@@ -474,7 +474,8 @@
      \ifconditional\c_tabl_lines_preroll \else
        \box\b_tabl_lines_cell
        % the columncounter is one ahead !
-       \dorecurse\c_tabl_lines_step{\strut\hfil}%
+%        \dorecurse\c_tabl_lines_step{\strut\hfil}%
+\strut
        \hskip\scratchskip
      \fi
    \fi}

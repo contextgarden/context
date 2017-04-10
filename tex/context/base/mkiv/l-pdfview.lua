@@ -44,7 +44,7 @@ if os.type == "windows" then
         ['okular']      = [[start "test" okular.exe --unique "%filename%"]],
         ['pdfxcview']   = [[start "test" pdfxcview.exe /A "nolock=yes=OpenParameters" "%filename%"]],
         ['sumatra']     = [[start "test" sumatrapdf.exe -reuse-instance -bg-color 0xCCCCCC "%filename%"]],
-        ['auto']        = [[start "%filename%"]],
+        ['auto']        = [[start "" "%filename%"]],
     }
     closecalls= {
         ['default']     = [[pdfclose --file "%filename%"]],
@@ -91,7 +91,7 @@ else
         ['okular']    = [[okular --unique "%filename%"]],
         ['sumatra']   = [[wine "sumatrapdf.exe" -reuse-instance -bg-color 0xCCCCCC "%filename%"]],
         ['pdfxcview'] = [[wine "pdfxcview.exe" /A "nolock=yes=OpenParameters" "%filename%"]],
-        ['auto']      = [[open "%filename%"]],
+        ['auto']      = [[open "%filename%"]], -- linux: xdg-open
     }
     closecalls= {
         ['default']   = [[pdfclose --file "%filename%"]],

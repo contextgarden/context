@@ -20718,6 +20718,7 @@ local helpinfo = [[
    </subcategory>
    <subcategory>
     <flag name="expand-braces"><short>expand complex variable</short></flag>
+    <flag name="resolve-path"><short>expand variable (completely resolve paths)</short></flag>
     <flag name="expand-path"><short>expand variable (resolve paths)</short></flag>
     <flag name="expand-var"><short>expand variable (resolve references)</short></flag>
     <flag name="show-path"><short>show path expansion of ...</short></flag>
@@ -21700,6 +21701,13 @@ elseif e_argument("expand-path") then
     runners.register_arguments(filename)
     environment.initializearguments(environment.arguments_after)
     resolvers.dowithfilesandreport(resolvers.expandpath, environment.files)
+
+elseif e_argument("resolve-path") then
+
+    resolvers.load("nofiles")
+    runners.register_arguments(filename)
+    environment.initializearguments(environment.arguments_after)
+    resolvers.dowithfilesandreport(resolvers.cleanedpathlist, environment.files)
 
 elseif e_argument("expand-var") or e_argument("expand-variable") then
 

@@ -25,35 +25,28 @@ local info = {
 -- be changes because otherwise we get a message when the session is restored. I don't
 -- care about locales.
 --
--- Somehow th eprocess hangs when I refresh the pdf viewer, this doesn't happen in scite so
+-- Somehow the process hangs when I refresh the pdf viewer, this doesn't happen in scite so
 -- the underlying code is for the moment less reliant.
 
 local match, gsub, find, format = string.match, string.gsub, string.find, string.format
 local assert, type = assert, type
 
-local original          = textadept.run
-local runner            = { }
+local original            = textadept.run
+local runner              = { }
 
-runner.MARK_WARNING     = original.MARK_WARNING
-runner.MARK_ERROR       = original.MARK_ERROR
+runner.MARK_WARNING       = original.MARK_WARNING
+runner.MARK_ERROR         = original.MARK_ERROR
 
-local specifications    = { }
-runner.specifications   = specifications
+local specifications      = { }
+runner.specifications     = specifications
 
-events.CHECK_OUTPUT     = 'build_output'     -- 'check_output'
-events.PROCESS_OUTPUT   = 'run_output'       -- 'process_output'
-events.PREVIEW_OUTPUT   = 'compile_output'   -- 'preview_output'
+----- RUNNER_EVENT        = "[Context Runner]"
+local OUTPUT_BUFFER       = '[Message Buffer]' -- CONSOLE
 
-local eventtags         = {
-    check   = events.CHECK_OUTPUT,
-    process = events.PROCESS_OUTPUT,
-    preview = events.PREVIEW_OUTPUT,
-}
+----- events.RUNNER_EVENT = RUNNER_EVENT
 
-local OUTPUT_BUFFER     = '[Message Buffer]' -- CONSOLE
-
-local currentprocess    = nil
-local xbuffer           = nil
+local currentprocess      = nil
+local xbuffer             = nil
 
 local function find_buffer(buffer_type)
     for i=1,#_BUFFERS do
@@ -66,6 +59,7 @@ end
 
 local function print_output(str)
     local print_buffer = find_buffer(OUTPUT_BUFFER)
+    -- some simplified magic copied from the adeptext runner
     if not print_buffer then
         if not ui.tabs then
             view:split()
@@ -88,6 +82,7 @@ local function print_output(str)
     print_buffer:append_text(str)
     print_buffer:goto_pos(buffer.length)
     print_buffer:set_save_point()
+    --
     return true -- quits
 end
 
@@ -103,11 +98,11 @@ local function is_output(buffer)
     return buffer._type == OUTPUT_BUFFER
 end
 
+-- Instead of events we will have out own interceptors so that we don't have
+-- interference. The main problem is that we don't hav emuch control over the
+-- order. If we have much actions I can always come up with something.
+
 local function process(buffer,filename,action)
-    local event = eventtags[action]
-    if not event then
-        return
-    end
     if not filename then
         filename = buffer.filename
     end
@@ -115,16 +110,21 @@ local function process(buffer,filename,action)
         buffer:annotation_clear_all() -- needed ?
         io.save_file()
     end
+    if filename == "" then
+        return
+    end
     local suffix        = match(filename,'[^/\\.]+$')
     local specification = specifications[suffix]
     if not specification then
         return
     end
-    local command = specification[action]
-    if type(command) == "string" then
-        -- we're ok, some day also more specific table support, e.g. when we want
-        -- to hook in a log lexer
-    else
+    local action = specification[action]
+    local quitter = nil
+    if type(action) == "table" then
+        action  = action.command
+        quitter = action.quitter
+    end
+    if type(action) ~= "string" then
         return
     end
     clear_output()
@@ -135,37 +135,57 @@ local function process(buffer,filename,action)
     end
     -- beter strip one from the end
     local nameonly = match(basename,'^(.+)%.')
-    -- more in sync which what we normally do
-    command = gsub(command,'%%(.-)%%', {
-        filename = filename,
-        pathname = dirname,
-        dirname  = dirname,
-        pathpart = dirname,
-        basename = basename,
-        nameonly = nameonly,
-        suffix   = suffix,
+    -- more in sync which what we normally do (i'd rather use the ctx template mechanism)
+    local command = gsub(action,'%%(.-)%%', {
+        filename  = filename,
+        pathname  = dirname,
+        dirname   = dirname,
+        pathpart  = dirname,
+        basename  = basename,
+        nameonly  = nameonly,
+        suffix    = suffix,
+        selection = function() return match(buffer.get_sel_text(),"%s*([A-Za-z]+)") end,
     })
     -- for fun i'll add a ansi escape sequence lexer some day
     local function emit_output(output)
-        events.emit(event,output)
+        print_output(output) -- events.emit(RUNNER_EVENT,...)
+        -- afaik there is no way to check if we're waiting for input (no input callback)
+        if quitter then
+            local quit, message = quitter(interceptor)
+            if quit then
+                if message then
+                    print_output(format("\n\n> quit: %s\n",message))
+                end
+                runner.quit()
+            end
+        end
     end
     local function exit_output(status)
-        events.emit(event,format("\n\n> exit: %s, press esc to return to source\n",status))
+        print_output(format("\n\n> exit: %s, press esc to return to source\n",status)) -- events.emit(RUNNER_EVENT,...)
     end
-    events.emit(event,format("> command: %s\n",command))
+    print_output(format("> command: %s\n",command)) -- events.emit(RUNNER_EVENT,...)
     currentprocess = assert(spawn(command, pathpart, emit_output, emit_output, exit_output))
 end
 
-function runner.check(filename)
-    process(buffer,filename,"check")
+function runner.install(name)
+    return function(filename)
+        process(buffer,filename,name)
+    end
 end
 
-function runner.process(filename)
-    process(buffer,filename,"process")
-end
+runner.check   = runner.install("check")
+runner.process = runner.install("process")
+runner.preview = runner.install("preview")
 
-function runner.preview(filename)
-    process(buffer,filename,"preview")
+function runner.resultof(command) -- from l-os.lua
+    local handle = io.popen(command,"r")
+    if handle then
+        local result = handle:read("*all") or ""
+        handle:close()
+        return result
+    else
+        return ""
+    end
 end
 
 function runner.quit()
@@ -202,11 +222,12 @@ end
 
 -- Tricky: we can't reset an event (because we need to know the function which is
 -- local. So, a first solution injected a false into the table which will trigger
--- a break and then I found out that returning true has the same effect.
+-- a break and then I found out that returning true has the same effect. Then I
+-- found out that we can have our own events and next decided not to use them at
+-- all.
 
-events.connect(events.COMPILE_OUTPUT, print_output, 1)
-events.connect(events.RUN_OUTPUT,     print_output, 1)
-events.connect(events.BUILD_OUTPUT,   print_output, 1)
+-- events.connect(events.RUNNER_EVENT,   print_output, 1)
+
 events.connect(events.CHAR_ADDED,     char_added,   1)
 events.connect(events.KEYPRESS,       key_press,    1)
 events.connect(events.DOUBLE_CLICK,   double_click, 1)

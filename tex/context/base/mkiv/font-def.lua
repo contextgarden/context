@@ -11,8 +11,9 @@ if not modules then modules = { } end modules ['font-def'] = {
 local lower, gsub = string.lower, string.gsub
 local tostring, next = tostring, next
 local lpegmatch = lpeg.match
-local suffixonly, removesuffix = file.suffix, file.removesuffix
+local suffixonly, removesuffix, basename = file.suffix, file.removesuffix, file.basename
 local formatters = string.formatters
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 
 local allocate = utilities.storage.allocate
 
@@ -203,9 +204,9 @@ function resolvers.name(specification)
                     features.normal = normal
                 end
                 normal.instance = instance
-if not callbacks.supported.glyph_stream_provider then
-    normal.variableshapes = true -- for the moment
-end
+                if not callbacks.supported.glyph_stream_provider then
+                    normal.variableshapes = true -- for the moment
+                end
             end
             --
             local suffix = lower(suffixonly(resolved))
@@ -313,6 +314,65 @@ local function checkembedding(tfmdata)
     tfmdata.embedding = embedding
 end
 
+local function checkfeatures(tfmdata)
+    local resources = tfmdata.resources
+    local shared    = tfmdata.shared
+    if resources and shared then
+        local features     = resources.features
+        local usedfeatures = shared.features
+        if features and usedfeatures then
+            local usedlanguage = usedfeatures.language or "dflt"
+            local usedscript   = usedfeatures.script or "dflt"
+            local function check(what)
+                if what then
+                    local foundlanguages = { }
+                    for feature, scripts in next, what do
+                        if usedscript == "auto" or scripts["*"] then
+                            -- ok
+                        elseif not scripts[usedscript] then
+                         -- report_defining("font %!font:name!, feature %a, no script %a",
+                         --     tfmdata,feature,usedscript)
+                        else
+                            for script, languages in next, scripts do
+                                if languages["*"] then
+                                    -- ok
+                                elseif not languages[usedlanguage] then
+                                    report_defining("font %!font:name!, feature %a, script %a, no language %a",
+                                        tfmdata,feature,script,usedlanguage)
+                                end
+                            end
+                        end
+                        for script, languages in next, scripts do
+                            for language in next, languages do
+                                foundlanguages[language] = true
+                            end
+                        end
+                    end
+                    if false then
+                        foundlanguages["*"] = nil
+                        foundlanguages = sortedkeys(foundlanguages)
+                        for feature, scripts in sortedhash(what) do
+                            for script, languages in next, scripts do
+                                if not languages["*"] then
+                                    for i=1,#foundlanguages do
+                                        local language = foundlanguages[i]
+                                        if not languages[language] then
+                                            report_defining("font %!font:name!, feature %a, script %a, no language %a",
+                                                tfmdata,feature,script,language)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            check(features.gsub)
+            check(features.gpos)
+        end
+    end
+end
+
 function definers.loadfont(specification)
     local hash = constructors.hashinstance(specification)
     -- todo: also hash by instance / factors
@@ -347,6 +407,7 @@ function definers.loadfont(specification)
             checkembedding(tfmdata) -- todo: general postprocessor
             loadedfonts[hash] = tfmdata
             designsizes[specification.hash] = tfmdata.parameters.designsize
+            checkfeatures(tfmdata)
         end
     end
     if not tfmdata then
@@ -458,7 +519,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         local parameters = tfmdata.parameters or { }
         report_defining("using %a font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
             properties.format or "unknown", id, properties.name, parameters.size, properties.encodingbytes,
-            properties.encodingname, properties.fullname, file.basename(properties.filename))
+            properties.encodingname, properties.fullname, basename(properties.filename))
     end
     statistics.stoptiming(fonts)
     return tfmdata

@@ -245,6 +245,7 @@ local function getnames(root,interface)
     local found  = { }
     local names  = { }
     local groups = { }
+    local extra  = { }
     for e in xmlcollected(root,'cd:interface/cd:interface') do
         local category = match(e.at.file or "","^i%-(.*)%.xml$")
         local list     = { }
@@ -256,6 +257,7 @@ local function getnames(root,interface)
                 names[#names+1] = t
                 list[#list+1]   = t
                 found[idname]   = e
+                extra[csname]   = e
             else
                 -- variant
             end
@@ -268,11 +270,11 @@ local function getnames(root,interface)
     end
     sort(names,  function(a,b) return lower(a[2]) < lower(b[2]) end)
     sort(groups, function(a,b) return lower(a[1]) < lower(b[1]) end)
-    return names, groups, found
+    return names, groups, found, extra
 end
 
 local loaded = setmetatableindex(function(loaded,interface)
-    local names, groups, found = getnames(usedsetuproot,interface)
+    local names, groups, found, extra = getnames(usedsetuproot,interface)
     local current = {
         interface   = interface,
         root        = usedsetuproot,
@@ -280,13 +282,14 @@ local loaded = setmetatableindex(function(loaded,interface)
         names       = names,
         groups      = groups,
         found       = found,
+        extra       = extra,
     }
     loaded[interface] = current
     return current
 end)
 
 local function collect(current,name,interface,lastmode)
-    local command = current.found[name]
+    local command = current.found[name] or current.extra[name]
     if command then
         local definitions = current.definitions
         local attributes  = command.at or { }

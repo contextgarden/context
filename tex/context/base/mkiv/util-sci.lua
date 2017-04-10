@@ -17,7 +17,20 @@ utilities.scite = scite
 
 local report = logs.reporter("scite")
 
-local lexerroot = file.dirname(resolvers.find_file("scite-context-lexer.lua"))
+do
+    local lexerroot = "c:/data/system/scite/wscite/context/lexers"
+    if not lexerroot then
+        lexerroot = file.dirname(resolvers.find_file("scite-context-lexer.lua"))
+    end
+    if lfs.isdir(lexerroot) then
+        package.extraluapath(lexerroot)
+        package.extraluapath(lexerroot.."/themes")
+        package.extraluapath(lexerroot.."/data")
+        report("using lexer root %a",lexerroot)
+    else
+        report("no valid lexer root")
+    end
+end
 
 local knownlexers  = {
     tex  = "tex", mkiv = "tex", mkvi = "tex", mkxi = "tex", mkix = "tex", mkii = "tex", cld  = "tex",
@@ -35,20 +48,16 @@ lexer = nil -- main lexer, global (for the moment needed for themes)
 
 local function loadscitelexer()
     if not lexer then
-        dir.push(lexerroot)
-        lexer = dofile("scite-context-lexer.lua")
-        dofile("themes/scite-context-theme.lua")
-        dir.pop()
+        lexer = require("scite-context-lexer")
+        require("scite-context-theme") -- uses lexer
     end
     return lexer
 end
 
 local loadedlexers = setmetatableindex(function(t,k)
     local l = knownlexers[k] or k
-    dir.push(lexerroot)
     loadscitelexer()
     local v = lexer.load(formatters["scite-context-lexer-%s"](l))
-    dir.pop()
     t[l] = v
     t[k] = v
     return v
@@ -58,8 +67,8 @@ scite.loadedlexers   = loadedlexers
 scite.knownlexers    = knownlexers
 scite.loadscitelexer = loadscitelexer
 
-local f_fore_bold  = formatters['.%s { display: inline ; font-weight: bold   ; color: #%s%s%s ; }']
-local f_fore_none  = formatters['.%s { display: inline ; font-weight: normal ; color: #%s%s%s ; }']
+local f_fore_bold  = formatters['.%s { display: inline ; font-weight: bold   ; color: #%02X%02X%02X ; }']
+local f_fore_none  = formatters['.%s { display: inline ; font-weight: normal ; color: #%02X%02X%02X ; }']
 local f_none_bold  = formatters['.%s { display: inline ; font-weight: bold   ; }']
 local f_none_none  = formatters['.%s { display: inline ; font-weight: normal ; }']
 local f_div_class  = formatters['<div class="%s">%s</div>']
@@ -92,7 +101,7 @@ local function exportcsslexing()
     if not css then
         loadscitelexer()
         local function black(f)
-            return (f[1] == f[2]) and (f[2] == f[3]) and (f[3] == '00')
+            return (#f == 0 and f[1] == 0) or ((f[1] == f[2]) and (f[2] == f[3]) and (f[3] == 0))
         end
         local result, r = { }, 0
         for k, v in table.sortedhash(lexer.context.styles) do
@@ -100,17 +109,10 @@ local function exportcsslexing()
             local fore = v.fore
             r = r + 1
             if fore and not black(fore) then
-                if bold then
-                    result[r] = f_fore_bold(k,fore[1],fore[2],fore[3])
-                else
-                    result[r] = f_fore_none(k,fore[1],fore[2],fore[3])
-                end
+                local cr, cg, cb = fore[1], fore[2], fore[3]
+                result[r] = (bold and f_fore_bold or f_fore_none)(k,cr,cg or cr,cb or cr)
             else
-                if bold then
-                    result[r] = f_none_bold(k)
-                else
-                    result[r] = f_none_none(k)
-                end
+                result[r] = (bold and f_none_bold or f_none_none)(k)
             end
         end
         css = concat(result,"\n")

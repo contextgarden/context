@@ -37,6 +37,7 @@ local texnest            = tex.nest
 local texlists           = tex.lists
 
 local nodes              = nodes
+local nodeidstostring    = nodes.idstostring
 local nodepool           = nodes.pool
 local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip

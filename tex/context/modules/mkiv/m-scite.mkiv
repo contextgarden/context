@@ -56,7 +56,7 @@ buffers.scite = scite
 
 -- context output:
 
-local f_def_color = formatters["\\definecolor[slxc%s][h=%s%s%s]%%"]
+local f_def_color = formatters["\\definecolor[slxc%s][h=%02X%02X%02X]%%"]
 local f_fore_none = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s#1}}%%"]
 local f_fore_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s\\bf#1}}%%"]
 local f_none_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\bf#1}}%%"]
@@ -99,14 +99,14 @@ local function exportcolors()
     if not colors then
         scite.loadscitelexer()
         local function black(f)
-            return (f[1] == f[2]) and (f[2] == f[3]) and (f[3] == '00')
+            return (f[1] == f[2]) and (f[2] == f[3]) and (f[3] == 0)
         end
         local result, r = { f_mapping }, 1
         for k, v in table.sortedhash(lexer.context.styles) do
             local fore = v.fore
             if fore and not black(fore) then
                 r = r + 1
-                result[r] = f_def_color(k,fore[1],fore[2],fore[3])
+                result[r] = f_def_color(k,fore[1],fore[2] or fore[1],fore[3] or fore[1])
             end
         end
         r = r + 1

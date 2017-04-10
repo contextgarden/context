@@ -232,7 +232,6 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 -- is still not perfect (sometimes hangs) but it was enough reason to spend time on
 -- making our lexer work with TextAdept and create a setup.
 --
---
 -- TRACING
 --
 -- The advantage is that we now can check more easily with regular Lua(TeX). We can
@@ -288,6 +287,8 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 -- Properties is an ugly mess ... due to chages in the interface we're now left
 -- with some hybrid that sort of works ok
 
+-- textadept: buffer:colourise(0,-1)
+
 local lpeg  = require("lpeg")
 
 local global = _G
@@ -297,9 +298,9 @@ local type, next, setmetatable, rawset, tonumber, tostring = type, next, setmeta
 local R, P, S, V, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg, Carg = lpeg.R, lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Carg
 local lpegmatch = lpeg.match
 
+local usage   = (textadept and "textadept") or (resolvers and "context") or "scite"
 local nesting = 0
-
-local print = (textadept and ui and ui.print) or print
+local print   = textadept and ui and ui.print or print
 
 local function report(fmt,str,...)
     if log then
@@ -748,21 +749,34 @@ local locations = {
 --     end
 -- end
 
-local function collect(name)
-    local rootlist = lexers.LEXERPATH or "."
-    for root in gmatch(rootlist,"[^;]+") do
-        local root = gsub(root,"/[^/]-lua$","")
-        for i=1,#locations do
-            local fullname =  root .. "/" .. locations[i] .. "/" .. name .. ".lua" -- so we can also check for .luc
-            if trace then
-                report("attempt to locate '%s'",fullname)
-            end
-            local okay, result = pcall(function () return dofile(fullname) end)
-            if okay then
-                return result, fullname
+local collect
+
+if usage == "context" then
+
+    collect = function(name)
+        return require(name), name
+    end
+
+else
+
+    collect = function(name)
+        local rootlist = lexers.LEXERPATH or "."
+        for root in gmatch(rootlist,"[^;]+") do
+            local root = gsub(root,"/[^/]-lua$","")
+            for i=1,#locations do
+                local fullname =  root .. "/" .. locations[i] .. "/" .. name .. ".lua" -- so we can also check for .luc
+                if trace then
+                    report("attempt to locate '%s'",fullname)
+                end
+                local okay, result = pcall(function () return dofile(fullname) end)
+                if okay then
+                    return result, fullname
+                end
             end
         end
+    --     return require(name), name
     end
+
 end
 
 function context.loadluafile(name)
@@ -773,7 +787,9 @@ function context.loadluafile(name)
         end
         return data, fullname
     end
-    report("unable to load lua file '%s'",name)
+    if not textadept then
+        report("unable to load lua file '%s'",name)
+    end
 end
 
 -- in fact we could share more as we probably process the data but then we need
@@ -793,7 +809,9 @@ function context.loaddefinitions(name)
     end
     local data, fullname = collect(name)
     if not data then
-        report("unable to load definition file '%s'",name)
+        if not textadept then
+            report("unable to load definition file '%s'",name)
+        end
         data = false
     elseif trace then
         report("definition file '%s' has been loaded",fullname)
@@ -1026,7 +1044,9 @@ function context.setwordlist(tag,limit) -- returns hash (lowercase keys and orig
     if not list then
         list = context.loaddefinitions("spell-" .. tag)
         if not list or type(list) ~= "table" then
-            report("invalid spell checking list for '%s'",tag)
+            if not textadept then
+                report("invalid spell checking list for '%s'",tag)
+            end
             list = { words = false, min = 3 }
         else
             list.words = list.words or false

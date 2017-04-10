@@ -12,6 +12,19 @@ local lexer   = require("scite-context-lexer")
 local context = lexer.context
 local install = context.install
 
+-- autopdf takes long to stop (weird, not in scite)
+
+-- WIN32 and 'start "" "%e.pdf"' or OSX and 'open "%e.pdf"' or 'xdg-open "%e.pdf"',
+
+local quitter = function(output)
+    return find(output,"%? +$") and true or false, "see message above"
+end
+
+local listing = {
+    command = [[mtxrun --autogenerate --script context --extra=listing --scite --compact "%basename%"]], -- --autopdf
+    quitter = quitter,
+}
+
 install {
     lexer    = "scite-context-lexer-tex",
     suffixes = {
@@ -19,13 +32,30 @@ install {
         "mkii",
         "mkiv", "mkvi", "mkix", "mkxi"
     },
-    check    = [[mtxrun --autogenerate --script check   "%basename%"]],
-    process  = [[mtxrun --autogenerate --script context "%basename%"]], -- --autopdf takes long to stop (weird, not in scite)
+    check    = {
+        command = [[mtxrun --autogenerate --script check "%basename%"]],
+        quitter = quitter,
+    },
+    process  = {
+        command = [[mtxrun --autogenerate --script context "%basename%"]], --  --autopdf,
+        quitter = quitter,
+    },
+    listing  = listing,
+    generate = [[mtxrun --generate]],
+    fonts    = [[mtxrun --script fonts --reload --force]],
+    clear    = [[mtxrun --script cache --erase]],
+    purge    = [[mtxrun --script context --purgeall]],
     preview  = [[]],
+    logfile  = [[]],
+    arrange  = [[]],
+    unicodes = [[]],
     setter   = function(lexer)
         -- whatever
     end,
 }
+
+
+
 
 install {
     lexer    = "scite-context-lexer-xml",
@@ -39,7 +69,11 @@ install {
         "xul"
     },
     check    = [[tidy -quiet -utf8 -xml -errors "%basename%"]],
-    process  = [[mtxrun --autogenerate --script context "%basename%"]], -- --autopdf takes long to stop (weird, not in scite)
+    process  = {
+        command = [[mtxrun --autogenerate --script context "%basename%"]], --  --autopdf]],
+        quitter = quitter,
+    },
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,
@@ -50,6 +84,7 @@ install {
     suffixes = {
         "mp", "mpx"
     },
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,
@@ -64,6 +99,7 @@ install {
     check    = [[mtxrun --autogenerate --script "%basename%"]],
     process  = [[mtxrun --autogenerate --script "%basename%"]],
     preview  = [[mtxrun --autogenerate --script "%basename%"]],
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,
@@ -74,6 +110,7 @@ install {
     suffixes = {
         "txt"
     },
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,
@@ -96,6 +133,7 @@ install {
         "w",
         "ww"
     },
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,
@@ -109,6 +147,7 @@ install {
         "hpp", "cpp",
         "hxx", "cxx"
     },
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,
@@ -119,6 +158,7 @@ install {
     suffixes = {
         "bib"
     },
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,
@@ -129,6 +169,7 @@ install {
     suffixes = {
         "sql"
     },
+    listing  = listing,
     setter   = function(lexer)
         -- whatever
     end,

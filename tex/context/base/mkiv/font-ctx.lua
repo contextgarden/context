@@ -156,16 +156,17 @@ end
 
 helpers.name = getfontname
 
+local addformatter = utilities.strings.formatters.add
+
 if _LUAVERSION < 5.2  then
 
-    formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          "local fontname  = fonts.helpers.name")
-    formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")
+    addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          "local fontname  = fonts.helpers.name")
+    addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")
 
 else
-    -- somehow can fail:
 
-    formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
-    formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced })
+    addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
+    addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced })
 
 end
 
@@ -183,12 +184,12 @@ do
     local shares = { }
     local hashes = { }
 
-local nofinstances = 0
-local instances    = table.setmetatableindex(function(t,k)
-    nofinstances = nofinstances + 1
-    t[k] = nofinstances
-    return nofinstances
-end)
+    local nofinstances = 0
+    local instances    = table.setmetatableindex(function(t,k)
+        nofinstances = nofinstances + 1
+        t[k] = nofinstances
+        return nofinstances
+    end)
 
     function constructors.trytosharefont(target,tfmdata)
         constructors.noffontsloaded = constructors.noffontsloaded + 1
@@ -347,21 +348,13 @@ otftables.scripts.auto = "automatic fallback to latn when no dflt present"
 
 -- setmetatableindex(otffeatures.descriptions,otftables.features)
 
-local privatefeatures = { -- this can go away
-    tlig = true,
-    trep = true,
-    anum = true,
-}
-
 local function checkedscript(tfmdata,resources,features)
     local latn   = false
     local script = false
     if resources.features then
         for g, list in next, resources.features do
             for f, scripts in next, list do
-                if privatefeatures[f] then
-                    -- skip
-                elseif scripts.dflt then
+                if scripts.dflt then
                     script = "dflt"
                     break
                 elseif scripts.latn then

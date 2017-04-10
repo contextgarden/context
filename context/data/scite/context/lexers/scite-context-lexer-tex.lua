@@ -144,17 +144,20 @@ local validminimum = 3
 
 -- fails (empty loop message) ... latest lpeg issue?
 
+-- todo: Make sure we only do this at the beginning .. a pitty that we
+-- can't store a state .. now is done too often.
+
 local knownpreamble = Cmt(P("% "), function(input,i,_) -- todo : utfbomb, was #P("% ")
     if i < 10 then
         validwords, validminimum = false, 3
-        local s, e, word = find(input,"^(.+)[\n\r]",i) -- combine with match
+        local s, e, word = find(input,"^(.-)[\n\r]",i) -- combine with match
         if word then
-            local interface = match(word,"interface=([a-z]+)")
+            local interface = match(word,"interface=([a-z][a-z]+)")
             if interface and #interface == 2 then
                 inform("enabling context user interface '%s'",interface)
                 currentcommands  = commands[interface] or commands.en or { }
             end
-            local language = match(word,"language=([a-z]+)")
+            local language = match(word,"language=([a-z][a-z]+)")
             validwords, validminimum = setwordlist(language)
         end
     end

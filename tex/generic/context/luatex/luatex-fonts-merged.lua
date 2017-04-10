@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/08/17 12:09:31
+-- merge date  : 04/10/17 23:25:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -28783,8 +28783,9 @@ if not modules then modules={} end modules ['font-def']={
 local lower,gsub=string.lower,string.gsub
 local tostring,next=tostring,next
 local lpegmatch=lpeg.match
-local suffixonly,removesuffix=file.suffix,file.removesuffix
+local suffixonly,removesuffix,basename=file.suffix,file.removesuffix,file.basename
 local formatters=string.formatters
+local sortedhash,sortedkeys=table.sortedhash,table.sortedkeys
 local allocate=utilities.storage.allocate
 local trace_defining=false trackers .register("fonts.defining",function(v) trace_defining=v end)
 local directive_embedall=false directives.register("fonts.embedall",function(v) directive_embedall=v end)
@@ -28904,9 +28905,9 @@ function resolvers.name(specification)
           features.normal=normal
         end
         normal.instance=instance
-if not callbacks.supported.glyph_stream_provider then
-  normal.variableshapes=true 
-end
+        if not callbacks.supported.glyph_stream_provider then
+          normal.variableshapes=true 
+        end
       end
       local suffix=lower(suffixonly(resolved))
       if fonts.formats[suffix] then
@@ -28985,6 +28986,60 @@ local function checkembedding(tfmdata)
   end
   tfmdata.embedding=embedding
 end
+local function checkfeatures(tfmdata)
+  local resources=tfmdata.resources
+  local shared=tfmdata.shared
+  if resources and shared then
+    local features=resources.features
+    local usedfeatures=shared.features
+    if features and usedfeatures then
+      local usedlanguage=usedfeatures.language or "dflt"
+      local usedscript=usedfeatures.script or "dflt"
+      local function check(what)
+        if what then
+          local foundlanguages={}
+          for feature,scripts in next,what do
+            if usedscript=="auto" or scripts["*"] then
+            elseif not scripts[usedscript] then
+            else
+              for script,languages in next,scripts do
+                if languages["*"] then
+                elseif not languages[usedlanguage] then
+                  report_defining("font %!font:name!, feature %a, script %a, no language %a",
+                    tfmdata,feature,script,usedlanguage)
+                end
+              end
+            end
+            for script,languages in next,scripts do
+              for language in next,languages do
+                foundlanguages[language]=true
+              end
+            end
+          end
+          if false then
+            foundlanguages["*"]=nil
+            foundlanguages=sortedkeys(foundlanguages)
+            for feature,scripts in sortedhash(what) do
+              for script,languages in next,scripts do
+                if not languages["*"] then
+                  for i=1,#foundlanguages do
+                    local language=foundlanguages[i]
+                    if not languages[language] then
+                      report_defining("font %!font:name!, feature %a, script %a, no language %a",
+                        tfmdata,feature,script,language)
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+      check(features.gsub)
+      check(features.gpos)
+    end
+  end
+end
 function definers.loadfont(specification)
   local hash=constructors.hashinstance(specification)
   local tfmdata=loadedfonts[hash] 
@@ -29018,6 +29073,7 @@ function definers.loadfont(specification)
       checkembedding(tfmdata) 
       loadedfonts[hash]=tfmdata
       designsizes[specification.hash]=tfmdata.parameters.designsize
+      checkfeatures(tfmdata)
     end
   end
   if not tfmdata then
@@ -29110,7 +29166,7 @@ function definers.read(specification,size,id)
     local parameters=tfmdata.parameters or {}
     report_defining("using %a font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
       properties.format or "unknown",id,properties.name,parameters.size,properties.encodingbytes,
-      properties.encodingname,properties.fullname,file.basename(properties.filename))
+      properties.encodingname,properties.fullname,basename(properties.filename))
   end
   statistics.stoptiming(fonts)
   return tfmdata

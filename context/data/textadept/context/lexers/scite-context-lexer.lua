@@ -704,7 +704,9 @@ function context.loadluafile(name)
         end
         return data, fullname
     end
-    report("unable to load lua file '%s'",name)
+    if not textadept then
+        report("unable to load lua file '%s'",name)
+    end
 end
 
 -- in fact we could share more as we probably process the data but then we need
@@ -724,7 +726,9 @@ function context.loaddefinitions(name)
     end
     local data, fullname = collect(name)
     if not data then
-        report("unable to load definition file '%s'",name)
+        if not textadept then
+            report("unable to load definition file '%s'",name)
+        end
         data = false
     elseif trace then
         report("definition file '%s' has been loaded",fullname)
@@ -957,7 +961,9 @@ function context.setwordlist(tag,limit) -- returns hash (lowercase keys and orig
     if not list then
         list = context.loaddefinitions("spell-" .. tag)
         if not list or type(list) ~= "table" then
-            report("invalid spell checking list for '%s'",tag)
+            if not textadept then
+                report("invalid spell checking list for '%s'",tag)
+            end
             list = { words = false, min = 3 }
         else
             list.words = list.words or false
