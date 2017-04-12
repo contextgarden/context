@@ -14,6 +14,9 @@ local char, format, gsub = string.char, string.format, string.gsub
 -- What is _CHARSET doing ... I don't want any messing with conversion at all. Scite is
 -- more clever with e.g. pdf. How can I show non ascii as escapes.
 
+-- I'll add a few more keybindings. I mostly made this file for my own use and as a
+-- fallback for SciTE as it runs on all os's. It might evolve ... who knows.
+
 io.encodings = {
     "UTF-8",
     "ASCII",
@@ -62,6 +65,7 @@ local runner    = require("textadept-context-runner")
 
 local SEPARATOR = { "" }
 local newmenu   = { }
+local newkeys   = { }
 
 do
 
@@ -93,9 +97,23 @@ do
 
     }
 
+    -- maybe just the same keys on all ... or duplicate on osx
+
+    newkeys[OSX and 'mn'  or 'cn']  = buffer.new
+    newkeys[OSX and 'mo'  or 'co']  = io.open_file
+    newkeys[OSX and 'cmo' or 'cao'] = io.open_recent_file
+    newkeys[OSX and 'ms'  or 'cs']  = io.save_file
+    newkeys[OSX and 'mS'  or 'cS']  = io.save_file_as
+    newkeys[OSX and 'mw'  or 'cw']  = io.close_buffer
+    newkeys[OSX and 'mW'  or 'cW']  = io.close_all_buffers
+
 end
 
 do
+
+    local function complete_symbol()
+        textadept.editing.autocomplete(buffer:get_lexer(true))
+    end
 
     newmenu.edit = {
 
@@ -125,6 +143,54 @@ do
         { '_Lower Case Selection', buffer.lower_case },
 
     }
+
+    newkeys[OSX and 'mz' or 'cz']  = buffer.undo
+    newkeys[OSX and 'my' or 'cy']  = buffer.redo
+    newkeys[OSX and 'mx' or 'cx']  = buffer.cut
+    newkeys[OSX and 'mc' or 'cc']  = buffer.copy
+    newkeys[OSX and 'mv' or 'cv']  = buffer.paste
+    newkeys[OSX and 'ma' or 'ca']  = buffer.select_all
+
+    newkeys[OSX and 'mD' or 'cD']  = textadept.editing.select_word
+    newkeys[OSX and 'mN' or 'cN']  = textadept.editing.select_line
+    newkeys[OSX and 'mP' or 'cP']  = textadept.editing.select_paragraph
+
+    newkeys['del']                 = buffer.clear
+    newkeys['cy']                  = buffer.redo
+
+    newkeys[OSX and 'md' or 'cd']  = buffer.line_duplicate
+    newkeys[OSX and 'cu' or 'cau'] = buffer.upper_case
+    newkeys[OSX and 'cU' or 'caU'] = buffer.lower_case
+
+    newkeys[OSX and 'mq' or 'cq']  = textadept.editing.block_comment
+
+    -- Do I ever use these?
+
+ -- newkeys['cf']     = buffer.char_right
+ -- newkeys['cF']     = buffer.char_right_extend
+ -- newkeys['cmf']    = buffer.word_right
+ -- newkeys['cmF']    = buffer.word_right_extend
+ -- newkeys['cb']     = buffer.char_left
+ -- newkeys['cB']     = buffer.char_left_extend
+ -- newkeys['cmb']    = buffer.word_left
+ -- newkeys['cmB']    = buffer.word_left_extend
+ -- newkeys['cn']     = buffer.line_down
+ -- newkeys['cN']     = buffer.line_down_extend
+ -- newkeys['cp']     = buffer.line_up
+ -- newkeys['cP']     = buffer.line_up_extend
+ -- newkeys['ca']     = buffer.vc_home
+ -- newkeys['cA']     = buffer.vc_home_extend
+ -- newkeys['ce']     = buffer.line_end
+ -- newkeys['cE']     = buffer.line_end_extend
+ -- newkeys['aright'] = buffer.word_right
+ -- newkeys['aleft']  = buffer.word_left
+ -- newkeys['cdv']    = buffer.clear
+ -- newkeys['ck']     = function() buffer:line_end_extend() buffer:cut()  end
+ -- newkeys['cl']     = buffer.vertical_centre_caret
+
+    newkeys.fn = OSX and function() return true end or nil
+
+    newkeys[OSX and 'c@' or 'c '] = complete_symbol
 
 end
 
@@ -172,6 +238,25 @@ do
         { '_Jump to',                  textadept.editing.goto_line }
 
     }
+
+    -- The few times I use osx I want the same keys ... better explicitly handle
+    -- "not GUI" but I have to test the curses version first anyway.
+
+    newkeys[OSX and 'mf' or 'cf']    = find_in_file
+    newkeys[OSX and 'mg' or 'cg']    = ui.find.find_next
+    newkeys[OSX and 'mG' or 'cG']    = ui.find.find_prev
+    newkeys[OSX and 'mg' or 'cg']    = textadept.editing.goto_line
+
+    newkeys['f3']                    = not OSX and ui.find.find_next or nil
+    newkeys['sf3']                   = not OSX and ui.find.find_prev or nil
+
+    newkeys[OSX and 'cr'  or 'car']  = ui.find.replace
+    newkeys[OSX and 'cR'  or 'caR']  = ui.find.replace_all
+    newkeys[OSX and 'cmf' or 'caf']  = ui.find.find_incremental
+
+    newkeys[OSX and 'mF'  or 'cF']   = find_in_files
+    newkeys[OSX and 'cmg' or 'cag']  = find_next_in_files
+    newkeys[OSX and 'cmG' or 'caG']  = find_previous_in_files
 
 end
 
@@ -246,9 +331,9 @@ do
 
         SEPARATOR,
 
-        { 'Check Source',            runner.install("check") },
-        { 'Process Source',          runner.install("process") },
-        { 'Preview Result',          runner.install("preview") },
+        { 'Check Source',            runner.check },
+        { 'Process Source',          runner.process },
+        { 'Preview Result',          runner.preview },
         { 'Show Log File',           runner.install("logfile") },
         { 'Quit',                    runner.quit },
 
@@ -280,6 +365,14 @@ do
         { 'Show Unicodes',           runner.install("unicodes") },
 
     }
+
+    newkeys[OSX and 'mc' or 'cc'] = runner.check
+    newkeys[OSX and 'mr' or 'cr'] = runner.process
+    newkeys[OSX and 'mp' or 'cp'] = runner.preview
+    newkeys[OSX and 'mx' or 'cx'] = runner.quit
+
+    newkeys['f7']  = runner.process
+    newkeys['f12'] = runner.process
 
 end
 
@@ -330,7 +423,7 @@ do
         set_encoding('UTF-16BE')
     end
 
-    function goto_previous_buffer()
+    function goto_prev_buffer()
         view:goto_buffer(-1)
     end
 
@@ -344,7 +437,7 @@ do
 
         SEPARATOR,
 
-        { '_Previous Buffer',  goto_previous_buffer },
+        { '_Previous Buffer',  goto_prev_buffer },
         { '_Next Buffer',      goto_next_buffer },
         { '_Switch to Buffer', ui.switch_buffer },
 
@@ -378,6 +471,12 @@ do
         { 'Refresh _Syntax Highlighting', update_lexing }
 
     }
+
+    newkeys['f5'] = update_lexing
+
+    newkeys[OSX and 'mp' or 'cs\t'] = goto_prev_buffer
+    newkeys[OSX and 'mn' or 'c\t']  = goto_next_buffer
+    newkeys[OSX and 'mb' or 'cb']   = ui.switch_buffer
 
 end
 
@@ -422,6 +521,10 @@ do
 
     }
 
+    newkeys[OSX and 'm=' or 'c='] = buffer.zoom_in
+    newkeys[OSX and 'm-' or 'c-'] = buffer.zoom_out
+    newkeys[OSX and 'm0' or 'c0'] = reset_zoom
+
 end
 
 do
@@ -458,6 +561,7 @@ do
     }
 
 end
+
 do
 
     local function replace(oldmenu,newmenu)
@@ -478,6 +582,58 @@ do
     replace(textadept.menu.menubar [_L['_Buffer']], newmenu.buffer)
     replace(textadept.menu.menubar [_L['_View']],   newmenu.view)
     replace(textadept.menu.menubar [_L['_Help']],   newmenu.help)
+
+    local char = string.char
+
+    local combi = {
+        "c", "m", "a",
+        "cm", "ca", "ma",
+    }
+
+    local pad   = {
+        "esc", "del", "bs",
+        "up", "down", "left", "right",
+        "end", "home",
+        "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12",
+    }
+
+    local s = "s"
+
+    for i=1,#combi do
+        local c = combi[i]
+        for i=0x20,0x40 do
+            local ci = char(i)
+            keys[   c..ci] = nil
+            keys[s..c..ci] = nil
+        end
+        for i=0x41,0x5A do -- A .. Z
+            local ci = char(i)
+            keys[   c..ci] = nil
+        end
+        for i=0x5B,0x60 do
+            local ci = char(i)
+            keys[   c..ci] = nil
+            keys[s..c..ci] = nil
+        end
+        for i=0x61,0x7A do -- a .. z
+            local ci = char(i)
+            keys[   c..ci] = nil
+        end
+        for i=0x7B,0x7F do
+            local ci = char(i)
+            keys[   c..ci] = nil
+            keys[s..c..ci] = nil
+        end
+        for i=1,#pad do
+            local pi = pad[i]
+            keys[   c..pi] = nil
+            keys[s..c..pi] = nil
+        end
+    end
+
+    for k, v in next, newkeys do
+        keys[k] = v
+    end
 
 end
 

@@ -53,11 +53,13 @@ local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
 otf.version               = 3.028 -- beware: also sync font-mis.lua and in mtx-fonts
-otf.cache                 = containers.define("fonts", "otl", otf.version, true)
-otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
-otf.pdfcache              = containers.define("fonts", "pdf", otf.version, true)
+otf.cache                 = containers.define("fonts", "otl",  otf.version, true)
+otf.svgcache              = containers.define("fonts", "svg",  otf.version, true)
+otf.sbixcache             = containers.define("fonts", "sbix", otf.version, true)
+otf.pdfcache              = containers.define("fonts", "pdf",  otf.version, true)
 
 otf.svgenabled            = false
+otf.sbixenabled           = false
 
 local otfreaders          = otf.readers
 
@@ -127,8 +129,10 @@ function otf.load(filename,sub,instance)
         starttiming(otfreaders)
         data = otfreaders.loadfont(filename,sub or 1,instance) -- we can pass the number instead (if it comes from a name search)
         if data then
-            local resources = data.resources
-            local svgshapes = resources.svgshapes
+            -- todo: make this a plugin
+            local resources  = data.resources
+            local svgshapes  = resources.svgshapes
+            local sbixshapes = resources.sbixshapes
             if svgshapes then
                 resources.svgshapes = nil
                 if otf.svgenabled then
@@ -144,6 +148,22 @@ function otf.load(filename,sub,instance)
                     }
                 end
             end
+            if sbixshapes then
+                resources.sbixshapes = nil
+                if otf.sbixenabled then
+                    local timestamp = os.date()
+                    -- work in progress ... a bit boring to do
+                    containers.write(otf.sbixcache,hash, {
+                        sbixshapes = sbixshapes,
+                        timestamp  = timestamp,
+                    })
+                    data.properties.sbix = {
+                        hash      = hash,
+                        timestamp = timestamp,
+                    }
+                end
+            end
+            --
             otfreaders.compact(data)
             otfreaders.rehash(data,"unicodes")
             otfreaders.addunicodetable(data)

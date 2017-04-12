@@ -1756,23 +1756,59 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
     end
 end
 
--- Experimental (we need fonts).
+-- The MicroSoft variant is pretty clean and is supported (implemented elsewhere)
+-- just because I wanted to see how such a font looks like.
 
 function readers.colr(f,fontdata,specification)
     if specification.glyphs then
         reportskippedtable("colr")
     end
 end
-
 function readers.cpal(f,fontdata,specification)
     if specification.glyphs then
         reportskippedtable("cpal")
     end
 end
 
+-- This one is also supported, if only because I could locate a proper font for
+-- testing.
+
 function readers.svg(f,fontdata,specification)
     if specification.glyphs then
         reportskippedtable("svg")
+    end
+end
+
+-- There is a font from apple to test the next one. Will there be more? Anyhow,
+-- it's relatively easy to support, so I did it.
+
+function readers.sbix(f,fontdata,specification)
+    if specification.glyphs then
+        reportskippedtable("sbix")
+    end
+end
+
+-- I'm only willing to look into the next variant if I see a decent and complete (!)
+-- font and more can show up. It makes no sense to waste time on ideas.
+
+function readers.cbdt(f,fontdata,specification)
+    if specification.glyphs then
+        reportskippedtable("cbdt")
+    end
+end
+function readers.cblc(f,fontdata,specification)
+    if specification.glyphs then
+        reportskippedtable("cblc")
+    end
+end
+function readers.ebdt(f,fontdata,specification)
+    if specification.glyphs then
+        reportskippedtable("ebdt")
+    end
+end
+function readers.eblc(f,fontdata,specification)
+    if specification.glyphs then
+        reportskippedtable("eblc")
     end
 end
 
@@ -2110,6 +2146,12 @@ local function readdata(f,offset,specification)
     readtable("colr",f,fontdata,specification)
     readtable("cpal",f,fontdata,specification)
     readtable("svg" ,f,fontdata,specification)
+    readtable("sbix",f,fontdata,specification)
+
+    readtable("cbdt",f,fontdata,specification)
+    readtable("cblc",f,fontdata,specification)
+    readtable("ebdt",f,fontdata,specification)
+    readtable("eblc",f,fontdata,specification)
 
     readtable("kern",f,fontdata,specification)
     readtable("gsub",f,fontdata,specification)
@@ -2321,6 +2363,7 @@ function readers.loadfont(filename,n,instance)
                 mathconstants = fontdata.mathconstants,
                 colorpalettes = fontdata.colorpalettes,
                 svgshapes     = fontdata.svgshapes,
+                sbixshapes    = fontdata.sbixshapes,
                 variabledata  = fontdata.variabledata,
                 foundtables   = fontdata.foundtables,
             },

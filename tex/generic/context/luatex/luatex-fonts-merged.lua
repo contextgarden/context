@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/10/17 23:25:54
+-- merge date  : 04/12/17 17:44:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -9270,6 +9270,31 @@ function readers.svg(f,fontdata,specification)
     reportskippedtable("svg")
   end
 end
+function readers.sbix(f,fontdata,specification)
+  if specification.glyphs then
+    reportskippedtable("sbix")
+  end
+end
+function readers.cbdt(f,fontdata,specification)
+  if specification.glyphs then
+    reportskippedtable("cbdt")
+  end
+end
+function readers.cblc(f,fontdata,specification)
+  if specification.glyphs then
+    reportskippedtable("cblc")
+  end
+end
+function readers.ebdt(f,fontdata,specification)
+  if specification.glyphs then
+    reportskippedtable("ebdt")
+  end
+end
+function readers.eblc(f,fontdata,specification)
+  if specification.glyphs then
+    reportskippedtable("eblc")
+  end
+end
 function readers.kern(f,fontdata,specification)
   local tableoffset=gotodatatable(f,fontdata,"kern",specification.kerns)
   if tableoffset then
@@ -9560,6 +9585,11 @@ local function readdata(f,offset,specification)
   readtable("colr",f,fontdata,specification)
   readtable("cpal",f,fontdata,specification)
   readtable("svg",f,fontdata,specification)
+  readtable("sbix",f,fontdata,specification)
+  readtable("cbdt",f,fontdata,specification)
+  readtable("cblc",f,fontdata,specification)
+  readtable("ebdt",f,fontdata,specification)
+  readtable("eblc",f,fontdata,specification)
   readtable("kern",f,fontdata,specification)
   readtable("gsub",f,fontdata,specification)
   readtable("gpos",f,fontdata,specification)
@@ -9753,6 +9783,7 @@ function readers.loadfont(filename,n,instance)
         mathconstants=fontdata.mathconstants,
         colorpalettes=fontdata.colorpalettes,
         svgshapes=fontdata.svgshapes,
+        sbixshapes=fontdata.sbixshapes,
         variabledata=fontdata.variabledata,
         foundtables=fontdata.foundtables,
       },
@@ -15269,6 +15300,72 @@ function readers.svg(f,fontdata,specification)
   end
   fontdata.hascolor=true
 end
+function readers.sbix(f,fontdata,specification)
+  local tableoffset=gotodatatable(f,fontdata,"sbix",specification.glyphs)
+  if tableoffset then
+    local version=readushort(f)
+    local flags=readushort(f)
+    local nofstrikes=readulong(f)
+    local strikes={}
+    local nofglyphs=fontdata.nofglyphs
+    for i=1,nofstrikes do
+      strikes[i]=readulong(f)
+    end
+      local shapes={}
+      local done=0
+      for i=1,nofstrikes do
+        local strikeoffset=strikes[i]+tableoffset
+        setposition(f,strikeoffset)
+        strikes[i]={
+          ppem=readushort(f),
+          ppi=readushort(f),
+          offset=strikeoffset
+        }
+      end
+      sort(strikes,function(a,b)
+        if b.ppem==a.ppem then
+          return b.ppi<a.ppi
+        else
+          return b.ppem<a.ppem
+        end
+      end)
+      local glyphs={}
+      for i=1,nofstrikes do
+        local strike=strikes[i]
+        local strikeppem=strike.ppem
+        local strikeppi=strike.ppi
+        local strikeoffset=strike.offset
+        setposition(f,strikeoffset)
+        for i=0,nofglyphs do
+          glyphs[i]=readulong(f)
+        end
+        local glyphoffset=glyphs[0]
+        for i=0,nofglyphs-1 do
+          local nextoffset=glyphs[i+1]
+          if not shapes[i] then
+            local datasize=nextoffset-glyphoffset
+            if datasize>0 then
+              setposition(f,strikeoffset+glyphoffset)
+              shapes[i]={
+                x=readshort(f),
+                y=readshort(f),
+                tag=readtag(f),
+                data=readstring(f,datasize-8),
+                ppem=strikeppem,
+                ppi=strikeppi,
+              }
+              done=done+1
+              if done==nofglyphs then
+                break
+              end
+            end
+          end
+          glyphoffset=nextoffset
+        end
+      end
+      fontdata.sbixshapes=shapes
+  end
+end
 function readers.stat(f,fontdata,specification)
   local tableoffset=gotodatatable(f,fontdata,"stat",true) 
   if tableoffset then
@@ -17755,8 +17852,10 @@ local otf=fonts.handlers.otf
 otf.version=3.028 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
+otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
 otf.svgenabled=false
+otf.sbixenabled=false
 local otfreaders=otf.readers
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -17812,6 +17911,7 @@ function otf.load(filename,sub,instance)
     if data then
       local resources=data.resources
       local svgshapes=resources.svgshapes
+      local sbixshapes=resources.sbixshapes
       if svgshapes then
         resources.svgshapes=nil
         if otf.svgenabled then
@@ -17821,6 +17921,20 @@ function otf.load(filename,sub,instance)
             timestamp=timestamp,
           })
           data.properties.svg={
+            hash=hash,
+            timestamp=timestamp,
+          }
+        end
+      end
+      if sbixshapes then
+        resources.sbixshapes=nil
+        if otf.sbixenabled then
+          local timestamp=os.date()
+          containers.write(otf.sbixcache,hash,{
+            sbixshapes=sbixshapes,
+            timestamp=timestamp,
+          })
+          data.properties.sbix={
             hash=hash,
             timestamp=timestamp,
           }
@@ -25817,6 +25931,7 @@ if not modules then modules={} end modules ['font-ocl']={
 }
 local tostring,next,format=tostring,next,string.format
 local round,max=math.round,math.round
+local sortedkeys,sortedhash=table.sortedkeys,table.sortedhash
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
 local otf=fonts.handlers.otf
@@ -25944,44 +26059,78 @@ fonts.handlers.otf.features.register {
     node=initializecolr,
   }
 }
-local otfsvg=otf.svg or {}
-otf.svg=otfsvg
-otf.svgenabled=true
 do
   local nofstreams=0
-  local f_name=formatters[ [[svg-glyph-%05i]] ]
+  local f_name=formatters[ [[pdf-glyph-%05i]] ]
   local f_used=context and formatters[ [[original:///%s]] ] or formatters[ [[%s]] ]
+  local hashed={}
   local cache={}
-  function otfsvg.storepdfdata(pdf)
-    nofstreams=nofstreams+1
-    local o,n=epdf.openMemStream(pdf,#pdf,f_name(nofstreams))
-    cache[n]=o 
-    return nil,f_used(n),nil
+  function otf.storepdfdata(pdf)
+    local done=hashed[pdf]
+    if not done then
+      nofstreams=nofstreams+1
+      local o,n=epdf.openMemStream(pdf,#pdf,f_name(nofstreams))
+      cache[n]=o 
+      done=f_used(n)
+      hashed[pdf]=done
+    end
+    return nil,done,nil
   end
-  if context then
-    local storepdfdata=otfsvg.storepdfdata
-    local initialized=false
-    function otfsvg.storepdfdata(pdf)
-      if not initialized then
-        if resolvers.setmemstream then
-          local f_setstream=formatters[ [[resolvers.setmemstream("svg-glyph-%05i",%q,true)]] ]
-          local f_getstream=formatters[ [[memstream:///svg-glyph-%05i]] ]
-          local f_nilstream=formatters[ [[resolvers.resetmemstream("svg-glyph-%05i",true)]] ]
-          storepdfdata=function(pdf)
-            nofstreams=nofstreams+1
-            return
-              f_setstream(nofstreams,pdf),
-              f_getstream(nofstreams),
-              f_nilstream(nofstreams)
-          end
-          otfsvg.storepdfdata=storepdfdata
-        end
-        initialized=true
+end
+local function pdftovirtual(tfmdata,pdfshapes,kind) 
+  if not tfmdata or not pdfshapes or not kind then
+    return
+  end
+  local characters=tfmdata.characters
+  local properties=tfmdata.properties
+  local parameters=tfmdata.parameters
+  local hfactor=parameters.hfactor
+  properties.virtualized=true
+  tfmdata.fonts={
+    { id=0 }
+  }
+  local getactualtext=otf.getactualtext
+  local storepdfdata=otf.storepdfdata
+  for unicode,character in sortedhash(characters) do 
+    local index=character.index
+    if index then
+      local pdf=pdfshapes[index]
+      local typ=type(pdf)
+      local data=nil
+      local dx=nil
+      local dy=nil
+      if typ=="table" then
+        data=pdf.data
+        dx=pdf.dx or 0
+        dy=pdf.dy or 0
+      elseif typ=="string" then
+        data=pdf
+        dx=0
+        dy=0
       end
-      return storepdfdata(pdf)
+      if data then
+        local setcode,name,nilcode=storepdfdata(data)
+        if name then
+          local bt,et=getactualtext(unicode)
+          local wd=character.width or 0
+          local ht=character.height or 0
+          local dp=character.depth or 0
+          character.commands={
+            { "special","pdf:direct:"..bt },
+            { "down",dp+dy*hfactor },
+            { "right",dx*hfactor },
+            { "image",{ filename=name,width=wd,height=ht,depth=dp } },
+            { "special","pdf:direct:"..et },
+          }
+          character[kind]=true
+        end
+      end
     end
   end
 end
+local otfsvg=otf.svg or {}
+otf.svg=otfsvg
+otf.svgenabled=true
 do
   local report_svg=logs.reporter("fonts","svg conversion")
   local loaddata=io.loaddata
@@ -26054,7 +26203,7 @@ do
       end
       statistics.stoptiming()
       if statistics.elapsedseconds then
-        report_svg("svg conversion time %s",statistics.elapsedseconds())
+        report_svg("svg conversion time %s",statistics.elapsedseconds() or "-")
       end
     end
     return pdfshapes
@@ -26062,10 +26211,7 @@ do
 end
 local function initializesvg(tfmdata,kind,value) 
   if value and otf.svgenabled then
-    local characters=tfmdata.characters
-    local descriptions=tfmdata.descriptions
-    local properties=tfmdata.properties
-    local svg=properties.svg
+    local svg=tfmdata.properties.svg
     local hash=svg and svg.hash
     local timestamp=svg and svg.timestamp
     if not hash then
@@ -26082,40 +26228,7 @@ local function initializesvg(tfmdata,kind,value)
         timestamp=timestamp,
       })
     end
-    if not pdfshapes or not next(pdfshapes) then
-      return
-    end
-    properties.virtualized=true
-    tfmdata.fonts={
-      { id=0 }
-    }
-    local getactualtext=otf.getactualtext
-    local storepdfdata=otfsvg.storepdfdata
-    local nop={ "nop" }
-    for unicode,character in next,characters do
-      local index=character.index
-      if index then
-        local pdf=pdfshapes[index]
-        if pdf then
-          local setcode,name,nilcode=storepdfdata(pdf)
-          if name then
-            local bt,et=getactualtext(unicode)
-            local wd=character.width or 0
-            local ht=character.height or 0
-            local dp=character.depth or 0
-            character.commands={
-              { "special","pdf:direct:"..bt },
-              { "down",dp },
-              setcode and { "lua",setcode } or nop,
-              { "image",{ filename=name,width=wd,height=ht,depth=dp } },
-              nilcode and { "lua",nilcode } or nop,
-              { "special","pdf:direct:"..et },
-            }
-            character.svg=true
-          end
-        end
-      end
-    end
+    pdftovirtual(tfmdata,pdfshapes,"svg")
   end
 end
 fonts.handlers.otf.features.register {
@@ -26124,6 +26237,91 @@ fonts.handlers.otf.features.register {
   manipulators={
     base=initializesvg,
     node=initializesvg,
+  }
+}
+local otfsbix=otf.sbix or {}
+otf.sbix=otfsbix
+otf.sbixenabled=true
+do
+  local report_sbix=logs.reporter("fonts","sbix conversion")
+  local loaddata=io.loaddata
+  local savedata=io.savedata
+  local remove=os.remove
+  local runner=sandbox and sandbox.registerrunner {
+    name="otfsbix",
+    program="gm",
+    template="convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log",
+  }
+  if not runner then
+    runner=function()
+      return os.execute("gm convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log")
+    end
+  end
+  function otfsbix.topdf(sbixshapes)
+    local pdfshapes={}
+    local sbixfile="temp-otf-sbix-shape.sbix"
+    local pdffile="temp-otf-sbix-shape.pdf"
+    local nofdone=0
+    local indices=sortedkeys(sbixshapes) 
+    local nofindices=#indices
+    report_sbix("processing %i sbix containers",nofindices)
+    statistics.starttiming()
+    for i=1,nofindices do
+      local index=indices[i]
+      local entry=sbixshapes[index]
+      local data=entry.data
+      local x=entry.x
+      local y=entry.y
+      savedata(sbixfile,data)
+      runner()
+      pdfshapes[index]={
+        x=x~=0 and x or nil,
+        y=y~=0 and y or nil,
+        data=loaddata(pdffile),
+      }
+      nofdone=nofdone+1
+      if nofdone%100==0 then
+        report_sbix("%i shapes processed",nofdone)
+      end
+    end
+    report_sbix("processing %i pdf results",nofindices)
+    remove(sbixfile)
+    remove(pdffile)
+    statistics.stoptiming()
+    if statistics.elapsedseconds then
+      report_sbix("sbix conversion time %s",statistics.elapsedseconds() or "-")
+    end
+    return pdfshapes
+  end
+end
+local function initializesbix(tfmdata,kind,value) 
+  if value and otf.sbixenabled then
+    local sbix=tfmdata.properties.sbix
+    local hash=sbix and sbix.hash
+    local timestamp=sbix and sbix.timestamp
+    if not hash then
+      return
+    end
+    local pdffile=containers.read(otf.pdfcache,hash)
+    local pdfshapes=pdffile and pdffile.pdfshapes
+    if not pdfshapes or pdffile.timestamp~=timestamp then
+      local sbixfile=containers.read(otf.sbixcache,hash)
+      local sbixshapes=sbixfile and sbixfile.sbixshapes
+      pdfshapes=sbixshapes and otfsbix.topdf(sbixshapes) or {}
+      containers.write(otf.pdfcache,hash,{
+        pdfshapes=pdfshapes,
+        timestamp=timestamp,
+      })
+    end
+    pdftovirtual(tfmdata,pdfshapes,"sbix")
+  end
+end
+fonts.handlers.otf.features.register {
+  name="sbix",
+  description="sbix glyphs",
+  manipulators={
+    base=initializesbix,
+    node=initializesbix,
   }
 }
 

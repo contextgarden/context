@@ -941,7 +941,9 @@
 \def\pack_framed_start_framed_nop_indeed[#1]%
   {\pack_framed_initialize
    \bgroup
-   \setupcurrentframed[#1]% here !
+   \iffirstargument
+     \setupcurrentframed[#1]% here !
+   \fi
    \pack_framed_process_indeed
    \bgroup
    \ignorespaces}

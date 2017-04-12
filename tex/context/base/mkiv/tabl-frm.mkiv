@@ -1,0 +1,209 @@
+%D \module
+%D   [       file=tabl-frm,
+%D        version=2017.04.11,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Framed Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D For Thomas Schmitz who needed 3000 pages long tables.
+
+\unprotect
+
+\writestatus{loading}{ConTeXt Table Macros / Framed Tables}
+
+\installcorenamespace{framedtable}
+\installcorenamespace{framedtablerow}
+\installcorenamespace{framedtablecolumn}
+
+\newcount\c_tabl_framed_c
+\newcount\c_tabl_framed_r
+\newdimen\d_tabl_framed_h
+\newdimen\d_tabl_framed_d
+\newdimen\b_tabl_framed
+
+\initializeboxstack\??framedtable
+
+\defineframed[\??framedtable]
+\defineframed[\??framedtablerow][\??framedtable]
+\defineframed[\??framedtablecolumn][\??framedtable]
+
+\setupframed
+  [\??framedtable]
+  [\c!distance=\zeropoint,
+   \c!before=,
+   \c!after=,
+   \c!inbetween=]
+
+\setupframed
+  [\??framedtablerow]
+  [\c!strut=\v!no,
+   \c!offset=\v!overlay]
+
+% \defineframedtable[foo]
+% \defineframedtable[bar][foo]
+
+\unexpanded\def\defineframedtable
+  {\dodoubleempty\tabl_framed_define}
+
+\def\tabl_framed_define[#1][#2]%
+  {\ifsecondargument
+     \defineframed[\??framedtable#1][\??framedtable#2]%
+   \else\iffirstargument
+     \defineframed[\??framedtable#1][\??framedtable]%
+   \fi\fi}
+
+% \setupframedtable[foo][...]
+
+\unexpanded\def\setupframedtable
+  {\dodoubleempty\tabl_framed_setup}
+
+\def\tabl_framed_setup[#1][#2]%
+  {\ifsecondargument
+     \ifcsname\??framed:\??framedtable#1\endcsname \else
+       \defineframed[\??framedtable#1][\??framedtable]%
+     \fi
+     \setupframed[\??framedtable#1][#2]%
+   \else
+     \setupframed[\??framedtable][#1]%
+   \fi}
+
+% \setupframedtable[1][...]
+% \setupframedtable[foo][1][...]
+
+\unexpanded\def\setupframedtablerow
+  {\dotripleempty\tabl_framed_setup_row}
+
+\def\tabl_framed_setup_row[#1][#2][#3]%
+  {\ifthirdargument
+     \ifcsname\??framed:\??framedtable#1\endcsname \else
+       \defineframed[\??framedtable#1][\??framedtable]%
+     \fi
+     \ifcsname\??framed:\??framedtablerow#1:#2\endcsname \else
+       \defineframed[\??framedtablerow#1:#2][\??framedtable#1]%
+     \fi
+     \setupframed[\??framedtablerow#1:#2][#3]%
+   \else\ifsecondargument
+     \ifcsname\??framed:\??framedtablerow:#1\endcsname \else
+       \defineframed[\??framedtablerow:#1][\??framedtable]%
+     \fi
+     \setupframed[\??framedtablerow:#1][#2]%
+   \fi\fi}
+
+\unexpanded\def\setupframedtablecolumn
+  {\dotripleempty\tabl_framed_setup_column}
+
+\def\tabl_framed_setup_column[#1][#2][#3]%
+  {\ifthirdargument
+     \ifcsname\??framed:\??framedtable#1\endcsname \else
+       \defineframed[\??framedtable#1][\??framedtable]%
+     \fi
+     \ifcsname\??framed:\??framedtablecolumn#1:#2\endcsname \else
+       \defineframed[\??framedtablecolumn#1:#2][\??framedtable#1]%
+     \fi
+     \setupframed[\??framedtablecolumn#1:#2][#3]%
+   \else\ifsecondargument
+     \ifcsname\??framed:\??framedtablecolumn:#1\endcsname \else
+       \defineframed[\??framedtablecolumn:#1][\??framedtable]%
+     \fi
+     \setupframed[\??framedtablecolumn:#1][#2]%
+   \fi\fi}
+
+\unexpanded\def\startframedtable
+  {\dodoubleempty\tabl_framed_start}
+
+\unexpanded\def\tabl_framed_start[#1][#2]%
+  {\begingroup
+   \forgetall
+   \doifelseassignment{#1}%
+     {\let\currentframedtable\empty
+      \setupframed[\??framedtable][#1]}%
+     {\edef\currentframedtable{#1}%
+      \setupframed[\??framedtable][#2]}%
+   \edef\currentframed{\??framedtable\currentframedtable}%
+   \c_tabl_framed_r\zerocount
+   \d_tabl_framed_d\framedparameter\c!distance
+   \framedparameter\c!before}
+
+\unexpanded\def\stopframedtable
+  {\framedparameter\c!after
+   \endgroup}
+
+\unexpanded\def\startframedrow
+  {\advance\c_tabl_framed_r\plusone
+   \c_tabl_framed_c\zerocount
+   \d_tabl_framed_h\zeropoint
+   \bgroup
+   \edef\currentframed{\number\c_tabl_framed_r}%
+   \edef\currentframed
+     {\??framedtablerow\currentframedtable
+      \ifcsname\??framedtablerow\currentframedtable:\currentframed\endcsname
+        :\currentframed
+      \else\ifcsname\??framedtablerow\currentframedtable:\v!each\endcsname
+        :\v!each
+      \fi\fi}%
+   \dosingleempty\pack_framed_start_framed_nop_indeed}
+
+\unexpanded\def\stopframedrow
+  {\dofastloopcs\c_tabl_framed_c\tabl_framed_flush_row
+   \stopframed
+   \nointerlineskip
+   \vskip\zeropoint\relax
+   \framedparameter\c!inbetween}
+
+\unexpanded\def\tabl_framed_flush_row
+  {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\number\fastloopindex}\vfill}%
+   \ifdim\d_tabl_framed_d=\zeropoint\else\kern\d_tabl_framed_d\fi}
+
+\unexpanded\def\startframedcell
+  {\advance\c_tabl_framed_c\plusone
+   \setbox\b_tabl_framed\hpack\bgroup
+  %\bgroup
+   \edef\currentframed{\number\c_tabl_framed_c}%
+   \edef\currentframed
+     {\??framedtablecolumn\currentframedtable
+      \ifcsname\??framedtablecolumn\currentframedtable:\currentframed\endcsname
+        :\currentframed
+      \else\ifcsname\??framedtablecolumn\currentframedtable:\v!each\endcsname
+        :\v!each
+      \fi\fi}%
+   \dosingleempty\pack_framed_start_framed_nop_indeed}
+
+\unexpanded\def\stopframedcell
+  {\stopframed
+  %\egroup
+   \ifdim\ht\b_tabl_framed>\d_tabl_framed_h
+     \d_tabl_framed_h\ht\b_tabl_framed
+   \fi
+   \savebox\??framedtable{\number\c_tabl_framed_c}{\box\b_tabl_framed}}
+
+\protect \endinput
+
+\starttext
+
+\setupframedtablecolumn [1] [width=3cm,background=color,backgroundcolor=red]
+\setupframedtablecolumn [2] [width=4cm,background=color,backgroundcolor=green,align=normal]
+% \setupframedtablerow [each] [background=color,backgroundcolor=blue,strut=no]
+% \setupframedtablerow [each] [strut=no,offset=overlay]
+
+\startframedtable[inbetween=\kern-0.4pt,distance=-0.4pt]
+
+\testfeatureonce{10000}{
+% \testfeatureonce{10}{
+    \startframedrow
+        \startframedcell%[backgroundcolor=yellow]
+        test
+        \stopframedcell
+        \startframedcell
+        test \par test
+        \stopframedcell
+    \stopframedrow
+}
+\stopframedtable
+
+\stoptext

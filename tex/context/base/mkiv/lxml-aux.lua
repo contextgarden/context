@@ -762,7 +762,7 @@ local obsolete = xml.obsolete
 xml.strip_whitespace           = xml.strip                 obsolete.strip_whitespace      = xml.strip
 xml.collect_elements           = xml.collect               obsolete.collect_elements      = xml.collect
 xml.delete_element             = xml.delete                obsolete.delete_element        = xml.delete
-xml.replace_element            = xml.replace               obsolete.replace_element       = xml.replacet
+xml.replace_element            = xml.replace               obsolete.replace_element       = xml.replace
 xml.each_element               = xml.each                  obsolete.each_element          = xml.each
 xml.process_elements           = xml.process               obsolete.process_elements      = xml.process
 xml.insert_element_after       = xml.insertafter           obsolete.insert_element_after  = xml.insertafter

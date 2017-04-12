@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['font-ocl'] = {
 
 local tostring, next, format = tostring, next, string.format
 local round, max = math.round, math.round
+local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 
 local formatters = string.formatters
 local tounicode  = fonts.mappings.tounicode
@@ -175,13 +176,7 @@ fonts.handlers.otf.features.register {
     }
 }
 
-local otfsvg   = otf.svg or { }
-otf.svg        = otfsvg
-otf.svgenabled = true
-
 do
-
-    local nofstreams = 0
 
  -- local f_setstream = formatters[ [[io.savedata("svg-glyph-%05i",%q)]] ]
  -- local f_getstream = formatters[ [[svg-glyph-%05i]] ]
@@ -194,47 +189,125 @@ do
  --     end
  -- end
 
-    local f_name = formatters[ [[svg-glyph-%05i]] ]
-    local f_used = context and formatters[ [[original:///%s]] ] or formatters[ [[%s]] ]
+    local nofstreams = 0
+    local f_name     = formatters[ [[pdf-glyph-%05i]] ]
+    local f_used     = context and formatters[ [[original:///%s]] ] or formatters[ [[%s]] ]
+    local hashed     = { }
+    local cache      = { }
 
-    local cache = { }
-
-    function otfsvg.storepdfdata(pdf)
-        nofstreams = nofstreams + 1
-        local o, n = epdf.openMemStream(pdf,#pdf,f_name(nofstreams))
-        cache[n] = o -- we need to keep in mem
-        return nil, f_used(n), nil
-    end
-
-    if context then
-
-        local storepdfdata = otfsvg.storepdfdata
-        local initialized  = false
-
-        function otfsvg.storepdfdata(pdf)
-            if not initialized then
-                if resolvers.setmemstream then
-                    local f_setstream = formatters[ [[resolvers.setmemstream("svg-glyph-%05i",%q,true)]] ]
-                    local f_getstream = formatters[ [[memstream:///svg-glyph-%05i]] ]
-                    local f_nilstream = formatters[ [[resolvers.resetmemstream("svg-glyph-%05i",true)]] ]
-                    storepdfdata = function(pdf)
-                        nofstreams = nofstreams + 1
-                        return
-                            f_setstream(nofstreams,pdf),
-                            f_getstream(nofstreams),
-                            f_nilstream(nofstreams)
-                    end
-                    otfsvg.storepdfdata = storepdfdata
-                end
-                initialized = true
-            end
-            return storepdfdata(pdf)
+    function otf.storepdfdata(pdf)
+        local done = hashed[pdf]
+        if not done then
+            nofstreams = nofstreams + 1
+            local o, n = epdf.openMemStream(pdf,#pdf,f_name(nofstreams))
+            cache[n] = o -- we need to keep in mem
+            done = f_used(n)
+            hashed[pdf] = done
         end
-
+        return nil, done, nil
     end
+
+ -- maybe more efficient but much slower (and we hasn already)
+ --
+ -- if context then
+ --
+ --     local storepdfdata = otf.storepdfdata
+ --     local initialized  = false
+ --
+ --     function otf.storepdfdata(pdf)
+ --         if not initialized then
+ --             if resolvers.setmemstream then
+ --                 local f_setstream = formatters[ [[resolvers.setmemstream("pdf-glyph-%05i",%q,true)]] ]
+ --                 local f_getstream = formatters[ [[memstream:///pdf-glyph-%05i]] ]
+ --                 local f_nilstream = formatters[ [[resolvers.resetmemstream("pdf-glyph-%05i",true)]] ]
+ --                 storepdfdata = function(pdf)
+ --                     local done  = hashed[pdf]
+ --                     local set   = nil
+ --                     local reset = nil
+ --                     if not done then
+ --                         nofstreams = nofstreams + 1
+ --                         set   = f_setstream(nofstreams,pdf)
+ --                         done  = f_getstream(nofstreams)
+ --                         reset = f_nilstream(nofstreams)
+ --                         hashed[pdf] = done
+ --                     end
+ --                     return set, done, reset
+ --                 end
+ --                 otf.storepdfdata = storepdfdata
+ --             end
+ --             initialized = true
+ --         end
+ --         return storepdfdata(pdf)
+ --     end
+ --
+ -- end
 
 end
 
+local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
+    if not tfmdata or not pdfshapes or not kind then
+        return
+    end
+    --
+    local characters = tfmdata.characters
+    local properties = tfmdata.properties
+    local parameters = tfmdata.parameters
+    local hfactor    = parameters.hfactor
+    --
+    properties.virtualized = true
+    --
+    tfmdata.fonts = {
+        { id = 0 }
+    }
+        --
+    local getactualtext = otf.getactualtext
+    local storepdfdata  = otf.storepdfdata
+    --
+ -- local nop = { "nop" }
+    --
+    for unicode, character in sortedhash(characters) do  -- sort is nicer for svg
+        local index = character.index
+        if index then
+            local pdf  = pdfshapes[index]
+            local typ  = type(pdf)
+            local data = nil
+            local dx   = nil
+            local dy   = nil
+            if typ == "table" then
+                data = pdf.data
+                dx   = pdf.dx or 0
+                dy   = pdf.dy or 0
+            elseif typ == "string" then
+                data = pdf
+                dx   = 0
+                dy   = 0
+            end
+            if data then
+                local setcode, name, nilcode = storepdfdata(data)
+                if name then
+                    local bt, et = getactualtext(unicode)
+                    local wd = character.width  or 0
+                    local ht = character.height or 0
+                    local dp = character.depth  or 0
+                    character.commands = {
+                        { "special", "pdf:direct:" .. bt },
+                        { "down", dp + dy * hfactor },
+                        { "right", dx * hfactor },
+                     -- setcode and { "lua", setcode } or nop,
+                        { "image", { filename = name, width = wd, height = ht, depth = dp } },
+                     -- nilcode and { "lua", nilcode } or nop,
+                        { "special", "pdf:direct:" .. et },
+                    }
+                    character[kind] = true
+                end
+            end
+        end
+    end
+end
+
+local otfsvg   = otf.svg or { }
+otf.svg         = otfsvg
+otf.svgenabled  = true
 
 do
 
@@ -323,7 +396,7 @@ do
             end
             statistics.stoptiming()
             if statistics.elapsedseconds then
-                report_svg("svg conversion time %s",statistics.elapsedseconds())
+                report_svg("svg conversion time %s",statistics.elapsedseconds() or "-")
             end
         end
         return pdfshapes
@@ -333,17 +406,12 @@ end
 
 local function initializesvg(tfmdata,kind,value) -- hm, always value
     if value and otf.svgenabled then
-        local characters   = tfmdata.characters
-        local descriptions = tfmdata.descriptions
-        local properties   = tfmdata.properties
-        --
-        local svg       = properties.svg
+        local svg       = tfmdata.properties.svg
         local hash      = svg and svg.hash
         local timestamp = svg and svg.timestamp
         if not hash then
             return
         end
-        --
         local pdffile   = containers.read(otf.pdfcache,hash)
         local pdfshapes = pdffile and pdffile.pdfshapes
         if not pdfshapes or pdffile.timestamp ~= timestamp then
@@ -355,44 +423,7 @@ local function initializesvg(tfmdata,kind,value) -- hm, always value
                 timestamp = timestamp,
             })
         end
-        if not pdfshapes or not next(pdfshapes) then
-            return
-        end
-        --
-        properties.virtualized = true
-        tfmdata.fonts = {
-            { id = 0 }
-        }
-        --
-        local getactualtext = otf.getactualtext
-        local storepdfdata  = otfsvg.storepdfdata
-        --
-        local nop = { "nop" }
-        --
-        for unicode, character in next, characters do
-            local index = character.index
-            if index then
-                local pdf = pdfshapes[index]
-                if pdf then
-                    local setcode, name, nilcode = storepdfdata(pdf)
-                    if name then
-                        local bt, et = getactualtext(unicode)
-                        local wd = character.width  or 0
-                        local ht = character.height or 0
-                        local dp = character.depth  or 0
-                        character.commands = {
-                            { "special", "pdf:direct:" .. bt },
-                            { "down", dp },
-                            setcode and { "lua", setcode } or nop,
-                            { "image", { filename = name, width = wd, height = ht, depth = dp } },
-                            nilcode and { "lua", nilcode } or nop,
-                            { "special", "pdf:direct:" .. et },
-                        }
-                        character.svg = true
-                    end
-                end
-            end
-        end
+        pdftovirtual(tfmdata,pdfshapes,"svg")
     end
 end
 
@@ -404,3 +435,111 @@ fonts.handlers.otf.features.register {
         node = initializesvg,
     }
 }
+
+-- This can be done differently e.g. with ffi and gm and we can share code anway. Using
+-- batchmode in gm is not faster and as it accumulates we would need to flush all
+-- individual shapes.
+
+local otfsbix   = otf.sbix or { }
+otf.sbix        = otfsbix
+otf.sbixenabled = true
+
+do
+
+    -- for now png but also other bitmap formats
+
+    local report_sbix = logs.reporter("fonts","sbix conversion")
+
+    local loaddata   = io.loaddata
+    local savedata   = io.savedata
+    local remove     = os.remove
+
+    local runner = sandbox and sandbox.registerrunner {
+        name     = "otfsbix",
+        program  = "gm",
+        template = "convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log",
+     -- reporter = report_sbix,
+    }
+
+    if not runner then
+        --
+        -- poor mans variant for generic:
+        --
+        runner = function()
+            return os.execute("gm convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log")
+        end
+    end
+
+    function otfsbix.topdf(sbixshapes)
+        local pdfshapes  = { }
+        local sbixfile   = "temp-otf-sbix-shape.sbix"
+        local pdffile    = "temp-otf-sbix-shape.pdf"
+        local nofdone    = 0
+        local indices    = sortedkeys(sbixshapes) -- can be sparse
+        local nofindices = #indices
+        report_sbix("processing %i sbix containers",nofindices)
+        statistics.starttiming()
+        for i=1,nofindices do
+            local index = indices[i]
+            local entry = sbixshapes[index]
+            local data  = entry.data
+            local x     = entry.x
+            local y     = entry.y
+            savedata(sbixfile,data)
+            runner()
+            pdfshapes[index] = {
+                x     = x ~= 0 and x or nil,
+                y     = y ~= 0 and y or nil,
+                data  = loaddata(pdffile),
+            }
+            nofdone = nofdone + 1
+            if nofdone % 100 == 0 then
+                report_sbix("%i shapes processed",nofdone)
+            end
+        end
+        report_sbix("processing %i pdf results",nofindices)
+        remove(sbixfile)
+        remove(pdffile)
+        statistics.stoptiming()
+        if statistics.elapsedseconds then
+            report_sbix("sbix conversion time %s",statistics.elapsedseconds() or "-")
+        end
+        return pdfshapes
+     -- end
+    end
+
+end
+
+local function initializesbix(tfmdata,kind,value) -- hm, always value
+    if value and otf.sbixenabled then
+        local sbix      = tfmdata.properties.sbix
+        local hash      = sbix and sbix.hash
+        local timestamp = sbix and sbix.timestamp
+        if not hash then
+            return
+        end
+        local pdffile   = containers.read(otf.pdfcache,hash)
+        local pdfshapes = pdffile and pdffile.pdfshapes
+        if not pdfshapes or pdffile.timestamp ~= timestamp then
+            local sbixfile   = containers.read(otf.sbixcache,hash)
+            local sbixshapes = sbixfile and sbixfile.sbixshapes
+            pdfshapes = sbixshapes and otfsbix.topdf(sbixshapes) or { }
+            containers.write(otf.pdfcache, hash, {
+                pdfshapes = pdfshapes,
+                timestamp = timestamp,
+            })
+        end
+        --
+        pdftovirtual(tfmdata,pdfshapes,"sbix")
+    end
+end
+
+fonts.handlers.otf.features.register {
+    name         = "sbix",
+    description  = "sbix glyphs",
+    manipulators = {
+        base = initializesbix,
+        node = initializesbix,
+    }
+}
+
