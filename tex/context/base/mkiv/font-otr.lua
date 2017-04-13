@@ -133,15 +133,6 @@ end
 local tableversion    = 0.004
 readers.tableversion  = tableversion
 local privateoffset   = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
-local reportedskipped = { }
-
-
-local function reportskippedtable(tag)
-    if not reportedskipped[tag] then
-        report("loading of table %a skipped (reported once only)",tag)
-        reportedskipped[tag] = true
-    end
-end
 
 -- We have quite some data tables. We are somewhat ff compatible with names but as I used
 -- the information from the microsoft site there can be differences. Eventually I might end
@@ -720,6 +711,15 @@ local function gotodatatable(f,fontdata,tag,criterium)
     end
 end
 
+local function reportskippedtable(f,fontdata,tag,criterium)
+    if criterium and f then
+        local datatable = fontdata.tables[tag]
+        if datatable then
+            report("loading of table %a skipped",tag)
+        end
+    end
+end
+
 local function setvariabledata(fontdata,tag,data)
     local variabledata = fontdata.variabledata
     if variabledata then
@@ -729,8 +729,9 @@ local function setvariabledata(fontdata,tag,data)
     end
 end
 
-helpers.gotodatatable   = gotodatatable
-helpers.setvariabledata = setvariabledata
+helpers.gotodatatable      = gotodatatable
+helpers.setvariabledata    = setvariabledata
+helpers.reportskippedtable = reportskippedtable
 
 -- The name table is probably the first one to load. After all this one provides
 -- useful information about what we deal with. The complication is that we need
@@ -1181,9 +1182,7 @@ readers.vmtx = function(f,fontdata,specification)
 end
 
 readers.vorg = function(f,fontdata,specification)
-    if specification.glyphs then
-     -- reportskippedtable("vorg")
-    end
+    reportskippedtable(f,fontdata,"vorg",specification.glyphs)
 end
 
 -- The post table relates to postscript (printing) but has some relevant properties for other
@@ -1254,9 +1253,7 @@ readers.post = function(f,fontdata,specification)
 end
 
 readers.cff = function(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("cff")
-    end
+    reportskippedtable(f,fontdata,"cff",specification.glyphs)
 end
 
 -- Not all cmaps make sense .. e.g. dfont is obsolete and probably more are not relevant. Let's see
@@ -1745,71 +1742,55 @@ end
 -- although we not need it in our usage (yet). We can remove the locations table when we're done.
 
 function readers.loca(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("loca")
-    end
+    reportskippedtable(f,fontdata,"loca",specification.glyphs)
 end
 
 function readers.glyf(f,fontdata,specification) -- part goes to cff module
-    if specification.glyphs then
-        reportskippedtable("glyf")
-    end
+    reportskippedtable(f,fontdata,"glyf",specification.glyphs)
 end
 
 -- The MicroSoft variant is pretty clean and is supported (implemented elsewhere)
 -- just because I wanted to see how such a font looks like.
 
 function readers.colr(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("colr")
-    end
+    reportskippedtable(f,fontdata,"colr",specification.glyphs)
 end
 function readers.cpal(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("cpal")
-    end
+    reportskippedtable(f,fontdata,"cpal",specification.glyphs)
 end
 
 -- This one is also supported, if only because I could locate a proper font for
 -- testing.
 
 function readers.svg(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("svg")
-    end
+    reportskippedtable(f,fontdata,"svg",specification.glyphs)
 end
 
 -- There is a font from apple to test the next one. Will there be more? Anyhow,
 -- it's relatively easy to support, so I did it.
 
 function readers.sbix(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("sbix")
-    end
+    reportskippedtable(f,fontdata,"sbix",specification.glyphs)
 end
 
 -- I'm only willing to look into the next variant if I see a decent and complete (!)
--- font and more can show up. It makes no sense to waste time on ideas.
+-- font and more can show up. It makes no sense to waste time on ideas. Okay, the
+-- apple font also has these tables.
 
 function readers.cbdt(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("cbdt")
-    end
+    reportskippedtable(f,fontdata,"cbdt",specification.glyphs)
 end
 function readers.cblc(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("cblc")
-    end
+    reportskippedtable(f,fontdata,"cblc",specification.glyphs)
 end
 function readers.ebdt(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("ebdt")
-    end
+    reportskippedtable(f,fontdata,"ebdt",specification.glyphs)
+end
+function readers.ebsc(f,fontdata,specification)
+    reportskippedtable(f,fontdata,"ebsc",specification.glyphs)
 end
 function readers.eblc(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("eblc")
-    end
+    reportskippedtable(f,fontdata,"eblc",specification.glyphs)
 end
 
 -- Here we have a table that we really need for later processing although a more advanced gpos table
@@ -1855,27 +1836,19 @@ function readers.kern(f,fontdata,specification)
 end
 
 function readers.gdef(f,fontdata,specification)
-    if specification.details then
-        reportskippedtable("gdef")
-    end
+    reportskippedtable(f,fontdata,"gdef",specification.details)
 end
 
 function readers.gsub(f,fontdata,specification)
-    if specification.details then
-        reportskippedtable("gsub")
-    end
+    reportskippedtable(f,fontdata,"gsub",specification.details)
 end
 
 function readers.gpos(f,fontdata,specification)
-    if specification.details then
-        reportskippedtable("gpos")
-    end
+    reportskippedtable(f,fontdata,"gpos",specification.details)
 end
 
 function readers.math(f,fontdata,specification)
-    if specification.glyphs then
-        reportskippedtable("math")
-    end
+    reportskippedtable(f,fontdata,"math",specification.details)
 end
 
 -- Now comes the loader. The order of reading these matters as we need to know
@@ -2145,7 +2118,9 @@ local function readdata(f,offset,specification)
 
     readtable("colr",f,fontdata,specification)
     readtable("cpal",f,fontdata,specification)
+
     readtable("svg" ,f,fontdata,specification)
+
     readtable("sbix",f,fontdata,specification)
 
     readtable("cbdt",f,fontdata,specification)

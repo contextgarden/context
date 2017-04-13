@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/12/17 17:44:44
+-- merge date  : 04/13/17 11:12:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -8171,14 +8171,7 @@ local function readlongdatetime(f)
 end
 local tableversion=0.004
 readers.tableversion=tableversion
-local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
-local reportedskipped={}
-local function reportskippedtable(tag)
-  if not reportedskipped[tag] then
-    report("loading of table %a skipped (reported once only)",tag)
-    reportedskipped[tag]=true
-  end
-end
+local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000
 local reservednames={ [0]="copyright",
   "family",
   "subfamily",
@@ -8382,6 +8375,14 @@ local function gotodatatable(f,fontdata,tag,criterium)
     end
   end
 end
+local function reportskippedtable(f,fontdata,tag,criterium)
+  if criterium and f then
+    local datatable=fontdata.tables[tag]
+    if datatable then
+      report("loading of table %a skipped",tag)
+    end
+  end
+end
 local function setvariabledata(fontdata,tag,data)
   local variabledata=fontdata.variabledata
   if variabledata then
@@ -8392,6 +8393,7 @@ local function setvariabledata(fontdata,tag,data)
 end
 helpers.gotodatatable=gotodatatable
 helpers.setvariabledata=setvariabledata
+helpers.reportskippedtable=reportskippedtable
 local platformnames={
   postscriptname=true,
   fullname=true,
@@ -8763,8 +8765,7 @@ readers.vmtx=function(f,fontdata,specification)
   end
 end
 readers.vorg=function(f,fontdata,specification)
-  if specification.glyphs then
-  end
+  reportskippedtable(f,fontdata,"vorg",specification.glyphs)
 end
 readers.post=function(f,fontdata,specification)
   local tableoffset=gotodatatable(f,fontdata,"post",true)
@@ -8825,9 +8826,7 @@ readers.post=function(f,fontdata,specification)
   end
 end
 readers.cff=function(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("cff")
-  end
+  reportskippedtable(f,fontdata,"cff",specification.glyphs)
 end
 local formatreaders={}
 local duplicatestoo=true
@@ -9246,54 +9245,37 @@ function readers.cmap(f,fontdata,specification)
   end
 end
 function readers.loca(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("loca")
-  end
+  reportskippedtable(f,fontdata,"loca",specification.glyphs)
 end
 function readers.glyf(f,fontdata,specification) 
-  if specification.glyphs then
-    reportskippedtable("glyf")
-  end
+  reportskippedtable(f,fontdata,"glyf",specification.glyphs)
 end
 function readers.colr(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("colr")
-  end
+  reportskippedtable(f,fontdata,"colr",specification.glyphs)
 end
 function readers.cpal(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("cpal")
-  end
+  reportskippedtable(f,fontdata,"cpal",specification.glyphs)
 end
 function readers.svg(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("svg")
-  end
+  reportskippedtable(f,fontdata,"svg",specification.glyphs)
 end
 function readers.sbix(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("sbix")
-  end
+  reportskippedtable(f,fontdata,"sbix",specification.glyphs)
 end
 function readers.cbdt(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("cbdt")
-  end
+  reportskippedtable(f,fontdata,"cbdt",specification.glyphs)
 end
 function readers.cblc(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("cblc")
-  end
+  reportskippedtable(f,fontdata,"cblc",specification.glyphs)
 end
 function readers.ebdt(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("ebdt")
-  end
+  reportskippedtable(f,fontdata,"ebdt",specification.glyphs)
+end
+function readers.ebsc(f,fontdata,specification)
+  reportskippedtable(f,fontdata,"ebsc",specification.glyphs)
 end
 function readers.eblc(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("eblc")
-  end
+  reportskippedtable(f,fontdata,"eblc",specification.glyphs)
 end
 function readers.kern(f,fontdata,specification)
   local tableoffset=gotodatatable(f,fontdata,"kern",specification.kerns)
@@ -9333,24 +9315,16 @@ function readers.kern(f,fontdata,specification)
   end
 end
 function readers.gdef(f,fontdata,specification)
-  if specification.details then
-    reportskippedtable("gdef")
-  end
+  reportskippedtable(f,fontdata,"gdef",specification.details)
 end
 function readers.gsub(f,fontdata,specification)
-  if specification.details then
-    reportskippedtable("gsub")
-  end
+  reportskippedtable(f,fontdata,"gsub",specification.details)
 end
 function readers.gpos(f,fontdata,specification)
-  if specification.details then
-    reportskippedtable("gpos")
-  end
+  reportskippedtable(f,fontdata,"gpos",specification.details)
 end
 function readers.math(f,fontdata,specification)
-  if specification.glyphs then
-    reportskippedtable("math")
-  end
+  reportskippedtable(f,fontdata,"math",specification.details)
 end
 local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,instancenames)
   local fontdata=sub and maindata.subfonts and maindata.subfonts[sub] or maindata

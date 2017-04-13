@@ -3124,6 +3124,95 @@ function readers.sbix(f,fontdata,specification)
     end
 end
 
+-- function readers.cblc(f,fontdata,specification)
+--     local tableoffset = gotodatatable(f,fontdata,"cblc",specification.glyphs)
+--     if tableoffset then
+--     end
+-- end
+--
+-- function readers.cbdt(f,fontdata,specification)
+--     local tableoffset = gotodatatable(f,fontdata,"ctdt",specification.glyphs)
+--     if tableoffset then
+--
+--         local function getmetrics(f)
+--             return {
+--                 ascender              = readinteger(f),
+--                 descender             = readinteger(f),
+--                 widthmax              = readcardinal(f),
+--                 caretslopedumerator   = readinteger(f),
+--                 caretslopedenominator = readinteger(f),
+--                 caretoffset           = readinteger(f),
+--                 minorigin             = readinteger(f),
+--                 minadvance            = readinteger(f),
+--                 maxbefore             = readinteger(f),
+--                 minafter              = readinteger(f),
+--                 pad1                  = readinteger(f),
+--                 pad2                  = readinteger(f),
+--             }
+--         end
+--
+--         local majorversion  = readushort(f)
+--         local minorversion  = readushort(f)
+--         local nofsizetables = readulong(f)
+--         local sizetable     = { }
+--         for i=1,nofsizetables do
+--             sizetable[i] = {
+--                 subtables    = readulong(f),
+--                 indexsize    = readulong(f),
+--                 nofsubtables = readulong(f),
+--                 colorref     = readulong(f),
+--                 hormetrics   = getmetrics(f),
+--                 vermetrics   = getmetrics(f),
+--                 firstindex   = readushort(f),
+--                 lastindex    = readushort(f),
+--                 ppemx        = readbyte(f),
+--                 ppemy        = readbyte(f),
+--                 bitdepth     = readbyte(f),
+--                 flags        = readbyte(f),
+--             }
+--         end
+--
+--         sort(sizetable,function(a,b)
+--             if b.ppemx == a.ppemx then
+--                 return b.bitdepth < a.bitdepth
+--             else
+--                 return b.ppemx < a.ppemx
+--             end
+--         end)
+--
+--         local shapes = { }
+--
+--         for i=1,nofsizetables do
+--             local s = sizetables[i]
+--             for j=firstindex,lastindex do
+--                 if not shapes[j] then
+--                     shapes[j] = {
+--                         i
+--                     }
+--                 end
+--             end
+--         end
+--
+--         inspect(shapes)
+--
+--     end
+-- end
+
+-- function readers.ebdt(f,fontdata,specification)
+--     if specification.glyphs then
+--     end
+-- end
+
+-- function readers.ebsc(f,fontdata,specification)
+--     if specification.glyphs then
+--     end
+-- end
+
+-- function readers.eblc(f,fontdata,specification)
+--     if specification.glyphs then
+--     end
+-- end
+
 -- + AVAR : optional
 -- + CFF2 : otf outlines
 -- - CVAR : ttf hinting, not needed
