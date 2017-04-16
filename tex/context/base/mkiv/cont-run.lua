@@ -180,6 +180,10 @@ local function processjob()
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
 
+    if arguments.synctex then
+        directives.enable("system.synctex="..tostring(arguments.synctex))
+    end
+
     if not filename or filename == "" then
         -- skip
     elseif suffix == "xml" or arguments.forcexml then

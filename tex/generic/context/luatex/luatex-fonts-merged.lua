@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/13/17 11:12:25
+-- merge date  : 04/16/17 12:32:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -26314,7 +26314,6 @@ local format,insert,sortedkeys,tohash=string.format,table.insert,table.sortedkey
 local type,next=type,next
 local lpegmatch=lpeg.match
 local utfbyte,utflen,utfsplit=utf.byte,utf.len,utf.split
-local settings_to_array=utilities.parsers.settings_to_array
 local trace_loading=false trackers.register("otf.loading",function(v) trace_loading=v end)
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
@@ -27146,6 +27145,8 @@ registerotffeature {
   name='blockligatures',
   description='block certain ligatures',
 }
+local settings_to_array=utilities.parsers and utilities.parsers.settings_to_array
+            or function(s) return string.split(s,",") end 
 local function blockligatures(str)
   local t=settings_to_array(str)
   for i=1,#t do

@@ -10,7 +10,6 @@ local format, insert, sortedkeys, tohash = string.format, table.insert, table.so
 local type, next = type, next
 local lpegmatch = lpeg.match
 local utfbyte, utflen, utfsplit = utf.byte, utf.len, utf.split
-local settings_to_array = utilities.parsers.settings_to_array
 
 -- we assume that the other otf stuff is loaded already
 
@@ -1039,6 +1038,9 @@ registerotffeature {
     name        = 'blockligatures',
     description = 'block certain ligatures',
 }
+
+local settings_to_array = utilities.parsers and utilities.parsers.settings_to_array
+                       or function(s) return string.split(s,",") end -- for generic
 
 local function blockligatures(str)
 

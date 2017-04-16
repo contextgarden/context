@@ -23,6 +23,10 @@ local report_tempfiles = logs.reporter("resolvers","tempfiles")
 luatex       = luatex or { }
 local luatex = luatex
 
+if not luatex.synctex then
+    luatex.synctex = table.setmetatableindex(function() return function() end end)
+end
+
 local startactions = { }
 local stopactions  = { }
 local dumpactions  = { }
@@ -68,6 +72,7 @@ local function stop_shipout_page()
     for i=1,#pageactions do
         pageactions[i]()
     end
+    luatex.synctex.flush()
 end
 
 local function report_output_pages()
@@ -142,27 +147,6 @@ end
 
 luatex.registerstopactions(luatex.cleanuptempfiles)
 
--- for the moment here
-
-local report_system = logs.reporter("system")
-local synctex       = 0
-
-directives.register("system.synctex", function(v)
-    synctex = tonumber(v) or (toboolean(v,true) and 1) or (v == "zipped" and 1) or (v == "unzipped" and -1) or 0
-    if synctex ~= 0 then
-        report_system("synctex functionality is enabled (%s), expect runtime overhead!",tostring(synctex))
-    else
-        report_system("synctex functionality is disabled!")
-    end
-    tex.normalsynctex = synctex
-end)
-
-statistics.register("synctex tracing",function()
-    if synctex ~= 0 then
-        return "synctex has been enabled (extra log file generated)"
-    end
-end)
-
 -- filenames
 
 local types = {
@@ -184,6 +168,10 @@ local total = 0
 local stack = { }
 local all   = false
 
+function luatex.currentfile()
+    return stack[#stack] or tex.jobname
+end
+
 local function report_start(left,name)
     if not left then
         -- skip
@@ -200,6 +188,7 @@ local function report_start(left,name)
         level = level + 1
      -- report_open("%i > %i > %s",level,total,name or "?")
         report_open("level %i, order %i, name %a",level,total,name or "?")
+        luatex.synctex.setfilename(name)
     end
 end
 

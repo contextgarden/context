@@ -207,7 +207,7 @@ do
         return nil, done, nil
     end
 
- -- maybe more efficient but much slower (and we hasn already)
+ -- maybe more efficient but much slower (and we hash already)
  --
  -- if context then
  --
@@ -469,6 +469,9 @@ do
             return os.execute("gm convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log")
         end
     end
+
+    -- Alternatively we can create a single pdf file with -adjoin and then pick up pages from
+    -- that file but creating thousands of small files is no fun either.
 
     function otfsbix.topdf(sbixshapes)
         local pdfshapes  = { }

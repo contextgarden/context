@@ -46,6 +46,7 @@ local postexhyphenchar = lang.postexhyphenchar -- global per language
 local sethjcode        = lang.sethjcode
 
 local uccodes          = characters.uccodes
+local lccodes          = characters.lccodes
 
 lang.exceptions        = lang.hyphenation
 local new_langage      = lang.new
@@ -159,7 +160,7 @@ local function sethjcodes(instance,loaded,what,factor)
         --
         local function setcode(l)
             local u = uccodes[l]
-            local s = 1
+            local s = l
             if hjcounts then
                 local c = hjcounts[l]
                 if c then
@@ -182,7 +183,7 @@ local function sethjcodes(instance,loaded,what,factor)
             h[l] = s
             if u ~= l and type(u) == "number" then
                 sethjcode(instance,u,s)
-                h[u] = s
+                h[u] = lccodes[l]
             end
         end
         --
