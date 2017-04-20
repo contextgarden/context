@@ -119,6 +119,9 @@ show (known) experiments
 .B --expand-braces
 expand complex variable
 .TP
+.B --resolve-path
+expand variable (completely resolve paths)
+.TP
 .B --expand-path
 expand variable (resolve paths)
 .TP

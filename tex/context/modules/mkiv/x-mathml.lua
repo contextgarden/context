@@ -187,6 +187,7 @@ local i_replacements = {
     ["true"]        = "{\\mathrm true}",
     ["declare"]     = "{\\mathrm declare}",
     ["as"]          = "{\\mathrm as}",
+
 }
 
 -- we could use a metatable or when accessing fallback on the

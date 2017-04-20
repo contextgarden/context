@@ -19,7 +19,9 @@ local trace_mapping = false  trackers.register("fonts.mapping", function(v) trac
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
 
-local force_ligatures = false  directives.register("fonts.mapping.forceligatures",function(v) force_ligatures = v end)
+-- force_ligatures is true per 2017-04-20 so that these emoji's with bad names work too
+
+local force_ligatures = true  directives.register("fonts.mapping.forceligatures",function(v) force_ligatures = v end)
 
 local fonts         = fonts or { }
 local mappings      = fonts.mappings or { }
@@ -241,6 +243,8 @@ mappings.tounicode           = tounicode
 mappings.tounicode16         = tounicode16
 mappings.tounicode16sequence = tounicode16sequence
 mappings.fromunicode16       = fromunicode16
+
+-- mozilla emoji has bad lig names: name = gsub(name,"(u[a-f0-9_]+)%-([a-f0-9_]+)","%1_%2")
 
 local ligseparator = P("_")
 local varseparator = P(".")
@@ -490,41 +494,50 @@ function mappings.addtounicode(data,filename,checklookups)
         checklookups(data,missing,nofmissing)
     end
 
-    -- todo: go lowercase
-
-    local collected = false
     local unicoded  = 0
- -- for du, glyph in next, descriptions do
-    for i=1,#dlist do
-        local du    = dlist[i]
-        local glyph = descriptions[du]
-        if glyph.class == "ligature" and (force_ligatures or not glyph.unicode) then
-            if not collected then
-                collected = fonts.handlers.otf.readers.getcomponents(data)
-                if not collected then
-                    break
-                end
+    local collected = fonts.handlers.otf.readers.getcomponents(data) -- neglectable overhead
+
+    local function resolve(glyph,u)
+        local n = #u
+        for i=1,n do
+            if u[i] > private then
+                n = 0
+                break
             end
-            local u = collected[du] -- always tables
+        end
+        if n > 0 then
+            if n > 1 then
+                glyph.unicode = u
+            else
+                glyph.unicode = u[1]
+            end
+            unicoded = unicoded + 1
+        end
+    end
+
+    if not collected then
+        -- move on
+    elseif force_ligatures then
+        for i=1,#dlist do
+            local du = dlist[i]
+            local u  = collected[du] -- always tables
             if u then
-                local n = #u
-                for i=1,n do
-                    if u[i] > private then
-                        n = 0
-                        break
-                    end
-                end
-                if n > 0 then
-                    if n > 1 then
-                        glyph.unicode = u
-                    else
-                        glyph.unicode = u[1]
-                    end
-                    unicoded = unicoded + 1
+                resolve(descriptions[du],u)
+            end
+        end
+    else
+        for i=1,#dlist do
+            local du    = dlist[i]
+            local glyph = descriptions[du]
+            if glyph.class == "ligature" and not glyph.unicode then
+                local u = collected[du] -- always tables
+                if u then
+                     resolve(glyph,u)
                 end
             end
         end
     end
+
     if trace_mapping and unicoded > 0 then
         report_fonts("%n ligature tounicode mappings deduced from gsub ligature features",unicoded)
     end

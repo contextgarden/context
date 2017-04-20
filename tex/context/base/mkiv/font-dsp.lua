@@ -2917,7 +2917,7 @@ function readers.colr(f,fontdata,specification)
         -- than 'palette'.
         setposition(f,tableoffset + layeroffset)
         for i=1,noflayers do
-            local slot    = readushort(f)
+            local slot  = readushort(f)
             local class = readushort(f)
             if class < 0xFFFF then
                 class = class + 1

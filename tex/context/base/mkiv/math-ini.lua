@@ -365,6 +365,11 @@ local function utfmathclass(chr, default)
     return cd and cd.mathclass or default or "unknown"
 end
 
+local function utfmathlimop(chr)
+    local cd = somechar[chr]
+    return cd and cd.mathclass == "limop" or false
+end
+
 local function utfmathaccent(chr,default,asked1,asked2)
     local cd = somechar[chr]
     if not cd then
@@ -513,6 +518,7 @@ implement {
     actions   = { utfmathcommand, context },
     arguments = { "string", false, "'botaccent'","'under'" }
 }
+
 implement {
     name      = "utfmathcommandfiller",
     actions   = { utfmathfiller, context },
@@ -542,6 +548,12 @@ implement {
 implement {
     name      = "doifelseutfmathfiller",
     actions   = { utfmathfiller, ctx_doifelsesomething },
+    arguments = "string",
+}
+
+implement {
+    name      = "doifelseutfmathlimop",
+    actions   = { utfmathlimop, ctx_doifelsesomething },
     arguments = "string",
 }
 

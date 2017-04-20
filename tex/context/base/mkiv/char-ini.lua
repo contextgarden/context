@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
 local utfchar, utfbyte, utfvalues, ustring, utotable = utf.char, utf.byte, utf.values, utf.ustring, utf.totable
 local concat, unpack, tohash, insert = table.concat, table.unpack, table.tohash, table.insert
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
-local format, lower, gsub = string.format, string.lower, string.gsub
+local format, lower, gsub, find = string.format, string.lower, string.gsub, string.find
 local P, R, S, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cs
 
 if not characters then require("char-def") end
@@ -942,6 +942,7 @@ end)
 
 local specialchars = allocate()  characters.specialchars = specialchars -- lazy table
 local descriptions = allocate()  characters.descriptions = descriptions -- lazy table
+local synonyms     = allocate()  characters.synonyms     = synonyms     -- lazy table
 
 setmetatableindex(specialchars, function(t,u)
     if u then
@@ -975,7 +976,9 @@ setmetatableindex(descriptions, function(t,k)
     for u, c in next, data do
         local d = c.description
         if d then
-            d = gsub(d," ","")
+            if find(d," ") then
+                d = gsub(d," ","")
+            end
             d = lower(d)
             t[d] = u
         end
@@ -985,6 +988,24 @@ setmetatableindex(descriptions, function(t,k)
         t[k] = k
     end
     return d
+end)
+
+setmetatableindex(synonyms, function(t,k)
+    for u, c in next, data do
+        local s = c.synonyms
+        if s then
+            if find(s," ") then
+                s = gsub(s," ","")
+            end
+         -- s = lower(s) -- is already lowercase
+            t[s] = u
+        end
+    end
+    local s = rawget(t,k)
+    if not s then
+        t[s] = s
+    end
+    return s
 end)
 
 function characters.unicodechar(asked)

@@ -423,6 +423,7 @@ local fontkern do
                 setlistcolor(list,c_zero_d)
             end
             setlisttransparency(list,c_text_d)
+            setcolor(rule,c_text_d)
             settransparency(rule,c_text_d)
             setshift(text,-5 * exheight)
             info = new_hlist(setlink(rule,text))

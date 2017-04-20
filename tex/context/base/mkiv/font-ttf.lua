@@ -904,7 +904,7 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
                     else
                         contours2outlines_shaped(glyphs,shapes,specification.shapes)
                     end
-                elseif specification.loadshapes then
+                elseif specification.shapes then
                     contours2outlines_normal(glyphs,shapes)
                 end
             end

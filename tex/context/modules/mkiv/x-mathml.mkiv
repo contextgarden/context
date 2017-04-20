@@ -204,7 +204,7 @@
 %D The second implementation expanded the whole math sequence
 %D into an internal \TEX\ representation. This is a rather clean
 %D and fast process. Filtering and testing takes place by
-%D redefining teh internal representation macros.
+%D redefining the internal representation macros.
 %D
 %D The third implementation may look a bit more messy in some
 %D respects. This is because in \TEX\ it's not that trivial to
@@ -1849,9 +1849,13 @@
                                                \let\mmlfrac\frac
 \xmlmapvalue {mml:l} {+}                      {\let\mmlfrac\sfrac}
 
+\xmlmapvalue {mml:d} {true}                   {\displaystyle}
+\xmlmapvalue {mml:d} {false}                  {\textstyle} % or whatever
+
 % todo: displaystyle=true/false (or whatever else shows up)
 
 \starttexdefinition setmmlmathstyle #1
+    \xmlval{mml:d}{\xmlatt{#1}{displaystyle}}\empty % was: \mmmr
     \xmlval{mml:s}{\xmlatt{#1}{mathvariant}}\empty % was: \mmmr
 \stoptexdefinition
 
@@ -2268,9 +2272,9 @@
 
 \def\mmlextensible#1{\ctxmodulemathml{extensible(\!!bs#1\!!es)}}
 
-\definemathtriplet   [\v!mathematics]  [mmlovertriplet]   % or will we use a special instance
-\definemathtriplet   [\v!mathematics]  [mmlundertriplet]  % or will we use a special instance
-\definemathtriplet   [\v!mathematics]  [mmldoubletriplet] % or will we use a special instance
+\definemathtriplet [\v!mathematics] [mmlovertriplet]   % or will we use a special instance
+\definemathtriplet [\v!mathematics] [mmlundertriplet]  % or will we use a special instance
+\definemathtriplet [\v!mathematics] [mmldoubletriplet] % or will we use a special instance
 
 % common to munder/mover/munderover : will become core helper (speed up too)
 
@@ -2319,8 +2323,14 @@
 
 \startxmlsetups mml:mover
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathfiller\mmlbasetoken \mmloverbasefiller \mmloveraccentchecker {#1}
+    \doifelseutfmathlimop\mmlbasetoken
+      {\mmllimopover{#1}}
+      {\doifelseutfmathfiller\mmlbasetoken \mmloverbasefiller \mmloveraccentchecker {#1}}
 \stopxmlsetups
+
+\starttexdefinition mmllimopover #1
+    \mmlbasetoken ^{\mmlfencedsecond{#1}}
+\stoptexdefinition
 
 % munder
 
@@ -2351,8 +2361,14 @@
 
 \startxmlsetups mml:munder
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathfiller\mmlbasetoken \mmlunderbasefiller \mmlunderaccentchecker {#1}
+    \doifelseutfmathlimop\mmlbasetoken
+      {\mmllimopunder{#1}}
+      {\doifelseutfmathfiller\mmlbasetoken \mmlunderbasefiller \mmlunderaccentchecker {#1}}
 \stopxmlsetups
+
+\starttexdefinition mmllimopunder #1
+    \mmlbasetoken _{\mmlfencedsecond{#1}}
+\stoptexdefinition
 
 % munderover
 
@@ -2412,10 +2428,17 @@
     \edef\mmlbasecommand{e\utfmathcommandfiller\mmlbasetoken}%
     \mmlexecuteifdefined\mmlbasecommand \relax {\mmlfencedthird{#1}} {\mmlfencedsecond{#1}}
 \stoptexdefinition
+
 \startxmlsetups mml:munderover
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathfiller\mmlbasetoken \mmlunderoverbasefiller \mmlunderoveraccentchecker {#1}
+    \doifelseutfmathlimop\mmlbasetoken
+      {\mmllimopunderover{#1}}
+      {\doifelseutfmathfiller\mmlbasetoken \mmlunderoverbasefiller \mmlunderoveraccentchecker {#1}}
 \stopxmlsetups
+
+\starttexdefinition mmllimopunderover #1
+    \mmlbasetoken ^{\mmlfencedthird{#1}}_{\mmlfencedsecond{#1}}
+\stoptexdefinition
 
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)
 

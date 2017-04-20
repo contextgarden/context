@@ -46,8 +46,8 @@ local application = logs.application {
     helpinfo = helpinfo,
 }
 
-local gmatch, match, gsub, find, lower, format = string.gmatch, string.match, string.gsub, string.find, string.lower, string.format
-local concat = table.concat
+local gmatch, match, gsub, find, lower, upper, format = string.gmatch, string.match, string.gsub, string.find, string.lower, string.upper, string.format
+local concat, sort = table.concat, table.sort
 local split, splitlines, strip = string.split, string.splitlines, string.strip
 local are_equal = table.are_equal
 local tonumber, tostring, rawget = tonumber, tostring, rawget
@@ -90,6 +90,7 @@ function scripts.unicode.update()
     local eastasianwidth       = texttables.eastasianwidth
     local standardizedvariants = texttables.standardizedvariants
     local arabicshaping        = texttables.arabicshaping
+    local index                = texttables.index
     local characterdata        = characters.data
     --
     for unicode, ud in table.sortedpairs(unicodedata) do
@@ -400,6 +401,22 @@ local function splitdefinition(str,index)
     return t
 end
 
+local function splitindex(str)
+    -- ok, quick and dirty ... could be a nice lpeg instead
+    local l = splitlines(str)
+    local n = { }
+    for i=1,#l do
+        local a, b, c = match(l[i],"([^%,]+)%,?(.-)\t(.*)")
+        if a and b and c then
+            local name = b .. " " .. a
+            name = strip(name)
+            name = gsub(name,"%s+"," ")
+            n[name] = tonumber(c,16)
+        end
+    end
+    return n
+end
+
 function scripts.unicode.load()
     local fullname = resolvers.findfile("char-def.lua")
     report("using: %s",fullname)
@@ -428,6 +445,7 @@ function scripts.unicode.load()
             eastasianwidth       = resolvers.findfile("eastasianwidth.txt")       or "",
             standardizedvariants = resolvers.findfile("standardizedvariants.txt") or "",
             arabicshaping        = resolvers.findfile("arabicshaping.txt")        or "",
+            index                = resolvers.findfile("index.txt")                or "",
         }
         --
         textdata = {
@@ -437,6 +455,7 @@ function scripts.unicode.load()
             eastasianwidth       = textfiles.eastasianwidth       ~= "" and io.loaddata(textfiles.eastasianwidth)       or "",
             standardizedvariants = textfiles.standardizedvariants ~= "" and io.loaddata(textfiles.standardizedvariants) or "",
             arabicshaping        = textfiles.arabicshaping        ~= "" and io.loaddata(textfiles.arabicshaping)        or "",
+            index                = textfiles.index                ~= "" and io.loaddata(textfiles.index)                or "",
         }
         texttables = {
             unicodedata          = splitdefinition(textdata.unicodedata,true),
@@ -445,6 +464,7 @@ function scripts.unicode.load()
             eastasianwidth       = splitdefinition(textdata.eastasianwidth,true),
             standardizedvariants = splitdefinition(textdata.standardizedvariants,false),
             arabicshaping        = splitdefinition(textdata.arabicshaping,true),
+            index                = splitindex(textdata.index),
         }
         return true
     else
@@ -500,15 +520,52 @@ function scripts.unicode.extras() -- old code
                 end
             end
         end
-        table.sort(result)
+        sort(result)
         for i=1,#result do
             report(result[i])
         end
-        table.sort(map)
+        sort(map)
         for i=1,#map do
             local m = map[i]
             if not blocks[m] then
                 report("obsolete block %a",m)
+            end
+        end
+    end
+    --
+    local index  = texttables.index
+    local blocks = characters.blocks
+    local data   = characters.data
+    for k, v in next, index do
+        if k ~= lower(k) then
+            index[k] = nil
+        end
+    end
+-- for k, v in next, data do
+--     v.synonym  = nil
+--     v.synonyms = nil
+-- end
+    for k, v in table.sortedhash(index) do
+        local d = data[v]
+        if d and d.description ~= upper(k) then
+            local synonyms = d.synonyms
+            if synonyms then
+                local n = #synonyms
+                local f = false
+                for i=1,n do
+                    if synonyms[i] == k then
+                        f = true
+                        break
+                    end
+                end
+                if not f then
+                    synonyms[n+1] = k
+                end
+             -- synonyms = table.unique(synonyms)
+             -- d.synonyms = synonyms
+                sort(synonyms)
+            else
+                d.synonyms = { k }
             end
         end
     end

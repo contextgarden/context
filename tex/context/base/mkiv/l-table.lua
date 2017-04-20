@@ -573,7 +573,12 @@ local function is_simple_table(t) -- also used in util-tab so maybe public
                 local v = t[i]
                 local tv = type(v)
                 if tv == "number" then
-                    tt[i] = v -- not needed tostring(v)
+                 -- tt[i] = v -- not needed tostring(v)
+                    if hexify then
+                        tt[i] = format("0x%X",v)
+                    else
+                        tt[i] = v -- not needed tostring(v)
+                    end
                 elseif tv == "string" then
                     tt[i] = format("%q",v) -- f_string(v)
                 elseif tv == "boolean" then
@@ -589,7 +594,12 @@ local function is_simple_table(t) -- also used in util-tab so maybe public
                 local v = t[i]
                 local tv = type(v)
                 if tv == "number" then
-                    tt[i+1] = v -- not needed tostring(v)
+                 -- tt[i+1] = v -- not needed tostring(v)
+                    if hexify then
+                        tt[i+1] = format("0x%X",v)
+                    else
+                        tt[i+1] = v -- not needed tostring(v)
+                    end
                 elseif tv == "string" then
                     tt[i+1] = format("%q",v) -- f_string(v)
                 elseif tv == "boolean" then

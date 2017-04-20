@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/16/17 12:32:21
+-- merge date  : 04/20/17 21:31:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -1389,7 +1389,11 @@ local function is_simple_table(t)
         local v=t[i]
         local tv=type(v)
         if tv=="number" then
-          tt[i]=v 
+          if hexify then
+            tt[i]=format("0x%X",v)
+          else
+            tt[i]=v 
+          end
         elseif tv=="string" then
           tt[i]=format("%q",v) 
         elseif tv=="boolean" then
@@ -1405,7 +1409,11 @@ local function is_simple_table(t)
         local v=t[i]
         local tv=type(v)
         if tv=="number" then
-          tt[i+1]=v 
+          if hexify then
+            tt[i+1]=format("0x%X",v)
+          else
+            tt[i+1]=v 
+          end
         elseif tv=="string" then
           tt[i+1]=format("%q",v) 
         elseif tv=="boolean" then
@@ -7541,8 +7549,8 @@ local formatters=string.formatters
 local sortedhash,sortedkeys=table.sortedhash,table.sortedkeys
 local trace_loading=false trackers.register("fonts.loading",function(v) trace_loading=v end)
 local trace_mapping=false trackers.register("fonts.mapping",function(v) trace_mapping=v end)
-local report_fonts=logs.reporter("fonts","loading") 
-local force_ligatures=false directives.register("fonts.mapping.forceligatures",function(v) force_ligatures=v end)
+local report_fonts=logs.reporter("fonts","loading")
+local force_ligatures=true directives.register("fonts.mapping.forceligatures",function(v) force_ligatures=v end)
 local fonts=fonts or {}
 local mappings=fonts.mappings or {}
 fonts.mappings=mappings
@@ -7825,34 +7833,42 @@ function mappings.addtounicode(data,filename,checklookups)
   if type(checklookups)=="function" then
     checklookups(data,missing,nofmissing)
   end
-  local collected=false
   local unicoded=0
-  for i=1,#dlist do
-    local du=dlist[i]
-    local glyph=descriptions[du]
-    if glyph.class=="ligature" and (force_ligatures or not glyph.unicode) then
-      if not collected then
-        collected=fonts.handlers.otf.readers.getcomponents(data)
-        if not collected then
-          break
-        end
+  local collected=fonts.handlers.otf.readers.getcomponents(data) 
+  local function resolve(glyph,u)
+    local n=#u
+    for i=1,n do
+      if u[i]>private then
+        n=0
+        break
       end
+    end
+    if n>0 then
+      if n>1 then
+        glyph.unicode=u
+      else
+        glyph.unicode=u[1]
+      end
+      unicoded=unicoded+1
+    end
+  end
+  if not collected then
+  elseif force_ligatures then
+    for i=1,#dlist do
+      local du=dlist[i]
       local u=collected[du] 
       if u then
-        local n=#u
-        for i=1,n do
-          if u[i]>private then
-            n=0
-            break
-          end
-        end
-        if n>0 then
-          if n>1 then
-            glyph.unicode=u
-          else
-            glyph.unicode=u[1]
-          end
-          unicoded=unicoded+1
+        resolve(descriptions[du],u)
+      end
+    end
+  else
+    for i=1,#dlist do
+      local du=dlist[i]
+      local glyph=descriptions[du]
+      if glyph.class=="ligature" and not glyph.unicode then
+        local u=collected[du] 
+        if u then
+           resolve(glyph,u)
         end
       end
     end
@@ -12463,7 +12479,7 @@ function readers.glyf(f,fontdata,specification)
           else
             contours2outlines_shaped(glyphs,shapes,specification.shapes)
           end
-        elseif specification.loadshapes then
+        elseif specification.shapes then
           contours2outlines_normal(glyphs,shapes)
         end
       end
@@ -26006,7 +26022,8 @@ local function initializecolr(tfmdata,kind,value)
             local w=character.width or 0
             local s=#colorlist
             local t={
-              { "special","pdf:direct:q "..b },
+              { "special","pdf:page:q" },
+              { "special","pdf:raw:"..b }
             }
             local n=#t
             for i=1,s do
@@ -26017,7 +26034,8 @@ local function initializecolr(tfmdata,kind,value)
                 n=n+1 t[n]={ "right",-w }
               end
             end
-            n=n+1 t[n]={ "special","pdf:direct:"..e.." Q"}
+            n=n+1 t[n]={ "special","pdf:page:"..e }
+            n=n+1 t[n]={ "special","pdf:raw:Q" }
             character.commands=t
           end
         end

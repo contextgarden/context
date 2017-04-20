@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 local context, commands = context, commands
 
-local format, gmatch, match, find, lower, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte, string.topattern
+local format, gmatch, match, find, lower, upper, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.upper, string.gsub, string.byte, string.topattern
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
@@ -47,6 +47,8 @@ local report_newline      = logs.newline
 local setmetatableindex   = table.setmetatableindex
 
 local implement           = interfaces.implement
+
+local chardata            = characters.data
 
 local fonts               = fonts
 local handlers            = fonts.handlers
@@ -1629,7 +1631,6 @@ implement {
 
 local function nametoslot(name)
     local t = type(name)
-    local s = nil
     if t == "string" then
         local slot = unicodes[true][name]
         if slot then
@@ -1638,12 +1639,82 @@ local function nametoslot(name)
         if not aglunicodes then
             aglunicodes = encodings.agl.unicodes
         end
-        slot = aglunicodes[name]
-        if characters[true][slot] then
+        local char = characters[true]
+        local slot = aglunicodes[name]
+        if char[slot] then
+            return slot
+        end
+        -- not in font
+    elseif t == "number" then
+        if characters[true][name] then
             return slot
         else
             -- not in font
         end
+    end
+end
+
+
+local found = { }
+
+local function descriptiontoslot(name)
+    local t = type(name)
+    if t == "string" then
+        -- slow
+        local list = sortedkeys(chardata)
+        local slot = found[name]
+        local char = characters[true]
+        if slot then
+            return char[slot] and slot or nil
+        end
+        local NAME = upper(name)
+        for i=1,#list do
+            slot = list[i]
+            local c = chardata[slot]
+            local d = c.description
+            if d == NAME then
+                found[name] = slot
+                return char[slot] and slot or nil
+            end
+        end
+        for i=1,#list do
+            slot = list[i]
+            local c = chardata[slot]
+            local s = c.synonyms
+            if s then
+                for i=1,#s do
+                    local si = s[i]
+                    if si == name then
+                        found[name] = si
+                        return char[slot] and slot or nil
+                    end
+                end
+            end
+        end
+        for i=1,#list do
+            slot = list[i]
+            local c = chardata[slot]
+            local d = c.description
+            if d and find(d,NAME) then
+                found[name] = slot
+                return char[slot] and slot or nil
+            end
+        end
+        for i=1,#list do
+            slot = list[i]
+            local c = chardata[slot]
+            local s = c.synonyms
+            if s then
+                for i=1,#s do
+                    local si = s[i]
+                    if find(s[i],name) then
+                        found[name] = si
+                        return char[slot] and slot or nil
+                    end
+                end
+            end
+        end
+        -- not in font
     elseif t == "number" then
         if characters[true][name] then
             return slot
@@ -1720,6 +1791,16 @@ do -- else too many locals
                 local n = nametoslot(name)
                 return n and utfchar(n) or name
             end,
+        -- unicode description (synonym)
+        u = function(name)
+                local n = descriptiontoslot(name,false)
+                return n and utfchar(n) or name
+            end,
+        -- all
+        a = function(name)
+                local n = nametoslot(name) or descriptiontoslot(name)
+                return n and utfchar(n) or name
+            end,
         -- char
         c = function(name)
                 return name
@@ -1752,9 +1833,10 @@ do -- else too many locals
         end
     end
 
-    helpers.nametoslot  = nametoslot
-    helpers.indextoslot = indextoslot
-    helpers.tochar      = tochar
+    helpers.nametoslot        = nametoslot
+    helpers.descriptiontoslot = descriptiontoslot
+    helpers.indextoslot       = indextoslot
+    helpers.tochar            = tochar
 
     -- interfaces:
 
