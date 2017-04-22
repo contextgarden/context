@@ -125,14 +125,15 @@ function collections.define(name,font,ranges,details)
                 offset = tonumber(offset) or false
             end
             d[#d+1] = {
-                font   = font,
-                start  = start,
-                stop   = stop,
-                gaps   = gaps,
-                offset = offset,
-                rscale = tonumber (details.rscale) or 1,
-                force  = toboolean(details.force,true),
-                check  = toboolean(details.check,true),
+                font     = font,
+                start    = start,
+                stop     = stop,
+                gaps     = gaps,
+                offset   = offset,
+                rscale   = tonumber (details.rscale) or 1,
+                force    = toboolean(details.force,true),
+                check    = toboolean(details.check,true),
+                features = details.features,
             }
         end
     end

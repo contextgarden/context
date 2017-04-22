@@ -83,6 +83,9 @@ local report            = logs.reporter("otf reader")
 local trace_cmap        = false -- only for checking issues
 local trace_cmap_detail = false -- only for checking issues
 
+-- local trace_cmap        = true
+-- local trace_cmap_detail = true
+
 fonts                   = fonts or { }
 local handlers          = fonts.handlers or { }
 fonts.handlers          = handlers
@@ -1275,6 +1278,7 @@ local sequence = {
     -- variants
     { 0,  5, 14 },
     -- last resort ranges
+{ 0,  4, 12 },
     { 3, 10, 13 },
 }
 

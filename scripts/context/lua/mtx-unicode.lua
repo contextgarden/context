@@ -541,10 +541,10 @@ function scripts.unicode.extras() -- old code
             index[k] = nil
         end
     end
--- for k, v in next, data do
---     v.synonym  = nil
---     v.synonyms = nil
--- end
+ -- for k, v in next, data do
+ --     v.synonym  = nil
+ --     v.synonyms = nil
+ -- end
     for k, v in table.sortedhash(index) do
         local d = data[v]
         if d and d.description ~= upper(k) then

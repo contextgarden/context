@@ -127,14 +127,16 @@
                                                                                                   \settrue \c_font_auto_size
    \fi\fi}
 
+\let\mathsizesuffix\empty
+
 \def\font_helpers_set_math_family_indeed#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
    % the order is important as we depend on known id's when completing fonts
-   \let\fontface\!!plusthree\font_helpers_set_math_family_a\scriptscriptfont#mrtag\font
-   \let\fontface\!!plustwo  \font_helpers_set_math_family_a\scriptfont      #mrtag\font
-   \let\fontface\!!plusone  \font_helpers_set_math_family_a\textfont        #mrtag\font
-   \let\fontface\!!zerocount
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusthree\font_helpers_set_math_family_a\scriptscriptfont#mrtag\font
+   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo  \font_helpers_set_math_family_a\scriptfont      #mrtag\font
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusone  \font_helpers_set_math_family_a\textfont        #mrtag\font
+   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
 
@@ -159,10 +161,10 @@
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
-   \let\fontface\!!plusthree\font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam%
-   \let\fontface\!!plustwo  \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam%
-   \let\fontface\!!plusone  \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam%
-   \let\fontface\!!zerocount
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusthree\font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam%
+   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo  \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam%
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusone  \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam%
+   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
    \setfalse\c_font_auto_size}

@@ -34,7 +34,9 @@
 \unexpanded\def\resetfontfallback {\dodoubleempty   \font_fallbacks_reset }
 
 \def\font_fallbacks_define[#name][#font][#ranges][#settings]%
-  {\clf_fontcollectiondefine{#name}{#font}{#ranges}{#settings}}
+  {\let\mathsizesuffix\relax
+   \clf_fontcollectiondefine{#name}{#font}{#ranges}{#settings}%
+   \let\mathsizesuffix\empty}
 
 \def\font_fallbacks_reset[#name][#font]%
   {\clf_fontcollectionreset{#name}{#font}}
@@ -91,6 +93,17 @@
 
 \def\font_fallbacks_register_main        #name{\clf_fontcollectionregister{#name}}
 \def\font_fallbacks_prepare_clone_vectors#name{\clf_fontcollectionclone{#name}}
+
+% math (experiment, todo clf_)
+
+\def\font_fallbacks_register_math#1#2#3#4%
+  {\doifelsenothing{#3}%
+      {\definedfont[#2 at #4sp]}%
+      {\definedfont[#2*#3\space at #4\scaledpoint]}%
+   \ctxlua{mathematics.registerfallbackid(#1,\fontid\font)}}
+
+\def\font_fallbacks_finish_math
+  {\ctxlua{mathematics.finishfallbacks()}}
 
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)

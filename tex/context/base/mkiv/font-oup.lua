@@ -891,7 +891,7 @@ function readers.rehash(fontdata,hashmethod) -- TODO: combine loops in one
         unifymissing(fontdata)
      -- stripredundant(fontdata)
     else
-        fontdata.hashmethod = "unicode"
+        fontdata.hashmethod = "unicodes"
         local indices = unifyglyphs(fontdata)
         unifyresources(fontdata,indices)
         copyduplicates(fontdata)
@@ -908,10 +908,10 @@ function readers.checkhash(fontdata)
     elseif hashmethod == "names" and fontdata.names then
         unifyresources(fontdata,fontdata.names)
         copyduplicates(fontdata)
-        fontdata.hashmethod = "unicode"
+        fontdata.hashmethod = "unicodes"
         fontdata.names = nil -- no need for it
     else
-        readers.rehash(fontdata,"unicode")
+        readers.rehash(fontdata,"unicodes")
     end
 end
 

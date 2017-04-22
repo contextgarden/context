@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/20/17 21:31:47
+-- merge date  : 04/22/17 12:17:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -8149,7 +8149,7 @@ local stripstring=string.nospaces
 local utf16_to_utf8_be=utf.utf16_to_utf8_be
 local report=logs.reporter("otf reader")
 local trace_cmap=false 
-local trace_cmap_detail=false 
+local trace_cmap_detail=false
 fonts=fonts or {}
 local handlers=fonts.handlers or {}
 fonts.handlers=handlers
@@ -8854,6 +8854,7 @@ local sequence={
   { 0,0,6 },
   { 3,0,6 },
   { 0,5,14 },
+{ 0,4,12 },
   { 3,10,13 },
 }
 local supported={}
@@ -16469,7 +16470,7 @@ function readers.rehash(fontdata,hashmethod)
     copyduplicates(fontdata)
     unifymissing(fontdata)
   else
-    fontdata.hashmethod="unicode"
+    fontdata.hashmethod="unicodes"
     local indices=unifyglyphs(fontdata)
     unifyresources(fontdata,indices)
     copyduplicates(fontdata)
@@ -16484,10 +16485,10 @@ function readers.checkhash(fontdata)
   elseif hashmethod=="names" and fontdata.names then
     unifyresources(fontdata,fontdata.names)
     copyduplicates(fontdata)
-    fontdata.hashmethod="unicode"
+    fontdata.hashmethod="unicodes"
     fontdata.names=nil 
   else
-    readers.rehash(fontdata,"unicode")
+    readers.rehash(fontdata,"unicodes")
   end
 end
 function readers.addunicodetable(fontdata)
