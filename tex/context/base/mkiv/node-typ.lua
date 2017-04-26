@@ -18,10 +18,11 @@ local tonut           = nuts.tonut
 local setfield        = nuts.setfield
 local setlink         = nuts.setlink
 local setchar         = nuts.setchar
------ setattrlist     = nuts.setattrlist
+local setattrlist     = nuts.setattrlist
 
 local getfield        = nuts.getfield
 local getfont         = nuts.getfont
+local getattrlist     = nuts.getattrlist
 
 local hpack_node_list = nuts.hpack
 local vpack_node_list = nuts.vpack
@@ -33,20 +34,26 @@ local new_glue        = nodepool.glue
 
 local utfvalues       = utf.values
 
-local currentfont     = font.current
------ current_attr    = node.current_attr
+local currentfont     = font.current      -- mabe nicer is fonts     .current
+local currentattr     = node.current_attr -- mabe nicer is attributes.current
 local fontparameters  = fonts.hashes.parameters
 
-local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
+-- when attrid == true then take from glyph or current else use the given value
+
+local function tonodes(str,fontid,spacing,templateglyph,attrid) -- quick and dirty
     local head, prev = nil, nil
- -- local attrid = nil
     if not fontid then
         if templateglyph then
             fontid = getfont(templateglyph)
-         -- attrid = setattrlist(templateglyph)
         else
             fontid = currentfont()
-         -- attrid = current_attr()
+        end
+    end
+    if attrid == true then
+        if templateglyph then
+            attrid = false -- we copy with the glyph
+        else
+            attrid = currentattr()
         end
     end
     local fp = fontparameters[fontid]
@@ -75,10 +82,14 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
         if not next then
             -- nothing
         elseif not head then
-         -- setattrlist(next,attrid)
+            if attrid then
+                setattrlist(next,attrid)
+            end
             head = next
         else
-         -- setattrlist(next,attrid)
+            if attrid then
+                setattrlist(next,attrid)
+            end
             setlink(prev,next)
         end
         prev = next

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/22/17 12:17:18
+-- merge date  : 04/27/17 01:00:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -1372,7 +1372,7 @@ local reserved=table.tohash {
   'in','local','nil','not','or','repeat','return','then','true','until','while',
   'NaN','goto',
 }
-local function is_simple_table(t) 
+local function is_simple_table(t,hexify) 
   local nt=#t
   if nt>0 then
     local n=0
@@ -1490,7 +1490,7 @@ local function do_serialize(root,name,depth,level,indexed)
           if next(v)==nil then
             handle(format("%s {},",depth))
           elseif inline then 
-            local st=is_simple_table(v)
+            local st=is_simple_table(v,hexify)
             if st then
               handle(format("%s { %s },",depth,concat(st,", ")))
             else
@@ -1573,7 +1573,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s [%q]={},",depth,k))
           end
         elseif inline then
-          local st=is_simple_table(v)
+          local st=is_simple_table(v,hexify)
           if st then
             if tk=="number" then
               if hexify then
@@ -9539,19 +9539,27 @@ local function readdata(f,offset,specification)
       local instance=specification.instance
       if type(instance)=="string" then
         local factors=helpers.getfactors(fontdata,instance)
-        specification.factors=factors
-        fontdata.factors=factors
-        fontdata.instance=instance
-        report("user instance: %s, factors: % t",instance,factors)
+        if factors then
+          specification.factors=factors
+          fontdata.factors=factors
+          fontdata.instance=instance
+          report("user instance: %s, factors: % t",instance,factors)
+        else
+          report("user instance: %s, bad factors",instance)
+        end
       end
     end
     if not fontdata.factors then
       if fontdata.variabledata then
         local factors=helpers.getfactors(fontdata,true)
-        specification.factors=factors
-        fontdata.factors=factors
-        fontdata.instance=instance
-        report("font instance: %s, factors: % t",instance,factors)
+        if factors then
+          specification.factors=factors
+          fontdata.factors=factors
+          fontdata.instance=instance
+          report("font instance: %s, factors: % t",instance,factors)
+        else
+          report("user instance: %s, bad factors",instance)
+        end
       end
     end
   end
@@ -11509,7 +11517,9 @@ local function readnoselect(f,fontdata,data,glyphs,doshapes,version,streams)
   local dictionary=dictionaries[1]
   readglobals(f,data)
   readcharstrings(f,data,version)
-  if version~="cff2" then
+  if version=="cff2" then
+    dictionary.charset=nil
+  else
     readencodings(f,data)
     readcharsets(f,data,dictionary)
   end
@@ -11654,10 +11664,16 @@ function readers.cff2(f,fontdata,specification)
       nofglyphs=fontdata.nofglyphs,
     }
     parsedictionaries(data,dictionaries,"cff2")
-    local storeoffset=dictionaries[1].vstore+data.header.offset+2 
-    local regions,deltas=readers.helpers.readvariationdata(f,storeoffset,factors)
-    data.regions=regions
-    data.deltas=deltas
+    local offset=dictionaries[1].vstore
+    if offset>0 then
+      local storeoffset=dictionaries[1].vstore+data.header.offset+2 
+      local regions,deltas=readers.helpers.readvariationdata(f,storeoffset,factors)
+      data.regions=regions
+      data.deltas=deltas
+    else
+      data.regions={}
+      data.deltas={}
+    end
     data.factors=specification.factors
     local cid=data.dictionaries[1].cid
     local all=specification.shapes or false
@@ -13369,7 +13385,13 @@ local function readlookuparray(f,noflookups,nofcurrent)
       if index>length then
         length=index
       end
-      lookups[index]=readushort(f)+1
+      local lookup=readushort(f)+1
+      local list=lookups[index]
+      if list then
+        list[#list+1]=lookup
+      else
+        lookups[index]={ lookup }
+      end
     end
     for index=1,length do
       if not lookups[index] then
@@ -14529,43 +14551,55 @@ do
             else
               local length=#rlookups
               for index=1,length do
-                local lookupid=rlookups[index]
-                if lookupid then
-                  local h=sublookuphash[lookupid]
-                  if not h then
-                    local lookup=lookups[lookupid]
-                    if lookup then
-                      local d=lookup.done
-                      if d then
-                        nofsublookups=nofsublookups+1
-                        h={
-                          index=nofsublookups,
-                          name=f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
-                          derived=true,
-                          steps=d.steps,
-                          nofsteps=d.nofsteps,
-                          type=d.lookuptype or "gsub_single",
-                          markclass=d.markclass or nil,
-                          flags=d.flags,
-                        }
-                        sublookuplist[nofsublookups]=copy(h) 
-                        sublookuphash[lookupid]=nofsublookups
-                        sublookupcheck[lookupid]=1
-                        h=nofsublookups
+                local lookuplist=rlookups[index]
+                if lookuplist then
+                  local length=#lookuplist
+                  local found={}
+                  local noffound=0
+                  for index=1,length do
+                    local lookupid=lookuplist[index]
+                    if lookupid then
+                      local h=sublookuphash[lookupid]
+                      if not h then
+                        local lookup=lookups[lookupid]
+                        if lookup then
+                          local d=lookup.done
+                          if d then
+                            nofsublookups=nofsublookups+1
+                            h={
+                              index=nofsublookups,
+                              name=f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
+                              derived=true,
+                              steps=d.steps,
+                              nofsteps=d.nofsteps,
+                              type=d.lookuptype or "gsub_single",
+                              markclass=d.markclass or nil,
+                              flags=d.flags,
+                            }
+                            sublookuplist[nofsublookups]=copy(h) 
+                            sublookuphash[lookupid]=nofsublookups
+                            sublookupcheck[lookupid]=1
+                            h=nofsublookups
+                          else
+                            report_issue(i,what,sequence,"missing")
+                            rule.lookups=nil
+                            break
+                          end
+                        else
+                          report_issue(i,what,sequence,"bad")
+                          rule.lookups=nil
+                          break
+                        end
                       else
-                        report_issue(i,what,sequence,"missing")
-                        rule.lookups=nil
-                        break
+                        sublookupcheck[lookupid]=sublookupcheck[lookupid]+1
                       end
-                    else
-                      report_issue(i,what,sequence,"bad")
-                      rule.lookups=nil
-                      break
+                      if h then
+                        noffound=noffound+1
+                        found[noffound]=h
+                      end
                     end
-                  else
-                    sublookupcheck[lookupid]=sublookupcheck[lookupid]+1
                   end
-                  rlookups[index]=h or false
+                  rlookups[index]=noffound>0 and found or false
                 else
                   rlookups[index]=false
                 end
@@ -15494,7 +15528,7 @@ function readers.fvar(f,fontdata,specification)
         default=readfixed(f),
         maximum=readfixed(f),
         flags=readushort(f),
-        name=lower(extras[readushort(f)]),
+        name=lower(extras[readushort(f)] or "bad name"),
       }
       local n=sizeofaxis-20
       if n>0 then
@@ -16861,7 +16895,6 @@ function readers.pack(data)
                   local r=rule.before    if r then for i=1,#r do r[i]=pack_boolean(r[i]) end end
                   local r=rule.after    if r then for i=1,#r do r[i]=pack_boolean(r[i]) end end
                   local r=rule.current   if r then for i=1,#r do r[i]=pack_boolean(r[i]) end end
-                  local r=rule.lookups   if r then rule.lookups=pack_mixed (r)  end
                   local r=rule.replacements if r then rule.replacements=pack_flat  (r)  end
                 end
               end
@@ -17257,13 +17290,6 @@ function readers.unpack(data)
                       if tv then
                         current[i]=tv
                       end
-                    end
-                  end
-                  local lookups=rule.lookups
-                  if lookups then
-                    local tv=tables[lookups]
-                    if tv then
-                      rule.lookups=tv
                     end
                   end
                   local replacements=rule.replacements
@@ -17769,14 +17795,19 @@ function readers.expand(data)
                 local lookups=rule.lookups or false
                 local subtype=nil
                 if lookups then
-                  for k,v in next,lookups do
-                    local lookup=sublookups[v]
-                    if lookup then
-                      lookups[k]=lookup
-                      if not subtype then
-                        subtype=lookup.type
+                  for i=1,#lookups do
+                    local lookups=lookups[i]
+                    if lookups then
+                      for k,v in next,lookups do
+                        local lookup=sublookups[v]
+                        if lookup then
+                          lookups[k]=lookup
+                          if not subtype then
+                            subtype=lookup.type
+                          end
+                        else
+                        end
                       end
-                    else
                     end
                   end
                 end
@@ -17840,7 +17871,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.028 
+otf.version=3.029 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
@@ -19309,7 +19340,7 @@ local function inject_kerns_only(head,where)
         if i then
           local leftkern=i.leftkern
           if leftkern and leftkern~=0 then
-            insert_node_before(head,current,newkern(leftkern))
+            head=insert_node_before(head,current,newkern(leftkern))
           end
         end
         if prevdisc then
@@ -19690,7 +19721,7 @@ local function inject_everything(head,where)
             ox=px-pn.markx
           end
         else
-          ox=px-pn.markx
+          ox=px-pn.markx-rightkern 
         end
       end
     else
@@ -19783,7 +19814,7 @@ local function inject_everything(head,where)
             end
             local leftkern=i.leftkern
             if leftkern and leftkern~=0 then
-              insert_node_before(head,current,newkern(leftkern))
+              head=insert_node_before(head,current,newkern(leftkern))
             end
             local rightkern=i.rightkern
             if rightkern and rightkern~=0 then
@@ -22017,16 +22048,19 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
     local nofchainlookups=#chainlookups
     if size==1 then
       local chainlookup=chainlookups[1]
-      local chainkind=chainlookup.type
-      local chainproc=chainprocs[chainkind]
-      if chainproc then
-        local ok
-        head,start,ok=chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,1)
-        if ok then
-          done=true
+      for j=1,#chainlookup do
+        local chainstep=chainlookup[j]
+        local chainkind=chainstep.type
+        local chainproc=chainprocs[chainkind]
+        if chainproc then
+          local ok
+          head,start,ok=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,1)
+          if ok then
+            done=true
+          end
+        else
+          logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
         end
-      else
-        logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
       end
      else
       local i=1
@@ -22048,19 +22082,22 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
         end
         local chainlookup=chainlookups[i]
         if chainlookup then
-          local chainkind=chainlookup.type
-          local chainproc=chainprocs[chainkind]
-          if chainproc then
-            local ok,n
-            head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,i)
-            if ok then
-              done=true
-              if n and n>1 and i+n>nofchainlookups then
-                break
+          for j=1,#chainlookup do
+            local chainstep=chainlookup[j]
+            local chainkind=chainstep.type
+            local chainproc=chainprocs[chainkind]
+            if chainproc then
+              local ok,n
+              head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,i)
+              if ok then
+                done=true
+                if n and n>1 and i+n>nofchainlookups then
+                  break
+                end
               end
+            else
+              logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
             end
-          else
-            logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
           end
         end
         i=i+1
@@ -25928,7 +25965,6 @@ local tounicode=fonts.mappings.tounicode
 local otf=fonts.handlers.otf
 local f_color=formatters["pdf:direct:%f %f %f rg"]
 local f_gray=formatters["pdf:direct:%f g"]
-local s_black="pdf:direct:0 g"
 if context then
   local startactualtext=nil
   local stopactualtext=nil
@@ -25948,30 +25984,37 @@ else
   end
 end
 local sharedpalettes={}
+local hash=table.setmetatableindex(function(t,k)
+  local v={ "special",k }
+  t[k]=v
+  return v
+end)
 if context then
-  local graytorgb=attributes.colors.graytorgb
-  local cmyktorgb=attributes.colors.cmyktorgb
+  local colors=attributes.list[attributes.private('color')] or {}
+  local transparencies=attributes.list[attributes.private('transparency')] or {}
   function otf.registerpalette(name,values)
     sharedpalettes[name]=values
     for i=1,#values do
       local v=values[i]
-      local r,g,b
-      local s=v.s
-      if s then
-        r,g,b=graytorgb(s)
+      local c=nil
+      local t=nil
+      if type(v)=="table" then
+        c=colors.register(name,"rgb",
+          max(round((v.r or 0)*255),255)/255,
+          max(round((v.g or 0)*255),255)/255,
+          max(round((v.b or 0)*255),255)/255
+        )
       else
-        local c,m,y,k=v.c,v.m,v.y,v.k
-        if c or m or y or k then
-          r,g,b=cmyktorgb(c or 0,m or 0,y or 0,k or 0)
-        else
-          r,g,b=v.r,v.g,v.b
-        end
+        c=colors[v]
+        t=transparencies[v]
       end
-      values[i]={
-        max(r and round(r*255) or 0,255),
-        max(g and round(g*255) or 0,255),
-        max(b and round(b*255) or 0,255)
-      }
+      if c and t then
+        values[i]=hash["pdf:direct:"..lpdf.color(1,c).." "..lpdf.transparency(t)]
+      elseif c then
+        values[i]=hash["pdf:direct:"..lpdf.color(1,c)]
+      elseif t then
+        values[i]=hash["pdf:direct:"..lpdf.color(1,t)]
+      end
     end
   end
 else 
@@ -25979,41 +26022,60 @@ else
     sharedpalettes[name]=values
     for i=1,#values do
       local v=values[i]
-      values[i]={
-        max(round((v.r or 0)*255),255),
-        max(round((v.g or 0)*255),255),
-        max(round((v.b or 0)*255),255)
-      }
+      values[i]=hash[f_color(
+        max(round((v.r or 0)*255),255)/255,
+        max(round((v.g or 0)*255),255)/255,
+        max(round((v.b or 0)*255),255)/255
+      )]
     end
   end
 end
+local function convert(t,k)
+  local v={}
+  for i=1,#k do
+    local p=k[i]
+    local r,g,b=p[1],p[2],p[3]
+    if r==g and g==b then
+      v[i]=hash[f_gray(r/255)]
+    else
+      v[i]=hash[f_color(r/255,g/255,b/255)]
+    end
+  end
+  t[k]=v
+  return v
+end
 local function initializecolr(tfmdata,kind,value) 
   if value then
-    local palettes=tfmdata.resources.colorpalettes
+    local resources=tfmdata.resources
+    local palettes=resources.colorpalettes
     if palettes then
-      local palette=sharedpalettes[value] or palettes[tonumber(value) or 1] or palettes[1] or {}
-      local classes=#palette
+      local converted=resources.converted
+      if not converted then
+        converted=table.setmetatableindex(convert)
+        resources.converted=converted
+      end
+      local colorvalues=sharedpalettes[value] or converted[palettes[tonumber(value) or 1] or palettes[1]] or {}
+      local classes=#colorvalues
       if classes==0 then
         return
       end
       local characters=tfmdata.characters
       local descriptions=tfmdata.descriptions
       local properties=tfmdata.properties
-      local colorvalues={}
       properties.virtualized=true
       tfmdata.fonts={
         { id=0 }
       }
-      for i=1,classes do
-        local p=palette[i]
-        local r,g,b=p[1],p[2],p[3]
-        if r==g and g==b then
-          colorvalues[i]={ "special",f_gray(r/255) }
-        else
-          colorvalues[i]={ "special",f_color(r/255,g/255,b/255) }
-        end
-      end
+      local widths=table.setmetatableindex(function(t,k)
+        local v={ "right",-k }
+        t[k]=v
+        return v
+      end)
       local getactualtext=otf.getactualtext
+      local default=colorvalues[#colorvalues]
+      local endactual=nil
+      local start={ "special","pdf:page:q" }
+      local stop={ "special","pdf:raw:Q" }
       for unicode,character in next,characters do
         local description=descriptions[unicode]
         if description then
@@ -26022,21 +26084,30 @@ local function initializecolr(tfmdata,kind,value)
             local b,e=getactualtext(tounicode(characters[unicode].unicode or 0xFFFD))
             local w=character.width or 0
             local s=#colorlist
+            local goback=w~=0 and widths[w] or nil
             local t={
-              { "special","pdf:page:q" },
+              start,
               { "special","pdf:raw:"..b }
             }
             local n=#t
+            local l=nil
             for i=1,s do
               local entry=colorlist[i]
-              n=n+1 t[n]=colorvalues[entry.class] or s_black
+              local v=colorvalues[entry.class] or default
+              if v and l~=v then
+                n=n+1 t[n]=v
+                l=v
+              end
               n=n+1 t[n]={ "char",entry.slot }
-              if s>1 and i<s and w~=0 then
-                n=n+1 t[n]={ "right",-w }
+              if s>1 and i<s and goback then
+                n=n+1 t[n]=goback
               end
             end
-            n=n+1 t[n]={ "special","pdf:page:"..e }
-            n=n+1 t[n]={ "special","pdf:raw:Q" }
+            if not endactual then
+              endactual={ "special","pdf:page:"..e } 
+            end
+            n=n+1 t[n]=endactual
+            n=n+1 t[n]=stop
             character.commands=t
           end
         end
@@ -26727,10 +26798,16 @@ local function addfeature(data,feature,specifications)
           for k,v in next,lookups do
             local t=type(v)
             if t=="table" then
+              for i=1,#v do
+                local vi=v[i]
+                if type(vi)~="table" then
+                  v[i]={ vi }
+                end
+              end
             elseif t=="number" then
               local lookup=sublookups[v]
               if lookup then
-                lookups[k]=lookup
+                lookups[k]={ lookup }
                 if not subtype then
                   subtype=lookup.type
                 end

@@ -14,8 +14,9 @@ if not modules then modules = { } end modules ['char-ini'] = {
 local utfchar, utfbyte, utfvalues, ustring, utotable = utf.char, utf.byte, utf.values, utf.ustring, utf.totable
 local concat, unpack, tohash, insert = table.concat, table.unpack, table.tohash, table.insert
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
-local format, lower, gsub, find = string.format, string.lower, string.gsub, string.find
-local P, R, S, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cs
+local format, lower, gsub, find, match = string.format, string.lower, string.gsub, string.find, string.match
+local P, R, S, C, Cs, Ct, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.V
+local formatters = string.formatters
 
 if not characters then require("char-def") end
 
@@ -1385,6 +1386,174 @@ function characters.showstring(str)
     for i=1,#list do
         report_defining("split % 3i : %C",i,list[i])
     end
+end
+
+do
+
+    -- There is no need to preload this table.
+
+    local any       = P(1)
+    local special   = S([['".,:;-+()]])
+                    + P('“') + P('”')
+    local apostrofe = P("’") + P("'")
+
+    local pattern = Cs ( (
+        (P("medium light") / "medium-light" + P("medium dark")  / "medium-dark") * P(" skin tone")
+        + (apostrofe * P("s"))/""
+        + special/""
+        + any
+    )^1)
+
+    local function load()
+        local name = resolvers.find_file("char-emj.lua")
+        local data = name and name ~= "" and dofile(name) or { }
+        local hash = { }
+        for d, c in next, data do
+            local k = lpegmatch(pattern,d) or d
+            local u = { }
+            for i=1,#c do
+                u[i] = utfchar(c[i])
+            end
+            u = concat(u)
+            hash[k] = u
+        end
+        return data, hash
+    end
+
+    local data, hash = nil, nil
+
+    function characters.emojized(name)
+        local t = lpegmatch(pattern,name)
+        if t then
+            return t
+        else
+            return { name }
+        end
+    end
+
+    local start     = P(" ")
+    local finish    = P(-1) + P(" ")
+    local skintone  = P("medium ")^0 * (P("light ") + P("dark "))^0 * P("skin tone")
+    local gender    = P("woman") + P("man")
+    local expanded  = (
+                            P("m-l-")/"medium-light"
+                          + P("m-d-")/"medium-dark"
+                          + P("l-")  /"light"
+                          + P("m-")  /"medium"
+                          + P("d-")  /"dark"
+                      )
+                    * (P("s-t")/" skin tone")
+    local compacted = (
+                        (P("medium-")/"m-" * (P("light")/"l" + P("dark")/"d"))
+                      + (P("medium")/"m"   +  P("light")/"l" + P("dark")/"d")
+                      )
+                    * (P(" skin tone")/"-s-t")
+
+    local pattern_0 = Cs((expanded + any)^1)
+    local pattern_1 = Cs(((start * skintone + skintone * finish)/"" + any)^1)
+    local pattern_2 = Cs(((start * gender   + gender   * finish)/"" + any)^1)
+    local pattern_4 = Cs((compacted + any)^1)
+
+ -- print(lpegmatch(pattern_0,"kiss woman l-s-t man d-s-t"))
+ -- print(lpegmatch(pattern_0,"something m-l-s-t"))
+ -- print(lpegmatch(pattern_0,"something m-s-t"))
+ -- print(lpegmatch(pattern_4,"something medium-light skin tone"))
+ -- print(lpegmatch(pattern_4,"something medium skin tone"))
+
+    local skin =
+        P("light skin tone")        / utfchar(0x1F3FB)
+      + P("medium-light skin tone") / utfchar(0x1F3FC)
+      + P("medium skin tone")       / utfchar(0x1F3FD)
+      + P("medium-dark skin tone")  / utfchar(0x1F3FE)
+      + P("dark skin tone")         / utfchar(0x1F3FF)
+
+    local parent =
+        P("man")   / utfchar(0x1F468)
+      + P("woman") / utfchar(0x1F469)
+
+    local child =
+        P("baby")  / utfchar(0x1F476)
+      + P("boy")   / utfchar(0x1F466)
+      + P("girl")  / utfchar(0x1F467)
+
+    local zwj   = utfchar(0x200D)
+    local heart = utfchar(0x2764) .. utfchar(0xFE0F) .. zwj
+    local kiss  = utfchar(0x2764) .. utfchar(0xFE0F) .. utfchar(0x200D) .. utfchar(0x1F48B) .. zwj
+
+    ----- member = parent + child
+
+    local space = P(" ")
+    local final = P(-1)
+
+    local p_done   = (space^1/zwj) + P(-1)
+    local p_rest   = space/"" * (skin * p_done) + p_done
+    local p_parent = parent * p_rest
+    local p_child  = child  * p_rest
+
+    local p_family = Cs ( (P("family")            * space^1)/"" * p_parent^-2 * p_child^-2 )
+    local p_couple = Cs ( (P("couple with heart") * space^1)/"" * p_parent * Cc(heart) * p_parent )
+    local p_kiss   = Cs ( (P("kiss")              * space^1)/"" * p_parent * Cc(kiss)  * p_parent )
+
+    local p_special = p_family + p_couple + p_kiss
+
+--     print(lpeg.match(p_special,"family man woman girl"))
+--      print(lpeg.match(p_special,"family man dark skin tone woman girl girl"))
+
+ -- local p_special = P { "all",
+ --     all    = Cs (V("family") + V("couple") + V("kiss")),
+ --     family = C("family")            * space^1 * V("parent")^-2 * V("child")^-2,
+ --     couple = P("couple with heart") * space^1 * V("parent") * Cc(heart) * V("parent"),
+ --     kiss   = P("kiss")              * space^1 * V("parent") * Cc(kiss) * V("parent"),
+ --     parent = parent * V("rest"),
+ --     child  = child  * V("rest"),
+ --     rest   = (space * skin)^0/"" * ((space^1/zwj) + P(-1)),
+ -- }
+
+    -- maybe characters.emoji.toutf
+
+    local emoji      = { }
+    characters.emoji = emoji
+
+    function emoji.resolve(name)
+        if not hash then
+            data, hash = load()
+        end
+        local h = hash[name]
+        if h then
+            return h
+        end
+        -- expand shortcuts
+        local name = lpegmatch(pattern_0,name) or name
+        -- expand some 25K variants
+        local h = lpegmatch(p_special,name)
+        if h then
+            return h
+        end
+        -- simplify
+        local s = lpegmatch(pattern_1,name)
+        local h = hash[s]
+        if h then
+            return h
+        end
+        -- simplify
+        local s = lpegmatch(pattern_2,name)
+        local h = hash[s]
+        if h then
+            return h
+        end
+    end
+
+    function emoji.known()
+        if not hash then
+            data, hash = load()
+        end
+        return hash, data
+    end
+
+    function emoji.compact(name)
+        return lpegmatch(pattern_4,name) or name
+    end
+
 end
 
 -- code moved to char-tex.lua

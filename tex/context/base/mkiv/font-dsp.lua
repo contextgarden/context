@@ -889,7 +889,13 @@ local function readlookuparray(f,noflookups,nofcurrent)
             if index > length then
                 length = index
             end
-            lookups[index] = readushort(f) + 1
+            local lookup = readushort(f) + 1
+            local list   = lookups[index]
+            if list then
+                list[#list+1] = lookup
+            else
+                lookups[index] = { lookup }
+            end
         end
         for index=1,length do
             if not lookups[index] then
@@ -2185,50 +2191,63 @@ do
                             report_issue(i,what,sequence,"empty")
                             rule.lookups = nil
                         else
-                            -- we can have holes in rlookups
+                            -- we can have holes in rlookups flagged false and we can have multiple lookups
+                            -- applied (first time seen in seguemj)
                             local length = #rlookups
                             for index=1,length do
-                                local lookupid = rlookups[index]
-                                if lookupid then
-                                    local h = sublookuphash[lookupid]
-                                    if not h then
-                                        -- here we have a lookup that is used independent as well
-                                        -- as in another one
-                                        local lookup = lookups[lookupid]
-                                        if lookup then
-                                            local d = lookup.done
-                                            if d then
-                                                nofsublookups = nofsublookups + 1
-                                             -- report("registering %i as sublookup %i",lookupid,nofsublookups)
-                                                h = {
-                                                    index     = nofsublookups, -- handy for tracing
-                                                    name      = f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
-                                                    derived   = true,          -- handy for tracing
-                                                    steps     = d.steps,
-                                                    nofsteps  = d.nofsteps,
-                                                    type      = d.lookuptype or "gsub_single", -- todo: check type
-                                                    markclass = d.markclass or nil,
-                                                    flags     = d.flags,
-                                                 -- chain     = d.chain,
-                                                }
-                                                sublookuplist[nofsublookups] = copy(h) -- we repack later
-                                                sublookuphash[lookupid] = nofsublookups
-                                                sublookupcheck[lookupid] = 1
-                                                h = nofsublookups
+                                local lookuplist = rlookups[index]
+                                if lookuplist then
+                                    local length   = #lookuplist
+                                    local found    = { }
+                                    local noffound = 0
+                                    for index=1,length do
+                                        local lookupid = lookuplist[index]
+                                        if lookupid then
+                                            local h = sublookuphash[lookupid]
+                                            if not h then
+                                                -- here we have a lookup that is used independent as well
+                                                -- as in another one
+                                                local lookup = lookups[lookupid]
+                                                if lookup then
+                                                    local d = lookup.done
+                                                    if d then
+                                                        nofsublookups = nofsublookups + 1
+                                                     -- report("registering %i as sublookup %i",lookupid,nofsublookups)
+                                                        h = {
+                                                            index     = nofsublookups, -- handy for tracing
+                                                            name      = f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
+                                                            derived   = true,          -- handy for tracing
+                                                            steps     = d.steps,
+                                                            nofsteps  = d.nofsteps,
+                                                            type      = d.lookuptype or "gsub_single", -- todo: check type
+                                                            markclass = d.markclass or nil,
+                                                            flags     = d.flags,
+                                                         -- chain     = d.chain,
+                                                        }
+                                                        sublookuplist[nofsublookups] = copy(h) -- we repack later
+                                                        sublookuphash[lookupid] = nofsublookups
+                                                        sublookupcheck[lookupid] = 1
+                                                        h = nofsublookups
+                                                    else
+                                                        report_issue(i,what,sequence,"missing")
+                                                        rule.lookups = nil
+                                                        break
+                                                    end
+                                                else
+                                                    report_issue(i,what,sequence,"bad")
+                                                    rule.lookups = nil
+                                                    break
+                                                end
                                             else
-                                                report_issue(i,what,sequence,"missing")
-                                                rule.lookups = nil
-                                                break
+                                                sublookupcheck[lookupid] = sublookupcheck[lookupid] + 1
                                             end
-                                        else
-                                            report_issue(i,what,sequence,"bad")
-                                            rule.lookups = nil
-                                            break
+                                            if h then
+                                                noffound = noffound + 1
+                                                found[noffound] = h
+                                            end
                                         end
-                                    else
-                                        sublookupcheck[lookupid] = sublookupcheck[lookupid] + 1
                                     end
-                                    rlookups[index] = h or false
+                                    rlookups[index] = noffound > 0 and found or false
                                 else
                                     rlookups[index] = false
                                 end
@@ -3388,7 +3407,7 @@ function readers.fvar(f,fontdata,specification)
                 default = readfixed(f), -- idem
                 maximum = readfixed(f), -- idem
                 flags   = readushort(f),
-                name    = lower(extras[readushort(f)]),
+                name    = lower(extras[readushort(f)] or "bad name"),
             }
             local n = sizeofaxis - 20
             if n > 0 then

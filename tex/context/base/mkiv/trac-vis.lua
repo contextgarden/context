@@ -575,7 +575,8 @@ local ruledbox do
             local baseline, baseskip
             if dp ~= 0 and ht ~= 0 then
                 if wd > 20*linewidth then
-                    baseline = b_cache[size]
+                    local targetsize = wd - size
+                    baseline = b_cache[targetsize]
                     if not baseline then
                         -- due to an optimized leader color/transparency we need to set the glue node in order
                         -- to trigger this mechanism
@@ -585,8 +586,8 @@ local ruledbox do
                         setleader(baseline,leader)
                         setsubtype(baseline,cleaders_code)
                         setlisttransparency(baseline,c_text)
-                        baseline = hpack_nodes(baseline,wd-size)
-                        b_cache[size] = baseline
+                        baseline = hpack_nodes(baseline,targetsize)
+                        b_cache[targetsize] = baseline
                     end
                     baseline = copy_list(baseline)
                     baseskip = new_kern(-wd+linewidth)

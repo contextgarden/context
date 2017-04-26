@@ -575,7 +575,7 @@ local function inject_kerns_only(head,where)
                     -- left|glyph|right
                     local leftkern = i.leftkern
                     if leftkern and leftkern ~= 0 then
-                        insert_node_before(head,current,newkern(leftkern))
+                        head = insert_node_before(head,current,newkern(leftkern))
                     end
                 end
                 if prevdisc then
@@ -1007,7 +1007,7 @@ local function inject_everything(head,where)
                         ox = px - pn.markx
                     end
                 else
-                    ox = px - pn.markx
+                    ox = px - pn.markx - rightkern -- seguiemj needs the rightkern
                 end
             end
         else
@@ -1032,6 +1032,7 @@ local function inject_everything(head,where)
                     -- -- we're too late anyway as kerns are already injected so
                     -- -- we do it the ugly way (no checking if the previous is
                     -- -- already a kern) .. maybe we should fix the font instead
+                    -- hm, no head ?
                     insert_node_before(n,n,newkern(-wn))
                     insert_node_after(n,n,newkern(-wn))
                 end
@@ -1116,7 +1117,7 @@ local function inject_everything(head,where)
                         -- left|glyph|right
                         local leftkern = i.leftkern
                         if leftkern and leftkern ~= 0 then
-                            insert_node_before(head,current,newkern(leftkern))
+                            head = insert_node_before(head,current,newkern(leftkern))
                         end
                         local rightkern = i.rightkern
                         if rightkern and rightkern ~= 0 then

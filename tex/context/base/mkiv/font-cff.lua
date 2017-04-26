@@ -1831,6 +1831,9 @@ do
             r = r + 1
             result[r] = c_endchar
             local stream = concat(result)
+         -- if trace_charstrings then
+         --     report("vdata: %s",stream)
+         -- end
             if glyph then
                 glyph.stream  = stream
             else
@@ -2082,7 +2085,9 @@ local function readnoselect(f,fontdata,data,glyphs,doshapes,version,streams)
     local dictionary   = dictionaries[1]
     readglobals(f,data)
     readcharstrings(f,data,version)
-    if version ~= "cff2" then
+    if version == "cff2" then
+        dictionary.charset = nil
+    else
         readencodings(f,data)
         readcharsets(f,data,dictionary)
     end
@@ -2248,11 +2253,17 @@ function readers.cff2(f,fontdata,specification)
         --
         parsedictionaries(data,dictionaries,"cff2")
         --
-        local storeoffset = dictionaries[1].vstore + data.header.offset + 2 -- cff has a preceding size field
-        local regions, deltas = readers.helpers.readvariationdata(f,storeoffset,factors)
-        --
-        data.regions  = regions
-        data.deltas   = deltas
+        local offset = dictionaries[1].vstore
+        if offset > 0 then
+            local storeoffset = dictionaries[1].vstore + data.header.offset + 2 -- cff has a preceding size field
+            local regions, deltas = readers.helpers.readvariationdata(f,storeoffset,factors)
+            --
+            data.regions  = regions
+            data.deltas   = deltas
+        else
+            data.regions  = { }
+            data.deltas   = { }
+        end
         data.factors  = specification.factors
         --
         local cid = data.dictionaries[1].cid

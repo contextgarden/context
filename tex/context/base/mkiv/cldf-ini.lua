@@ -1450,11 +1450,19 @@ do
     local p_texescape = patterns.texescape
 
     function context.escaped(s)
-        return context(lpegmatch(p_texescape,s) or s)
+        if s then
+            context(lpegmatch(p_texescape,s) or s)
+        else
+         -- context("")
+        end
     end
 
     function context.escape(s)
-        return lpegmatch(p_texescape,s) or s or ""
+        if s then
+            return lpegmatch(p_texescape,s) or s
+        else
+            return ""
+        end
     end
 
 end

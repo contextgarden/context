@@ -1,0 +1,331 @@
+%D \module
+%D   [      file=s-fonts-emoji,
+%D        version=2017.04.26,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Emoji Helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startluacode
+moduledata.emoji    = moduledata.emoji or { }
+
+local find          = string.find
+local sortedhash    = table.sortedhash
+local utfvalues     = string.utfvalues
+
+local context       = context
+
+local traverse_id   = node.traverse_id
+local glyph_code    = nodes.nodecodes.glyph
+
+local descriptions  = fonts.hashes.descriptions
+local checkedemoji  = fonts.symbols.emoji.checked
+local compactemoji  = characters.emoji.compact
+local resolvedemoji = characters.emoji.resolve
+local knownemoji    = characters.emoji.known
+
+local function emojisnippets(name)
+    local d = descriptions[true]
+    if d then
+        local e = resolvedemoji(name)
+        local s = { }
+        for b in utfvalues(e) do
+            if not (b == 0x200D or (b >= 0x1F3FB and b <= 0x1F3FF)) then
+                local t = { }
+                s[#s+1] = t
+                local c = d[b]
+                if c then
+                    c = c.colors
+                    if c then
+                        for i=1,#c do
+                            t[#t+1] = c[i].slot
+                        end
+                    else
+                        t[#t+1] = b
+                    end
+                end
+            end
+        end
+        return #s > 0 and s or nil
+    end
+end
+
+local function emojiglyphs(name)
+    local d = descriptions[true]
+    if d then
+        local e = checkedemoji(name)
+        local s = { }
+        for n in traverse_id(glyph_code,e) do
+            local b = n.char
+            if not (b == 0x200D or (b >= 0x1F3FB and b <= 0x1F3FF)) then
+                local t = { }
+                s[#s+1] = t
+                local c = d[b]
+                if c then
+                    c = c.colors
+                    if c then
+                        for i=1,#c do
+                            t[#t+1] = c[i].slot
+                        end
+                    else
+                        t[#t+1] = b
+                    end
+                end
+            end
+        end
+        nodes.flush_list(e)
+        return #s > 0 and s or nil
+    end
+end
+
+characters.emojisnippets  = emojisnippets
+fonts.symbols.emojiglyphs = emojiglyphs
+
+function moduledata.emoji.showsnippets(name)
+    local s = emojisnippets(name)
+    if s then
+        local ni = #s
+        for i=1,ni do
+            local si = s[i]
+            local nj = #si
+            for j=1,nj do
+                context.WrapEmojiSnippet(i,ni,j,nj,si[j])
+            end
+        end
+    end
+end
+
+function moduledata.emoji.showglyphs(name)
+    local s = emojiglyphs(name)
+    if s then
+        local ni = #s
+        for i=1,ni do
+            local si = s[i]
+            local nj = #si
+            for j=1,nj do
+                context.WrapEmojiSnippet(i,ni,j,nj,si[j])
+            end
+        end
+    end
+end
+
+function moduledata.emoji.showknown(list)
+    local hash = knownemoji()
+    local size = 0
+    if list then
+        list = utilities.parsers.settings_to_array(list)
+        size = #list
+        if size == 0 then
+            list = false
+        else
+            for i=1,size do
+                list[i] = string.escapedpattern(list[i])
+            end
+        end
+    end
+    for k, v in sortedhash(hash) do
+        local okay = true
+        if find(compactemoji(k),"%-s%-t") then
+            okay = false
+        elseif list then
+            okay = false
+            for i=1,size do
+                if find(k,list[i]) then
+                    okay = true
+                    break
+                end
+            end
+        end
+        if okay then
+            context("\\WrapEmojiPlusText{%s}{%!tex!}",k,v)
+        end
+    end
+end
+
+local function convert(t,k)
+    local v = { }
+    for i=1,#k do
+        local p = k[i]
+    end
+    return v
+end
+
+function moduledata.emoji.showpalette(list)
+    local colorpalettes = fonts.hashes.resources[true].colorpalettes
+    if colorpalettes then
+        if list then
+            list = utilities.parsers.settings_to_hash(list)
+            if not next(list) then
+                list = false
+            end
+        end
+        context.starttabulate { "||lp|" }
+        for i=1,#colorpalettes do
+            if not list or list[tostring(i)] then
+                local palette = colorpalettes[i]
+                context.BC()
+                context.type(i)
+                context.NC()
+                for j=1,#palette do
+                    local p = palette[j]
+                    local r, g, b = p[1]/255, p[2]/255, p[3]/255
+                    local s = attributes.colors.rgbtogray(r,g,b)
+                    context.WrapEmojiColorEntry(j,s,r,g,b)
+                end
+                context.NC()
+                context.NR()
+            end
+        end
+        context.stoptabulate()
+    end
+end
+
+\stopluacode
+
+\unexpanded\def\WrapEmojiPlusText#1#2%
+  {\dontleavehmode\hbox\bgroup
+     \tttf % determines em
+     \hpack to 8\emwidth{\setfontid\scratchcounter#2\hss}%
+     \hpack to 8\emwidth{\setfontid\scratchcounter\checkedemoji{#1}\hss}%
+     #1%
+   \egroup\par}
+
+\unexpanded\def\ShowEmoji
+  {\dosingleempty\doShowEmoji}
+
+\unexpanded\def\doShowEmoji[#1]%
+  {\begingroup
+   \scratchcounter\fontid\font
+   \ctxlua{moduledata.emoji.showknown([[#1]])}%
+   \endgroup}
+
+\unexpanded\def\WrapEmojiSnippet#1#2#3#4#5%
+  {\ifnum#3=\plusone
+     \par
+     \dontleavehmode\ruledhbox\bgroup
+   \fi
+   \ruledhbox to 2\emwidth{\hss\char#5\hss}%
+   \ifnum#3=#4\relax
+     \egroup
+     \par
+   \fi}
+
+\unexpanded\def\ShowEmojiSnippets[#1]%
+  {\ctxlua{moduledata.emoji.showsnippets("#1")}}
+
+\unexpanded\def\ShowEmojiGlyphs[#1]%
+  {\ctxlua{moduledata.emoji.showglyphs("#1")}}
+
+\unexpanded\def\OverlayEmojiSnippet#1#2#3#4#5%
+  {\setbox\scratchbox\hbox{\color[trace:#3]{\char#5}}%
+   \ifnum#3=\plusone
+     \ifnum#1=\plusone
+       \dontleavehmode\ruledhbox\bgroup
+     \fi
+     \hbox\bgroup
+   \else
+     \hskip-\wd\scratchbox
+   \fi
+   \box\scratchbox
+   \ifnum#3=#4\relax
+     \egroup
+     \ifnum#1=#2\relax
+       \egroup
+     \fi
+   \fi}
+
+\unexpanded\def\ShowEmojiSnippetsOverlay[#1]%
+  {\begingroup
+   \let\WrapEmojiSnippet\OverlayEmojiSnippet
+   \ctxlua{moduledata.emoji.showsnippets("#1")}%
+   \endgroup}
+
+\unexpanded\def\WrapEmojiColorEntry#1#2#3#4#5%
+  {\dontleavehmode\hpack\bgroup
+     \definecolor
+        [dummy]
+        [r=#3,g=#4,b=#5]%
+     \backgroundline
+        [dummy]
+        {\setbox\scratchbox\hpack to 2\emwidth{\hss\ifdim#2pt<.5pt\white\fi\ttx#1\hss}%
+         \ht\scratchbox.8\strutht\dp\scratchbox.6\strutdp\box\scratchbox}%
+   \egroup
+   \quad}
+
+\unexpanded\def\ShowEmojiPalettes
+  {\dosingleempty\doShowEmojiPalettes}
+
+\unexpanded\def\doShowEmojiPalettes[#1]%
+  {\ctxlua{moduledata.emoji.showpalette([[#1]])}}
+
+% \definefontfeature[bandw:overlay][ccmp=yes,dist=yes]
+% \definefontfeature[color:overlay][ccmp=yes,dist=yes,colr=yes]
+% %definefontfeature[bandw:svg]    [ccmp=yes,dist=yes]
+% \definefontfeature[color:svg]    [ccmp=yes,dist=yes,svg=yes]
+% %definefontfeature[bandw:bitmap] [ccmp=yes,dist=yes,sbix=yes]
+% \definefontfeature[color:bitmap] [ccmp=yes,dist=yes,sbix=yes]
+
+\definefontfeature[seguiemj-cl][color:overlay]
+\definefontfeature[seguiemj-bw][bandw:overlay]
+
+% \definefont[MyEmoji] [seguiemj*seguiemj-bw]
+% \definefont[MyEmoji] [seguiemj*seguiemj-cl]
+% \definefont[MyEmoji] [emojionecolor-svginot*default,svg]
+% \definefont[MyEmoji] [emojionemozilla*default,overlay]
+% \definefont[MyEmoji] [applecoloremoji*default,bitmap]
+
+% \definecolor[trace:1][s=0,t=.5,a=1]
+% \definecolor[trace:2][s=0,t=.5,a=1]
+% \definecolor[trace:3][s=0,t=.5,a=1]
+% \definecolor[trace:4][s=0,t=.5,a=1]
+% \definecolor[trace:5][s=0,t=.5,a=1]
+% \definecolor[trace:6][s=0,t=.5,a=1]
+
+\continueifinputfile{s-fonts-emoji.mkiv}
+
+\starttext
+
+\start
+
+\definedfont[seguiemj*seguiemj-cl]
+
+\ShowEmojiSnippets
+  [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+
+\ShowEmojiSnippetsOverlay
+  [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+
+\ShowEmojiGlyphs
+  [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+
+\page
+
+\ShowEmoji[^man]
+
+\page
+
+\definecolor[emoji-base][r=.4]
+\definecolor[emoji-gray][s=.5,t=.5,a=1]
+
+\definefontcolorpalette
+  [emoji-gray]
+  [emoji-base,emoji-gray]
+
+\definefontfeature[seguiemj-cl][ccmp=yes,dist=yes,colr=emoji-gray]
+
+\definedfont[seguiemj*seguiemj-cl]
+
+\ShowEmoji
+
+\page
+
+\ShowEmojiPalettes[1]
+
+\stop
+
+\stoptext

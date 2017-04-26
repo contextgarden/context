@@ -1943,16 +1943,19 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
          --     -- bad rules
          -- end
             local chainlookup = chainlookups[1]
-            local chainkind   = chainlookup.type
-            local chainproc   = chainprocs[chainkind]
-            if chainproc then
-                local ok
-                head, start, ok = chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,1)
-                if ok then
-                    done = true
+            for j=1,#chainlookup do
+                local chainstep = chainlookup[j]
+                local chainkind = chainstep.type
+                local chainproc = chainprocs[chainkind]
+                if chainproc then
+                    local ok
+                    head, start, ok = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,1)
+                    if ok then
+                        done = true
+                    end
+                else
+                    logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
                 end
-            else
-                logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
             end
          else
             -- See LookupType 5: Contextual Substitution Subtable. Now it becomes messy. The
@@ -1963,6 +1966,8 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
             --
             -- U+1105 U+119E U+1105 U+119E : sourcehansansklight: script=hang ccmp=yes
             --
+            -- Even worse are these family emoji shapes as they can have multiple lookups
+            -- per slot (probably only for gpos).
             local i = 1
             while start do
                 if skipped then
@@ -1982,22 +1987,25 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
                 end
                 local chainlookup = chainlookups[i]
                 if chainlookup then
-                    local chainkind = chainlookup.type
-                    local chainproc = chainprocs[chainkind]
-                    if chainproc then
-                        local ok, n
-                        head, start, ok, n = chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,i)
-                        -- messy since last can be changed !
-                        if ok then
-                            done = true
-                            if n and n > 1 and i + n > nofchainlookups then
-                                -- this is a safeguard, we just ignore the rest of the lookups
-                                break
+                    for j=1,#chainlookup do
+                        local chainstep = chainlookup[j]
+                        local chainkind = chainstep.type
+                        local chainproc = chainprocs[chainkind]
+                        if chainproc then
+                            local ok, n
+                            head, start, ok, n = chainproc(head,start,last,dataset,sequence,chainstep,rlmode,i)
+                            -- messy since last can be changed !
+                            if ok then
+                                done = true
+                                if n and n > 1 and i + n > nofchainlookups then
+                                    -- this is a safeguard, we just ignore the rest of the lookups
+                                    break
+                                end
                             end
+                        else
+                            -- actually an error
+                            logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
                         end
-                    else
-                        -- actually an error
-                        logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
                     end
                 end
                 i = i + 1

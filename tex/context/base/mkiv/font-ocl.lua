@@ -19,7 +19,6 @@ local otf        = fonts.handlers.otf
 
 local f_color    = formatters["pdf:direct:%f %f %f rg"]
 local f_gray     = formatters["pdf:direct:%f g"]
-local s_black    = "pdf:direct:0 g"
 
 if context then
 
@@ -48,32 +47,40 @@ end
 
 local sharedpalettes = { }
 
+local hash = table.setmetatableindex(function(t,k)
+    local v = { "special", k }
+    t[k] = v
+    return v
+end)
+
 if context then
 
-    local graytorgb = attributes.colors.graytorgb
-    local cmyktorgb = attributes.colors.cmyktorgb
+    local colors          = attributes.list[attributes.private('color')] or { }
+    local transparencies  = attributes.list[attributes.private('transparency')] or { }
 
     function otf.registerpalette(name,values)
         sharedpalettes[name] = values
         for i=1,#values do
             local v = values[i]
-            local r, g, b
-            local s = v.s
-            if s then
-                r, g, b = graytorgb(s)
+            local c = nil
+            local t = nil
+            if type(v) == "table" then
+                c = colors.register(name,"rgb",
+                    max(round((v.r or 0)*255),255)/255,
+                    max(round((v.g or 0)*255),255)/255,
+                    max(round((v.b or 0)*255),255)/255
+                )
             else
-                local c, m, y, k = v.c, v.m, v.y, v.k
-                if c or m or y or k then
-                    r, g, b = cmyktorgb(c or 0,m or 0,y or 0,k or 0)
-                else
-                    r, g, b = v.r, v.g, v.b
-                end
+                c = colors[v]
+                t = transparencies[v]
             end
-            values[i] = {
-                max(r and round(r*255) or 0,255),
-                max(g and round(g*255) or 0,255),
-                max(b and round(b*255) or 0,255)
-            }
+            if c and t then
+                values[i] = hash["pdf:direct:" .. lpdf.color(1,c) .. " " .. lpdf.transparency(t)]
+            elseif c then
+                values[i] = hash["pdf:direct:" .. lpdf.color(1,c)]
+            elseif t then
+                values[i] = hash["pdf:direct:" .. lpdf.color(1,t)]
+            end
         end
     end
 
@@ -83,23 +90,51 @@ else -- for generic
         sharedpalettes[name] = values
         for i=1,#values do
             local v = values[i]
-            values[i] = {
-                max(round((v.r or 0)*255),255),
-                max(round((v.g or 0)*255),255),
-                max(round((v.b or 0)*255),255)
-            }
+            values[i] = hash[f_color(
+                max(round((v.r or 0)*255),255)/255,
+                max(round((v.g or 0)*255),255)/255,
+                max(round((v.b or 0)*255),255)/255
+            )]
         end
     end
 
 end
 
+-- We need to force page first because otherwise the q's get outside
+-- the font switch and as a consequence the next character has no font
+-- set (well, it has: the preceding one). As a consequence these fonts
+-- are somewhat inefficient as each glyph gets the font set. It's a
+-- side effect of the fact that a font is handled when a character gets
+-- flushed.
+
+local function convert(t,k)
+    local v = { }
+    for i=1,#k do
+        local p = k[i]
+        local r, g, b = p[1], p[2], p[3]
+        if r == g and g == b then
+            v[i] = hash[f_gray(r/255)]
+        else
+            v[i] = hash[f_color(r/255,g/255,b/255)]
+        end
+    end
+    t[k] = v
+    return v
+end
+
 local function initializecolr(tfmdata,kind,value) -- hm, always value
     if value then
-        local palettes = tfmdata.resources.colorpalettes
+        local resources = tfmdata.resources
+        local palettes  = resources.colorpalettes
         if palettes then
             --
-            local palette = sharedpalettes[value] or palettes[tonumber(value) or 1] or palettes[1] or { }
-            local classes = #palette
+            local converted = resources.converted
+            if not converted then
+                converted = table.setmetatableindex(convert)
+                resources.converted = converted
+            end
+            local colorvalues = sharedpalettes[value] or converted[palettes[tonumber(value) or 1] or palettes[1]] or { }
+            local classes     = #colorvalues
             if classes == 0 then
                 return
             end
@@ -107,24 +142,22 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             local characters   = tfmdata.characters
             local descriptions = tfmdata.descriptions
             local properties   = tfmdata.properties
-            local colorvalues  = { }
             --
             properties.virtualized = true
             tfmdata.fonts = {
                 { id = 0 }
             }
-            --
-            for i=1,classes do
-                local p = palette[i]
-                local r, g, b = p[1], p[2], p[3]
-                if r == g and g == b then
-                    colorvalues[i] = { "special", f_gray(r/255) }
-                else
-                    colorvalues[i] = { "special", f_color(r/255,g/255,b/255) }
-                end
-            end
+            local widths = table.setmetatableindex(function(t,k)
+                local v = { "right", -k }
+                t[k] = v
+                return v
+            end)
             --
             local getactualtext = otf.getactualtext
+            local default       = colorvalues[#colorvalues]
+            local endactual     = nil
+            local start         = { "special", "pdf:page:q" }
+            local stop          = { "special", "pdf:raw:Q" }
             --
             for unicode, character in next, characters do
                 local description = descriptions[unicode]
@@ -134,31 +167,30 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                         local b, e = getactualtext(tounicode(characters[unicode].unicode or 0xFFFD))
                         local w = character.width or 0
                         local s = #colorlist
+                        local goback = w ~= 0 and widths[w] or nil
                         local t = {
-                            -- We need to force page first because otherwise the q's get outside
-                            -- the font switch and as a consequence the next character has no font
-                            -- set (well, it has: the preceding one). As a consequence these fonts
-                            -- are somewhat inefficient as each glyph gets the font set. It's a
-                            -- side effect of the fact that a font is handled when a character gets
-                            -- flushed.
-                            { "special", "pdf:page:q" },
+                            start,
                             { "special", "pdf:raw:" .. b }
-                            -- This is not ok:
-                         -- { "special", "pdf:direct:q " .. b },
                         }
                         local n = #t
+                        local l = nil
                         for i=1,s do
                             local entry = colorlist[i]
-                            n = n + 1 t[n] = colorvalues[entry.class] or s_black
+                            local v = colorvalues[entry.class] or default
+                            if v and l ~= v then
+                                n = n + 1 t[n] = v
+                                l = v
+                            end
                             n = n + 1 t[n] = { "char", entry.slot }
-                            if s > 1 and i < s and w ~= 0 then
-                                n = n + 1 t[n] = { "right", -w }
+                            if s > 1 and i < s and goback then
+                                n = n + 1 t[n] = goback
                             end
                         end
-                        n = n + 1 t[n] = { "special", "pdf:page:" .. e }
-                        n = n + 1 t[n] = { "special", "pdf:raw:Q" }
-                        -- This is not ok:
-                     -- n = n + 1 t[n] = { "special", "pdf:direct:" .. e .. " Q"}
+                        if not endactual then
+                            endactual = { "special", "pdf:page:" .. e } -- saves tables
+                        end
+                        n = n + 1 t[n] = endactual
+                        n = n + 1 t[n] = stop
                         character.commands = t
                     end
                 end

@@ -439,7 +439,10 @@ function step_tracers.check(head)
         local n = copy_node_list(h)
         freeze(n,"check")
         injections.keepcounts(n) -- one-time
-        injections.handler(n,"trace")
+        local l = injections.handler(n,"trace")
+        if l then -- hm, can be false
+            n = tonut(l)
+        end
         protect_glyphs(n)
         collection[1] = n
     end
@@ -453,7 +456,10 @@ function step_tracers.register(head)
             local n = copy_node_list(h)
             freeze(n,"register")
             injections.keepcounts(n) -- one-time
-            injections.handler(n,"trace")
+            local l = injections.handler(n,"trace")
+            if l then -- hm, can be false
+                n = tonut(l)
+            end
             protect_glyphs(n)
             collection[nc] = n
         end

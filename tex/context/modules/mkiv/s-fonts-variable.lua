@@ -28,7 +28,6 @@ function moduledata.fonts.variable.showvariations(specification)
     if not fontfile then
         return
     end
-
     local id, fontdata = fonts.definers.define {
         name = fontfile,
      -- size = fontsize,
@@ -36,7 +35,7 @@ function moduledata.fonts.variable.showvariations(specification)
     }
 
     if not fontdata then
-        context("no font with name %a found",fontname)
+        context.type("no font with name %a found",fontname)
     end
 
     local resources = fontdata.resources
@@ -45,11 +44,11 @@ function moduledata.fonts.variable.showvariations(specification)
         return
     end
 
-    local variabledata = resources.variabledata
+    local variabledata = resources.variabledata or { }
 
-    if not variabledata then
-        return
-    end
+--     if not variabledata then
+--         return
+--     end
 
     context.starttitle { title = fontdata.shared.rawdata.metadata.fullname }
 

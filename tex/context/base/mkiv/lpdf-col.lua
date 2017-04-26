@@ -421,7 +421,7 @@ end
 
 -- transparency
 
-local transparencies = { [0] =
+local pdftransparencies = { [0] =
     pdfconstant("Normal"),
     pdfconstant("Normal"),
     pdfconstant("Multiply"),
@@ -453,7 +453,7 @@ function registrations.transparency(n,a,t)
               Type = pdf_extgstate,
               ca   = 1,
               CA   = 1,
-              BM   = transparencies[1],
+              BM   = pdftransparencies[1],
               AIS  = false,
             }
         local m = pdfflushobject(d)
@@ -468,7 +468,7 @@ function registrations.transparency(n,a,t)
               Type = pdf_extgstate,
               ca   = tonumber(t),
               CA   = tonumber(t),
-              BM   = transparencies[tonumber(a)] or transparencies[0],
+              BM   = pdftransparencies[tonumber(a)] or pdftransparencies[0],
               AIS  = false,
             }
         local m = pdfflushobject(d)

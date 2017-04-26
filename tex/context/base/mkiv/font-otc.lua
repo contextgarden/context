@@ -446,10 +446,16 @@ local function addfeature(data,feature,specifications)
                         local t = type(v)
                         if t == "table" then
                             -- already ok
+                            for i=1,#v do
+                                local vi = v[i]
+                                if type(vi) ~= "table" then
+                                    v[i] = { vi }
+                                end
+                            end
                         elseif t == "number" then
                             local lookup = sublookups[v]
                             if lookup then
-                                lookups[k] = lookup
+                                lookups[k] = { lookup }
                                 if not subtype then
                                     subtype = lookup.type
                                 end

@@ -17,7 +17,7 @@ local concat = table.concat
 local write_nl = texio.write_nl
 
 local otfversion  = 2.826
-local otlversion  = 3.028
+local otlversion  = 3.029
 
 local helpinfo = [[
 <?xml version="1.0"?>

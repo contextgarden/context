@@ -527,8 +527,8 @@ local function reviver(data,n)
     end
 end
 
-setmetatableindex(transparencies, extender)
-setmetatableindex(transparencies.data, reviver) -- register if used
+setmetatableindex(transparencies,extender)
+setmetatableindex(transparencies.data,reviver) -- register if used
 
 -- check if there is an identity
 

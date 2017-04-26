@@ -555,7 +555,7 @@ local reserved = table.tohash { -- intercept a language inconvenience: no reserv
 --     return nil
 -- end
 
-local function is_simple_table(t) -- also used in util-tab so maybe public
+local function is_simple_table(t,hexify) -- also used in util-tab so maybe public
     local nt = #t
     if nt > 0 then
         local n = 0
@@ -699,7 +699,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     if next(v) == nil then
                         handle(format("%s {},",depth))
                     elseif inline then -- and #t > 0
-                        local st = is_simple_table(v)
+                        local st = is_simple_table(v,hexify)
                         if st then
                             handle(format("%s { %s },",depth,concat(st,", ")))
                         else
@@ -785,7 +785,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         handle(format("%s [%q]={},",depth,k))
                     end
                 elseif inline then
-                    local st = is_simple_table(v)
+                    local st = is_simple_table(v,hexify)
                     if st then
                         if tk == "number" then
                             if hexify then

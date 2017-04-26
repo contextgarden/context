@@ -52,7 +52,9 @@ local split, splitlines, strip = string.split, string.splitlines, string.strip
 local are_equal = table.are_equal
 local tonumber, tostring, rawget = tonumber, tostring, rawget
 local lpegmatch = lpeg.match
+local P, C, S, R, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
 local formatters = string.formatters
+local utfchar = utf.char
 
 local report = application.report
 
@@ -73,7 +75,7 @@ local sparse = false
 local split_space_table = lpeg.tsplitat(" ")
 local split_space_two   = lpeg.splitat (" ")
 local split_range_two   = lpeg.splitat ("..")
-local split_colon_table = lpeg.tsplitat(lpeg.P(" ")^0 * lpeg.P(";") * lpeg.P(" ")^0)
+local split_colon_table = lpeg.tsplitat(P(" ")^0 * P(";") * P(" ")^0)
 
 local skipped = {
     [0x002C6] = true, -- MODIFIER LETTER CIRCUMFLEX ACCENT
@@ -571,6 +573,91 @@ function scripts.unicode.extras() -- old code
     end
 end
 
+do
+
+    local space       = P(" ")
+    local spaces      = space^0
+    local semicolon   = P(";")
+    local hash        = P("#")
+    local newline     = S("\n\r")
+
+    local unicode     = Cs(R("09","AF")^1)/function(n) return tonumber(n,16) end
+                      * spaces
+    local components  = Ct (unicode^1)
+
+ -- local rubish_a    = semicolon
+ --                   * spaces
+ --                   * P("Emoji_ZWJ_Sequence")
+ --                   * spaces
+ --                   * semicolon
+ --                   * spaces
+ -- local description = C((1 - (spaces * (hash+newline)))^1)
+ -- local rubish_b    = (1-newline)^0
+ --                   * newline^1
+ --
+ -- local pattern_1   = Ct ( (
+ --     Cf ( Ct("") *
+ --         Cg (Cc("components") * components)
+ --       * rubish_a
+ --       * Cg (Cc("description") * description )
+ --       * rubish_b
+ --     , rawset)
+ --     + P(1) )^1 )
+
+    local rubish_a    = semicolon
+                      * spaces
+                      * P("non-")^0 * P("fully-qualified")
+                      * spaces
+                      * hash
+                      * spaces
+    local textstring  = C((1 - space)^1)
+                      * spaces
+    local description = ((1 - (spaces * newline))^1) / string.lower
+    local rubish_b    = (1-newline)^0
+                      * newline^1
+
+    local pattern_2   = Ct ( (
+        Cf ( Ct("") *
+            Cg (Cc("components") * components)
+          * rubish_a
+          * Cg (Cc("textstring") * textstring)
+          * Cg (Cc("description") * description )
+          * rubish_b
+        , rawset)
+        + P(1) )^1 )
+
+    function scripts.unicode.emoji(filename)
+
+        local name = resolvers.findfile("emoji-test.txt") or ""
+        if name == "" then
+            return
+        end
+        local l = io.loaddata(name)
+        local t = lpegmatch(pattern_2,l)
+
+        local hash = { }
+
+        local replace = lpeg.replacer {
+            ["#"] = "hash",
+            ["*"] = "asterisk"
+        }
+
+        for i=1,#t do
+            local v = t[i]
+            local d = v.description
+            local k = lpegmatch(replace,d) or d
+            hash[k] = v.components
+        end
+        local new = table.serialize(hash,"return", { hexify = true })
+        local old = io.loaddata(resolvers.findfile("char-emj.lua"))
+        if old and old ~= "" then
+            new = gsub(old,"^(.-)return .*$","%1" .. new)
+        end
+        io.savedata(filename,new)
+    end
+
+end
+
 -- the action
 
 local filename = environment.files[1]
@@ -583,6 +670,7 @@ else
         scripts.unicode.update()
         scripts.unicode.extras()
         scripts.unicode.save("char-def-new.lua")
+        scripts.unicode.emoji("char-emj-new.lua")
     else
         report("nothing to do")
     end
