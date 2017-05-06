@@ -314,14 +314,14 @@
    \fi
    \endgroup}
 
-\unexpanded\def\spac_fake_next_line_old
-  {\par
-   \begingroup
-   \reseteverypar
-   \dontleavehmode\hpack to \zeropoint{\page_sides_anchor\hss\strut}% just a tracer
-   \vskip-\parskip
-   \vskip-\struttotal
-   \endgroup}
+% \unexpanded\def\spac_fake_next_line_old
+%   {\par
+%    \begingroup
+%    \reseteverypar
+%    \dontleavehmode\hpack to \zeropoint{\page_sides_anchor\hss\strut}% just a tracer
+%    \vskip-\parskip
+%    \vskip-\struttotal
+%    \endgroup}
 
 %let\fakenextstrutline\spac_fake_next_line_old
 \let\fakenextstrutline\spac_fake_next_line_new

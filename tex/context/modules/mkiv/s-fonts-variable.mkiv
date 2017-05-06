@@ -32,7 +32,11 @@
 
 \usemodule[art-01]
 
+\setuphead[section][before={\testpage[5]\blank[2*big]}]
+
 \starttext
+
+%     \showfontkerns
 
     \showfontvariations
       [font=file:adobevfprototype.otf]
@@ -43,7 +47,20 @@
 %     \showfontvariations
 %       [font=file:kairossansvariable.ttf]
 
+%     \showfontvariations
+%       [font=file:sourcecode-regular.otf]
+
+%     \showfontvariations
+%       [font=file:AmstelvarAlpha-VF.ttf]
+
     \showfontvariations
-      [font=file:sourcecode-regular.otf]
+      [font=file:DecoVar-VF.ttf]
+
+    % This is Adam's version of noto .. has lots of instances so it takes a while
+    % the first time. Looks like I do somethign wrong (bad a's and widths).
+
+%     \showfontvariations
+%       [font=file:VotoSerifGX.ttf]
+
 
 \stoptext

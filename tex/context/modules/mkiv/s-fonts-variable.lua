@@ -15,7 +15,7 @@ local lower       = string.lower
 local rep         = string.rep
 
 local context = context
-local NC, NR, HL = context.NC, context.NR, context.HL
+local NC, NR, HL, ML = context.NC, context.NR, context.HL, context.ML
 local bold, monobold, mono, formattedmono = context.bold, context.monobold, context.mono, context.formatted.mono
 
 function moduledata.fonts.variable.showvariations(specification)
@@ -36,6 +36,7 @@ function moduledata.fonts.variable.showvariations(specification)
 
     if not fontdata then
         context.type("no font with name %a found",fontname)
+        return
     end
 
     local resources = fontdata.resources
@@ -119,21 +120,24 @@ function moduledata.fonts.variable.showvariations(specification)
                     local tag       = axis.tag
                     local name      = axis.name
                     local variants  = axis.variants
-                    local haslimits = variants[1].maximum
-                    local haslink   = variants[1].link
-                    for i=1,#variants do
-                        local variant = variants[i]
-                        NC() monobold(tag)
-                        NC() context(name)
-                        NC() context(variant.name)
-                        NC() formattedmono("0x%04x",variant.flags)
-                        NC() context(variant.value)
-                        NC() context(variant.minimum or "-")
-                        NC() context(variant.maximum or "-")
-                        NC() context(variant.link or "-")
-                        NC() NR()
-                        tag  = nil
-                        name = nil
+                    local first     = variants and variants[1]
+                    if first then
+                        local haslimits = first.maximum
+                        local haslink   = first.link
+                        for i=1,#variants do
+                            local variant = variants[i]
+                            NC() monobold(tag)
+                            NC() context(name)
+                            NC() context(variant.name)
+                            NC() formattedmono("0x%04x",variant.flags)
+                            NC() context(variant.value)
+                            NC() context(variant.minimum or "-")
+                            NC() context(variant.maximum or "-")
+                            NC() context(variant.link or "-")
+                            NC() NR()
+                            tag  = nil
+                            name = nil
+                        end
                     end
                 end
             context.stoptabulate()
@@ -175,7 +179,16 @@ function moduledata.fonts.variable.showvariations(specification)
     local collected = { }
 
     context.startsubject { title = "instances" }
-        if instances and #list > 0 then
+        if not instances or #instances == 0 or not list or #list == 0 then
+            context("no instances defined, incomplete \\type{fvar}/\\type{stat} table")
+        else
+            if #axis > 8 then
+                context.start()
+                context.switchtobodyfont { "small" }
+                if #axis > 12 then
+                    context.switchtobodyfont { "small" }
+                end
+            end
             context.starttabulate { "||" .. rep("c|",#list) .. "|" }
                 NC()
                 for i=1,#list do
@@ -185,7 +198,7 @@ function moduledata.fonts.variable.showvariations(specification)
                 local fullname = lower(stripstring(fontdata.shared.rawdata.metadata.fullname))
                 formattedmono("%s*",fullname)
                 NC() NR()
-                HL()
+                ML()
                 for k=1,#instances do
                     local i = instances[k]
                     NC() monobold(i.subfamily)
@@ -205,8 +218,9 @@ function moduledata.fonts.variable.showvariations(specification)
                     NC() NR()
                 end
             context.stoptabulate()
-        else
-            context("no instances defined, incomplete \\type{fvar} table")
+            if #axis > 8 then
+                context.stop()
+            end
         end
     context.stopsubject()
 

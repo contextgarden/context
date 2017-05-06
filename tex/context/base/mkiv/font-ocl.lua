@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['font-ocl'] = {
 local tostring, next, format = tostring, next, string.format
 local round, max = math.round, math.round
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
+local setmetatableindex = table.setmetatableindex
 
 local formatters = string.formatters
 local tounicode  = fonts.mappings.tounicode
@@ -47,7 +48,7 @@ end
 
 local sharedpalettes = { }
 
-local hash = table.setmetatableindex(function(t,k)
+local hash = setmetatableindex(function(t,k)
     local v = { "special", k }
     t[k] = v
     return v
@@ -130,7 +131,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             --
             local converted = resources.converted
             if not converted then
-                converted = table.setmetatableindex(convert)
+                converted = setmetatableindex(convert)
                 resources.converted = converted
             end
             local colorvalues = sharedpalettes[value] or converted[palettes[tonumber(value) or 1] or palettes[1]] or { }
@@ -147,7 +148,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             tfmdata.fonts = {
                 { id = 0 }
             }
-            local widths = table.setmetatableindex(function(t,k)
+            local widths = setmetatableindex(function(t,k)
                 local v = { "right", -k }
                 t[k] = v
                 return v
@@ -155,24 +156,32 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             --
             local getactualtext = otf.getactualtext
             local default       = colorvalues[#colorvalues]
-            local endactual     = nil
+            local b, e          = getactualtext(tounicode(0xFFFD))
             local start         = { "special", "pdf:page:q" }
             local stop          = { "special", "pdf:raw:Q" }
+            local actualb       = { "special", "pdf:page:" .. b } -- saves tables
+            local actuale       = { "special", "pdf:page:" .. e } -- saves tables
+            --
+            local cache = setmetatableindex(function(t,k)
+                local v = { "char", k }
+                t[k] = v
+                return v
+            end)
             --
             for unicode, character in next, characters do
                 local description = descriptions[unicode]
                 if description then
                     local colorlist = description.colors
                     if colorlist then
-                        local b, e = getactualtext(tounicode(characters[unicode].unicode or 0xFFFD))
+                        local u = description.unicode or characters[unicode].unicode
                         local w = character.width or 0
                         local s = #colorlist
-                        local goback = w ~= 0 and widths[w] or nil
+                        local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
                         local t = {
                             start,
-                            { "special", "pdf:raw:" .. b }
+                            not u and actualb or { "special", "pdf:raw:" .. getactualtext(tounicode(u)) }
                         }
-                        local n = #t
+                        local n = 2
                         local l = nil
                         for i=1,s do
                             local entry = colorlist[i]
@@ -181,15 +190,12 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                                 n = n + 1 t[n] = v
                                 l = v
                             end
-                            n = n + 1 t[n] = { "char", entry.slot }
+                            n = n + 1 t[n] = cache[entry.slot]
                             if s > 1 and i < s and goback then
                                 n = n + 1 t[n] = goback
                             end
                         end
-                        if not endactual then
-                            endactual = { "special", "pdf:page:" .. e } -- saves tables
-                        end
-                        n = n + 1 t[n] = endactual
+                        n = n + 1 t[n] = actuale
                         n = n + 1 t[n] = stop
                         character.commands = t
                     end

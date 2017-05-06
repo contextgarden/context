@@ -1496,8 +1496,8 @@ do
 
     local p_special = p_family + p_couple + p_kiss
 
---     print(lpeg.match(p_special,"family man woman girl"))
---      print(lpeg.match(p_special,"family man dark skin tone woman girl girl"))
+ -- print(lpeg.match(p_special,"family man woman girl"))
+ -- print(lpeg.match(p_special,"family man dark skin tone woman girl girl"))
 
  -- local p_special = P { "all",
  --     all    = Cs (V("family") + V("couple") + V("kiss")),
@@ -1509,10 +1509,10 @@ do
  --     rest   = (space * skin)^0/"" * ((space^1/zwj) + P(-1)),
  -- }
 
-    -- maybe characters.emoji.toutf
-
     local emoji      = { }
     characters.emoji = emoji
+
+local cache = setmetatable({ }, { __mode = "k" } )
 
     function emoji.resolve(name)
         if not hash then
@@ -1522,25 +1522,35 @@ do
         if h then
             return h
         end
+local h = cache[name]
+if h then
+    return h
+elseif h == false then
+    return
+end
         -- expand shortcuts
         local name = lpegmatch(pattern_0,name) or name
         -- expand some 25K variants
         local h = lpegmatch(p_special,name)
         if h then
+cache[name] = h
             return h
         end
         -- simplify
         local s = lpegmatch(pattern_1,name)
         local h = hash[s]
         if h then
+cache[name] = h
             return h
         end
         -- simplify
         local s = lpegmatch(pattern_2,name)
         local h = hash[s]
         if h then
+cache[name] = h
             return h
         end
+cache[name] = false
     end
 
     function emoji.known()

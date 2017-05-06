@@ -2039,7 +2039,7 @@ local function readtable(tag,f,fontdata,specification,...)
     end
 end
 
-local variablefonts_supported = context and true or false
+local variablefonts_supported = (context and true) or (logs and logs.application and true) or false
 
 local function readdata(f,offset,specification)
 
@@ -2100,6 +2100,8 @@ local function readdata(f,offset,specification)
                 else
                     report("user instance: %s, bad factors",instance)
                 end
+            else
+                report("unknown instance")
             end
         end
 

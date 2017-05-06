@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/27/17 01:00:26
+-- merge date  : 05/06/17 23:06:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -9509,7 +9509,7 @@ local function readtable(tag,f,fontdata,specification,...)
     reader(f,fontdata,specification,...)
   end
 end
-local variablefonts_supported=context and true or false
+local variablefonts_supported=(context and true) or (logs and logs.application and true) or false
 local function readdata(f,offset,specification)
   local fontdata=loadtables(f,specification,offset)
   if specification.glyphs then
@@ -9560,6 +9560,8 @@ local function readdata(f,offset,specification)
         else
           report("user instance: %s, bad factors",instance)
         end
+      else
+        report("unknown instance")
       end
     end
   end
@@ -12181,7 +12183,7 @@ local function repackpoints(glyphs,shapes)
       if false then
       else
         local contours=shape.contours
-        local nofcontours=#contours
+        local nofcontours=contours and #contours or 0
         local boundingbox=glyph.boundingbox or noboundingbox
         r=r+1 result[r]=toshort(nofcontours)
         r=r+1 result[r]=toshort(boundingbox[1]) 
@@ -12313,7 +12315,7 @@ local function readglyph(f,nofcontours)
     else
       x=x+readshort(f)
     end
-    points[i]={ x,y,bittest(flag,0x01) }
+    points[i]={ x,0,bittest(flag,0x01) }
   end
   local y=0
   for i=1,nofpoints do
@@ -12521,7 +12523,7 @@ local function readpoints(f)
     end
     local points={}
     local p=0
-    local n=1
+    local n=1 
     while p<count do
       local control=readbyte(f)
       local runreader=bittest(control,0x80) and readushort or readbyte
@@ -12538,22 +12540,24 @@ end
 local function readdeltas(f,nofpoints)
   local deltas={}
   local p=0
-  local n=0
-  local z=false
+  local z=0
   while nofpoints>0 do
     local control=readbyte(f)
+if not control then
+  break
+end
     local allzero=bittest(control,0x80)
-    local runreader=bittest(control,0x40) and readshort or readinteger
     local runlength=band(control,0x3F)+1
     if allzero then
-      z=runlength
+      z=z+runlength
     else
-      if z then
+      local runreader=bittest(control,0x40) and readshort or readinteger
+      if z>0 then
         for i=1,z do
           p=p+1
           deltas[p]=0
         end
-        z=false
+        z=0
       end
       for i=1,runlength do
         p=p+1
@@ -12561,6 +12565,36 @@ local function readdeltas(f,nofpoints)
       end
     end
     nofpoints=nofpoints-runlength
+  end
+  if p>0 then
+    return deltas
+  else
+  end
+end
+local function readdeltas(f,nofpoints)
+  local deltas={}
+  local p=0
+  while nofpoints>0 do
+    local control=readbyte(f)
+    if control then
+      local allzero=bittest(control,0x80)
+      local runlength=band(control,0x3F)+1
+      if allzero then
+        for i=1,runlength do
+          p=p+1
+          deltas[p]=0
+        end
+      else
+        local runreader=bittest(control,0x40) and readshort or readinteger
+        for i=1,runlength do
+          p=p+1
+          deltas[p]=runreader(f)
+        end
+      end
+      nofpoints=nofpoints-runlength
+    else
+      break
+    end
   end
   if p>0 then
     return deltas
@@ -12581,7 +12615,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
     local version=readulong(f) 
     local nofaxis=readushort(f)
     local noftuples=readushort(f)
-    local tupleoffset=readulong(f) 
+    local tupleoffset=tableoffset+readulong(f)
     local nofglyphs=readushort(f)
     local flags=readushort(f)
     local dataoffset=tableoffset+readulong(f)
@@ -12597,54 +12631,52 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
         data[i]=2*readushort(f)
       end
     end
-    setposition(f,tableoffset+tupleoffset)
-    for i=1,noftuples do
-      tuples[i]=readtuplerecord(f,nofaxis) 
+    if noftuples>0 then
+      setposition(f,tupleoffset)
+      for i=1,noftuples do
+        tuples[i]=readtuplerecord(f,nofaxis)
+      end
     end
     local lastoffset=false
     for i=1,nofglyphs do 
-      local shape=shapedata[i-1] 
-      if shape then
-        local startoffset=dataoffset+data[i]
-        if startoffset==lastoffset then
+      local startoffset=dataoffset+data[i]
+      if startoffset==lastoffset then
+      else
+        local shape=shapedata[i-1] 
+        if not shape then
         else
           lastoffset=startoffset
           setposition(f,startoffset)
           local flags=readushort(f)
           local count=band(flags,0x0FFF)
-          local points=bittest(flags,0x8000)
           local offset=startoffset+readushort(f) 
           local deltas={}
-          local nofpoints=0
-          local allpoints=(shape.nofpoints or 0)+1
-          if points then
+          local allpoints=(shape.nofpoints or 0) 
+          local shared=false
+          local nofshared=0
+          if bittest(flags,0x8000) then
             local current=getposition(f)
             setposition(f,offset)
-            points,nofpoints=readpoints(f)
+            shared,nofshared=readpoints(f)
             offset=getposition(f)
             setposition(f,current)
-          else
-            points,nofpoints=nil,0
           end
-          for i=1,count do
-            local currentstart=getposition(f)
+          for j=1,count do
             local size=readushort(f) 
             local flags=readushort(f)
             local index=band(flags,0x0FFF)
             local haspeak=bittest(flags,0x8000)
             local intermediate=bittest(flags,0x4000)
-            local private=bittest(flags,0x1000)
+            local private=bittest(flags,0x2000)
             local peak=nil
             local start=nil
             local stop=nil
             local xvalues=nil
             local yvalues=nil
-            local points=points  
-            local nofpoints=nofpoints 
-            local advance=4
-            if peak then
+            local points=shared  
+            local nofpoints=nofshared
+            if haspeak then
               peak=readtuplerecord(f,nofaxis)
-              advance=advance+2*nofaxis
             else
               if index+1>#tuples then
                 print("error, bad index",index)
@@ -12654,21 +12686,22 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
             if intermediate then
               start=readtuplerecord(f,nofaxis)
               stop=readtuplerecord(f,nofaxis)
-              advance=advance+4*nofaxis
             end
             if size>0 then
+              local current=getposition(f)
               setposition(f,offset)
               if private then
                 points,nofpoints=readpoints(f)
-              elseif nofpoints==0 then
-                nofpoints=allpoints
+              end 
+              if nofpoints==0 then
+                nofpoints=allpoints+4
               end
               if nofpoints>0 then
                 xvalues=readdeltas(f,nofpoints)
                 yvalues=readdeltas(f,nofpoints)
               end
-              offset=getposition(f)
-              setposition(f,currentstart+advance)
+              offset=offset+size
+              setposition(f,current)
             end
             if not xvalues and not yvalues then
               points=nil
@@ -12676,9 +12709,9 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
             local s=1
             for i=1,nofaxis do
               local f=factors[i]
-              local start=start and start[i] or 0
               local peak=peak and peak [i] or 0
-              local stop=stop and stop [i] or 0
+              local start=start and start[i] or (peak<0 and peak or 0)
+              local stop=stop and stop [i] or (peak>0 and peak or 0)
               if start>peak or peak>stop then
               elseif start<0 and stop>0 and peak~=0 then
               elseif peak==0 then
@@ -25960,6 +25993,7 @@ if not modules then modules={} end modules ['font-ocl']={
 local tostring,next,format=tostring,next,string.format
 local round,max=math.round,math.round
 local sortedkeys,sortedhash=table.sortedkeys,table.sortedhash
+local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
 local otf=fonts.handlers.otf
@@ -25984,7 +26018,7 @@ else
   end
 end
 local sharedpalettes={}
-local hash=table.setmetatableindex(function(t,k)
+local hash=setmetatableindex(function(t,k)
   local v={ "special",k }
   t[k]=v
   return v
@@ -26051,7 +26085,7 @@ local function initializecolr(tfmdata,kind,value)
     if palettes then
       local converted=resources.converted
       if not converted then
-        converted=table.setmetatableindex(convert)
+        converted=setmetatableindex(convert)
         resources.converted=converted
       end
       local colorvalues=sharedpalettes[value] or converted[palettes[tonumber(value) or 1] or palettes[1]] or {}
@@ -26066,30 +26100,37 @@ local function initializecolr(tfmdata,kind,value)
       tfmdata.fonts={
         { id=0 }
       }
-      local widths=table.setmetatableindex(function(t,k)
+      local widths=setmetatableindex(function(t,k)
         local v={ "right",-k }
         t[k]=v
         return v
       end)
       local getactualtext=otf.getactualtext
       local default=colorvalues[#colorvalues]
-      local endactual=nil
+      local b,e=getactualtext(tounicode(0xFFFD))
       local start={ "special","pdf:page:q" }
       local stop={ "special","pdf:raw:Q" }
+      local actualb={ "special","pdf:page:"..b } 
+      local actuale={ "special","pdf:page:"..e }
+      local cache=setmetatableindex(function(t,k)
+        local v={ "char",k }
+        t[k]=v
+        return v
+      end)
       for unicode,character in next,characters do
         local description=descriptions[unicode]
         if description then
           local colorlist=description.colors
           if colorlist then
-            local b,e=getactualtext(tounicode(characters[unicode].unicode or 0xFFFD))
+            local u=description.unicode or characters[unicode].unicode
             local w=character.width or 0
             local s=#colorlist
-            local goback=w~=0 and widths[w] or nil
+            local goback=w~=0 and widths[w] or nil 
             local t={
               start,
-              { "special","pdf:raw:"..b }
+              not u and actualb or { "special","pdf:raw:"..getactualtext(tounicode(u)) }
             }
-            local n=#t
+            local n=2
             local l=nil
             for i=1,s do
               local entry=colorlist[i]
@@ -26098,15 +26139,12 @@ local function initializecolr(tfmdata,kind,value)
                 n=n+1 t[n]=v
                 l=v
               end
-              n=n+1 t[n]={ "char",entry.slot }
+              n=n+1 t[n]=cache[entry.slot]
               if s>1 and i<s and goback then
                 n=n+1 t[n]=goback
               end
             end
-            if not endactual then
-              endactual={ "special","pdf:page:"..e } 
-            end
-            n=n+1 t[n]=endactual
+            n=n+1 t[n]=actuale
             n=n+1 t[n]=stop
             character.commands=t
           end

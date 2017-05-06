@@ -555,7 +555,7 @@ local function repackpoints(glyphs,shapes)
                 -- we merged them
             else
                 local contours    = shape.contours
-                local nofcontours = #contours
+                local nofcontours = contours and #contours or 0
                 local boundingbox = glyph.boundingbox or noboundingbox
                 r = r + 1 result[r] = toshort(nofcontours)
                 r = r + 1 result[r] = toshort(boundingbox[1]) -- xmin
@@ -696,7 +696,7 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
         else
             x = x + readshort(f)
         end
-        points[i] = { x, y, bittest(flag,0x01) }
+        points[i] = { x, 0, bittest(flag,0x01) }
     end
     local y = 0
     for i=1,nofpoints do
@@ -924,6 +924,9 @@ local function readtuplerecord(f,nofaxis)
     return record
 end
 
+-- (1) the first is a real point the rest deltas
+-- (2) points can be present more than once (multiple deltas then)
+
 local function readpoints(f)
     local count = readbyte(f)
     if count == 0 then
@@ -937,7 +940,7 @@ local function readpoints(f)
         end
         local points = { }
         local p = 0
-        local n = 1
+        local n = 1 -- indices
         while p < count do
             local control   = readbyte(f)
             local runreader = bittest(control,0x80) and readushort or readbyte
@@ -955,22 +958,24 @@ end
 local function readdeltas(f,nofpoints)
     local deltas = { }
     local p = 0
-    local n = 0
-    local z = false
+    local z = 0
     while nofpoints > 0 do
         local control   = readbyte(f)
+if not control then
+    break
+end
         local allzero   = bittest(control,0x80)
-        local runreader = bittest(control,0x40) and readshort or readinteger
         local runlength = band(control,0x3F) + 1
         if allzero then
-            z = runlength
+            z = z + runlength
         else
-            if z then
+            local runreader = bittest(control,0x40) and readshort or readinteger
+            if z > 0 then
                 for i=1,z do
                     p = p + 1
                     deltas[p] = 0
                 end
-                z = false
+                z = 0
             end
             for i=1,runlength do
                 p = p + 1
@@ -980,12 +985,12 @@ local function readdeltas(f,nofpoints)
         nofpoints = nofpoints - runlength
     end
     -- saves space
- -- if z then
- --     for i=1,z do
- --         p = p + 1
- --         deltas[p] = 0
- --     end
- -- end
+-- if z > 0 then
+--     for i=1,z do
+--         p = p + 1
+--         deltas[p] = 0
+--     end
+-- end
     if p > 0 then
         -- forget about trailing zeros
         return deltas
@@ -994,7 +999,42 @@ local function readdeltas(f,nofpoints)
     end
 end
 
+local function readdeltas(f,nofpoints)
+    local deltas = { }
+    local p = 0
+    while nofpoints > 0 do
+        local control = readbyte(f)
+        if control then
+            local allzero   = bittest(control,0x80)
+            local runlength = band(control,0x3F) + 1
+            if allzero then
+                for i=1,runlength do
+                    p = p + 1
+                    deltas[p] = 0
+                end
+            else
+                local runreader = bittest(control,0x40) and readshort or readinteger
+                for i=1,runlength do
+                    p = p + 1
+                    deltas[p] = runreader(f)
+                end
+            end
+            nofpoints = nofpoints - runlength
+        else
+            -- it happens
+            break
+        end
+    end
+    -- saves space
+    if p > 0 then
+        return deltas
+    else
+        -- forget about all zeros
+    end
+end
+
 function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
+    -- this is one of the messiest tables
     local instance = specification.instance
     if not instance then
         return
@@ -1008,7 +1048,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
         local version     = readulong(f) -- 1.0
         local nofaxis     = readushort(f)
         local noftuples   = readushort(f)
-        local tupleoffset = readulong(f)  -- shared
+        local tupleoffset = tableoffset + readulong(f)
         local nofglyphs   = readushort(f)
         local flags       = readushort(f)
         local dataoffset  = tableoffset + readulong(f)
@@ -1027,89 +1067,89 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
             end
         end
         --
-        setposition(f,tableoffset+tupleoffset)
-        for i=1,noftuples do
-            tuples[i] = readtuplerecord(f,nofaxis) -- used ?
+        if noftuples > 0 then
+            setposition(f,tupleoffset)
+            for i=1,noftuples do
+                tuples[i] = readtuplerecord(f,nofaxis)
+            end
         end
         local lastoffset = false
         for i=1,nofglyphs do -- hm one more cf spec
-            local shape = shapedata[i-1] -- todo 0
-            if shape then
-                local startoffset = dataoffset + data[i]
-                if startoffset == lastoffset then
-                    -- in the font that i used for testing there were the same offsets so
-                    -- we can assume that this indicates a zero entry
+            local startoffset = dataoffset + data[i]
+            if startoffset == lastoffset then
+                -- no deltas
+            else
+                local shape = shapedata[i-1] -- todo 0
+                if not shape then
+                    -- no shape
                 else
-                    -- todo: args_are_xy_values mess .. i have to be really bored
-                    -- and motivated to deal with it
-
                     lastoffset = startoffset
                     setposition(f,startoffset)
                     local flags     = readushort(f)
                     local count     = band(flags,0x0FFF)
-                    local points    = bittest(flags,0x8000)
                     local offset    = startoffset + readushort(f) -- to serialized
                     local deltas    = { }
-                    local nofpoints = 0
-                    local allpoints = (shape.nofpoints or 0) + 1
-                    if points then
+                    local allpoints = (shape.nofpoints or 0) -- + 1
+                    local shared    = false
+                    local nofshared = 0
+                    if bittest(flags,0x8000) then -- has shared points
                         -- go to the packed stream (get them once)
                         local current = getposition(f)
                         setposition(f,offset)
-                        points, nofpoints = readpoints(f)
+                        shared, nofshared = readpoints(f)
                         offset = getposition(f)
                         setposition(f,current)
                         -- and back to the table
-                    else
-                        points, nofpoints = nil, 0
                     end
-                    for i=1,count do
-                        local currentstart = getposition(f)
+                    for j=1,count do
                         local size         = readushort(f) -- check
                         local flags        = readushort(f)
                         local index        = band(flags,0x0FFF)
                         local haspeak      = bittest(flags,0x8000)
                         local intermediate = bittest(flags,0x4000)
-                        local private      = bittest(flags,0x1000)
+                        local private      = bittest(flags,0x2000)
                         local peak         = nil
                         local start        = nil
                         local stop         = nil
                         local xvalues      = nil
                         local yvalues      = nil
-                        local points       = points    -- we default to shared
-                        local nofpoints    = nofpoints -- we default to shared
-                        local advance      = 4
-                        if peak then
+                        local points       = shared    -- we default to shared
+                        local nofpoints    = nofshared -- we default to shared
+                     -- local advance      = 4
+                        if haspeak then
                             peak    = readtuplerecord(f,nofaxis)
-                            advance = advance + 2*nofaxis
+                         -- advance = advance + 2*nofaxis
                         else
                             if index+1 > #tuples then
                                 print("error, bad index",index)
                             end
                             peak = tuples[index+1] -- hm, needs checking, only peak?
                         end
--- what start otherwise ?
                         if intermediate then
                             start   = readtuplerecord(f,nofaxis)
                             stop    = readtuplerecord(f,nofaxis)
-                            advance = advance + 4*nofaxis
+                         -- advance = advance + 4*nofaxis
                         end
                         -- get the deltas
                         if size > 0 then
+                            local current = getposition(f)
                             -- goto the packed stream
                             setposition(f,offset)
                             if private then
                                 points, nofpoints = readpoints(f)
-                            elseif nofpoints == 0 then
-                                nofpoints = allpoints
+                            end -- else
+                            if nofpoints == 0 then
+                                nofpoints = allpoints + 4
                             end
                             if nofpoints > 0 then
+                                -- a nice test is to do only one
                                 xvalues = readdeltas(f,nofpoints)
                                 yvalues = readdeltas(f,nofpoints)
                             end
-                            offset = getposition(f)
+                            -- resync offset
+                            offset = offset + size
                             -- back to the table
-                            setposition(f,currentstart+advance)
+                            setposition(f,current)
                         end
                         if not xvalues and not yvalues then
                             points = nil
@@ -1117,9 +1157,11 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                         local s = 1
                         for i=1,nofaxis do
                             local f = factors[i]
-                            local start = start and start[i] or 0
                             local peak  = peak  and peak [i] or 0
-                            local stop  = stop  and stop [i] or 0
+                         -- local start = start and start[i] or 0
+                         -- local stop  = stop  and stop [i] or 0
+                            local start = start and start[i] or (peak < 0 and peak or 0)
+                            local stop  = stop  and stop [i] or (peak > 0 and peak or 0)
                             -- do we really need these tests ... can't we assume sane values
                             if start > peak or peak > stop then
                                 -- * 1
@@ -1150,8 +1192,24 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                         end
                     end
                     if shape.type == "glyph" then
+-- if fontdata.glyphs[i-1].name == "X" then
+--     if deltas then
+--         for i=1,#deltas do
+--             local d = deltas[i]
+--             local x = d.xvalues
+--             local y = d.yvalues
+--             if x and y then
+--                 for i=1,#x do
+--                     print(i-1,x[i],y[i])
+--                 end
+--             end
+--         end
+--     end
+-- end
                         applyaxis(glyphdata[i],shape,shape.points,deltas)
                     else
+                        -- todo: args_are_xy_values mess .. i have to be really bored
+                        -- and motivated to deal with it
                         shape.deltas = deltas
                     end
                 end
