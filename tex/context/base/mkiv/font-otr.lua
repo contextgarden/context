@@ -2075,6 +2075,39 @@ local function readdata(f,offset,specification)
 
     if variablefonts_supported then
 
+        local variabledata = fontdata.variabledata
+
+        if variabledata then
+            local instances = variabledata.instances
+            local axis      = variabledata.axis
+            if axis and (not instances or #instances == 0) then
+                instances = { }
+                variabledata.instances = instances
+                local function add(n,subfamily,value)
+                    local values = { }
+                    for i=1,#axis do
+                        local a = axis[i]
+                        values[i] = {
+                            axis  = a.tag,
+                            value = i == n and value or a.default,
+                        }
+                    end
+                    instances[#instances+1] = {
+                        subfamily = subfamily,
+                        values    = values,
+                    }
+                end
+                for i=1,#axis do
+                    local a   = axis[i]
+                    local tag = a.tag
+                    add(i,"default"..tag,a.default)
+                    add(i,"minimum"..tag,a.minimum)
+                    add(i,"maximum"..tag,a.maximum)
+                end
+             -- report("%i fake instances added",#instances)
+            end
+        end
+
         if not specification.factors then
             local instance = specification.instance
             if type(instance) == "string" then
@@ -2089,19 +2122,19 @@ local function readdata(f,offset,specification)
                 end
             end
         end
+
         if not fontdata.factors then
             if fontdata.variabledata then
                 local factors = helpers.getfactors(fontdata,true)
                 if factors then
                     specification.factors = factors
-                    fontdata.factors  = factors
-                    fontdata.instance = instance
-                    report("font instance: %s, factors: % t",instance,factors)
+                    fontdata.factors = factors
+                    report("factors: % t",factors)
                 else
-                    report("user instance: %s, bad factors",instance)
+                    report("bad factors")
                 end
             else
-                report("unknown instance")
+             -- report("unknown instance")
             end
         end
 

@@ -195,23 +195,41 @@ function files.readinteger4le(f)
     end
 end
 
+-- function files.readfixed2(f)
+--     local a, b = byte(f:read(2),1,2)
+--     if a >= 0x80 then
+--         return (0x100 * a + b - 0x10000)/256.0
+--     else
+--         return (0x100 * a + b)/256.0
+--     end
+-- end
+
 function files.readfixed2(f)
     local a, b = byte(f:read(2),1,2)
     if a >= 0x80 then
-        return (0x100 * a + b - 0x10000)/256.0
+        return (a - 0x100) + b/0x100
     else
-        return (0x100 * a + b)/256.0
+        return (a        ) + b/0x100
     end
 end
 
 -- (real) (n>>16) + ((n&0xffff)/65536.0))
 
+-- function files.readfixed4(f)
+--     local a, b, c, d = byte(f:read(4),1,4)
+--     if a >= 0x80 then
+--         return (0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000)/65536.0
+--     else
+--         return (0x1000000 * a + 0x10000 * b + 0x100 * c + d)/65536.0
+--     end
+-- end
+
 function files.readfixed4(f)
     local a, b, c, d = byte(f:read(4),1,4)
     if a >= 0x80 then
-        return (0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000)/65536.0
+        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
     else
-        return (0x1000000 * a + 0x10000 * b + 0x100 * c + d)/65536.0
+        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
     end
 end
 

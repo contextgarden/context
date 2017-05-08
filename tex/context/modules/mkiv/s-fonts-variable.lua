@@ -23,6 +23,7 @@ function moduledata.fonts.variable.showvariations(specification)
     specification = interfaces.checkedspecification(specification)
 
     local fontfile = specification.font
+    local maximum  = tonumber(specification.max) or 0xFFFF
     local fontname = format("testfont-%s",i)
     local fontsize = tex.dimen.bodyfontsize
     if not fontfile then
@@ -50,6 +51,10 @@ function moduledata.fonts.variable.showvariations(specification)
 --     if not variabledata then
 --         return
 --     end
+
+if not fontdata.shared.rawdata.metadata.fullname then
+    fontdata.shared.rawdata.metadata.fullname = fontdata.shared.rawdata.metadata.fontname
+end
 
     context.starttitle { title = fontdata.shared.rawdata.metadata.fullname }
 
@@ -224,16 +229,30 @@ function moduledata.fonts.variable.showvariations(specification)
         end
     context.stopsubject()
 
+    local sample = specification.sample
+
     for i=1,#collected do
 
         local instance = collected[i]
         context.startsubject { title = instance }
             context.start()
             context.definedfont { "name:" .. instance .. "*default" }
-            context.input("zapf.tex")
+            if sample and sample ~= "" then
+                context(sample)
+            else
+                context.input("zapf.tex")
+            end
             context.par()
             context.stop()
         context.stopsubject()
+
+        if i > maximum then
+            context.startsubject { title = "And so on" }
+                context("no more than %i instances are shown",maximum)
+                context.par()
+            context.stopsubject()
+            break
+        end
     end
 
  -- local function showregions(tag)

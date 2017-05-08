@@ -36,7 +36,29 @@
 
 \starttext
 
+    \startbuffer[zycon]
+        \char008986\relax\quad
+        \char009728\relax\quad
+        \char010031\relax\quad
+        \char010143\relax\quad
+        \char011044\relax\quad
+        \char127773\relax\quad
+        \char127989\relax\quad
+        \char128008\relax\quad
+        \char128021\relax\quad
+        \char128034\relax\quad
+        \char128161\relax\quad
+        \char128274\relax\quad
+        \char128347\relax\quad
+        \char128400\relax\quad
+        \char128692\relax\quad
+        \char129417\relax\quad
+        \char129422\relax\quad
+        \char983040\relax\par
+    \stopbuffer
+
 %     \showfontkerns
+%     \showglyphs
 
     \showfontvariations
       [font=file:adobevfprototype.otf]
@@ -44,23 +66,30 @@
     \showfontvariations
       [font=file:avenirnextvariable.ttf]
 
-%     \showfontvariations
-%       [font=file:kairossansvariable.ttf]
-
-%     \showfontvariations
-%       [font=file:sourcecode-regular.otf]
-
-%     \showfontvariations
-%       [font=file:AmstelvarAlpha-VF.ttf]
-
     \showfontvariations
       [font=file:DecoVar-VF.ttf]
 
-    % This is Adam's version of noto .. has lots of instances so it takes a while
-    % the first time. Looks like I do somethign wrong (bad a's and widths).
+    \showfontvariations
+      [font=file:VotoSerifGX.ttf,
+       max=15]
 
-%     \showfontvariations
-%       [font=file:VotoSerifGX.ttf]
+    \showfontvariations
+      [font=file:Selawik-Variable.ttf]
 
+    \showfontvariations
+      [font=file:LibreFranklinGX-Romans.ttf]
+
+    \showfontvariations
+      [font=file:Zycon.ttf,
+       sample={\getbuffer[zycon]}]
+
+   % \showfontvariations
+   %   [font=file:kairossansvariable.ttf]
+
+   %  \showfontvariations
+   %    [font=file:sourcecode-regular.otf]
+
+   %  \showfontvariations
+   %    [font=file:AmstelvarAlpha-VF.ttf]
 
 \stoptext

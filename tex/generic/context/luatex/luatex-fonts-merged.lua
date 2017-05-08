@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/06/17 23:06:49
+-- merge date  : 05/08/17 18:02:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -4439,17 +4439,17 @@ end
 function files.readfixed2(f)
   local a,b=byte(f:read(2),1,2)
   if a>=0x80 then
-    return (0x100*a+b-0x10000)/256.0
+    return (a-0x100)+b/0x100
   else
-    return (0x100*a+b)/256.0
+    return (a    )+b/0x100
   end
 end
 function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   if a>=0x80 then
-    return (0x1000000*a+0x10000*b+0x100*c+d-0x100000000)/65536.0
+    return (0x100*a+b-0x10000)+(0x100*c+d)/0x10000
   else
-    return (0x1000000*a+0x10000*b+0x100*c+d)/65536.0
+    return (0x100*a+b     )+(0x100*c+d)/0x10000
   end
 end
 if extract then
@@ -9535,6 +9535,36 @@ local function readdata(f,offset,specification)
   readtable("avar",f,fontdata,specification)
   readtable("fvar",f,fontdata,specification)
   if variablefonts_supported then
+    local variabledata=fontdata.variabledata
+    if variabledata then
+      local instances=variabledata.instances
+      local axis=variabledata.axis
+      if axis and (not instances or #instances==0) then
+        instances={}
+        variabledata.instances=instances
+        local function add(n,subfamily,value)
+          local values={}
+          for i=1,#axis do
+            local a=axis[i]
+            values[i]={
+              axis=a.tag,
+              value=i==n and value or a.default,
+            }
+          end
+          instances[#instances+1]={
+            subfamily=subfamily,
+            values=values,
+          }
+        end
+        for i=1,#axis do
+          local a=axis[i]
+          local tag=a.tag
+          add(i,"default"..tag,a.default)
+          add(i,"minimum"..tag,a.minimum)
+          add(i,"maximum"..tag,a.maximum)
+        end
+      end
+    end
     if not specification.factors then
       local instance=specification.instance
       if type(instance)=="string" then
@@ -9555,13 +9585,11 @@ local function readdata(f,offset,specification)
         if factors then
           specification.factors=factors
           fontdata.factors=factors
-          fontdata.instance=instance
-          report("font instance: %s, factors: % t",instance,factors)
+          report("factors: % t",factors)
         else
-          report("user instance: %s, bad factors",instance)
+          report("bad factors")
         end
       else
-        report("unknown instance")
       end
     end
   end
@@ -11738,6 +11766,7 @@ local sqrt,round=math.sqrt,math.round
 local char=string.char
 local concat=table.concat
 local report=logs.reporter("otf reader","ttf")
+local trace_deltas=false
 local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
 local setposition=streamreader.setposition
@@ -11826,9 +11855,12 @@ local function curveto(m_x,m_y,l_x,l_y,r_x,r_y)
     r_x+2/3*(m_x-r_x),r_y+2/3*(m_y-r_y),
     r_x,r_y,"c"
 end
-local function applyaxis(glyph,shape,points,deltas)
+local function applyaxis(glyph,shape,deltas,dowidth)
+  local points=shape.points
   if points then
     local nofpoints=#points
+    local h=nofpoints+1
+    local width=dowidth and glyph.width 
     for i=1,#deltas do
       local deltaset=deltas[i]
       local xvalues=deltaset.xvalues
@@ -11842,18 +11874,22 @@ local function applyaxis(glyph,shape,points,deltas)
           local p=points[d]
           if p then
             if xvalues then
-              local x=xvalues[d]
+              local x=xvalues[i]
               if x and x~=0 then
                 p[1]=p[1]+factor*x
               end
             end
             if yvalues then
-              local y=yvalues[d]
+              local y=yvalues[i]
               if y and y~=0 then
                 p[2]=p[2]+factor*y
               end
             end
-          elseif width then
+          elseif width then 
+            local x=xvalues[d+1]
+            if x then
+              width=width+factor*x
+            end
           end
         end
       else
@@ -11872,8 +11908,19 @@ local function applyaxis(glyph,shape,points,deltas)
             end
           end
         end
+        if width then
+          local x=xvalues[h]
+          if x then
+            width=width+factor*x
+          end
+        end
       end
     end
+    if width then
+      glyph.width=width
+    end
+  else
+    report("no points for glyph %a",glyph.name)
   end
 end
 local quadratic=false
@@ -12518,8 +12565,9 @@ local function readpoints(f)
     return nil,0 
   else
     if count<128 then
+    elseif bittest(count,0x80) then
+      count=band(count,0x7F)*256+readbyte(f)
     else
-      count=band(count,0x80)*256+readbyte(f)
     end
     local points={}
     local p=0
@@ -12622,13 +12670,14 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
     local data={}
     local tuples={}
     local glyphdata=fontdata.glyphs
+    local dowidth=fontdata.variabledata.hvarwidths
     if bittest(flags,0x0001) then
-      for i=1,nofglyphs do
-        data[i]=readulong(f)
+      for i=1,nofglyphs+1 do
+        data[i]=dataoffset+readulong(f)
       end
     else
-      for i=1,nofglyphs do
-        data[i]=2*readushort(f)
+      for i=1,nofglyphs+1 do
+        data[i]=dataoffset+2*readushort(f)
       end
     end
     if noftuples>0 then
@@ -12637,13 +12686,22 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
         tuples[i]=readtuplerecord(f,nofaxis)
       end
     end
-    local lastoffset=false
+    local nextoffset=false
+    local startoffset=data[1]
     for i=1,nofglyphs do 
-      local startoffset=dataoffset+data[i]
-      if startoffset==lastoffset then
+      nextoffset=data[i+1]
+      local glyph=glyphdata[i-1]
+      local name=trace_deltas and glyph.name
+      if startoffset==nextoffset then
+        if name then
+          report("no deltas for glyph %a",name)
+        end
       else
         local shape=shapedata[i-1] 
         if not shape then
+          if name then
+            report("no shape for glyph %a",name)
+          end
         else
           lastoffset=startoffset
           setposition(f,startoffset)
@@ -12679,7 +12737,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
               peak=readtuplerecord(f,nofaxis)
             else
               if index+1>#tuples then
-                print("error, bad index",index)
+                report("error, bad tuple index",index)
               end
               peak=tuples[index+1] 
             end
@@ -12725,7 +12783,11 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
               else
               end
             end
-            if s~=0 then
+            if s==0 then
+              if name then
+                report("no deltas applied for glyph %a",name)
+              end
+            else
               deltas[#deltas+1]={
                 factor=s,
                 points=points,
@@ -12735,12 +12797,13 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
             end
           end
           if shape.type=="glyph" then
-            applyaxis(glyphdata[i],shape,shape.points,deltas)
+            applyaxis(glyph,shape,deltas,dowidth)
           else
             shape.deltas=deltas
           end
         end
       end
+      startoffset=nextoffset
     end
   end
 end
@@ -12916,7 +12979,7 @@ local lookupflags=setmetatableindex(function(t,k)
 end)
 local pattern=lpeg.Cf (
   lpeg.Ct("")*lpeg.Cg (
-    lpeg.C(lpeg.R("az")^1)*lpeg.S(" :=")*(lpeg.patterns.number/tonumber)*lpeg.S(" ,")^0
+    lpeg.C((lpeg.R("az","09")+lpeg.P(" "))^1)*lpeg.S(" :=")*(lpeg.patterns.number/tonumber)*lpeg.S(" ,")^0
   )^1,rawset
 )
 local hash=table.setmetatableindex(function(t,k)
@@ -12962,7 +13025,10 @@ local function getaxisscale(segments,minimum,default,maximum,user)
   local e
   for i=1,#segments do
     local s=segments[i]
-    if s[1]>=default then
+    if type(s)~="number" then
+      report("using default axis scale")
+      return default
+    elseif s[1]>=default then
       if s[2]==default then
         return default
       else
@@ -15500,7 +15566,7 @@ function readers.avar(f,fontdata,specification)
   local tableoffset=gotodatatable(f,fontdata,"avar",true) 
   if tableoffset then
     local function collect()
-      local nofvalues=readulong(f)
+      local nofvalues=readushort(f)
       local values={}
       local lastfrom=false
       local lastto=false
@@ -15510,7 +15576,7 @@ function readers.avar(f,fontdata,specification)
         elseif lastto and t>=lastto then
         else
           values[#values+1]={ f,t }
-          lasfrom,lastto=f,t
+          lastfrom,lastto=f,t
         end
       end
       nofvalues=#values
@@ -15519,7 +15585,7 @@ function readers.avar(f,fontdata,specification)
         if some[1]==-1 and some[2]==-1 then
           some=values[nofvalues]
           if some[1]==1 and some[2]==1 then
-            for i=2,size-1 do
+            for i=2,nofvalues-1 do
               some=values[i]
               if some[1]==0 and some[2]==0 then
                 return values
@@ -15530,9 +15596,10 @@ function readers.avar(f,fontdata,specification)
       end
       return false
     end
-    local version=readulong(f) 
-    local reserved=readulong(f)
-    local nofaxis=readulong(f)
+    local majorversion=readushort(f) 
+    local minorversion=readushort(f) 
+    local reserved=readushort(f)
+    local nofaxis=readushort(f)
     local segments={}
     for i=1,nofaxis do
       segments[i]=collect()
@@ -15645,6 +15712,7 @@ function readers.hvar(f,fontdata,specification)
       outerindex[i]=rshift(mapdata,nofinnerbits)
       innerindex[i]=band(mapdata,innermask)
     end
+    setvariabledata(fontdata,"hvarwidths",true)
     local glyphs=fontdata.glyphs
     for i=0,fontdata.nofglyphs-1 do
       local glyph=glyphs[i]

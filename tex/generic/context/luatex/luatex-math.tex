@@ -15,7 +15,9 @@
 
 % we provide a remap feature
 
-\directlua{dofile(kpse.find_file('luatex-math.lua'))}
+\ifdefined\directlua
+    \directlua{dofile(kpse.find_file('luatex-math.lua'))}
+\fi
 
 % a bunch of fonts:
 
@@ -55,8 +57,8 @@
    \font\sevenrm = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  7pt
    \font\fiverm  = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  5pt
    %
-   \font\tentt   = file:lucidabrightot.otf                                    at 10pt
-   \font\tenit   = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep            at 10pt
+   \font\tentt   = file:lucidasanstypewriterot.otf                            at 10pt
+   \font\tensl   = file:lucidabrightot.otf:slant=0.2;+liga;+kern;+tlig;+trep  at 10pt
    \font\tenit   = file:lucidabrightot-italic.otf:+liga;+kern;+tlig;+trep     at 10pt
    \font\tenbf   = file:lucidabrightot-demi.otf:+liga;+kern;+tlig;+trep       at 10pt
    \font\tenbi   = file:lucidabrightot-demiitalic.otf:+liga;+kern;+tlig;+trep at 10pt
@@ -71,13 +73,15 @@
    %
    \tenrm}
 
-\directlua {
-    if arguments["mtx:lucidabright"] then
-        tex.print("\string\\lucidabright")
-    else
-        tex.print("\string\\latinmodern")
-    end
-}
+\ifdefined\directlua
+    \directlua {
+        if arguments["mtx:lucidabright"] then
+            tex.print("\string\\lucidabright")
+        else
+            tex.print("\string\\latinmodern")
+        end
+    }
+\fi
 
 \newtoks\everymathrm
 \newtoks\everymathmit
@@ -1849,26 +1853,34 @@
 \let\OE        Œ
 \let\O         Ø
 \let\i         ı
+\let\j         ȷ
 \let\aa        å
 \let\l         ł
 \let\L         Ł
 \let\AA        Å
 \let\copyright ©
+\let\S         §
+\let\P         ¶
+\let\dag       †
+\let\ddag      ‡
+\let\pounds    £
 
 % just use utf
 
-\def\`#1{\string\`\string{#1\string}}
-\def\'#1{\string\'\string{#1\string}}
-\def\v#1{\string\v\string{#1\string}}
-\def\u#1{\string\u\string{#1\string}}
-\def\=#1{\string\=\string{#1\string}}
-\def\^#1{\string\^\string{#1\string}}
-\def\.#1{\string\.\string{#1\string}}
-\def\H#1{\string\H\string{#1\string}}
-\def\~#1{\string\~\string{#1\string}}
-\def\"#1{\string\"\string{#1\string}}
-\def\d#1{\string\d\string{#1\string}}
-\def\b#1{\string\b\string{#1\string}}
-\def\c#1{\string\c\string{#1\string}}
+\def\`#1{#1^^^^0300}
+\def\'#1{#1^^^^0301}
+\def\^#1{#1^^^^0302}
+\def\~#1{#1^^^^0303}
+\def\=#1{#1^^^^0304}
+\def\u#1{#1^^^^0306}
+\def\.#1{#1^^^^0307}
+\def\"#1{#1^^^^0308}
+\def\r#1{#1^^^^030a} % not in plain
+\def\H#1{#1^^^^030b}
+\def\v#1{#1^^^^030c}
+\def\d#1{#1^^^^0323}
+\def\c#1{#1^^^^0327}
+\def\k#1{#1^^^^0328} % not in plain
+\def\b#1{#1^^^^0331}
 
 \endinput

@@ -307,11 +307,13 @@ end)
 --     italic = "ital",
 -- }, "self")
 
+-- todo: spaces in name but not before :
+
 local pattern = lpeg.Cf (
     lpeg.Ct("") *
     lpeg.Cg (
       --(lpeg.R("az")^1/names) * lpeg.S(" :") *
-        lpeg.C(lpeg.R("az")^1) * lpeg.S(" :=") *
+        lpeg.C((lpeg.R("az","09")+lpeg.P(" "))^1) * lpeg.S(" :=") *
         (lpeg.patterns.number/tonumber) * lpeg.S(" ,")^0
     )^1, rawset
 )
@@ -371,7 +373,10 @@ local function getaxisscale(segments,minimum,default,maximum,user)
     local e
     for i=1,#segments do
         local s = segments[i]
-        if s[1] >= default then
+        if type(s) ~= "number" then
+            report("using default axis scale")
+            return default
+        elseif s[1] >= default then
             if s[2] == default then
                 return default
             else
@@ -3329,7 +3334,7 @@ function readers.stat(f,fontdata,specification)
 end
 
 -- The avar table is optional and used in combination with fvar. Given the
--- detailed explanation about bad valeus we expect the worst and do some
+-- detailed explanation about bad values we expect the worst and do some
 -- checking.
 
 function readers.avar(f,fontdata,specification)
@@ -3337,7 +3342,7 @@ function readers.avar(f,fontdata,specification)
     if tableoffset then
 
         local function collect()
-            local nofvalues = readulong(f)
+            local nofvalues = readushort(f)
             local values    = { }
             local lastfrom  = false
             local lastto    = false
@@ -3349,7 +3354,7 @@ function readers.avar(f,fontdata,specification)
                     -- ignore
                 else
                     values[#values+1] = { f, t }
-                    lasfrom, lastto = f, t
+                    lastfrom, lastto = f, t
                 end
             end
             nofvalues = #values
@@ -3358,7 +3363,7 @@ function readers.avar(f,fontdata,specification)
                 if some[1] == -1 and some[2] == -1 then
                     some = values[nofvalues]
                     if some[1] == 1 and some[2] == 1 then
-                        for i=2,size-1 do
+                        for i=2,nofvalues-1 do
                             some = values[i]
                             if some[1] == 0 and some[2] == 0 then
                                 return values
@@ -3370,10 +3375,11 @@ function readers.avar(f,fontdata,specification)
             return false
         end
 
-        local version  = readulong(f) -- 1.0
-        local reserved = readulong(f)
-        local nofaxis  = readulong(f)
-        local segments = { }
+        local majorversion = readushort(f) -- 1
+        local minorversion = readushort(f) -- 0
+        local reserved     = readushort(f)
+        local nofaxis      = readushort(f)
+        local segments     = { }
         for i=1,nofaxis do
             segments[i] = collect()
         end
@@ -3403,9 +3409,9 @@ function readers.fvar(f,fontdata,specification)
         for i=1,nofaxis do
             axis[i] = {
                 tag     = readtag(f),   -- ital opsz slnt wdth wght
-                minimum = readfixed(f), -- we get weird values from a test font ... to be checked
-                default = readfixed(f), -- idem
-                maximum = readfixed(f), -- idem
+                minimum = readfixed(f),
+                default = readfixed(f),
+                maximum = readfixed(f),
                 flags   = readushort(f),
                 name    = lower(extras[readushort(f)] or "bad name"),
             }
@@ -3425,10 +3431,6 @@ function readers.fvar(f,fontdata,specification)
             local flags    = readushort(f) -- 0, not used yet
             local values   = { }
             for i=1,nofaxis do
-                -- depends on what we want to see:
-                --
-             -- values[axis[i].tag] = readfixed(f)
-                --
                 values[i] = {
                     axis  = axis[i].tag,
                     value = readfixed(f),
@@ -3516,6 +3518,7 @@ function readers.hvar(f,fontdata,specification)
             innerindex[i] = band(mapdata,innermask)
         end
         -- use last entry when no match i
+        setvariabledata(fontdata,"hvarwidths",true)
         local glyphs = fontdata.glyphs
         for i=0,fontdata.nofglyphs-1 do
             local glyph = glyphs[i]

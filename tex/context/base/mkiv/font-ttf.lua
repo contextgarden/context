@@ -40,6 +40,8 @@ local concat = table.concat
 
 local report        = logs.reporter("otf reader","ttf")
 
+local trace_deltas  = false
+
 local readers       = fonts.handlers.otf.readers
 local streamreader  = readers.streamreader
 
@@ -154,14 +156,15 @@ end
 -- We had two loops (going backward) but can do it in one loop .. but maybe we
 -- should only accept fonts with proper hvar tables.
 
-local function applyaxis(glyph,shape,points,deltas)
+local function applyaxis(glyph,shape,deltas,dowidth)
+    local points = shape.points
     if points then
         local nofpoints = #points
--- local h = nofpoints + 2 -- weird, the example font seems to have left first
--- ----- l = nofpoints + 2
--- ----- v = nofpoints + 3
--- ----- t = nofpoints + 4
--- local width = glyph.width
+        local h = nofpoints + 1 -- weird, the example font seems to have left first
+        ----- l = nofpoints + 2
+        ----- v = nofpoints + 3
+        ----- t = nofpoints + 4
+        local width = dowidth and glyph.width -- what if hvar
         for i=1,#deltas do
             local deltaset = deltas[i]
             local xvalues  = deltaset.xvalues
@@ -176,30 +179,22 @@ local function applyaxis(glyph,shape,points,deltas)
                     local p = points[d]
                     if p then
                         if xvalues then
-                            local x = xvalues[d]
+                            local x = xvalues[i]
                             if x and x ~= 0 then
                                 p[1] = p[1] + factor * x
                             end
                         end
                         if yvalues then
-                            local y = yvalues[d]
+                            local y = yvalues[i]
                             if y and y ~= 0 then
                                 p[2] = p[2] + factor * y
                             end
                         end
-                    elseif width then
--- weird one-off and bad values
---
--- if d == h then
--- print("index",d)
--- inspect(dpoints)
--- inspect(xvalues)
---     local x = xvalues[i]
---     if x then
--- print("phantom h advance",width,factor*x)
---         width = width + factor * x
---     end
--- end
+                    elseif width then -- and p == h then
+                        local x = xvalues[d+1]
+                        if x then
+                            width = width + factor * x
+                        end
                     end
                 end
             else
@@ -218,10 +213,24 @@ local function applyaxis(glyph,shape,points,deltas)
                         end
                     end
                 end
--- todo : phantom point hadvance
+                if width then
+                    local x = xvalues[h]
+                    if x then
+                        width = width + factor * x
+                    end
+                end
             end
         end
--- glyph.width = width
+     -- for i=1,nofpoints do
+     --     local p = points[i]
+     --     p[1] = round(p[1])
+     --     p[2] = round(p[2])
+     -- end
+       if width then
+            glyph.width = width
+        end
+    else
+        report("no points for glyph %a",glyph.name)
     end
 end
 
@@ -935,8 +944,10 @@ local function readpoints(f)
     else
         if count < 128 then
             -- no second byte, use count
+        elseif bittest(count,0x80) then
+            count = band(count,0x7F) * 256 + readbyte(f)
         else
-            count = band(count,0x80) * 256 + readbyte(f)
+            -- bad news
         end
         local points = { }
         local p = 0
@@ -1055,15 +1066,16 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
         local data        = { }
         local tuples      = { }
         local glyphdata   = fontdata.glyphs
+        local dowidth     = fontdata.variabledata.hvarwidths
         -- there is one more offset (so that one can calculate the size i suppose)
         -- so we could test for overflows but we simply assume sane font files
         if bittest(flags,0x0001) then
-            for i=1,nofglyphs do
-                data[i] = readulong(f)
+            for i=1,nofglyphs+1 do
+                data[i] = dataoffset + readulong(f)
             end
         else
-            for i=1,nofglyphs do
-                data[i] = 2*readushort(f)
+            for i=1,nofglyphs+1 do
+                data[i] = dataoffset + 2*readushort(f)
             end
         end
         --
@@ -1073,15 +1085,22 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                 tuples[i] = readtuplerecord(f,nofaxis)
             end
         end
-        local lastoffset = false
+        local nextoffset  = false
+        local startoffset = data[1]
         for i=1,nofglyphs do -- hm one more cf spec
-            local startoffset = dataoffset + data[i]
-            if startoffset == lastoffset then
-                -- no deltas
+            nextoffset = data[i+1]
+            local glyph = glyphdata[i-1]
+            local name  = trace_deltas and glyph.name
+            if startoffset == nextoffset then
+                if name then
+                    report("no deltas for glyph %a",name)
+                end
             else
                 local shape = shapedata[i-1] -- todo 0
                 if not shape then
-                    -- no shape
+                    if name then
+                        report("no shape for glyph %a",name)
+                    end
                 else
                     lastoffset = startoffset
                     setposition(f,startoffset)
@@ -1121,7 +1140,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                          -- advance = advance + 2*nofaxis
                         else
                             if index+1 > #tuples then
-                                print("error, bad index",index)
+                                report("error, bad tuple index",index)
                             end
                             peak = tuples[index+1] -- hm, needs checking, only peak?
                         end
@@ -1182,7 +1201,11 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                                 -- * 1
                             end
                         end
-                        if s ~= 0 then
+                        if s == 0 then
+                            if name then
+                                report("no deltas applied for glyph %a",name)
+                            end
+                        else
                             deltas[#deltas+1] = {
                                 factor  = s,
                                 points  = points,
@@ -1192,21 +1215,11 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                         end
                     end
                     if shape.type == "glyph" then
--- if fontdata.glyphs[i-1].name == "X" then
---     if deltas then
---         for i=1,#deltas do
---             local d = deltas[i]
---             local x = d.xvalues
---             local y = d.yvalues
---             if x and y then
---                 for i=1,#x do
---                     print(i-1,x[i],y[i])
---                 end
---             end
---         end
---     end
+-- if glyph.name == "u1f31d" then
+-- if glyph.unicode  == 127773 then
+--     inspect(deltas)
 -- end
-                        applyaxis(glyphdata[i],shape,shape.points,deltas)
+                        applyaxis(glyph,shape,deltas,dowidth)
                     else
                         -- todo: args_are_xy_values mess .. i have to be really bored
                         -- and motivated to deal with it
@@ -1214,6 +1227,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                     end
                 end
             end
+            startoffset = nextoffset
         end
     end
 end
