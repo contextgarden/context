@@ -300,7 +300,7 @@ if sio and sio.readcardinal2 then
     local readfixed4     = sio.readfixed4
     local read2dot14     = sio.read2dot14
     local readbytes      = sio.readbytes
-    local readbytetable = sio.readbytetable
+    local readbytetable  = sio.readbytetable
 
     function streams.readcardinal1(f)
         local i = f[2]
@@ -342,16 +342,16 @@ if sio and sio.readcardinal2 then
         f[2] = i + 4
         return readinteger4(f[1],i)
     end
-    function streams.readfixed2(f)
-        local i = f[2]
-        f[2] = i + 2
-        return readfixed2(f[1],i)
-    end
-    function streams.readfixed4(f)
-        local i = f[2]
-        f[2] = i + 4
-        return readfixed4(f[1],i)
-    end
+ -- function streams.readfixed2(f) -- needs recent luatex
+ --     local i = f[2]
+ --     f[2] = i + 2
+ --     return readfixed2(f[1],i)
+ -- end
+ -- function streams.readfixed4(f) -- needs recent luatex
+ --     local i = f[2]
+ --     f[2] = i + 4
+ --     return readfixed4(f[1],i)
+ -- end
     function streams.read2dot4(f)
         local i = f[2]
         f[2] = i + 2

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/08/17 18:02:32
+-- merge date  : 05/09/17 10:14:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -4503,8 +4503,6 @@ if fio and fio.readcardinal1 then
   files.readinteger2=fio.readinteger2
   files.readinteger3=fio.readinteger3
   files.readinteger4=fio.readinteger4
-  files.readfixed2=fio.readfixed2
-  files.readfixed4=fio.readfixed4
   files.read2dot14=fio.read2dot14
   files.setposition=fio.setposition
   files.getposition=fio.getposition

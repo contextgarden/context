@@ -173,6 +173,8 @@
 \unexpanded\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
 \unexpanded\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
 \unexpanded\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
+\unexpanded\def\resolvedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_tochar{#character}}}
+\unexpanded\def\resolvedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_tochar{#character}}}
 
 % this one is wrong:
 

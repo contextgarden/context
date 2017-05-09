@@ -1406,6 +1406,24 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="resolvedglyphstyled" file="font-sym.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-font"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:text"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resolvedglyphdirect" file="font-sym.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-font"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:text"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="setfont" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="string-font"/>

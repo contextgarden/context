@@ -299,8 +299,8 @@ if fio and fio.readcardinal1 then
     files.readinteger2   = fio.readinteger2
     files.readinteger3   = fio.readinteger3
     files.readinteger4   = fio.readinteger4
-    files.readfixed2     = fio.readfixed2
-    files.readfixed4     = fio.readfixed4
+ -- files.readfixed2     = fio.readfixed2 -- needs recent luatex
+ -- files.readfixed4     = fio.readfixed4 -- needs recent luatex
     files.read2dot14     = fio.read2dot14
     files.setposition    = fio.setposition
     files.getposition    = fio.getposition
