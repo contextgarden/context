@@ -53,7 +53,10 @@ do -- eps | ps
 
     local runner = sandbox.registerrunner {
         name     = "eps to pdf",
-        program  = { windows = "gswin64c", unix = "gs" },
+        program  = {
+            windows = os.platform == "win64" and "gswin64c" or "gswin32c",
+            unix    = "gs",
+        },
         template = longtostring [[
             -q
             -sDEVICE=pdfwrite

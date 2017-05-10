@@ -562,7 +562,7 @@ function selectfont.registerfontalternative(alternative)
 end
 
 function selectfont.registerfallback(index)
-    local data     = data[index]
+    local data      = data[index]
     local fontclass = data.metadata.typeface
     local fontstyle = data.metadata.style
     local fallback  = fallbacks[fontclass]

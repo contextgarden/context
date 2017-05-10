@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/09/17 10:14:12
+-- merge date  : 05/10/17 10:41:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -19827,7 +19827,7 @@ local function inject_everything(head,where)
         ox=px-pn.markx
       if pn.checkmark then
         local wn=getwidth(n) 
-        if wn~=0 then
+        if wn and wn~=0 then
           wn=wn/2
           if trace_injections then
             report_injections("correcting non zero width mark %C",getchar(n))
@@ -20014,7 +20014,7 @@ local function inject_everything(head,where)
               if hasmarks then
                 local pm=i.markbasenode
                 if pm then
-                  processmark(pm,current,i)
+                  processmark(pm,n,i)
                 end
               end
             end
@@ -20044,7 +20044,7 @@ local function inject_everything(head,where)
               if hasmarks then
                 local pm=i.markbasenode
                 if pm then
-                  processmark(pm,current,i)
+                  processmark(pm,n,i)
                 end
               end
             end
@@ -20074,7 +20074,7 @@ local function inject_everything(head,where)
               if hasmarks then
                 local pm=i.markbasenode
                 if pm then
-                  processmark(pm,current,i)
+                  processmark(pm,n,i)
                 end
               end
             end

@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['math-act'] = {
 -- Here we tweak some font properties (if needed).
 
 local type, next = type, next
-local fastcopy = table.fastcopy
+local fastcopy, insert, remove = table.fastcopy, table.insert, table.remove
 local formatters = string.formatters
 
 local trace_defining   = false  trackers.register("math.defining",   function(v) trace_defining   = v end)
@@ -674,6 +674,9 @@ end
 function mathematics.injectfallbacks(target,original)
     if #stack > 0 then
         -- for now
+        if trace_collecting then
+            report_math("stack overflow in math fallbacks")
+        end
         return
     end
     local properties = original.properties
@@ -684,7 +687,7 @@ function mathematics.injectfallbacks(target,original)
             if fallbacks then
                 local definitions = fonts.collections.definitions[fallbacks]
                 if definitions then
-                    table.insert(stack, {
+                    insert(stack, {
                         target   = target,
                         original = original,
                         list     = { },
@@ -710,7 +713,7 @@ function mathematics.injectfallbacks(target,original)
 end
 
 function mathematics.finishfallbacks()
-    local top      = table.remove(stack)
+    local top = remove(stack)
     if not top then
         report_math("finish error in math fallbacks")
         return
@@ -725,7 +728,7 @@ function mathematics.finishfallbacks()
             local fallbacks = specification.fallbacks
             if fallbacks then
                 local definitions = fonts.collections.definitions[fallbacks]
-                if definitions then
+                if definitions and #definitions > 0 then
                     if trace_collecting then
                         report_math("adding fallback characters to font %a",specification.hash)
                     end
@@ -770,6 +773,7 @@ function mathematics.finishfallbacks()
                                     end
                                     characters[unic] = copiedglyph(target,characters,chars,unicode,index)
                                     done[unic] = true
+                                else
                                 end
                             end
                             for unicode = start, stop do
@@ -786,6 +790,8 @@ function mathematics.finishfallbacks()
                     xlist     = nil
                     xtarget   = nil
                     xoriginal = nil
+                elseif trace_collecting then
+                    report_math("no fallback characters added to font %a",specification.hash)
                 end
             end
         end

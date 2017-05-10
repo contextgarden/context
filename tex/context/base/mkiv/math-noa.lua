@@ -23,6 +23,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 -- nota bene: uunderdelimiter uoverdelimiter etc are radicals (we have 5 types)
 
+local next, tonumber = next, tonumber
 local utfchar, utfbyte = utf.char, utf.byte
 local formatters, gmatch = string.formatters, string.gmatch
 local sortedhash = table.sortedhash
@@ -378,7 +379,6 @@ noads.process       = processnoads
 noads.processnested = processnested
 noads.processouter  = process
 
-
 -- experiment (when not present fall back to fam 0) -- needs documentation
 
 local unknowns = { }
@@ -541,7 +541,8 @@ do
     processors.relocate = { }
 
     local function report_remap(tag,id,old,new,extra)
-        report_remapping("remapping %s in font %s from %C to %C%s",tag,id,old,new,extra)
+        report_remapping("remapping %s in font (%s,%s) from %C to %C%s",
+            tag,id,fontdata[id].properties.fontname or "",old,new,extra)
     end
 
     local remapalphabets    = mathematics.remapalphabets

@@ -67,6 +67,9 @@ local get_synctex_fields = nuts.get_synctex_fields
 local set_synctex_fields = nuts.set_synctex_fields
 local set_syntex_tag     = nodes.set_synctex_tag
 
+local getcount           = tex.getcount
+local setcount           = tex.setcount
+
 local getpos             = function()
                                getpos = backends.codeinjections.getpos
                                return getpos()
@@ -480,11 +483,11 @@ local synctex       = false
 directives.register("system.synctex", function(v)
     if v == "context" then
         luatex.synctex.enable()
-        tex.normalsynctex = 0
+        setcount("normalsynctex",0)
         synctex = true
     else
         v = tonumber(v) or (toboolean(v,true) and 1) or (v == "zipped" and 1) or (v == "unzipped" and -1) or 0
-        tex.normalsynctex = v
+        setcount("normalsynctex",v)
         synctex = v ~= 0
     end
     if synctex then
@@ -495,7 +498,7 @@ directives.register("system.synctex", function(v)
 end)
 
 statistics.register("synctex tracing",function()
-    if synctex or tex.normalsynctex ~= 0 then
+    if synctex or getcount("normalsynctex") ~= 0 then
         return "synctex has been enabled (extra log file generated)"
     end
 end)

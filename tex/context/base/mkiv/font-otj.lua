@@ -1021,7 +1021,7 @@ local function inject_everything(head,where)
          -- end
             if pn.checkmark then
                 local wn = getwidth(n) -- in arial marks have widths
-                if wn ~= 0 then
+                if wn and wn ~= 0 then
                     wn = wn/2
                     if trace_injections then
                         report_injections("correcting non zero width mark %C",getchar(n))
@@ -1228,7 +1228,7 @@ local function inject_everything(head,where)
                             if hasmarks then
                                 local pm = i.markbasenode
                                 if pm then
-                                    processmark(pm,current,i)
+                                    processmark(pm,n,i)
                                 end
                             end
                         end
@@ -1260,7 +1260,7 @@ local function inject_everything(head,where)
                             if hasmarks then
                                 local pm = i.markbasenode
                                 if pm then
-                                    processmark(pm,current,i)
+                                    processmark(pm,n,i)
                                 end
                             end
                         end
@@ -1292,7 +1292,7 @@ local function inject_everything(head,where)
                             if hasmarks then
                                 local pm = i.markbasenode
                                 if pm then
-                                    processmark(pm,current,i)
+                                    processmark(pm,n,i)
                                 end
                             end
                         end
