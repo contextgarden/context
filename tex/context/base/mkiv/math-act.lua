@@ -632,7 +632,7 @@ blocks["uppercasedoublestruck"].gaps = {
 --                         fonts[index] = { id = id, size = size }
 --                         local chars  = fontchars[id]
 --                         local function remap(unic,unicode,gap)
---                             local unic = unicode + offset - start
+--                          -- local unic = unicode + offset - start
 --                             if check and not chars[unicode] then
 --                                 -- not in font
 --                             elseif force or (not done[unic] and not characters[unic]) then
@@ -659,143 +659,100 @@ blocks["uppercasedoublestruck"].gaps = {
 --         end
 --     end
 -- end
+--
+-- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.finishfallbacks")
 
 local stack = { }
 
 function mathematics.registerfallbackid(n,id)
-    local top = stack[#stack]
-    if top then
-        top.list[n] = id
-    else
-        report_math("stack underrun in math fallbacks")
-    end
+    stack[#stack][n] = id
 end
 
-function mathematics.injectfallbacks(target,original)
-    if #stack > 0 then
-        -- for now
-        if trace_collecting then
-            report_math("stack overflow in math fallbacks")
-        end
-        return
-    end
-    local properties = original.properties
-    if properties and properties.hasmath then
-        local specification = target.specification
-        if specification then
-            local fallbacks = specification.fallbacks
-            if fallbacks then
-                local definitions = fonts.collections.definitions[fallbacks]
-                if definitions then
-                    insert(stack, {
-                        target   = target,
-                        original = original,
-                        list     = { },
-                    })
-                    if trace_collecting then
-                        report_math("adding fallback characters to font %a",specification.hash)
-                    end
-                    local size = specification.size -- target.size
-                    context.pushcatcodes("prt") -- context.unprotect()
-                    for i=1,#definitions do
-                        local definition = definitions[i]
-                        local name       = definition.font
-                        local features   = definition.features or ""
-                        local size       = size * (definition.rscale or 1)
-                        context.font_fallbacks_register_math(i,name,features,size)
-                    end
-                    context.font_fallbacks_finish_math()
-                    context.popcatcodes()
-                end
+function mathematics.resolvefallbacks(target,specification,fallbacks)
+    local definitions = fonts.collections.definitions[fallbacks]
+    if definitions then
+        local size = specification.size -- target.size
+        local list = { }
+        insert(stack,list)
+        context.pushcatcodes("prt") -- context.unprotect()
+        for i=1,#definitions do
+            local definition = definitions[i]
+            local name       = definition.font
+            local features   = definition.features or ""
+            local size       = size * (definition.rscale or 1)
+            context.font_fallbacks_register_math(i,name,features,size)
+            if trace_collecting then
+                report_math("registering fallback font %i, name %a, size %a, features %a",i,name,size,features)
             end
         end
+        context.popcatcodes()
     end
 end
 
-function mathematics.finishfallbacks()
-    local top = remove(stack)
-    if not top then
-        report_math("finish error in math fallbacks")
-        return
-    end
-    local target   = top.target
-    local original = top.original
-    local list     = top.list
-    local properties = original.properties
-    if properties and properties.hasmath then
-        local specification = target.specification
-        if specification then
-            local fallbacks = specification.fallbacks
-            if fallbacks then
-                local definitions = fonts.collections.definitions[fallbacks]
-                if definitions and #definitions > 0 then
-                    if trace_collecting then
-                        report_math("adding fallback characters to font %a",specification.hash)
-                    end
-                    local definedfont = fonts.definers.internal
-                    local copiedglyph = fonts.handlers.vf.math.copy_glyph
-                    local fonts       = target.fonts
-                    local size        = specification.size -- target.size
-                    local characters  = target.characters
-                    if not fonts then
-                        fonts = { }
-                        target.fonts = fonts
-                        target.type = "virtual"
-                        target.properties.virtualized = true
-                    end
-                    if #fonts == 0 then
-                        fonts[1] = { id = 0, size = size } -- sel, will be resolved later
-                    end
-                    local done = { }
-                    for i=1,#definitions do
-                        local definition = definitions[i]
-                        local name   = definition.font
-                        local start  = definition.start
-                        local stop   = definition.stop
-                        local gaps   = definition.gaps
-                        local check  = definition.check
-                        local force  = definition.force
-                        local rscale = definition.rscale or 1
-                        local offset = definition.offset or start
-                        local id     = list[i]
-                        if id then
-                            local index  = #fonts + 1
-                            fonts[index] = { id = id, size = size }
-                            local chars  = fontchars[id]
-                            local function remap(unic,unicode,gap)
-                                local unic = unicode + offset - start
-                                if check and not chars[unicode] then
-                                    -- not in font
-                                elseif force or (not done[unic] and not characters[unic]) then
-                                    if trace_collecting then
-                                        report_math("remapping math character, vector %a, font %a, character %C%s%s",
-                                            fallbacks,name,unic,check and ", checked",gap and ", gap plugged")
-                                    end
-                                    characters[unic] = copiedglyph(target,characters,chars,unicode,index)
-                                    done[unic] = true
-                                else
-                                end
+function mathematics.finishfallbacks(target,specification,fallbacks)
+    local list = remove(stack)
+    if list and #list > 0 then
+        local definitions = fonts.collections.definitions[fallbacks]
+        if definitions and #definitions > 0 then
+            if trace_collecting then
+                report_math("adding fallback characters to font %a",specification.hash)
+            end
+            local definedfont = fonts.definers.internal
+            local copiedglyph = fonts.handlers.vf.math.copy_glyph
+            local fonts       = target.fonts
+            local size        = specification.size -- target.size
+            local characters  = target.characters
+            if not fonts then
+                fonts = { }
+                target.fonts = fonts
+            end
+            target.type = "virtual"
+            target.properties.virtualized = true
+            if #fonts == 0 then
+                fonts[1] = { id = 0, size = size } -- self, will be resolved later
+            end
+            local done = { }
+            for i=1,#definitions do
+                local definition = definitions[i]
+                local name   = definition.font
+                local start  = definition.start
+                local stop   = definition.stop
+                local gaps   = definition.gaps
+                local check  = definition.check
+                local force  = definition.force
+                local rscale = definition.rscale or 1
+                local offset = definition.offset or start
+                local id     = list[i]
+                if id then
+                    local index  = #fonts + 1
+                    fonts[index] = { id = id, size = size }
+                    local chars  = fontchars[id]
+                    local function remap(unic,unicode,gap)
+                        if check and not chars[unicode] then
+                            return
+                        end
+                        if force or (not done[unic] and not characters[unic]) then
+                            if trace_collecting then
+                                report_math("replacing math character %C by %C using vector %a and font %a named %a%s%s",
+                                    unic,unicode,fallbacks,id,name,check and ", checked",gap and ", gap plugged")
                             end
-                            for unicode = start, stop do
-                                local unic = unicode + offset - start
-                                remap(unic,unicode,false)
-                            end
-                            if gaps then
-                                for unic, unicode in next, gaps do
-                                    remap(unic,unicode,true)
-                                end
-                            end
+                            characters[unic] = copiedglyph(target,characters,chars,unicode,index)
+                            done[unic] = true
                         end
                     end
-                    xlist     = nil
-                    xtarget   = nil
-                    xoriginal = nil
-                elseif trace_collecting then
-                    report_math("no fallback characters added to font %a",specification.hash)
+                    for unicode = start, stop do
+                        local unic = unicode + offset - start
+                        remap(unic,unicode,false)
+                    end
+                    if gaps then
+                        for unic, unicode in next, gaps do
+                            remap(unic,unicode,true)
+                        end
+                    end
                 end
             end
+        elseif trace_collecting then
+            report_math("no fallback characters added to font %a",specification.hash)
         end
     end
 end
-
-sequencers.appendaction("aftercopyingcharacters", "system","mathematics.injectfallbacks")

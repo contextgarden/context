@@ -133,9 +133,9 @@
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
    % the order is important as we depend on known id's when completing fonts
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusthree\font_helpers_set_math_family_a\scriptscriptfont#mrtag\font
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree\font_helpers_set_math_family_a\scriptscriptfont#mrtag\font
    \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo  \font_helpers_set_math_family_a\scriptfont      #mrtag\font
-   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusone  \font_helpers_set_math_family_a\textfont        #mrtag\font
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone  \font_helpers_set_math_family_a\textfont        #mrtag\font
    \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
@@ -161,9 +161,9 @@
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusthree\font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam%
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree\font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam%
    \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo  \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam%
-   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusone  \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam%
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone  \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam%
    \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass

@@ -102,8 +102,8 @@
       {\definedfont[#2*#3\space at #4\scaledpoint]}%
    \ctxlua{mathematics.registerfallbackid(#1,\fontid\font)}}
 
-\def\font_fallbacks_finish_math
-  {\ctxlua{mathematics.finishfallbacks()}}
+% \def\font_fallbacks_finish_math
+%   {\ctxlua{mathematics.finishfallbacks()}}
 
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)

@@ -553,15 +553,34 @@ setmetatableindex(otfscripts,function(t,unicode)
     return "dflt"
 end)
 
-local splitter = lpeg.splitat(S(":-"))
+local splitter1 = lpeg.splitat(S(":-"))
+local splitter2 = lpeg.splitat(S(" +-"),true)
 
-function characters.getrange(name) -- used in font fallback definitions (name or range)
-    local range = blocks[name]
+function characters.getrange(name,expression) -- used in font fallback definitions (name or range)
+    local range = rawget(blocks,lower(gsub(name,"[^a-zA-Z0-9]","")))
     if range then
         return range.first, range.last, range.description, range.gaps
     end
     name = gsub(name,'"',"0x") -- goodie: tex hex notation
-    local start, stop = lpegmatch(splitter,name)
+    local start, stop
+    if expression then
+        local first, rest = lpegmatch(splitter2,name)
+        local range = rawget(blocks,lower(gsub(first,"[^a-zA-Z0-9]","")))
+        if range then
+            start = range.first
+            stop  = range.last
+            local s = loadstring("return 0 " .. rest)
+            if type(s) == "function" then
+                local d = s()
+                if type(d) == "number" then
+                    start = start + d
+                    stop  = stop  + d
+                    return start, stop, nil
+                end
+            end
+        end
+    end
+    start, stop = lpegmatch(splitter1,name)
     if start and stop then
         start, stop = tonumber(start,16) or tonumber(start), tonumber(stop,16) or tonumber(stop)
         if start and stop then
@@ -571,6 +590,9 @@ function characters.getrange(name) -- used in font fallback definitions (name or
     local slot = tonumber(name,16) or tonumber(name)
     return slot, slot, nil
 end
+
+-- print(characters.getrange("lowercaseitalic + 123",true))
+-- print(characters.getrange("lowercaseitalic + 124",true))
 
 local categorytags = allocate {
     lu = "Letter Uppercase",

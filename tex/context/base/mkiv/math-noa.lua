@@ -585,9 +585,10 @@ do
             end
             local newchar = remapalphabets(char,a,g)
             if newchar then
-                if characters[newchar] then
+                local newchardata = characters[newchar]
+                if newchardata then
                     if trace_remapping then
-                        report_remap("char",font,char,newchar)
+                        report_remap("char",font,char,newchar,newchardata.commands and " (virtual)" or "")
                     end
                     if trace_analyzing then
                         setnodecolor(pointer,"font:isol")
@@ -617,6 +618,11 @@ do
                     elseif trace_remapping then
                         report_remap("char",font,char,newchar," fails (no fallback style)")
                     end
+                end
+            elseif trace_remapping then
+                local chardata = characters[char]
+                if chardata and chardata.commands then
+                    report_remap("char",font,char,char," (virtual)")
                 end
             end
         end
