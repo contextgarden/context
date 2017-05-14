@@ -13,6 +13,9 @@
 %D approach (and thereby far from the \CONTEXT\ way). This file is mainly meant for
 %D Boguslaw Jackowski.
 
+%D In the perspective of the TUG Lucida Opentype project Bruno Voisin checked the code
+%D and definitions below and suggested some improvements.
+
 % we provide a remap feature
 
 \ifdefined\directlua
@@ -42,6 +45,10 @@
    \font\tenbf   = file:lmroman10-bold.otf:+liga;+kern;+tlig;+trep         at 10pt
    \font\tenbi   = file:lmroman10-bolditalic.otf:+liga;+kern;+tlig;+trep   at 10pt
    %
+   \font\tenos   = file:lmroman10-regular.otf:+onum;+liga;+kern;+tlig;+trep at 10pt
+   \font\sevenos = file:lmroman7-regular.otf:+onum;+liga;+kern;+tlig;+trep  at  7pt
+   \font\fiveos  = file:lmroman5-regular.otf:+onum;+liga;+kern;+tlig;+trep  at  5pt
+   %
    \font\mathfonttextupright         = file:latinmodern-math.otf:script=math;ssty=0;mathsize=yes at 10pt
    \font\mathfontscriptupright       = file:latinmodern-math.otf:script=math;ssty=1;mathsize=yes at  7pt
    \font\mathfontscriptscriptupright = file:latinmodern-math.otf:script=math;ssty=2;mathsize=yes at  5pt
@@ -50,6 +57,10 @@
    \scriptfont       0 = \mathfontscriptupright
    \scriptscriptfont 0 = \mathfontscriptscriptupright
    %
+   \textfont         1 = \tenos
+   \scriptfont       1 = \sevenos
+   \scriptscriptfont 1 = \fiveos
+   %
    \tenrm}
 
 \def\lucidabright
@@ -57,11 +68,15 @@
    \font\sevenrm = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  7pt
    \font\fiverm  = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  5pt
    %
-   \font\tentt   = file:lucidasanstypewriterot.otf                            at 10pt
-   \font\tensl   = file:lucidabrightot.otf:slant=0.2;+liga;+kern;+tlig;+trep  at 10pt
-   \font\tenit   = file:lucidabrightot-italic.otf:+liga;+kern;+tlig;+trep     at 10pt
-   \font\tenbf   = file:lucidabrightot-demi.otf:+liga;+kern;+tlig;+trep       at 10pt
-   \font\tenbi   = file:lucidabrightot-demiitalic.otf:+liga;+kern;+tlig;+trep at 10pt
+   \font\tentt   = file:lucidasanstypewriterot.otf                             at 10pt
+   \font\tensl   = file:lucidabrightot.otf:slant=0.167;+liga;+kern;+tlig;+trep at 10pt
+   \font\tenit   = file:lucidabrightot-italic.otf:+liga;+kern;+tlig;+trep      at 10pt
+   \font\tenbf   = file:lucidabrightot-demi.otf:+liga;+kern;+tlig;+trep        at 10pt
+   \font\tenbi   = file:lucidabrightot-demiitalic.otf:+liga;+kern;+tlig;+trep  at 10pt
+   %
+   \font\tenos   = file:lucidabrightot.otf:+onum;+liga;+kern;+tlig;+trep at 10pt
+   \font\sevenos = file:lucidabrightot.otf:+onum;+liga;+kern;+tlig;+trep at  7pt
+   \font\fiveos  = file:lucidabrightot.otf:+onum;+liga;+kern;+tlig;+trep at  5pt
    %
    \font\mathfonttextupright         = file:lucidabrightmathot.otf:script=math;ssty=0;mathsize=yes at 10pt
    \font\mathfontscriptupright       = file:lucidabrightmathot.otf:script=math;ssty=1;mathsize=yes at  7pt
@@ -70,6 +85,10 @@
    \textfont         0 = \mathfonttextupright
    \scriptfont       0 = \mathfontscriptupright
    \scriptscriptfont 0 = \mathfontscriptscriptupright
+   %
+   \textfont         1 = \tenos
+   \scriptfont       1 = \sevenos
+   \scriptscriptfont 1 = \fiveos
    %
    \tenrm}
 
@@ -84,13 +103,14 @@
 \fi
 
 \newtoks\everymathrm
-\newtoks\everymathmit
 \newtoks\everymathcal
 \newtoks\everymathit
 \newtoks\everymathsl
 \newtoks\everymathbf
 \newtoks\everymathbi
 \newtoks\everymathtt
+
+% the following commands switch text as well as math
 
 \def\rm{\fam0\relax\the\everymathrm\relax\tenrm\relax}
 \def\it{\fam0\relax\the\everymathit\relax\tenit\relax}
@@ -99,13 +119,10 @@
 \def\bi{\fam0\relax\the\everymathbi\relax\tenbi\relax}
 \def\tt{\fam0\relax\the\everymathtt\relax\tentt\relax}
 
-\let\mit     \relax % use names or \Uchar or define a vector
-\let\cal     \relax % idem, i'm not in the mood for this now
-\let\oldstyle\relax % no longer misuse of math mode
-
 % tex is fast enough for this kind of assignments:
 
 \everymathrm {%
+    % codes
     \Umathcode"0041="0"0"0041%
     \Umathcode"0042="0"0"0042%
     \Umathcode"0043="0"0"0043%
@@ -216,18 +233,69 @@
     \Umathcode"03F5="0"0"03F5%
     \Umathcode"2202="0"0"2202%
     \Umathcode"2207="0"0"2207%
+    % commands
+    \Umathchardef\Alpha     "0"0"000391%
+    \Umathchardef\Beta      "0"0"000392%
+    \Umathchardef\Gamma     "0"0"000393%
+    \Umathchardef\Delta     "0"0"000394%
+    \Umathchardef\Epsilon   "0"0"000395%
+    \Umathchardef\Zeta      "0"0"000396%
+    \Umathchardef\Eta       "0"0"000397%
+    \Umathchardef\Theta     "0"0"000398%
+    \Umathchardef\Iota      "0"0"000399%
+    \Umathchardef\Kappa     "0"0"00039A%
+    \Umathchardef\Lambda    "0"0"00039B%
+    \Umathchardef\Mu        "0"0"00039C%
+    \Umathchardef\Nu        "0"0"00039D%
+    \Umathchardef\Xi        "0"0"00039E%
+    \Umathchardef\Omicron   "0"0"00039F%
+    \Umathchardef\Pi        "0"0"0003A0%
+    \Umathchardef\Rho       "0"0"0003A1%
+    \Umathchardef\Sigma     "0"0"0003A3%
+    \Umathchardef\Tau       "0"0"0003A4%
+    \Umathchardef\Upsilon   "0"0"0003A5%
+    \Umathchardef\Phi       "0"0"0003A6%
+    \Umathchardef\Chi       "0"0"0003A7%
+    \Umathchardef\Psi       "0"0"0003A8%
+    \Umathchardef\Omega     "0"0"0003A9%
+    \Umathchardef\alpha     "0"0"0003B1%
+    \Umathchardef\beta      "0"0"0003B2%
+    \Umathchardef\gamma     "0"0"0003B3%
+    \Umathchardef\delta     "0"0"0003B4%
+    \Umathchardef\varepsilon"0"0"0003B5%
+    \Umathchardef\zeta      "0"0"0003B6%
+    \Umathchardef\eta       "0"0"0003B7%
+    \Umathchardef\theta     "0"0"0003B8%
+    \Umathchardef\iota      "0"0"0003B9%
+    \Umathchardef\kappa     "0"0"0003BA%
+    \Umathchardef\lambda    "0"0"0003BB%
+    \Umathchardef\mu        "0"0"0003BC%
+    \Umathchardef\nu        "0"0"0003BD%
+    \Umathchardef\xi        "0"0"0003BE%
+    \Umathchardef\omicron   "0"0"0003BF%
+    \Umathchardef\pi        "0"0"0003C0%
+    \Umathchardef\rho       "0"0"0003C1%
+    \Umathchardef\varsigma  "0"0"0003C2%
+    \Umathchardef\sigma     "0"0"0003C3%
+    \Umathchardef\tau       "0"0"0003C4%
+    \Umathchardef\upsilon   "0"0"0003C5%
+    \Umathchardef\varphi    "0"0"0003C6%
+    \Umathchardef\chi       "0"0"0003C7%
+    \Umathchardef\psi       "0"0"0003C8%
+    \Umathchardef\omega     "0"0"0003C9%
+    \Umathchardef\vartheta  "0"0"0003D1%
+    \Umathchardef\phi       "0"0"0003D5%
+    \Umathchardef\varpi     "0"0"0003D6%
+    \Umathchardef\varkappa  "0"0"0003F0%
+    \Umathchardef\varrho    "0"0"0003F1%
+    \Umathchardef\epsilon   "0"0"0003F5%
+    \Umathchardef\varTheta  "0"0"0003F4%
+    \Umathchardef\digamma   "0"0"0003DC%
     \relax
 }
 
-\everymathmit {%
-    % not done
-}
-
-\everymathcal {%
-    % not done
-}
-
 \everymathit {%
+    % codes
     \Umathcode"0041="0"0"1D434%
     \Umathcode"0042="0"0"1D435%
     \Umathcode"0043="0"0"1D436%
@@ -338,6 +406,64 @@
     \Umathcode"03F5="0"0"1D716%
     \Umathcode"2202="0"0"1D715%
     \Umathcode"2207="0"0"1D6FB%
+    % commands
+    \Umathchardef\Alpha     "0"0"01D6E2%
+    \Umathchardef\Beta      "0"0"01D6E3%
+    \Umathchardef\Gamma     "0"0"01D6E4%
+    \Umathchardef\Delta     "0"0"01D6E5%
+    \Umathchardef\Epsilon   "0"0"01D6E6%
+    \Umathchardef\Zeta      "0"0"01D6E7%
+    \Umathchardef\Eta       "0"0"01D6E8%
+    \Umathchardef\Theta     "0"0"01D6E9%
+    \Umathchardef\Iota      "0"0"01D6EA%
+    \Umathchardef\Kappa     "0"0"01D6EB%
+    \Umathchardef\Lambda    "0"0"01D6EC%
+    \Umathchardef\Mu        "0"0"01D6ED%
+    \Umathchardef\Nu        "0"0"01D6EE%
+    \Umathchardef\Xi        "0"0"01D6EF%
+    \Umathchardef\Omicron   "0"0"01D6F0%
+    \Umathchardef\Pi        "0"0"01D6F1%
+    \Umathchardef\Rho       "0"0"01D6F2%
+    \Umathchardef\Sigma     "0"0"01D6F4%
+    \Umathchardef\Tau       "0"0"01D6F5%
+    \Umathchardef\Upsilon   "0"0"01D6F6%
+    \Umathchardef\Phi       "0"0"01D6F7%
+    \Umathchardef\Chi       "0"0"01D6F8%
+    \Umathchardef\Psi       "0"0"01D6F9%
+    \Umathchardef\Omega     "0"0"01D6FA%
+    \Umathchardef\alpha     "0"0"01D6FC%
+    \Umathchardef\beta      "0"0"01D6FD%
+    \Umathchardef\gamma     "0"0"01D6FE%
+    \Umathchardef\delta     "0"0"01D6FF%
+    \Umathchardef\varepsilon"0"0"01D700%
+    \Umathchardef\zeta      "0"0"01D701%
+    \Umathchardef\eta       "0"0"01D702%
+    \Umathchardef\theta     "0"0"01D703%
+    \Umathchardef\iota      "0"0"01D704%
+    \Umathchardef\kappa     "0"0"01D705%
+    \Umathchardef\lambda    "0"0"01D706%
+    \Umathchardef\mu        "0"0"01D707%
+    \Umathchardef\nu        "0"0"01D708%
+    \Umathchardef\xi        "0"0"01D709%
+    \Umathchardef\omicron   "0"0"01D70A%
+    \Umathchardef\pi        "0"0"01D70B%
+    \Umathchardef\rho       "0"0"01D70C%
+    \Umathchardef\varsigma  "0"0"01D70D%
+    \Umathchardef\sigma     "0"0"01D70E%
+    \Umathchardef\tau       "0"0"01D70F%
+    \Umathchardef\upsilon   "0"0"01D710%
+    \Umathchardef\varphi    "0"0"01D711%
+    \Umathchardef\chi       "0"0"01D712%
+    \Umathchardef\psi       "0"0"01D713%
+    \Umathchardef\omega     "0"0"01D714%
+    \Umathchardef\epsilon   "0"0"01D716%
+    \Umathchardef\vartheta  "0"0"01D717%
+    \Umathchardef\varkappa  "0"0"01D718%
+    \Umathchardef\phi       "0"0"01D719%
+    \Umathchardef\varrho    "0"0"01D71A%
+    \Umathchardef\varpi     "0"0"01D71B%
+    \Umathchardef\varTheta  "0"0"01D6F3%
+    \Umathchardef\digamma   "0"0"0003DC%
     \relax
 }
 
@@ -346,6 +472,7 @@
 }
 
 \everymathbf {%
+    % codes
     \Umathcode"0030="0"0"1D7CE%
     \Umathcode"0031="0"0"1D7CF%
     \Umathcode"0032="0"0"1D7D0%
@@ -466,10 +593,69 @@
     \Umathcode"03F5="0"0"1D6DC%
     \Umathcode"2202="0"0"1D6DB%
     \Umathcode"2207="0"0"1D6C1%
+    % commands
+    \Umathchardef\Alpha     "0"0"01D6A8%
+    \Umathchardef\Beta      "0"0"01D6A9%
+    \Umathchardef\Gamma     "0"0"01D6AA%
+    \Umathchardef\Delta     "0"0"01D6AB%
+    \Umathchardef\Epsilon   "0"0"01D6AC%
+    \Umathchardef\Zeta      "0"0"01D6AD%
+    \Umathchardef\Eta       "0"0"01D6AE%
+    \Umathchardef\Theta     "0"0"01D6AF%
+    \Umathchardef\Iota      "0"0"01D6B0%
+    \Umathchardef\Kappa     "0"0"01D6B1%
+    \Umathchardef\Lambda    "0"0"01D6B2%
+    \Umathchardef\Mu        "0"0"01D6B3%
+    \Umathchardef\Nu        "0"0"01D6B4%
+    \Umathchardef\Xi        "0"0"01D6B5%
+    \Umathchardef\Omicron   "0"0"01D6B6%
+    \Umathchardef\Pi        "0"0"01D6B7%
+    \Umathchardef\Rho       "0"0"01D6B8%
+    \Umathchardef\Sigma     "0"0"01D6BA%
+    \Umathchardef\Tau       "0"0"01D6BB%
+    \Umathchardef\Upsilon   "0"0"01D6BC%
+    \Umathchardef\Phi       "0"0"01D6BD%
+    \Umathchardef\Chi       "0"0"01D6BE%
+    \Umathchardef\Psi       "0"0"01D6BF%
+    \Umathchardef\Omega     "0"0"01D6C0%
+    \Umathchardef\alpha     "0"0"01D6C2%
+    \Umathchardef\beta      "0"0"01D6C3%
+    \Umathchardef\gamma     "0"0"01D6C4%
+    \Umathchardef\delta     "0"0"01D6C5%
+    \Umathchardef\varepsilon"0"0"01D6C6%
+    \Umathchardef\zeta      "0"0"01D6C7%
+    \Umathchardef\eta       "0"0"01D6C8%
+    \Umathchardef\theta     "0"0"01D6C9%
+    \Umathchardef\iota      "0"0"01D6CA%
+    \Umathchardef\kappa     "0"0"01D6CB%
+    \Umathchardef\lambda    "0"0"01D6CC%
+    \Umathchardef\mu        "0"0"01D6CD%
+    \Umathchardef\nu        "0"0"01D6CE%
+    \Umathchardef\xi        "0"0"01D6CF%
+    \Umathchardef\omicron   "0"0"01D6D0%
+    \Umathchardef\pi        "0"0"01D6D1%
+    \Umathchardef\rho       "0"0"01D6D2%
+    \Umathchardef\varsigma  "0"0"01D6D3%
+    \Umathchardef\sigma     "0"0"01D6D4%
+    \Umathchardef\tau       "0"0"01D6D5%
+    \Umathchardef\upsilon   "0"0"01D6D6%
+    \Umathchardef\varphi    "0"0"01D6D7%
+    \Umathchardef\chi       "0"0"01D6D8%
+    \Umathchardef\psi       "0"0"01D6D9%
+    \Umathchardef\omega     "0"0"01D6DA%
+    \Umathchardef\epsilon   "0"0"01D6DC%
+    \Umathchardef\vartheta  "0"0"01D6DD%
+    \Umathchardef\varkappa  "0"0"01D6DE%
+    \Umathchardef\phi       "0"0"01D6DF%
+    \Umathchardef\varrho    "0"0"01D6E0%
+    \Umathchardef\varpi     "0"0"01D6E1%
+    \Umathchardef\varTheta  "0"0"01D6B9%
+    \Umathchardef\digamma   "0"0"01D7CA%
     \relax
 }
 
 \everymathbi {%
+    % codes
     \Umathcode"0030="0"0"1D7CE%
     \Umathcode"0031="0"0"1D7CF%
     \Umathcode"0032="0"0"1D7D0%
@@ -590,11 +776,138 @@
     \Umathcode"03F5="0"0"1D750%
     \Umathcode"2202="0"0"1D74F%
     \Umathcode"2207="0"0"1D735%
+    % commands
+    \Umathchardef\Alpha     "0"0"01D71C%
+    \Umathchardef\Beta      "0"0"01D71D%
+    \Umathchardef\Gamma     "0"0"01D71E%
+    \Umathchardef\Delta     "0"0"01D71F%
+    \Umathchardef\Epsilon   "0"0"01D720%
+    \Umathchardef\Zeta      "0"0"01D721%
+    \Umathchardef\Eta       "0"0"01D722%
+    \Umathchardef\Theta     "0"0"01D723%
+    \Umathchardef\Iota      "0"0"01D724%
+    \Umathchardef\Kappa     "0"0"01D725%
+    \Umathchardef\Lambda    "0"0"01D726%
+    \Umathchardef\Mu        "0"0"01D727%
+    \Umathchardef\Nu        "0"0"01D728%
+    \Umathchardef\Xi        "0"0"01D729%
+    \Umathchardef\Omicron   "0"0"01D72A%
+    \Umathchardef\Pi        "0"0"01D72B%
+    \Umathchardef\Rho       "0"0"01D72C%
+    \Umathchardef\Sigma     "0"0"01D72E%
+    \Umathchardef\Tau       "0"0"01D72F%
+    \Umathchardef\Upsilon   "0"0"01D730%
+    \Umathchardef\Phi       "0"0"01D731%
+    \Umathchardef\Chi       "0"0"01D732%
+    \Umathchardef\Psi       "0"0"01D733%
+    \Umathchardef\Omega     "0"0"01D734%
+    \Umathchardef\alpha     "0"0"01D736%
+    \Umathchardef\beta      "0"0"01D737%
+    \Umathchardef\gamma     "0"0"01D738%
+    \Umathchardef\delta     "0"0"01D739%
+    \Umathchardef\varepsilon"0"0"01D73A%
+    \Umathchardef\zeta      "0"0"01D73B%
+    \Umathchardef\eta       "0"0"01D73C%
+    \Umathchardef\theta     "0"0"01D73D%
+    \Umathchardef\iota      "0"0"01D73E%
+    \Umathchardef\kappa     "0"0"01D73F%
+    \Umathchardef\lambda    "0"0"01D740%
+    \Umathchardef\mu        "0"0"01D741%
+    \Umathchardef\nu        "0"0"01D742%
+    \Umathchardef\xi        "0"0"01D743%
+    \Umathchardef\omicron   "0"0"01D744%
+    \Umathchardef\pi        "0"0"01D745%
+    \Umathchardef\rho       "0"0"01D746%
+    \Umathchardef\varsigma  "0"0"01D747%
+    \Umathchardef\sigma     "0"0"01D748%
+    \Umathchardef\tau       "0"0"01D749%
+    \Umathchardef\upsilon   "0"0"01D74A%
+    \Umathchardef\varphi    "0"0"01D74B%
+    \Umathchardef\chi       "0"0"01D74C%
+    \Umathchardef\psi       "0"0"01D74D%
+    \Umathchardef\omega     "0"0"01D74E%
+    \Umathchardef\epsilon   "0"0"01D750%
+    \Umathchardef\vartheta  "0"0"01D751%
+    \Umathchardef\varkappa  "0"0"01D752%
+    \Umathchardef\phi       "0"0"01D753%
+    \Umathchardef\varrho    "0"0"01D754%
+    \Umathchardef\varpi     "0"0"01D755%
+    \Umathchardef\varTheta  "0"0"01D72D%
+    \Umathchardef\digamma   "0"0"01D7CA%
     \relax
 }
 
 \everymathtt {%
     % not done
+}
+
+% Nothing special here:
+
+\let\mit\it
+
+% We use a special family for this, not that oldstyle in math makes
+% much sense, it's more that in good old tex oldstyle was taken from
+% math fonts. So, just something compatible:
+
+\def\oldstyle{\fam1\relax\tenos\relax}
+
+% Again a text and math one and it had better be used grouped.
+
+\def\cal{\fam0\relax\the\everymathcal\relax\tenit\relax}
+
+\everymathcal {%
+    \Umathcode"0041="0"0"1D49C% A
+    \Umathcode"0042="0"0"0212C% B
+    \Umathcode"0043="0"0"1D49E% C
+    \Umathcode"0044="0"0"1D49F% D
+    \Umathcode"0045="0"0"02130% E
+    \Umathcode"0046="0"0"02131% F
+    \Umathcode"0047="0"0"1D4A2% G
+    \Umathcode"0048="0"0"0210B% H
+    \Umathcode"0049="0"0"02110% I
+    \Umathcode"004A="0"0"1D4A5% J
+    \Umathcode"004B="0"0"1D4A6% K
+    \Umathcode"004C="0"0"02112% L
+    \Umathcode"004D="0"0"02133% M
+    \Umathcode"004E="0"0"1D4A9% N
+    \Umathcode"004F="0"0"1D4AA% O
+    \Umathcode"0050="0"0"1D4AB% P
+    \Umathcode"0051="0"0"1D4AC% Q
+    \Umathcode"0052="0"0"0211B% R
+    \Umathcode"0053="0"0"1D4AE% S
+    \Umathcode"0054="0"0"1D4AF% T
+    \Umathcode"0055="0"0"1D4B0% U
+    \Umathcode"0056="0"0"1D4B1% V
+    \Umathcode"0057="0"0"1D4B2% W
+    \Umathcode"0058="0"0"1D4B3% X
+    \Umathcode"0059="0"0"1D4B4% Y
+    \Umathcode"005A="0"0"1D4B5% Z
+    \Umathcode"0061="0"0"1D4B6% a
+    \Umathcode"0062="0"0"1D4B7% b
+    \Umathcode"0063="0"0"1D4B8% c
+    \Umathcode"0064="0"0"1D4B9% d
+    \Umathcode"0065="0"0"0212F% e
+    \Umathcode"0066="0"0"1D4BB% f
+    \Umathcode"0067="0"0"0210A% g
+    \Umathcode"0068="0"0"1D4BD% h
+    \Umathcode"0069="0"0"1D4BE% i
+    \Umathcode"006A="0"0"1D4BF% j
+    \Umathcode"006B="0"0"1D4C0% k
+    \Umathcode"006C="0"0"1D4C1% l
+    \Umathcode"006D="0"0"1D4C2% m
+    \Umathcode"006E="0"0"1D4C3% n
+    \Umathcode"006F="0"0"02134% o
+    \Umathcode"0070="0"0"1D4C5% p
+    \Umathcode"0071="0"0"1D4C6% q
+    \Umathcode"0072="0"0"1D4C7% r
+    \Umathcode"0073="0"0"1D4C8% s
+    \Umathcode"0074="0"0"1D4C9% t
+    \Umathcode"0075="0"0"1D4CA% u
+    \Umathcode"0076="0"0"1D4CB% v
+    \Umathcode"0077="0"0"1D4CC% w
+    \Umathcode"0078="0"0"1D4CD% x
+    \Umathcode"0079="0"0"1D4CE% y
+    \Umathcode"007A="0"0"1D4CF% z
 }
 
 \Udelcode  "00021 = "0 "00021
@@ -1831,6 +2144,44 @@
 \def\Zeta                      {\Umathchar  "0"0"000396 }
 \def\zeta                      {\Umathchar  "0"0"0003B6 }
 
+%D The following are suggested by Bruno. As I don't use plain and as the above are
+%D taken from text unicode greek I suppose his list is better:
+
+\def\alpha                     {\Umathchar  "0"0"01D6FC }
+\def\beta                      {\Umathchar  "0"0"01D6FD }
+\def\chi                       {\Umathchar  "0"0"01D712 }
+\def\delta                     {\Umathchar  "0"0"01D6FF }
+\def\digamma                   {\Umathchar  "0"0"0003DC }
+\def\epsilon                   {\Umathchar  "0"0"01D716 }
+\def\eta                       {\Umathchar  "0"0"01D702 }
+\def\gamma                     {\Umathchar  "0"0"01D6FE }
+\def\iota                      {\Umathchar  "0"0"01D704 }
+\def\kappa                     {\Umathchar  "0"0"01D705 }
+\def\lambda                    {\Umathchar  "0"0"01D706 }
+\def\mu                        {\Umathchar  "0"0"01D707 }
+\def\nu                        {\Umathchar  "0"0"01D708 }
+\def\omega                     {\Umathchar  "0"0"01D714 }
+\def\omicron                   {\Umathchar  "0"0"01D70A }
+\def\phi                       {\Umathchar  "0"0"01D719 }
+\def\pi                        {\Umathchar  "0"0"01D70B }
+\def\psi                       {\Umathchar  "0"0"01D713 }
+\def\rho                       {\Umathchar  "0"0"01D70C }
+\def\sigma                     {\Umathchar  "0"0"01D70E }
+\def\tau                       {\Umathchar  "0"0"01D70F }
+\def\theta                     {\Umathchar  "0"0"01D703 }
+\def\upsilon                   {\Umathchar  "0"0"01D710 }
+\def\varepsilon                {\Umathchar  "0"0"01D700 }
+\def\varkappa                  {\Umathchar  "0"0"01D718 }
+\def\varphi                    {\Umathchar  "0"0"01D711 }
+\def\varpi                     {\Umathchar  "0"0"01D71B }
+\def\varrho                    {\Umathchar  "0"0"01D71A }
+\def\varsigma                  {\Umathchar  "0"0"01D70D }
+\def\vartheta                  {\Umathchar  "0"0"01D717 }
+\def\xi                        {\Umathchar  "0"0"01D709 }
+\def\zeta                      {\Umathchar  "0"0"01D701 }
+
+\def\varTheta                  {\Umathchar  "0"0"0003F4 }
+
 % a few definitions:
 
 \def\sqrt     {\Uroot "0 "221A{}}
@@ -1882,5 +2233,23 @@
 \def\c#1{#1^^^^0327}
 \def\k#1{#1^^^^0328} % not in plain
 \def\b#1{#1^^^^0331}
+
+% for Bruno, when he tests this file with xetex:
+
+\ifdefined\directlua \else
+
+    \catcode`@=11
+
+    \def\sqrt{\Uradical "0 "221A }
+
+    \def\root#1\of
+      {\setbox\rootbox\hbox\bgroup
+          $\m@th\scriptscriptstyle{#1}$%
+       \egroup}%
+       \mathpalette\r@@t}
+
+    \catcode`@=12
+
+\fi
 
 \endinput

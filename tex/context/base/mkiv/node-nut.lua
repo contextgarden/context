@@ -205,7 +205,9 @@ end
 
 if LUATEXVERSION < 1.005 then
     local getfield = direct.getfield
-    function direct.getsup(n) return getfield(n,"sup") end
+    function direct.getnucleus(n) return getfield(n,"nucleus") end
+    function direct.getsub    (n) return getfield(n,"sub") end
+    function direct.getsup    (n) return getfield(n,"sup") end
 end
 
 -- if LUATEXVERSION < 1.004 then

@@ -160,11 +160,12 @@ local function applyaxis(glyph,shape,deltas,dowidth)
     local points = shape.points
     if points then
         local nofpoints = #points
-        local h = nofpoints + 1 -- weird, the example font seems to have left first
-        ----- l = nofpoints + 2
+        local h = nofpoints + 2 -- weird, the example font seems to have left first
+        local l = nofpoints + 1
         ----- v = nofpoints + 3
         ----- t = nofpoints + 4
-        local width = dowidth and glyph.width -- what if hvar
+        local dw = 0
+        local dl = 0
         for i=1,#deltas do
             local deltaset = deltas[i]
             local xvalues  = deltaset.xvalues
@@ -190,10 +191,22 @@ local function applyaxis(glyph,shape,deltas,dowidth)
                                 p[2] = p[2] + factor * y
                             end
                         end
-                    elseif width then -- and p == h then
-                        local x = xvalues[d+1]
-                        if x then
-                            width = width + factor * x
+                    elseif dowidth then
+                        -- we've now ran into phantom points which is a bit fuzzy because:
+                        -- are there gaps in there?
+                        --
+                        -- todo: move this outside the loop (when we can be sure of all 4 being there)
+                        if d == h then
+                            -- we have a phantom point hadvance
+                            local x = xvalues[i]
+                            if x then
+                                dw = dw + factor * x
+                            end
+                        elseif d == l then
+                            local x = xvalues[i]
+                            if x then
+                                dl = dl + factor * x
+                            end
                         end
                     end
                 end
@@ -213,10 +226,14 @@ local function applyaxis(glyph,shape,deltas,dowidth)
                         end
                     end
                 end
-                if width then
+                if dowidth then
                     local x = xvalues[h]
                     if x then
-                        width = width + factor * x
+                        dw = dw + factor * x
+                    end
+                    local x = xvalues[l]
+                    if x then
+                        dl = dl + factor * x
                     end
                 end
             end
@@ -226,8 +243,10 @@ local function applyaxis(glyph,shape,deltas,dowidth)
      --     p[1] = round(p[1])
      --     p[2] = round(p[2])
      -- end
-       if width then
-            glyph.width = width
+        if dowidth then
+            local width = glyph.width or 0
+         -- local lsb   = glyph.lsb or 0
+            glyph.width = width + dw - dl
         end
     else
         report("no points for glyph %a",glyph.name)
@@ -1066,7 +1085,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
         local data        = { }
         local tuples      = { }
         local glyphdata   = fontdata.glyphs
-        local dowidth     = fontdata.variabledata.hvarwidths
+        local dowidth     = not fontdata.variabledata.hvarwidths
         -- there is one more offset (so that one can calculate the size i suppose)
         -- so we could test for overflows but we simply assume sane font files
         if bittest(flags,0x0001) then

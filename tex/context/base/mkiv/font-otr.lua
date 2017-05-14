@@ -1130,9 +1130,10 @@ readers.hmtx = function(f,fontdata,specification)
             if width ~= 0 then
                 glyph.width = width
             end
-         -- if leftsidebearing ~= 0 then
-         --     glyph.lsb = leftsidebearing
-         -- end
+-- for now
+--             if leftsidebearing ~= 0 then
+--                 glyph.lsb = leftsidebearing
+--             end
         end
         -- The next can happen in for instance a monospace font or in a cjk font
         -- with fixed widths.

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/12/17 22:40:43
+-- merge date  : 05/14/17 19:09:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -11857,8 +11857,10 @@ local function applyaxis(glyph,shape,deltas,dowidth)
   local points=shape.points
   if points then
     local nofpoints=#points
-    local h=nofpoints+1
-    local width=dowidth and glyph.width 
+    local h=nofpoints+2 
+    local l=nofpoints+1
+    local dw=0
+    local dl=0
     for i=1,#deltas do
       local deltaset=deltas[i]
       local xvalues=deltaset.xvalues
@@ -11883,10 +11885,17 @@ local function applyaxis(glyph,shape,deltas,dowidth)
                 p[2]=p[2]+factor*y
               end
             end
-          elseif width then 
-            local x=xvalues[d+1]
-            if x then
-              width=width+factor*x
+          elseif dowidth then
+            if d==h then
+              local x=xvalues[i]
+              if x then
+                dw=dw+factor*x
+              end
+            elseif d==l then
+              local x=xvalues[i]
+              if x then
+                dl=dl+factor*x
+              end
             end
           end
         end
@@ -11906,16 +11915,21 @@ local function applyaxis(glyph,shape,deltas,dowidth)
             end
           end
         end
-        if width then
+        if dowidth then
           local x=xvalues[h]
           if x then
-            width=width+factor*x
+            dw=dw+factor*x
+          end
+          local x=xvalues[l]
+          if x then
+            dl=dl+factor*x
           end
         end
       end
     end
-    if width then
-      glyph.width=width
+    if dowidth then
+      local width=glyph.width or 0
+      glyph.width=width+dw-dl
     end
   else
     report("no points for glyph %a",glyph.name)
@@ -12668,7 +12682,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
     local data={}
     local tuples={}
     local glyphdata=fontdata.glyphs
-    local dowidth=fontdata.variabledata.hvarwidths
+    local dowidth=not fontdata.variabledata.hvarwidths
     if bittest(flags,0x0001) then
       for i=1,nofglyphs+1 do
         data[i]=dataoffset+readulong(f)

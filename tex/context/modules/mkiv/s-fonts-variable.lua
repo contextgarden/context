@@ -18,6 +18,9 @@ local context = context
 local NC, NR, HL, ML = context.NC, context.NR, context.HL, context.ML
 local bold, monobold, mono, formattedmono = context.bold, context.monobold, context.mono, context.formatted.mono
 
+local show_glyphs = false  trackers.register("modules.fonts.variables.glyphs", function(v) show_glyphs = v end)
+local show_kerns  = false  trackers.register("modules.fonts.variables.kerns",  function(v) show_kerns  = v end)
+
 function moduledata.fonts.variable.showvariations(specification)
 
     specification = interfaces.checkedspecification(specification)
@@ -237,11 +240,21 @@ end
         context.startsubject { title = instance }
             context.start()
             context.definedfont { "name:" .. instance .. "*default" }
+            context.start()
+            if show_glyphs then
+                context.showglyphs()
+            end
+            if show_kerns then
+                context.showfontkerns()
+            end
             if sample and sample ~= "" then
                 context(sample)
             else
                 context.input("zapf.tex")
             end
+            context.stop()
+            context.blank { "big,samepage"}
+            context.showfontspacing()
             context.par()
             context.stop()
         context.stopsubject()

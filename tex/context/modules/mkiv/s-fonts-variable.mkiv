@@ -26,6 +26,18 @@
 
 \installmodulecommandluasingle \showfontvariations {moduledata.fonts.variable.showvariations}
 
+\unexpanded\def\showfontspacing
+  {\begingroup
+   \scratchskip \interwordspace plus \interwordstretch minus \interwordshrink
+   \normalexpanded{\hpack\bgroup
+      \tttf
+      sp: \the\scratchskip   \hskip\emwidth
+      es: \the\extraspace\hskip\emwidth
+      ex: \the\exheight  \hskip\emwidth
+      em: \the\emwidth   \hskip\emwidth
+   \egroup}%
+   \endgroup}
+
 \stopmodule
 
 \continueifinputfile{s-fonts-variable.mkiv}
@@ -33,6 +45,9 @@
 \usemodule[art-01]
 
 \setuphead[section][before={\testpage[5]\blank[2*big]}]
+
+\enabletrackers[modules.fonts.variables.glyphs]
+\enabletrackers[modules.fonts.variables.kerns]
 
 \starttext
 
@@ -57,8 +72,9 @@
         \char983040\relax\par
     \stopbuffer
 
-%     \showfontkerns
-%     \showglyphs
+%     \showfontvariations
+%       [font=file:VotoSerifGX.ttf,
+%        max=6]
 
     \showfontvariations
       [font=file:adobevfprototype.otf]

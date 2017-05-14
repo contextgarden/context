@@ -28,6 +28,7 @@ local appendgroup      = sequencers.appendgroup
 local appendaction     = sequencers.appendaction
 
 local fontchars        = fonts.hashes.characters
+local fontproperties   = fonts.hashes.properties
 
 local mathfontparameteractions = sequencers.new {
     name      = "mathparameters",
@@ -664,9 +665,19 @@ blocks["uppercasedoublestruck"].gaps = {
 
 local stack = { }
 
-function mathematics.registerfallbackid(n,id)
+function mathematics.registerfallbackid(n,id,name)
+    if trace_collecting then
+        report_math("resolved fallback font %i, name %a, id %a, used %a",
+            n,name,id,fontproperties[id].fontname)
+    end
     stack[#stack][n] = id
 end
+
+interfaces.implement { -- will be shared with text
+    name      = "registerfontfallbackid",
+    arguments = { "integer", "integer", "string" },
+    actions   = mathematics.registerfallbackid,
+}
 
 function mathematics.resolvefallbacks(target,specification,fallbacks)
     local definitions = fonts.collections.definitions[fallbacks]
@@ -733,8 +744,8 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
                         end
                         if force or (not done[unic] and not characters[unic]) then
                             if trace_collecting then
-                                report_math("replacing math character %C by %C using vector %a and font %a named %a%s%s",
-                                    unic,unicode,fallbacks,id,name,check and ", checked",gap and ", gap plugged")
+                                report_math("replacing math character %C by %C using vector %a and font id %a for %a%s%s",
+                                    unic,unicode,fallbacks,id,fontproperties[id].fontname,check and ", checked",gap and ", gap plugged")
                             end
                             characters[unic] = copiedglyph(target,characters,chars,unicode,index)
                             done[unic] = true
