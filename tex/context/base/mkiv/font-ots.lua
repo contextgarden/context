@@ -4289,9 +4289,9 @@ local function spaceinitializer(tfmdata,value) -- attr
                                         if type(kern) ~= "table" then
                                             left[k] = kern
                                         elseif single then
-                                            left[k] = v[3]
+                                            left[k] = kern[3]
                                         else
-                                            local one = v[1]
+                                            local one = kern[1]
                                             if one then
                                                 left[k] = one[3]
                                             end

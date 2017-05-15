@@ -58,6 +58,8 @@ for k, c in next, chardata do
                 else
                     classifiers[k] = s_rest
                 end
+            elseif c.category == "mn" then
+                classifiers[k] = s_mark
             end
         end
     end

@@ -40,7 +40,7 @@ else
 
     function otf.getactualtext(s)
         return
-            "/Span << /ActualText <feff" .. n .. "> >> BDC",
+            "/Span << /ActualText <feff" .. s .. "> >> BDC",
             "EMC"
     end
 

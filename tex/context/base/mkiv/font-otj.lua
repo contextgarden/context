@@ -1434,6 +1434,35 @@ function injections.isspace(n,threshold,id)
     end
 end
 
+-- We have a plugin so that Kai can use the next in plain. Such a plugin is rather application
+-- specific.
+--
+-- local getboth = nodes.direct.getboth
+-- local getid   = nodes.direct.getid
+-- local getprev = nodes.direct.getprev
+-- local getnext = nodes.direct.getnext
+--
+-- local whatsit_code = nodes.nodecodes.whatsit
+-- local glyph_code   = nodes.nodecodes.glyph
+--
+-- local function getspaceboth(n) -- fragile: what it prev/next has no width field
+--     local prev, next = getboth(n)
+--     while prev and (getid(prev) == whatsit_code or (getwidth(prev) == 0 and getid(prev) ~= glyph_code)) do
+--         prev = getprev(prev)
+--     end
+--     while next and (getid(next) == whatsit_code or (getwidth(next) == 0 and getid(next) ~= glyph_code)) do
+--         next = getnext(next)
+--     end
+-- end
+--
+-- injections.installgetspaceboth(getspaceboth)
+
+local getspaceboth = getboth
+
+function injections.installgetspaceboth(gb)
+    getspaceboth = gb or getboth
+end
+
 local function injectspaces(head)
 
     if not triggers then
@@ -1458,9 +1487,9 @@ local function injectspaces(head)
     end
 
     for n in traverse_id(glue_code,tonut(head)) do
-        local prev, next = getboth(n)
-        local prevchar = ischar(prev)
-        local nextchar = ischar(next)
+        local prev, next = getspaceboth(n)
+        local prevchar = prev and ischar(prev)
+        local nextchar = next and ischar(next)
         if nextchar then
             local font = getfont(next)
             local trig = triggers[font]

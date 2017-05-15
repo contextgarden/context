@@ -1296,3 +1296,52 @@ do -- another hack for a crappy font
     }
 
 end
+
+do
+
+    local tounicode = fonts.mappings.tounicode
+
+    local function check(tfmdata,key,value)
+        if value == "ligatures" then
+            local private   = fonts.constructors and fonts.constructors.privateoffset or 0xF0000
+            local collected = fonts.handlers.otf.readers.getcomponents(tfmdata.shared.rawdata)
+            if collected and next(collected)then
+                for unicode, char in next, tfmdata.characters do
+                    if true then -- if unicode >= private or (unicode >= 0xE000 and unicode <= 0xF8FF) then
+                        local u = collected[unicode]
+                        if u then
+                            local n = #u
+                            for i=1,n do
+                                if u[i] > private then
+                                    n = 0
+                                    break
+                                end
+                            end
+                            if n > 0 then
+                                if n == 1 then
+                                    u = u[1]
+                                end
+                                char.unicode   = u
+                                char.tounicode = tounicode(u)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- forceunicodes=ligatures : aggressive lig resolving (e.g. for emoji)
+    --
+    -- kind of like: \enabletrackers[fonts.mapping.forceligatures]
+
+    registerotffeature {
+        name         = "forceunicodes",
+        description  = "forceunicodes",
+        manipulators = {
+            base = check,
+            node = check,
+        }
+    }
+
+end

@@ -19,9 +19,9 @@ local trace_mapping = false  trackers.register("fonts.mapping", function(v) trac
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
 
--- force_ligatures is true per 2017-04-20 so that these emoji's with bad names work too
+-- force_ligatures was true for a while so that these emoji's with bad names work too
 
-local force_ligatures = true  directives.register("fonts.mapping.forceligatures",function(v) force_ligatures = v end)
+local force_ligatures = false  directives.register("fonts.mapping.forceligatures",function(v) force_ligatures = v end)
 
 local fonts         = fonts or { }
 local mappings      = fonts.mappings or { }
@@ -279,6 +279,9 @@ do
         ffl = { name = "f_f_l", unicode = { 0x66, 0x66, 0x6C }, mess = 0xFB04 },
         fj  = { name = "f_j",   unicode = { 0x66, 0x6A } },
         fk  = { name = "f_k",   unicode = { 0x66, 0x6B } },
+
+     -- endash = { name = "endash", unicode = 0x2013, mess = 0x2013 },
+     -- emdash = { name = "emdash", unicode = 0x2014, mess = 0x2014 },
     }
 
     local o = { }
@@ -299,7 +302,7 @@ do
 
 end
 
-function mappings.addtounicode(data,filename,checklookups)
+function mappings.addtounicode(data,filename,checklookups,forceligatures)
     local resources = data.resources
     local unicodes  = resources.unicodes
     if not unicodes then
@@ -517,22 +520,26 @@ function mappings.addtounicode(data,filename,checklookups)
 
     if not collected then
         -- move on
-    elseif force_ligatures then
+    elseif forceligatures or force_ligatures then
         for i=1,#dlist do
             local du = dlist[i]
-            local u  = collected[du] -- always tables
-            if u then
-                resolve(descriptions[du],u)
+            if du >= private or (du >= 0xE000 and du <= 0xF8FF) then
+                local u  = collected[du] -- always tables
+                if u then
+                    resolve(descriptions[du],u)
+                end
             end
         end
     else
         for i=1,#dlist do
-            local du    = dlist[i]
-            local glyph = descriptions[du]
-            if glyph.class == "ligature" and not glyph.unicode then
-                local u = collected[du] -- always tables
-                if u then
-                     resolve(glyph,u)
+            local du = dlist[i]
+            if du >= private or (du >= 0xE000 and du <= 0xF8FF) then
+                local glyph = descriptions[du]
+                if glyph.class == "ligature" and not glyph.unicode then
+                    local u = collected[du] -- always tables
+                    if u then
+                         resolve(glyph,u)
+                    end
                 end
             end
         end
