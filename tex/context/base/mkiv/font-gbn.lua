@@ -71,7 +71,8 @@ function nodes.handlers.setbasemodepass(v)
     basemodepass = v
 end
 
-function nodes.handlers.nodepass(head)
+-------- nodes.handlers.nodepass(head)
+function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
     local fontdata = fonts.hashes.identifiers
     if fontdata then
         local nuthead   = tonut(head)
@@ -81,6 +82,7 @@ function nodes.handlers.nodepass(head)
         local basefont  = nil
         local variants  = nil
         local redundant = nil
+        local nofused   = 0
         for n in traverse_id(glyph_code,nuthead) do
             local font = getfont(n)
             if font ~= prevfont then
@@ -97,6 +99,7 @@ function nodes.handlers.nodepass(head)
                             local processors = shared.processes
                             if processors and #processors > 0 then
                                 usedfonts[font] = processors
+                                nofused = nofused + 1
                             elseif basemodepass then
                                 basefont = { n, nil }
                                 basefonts[#basefonts+1] = basefont
@@ -178,6 +181,7 @@ function nodes.handlers.nodepass(head)
                                     local processors = shared.processes
                                     if processors and #processors > 0 then
                                         usedfonts[font] = processors
+                                        nofused = nofused + 1
                                     end
                                 end
                             end
@@ -189,7 +193,7 @@ function nodes.handlers.nodepass(head)
         if next(usedfonts) then
             for font, processors in next, usedfonts do
                 for i=1,#processors do
-                    head = processors[i](head,font,0) or head
+                    head = processors[i](head,font,0,direction,nofused) or head
                 end
             end
         end
@@ -241,9 +245,9 @@ local basepass    = nodes.handlers.basepass
 local injectpass  = nodes.injections.handler
 local protectpass = nodes.handlers.protectglyphs
 
-function nodes.simple_font_handler(head)
+function nodes.simple_font_handler(head,groupcode,size,packtype,direction)
     if head then
-        head = nodepass(head)
+        head = nodepass(head,groupcode,size,packtype,direction)
         head = injectpass(head)
         if not basemodepass then
             head = basepass(head)

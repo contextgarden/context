@@ -449,7 +449,7 @@ function handlers.characters(head,groupcode,size,packtype,direction)
         local attr = a > 0 and 0 or false -- 0 is the savest way
         for font, processors in next, usedfonts do -- unordered
             for i=1,#processors do
-                local h, d = processors[i](head,font,attr,direction)
+                local h, d = processors[i](head,font,attr,direction,u)
                 if d then
                     if h then
                         head = h
@@ -478,7 +478,7 @@ function handlers.characters(head,groupcode,size,packtype,direction)
         for font, dynamics in next, attrfonts do
             for attribute, processors in next, dynamics do -- unordered, attr can switch in between
                 for i=1,#processors do
-                    local h, d = processors[i](head,font,attribute,direction)
+                    local h, d = processors[i](head,font,attribute,direction,a)
                     if d then
                         if h then
                             head = h

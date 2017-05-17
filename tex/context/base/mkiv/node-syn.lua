@@ -162,6 +162,9 @@ local function flushpreamble()
 end
 
 local function flushpostamble()
+    if not f then
+        return
+    end
     writeanchor()
     f:write("Postamble:\n")
     f:write("Count:"..nofobjects.."\n")

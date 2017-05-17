@@ -543,6 +543,8 @@ function lpdf.escaped(str)
     return lpegmatch(escaped,str) or str
 end
 
+local pdfnull, pdfboolean, pdfreference, pdfverbose
+
 do
 
     local p_null  = { } setmetatable(p_null, mt_z)

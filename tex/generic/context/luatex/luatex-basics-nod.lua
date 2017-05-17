@@ -462,3 +462,37 @@ function nuts.copy_only_glyphs(current)
     end
     return head
 end
+
+nuts.uses_font  = direct.uses_font
+
+if not nuts.uses_font then
+    local getdisc = nuts.getdisc
+    local getfont = nuts.getfont
+    function nuts.uses_font(n,font)
+        local pre, post, replace = getdisc(n)
+        if pre then
+            -- traverse_char
+            for n in traverse_id(glyph_code,pre) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        if post then
+            for n in traverse_id(glyph_code,post) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        if replace then
+            for n in traverse_id(glyph_code,replace) do
+                if getfont(n) == font then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+end
+

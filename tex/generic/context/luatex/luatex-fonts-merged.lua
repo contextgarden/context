@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/15/17 21:48:19
+-- merge date  : 05/17/17 19:20:56
 
 do -- begin closure to overcome local limits and interference
 
@@ -5309,6 +5309,36 @@ function nuts.copy_only_glyphs(current)
     previous=n
   end
   return head
+end
+nuts.uses_font=direct.uses_font
+if not nuts.uses_font then
+  local getdisc=nuts.getdisc
+  local getfont=nuts.getfont
+  function nuts.uses_font(n,font)
+    local pre,post,replace=getdisc(n)
+    if pre then
+      for n in traverse_id(glyph_code,pre) do
+        if getfont(n)==font then
+          return true
+        end
+      end
+    end
+    if post then
+      for n in traverse_id(glyph_code,post) do
+        if getfont(n)==font then
+          return true
+        end
+      end
+    end
+    if replace then
+      for n in traverse_id(glyph_code,replace) do
+        if getfont(n)==font then
+          return true
+        end
+      end
+    end
+    return false
+  end
 end
 
 end -- closure
@@ -22198,6 +22228,7 @@ local setcomponents=nuts.setcomponents
 local getdir=nuts.getdir
 local getwidth=nuts.getwidth
 local ischar=nuts.is_char
+local usesfont=nuts.uses_font
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
 local copy_node_list=nuts.copy_list
@@ -25082,102 +25113,167 @@ end
 otf.helpers=otf.helpers or {}
 otf.helpers.txtdirstate=txtdirstate
 otf.helpers.pardirstate=pardirstate
-local function featuresprocessor(head,font,attr,direction)
-  local sequences=sequencelists[font] 
-  if not sequencelists then
-    return head,false
-  end
-  nesting=nesting+1
-  if nesting==1 then
-    currentfont=font
-    tfmdata=fontdata[font]
-    descriptions=tfmdata.descriptions 
-    characters=tfmdata.characters  
- local resources=tfmdata.resources
-    marks=resources.marks
-    classes=resources.classes
-    threshold,
-    factor=getthreshold(font)
-    checkmarks=tfmdata.properties.checkmarks
-  elseif currentfont~=font then
-    report_warning("nested call with a different font, level %s, quitting",nesting)
-    nesting=nesting-1
-    return head,false
-  end
-  head=tonut(head)
-  if trace_steps then
-    checkstep(head)
-  end
-  local initialrl=direction=="TRT" and -1 or 0
-  local done=false
-  local datasets=otf.dataset(tfmdata,font,attr)
-  local dirstack={} 
-  sweephead={}
-  for s=1,#datasets do
-    local dataset=datasets[s]
-    local attribute=dataset[2]
-    local sequence=dataset[3] 
-    local rlparmode=initialrl
-    local topstack=0
-    local typ=sequence.type
-    local gpossing=typ=="gpos_single" or typ=="gpos_pair" 
-    local handler=handlers[typ]
-    local steps=sequence.steps
-    local nofsteps=sequence.nofsteps
-    if not steps then
-      local h,d,ok=handler(head,head,dataset,sequence,nil,nil,nil,0,font,attr)
-      if ok then
-        done=true
-        if h then
-          head=h
-        end
-      end
-    elseif typ=="gsub_reversecontextchain" then
-      local start=find_node_tail(head)
-      local rlmode=0 
-      while start do
-        local char=ischar(start,font)
-        if char then
-          local a 
-          if attr then
-            a=getattr(start,0)
+do
+  local fastdisc=false directives.register("otf.fastdisc",function(v) fastdisc=v end)
+  function otf.featuresprocessor(head,font,attr,direction,n)
+    local sequences=sequencelists[font] 
+    if not sequencelists then
+      return head,false
+    end
+    nesting=nesting+1
+    if nesting==1 then
+      currentfont=font
+      tfmdata=fontdata[font]
+      descriptions=tfmdata.descriptions 
+      characters=tfmdata.characters  
+   local resources=tfmdata.resources
+      marks=resources.marks
+      classes=resources.classes
+      threshold,
+      factor=getthreshold(font)
+      checkmarks=tfmdata.properties.checkmarks
+    elseif currentfont~=font then
+      report_warning("nested call with a different font, level %s, quitting",nesting)
+      nesting=nesting-1
+      return head,false
+    end
+    head=tonut(head)
+    if trace_steps then
+      checkstep(head)
+    end
+    local initialrl=direction=="TRT" and -1 or 0
+    local done=false
+    local datasets=otf.dataset(tfmdata,font,attr)
+    local dirstack={} 
+    sweephead={}
+    local discs=fastdisc and n and n>1 and setmetatableindex(function(t,k)
+      local v=usesfont(k,font)
+      t[k]=v
+      return v
+    end)
+    for s=1,#datasets do
+      local dataset=datasets[s]
+      local attribute=dataset[2]
+      local sequence=dataset[3] 
+      local rlparmode=initialrl
+      local topstack=0
+      local typ=sequence.type
+      local gpossing=typ=="gpos_single" or typ=="gpos_pair" 
+      local handler=handlers[typ]
+      local steps=sequence.steps
+      local nofsteps=sequence.nofsteps
+      if not steps then
+        local h,d,ok=handler(head,head,dataset,sequence,nil,nil,nil,0,font,attr)
+        if ok then
+          done=true
+          if h then
+            head=h
           end
-          if not a or (a==attr) then
-            for i=1,nofsteps do
-              local step=steps[i]
-              local lookupcache=step.coverage
-              if lookupcache then
-                local lookupmatch=lookupcache[char]
-                if lookupmatch then
-                  local ok
-                  head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                  if ok then
-                    done=true
-                    break
-                  end
-                end
-              else
-                report_missing_coverage(dataset,sequence)
-              end
+        end
+      elseif typ=="gsub_reversecontextchain" then
+        local start=find_node_tail(head)
+        local rlmode=0 
+        while start do
+          local char=ischar(start,font)
+          if char then
+            local a 
+            if attr then
+              a=getattr(start,0)
             end
-            if start then
+            if not a or (a==attr) then
+              for i=1,nofsteps do
+                local step=steps[i]
+                local lookupcache=step.coverage
+                if lookupcache then
+                  local lookupmatch=lookupcache[char]
+                  if lookupmatch then
+                    local ok
+                    head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                    if ok then
+                      done=true
+                      break
+                    end
+                  end
+                else
+                  report_missing_coverage(dataset,sequence)
+                end
+              end
+              if start then
+                start=getprev(start)
+              end
+            else
               start=getprev(start)
             end
           else
             start=getprev(start)
           end
-        else
-          start=getprev(start)
         end
-      end
-    else
-      local start=head
-      local rlmode=initialrl
-      if nofsteps==1 then 
-        local step=steps[1]
-        local lookupcache=step.coverage
-        if not lookupcache then
-          report_missing_coverage(dataset,sequence)
+      else
+        local start=head
+        local rlmode=initialrl
+        if nofsteps==1 then 
+          local step=steps[1]
+          local lookupcache=step.coverage
+          if not lookupcache then
+            report_missing_coverage(dataset,sequence)
+          else
+            while start do
+              local char,id=ischar(start,font)
+              if char then
+                local a 
+                if attr then
+                  if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+                    a=true
+                  end
+                elseif not attribute or getprop(start,a_state)==attribute then
+                  a=true
+                end
+                if a then
+                  local lookupmatch=lookupcache[char]
+                  if lookupmatch then
+                    local ok
+                    head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
+                    if ok then
+                      done=true
+                    end
+                  end
+                  if start then
+                    start=getnext(start)
+                  end
+                else
+                  start=getnext(start)
+                end
+              elseif char==false then
+                start=getnext(start)
+              elseif id==glue_code then
+                start=getnext(start)
+              elseif id==disc_code then
+                if not discs or discs[start]==true then
+                  local ok
+                  if gpossing then
+                    start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                  elseif typ=="gsub_ligature" then
+                    start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                  else
+                    start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                  end
+                  if ok then
+                    done=true
+                  end
+              else
+                start=getnext(start)
+              end
+              elseif id==math_code then
+                start=getnext(end_of_math(start))
+              elseif id==dir_code then
+                start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+              elseif id==localpar_code then
+                start,rlparmode,rlmode=pardirstate(start)
+              else
+                start=getnext(start)
+              end
+            end
+          end
         else
           while start do
             local char,id=ischar(start,font)
@@ -25191,12 +25287,23 @@ local function featuresprocessor(head,font,attr,direction)
                 a=true
               end
               if a then
-                local lookupmatch=lookupcache[char]
-                if lookupmatch then
-                  local ok
-                  head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
-                  if ok then
-                    done=true
+                for i=1,nofsteps do
+                  local step=steps[i]
+                  local lookupcache=step.coverage
+                  if lookupcache then
+                    local lookupmatch=lookupcache[char]
+                    if lookupmatch then
+                      local ok
+                      head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                      if ok then
+                        done=true
+                        break
+                      elseif not start then
+                        break
+                      end
+                    end
+                  else
+                    report_missing_coverage(dataset,sequence)
                   end
                 end
                 if start then
@@ -25210,16 +25317,20 @@ local function featuresprocessor(head,font,attr,direction)
             elseif id==glue_code then
               start=getnext(start)
             elseif id==disc_code then
-              local ok
-              if gpossing then
-                start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-              elseif typ=="gsub_ligature" then
-                start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+              if not discs or discs[start]==true then
+                local ok
+                if gpossing then
+                  start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+                elseif typ=="gsub_ligature" then
+                  start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+                else
+                  start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+                end
+                if ok then
+                  done=true
+                end
               else
-                start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-              end
-              if ok then
-                done=true
+                start=getnext(start)
               end
             elseif id==math_code then
               start=getnext(end_of_math(start))
@@ -25232,79 +25343,15 @@ local function featuresprocessor(head,font,attr,direction)
             end
           end
         end
-      else
-        while start do
-          local char,id=ischar(start,font)
-          if char then
-            local a 
-            if attr then
-              if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
-                a=true
-              end
-            elseif not attribute or getprop(start,a_state)==attribute then
-              a=true
-            end
-            if a then
-              for i=1,nofsteps do
-                local step=steps[i]
-                local lookupcache=step.coverage
-                if lookupcache then
-                  local lookupmatch=lookupcache[char]
-                  if lookupmatch then
-                    local ok
-                    head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                    if ok then
-                      done=true
-                      break
-                    elseif not start then
-                      break
-                    end
-                  end
-                else
-                  report_missing_coverage(dataset,sequence)
-                end
-              end
-              if start then
-                start=getnext(start)
-              end
-            else
-              start=getnext(start)
-            end
-          elseif char==false then
-            start=getnext(start)
-          elseif id==glue_code then
-            start=getnext(start)
-          elseif id==disc_code then
-            local ok
-            if gpossing then
-              start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-            elseif typ=="gsub_ligature" then
-              start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-            else
-              start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-            end
-            if ok then
-              done=true
-            end
-          elseif id==math_code then
-            start=getnext(end_of_math(start))
-          elseif id==dir_code then
-            start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
-          elseif id==localpar_code then
-            start,rlparmode,rlmode=pardirstate(start)
-          else
-            start=getnext(start)
-          end
-        end
+      end
+      if trace_steps then 
+        registerstep(head)
       end
     end
-    if trace_steps then 
-      registerstep(head)
-    end
+    nesting=nesting-1
+    head=tonode(head)
+    return head,done
   end
-  nesting=nesting-1
-  head=tonode(head)
-  return head,done
 end
 local plugins={}
 otf.plugins=plugins
@@ -25313,12 +25360,12 @@ function otf.registerplugin(name,f)
     plugins[name]={ name,f }
   end
 end
-local function plugininitializer(tfmdata,value)
+function otf.plugininitializer(tfmdata,value)
   if type(value)=="string" then
     tfmdata.shared.plugin=plugins[value]
   end
 end
-local function pluginprocessor(head,font)
+function otf.pluginprocessor(head,font)
   local s=fontdata[font].shared
   local p=s and s.plugin
   if p then
@@ -25330,7 +25377,7 @@ local function pluginprocessor(head,font)
     return head,false
   end
 end
-local function featuresinitializer(tfmdata,value)
+function otf.featuresinitializer(tfmdata,value)
 end
 registerotffeature {
   name="features",
@@ -25338,16 +25385,14 @@ registerotffeature {
   default=true,
   initializers={
     position=1,
-    node=featuresinitializer,
-    plug=plugininitializer,
+    node=otf.featuresinitializer,
+    plug=otf.plugininitializer,
   },
   processors={
-    node=featuresprocessor,
-    plug=pluginprocessor,
+    node=otf.featuresprocessor,
+    plug=otf.pluginprocessor,
   }
 }
-otf.nodemodeinitializer=featuresinitializer
-otf.featuresprocessor=featuresprocessor
 otf.handlers=handlers
 local setspacekerns=nodes.injections.setspacekerns if not setspacekerns then os.exit() end
 if fontfeatures then
@@ -33464,7 +33509,7 @@ end
 function nodes.handlers.setbasemodepass(v)
   basemodepass=v
 end
-function nodes.handlers.nodepass(head)
+function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
   local fontdata=fonts.hashes.identifiers
   if fontdata then
     local nuthead=tonut(head)
@@ -33474,6 +33519,7 @@ function nodes.handlers.nodepass(head)
     local basefont=nil
     local variants=nil
     local redundant=nil
+    local nofused=0
     for n in traverse_id(glyph_code,nuthead) do
       local font=getfont(n)
       if font~=prevfont then
@@ -33490,6 +33536,7 @@ function nodes.handlers.nodepass(head)
               local processors=shared.processes
               if processors and #processors>0 then
                 usedfonts[font]=processors
+                nofused=nofused+1
               elseif basemodepass then
                 basefont={ n,nil }
                 basefonts[#basefonts+1]=basefont
@@ -33570,6 +33617,7 @@ function nodes.handlers.nodepass(head)
                   local processors=shared.processes
                   if processors and #processors>0 then
                     usedfonts[font]=processors
+                    nofused=nofused+1
                   end
                 end
               end
@@ -33581,7 +33629,7 @@ function nodes.handlers.nodepass(head)
     if next(usedfonts) then
       for font,processors in next,usedfonts do
         for i=1,#processors do
-          head=processors[i](head,font,0) or head
+          head=processors[i](head,font,0,direction,nofused) or head
         end
       end
     end
@@ -33630,9 +33678,9 @@ local nodepass=nodes.handlers.nodepass
 local basepass=nodes.handlers.basepass
 local injectpass=nodes.injections.handler
 local protectpass=nodes.handlers.protectglyphs
-function nodes.simple_font_handler(head)
+function nodes.simple_font_handler(head,groupcode,size,packtype,direction)
   if head then
-    head=nodepass(head)
+    head=nodepass(head,groupcode,size,packtype,direction)
     head=injectpass(head)
     if not basemodepass then
       head=basepass(head)
