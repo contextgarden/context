@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="doifpositionaction" file="anch-pgr.mkiv">
+    <cd:command name="doifpositionaction" level="system" file="anch-pgr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepositionaction" file="anch-pgr.mkiv">
+    <cd:command name="doifelsepositionaction" level="system" file="anch-pgr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpositionactionelse" file="anch-pgr.mkiv">
+    <cd:command name="doifpositionactionelse" level="system" file="anch-pgr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -28,7 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dopositionaction" file="anch-pgr.mkiv">
+    <cd:command name="dopositionaction" level="system" file="anch-pgr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
@@ -321,19 +321,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpositiononly" file="anch-pos.mkiv">
+    <cd:command name="setpositiononly" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setposition" file="anch-pos.mkiv">
+    <cd:command name="setposition" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpositiondata" file="anch-pos.mkiv">
+    <cd:command name="setpositiondata" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-dimension"/>
@@ -342,7 +342,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpositionbox" file="anch-pos.mkiv">
+    <cd:command name="setpositionbox" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:csname/>
@@ -350,13 +350,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpositionstrut" file="anch-pos.mkiv">
+    <cd:command name="setpositionstrut" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpositiondataplus" file="anch-pos.mkiv">
+    <cd:command name="setpositiondataplus" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-dimension"/>
@@ -368,7 +368,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpositionplus" file="anch-pos.mkiv">
+    <cd:command name="setpositionplus" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces" list="yes">
@@ -379,22 +379,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="copyposition" file="anch-pos.mkiv">
+    <cd:command name="copyposition" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifposition" file="anch-pos.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifelseposition" file="anch-pos.mkiv">
+    <cd:command name="doifposition" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -402,7 +394,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpositionelse" file="anch-pos.mkiv">
+    <cd:command name="doifelseposition" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -410,7 +402,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepositiononpage" file="anch-pos.mkiv">
+    <cd:command name="doifpositionelse" level="system" file="anch-pos.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsepositiononpage" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -419,7 +419,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpositiononpageelse" file="anch-pos.mkiv">
+    <cd:command name="doifpositiononpageelse" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -428,33 +428,33 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xypos" file="anch-pos.mkiv">
+    <cd:command name="xypos" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hpos" file="anch-pos.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="vpos" file="anch-pos.mkiv">
+    <cd:command name="hpos" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bpos" file="anch-pos.mkiv">
+    <cd:command name="vpos" level="system" file="anch-pos.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bpos" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="epos" file="anch-pos.mkiv">
+    <cd:command name="epos" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
@@ -463,11 +463,11 @@
 
     <cd:command name="tracepositions" file="anch-pos.mkiv"/>
 
-    <cd:command name="enableparpositions" file="anch-pos.mkiv"/>
+    <cd:command name="enableparpositions" level="system" file="anch-pos.mkiv"/>
 
-    <cd:command name="disableparpositions" file="anch-pos.mkiv"/>
+    <cd:command name="disableparpositions" level="system" file="anch-pos.mkiv"/>
 
-    <cd:command name="doifelseoverlapping" file="anch-pos.mkiv">
+    <cd:command name="doifelseoverlapping" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -476,7 +476,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoverlappingelse" file="anch-pos.mkiv">
+    <cd:command name="doifoverlappingelse" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -485,7 +485,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepositionsonsamepage" file="anch-pos.mkiv">
+    <cd:command name="doifelsepositionsonsamepage" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -493,7 +493,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpositionsonsamepageelse" file="anch-pos.mkiv">
+    <cd:command name="doifpositionsonsamepageelse" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -501,7 +501,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepositionsonthispage" file="anch-pos.mkiv">
+    <cd:command name="doifelsepositionsonthispage" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -509,7 +509,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpositionsonthispageelse" file="anch-pos.mkiv">
+    <cd:command name="doifpositionsonthispageelse" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -517,14 +517,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepositionsused" file="anch-pos.mkiv">
+    <cd:command name="doifelsepositionsused" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpositionsusedelse" file="anch-pos.mkiv">
+    <cd:command name="doifpositionsusedelse" level="system" file="anch-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

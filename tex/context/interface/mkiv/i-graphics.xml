@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineexternalfigure" file="grph-inc.mkiv">
+    <cd:command name="defineexternalfigure" category="graphics" level="style" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -28,7 +28,7 @@
 
     -->
 
-    <cd:command name="setupexternalfigure" file="grph-inc.mkvi">
+    <cd:command name="setupexternalfigure" category="graphics" level="style" file="grph-inc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -251,7 +251,7 @@
 
     -->
 
-    <cd:command name="useexternalfigure" file="grph-inc.mkiv">
+    <cd:command name="useexternalfigure" category="graphics" level="style" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
@@ -262,7 +262,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="externalfigure" file="grph-inc.mkiv">
+    <cd:command name="externalfigure" category="graphics" level="document" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -272,7 +272,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getfiguredimensions" file="grph-inc.mkiv">
+    <cd:command name="getfiguredimensions" category="graphics" level="system" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:assignments list="yes" optional="yes">
@@ -281,32 +281,32 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="figurewidth" file="grph-inc.mkiv"/>
+    <cd:command name="figurewidth" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="figureheight" file="grph-inc.mkiv"/>
+    <cd:command name="figureheight" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="figurenaturalwidth" file="grph-inc.mkiv"/>
+    <cd:command name="figurenaturalwidth" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="figurenaturalheight" file="grph-inc.mkiv"/>
+    <cd:command name="figurenaturalheight" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="figurefullname" file="grph-inc.mkiv"/>
+    <cd:command name="figurefullname" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="figurefilename" file="grph-inc.mkiv"/>
+    <cd:command name="figurefilename" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="figurefilepath" file="grph-inc.mkiv"/>
+    <cd:command name="figurefilepath" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="figurefiletype" file="grph-inc.mkiv"/>
+    <cd:command name="figurefiletype" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="noffigurepages" file="grph-inc.mkiv"/>
+    <cd:command name="noffigurepages" category="graphics" level="system" file="grph-inc.mkiv"/>
 
-    <cd:command name="definegraphictypesynonym" file="grph-inc.mkiv">
+    <cd:command name="definegraphictypesynonym" category="graphics" level="system" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefigure" file="grph-inc.mkiv">
+    <cd:command name="doifelsefigure" category="graphics" level="system" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -314,7 +314,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffigureelse" file="grph-inc.mkiv">
+    <cd:command name="doiffigureelse" category="graphics" level="system" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -322,7 +322,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registerexternalfigure" file="grph-inc.mkiv">
+    <cd:command name="registerexternalfigure" category="graphics" level="system" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -332,7 +332,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usefigurebase" file="grph-inc.mkiv">
+    <cd:command name="usefigurebase" category="graphics" level="style" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -341,81 +341,81 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="externalfigurecollection" type="environment" file="grph-inc.mkiv">
+    <cd:command name="externalfigurecollection" type="environment" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="externalfigurecollectionminwidth" file="grph-inc.mkiv">
+    <cd:command name="externalfigurecollectionminwidth" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="externalfigurecollectionmaxwidth" file="grph-inc.mkiv">
+    <cd:command name="externalfigurecollectionmaxwidth" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="externalfigurecollectionminheight" file="grph-inc.mkiv">
+    <cd:command name="externalfigurecollectionminheight" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="externalfigurecollectionmaxheight" file="grph-inc.mkiv">
+    <cd:command name="externalfigurecollectionmaxheight" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="externalfigurecollectionparameter" file="grph-inc.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-key"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="efcminwidth" file="grph-inc.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="efcmaxwidth" file="grph-inc.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="efcminheight" file="grph-inc.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="efcmaxheight" file="grph-inc.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="efcparameter" file="grph-inc.mkiv">
+    <cd:command name="externalfigurecollectionparameter" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlayfigure" file="grph-inc.mkiv">
+    <cd:command name="efcminwidth" category="graphics" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcmaxwidth" category="graphics" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcminheight" category="graphics" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcmaxheight" category="graphics" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcparameter" category="graphics" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="overlayfigure" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bitmapimage" file="grph-inc.mkiv">
+    <cd:command name="bitmapimage" category="graphics" level="document" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="color">
@@ -442,7 +442,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bitmapimage" type="environment" file="grph-inc.mkiv">
+    <cd:command name="bitmapimage" type="environment" category="graphics" level="document" file="grph-inc.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="color">
@@ -466,7 +466,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typesetbuffer" file="grph-fig.mkiv">
+    <cd:command name="typesetbuffer" level="document" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="*"/>
@@ -478,7 +478,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetypesetting" file="grph-fig.mkiv">
+    <cd:command name="definetypesetting" level="style" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text-optional"/>
@@ -488,7 +488,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typesetfile" file="grph-fig.mkiv">
+    <cd:command name="typesetfile" level="document" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -504,7 +504,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="backgroundimage" file="pack-box.mkiv">
+    <cd:command name="backgroundimage" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-dimension"/>
@@ -513,7 +513,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="backgroundimagefill" file="pack-box.mkiv">
+    <cd:command name="backgroundimagefill" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-dimension"/>

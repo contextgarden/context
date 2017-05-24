@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuphyphenation" file="lang-hyp.mkiv">
+    <cd:command name="setuphyphenation" level="style" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="method">
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definehypenationfeatures" file="lang-hyp.mkiv">
+    <cd:command name="definehypenationfeatures" level="style" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sethyphenationfeatures" file="lang-hyp.mkiv">
+    <cd:command name="sethyphenationfeatures" level="style" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -127,7 +127,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphyphenmark" file="typo-del.mkiv">
+    <cd:command name="setuphyphenmark" level="style" file="typo-del.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="sign">
@@ -138,13 +138,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebreakpoints" file="typo-brk.mkiv">
+    <cd:command name="definebreakpoints" level="style" file="typo-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebreakpoint" file="typo-brk.mkiv">
+    <cd:command name="definebreakpoint" level="style" file="typo-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -184,7 +184,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setbreakpoints" file="typo-brk.mkiv">
+    <cd:command name="setbreakpoints" level="style" file="typo-brk.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definedatabase" level="style" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupdatabase"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupdatabase" level="style" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="strip">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="separator">
+                    <cd:constant type="tab"/>
+                    <cd:constant type="tabs"/>
+                    <cd:constant type="comma"/>
+                    <cd:constant type="space"/>
+                    <cd:constant type="spaces"/>
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="quotechar">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="commentchar">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="setups" list="yes">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="first">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="last">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:csname"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="processdatabasebuffer" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-buffer"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="processdatabasefile" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineseparatedlist" level="style" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupdatabase"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="processseparatedlist" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="separatedlist" type="environment" generated="yes" variant="instance" file="m-database.mkiv">
+        <cd:sequence>
+            <cd:instance value="separatedlist"/>
+        </cd:sequence>
+    </cd:command>
+
+    <cd:command name="separatedlist" type="environment" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupseparatedlist" level="style" file="m-database.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupdatabase"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

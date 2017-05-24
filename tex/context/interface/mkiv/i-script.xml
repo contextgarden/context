@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definescript" file="scrp-ini.mkvi">
+    <cd:command name="definescript" category="language" level="style" file="scrp-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupscript" file="scrp-ini.mkvi">
+    <cd:command name="setupscript" category="language" level="style" file="scrp-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -36,7 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupscripts" file="scrp-ini.mkvi">
+    <cd:command name="setupscripts" category="language" level="style" file="scrp-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -45,7 +45,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setscript" file="scrp-ini.mkvi">
+    <cd:command name="setscript" category="language" level="style" file="scrp-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="hangul"/>
@@ -59,9 +59,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetscript" file="scrp-ini.mkvi"/>
+    <cd:command name="resetscript" category="language" file="scrp-ini.mkvi"/>
 
-    <cd:command name="script" type="environment" file="scrp-ini.mkvi">
+    <cd:command name="script" type="environment" category="language" file="scrp-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="hangul"/>
@@ -75,7 +75,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="script" generated="yes" varianet="instance" file="scrp-ini.mkvi">
+    <cd:command name="script" generated="yes" variant="instance" category="language" file="scrp-ini.mkvi">
         <cd:sequence>
             <cd:instance value="script"/>
         </cd:sequence>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathcases" file="math-ali.mkiv">
+    <cd:command name="definemathcases" category="mathematics" level="style" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathcases" file="math-ali.mkiv">
+    <cd:command name="setupmathcases" category="mathematics" level="style" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathcases" type="environment" generated="yes" variant="instance" file="math-ali.mkiv">
+    <cd:command name="mathcases" type="environment" generated="yes" variant="instance" category="mathematics" level="document" file="math-ali.mkiv">
         <cd:sequence>
             <cd:instance value="mathcases"/>
         </cd:sequence>

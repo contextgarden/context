@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/17/17 19:20:56
+-- merge date  : 05/24/17 17:31:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -20032,6 +20032,7 @@ otf.coverup={
     multiple=justset,
     kern=justset,
     pair=justset,
+    single=justset,
     ligature=function(coverage,unicode,ligature)
       local first=ligature[1]
       local tree=coverage[first]
@@ -22757,7 +22758,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
 end
 function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,step,i,injection)
   local startchar=getchar(start)
-  if step.format=="pair" then
+  if step.format=="pair" or type(kerns)=="table" then
     local dx,dy,w,h=setpair(start,factor,rlmode,sequence.flags[4],kerns,injection)
     if trace_kerns then
       logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",pref(dataset,sequence),gref(startchar),dx,dy,w,h)
@@ -28005,6 +28006,7 @@ local normalized={
   multiple="multiple",
   kern="kern",
   pair="pair",
+  single="single",
   chainsubstitution="chainsubstitution",
   chainposition="chainposition",
 }
@@ -28015,6 +28017,7 @@ local types={
   multiple="gsub_multiple",
   kern="gpos_pair",
   pair="gpos_pair",
+  single="gpos_single",
   chainsubstitution="gsub_contextchain",
   chainposition="gpos_contextchain",
 }
@@ -28344,6 +28347,7 @@ local function addfeature(data,feature,specifications)
     end
     return coverage
   end
+  local prepare_single=prepare_pair
   local function prepare_chain(list,featuretype,sublookups)
     local rules=list.rules
     local coverage={}
@@ -28559,6 +28563,9 @@ local function addfeature(data,feature,specifications)
             elseif featuretype=="pair" then
               format="pair"
               coverage=prepare_pair(list,featuretype)
+            elseif featuretype=="single" then
+              format="single"
+              coverage=prepare_single(list,featuretype)
             end
             if coverage and next(coverage) then
               nofsteps=nofsteps+1
@@ -28598,6 +28605,10 @@ local function addfeature(data,feature,specifications)
           category="gpos"
           format="pair"
           coverage=prepare_pair(list,featuretype)
+        elseif featuretype=="single" then
+          category="gpos"
+          format="single"
+          coverage=prepare_single(list,featuretype)
         elseif featuretype=="chainsubstitution" then
           category="gsub"
           coverage=prepare_chain(list,featuretype,sublookups)

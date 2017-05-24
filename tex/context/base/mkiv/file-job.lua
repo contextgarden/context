@@ -55,7 +55,8 @@ local hasscheme         = url.hasscheme
 local jobresolvers      = resolvers.jobs
 
 local registerextrapath = resolvers.registerextrapath
-local resetextrapath    = resolvers.resetextrapath
+local resetextrapaths   = resolvers.resetextrapaths
+local getextrapaths     = resolvers.getextrapath
 local pushextrapath     = resolvers.pushextrapath
 local popextrapath      = resolvers.popextrapath
 
@@ -147,14 +148,14 @@ implement {
     name      = "resetpath",
     actions   = function()
         report_jobfiles("resetting path")
-        resetextrapath()
+        resetextrapaths()
     end
 }
 
 implement {
     name      = "allinputpaths",
     actions   = function()
-        context(concat(resolvers.instance.extra_paths or { },","))
+        context(concat(getextrapaths(),","))
     end
 }
 
@@ -1100,7 +1101,7 @@ local report_file     = logs.reporter("used file")
 local report_option   = logs.reporter("used option")
 
 luatex.registerstopactions(function()
-    local foundintrees = resolvers.instance.foundintrees
+    local foundintrees = resolvers.foundintrees()
     if #foundintrees > 0 then
         logspushtarget("logfile")
         logsnewline()

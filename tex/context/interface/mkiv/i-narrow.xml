@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definenarrower" file="spac-hor.mkiv">
+    <cd:command name="definenarrower" level="style" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupnarrower" file="spac-hor.mkiv">
+    <cd:command name="setupnarrower" level="style" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -46,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="narrower" type="environment" file="spac-hor.mkiv">
+    <cd:command name="narrower" type="environment" level="document" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="left" prefix="cd:sign" method="none"/>
@@ -60,7 +60,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="narrower" type="environment" generated="yes" variant="example" file="spac-hor.mkiv">
+    <cd:command name="narrower" type="environment" generated="yes" variant="example" level="document" file="spac-hor.mkiv">
         <cd:sequence>
             <cd:variable value="narrower"/>
         </cd:sequence>
@@ -77,7 +77,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="narrow" type="environment" file="spac-hor.mkiv">
+    <cd:command name="narrow" type="environment" level="document" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -86,7 +86,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="narrow" type="environment" variant="name" file="spac-hor.mkiv">
+    <cd:command name="narrow" type="environment" variant="name" level="document" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords list="yes" optional="yes">
@@ -101,7 +101,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="narrow" type="environment" variant="assignment" file="spac-hor.mkiv">
+    <cd:command name="narrow" type="environment" variant="assignment" level="document" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupnarrower"/>

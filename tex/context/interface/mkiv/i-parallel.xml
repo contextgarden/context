@@ -4,14 +4,14 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineparallel" file="buff-par.mkvi">
+    <cd:command name="defineparallel" level="style" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupparallel" file="buff-par.mkvi">
+    <cd:command name="setupparallel" level="style" file="buff-par.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuptagging" file="strc-tag.mkiv">
+    <cd:command name="setuptagging" level="style" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="state">
@@ -18,7 +18,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tagged" type="environment" begin="dostart" end="dostop" file="strc-tag.mkiv">
+    <cd:command name="tagged" type="environment" begin="dostart" end="dostop" level="system" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseinelement" file="strc-tag.mkiv">
+    <cd:command name="doifelseinelement" level="system" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -40,7 +40,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinelementelse" file="strc-tag.mkiv">
+    <cd:command name="doifinelementelse" level="system" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -48,7 +48,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="taggedlabeltexts" file="strc-tag.mkiv">
+    <cd:command name="taggedlabeltexts" level="system" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -56,7 +56,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedtaggedlabeltexts" file="strc-tag.mkiv">
+    <cd:command name="namedtaggedlabeltexts" level="system" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>

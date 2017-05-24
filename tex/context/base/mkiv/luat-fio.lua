@@ -15,11 +15,9 @@ texconfig.shell_escape   = 't'
 texconfig.max_print_line = 100000
 texconfig.max_in_open    = 1000
 
-if not resolvers.instance then
+if not resolvers.initialized() then
 
     resolvers.reset()
-
-    resolvers.instance.validfile  = resolvers.validctxfile
 
     -- we now load the file database as we might need files other than
     -- tex and lua file on the given path
@@ -128,7 +126,7 @@ statistics.register("resource resolver", function()
         scandata.n,
         scandata.time,
         scandata.shared,
-        #resolvers.instance.foundintrees,
+        #resolvers.foundintrees(),
         #scandata.paths > 0 and concat(scandata.paths," ") or "<none>"
     )
 end)

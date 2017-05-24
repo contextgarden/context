@@ -18,12 +18,12 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupchemical" file="chem-str.mkiv">
+    <cd:command name="setupchemical" level="style" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="strut">
-                    <cd:inherit name="value-strut"/>
+                    <cd:resolve name="value-strut"/>
                 </cd:parameter>
                 <cd:parameter name="width">
                     <cd:constant type="fit" default="yes"/>
@@ -125,7 +125,7 @@
 
     -->
 
-    <cd:command name="setupchemicalframed" file="chem-str.mkiv">
+    <cd:command name="setupchemicalframed" level="style" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -242,7 +242,7 @@
 
     -->
 
-    <cd:command name="definechemicals" file="chem-str.mkiv">
+    <cd:command name="definechemicals" level="style" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>

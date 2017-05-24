@@ -933,7 +933,8 @@ end
 
 function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,step,i,injection)
     local startchar = getchar(start)
-    if step.format == "pair" then
+--     if step.format == "pair" then
+    if step.format == "pair" or type(kerns) == "table" then
         local dx, dy, w, h = setpair(start,factor,rlmode,sequence.flags[4],kerns,injection)
         if trace_kerns then
             logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",pref(dataset,sequence),gref(startchar),dx,dy,w,h)

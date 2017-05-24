@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definefiller" file="spac-flr.mkiv">
+    <cd:command name="definefiller" level="style" file="spac-flr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfiller" file="spac-flr.mkiv">
+    <cd:command name="setupfiller" level="style" file="spac-flr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -113,7 +113,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelinefiller" file="node-rul.mkiv">
+    <cd:command name="definelinefiller" level="style" file="node-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -123,7 +123,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplinefiller" file="node-rul.mkiv">
+    <cd:command name="setuplinefiller" level="style" file="node-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -177,7 +177,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplinefillers" file="node-rul.mkiv">
+    <cd:command name="setuplinefillers" level="style" file="node-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">

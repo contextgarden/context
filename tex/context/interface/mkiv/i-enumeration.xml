@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineenumeration" file="strc-enu.mkvi">
+    <cd:command name="defineenumeration" level="style" file="strc-enu.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupenumeration" file="strc-enu.mkvi">
+    <cd:command name="setupenumeration" level="style" file="strc-enu.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -148,6 +148,9 @@
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="xml"/>
                 </cd:parameter>
+                <cd:parameter name="referenceprefix">
+                    <cd:resolve name="value-referenceprefix"/>
+                </cd:parameter>
                 <cd:parameter name="sample">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
@@ -172,20 +175,16 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
+    <cd:command name="setupenumerations" level="style" file="strc-enu.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupenumeration"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
-        <cd:command name="setupenumerations" file="strc-enu.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupenumeration"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
-    <cd:command name="enumeration" type="environment" generated="yes" variant="example" file="strc-enu.mkvi">
+    <cd:command name="enumeration" type="environment" generated="yes" variant="example" level="document" file="strc-enu.mkvi">
         <cd:sequence>
             <cd:variable value="enumeration"/>
         </cd:sequence>
@@ -194,7 +193,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="enumeration" type="environment" generated="yes" variant="example:title" file="strc-enu.mkvi">
+    <cd:command name="enumeration" type="environment" generated="yes" variant="example:title" level="document" file="strc-enu.mkvi">
         <cd:sequence>
             <cd:variable value="enumeration"/>
         </cd:sequence>
@@ -204,7 +203,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="enumeration" generated="yes" variant="example" file="strc-enu.mkvi">
+    <cd:command name="enumeration" generated="yes" variant="example" level="document" file="strc-enu.mkvi">
         <cd:sequence>
             <cd:variable value="enumeration"/>
         </cd:sequence>

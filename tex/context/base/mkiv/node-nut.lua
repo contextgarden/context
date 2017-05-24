@@ -858,9 +858,6 @@ end
 
 -- here:
 
-nodes.set_synctex_line  = node.set_synctex_line
-nodes.set_synctex_tag   = node.set_synctex_tag
-
 nuts.get_synctex_fields = direct.get_synctex_fields
 nuts.set_synctex_fields = direct.set_synctex_fields
 

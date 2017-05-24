@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineprofile" file="spac-prf.mkvi">
+    <cd:command name="defineprofile" level="style" file="spac-prf.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupprofile" file="spac-prf.mkvi">
+    <cd:command name="setupprofile" level="style" file="spac-prf.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -58,13 +58,13 @@
 
     <cd:command name="resetprofile" file="spac-prf.mkvi"/>
 
-    <cd:command name="useprofileparameter" file="spac-prf.mkvi">
+    <cd:command name="useprofileparameter" level="system" file="spac-prf.mkvi">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="profiledbox" file="spac-prf.mkvi">
+    <cd:command name="profiledbox" level="system" file="spac-prf.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="none"/>
@@ -82,7 +82,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="profilegivenbox" file="spac-prf.mkvi">
+    <cd:command name="profilegivenbox" level="system" file="spac-prf.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces" optional="yes">
                 <cd:constant type="none"/>

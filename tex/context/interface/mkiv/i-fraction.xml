@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathfraction" file="math-frc.mkiv">
+    <cd:command name="definemathfraction" category="mathematics" level="style" file="math-frc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathfraction" file="math-frc.mkiv">
+    <cd:command name="setupmathfraction" category="mathematics" level="style" file="math-frc.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -67,117 +67,110 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
+    <cd:command name="setupmathfractions" category="mathematics" level="style" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupmathfraction"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
-        <cd:command name="setupmathfractions" file="math-frc.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupmathfraction"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
-    <cd:command name="fraction" generated="yes" variant="example" file="math-frc.mkiv">
+    <cd:command name="fraction" generated="yes" variant="instance" category="mathematics" level="document" file="math-frc.mkiv">
         <cd:sequence>
-            <cd:variable value="fraction"/>
+            <cd:instance value="fraction"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="xfrac"/>
-            <cd:constant value="xxfrac"/>
-            <cd:constant value="frac"/>
-            <cd:constant value="sfrac"/>
-            <cd:constant value="dfrac"/>
-            <cd:constant value="binom"/>
-            <cd:constant value="dbinom"/>
-            <cd:constant value="tbinom"/>
+            <cd:resolve name="instance-fraction"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="frac" file="math-frc.mkiv">
+    <!--
+
+        <cd:command name="frac" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xfrac" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xxfrac" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tfrac" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="sfrac" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="dfrac" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="binom" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="dbinom" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tbinom" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:content/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="splitfrac" category="mathematics" level="document" file="math-frc.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xfrac" file="math-frc.mkiv">
+    <cd:command name="splitdfrac" category="mathematics" level="document" file="math-frc.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xxfrac" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tfrac" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="sfrac" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="dfrac" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="binom" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="dbinom" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tbinom" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="splitfrac" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="splitdfrac" file="math-frc.mkiv">
-        <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="cfrac" file="math-frc.mkiv">
+    <cd:command name="cfrac" category="mathematics" level="document" file="math-frc.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="l"/>

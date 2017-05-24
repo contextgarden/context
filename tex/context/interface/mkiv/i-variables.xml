@@ -135,7 +135,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsevariable" file="core-env.mkiv">
+    <cd:command name="doifelsevariable" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -144,7 +144,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifvariableelse" file="core-env.mkiv">
+    <cd:command name="doifvariableelse" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -153,7 +153,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifvariable" file="core-env.mkiv">
+    <cd:command name="doifvariable" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -161,7 +161,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotvariable" file="core-env.mkiv">
+    <cd:command name="doifnotvariable" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -169,16 +169,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseemptyvariable" file="core-env.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-key"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifemptyvariableelse" file="core-env.mkiv">
+    <cd:command name="doifelseemptyvariable" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -187,7 +178,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifemptyvariable" file="core-env.mkiv">
+    <cd:command name="doifemptyvariableelse" level="system" file="core-env.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifemptyvariable" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -195,7 +195,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotemptyvariable" file="core-env.mkiv">
+    <cd:command name="doifnotemptyvariable" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -203,7 +203,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getvariabledefault" file="core-env.mkiv">
+    <cd:command name="getvariabledefault" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-key"/>
@@ -227,7 +227,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseenv" file="core-env.mkiv">
+    <cd:command name="doifelseenv" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-true"/>
@@ -235,7 +235,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifenvelse" file="core-env.mkiv">
+    <cd:command name="doifenvelse" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-true"/>
@@ -243,14 +243,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifenv" file="core-env.mkiv">
+    <cd:command name="doifenv" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotenv" file="core-env.mkiv">
+    <cd:command name="doifnotenv" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-true"/>
@@ -270,21 +270,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdocumentfilename" file="luat-ini.mkiv">
+    <cd:command name="setdocumentfilename" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdocumentargument" file="luat-ini.mkiv">
+    <cd:command name="setdocumentargument" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdocumentargumentdefault" file="luat-ini.mkiv">
+    <cd:command name="setdocumentargumentdefault" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
@@ -310,7 +310,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsedocumentargument" file="luat-ini.mkiv">
+    <cd:command name="doifelsedocumentargument" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -318,7 +318,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdocumentargumentelse" file="luat-ini.mkiv">
+    <cd:command name="doifdocumentargumentelse" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -326,21 +326,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdocumentargument" file="luat-ini.mkiv">
+    <cd:command name="doifdocumentargument" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotdocumentargument" file="luat-ini.mkiv">
+    <cd:command name="doifnotdocumentargument" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsedocumentfilename" file="luat-ini.mkiv">
+    <cd:command name="doifelsedocumentfilename" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
@@ -348,7 +348,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdocumentfilenameelse" file="luat-ini.mkiv">
+    <cd:command name="doifdocumentfilenameelse" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
@@ -356,14 +356,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdocumentfilename" file="luat-ini.mkiv">
+    <cd:command name="doifdocumentfilename" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotdocumentfilename" file="luat-ini.mkiv">
+    <cd:command name="doifnotdocumentfilename" level="system" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>

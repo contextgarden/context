@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemakeup" file="page-mak.mkvi">
+    <cd:command name="definemakeup" level="style" file="page-mak.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmakeup" file="page-mak.mkvi">
+    <cd:command name="setupmakeup" level="style" file="page-mak.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -113,7 +113,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeup" type="environment" file="page-mak.mkvi">
+    <cd:command name="makeup" type="environment" level="document" file="page-mak.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -122,7 +122,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeup" type="environment" generated="yes" variant="instance" file="page-mak.mkvi">
+    <cd:command name="makeup" type="environment" generated="yes" variant="instance" level="document" file="page-mak.mkvi">
         <cd:sequence>
             <cd:instance value="makeup"/>
             <cd:string value="makeup"/>

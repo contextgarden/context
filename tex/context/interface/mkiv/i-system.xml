@@ -4,47 +4,37 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="expanded" file="syst-aux.mkiv">
+    <cd:command name="expanded" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expanded" type="environment" file="syst-aux.mkiv"/>
+    <cd:command name="expanded" type="environment" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="gobbleoneargument" file="syst-aux.mkiv">
+    <cd:command name="gobbleoneargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbletwoarguments" file="syst-aux.mkiv">
+    <cd:command name="gobbletwoarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobblethreearguments" file="syst-aux.mkiv">
+    <cd:command name="gobblethreearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:content/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="gobblefourarguments" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:content/>
             <cd:content/>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobblefivearguments" file="syst-aux.mkiv">
+    <cd:command name="gobblefourarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
             <cd:content/>
             <cd:content/>
             <cd:content/>
@@ -52,9 +42,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobblesixarguments" file="syst-aux.mkiv">
+    <cd:command name="gobblefivearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
             <cd:content/>
             <cd:content/>
             <cd:content/>
@@ -63,9 +52,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobblesevenarguments" file="syst-aux.mkiv">
+    <cd:command name="gobblesixarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
             <cd:content/>
             <cd:content/>
             <cd:content/>
@@ -75,9 +63,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbleeightarguments" file="syst-aux.mkiv">
+    <cd:command name="gobblesevenarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
             <cd:content/>
             <cd:content/>
             <cd:content/>
@@ -88,9 +75,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbleninearguments" file="syst-aux.mkiv">
+    <cd:command name="gobbleeightarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
             <cd:content/>
             <cd:content/>
             <cd:content/>
@@ -102,9 +88,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbletenarguments" file="syst-aux.mkiv">
+    <cd:command name="gobbleninearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
             <cd:content/>
             <cd:content/>
             <cd:content/>
@@ -117,39 +102,44 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbleoneoptional" file="syst-aux.mkiv">
+    <cd:command name="gobbletenarguments" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="gobbleoneoptional" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbletwooptionals" file="syst-aux.mkiv">
+    <cd:command name="gobbletwooptionals" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobblethreeoptionals" file="syst-aux.mkiv">
+    <cd:command name="gobblethreeoptionals" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="gobblefouroptionals" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobblefiveoptionals" file="syst-aux.mkiv">
+    <cd:command name="gobblefouroptionals" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
@@ -157,9 +147,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="donothing" file="syst-aux.mkiv"/>
+    <cd:command name="gobblefiveoptionals" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="doifelsenextchar" file="syst-aux.mkiv">
+    <cd:command name="donothing" level="system" file="syst-aux.mkiv"/>
+
+    <cd:command name="doifelsenextchar" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
             <cd:resolve name="argument-true"/>
@@ -167,7 +167,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnextcharelse" file="syst-aux.mkiv">
+    <cd:command name="doifnextcharelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
             <cd:resolve name="argument-true"/>
@@ -175,212 +175,212 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsenextoptional" file="syst-aux.mkiv">
+    <cd:command name="doifelsenextoptional" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnextoptionalelse" file="syst-aux.mkiv">
+    <cd:command name="doifnextoptionalelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsenextoptionalcs" file="syst-aux.mkiv">
+    <cd:command name="doifelsenextoptionalcs" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnextoptionalcselse" file="syst-aux.mkiv">
+    <cd:command name="doifnextoptionalcselse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsenextbgroup" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifnextbgroupelse" file="syst-aux.mkiv">
+    <cd:command name="doifelsenextbgroup" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsenextbgroupcs" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifnextbgroupcselse" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifelsenextparenthesis" file="syst-aux.mkiv">
+    <cd:command name="doifnextbgroupelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnextparenthesiselse" file="syst-aux.mkiv">
+    <cd:command name="doifelsenextbgroupcs" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifnextbgroupcselse" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsenextparenthesis" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefastoptionalcheck" file="syst-aux.mkiv">
+    <cd:command name="doifnextparenthesiselse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffastoptionalcheckelse" file="syst-aux.mkiv">
+    <cd:command name="doifelsefastoptionalcheck" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefastoptionalcheckcs" file="syst-aux.mkiv">
+    <cd:command name="doiffastoptionalcheckelse" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsefastoptionalcheckcs" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffastoptionalcheckcselse" file="syst-aux.mkiv">
+    <cd:command name="doiffastoptionalcheckcselse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="assumelongusagecs" file="syst-aux.mkiv">
+    <cd:command name="assumelongusagecs" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setvalue" file="syst-aux.mkiv">
+    <cd:command name="setvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setgvalue" file="syst-aux.mkiv">
+    <cd:command name="setgvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setevalue" file="syst-aux.mkiv">
+    <cd:command name="setevalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setxvalue" file="syst-aux.mkiv">
+    <cd:command name="setxvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getvalue" file="syst-aux.mkiv">
+    <cd:command name="getvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letvalue" file="syst-aux.mkiv">
+    <cd:command name="letvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letgvalue" file="syst-aux.mkiv">
+    <cd:command name="letgvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetvalue" file="syst-aux.mkiv">
+    <cd:command name="resetvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="undefinevalue" file="syst-aux.mkiv">
+    <cd:command name="undefinevalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ignorevalue" file="syst-aux.mkiv">
+    <cd:command name="ignorevalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuvalue" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="setuevalue" file="syst-aux.mkiv">
+    <cd:command name="setuvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setugvalue" file="syst-aux.mkiv">
+    <cd:command name="setuevalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuxvalue" file="syst-aux.mkiv">
+    <cd:command name="setugvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getuvalue" file="syst-aux.mkiv">
+    <cd:command name="setuxvalue" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getuvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseundefined" file="syst-aux.mkiv">
+    <cd:command name="doifelseundefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -388,7 +388,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifundefinedelse" file="syst-aux.mkiv">
+    <cd:command name="doifundefinedelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -396,7 +396,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsedefined" file="syst-aux.mkiv">
+    <cd:command name="doifelsedefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -404,7 +404,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdefinedelse" file="syst-aux.mkiv">
+    <cd:command name="doifdefinedelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -412,39 +412,39 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifundefined" file="syst-aux.mkiv">
+    <cd:command name="doifundefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdefined" file="syst-aux.mkiv">
+    <cd:command name="doifdefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letbeundefined" file="syst-aux.mkiv">
+    <cd:command name="letbeundefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localundefine" file="syst-aux.mkiv">
+    <cd:command name="localundefine" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalundefine" file="syst-aux.mkiv">
+    <cd:command name="globalundefine" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsealldefined" file="syst-aux.mkiv">
+    <cd:command name="doifelsealldefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -452,7 +452,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifalldefinedelse" file="syst-aux.mkiv">
+    <cd:command name="doifalldefinedelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -460,7 +460,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doif" file="syst-aux.mkiv">
+    <cd:command name="doif" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -468,7 +468,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnot" file="syst-aux.mkiv">
+    <cd:command name="doifnot" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -476,7 +476,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelse" file="syst-aux.mkiv">
+    <cd:command name="doifelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -485,7 +485,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseempty" file="syst-aux.mkiv">
+    <cd:command name="doifelseempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="argument-true"/>
@@ -493,7 +493,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifemptyelse" file="syst-aux.mkiv">
+    <cd:command name="doifemptyelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="argument-true"/>
@@ -501,170 +501,161 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifempty" file="syst-aux.mkiv">
+    <cd:command name="doifempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotempty" file="syst-aux.mkiv">
+    <cd:command name="doifnotempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseinset" file="syst-aux.mkiv">
+    <cd:command name="doifelseinset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinsetelse" file="syst-aux.mkiv">
+    <cd:command name="doifinsetelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinset" file="syst-aux.mkiv">
+    <cd:command name="doifinset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotinset" file="syst-aux.mkiv">
+    <cd:command name="doifnotinset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecommon" file="syst-aux.mkiv">
+    <cd:command name="doifelsecommon" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifcommonelse" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcommon" file="syst-aux.mkiv">
+    <cd:command name="doifcommonelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifcommon" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotcommon" file="syst-aux.mkiv">
+    <cd:command name="doifnotcommon" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processcommalist" file="syst-aux.mkiv">
+    <cd:command name="processcommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="quitcommalist" file="syst-aux.mkiv"/>
+    <cd:command name="quitcommalist" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="quitprevcommalist" file="syst-aux.mkiv"/>
+    <cd:command name="quitprevcommalist" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="processcommacommand" file="syst-aux.mkiv">
+    <cd:command name="processcommacommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processcommalistwithparameters" file="syst-aux.mkiv">
+    <cd:command name="processcommalistwithparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processcommalist" type="environment" file="syst-aux.mkiv">
+    <cd:command name="processcommalist" type="environment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processcommacommand" type="environment" file="syst-aux.mkiv">
+    <cd:command name="processcommacommand" type="environment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentcommalistitem" file="syst-aux.mkiv"/>
+    <cd:command name="currentcommalistitem" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="processaction" file="syst-aux.mkiv">
+    <cd:command name="processaction" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command"/>
             <cd:apply list="yes"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfirstactioninset" file="syst-aux.mkiv">
+    <cd:command name="processfirstactioninset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command"/>
             <cd:apply list="yes"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processallactionsinset" file="syst-aux.mkiv">
+    <cd:command name="processallactionsinset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command"/>
             <cd:apply list="yes"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="commalistelement" file="syst-aux.mkiv"/>
+    <cd:command name="commalistelement" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="firstcharacter" file="syst-aux.mkiv"/>
+    <cd:command name="firstcharacter" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="remainingcharacters" file="syst-aux.mkiv"/>
+    <cd:command name="remainingcharacters" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="getfirstcharacter" file="syst-aux.mkiv">
+    <cd:command name="getfirstcharacter" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefirstchar" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doiffirstcharelse" file="syst-aux.mkiv">
+    <cd:command name="doifelsefirstchar" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -673,19 +664,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thefirstcharacter" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="theremainingcharacters" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifelseinstring" file="syst-aux.mkiv">
+    <cd:command name="doiffirstcharelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -694,7 +673,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinstringelse" file="syst-aux.mkiv">
+    <cd:command name="thefirstcharacter" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="theremainingcharacters" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelseinstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -703,7 +694,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinstring" file="syst-aux.mkiv">
+    <cd:command name="doifinstringelse" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifinstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -711,7 +711,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotinstring" file="syst-aux.mkiv">
+    <cd:command name="doifnotinstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -719,7 +719,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseincsname" file="syst-aux.mkiv">
+    <cd:command name="doifelseincsname" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-csname"/>
@@ -728,7 +728,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifincsnameelse" file="syst-aux.mkiv">
+    <cd:command name="doifincsnameelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-csname"/>
@@ -737,7 +737,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsenumber" file="syst-aux.mkiv">
+    <cd:command name="doifelsenumber" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -745,7 +745,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnumberelse" file="syst-aux.mkiv">
+    <cd:command name="doifnumberelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -753,21 +753,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnumber" file="syst-aux.mkiv">
+    <cd:command name="doifnumber" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotnumber" file="syst-aux.mkiv">
+    <cd:command name="doifnotnumber" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="percentdimen" file="syst-aux.mkiv">
+    <cd:command name="percentdimen" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:dimension"/>
@@ -780,7 +780,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpercentdimen" file="syst-aux.mkiv">
+    <cd:command name="setpercentdimen" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:dimension"/>
@@ -793,170 +793,170 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makerawcommalist" file="syst-aux.mkiv">
+    <cd:command name="makerawcommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawprocesscommalist" file="syst-aux.mkiv">
+    <cd:command name="rawprocesscommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawprocesscommacommand" file="syst-aux.mkiv">
+    <cd:command name="rawprocesscommacommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawdoifelseinset" file="syst-aux.mkiv">
+    <cd:command name="rawdoifelseinset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawdoifinsetelse" file="syst-aux.mkiv">
+    <cd:command name="rawdoifinsetelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawdoifinset" file="syst-aux.mkiv">
+    <cd:command name="rawdoifinset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:content/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawprocessaction" file="syst-aux.mkiv">
+    <cd:command name="rawprocessaction" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command"/>
             <cd:apply list="yes"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentvalue" file="syst-aux.mkiv"/>
+    <cd:command name="currentvalue" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="getparameters" file="syst-aux.mkiv">
+    <cd:command name="getparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="geteparameters" file="syst-aux.mkiv">
+    <cd:command name="geteparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getgparameters" file="syst-aux.mkiv">
+    <cd:command name="getgparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getxparameters" file="syst-aux.mkiv">
+    <cd:command name="getxparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="forgetparameters" file="syst-aux.mkiv">
+    <cd:command name="forgetparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getexpandedparameters" file="syst-aux.mkiv">
+    <cd:command name="getexpandedparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doassign" file="syst-aux.mkiv">
+    <cd:command name="doassign" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doeassign" file="syst-aux.mkiv">
+    <cd:command name="doeassign" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="undoassign" file="syst-aux.mkiv">
+    <cd:command name="undoassign" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doassignempty" file="syst-aux.mkiv">
+    <cd:command name="doassignempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processassignmentlist" file="syst-aux.mkiv">
+    <cd:command name="processassignmentlist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-userdata-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processassignmentcommand" file="syst-aux.mkiv">
+    <cd:command name="processassignmentcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-userdata-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processassignmentlist" type="environment" file="syst-aux.mkiv">
+    <cd:command name="processassignmentlist" type="environment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processassignmentcommand" type="environment" file="syst-aux.mkiv">
+    <cd:command name="processassignmentcommand" type="environment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentassignmentlistkey" file="syst-aux.mkiv"/>
+    <cd:command name="currentassignmentlistkey" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="currentassignmentlistvalue" file="syst-aux.mkiv"/>
+    <cd:command name="currentassignmentlistvalue" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="getemptyparameters" file="syst-aux.mkiv">
+    <cd:command name="getemptyparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="copyparameters" file="syst-aux.mkiv">
+    <cd:command name="copyparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="keyword-text"/>
@@ -964,13 +964,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkparameters" file="syst-aux.mkiv">
+    <cd:command name="checkparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ifparameters" file="syst-aux.mkiv">
+    <cd:command name="ifparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-true"/>
             <cd:delimiter name="else"/>
@@ -979,35 +979,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="commalistsize" file="syst-aux.mkiv"/>
+    <cd:command name="commalistsize" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="getcommalistsize" file="syst-aux.mkiv">
+    <cd:command name="getcommalistsize" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getcommacommandsize" file="syst-aux.mkiv">
+    <cd:command name="getcommacommandsize" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getfromcommalist" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-command-list"/>
-            <cd:resolve name="keyword-number"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="getfromcommacommand" file="syst-aux.mkiv">
+    <cd:command name="getfromcommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dogetcommacommandelement" file="syst-aux.mkiv">
+    <cd:command name="getfromcommacommand" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-command-list"/>
+            <cd:resolve name="keyword-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dogetcommacommandelement" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-number"/>
             <cd:delimiter name="from"/>
@@ -1017,14 +1017,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosingleempty" file="syst-aux.mkiv">
+    <cd:command name="dosingleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dodoubleempty" file="syst-aux.mkiv">
+    <cd:command name="dodoubleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy-optional"/>
@@ -1032,7 +1032,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dotripleempty" file="syst-aux.mkiv">
+    <cd:command name="dotripleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy-optional"/>
@@ -1041,20 +1041,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doquadrupleempty" file="syst-aux.mkiv">
+    <cd:command name="doquadrupleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
-            <cd:resolve name="keyword-dummy-optional"/>
-            <cd:resolve name="keyword-dummy-optional"/>
-            <cd:resolve name="keyword-dummy-optional"/>
-            <cd:resolve name="keyword-dummy-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doquintupleempty" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
@@ -1062,10 +1051,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosixtupleempty" file="syst-aux.mkiv">
+    <cd:command name="doquintupleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
-            <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
@@ -1074,10 +1062,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doseventupleempty" file="syst-aux.mkiv">
+    <cd:command name="dosixtupleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
-            <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
@@ -1087,14 +1074,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosingleargument" file="syst-aux.mkiv">
+    <cd:command name="doseventupleempty" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="keyword-dummy-optional"/>
+            <cd:resolve name="keyword-dummy-optional"/>
+            <cd:resolve name="keyword-dummy-optional"/>
+            <cd:resolve name="keyword-dummy-optional"/>
+            <cd:resolve name="keyword-dummy-optional"/>
+            <cd:resolve name="keyword-dummy-optional"/>
+            <cd:resolve name="keyword-dummy-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dosingleargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dodoubleargument" file="syst-aux.mkiv">
+    <cd:command name="dodoubleargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy"/>
@@ -1102,7 +1102,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dotripleargument" file="syst-aux.mkiv">
+    <cd:command name="dotripleargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy"/>
@@ -1111,32 +1111,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doquadrupleargument" file="syst-aux.mkiv">
+    <cd:command name="doquadrupleargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doquintupleargument" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="dosixtupleargument" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
@@ -1144,11 +1121,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doseventupleargument" file="syst-aux.mkiv">
+    <cd:command name="doquintupleargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
-            <cd:resolve name="keyword-dummy"/>
-            <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
             <cd:resolve name="keyword-dummy"/>
@@ -1157,13 +1132,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strippedcsname" file="syst-aux.mkiv">
+    <cd:command name="dosixtupleargument" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doseventupleargument" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+            <cd:resolve name="keyword-dummy"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="strippedcsname" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strippedcsname" variant="string" file="syst-aux.mkiv">
+    <cd:command name="strippedcsname" variant="string" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="none">
                 <cd:constant type="cd:text"/>
@@ -1171,13 +1171,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimple" file="syst-aux.mkiv">
+    <cd:command name="complexorsimple" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimple" variant="argument" file="syst-aux.mkiv">
+    <cd:command name="complexorsimple" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1186,13 +1186,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimpleempty" file="syst-aux.mkiv">
+    <cd:command name="complexorsimpleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimpleempty" variant="argument" file="syst-aux.mkiv">
+    <cd:command name="complexorsimpleempty" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1201,13 +1201,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimple" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimple" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimple" variant="argument" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimple" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1216,13 +1216,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimpleempty" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimpleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimpleempty" variant="argument" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimpleempty" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1231,18 +1231,18 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="permitspacesbetweengroups" file="syst-aux.mkiv"/>
+    <cd:command name="permitspacesbetweengroups" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="dontpermitspacesbetweengroups" file="syst-aux.mkiv"/>
+    <cd:command name="dontpermitspacesbetweengroups" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="dosinglegroupempty" file="syst-aux.mkiv">
+    <cd:command name="dosinglegroupempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dummy-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dodoublegroupempty" file="syst-aux.mkiv">
+    <cd:command name="dodoublegroupempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dummy-optional"/>
@@ -1250,7 +1250,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dotriplegroupempty" file="syst-aux.mkiv">
+    <cd:command name="dotriplegroupempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dummy-optional"/>
@@ -1259,7 +1259,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doquadruplegroupempty" file="syst-aux.mkiv">
+    <cd:command name="doquadruplegroupempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dummy-optional"/>
@@ -1269,7 +1269,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doquintuplegroupempty" file="syst-aux.mkiv">
+    <cd:command name="doquintuplegroupempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dummy-optional"/>
@@ -1280,35 +1280,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstofoneargument" file="syst-aux.mkiv">
+    <cd:command name="firstofoneargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstoftwoarguments" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-dummy"/>
-            <cd:resolve name="argument-dummy"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="secondoftwoarguments" file="syst-aux.mkiv">
+    <cd:command name="firstoftwoarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstofthreearguments" file="syst-aux.mkiv">
+    <cd:command name="secondoftwoarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="secondofthreearguments" file="syst-aux.mkiv">
+    <cd:command name="firstofthreearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1316,7 +1308,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thirdofthreearguments" file="syst-aux.mkiv">
+    <cd:command name="secondofthreearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1324,16 +1316,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstoffourarguments" file="syst-aux.mkiv">
+    <cd:command name="thirdofthreearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="secondoffourarguments" file="syst-aux.mkiv">
+    <cd:command name="firstoffourarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1342,7 +1333,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thirdoffourarguments" file="syst-aux.mkiv">
+    <cd:command name="secondoffourarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1351,7 +1342,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fourthoffourarguments" file="syst-aux.mkiv">
+    <cd:command name="thirdoffourarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1360,9 +1351,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstoffivearguments" file="syst-aux.mkiv">
+    <cd:command name="fourthoffourarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1370,7 +1360,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="secondoffivearguments" file="syst-aux.mkiv">
+    <cd:command name="firstoffivearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1380,7 +1370,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thirdoffivearguments" file="syst-aux.mkiv">
+    <cd:command name="secondoffivearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1390,7 +1380,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fourthoffivearguments" file="syst-aux.mkiv">
+    <cd:command name="thirdoffivearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1400,7 +1390,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fifthoffivearguments" file="syst-aux.mkiv">
+    <cd:command name="fourthoffivearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1410,9 +1400,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstofsixarguments" file="syst-aux.mkiv">
+    <cd:command name="fifthoffivearguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1421,7 +1410,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="secondofsixarguments" file="syst-aux.mkiv">
+    <cd:command name="firstofsixarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1432,7 +1421,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thirdofsixarguments" file="syst-aux.mkiv">
+    <cd:command name="secondofsixarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1443,7 +1432,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fourthofsixarguments" file="syst-aux.mkiv">
+    <cd:command name="thirdofsixarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1454,7 +1443,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fifthofsixarguments" file="syst-aux.mkiv">
+    <cd:command name="fourthofsixarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1465,7 +1454,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sixthofsixarguments" file="syst-aux.mkiv">
+    <cd:command name="fifthofsixarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1476,43 +1465,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="firstofoneunexpanded" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-dummy"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="firstoftwounexpanded" file="syst-aux.mkiv">
+    <cd:command name="sixthofsixarguments" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="secondoftwounexpanded" file="syst-aux.mkiv">
-        <cd:arguments>
             <cd:resolve name="argument-dummy"/>
-            <cd:resolve name="argument-dummy"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="firstofthreeunexpanded" file="syst-aux.mkiv">
-        <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="secondofthreeunexpanded" file="syst-aux.mkiv">
+    <cd:command name="firstofoneunexpanded" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="firstoftwounexpanded" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thirdofthreeunexpanded" file="syst-aux.mkiv">
+    <cd:command name="secondoftwounexpanded" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dummy"/>
+            <cd:resolve name="argument-dummy"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="firstofthreeunexpanded" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dummy"/>
             <cd:resolve name="argument-dummy"/>
@@ -1520,56 +1504,72 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letempty" file="syst-aux.mkiv">
+    <cd:command name="secondofthreeunexpanded" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:csname/>
+            <cd:resolve name="argument-dummy"/>
+            <cd:resolve name="argument-dummy"/>
+            <cd:resolve name="argument-dummy"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalletempty" file="syst-aux.mkiv">
+    <cd:command name="thirdofthreeunexpanded" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dummy"/>
+            <cd:resolve name="argument-dummy"/>
+            <cd:resolve name="argument-dummy"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="letempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letvalueempty" file="syst-aux.mkiv">
+    <cd:command name="globalletempty" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="letvalueempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letgvalueempty" file="syst-aux.mkiv">
+    <cd:command name="letgvalueempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letvaluerelax" file="syst-aux.mkiv">
+    <cd:command name="letvaluerelax" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letgvalurelax" file="syst-aux.mkiv">
+    <cd:command name="letgvalurelax" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="relaxvalueifundefined" file="syst-aux.mkiv">
+    <cd:command name="relaxvalueifundefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawgetparameters" file="syst-aux.mkiv">
+    <cd:command name="rawgetparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="texdefinition" type="environment" file="syst-aux.mkiv">
+    <cd:command name="texdefinition" type="environment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="spaces"/>
@@ -1584,6 +1584,20 @@
             <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="expanded"/>
             </cd:keywords>
+            <cd:keywords delimiters="none" optional="yes">
+                <cd:constant type="singleempty"/>
+                <cd:constant type="doubleempty"/>
+                <cd:constant type="tripleempty"/>
+                <cd:constant type="quadrupleempty"/>
+                <cd:constant type="quintupleempty"/>
+                <cd:constant type="sixtupleempty"/>
+                <cd:constant type="singleargument"/>
+                <cd:constant type="doubleargument"/>
+                <cd:constant type="tripleargument"/>
+                <cd:constant type="quadrupleargument"/>
+                <cd:constant type="quintupleargument"/>
+                <cd:constant type="sixtupleargument"/>
+            </cd:keywords>
             <cd:keywords delimiters="none">
                 <cd:constant type="cd:name"/>
             </cd:keywords>
@@ -1593,39 +1607,39 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="texdefinition" file="syst-aux.mkiv">
+    <cd:command name="texdefinition" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="texcode" type="environment" file="syst-aux.mkiv"/>
+    <cd:command name="texcode" type="environment" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="newcounter" file="syst-aux.mkiv">
+    <cd:command name="newcounter" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fastincrement" file="syst-aux.mkiv">
+    <cd:command name="fastincrement" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fastdecrement" file="syst-aux.mkiv">
+    <cd:command name="fastdecrement" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="increment" file="syst-aux.mkiv">
+    <cd:command name="increment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="increment" variant="argument" file="syst-aux.mkiv">
+    <cd:command name="increment" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="parentheses" list="yes">
                 <cd:constant type="cd:csname"/>
@@ -1634,13 +1648,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="decrement" file="syst-aux.mkiv">
+    <cd:command name="decrement" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="decrement" variant="argument" file="syst-aux.mkiv">
+    <cd:command name="decrement" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="parentheses" list="yes">
                 <cd:constant type="cd:csname"/>
@@ -1649,47 +1663,49 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="incrementvalue" file="syst-aux.mkiv">
+    <cd:command name="incrementvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="decrementvalue" file="syst-aux.mkiv">
+    <cd:command name="decrementvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="newsignal" file="syst-aux.mkiv">
+    <cd:command name="newsignal" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedstrippedcsname" file="syst-aux.mkiv">
+    <cd:command name="checkedstrippedcsname" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedstrippedcsname" variant="string" file="syst-aux.mkiv">
+    <cd:command name="checkedstrippedcsname" variant="string" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savenormalmeaning" file="syst-aux.mkiv">
+    <cd:command name="savenormalmeaning" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="recursedepth" file="syst-aux.mkiv"/>
+    <cd:command name="recursedepth" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="recurselevel" file="syst-aux.mkiv"/>
+    <cd:command name="recurselevel" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="dostepwiserecurse" file="syst-aux.mkiv">
+    <cd:command name="resetrecurselevel" level="system" file="syst-aux.mkiv"/>
+
+    <cd:command name="dostepwiserecurse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -1700,75 +1716,79 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dorecurse" file="syst-aux.mkiv">
+    <cd:command name="dorecurse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doexpandedrecurse" file="syst-aux.mkiv">
+    <cd:command name="doexpandedrecurse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dowith" file="syst-aux.mkiv">
+    <cd:command name="dowith" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command-list"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doloop" file="syst-aux.mkiv">
+    <cd:command name="doloop" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="exitloop" file="syst-aux.mkiv"/>
+    <cd:command name="exitloop" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="exitloopnow" file="syst-aux.mkiv"/>
+    <cd:command name="exitloopnow" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="dorecurse" file="syst-aux.mkiv">
+    <cd:command name="dofastloopcs" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doloopoverlist" file="syst-aux.mkiv">
+    <cd:command name="fastloopindex" level="system" file="syst-aux.mkiv"/>
+
+    <cd:command name="fastloopfinal" level="system" file="syst-aux.mkiv"/>
+
+    <cd:command name="doloopoverlist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="recursestring" file="syst-aux.mkiv"/>
+    <cd:command name="recursestring" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="newevery" file="syst-aux.mkiv">
+    <cd:command name="newevery" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="EveryPar" file="syst-aux.mkiv">
+    <cd:command name="EveryPar" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="EveryLine" file="syst-aux.mkiv">
+    <cd:command name="EveryLine" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="forgeteverypar" file="syst-aux.mkiv"/>
+    <cd:command name="forgeteverypar" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="convertvalue" file="syst-aux.mkiv">
+    <cd:command name="convertvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
             <cd:delimiter name="to"/>
@@ -1776,14 +1796,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defconvertedvalue" file="syst-aux.mkiv">
+    <cd:command name="defconvertedvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseassignment" file="syst-aux.mkiv">
+    <cd:command name="doifelseassignment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -1791,7 +1811,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifassignmentelse" file="syst-aux.mkiv">
+    <cd:command name="doifassignmentelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -1799,13 +1819,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="docheckassignment" file="syst-aux.mkiv">
+    <cd:command name="docheckassignment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ifassignment" file="syst-aux.mkiv">
+    <cd:command name="ifassignment" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-true"/>
             <cd:delimiter name="else"/>
@@ -1814,7 +1834,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="convertargument" file="syst-aux.mkiv">
+    <cd:command name="convertargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="to"/>
@@ -1822,7 +1842,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="convertcommand" file="syst-aux.mkiv">
+    <cd:command name="convertcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:delimiter name="to"/>
@@ -1830,55 +1850,55 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defconvertedargument" file="syst-aux.mkiv">
+    <cd:command name="defconvertedargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defconvertedcommand" file="syst-aux.mkiv">
+    <cd:command name="defconvertedcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="edefconvertedargument" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="gdefconvertedargument" file="syst-aux.mkiv">
+    <cd:command name="edefconvertedargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gdefconvertedcommand" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xdefconvertedargument" file="syst-aux.mkiv">
+    <cd:command name="gdefconvertedargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showvalue" file="syst-aux.mkiv">
+    <cd:command name="gdefconvertedcommand" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xdefconvertedargument" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemeaning" file="syst-aux.mkiv">
+    <cd:command name="doifelsemeaning" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
@@ -1887,7 +1907,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmeaningelse" file="syst-aux.mkiv">
+    <cd:command name="doifmeaningelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
@@ -1896,7 +1916,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesamestring" file="syst-aux.mkiv">
+    <cd:command name="doifelsesamestring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -1905,7 +1925,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsamestringelse" file="syst-aux.mkiv">
+    <cd:command name="doifsamestringelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -1914,7 +1934,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsamestring" file="syst-aux.mkiv">
+    <cd:command name="doifsamestring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -1922,7 +1942,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotsamestring" file="syst-aux.mkiv">
+    <cd:command name="doifnotsamestring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -1930,7 +1950,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ConvertToConstant" file="syst-aux.mkiv">
+    <cd:command name="ConvertToConstant" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
@@ -1938,7 +1958,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ConvertConstantAfter" file="syst-aux.mkiv">
+    <cd:command name="ConvertConstantAfter" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
@@ -1946,61 +1966,61 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="assignifempty" file="syst-aux.mkiv">
+    <cd:command name="assignifempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="grabuntil" file="syst-aux.mkiv">
+    <cd:command name="grabuntil" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processbetween" file="syst-aux.mkiv">
+    <cd:command name="processbetween" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbleuntil" file="syst-aux.mkiv">
+    <cd:command name="gobbleuntil" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobbleuntilrelax" file="syst-aux.mkiv">
+    <cd:command name="gobbleuntilrelax" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-content"/>
             <cd:delimiter name="relax"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processuntil" file="syst-aux.mkiv">
+    <cd:command name="processuntil" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="groupedcommand" file="syst-aux.mkiv">
+    <cd:command name="groupedcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="simplegroupedcommand" file="syst-aux.mkiv">
+    <cd:command name="simplegroupedcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pickupgroupedcommand" file="syst-aux.mkiv">
+    <cd:command name="pickupgroupedcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -2008,35 +2028,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="BeforePar" file="syst-aux.mkiv">
+    <cd:command name="BeforePar" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="AfterPar" file="syst-aux.mkiv">
+    <cd:command name="AfterPar" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="GetPar" file="syst-aux.mkiv"/>
+    <cd:command name="GetPar" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="GotoPar" file="syst-aux.mkiv"/>
+    <cd:command name="GotoPar" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="dowithpargument" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="dowithwargument" file="syst-aux.mkiv">
+    <cd:command name="dowithpargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dorepeatwithcommand" file="syst-aux.mkiv">
+    <cd:command name="dowithwargument" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dorepeatwithcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:text"/>
@@ -2046,7 +2066,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsestringinstring" file="syst-aux.mkiv">
+    <cd:command name="doifelsestringinstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -2055,7 +2075,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifstringinstringelse" file="syst-aux.mkiv">
+    <cd:command name="doifstringinstringelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -2064,7 +2084,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="appendtoks" file="syst-aux.mkiv">
+    <cd:command name="appendtoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-command"/>
             <cd:delimiter name="to"/>
@@ -2072,7 +2092,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prependtoks" file="syst-aux.mkiv">
+    <cd:command name="prependtoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-command"/>
             <cd:delimiter name="to"/>
@@ -2080,7 +2100,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="appendtoksonce" file="syst-aux.mkiv">
+    <cd:command name="appendtoksonce" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-command"/>
             <cd:delimiter name="to"/>
@@ -2088,7 +2108,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prependtoksonce" file="syst-aux.mkiv">
+    <cd:command name="prependtoksonce" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-command"/>
             <cd:delimiter name="to"/>
@@ -2096,7 +2116,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseintoks" file="syst-aux.mkiv">
+    <cd:command name="doifelseintoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -2105,7 +2125,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifintokselse" file="syst-aux.mkiv">
+    <cd:command name="doifintokselse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -2114,25 +2134,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="collecting" type="environment" file="syst-aux.mkiv"/>
+    <cd:command name="collecting" type="environment" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="collect" type="environment" file="syst-aux.mkiv"/>
+    <cd:command name="collect" type="environment" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="expandedcollect" type="environment" file="syst-aux.mkiv"/>
+    <cd:command name="expandedcollect" type="environment" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="collect" file="syst-aux.mkiv">
+    <cd:command name="collect" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="collectexpanded" file="syst-aux.mkiv">
+    <cd:command name="collectexpanded" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="removetoks" file="syst-aux.mkiv">
+    <cd:command name="removetoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-command"/>
             <cd:delimiter name="from"/>
@@ -2140,7 +2160,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="appendetoks" file="syst-aux.mkiv">
+    <cd:command name="appendetoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-command"/>
             <cd:delimiter name="to"/>
@@ -2148,7 +2168,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prependetoks" file="syst-aux.mkiv">
+    <cd:command name="prependetoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-command"/>
             <cd:delimiter name="to"/>
@@ -2156,29 +2176,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushtoks" file="syst-aux.mkiv">
+    <cd:command name="flushtoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dotoks" file="syst-aux.mkiv">
+    <cd:command name="dotoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="beforesplitstring" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="at"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="to"/>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="aftersplitstring" file="syst-aux.mkiv">
+    <cd:command name="beforesplitstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="at"/>
@@ -2188,19 +2198,17 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitstring" file="syst-aux.mkiv">
+    <cd:command name="aftersplitstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="at"/>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="to"/>
             <cd:csname/>
-            <cd:delimiter name="and"/>
-            <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="greedysplitstring" file="syst-aux.mkiv">
+    <cd:command name="splitstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="at"/>
@@ -2212,27 +2220,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="beforetestandsplitstring" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="at"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="to"/>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="aftertestandsplitstring" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="at"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="to"/>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="testandsplitstring" file="syst-aux.mkiv">
+    <cd:command name="greedysplitstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="at"/>
@@ -2244,7 +2232,39 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitatcolon" file="syst-aux.mkiv">
+    <cd:command name="beforetestandsplitstring" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="at"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="to"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="aftertestandsplitstring" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="at"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="to"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="testandsplitstring" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="at"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="to"/>
+            <cd:csname/>
+            <cd:delimiter name="and"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="splitatperiod" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:csname/>
@@ -2252,7 +2272,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitatcomma" file="syst-aux.mkiv">
+    <cd:command name="splitatcomma" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:csname/>
@@ -2260,7 +2280,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitatasterisk" file="syst-aux.mkiv">
+    <cd:command name="splitatasterisk" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:csname/>
@@ -2268,7 +2288,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitatcolon" file="syst-aux.mkiv">
+    <cd:command name="splitatcolon" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:csname/>
@@ -2276,7 +2296,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitatcolons" file="syst-aux.mkiv">
+    <cd:command name="splitatcolons" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:csname/>
@@ -2284,7 +2304,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="removesubstring" file="syst-aux.mkiv">
+    <cd:command name="removesubstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="from"/>
@@ -2294,81 +2314,81 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="appendtocommalist" file="syst-aux.mkiv">
+    <cd:command name="appendtocommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prependtocommalist" file="syst-aux.mkiv">
+    <cd:command name="prependtocommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addtocommalist" file="syst-aux.mkiv">
+    <cd:command name="addtocommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pretocommalist" file="syst-aux.mkiv">
+    <cd:command name="pretocommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="robustdoifelseinset" file="syst-aux.mkiv">
+    <cd:command name="robustdoifelseinset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="robustdoifinsetelse" file="syst-aux.mkiv">
+    <cd:command name="robustdoifinsetelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="robustaddtocommalist" file="syst-aux.mkiv">
+    <cd:command name="robustaddtocommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="robustpretocommalist" file="syst-aux.mkiv">
+    <cd:command name="robustpretocommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xsplitstring" file="syst-aux.mkiv">
+    <cd:command name="xsplitstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="removefromcommalist" file="syst-aux.mkiv">
+    <cd:command name="removefromcommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="substituteincommalist" file="syst-aux.mkiv">
+    <cd:command name="substituteincommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -2376,14 +2396,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="replaceincommalist" file="syst-aux.mkiv">
+    <cd:command name="replaceincommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalprocesscommalist" file="syst-aux.mkiv">
+    <cd:command name="globalprocesscommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:command"/>
@@ -2392,104 +2412,104 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="withoutpt" file="syst-aux.mkiv">
+    <cd:command name="withoutpt" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PtToCm" file="syst-aux.mkiv">
+    <cd:command name="PtToCm" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dimensiontocount" file="syst-aux.mkiv">
+    <cd:command name="dimensiontocount" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="numberofpoints" file="syst-aux.mkiv">
+    <cd:command name="numberofpoints" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="swapdimens" file="syst-aux.mkiv">
+    <cd:command name="swapdimens" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="swapcounts" file="syst-aux.mkiv">
+    <cd:command name="swapcounts" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="swapmacros" file="syst-aux.mkiv">
+    <cd:command name="swapmacros" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalswapdimens" file="syst-aux.mkiv">
+    <cd:command name="globalswapdimens" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalswapcounts" file="syst-aux.mkiv">
+    <cd:command name="globalswapcounts" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalswapmacros" file="syst-aux.mkiv">
+    <cd:command name="globalswapmacros" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalpushmacro" file="syst-aux.mkiv">
+    <cd:command name="globalpushmacro" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localpushmacro" file="syst-aux.mkiv">
+    <cd:command name="localpushmacro" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalpopmacro" file="syst-aux.mkiv">
+    <cd:command name="globalpopmacro" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localpopmacro" file="syst-aux.mkiv">
+    <cd:command name="localpopmacro" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pushmacro" file="syst-aux.mkiv">
+    <cd:command name="pushmacro" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="popmacro" file="syst-aux.mkiv">
+    <cd:command name="popmacro" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
@@ -2515,14 +2535,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hsizefraction" file="syst-aux.mkiv">
+    <cd:command name="hsizefraction" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifvalue" file="syst-aux.mkiv">
+    <cd:command name="doifvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
@@ -2530,7 +2550,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotvalue" file="syst-aux.mkiv">
+    <cd:command name="doifnotvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
@@ -2538,16 +2558,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsevalue" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifvalueelse" file="syst-aux.mkiv">
+    <cd:command name="doifelsevalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
@@ -2556,37 +2567,30 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnothing" file="syst-aux.mkiv">
+    <cd:command name="doifvalueelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-true"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifsomething" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-true"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifelsenothing" file="syst-aux.mkiv">
-        <cd:arguments>
+            <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnothingelse" file="syst-aux.mkiv">
+    <cd:command name="doifnothing" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesomething" file="syst-aux.mkiv">
+    <cd:command name="doifsomething" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsenothing" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -2594,7 +2598,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsomethingelse" file="syst-aux.mkiv">
+    <cd:command name="doifnothingelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -2602,21 +2606,37 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifvaluenothing" file="syst-aux.mkiv">
+    <cd:command name="doifelsesomething" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifsomethingelse" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifvaluenothing" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifvaluesomething" file="syst-aux.mkiv">
+    <cd:command name="doifvaluesomething" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsevaluenothing" file="syst-aux.mkiv">
+    <cd:command name="doifelsevaluenothing" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -2624,7 +2644,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifvaluenothingelse" file="syst-aux.mkiv">
+    <cd:command name="doifvaluenothingelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -2632,7 +2652,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseemptyvalue" file="syst-aux.mkiv">
+    <cd:command name="doifelseemptyvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -2640,7 +2660,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifemptyvalueelse" file="syst-aux.mkiv">
+    <cd:command name="doifemptyvalueelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -2648,55 +2668,55 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifemptyvalue" file="syst-aux.mkiv">
+    <cd:command name="doifemptyvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotemptyvalue" file="syst-aux.mkiv">
+    <cd:command name="doifnotemptyvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseallcommon" file="syst-aux.mkiv">
+    <cd:command name="doifelseallcommon" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifallcommonelse" file="syst-aux.mkiv">
+    <cd:command name="doifallcommonelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifallcommon" file="syst-aux.mkiv">
+    <cd:command name="doifallcommon" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotallcommon" file="syst-aux.mkiv">
+    <cd:command name="doifnotallcommon" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-content-list"/>
-            <cd:resolve name="argument-content-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dodoubleemptywithset" file="syst-aux.mkiv">
+    <cd:command name="dodoubleemptywithset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy-list-optional"/>
@@ -2704,7 +2724,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dotripleemptywithset" file="syst-aux.mkiv">
+    <cd:command name="dotripleemptywithset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy-list-optional"/>
@@ -2713,7 +2733,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dodoubleargumentwithset" file="syst-aux.mkiv">
+    <cd:command name="dodoubleargumentwithset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy-list"/>
@@ -2721,7 +2741,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dotripleargumentwithset" file="syst-aux.mkiv">
+    <cd:command name="dotripleargumentwithset" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="keyword-dummy-list"/>
@@ -2730,7 +2750,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="stripcharacter" file="syst-aux.mkiv">
+    <cd:command name="stripcharacter" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:delimiter name="from"/>
@@ -2740,7 +2760,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="stripspaces" file="syst-aux.mkiv">
+    <cd:command name="stripspaces" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:delimiter name="from"/>
             <cd:resolve name="string-text"/>
@@ -2749,7 +2769,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unspacestring" file="syst-aux.mkiv">
+    <cd:command name="unspacestring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="to"/>
@@ -2757,14 +2777,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="executeifdefined" file="syst-aux.mkiv">
+    <cd:command name="executeifdefined" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesomespace" file="syst-aux.mkiv">
+    <cd:command name="doifelsesomespace" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -2772,7 +2792,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsomespaceelse" file="syst-aux.mkiv">
+    <cd:command name="doifsomespaceelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -2780,7 +2800,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processseparatedlist" file="syst-aux.mkiv">
+    <cd:command name="processseparatedlist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="keyword-text"/>
@@ -2791,7 +2811,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processlist" file="syst-aux.mkiv">
+    <cd:command name="processlist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
             <cd:resolve name="argument-character"/>
@@ -2800,14 +2820,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processassignlist" file="syst-aux.mkiv">
+    <cd:command name="processassignlist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text-list"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="untexargument" file="syst-aux.mkiv">
+    <cd:command name="untexargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:delimiter name="to"/>
@@ -2815,7 +2835,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="untexcommand" file="syst-aux.mkiv">
+    <cd:command name="untexcommand" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-csname"/>
             <cd:delimiter name="to"/>
@@ -2823,35 +2843,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PointsToBigPoints" file="syst-aux.mkiv">
+    <cd:command name="PointsToBigPoints" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PointsToWholeBigPoints" file="syst-aux.mkiv">
+    <cd:command name="PointsToWholeBigPoints" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ScaledPointsToBigPoints" file="syst-aux.mkiv">
+    <cd:command name="ScaledPointsToBigPoints" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ScaledPointsToWholeBigPoints" file="syst-aux.mkiv">
+    <cd:command name="ScaledPointsToWholeBigPoints" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PointsToReal" file="syst-aux.mkiv">
+    <cd:command name="PointsToReal" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:csname/>
@@ -2860,19 +2880,19 @@
 
     <cd:command name="dontleavehmode" file="syst-aux.mkiv"/>
 
-    <cd:command name="utfupper" file="syst-aux.mkiv">
+    <cd:command name="utfupper" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="utflower" file="syst-aux.mkiv">
+    <cd:command name="utflower" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uppercasestring" file="syst-aux.mkiv">
+    <cd:command name="uppercasestring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="to"/>
@@ -2880,7 +2900,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowercasestring" file="syst-aux.mkiv">
+    <cd:command name="lowercasestring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="to"/>
@@ -2888,7 +2908,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="counttoken" file="syst-aux.mkiv">
+    <cd:command name="counttoken" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="in"/>
@@ -2898,7 +2918,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="counttokens" file="syst-aux.mkiv">
+    <cd:command name="counttokens" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="to"/>
@@ -2906,7 +2926,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitofftokens" file="syst-aux.mkiv">
+    <cd:command name="splitofftokens" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="from"/>
@@ -2916,7 +2936,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="handletokens" file="syst-aux.mkiv">
+    <cd:command name="handletokens" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="with"/>
@@ -2924,11 +2944,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="settrialtypesetting" file="syst-aux.mkiv"/>
+    <cd:command name="settrialtypesetting" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="resettrialtypesetting" file="syst-aux.mkiv"/>
+    <cd:command name="resettrialtypesetting" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="iftrialtypesetting" file="syst-aux.mkiv">
+    <cd:command name="iftrialtypesetting" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-true"/>
             <cd:delimiter name="else"/>
@@ -2937,64 +2957,64 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="integerrounding" file="syst-aux.mkiv">
+    <cd:command name="integerrounding" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="onedigitrounding" file="syst-aux.mkiv">
+    <cd:command name="onedigitrounding" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="twodigitrounding" file="syst-aux.mkiv">
+    <cd:command name="twodigitrounding" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="threedigitrounding" file="syst-aux.mkiv">
+    <cd:command name="threedigitrounding" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processcontent" file="syst-aux.mkiv">
+    <cd:command name="processcontent" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dogobblesingleempty" file="syst-aux.mkiv">
+    <cd:command name="dogobblesingleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dummy-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dogobbledoubleempty" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-dummy-optional"/>
-            <cd:resolve name="keyword-dummy-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="gobblesingleempty" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-dummy-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="gobbledoubleempty" file="syst-aux.mkiv">
+    <cd:command name="dogobbledoubleempty" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dummy-optional"/>
             <cd:resolve name="keyword-dummy-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesometoks" file="syst-aux.mkiv">
+    <cd:command name="gobblesingleempty" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-dummy-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="gobbledoubleempty" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-dummy-optional"/>
+            <cd:resolve name="keyword-dummy-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsesometoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-true"/>
@@ -3002,7 +3022,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsometokselse" file="syst-aux.mkiv">
+    <cd:command name="doifsometokselse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-true"/>
@@ -3010,71 +3030,71 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsometoks" file="syst-aux.mkiv">
+    <cd:command name="doifsometoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifemptytoks" file="syst-aux.mkiv">
+    <cd:command name="doifemptytoks" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strictinspectnextcharacter" type="environment" file="syst-aux.mkiv"/>
+    <cd:command name="strictinspectnextcharacter" type="environment" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="strictdoifelsenextoptional" file="syst-aux.mkiv">
+    <cd:command name="strictdoifelsenextoptional" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strictdoifnextoptionalelse" file="syst-aux.mkiv">
+    <cd:command name="strictdoifnextoptionalelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gobblespacetokens" file="syst-aux.mkiv"/>
+    <cd:command name="gobblespacetokens" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="verbatimstring" file="syst-aux.mkiv">
+    <cd:command name="verbatimstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lastdigit" file="syst-aux.mkiv">
+    <cd:command name="lastdigit" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lasttwodigits" file="syst-aux.mkiv">
+    <cd:command name="lasttwodigits" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="serializedcommalist" file="syst-aux.mkiv"/>
+    <cd:command name="serializedcommalist" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="serializecommalist" file="syst-aux.mkiv">
+    <cd:command name="serializecommalist" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-command-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="purenumber" file="syst-aux.mkiv">
+    <cd:command name="purenumber" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filterfromvalue" file="syst-aux.mkiv">
+    <cd:command name="filterfromvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -3082,15 +3102,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filterfromnext" file="syst-aux.mkiv">
+    <cd:command name="filterfromnext" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
-            <cd:resolve name="argument-content-optional"/>
-            <cd:resolve name="argument-content-optional"/>
-            <cd:resolve name="argument-content-optional"/>
-            <cd:resolve name="argument-content-optional"/>
-            <cd:resolve name="argument-content-optional"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
         </cd:arguments>
     </cd:command>
 
@@ -3156,7 +3176,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsedimension" file="syst-aux.mkiv">
+    <cd:command name="doifelsedimension" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -3164,7 +3184,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdimensionelse" file="syst-aux.mkiv">
+    <cd:command name="doifdimensionelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -3172,7 +3192,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsedimenstring" file="syst-aux.mkiv">
+    <cd:command name="doifelsedimenstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -3180,7 +3200,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdimenstringelse" file="syst-aux.mkiv">
+    <cd:command name="doifdimenstringelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -3188,23 +3208,23 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="compresult" file="syst-aux.mkiv"/>
+    <cd:command name="compresult" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="comparedimension" file="syst-aux.mkiv">
+    <cd:command name="comparedimension" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="comparedimensioneps" file="syst-aux.mkiv">
+    <cd:command name="comparedimensioneps" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letcscsname" file="syst-aux.mkiv">
+    <cd:command name="letcscsname" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:delimiter name="csname"/>
@@ -3213,7 +3233,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letcsnamecs" file="syst-aux.mkiv">
+    <cd:command name="letcsnamecs" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:delimiter name="csname"/>
             <cd:resolve name="string-name"/>
@@ -3222,7 +3242,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letcsnamecsname" file="syst-aux.mkiv">
+    <cd:command name="letcsnamecsname" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:delimiter name="csname"/>
             <cd:resolve name="string-name"/>
@@ -3233,20 +3253,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addvalue" file="syst-aux.mkiv">
+    <cd:command name="addvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unspaced" file="syst-aux.mkiv">
+    <cd:command name="unspaced" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unspaceargument" file="syst-aux.mkiv">
+    <cd:command name="unspaceargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
             <cd:delimiter name="to"/>
@@ -3254,14 +3274,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unspaceafter" file="syst-aux.mkiv">
+    <cd:command name="unspaceafter" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsehasspace" file="syst-aux.mkiv">
+    <cd:command name="doifelsehasspace" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -3269,7 +3289,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifhasspaceelse" file="syst-aux.mkiv">
+    <cd:command name="doifhasspaceelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -3277,33 +3297,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setflag" file="syst-aux.mkiv">
+    <cd:command name="setflag" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetflag" file="syst-aux.mkiv">
+    <cd:command name="resetflag" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flag" file="syst-aux.mkiv">
+    <cd:command name="flag" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseflagged" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifflaggedelse" file="syst-aux.mkiv">
+    <cd:command name="doifelseflagged" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -3311,14 +3323,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotflagged" file="syst-aux.mkiv">
+    <cd:command name="doifflaggedelse" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifnotflagged" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inheritparameter" file="syst-aux.mkiv">
+    <cd:command name="inheritparameter" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="keyword-text"/>
@@ -3326,7 +3346,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsenonzeropositive" file="syst-aux.mkiv">
+    <cd:command name="doifelsenonzeropositive" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
@@ -3334,7 +3354,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnonzeropositiveelse" file="syst-aux.mkiv">
+    <cd:command name="doifnonzeropositiveelse" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
@@ -3342,53 +3362,53 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrawparameters" file="syst-aux.mkiv">
+    <cd:command name="getrawparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getraweparameters" file="syst-aux.mkiv">
+    <cd:command name="getraweparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrawgparameters" file="syst-aux.mkiv">
+    <cd:command name="getrawgparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrawxparameters" file="syst-aux.mkiv">
+    <cd:command name="getrawxparameters" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unprotected" file="syst-aux.mkiv">
+    <cd:command name="unprotected" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-content"/>
             <cd:delimiter name="par"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resettimer" file="syst-aux.mkiv"/>
+    <cd:command name="resettimer" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="elapsedtime" file="syst-aux.mkiv"/>
+    <cd:command name="elapsedtime" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="elapsedseconds" file="syst-aux.mkiv"/>
+    <cd:command name="elapsedseconds" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="currentfeaturetest" file="syst-aux.mkiv"/>
+    <cd:command name="currentfeaturetest" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="testfeature" file="syst-aux.mkiv">
+    <cd:command name="testfeature" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
-            <cd:resolve name="argument-content"/>
+            <cd:content/>
         </cd:arguments>
     </cd:command>
 
@@ -3398,62 +3418,62 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testfeatureonce" file="syst-aux.mkiv">
+    <cd:command name="testfeatureonce" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
-            <cd:resolve name="argument-content"/>
+            <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="freezedimenmacro" file="syst-aux.mkiv">
+    <cd:command name="freezedimenmacro" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="negated" file="syst-aux.mkiv">
+    <cd:command name="negated" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="assigndimen" file="syst-aux.mkiv">
+    <cd:command name="assigndimen" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="appendvalue" file="syst-aux.mkiv">
+    <cd:command name="appendvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="appendgvalue" file="syst-aux.mkiv">
+    <cd:command name="appendgvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prependvalue" file="syst-aux.mkiv">
+    <cd:command name="prependvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prependgvalue" file="syst-aux.mkiv">
+    <cd:command name="prependgvalue" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processranges" file="syst-aux.mkiv">
+    <cd:command name="processranges" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="cd:number"/>
@@ -3463,7 +3483,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dowithrange" file="syst-aux.mkiv">
+    <cd:command name="dowithrange" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces" list="yes">
                 <cd:constant type="cd:number"/>
@@ -3473,11 +3493,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ignoreimplicitspaces" file="syst-aux.mkiv"/>
+    <cd:command name="ignoreimplicitspaces" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="nointerference" type="environment" file="syst-aux.mkiv"/>
+    <cd:command name="nointerference" type="environment" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="expandcheckedcsname" file="syst-aux.mkiv">
+    <cd:command name="expandcheckedcsname" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-key"/>
@@ -3485,43 +3505,43 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="docheckedpair" file="syst-aux.mkiv">
+    <cd:command name="docheckedpair" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="constantnumber" file="syst-aux.mkiv">
+    <cd:command name="constantnumber" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="constantnumberargument" file="syst-aux.mkiv">
+    <cd:command name="constantnumberargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="constantdimen" file="syst-aux.mkiv">
+    <cd:command name="constantdimen" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="constantdimenargument" file="syst-aux.mkiv">
+    <cd:command name="constantdimenargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="constantemptyargument" file="syst-aux.mkiv">
+    <cd:command name="constantemptyargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getsubstring" file="syst-aux.mkiv">
+    <cd:command name="getsubstring" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -3529,7 +3549,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="converteddimen" file="syst-aux.mkiv">
+    <cd:command name="converteddimen" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:keywords delimiters="braces">
@@ -3549,10 +3569,77 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ntimes" file="syst-aux.mkiv">
+    <cd:command name="ntimes" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expdoifelse" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expdoif" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expdoifnot" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expdoifelsecommon" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expdoifcommonelse" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expdoifelseinset" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expdoifinsetelse" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-list"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="luaexpr" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
         </cd:arguments>
     </cd:command>
 

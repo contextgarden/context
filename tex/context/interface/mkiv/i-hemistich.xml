@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definehemistich" level="style" file="m-hemistich.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuphemistich"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuphemistich" level="style" file="m-hemistich.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="width">
+                    <cd:constant type="local" default="yes"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="separator">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="leftstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="leftcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="rightstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="rightcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="separatorstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="separatorcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hemistiches" level="document" file="m-hemistich.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hemistiches" variant="assignment" level="document" file="m-hemistich.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuphemistich"/>
+            </cd:assignments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hemistich" generated="yes" variant="instance" level="document" file="m-hemistich.mkiv">
+        <cd:sequence>
+            <cd:instance value="hemistich"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hemistichescaesura" level="document" file="m-hemistich.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:text"/>
+                <cd:constant type="cd:command"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

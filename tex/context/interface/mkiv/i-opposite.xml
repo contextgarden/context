@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupoppositeplacing" file="page-fac.mkiv">
+    <cd:command name="setupoppositeplacing" level="style" file="page-fac.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="state">
@@ -24,6 +24,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="opposite" type="environment" file="page-fac.mkiv"/>
+    <cd:command name="opposite" type="environment" level="document" file="page-fac.mkiv"/>
 
 </cd:interface>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definefittingpage" file="page-app.mkiv">
+    <cd:command name="definefittingpage" level="style" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfittingpage" file="page-app.mkiv">
+    <cd:command name="setupfittingpage" level="style" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fittingpage" type="environment" file="page-app.mkiv">
+    <cd:command name="fittingpage" type="environment" level="document" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -50,9 +50,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fittingpage" type="environment" generated="yes" variant="example" file="page-app.mkiv">
+    <cd:command name="fittingpage" type="environment" generated="yes" variant="instance" level="document" file="page-app.mkiv">
         <cd:sequence>
-            <cd:variable value="fittingpage"/>
+            <cd:instance value="fittingpage"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -60,20 +60,31 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="TEXpage"/>
-            <cd:constant value="MPpage"/>
+            <cd:resolve name="instance-fittingpage"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="TEXpage" type="environment" file="page-app.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupfittingpage"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="setupTEXpage" file="page-app.mkiv">
+        <cd:command name="TEXpage" type="environment" file="page-app.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupfittingpage"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="MPpage" type="environment" file="meta-fig.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupfittingpage"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupTEXpage" level="style" file="page-app.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupfittingpage"/>
@@ -81,15 +92,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPpage" type="environment" file="meta-fig.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupfittingpage"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="setupMPpage" file="meta-fig.mkiv">
+    <cd:command name="setupMPpage" level="style" file="meta-fig.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupfittingpage"/>

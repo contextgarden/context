@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuppositionbar" file="pack-bar.mkiv">
+    <cd:command name="setuppositionbar" level="style" file="pack-bar.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="style">

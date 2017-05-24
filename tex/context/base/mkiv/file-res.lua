@@ -78,7 +78,7 @@ local function readfilename(specification,backtrack,treetoo)
             end
         end
         if not fnd then
-            local paths = resolvers.instance.extra_paths
+            local paths = resolvers.getextrapaths()
             if paths then
                 for i=1,#paths do
                     for i=1,#names do

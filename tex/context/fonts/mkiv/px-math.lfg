@@ -10,8 +10,9 @@ return {
         },
         virtuals = {
             ["px-math"] = {
-                { name = "texgyre-pagella-math-regular.otf", features = "virtualmath", main = true },
-                { name = "texgyrepagella-regular.otf", features = "virtualmath", vector = "tex-mr-missing" } ,
+--                 { name = "texgyre-pagella-math-regular.otf", features = "virtualmath", main = true },
+--                 { name = "texgyrepagella-regular.otf", features = "virtualmath", vector = "tex-mr-missing" } ,
+                { name = "texgyrepagella-regular.otf", features = "virtualmath" } ,
                 { name = "rpxr.tfm", vector = "tex-mr" } ,
                 { name = "rpxmi.tfm", vector = "tex-mi", skewchar=0x7F },
                 { name = "rpxpplri.tfm", vector = "tex-it", skewchar=0x7F },

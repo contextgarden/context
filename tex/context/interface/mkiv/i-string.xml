@@ -4,61 +4,61 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="wdofstring" file="blob-ini.mkiv">
+    <cd:command name="wdofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="htofstring" file="blob-ini.mkiv">
+    <cd:command name="htofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dpofstring" file="blob-ini.mkiv">
+    <cd:command name="dpofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hdofstring" file="blob-ini.mkiv">
+    <cd:command name="hdofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="htdpofstring" file="blob-ini.mkiv">
+    <cd:command name="htdpofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="widthofstring" file="blob-ini.mkiv">
+    <cd:command name="widthofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="heightofstring" file="blob-ini.mkiv">
+    <cd:command name="heightofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="depthofstring" file="blob-ini.mkiv">
+    <cd:command name="depthofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="heightanddepthofstring" file="blob-ini.mkiv">
+    <cd:command name="heightanddepthofstring" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setwidthof" file="blob-ini.mkiv">
+    <cd:command name="setwidthof" level="system" file="blob-ini.mkiv">
         <cd:arguments>
             <cd:text/>
             <cd:delimiter name="to"/>

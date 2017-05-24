@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="table" type="environment" file="tabl-tab.mkiv">
+    <cd:command name="table" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:template/>
             <cd:assignments list="yes" optional="yes">
@@ -13,7 +13,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="table" type="environment" variant="name" file="tabl-tab.mkiv">
+    <cd:command name="table" type="environment" variant="name" category="tables" level="document" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -22,7 +22,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetabletemplate" file="tabl-tab.mkiv">
+    <cd:command name="definetabletemplate" category="tables" level="style" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:template/>
@@ -31,31 +31,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tables" type="environment" file="tabl-tab.mkiv">
+    <cd:command name="tables" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:template/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tables" type="environment" variant="name" file="tabl-tab.mkiv">
+    <cd:command name="tables" type="environment" variant="name" category="tables" level="document" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tablehead" type="environment" file="tabl-tab.mkiv">
+    <cd:command name="tablehead" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabletail" type="environment" file="tabl-tab.mkiv">
+    <cd:command name="tabletail" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptables" file="tabl-tab.mkiv">
+    <cd:command name="setuptables" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="text">

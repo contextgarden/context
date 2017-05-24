@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathfence" file="math-fen.mkiv">
+    <cd:command name="definemathfence" category="mathematics" level="style" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathfence" file="math-fen.mkiv">
+    <cd:command name="setupmathfence" category="mathematics" level="style" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -41,15 +41,15 @@
                     <cd:constant type="auto"/>
                 </cd:parameter>
                 <cd:parameter name="factor">
-                    <cd:constant type="auto" default="yes"/>
                     <cd:constant type="none"/>
-                    <cd:constant type="number"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="cd:number"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fence" generated="yes" variant="example" file="math-fen.mkiv">
+    <cd:command name="fence" generated="yes" variant="example" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:sequence>
             <cd:variable value="fence"/>
         </cd:sequence>
@@ -58,147 +58,147 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fenced" file="math-fen.mkiv">
+    <cd:command name="fenced" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fence" file="math-fen.mkiv"/>
+    <cd:command name="fence" category="mathematics" level="document" file="math-fen.mkiv"/>
 
-    <cd:command name="left" file="math-fen.mkiv">
+    <cd:command name="left" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="middle" file="math-fen.mkiv">
+    <cd:command name="middle" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="right" file="math-fen.mkiv">
+    <cd:command name="right" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="big" file="math-fen.mkiv">
+    <cd:command name="big" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Big" file="math-fen.mkiv">
+    <cd:command name="Big" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigg" file="math-fen.mkiv">
+    <cd:command name="bigg" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigg" file="math-fen.mkiv">
+    <cd:command name="Bigg" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigl" file="math-fen.mkiv">
+    <cd:command name="bigl" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigm" file="math-fen.mkiv">
+    <cd:command name="bigm" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigr" file="math-fen.mkiv">
+    <cd:command name="bigr" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigl" file="math-fen.mkiv">
+    <cd:command name="Bigl" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigm" file="math-fen.mkiv">
+    <cd:command name="Bigm" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigr" file="math-fen.mkiv">
+    <cd:command name="Bigr" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="biggl" file="math-fen.mkiv">
+    <cd:command name="biggl" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="biggm" file="math-fen.mkiv">
+    <cd:command name="biggm" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="biggr" file="math-fen.mkiv">
+    <cd:command name="biggr" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Biggl" file="math-fen.mkiv">
+    <cd:command name="Biggl" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Biggm" file="math-fen.mkiv">
+    <cd:command name="Biggm" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Biggr" file="math-fen.mkiv">
+    <cd:command name="Biggr" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lfence" file="math-fen.mkiv">
+    <cd:command name="lfence" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mfence" file="math-fen.mkiv">
+    <cd:command name="mfence" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rfence" file="math-fen.mkiv">
+    <cd:command name="rfence" category="mathematics" level="document" file="math-fen.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedfences" type="environment" file="math-fen.mkiv"/>
+    <cd:command name="checkedfences" category="mathematics" type="environment" file="math-fen.mkiv"/>
 
 </cd:interface>

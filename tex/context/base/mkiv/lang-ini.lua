@@ -270,6 +270,8 @@ local function unique(tag,requested,loaded)
     end
 end
 
+local shared = false
+
 local function loaddefinitions(tag,specification)
     statistics.starttiming(languages)
     local data, instance = resolve(tag)
@@ -295,6 +297,19 @@ local function loaddefinitions(tag,specification)
         local ok        = false
         local resources = data.resources or { }
         data.resources  = resources
+        if not shared then
+            local found = resolvers.findfile("lang-exc.lua")
+            if found then
+                shared = dofile(found)
+                if type(shared) == "table" then
+                    shared = concat(shared," ")
+                else
+                    shared = true
+                end
+            else
+                shared = true
+            end
+        end
         for i=1,#definitions do
             local definition = definitions[i]
             if definition == "" then
@@ -344,12 +359,17 @@ local function loaddefinitions(tag,specification)
             end
         end
         if #ploaded > 0 then
+            -- why not always clear
             instance:clear_patterns()
             instance:patterns(unique(tag,requested,ploaded))
         end
         if #eloaded > 0 then
+            -- why not always clear
             instance:clear_hyphenation()
             instance:hyphenation(concat(eloaded," "))
+        end
+        if type(shared) == "string" then
+            instance:hyphenation(shared)
         end
         return ok
     elseif trace_patterns then

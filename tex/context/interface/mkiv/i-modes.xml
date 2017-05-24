@@ -4,37 +4,37 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="newmode" file="core-env.mkiv">
+    <cd:command name="newmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmode" file="core-env.mkiv">
+    <cd:command name="setmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetmode" file="core-env.mkiv">
+    <cd:command name="resetmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="newsystemmode" file="core-env.mkiv">
+    <cd:command name="newsystemmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsystemmode" file="core-env.mkiv">
+    <cd:command name="setsystemmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetsystemmode" file="core-env.mkiv">
+    <cd:command name="resetsystemmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
@@ -58,19 +58,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalpreventmode" file="core-env.mkiv">
+    <cd:command name="globalpreventmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalenablemode" file="core-env.mkiv">
+    <cd:command name="globalenablemode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globaldisablemode" file="core-env.mkiv">
+    <cd:command name="globaldisablemode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
@@ -87,7 +87,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="booleanmodevalue" file="core-env.mkiv">
+    <cd:command name="booleanmodevalue" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
@@ -189,25 +189,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pushmode" file="core-env.mkiv">
+    <cd:command name="pushmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="popmode" file="core-env.mkiv">
+    <cd:command name="popmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pushsystemmode" file="core-env.mkiv">
+    <cd:command name="pushsystemmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="popsystemmode" file="core-env.mkiv">
+    <cd:command name="popsystemmode" level="system" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

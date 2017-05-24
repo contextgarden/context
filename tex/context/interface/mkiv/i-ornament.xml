@@ -52,7 +52,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineornament" variant="collector" file="pack-box.mkiv">
+    <cd:command name="defineornament" variant="collector" level="style" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineornament" variant="layer" file="pack-box.mkiv">
+    <cd:command name="defineornament" variant="layer" level="style" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">

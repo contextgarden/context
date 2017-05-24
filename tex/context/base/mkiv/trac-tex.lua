@@ -84,7 +84,7 @@ local function saveusedfilesintrees(format)
         jobname = environment.jobname or "?",
         version = environment.version or "?",
         kind    = environment.kind    or "?",
-        files   = resolvers.instance.foundintrees
+        files   = resolvers.foundintrees()
     }
     local filename = file.replacesuffix(environment.jobname or "context-job",'jlg')
     if format == "lua" then

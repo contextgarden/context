@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synchronizestrut" file="spac-ver.mkiv">
+    <cd:command name="synchronizestrut" level="system" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-strut"/>
@@ -30,24 +30,24 @@
 
     <cd:command name="strut" file="spac-ver.mkiv"/>
 
-    <cd:command name="setstrut" file="spac-ver.mkiv"/>
+    <cd:command name="setstrut" level="system" file="spac-ver.mkiv"/>
 
-    <cd:command name="setcharstrut" file="spac-ver.mkiv">
+    <cd:command name="setcharstrut" level="system" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setfontstrut" file="spac-ver.mkiv"/>
+    <cd:command name="setfontstrut" level="system" file="spac-ver.mkiv"/>
 
-    <cd:command name="setcapstrut" file="spac-ver.mkiv"/>
+    <cd:command name="setcapstrut" level="system" file="spac-ver.mkiv"/>
 
-    <cd:command name="setnostrut" file="spac-ver.mkiv"/>
+    <cd:command name="setnostrut" level="system" file="spac-ver.mkiv"/>
 
     <cd:command name="showstruts" file="spac-ver.mkiv"/>
 
     <cd:command name="showcolorstruts" file="spac-ver.mkiv"/>
 
-    <cd:command name="strut" type="environment" begin="beg" end="end" file="spac-ver.mkiv"/>
+    <cd:command name="strut" type="environment" begin="beg" end="end" level="system" file="spac-ver.mkiv"/>
 
 </cd:interface>

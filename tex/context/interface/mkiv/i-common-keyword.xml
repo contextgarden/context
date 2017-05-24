@@ -750,4 +750,45 @@
         </cd:keywords>
     </cd:define>
 
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
+    <!-- * SCITE    -->
+
+    <cd:define name="keyword-scite-optional">
+        <cd:keywords optional="yes">
+            <cd:constant type="tex"/>
+            <cd:constant type="mkiv"/>
+            <cd:constant type="mkvi"/>
+            <cd:constant type="mkxi"/>
+            <cd:constant type="mkix"/>
+            <cd:constant type="mkii"/>
+            <cd:constant type="cld"/>
+            <cd:constant type="lua"/>
+            <cd:constant type="lfg"/>
+            <cd:constant type="lus"/>
+            <cd:constant type="mp"/>
+            <cd:constant type="mkiv"/>
+            <cd:constant type="mkii"/>
+            <cd:constant type="w"/>
+            <cd:constant type="ww"/>
+            <cd:constant type="c"/>
+            <cd:constant type="h"/>
+            <cd:constant type="cpp"/>
+            <cd:constant type="hpp"/>
+            <cd:constant type="cxx"/>
+            <cd:constant type="hxx"/>
+            <cd:constant type="xml"/>
+            <cd:constant type="lmx"/>
+            <cd:constant type="ctx"/>
+            <cd:constant type="xsl"/>
+            <cd:constant type="xsd"/>
+            <cd:constant type="rlx"/>
+            <cd:constant type="css"/>
+            <cd:constant type="dtd"/>
+            <cd:constant type="bib"/>
+            <cd:constant type="rme"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

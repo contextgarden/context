@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineparagraph" file="strc-tag.mkiv">
+    <cd:command name="defineparagraph" level="style" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupparagraph" file="strc-tag.mkiv">
+    <cd:command name="setupparagraph" level="style" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="paragraph" type="environment" file="strc-tag.mkiv">
+    <cd:command name="paragraph" type="environment" level="document" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -43,7 +43,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="par" type="environment" file="strc-tag.mkiv">
+    <cd:command name="par" type="environment" level="document" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -52,9 +52,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="par" type="environment" begin="b" end ="e" file="strc-tag.mkiv"/>
+    <cd:command name="par" type="environment" begin="b" end ="e" level="document" file="strc-tag.mkiv"/>
 
-    <cd:command name="setupparagraphintro" file="spac-par.mkiv">
+    <cd:command name="setupparagraphintro" level="style" file="spac-par.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="reset"/>

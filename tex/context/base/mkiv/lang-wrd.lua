@@ -187,6 +187,10 @@ local function mark_words(head,whenfound) -- can be optimized and shared
             if n > 0 then
                 local r = getfield(current,"replace")
                 if r then
+                    -- also disc itself
+                    n = n + 1
+                    nds[n] = current
+                    --
                     for current in traverse_ids(glyph_code,r) do
                         local code = getchar(current)
                         n = n + 1
@@ -195,7 +199,7 @@ local function mark_words(head,whenfound) -- can be optimized and shared
                         str[s] = utfchar(code)
                     end
                 end
-            end
+        end
         elseif id == kern_code and getsubtype(current) == kerning_code and s > 0 then
             -- ok
         elseif s > 0 then

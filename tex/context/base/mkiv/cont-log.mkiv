@@ -22,23 +22,26 @@
 \unexpanded\def\TeX
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\hbox{M}%
    T%
+   \setbox\scratchbox\hbox{M}%
    \kern-.1667\wd\scratchbox
    \lower.5\exheight\hbox{E}%
    \kern-.125\wd\scratchbox
    X%
    \endgroup}
 
+\unexpanded\def\TeXsuffix{\wordboundary\TeX}
+\unexpanded\def\TeXprefix{\TeX\wordboundary}
+
 \unexpanded\def\ConTeXt
   {\dontleavehmode
    \begingroup
    Con%
+   \wordboundary
    \setbox\scratchboxone\hbox{T\kern\zeropoint e}%
    \setbox\scratchboxtwo\hbox{Te}%
    \discretionary{-}{}{\kern\dimexpr\wd\scratchboxtwo-\wd\scratchboxone\relax}%
-   \TeX
-   t%
+   \TeX t%
    \endgroup}
 
 \unexpanded\def\PPCHTeX{ppch\TeX}
@@ -196,12 +199,12 @@
 %D Some placeholders:
 
 \unexpanded\def\eTeX     {\mathematics{\varepsilon}-\TeX}
-\unexpanded\def\pdfTeX   {pdf\TeX}
-\unexpanded\def\pdfeTeX  {pdfe-\TeX}
-\unexpanded\def\luaTeX   {lua\TeX}
+\unexpanded\def\pdfTeX   {pdf\wordboundary\TeX}
+\unexpanded\def\pdfeTeX  {pdfe-\wordboundary\TeX}
+\unexpanded\def\luaTeX   {lua\wordboundary\TeX}
 \unexpanded\def\Lua      {Lua}
-\unexpanded\def\luajitTeX{luajit\TeX}
-\unexpanded\def\metaTeX  {meta\TeX}
+\unexpanded\def\luajitTeX{luajit\wordboundary\TeX}
+\unexpanded\def\metaTeX  {meta\wordboundary\TeX}
 \unexpanded\def\XeTeX    {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
 % Adapted from a patch by Mojca:
@@ -320,8 +323,11 @@
     \def\MetaFont {MetaFont}%
     \def\MetaFun  {MetaFun}%
     \def\TeX      {TeX}%
+    \def\TeXsuffix{TeX}%
+    \def\TeXprefix{TeX}%
     \def\LuaTeX   {LuaTeX}%
     \def\LuajitTeX{LuajitTeX}%
+    \let\wordboundary\empty
 \to \everysimplifycommands
 
 \protect \endinput

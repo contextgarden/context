@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuppagecomment" file="page-com.mkiv">
+    <cd:command name="setuppagecomment" level="style" file="page-com.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="location">

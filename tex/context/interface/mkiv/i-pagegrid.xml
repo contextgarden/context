@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definepagegrid" file="page-cst.mkiv">
+    <cd:command name="definepagegrid" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegrid" file="page-cst.mkiv">
+    <cd:command name="setuppagegrid" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegrid" type="environment" generated="yes" variant="example" file="page-cst.mkiv">
+    <cd:command name="pagegrid" type="environment" generated="yes" variant="example" level="document" file="page-cst.mkiv">
         <cd:sequence>
             <cd:variable value="pagegrid"/>
         </cd:sequence>
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegrid" type="environment" file="page-cst.mkiv">
+    <cd:command name="pagegrid" type="environment" level="document" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -95,7 +95,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepagegridspan" file="page-cst.mkiv">
+    <cd:command name="definepagegridspan" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -105,7 +105,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridspan" file="page-cst.mkiv">
+    <cd:command name="setuppagegridspan" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -129,7 +129,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegridspan" type="environment" file="page-cst.mkiv">
+    <cd:command name="pagegridspan" type="environment" level="document" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -144,7 +144,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepagegridarea" file="page-cst.mkiv">
+    <cd:command name="definepagegridarea" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -154,7 +154,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridarea" file="page-cst.mkiv">
+    <cd:command name="setuppagegridarea" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -192,14 +192,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridareatext" file="page-cst.mkiv">
+    <cd:command name="setuppagegridareatext" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridlines" file="page-cst.mkiv">
+    <cd:command name="setuppagegridlines" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
@@ -208,7 +208,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridstart" file="page-cst.mkiv">
+    <cd:command name="setuppagegridstart" level="style" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>

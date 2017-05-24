@@ -131,24 +131,24 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredhbox" file="m-visual.mkiv">
+    <cd:command name="coloredhbox" level="system" file="m-visual.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredvbox" file="m-visual.mkiv">
+    <cd:command name="coloredvbox" level="system" file="m-visual.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredvtop" file="m-visual.mkiv">
+    <cd:command name="coloredvtop" level="system" file="m-visual.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloredstrut" file="m-visual.mkiv"/>
+    <cd:command name="coloredstrut" level="system" file="m-visual.mkiv"/>
 
 </cd:interface>

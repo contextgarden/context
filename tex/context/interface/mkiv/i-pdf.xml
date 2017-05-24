@@ -4,95 +4,95 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="pdfbackendsetcatalog" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetcatalog" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetinfo" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetinfo" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetname" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetname" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetpageattribute" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetpageattribute" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetpagesattribute" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetpagesattribute" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetpageresource" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetpageresource" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetextgstate" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetextgstate" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetcolorspace" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetcolorspace" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetpattern" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetpattern" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendsetshade" file="back-pdf.mkiv">
+    <cd:command name="pdfbackendsetshade" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pdfbackendcurrentresources" file="back-pdf.mkiv"/>
+    <cd:command name="pdfbackendcurrentresources" level="system" file="back-pdf.mkiv"/>
 
-    <cd:command name="pdfcolor" file="back-pdf.mkiv">
+    <cd:command name="pdfcolor" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PDFcolor" file="back-pdf.mkiv">
+    <cd:command name="PDFcolor" level="system" file="back-pdf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TransparencyHack" file="back-pdf.mkiv"/>
+    <cd:command name="TransparencyHack" level="system" file="back-pdf.mkiv"/>
 
-    <cd:command name="lastpredefinedsymbol" file="pack-obj.mkiv"/>
+    <cd:command name="lastpredefinedsymbol" level="system" file="pack-obj.mkiv"/>
 
-    <cd:command name="predefinesymbol" file="pack-obj.mkiv">
+    <cd:command name="predefinesymbol" level="system" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -116,7 +116,7 @@
 
     <cd:command name="positive" type="environment" file="attr-neg.mkiv"/>
 
-    <cd:command name="setuppagetransitions" file="scrn-pag.mkvi">
+    <cd:command name="setuppagetransitions" level="style" file="scrn-pag.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset" default="yes"/>

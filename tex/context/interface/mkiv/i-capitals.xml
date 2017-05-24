@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecapitals" file="typo-cap.mkiv">
+    <cd:command name="definecapitals" level="style" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcapitals" file="typo-cap.mkiv">
+    <cd:command name="setupcapitals" level="style" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -53,43 +53,43 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="WORD" file="typo-cap.mkiv">
+    <cd:command name="WORD" level="document" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="word" file="typo-cap.mkiv">
+    <cd:command name="word" level="document" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Word" file="typo-cap.mkiv">
+    <cd:command name="Word" level="document" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Words" file="typo-cap.mkiv">
+    <cd:command name="Words" level="document" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="camel" file="typo-cap.mkiv">
+    <cd:command name="camel" level="document" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="WORDS" file="typo-cap.mkiv">
+    <cd:command name="WORDS" level="document" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="words" file="typo-cap.mkiv">
+    <cd:command name="words" level="document" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>

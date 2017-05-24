@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupforms" file="scrn-fld.mkvi">
+    <cd:command name="setupforms" level="style" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="method">

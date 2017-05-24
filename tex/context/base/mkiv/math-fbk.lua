@@ -519,45 +519,19 @@ virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) 
 -- these primes in fonts are a real mess .. kind of a dead end, so don't wonder about
 -- the values below
 
--- todo: check tounicodes
-
-local function smashed(data,unicode,optional)
-    local oldchar = data.characters[unicode]
-    if oldchar then
-        local xheight = data.target.parameters.xheight
-        local height  = 1.2 * xheight
-        local shift   = oldchar.height - height
-        local newchar = {
-            commands = {
-                { "down", shift },
-                { "char", unicode },
-            },
-            height = height,
-            width  = oldchar.width,
-        }
-        return newchar
-    elseif not optional then
-        report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
-    end
-end
-
--- -- relocate all but less flexible so not used .. instead some noad hackery plus
--- -- the above
---
 -- local function smashed(data,unicode,optional)
 --     local oldchar = data.characters[unicode]
 --     if oldchar then
 --         local xheight = data.target.parameters.xheight
---         local height  = oldchar.height
---         local shift   = oldchar.height < 1.5*xheight and -(1.8*xheight-height) or 0
+--         local height  = 1.25 * xheight
+--         local shift   = oldchar.height - height
 --         local newchar = {
 --             commands = {
 --                 { "down", shift },
 --                 { "char", unicode },
 --             },
---             unicode = unicode,
---             height  = height,
---             width   = oldchar.width,
+--             height = height,
+--             width  = oldchar.width,
 --         }
 --         return newchar
 --     elseif not optional then
@@ -565,23 +539,23 @@ end
 --     end
 -- end
 
-addextra(0xFE932, { description="SMASHED PRIME 0x02032", unicodeslot=0xFE932 } )
-addextra(0xFE933, { description="SMASHED PRIME 0x02033", unicodeslot=0xFE933 } )
-addextra(0xFE934, { description="SMASHED PRIME 0x02034", unicodeslot=0xFE934 } )
-addextra(0xFE957, { description="SMASHED PRIME 0x02057", unicodeslot=0xFE957 } )
+-- addextra(0xFE932, { description = "SMASHED PRIME 0x02032", unicodeslot = 0xFE932 } )
+-- addextra(0xFE933, { description = "SMASHED PRIME 0x02033", unicodeslot = 0xFE933 } )
+-- addextra(0xFE934, { description = "SMASHED PRIME 0x02034", unicodeslot = 0xFE934 } )
+-- addextra(0xFE957, { description = "SMASHED PRIME 0x02057", unicodeslot = 0xFE957 } )
 
-addextra(0xFE935, { description="SMASHED BACKWARD PRIME 0x02035", unicodeslot=0xFE935 } )
-addextra(0xFE936, { description="SMASHED BACKWARD PRIME 0x02036", unicodeslot=0xFE936 } )
-addextra(0xFE937, { description="SMASHED BACKWARD PRIME 0x02037", unicodeslot=0xFE937 } )
+-- addextra(0xFE935, { description = "SMASHED BACKWARD PRIME 0x02035", unicodeslot = 0xFE935 } )
+-- addextra(0xFE936, { description = "SMASHED BACKWARD PRIME 0x02036", unicodeslot = 0xFE936 } )
+-- addextra(0xFE937, { description = "SMASHED BACKWARD PRIME 0x02037", unicodeslot = 0xFE937 } )
 
-virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
-virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
-virtualcharacters[0xFE934] = function(data) return smashed(data,0x02034) end
-virtualcharacters[0xFE957] = function(data) return smashed(data,0x02057) end
+-- virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
+-- virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
+-- virtualcharacters[0xFE934] = function(data) return smashed(data,0x02034) end
+-- virtualcharacters[0xFE957] = function(data) return smashed(data,0x02057) end
 
-virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) end
-virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
-virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
+-- virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) end
+-- virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
+-- virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
 
 -- actuarian (beware: xits has an ugly one)
 

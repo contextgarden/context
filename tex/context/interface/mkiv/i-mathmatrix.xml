@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathmatrix" file="math-ali.mkiv">
+    <cd:command name="definemathmatrix" category="mathematics" level="style" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathmatrix" file="math-ali.mkiv">
+    <cd:command name="setupmathmatrix" category="mathematics" level="style" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -53,7 +53,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" category="mathematics" level="document" file="math-ali.mkiv">
         <cd:sequence>
             <cd:instance value="mathmatrix"/>
         </cd:sequence>
@@ -87,7 +87,7 @@
 
     -->
 
-    <cd:command name="matrices" type="environment" file="math-ali.mkiv">
+    <cd:command name="matrices" type="environment" category="mathematics" level="document" file="math-ali.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupmathmatrix"/>
@@ -95,24 +95,24 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="intertext" type="environment" file="math-ali.mkiv"/>
+    <cd:command name="intertext" type="environment" category="mathematics" level="document" file="math-ali.mkiv"/>
 
-    <cd:command name="intertext" file="math-ali.mkiv">
+    <cd:command name="intertext" category="mathematics" level="document" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="substack" type="environment" file="math-ali.mkiv"/>
+    <cd:command name="substack" type="environment" category="mathematics" level="document" file="math-ali.mkiv"/>
 
-    <cd:command name="overset" file="math-ali.mkiv">
+    <cd:command name="overset" category="mathematics" level="document" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underset" file="math-ali.mkiv">
+    <cd:command name="underset" category="mathematics" level="document" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>

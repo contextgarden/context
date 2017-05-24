@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupoffsetbox" file="pack-box.mkiv">
+    <cd:command name="setupoffsetbox" level="style" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="x">
@@ -44,7 +44,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupoffset" file="pack-box.mkiv">
+    <cd:command name="setupoffset" level="style" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupoffsetbox"/>
@@ -62,7 +62,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="offset" file="pack-box.mkiv">
+    <cd:command name="offset" level="document" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupoffset"/>

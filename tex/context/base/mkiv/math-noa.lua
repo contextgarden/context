@@ -1510,6 +1510,8 @@ local collapse = { } processors.collapse = collapse
 
 local mathpairs = characters.mathpairs -- next will move to char-def
 
+-- 0x02B9 modifier
+
 mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
 mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
 mathpairs[0x2034] = { [0x2032] = 0x2057 }                                       -- (tripleprime,prime)
@@ -1521,24 +1523,40 @@ mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D }
 mathpairs[0x222C] = { [0x222B] = 0x222D }
 
 mathpairs[0x007C] = { [0x007C] = 0x2016, [0x2016] = 0x2980 } -- bar+bar=double bar+double=triple
-mathpairs[0x2016] = { [0x007C] = 0x2980 }                    -- double+bar=triple
+mathpairs[0x2016] = { [0x007C] = 0x2980, [0x02B9] = 0x2016 } -- double+bar=triple
+
+-- local movesub = {
+--     -- primes
+--     [0x2032] = 0xFE932,
+--     [0x2033] = 0xFE933,
+--     [0x2034] = 0xFE934,
+--     [0x2057] = 0xFE957,
+--     -- reverse primes
+--     [0x2035] = 0xFE935,
+--     [0x2036] = 0xFE936,
+--     [0x2037] = 0xFE937,
+-- }
 
 local movesub = {
     -- primes
-    [0x2032] = 0xFE932,
-    [0x2033] = 0xFE933,
-    [0x2034] = 0xFE934,
-    [0x2057] = 0xFE957,
+    [0x2032] = 0x2032,
+    [0x2033] = 0x2033,
+    [0x2034] = 0x2034,
+    [0x2057] = 0x2057,
     -- reverse primes
-    [0x2035] = 0xFE935,
-    [0x2036] = 0xFE936,
-    [0x2037] = 0xFE937,
+    [0x2035] = 0x2035,
+    [0x2036] = 0x2036,
+    [0x2037] = 0x2037,
 }
 
+-- inner under over vcenter
+
 local validpair = {
-    [noad_rel]             = true,
     [noad_ord]             = true,
+    [noad_rel]             = true,
     [noad_bin]             = true, -- new
+    [noad_open]            = true, -- new
+    [noad_close]           = true, -- new
     [noad_punct]           = true, -- new
     [noad_opdisplaylimits] = true,
     [noad_oplimits]        = true,
@@ -1548,9 +1566,11 @@ local validpair = {
 local function movesubscript(parent,current_nucleus,current_char)
     local prev = getprev(parent)
     if prev and getid(prev) == math_noad then
-        if not getsup(prev) and not getsub(prev) then
+        local psup = getsup(prev)
+        local psub = getsub(prev)
+        if not psup and not psub then
             -- {f} {'}_n => f_n^'
-            setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
+         -- setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
             local nucleus = getnucleus(parent)
             local sub     = getsub(parent)
             local sup     = getsup(parent)
@@ -1563,9 +1583,9 @@ local function movesubscript(parent,current_nucleus,current_char)
             if trace_collapsing then
                 report_collapsing("fixing subscript")
             end
-        elseif not getsup(prev) then
+        elseif not psup then
             -- {f} {'}_n => f_n^'
-            setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
+         -- setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
             local nucleus = getnucleus(parent)
             local sup     = getsup(parent)
             setsup(prev,nucleus)
@@ -1592,9 +1612,9 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                         if next_noad and getid(next_noad) == math_noad then
                             if validpair[getsubtype(next_noad)] then
                                 local next_nucleus = getnucleus(next_noad)
-                                local next_char    = getchar(next_nucleus)
                                 if getid(next_nucleus) == math_char then
-                                    local newchar = mathpair[next_char]
+                                    local next_char = getchar(next_nucleus)
+                                    local newchar   = mathpair[next_char]
                                     if newchar then
                                         local id         = getfont(current_nucleus)
                                         local characters = fontcharacters[id]
@@ -1609,30 +1629,37 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                                             else
                                                 setnext(parent)
                                             end
-                                            setsup(parent,getsup(next_noad))
-                                            setsub(parent,getsub(next_noad))
-                                            setsup(next_noad)
-                                            setsub(next_noad)
+                                            local nsup = getsup(next_noad)
+                                            local nsub = getsub(next_noad)
+                                            if nsup then
+                                                setsup(parent,nsup)
+                                                setsup(next_noad)
+                                            end
+                                            if nsub then
+                                                setsub(parent,nsub)
+                                                setsub(next_noad)
+                                            end
                                             flush_node(next_noad)
                                             collapsepair(pointer,what,n,parent,true)
-                                         -- if not nested and movesub[current_char] then
-                                         --     movesubscript(parent,current_nucleus,current_char)
-                                         -- end
                                         end
-                                    elseif not nested and movesub[current_char] then
-                                        movesubscript(parent,current_nucleus,current_char)
+--                                     elseif not nested and movesub[current_char] then
+--                                         movesubscript(parent,current_nucleus,current_char)
                                     end
                                 end
                             end
-                        elseif not nested and movesub[current_char] then
-                            movesubscript(parent,current_nucleus,current_char)
+--                         elseif not nested and movesub[current_char] then
+--                             movesubscript(parent,current_nucleus,current_char)
                         end
-                    elseif not nested and movesub[current_char] then
-                        movesubscript(parent,current_nucleus,current_char)
+--                     elseif not nested and movesub[current_char] then
+--                         movesubscript(parent,current_nucleus,current_char)
                     end
-                elseif not nested and movesub[current_char] then
-                    movesubscript(parent,current_nucleus,current_char)
+--                 elseif not nested and movesub[current_char] then
+--                     movesubscript(parent,current_nucleus,current_char)
                 end
+local current_char = getchar(current_nucleus)
+if movesub[current_char] then
+    movesubscript(parent,current_nucleus,current_char)
+end
             end
         end
     end

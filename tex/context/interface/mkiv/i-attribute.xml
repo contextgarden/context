@@ -4,25 +4,25 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="pushattribute" file="attr-ini.mkiv">
+    <cd:command name="pushattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="popattribute" file="attr-ini.mkiv">
+    <cd:command name="popattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installattributestack" file="attr-ini.mkiv">
+    <cd:command name="installattributestack" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineattribute" file="attr-ini.mkiv">
+    <cd:command name="defineattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesystemattribute" file="attr-ini.mkiv">
+    <cd:command name="definesystemattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -46,46 +46,46 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="newattribute" file="attr-ini.mkiv">
+    <cd:command name="newattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosetattribute" file="attr-ini.mkiv">
+    <cd:command name="dosetattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doresetattribute" file="attr-ini.mkiv">
+    <cd:command name="doresetattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dogetattribute" file="attr-ini.mkiv">
+    <cd:command name="dogetattribute" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dogetattributeid" file="attr-ini.mkiv">
+    <cd:command name="dogetattributeid" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetallattributes" file="attr-ini.mkiv"/>
+    <cd:command name="resetallattributes" level="system" file="attr-ini.mkiv"/>
 
-    <cd:command name="savecurrentattributes" file="attr-ini.mkiv">
+    <cd:command name="savecurrentattributes" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="restorecurrentattributes" file="attr-ini.mkiv">
+    <cd:command name="restorecurrentattributes" level="system" file="attr-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

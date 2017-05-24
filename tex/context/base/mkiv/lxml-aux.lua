@@ -412,7 +412,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                     end
                     local data = nil
                     if name and name ~= "" then
-                        data = loaddata(name) or ""
+                        local d, n = loaddata(name)
+                        data = d or ""
+                        name = n or name
                         if trace_inclusions then
                             report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
                         end
@@ -423,6 +425,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                         -- for the moment hard coded
                         epdt[ek.ni] = xml.escaped(data) -- d[k] = xml.escaped(data)
                     else
+local settings = xmldata.settings
+local savedresource = settings.currentresource
+settings.currentresource = name
                         local xi = xmlinheritedconvert(data,xmldata)
                         if not xi then
                             epdt[ek.ni] = "" -- xml.empty(d,k)
@@ -433,6 +438,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                             local child = xml.body(xi) -- xml.assign(d,k,xi)
                             child.__p__ = ekrt
                             child.__f__ = name -- handy for tracing
+child.cf = name
                             epdt[ek.ni] = child
                             local settings   = xmldata.settings
                             local inclusions = settings and settings.inclusions
@@ -453,6 +459,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                                 end
                             end
                         end
+settings.currentresource = savedresource
                     end
                 end
             end

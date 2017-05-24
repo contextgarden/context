@@ -4,11 +4,11 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="punctuation" type="environment" begin="push" end="pop" file="typo-chr.mkiv"/>
+    <cd:command name="punctuation" type="environment" begin="push" end="pop" level="system" file="typo-chr.mkiv"/>
 
-    <cd:command name="removepunctuation" file="typo-chr.mkiv"/>
+    <cd:command name="removepunctuation" level="system" file="typo-chr.mkiv"/>
 
-    <cd:command name="markcontent" file="typo-chr.mkiv">
+    <cd:command name="markcontent" level="system" file="typo-chr.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reset"/>
@@ -19,7 +19,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="markedcontent" type="environment" file="typo-chr.mkiv">
+    <cd:command name="markedcontent" type="environment" level="system" file="typo-chr.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reset"/>
@@ -29,13 +29,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="removemarkedcontent" file="typo-chr.mkiv">
+    <cd:command name="removemarkedcontent" level="system" file="typo-chr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcharactercleaning" file="typo-cln.mkiv">
+    <cd:command name="setcharactercleaning" level="system" file="typo-cln.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>

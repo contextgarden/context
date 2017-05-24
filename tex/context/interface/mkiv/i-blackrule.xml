@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupblackrules" file="pack-mrl.mkiv">
+    <cd:command name="setupblackrules" level="style" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
@@ -47,7 +47,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blackrule" file="pack-mrl.mkiv">
+    <cd:command name="blackrule" level="document" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupblackrules"/>
@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blackrules" file="pack-mrl.mkiv">
+    <cd:command name="blackrules" level="document" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupblackrules"/>
@@ -63,13 +63,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vl" file="pack-mrl.mkiv">
+    <cd:command name="vl" level="document" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hl" file="pack-mrl.mkiv">
+    <cd:command name="hl" level="document" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>

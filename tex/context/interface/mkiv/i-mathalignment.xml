@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathalignment" file="math-ali.mkiv">
+    <cd:command name="definemathalignment" category="mathematics" level="style" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathalignment" file="math-ali.mkiv">
+    <cd:command name="setupmathalignment" category="mathematics" level="style" file="math-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" file="math-ali.mkiv">
+    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" category="mathematics" level="document" file="math-ali.mkiv">
         <cd:sequence>
             <cd:instance value="mathalignment"/>
         </cd:sequence>

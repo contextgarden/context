@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineselector" file="core-env.mkiv">
+    <cd:command name="defineselector" level="style" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -13,7 +13,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupselector" file="core-env.mkiv">
+    <cd:command name="setupselector" level="style" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -27,7 +27,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="select" file="core-env.mkiv">
+    <cd:command name="select" level="document" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content optional="yes"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathornament" file="math-rad.mkvi">
+    <cd:command name="definemathornament" category="mathematics" level="style" file="math-rad.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathornament" file="math-rad.mkvi">
+    <cd:command name="setupmathornament" category="mathematics" level="style" file="math-rad.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathornament" generated="yes" variant="example" file="math-rad.mkvi">
+    <cd:command name="mathornament" generated="yes" variant="example" category="mathematics" level="document" file="math-rad.mkvi">
         <cd:sequence>
             <cd:variable value="mathornament"/>
         </cd:sequence>

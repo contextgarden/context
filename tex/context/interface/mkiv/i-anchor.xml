@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineanchor" file="pack-box.mkiv">
+    <cd:command name="defineanchor" level="style" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -18,7 +18,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="anchor" file="pack-box.mkiv">
+    <cd:command name="anchor" level="document" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

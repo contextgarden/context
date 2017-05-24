@@ -152,4 +152,21 @@
         </cd:keywords>
     </cd:define>
 
+    <!--       *      -->
+    <!-- \... ...     -->
+    <!--              -->
+    <!-- * ASSIGNMENT -->
+
+    <cd:define name="string-assignment">
+        <cd:keywords delimiters="none">
+            <cd:constant type="="/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="string-assignment-optional">
+        <cd:keywords delimiters="none" optional="yes">
+            <cd:constant type="="/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

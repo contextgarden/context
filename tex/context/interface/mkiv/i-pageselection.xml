@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="insertpages" file="page-sel.mkvi">
+    <cd:command name="insertpages" level="document" file="page-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:resolve name="keyword-number-list-optional"/>
@@ -22,7 +22,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filterpages" file="page-sel.mkvi">
+    <cd:command name="filterpages" level="document" file="page-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:keywords list="yes">
@@ -45,7 +45,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="copypages" file="page-sel.mkvi">
+    <cd:command name="copypages" level="document" file="page-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:assignments list="yes" optional="yes">
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="combinepages" file="page-sel.mkvi">
+    <cd:command name="combinepages" level="document" file="page-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:assignments list="yes" optional="yes">
@@ -132,7 +132,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="slicepages" file="page-sel.mkvi">
+    <cd:command name="slicepages" level="document" file="page-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:assignments list="yes" optional="yes">

@@ -1621,6 +1621,26 @@ example we only displace the second glyph.
 Of course you need to know a bit about the metrics of the glyphs involved so in
 practice this boils down to trial and error.
 
+A single character (glyph) can also be tweaked, although normally this is done
+better in a manipulator when loading the font. Anyway:
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "stest",
+        type = "single",
+        data = {
+            a = { -30, 0, -50, 0 },
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This will reduce the left and right edges and make the glyph a pretty tight one. The
+values are for Latin Modern.
+
 \stopsubsection
 
 \startsubsection[title=Examples]

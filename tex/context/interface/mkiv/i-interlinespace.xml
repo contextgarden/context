@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinterlinespace" file="spac-ver.mkiv">
+    <cd:command name="defineinterlinespace" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinterlinespace" file="spac-ver.mkiv">
+    <cd:command name="setupinterlinespace" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -53,7 +53,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinterlinespace" variant="argument" file="spac-ver.mkiv">
+    <cd:command name="setupinterlinespace" variant="argument" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="on"/>
@@ -69,13 +69,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinterlinespace" variant="name" file="spac-ver.mkiv">
+    <cd:command name="setupinterlinespace" variant="name" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplocalinterlinespace" file="spac-ver.mkiv">
+    <cd:command name="setuplocalinterlinespace" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -84,7 +84,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplocalinterlinespace" variant="argument" file="spac-ver.mkiv">
+    <cd:command name="setuplocalinterlinespace" variant="argument" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="on"/>
@@ -100,7 +100,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplocalinterlinespace" variant="name" file="spac-ver.mkiv">
+    <cd:command name="setuplocalinterlinespace" variant="name" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -137,7 +137,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosetupcheckedinterlinespace" file="spac-ver.mkiv">
+    <cd:command name="dosetupcheckedinterlinespace" level="system" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:assignments delimiters="braces" list="yes">
                 <cd:inherit name="setupinterlinespace"/>
@@ -145,7 +145,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosetupcheckedinterlinespace" variant="argument" file="spac-ver.mkiv">
+    <cd:command name="dosetupcheckedinterlinespace" variant="argument" level="system" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces" list="yes">
                 <cd:constant type="on"/>
@@ -161,13 +161,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosetupcheckedinterlinespace" variant="name" file="spac-ver.mkiv">
+    <cd:command name="dosetupcheckedinterlinespace" variant="name" level="system" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useinterlinespaceparameter" file="spac-ver.mkiv">
+    <cd:command name="useinterlinespaceparameter" level="system" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>

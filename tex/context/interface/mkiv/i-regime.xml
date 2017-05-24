@@ -8,7 +8,7 @@
 
     <cd:command name="disableregime" file="regi-ini.mkiv"/>
 
-    <cd:command name="enableregime" file="regi-ini.mkiv">
+    <cd:command name="enableregime" level="style" file="regi-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cp1250"/>

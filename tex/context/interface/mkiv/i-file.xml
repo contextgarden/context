@@ -16,21 +16,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffile" file="file-ini.mkvi">
+    <cd:command name="doiffile" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotfile" file="file-ini.mkvi">
+    <cd:command name="doifnotfile" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefile" file="file-ini.mkvi">
+    <cd:command name="doifelsefile" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -38,7 +38,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffileelse" file="file-ini.mkvi">
+    <cd:command name="doiffileelse" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -60,19 +60,19 @@
 
     <cd:command name="outputfilename" file="core-sys.mkiv"/>
 
-    <cd:command name="readingfile" type="environment" file="file-ini.mkvi"/>
+    <cd:command name="readingfile" type="environment" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="endofline" type="environment" begin="push" end="pop" file="file-ini.mkvi"/>
+    <cd:command name="endofline" type="environment" begin="push" end="pop" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="restoreendofline" file="file-ini.mkvi"/>
+    <cd:command name="restoreendofline" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="inputgivenfile" file="file-ini.mkvi">
+    <cd:command name="inputgivenfile" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepath" file="file-ini.mkvi">
+    <cd:command name="doifelsepath" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -80,7 +80,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpathelse" file="file-ini.mkvi">
+    <cd:command name="doifpathelse" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefileexists" file="file-ini.mkvi">
+    <cd:command name="doifelsefileexists" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -96,7 +96,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffileexistselse" file="file-ini.mkvi">
+    <cd:command name="doiffileexistselse" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -104,7 +104,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepathexists" file="file-ini.mkvi">
+    <cd:command name="doifelsepathexists" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -112,7 +112,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpathexistselse" file="file-ini.mkvi">
+    <cd:command name="doifpathexistselse" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseparentfile" file="file-ini.mkvi">
+    <cd:command name="doifelseparentfile" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -128,7 +128,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifparentfileelse" file="file-ini.mkvi">
+    <cd:command name="doifparentfileelse" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -136,35 +136,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitfilename" file="file-ini.mkvi">
+    <cd:command name="splitfilename" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitofffull" file="file-ini.mkvi"/>
+    <cd:command name="splitofffull" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="splitoffpath" file="file-ini.mkvi"/>
+    <cd:command name="splitoffpath" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="splitoffbase" file="file-ini.mkvi"/>
+    <cd:command name="splitoffbase" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="splitoffname" file="file-ini.mkvi"/>
+    <cd:command name="splitoffname" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="splitofftype" file="file-ini.mkvi"/>
+    <cd:command name="splitofftype" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="splitoffkind" file="file-ini.mkvi"/>
+    <cd:command name="splitoffkind" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="splitoffroot" file="file-ini.mkvi"/>
+    <cd:command name="splitoffroot" level="system" file="file-ini.mkvi"/>
 
-    <cd:command name="doifelseinputfile" file="file-job.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-file"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifinputfileelse" file="file-job.mkvi">
+    <cd:command name="doifelseinputfile" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -172,19 +164,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfile" file="file-ini.mkvi">
+    <cd:command name="doifinputfileelse" level="system" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="processfile" level="system" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usepath" file="file-job.mkvi">
+    <cd:command name="usepath" level="style" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usesubpath" file="file-job.mkvi">
+    <cd:command name="usesubpath" level="style" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
@@ -206,28 +206,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="locatedfilepath" file="file-job.mkvi"/>
+    <cd:command name="locatedfilepath" level="system" file="file-job.mkvi"/>
 
-    <cd:command name="usezipfile" file="file-job.mkvi">
+    <cd:command name="usezipfile" level="style" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:resolve name="keyword-file-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfilemany" file="file-job.mkvi">
+    <cd:command name="processfilemany" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfileonce" file="file-job.mkvi">
+    <cd:command name="processfileonce" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfilenone" file="file-job.mkvi">
+    <cd:command name="processfilenone" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
@@ -251,51 +251,43 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadanyfile" file="file-job.mkvi">
+    <cd:command name="loadanyfile" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadtexfileonce" file="file-job.mkvi">
+    <cd:command name="loadtexfileonce" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadluafileonce" file="file-job.mkvi">
+    <cd:command name="loadluafileonce" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadcldfileonce" file="file-job.mkvi">
+    <cd:command name="loadcldfileonce" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadanyfileonce" file="file-job.mkvi">
+    <cd:command name="loadanyfileonce" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="continueifinputfile" file="file-job.mkvi">
+    <cd:command name="continueifinputfile" level="system" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readjobfile" file="file-res.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-file"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="readlocfile" file="file-res.mkvi">
+    <cd:command name="readjobfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -303,7 +295,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readsysfile" file="file-res.mkvi">
+    <cd:command name="readlocfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -311,7 +303,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readfixfile" file="file-res.mkvi">
+    <cd:command name="readsysfile" level="system" file="file-res.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="readfixfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-file"/>
@@ -320,7 +320,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readsetfile" file="file-res.mkvi">
+    <cd:command name="readsetfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-file"/>
@@ -329,7 +329,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readfile" file="file-res.mkvi">
+    <cd:command name="readfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -337,21 +337,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ReadFile" file="file-res.mkvi">
+    <cd:command name="ReadFile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="readtexfile" file="file-res.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-file"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="readxmlfile" file="file-res.mkvi">
+    <cd:command name="readtexfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -359,7 +351,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselocfile" file="file-res.mkvi">
+    <cd:command name="readxmlfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -367,7 +359,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflocfileelse" file="file-res.mkvi">
+    <cd:command name="doifelselocfile" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -375,27 +367,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="locfilename" file="file-res.mkvi">
+    <cd:command name="doiflocfileelse" level="system" file="file-res.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="locfilename" level="system" file="file-res.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefilesynonym" file="file-sys.mkvi">
+    <cd:command name="definefilesynonym" level="system" file="file-sys.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefilefallback" file="file-sys.mkvi">
+    <cd:command name="definefilefallback" level="system" file="file-sys.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="truefilename" file="file-sys.mkvi">
+    <cd:command name="truefilename" level="system" file="file-sys.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>

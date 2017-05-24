@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="define" file="core-sys.mkiv">
+    <cd:command name="define" level="system" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
             <cd:csname/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineexpandable" file="core-sys.mkiv">
+    <cd:command name="defineexpandable" level="system" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
             <cd:csname/>

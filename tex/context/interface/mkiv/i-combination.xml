@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecombination" file="pack-com.mkiv">
+    <cd:command name="definecombination" level="style" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcombination" file="pack-com.mkiv">
+    <cd:command name="setupcombination" level="style" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -85,7 +85,7 @@
 
     -->
 
-    <cd:command name="combination" type="environment" variant="matrix" file="pack-com.mkiv">
+    <cd:command name="combination" type="environment" variant="matrix" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords optional="yes">
@@ -94,7 +94,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="combination" type="environment" file="pack-com.mkiv">
+    <cd:command name="combination" type="environment" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -111,7 +111,7 @@
 
     -->
 
-    <cd:command name="floatcombination" type="environment" variant="matrix" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" variant="matrix" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:matrix"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="floatcombination" type="environment" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcombination"/>

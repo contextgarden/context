@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupbackend" file="back-ini.mkiv">
+    <cd:command name="setupbackend" level="style" file="back-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="export">

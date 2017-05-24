@@ -41,7 +41,7 @@
 
     -->
 
-    <cd:command name="setupSTEPcharts" file="m-steps.mkvi">
+    <cd:command name="setupSTEPcharts" level="style" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -114,7 +114,7 @@
 
     -->
 
-    <cd:command name="setupSTEPcells" file="m-steps.mkvi">
+    <cd:command name="setupSTEPcells" level="style" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -197,7 +197,7 @@
 
     -->
 
-    <cd:command name="setupSTEPtexts" file="m-steps.mkvi">
+    <cd:command name="setupSTEPtexts" level="style" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -271,7 +271,7 @@
 
     -->
 
-    <cd:command name="setupSTEPlines" file="m-steps.mkvi">
+    <cd:command name="setupSTEPlines" level="style" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>

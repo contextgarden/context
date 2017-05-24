@@ -4,14 +4,14 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="singalcharacteralign" file="typo-tal.mkiv">
+    <cd:command name="singalcharacteralign" level="system" file="typo-tal.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcharacteralign" file="typo-tal.mkiv">
+    <cd:command name="setcharacteralign" level="system" file="typo-tal.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:keywords delimiters="braces">
@@ -22,11 +22,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcharacteralign" file="typo-tal.mkiv"/>
+    <cd:command name="resetcharacteralign" level="system" file="typo-tal.mkiv"/>
 
-    <cd:command name="alignmentcharacter" file="typo-tal.mkiv"/>
+    <cd:command name="alignmentcharacter" level="system" file="typo-tal.mkiv"/>
 
-    <cd:command name="characteralign" type="environment" file="typo-tal.mkiv">
+    <cd:command name="characteralign" type="environment" level="system" file="typo-tal.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:text"/>
@@ -36,7 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkcharacteralign" file="typo-tal.mkiv">
+    <cd:command name="checkcharacteralign" level="system" file="typo-tal.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuplayeredtext" file="pack-box.mkiv">
+    <cd:command name="setuplayeredtext" level="style" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -94,7 +94,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelayer" file="pack-lyr.mkiv">
+    <cd:command name="definelayer" level="style" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -104,7 +104,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplayer" file="pack-lyr.mkiv">
+    <cd:command name="setuplayer" level="style" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -267,7 +267,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelayerpreset" file="pack-lyr.mkiv">
+    <cd:command name="definelayerpreset" level="system" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -276,14 +276,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelayerpreset" variant="name" file="pack-lyr.mkiv">
+    <cd:command name="definelayerpreset" variant="name" level="system" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayerdata" file="pack-lyr.mkiv">
+    <cd:command name="doifelselayerdata" level="system" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -291,7 +291,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayerdataelse" file="pack-lyr.mkiv">
+    <cd:command name="doiflayerdataelse" level="system" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

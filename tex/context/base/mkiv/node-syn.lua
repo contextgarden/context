@@ -18,11 +18,13 @@ if not modules then modules = { } end modules ['node-syn'] = {
 --
 -- Possible optimizations: pack whole lines.
 
+-- InverseSearchCmdLine = mtxrun.exe --script synctex --edit --name="%f" --line="%l" $
+
 local type, rawset = type, rawset
 local concat = table.concat
 local formatters = string.formatters
 
-local trace = false  trackers.register("system.syntex.visualize", function(v) trace = v end)
+local trace = false  trackers.register("system.synctex.visualize", function(v) trace = v end)
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -65,7 +67,12 @@ local a_fontkern         = attributes.private("fontkern")
 
 local get_synctex_fields = nuts.get_synctex_fields
 local set_synctex_fields = nuts.set_synctex_fields
-local set_syntex_tag     = nodes.set_synctex_tag
+local set_synctex_line   = tex.set_synctex_line
+local set_synctex_tag    = tex.set_synctex_tag
+local force_synctex_tag  = tex.force_synctex_tag
+local force_synctex_line = tex.force_synctex_line
+----- get_synctex_tag    = tex.get_synctex_tag
+----- get_synctex_line   = tex.get_synctex_line
 
 local getcount           = tex.getcount
 local setcount           = tex.setcount
@@ -74,6 +81,9 @@ local getpos             = function()
                                getpos = backends.codeinjections.getpos
                                return getpos()
                            end
+
+
+local eol                = "\010"
 
 local f_glue             = formatters["g%i,%i:%i,%i"]
 local f_glyph            = formatters["x%i,%i:%i,%i"]
@@ -88,6 +98,10 @@ local f_vvoid            = formatters["v%i,%i:%i,%i:%i,%i,%i"]
 
 local characters         = fonts.hashes.characters
 
+local foundintree        = resolvers.foundintree
+local suffixonly         = file.suffix
+local nameonly           = file.nameonly
+
 local synctex            = { }
 luatex.synctex           = synctex
 
@@ -95,25 +109,56 @@ luatex.synctex           = synctex
 
 local noftags            = 0
 local stnums             = { }
-local sttags             = table.setmetatableindex(function(t,name)
-    noftags = noftags + 1
-    t[name] = noftags
-    stnums[noftags] = name
-    return noftags
+local nofblocked         = 0
+local blockedfilenames   = { }
+local blockedsuffixes    = {
+    mkii = true,
+    mkiv = true,
+    mkvi = true,
+    mkix = true,
+    mkxi = true,
+ -- lfg  = true,
+}
+
+
+local sttags = table.setmetatableindex(function(t,name)
+    if blockedsuffixes[suffixonly(name)] then
+        -- Just so that I don't get the ones on my development tree.
+        nofblocked = nofblocked + 1
+        return 0
+    elseif blockedfilenames[nameonly(name)] then
+        -- So we can block specific files.
+        nofblocked = nofblocked + 1
+        return 0
+    elseif foundintree(name) then
+        -- One shouldn't edit styles etc this way.
+        nofblocked = nofblocked + 1
+        return 0
+    else
+        noftags = noftags + 1
+        t[name] = noftags
+        stnums[noftags] = name
+        return noftags
+    end
 end)
 
-function synctex.setfilename(name)
-    if set_syntex_tag and name then
-        set_syntex_tag(sttags[name])
+function synctex.blockfilename(name)
+    blockedfilenames[nameonly(name)] = name
+end
+
+function synctex.setfilename(name,line)
+    if force_synctex_tag and name then
+        force_synctex_tag(sttags[name])
+        if line then
+            force_synctex_line(line)
+        end
     end
 end
 
 function synctex.resetfilename()
-    if set_syntex_tag then
-        local name = luatex.currentfile()
-        if name then
-            set_syntex_tag(name)
-        end
+    if force_synctex_tag then
+        force_synctex_tag(0)
+        force_synctex_line(0)
     end
 end
 
@@ -128,10 +173,14 @@ local last               = 0
 local filesdone          = 0
 local enabled            = false
 local compact            = true
+-- local compact            = false
+local fulltrace          = false
+-- local fulltrace          = true
+local logfile            = false
 
 local function writeanchor()
     local size = f:seek("end")
-    f:write("!" .. (size-last) .. "\n")
+    f:write("!" .. (size-last) ..eol)
     last = size
 end
 
@@ -139,25 +188,23 @@ local function writefiles()
     local total = #stnums
     if filesdone < total then
         for i=filesdone+1,total do
-            f:write("Input:"..i..":"..stnums[i].."\n")
+            f:write("Input:"..i..":"..stnums[i]..eol)
         end
         filesdone = total
     end
 end
 
 local function flushpreamble()
-    local jobname = tex.jobname
-    stnums[0] = jobname
-    f = io.open(file.replacesuffix(jobname,"syncctx"),"w")
-    f:write("SyncTeX Version:1\n")
-    f:write("Input:0:"..jobname.."\n")
+    logfile = file.replacesuffix(tex.jobname,"syncctx")
+    f = io.open(logfile,"wb")
+    f:write("SyncTeX Version:1"..eol)
     writefiles()
-    f:write("Output:pdf\n")
-    f:write("Magnification:1000\n")
-    f:write("Unit:1\n")
-    f:write("X Offset:0\n")
-    f:write("Y Offset:0\n")
-    f:write("Content:\n")
+    f:write("Output:pdf"..eol)
+    f:write("Magnification:1000"..eol)
+    f:write("Unit:1"..eol)
+    f:write("X Offset:0"..eol)
+    f:write("Y Offset:0"..eol)
+    f:write("Content:"..eol)
     flushpreamble = writefiles
 end
 
@@ -166,10 +213,10 @@ local function flushpostamble()
         return
     end
     writeanchor()
-    f:write("Postamble:\n")
-    f:write("Count:"..nofobjects.."\n")
+    f:write("Postamble:"..eol)
+    f:write("Count:"..nofobjects..eol)
     writeanchor()
-    f:write("Post scriptum:\n")
+    f:write("Post scriptum:"..eol)
     f:close()
     enabled = false
 end
@@ -264,7 +311,14 @@ end
 --     end))
 -- end
 
-local function collect(head,t,l)
+-- todo: why not only lines
+-- todo: larger ranges
+
+-- color is already handled so no colors
+
+-- we can have ranges .. more efficient but a bit more complex to analyze ... some day
+
+local function collect(head,t,l,dp,ht)
     local current = head
     while current do
         local id = getid(current)
@@ -273,9 +327,20 @@ local function collect(head,t,l)
             local last  = current
             while true do
                 id = getid(current)
+                -- traditionally glyphs have no synctex code which works sort of ok
+                -- but not when we don't leave hmode cq. have no par
+                --
                 if id == glyph_code or id == disc_code then
+                    local tc, lc = get_synctex_fields(current)
+                    if tc and tc > 0 then
+                        t, l = tc, lc
+                    end
                     last = current
                 elseif id == kern_code and (getsubtype(current) == fontkern_code or getattr(current,a_fontkern)) then
+                    local tc, lc = get_synctex_fields(current)
+                    if tc and tc > 0 then
+                        t, l = tc, lc
+                    end
                     last = current
                 else
                     if id == glue_code then
@@ -288,16 +353,13 @@ local function collect(head,t,l)
                     end
                     local w, h, d = getdimensions(first,getnext(last))
                  -- local w, h, d = getrangedimensions(head,first,getnext(last))
+                    if dp and d < dp then d = dp end
+                    if ht and h < ht then h = ht end
+                    if h < 655360 then h = 655360 end
+                    if d < 327680 then d = 327680 end
                     if trace then
-                        -- color is already handled so no colors
-                        head = insert_before(head,first,new_hlist(new_rule(w,32768,32768)))
+                        head = insert_before(head,first,new_hlist(new_rule(w,fulltrace and h or 32768,fulltrace and d or 32768)))
                     end
-if h < 655360 then
-    h = 655360
-end
-if d < 327680 then
-    d = 327680
-end
                     head = x_hlist(head,first,t,l,w,h,d)
                     break
                 end
@@ -305,16 +367,13 @@ end
                 if not current then
                     local w, h, d = getdimensions(first,getnext(last))
                  -- local w, h, d = getrangedimensions(head,first,getnext(last))
+                    if dp and d < dp then d = dp end
+                    if ht and h < ht then h = ht end
+                    if h < 655360 then h = 655360 end
+                    if d < 327680 then d = 327680 end
                     if trace then
-                        -- color is already handled so no colors
-                        head = insert_before(head,first,new_hlist(new_rule(w,32768,32768)))
+                        head = insert_before(head,first,new_hlist(new_rule(w,fulltrace and h or 32768,fulltrace and d or 32768)))
                     end
-if h < 655360 then
-    h = 655360
-end
-if d < 327680 then
-    d = 327680
-end
                     head = x_hlist(head,first,t,l,w,h,d)
                     return head
                 end
@@ -344,15 +403,15 @@ end
                     end
                 elseif list then
                  -- head = b_hlist(head,current,t,l,w,h,d)
-                    head = b_hlist(head,current,0,0,w,h,d)
-                    local l = collect(list,t,l)
+                    head = b_hlist(head,current,0,0,w,h,d) -- todo: only d h when line
+                    local l = collect(list,t,l,d,h)
                     if l ~= list then
                         setlist(current,l)
                     end
                     head, current = e_hlist(head,current)
                 else
                  -- head = x_hlist(head,current,t,l,w,h,d)
-                    head = x_hlist(head,current,0,0,w,h,d)
+                    head = x_hlist(head,current,0,0,w,h,d) -- todo: only d h when line
                 end
             end
         elseif id == vlist_code then
@@ -439,37 +498,71 @@ function synctex.flush()
         nofsheets = nofsheets + 1 -- could be realpageno
         flushpreamble()
         writeanchor()
-        f:write("{"..nofsheets.."\n")
+        f:write("{"..nofsheets..eol)
         if compact then
-            f:write(f_vlist(0,0,0,0,tex.pagewidth,tex.pageheight,0))
-            f:write("\n")
+         -- f:write(f_vlist(0,0,0,0,tex.pagewidth,tex.pageheight,0))
+            f:write(f_hlist(0,0,0,0,0,0,0))
+            f:write(eol)
+            f:write(f_vlist(0,0,0,0,0,0,0))
+            f:write(eol)
         end
-        f:write(concat(result,"\n"))
+        f:write(concat(result,eol))
         if compact then
-            f:write("\n")
+            f:write(eol)
             f:write(s_vlist)
+            f:write(eol)
+            f:write(s_hlist)
         end
-        f:write("\n")
+        f:write(eol)
         writeanchor()
-        f:write("}"..nofsheets.."\n")
+        f:write("}"..nofsheets..eol)
         nofobjects = nofobjects + 2
         result, r = { }, 0
     end
 end
 
-function synctex.enable()
-    if not enabled and node.set_synctex_mode then
-        enabled = true
-        node.set_synctex_mode(1)
-        tex.normalsynctex = 0
-        nodes.tasks.appendaction("shipouts", "after", "nodes.synctex.collect")
-    end
-end
+local details = 1
+local state   = 0
 
-function synctex.finish()
-    if enabled then
-        flushpostamble()
+directives.register("system.synctex.details",function(v)
+    details = tonumber(v) or 1
+end)
+
+local set_synctex_mode = tex.set_synctex_mode
+
+if set_synctex_mode then
+
+    function synctex.enable()
+        if not enabled then
+            enabled = true
+            state   = details or 1
+            set_synctex_mode(state)
+            tex.normalsynctex = 0
+            directives.enable("system.synctex.xml")
+            nodes.tasks.appendaction("shipouts", "after", "nodes.synctex.collect")
+        elseif state > 0 then
+            set_synctex_mode(state)
+        end
     end
+
+    function synctex.disable()
+        if enabled then
+            set_synctex_mode(0)
+        end
+    end
+
+    function synctex.finish()
+        if enabled then
+            flushpostamble()
+        end
+    end
+
+else
+
+    function synctex.enable () end
+    function synctex.disable() end
+    function synctex.finish () end
+
 end
 
 -- not the best place
@@ -481,27 +574,60 @@ nodes.tasks.appendaction("shipouts", "after", "luatex.synctex.collect")
 -- moved here
 
 local report_system = logs.reporter("system")
-local synctex       = false
+local synctex_used  = false
 
-directives.register("system.synctex", function(v)
+local function setsynctex(v)
     if v == "context" then
-        luatex.synctex.enable()
+        synctex.enable()
         setcount("normalsynctex",0)
-        synctex = true
+        synctex_used = true
     else
         v = tonumber(v) or (toboolean(v,true) and 1) or (v == "zipped" and 1) or (v == "unzipped" and -1) or 0
         setcount("normalsynctex",v)
-        synctex = v ~= 0
+        synctex_used = v ~= 0
     end
-    if synctex then
+    if synctex_used then
         report_system("synctex functionality is enabled (%s), expect runtime overhead!",tostring(v))
     else
         report_system("synctex functionality is disabled!")
     end
+end
+
+directives.register("system.synctex", setsynctex) -- 0|1|false|true|zipped|unzipped|context
+
+directives.register("system.synctex.context", function(v)
+    setsynctex(v and "context" or false)
 end)
 
 statistics.register("synctex tracing",function()
-    if synctex or getcount("normalsynctex") ~= 0 then
-        return "synctex has been enabled (extra log file generated)"
+    if synctex_used or getcount("normalsynctex") ~= 0 then
+        return string.format("%i referenced files, %i files ignored, logfile: %s",noftags,nofblocked,logfile)
     end
 end)
+
+interfaces.implement {
+    name      = "synctexblockfilename",
+    arguments = "string",
+    actions   = synctex.blockfilename,
+}
+
+interfaces.implement {
+    name      = "synctexsetfilename",
+    arguments = "string",
+    actions   = synctex.setfilename,
+}
+
+interfaces.implement {
+    name      = "synctexresetfilename",
+    actions   = synctex.resetfilename,
+}
+
+interfaces.implement {
+    name      = "synctexenable",
+    actions   = synctex.enable,
+}
+
+interfaces.implement {
+    name      = "synctexdisable",
+    actions   = synctex.disable,
+}

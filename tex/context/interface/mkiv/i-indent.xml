@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineindenting" file="spac-hor.mkiv">
+    <cd:command name="defineindenting" level="style" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes">
@@ -29,7 +29,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupindenting" file="spac-hor.mkiv">
+    <cd:command name="setupindenting" level="style" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="small" prefix="cd:sign" method="none"/>
@@ -54,9 +54,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synchronizeindenting" file="spac-hor.mkiv"/>
+    <cd:command name="synchronizeindenting" level="system" file="spac-hor.mkiv"/>
 
-    <cd:command name="useindentingparameter" file="spac-hor.mkiv">
+    <cd:command name="useindentingparameter" level="system" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
@@ -68,7 +68,7 @@
 
     <cd:command name="doindentation" file="spac-hor.mkiv" coreprimitive="yes"/>
 
-    <cd:command name="checknextindentation" file="spac-hor.mkiv">
+    <cd:command name="checknextindentation" level="system" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="yes"/>
@@ -78,14 +78,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useindentnextparameter" file="spac-hor.mkiv">
+    <cd:command name="useindentnextparameter" level="system" file="spac-hor.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dorechecknextindentation" file="spac-hor.mkiv"/>
+    <cd:command name="dorechecknextindentation" level="system" file="spac-hor.mkiv"/>
 
-    <cd:command name="indentation" type="environment" begin="push" end="pop" file="spac-hor.mkiv"/>
+    <cd:command name="indentation" type="environment" begin="push" end="pop" level="system" file="spac-hor.mkiv"/>
 
 </cd:interface>

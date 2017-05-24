@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="pagearea" file="page-plg.mkiv">
+    <cd:command name="pagearea" category="layout" file="page-plg.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="top"/>
@@ -28,7 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagelayout" type="environment" file="page-plg.mkiv">
+    <cd:command name="pagelayout" type="environment" category="layout" file="page-plg.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="page"/>

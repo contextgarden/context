@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definehelp" file="scrn-hlp.mkvi">
+    <cd:command name="definehelp" level="style" file="scrn-hlp.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphelp" file="scrn-hlp.mkvi">
+    <cd:command name="setuphelp" level="style" file="scrn-hlp.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -23,9 +23,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="help" generated="yes" variant="example" file="scrn-hlp.mkvi">
+    <cd:command name="help" generated="yes" variant="instance" file="scrn-hlp.mkvi">
         <cd:sequence>
-            <cd:variable value="help"/>
+            <cd:instance value="help"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-reference-optional"/>
@@ -33,30 +33,30 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="helptext"/>
+            <cd:resolve name="instance-help"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="help" type="environment" generated="yes" variant="example" file="scrn-hlp.mkvi">
+    <cd:command name="help" type="environment" generated="yes" variant="instance" file="scrn-hlp.mkvi">
         <cd:sequence>
-            <cd:variable value="help"/>
+            <cd:instance value="help"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-reference-optional"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="helptext"/>
+            <cd:resolve name="instance-help"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="doifelsehelp" file="scrn-hlp.mkvi">
+    <cd:command name="doifelsehelp" level="system" file="scrn-hlp.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifhelpelse" file="scrn-hlp.mkvi">
+    <cd:command name="doifhelpelse" level="system" file="scrn-hlp.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

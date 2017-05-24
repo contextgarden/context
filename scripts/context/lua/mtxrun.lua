@@ -11423,7 +11423,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 57003, stripped down to: 35696
+-- original size: 59348, stripped down to: 37757
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -11469,8 +11469,17 @@ local entities,parameters
 local strip,utfize,resolve,cleanup,resolve_predefined,unify_predefined
 local dcache,hcache,acache
 local mt,dt,nt
+local currentfilename,currentline,linenumbers
+local grammar_parsed_text_one
+local grammar_parsed_text_two
+local grammar_unparsed_text
+local handle_hex_entity
+local handle_dec_entity
+local handle_any_entity_dtd
+local handle_any_entity_text
 local function preparexmlstate(settings)
   if settings then
+    linenumbers=settings.linenumbers
     stack={}
     level=0
     top={}
@@ -11487,6 +11496,8 @@ local function preparexmlstate(settings)
     unify_predefined=settings.unify_predefined_entities  
     cleanup=settings.text_cleanup
     entities=settings.entities or {}
+    currentfilename=settings.currentresource
+    currentline=1
     parameters={}
     reported_at_errors={}
     dcache={}
@@ -11501,6 +11512,7 @@ local function preparexmlstate(settings)
       resolve_predefined=true
     end
   else
+    linenumbers=false
     stack=nil
     level=nil
     top=nil
@@ -11522,6 +11534,8 @@ local function preparexmlstate(settings)
     dcache=nil
     hcache=nil
     acache=nil
+    currentfilename=nil
+    currentline=1
   end
 end
 local function initialize_mt(root)
@@ -11559,14 +11573,24 @@ local function add_empty(spacing,namespace,tag)
   top=stack[level]
   dt=top.dt
   nt=#dt+1
-  local t={
+  local t=linenumbers and {
     ns=namespace or "",
     rn=resolved,
     tg=tag,
     at=at,
     dt={},
     ni=nt,
-    __p__=top
+    cf=currentfilename,
+    cl=currentline,
+    __p__=top,
+  } or {
+    ns=namespace or "",
+    rn=resolved,
+    tg=tag,
+    at=at,
+    dt={},
+    ni=nt,
+    __p__=top,
   }
   dt[nt]=t
   setmetatable(t,mt)
@@ -11581,18 +11605,28 @@ local function add_begin(spacing,namespace,tag)
     dt[nt]=spacing
   end
   local resolved=namespace=="" and xmlns[#xmlns] or nsremap[namespace] or namespace
-  top={
+  dt={}
+  top=linenumbers and {
     ns=namespace or "",
     rn=resolved,
     tg=tag,
     at=at,
-    dt={},
+    dt=dt,
     ni=nil,
-    __p__=stack[level]
+    cf=currentfilename,
+    cl=currentline,
+    __p__=stack[level],
+  } or {
+    ns=namespace or "",
+    rn=resolved,
+    tg=tag,
+    at=at,
+    dt=dt,
+    ni=nil,
+    __p__=stack[level],
   }
   setmetatable(top,mt)
-  dt=top.dt
-  nt=#dt
+  nt=0
   level=level+1
   stack[level]=top
   at={}
@@ -11660,7 +11694,15 @@ local function add_special(what,spacing,text)
   if strip and (what=="@cm@" or what=="@dt@") then
   else
     nt=nt+1
-    dt[nt]={
+    dt[nt]=linenumbers and {
+      special=true,
+      ns="",
+      tg=what,
+      ni=nil,
+      dt={ text },
+      cf=currentfilename,
+      cl=currentline,
+    } or {
       special=true,
       ns="",
       tg=what,
@@ -11688,12 +11730,6 @@ local function attribute_specification_error(str)
   end
   return str
 end
-local grammar_parsed_text_one
-local grammar_parsed_text_two
-local handle_hex_entity
-local handle_dec_entity
-local handle_any_entity_dtd
-local handle_any_entity_text
 do
   local badentity="&" 
   xml.placeholders={
@@ -12095,7 +12131,13 @@ local function handle_crap_error(chr)
   add_text(chr)
   return chr
 end
+local function handlenewline()
+  currentline=currentline+1
+end
+local spacetab=S(' \t')
 local space=S(' \r\n\t')
+local newline=lpegpatterns.newline/handlenewline
+local anything=P(1)
 local open=P('<')
 local close=P('>')
 local squote=S("'")
@@ -12111,43 +12153,9 @@ local name_nop=C(P(true))*C(valid^1)
 local name=name_yes+name_nop
 local utfbom=lpegpatterns.utfbom 
 local spacing=C(space^0)
-local anyentitycontent=(1-open-semicolon-space-close-ampersand)^0
-local hexentitycontent=R("AF","af","09")^1
-local decentitycontent=R("09")^1
-local parsedentity=P("#")/""*(
-                P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
-              )+(anyentitycontent/handle_any_entity_dtd) 
-local parsedentity_text=P("#")/""*(
-                P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
-              )+(anyentitycontent/handle_any_entity_text)
-local entity=(ampersand/"")*parsedentity*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
-local entity_text=(ampersand/"")*parsedentity_text*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
-local text_unparsed=C((1-open)^1)
-local text_parsed=(Cs((1-open-ampersand)^1)/add_text+Cs(entity_text)/add_text)^1
-local somespace=space^1
-local optionalspace=space^0
-local value=(squote*Cs((entity+(1-squote))^0)*squote)+(dquote*Cs((entity+(1-dquote))^0)*dquote) 
-local endofattributes=slash*close+close 
-local whatever=space*name*optionalspace*equal
-local wrongvalue=Cs(P(entity+(1-space-endofattributes))^1)/attribute_value_error
-local attributevalue=value+wrongvalue
-local attribute=(somespace*name*optionalspace*equal*optionalspace*attributevalue)/add_attribute
-local attributes=(attribute+somespace^-1*(((1-endofattributes)^1)/attribute_specification_error))^0
-local parsedtext=text_parsed  
-local unparsedtext=text_unparsed/add_text
-local balanced=P { "["*((1-S"[]")+V(1))^0*"]" } 
-local emptyelement=(spacing*open*name*attributes*optionalspace*slash*close)/add_empty
-local beginelement=(spacing*open*name*attributes*optionalspace*close)/add_begin
-local endelement=(spacing*open*slash*name*optionalspace*close)/add_end
-local begincomment=open*P("!--")
-local endcomment=P("--")*close
-local begininstruction=open*P("?")
-local endinstruction=P("?")*close
-local begincdata=open*P("![CDATA[")
-local endcdata=P("]]")*close
-local someinstruction=C((1-endinstruction)^0)
-local somecomment=C((1-endcomment  )^0)
-local somecdata=C((1-endcdata   )^0)
+local space_nl=spacetab+newline
+local spacing_nl=Cs((space_nl)^0)
+local anything_nl=newline+P(1)
 local function weirdentity(k,v)
   if trace_entities then
     report_xml("registering %s entity %a as %a","weird",k,v)
@@ -12172,59 +12180,114 @@ local function publicentity(k,v,n)
   end
   entities[k]=v
 end
-local begindoctype=open*P("!DOCTYPE")
-local enddoctype=close
-local beginset=P("[")
-local endset=P("]")
-local wrdtypename=C((1-somespace-P(";"))^1)
-local doctypename=C((1-somespace-close)^0)
-local elementdoctype=optionalspace*P("<!ELEMENT")*(1-close)^0*close
-local basiccomment=begincomment*((1-endcomment)^0)*endcomment
-local weirdentitytype=P("%")*(somespace*doctypename*somespace*value)/weirdentity
-local normalentitytype=(doctypename*somespace*value)/normalentity
-local publicentitytype=(doctypename*somespace*P("PUBLIC")*somespace*value)/publicentity
-local systementitytype=(doctypename*somespace*P("SYSTEM")*somespace*value*somespace*P("NDATA")*somespace*doctypename)/systementity
-local entitydoctype=optionalspace*P("<!ENTITY")*somespace*(systementitytype+publicentitytype+normalentitytype+weirdentitytype)*optionalspace*close
-local function weirdresolve(s)
-  lpegmatch(entitydoctype,parameters[s])
+local function install(spacenewline,spacing,anything)
+  local anyentitycontent=(1-open-semicolon-space-close-ampersand)^0
+  local hexentitycontent=R("AF","af","09")^1
+  local decentitycontent=R("09")^1
+  local parsedentity=P("#")/""*(
+                  P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
+                )+(anyentitycontent/handle_any_entity_dtd) 
+  local parsedentity_text=P("#")/""*(
+                  P("x")/""*(hexentitycontent/handle_hex_entity)+(decentitycontent/handle_dec_entity)
+                )+(anyentitycontent/handle_any_entity_text) 
+  local entity=(ampersand/"")*parsedentity*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
+  local entity_text=(ampersand/"")*parsedentity_text*(semicolon/"")+ampersand*(anyentitycontent/handle_end_entity)
+  local text_unparsed=Cs((anything-open)^1)
+  local text_parsed=(Cs((anything-open-ampersand)^1)/add_text+Cs(entity_text)/add_text)^1
+  local somespace=(spacenewline)^1
+  local optionalspace=(spacenewline)^0
+  local value=(squote*Cs((entity+(anything-squote))^0)*squote)+(dquote*Cs((entity+(anything-dquote))^0)*dquote) 
+  local endofattributes=slash*close+close 
+  local whatever=space*name*optionalspace*equal
+  local wrongvalue=Cs(P(entity+(1-space-endofattributes))^1)/attribute_value_error
+  local attributevalue=value+wrongvalue
+  local attribute=(somespace*name*optionalspace*equal*optionalspace*attributevalue)/add_attribute
+  local attributes=(attribute+somespace^-1*(((anything-endofattributes)^1)/attribute_specification_error))^0
+  local parsedtext=text_parsed  
+  local unparsedtext=text_unparsed/add_text
+  local balanced=P { "["*((anything-S"[]")+V(1))^0*"]" } 
+  local emptyelement=(spacing*open*name*attributes*optionalspace*slash*close)/add_empty
+  local beginelement=(spacing*open*name*attributes*optionalspace*close)/add_begin
+  local endelement=(spacing*open*slash*name*optionalspace*close)/add_end
+  local begincomment=open*P("!--")
+  local endcomment=P("--")*close
+  local begininstruction=open*P("?")
+  local endinstruction=P("?")*close
+  local begincdata=open*P("![CDATA[")
+  local endcdata=P("]]")*close
+  local someinstruction=C((anything-endinstruction)^0)
+  local somecomment=C((anything-endcomment  )^0)
+  local somecdata=C((anything-endcdata   )^0)
+  local begindoctype=open*P("!DOCTYPE")
+  local enddoctype=close
+  local beginset=P("[")
+  local endset=P("]")
+  local wrdtypename=C((anything-somespace-P(";"))^1)
+  local doctypename=C((anything-somespace-close)^0)
+  local elementdoctype=optionalspace*P("<!ELEMENT")*(anything-close)^0*close
+  local basiccomment=begincomment*((anything-endcomment)^0)*endcomment
+  local weirdentitytype=P("%")*(somespace*doctypename*somespace*value)/weirdentity
+  local normalentitytype=(doctypename*somespace*value)/normalentity
+  local publicentitytype=(doctypename*somespace*P("PUBLIC")*somespace*value)/publicentity
+  local systementitytype=(doctypename*somespace*P("SYSTEM")*somespace*value*somespace*P("NDATA")*somespace*doctypename)/systementity
+  local entitydoctype=optionalspace*P("<!ENTITY")*somespace*(systementitytype+publicentitytype+normalentitytype+weirdentitytype)*optionalspace*close
+  local function weirdresolve(s)
+    lpegmatch(entitydoctype,parameters[s])
+  end
+  local function normalresolve(s)
+    lpegmatch(entitydoctype,entities[s])
+  end
+  local entityresolve=P("%")*(wrdtypename/weirdresolve )*P(";")+P("&")*(wrdtypename/normalresolve)*P(";")
+  entitydoctype=entitydoctype+entityresolve
+  local doctypeset=beginset*optionalspace*P(elementdoctype+entitydoctype+entityresolve+basiccomment+space)^0*optionalspace*endset
+  local definitiondoctype=doctypename*somespace*doctypeset
+  local publicdoctype=doctypename*somespace*P("PUBLIC")*somespace*value*somespace*value*somespace*doctypeset
+  local systemdoctype=doctypename*somespace*P("SYSTEM")*somespace*value*somespace*doctypeset
+  local simpledoctype=(anything-close)^1 
+  local somedoctype=C((somespace*(publicdoctype+systemdoctype+definitiondoctype+simpledoctype)*optionalspace)^0)
+  local instruction=(spacing*begininstruction*someinstruction*endinstruction)/function(...) add_special("@pi@",...) end
+  local comment=(spacing*begincomment*somecomment*endcomment  )/function(...) add_special("@cm@",...) end
+  local cdata=(spacing*begincdata*somecdata*endcdata   )/function(...) add_special("@cd@",...) end
+  local doctype=(spacing*begindoctype*somedoctype*enddoctype  )/function(...) add_special("@dt@",...) end
+  local crap_parsed=anything-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata-ampersand
+  local crap_unparsed=anything-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata
+  local parsedcrap=Cs((crap_parsed^1+entity_text)^1)/handle_crap_error
+  local parsedcrap=Cs((crap_parsed^1+entity_text)^1)/handle_crap_error
+  local unparsedcrap=Cs((crap_unparsed       )^1)/handle_crap_error
+  local trailer=space^0*(text_unparsed/set_message)^0
+  local grammar_parsed_text_one=P { "preamble",
+    preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0,
+  }
+  local grammar_parsed_text_two=P { "followup",
+    followup=V("parent")*trailer,
+    parent=beginelement*V("children")^0*endelement,
+    children=parsedtext+V("parent")+emptyelement+comment+cdata+instruction+parsedcrap,
+  }
+  local grammar_unparsed_text=P { "preamble",
+    preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0*V("parent")*trailer,
+    parent=beginelement*V("children")^0*endelement,
+    children=unparsedtext+V("parent")+emptyelement+comment+cdata+instruction+unparsedcrap,
+  }
+  return grammar_parsed_text_one,grammar_parsed_text_two,grammar_unparsed_text
 end
-local function normalresolve(s)
-  lpegmatch(entitydoctype,entities[s])
-end
-local entityresolve=P("%")*(wrdtypename/weirdresolve )*P(";")+P("&")*(wrdtypename/normalresolve)*P(";")
-entitydoctype=entitydoctype+entityresolve
-local doctypeset=beginset*optionalspace*P(elementdoctype+entitydoctype+entityresolve+basiccomment+space)^0*optionalspace*endset
-local definitiondoctype=doctypename*somespace*doctypeset
-local publicdoctype=doctypename*somespace*P("PUBLIC")*somespace*value*somespace*value*somespace*doctypeset
-local systemdoctype=doctypename*somespace*P("SYSTEM")*somespace*value*somespace*doctypeset
-local simpledoctype=(1-close)^1 
-local somedoctype=C((somespace*(publicdoctype+systemdoctype+definitiondoctype+simpledoctype)*optionalspace)^0)
-local instruction=(spacing*begininstruction*someinstruction*endinstruction)/function(...) add_special("@pi@",...) end
-local comment=(spacing*begincomment*somecomment*endcomment  )/function(...) add_special("@cm@",...) end
-local cdata=(spacing*begincdata*somecdata*endcdata   )/function(...) add_special("@cd@",...) end
-local doctype=(spacing*begindoctype*somedoctype*enddoctype  )/function(...) add_special("@dt@",...) end
-local crap_parsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata-ampersand
-local crap_unparsed=1-beginelement-endelement-emptyelement-begininstruction-begincomment-begincdata
-local parsedcrap=Cs((crap_parsed^1+entity_text)^1)/handle_crap_error
-local parsedcrap=Cs((crap_parsed^1+entity_text)^1)/handle_crap_error
-local unparsedcrap=Cs((crap_unparsed       )^1)/handle_crap_error
-local trailer=space^0*(text_unparsed/set_message)^0
-grammar_parsed_text_one=P { "preamble",
-  preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0,
-}
-grammar_parsed_text_two=P { "followup",
-  followup=V("parent")*trailer,
-  parent=beginelement*V("children")^0*endelement,
-  children=parsedtext+V("parent")+emptyelement+comment+cdata+instruction+parsedcrap,
-}
-local grammar_unparsed_text=P { "preamble",
-  preamble=utfbom^0*instruction^0*(doctype+comment+instruction)^0*V("parent")*trailer,
-  parent=beginelement*V("children")^0*endelement,
-  children=unparsedtext+V("parent")+emptyelement+comment+cdata+instruction+unparsedcrap,
-}
+grammar_parsed_text_one_nop,
+grammar_parsed_text_two_nop,
+grammar_unparsed_text_nop=install(space,spacing,anything)
+grammar_parsed_text_one_yes,
+grammar_parsed_text_two_yes,
+grammar_unparsed_text_yes=install(space_nl,spacing_nl,anything_nl)
 local function _xmlconvert_(data,settings)
   settings=settings or {} 
   preparexmlstate(settings)
+  if settings.linenumbers then
+    grammar_parsed_text_one=grammar_parsed_text_one_yes
+    grammar_parsed_text_two=grammar_parsed_text_two_yes
+    grammar_unparsed_text=grammar_unparsed_text_yes
+  else
+    grammar_parsed_text_one=grammar_parsed_text_one_nop
+    grammar_parsed_text_two=grammar_parsed_text_two_nop
+    grammar_unparsed_text=grammar_unparsed_text_nop
+  end
   local preprocessor=settings.preprocessor
   if data and data~="" and type(preprocessor)=="function" then
     data=preprocessor(data,settings) or data 
@@ -14014,7 +14077,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 29835, stripped down to: 21174
+-- original size: 30085, stripped down to: 21385
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -14375,7 +14438,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
           end
           local data=nil
           if name and name~="" then
-            data=loaddata(name) or ""
+            local d,n=loaddata(name)
+            data=d or ""
+            name=n or name
             if trace_inclusions then
               report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
             end
@@ -14385,6 +14450,9 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
           elseif ekat["parse"]=="text" then
             epdt[ek.ni]=xml.escaped(data) 
           else
+local settings=xmldata.settings
+local savedresource=settings.currentresource
+settings.currentresource=name
             local xi=xmlinheritedconvert(data,xmldata)
             if not xi then
               epdt[ek.ni]="" 
@@ -14395,6 +14463,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
               local child=xml.body(xi) 
               child.__p__=ekrt
               child.__f__=name 
+child.cf=name
               epdt[ek.ni]=child
               local settings=xmldata.settings
               local inclusions=settings and settings.inclusions
@@ -14415,6 +14484,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                 end
               end
             end
+settings.currentresource=savedresource
           end
         end
       end
@@ -16352,7 +16422,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16088, stripped down to: 11435
+-- original size: 16086, stripped down to: 11433
 
 if not modules then modules={} end modules ['data-tmp']={
   version=1.100,
@@ -16500,7 +16570,7 @@ function caches.usedpaths(separator)
   end
 end
 function caches.configfiles()
-  return concat(resolvers.instance.specification,";")
+  return concat(resolvers.configurationfiles(),";")
 end
 function caches.hashed(tree)
   tree=gsub(tree,"[\\/]+$","")
@@ -16838,7 +16908,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 67524, stripped down to: 46632
+-- original size: 68236, stripped down to: 47762
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -16912,8 +16982,7 @@ local usertypes=resolvers.usertypes
 local dangerous=resolvers.dangerous
 local suffixmap=resolvers.suffixmap
 resolvers.defaultsuffixes={ "tex" } 
-resolvers.instance=resolvers.instance or nil 
-local   instance=resolvers.instance or nil
+local instance=nil
 function resolvers.setenv(key,value,raw)
   if instance then
     instance.environment[key]=value
@@ -16948,27 +17017,30 @@ local variableresolver=Cs((variable+P(1))^0)
 local function expandedvariable(var)
   return lpegmatch(variableexpander,var) or var
 end
-function resolvers.newinstance()
+function resolvers.reset()
   if trace_locating then
     report_resolving("creating instance")
   end
-  local environment,variables,expansions,order=allocate(),allocate(),allocate(),allocate()
-  local newinstance={
+  local environment={}
+  local variables={}
+  local expansions={}
+  local order={}
+  instance={
     environment=environment,
     variables=variables,
     expansions=expansions,
     order=order,
-    files=allocate(),
-    setups=allocate(),
-    found=allocate(),
-    foundintrees=allocate(),
-    hashes=allocate(),
-    hashed=allocate(),
+    files={},
+    setups={},
+    found={},
+    foundintrees={},
+    hashes={},
+    hashed={},
     pathlists=false,
-    specification=allocate(),
-    lists=allocate(),
-    data=allocate(),
-    fakepaths=allocate(),
+    specification={},
+    lists={},
+    data={},
+    fakepaths={},
     remember=true,
     diskcache=true,
     renewcache=false,
@@ -17015,15 +17087,9 @@ function resolvers.newinstance()
     t[k]=v
     return v
   end)
-  return newinstance
 end
-function resolvers.setinstance(someinstance) 
-  instance=someinstance
-  resolvers.instance=someinstance
-  return someinstance
-end
-function resolvers.reset()
-  return resolvers.setinstance(resolvers.newinstance())
+function resolvers.initialized()
+  return instance~=nil
 end
 local function reset_hashes()
   instance.lists={}
@@ -17192,8 +17258,12 @@ local function load_configuration_files()
     report_resolving("warning: no lua configuration files found")
   end
 end
+function resolvers.configurationfiles()
+  return instance.specification or {}
+end
 local function load_file_databases()
-  instance.loaderror,instance.files=false,allocate()
+  instance.loaderror=false
+  instance.files={}
   if not instance.renewcache then
     local hashes=instance.hashes
     for k=1,#hashes do
@@ -17404,7 +17474,7 @@ function resolvers.stackpath()
   return currentpath~="" and currentpath or nil
 end
 local done={}
-function resolvers.resetextrapath()
+function resolvers.resetextrapaths()
   local ep=instance.extra_paths
   if not ep then
     done={}
@@ -17413,6 +17483,9 @@ function resolvers.resetextrapath()
     done={}
     reset_caches()
   end
+end
+function resolvers.getextrapaths()
+  return instance.extra_paths or {}
 end
 function resolvers.registerextrapath(paths,subpaths)
   if not subpaths or subpaths=="" then
@@ -17573,9 +17646,8 @@ function resolvers.cleanedpathlist(v)
   end
   return t
 end
-function resolvers.expandbraces(str)
-    local ori=str
-  local pth=expandedpathfromlist(resolvers.splitpath(ori))
+function resolvers.expandbraces(str) 
+  local pth=expandedpathfromlist(resolvers.splitpath(str))
   return joinpath(pth)
 end
 function resolvers.registerfilehash(name,content,someerror)
@@ -17586,6 +17658,17 @@ function resolvers.registerfilehash(name,content,someerror)
     if somerror==true then 
       instance.loaderror=someerror
     end
+  end
+end
+function resolvers.getfilehashes()
+  return instance and instance.files or {}
+end
+function resolvers.gethashes()
+  return instance and instance.hashes or {}
+end
+function resolvers.renewcache()
+  if instance then
+    instance.renewcache=true
   end
 end
 local function isreadable(name)
@@ -17660,16 +17743,25 @@ function resolvers.registerintrees(filename,format,filetype,usedmethod,foundname
   local foundintrees=instance.foundintrees
   if usedmethod=="direct" and filename==foundname and fit[foundname] then
   else
+    local collapsed=collapsepath(foundname,true)
     local t={
       filename=filename,
-      format=format~="" and format or nil,
+      format=format~="" and format  or nil,
       filetype=filetype~="" and filetype or nil,
       usedmethod=usedmethod,
       foundname=foundname,
+      fullname=collapsed,
     }
     fit[foundname]=t
     foundintrees[#foundintrees+1]=t
   end
+end
+function resolvers.foundintrees()
+  return instance.foundintrees or {}
+end
+function resolvers.foundintree(fullname)
+  local f=fit[fullname]
+  return f and f.usedmethod=="database"
 end
 local function can_be_dir(name) 
   local fakepaths=instance.fakepaths
@@ -17685,10 +17777,12 @@ end
 local preparetreepattern=Cs((P(".")/"%%."+P("-")/"%%-"+P(1))^0*Cc("$"))
 local collect_instance_files
 local function find_analyze(filename,askedformat,allresults)
-  local filetype,wantedfiles,ext='',{},suffixonly(filename)
+  local filetype=''
+  local filesuffix=suffixonly(filename)
+  local wantedfiles={}
   wantedfiles[#wantedfiles+1]=filename
   if askedformat=="" then
-    if ext=="" or not suffixmap[ext] then
+    if filesuffix=="" or not suffixmap[filesuffix] then
       local defaultsuffixes=resolvers.defaultsuffixes
       local formatofsuffix=resolvers.formatofsuffix
       for i=1,#defaultsuffixes do
@@ -17706,7 +17800,7 @@ local function find_analyze(filename,askedformat,allresults)
       end
     end
   else
-    if ext=="" or not suffixmap[ext] then
+    if filesuffix=="" or not suffixmap[filesuffix] then
       local format_suffixes=suffixes[askedformat]
       if format_suffixes then
         for i=1,#format_suffixes do
@@ -17851,7 +17945,7 @@ end
 local function find_intree(filename,filetype,wantedfiles,allresults)
   local pathlists=instance.pathlists
   if not pathlists then
-    pathlists=setmetatableindex(allocate(),makepathlist)
+    pathlists=setmetatableindex({},makepathlist)
     instance.pathlists=pathlists
   end
   local pathlist=pathlists[filetype]
@@ -18254,15 +18348,21 @@ function resolvers.findwildcardfile(filename)
 end
 function resolvers.automount()
 end
-function resolvers.load(option)
+function resolvers.starttiming()
   statistics.starttiming(instance)
+end
+function resolvers.stoptiming()
+  statistics.stoptiming(instance)
+end
+function resolvers.load(option)
+  resolvers.starttiming()
   identify_configuration_files()
   load_configuration_files()
   if option~="nofiles" then
     load_databases()
     resolvers.automount()
   end
-  statistics.stoptiming(instance)
+  resolvers.stoptiming()
   local files=instance.files
   return files and next(files) and true
 end
@@ -18354,7 +18454,6 @@ function resolvers.booleanvariable(str,default)
   end
 end
 function resolvers.dowithfilesintree(pattern,handle,before,after) 
-  local instance=resolvers.instance
   local hashes=instance.hashes
   for i=1,#hashes do
     local hash=hashes[i]
@@ -18392,6 +18491,31 @@ local obsolete=resolvers.obsolete or {}
 resolvers.obsolete=obsolete
 resolvers.find_file=resolvers.findfile  obsolete.find_file=resolvers.findfile
 resolvers.find_files=resolvers.findfiles  obsolete.find_files=resolvers.findfiles
+function resolvers.knownvariables(pattern)
+  if instance then
+    local environment=instance.environment
+    local variables=instance.variables
+    local expansions=instance.expansions
+    local order=instance.order
+    local pattern=upper(pattern or "")
+    local result={}
+    for i=1,#order do
+      for key in next,order[i] do
+        if result[key]==nil and key~="" and (pattern=="" or find(upper(key),pattern)) then
+          result[key]={
+            environment=rawget(environment,key),
+            variable=key,
+            expansion=expansions[key],
+            resolved=resolveprefix(expansions[key]),
+          }
+        end
+      end
+    end
+    return result
+  else
+    return {}
+  end
+end
 
 
 end -- of closure
@@ -18802,7 +18926,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 4045, stripped down to: 3110
+-- original size: 4007, stripped down to: 3072
 
 if not modules then modules={} end modules ['data-use']={
   version=1.001,
@@ -18822,7 +18946,7 @@ function resolvers.automount(usecache)
     mountpaths=caches.getreadablepaths("mount")
   end
   if mountpaths and #mountpaths>0 then
-    statistics.starttiming(resolvers.instance)
+    resolvers.starttiming()
     for k=1,#mountpaths do
       local root=mountpaths[k]
       local f=io.open(root.."/url.tmi")
@@ -18842,7 +18966,7 @@ function resolvers.automount(usecache)
         f:close()
       end
     end
-    statistics.stoptiming(resolvers.instance)
+    resolvers.stoptiming()
   end
 end
 statistics.register("used config file",function() return caches.configfiles() end)
@@ -18897,7 +19021,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-zip"] = package.loaded["data-zip"] or true
 
--- original size: 8772, stripped down to: 6841
+-- original size: 8716, stripped down to: 6795
 
 if not modules then modules={} end modules ['data-zip']={
   version=1.001,
@@ -19070,17 +19194,16 @@ function resolvers.usezipfile(archive)
   if archive and not registeredfiles[archive] then
     local z=zip.openarchive(archive)
     if z then
-      local instance=resolvers.instance
       local tree=url.query(specification.query).tree or ""
       if trace_locating then
         report_zip("registering: archive %a",archive)
       end
-      statistics.starttiming(instance)
+      resolvers.starttiming()
       resolvers.prependhash('zip',archive)
       resolvers.extendtexmfvariable(archive) 
       registeredfiles[archive]=z
-      instance.files[archive]=resolvers.registerzipfile(z,tree)
-      statistics.stoptiming(instance)
+      resolvers.registerfilehash(archive,resolvers.registerzipfile(z,tree))
+      resolvers.stoptiming()
     elseif trace_locating then
       report_zip("registering: unknown archive %a",archive)
     end
@@ -19747,7 +19870,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lst"] = package.loaded["data-lst"] or true
 
--- original size: 2734, stripped down to: 2354
+-- original size: 1823, stripped down to: 1591
 
 if not modules then modules={} end modules ['data-lst']={
   version=1.001,
@@ -19756,14 +19879,14 @@ if not modules then modules={} end modules ['data-lst']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local rawget,type,next=rawget,type,next
-local find,concat,upper=string.find,table.concat,string.upper
-local fastcopy,sortedpairs=table.fastcopy,table.sortedpairs
+local type=type
+local concat,sortedhash=table.concat,table.sortedhash
 local resolvers=resolvers
 local listers=resolvers.listers or {}
 resolvers.listers=listers
 local resolveprefix=resolvers.resolve
 local report_lists=logs.reporter("resolvers","lists")
+local report_resolved=logs.reporter("system","resolved")
 local function tabstr(str)
   if type(str)=='table' then
     return concat(str," | ")
@@ -19772,39 +19895,17 @@ local function tabstr(str)
   end
 end
 function listers.variables(pattern)
-  local instance=resolvers.instance
-  local environment=instance.environment
-  local variables=instance.variables
-  local expansions=instance.expansions
-  local pattern=upper(pattern or "")
-  local configured={}
-  local order=instance.order
-  for i=1,#order do
-    for k,v in next,order[i] do
-      if v~=nil and configured[k]==nil then
-        configured[k]=v
-      end
-    end
+  local result=resolvers.knownvariables(pattern)
+  for key,value in sortedhash(result) do
+    report_lists(key)
+    report_lists("  env: %s",tabstr(value.environment or "unset"))
+    report_lists("  var: %s",tabstr(value.variable  or "unset"))
+    report_lists("  exp: %s",tabstr(value.expansion  or "unset"))
+    report_lists("  res: %s",tabstr(value.resolved  or "unset"))
   end
-  local env=fastcopy(environment)
-  local var=fastcopy(variables)
-  local exp=fastcopy(expansions)
-  for key,value in sortedpairs(configured) do
-    if key~="" and (pattern=="" or find(upper(key),pattern)) then
-      report_lists(key)
-      report_lists("  env: %s",tabstr(rawget(environment,key))    or "unset")
-      report_lists("  var: %s",tabstr(configured[key])        or "unset")
-      report_lists("  exp: %s",tabstr(expansions[key])        or "unset")
-      report_lists("  res: %s",tabstr(resolveprefix(expansions[key])) or "unset")
-    end
-  end
-  instance.environment=fastcopy(env)
-  instance.variables=fastcopy(var)
-  instance.expansions=fastcopy(exp)
 end
-local report_resolved=logs.reporter("system","resolved")
 function listers.configurations()
-  local configurations=resolvers.instance.specification
+  local configurations=resolvers.configurationfiles()
   for i=1,#configurations do
     report_resolved("file : %s",resolveprefix(configurations[i]))
   end
@@ -20418,8 +20519,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 842443
--- stripped bytes    : 306317
+-- original bytes    : 844743
+-- stripped bytes    : 306064
 
 -- end library merge
 
@@ -20643,7 +20744,7 @@ if not environment.experiments then environment.experiments = e_experiments end
 
 --
 
-local instance = resolvers.reset()
+resolvers.reset()
 
 local helpinfo = [[
 <?xml version="1.0" ?>
@@ -21199,7 +21300,7 @@ function runners.execute_ctx_script(filename,...)
     end
     -- retry after generate but only if --autogenerate
     if fullname == "" and environment.argument("autogenerate") then -- might become the default
-        instance.renewcache = true
+        resolvers.renewcache()
         trackers.enable("resolvers.locating")
         resolvers.load()
         --
@@ -21378,8 +21479,6 @@ local before, after = environment.splitarguments(filename)
 environment.arguments_before, environment.arguments_after = before, after
 environment.initializearguments(before)
 
-instance.lsrmode  = environment.argument("lsr") or false
-
 e_verbose = environment.arguments["verbose"] -- delayed till here (we need the ones before script)
 
 if e_verbose then
@@ -21466,7 +21565,7 @@ else
     function runners.loadbase(...)
         if not resolvers.load(...) then
             report("forcing cache reload")
-            instance.renewcache = true
+            resolvers.renewcache()
             trackers.enable("resolvers.locating")
             if not resolvers.load(...) then
                 report("the resolver databases are not present or outdated")
@@ -21673,7 +21772,7 @@ elseif e_argument("find-path") then
     -- luatools: runners.execute_ctx_script("mtx-base","--find-path",filename)
 
     resolvers.load()
-    local path = resolvers.findpath(filename, instance.my_format)
+    local path = resolvers.findpath(filename)
     if e_verbose then
         report(path)
     else
@@ -21754,7 +21853,7 @@ elseif e_argument("generate") then
         trackers.enable("resolvers.locating")
         resolvers.renew(filename)
     else
-        instance.renewcache = true
+        resolvers.renewcache()
         trackers.enable("resolvers.locating")
         resolvers.load()
     end

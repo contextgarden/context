@@ -24,7 +24,7 @@ function resolvers.automount(usecache)
         mountpaths = caches.getreadablepaths("mount")
     end
     if mountpaths and #mountpaths > 0 then
-        statistics.starttiming(resolvers.instance)
+        resolvers.starttiming()
         for k=1,#mountpaths do
             local root = mountpaths[k]
             local f = io.open(root.."/url.tmi")
@@ -45,7 +45,7 @@ function resolvers.automount(usecache)
                 f:close()
             end
         end
-        statistics.stoptiming(resolvers.instance)
+        resolvers.stoptiming()
     end
 end
 

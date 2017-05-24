@@ -4,14 +4,14 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definelabelclass" file="lang-lab.mkiv">
+    <cd:command name="definelabelclass" category="language" level="system" file="lang-lab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplabeltext" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="setuplabeltext" generated="yes" variant="instance" category="language" level="style" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="label"/>
@@ -26,7 +26,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="presetlabeltext" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="presetlabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="preset"/>
             <cd:instance value="label"/>
@@ -41,7 +41,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="copylabeltext" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="copylabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="copy"/>
             <cd:instance value="label"/>
@@ -56,7 +56,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltext" type="environment" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="labeltext" type="environment" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="text"/>
@@ -70,7 +70,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labellanguage" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="labellanguage" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="language"/>
@@ -80,7 +80,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltext" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="labeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="text"/>
@@ -93,7 +93,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltexts" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="labeltexts" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="texts"/>
@@ -107,7 +107,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="leftlabeltext" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="leftlabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="left"/>
             <cd:instance value="label"/>
@@ -121,7 +121,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="rightlabeltext" generated="yes" variant="instance" file="lang-lab.mkiv">
+    <cd:command name="rightlabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="right"/>
             <cd:instance value="label"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupperiods" file="enco-ini.mkiv">
+    <cd:command name="setupperiods" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="n">
@@ -24,13 +24,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="periods" file="enco-ini.mkiv">
+    <cd:command name="periods" level="document" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="periods" variant="assignment" file="enco-ini.mkiv">
+    <cd:command name="periods" variant="assignment" level="document" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupperiods"/>
@@ -38,6 +38,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unknown" file="enco-ini.mkiv"/>
+    <cd:command name="unknown" level="document" file="enco-ini.mkiv"/>
 
 </cd:interface>

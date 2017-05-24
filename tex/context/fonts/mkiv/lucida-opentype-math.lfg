@@ -22,6 +22,7 @@ return {
         dimensions = {
             default = { -- experimental values
                 [0x2044] = { xoffset = 275, width = 600 },
+--                 [0x2032] = { yoffset = -10 },
             },
         },
     },

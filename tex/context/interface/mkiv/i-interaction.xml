@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinteraction" file="scrn-ini.mkvi">
+    <cd:command name="defineinteraction" level="style" file="scrn-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteraction" file="scrn-ini.mkvi">
+    <cd:command name="setupinteraction" level="style" file="scrn-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -119,7 +119,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteraction" variant="name" file="scrn-ini.mkvi">
+    <cd:command name="setupinteraction" variant="name" level="style" file="scrn-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
@@ -143,14 +143,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselocation" file="scrn-ini.mkvi">
+    <cd:command name="doifelselocation" level="system" file="scrn-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflocationelse" file="scrn-ini.mkvi">
+    <cd:command name="doiflocationelse" level="system" file="scrn-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

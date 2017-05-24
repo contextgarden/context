@@ -4,25 +4,25 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="btxrenderingdefinitions" type="environment" file="publ-ini.mkiv">
+    <cd:command name="btxrenderingdefinitions" type="environment" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadbtxdefinitionfile" file="publ-ini.mkiv">
+    <cd:command name="loadbtxdefinitionfile" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadbtxreplacementfile" file="publ-ini.mkiv">
+    <cd:command name="loadbtxreplacementfile" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebtx" file="publ-ini.mkiv">
+    <cd:command name="definebtx" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbtx" file="publ-ini.mkiv">
+    <cd:command name="setupbtx" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
@@ -114,19 +114,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbtx" variant="name" file="publ-ini.mkiv">
+    <cd:command name="setupbtx" variant="name" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usingbtxspecification" type="environment" file="publ-ini.mkiv">
+    <cd:command name="usingbtxspecification" type="environment" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebtxdataset" file="publ-ini.mkiv">
+    <cd:command name="definebtxdataset" category="bibliography" level="style" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -136,7 +136,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbtxdataset" file="publ-ini.mkiv">
+    <cd:command name="setupbtxdataset" category="bibliography" level="style" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -147,7 +147,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebtxregister" file="publ-ini.mkiv">
+    <cd:command name="definebtxregister" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -157,7 +157,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbtxregister" file="publ-ini.mkiv">
+    <cd:command name="setupbtxregister" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -194,7 +194,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebtxrendering" file="publ-ini.mkiv">
+    <cd:command name="definebtxrendering" category="bibliography" level="style" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -204,7 +204,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbtxrendering" file="publ-ini.mkiv">
+    <cd:command name="setupbtxrendering" category="bibliography" level="style" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -293,7 +293,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usebtxdataset" file="publ-ini.mkiv">
+    <cd:command name="usebtxdataset" category="bibliography" level="style" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-file"/>
@@ -305,7 +305,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="publication" type="environment" file="publ-ini.mkiv">
+    <cd:command name="publication" type="environment" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -325,7 +325,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbtxlist" file="publ-ini.mkiv">
+    <cd:command name="setupbtxlist" category="bibliography" level="style" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
@@ -334,7 +334,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="completebtxrendering" file="publ-ini.mkiv">
+    <cd:command name="completebtxrendering" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -343,7 +343,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placebtxrendering" file="publ-ini.mkiv">
+    <cd:command name="placebtxrendering" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -352,7 +352,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="completelistofpublications" file="publ-ini.mkiv">
+    <cd:command name="completelistofpublications" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -361,7 +361,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofpublications" file="publ-ini.mkiv">
+    <cd:command name="placelistofpublications" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -370,319 +370,319 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxhybridcite" file="publ-ini.mkiv">
+    <cd:command name="btxhybridcite" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxhybridcite" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="btxhybridcite" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxhybridcite" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="btxhybridcite" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxhybridcite" variant="direct" file="publ-ini.mkiv">
+    <cd:command name="btxhybridcite" variant="direct" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxlistcitation" file="publ-ini.mkiv">
+    <cd:command name="btxlistcitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxlistcitation" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="btxlistcitation" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxlistcitation" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="btxlistcitation" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxtextcitation" file="publ-ini.mkiv">
+    <cd:command name="btxtextcitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxtextcitation" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="btxtextcitation" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxtextcitation" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="btxtextcitation" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxalwayscitation" file="publ-ini.mkiv">
+    <cd:command name="btxalwayscitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxalwayscitation" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="btxalwayscitation" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxalwayscitation" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="btxalwayscitation" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bthiddencitation" file="publ-ini.mkiv">
+    <cd:command name="bthiddencitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="listcitation" file="publ-ini.mkiv">
+    <cd:command name="listcitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="listcitation" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="listcitation" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="listcitation" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="listcitation" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="listcite" file="publ-ini.mkiv">
+    <cd:command name="listcite" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="listcite" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="listcite" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="listcite" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="listcite" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textcitation" file="publ-ini.mkiv">
+    <cd:command name="textcitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textcitation" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="textcitation" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textcitation" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="textcitation" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textcite" file="publ-ini.mkiv">
+    <cd:command name="textcite" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textcite" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="textcite" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textcite" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="textcite" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alwayscitation" file="publ-ini.mkiv">
+    <cd:command name="alwayscitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alwayscitation" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="alwayscitation" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alwayscitation" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="alwayscitation" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alwayscite" file="publ-ini.mkiv">
+    <cd:command name="alwayscite" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alwayscite" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="alwayscite" variant="userdata" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alwayscite" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="alwayscite" variant="alternative" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hiddencitation" file="publ-ini.mkiv">
+    <cd:command name="hiddencitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hiddencite" file="publ-ini.mkiv">
+    <cd:command name="hiddencite" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="citation" file="publ-ini.mkiv">
+    <cd:command name="citation" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="citation" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="citation" variant="userdata" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="citation" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="citation" variant="alternative" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="citation" variant="direct" file="publ-ini.mkiv">
+    <cd:command name="citation" variant="direct" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cite" file="publ-ini.mkiv">
+    <cd:command name="cite" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cite" variant="userdata" file="publ-ini.mkiv">
+    <cd:command name="cite" variant="userdata" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-citedata-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cite" variant="alternative" file="publ-ini.mkiv">
+    <cd:command name="cite" variant="alternative" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-btxalternative-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cite" variant="direct" file="publ-ini.mkiv">
+    <cd:command name="cite" variant="direct" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nocitation" file="publ-ini.mkiv">
+    <cd:command name="nocitation" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nocitation" variant="direct" file="publ-ini.mkiv">
+    <cd:command name="nocitation" variant="direct" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nocite" file="publ-ini.mkiv">
+    <cd:command name="nocite" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nocite" variant="direct" file="publ-ini.mkiv">
+    <cd:command name="nocite" variant="direct" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savebtxdataset" file="publ-ini.mkiv">
+    <cd:command name="savebtxdataset" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-file-optional"/>
@@ -717,67 +717,67 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placecitation" file="publ-ini.mkiv">
+    <cd:command name="placecitation" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usebtxdefinitions" file="publ-ini.mkiv">
+    <cd:command name="usebtxdefinitions" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxfield" file="publ-ini.mkiv">
+    <cd:command name="btxfield" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdetail" file="publ-ini.mkiv">
+    <cd:command name="btxdetail" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxflush" file="publ-ini.mkiv">
+    <cd:command name="btxflush" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdirect" file="publ-ini.mkiv">
+    <cd:command name="btxdirect" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxfieldname" file="publ-ini.mkiv">
+    <cd:command name="btxfieldname" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxfieldtype" file="publ-ini.mkiv">
+    <cd:command name="btxfieldtype" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxfoundname" file="publ-ini.mkiv">
+    <cd:command name="btxfoundname" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxfoundtype" file="publ-ini.mkiv">
+    <cd:command name="btxfoundtype" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxauthorfield" file="publ-ini.mkiv">
+    <cd:command name="btxauthorfield" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="initials"/>
@@ -789,7 +789,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelse" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelse" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
@@ -797,27 +797,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoif" file="publ-ini.mkiv">
+    <cd:command name="btxdoif" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifnot" file="publ-ini.mkiv">
+    <cd:command name="btxdoifnot" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxsetup" file="publ-ini.mkiv">
+    <cd:command name="btxsetup" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelsesameaspreviouschecked" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelsesameaspreviouschecked" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="always"/>
@@ -829,7 +829,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelsesameasprevious" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelsesameasprevious" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
@@ -837,7 +837,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelsecombiinlist" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelsecombiinlist" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -846,7 +846,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifsameaspreviouscheckedelse" file="publ-ini.mkiv">
+    <cd:command name="btxdoifsameaspreviouscheckedelse" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="always"/>
@@ -858,7 +858,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifsameaspreviouselse" file="publ-ini.mkiv">
+    <cd:command name="btxdoifsameaspreviouselse" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxfield"/>
             <cd:resolve name="argument-true"/>
@@ -866,7 +866,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifcombiinlistelse" file="publ-ini.mkiv">
+    <cd:command name="btxdoifcombiinlistelse" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -875,21 +875,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentbtxuservariable" file="publ-ini.mkiv">
+    <cd:command name="currentbtxuservariable" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxdoifelseuservariable" file="publ-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-key"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="btxdoifuservariableelse" file="publ-ini.mkiv">
+    <cd:command name="btxdoifelseuservariable" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-true"/>
@@ -897,14 +889,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxremapauthor" file="publ-ini.mkiv">
+    <cd:command name="btxdoifuservariableelse" category="bibliography" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxremapauthor" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxflushauthor" file="publ-ini.mkiv">
+    <cd:command name="btxflushauthor" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="num"/>
@@ -917,39 +917,39 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxflushsuffix" file="publ-ini.mkiv"/>
+    <cd:command name="btxflushsuffix" category="bibliography" file="publ-ini.mkiv"/>
 
-    <cd:command name="btxflushauthorname" file="publ-ini.mkiv">
+    <cd:command name="btxflushauthorname" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxauthor"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxflushauthornormal" file="publ-ini.mkiv">
+    <cd:command name="btxflushauthornormal" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxauthor"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxflushauthornormalshort" file="publ-ini.mkiv">
+    <cd:command name="btxflushauthornormalshort" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxauthor"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxflushauthorinverted" file="publ-ini.mkiv">
+    <cd:command name="btxflushauthorinverted" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxauthor"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxflushauthorinvertedshort" file="publ-ini.mkiv">
+    <cd:command name="btxflushauthorinvertedshort" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-btxauthor"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxsingularplural" file="publ-ini.mkiv">
+    <cd:command name="btxsingularplural" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="editor"/>
@@ -961,7 +961,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxsingularorplural" file="publ-ini.mkiv">
+    <cd:command name="btxsingularorplural" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="editor"/>
@@ -973,7 +973,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxoneorrange" file="publ-ini.mkiv">
+    <cd:command name="btxoneorrange" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="volume"/>
@@ -984,7 +984,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxfirstofrange" file="publ-ini.mkiv">
+    <cd:command name="btxfirstofrange" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="volume"/>
@@ -993,38 +993,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxloadjournalist" file="publ-ini.mkiv">
+    <cd:command name="btxloadjournalist" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxsavejournalist" file="publ-ini.mkiv">
+    <cd:command name="btxsavejournalist" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxaddjournal" file="publ-ini.mkiv">
+    <cd:command name="btxaddjournal" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxexpandedjournal" file="publ-ini.mkiv">
+    <cd:command name="btxexpandedjournal" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="btxabbreviatedjournal" file="publ-ini.mkiv">
+    <cd:command name="btxabbreviatedjournal" category="bibliography" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxdatasetfields" file="publ-tra.mkiv">
+    <cd:command name="showbtxdatasetfields" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="specification">
@@ -1040,13 +1040,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxdatasetfields" variant="argument" file="publ-tra.mkiv">
+    <cd:command name="showbtxdatasetfields" variant="argument" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxdatasetcompleteness" file="publ-tra.mkiv">
+    <cd:command name="showbtxdatasetcompleteness" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="specification">
@@ -1062,13 +1062,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxdatasetcompleteness" variant="argument" file="publ-tra.mkiv">
+    <cd:command name="showbtxdatasetcompleteness" variant="argument" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxdatasetauthors" file="publ-tra.mkiv">
+    <cd:command name="showbtxdatasetauthors" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="specification">
@@ -1084,19 +1084,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxdatasetauthors" variant="argument" file="publ-tra.mkiv">
+    <cd:command name="showbtxdatasetauthors" variant="argument" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxhashedauthors" file="publ-tra.mkiv">
+    <cd:command name="showbtxhashedauthors" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dummy-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxfields" file="publ-tra.mkiv">
+    <cd:command name="showbtxfields" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="rotation">
@@ -1109,13 +1109,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxfields" variant="argument" file="publ-tra.mkiv">
+    <cd:command name="showbtxfields" variant="argument" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbtxtables" file="publ-tra.mkiv">
+    <cd:command name="showbtxtables" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dummy-optional"/>
         </cd:arguments>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineattachment" file="scrn-wid.mkvi">
+    <cd:command name="defineattachment" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupattachment" file="scrn-wid.mkvi">
+    <cd:command name="setupattachment" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -85,18 +85,14 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="setupattachments" file="scrn-wid.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupattachment"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
+    <cd:command name="setupattachments" level="style" file="scrn-wid.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupattachment"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
     <cd:command name="registerattachment" file="scrn-wid.mkvi">
         <cd:arguments>
@@ -107,9 +103,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="attachment" generated="yes" variant="example" file="scrn-wid.mkvi">
+    <cd:command name="attachment" generated="yes" variant="instance" level="document" file="scrn-wid.mkvi">
         <cd:sequence>
-            <cd:variable value="attachment"/>
+            <cd:instance value="attachment"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
@@ -118,13 +114,13 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="attachment"/>
+            <cd:resolve name="instance-attachment"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="attachment" type="environment" generated="yes" variant="example" file="scrn-wid.mkvi">
+    <cd:command name="attachment" type="environment" generated="yes" variant="instance" level="document" file="scrn-wid.mkvi">
         <cd:sequence>
-            <cd:variable value="attachment"/>
+            <cd:instance value="attachment"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
@@ -133,28 +129,32 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="attachment"/>
+            <cd:resolve name="instance-attachment"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placeattachments" file="scrn-wid.mkvi"/>
+    <cd:command name="placeattachments" level="document" file="scrn-wid.mkvi"/>
 
-    <cd:command name="attachment" file="scrn-wid.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupattachment"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="attachment" type="environment" file="scrn-wid.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupattachment"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="attachment" file="scrn-wid.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupattachment"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="attachment" type="environment" file="scrn-wid.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupattachment"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

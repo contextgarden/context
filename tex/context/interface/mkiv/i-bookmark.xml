@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupbookmark" file="strc-bkm.mkiv">
+    <cd:command name="setupbookmark" level="style" file="strc-bkm.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="force">
@@ -50,7 +50,7 @@
 
     -->
 
-    <cd:command name="bookmark" file="strc-bkm.mkiv">
+    <cd:command name="bookmark" level="document" file="strc-bkm.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:section"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setitaliccorrection" file="typo-itc.mkvi">
+    <cd:command name="setitaliccorrection" category="fonts" file="typo-itc.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -14,11 +14,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetitaliccorrection" file="typo-itc.mkvi"/>
+    <cd:command name="resetitaliccorrection" category="fonts" file="typo-itc.mkvi"/>
 
-    <cd:command name="italiccorrection" file="typo-itc.mkvi"/>
+    <cd:command name="italiccorrection" category="fonts" file="typo-itc.mkvi"/>
 
-    <cd:command name="setupitaliccorrection" file="typo-itc.mkvi">
+    <cd:command name="setupitaliccorrection" category="fonts" file="typo-itc.mkvi">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="text"/>

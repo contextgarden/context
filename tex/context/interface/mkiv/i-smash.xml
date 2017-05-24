@@ -4,69 +4,69 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="smashbox" file="supp-box.mkiv">
+    <cd:command name="smashbox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smashboxed" file="supp-box.mkiv">
+    <cd:command name="smashboxed" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hsmashbox" file="supp-box.mkiv">
+    <cd:command name="hsmashbox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vsmashbox" file="supp-box.mkiv">
+    <cd:command name="vsmashbox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hsmash" file="supp-box.mkiv">
+    <cd:command name="hsmash" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vsmash" file="supp-box.mkiv">
+    <cd:command name="vsmash" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hsmashed" file="supp-box.mkiv">
+    <cd:command name="hsmashed" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vsmashed" file="supp-box.mkiv">
+    <cd:command name="vsmashed" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smashedhbox" file="supp-box.mkiv">
+    <cd:command name="smashedhbox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smashedvbox" file="supp-box.mkiv">
+    <cd:command name="smashedvbox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smash" file="supp-box.mkiv">
+    <cd:command name="smash" level="document" file="supp-box.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="w"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definedataset" file="core-dat.mkiv">
+    <cd:command name="definedataset" level="system" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupdataset" file="core-dat.mkiv">
+    <cd:command name="setupdataset" level="system" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -26,7 +26,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdataset" file="core-dat.mkiv">
+    <cd:command name="setdataset" level="system" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="datasetvariable" file="core-dat.mkiv">
+    <cd:command name="datasetvariable" level="system" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">

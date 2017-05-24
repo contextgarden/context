@@ -29,6 +29,7 @@ local normalized = {
     multiple          = "multiple",
     kern              = "kern",
     pair              = "pair",
+    single            = "single",
     chainsubstitution = "chainsubstitution",
     chainposition     = "chainposition",
 }
@@ -40,6 +41,7 @@ local types = {
     multiple          = "gsub_multiple",
     kern              = "gpos_pair",
     pair              = "gpos_pair",
+    single            = "gpos_single",
     chainsubstitution = "gsub_contextchain",
     chainposition     = "gpos_contextchain",
 }
@@ -403,6 +405,8 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
+    local prepare_single = prepare_pair
+
     local function prepare_chain(list,featuretype,sublookups)
         -- todo: coveractions
         local rules    = list.rules
@@ -627,6 +631,9 @@ local function addfeature(data,feature,specifications)
                         elseif featuretype == "pair" then
                             format   = "pair"
                             coverage = prepare_pair(list,featuretype)
+                        elseif featuretype == "single" then
+                            format   = "single"
+                            coverage = prepare_single(list,featuretype)
                         end
                         if coverage and next(coverage) then
                             nofsteps = nofsteps + 1
@@ -666,6 +673,10 @@ local function addfeature(data,feature,specifications)
                     category = "gpos"
                     format   = "pair"
                     coverage = prepare_pair(list,featuretype)
+                elseif featuretype == "single" then
+                    category = "gpos"
+                    format   = "single"
+                    coverage = prepare_single(list,featuretype)
                 elseif featuretype == "chainsubstitution" then
                     category = "gsub"
                     coverage = prepare_chain(list,featuretype,sublookups)

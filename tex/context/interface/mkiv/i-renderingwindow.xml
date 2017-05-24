@@ -27,7 +27,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definerenderingwindow" file="scrn-wid.mkvi">
+    <cd:command name="definerenderingwindow" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuprenderingwindow" file="scrn-wid.mkvi">
+    <cd:command name="setuprenderingwindow" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">

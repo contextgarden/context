@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definespreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="definespreadsheet" level="style" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="setupspreadsheet" level="style" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsespreadsheetcell" file="m-spreadsheet.mkiv">
+    <cd:command name="doifelsespreadsheetcell" level="system" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>
@@ -84,7 +84,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifspreadsheetcellelse" file="m-spreadsheet.mkiv">
+    <cd:command name="doifspreadsheetcellelse" level="system" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>
@@ -118,7 +118,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="spreadsheettable" type="environment" file="m-spreadsheet.mkiv">
+    <cd:command name="spreadsheettable" type="environment" level="document" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -127,9 +127,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="row" type="environment" file="m-spreadsheet.mkiv"/>
+    <cd:command name="row" type="environment" level="document" file="m-spreadsheet.mkiv"/>
 
-    <cd:command name="cell" type="environment" file="m-spreadsheet.mkiv">
+    <cd:command name="cell" type="environment" level="document" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="bTD"/>

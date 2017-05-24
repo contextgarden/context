@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemargindata" file="typo-mar.mkiv">
+    <cd:command name="definemargindata" level="style" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmargindata" file="typo-mar.mkiv">
+    <cd:command name="setupmargindata" level="style" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -119,7 +119,7 @@
 
     -->
 
-    <cd:command name="setupmarginframed" file="typo-mar.mkiv">
+    <cd:command name="setupmarginframed" level="style" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -128,7 +128,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="margindata" generated="yes" variant="instance" file="typo-mar.mkiv">
+    <cd:command name="margindata" generated="yes" variant="instance" level="document" file="typo-mar.mkiv">
         <cd:sequence>
             <cd:instance value="margindata"/>
         </cd:sequence>
@@ -149,7 +149,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="margindata" file="typo-mar.mkiv">
+    <cd:command name="margindata" level="document" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

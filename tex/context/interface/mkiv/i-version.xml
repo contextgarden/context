@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupversion" file="page-inf.mkiv">
+    <cd:command name="setupversion" level="style" file="page-inf.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="concept"/>
@@ -16,7 +16,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="version" file="page-inf.mkiv">
+    <cd:command name="version" level="style" file="page-inf.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="concept"/>
@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseolderversion" file="file-mod.mkvi">
+    <cd:command name="doifelseolderversion" level="system" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifolderversionelse" file="file-mod.mkvi">
+    <cd:command name="doifolderversionelse" level="system" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -59,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseoldercontext" file="file-mod.mkvi">
+    <cd:command name="doifelseoldercontext" level="system" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
@@ -67,7 +67,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoldercontextelse" file="file-mod.mkvi">
+    <cd:command name="doifoldercontextelse" level="system" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>

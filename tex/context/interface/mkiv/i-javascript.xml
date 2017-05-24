@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="JScode" type="environment" file="java-ini.mkiv">
+    <cd:command name="JScode" type="environment" level="system" file="java-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
             <cd:keywords delimiters="none">
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="JSpreamble" type="environment" file="java-ini.mkiv">
+    <cd:command name="JSpreamble" type="environment" level="system" file="java-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
             <cd:keywords delimiters="none">
@@ -27,21 +27,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setJSpreamble" file="java-ini.mkiv">
+    <cd:command name="setJSpreamble" level="system" file="java-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addtoJSpreamble" file="java-ini.mkiv">
+    <cd:command name="addtoJSpreamble" level="system" file="java-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useJSscripts" file="java-ini.mkiv">
+    <cd:command name="useJSscripts" level="style" file="java-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:resolve name="keyword-name-list-optional"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineoutputroutine" file="page-otr.mkvi">
+    <cd:command name="defineoutputroutine" level="system" file="page-otr.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupoutputroutine" file="page-otr.mkvi">
+    <cd:command name="setupoutputroutine" level="system" file="page-otr.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
@@ -25,21 +25,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupoutputroutine" variant="name" file="page-otr.mkvi">
+    <cd:command name="setupoutputroutine" variant="name" level="system" file="page-otr.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineoutputroutinecommand" file="page-otr.mkvi">
+    <cd:command name="defineoutputroutinecommand" level="system" file="page-otr.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-key-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="traceoutputroutines" file="page-otr.mkvi"/>
+    <cd:command name="traceoutputroutines" level="system" file="page-otr.mkvi"/>
 
-    <cd:command name="installoutputroutine" file="page-otr.mkvi">
+    <cd:command name="installoutputroutine" level="system" file="page-otr.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-command"/>

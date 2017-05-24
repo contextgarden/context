@@ -190,7 +190,7 @@ function caches.usedpaths(separator)
 end
 
 function caches.configfiles()
-    return concat(resolvers.instance.specification,";")
+    return concat(resolvers.configurationfiles(),";")
 end
 
 function caches.hashed(tree)

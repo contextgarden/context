@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuplinetable" file="tabl-ltb.mkiv">
+    <cd:command name="setuplinetable" category="tables" level="style" file="tabl-ltb.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="r"/>
@@ -98,7 +98,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linetablecell" type="environment" file="tabl-ltb.mkiv">
+    <cd:command name="linetablecell" type="environment" category="tables" file="tabl-ltb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuplinetable"/>
@@ -106,19 +106,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linetable" type="environment" file="tabl-ltb.mkiv"/>
+    <cd:command name="linetable" type="environment" category="tables" level="document" file="tabl-ltb.mkiv"/>
 
-    <cd:command name="linetablehead" type="environment" file="tabl-ltb.mkiv"/>
+    <cd:command name="linetablehead" type="environment" category="tables" level="document" file="tabl-ltb.mkiv"/>
 
-    <cd:command name="linetablebody" type="environment" file="tabl-ltb.mkiv"/>
+    <cd:command name="linetablebody" type="environment" category="tables" level="document" file="tabl-ltb.mkiv"/>
 
-    <cd:command name="processlinetablebuffer" file="tabl-ltb.mkiv">
+    <cd:command name="processlinetablebuffer" category="tables" level="document" file="tabl-ltb.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processlinetablefile" file="tabl-ltb.mkiv">
+    <cd:command name="processlinetablefile" category="tables" level="document" file="tabl-ltb.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathstackers" file="math-stc.mkvi">
+    <cd:command name="definemathstackers" category="mathematics" level="style" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathstackers" file="math-stc.mkvi">
+    <cd:command name="setupmathstackers" category="mathematics" level="style" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -107,7 +107,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathextensible" file="math-sty.mkvi">
+    <cd:command name="definemathextensible" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reverse"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathextensible" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathextensible"/>
         </cd:sequence>
@@ -136,7 +136,7 @@
         </cd:arguments>
     </cd:command>
         
-    <cd:command name="definemathoverextensible" file="math-sty.mkvi">
+    <cd:command name="definemathoverextensible" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="top"/>
@@ -147,7 +147,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathoverextensible" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathoverextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathoverextensible"/>
         </cd:sequence>
@@ -156,7 +156,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathunderextensible" file="math-sty.mkvi">
+    <cd:command name="definemathunderextensible" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bottom"/>
@@ -167,7 +167,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathunderextensible" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathunderextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathunderextensible"/>
         </cd:sequence>
@@ -176,7 +176,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathdoubleextensible" file="math-sty.mkvi">
+    <cd:command name="definemathdoubleextensible" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="both"/>
@@ -188,7 +188,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathdoubleextensible" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathdoubleextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathdoubleextensible"/>
         </cd:sequence>
@@ -197,7 +197,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathovertextextensible" file="math-sty.mkvi">
+    <cd:command name="definemathovertextextensible" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bothtext"/>
@@ -207,7 +207,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathovertextextensible" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathovertextextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathovertextextensible"/>
         </cd:sequence>
@@ -217,7 +217,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathundertextextensible" file="math-sty.mkvi">
+    <cd:command name="definemathundertextextensible" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bothtext"/>
@@ -227,7 +227,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathundertextextensible" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathundertextextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathundertextextensible"/>
         </cd:sequence>
@@ -237,7 +237,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathtriplet" file="math-sty.mkvi">
+    <cd:command name="definemathtriplet" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -245,7 +245,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtriplet" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathtriplet" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathtriplet"/>
         </cd:sequence>
@@ -257,7 +257,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtriplet" file="math-stc.mkvi">
+    <cd:command name="mathtriplet" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text-optional"/>
@@ -266,7 +266,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrel"  file="math-stc.mkvi">
+    <cd:command name="xrel" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -281,7 +281,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xequal"  file="math-stc.mkvi">
+    <cd:command name="xequal" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -296,7 +296,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xleftarrow"  file="math-stc.mkvi">
+    <cd:command name="xleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -311,7 +311,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrightarrow"  file="math-stc.mkvi">
+    <cd:command name="xrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -326,7 +326,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xleftrightarrow"  file="math-stc.mkvi">
+    <cd:command name="xleftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -341,7 +341,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xLeftarrow"  file="math-stc.mkvi">
+    <cd:command name="xLeftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -356,7 +356,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xRightarrow"  file="math-stc.mkvi">
+    <cd:command name="xRightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -371,7 +371,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xLeftrightarrow"  file="math-stc.mkvi">
+    <cd:command name="xLeftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -386,7 +386,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtwoheadleftarrow"  file="math-stc.mkvi">
+    <cd:command name="xtwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -401,7 +401,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtwoheadrightarrow"  file="math-stc.mkvi">
+    <cd:command name="xtwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -416,7 +416,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xmapsto"  file="math-stc.mkvi">
+    <cd:command name="xmapsto" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -431,7 +431,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xhookleftarrow"  file="math-stc.mkvi">
+    <cd:command name="xhookleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -446,7 +446,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xhookrightarrow"  file="math-stc.mkvi">
+    <cd:command name="xhookrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -461,7 +461,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xleftharpoondown"  file="math-stc.mkvi">
+    <cd:command name="xleftharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -476,7 +476,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xleftharpoonup"  file="math-stc.mkvi">
+    <cd:command name="xleftharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -491,7 +491,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrightharpoondown"  file="math-stc.mkvi">
+    <cd:command name="xrightharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -506,7 +506,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrightharpoonup"  file="math-stc.mkvi">
+    <cd:command name="xrightharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -521,7 +521,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrightoverleftarrow"  file="math-stc.mkvi">
+    <cd:command name="xrightoverleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -536,7 +536,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xleftrightharpoons"  file="math-stc.mkvi">
+    <cd:command name="xleftrightharpoons" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -551,7 +551,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrightleftharpoons"  file="math-stc.mkvi">
+    <cd:command name="xrightleftharpoons" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -566,7 +566,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtriplerel"  file="math-stc.mkvi">
+    <cd:command name="xtriplerel" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -581,7 +581,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mrel"  file="math-stc.mkvi">
+    <cd:command name="mrel" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -596,7 +596,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mequal"  file="math-stc.mkvi">
+    <cd:command name="mequal" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -611,7 +611,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mleftarrow"  file="math-stc.mkvi">
+    <cd:command name="mleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -626,7 +626,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mrightarrow"  file="math-stc.mkvi">
+    <cd:command name="mrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -641,7 +641,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mleftrightarrow"  file="math-stc.mkvi">
+    <cd:command name="mleftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -656,7 +656,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mLeftarrow"  file="math-stc.mkvi">
+    <cd:command name="mLeftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -671,7 +671,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mRightarrow"  file="math-stc.mkvi">
+    <cd:command name="mRightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -686,7 +686,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mLeftrightarrow"  file="math-stc.mkvi">
+    <cd:command name="mLeftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -701,7 +701,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mtwoheadleftarrow"  file="math-stc.mkvi">
+    <cd:command name="mtwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -716,7 +716,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mtwoheadrightarrow"  file="math-stc.mkvi">
+    <cd:command name="mtwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -731,7 +731,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mmapsto"  file="math-stc.mkvi">
+    <cd:command name="mmapsto" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -746,7 +746,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mhookleftarrow"  file="math-stc.mkvi">
+    <cd:command name="mhookleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -761,7 +761,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mhookrightarrow"  file="math-stc.mkvi">
+    <cd:command name="mhookrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -776,7 +776,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mleftharpoondown"  file="math-stc.mkvi">
+    <cd:command name="mleftharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -791,7 +791,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mleftharpoonup"  file="math-stc.mkvi">
+    <cd:command name="mleftharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -806,7 +806,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mrightharpoondown"  file="math-stc.mkvi">
+    <cd:command name="mrightharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -821,7 +821,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mrightharpoonup"  file="math-stc.mkvi">
+    <cd:command name="mrightharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -836,7 +836,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mrightoverleftarrow"  file="math-stc.mkvi">
+    <cd:command name="mrightoverleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -851,7 +851,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mleftrightharpoons"  file="math-stc.mkvi">
+    <cd:command name="mleftrightharpoons" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -866,7 +866,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mrightleftharpoons"  file="math-stc.mkvi">
+    <cd:command name="mrightleftharpoons" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -881,7 +881,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mtriplerel"  file="math-stc.mkvi">
+    <cd:command name="mtriplerel" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -896,7 +896,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eleftarrowfill"  file="math-stc.mkvi">
+    <cd:command name="eleftarrowfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -911,7 +911,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="erightarrowfill"  file="math-stc.mkvi">
+    <cd:command name="erightarrowfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -926,7 +926,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eleftrightarrowfill"  file="math-stc.mkvi">
+    <cd:command name="eleftrightarrowfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -941,7 +941,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="etwoheadrightarrowfill"  file="math-stc.mkvi">
+    <cd:command name="etwoheadrightarrowfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -956,7 +956,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eleftharpoondownfill"  file="math-stc.mkvi">
+    <cd:command name="eleftharpoondownfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -971,7 +971,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eleftharpoonupfill"  file="math-stc.mkvi">
+    <cd:command name="eleftharpoonupfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -986,7 +986,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="erightharpoondownfill"  file="math-stc.mkvi">
+    <cd:command name="erightharpoondownfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1001,7 +1001,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="erightharpoonupfill"  file="math-stc.mkvi">
+    <cd:command name="erightharpoonupfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1016,7 +1016,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eoverbarfill"  file="math-stc.mkvi">
+    <cd:command name="eoverbarfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1031,7 +1031,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eunderbarfill"  file="math-stc.mkvi">
+    <cd:command name="eunderbarfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1046,7 +1046,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eoverbracefill"  file="math-stc.mkvi">
+    <cd:command name="eoverbracefill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1061,7 +1061,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eunderbracefill"  file="math-stc.mkvi">
+    <cd:command name="eunderbracefill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1076,7 +1076,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eoverparentfill"  file="math-stc.mkvi">
+    <cd:command name="eoverparentfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1091,7 +1091,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eunderparentfill"  file="math-stc.mkvi">
+    <cd:command name="eunderparentfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1106,7 +1106,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eoverbracketfill"  file="math-stc.mkvi">
+    <cd:command name="eoverbracketfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1121,7 +1121,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="eunderbracketfill"  file="math-stc.mkvi">
+    <cd:command name="eunderbracketfill" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1136,7 +1136,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="trel"  file="math-stc.mkvi">
+    <cd:command name="trel" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1151,7 +1151,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tequal"  file="math-stc.mkvi">
+    <cd:command name="tequal" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1166,7 +1166,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tmapsto"  file="math-stc.mkvi">
+    <cd:command name="tmapsto" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1181,7 +1181,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tleftarrow"  file="math-stc.mkvi">
+    <cd:command name="tleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1196,7 +1196,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="trightarrow"  file="math-stc.mkvi">
+    <cd:command name="trightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1211,7 +1211,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tleftrightarrow"  file="math-stc.mkvi">
+    <cd:command name="tleftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1226,7 +1226,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tLeftarrow"  file="math-stc.mkvi">
+    <cd:command name="tLeftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1241,7 +1241,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tRightarrow"  file="math-stc.mkvi">
+    <cd:command name="tRightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1256,7 +1256,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tLeftrightarrow"  file="math-stc.mkvi">
+    <cd:command name="tLeftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1271,7 +1271,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ttwoheadleftarrow"  file="math-stc.mkvi">
+    <cd:command name="ttwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1286,7 +1286,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ttwoheadrightarrow"  file="math-stc.mkvi">
+    <cd:command name="ttwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1301,7 +1301,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thookleftarrow"  file="math-stc.mkvi">
+    <cd:command name="thookleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1316,7 +1316,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thookrightarrow"  file="math-stc.mkvi">
+    <cd:command name="thookrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1331,7 +1331,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tleftharpoondown"  file="math-stc.mkvi">
+    <cd:command name="tleftharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1346,7 +1346,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tleftharpoonup"  file="math-stc.mkvi">
+    <cd:command name="tleftharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1361,7 +1361,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="trightharpoondown"  file="math-stc.mkvi">
+    <cd:command name="trightharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1376,7 +1376,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="trightharpoonup"  file="math-stc.mkvi">
+    <cd:command name="trightharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1391,7 +1391,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="trightoverleftarrow"  file="math-stc.mkvi">
+    <cd:command name="trightoverleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1406,7 +1406,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tleftrightharpoons"  file="math-stc.mkvi">
+    <cd:command name="tleftrightharpoons" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1421,7 +1421,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="trightleftharpoons"  file="math-stc.mkvi">
+    <cd:command name="trightleftharpoons" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1436,7 +1436,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ttriplerel"  file="math-stc.mkvi">
+    <cd:command name="ttriplerel" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1451,7 +1451,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cleftarrow"  file="math-stc.mkvi">
+    <cd:command name="cleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1466,7 +1466,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="crightarrow"  file="math-stc.mkvi">
+    <cd:command name="crightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1481,7 +1481,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="crightoverleftarrow"  file="math-stc.mkvi">
+    <cd:command name="crightoverleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <!--
                 <cd:keywords optional="yes">
@@ -1496,260 +1496,260 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underleftarrow" file="math-stc.mkvi">
+    <cd:command name="underleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underrightarrow" file="math-stc.mkvi">
+    <cd:command name="underrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underleftrightarrow" file="math-stc.mkvi">
+    <cd:command name="underleftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="undertwoheadleftarrow" file="math-stc.mkvi">
+    <cd:command name="undertwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="undertwoheadrightarrow" file="math-stc.mkvi">
+    <cd:command name="undertwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underleftharpoondown" file="math-stc.mkvi">
+    <cd:command name="underleftharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underleftharpoonup" file="math-stc.mkvi">
+    <cd:command name="underleftharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underrightharpoondown" file="math-stc.mkvi">
+    <cd:command name="underrightharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underrightharpoonup" file="math-stc.mkvi">
+    <cd:command name="underrightharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underbar" file="math-stc.mkvi">
+    <cd:command name="underbar" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underbrace" file="math-stc.mkvi">
+    <cd:command name="underbrace" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underparent" file="math-stc.mkvi">
+    <cd:command name="underparent" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underbracket" file="math-stc.mkvi">
+    <cd:command name="underbracket" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overleftarrow" file="math-stc.mkvi">
+    <cd:command name="overleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overrightarrow" file="math-stc.mkvi">
+    <cd:command name="overrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overleftrightarrow" file="math-stc.mkvi">
+    <cd:command name="overleftrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overtwoheadleftarrow" file="math-stc.mkvi">
+    <cd:command name="overtwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overtwoheadrightarrow" file="math-stc.mkvi">
+    <cd:command name="overtwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overleftharpoondown" file="math-stc.mkvi">
+    <cd:command name="overleftharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overleftharpoonup" file="math-stc.mkvi">
+    <cd:command name="overleftharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overrightharpoondown" file="math-stc.mkvi">
+    <cd:command name="overrightharpoondown" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overrightharpoonup" file="math-stc.mkvi">
+    <cd:command name="overrightharpoonup" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbar" file="math-stc.mkvi">
+    <cd:command name="overbar" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbrace" file="math-stc.mkvi">
+    <cd:command name="overbrace" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overparent" file="math-stc.mkvi">
+    <cd:command name="overparent" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbracket" file="math-stc.mkvi">
+    <cd:command name="overbracket" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doublebar" file="math-stc.mkvi">
+    <cd:command name="doublebar" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doublebrace" file="math-stc.mkvi">
+    <cd:command name="doublebrace" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doubleparent" file="math-stc.mkvi">
+    <cd:command name="doubleparent" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doublebracket" file="math-stc.mkvi">
+    <cd:command name="doublebracket" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbarunderbar" file="math-stc.mkvi">
+    <cd:command name="overbarunderbar" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbraceunderbrace" file="math-stc.mkvi">
+    <cd:command name="overbraceunderbrace" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overparentunderparent" file="math-stc.mkvi">
+    <cd:command name="overparentunderparent" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbracketunderbracket" file="math-stc.mkvi">
+    <cd:command name="overbracketunderbracket" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbartext"  file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbracetext"  file="math-stc.mkvi">
+    <cd:command name="overbartext" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overparenttext"  file="math-stc.mkvi">
+    <cd:command name="overbracetext" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overbrackettext"  file="math-stc.mkvi">
+    <cd:command name="overparenttext" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underbartext" file="math-stc.mkvi">
+    <cd:command name="overbrackettext" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underbracetext" file="math-stc.mkvi">
+    <cd:command name="underbartext" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underparenttext" file="math-stc.mkvi">
+    <cd:command name="underbracetext" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underbrackettext" file="math-stc.mkvi">
+    <cd:command name="underparenttext" category="mathematics" file="math-stc.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="underbrackettext" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -1762,7 +1762,7 @@
 
     <cd:command name="triplebond" file="math-stc.mkvi"/>
 
-    <cd:command name="definemathunstacked" file="math-stc.mkvi">
+    <cd:command name="definemathunstacked" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="wide"/>
@@ -1772,7 +1772,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathunstacked" generated="yes" variant="example" file="math-stc.mkvi">
+    <cd:command name="mathunstacked" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathunstacked"/>
         </cd:sequence>

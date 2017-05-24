@@ -4,52 +4,52 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="getdummyparameters" file="mult-aux.mkiv">
+    <cd:command name="getdummyparameters" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dummyparameter" file="mult-aux.mkiv">
+    <cd:command name="dummyparameter" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directdummyparameter" file="mult-aux.mkiv">
+    <cd:command name="directdummyparameter" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdummyparameter" file="mult-aux.mkiv">
+    <cd:command name="setdummyparameter" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letdummyparameter" file="mult-aux.mkiv">
+    <cd:command name="letdummyparameter" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usedummystyleandcolor" file="mult-aux.mkiv">
+    <cd:command name="usedummystyleandcolor" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usedummystyleparameter" file="mult-aux.mkiv">
+    <cd:command name="usedummystyleparameter" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usedummycolorparameter" file="mult-aux.mkiv">
+    <cd:command name="usedummycolorparameter" level="system" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>

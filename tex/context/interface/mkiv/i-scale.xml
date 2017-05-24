@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definescale" file="grph-trf.mkiv">
+    <cd:command name="definescale" level="style" file="grph-trf.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupscale" file="grph-trf.mkiv">
+    <cd:command name="setupscale" level="style" file="grph-trf.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -93,7 +93,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="scale" file="grph-trf.mkiv">
+    <cd:command name="scale" level="document" file="grph-trf.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">

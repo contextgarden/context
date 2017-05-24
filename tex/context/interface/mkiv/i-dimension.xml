@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="assigndimension" file="mult-dim.mkvi">
+    <cd:command name="assigndimension" level="system" file="mult-dim.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="small" prefix="cd:sign" method="none"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="assignalfadimension" file="mult-dim.mkvi">
+    <cd:command name="assignalfadimension" level="system" file="mult-dim.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="small"/>
@@ -36,7 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="assignwidth" file="mult-dim.mkvi">
+    <cd:command name="assignwidth" level="system" file="mult-dim.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="fit"/>
@@ -49,7 +49,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="assignvalue" file="mult-dim.mkvi">
+    <cd:command name="assignvalue" level="system" file="mult-dim.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="small"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupexternalsoundtracks" file="scrn-wid.mkvi">
+    <cd:command name="setupexternalsoundtracks" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="option">
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useexternalsoundtrack" file="scrn-wid.mkvi">
+    <cd:command name="useexternalsoundtrack" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>

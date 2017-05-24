@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineregister" file="strc-reg.mkiv">
+    <cd:command name="defineregister" level="style" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregister" variant="argument" file="strc-reg.mkiv">
+    <cd:command name="setupregister" variant="argument" level="style" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-number-list-optional"/>
@@ -47,6 +47,7 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="all"/>
+                    <cd:constant type="packed"/>
                 </cd:parameter>
                 <cd:parameter name="criterium">
                     <cd:constant type="local"/>
@@ -178,7 +179,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregister" file="strc-reg.mkiv">
+    <cd:command name="setupregister" level="style" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:name"/>
@@ -344,7 +345,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregisters" variant="argument" file="strc-reg.mkiv">
+    <cd:command name="setupregisters" variant="argument" level="style" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-number-list-optional"/>
@@ -354,7 +355,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregisters" file="strc-reg.mkiv">
+    <cd:command name="setupregisters" level="style" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:name"/>
@@ -366,7 +367,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="register" generated="yes" variant="instance" file="strc-reg.mkiv">
+    <cd:command name="register" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:instance value="register"/>
         </cd:sequence>
@@ -382,7 +383,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="register" generated="yes" variant="instance:ownnumber" file="strc-reg.mkiv">
+    <cd:command name="register" generated="yes" variant="instance:ownnumber" level="document" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:instance value="register"/>
         </cd:sequence>
@@ -399,7 +400,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="seeregister" generated="yes" variant="instance" file="strc-reg.mkiv">
+    <cd:command name="seeregister" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="see"/>
             <cd:instance value="register"/>
@@ -420,7 +421,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placeregister" generated="yes" variant="instance" file="strc-reg.mkiv">
+    <cd:command name="placeregister" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:instance value="register"/>
@@ -435,7 +436,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="completeregister" generated="yes" variant="instance" file="strc-reg.mkiv">
+    <cd:command name="completeregister" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="complete"/>
             <cd:instance value="register"/>
@@ -450,7 +451,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="setupregister" generated="yes" variant="instance" file="strc-reg.mkiv">
+    <cd:command name="setupregister" generated="yes" variant="instance" level="style" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="register"/>
@@ -657,7 +658,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentregisterpageuserdata" file="strc-reg.mkiv">
+    <cd:command name="currentregisterpageuserdata" level="system" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>

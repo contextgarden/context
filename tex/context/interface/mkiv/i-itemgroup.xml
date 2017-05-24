@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineitemgroup" file="strc-itm.mkvi">
+    <cd:command name="defineitemgroup" level="style" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupitemgroup" file="strc-itm.mkvi">
+    <cd:command name="setupitemgroup" level="style" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -193,12 +193,15 @@
                 <cd:parameter name="symcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
-                <cd:inherit name="setupcounter"/>
+                <cd:parameter name="grid">
+                    <cd:inherit name="definegridsnapping"/>
+                </cd:parameter>
+                 <cd:inherit name="setupcounter"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupitemgroup" variant="assignment" file="strc-itm.mkvi">
+    <cd:command name="setupitemgroup" variant="assignment" level="style" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -376,12 +379,15 @@
                 <cd:parameter name="symcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
-                <cd:inherit name="setupcounter"/>
+                <cd:parameter name="grid">
+                    <cd:inherit name="definegridsnapping"/>
+                </cd:parameter>
+                 <cd:inherit name="setupcounter"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupitemgroups" file="strc-itm.mkvi">
+    <cd:command name="setupitemgroups" level="style" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -393,7 +399,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupitemgroup" generated="yes" variant="instance" file="strc-itm.mkvi">
+    <cd:command name="setupitemgroup" generated="yes" variant="instance" level="style" file="strc-itm.mkvi">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="itemgroup"/>
@@ -415,7 +421,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="itemgroup" type="environment" generated="yes" variant="instance" file="strc-itm.mkvi">
+    <cd:command name="itemgroup" type="environment" generated="yes" variant="instance" level="document" file="strc-itm.mkvi">
         <cd:sequence>
             <cd:instance value="itemgroup"/>
         </cd:sequence>
@@ -432,7 +438,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="itemgroup" type="environment" file="strc-itm.mkvi">
+    <cd:command name="itemgroup" type="environment" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -444,15 +450,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="item" scope="itemgroup" file="strc-itm.mkvi">
+    <cd:command name="item" scope="itemgroup" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="noitem" scope="itemgroup" file="strc-itm.mkvi"/>
+    <cd:command name="noitem" scope="itemgroup" level="document" file="strc-itm.mkvi"/>
 
-    <cd:command name="itemtag" scope="itemgroup" file="strc-itm.mkvi">
+    <cd:command name="itemtag" scope="itemgroup" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
@@ -521,20 +527,20 @@
 
     -->
 
-    <cd:command name="item" type="environment" scope="itemgroup" file="strc-itm.mkvi">
+    <cd:command name="item" type="environment" scope="itemgroup" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="head" type="environment" scope="itemgroup" file="strc-itm.mkvi">
+    <cd:command name="head" type="environment" scope="itemgroup" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="specialitem" type="environment" variant="item" scope="itemgroup" file="strc-itm.mkvi">
+    <cd:command name="specialitem" type="environment" variant="item" scope="itemgroup" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="item" default="yes"/>
@@ -543,7 +549,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="specialitem" type="environment" variant="symbol" scope="itemgroup" file="strc-itm.mkvi">
+    <cd:command name="specialitem" type="environment" variant="symbol" scope="itemgroup" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="sym"/>
@@ -554,7 +560,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="specialitem" type="environment" variant="none" scope="itemgroup" file="strc-itm.mkvi">
+    <cd:command name="specialitem" type="environment" variant="none" scope="itemgroup" level="document" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="sub"/>

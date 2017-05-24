@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupinteractionscreen" file="scrn-pag.mkvi">
+    <cd:command name="setupinteractionscreen" level="style" file="scrn-pag.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">

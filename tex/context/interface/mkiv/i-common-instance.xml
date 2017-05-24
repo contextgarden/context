@@ -2,6 +2,50 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
+    <cd:define name="instance-attachment">
+        <cd:constant value="attachment"/>
+    </cd:define>
+
+    <cd:define name="instance-bar">
+        <cd:constant value="overbar"/>
+        <cd:constant value="underbar"/>
+        <cd:constant value="overstrike"/>
+        <cd:constant value="understrike"/>
+        <cd:constant value="overbars"/>
+        <cd:constant value="underbars"/>
+        <cd:constant value="overstrikes"/>
+        <cd:constant value="understrikes"/>
+        <cd:constant value="underrandom"/>
+        <cd:constant value="underrandoms"/>
+        <cd:constant value="underdash"/>
+        <cd:constant value="underdashes"/>
+        <cd:constant value="underdot"/>
+        <cd:constant value="underdots"/>
+        <cd:constant value="nobar"/>
+        <cd:constant value="hiddenbar"/>
+    </cd:define>
+
+    <cd:define name="instance-buffer">
+        <cd:constant value="hiding"/>
+    </cd:define>
+
+    <cd:define name="instance-comment">
+        <cd:constant value="comment"/>
+    </cd:define>
+
+    <cd:define name="instance-delimitedtext">
+        <cd:constant value="quotation"/>
+        <cd:constant value="quote"/>
+        <cd:constant value="blockquote"/>
+        <cd:constant value="speech"/>
+        <cd:constant value="aside"/>
+    </cd:define>
+
+    <cd:define name="instance-fittingpage">
+        <cd:constant value="TEXpage"/>
+        <cd:constant value="MPpage"/>
+    </cd:define>
+
     <cd:define name="instance-float">
         <cd:constant value="chemical"/>
         <cd:constant value="figure"/>
@@ -10,79 +54,170 @@
         <cd:constant value="graphic"/>
     </cd:define>
 
+    <cd:define name="instance-floatlist">
+        <cd:constant value="chemicals"/>
+        <cd:constant value="figures"/>
+        <cd:constant value="tables"/>
+        <cd:constant value="intermezzi"/>
+        <cd:constant value="graphics"/>
+    </cd:define>
+
+    <cd:define name="instance-formula">
+        <cd:constant value="sp"/>
+        <cd:constant value="sd"/>
+        <cd:constant value="mp"/>
+        <cd:constant value="md"/>
+    </cd:define>
+
+    <cd:define name="instance-fraction">
+        <cd:constant value="xfrac"/>
+        <cd:constant value="xxfrac"/>
+        <cd:constant value="frac"/>
+        <cd:constant value="sfrac"/>
+        <cd:constant value="dfrac"/>
+        <cd:constant value="binom"/>
+        <cd:constant value="dbinom"/>
+        <cd:constant value="tbinom"/>
+    </cd:define>
+
+    <cd:define name="instance-mathframed">
+        <cd:constant value="mframed"/>
+        <cd:constant value="inmframed"/>
+        <cd:constant value="mcframed"/>
+    </cd:define>
+
+    <cd:define name="instance-framedtext">
+        <cd:constant value="framedtext"/>
+    </cd:define>
+
+    <cd:define name="instance-framed">
+        <cd:constant value="unframed"/>
+        <cd:constant value="fitfieldframed"/>
+    </cd:define>
+
+    <cd:define name="instance-help">
+        <cd:constant value="helptext"/>
+    </cd:define>
+
     <cd:define name="instance-itemgroup">
         <cd:constant value="itemize"/>
     </cd:define>
 
-    <cd:define name="instance-labeltext">
-        <!-- tode -->
+    <cd:define name="instance-labelclass">
+        <cd:constant value="head"/>
+        <cd:constant value="label"/>
+        <cd:constant value="mathlabel"/>
+        <cd:constant value="taglabel"/>
+        <cd:constant value="unit"/>
+        <cd:constant value="operator"/>
+        <cd:constant value="prefix"/>
+        <cd:constant value="suffix"/>
+        <cd:constant value="btxlabel"/>
     </cd:define>
 
-    <cd:define name="instance-labelclass">
-        <!-- tode -->
+    <cd:define name="instance-labeltext">
+        <cd:constant value="head"/>
+        <cd:constant value="label"/>
+        <cd:constant value="mathlabel"/>
     </cd:define>
 
     <cd:define name="instance-lines">
-        <!-- tode -->
+        <cd:constant value="lines"/>
     </cd:define>
 
     <cd:define name="instance-combinedlist">
-        <!-- tode -->
+        <cd:constant value="content"/>
     </cd:define>
 
     <cd:define name="instance-low">
-        <!-- tode -->
+        <cd:constant value="unitslow"/>
     </cd:define>
 
     <cd:define name="instance-high">
-        <!-- tode -->
+        <cd:constant value="unitshigh"/>
     </cd:define>
 
     <cd:define name="instance-makeup">
-        <!-- tode -->
+        <cd:constant value="standard"/>
+        <cd:constant value="page"/>
+        <cd:constant value="text"/>
+        <cd:constant value="middle"/>
     </cd:define>
 
     <cd:define name="instance-margindata">
-        <!-- tode -->
+        <cd:constant value="inleftmargin"/>
+        <cd:constant value="inrightmargin"/>
+        <cd:constant value="inoutermargin"/>
+        <cd:constant value="ininnermargin"/>
+        <cd:constant value="inleftedge"/>
+        <cd:constant value="inrightedge"/>
+        <cd:constant value="inouteredge"/>
+        <cd:constant value="ininneredge"/>
+        <cd:constant value="atleftmargin"/>
+        <cd:constant value="atrightmargin"/>
+        <cd:constant value="inleft"/>
+        <cd:constant value="inright"/>
+        <cd:constant value="inouter"/>
+        <cd:constant value="ininner"/>
+        <cd:constant value="inmargin"/>
+        <cd:constant value="inother"/>
+        <cd:constant value="margintext"/>
+        <!--
+            <cd:constant value="marginword"/>
+            <cd:constant value="margintitle"/>
+            <cd:constant value="inothermargin"/>
+        -->
     </cd:define>
 
     <cd:define name="instance-mathalignment">
-        <!-- tode -->
+        <cd:constant value="align"/>
+        <cd:constant value="mathalignment"/>
     </cd:define>
 
     <cd:define name="instance-mathcases">
-        <!-- tode -->
+        <cd:constant value="cases"/>
+        <cd:constant value="mathcases"/>
     </cd:define>
 
     <cd:define name="instance-mathmatrix">
-        <!-- tode -->
+        <cd:constant value="matrix"/>
+        <cd:constant value="mathmatrix"/>
     </cd:define>
 
     <cd:define name="instance-mixedcolumns">
-        <!-- tode -->
+        <cd:constant value="itemgroupcolumns"/>
+        <cd:constant value="boxedcolumns"/>
     </cd:define>
 
     <cd:define name="instance-note">
-        <!-- tode -->
+        <cd:constant value="footnote"/>
+        <cd:constant value="endnote"/>
     </cd:define>
 
     <cd:define name="instance-linenote">
-        <!-- tode -->
+        <cd:constant value="linenote"/>
     </cd:define>
 
     <cd:define name="instance-pairedbox">
-        <!-- tode -->
+        <cd:constant value="legend"/>
     </cd:define>
 
     <cd:define name="instance-register">
-        <!-- tode -->
+        <cd:constant value="index"/>
     </cd:define>
 
     <cd:define name="instance-script">
-        <!-- tode -->
+        <cd:constant value="hangul"/>
+        <cd:constant value="hanzi"/>
+        <cd:constant value="nihongo"/>
+        <cd:constant value="ethiopic"/>
+        <cd:constant value="thai"/>
+        <cd:constant value="latin"/>
+        <cd:constant value="test"/>
     </cd:define>
 
     <cd:define name="instance-section">
+        <cd:constant value="part"/>
         <cd:constant value="chapter"/>
         <cd:constant value="section"/>
         <cd:constant value="subsection"/>
@@ -98,43 +233,53 @@
     </cd:define>
 
     <cd:define name="instance-sectionblock">
-        <!-- tode -->
+        <cd:constant value="frontmatter"/>
+        <cd:constant value="bodymatter"/>
+        <cd:constant value="appendices"/>
+        <cd:constant value="backmatter"/>
     </cd:define>
 
     <cd:define name="instance-shift">
-        <!-- tode -->
+        <cd:constant value="shiftup"/>
+        <cd:constant value="shiftdown"/>
     </cd:define>
 
     <cd:define name="instance-sort">
-        <!-- tode -->
+        <cd:constant value="logo"/>
     </cd:define>
 
     <cd:define name="instance-sortlist">
-        <!-- tode -->
+        <cd:constant value="logos"/>
     </cd:define>
 
     <cd:define name="instance-synonym">
-        <!-- tode -->
+        <cd:constant value="abbreviation"/>
     </cd:define>
 
     <cd:define name="instance-synonymlist">
-        <!-- tode -->
+        <cd:constant value="abbreviations"/>
     </cd:define>
 
     <cd:define name="instance-tabulate">
-        <!-- tode -->
+        <cd:constant value="legend"/>
+        <cd:constant value="fact"/>
     </cd:define>
 
     <cd:define name="instance-tooltip">
-        <!-- tode -->
+        <cd:constant value="tooltip"/>
     </cd:define>
 
     <cd:define name="instance-unit">
-        <!-- tode -->
+        <cd:constant value="unit"/>
     </cd:define>
 
     <cd:define name="instance-typing">
-        <!-- tode -->
+        <cd:constant value="typing"/>
+        <cd:constant value="LUA"/>
+        <cd:constant value="MP"/>
+        <cd:constant value="PARSEDXML"/>
+        <cd:constant value="TEX"/>
+        <cd:constant value="XML"/>
     </cd:define>
 
 </cd:interface>

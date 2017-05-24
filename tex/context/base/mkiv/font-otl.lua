@@ -768,6 +768,7 @@ otf.coverup = {
         multiple          = justset,
         kern              = justset,
         pair              = justset,
+        single            = justset,
         ligature          = function(coverage,unicode,ligature)
             local first = ligature[1]
             local tree  = coverage[first]

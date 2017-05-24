@@ -4,9 +4,9 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="currentoutputstream" file="page-str.mkiv"/>
+    <cd:command name="currentoutputstream" level="system" file="page-str.mkiv"/>
 
-    <cd:command name="ifinoutputstream" file="page-str.mkiv">
+    <cd:command name="ifinoutputstream" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="string-true"/>
             <cd:delimiter name="else"/>
@@ -15,57 +15,57 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="enableoutputstream" file="page-str.mkiv">
+    <cd:command name="enableoutputstream" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="disableoutputstream" file="page-str.mkiv"/>
+    <cd:command name="disableoutputstream" level="system" file="page-str.mkiv"/>
 
-    <cd:command name="outputstream" type="environment" file="page-str.mkiv">
+    <cd:command name="outputstream" type="environment" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushoutputstream" file="page-str.mkiv">
+    <cd:command name="flushoutputstream" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="outputstreambox" file="page-str.mkiv">
+    <cd:command name="outputstreambox" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="outputstreamcopy" file="page-str.mkiv">
+    <cd:command name="outputstreamcopy" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="outputstreamunvbox" file="page-str.mkiv">
+    <cd:command name="outputstreamunvbox" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="outputstreamunvcopy" file="page-str.mkiv">
+    <cd:command name="outputstreamunvcopy" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synchronizeoutputstreams" file="page-str.mkiv">
+    <cd:command name="synchronizeoutputstreams" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pushoutputstream" file="page-str.mkiv">
+    <cd:command name="pushoutputstream" level="system" file="page-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>

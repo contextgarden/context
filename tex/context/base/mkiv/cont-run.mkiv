@@ -13,9 +13,27 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Runner}
 
-\unprotect
-
 \registerctxluafile{node-syn}{1.001}
 \registerctxluafile{cont-run}{1.001}
+
+% \enabletrackers[system.synctex.visualize]
+% \enabletrackers[system.synctex.xml]
+% \enabledirectives[system.synctex.details]
+% \setupsynctex[state=start]
+
+\unprotect
+
+\let\synctexsetfilename  \clf_synctexsetfilename
+\let\synctexresetfilename\clf_synctexresetfilename
+\let\synctexblockfilename\clf_synctexblockfilename
+
+\unexpanded\def\setupsynctex[#1]%
+  {\begingroup
+   \getdummyparameters[\c!state=,#1]%
+   \doifelse{\dummyparameter\c!state}\v!start\clf_synctexenable\clf_synctexdisable
+   \endgroup}
+
+\unexpanded\def\blocksynctexfile[#1]%
+  {\processcommacommand{#1}\synctexblockfilename}
 
 \protect \endinput

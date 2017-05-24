@@ -51,8 +51,6 @@ local report = application.report
 
 -- private option --noluc for testing errors in the stub
 
-local instance   = resolvers.instance
-
 local pattern    = environment.arguments["pattern"]  or nil
 local fileformat = environment.arguments["format"]   or "" -- nil ?
 local allresults = environment.arguments["all"]      or false
@@ -108,7 +106,7 @@ elseif pattern then -- brrr
     resolvers.load()
     resolvers.dowithfilesandreport(resolvers.findfiles, { pattern }, fileformat, allresults)
 elseif environment.arguments["generate"] then
-    instance.renewcache = true
+    resolvers.renewcache()
     trackers.enable("resolvers.locating")
     resolvers.load()
 elseif environment.arguments["make"] or environment.arguments["ini"] or environment.arguments["compile"] then

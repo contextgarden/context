@@ -4,104 +4,104 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="ruledhbox" file="trac-vis.mkiv">
+    <cd:command name="ruledhbox" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledvbox" file="trac-vis.mkiv">
+    <cd:command name="ruledvbox" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledvtop" file="trac-vis.mkiv">
+    <cd:command name="ruledvtop" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledtopv" file="trac-vis.mkiv">
+    <cd:command name="ruledtopv" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledhpack" file="trac-vis.mkiv">
+    <cd:command name="ruledhpack" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledvpack" file="trac-vis.mkiv">
+    <cd:command name="ruledvpack" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledtpack" file="trac-vis.mkiv">
+    <cd:command name="ruledtpack" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruledmbox" file="trac-vis.mkiv">
+    <cd:command name="ruledmbox" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxr" file="trac-vis.mkiv">
-        <cd:arguments>
-            <cd:resolve name="string-boxoptions"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="filledhboxg" file="trac-vis.mkiv">
+    <cd:command name="filledhboxr" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxb" file="trac-vis.mkiv">
+    <cd:command name="filledhboxg" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxc" file="trac-vis.mkiv">
+    <cd:command name="filledhboxb" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxm" file="trac-vis.mkiv">
+    <cd:command name="filledhboxc" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxy" file="trac-vis.mkiv">
+    <cd:command name="filledhboxm" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filledhboxk" file="trac-vis.mkiv">
+    <cd:command name="filledhboxy" level="system" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxk" level="system" file="trac-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>

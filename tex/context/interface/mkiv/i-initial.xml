@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinitial" file="typo-drp.mkiv">
+    <cd:command name="defineinitial" category="fonts" level="style" file="typo-drp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinitial" file="typo-drp.mkiv">
+    <cd:command name="setupinitial" category="fonts" level="style" file="typo-drp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -63,13 +63,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeinitial" file="typo-drp.mkiv">
+    <cd:command name="placeinitial" category="fonts" file="typo-drp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setinitial" file="typo-drp.mkiv">
+    <cd:command name="setinitial" category="fonts" file="typo-drp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">

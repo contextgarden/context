@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinteractionbar" file="scrn-bar.mkvi">
+    <cd:command name="defineinteractionbar" level="style" file="scrn-bar.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteractionbar" file="scrn-bar.mkvi">
+    <cd:command name="setupinteractionbar" level="style" file="scrn-bar.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">

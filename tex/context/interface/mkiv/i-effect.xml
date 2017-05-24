@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineeffect" file="attr-eff.mkiv">
+    <cd:command name="defineeffect" level="style" file="attr-eff.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupeffect" file="attr-eff.mkiv">
+    <cd:command name="setupeffect" level="style" file="attr-eff.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -40,19 +40,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="effect" type="environment" file="attr-eff.mkiv">
+    <cd:command name="effect" type="environment" level="document" file="attr-eff.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="effect" type="environment" generated="yes" variant="example" file="attr-eff.mkiv">
+    <cd:command name="effect" type="environment" generated="yes" variant="example" level="document" file="attr-eff.mkiv">
         <cd:sequence>
             <cd:variable value="effect"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="effect" file="attr-eff.mkiv">
+    <cd:command name="effect" level="document" file="attr-eff.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:content/>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<!--
+
+    Right from the start the ConTeXt user interface was sytematic enough to be described using a
+    common framework. First it was done in the TeX language at the top of the files where features
+    were implemented. Later we switched to XML where all definitions were moved to one file. That
+    file could be translated to different user interfaces.
+
+    The current XML files are a follow up on this. Instead of one big file we now have many small
+    files, and support for shared (XML) definitions has been extended. Many more commands are defined,
+    including those considered low level. There are no longer translated files needed but you can
+    still generate them.
+
+    These files can be used to generate overviews (see x-setups-*.mkiv) but also for generating
+    information for text editors. We also use them for the (local) help service.
+
+    Wolfgang Schuster & Hans Hagen
+
+-->
+
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:interfacefile filename="i-common-definitions.xml"/>
+
+    <cd:interfacefile filename="i-chart.xml"/>
+    <cd:interfacefile filename="i-database.xml"/>
+    <cd:interfacefile filename="i-hemistich.xml"/>
+    <cd:interfacefile filename="i-ipsum.xml"/>
+    <cd:interfacefile filename="i-scite.xml"/>
+    <cd:interfacefile filename="i-setup.xml"/>
+    <cd:interfacefile filename="i-spreadsheet.xml"/>
+    <cd:interfacefile filename="i-steps.xml"/>
+    <cd:interfacefile filename="i-translate.xml"/>
+    <cd:interfacefile filename="i-visual.xml"/>
+
+</cd:interface>

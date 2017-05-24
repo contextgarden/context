@@ -17,6 +17,7 @@ local lpegmatch = lpeg.match
 local P, S, C, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs
 local patterns = lpeg.patterns
 local setmetatableindex = table.setmetatableindex
+local formatters = string.formatters
 
 local tex, xml = tex, xml
 local lowerchars, upperchars, lettered = characters.lower, characters.upper, characters.lettered
@@ -481,13 +482,24 @@ end
 
 xml.originalload = xml.originalload or xml.load
 
-local noffiles, nofconverted = 0, 0
+local noffiles     = 0
+local nofconverted = 0
+local linenumbers  = false
+
+-- directives.register("lxml.linenumbers", function(v)
+--     linenumbers = v
+-- end)
+
+directives.register("system.synctex.xml",function(v)
+    linenumbers = v
+end)
 
 function xml.load(filename,settings)
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
     settings = settings or { }
+    settings.linenumbers = linenumbers
     settings.currentresource = filename
     local xmltable = xml.convert((ok and data) or "",settings)
     settings.currentresource = nil
@@ -528,6 +540,7 @@ local function lxmlconvert(id,data,compress,currentresource)
         resolve_entities            = function(str,ent) return entityconverter(id,str,ent) end,
         currentresource             = tostring(currentresource or id),
         preprocessor                = lxml.preprocessor,
+        linenumbers                 = linenumbers,
     }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
@@ -545,7 +558,8 @@ function lxml.load(id,filename,compress)
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
-    local xmltable = lxmlconvert(id,(ok and data) or "",compress,format("id: %s, file: %s",id,filename))
+--     local xmltable = lxmlconvert(id,(ok and data) or "",compress,formatters["id: %s, file: %s"](id,filename))
+local xmltable = lxmlconvert(id,(ok and data) or "",compress,filename)
     stoptiming(xml)
     lxml.store(id,xmltable,filename)
     return xmltable, filename
@@ -599,7 +613,8 @@ function lxml.include(id,pattern,attribute,options)
                 report_lxml("including file %a",filename)
             end
             noffiles, nofconverted = noffiles + 1, nofconverted + 1
-            return resolvers.loadtexfile(filename) or ""
+            return resolvers.loadtexfile(filename) or "",
+                resolvers.findtexfile(filename) or ""
         else
             return ""
         end
@@ -694,7 +709,37 @@ local default_element_handler = xml.gethandlers("verbose").functions["@el@"]
 --     return v
 -- end)
 
+local setfilename = false
+local trace_name  = false
+local report_name = logs.reporter("lxml")
+
+directives.register("system.synctex.xml",function(v)
+    if v then
+        setfilename = luatex.synctex.setfilename
+    else
+        setfilename = false
+    end
+end)
+
+local function syncfilename(e,where)
+    local cf = e.cf
+    if cf then
+        local cl = e.cl or 1
+        if trace_name then
+            report_name("set filename, case %a, tag %a, file %a, line %a",where,e.tg,cf,cl)
+        end
+        setfilename(cf,cl);
+    end
+end
+
+trackers.register("system.synctex.xml",function(v)
+    trace_name = v
+end)
+
 local function tex_element(e,handlers)
+    if setfilename then
+        syncfilename(e,"element")
+    end
     local command = e.command
     if command == nil then
         default_element_handler(e,handlers)
@@ -895,11 +940,14 @@ function lxml.setaction(id,pattern,action)
     end
 end
 
-local function sprint(root) -- check rawroot usage
+local function sprint(root,p) -- check rawroot usage
     if root then
         local tr = type(root)
         if tr == "string" then -- can also be result of lpath
          -- rawroot = false -- ?
+            if setfilename and p then
+                syncfilename(p,"sprint s")
+            end
             root = xmlunspecialized(root)
             lpegmatch(xmltextcapture,root)
         elseif tr == "table" then
@@ -910,11 +958,31 @@ local function sprint(root) -- check rawroot usage
                 root = xmldespecialized(xmltostring(root))
                 lpegmatch(xmltextcapture,root) -- goes to toc
             else
+if setfilename and p then -- and not root.cl
+    syncfilename(p,"sprint t")
+end
                 xmlserialize(root,xmltexhandler)
             end
         end
     end
 end
+
+-- local function tprint(root) -- we can move sprint inline
+--     local tr = type(root)
+--     if tr == "table" then
+--         local n = #root
+--         if n == 0 then
+--             -- skip
+--         else
+--             for i=1,n do
+--                 sprint(root[i])
+--             end
+--         end
+--     elseif tr == "string" then
+--         root = xmlunspecialized(root)
+--         lpegmatch(xmltextcapture,root)
+--     end
+-- end
 
 local function tprint(root) -- we can move sprint inline
     local tr = type(root)
@@ -924,7 +992,24 @@ local function tprint(root) -- we can move sprint inline
             -- skip
         else
             for i=1,n do
-                sprint(root[i])
+             -- sprint(root[i]) -- inlined because of filename:
+                local ri = root[i]
+                local tr = type(ri)
+                if tr == "string" then -- can also be result of lpath
+                    if setfilename then
+                        syncfilename(ri,"tprint")
+                    end
+                    root = xmlunspecialized(ri)
+                    lpegmatch(xmltextcapture,ri)
+                elseif tr == "table" then
+                    if forceraw then
+                        rawroot = ri
+                        root = xmldespecialized(xmltostring(ri))
+                        lpegmatch(xmltextcapture,ri) -- goes to toc
+                    else
+                        xmlserialize(ri,xmltexhandler)
+                    end
+                end
             end
         end
     elseif tr == "string" then
@@ -942,6 +1027,9 @@ local function cprint(root) -- content
         root = xmlunspecialized(root)
         lpegmatch(xmltextcapture,root)
     else
+        if setfilename then
+            syncfilename(root,"cprint")
+        end
         local rootdt = root.dt
         if forceraw then
             rawroot = root
@@ -961,7 +1049,11 @@ xml.cprint = cprint local xmlcprint = cprint  -- calls ct  mathml  -> will be re
 -- now we can flush
 
 function lxml.main(id)
-    xmlserialize(getid(id),xmltexhandler) -- the real root (@rt@)
+    local root = getid(id)
+--     if setfilename then
+--         syncfilename(root,"main")
+--     end
+    xmlserialize(root,xmltexhandler) -- the real root (@rt@)
 end
 
 -- -- lines (untested)
@@ -1932,7 +2024,7 @@ function lxml.flush(id)
     if e then
         local dt = e.dt
         if dt then
-            xmlsprint(dt)
+            xmlsprint(dt,e)
         end
     end
 end
@@ -1954,7 +2046,7 @@ function lxml.snippet(id,i)
         if dt then
             local dti = dt[i]
             if dti then
-                xmlsprint(dti)
+                xmlsprint(dti,e)
             end
         end
     end
@@ -2086,12 +2178,13 @@ function lxml.strip(id,pattern,nolines,anywhere)
 end
 
 function lxml.stripped(id,pattern,nolines)
-    local str = xmltext(getid(id),pattern) or ""
+    local root = getid(id)
+    local str = xmltext(root,pattern) or ""
     str = gsub(str,"^%s*(.-)%s*$","%1")
     if nolines then
         str = gsub(str,"%s+"," ")
     end
-    xmlsprint(str)
+    xmlsprint(str,root)
 end
 
 function lxml.delete(id,pattern)

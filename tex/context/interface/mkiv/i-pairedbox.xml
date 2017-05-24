@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definepairedbox" file="pack-com.mkiv">
+    <cd:command name="definepairedbox" level="style" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppairedbox" file="pack-com.mkiv">
+    <cd:command name="setuppairedbox" level="style" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -70,7 +70,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placepairedbox" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -81,7 +81,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placepairedbox" type="environment" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" type="environment" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -90,7 +90,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppairedbox" generated="yes" variant="instance" file="pack-com.mkiv">
+    <cd:command name="setuppairedbox" generated="yes" variant="instance" level="style" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="pairedbox"/>
@@ -105,7 +105,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" generated="yes" variant="instance" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" generated="yes" variant="instance" level="document" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:instance value="pairedbox"/>
@@ -122,7 +122,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" type="environment" generated="yes" variant="instance" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" type="environment" generated="yes" variant="instance" level="document" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:instance value="pairedbox"/>

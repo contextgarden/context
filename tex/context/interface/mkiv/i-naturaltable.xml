@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupTABLE" file="tabl-ntb.mkiv">
+    <cd:command name="setupTABLE" category="tables" level="style" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="r"/>
@@ -123,7 +123,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLE" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TABLE" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -131,7 +131,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TD" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TD" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="nx">
@@ -160,7 +160,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TR" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TR" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -168,7 +168,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TC" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TC" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="bTD"/>
@@ -176,7 +176,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TX" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TX" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="bTD"/>
@@ -184,7 +184,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TY" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TY" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -192,7 +192,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TH" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TH" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="bTD"/>
@@ -200,7 +200,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TN" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TN" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="bTD"/>
@@ -208,7 +208,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEhead" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEhead" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -216,7 +216,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEnext" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEnext" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -224,7 +224,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEbody" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEbody" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -232,7 +232,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEfoot" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEfoot" type="environment" begin="b" end="e" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -240,7 +240,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineTABLEsetup" file="tabl-ntb.mkiv">
+    <cd:command name="defineTABLEsetup" category="tables" level="style" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -249,19 +249,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TDs" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TDs" type="environment" begin="b" end="e" category="tables" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TRs" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+    <cd:command name="TRs" type="environment" begin="b" end="e" category="tables" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLE" type="environment" file="tabl-ntb.mkiv">
+    <cd:command name="TABLE" type="environment" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -269,7 +269,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEhead" type="environment" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEhead" type="environment" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -277,7 +277,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEnext" type="environment" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEnext" type="environment" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -285,7 +285,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEbody" type="environment" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEbody" type="environment" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>
@@ -293,7 +293,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEfoot" type="environment" file="tabl-ntb.mkiv">
+    <cd:command name="TABLEfoot" type="environment" category="tables" level="document" file="tabl-ntb.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupTABLE"/>

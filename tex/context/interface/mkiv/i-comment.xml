@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecomment" file="scrn-wid.mkvi">
+    <cd:command name="definecomment" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcomment" file="scrn-wid.mkvi">
+    <cd:command name="setupcomment" level="style" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -87,13 +87,19 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="space">
+                    <cd:constant type="yes"/>
+                </cd:parameter>
+                <cd:parameter name="buffer">
+                    <cd:constant type="cd:buffer"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="comment" generated="yes" variant="example" file="scrn-wid.mkvi">
+    <cd:command name="comment" generated="yes" variant="instance" level="document" file="scrn-wid.mkvi">
         <cd:sequence>
-            <cd:variable value="comment"/>
+            <cd:instance value="comment"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-text-optional"/>
@@ -103,13 +109,13 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="comment"/>
+            <cd:resolve name="instance-comment"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="comment" type="environment" generated="yes" variant="example" file="scrn-wid.mkvi">
+    <cd:command name="comment" type="environment" generated="yes" variant="instance" level="document" file="scrn-wid.mkvi">
         <cd:sequence>
-            <cd:variable value="comment"/>
+            <cd:instance value="comment"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-text-optional"/>
@@ -118,29 +124,33 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="comment"/>
+            <cd:resolve name="instance-comment"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placecomments" file="scrn-wid.mkvi"/>
+    <cd:command name="placecomments" level="document" file="scrn-wid.mkvi"/>
 
-    <cd:command name="comment" file="scrn-wid.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-text-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupcomment"/>
-            </cd:assignments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="comment" type="environment" file="scrn-wid.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-text-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupcomment"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="comment" file="scrn-wid.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-text-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupcomment"/>
+                </cd:assignments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="comment" type="environment" file="scrn-wid.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-text-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupcomment"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

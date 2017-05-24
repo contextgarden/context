@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definedescription" file="strc-des.mkvi">
+    <cd:command name="definedescription" level="style" file="strc-des.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupdescription" file="strc-des.mkvi">
+    <cd:command name="setupdescription" level="style" file="strc-des.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -102,6 +102,9 @@
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="xml"/>
                 </cd:parameter>
+                <cd:parameter name="referenceprefix">
+                    <cd:resolve name="value-referenceprefix"/>
+                </cd:parameter>
                 <cd:parameter name="sample">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
@@ -138,7 +141,7 @@
 
     -->
 
-    <cd:command name="description" type="environment" generated="yes" variant="example" file="strc-des.mkvi">
+    <cd:command name="description" type="environment" generated="yes" variant="example" level="document" file="strc-des.mkvi">
         <cd:sequence>
             <cd:variable value="description"/>
         </cd:sequence>
@@ -147,7 +150,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="description" type="environment" generated="yes" variant="example:title" file="strc-des.mkvi">
+    <cd:command name="description" type="environment" generated="yes" variant="example:title" level="document" file="strc-des.mkvi">
         <cd:sequence>
             <cd:variable value="description"/>
         </cd:sequence>
@@ -157,7 +160,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="description" generated="yes" variant="example" file="strc-des.mkvi">
+    <cd:command name="description" generated="yes" variant="example" level="document" file="strc-des.mkvi">
         <cd:sequence>
             <cd:variable value="description"/>
         </cd:sequence>

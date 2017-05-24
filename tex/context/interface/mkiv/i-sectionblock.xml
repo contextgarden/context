@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definesectionblock" file="strc-sbe.mkiv">
+    <cd:command name="definesectionblock" level="style" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsectionblock" file="strc-sbe.mkiv">
+    <cd:command name="setupsectionblock" level="style" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -46,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sectionblock" type="environment" file="strc-sbe.mkiv">
+    <cd:command name="sectionblock" type="environment" level="document" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -58,7 +58,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sectionblock" type="environment" generated="yes" variant="instance" file="strc-sbe.mkiv">
+    <cd:command name="sectionblock" type="environment" generated="yes" variant="instance" level="document" file="strc-sbe.mkiv">
         <cd:sequence>
             <cd:instance value="sectionblock"/>
         </cd:sequence>
@@ -75,7 +75,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="sectionblockenvironment" type="environment" file="strc-sbe.mkiv">
+    <cd:command name="sectionblockenvironment" type="environment" level="style" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>

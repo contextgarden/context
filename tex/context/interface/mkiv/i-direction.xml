@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupdirections" file="typo-dir.mkiv">
+    <cd:command name="setupdirections" level="style" file="typo-dir.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="bidi">
@@ -48,7 +48,7 @@
 
     <cd:command name="showdirsinmargin" file="supp-dir.mkiv"/>
 
-    <cd:command name="istltdir" file="supp-dir.mkiv">
+    <cd:command name="istltdir" level="system" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="none">
                 <cd:constant type="TLT"/>
@@ -57,7 +57,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="istrtdir" file="supp-dir.mkiv">
+    <cd:command name="istrtdir" level="system" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="none">
                 <cd:constant type="TLT"/>

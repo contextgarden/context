@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineitems" file="typo-itm.mkiv">
+    <cd:command name="defineitems" level="style" file="typo-itm.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupitems" file="typo-itm.mkiv">
+    <cd:command name="setupitems" level="style" file="typo-itm.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -73,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="items" file="typo-itm.mkiv">
+    <cd:command name="items" level="document" file="typo-itm.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupitems"/>

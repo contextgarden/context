@@ -905,9 +905,11 @@ function scripts.context.run(ctxdata,filename)
                     --
                 end
                 --
-                if a_synctex == "context" then
-                    renamefile(fileaddsuffix(jobname,"syncctx"),fileaddsuffix(jobname,"synctex"))
+                local syncctx = fileaddsuffix(jobname,"syncctx")
+                if a_synctex == "context" or validfile(syncctx) then
+                    renamefile(syncctx,fileaddsuffix(jobname,"synctex"))
                 end
+                --
                 if a_arrange then
                     --
                     c_flags.final      = true
@@ -1173,7 +1175,7 @@ do -- more or less copied from mtx-plain.lua:
 end
 
 function scripts.context.generate()
-    resolvers.instance.renewcache = true
+    resolvers.renewcache()
     trackers.enable("resolvers.locating")
     resolvers.load()
 end

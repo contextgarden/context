@@ -4,211 +4,211 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="numbers" file="core-con.mkiv">
+    <cd:command name="numbers" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Numbers" file="core-con.mkiv">
+    <cd:command name="Numbers" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="romannumerals" file="core-con.mkiv">
+    <cd:command name="romannumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Romannumerals" file="core-con.mkiv">
+    <cd:command name="Romannumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="abjadnumerals" file="core-con.mkiv">
+    <cd:command name="abjadnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="abjadnodotnumerals" file="core-con.mkiv">
+    <cd:command name="abjadnodotnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="abjadnaivenumerals" file="core-con.mkiv">
+    <cd:command name="abjadnaivenumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="languagecharacters" file="core-con.mkiv">
+    <cd:command name="languagecharacters" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="languageCharacters" file="core-con.mkiv">
+    <cd:command name="languageCharacters" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alphabeticnumerals" file="core-con.mkiv">
+    <cd:command name="alphabeticnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Alphabeticnumerals" file="core-con.mkiv">
+    <cd:command name="Alphabeticnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thainumerals" file="core-con.mkiv">
+    <cd:command name="thainumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="devanagarinumerals" file="core-con.mkiv">
+    <cd:command name="devanagarinumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gurmurkhinumerals" file="core-con.mkiv">
+    <cd:command name="gurmurkhinumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gujaratinumerals" file="core-con.mkiv">
+    <cd:command name="gujaratinumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tibetannumerals" file="core-con.mkiv">
+    <cd:command name="tibetannumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="greeknumerals" file="core-con.mkiv">
+    <cd:command name="greeknumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Greeknumerals" file="core-con.mkiv">
+    <cd:command name="Greeknumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="arabicnumerals" file="core-con.mkiv">
+    <cd:command name="arabicnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="persiannumerals" file="core-con.mkiv">
+    <cd:command name="persiannumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="arabicdecimals" file="core-con.mkiv">
+    <cd:command name="arabicdecimals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="persiandecimals" file="core-con.mkiv">
+    <cd:command name="persiandecimals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="arabicexnumerals" file="core-con.mkiv">
+    <cd:command name="arabicexnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="koreannumerals" file="core-con.mkiv">
+    <cd:command name="koreannumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="koreannumeralsp" file="core-con.mkiv">
+    <cd:command name="koreannumeralsp" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="koreannumeralsc" file="core-con.mkiv">
+    <cd:command name="koreannumeralsc" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="koreanparentnumerals" file="core-con.mkiv">
+    <cd:command name="koreanparentnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="koreancirclenumerals" file="core-con.mkiv">
+    <cd:command name="koreancirclenumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chinesenumerals" file="core-con.mkiv">
+    <cd:command name="chinesenumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chinesecapnumerals" file="core-con.mkiv">
+    <cd:command name="chinesecapnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chineseallnumerals" file="core-con.mkiv">
+    <cd:command name="chineseallnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="character" file="core-con.mkiv">
+    <cd:command name="character" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Character" file="core-con.mkiv">
+    <cd:command name="Character" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="characters" file="core-con.mkiv">
+    <cd:command name="characters" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Characters" file="core-con.mkiv">
+    <cd:command name="Characters" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
@@ -314,7 +314,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentdate" file="core-con.mkiv">
+    <cd:command name="currentdate" level="document" file="core-con.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="year"/>
@@ -358,7 +358,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="date" file="core-con.mkiv">
+    <cd:command name="date" level="document" file="core-con.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="d">
@@ -385,7 +385,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currenttime" file="core-con.mkiv">
+    <cd:command name="currenttime" level="document" file="core-con.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="h"/>
@@ -412,7 +412,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineconversion" file="core-con.mkiv">
+    <cd:command name="defineconversion" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -420,7 +420,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineconversion" variant="list" file="core-con.mkiv">
+    <cd:command name="defineconversion" variant="list" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -428,7 +428,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="convertnumber" file="core-con.mkiv">
+    <cd:command name="convertnumber" category="counter" level="document" file="core-con.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="empty"/>
@@ -508,7 +508,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uconvertnumber" file="core-con.mkiv">
+    <cd:command name="uconvertnumber" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:inherit name="convertnumber"/>
@@ -517,7 +517,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseconversiondefined" file="core-con.mkiv">
+    <cd:command name="doifelseconversiondefined" category="counter" level="system" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -525,7 +525,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifconversiondefinedelse" file="core-con.mkiv">
+    <cd:command name="doifconversiondefinedelse" category="counter" level="system" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -533,16 +533,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseconversionnumber" file="core-con.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-            <cd:resolve name="argument-number"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifconversionnumberelse" file="core-con.mkiv">
+    <cd:command name="doifelseconversionnumber" category="counter" level="system" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -551,7 +542,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="wordtonumber" file="core-con.mkiv">
+    <cd:command name="doifconversionnumberelse" category="counter" level="system" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="wordtonumber" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="one"/>
@@ -582,61 +582,61 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="verbosenumber" file="core-con.mkiv">
+    <cd:command name="verbosenumber" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="VerboseNumber" file="core-con.mkiv">
+    <cd:command name="VerboseNumber" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smallcappedromannumerals" file="core-con.mkiv">
+    <cd:command name="smallcappedromannumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smallcappedcharacters" file="core-con.mkiv">
+    <cd:command name="smallcappedcharacters" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sloveniannumerals" file="core-con.mkiv">
+    <cd:command name="sloveniannumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="slovenianNumerals" file="core-con.mkiv">
+    <cd:command name="slovenianNumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="spanishnumerals" file="core-con.mkiv">
+    <cd:command name="spanishnumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="spanishNumerals" file="core-con.mkiv">
+    <cd:command name="spanishNumerals" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unihex" file="core-con.mkiv">
+    <cd:command name="unihex" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="continuednumber" file="core-con.mkiv">
+    <cd:command name="continuednumber" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>

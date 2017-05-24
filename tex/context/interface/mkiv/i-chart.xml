@@ -4,13 +4,111 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <?context-directive job ctxfile x-setups.ctx ?>
+    <!--
 
-    <!-- still incomplete -->
+        <cd:command name="setupFLOWchart" file="m-chart.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="width">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="height">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="offset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="dx">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="dy">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="nx">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="ny">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="x">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="y">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="labeloffset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="commentoffset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="exitoffset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="split">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="no" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="bodyfont">
+                        <cd:inherit name="setupbodyfont"/>
+                    </cd:parameter>
+                    <cd:parameter name="option">
+                        <cd:constant type="test"/>
+                    </cd:parameter>
+                    <cd:parameter name="dot">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="con"/>
+                        <cd:constant type="mid"/>
+                        <cd:constant type="all"/>
+                    </cd:parameter>
+                    <cd:parameter name="hcompact">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="no" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="vcompact">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="no" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="focus">
+                        <cd:constant type="cd:text"/>
+                    </cd:parameter>
+                    <cd:parameter name="autofocus">
+                        <cd:constant type="cd:text"/>
+                    </cd:parameter>
+                    <cd:parameter name="background">
+                        <cd:resolve name="value-background"/>
+                    </cd:parameter>
+                    <cd:parameter name="framecolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="backgroundcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="rulethickness">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="frame">
+                        <cd:constant type="on"/>
+                        <cd:constant type="off" default="yes"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="setupFLOWcharts" file="m-chart.mkiv">
+        <cd:command name="setupFLOWcharts" file="m-chart.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupFLOWchart"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupFLOWcharts" level="style" file="m-chart.mkvi">
         <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
                     <cd:constant type="cd:dimension"/>
@@ -58,17 +156,27 @@
                 <cd:parameter name="option">
                     <cd:constant type="test"/>
                 </cd:parameter>
-                <!-- dot: private option -->
+                <!-- dot: private option
+                    <cd:parameter name="dot">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="con"/>
+                        <cd:constant type="mid"/>
+                        <cd:constant type="all"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="hcompact">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="vcompact">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
                 <cd:parameter name="focus">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
                 <cd:parameter name="autofocus">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                </cd:parameter>
-                <cd:parameter name="autofocus">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="cd:text"/>
                 </cd:parameter>
                 <cd:parameter name="background">
                     <cd:resolve name="value-background"/>
@@ -83,121 +191,83 @@
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="frame">
-                    <cd:constant type="on" default="yes"/>
-                    <cd:constant type="off"/>
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="setupFLOWlines" file="m-chart.mkiv">
+    <!--
+       <cd:command name="setupFLOWline" file="m-chart.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="corner">
+                        <cd:constant type="round" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="arrow">
+                        <cd:constant type="yes" default="yes"/>
+                        <cd:constant type="no"/>
+                    </cd:parameter>
+                    <cd:parameter name="dash">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="no" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="radius">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="rulethickness">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="offset">
+                        <cd:constant type="none"/>
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+       <cd:command name="setupFLOWlines" file="m-chart.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupFLOWline"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+   <cd:command name="setupFLOWlines" level="style" file="m-chart.mkvi">
         <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
-                <cd:parameter name="color">
-                    <cd:constant name="round"/>
-                    <cd:constant name="normal" default="yes"/>
+                <cd:parameter name="corner">
+                    <cd:constant type="round" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="arrow">
-                    <cd:constant name="yes" default="yes"/>
-                    <cd:constant name="no"/>
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
                 </cd:parameter>
                 <cd:parameter name="dash">
-                    <cd:constant name="yes"/>
-                    <cd:constant name="no" default="yes"/>
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="radius">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="color">
-                    <cd:constant name="cd:color"/>
+                    <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="rulethickness">
-                    <cd:constant name="cd:dimension"/>
-                </cd:parameter>
-                <cd:parameter name="offset">
                     <cd:constant type="cd:dimension"/>
-                </cd:parameter>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-   <cd:command name="setupFLOWshapes" file="m-chart.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:parameter name="default">
-                    <cd:resolve name="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="framecolor">
-                    <cd:constant name="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="background">
-                    <cd:resolve name="value-background"/>
-                </cd:parameter>
-                <cd:parameter name="backgroundcolor">
-                    <cd:constant name="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="rulethickness">
-                    <cd:constant name="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="offset">
                     <cd:constant type="none"/>
-                    <cd:constant type="overlay"/>
-                    <cd:constant type="standard"/>
                     <cd:constant type="cd:dimension"/>
-                </cd:parameter>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-   <cd:command name="setupFLOWfocus" file="m-chart.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:parameter name="color">
-                    <cd:constant type="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="background">
-                    <cd:inherit name="setupFLOWshape"/>
-                </cd:parameter>
-                <cd:parameter name="backgroundcolor">
-                    <cd:inherit name="setupFLOWshape"/>
-                </cd:parameter>
-                <cd:parameter name="rulethickness">
-                    <cd:inherit name="setupFLOWshape"/>
-                </cd:parameter>
-                <cd:parameter name="offset">
-                    <cd:inherit name="setupFLOWshape"/>
-                </cd:parameter>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-   <cd:command name="setupFLOWsplit" file="m-chart.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:parameter name="dx">
-                    <cd:constant name="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="dy">
-                    <cd:constant name="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="nx">
-                    <cd:constant name="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="ny">
-                    <cd:constant name="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="command">
-                    <cd:constant name="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="before">
-                    <cd:constant name="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="after">
-                    <cd:constant name="cd:command"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
@@ -205,13 +275,267 @@
 
     <!--
 
-        startFLOWchart   [name]
-        FLOWchart        [name]
-        startFLOWcell    [key=value]
-        includeFLOWchart
+       <cd:command name="setupFLOWshape" file="m-chart.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="default">
+                        <cd:resolve name="value-flowshape"/>
+                    </cd:parameter>
+                    <cd:parameter name="framecolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="backgroundcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="rulethickness">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-        name shape destination focus overlay location text label comment exit
-        connection include figure connect locate
+       <cd:command name="setupFLOWshapes" file="m-chart.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupFLOWshape"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
     -->
+
+   <cd:command name="setupFLOWshapes" level="style" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="default">
+                    <cd:resolve name="value-flowshape"/>
+                </cd:parameter>
+                <cd:parameter name="framecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="setupFLOWfocus" level="style" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="framecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="setupFLOWsplit" level="style" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="dx">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="dy">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="nx">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="ny">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="FLOWchart" type="environment" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="defineFLOWchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="FLOWcell" type="environment" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupFLOWshape"/>
+            </cd:assignments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupFLOWline"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="FLOWchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupFLOWchart"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="FLOWcharts" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupFLOWsplit"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="name" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="shape" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:resolve name="value-flowshape"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="destination" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="focus" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="overlay" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="location" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="-"/>
+                <cd:constant type="+"/>
+                <cd:constant type="cd:number" prefix="cd:sign" method="none"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="figure" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:file"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="text" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:resolve name="value-chartlabel"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="label" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:resolve name="value-chartlabel"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="comment" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:resolve name="value-chartlabel"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="exit" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:resolve name="value-chartlabel"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="connection" scope="flowchart" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="+"/>
+                <cd:constant type="-"/>
+                <cd:constant type="p"/>
+                <cd:constant type="m"/>
+                <cd:constant type="l"/>
+                <cd:constant type="r"/>
+                <cd:constant type="t"/>
+                <cd:constant type="b"/>
+                <cd:constant type="left"/>
+                <cd:constant type="right"/>
+                <cd:constant type="top"/>
+                <cd:constant type="bottom"/>
+                <cd:constant type="␣"/>
+            </cd:keywords>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+   <cd:command name="include" file="m-chart.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="x">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="y">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
 </cd:interface>
