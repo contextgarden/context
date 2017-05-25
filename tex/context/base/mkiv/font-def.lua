@@ -21,7 +21,6 @@ local trace_defining     = false  trackers  .register("fonts.defining", function
 local directive_embedall = false  directives.register("fonts.embedall", function(v) directive_embedall = v end)
 
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
-trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
 
 local report_defining = logs.reporter("fonts","defining")
 

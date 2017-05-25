@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/24/17 17:31:50
+-- merge date  : 05/25/17 12:50:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -22195,11 +22195,10 @@ local report_chain=logs.reporter("fonts","otf chain")
 local report_process=logs.reporter("fonts","otf process")
 local report_warning=logs.reporter("fonts","otf warning")
 local report_run=logs.reporter("fonts","otf run")
-registertracker("otf.replacements","otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
-registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
-registertracker("otf.actions","otf.replacements,otf.positions")
-registertracker("otf.injections","nodes.injections")
-registertracker("otf.sample","otf.steps,otf.actions,otf.analyzing")
+registertracker("otf.substitutions","otf.singles","otf.multiples","otf.alternatives","otf.ligatures")
+registertracker("otf.positions","otf.marks","otf.kerns","otf.cursive")
+registertracker("otf.actions","otf.substitutions","otf.positions")
+registertracker("otf.sample","otf.steps","otf.substitutions","otf.positions","otf.analyzing")
 local nuts=nodes.nuts
 local tonode=nuts.tonode
 local tonut=nuts.tonut
@@ -30657,7 +30656,6 @@ local allocate=utilities.storage.allocate
 local trace_defining=false trackers .register("fonts.defining",function(v) trace_defining=v end)
 local directive_embedall=false directives.register("fonts.embedall",function(v) directive_embedall=v end)
 trackers.register("fonts.loading","fonts.defining","otf.loading","afm.loading","tfm.loading")
-trackers.register("fonts.all","fonts.*","otf.*","afm.*","tfm.*")
 local report_defining=logs.reporter("fonts","defining")
 local fonts=fonts
 local fontdata=fonts.hashes.identifiers

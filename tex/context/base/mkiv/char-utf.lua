@@ -183,7 +183,8 @@ local p_collapse = nil -- so we can reset if needed
 
 local function prepare()
     local tree = utfchartabletopattern(collapsed)
-    p_collapse = Cs((tree/collapsed + p_utf8character)^0 * P(-1)) -- the P(1) is needed in order to accept non utf
+ -- p_collapse = Cs((tree/collapsed + p_utf8character)^0 * P(-1))
+    p_collapse = Cs((tree/collapsed + p_utf8character)^0)
 end
 
 function utffilters.collapse(str,filename)

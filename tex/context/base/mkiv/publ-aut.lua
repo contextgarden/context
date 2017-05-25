@@ -313,12 +313,12 @@ local function the_initials(initials,symbol,connector)
                     s = s + 1 ; set[s] = connector
                 end
                 s = s + 1 ; set[s] = initial[i]
-                s = s + 1 ; set[s] = symbol
             end
             r = r + 1 ; result[r] = concat(set)
         else
-            r = r + 1 ; result[r] = initial .. symbol
+            r = r + 1 ; result[r] = initial
         end
+        r = r + 1 ; result[r] = symbol
     end
     return result
 end
@@ -339,8 +339,9 @@ local ctx_btxstopauthor       = context.btxstopauthor
 local concatstate = publications.concatstate
 local f_invalid   = formatters["<invalid %s: %s>"]
 
-local currentauthordata   = nil
-local currentauthorsymbol = nil
+local currentauthordata      = nil
+local currentauthorsymbol    = nil
+local currentauthorconnector = nil
 
 local manipulators       = typesetters.manipulators
 local splitmanipulation  = manipulators.splitspecification
@@ -359,7 +360,7 @@ local function value(i,field)
 end
 
 implement { name = "btxcurrentfirstnames", arguments = "integer", actions = function(i) local v = value(i,"firstnames") if v then context(concat(v," ")) end end }
-implement { name = "btxcurrentinitials",   arguments = "integer", actions = function(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol))) end end }
+implement { name = "btxcurrentinitials",   arguments = "integer", actions = function(i) local v = value(i,"initials")   if v then context(concat(the_initials(v,currentauthorsymbol,currentauthorconnector))) end end }
 implement { name = "btxcurrentjuniors",    arguments = "integer", actions = function(i) local v = value(i,"juniors")    if v then context(concat(v," ")) end end }
 implement { name = "btxcurrentsurnames",   arguments = "integer", actions = function(i) local v = value(i,"surnames")   if v then context(concat(v," ")) end end }
 implement { name = "btxcurrentvons",       arguments = "integer", actions = function(i) local v = value(i,"vons")       if v then context(concat(v," ")) end end }
@@ -408,6 +409,7 @@ local function btxauthor(dataset,tag,field,settings)
         local etallast    = etaloption[v_last]
         local combiner    = settings.combiner
         local symbol      = settings.symbol
+        local connector   = settings.connector
         local index       = settings.index
         if not combiner or combiner == "" then
             combiner = "normal"
@@ -421,8 +423,9 @@ local function btxauthor(dataset,tag,field,settings)
         else
             etallast = false
         end
-        currentauthordata   = split
-        currentauthorsymbol = symbol
+        currentauthordata      = split
+        currentauthorsymbol    = symbol
+        currentauthorconnector = connector
 
         local function oneauthor(i,last,justone)
             local author = split[i]
@@ -508,6 +511,7 @@ implement {
             { "etaldisplay" },
             { "etaloption" },
             { "symbol" },
+            { "connector" },
         }
     }
 }

@@ -155,11 +155,10 @@ local report_process     = logs.reporter("fonts","otf process")
 local report_warning     = logs.reporter("fonts","otf warning")
 local report_run         = logs.reporter("fonts","otf run")
 
-registertracker("otf.replacements", "otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
-registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
-registertracker("otf.actions","otf.replacements,otf.positions")
-registertracker("otf.injections","nodes.injections")
-registertracker("otf.sample","otf.steps,otf.actions,otf.analyzing")
+registertracker("otf.substitutions", "otf.singles","otf.multiples","otf.alternatives","otf.ligatures")
+registertracker("otf.positions",     "otf.marks","otf.kerns","otf.cursive")
+registertracker("otf.actions",       "otf.substitutions","otf.positions")
+registertracker("otf.sample",        "otf.steps","otf.substitutions","otf.positions","otf.analyzing")
 
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode

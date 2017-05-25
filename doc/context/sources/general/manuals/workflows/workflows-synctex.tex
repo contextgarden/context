@@ -1,0 +1,178 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-xml
+
+\startchapter[title=Synctex]
+
+\startsection[title=Introduction]
+
+Some users like the synctex feature that is built in the \TEX\ engines.
+Personally I never use it because it doesn't work well with the kind of documents
+I maintain. If you have one document source, and don't shuffle around (reuse)
+text too much it probably works out okay but that is not our practice. Here I
+will describe how you can enable a more \CONTEXT\ specific synctex support so
+that aware \PDF\ viewers can bring you back to the source.
+
+\stopsection
+
+\startsection[title=What we want]
+
+The synctex method roughly works as follows. Internally \TEX\ constricts linked
+lists of glyphs, kerns, glue, boxes, rules etc. These elements are called nodes.
+Some nodes carry information about the file and line where they were created. In
+the backend this information gets somehow translated in a (sort of) verbose tree
+that describes the makeup in terms of boxes, glue and kerns. From that
+information the synctex parser library, hooked into a pdf viewer, can go back
+from a position on the screen to a line in a file. One would expect this to be a
+relative simple rectangle based model, but as far as I can see it's way more
+complex than that. There are some comments that \CONTEXT\ is not supported well
+because it has a layered page model, which indicates that there are some
+assumptions about how macro packages are supposed to work. Also the used
+heuristics not only involve some specific spot (location) but also involve the
+corners and edges. It is therefore not so much a (simple) generic system but a
+mechanism geared for a macro package like \LATEX.
+
+Because we have a couple of users who need to edit complex sets of documents,
+coded in \TEX\ or \XML, I decided to come up with a variant that doesn't use the
+synctex machinery but manipulates the few synctex fields directly \footnote {This
+is something that in my opinion should have been possible right from the start
+but it's too late now to change the system and it would not be used beyond
+\CONTEXT\ anyway.} and eventually outputs a straightforward file for the editor.
+Of course we need to follow some rules so that the editor can deal with it. It
+took a bit of trial and error to get the right information in the support file
+needed by the viewer but we got there.
+
+The prerequisites of a decent \CONTEXT\ \quotation {click on preview and goto
+editor} are the following:
+
+\startitemize
+
+\startitem
+    It only makes sense to click on text in the text flow. Headers and footers
+    are often generated from structure, and special typographic elements can
+    originate in macros hooked into commands instead of in the source.
+\stopitem
+
+\startitem
+    Users should not be able to reach environments (styles) and other files
+    loaded from the (normally read|-|only) \TEX\ tree, like modules. We don't
+    want accidental changed in such files.
+\stopitem
+
+\startitem
+    We not only have \TEX\ files but also \XML\ files and these can normally
+    flushed in rather arbitrary ways. Although the concept of lines is sort of
+    lost in such a file, there is still a relation between lines and the snippets
+    that make of the content of an \XML\ node.
+\stopitem
+
+\startitem
+    In the case of \XML\ files the overhead related to preserving line
+    numbers should be minimal and have no impact on loading and memory when
+    these features are not used.
+\stopitem
+
+\startitem
+    The overhead in terms of an auxiliary file size and complexity as well
+    as producing that file should be minimal. It should be easy to turn on and
+    off these features. (I'd never turn them on by default.)
+\stopitem
+
+\stopitemize
+
+It is unavoidable that we get more run time but I assume that for the average user
+that is no big deal. It pays off when you have a workflow when a book (or even a
+chapter in a book) is generated from hundreds of small \XML\ files. There is no
+overhead when synctex is not used.
+
+In \CONTEXT\ we don't use the built|-|in synctex features, that is: we let
+filename and line numbers be set but often these are overloaded explicitly. The
+output file is not compressed and constructed by \CONTEXT. There is no benefit in
+compression and the files are probably smaller than default synctex anyway.
+
+\stopsection
+
+\startsection[title=Commands]
+
+Although you can enable this mechanism with directives it makes sense to do it
+using the following command.
+
+\starttyping
+\setupsynctex[state=start]
+\stoptyping
+
+The advantage of using an explicit command instead of some command line option is
+that in an editor it's easier to disable this trickery. Commenting that line will
+speed up processing when needed. This command can also be given in an environment
+(style). On the command line you can say
+
+\starttyping
+context --synctex=context somefile.tex
+\stoptyping
+
+Often an \XML\ files is very structured and although probably the main body of
+text is flushed as a stream, specific elements can be flushed out of order. In
+educational documents flushing for instance answers to exercises can happen out of
+order. In that case we still need to make sure that we go to the right spot in
+the file. It will never be 100\% perfect but it's better than nothing. The
+above command will also enable \XML support.
+
+If you don't want a file to be accessed, you can block it:
+
+\starttyping
+\blocksynctexfile[foo.tex]
+\stoptyping
+
+Of course you need to configure the viewer to respond to the request for
+editing. In Sumatra combined with SciTE the magic command is:
+
+\starttyping
+c:\data\system\scite\wscite\scite.exe "%f" "-goto:%l"
+\stoptyping
+
+Such a command is independent of the macro package so you can just consult the
+manual or help info that comes with a viewer, given that it supports this linking
+back to the source at all.
+
+\stopsection
+
+\startsection[title=Tracing]
+
+In case you want to see what gets synced you can enable a tracker:
+
+\starttyping
+\enabletrackers[system.synctex.visualize]
+\stoptyping
+
+The following tracker outputs some status information about \XML\ flushing. Such
+trackers only make sense for developers.
+
+\starttyping
+\enabletrackers[system.synctex.xml]
+\stoptyping
+
+At the cost of extra overhead, the next (experimental) directive can be used when
+the accuracy is not optimal.
+
+\starttyping
+\enabledirectives[system.synctex.details]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Warning]
+
+Don't turn on this feature when you don't need it. This is one of those mechanism
+that hits performance badly.
+
+Depending on needs the functionality can be improved and|/|or extended. Of course
+you can always use the traditional synctex method but don't expect it to behave
+as described here.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

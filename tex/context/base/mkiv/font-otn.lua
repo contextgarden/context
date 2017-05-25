@@ -194,15 +194,13 @@ local report_process  = logs.reporter("fonts","otf process")
 local report_prepare  = logs.reporter("fonts","otf prepare")
 local report_run      = logs.reporter("fonts","otf run")
 
-registertracker("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
-registertracker("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
+registertracker("otf.substitutions", "otf.singles","otf.multiples","otf.alternatives","otf.ligatures")
+registertracker("otf.positions",     "otf.marks","otf.kerns","otf.cursive")
+registertracker("otf.actions",       "otf.substitutions","otf.positions")
+registertracker("otf.sample",        "otf.steps","otf.substitutions","otf.positions","otf.analyzing")
 
-registertracker("otf.replacements", "otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
-registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
-registertracker("otf.actions","otf.replacements,otf.positions")
-registertracker("otf.injections","nodes.injections")
-
-registertracker("*otf.sample","otf.steps,otf.actions,otf.analyzing")
+registertracker("otf.chain.verbose", function(v) otf.setcontextchain(v and "verbose") end)
+registertracker("otf.chain.normal",  function(v) otf.setcontextchain(v and "normal")  end)
 
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode

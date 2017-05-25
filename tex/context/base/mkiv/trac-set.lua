@@ -219,13 +219,30 @@ function setters.show(t)
         local name = list[k]
         local functions = t.data[name]
         if functions then
-            local value, default, modules = functions.value, functions.default, #functions
-            value   = value   == nil and "unset" or tostring(value)
-            default = default == nil and "unset" or tostring(default)
-            t.report("%-50s   modules: %2i   default: %-12s   value: %-12s",name,modules,default,value)
+            local value   = functions.value
+            local default = functions.default
+            local modules = #functions
+            if default == nil then
+                default = "unset"
+            elseif type(default) == "table" then
+                default = concat(default,"|")
+            else
+                default = tostring(default)
+            end
+            if value == nil then
+                value = "unset"
+            elseif type(value) == "table" then
+                value = concat(value,"|")
+            else
+                value = tostring(value)
+            end
+            t.report(name)
+            t.report("    modules : %i",modules)
+            t.report("    default : %s",default)
+            t.report("    value   : %s",value)
+            t.report()
         end
     end
-    t.report()
 end
 
 -- we could have used a bit of oo and the trackers:enable syntax but
