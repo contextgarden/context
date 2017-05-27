@@ -782,7 +782,7 @@ nodes.properties = {
 }
 
 ------.set_properties_mode(true,false) -- shallow copy ... problem: in fonts we then affect the originals too
-direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-inj.lua (unless we use an intermediate table)
+direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-otj.lua (unless we use an intermediate table)
 
 -- todo:
 --

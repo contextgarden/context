@@ -6,13 +6,6 @@ if not modules then modules = { } end modules ['font-osd'] = { -- script devanag
     license   = "see context related readme files"
 }
 
--- I'll optimize this one with ischar (much faster) when I see a reason (read: I need a
--- proper test case first).
-
--- This is a version of font-odv.lua  adapted to the new font loader and more
--- direct hashing. The initialization code has been adapted (more efficient). One day
--- I'll speed this up ... char swapping and properties.
-
 -- A few remarks:
 --
 -- This code is a partial rewrite of the code that deals with devanagari. The data and logic
@@ -29,7 +22,8 @@ if not modules then modules = { } end modules ['font-osd'] = { -- script devanag
 -- much can get messed up in over a week work) it could be that I introduced bugs. There
 -- is more to gain (esp in the functions applied to a range) but I'll do that when
 -- everything works as expected. Kai's original code is kept in font-odk.lua as a reference
--- so blame me (HH) for bugs.
+-- so blame me (HH) for bugs. (We no longer ship that file as the code below has diverted
+-- too much and in the meantime has more than doubled in size.)
 --
 -- Interesting is that Kai managed to write this on top of the existing otf handler. Only a
 -- few extensions were needed, like a few more analyzing states and dealing with changed
@@ -1140,7 +1134,7 @@ function handlers.devanagari_reorder_matras(head,start) -- no leak
                 head = remove_node(head,start)
                 setlink(start,next)
                 setlink(current,start)
-             -- setlink(current,start,next) -- maybe 
+             -- setlink(current,start,next) -- maybe
                 start = startnext
                 break
             end
@@ -1200,7 +1194,7 @@ function handlers.devanagari_reorder_reph(head,start)
                 head = remove_node(head,start)
                 setlink(start,next)
                 setlink(current,start)
-             -- setlink(current,start,next) -- maybe 
+             -- setlink(current,start,next) -- maybe
                 start = startnext
                 startattr = getprop(start,a_syllabe)
                 break
@@ -1220,7 +1214,7 @@ function handlers.devanagari_reorder_reph(head,start)
                     head = remove_node(head,start)
                     setlink(getprev(current),start)
                     setlink(start,current)
-                 -- setlink(getprev(current),start,current) -- maybe 
+                 -- setlink(getprev(current),start,current) -- maybe
                     start = startnext
                     startattr = getprop(start,a_syllabe)
                     break
@@ -1254,7 +1248,7 @@ function handlers.devanagari_reorder_reph(head,start)
             head = remove_node(head,start)
             setlink(getprev(c),start)
             setlink(start,c)
-         -- setlink(getprev(c),start,c) -- maybe 
+         -- setlink(getprev(c),start,c) -- maybe
             -- end
             start = startnext
             startattr = getprop(start,a_syllabe)
@@ -1278,7 +1272,7 @@ function handlers.devanagari_reorder_reph(head,start)
             head = remove_node(head,start)
             setlink(start,getnext(current))
             setlink(current,start)
-         -- setlink(current,start,getnext(current)) -- maybe 
+         -- setlink(current,start,getnext(current)) -- maybe
             start = startnext
         end
     end
@@ -1322,7 +1316,7 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
                 removenode(start,start)
                 setlink(start,next)
                 setlink(current,start)
-             -- setlink(current,start,next) -- maybe 
+             -- setlink(current,start,next) -- maybe
                 start = startnext
                 break
             end

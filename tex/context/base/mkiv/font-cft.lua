@@ -7,16 +7,18 @@ if not modules then modules = { } end modules ['font-cft'] = {
 }
 
 -- context font tables
-
+--
 -- todo: extra:
 --
 -- extra_space       => space.extra
 -- space             => space.width
 -- space_stretch     => space.stretch
 -- space_shrink      => space.shrink
-
+--
 -- We do keep the x-height, extra_space, space_shrink and space_stretch
 -- around as these are low level official names.
+--
+-- Needs to be checked and updated.
 
 local type = type
 

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/25/17 12:50:49
+-- merge date  : 05/27/17 18:52:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -7758,7 +7758,7 @@ function constructors.scale(tfmdata,specification)
   target.unscaled=tfmdata
   local mathsize=tonumber(specification.mathsize) or 0
   local textsize=tonumber(specification.textsize) or scaledpoints
-  local forcedsize=tonumber(parameters.mathsize  ) or 0
+  local forcedsize=tonumber(parameters.mathsize  ) or 0 
   local extrafactor=tonumber(specification.factor ) or 1
   if (mathsize==2 or forcedsize==2) and parameters.scriptpercentage then
     scaledpoints=parameters.scriptpercentage*textsize/100
@@ -7766,6 +7766,7 @@ function constructors.scale(tfmdata,specification)
     scaledpoints=parameters.scriptscriptpercentage*textsize/100
   elseif forcedsize>1000 then 
     scaledpoints=forcedsize
+  else
   end
   targetparameters.mathsize=mathsize  
   targetparameters.textsize=textsize  
@@ -8827,7 +8828,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-cid']={
   version=1.001,
-  comment="companion to font-otf.lua (cidmaps)",
+  comment="companion to font-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
@@ -19850,7 +19851,7 @@ local function checkmathsize(tfmdata,mathsize)
     local parameters=tfmdata.parameters
     parameters.scriptpercentage=mathdata.ScriptPercentScaleDown
     parameters.scriptscriptpercentage=mathdata.ScriptScriptPercentScaleDown
-    parameters.mathsize=mathsize
+    parameters.mathsize=mathsize 
   end
 end
 registerotffeature {
@@ -21771,7 +21772,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-ota']={
   version=1.001,
-  comment="companion to font-otf.lua (analysing)",
+  comment="companion to font-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
@@ -27534,7 +27535,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-ocl']={
   version=1.001,
-  comment="companion to font-otf.lua (context)",
+  comment="companion to font-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
@@ -27982,7 +27983,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-otc']={
   version=1.001,
-  comment="companion to font-otf.lua (context)",
+  comment="companion to font-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
@@ -29922,7 +29923,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-afk']={
   version=1.001,
-  comment="companion to font-afm.lua",
+  comment="companion to font-lib.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files",

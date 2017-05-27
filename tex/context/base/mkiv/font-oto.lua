@@ -6,10 +6,6 @@ if not modules then modules = { } end modules ['font-oto'] = { -- original tex
     license   = "see context related readme files"
 }
 
--- This is a version of font-otb adapted to the new fontloader code. We used to have two
--- base initialization methods but now we have only one. This means that instead of the
--- old default (independent) we now use the one more similar to node node (shared).
-
 local concat, unpack = table.concat, table.unpack
 local insert, remove = table.insert, table.remove
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip

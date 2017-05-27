@@ -16,7 +16,6 @@ local lower = string.lower
 local concat = table.concat
 local write_nl = texio.write_nl
 
-local otfversion  = 2.826
 local otlversion  = 3.029
 
 local helpinfo = [[
@@ -25,13 +24,12 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-fonts</entry>
   <entry name="detail">ConTeXt Font Database Management</entry>
-  <entry name="version">0.21</entry>
+  <entry name="version">1.00</entry>
  </metadata>
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="save"><short>save open type font in raw table (ff format)</short></flag>
-    <flag name="convert"><short>save open type font in raw table (ctx format)</short></flag>
+    <flag name="convert"><short>save open type font in raw table</short></flag>
     <flag name="unpack"><short>save a tma file in a more readable format</short></flag>
    </subcategory>
    <subcategory>
@@ -80,7 +78,6 @@ local helpinfo = [[
     <example><command>mtxrun --script font --list --file --pattern=*somename*</command></example>
    </subcategory>
    <subcategory>
-    <example><command>mtxrun --script font --save texgyrepagella-regular.otf</command></example>
     <example><command>mtxrun --script font --convert texgyrepagella-regular.otf</command></example>
     <example><command>mtxrun --script font --convert --names texgyrepagella-regular.otf</command></example>
    </subcategory>
@@ -108,11 +105,7 @@ local function loadmodule(filename)
     end
 end
 
--- old loader code
-
-loadmodule("font-otp.lua") -- we need to unpack the font for analysis
-
--- new loader code
+-- loader code
 
 loadmodule("char-def.lua")
 
@@ -432,18 +425,6 @@ function scripts.fonts.list()
 
 end
 
-function scripts.fonts.justload()
-    local fullname = environment.files[1]
-    if fullname then
-        local result = fontloader.open(fullname)
-        if type(result) == "table" then
-            report("loading %s: %s","succeeded",fullname)
-            fontloader.close(result)
-        end
-    end
-    report("loading %s: %s","failed",fullname)
-end
-
 function scripts.fonts.unpack()
     local name = removesuffix(basename(givenfiles[1] or ""))
     if name and name ~= "" then
@@ -456,58 +437,11 @@ function scripts.fonts.unpack()
             report("fontsave, saving data in %s",savename)
             if data.creator == "context mkiv" then
                 fonts.handlers.otf.readers.unpack(data)
-            else
-                fonts.handlers.otf.unpackdata(data)
             end
             io.savedata(savename,table.serialize(data,true))
         else
             report("unknown file %a in cache %a",name,cacheid)
         end
-    end
-end
-
-function scripts.fonts.save()
-    local name = givenfiles[1] or ""
-    local sub  = givenfiles[2] or ""
-    local function save(savename,fontblob)
-        if fontblob then
-            if fontblob.validation_state and table.contains(fontblob.validation_state,"bad_ps_fontname") then
-                report("ignoring bad fontname for %a",name)
-                savename = nameonly(name) .. "-bad-ps-name"
-            end
-            savename = addsuffix(lower(savename),"lua")
-            report("fontsave, saving data in %a",savename)
-            table.tofile(savename,fontloader.to_table(fontblob),"return")
-            fontloader.close(fontblob)
-        end
-    end
-    if name and name ~= "" then
-        local filename = resolvers.findfile(name) -- maybe also search for opentype
-        if filename and filename ~= "" then
-            local suffix = lower(suffix(filename))
-            if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then
-                local fontinfo = fontloader.info(filename)
-                if fontinfo then
-                    report("font: %a located as %a",name,filename)
-                    if #fontinfo > 0 then
-                        for k=1,#fontinfo do
-                            local v = fontinfo[k]
-                            save(v.fontname,fontloader.open(filename,v.fullname))
-                        end
-                    else
-                        save(fontinfo.fullname,fontloader.open(filename))
-                    end
-                else
-                    report("font: %a cannot be read",filename)
-                end
-            else
-                report("font: %a not saved",filename)
-            end
-        else
-            report("font: %a not found",name)
-        end
-    else
-        report("font: no name given")
     end
 end
 
@@ -550,12 +484,8 @@ if getargument("list") then
     scripts.fonts.list()
 elseif getargument("reload") then
     scripts.fonts.reload()
-elseif getargument("save") then
-    scripts.fonts.save()
 elseif getargument("convert") then
     scripts.fonts.convert()
-elseif getargument("justload") then
-    scripts.fonts.justload()
 elseif getargument("unpack") then
     scripts.fonts.unpack()
 elseif getargument("statistics") then

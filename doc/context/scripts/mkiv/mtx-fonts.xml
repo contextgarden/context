@@ -3,13 +3,12 @@
  <metadata>
   <entry name="name">mtx-fonts</entry>
   <entry name="detail">ConTeXt Font Database Management</entry>
-  <entry name="version">0.21</entry>
+  <entry name="version">1.00</entry>
  </metadata>
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="save"><short>save open type font in raw table (ff format)</short></flag>
-    <flag name="convert"><short>save open type font in raw table (ctx format)</short></flag>
+    <flag name="convert"><short>save open type font in raw table</short></flag>
     <flag name="unpack"><short>save a tma file in a more readable format</short></flag>
    </subcategory>
    <subcategory>
@@ -58,7 +57,6 @@
     <example><command>mtxrun --script font --list --file --pattern=*somename*</command></example>
    </subcategory>
    <subcategory>
-    <example><command>mtxrun --script font --save texgyrepagella-regular.otf</command></example>
     <example><command>mtxrun --script font --convert texgyrepagella-regular.otf</command></example>
     <example><command>mtxrun --script font --convert --names texgyrepagella-regular.otf</command></example>
    </subcategory>

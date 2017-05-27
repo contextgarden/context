@@ -49,6 +49,7 @@ collections.vectors      = vectors
 
 local fontdata           = fonts.hashes.identifiers
 local chardata           = fonts.hashes.characters
+local propdata           = fonts.hashes.properties
 local currentfont        = font.current
 
 local fontpatternhassize = fonts.helpers.fontpatternhassize
@@ -220,13 +221,15 @@ function collections.prepare(name) -- we can do this in lua now .. todo
     if vectors[current] then
         return
     end
-    if fontdata[current].mathparameters then
+    local properties = propdata[current]
+    local mathsize   = properties.mathsize
+    if mathsize == 1 or mathsize == 2 or mathsize == 3 then
         return
     end
     local d = definitions[name]
     if d then
         if trace_collecting then
-            local filename = file.basename(fontdata[current].properties.filename or "?")
+            local filename = file.basename(properties.filename or "?")
             report_fonts("applying collection %a to %a, file %a",name,current,filename)
         end
         list = { }
@@ -246,9 +249,6 @@ function collections.prepare(name) -- we can do this in lua now .. todo
         context.font_fallbacks_prepare_clone_vectors(name)
         context.font_fallbacks_stop_cloning()
         context.popcatcodes() -- context.protect()
-    elseif trace_collecting then
-        local filename = file.basename(fontdata[current].properties.filename or "?")
-        report_fonts("error while applying collection %a to %a, file %a",name,current,filename)
     end
 end
 

@@ -1,4 +1,4 @@
-.TH "mtx-fonts" "1" "01-01-2017" "version 0.21" "ConTeXt Font Database Management"
+.TH "mtx-fonts" "1" "01-01-2017" "version 1.00" "ConTeXt Font Database Management"
 .SH NAME
 .B mtx-fonts
 .SH SYNOPSIS
@@ -11,11 +11,8 @@
 .B ConTeXt Font Database Management
 .SH OPTIONS
 .TP
-.B --save
-save open type font in raw table (ff format)
-.TP
 .B --convert
-save open type font in raw table (ctx format)
+save open type font in raw table
 .TP
 .B --unpack
 save a tma file in a more readable format

@@ -24,18 +24,16 @@
 %D \macros
 %D   {textonly}
 %D
-%D Traditionally math has a big impact on font definitions, mainly
-%D because we need to define alphabet variants using families and
-%D fonts. This means that one can easily get 10 fonts loaded per
-%D math size. In \MKIV\ we use a different approach: one family
-%D which has either a virtual font made of traditional fonts, or
-%D an \OPENTYPE\ font that has it all.
+%D Traditionally math has a big impact on font definitions, mainly because we need
+%D to define alphabet variants using families and fonts. This means that one can
+%D easily get 10 fonts loaded per math size. In \MKIV\ we use a different approach:
+%D one family which has either a virtual font made of traditional fonts, or an
+%D \OPENTYPE\ font that has it all.
 %D
-%D We currently use only one math family but in the future we
-%D might consider using a second one for bold math. For the
-%D moment we keep the \MKII\ method of using a token register
-%D for definitions but we already dropped the text and symbols
-%D ones since they now live in the same family.
+%D We currently use only one math family but in the future we might consider using a
+%D second one for bold math. For the moment we keep the \MKII\ method of using a
+%D token register for definitions but we already dropped the text and symbols ones
+%D since they now live in the same family.
 
 \newtoks       \t_font_math_strategies
 \newconditional\c_font_synchronize_math_fonts \settrue\c_font_synchronize_math_fonts
@@ -45,14 +43,12 @@
 
 \unexpanded\def\textonly{\setfalse\c_font_synchronize_math_fonts} % document this
 
-%D The main math font definer. We have removed some optimized
-%D code simply because we now always have a fontclass. We could
-%D check for fontclass being default or empty and save a few
-%D tests but it does not help us when no math is defined.
-
-%D Because we want to keep mr=.. and mb=... settings (read: not
-%D break downward compatibility by enforcing mrlr etc) we need a
-%D bit more code that optimal.
+%D The main math font definer. We have removed some optimized code simply because we
+%D now always have a fontclass. We could check for fontclass being default or empty
+%D and save a few tests but it does not help us when no math is defined.
+%D
+%D Because we want to keep mr=.. and mb=... settings (read: not break downward
+%D compatibility by enforcing mrlr etc) we need a bit more code that optimal.
 
 % todo: \c_font_fam_mr
 
@@ -75,33 +71,9 @@
 
 \def\mathsizesuffix{\ifcase\fontface\or\mathtextsuffix\or\mathscriptsuffix\or\mathscriptscriptsuffix\fi}
 
-% Beware: truefontname also does a fallback on defaultfontclass so there
-% can be some interference here, which is why we use a different method
-% for bold.
-
-% \def\font_helpers_set_math_family_a
-%   {\ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-%      \csname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
-%    \ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-%      \csname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \else
-%      \font_helpers_set_math_family_b
-%    \fi\fi}
-
-% \def\font_helpers_set_math_family_b
-%   {\ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-%      \csname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
-%    \ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-%      \csname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \else
-%      \font_helpers_set_math_family_c
-%    \fi\fi}
-
-% \def\font_helpers_set_math_family_c
-%   {\ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-%      \csname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \else
-%    \ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-%      \csname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \else
-%                                                                                                   \settrue \c_font_auto_size
-%    \fi\fi}
+%D Beware: truefontname also does a fallback on defaultfontclass so there
+%D can be some interference here, which is why we use a different method
+%D for bold.
 
 \def\font_helpers_set_math_family_a
   {\ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
@@ -133,20 +105,19 @@
   {\let\savedfontbody\fontbody
    \let\fontfamily#family%
    % the order is important as we depend on known id's when completing fonts
-   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree\font_helpers_set_math_family_a\scriptscriptfont#mrtag\font
-   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo  \font_helpers_set_math_family_a\scriptfont      #mrtag\font
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone  \font_helpers_set_math_family_a\textfont        #mrtag\font
+   % enabling is needed when we have fallbacks which spoils the families
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
+   \font_helpers_set_math_family_a\scriptscriptfont#mrtag\font % defines
+   \font_helpers_set_math_family_a\scriptscriptfont#mrtag\font % enables
+   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo
+   \font_helpers_set_math_family_a\scriptfont      #mrtag\font % defines
+   \font_helpers_set_math_family_a\scriptfont      #mrtag\font % enables
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \font_helpers_set_math_family_a\textfont        #mrtag\font % defines
+   \font_helpers_set_math_family_a\textfont        #mrtag\font % enables
    \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
-
-% \def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
-%   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
-%      \csname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname #font#mbfam\font \else
-%    \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
-%      \csname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname #font#mbfam\font \else
-%      #font#mbfam#font#mrfam%
-%    \fi\fi}
 
 \def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
@@ -161,9 +132,15 @@
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\fontfamily#familytag%
-   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree\font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam%
-   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo  \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam%
-   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone  \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam%
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
+   \font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam% defines
+   \font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam% enables
+   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo
+   \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam% defines
+   \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam% enables
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
+   \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables
    \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
@@ -203,9 +180,8 @@
      \font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam%
    \fi}
 
-%D It can happen that we use a bodyfont with no math in which case
-%D we have a problem with setting the global bodyfont size in the
-%D page builder. For instance in:
+%D It can happen that we use a bodyfont with no math in which case we have a problem
+%D with setting the global bodyfont size in the page builder. For instance in:
 %D
 %D \starttext
 %D     \definetypeface[test][rm][serif][pagella][default]
@@ -213,9 +189,9 @@
 %D     test
 %D \stoptext
 %D
-%D This is why we need the check. At the cost of some extra checking we gain a little
-%D in restoring global states and, what's more important, we get rid of large math parameter
-%D push/pop in tracingall when not needed.
+%D This is why we need the check. At the cost of some extra checking we gain a
+%D little in restoring global states and, what's more important, we get rid of large
+%D math parameter push/pop in tracingall when not needed.
 
 \def\font_helpers_preset_math_family_indeed#fam#familytag%
   {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
@@ -235,13 +211,14 @@
 
 \let\font_helpers_reset_fontclass_math_families\gobbleoneargument
 
-% It would be nice if characters could be defined in a neutral way (say fam 255) and
-% be mapped to a real family during noad list construction. However, this changes
-% tex in critical places so for the moment we simulate this using manipulation.
-
-% For tracing purposes we use three families but in l2r mode 1 and 2 are copies of 0
-% while in rl mode 0 is a copy of 1. There is no real overhead involved in this. This
-% also permits different font definitions for normal and mixed.
+%D It would be nice if characters could be defined in a neutral way (say fam 255)
+%D and be mapped to a real family during noad list construction. However, this
+%D changes tex in critical places so for the moment we simulate this using
+%D manipulation.
+%D
+%D For tracing purposes we use three families but in l2r mode 1 and 2 are copies of
+%D 0 while in rl mode 0 is a copy of 1. There is no real overhead involved in this.
+%D This also permits different font definitions for normal and mixed.
 
 \let\m_font_class_direction\empty
 \let\m_font_class_features \empty
@@ -439,10 +416,10 @@
     \font_helpers_synchronize_math_bold_strategy
 \to \everymathematics
 
-% Bold is somewhat special as we might want both full-bold-math mixed
-% regular-math, as well as automatic adaption to outer bold (in titles
-% and inline text bold) so we will need explicit switches as well as
-% an automatic one. (We will use lucida as an example.)
+%D Bold is somewhat special as we might want both full-bold-math mixed regular-math,
+%D as well as automatic adaption to outer bold (in titles and inline text bold) so
+%D we will need explicit switches as well as an automatic one. (We will use lucida
+%D as an example.)
 
 \ifdefined\mathdefault \else \let\mathdefault\relax \fi
 

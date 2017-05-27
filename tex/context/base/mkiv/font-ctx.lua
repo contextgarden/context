@@ -1299,6 +1299,8 @@ do  -- else too many locals
 --         stoptiming(fonts)
 --     end
 
+    local busy = false
+
     scanners.definefont_two = function()
 
         local global          = scanboolean() -- \ifx\fontclass\empty\s!false\else\s!true\fi
@@ -1420,6 +1422,7 @@ do  -- else too many locals
             -- setting the extra characters will move elsewhere
             local characters = tfmdata.characters
             local parameters = tfmdata.parameters
+            local properties = tfmdata.properties
             -- we use char0 as signal; cf the spec pdf can handle this (no char in slot)
             characters[0] = nil
          -- characters[0x00A0] = { width = parameters.space }
@@ -1428,25 +1431,32 @@ do  -- else too many locals
             --
             constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             local fallbacks = specification.fallbacks
-            if fallbacks and fallbacks ~= "" and tfmdata.properties.hasmath then
+            local mathsize  = (mathsize == 1 or mathsize == 2 or mathsize == 3) and mathsize or nil -- can be unset so we test 1 2 3
+            if fallbacks and fallbacks ~= "" and mathsize and not busy then
+                busy = true
                 -- We need this ugly hack in order to resolve fontnames (at the \TEX end). Originally
                 -- math was done in Lua after loading (plugged into aftercopying).
                 --
-                -- After tl 2017 I'll also do text falbacks this way (although backups there are done
+                -- After tl 2017 I'll also do text fallbacks this way (although backups there are done
                 -- in a completely different way.
+                if trace_defining then
+                    report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
+                        name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,1)
+                end
                 mathematics.resolvefallbacks(tfmdata,specification,fallbacks)
                 context(function()
+                    busy = false
                     mathematics.finishfallbacks(tfmdata,specification,fallbacks)
                     local id = definefont(tfmdata)
                     csnames[id] = specification.cs
-                    tfmdata.properties.id = id
+                    properties.id = id
                     definers.register(tfmdata,id) -- to be sure, normally already done
                     texdefinefont(global,cs,id)
                     constructors.cleanuptable(tfmdata)
                     constructors.finalize(tfmdata)
                     if trace_defining then
-                        report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a",
-                            name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+                        report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
+                            name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,2)
                     end
                     -- resolved (when designsize is used):
                     local size = tfmdata.parameters.size or 655360
@@ -1455,13 +1465,20 @@ do  -- else too many locals
                     texsetcount("scaledfontsize",size)
                     lastfontid = id
                     --
+                    if trace_defining then
+                        report_defining("memory usage after: %s",statistics.memused())
+                        report_defining("stop stage two")
+                    end
+                    --
                     texsetcount("global","lastfontid",lastfontid)
                     specifiers[lastfontid] = { str, size }
                     if not mathsize then
-                        -- forget about it
+                        -- forget about it (can't happen here)
                     elseif mathsize == 0 then
+                        -- can't happen (here)
                         lastmathids[1] = lastfontid
                     else
+                        -- maybe only 1 2 3 (we already test for this)
                         lastmathids[mathsize] = lastfontid
                     end
                     stoptiming(fonts)
@@ -1470,14 +1487,14 @@ do  -- else too many locals
             else
                 local id = definefont(tfmdata)
                 csnames[id] = specification.cs
-                tfmdata.properties.id = id
+                properties.id = id
                 definers.register(tfmdata,id) -- to be sure, normally already done
                 texdefinefont(global,cs,id)
                 constructors.cleanuptable(tfmdata)
                 constructors.finalize(tfmdata)
                 if trace_defining then
-                    report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a",
-                        name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+                    report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
+                        name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,"-")
                 end
                 -- resolved (when designsize is used):
                 local size = tfmdata.parameters.size or 655360
@@ -1516,7 +1533,7 @@ do  -- else too many locals
             -- forget about it
         elseif mathsize == 0 then
             lastmathids[1] = lastfontid
-        else
+        else -- maybe only 1 2 3
             lastmathids[mathsize] = lastfontid
         end
         --

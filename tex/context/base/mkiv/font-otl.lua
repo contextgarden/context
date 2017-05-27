@@ -558,7 +558,7 @@ local function checkmathsize(tfmdata,mathsize)
         local parameters = tfmdata.parameters
         parameters.scriptpercentage       = mathdata.ScriptPercentScaleDown
         parameters.scriptscriptpercentage = mathdata.ScriptScriptPercentScaleDown
-        parameters.mathsize               = mathsize
+        parameters.mathsize               = mathsize -- only when a number !
     end
 end
 

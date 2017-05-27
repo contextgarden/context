@@ -35,111 +35,117 @@ local lastmathids       = fonts.hashes.lastmathids
 -- in context define three sizes but pass them later i.e. do virtualize afterwards
 
 function fallbacks.apply(target,original)
-    local mathparameters = target.mathparameters -- why not hasmath
-    if mathparameters then
-        local characters = target.characters
-        local parameters = target.parameters
-        local mathsize   = parameters.mathsize
-        local size       = parameters.size
-        local usedfonts  = target.fonts
-        if not usedfonts then
-            usedfonts    = {  }
-            target.fonts = usedfonts
-        end
-        -- This is not okay yet ... we have no proper way to refer to 'self'
-        -- otherwise I will make my own id allocator).
-        local self = #usedfonts == 0 and font.nextid() or nil -- will be true
-        local textid, scriptid, scriptscriptid
-        local textindex, scriptindex, scriptscriptindex
-        local textdata, scriptdata, scriptscriptdata
-        if mathsize == 3 then
-            -- scriptscriptsize
-         -- textid         = nil -- self
-         -- scriptid       = nil -- no smaller
-         -- scriptscriptid = nil -- no smaller
-            textid         = self
-            scriptid       = self
-            scriptscriptid = self
-        elseif mathsize == 2 then
-            -- scriptsize
-         -- textid         = nil -- self
-            textid         = self
-            scriptid       = lastmathids[3]
-            scriptscriptid = lastmathids[3]
-        else
-            -- textsize
-         -- textid         = nil -- self
-            textid         = self
-            scriptid       = lastmathids[2]
-            scriptscriptid = lastmathids[3]
-        end
-        if textid then
-            textindex = #usedfonts + 1
-            usedfonts[textindex] = { id = textid }
---             textdata = identifiers[textid] or target
-            textdata = target
-        else
-            textdata = target
-        end
-        if scriptid then
-            scriptindex = #usedfonts  + 1
-            usedfonts[scriptindex] = { id = scriptid }
-            scriptdata = identifiers[scriptid]
-        else
-            scriptindex = textindex
-            scriptdata  = textdata
-        end
-        if scriptscriptid then
-            scriptscriptindex = #usedfonts  + 1
-            usedfonts[scriptscriptindex] = { id = scriptscriptid }
-            scriptscriptdata = identifiers[scriptscriptid]
-        else
-            scriptscriptindex = scriptindex
-            scriptscriptdata  = scriptdata
-        end
-     -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
-        local data = {
-            textdata          = textdata,
-            scriptdata        = scriptdata,
-            scriptscriptdata  = scriptscriptdata,
-            textindex         = textindex,
-            scriptindex       = scriptindex,
-            scriptscriptindex = scriptscriptindex,
-            textid            = textid,
-            scriptid          = scriptid,
-            scriptscriptid    = scriptscriptid,
-            characters        = characters,
-            unicode           = k,
-            target            = target,
-            original          = original,
-            size              = size,
-            mathsize          = mathsize,
-        }
-        target.mathrelation = data
-     -- inspect(usedfonts)
-        for k, v in next, virtualcharacters do
-            if not characters[k] then
-                local tv = type(v)
-                local cd = nil
-                if tv == "table" then
-                    cd = v
-                elseif tv == "number" then
-                    cd = characters[v]
-                elseif tv == "function" then
-                    cd = v(data)
-                end
-                if cd then
-                    characters[k] = cd
-                else
-                    -- something else
-                end
-                if trace_fallbacks and characters[k] then
-                    report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
-                end
+    local mathparameters = target.mathparameters
+    if not mathparameters then
+        return
+    end
+    -- we also have forcedsize ... at this moment we already passed through
+    -- constructors.scale so we have this set
+    local parameters = target.parameters
+    local mathsize   = parameters.mathsize
+    if mathsize < 1 or mathsize > 3 then
+        return
+    end
+    local characters = target.characters
+    local size       = parameters.size
+    local usedfonts  = target.fonts
+    if not usedfonts then
+        usedfonts    = {  }
+        target.fonts = usedfonts
+    end
+    -- This is not okay yet ... we have no proper way to refer to 'self'
+    -- otherwise I will make my own id allocator).
+    local self = #usedfonts == 0 and font.nextid() or nil -- will be true
+    local textid, scriptid, scriptscriptid
+    local textindex, scriptindex, scriptscriptindex
+    local textdata, scriptdata, scriptscriptdata
+    if mathsize == 3 then
+        -- scriptscriptsize
+     -- textid         = nil -- self
+     -- scriptid       = nil -- no smaller
+     -- scriptscriptid = nil -- no smaller
+        textid         = self
+        scriptid       = self
+        scriptscriptid = self
+    elseif mathsize == 2 then
+        -- scriptsize
+     -- textid         = nil -- self
+        textid         = self
+        scriptid       = lastmathids[3]
+        scriptscriptid = lastmathids[3]
+    else
+        -- textsize
+     -- textid         = nil -- self
+        textid         = self
+        scriptid       = lastmathids[2]
+        scriptscriptid = lastmathids[3]
+    end
+    if textid then
+        textindex = #usedfonts + 1
+        usedfonts[textindex] = { id = textid }
+     -- textdata = identifiers[textid] or target
+        textdata = target
+    else
+        textdata = target
+    end
+    if scriptid then
+        scriptindex = #usedfonts  + 1
+        usedfonts[scriptindex] = { id = scriptid }
+        scriptdata = identifiers[scriptid]
+    else
+        scriptindex = textindex
+        scriptdata  = textdata
+    end
+    if scriptscriptid then
+        scriptscriptindex = #usedfonts  + 1
+        usedfonts[scriptscriptindex] = { id = scriptscriptid }
+        scriptscriptdata = identifiers[scriptscriptid]
+    else
+        scriptscriptindex = scriptindex
+        scriptscriptdata  = scriptdata
+    end
+ -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
+    local data = {
+        textdata          = textdata,
+        scriptdata        = scriptdata,
+        scriptscriptdata  = scriptscriptdata,
+        textindex         = textindex,
+        scriptindex       = scriptindex,
+        scriptscriptindex = scriptscriptindex,
+        textid            = textid,
+        scriptid          = scriptid,
+        scriptscriptid    = scriptscriptid,
+        characters        = characters,
+        unicode           = k,
+        target            = target,
+        original          = original,
+        size              = size,
+        mathsize          = mathsize,
+    }
+    target.mathrelation = data
+ -- inspect(usedfonts)
+    for k, v in next, virtualcharacters do
+        if not characters[k] then
+            local tv = type(v)
+            local cd = nil
+            if tv == "table" then
+                cd = v
+            elseif tv == "number" then
+                cd = characters[v]
+            elseif tv == "function" then
+                cd = v(data)
+            end
+            if cd then
+                characters[k] = cd
+            else
+                -- something else
+            end
+            if trace_fallbacks and characters[k] then
+                report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
             end
         end
-        data.unicode = nil
     end
+    data.unicode = nil
 end
 
 utilities.sequencers.appendaction("aftercopyingcharacters","system","mathematics.fallbacks.apply")
