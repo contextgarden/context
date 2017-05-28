@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/27/17 18:52:27
+-- merge date  : 05/28/17 19:30:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -7534,7 +7534,7 @@ fonts.analyzers={}
 fonts.readers={}
 fonts.definers={ methods={} }
 fonts.loggers={ register=function() end }
-fontloader.totable=fontloader.to_table 
+fontloader=nil
 
 end -- closure
 

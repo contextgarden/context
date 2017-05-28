@@ -1277,7 +1277,8 @@ local function collapse_bars(t)
         -- problem: we can have a proper nesting
 local d = false
 for i=1,m do
-    if find(t[i],"\\left") then
+    local ti = t[i]
+    if type(ti) == "string" and find(ti,"\\left") then
         d = true
         break
     end

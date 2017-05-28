@@ -65,6 +65,8 @@ local v_landscape          = variables.landscape
 local v_portrait           = variables.portrait
 local v_page               = variables.page
 local v_paper              = variables.paper
+local v_attachment         = variables.attachment
+local v_layer              = variables.layer
 
 local positive             = register(pdfliteral("/GSpositive gs"))
 local negative             = register(pdfliteral("/GSnegative gs"))
@@ -261,14 +263,50 @@ lpdf.registerdocumentfinalizer(flushjavascripts,"javascripts")
 
 -- -- --
 
-local pagespecs = {
-    [v_none] = {
-    },
+local plusspecs = {
     [v_max] = {
         mode = "FullScreen",
     },
     [v_bookmark] = {
         mode = "UseOutlines",
+    },
+    [v_attachment] = {
+        mode = "UseAttachments",
+    },
+    [v_layer] = {
+        mode = "UseOC",
+    },
+    [v_fit] = {
+        fit  = true,
+    },
+    [v_doublesided] = {
+        layout = "TwoColumnRight",
+    },
+    [v_fixed] = {
+        fixed  = true,
+    },
+    [v_landscape] = {
+        duplex = "DuplexFlipShortEdge",
+    },
+    [v_portrait] = {
+        duplex = "DuplexFlipLongEdge",
+    },
+    [v_page] = {
+        duplex = "Simplex" ,
+    },
+    [v_paper] = {
+        paper  = true,
+    },
+}
+
+local pagespecs = {
+    --
+    [v_max]        = plusspecs[v_max],
+    [v_bookmark]   = plusspecs[v_bookmark],
+    [v_attachment] = plusspecs[v_attachment],
+    [v_layer]      = plusspecs[v_layer],
+    --
+    [v_none] = {
     },
     [v_fit] = {
         mode = "UseNone",
@@ -318,36 +356,6 @@ local pagespecs = {
         layout = "auto",
         fixed  = true,
         duplex = "Simplex",
-        paper  = true,
-    },
-}
-
-local plusspecs = {
-    [v_max] = {
-        mode = "FullScreen",
-    },
-    [v_bookmark] = {
-        mode = "UseOutlines",
-    },
-    [v_fit] = {
-        fit  = true,
-    },
-    [v_doublesided] = {
-        layout = "TwoColumnRight",
-    },
-    [v_fixed] = {
-        fixed  = true,
-    },
-    [v_landscape] = {
-        duplex = "DuplexFlipShortEdge",
-    },
-    [v_portrait] = {
-        duplex = "DuplexFlipLongEdge",
-    },
-    [v_page] = {
-        duplex = "Simplex" ,
-    },
-    [v_paper] = {
         paper  = true,
     },
 }

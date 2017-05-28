@@ -67,7 +67,7 @@ function texconfig.init()
             "gzip",  "zip", "zlib", "lfs", "ltn12", "mime", "socket", "md5", "fio", "unicode", "utf",
         },
         extratex = {
-            "epdf", "fontloader", "kpse", "mplib",
+            "epdf", "kpse", "mplib", -- "fontloader",
         },
         obsolete = {
             "fontloader", -- can be filled by luat-log
