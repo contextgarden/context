@@ -26,6 +26,7 @@ local skipcodes     = nodes.skipcodes
 local kerncodes     = nodes.kerncodes
 local rulecodes     = nodes.rulecodes
 local nodecodes     = nodes.nodecodes
+local gluecodes     = nodes.gluecodes
 local boundarycodes = nodes.boundarycodes
 local usercodes     = nodes.usercodes
 
@@ -86,6 +87,8 @@ local setpenalty = nuts.setpenalty
 local setdir     = nuts.setdir
 local setshift   = nuts.setshift
 local setwidth   = nuts.setwidth
+local setsubtype = nuts.setsubtype
+local setleader  = nuts.setleader
 
 local copy_nut   = nuts.copy
 local new_nut    = nuts.new
@@ -182,6 +185,8 @@ local noad              = register_nut(new_nut("noad"))
 
 local boundary          = register_nut(new_nut("boundary",boundarycodes.user))
 local wordboundary      = register_nut(new_nut("boundary",boundarycodes.word))
+
+local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
 
 -- the dir field needs to be set otherwise crash:
 
@@ -361,6 +366,18 @@ function nutpool.userrule(width,height,depth,dir) -- w/h/d == nil will let them 
     end
     return n
 end
+
+function nutpool.leader(width,list)
+    local n = copy_nut(cleader)
+    if width then
+        setwidth(n,width)
+    end
+    if list then
+        setleader(n,list)
+    end
+    return n
+end
+
 
 function nutpool.latelua(code)
     local n = copy_nut(latelua)

@@ -463,7 +463,7 @@ function nuts.copy_only_glyphs(current)
     return head
 end
 
-nuts.uses_font  = direct.uses_font
+nuts.uses_font = direct.uses_font
 
 if not nuts.uses_font then
     local getdisc = nuts.getdisc

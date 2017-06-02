@@ -1092,7 +1092,9 @@ function table.unnest(t) -- bad name
 end
 
 local function are_equal(a,b,n,m) -- indexed
-    if a and b and #a == #b then
+    if a == b then
+        return true
+    elseif a and b and #a == #b then
         n = n or 1
         m = m or #a
         for i=n,m do
@@ -1114,16 +1116,18 @@ local function are_equal(a,b,n,m) -- indexed
 end
 
 local function identical(a,b) -- assumes same structure
-    for ka, va in next, a do
-        local vb = b[ka]
-        if va == vb then
-            -- same
-        elseif type(va) == "table" and  type(vb) == "table" then
-            if not identical(va,vb) then
+    if a ~= b then
+        for ka, va in next, a do
+            local vb = b[ka]
+            if va == vb then
+                -- same
+            elseif type(va) == "table" and  type(vb) == "table" then
+                if not identical(va,vb) then
+                    return false
+                end
+            else
                 return false
             end
-        else
-            return false
         end
     end
     return true

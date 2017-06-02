@@ -1670,7 +1670,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 39608, stripped down to: 23165
+-- original size: 39726, stripped down to: 23243
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2464,7 +2464,9 @@ function table.unnest(t)
   return unnest(t)
 end
 local function are_equal(a,b,n,m) 
-  if a and b and #a==#b then
+  if a==b then
+    return true
+  elseif a and b and #a==#b then
     n=n or 1
     m=m or #a
     for i=n,m do
@@ -2484,15 +2486,17 @@ local function are_equal(a,b,n,m)
   end
 end
 local function identical(a,b) 
-  for ka,va in next,a do
-    local vb=b[ka]
-    if va==vb then
-    elseif type(va)=="table" and type(vb)=="table" then
-      if not identical(va,vb) then
+  if a~=b then
+    for ka,va in next,a do
+      local vb=b[ka]
+      if va==vb then
+      elseif type(va)=="table" and type(vb)=="table" then
+        if not identical(va,vb) then
+          return false
+        end
+      else
         return false
       end
-    else
-      return false
     end
   end
   return true
@@ -20536,8 +20540,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 845187
--- stripped bytes    : 306192
+-- original bytes    : 845305
+-- stripped bytes    : 306232
 
 -- end library merge
 

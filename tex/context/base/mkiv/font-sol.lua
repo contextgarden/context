@@ -395,7 +395,7 @@ function splitters.split(head)
         if m > max_more then max_more = m end
         start, stop, done = nil, nil, true
     end
-    while current do -- also nextid
+    while current do -- also ischar
         local next = getnext(current)
         local id = getid(current)
         if id == glyph_code then

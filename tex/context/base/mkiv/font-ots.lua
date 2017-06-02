@@ -224,7 +224,7 @@ local math_code          = nodecodes.math
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
 
-local discretionary_code = disccodes.discretionary
+----- discretionary_code = disccodes.discretionary
 local ligature_code      = glyphcodes.ligature
 
 local a_state            = attributes.private('state')
@@ -3833,11 +3833,13 @@ otf.helpers.pardirstate = pardirstate
 
 do
 
-    -- experimental speedup (only with hyphenated text and multiple fonts per processing)
-    --
-    -- at some point this might become true by default
+    -- This is a measurable experimental speedup (only with hyphenated text and multiple
+    -- fonts per processor call), especially for fonts with lots of contextual lookups.
 
-    local fastdisc = false  directives.register("otf.fastdisc",function(v) fastdisc = v end)
+ -- local fastdisc = true
+    local fastdisc = context and LUATEXVERSION >= 1.005
+
+    directives.register("otf.fastdisc",function(v) fastdisc = v end)
 
     function otf.featuresprocessor(head,font,attr,direction,n)
 
@@ -4023,9 +4025,9 @@ do
                                     if ok then
                                         done = true
                                     end
-                            else
-                                start = getnext(start)
-                            end
+                                else
+                                    start = getnext(start)
+                                end
                             elseif id == math_code then
                                 start = getnext(end_of_math(start))
                             elseif id == dir_code then

@@ -1262,7 +1262,7 @@ do  -- else too many locals
 --          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
 --          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
 --             --
---             constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
+--          -- constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
 --             local id = definefont(tfmdata)
 --             csnames[id] = specification.cs
 --             tfmdata.properties.id = id
@@ -1429,7 +1429,7 @@ do  -- else too many locals
          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
             --
-            constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
+         -- constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             local fallbacks = specification.fallbacks
             local mathsize  = (mathsize == 1 or mathsize == 2 or mathsize == 3) and mathsize or nil -- can be unset so we test 1 2 3
             if fallbacks and fallbacks ~= "" and mathsize and not busy then
@@ -2383,26 +2383,24 @@ dimenfactors.pct  = nil
 to scale virtual characters.</p>
 --ldx]]--
 
--- in versions > 0.82 0 is supported as equivalent of self
-
-function constructors.checkvirtualids(tfmdata)
-    -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
-    local fonts  = tfmdata.fonts
-    local selfid = font.nextid()
-    if fonts and #fonts > 0 then
-        for i=1,#fonts do
-            local fi = fonts[i]
-            if fi[2] == 0 then
-                fi[2] = selfid
-            elseif fi.id == 0 then
-                fi.id = selfid
-            end
-        end
-    else
-     -- tfmdata.fonts = { "id", selfid } -- conflicts with other next id's (vf math), too late anyway
-    end
-    -- end of experiment
-end
+-- function constructors.checkvirtualids(tfmdata)
+--     -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
+--     local fonts  = tfmdata.fonts
+--     local selfid = font.nextid()
+--     if fonts and #fonts > 0 then
+--         for i=1,#fonts do
+--             local fi = fonts[i]
+--             if fi[2] == 0 then
+--                 fi[2] = selfid
+--             elseif fi.id == 0 then
+--                 fi.id = selfid
+--             end
+--         end
+--     else
+--      -- tfmdata.fonts = { "id", selfid } -- conflicts with other next id's (vf math), too late anyway
+--     end
+--     -- end of experiment
+-- end
 
 -- function constructors.getvirtualid(tfmdata)
 --     --  since we don't know the id yet, we use 0 as signal
@@ -3090,4 +3088,75 @@ do
         end
     }
 
+end
+
+-- for the moment here (and not in font-con.lua):
+
+local identical     = table.identical
+local copy          = table.copy
+local fontdata      = fonts.hashes.identifiers
+local addcharacters = font.addcharacters
+
+-- This helper is mostly meant to add last-resort (virtual) characters
+-- or runtime generated fonts (so we forget about features and such). It
+-- will probably take a while before it get used.
+
+local trace_adding  = false
+local report_adding = logs.reporter("fonts","add characters")
+
+trackers.register("fonts.addcharacters",function(v) trace_adding = v end)
+
+if addcharacters then
+
+    function fonts.constructors.addcharacters(id,list)
+        local newchar = list.characters
+        if newchar then
+            local data    = fontdata[id]
+            local newfont = list.fonts
+            local oldchar = data.characters
+            local oldfont = data.fonts
+            addcharacters(id, {
+                characters = newchar,
+                fonts      = newfont,
+                nomath     = not data.properties.hasmath,
+            })
+            -- this is just for tracing, as the assignment only uses the fonts list
+            -- and doesn't store it otherwise
+            if newfont then
+                if oldfont then
+                    local oldn = #oldfont
+                    local newn = #newfont
+                    for n=1,newn do
+                        local ok = false
+                        local nf = newfont[n]
+                        for o=1,oldn do
+                            if identical(nf,oldfont[o]) then
+                                ok = true
+                                break
+                            end
+                        end
+                        if not ok then
+                            oldn = oldn + 1
+                            oldfont[oldn] = newfont[i]
+                        end
+                    end
+                else
+                    data.fonts = newfont
+                end
+            end
+            -- this is because we need to know what goes on and also might
+            -- want to access character data
+            for u, c in next, newchar do
+                if trace_adding then
+                    report_adding("adding character %U to font %!font:name!",u,id)
+                end
+                oldchar[u] = c
+            end
+        end
+    end
+
+else
+    function fonts.constructors.addcharacters(id,list)
+        report_adding("adding characters to %!font:name! is not yet supported",id)
+    end
 end

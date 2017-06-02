@@ -359,4 +359,4 @@ function font.getfont(id)
     return identifiers[id]
 end
 
-font.setfont = currentfont -- bah, no native 'setfont' as name
+-- font.setfont = currentfont -- bah, no native 'setfont' as name

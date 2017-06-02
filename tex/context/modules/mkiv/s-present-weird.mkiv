@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-pre-17,
+%D   [      file=s-present-weird, % s-pre-17,
 %D        version=1999.08.20,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=Presentation Environment 17,
+%D       subtitle=Presentation Environment Weird,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -10,6 +10,14 @@
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
+
+\startmodule[present-balls]
+
+%D This is a rather old style, adn I used it for a presentation about \MATHML\
+%D around the turn of the century. Unfortunately I can't find back that weird
+%D presentation. I didn't change the code apart from loading the body font. One can
+%D clock on an area and get it large. Clicking elsewhere brings back the main page.
+%D It was actualy a zoom test at that time.
 
 \setupbodyfont
   [dejavu,11pt,ss]
@@ -30,7 +38,7 @@
 
 \setupinteraction
   [state=start,
-%    click=off,
+ % click=off,
    color=TitleColor,
    contrastcolor=TitleColor]
 
@@ -146,7 +154,7 @@
         next=connection:\NextBlaBla
     }
     \hbox to 600pt \bgroup
-        \setupinteraction[focus=fitr]
+        \setupinteraction[focus=frame]
         \getrandomdimen\scratchdimen{50pt}{75pt}
         \hskip0pt plus \scratchdimen minus \scratchdimen
         \hpos {
@@ -196,7 +204,7 @@
             \hbox to \wd\scratchbox
         }
         \bgroup
-            \setupinteraction[focus=fitr]
+            \setupinteraction[focus=frame]
             \hss
             \switchtobodyfont[big]%
             \bfd
@@ -238,8 +246,8 @@
         [MasterPage]
         [MasterPage]
     \setuplayout [
-        topspace=25pt,
-        backspace=25pt,
+        topspace=50pt,
+        backspace=50pt,
         width=middle,
         header=0pt,
         footer=0pt,
@@ -287,118 +295,8 @@
     \endgroup
 \stoptexdefinition
 
-\continueifinputfile{s-pre-17.mkiv}
+\stopmodule
 
-\starttext
+\continueifinputfile{s-present-balls.mkiv}
 
-\nopdfcompression
-
-\TitlePage{About Text\\Today's Talk\\Hans Hagen}
-
-\StartPage{The First Page}
-
-    \StartTopic{Some Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input knuth \StopText
-    \StopTopic
-
-    \StartTopic{Another Text}
-        \StartText \input tufte \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input knuth \StopText
-    \StopTopic
-
-    \StartTopic{Some More Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input tufte \StopText
-    \StopTopic
-
-    \StartTopic{Some Text Again}
-        \StartText \input tufte \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input knuth \StopText
-        \StartText \input tufte \StopText
-    \StopTopic
-
-\StopPage
-
-\StartPage{The Second Page}
-
-    \StartTopic{Some Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-    \StopTopic
-
-    \StartTopic{Another Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-    \StopTopic
-
-    \StartTopic{Some Nice Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input tufte \StopText
-        \StartText \input tufte \StopText
-    \StopTopic
-
-    \StartTopic{Some Funny Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-    \StopTopic
-
-    \StartTopic{Quite Some Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-    \StopTopic
-
-    \StartTopic{Even More Text}
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-    \StopTopic
-
-\StopPage
-
-\StartPage{The Third Page}
-
-    \StartTopic{Some Short Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-    \StopTopic
-
-    \StartTopic{Some Minimal Text}
-        \StartText \input tufte \StopText
-        \StartText \input zapf  \StopText
-    \StopTopic
-
-    \StartTopic{Some More Text}
-        \StartText \input tufte \StopText
-        \StartText \input knuth \StopText
-        \StartText \input zapf  \StopText
-        \StartText \input tufte \StopText
-        \StartText \input tufte \StopText
-    \StopTopic
-
-\StopPage
-
-\stoptext
+\inputpresentationfile{examples/present-weird-001.tex}

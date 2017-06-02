@@ -669,39 +669,3 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
-
--- temporary hack
-
-if LUATEXVERSION <= 1.002 then
-
-    local get   = tex.get
-    local flush = node.free
-
-    function tex.get(name,split)
-        local s = get(name)
-        if split == true then
-            if s then
-                local width         = s.width
-                local stretch       = s.stretch
-                local shrink        = s.shrink
-                local stretch_order = s.stretch_order
-                local shrink_order  = s.shrink_order
-                flush(s)
-                return width, stretch, shrink, stretch_order, shrink_order
-            else
-                return 0, 0, 0, 0, 0
-            end
-        elseif split == false then
-            if s then
-                local width = s.width
-                flush(s)
-                return width
-            else
-                return 0
-            end
-        else
-            return s
-        end
-    end
-
-end

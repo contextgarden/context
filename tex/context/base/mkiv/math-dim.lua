@@ -6,9 +6,6 @@ if not modules then modules = { } end modules ['math-dim'] = {
     license   = "see context related readme files"
 }
 
--- Beware: only Taco and Ulrik really understands in depth what these dimensions
--- do so if you run into problems ask on the context list.
-
 -- The radical_rule value is also used as a trigger. In luatex the accent
 -- placement happens either the opentype way (using top_accent cum suis) or the
 -- traditional way. In order to determine what method to use the \Umathradicalrule
@@ -18,6 +15,8 @@ if not modules then modules = { } end modules ['math-dim'] = {
 -- which case the engine takes the rulethickness. In c-speak:
 --
 -- int compat_mode = (radical_rule(cur_style) == undefined_math_parameter) ;
+--
+-- In the meantime things have been updated and we now have two code paths.
 
 local abs, next = math.abs, next
 

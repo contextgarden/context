@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/28/17 19:30:32
+-- merge date  : 06/02/17 12:11:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -1833,7 +1833,9 @@ function table.unnest(t)
   return unnest(t)
 end
 local function are_equal(a,b,n,m) 
-  if a and b and #a==#b then
+  if a==b then
+    return true
+  elseif a and b and #a==#b then
     n=n or 1
     m=m or #a
     for i=n,m do
@@ -1853,15 +1855,17 @@ local function are_equal(a,b,n,m)
   end
 end
 local function identical(a,b) 
-  for ka,va in next,a do
-    local vb=b[ka]
-    if va==vb then
-    elseif type(va)=="table" and type(vb)=="table" then
-      if not identical(va,vb) then
+  if a~=b then
+    for ka,va in next,a do
+      local vb=b[ka]
+      if va==vb then
+      elseif type(va)=="table" and type(vb)=="table" then
+        if not identical(va,vb) then
+          return false
+        end
+      else
         return false
       end
-    else
-      return false
     end
   end
   return true
@@ -7534,7 +7538,9 @@ fonts.analyzers={}
 fonts.readers={}
 fonts.definers={ methods={} }
 fonts.loggers={ register=function() end }
-fontloader=nil
+if context then
+  fontloader=nil
+end
 
 end -- closure
 
@@ -22254,7 +22260,6 @@ local disc_code=nodecodes.disc
 local math_code=nodecodes.math
 local dir_code=nodecodes.dir
 local localpar_code=nodecodes.localpar
-local discretionary_code=disccodes.discretionary
 local ligature_code=glyphcodes.ligature
 local a_state=attributes.private('state')
 local a_noligature=attributes.private("noligature")
@@ -25115,7 +25120,8 @@ otf.helpers=otf.helpers or {}
 otf.helpers.txtdirstate=txtdirstate
 otf.helpers.pardirstate=pardirstate
 do
-  local fastdisc=false directives.register("otf.fastdisc",function(v) fastdisc=v end)
+  local fastdisc=context and LUATEXVERSION>=1.005
+  directives.register("otf.fastdisc",function(v) fastdisc=v end)
   function otf.featuresprocessor(head,font,attr,direction,n)
     local sequences=sequencelists[font] 
     if not sequencelists then
@@ -25261,9 +25267,9 @@ do
                   if ok then
                     done=true
                   end
-              else
-                start=getnext(start)
-              end
+                else
+                  start=getnext(start)
+                end
               elseif id==math_code then
                 start=getnext(end_of_math(start))
               elseif id==dir_code then

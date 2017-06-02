@@ -1647,7 +1647,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
         return head, done
     end
 
-    if LUATEXVERSION< 1.005 then
+    if LUATEXVERSION < 1.005 then
 
         expanded = function(head)
             local done = hyphenate(head)

@@ -89,10 +89,6 @@ local trace_usage       = false  trackers.register  ("graphics.usage",      func
 local extra_check       = false  directives.register("graphics.extracheck",    function(v) extra_check    = v end)
 local auto_transform    = true   directives.register("graphics.autotransform", function(v) auto_transform = v end)
 
-if LUATEXVERSION <= 1 then
-    auto_transform = false
-end
-
 local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_figures    = logs.reporter("system","graphics")
 local report_figure     = logs.reporter("used graphic")

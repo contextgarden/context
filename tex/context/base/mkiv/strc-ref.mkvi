@@ -372,7 +372,7 @@
   {\begingroup
    \dowithnextbox
     {\strc_references_set_page_only_destination_attribute{#1}%
-     \hbox
+     \hpack % \hbox
        \ifnum\lastdestinationattribute=\attributeunsetvalue\else attr \destinationattribute \lastdestinationattribute \fi
        {\box\b_strc_destination_nodes\box\nextbox}%
      \endgroup}}

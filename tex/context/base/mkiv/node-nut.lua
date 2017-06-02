@@ -210,11 +210,6 @@ if LUATEXVERSION < 1.005 then
     function direct.getsup    (n) return getfield(n,"sup") end
 end
 
--- if LUATEXVERSION < 1.004 then
---     local gc = direct.getcomponents
---     getcomponents = function(n) local c = gc(n) return c ~= 0 and c or nil end
--- end
-
 -- local hash = table.setmetatableindex("number")
 -- local ga = direct.get_attribute
 -- function direct.get_attribute(n,a)

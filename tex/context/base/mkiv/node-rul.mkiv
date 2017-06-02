@@ -108,8 +108,14 @@
     \setuevalue\currentbar{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
 
+\newbox\b_node_rules
+
 \unexpanded\def\node_rules_define
   {\edef\p_node_rules_color{\barparameter\c!color}%
+   \edef\p_node_text{\barparameter\c!text}%
+   \ifx\p_node_text\empty\else
+     \setbox\b_node_rules\hbox{\p_node_text}%
+   \fi
    \setevalue{\??barattribute\currentbar}{\number
      \clf_definerule
         continue      {\barparameter\c!continue}%
@@ -125,6 +131,11 @@
         offset        \barparameter\c!offset\space % number
         dy            \barparameter\c!dy\space % number
         empty        {\barparameter\c!empty}%
+     \ifx\p_node_text\empty\else
+        % not that useful and efficient, more for testing something
+        text         \b_node_rules
+        repeat       {\barparameter\c!repeat}%
+     \fi
      \relax}}
 
 \unexpanded\def\node_rules_redefine#1%

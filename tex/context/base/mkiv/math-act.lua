@@ -238,6 +238,8 @@ function mathematics.overloaddimensions(target,original,set)
                 local hfactor    = parameters.hfactor
                 local vfactor    = parameters.vfactor
                 local addprivate = fonts.helpers.addprivate
+target.type = "virtual"
+target.properties.virtualized = true
                 local function overload(dimensions)
                     for unicode, data in next, dimensions do
                         local character = characters[unicode]
@@ -249,9 +251,9 @@ function mathematics.overloaddimensions(target,original,set)
                             if trace_defining and (width or height or depth) then
                                 report_math("overloading dimensions of %C, width %a, height %a, depth %a",unicode,width,height,depth)
                             end
-                            if width   then character.width  = width  * hfactor end
-                            if height  then character.height = height * vfactor end
-                            if depth   then character.depth  = depth  * vfactor end
+                            if width  then character.width  = width  * hfactor end
+                            if height then character.height = height * vfactor end
+                            if depth  then character.depth  = depth  * vfactor end
                             --
                             local xoffset = data.xoffset
                             local yoffset = data.yoffset
@@ -262,13 +264,22 @@ function mathematics.overloaddimensions(target,original,set)
                                 yoffset = { "down", -yoffset * vfactor }
                             end
                             if xoffset or yoffset then
-                                local slot = { "slot", 1, addprivate(target,nil,fastcopy(character)) }
-                                if xoffset and yoffset then
-                                    character.commands = { xoffset, yoffset, slot }
-                                elseif xoffset then
-                                    character.commands = { xoffset, slot }
+                                if character.commands then
+                                    if yoffset then
+                                        insert(character.commands,1,yoffset)
+                                    end
+                                    if xoffset then
+                                        insert(character.commands,1,xoffset)
+                                    end
                                 else
-                                    character.commands = { yoffset, slot }
+                                    local slot = { "slot", 0, addprivate(target,nil,fastcopy(character)) }
+                                    if xoffset and yoffset then
+                                        character.commands = { xoffset, yoffset, slot }
+                                    elseif xoffset then
+                                        character.commands = { xoffset, slot }
+                                    else
+                                        character.commands = { yoffset, slot }
+                                    end
                                 end
                                 character.index = nil
                             end

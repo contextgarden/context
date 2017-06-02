@@ -1461,7 +1461,7 @@ do
 
     local hash = setmetatableindex(function(t,font)
         local g = fontdata[font].goodies
-        local m = g and g[1].mathematics
+        local m = g and g[1] and g[1].mathematics
         local k = m and m.kernpairs
         t[font] = k
         return k

@@ -27,4 +27,6 @@ fonts.readers       = { }
 fonts.definers      = { methods = { } }
 fonts.loggers       = { register = function() end }
 
-fontloader = nil
+if context then
+    fontloader = nil
+end
