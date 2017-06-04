@@ -10483,11 +10483,15 @@
   </cd:command>
   <cd:command category="fonts" file="font-emp.mkvi" name="emphasistypeface"/>
   <cd:command category="fonts" file="font-emp.mkvi" name="emphasisboldface"/>
+  <cd:command category="fonts" file="font-emp.mkvi" name="normalitalicface"/>
+  <cd:command category="fonts" file="font-emp.mkvi" name="normalslantedface"/>
   <cd:command category="fonts" file="font-emp.mkvi" name="normalboldface"/>
   <cd:command category="fonts" file="font-emp.mkvi" name="normaltypeface"/>
   <cd:command category="fonts" file="font-emp.mkvi" name="swaptypeface"/>
   <cd:command category="fonts" file="font-emp.mkvi" name="typeface"/>
   <cd:command category="fonts" file="font-emp.mkvi" name="boldface"/>
+  <cd:command category="fonts" file="font-emp.mkvi" name="italicface"/>
+  <cd:command category="fonts" file="font-emp.mkvi" name="slantedface"/>
   <cd:command category="fonts" file="font-emp.mkvi" name="swapface"/>
   <cd:command category="fonts" file="font-fea.mkvi" level="style" name="definefontfeature">
    <cd:arguments>

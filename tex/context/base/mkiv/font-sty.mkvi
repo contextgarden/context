@@ -18,34 +18,33 @@
 %D \macros
 %D   {definealternativestyle}
 %D
-%D In the main modules we are going to implement lots of
-%D parameterized commands and one of these parameters will
-%D concern the font to use. To suit consistent use of fonts we
-%D here implement a mechanism for defining the keywords that
-%D present a particular style or alternative.
+%D In the main modules we are going to implement lots of parameterized commands and
+%D one of these parameters will concern the font to use. To suit consistent use of
+%D fonts we here implement a mechanism for defining the keywords that present a
+%D particular style or alternative.
 %D
 %D \starttyping
 %D \definealternativestyle [keywords] [\style] [\nostyle]
 %D \stoptyping
 %D
-%D The first command is used in the normal textflow, while the
-%D second command takes care of headings and alike. Consider
-%D the next two definitions:
+%D The first command is used in the normal textflow, while the second command takes
+%D care of headings and alike. Consider the next two definitions:
 %D
 %D \starttyping
 %D \definealternativestyle [bold] [\bf]  []
 %D \definealternativestyle [cap]  [\cap] [\cap]
 %D \stoptyping
 %D
-%D A change \type{\bf} in a heading which is to be set in
-%D \type{\tfd} does not look that well, so therefore we leave
-%D the second argument of \type{\definealternativestyle} empty.
-%D When we capatalize characters using the pseudo small cap
-%D command \type{\cap}, we want this to take effect in both
-%D text and headings, which is accomplished by assigning both
-%D arguments.
+%D A change \type {\bf} in a heading which is to be set in \type {\tfd} does not look
+%D that well, so therefore we leave the second argument of \type
+%D {\definealternativestyle} empty. When we capatalize characters using the pseudo
+%D small cap command \type {\cap}, we want this to take effect in both text and
+%D headings, which is accomplished by assigning both arguments.
 
-\installcorenamespace{alternativestyles}
+\installcorenamespace{alternativestyles}  % settings
+\installcorenamespace{alternativestyle}   % instances
+
+\installsetuponlycommandhandler \??alternativestyles {alternativestyles}
 
 \setnewconstant \c_font_current_alternative_style_index \plusone
 
@@ -57,13 +56,21 @@
 
 \let\definestyle\definealternativestyle % later redefined
 
+\newconstant\c_fonts_basics_alternative_style_method
+
 \def\font_basics_define_alternative_style_indeed#variantone#varianttwo#command%
-  {\ifcsname#command\endcsname
+  {\setvalue{\??alternativestyle#command}{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}%
+   \ifcsname#command\endcsname
      % no redefinition
+   \else\ifnum\c_fonts_basics_alternative_style_method=\plusone
+      \ifthirdargument
+        \setuevalue{#command}{\groupedcommand{\expandafter\noexpand\begincsname\??alternativestyle#command\endcsname}{}}%
+      \else
+        \setuvalue{#command}{\groupedcommand{#variantone}{}}%
+      \fi
    \else
      \setuvalue{#command}{\groupedcommand{#variantone}{}}%
-   \fi
-   \setvalue{\??alternativestyles#command}{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}}%
+   \fi\fi}
 
 \def\font_helpers_apply_alternative_style
   {\ifcase\c_font_current_alternative_style_index
@@ -77,18 +84,24 @@
    \fi}
 
 \def\applyalternativestyle#name% public
-  {\begincsname\??alternativestyles#name\endcsname}
+  {\begincsname\??alternativestyle#name\endcsname}
 
-%D Maybe too geneneric, but probably ok is the following. (Maybe one
-%D day we will use a dedicated grouped command for styles.)
+\appendtoks
+    \doifelse{\alternativestylesparameter\c!method}\v!auto
+      {\c_fonts_basics_alternative_style_method\plusone}%
+      {\c_fonts_basics_alternative_style_method\zerocount}%
+\to \everysetupalternativestyles
+
+%D Maybe too generic, but probably ok is the following. (Maybe one day we will use a
+%D dedicated grouped command for styles.)
 
 % \appendtoks
 %     \let\groupedcommand\thirdofthreearguments
 % \to \everysimplifycommands
 
-%D This command also defines the keyword as command. This means
-%D that the example definition of \type{bold} we gave before,
-%D results in a command \type{\bold} which can be used as:
+%D This command also defines the keyword as command. This means that the example
+%D definition of \type {bold} we gave before, results in a command \type {\bold}
+%D which can be used as:
 %D
 %D \startbuffer
 %D He's a \bold{bold} man with a {\bold head}.
@@ -102,39 +115,33 @@
 %D \definealternativestyle[bold][\bf][]\getbuffer
 %D \stopexample
 %D
-%D Such definitions are of course unwanted for \type{\cap}
-%D because this would result in an endless recursive call.
-%D Therefore we check on the existance of both the command and
-%D the substitution. The latter is needed because for instance
-%D \type{\type} is an entirely diferent command. That command
-%D handles verbatim, while the style command would just switch
-%D to teletype font. This is just an example of a tricky
-%D naming coincidence.
-
+%D Such definitions are of course unwanted for \type {\cap} because this would
+%D result in an endless recursive call. Therefore we check on the existance of both
+%D the command and the substitution. The latter is needed because for instance \type
+%D {\type} is an entirely diferent command. That command handles verbatim, while the
+%D style command would just switch to teletype font. This is just an example of a
+%D tricky naming coincidence.
+%D
 %D \macros
 %D   {doconvertfont,noconvertfont,
 %D    dontconvertfont,redoconvertfont}
 %D
-%D After having defined such keywords, we can call for them by
-%D using
+%D After having defined such keywords, we can call for them by using
 %D
 %D \starttyping
 %D \doconvertfont{keyword}{text}
 %D \stoptyping
 %D
-%D We deliberately pass an argument. This enables us to
-%D assign converters that handle one argument, like
-%D \type{\cap}.
+%D We deliberately pass an argument. This enables us to assign converters that
+%D handle one argument, like \type {\cap}.
 %D
-%D By default the first specification is used to set the style,
-%D exept when we say \type{\dontconvertfont}, after which the
-%D second specification is used. We can also directly call for
-%D \type{\noconvertfont}. In nested calls, we can restore the
-%D conversion by saying \type{\redoconvertfont}.
-
-%D These commands are not grouped! Grouping is most probably
-%D done by the calling macro's and would lead to unnecessary
-%D overhead.
+%D By default the first specification is used to set the style, exept when we say
+%D \type {\dontconvertfont}, after which the second specification is used. We can
+%D also directly call for \type {\noconvertfont}. In nested calls, we can restore
+%D the conversion by saying \type {\redoconvertfont}.
+%D
+%D These commands are not grouped! Grouping is most probably done by the calling
+%D macro's and would lead to unnecessary overhead.
 
 \let\m_current_convert_font   \empty
 \let\m_current_convert_font_dt\empty
@@ -149,7 +156,7 @@
 
 \def\font_helpers_do_convert_font
   {\edef\m_current_convert_font_dt{\detokenize\expandafter{\m_current_convert_font}}%
-   \ifcsname\??alternativestyles\m_current_convert_font_dt\endcsname
+   \ifcsname\??alternativestyle\m_current_convert_font_dt\endcsname
      \expandafter\lastnamedcs
    \else\ifcsname\m_current_convert_font_dt\endcsname
      \doubleexpandafter\lastnamedcs
@@ -157,8 +164,8 @@
      \doubleexpandafter\m_current_convert_font
    \fi\fi}
 
-%D Low level switches (downward compatible, but we keep them as one can use
-%D them in styles):
+%D Low level switches (downward compatible, but we keep them as one can use them in
+%D styles):
 %D
 %D \starttyping
 %D \usemodule[abr-02]
@@ -188,7 +195,7 @@
 \unexpanded\def\dousecurrentstyleparameter % empty check outside here
   {\edef\detokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
-   \ifcsname\??alternativestyles\detokenizedstyleparameter\endcsname
+   \ifcsname\??alternativestyle\detokenizedstyleparameter\endcsname
      \lastnamedcs
    \else\ifcsname\detokenizedstyleparameter\endcsname
      \lastnamedcs
@@ -392,8 +399,8 @@
 \unexpanded\edef\vsone#character{#character\normalUchar"FE00 } % used
 \unexpanded\edef\vstwo#character{#character\normalUchar"FE01 } % not used but handy for testing
 
-%D For historic reasons we keep the following around but they are no longer
-%D that relevant for \MKIV.
+%D For historic reasons we keep the following around but they are no longer that
+%D relevant for \MKIV.
 
 \unexpanded\def\doattributes#1#2#3#4%
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox

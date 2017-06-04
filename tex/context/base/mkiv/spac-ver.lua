@@ -1117,7 +1117,7 @@ end
 -- we could inject a vadjust to force a recalculation .. a mess
 --
 -- So, the next is far from robust and okay but for the moment this overlaying
--- has to do. Always test this with the examples in spec-ver.mkvi!
+-- has to do. Always test this with the examples in spac-ver.mkvi!
 
 local function check_experimental_overlay(head,current)
     local p = nil
@@ -1131,7 +1131,12 @@ local function check_experimental_overlay(head,current)
         -- We deal with this at the tex end .. we don't see spacing .. enabling this code
         -- is probably harmless but then we need to test it.
         --
+        -- we could calculate this before we call
+        --
+        -- problem: prev list and next list can be unconnected
+        --
         local c = getnext(p)
+        local l = c
         while c and c ~= n do
             local id = getid(c)
             if id == glue_code then
@@ -1139,19 +1144,28 @@ local function check_experimental_overlay(head,current)
             elseif id == kern_code then
                 skips = skips + getkern(c)
             end
+            l = c
             c = getnext(c)
+        end
+        local c = getprev(n)
+        while c and c ~= n and c ~= l do
+            local id = getid(c)
+            if id == glue_code then
+                skips = skips + getwidth(c)
+            elseif id == kern_code then
+                skips = skips + getkern(c)
+            end
+            c = getprev(c)
         end
         --
         local delta = n_ht + skips + p_dp
         texsetdimen("global","d_spac_overlay",-delta) -- for tracing
+        -- we should adapt pagetotal ! (need a hook for that) .. now we have the wrong pagebreak
         local k = new_kern(-delta)
+        head = insert_node_before(head,n,k)
         if n_ht > p_ht then
-            -- we should adapt pagetotal ! (need a hook for that) .. now we have the wrong pagebreak
-            setheight(p,n_ht)
-        end
-        insert_node_before(head,n,k)
-        if p == head then
-            head = k
+            local k = new_kern(n_ht-p_ht)
+            head = insert_node_before(head,p,k)
         end
         if trace_vspacing then
             report_vspacing("overlaying, prev height: %p, prev depth: %p, next height: %p, skips: %p, move up: %p",p_ht,p_dp,n_ht,skips,delta)
@@ -1177,7 +1191,7 @@ local function check_experimental_overlay(head,current)
         c = current
         while c do
             local id = getid(c)
-            if id == glue_code or id == penalty_code then
+            if id == glue_code or id == penalty_code then -- kern ?
                 c = getprev(c)
             elseif id == hlist_code then
                 p = c
@@ -1190,6 +1204,7 @@ local function check_experimental_overlay(head,current)
             if a_snapmethod == a_snapvbox then
                 -- quit, we're not on the mvl
             else
+                -- inefficient when we're at the end of a page
                 local c = tonut(texlists.page_head)
                 while c and c ~= n do
                     local id = getid(c)

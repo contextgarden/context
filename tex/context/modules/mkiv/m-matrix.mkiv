@@ -124,25 +124,14 @@ function matrix.typeset(m,options)
     end
 end
 
--- interchange two rows (i-th, j-th)
-
--- function matrix.swaprows(t,i,j)
---     if i <= #t and j <= #t then
---         t[i], t[j] = t[j], t[i]
---         return t
---     else
---         return "error: out of bound"
---     end
--- end
-
 function matrix.swaprows(t,i,j)
     local ti = t[i]
     if not ti then
-        return "error: no row i"
+        return "error: no row"
     end
     local tj = t[j]
     if not tj then
-        return "error: no row j"
+        return "error: no row"
     end
     t[i], t[j] = tj, ti
     return t
@@ -150,28 +139,14 @@ end
 
 -- interchange two columns (i-th, j-th)
 
--- function matrix.swapcolumns(t, i, j)
---     if i <= #t[1] and j <= #t[1] then
---         for k = 1, #t do
---             t[k][i], t[k][j] = t[k][j], t[k][i]
---         end
---         return t
---     else
---         return "error: out of bound"
---     end
--- end
-
 function matrix.swapcolumns(t, i, j)
     local t1 = t[1]
     if not t1 then
         return "error: no rows"
     end
     local n = #t1
-    if i <= n then
-        return "error: no row i"
-    end
-    if j <= n then
-        return "error: no row j"
+    if i > n or j > n then
+        return "error: no column"
     end
     for k = 1, #t do
         local tk = t[k]
@@ -315,7 +290,7 @@ local function determinant(m)
         end
         return s*d
     else
-        return "error: not a square matrix"
+        return "error: not a square matrix" -- not context(..)
     end
 end
 
@@ -387,7 +362,7 @@ matrix.rowEchelon = rowechelon
 
 -- make matrices until its determinant is not 0
 
-function matrix.make(n,m,low,high)
+function matrix.make(m,n,low,high) -- m and n swapped
     if not n then
         n = 10
     end
@@ -398,17 +373,16 @@ function matrix.make(n,m,low,high)
         low = 0
     end
     if not high then
-        high = 100
+        high = 10
     end
-    local t = { }  -- make an empty n1 x n2 array
-    local again = true
-    for i=1,n do
+    local t = { }
+    for i=1,m do
         t[i] = { }
     end
     while true do
-        for i=1,n do
+        for i=1,m do
             local ti = t[i]
-            for j=1,m do
+            for j=1,n do
                 ti[j] = random(low,high)
             end
         end
@@ -527,6 +501,9 @@ matrix.inverse = inverse
 
 \continueifinputfile{m-matrix.mkiv}
 
+\usemodule[m-matrix]
+\usemodule[art-01]
+
 \starttext
 
 \startluacode
@@ -542,147 +519,323 @@ document.DemoMatrixA = {
 document.DemoMatrixB = {
     { 0, 2,  4, -4, 1 },
     { 0, 0,  2,  3, 4 },
-    { 2, 2, -6,  2, 4 },
+    { 2, 2, -6,  3, 4 },
     { 2, 0, -6,  9, 7 },
     { 2, 2, -6,  2, 4 },
-    { 2, 2, -6,  2, 4 },
+}
+
+document.DemoMatrixC = {
+    {  3, 3, -1,  3 },
+    { -1, 4,  1,  3 },
+    {  5, 4,  0,  2 },
+    {  2, 4,  0, -1 },
 }
 \stopluacode
 
+\startbuffer[demo]
+\typebuffer
+\startalignment[middle]
+    \dontleavehmode\inlinebuffer
+\stopalignment
+\stopbuffer
+
+\setuphead[section][before={\testpage[5]\blank[2*big]}]
+
 \startsubject[title={A symbolic matrix}]
 
+\startbuffer
 \ctxmodulematrix{typeset(moduledata.matrix.symbolic("a", "m", "n"))}
 \ctxmodulematrix{typeset(moduledata.matrix.symbolic("a", "m", "n", 4, 8))}
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
+
+\startsubject[title={Generate a new $m \times n$ matrix}]
+
+\startbuffer
+\startluacode
+    moduledata.matrix.typeset(moduledata.matrix.make(4,3, 0,5))
+    context.qquad()
+    moduledata.matrix.typeset(moduledata.matrix.make(5,5,-1,5))
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
 \startsubject[title={Swap two rows (2 and 4)}]
 
+\startbuffer
 \startluacode
-moduledata.matrix.typeset(document.DemoMatrixA)
-context.blank()
-moduledata.matrix.swap(document.DemoMatrixA, 2, 4)
-context.blank()
-moduledata.matrix.typeset(document.DemoMatrixA)
+    moduledata.matrix.typeset(document.DemoMatrixA)
+    context("$\\qquad \\Rightarrow \\qquad$")
+    moduledata.matrix.typeset(moduledata.matrix.swaprows(document.DemoMatrixA,2,4))
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
-\startsubject[title={Multiply $3 \times r_2$}]
+\startsubject[title={Swap two columns (2 and 4)}]
 
+\startbuffer
 \startluacode
-moduledata.matrix.typeset(document.DemoMatrixA)
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.multiply(document.DemoMatrixA, 2, 3))
+    moduledata.matrix.typeset(document.DemoMatrixA)
+    context("$\\qquad \\Rightarrow \\qquad$")
+    moduledata.matrix.typeset(moduledata.matrix.swapcolumns(document.DemoMatrixA,2, 4))
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
-\startsubject[title={Row 2 + $4 \times r_3$}]
+\startsubject[title={Multiply 3 to row 2($3 \times r_2$)}]
 
+\startbuffer
 \startluacode
-moduledata.matrix.typeset(document.DemoMatrixA)
-context.blank()
-moduledata.matrix.sumrow(document.DemoMatrixA, 2, 3, 4)
-context.blank()
-moduledata.matrix.typeset(document.DemoMatrixA,{ fences = "bars" } )
+    moduledata.matrix.typeset(document.DemoMatrixA)
+    context("$\\qquad \\Rightarrow \\qquad$")
+    moduledata.matrix.typeset(moduledata.matrix.multiply(document.DemoMatrixA,2,3))
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
+
+\startsubject[title={Add 4 times of row 3 to row 2($r_2 + 4 \times r_3$)}]
+
+\startbuffer
+\startluacode
+    moduledata.matrix.typeset(document.DemoMatrixA)
+    context("$\\qquad \\Rightarrow \\qquad$")
+    moduledata.matrix.sumrow(document.DemoMatrixA,2,3,4)
+    moduledata.matrix.typeset(document.DemoMatrixA)
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
 \startsubject[title={Transpose a matrix}]
-
+\startbuffer
 \startluacode
-moduledata.matrix.typeset(document.DemoMatrixA)
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.transpose(document.DemoMatrixA))
+    moduledata.matrix.typeset(document.DemoMatrixA)
+    context("$\\qquad \\Rightarrow \\qquad$")
+    moduledata.matrix.typeset(moduledata.matrix.transpose(document.DemoMatrixA))
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
 \startsubject[title={The inner product of two vectors}]
 
+\startbuffer
 \startluacode
-context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2 }))
-context.blank()
+    context("$<1,2,3> \\cdot <3,1,2> \\ =\\ $ ")
+    context( moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2 }))
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\startluacode
+context("$<1,2,3> \\cdot <3,1,2, 4> \\ =\\ $ ")
 context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2, 4 }))
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
 
 \startsubject[title={The product of two matrices}]
 
+\startbuffer
 \startluacode
-moduledata.matrix.typeset(document.DemoMatrixA)
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.product(document.DemoMatrixA,document.DemoMatrixA))
+    context("$\\ $")
+    moduledata.matrix.typeset(document.DemoMatrixB)
+    context("$\\cdot$")
+    moduledata.matrix.typeset(document.DemoMatrixA)
+    context("$ = $")
+    moduledata.matrix.typeset(moduledata.matrix.product
+        (document.DemoMatrixB,document.DemoMatrixB))
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
 \startsubject[title={An Upper Triangular Matrix}]
 
-\ctxmodulematrix{typeset(moduledata.matrix.uppertri(document.DemoMatrixB))}
-
-\startsubject[title={A determinant}]
-
+\startbuffer
 \startluacode
-local m = {
-    { 1, 2,  4 },
-    { 0, 0,  2 },
-    { 2, 2, -6 },
-}
-context(moduledata.matrix.determinant(m, "determinant=yes" ))
+    moduledata.matrix.typeset(document.DemoMatrixB)
+    context("$\\qquad \\Rightarrow \\qquad$")
+    moduledata.matrix.typeset(moduledata.matrix.uppertri(document.DemoMatrixB))
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
+
+\startsubject[title={Determinant: using triangulation}]
+
+\startbuffer
+\startluacode
+    local m = {
+        { 1, 2,  4 },
+        { 0, 0,  2 },
+        { 2, 2, -6 },
+        { 2, 2, -6 },
+    }
+    moduledata.matrix.typeset(m, {fences="bars"})
+    context("$\\qquad = \\qquad$")
+    moduledata.matrix.determinant(m)
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer
+\startluacode
+    moduledata.matrix.typeset(document.DemoMatrixC, { fences = "bars" })
+    context("$\\qquad = \\qquad$")
+    context(moduledata.matrix.determinant(document.DemoMatrixC))
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
+
+\startsubject[title={Determinant: using Laplace Expansion}]
+
+\startbuffer
+\startluacode
+    moduledata.matrix.typeset(document.DemoMatrixC, { fences = "bars" })
+    context("$\\qquad = \\qquad$")
+    context(moduledata.matrix.laplace(document.DemoMatrixC))
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
+
+\startsubject[title={Example of Laplace Expansion using submatrix function}]
+
+\startbuffer
+\startluacode
+    local m = {
+        { 1, 5, 4, 2 },
+        { 5, 2, 0, 4 },
+        { 2, 2, 1, 1 },
+        { 1, 0, 0, 5 },
+    }
+    local options = {fences = "bars"}
+
+    moduledata.matrix.typeset(m,options)
+    context("\\par $=$")
+    for j = 1, #m[1] do
+        local mm =  moduledata.matrix.submatrix(m, 1, j)
+        local factor = (-1)^(1+j) *(m[1][j])
+        context("\\ ($%d$) \\cdot ", factor)
+        moduledata.matrix.typeset(mm, options)
+        if j < #m[1] then
+            context("\\ $+$ ")
+        end
+    end
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
 \startsubject[title={Row echelon form}]
 
+\startbuffer
 \startluacode
-local m = {
-    { 1, 3, -2,  0, 2,  0,  0 },
-    { 2, 6, -5, -2, 4, -3, -1 },
-    { 0, 0,  5, 10, 0, 15,  5 },
-    { 2, 6,  0,  8, 4, 18,  6 },
-}
-
-moduledata.matrix.typeset(m)
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.rowechelon(m,1), { determinant = "yes" })
+    local m = {
+        { 1, 3, -2,  0, 2,  0,  0 },
+        { 2, 6, -5, -2, 4, -3, -1 },
+        { 0, 0,  5, 10, 0, 15,  5 },
+        { 2, 6,  0,  8, 4, 18,  6 },
+    }
+    moduledata.matrix.typeset(m)
+    context("$\\Rightarrow$")
+    moduledata.matrix.typeset(moduledata.matrix.rowechelon(m,1))
 \stopluacode
+
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
 \startsubject[title={Solving linear equation}]
 
+\startbuffer
 \startluacode
-local m = {
-    {  1,  3, -2,  0 },
-    {  2,  0,  1,  2 },
-    {  6, -5, -2,  4 },
-    { -3, -1,  5, 10 },
-}
+    local m = {
+        {  1,  3, -2,  0 },
+        {  2,  0,  1,  2 },
+        {  6, -5, -2,  4 },
+        { -3, -1,  5, 10 },
+    }
 
-local c = { 5, 2, 6, 8 }
+    local c = { 5, 2, 6, 8 }
 
-moduledata.matrix.typeset(moduledata.matrix.solve(m,c))
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = 6 })
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "no" })
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "%0.3f" })
-context.blank()
-moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "%0.4F" })
+    moduledata.matrix.typeset(moduledata.matrix.solve(m,c))
+    context.blank()
+    moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = 6 })
+    context.blank()
+    moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "no" })
+    context.blank()
+    moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "%0.3f" })
+    context.blank()
+    moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "%0.4F" })
 \stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 
 \startsubject[title={Inverse matrix}]
 
-\startcombination[2*1]
-    {\ctxlua{moduledata.matrix.typeset { { 1, 1, 1 }, { 0, 2, 3 }, { 3, 2, 1 } }}} {}
-    {\ctxlua{moduledata.matrix.typeset(moduledata.matrix.inverse { { 1, 1, 1 }, { 0, 2, 3 }, { 3, 2, 1 } })}} {}
-\stopcombination
+\startbuffer
+\startluacode
+    local m = {
+        { 1, 1, 1 },
+        { 0, 2, 3 },
+        { 3, 2, 1 },
+    }
+    context("$A =\\quad$")
+    moduledata.matrix.typeset(m)
+    context("$\\qquad A^{-1} = \\quad$")
+    moduledata.matrix.typeset(moduledata.matrix.inverse(m))
+    context("\\blank\\ ")
+    moduledata.matrix.typeset(m)
+    context("$\\cdot$")
+    moduledata.matrix.typeset(moduledata.matrix.inverse(m))
+    context("$ = $")
+    moduledata.matrix.typeset(moduledata.matrix.product(m, moduledata.matrix.inverse(m)))
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
 
 \stopsubject
 

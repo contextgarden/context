@@ -62,6 +62,16 @@
    \else \ifx\fontalternative\s!sl\bs
    \else                          \bf\fi\fi}
 
+\unexpanded\def\normalitalicface % public
+  {\relax\ifx\fontalternative\s!tf\it
+   \else \ifx\fontalternative\s!bf\bi
+   \else                          \tf\fi\fi}
+
+\unexpanded\def\normalslantedface % public
+  {\relax\ifx\fontalternative\s!tf\sl
+   \else \ifx\fontalternative\s!bf\bs
+   \else                          \tf\fi\fi}
+
 \unexpanded\def\normaltypeface % public
   {\relax
    \ifx\fontalternative\s!bi \it \else
@@ -77,9 +87,11 @@
    \ifx\fontalternative\s!bi \bf               \else
                              \emphasistypeface \fi\fi\fi\fi\fi}
 
-\let\typeface\normaltypeface % public
-\let\boldface\normalboldface % public
-\let\swapface\swaptypeface   % public
+\let\typeface   \normaltypeface    % public
+\let\boldface   \normalboldface    % public
+\let\slantedface\normalslantedface % public
+\let\italicface \normalitalicface  % public
+\let\swapface   \swaptypeface      % public
 
 %D To be set with the default body font environment: \type
 %D {em} being \type {slanted} or \type {italic}.

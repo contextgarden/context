@@ -49,6 +49,10 @@
 
     <cd:command name="emphasisboldface" category="fonts" file="font-emp.mkvi"/>
 
+    <cd:command name="normalitalicface" category="fonts" file="font-emp.mkvi"/>
+
+    <cd:command name="normalslantedface" category="fonts" file="font-emp.mkvi"/>
+
     <cd:command name="normalboldface" category="fonts" file="font-emp.mkvi"/>
 
     <cd:command name="normaltypeface" category="fonts" file="font-emp.mkvi"/>
@@ -58,6 +62,10 @@
     <cd:command name="typeface" category="fonts" file="font-emp.mkvi"/>
 
     <cd:command name="boldface" category="fonts" file="font-emp.mkvi"/>
+
+    <cd:command name="italicface" category="fonts" file="font-emp.mkvi"/>
+
+    <cd:command name="slantedface" category="fonts" file="font-emp.mkvi"/>
 
     <cd:command name="swapface" category="fonts" file="font-emp.mkvi"/>
 
@@ -1689,5 +1697,5 @@
             <cd:resolve name="keyword-text-list"/>
         </cd:arguments>
     </cd:command>
-		
+
 </cd:interface>
