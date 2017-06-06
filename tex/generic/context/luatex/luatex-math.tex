@@ -2,8 +2,8 @@
 %D   [       file=luatex-math,
 %D        version=2013.04.29,
 %D          title=\LUATEX\ Support Macros,
-%D       subtitle=An exmaple of math,
-%D         author=Hans Hagen,
+%D       subtitle=An example of math,
+%D         author={Hans Hagen & Bruno Voisin},
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 
 %D This module is in no way a complete plain math implementation. I made this file
@@ -838,7 +838,69 @@
 }
 
 \everymathtt {%
-    % not done
+    \Umathcode"0030="0"0"1D7F6%
+    \Umathcode"0031="0"0"1D7F7%
+    \Umathcode"0032="0"0"1D7F8%
+    \Umathcode"0033="0"0"1D7F9%
+    \Umathcode"0034="0"0"1D7FA%
+    \Umathcode"0035="0"0"1D7FB%
+    \Umathcode"0036="0"0"1D7FC%
+    \Umathcode"0037="0"0"1D7FD%
+    \Umathcode"0038="0"0"1D7FE%
+    \Umathcode"0039="0"0"1D7FF%
+    \Umathcode"0041="0"0"1D670%
+    \Umathcode"0042="0"0"1D671%
+    \Umathcode"0043="0"0"1D672%
+    \Umathcode"0044="0"0"1D673%
+    \Umathcode"0045="0"0"1D674%
+    \Umathcode"0046="0"0"1D675%
+    \Umathcode"0047="0"0"1D676%
+    \Umathcode"0048="0"0"1D677%
+    \Umathcode"0049="0"0"1D678%
+    \Umathcode"004A="0"0"1D679%
+    \Umathcode"004B="0"0"1D67A%
+    \Umathcode"004C="0"0"1D67B%
+    \Umathcode"004D="0"0"1D67C%
+    \Umathcode"004E="0"0"1D67D%
+    \Umathcode"004F="0"0"1D67E%
+    \Umathcode"0050="0"0"1D67F%
+    \Umathcode"0051="0"0"1D680%
+    \Umathcode"0052="0"0"1D681%
+    \Umathcode"0053="0"0"1D682%
+    \Umathcode"0054="0"0"1D683%
+    \Umathcode"0055="0"0"1D684%
+    \Umathcode"0056="0"0"1D685%
+    \Umathcode"0057="0"0"1D686%
+    \Umathcode"0058="0"0"1D687%
+    \Umathcode"0059="0"0"1D688%
+    \Umathcode"005A="0"0"1D689%
+    \Umathcode"0061="0"0"1D68A%
+    \Umathcode"0062="0"0"1D68B%
+    \Umathcode"0063="0"0"1D68C%
+    \Umathcode"0064="0"0"1D68D%
+    \Umathcode"0065="0"0"1D68E%
+    \Umathcode"0066="0"0"1D68F%
+    \Umathcode"0067="0"0"1D690%
+    \Umathcode"0068="0"0"1D691%
+    \Umathcode"0069="0"0"1D692%
+    \Umathcode"006A="0"0"1D693%
+    \Umathcode"006B="0"0"1D694%
+    \Umathcode"006C="0"0"1D695%
+    \Umathcode"006D="0"0"1D696%
+    \Umathcode"006E="0"0"1D697%
+    \Umathcode"006F="0"0"1D698%
+    \Umathcode"0070="0"0"1D699%
+    \Umathcode"0071="0"0"1D69A%
+    \Umathcode"0072="0"0"1D69B%
+    \Umathcode"0073="0"0"1D69C%
+    \Umathcode"0074="0"0"1D69D%
+    \Umathcode"0075="0"0"1D69E%
+    \Umathcode"0076="0"0"1D69F%
+    \Umathcode"0077="0"0"1D6A0%
+    \Umathcode"0078="0"0"1D6A1%
+    \Umathcode"0079="0"0"1D6A2%
+    \Umathcode"007A="0"0"1D6A3%
+    \relax
 }
 
 % Nothing special here:
@@ -2233,6 +2295,20 @@
 \def\c#1{#1^^^^0327}
 \def\k#1{#1^^^^0328} % not in plain
 \def\b#1{#1^^^^0331}
+
+\def\*{\discretionary{\thinspace\the\textfont0\char"00D7}{}{}}
+
+\def\t#1% bruno's variant:
+  {\iffontchar\font"0361\relax
+     #1^^^^0361\relax
+   \else\iffontchar\font"2040\relax
+     \accent"2040 #1\relax
+   \else
+     \begingroup
+     \edef\next{\the\font}%
+     \the\textfont0\accent"2040\next#1\relax
+     \endgroup
+   \fi\fi}
 
 % for Bruno, when he tests this file with xetex:
 

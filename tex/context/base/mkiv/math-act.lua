@@ -272,6 +272,7 @@ target.properties.virtualized = true
                                         insert(character.commands,1,xoffset)
                                     end
                                 else
+                                 -- local slot = { "slot", 1, addprivate(target,nil,fastcopy(character)) }
                                     local slot = { "slot", 0, addprivate(target,nil,fastcopy(character)) }
                                     if xoffset and yoffset then
                                         character.commands = { xoffset, yoffset, slot }

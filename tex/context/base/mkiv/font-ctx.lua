@@ -1262,7 +1262,6 @@ do  -- else too many locals
 --          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
 --          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
 --             --
---          -- constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
 --             local id = definefont(tfmdata)
 --             csnames[id] = specification.cs
 --             tfmdata.properties.id = id
@@ -1429,7 +1428,6 @@ do  -- else too many locals
          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
             --
-         -- constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             local fallbacks = specification.fallbacks
             local mathsize  = (mathsize == 1 or mathsize == 2 or mathsize == 3) and mathsize or nil -- can be unset so we test 1 2 3
             if fallbacks and fallbacks ~= "" and mathsize and not busy then
@@ -1476,7 +1474,6 @@ do  -- else too many locals
                         -- forget about it (can't happen here)
                     elseif mathsize == 0 then
                         -- can't happen (here)
-                        lastmathids[1] = lastfontid
                     else
                         -- maybe only 1 2 3 (we already test for this)
                         lastmathids[mathsize] = lastfontid
@@ -1532,8 +1529,9 @@ do  -- else too many locals
         if not mathsize then
             -- forget about it
         elseif mathsize == 0 then
-            lastmathids[1] = lastfontid
-        else -- maybe only 1 2 3
+            -- can't happen (here)
+        else
+            -- maybe only 1 2 3
             lastmathids[mathsize] = lastfontid
         end
         --
@@ -1612,7 +1610,6 @@ do  -- else too many locals
                 end
                 return tfmdata, fontdata[tfmdata]
             else
-                constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
                 local id = definefont(tfmdata)
                 tfmdata.properties.id = id
                 definers.register(tfmdata,id)
@@ -2382,63 +2379,6 @@ dimenfactors.pct  = nil
 <p>Before a font is passed to <l n='tex'/> we scale it. Here we also need
 to scale virtual characters.</p>
 --ldx]]--
-
--- function constructors.checkvirtualids(tfmdata)
---     -- begin of experiment: we can use { "slot", 0, number } in virtual fonts
---     local fonts  = tfmdata.fonts
---     local selfid = font.nextid()
---     if fonts and #fonts > 0 then
---         for i=1,#fonts do
---             local fi = fonts[i]
---             if fi[2] == 0 then
---                 fi[2] = selfid
---             elseif fi.id == 0 then
---                 fi.id = selfid
---             end
---         end
---     else
---      -- tfmdata.fonts = { "id", selfid } -- conflicts with other next id's (vf math), too late anyway
---     end
---     -- end of experiment
--- end
-
--- function constructors.getvirtualid(tfmdata)
---     --  since we don't know the id yet, we use 0 as signal
---     local tf = tfmdata.fonts
---     if not tf then
---         local properties = tfmdata.properties
---         if properties then
---             properties.virtualized = true
---         else
---             tfmdata.properties = { virtualized = true }
---         end
---         tf = { }
---         tfmdata.fonts = tf
---     end
---     local ntf = #tf + 1
---     tf[ntf] = { id = 0 }
---     return ntf
--- end
---
--- function constructors.checkvirtualid(tfmdata, id) -- will go
---     local properties = tfmdata.properties
---     if tfmdata and tfmdata.type == "virtual" or (properties and properties.virtualized) then
---         local vfonts = tfmdata.fonts
---         if not vffonts or #vfonts == 0 then
---             if properties then
---                 properties.virtualized = false
---             end
---             tfmdata.fonts = nil
---         else
---             for f=1,#vfonts do
---                 local fnt = vfonts[f]
---                 if fnt.id and fnt.id == 0 then
---                     fnt.id = id
---                 end
---             end
---         end
---     end
--- end
 
 do
 

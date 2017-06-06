@@ -1043,6 +1043,11 @@
     \catcode\circumflexasciicode\activecatcode
     \catcode\ampersandasciicode \activecatcode
 
+    \unexpanded\gdef\obeymathcatcodes
+      {\let _\normalsubscript
+       \let ^\normalsuperscript
+       \let &\normalmathaligntab}
+
     \doglobal \appendtoks
         \let _\normalsubscript
         \let ^\normalsuperscript

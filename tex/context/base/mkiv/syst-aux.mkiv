@@ -7476,3 +7476,9 @@
 % \appendtovaluelist{mylist}{mies}
 %
 % \showvalue{mylist}
+
+% \unexpanded\def\showtokenlist#1%
+%   {\begingroup
+%    \edef\tempstring{\the#1}%
+%    \tx\ttbf\string#1: \tttf\meaning\tempstring
+%    \endgroup}

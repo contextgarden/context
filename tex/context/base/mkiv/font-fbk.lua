@@ -106,8 +106,9 @@ local function composecharacters(tfmdata)
                             end
                             local chr_t = cache[chr]
                             if not chr_t then
-                                chr_t = { "slot", 1, chr }
-                    -- will be: chr_t = { "slot", 0, chr }
+                             -- chr_t = { "slot", 1, chr }
+                             -- chr_t = { "slot", 0, chr }
+                                chr_t = { "char", chr }
                                 cache[chr] = chr_t
                             end
                             if charsacc then
@@ -116,8 +117,9 @@ local function composecharacters(tfmdata)
                                 end
                                 local acc_t = cache[acc]
                                 if not acc_t then
-                                    acc_t = { "slot", 1, acc }
-                        -- will be: acc_t = { "slot", 0, acc }
+                                 -- acc_t = { "slot", 1, acc }
+                                 -- acc_t = { "slot", 0, acc }
+                                    acc_t = { "char", acc }
                                     cache[acc] = acc_t
                                 end
                                 local cb = descriptions[chr].boundingbox

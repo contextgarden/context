@@ -671,6 +671,7 @@ local function manipulatedimensions(tfmdata,key,value)
                     local commands = {
                         { "right", (width - oldwidth) / 2 },
                         { "slot", 1, private },
+                     -- { "slot", 0, private },
                     }
                     if height > 0 then
                         if depth > 0 then
@@ -803,6 +804,7 @@ local function showboundingbox(tfmdata,key,value)
                         black,
                         pop,
                         { "slot", 1, private },
+                     -- { "slot", 0, private },
                     }
                 }
             else
@@ -818,6 +820,7 @@ local function showboundingbox(tfmdata,key,value)
                         black,
                         pop,
                         { "slot", 1, private },
+                     -- { "slot", 0, private },
                     }
                 }
             end
@@ -1271,7 +1274,9 @@ do -- another hack for a crappy font
                     height   = old_c.height,
                     depth    = old_c.depth,
                     commands = {
-                        { "slot", 1, private },
+                     -- { "slot", 1, private },
+                     -- { "slot", 0, private },
+                        { "char", private },
                         { "right", olditalic },
                     },
                 }

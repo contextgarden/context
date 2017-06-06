@@ -345,10 +345,6 @@ function constructors.scale(tfmdata,specification)
     local defaultdepth  = resources.defaultdepth or 0
     local units         = parameters.units or 1000
     --
-    if target.fonts then
-        target.fonts = fastcopy(target.fonts) -- maybe we virtualize more afterwards
-    end
-    --
     -- boundary keys are no longer needed as we now have a string 'right_boundary'
     -- that can be used in relevant tables (kerns and ligatures) ... not that I ever
     -- used them
@@ -452,6 +448,13 @@ function constructors.scale(tfmdata,specification)
     local realdimensions   = properties.realdimensions
     local writingmode      = properties.writingmode or "horizontal"
     local identity         = properties.identity or "horizontal"
+    --
+    local vfonts = target.fonts
+    if vfonts and #vfonts > 0 then
+        target.fonts = fastcopy(vfonts) -- maybe we virtualize more afterwards
+    elseif isvirtual then
+        target.fonts = { { id = 0 } } -- catch error
+    end
     --
     if changed and not next(changed) then
         changed = false
@@ -805,6 +808,21 @@ function constructors.scale(tfmdata,specification)
     constructors.aftercopyingcharacters(target,tfmdata)
     --
     constructors.trytosharefont(target,tfmdata)
+    --
+    -- catch incosnistencies
+    --
+    local vfonts = target.fonts
+    if isvirtual then
+        if not vfonts or #vfonts == 0 then
+            target.fonts = { { id = 0 } }
+        end
+    elseif vfonts then
+        properties.virtualized = true
+        target.type = "virtual"
+        if #vfonts == 0 then
+            target.fonts = { { id = 0 } }
+        end
+    end
     --
     return target
 end

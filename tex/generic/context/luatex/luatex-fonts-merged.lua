@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/04/17 16:55:09
+-- merge date  : 06/06/17 13:22:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -7783,9 +7783,6 @@ function constructors.scale(tfmdata,specification)
   local defaultheight=resources.defaultheight or 0
   local defaultdepth=resources.defaultdepth or 0
   local units=parameters.units or 1000
-  if target.fonts then
-    target.fonts=fastcopy(target.fonts) 
-  end
   targetproperties.language=properties.language or "dflt" 
   targetproperties.script=properties.script  or "dflt" 
   targetproperties.mode=properties.mode   or "base"
@@ -7863,6 +7860,12 @@ function constructors.scale(tfmdata,specification)
   local realdimensions=properties.realdimensions
   local writingmode=properties.writingmode or "horizontal"
   local identity=properties.identity or "horizontal"
+  local vfonts=target.fonts
+  if vfonts and #vfonts>0 then
+    target.fonts=fastcopy(vfonts) 
+  elseif isvirtual then
+    target.fonts={ { id=0 } } 
+  end
   if changed and not next(changed) then
     changed=false
   end
@@ -8175,6 +8178,18 @@ function constructors.scale(tfmdata,specification)
   properties.setitalics=hasitalics
   constructors.aftercopyingcharacters(target,tfmdata)
   constructors.trytosharefont(target,tfmdata)
+  local vfonts=target.fonts
+  if isvirtual then
+    if not vfonts or #vfonts==0 then
+      target.fonts={ { id=0 } }
+    end
+  elseif vfonts then
+    properties.virtualized=true
+    target.type="virtual"
+    if #vfonts==0 then
+      target.fonts={ { id=0 } }
+    end
+  end
   return target
 end
 function constructors.finalize(tfmdata)
@@ -30953,8 +30968,6 @@ function definers.loadfont(specification)
   end
   return tfmdata
 end
-function constructors.checkvirtualids()
-end
 function constructors.readanddefine(name,size) 
   local specification=definers.analyze(name,size)
   local method=specification.method
@@ -30968,7 +30981,6 @@ function constructors.readanddefine(name,size)
     local tfmdata=definers.loadfont(specification)
     if tfmdata then
       tfmdata.properties.hash=hash
-      constructors.checkvirtualids(tfmdata) 
       id=font.define(tfmdata)
       definers.register(tfmdata,id)
     else

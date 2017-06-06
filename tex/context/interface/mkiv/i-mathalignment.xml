@@ -27,6 +27,9 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="separator">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
                 <cd:parameter name="align">
                     <cd:constant type="left"/>
                     <cd:constant type="middle"/>

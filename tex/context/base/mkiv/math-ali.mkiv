@@ -33,20 +33,51 @@
 \newtoks\t_math_align_b
 \newtoks\t_math_align_c
 
+\newskip\d_math_eqalign_distance
+
+% \unexpanded\def\math_eqalign_distance
+%   {\tabskip\d_math_eqalign_distance}
+
+\unexpanded\def\math_eqalign_distance
+  {\relax
+   \ifdim\d_math_eqalign_distance>\zeropoint
+     \hskip\d_math_eqalign_distance
+   \fi
+   \mathalignmentparameter\c!separator
+   \relax}
+
 \def\displayopenupvalue{.25\bodyfontsize}
+
+% \def\math_build_eqalign
+%   {\scratchtoks\emptytoks
+%    \d_math_eqalign_distance\mathalignmentparameter\c!distance
+%    \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
+%    \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_c}}}
+
+% \unexpanded\def\math_build_eqalign_step % make sure no expansion in tracing
+%   {\ifnum\recurselevel>\plusone
+%      \scratchtoks\expandafter{\the\scratchtoks\math_eqalign_distance\aligntab\tabskip\zeropoint}%
+%    \fi
+%    \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_a}}%
+%    \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
+%      {\normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_b}}}}
 
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
-   \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_c}}}
-
-\unexpanded\def\math_build_eqalign_step % make sure no expansion in tracing
-  {\ifnum\recurselevel>\plusone
-     \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint}%
-   \fi
+   \d_math_eqalign_distance\mathalignmentparameter\c!distance
+   \scratchcounterone\mathalignmentparameter\c!m
+   \scratchcountertwo\mathalignmentparameter\c!n
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_a}}%
-   \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
-     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_b}}}}
+   \scratchcounter\plusone
+   \dorecurse{\numexpr\scratchcounterone*\scratchcountertwo-\plusone\relax}
+     {\ifnum\scratchcounter=\scratchcountertwo
+        \scratchcounter\plusone
+        \scratchtoks\expandafter{\the\scratchtoks\math_eqalign_distance}%
+      \else
+        \advance\scratchcounter\plusone
+      \fi
+      \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_b}}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_c}}}
 
 \def\math_math_in_eqalign#1%
   {\startforceddisplaymath
@@ -239,35 +270,49 @@
 \newcount\c_math_eqalign_column
 
 \newtoks \everymathalignment
+\newtoks \everymathalignmentdone
 
-\def\math_alignment_NC_first#1\NR
-  {\glet\math_alignment_NC\math_alignment_NC_rest
-   \scratchtoks{\math_number_left_of_eqalign\aligntab#1\NR}% \math_number_left_of_eqalign not used yet
-   \dodoubleempty\math_alignment_NC_first_indeed}
+\def\math_alignment_NN
+  {\dodirectdoubleempty\math_alignment_NN_indeed}
 
-\def\math_alignment_NC_first_indeed[#1][#2]%
-  {\strc_formulas_place_number_nested{#1}{#2}\the\scratchtoks}
+\def\math_alignment_NN_indeed[#1][#2]%
+  {\aligntab
+   \strc_formulas_place_number_nested{#1}{#2}}
 
 \def\math_alignment_NR
+  {\dodirectdoubleempty\math_alignment_NR_indeed}
+
+\def\math_alignment_NR_indeed[#1][#2]%
   {\aligntab
    \dostoptagged % finish cell
+   \strc_formulas_place_number_nested{#1}{#2}%
    \math_number_right_of_eqalign
    \crcr
-   \dostoptagged % finish row
-   \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
+   \dostoptagged} % finish row
 
-\def\math_alignment_NC_rest
+\def\math_alignment_NC
   {\aligntab}
 
 \def\math_alignment_EQ
   {\NC=}
 
 \appendtoks
-   \glet\math_alignment_NC\math_alignment_NC_first
-   \unexpanded\def\NC{\math_alignment_NC}% messy, due to lookahead (we cannot use a flag)
-   \let\EQ\math_alignment_EQ
-   \let\NR\math_alignment_NR
+    \pushmacro\NC
+    \pushmacro\NN
+    \pushmacro\EQ
+    \pushmacro\NR
+    \let\NC\math_alignment_NC
+    \let\NN\math_alignment_NN
+    \let\EQ\math_alignment_EQ
+    \let\NR\math_alignment_NR
 \to \everymathalignment
+
+\appendtoks
+    \popmacro\NR
+    \popmacro\EQ
+    \popmacro\NN
+    \popmacro\NC
+\to \everymathalignmentdone
 
 \let\math_alignment_snap_start\relax
 \let\math_alignment_snap_stop \relax
@@ -310,6 +355,7 @@
   {\math_finish_eqalign_no
    \dostoptagged
    \dostoptagged
+   \the\everymathalignmentdone
    \math_alignment_snap_stop}
 
 \installcorenamespace{mathalignment}

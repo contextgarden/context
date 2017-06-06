@@ -415,10 +415,6 @@ function definers.loadfont(specification)
     return tfmdata
 end
 
-function constructors.checkvirtualids()
-    -- dummy in plain version
-end
-
 function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
     local specification = definers.analyze(name,size)
     local method = specification.method
@@ -432,7 +428,6 @@ function constructors.readanddefine(name,size) -- no id -- maybe a dummy first
         local tfmdata = definers.loadfont(specification)
         if tfmdata then
             tfmdata.properties.hash = hash
-            constructors.checkvirtualids(tfmdata) -- experiment, will become obsolete when slots can selfreference
             id = font.define(tfmdata)
             definers.register(tfmdata,id)
         else

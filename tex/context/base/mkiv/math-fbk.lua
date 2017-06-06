@@ -26,17 +26,13 @@ local lastmathids       = fonts.hashes.lastmathids
 -- that order we could use their id's .. i.e. we could always add a font
 -- table with those id's .. in fact, we could also add a whole lot more
 -- as it doesn't hurt
---
--- todo: use index 'true when luatex provides that feature (on the agenda)
 
--- to be considered:
---
--- in luatex provide reserve_id (and pass id as field of tfmdata)
--- in context define three sizes but pass them later i.e. do virtualize afterwards
+local scripscriptdelayed = { } -- 1.005 : add characters later
+local scriptdelayed      = { } -- 1.005 : add characters later
 
 function fallbacks.apply(target,original)
     local mathparameters = target.mathparameters
-    if not mathparameters then
+    if not mathparameters or not next(mathparameters) then
         return
     end
     -- we also have forcedsize ... at this moment we already passed through
@@ -50,61 +46,53 @@ function fallbacks.apply(target,original)
     local size       = parameters.size
     local usedfonts  = target.fonts
     if not usedfonts then
-        usedfonts    = {  }
+        usedfonts    = { { id = 0 } } -- we need at least one entry (automatically done anyway)
         target.fonts = usedfonts
     end
-    -- This is not okay yet ... we have no proper way to refer to 'self'
-    -- otherwise I will make my own id allocator).
-    local self = #usedfonts == 0 and font.nextid() or nil -- will be true
+    -- not used
     local textid, scriptid, scriptscriptid
     local textindex, scriptindex, scriptscriptindex
     local textdata, scriptdata, scriptscriptdata
     if mathsize == 3 then
         -- scriptscriptsize
-     -- textid         = nil -- self
-     -- scriptid       = nil -- no smaller
-     -- scriptscriptid = nil -- no smaller
-        textid         = self
-        scriptid       = self
-        scriptscriptid = self
+        textid         = 0
+        scriptid       = 0
+        scriptscriptid = 0
     elseif mathsize == 2 then
         -- scriptsize
-     -- textid         = nil -- self
-        textid         = self
-        scriptid       = lastmathids[3]
-        scriptscriptid = lastmathids[3]
+        textid         = 0
+        scriptid       = lastmathids[3] or 0
+        scriptscriptid = lastmathids[3] or 0
     else
         -- textsize
-     -- textid         = nil -- self
-        textid         = self
-        scriptid       = lastmathids[2]
-        scriptscriptid = lastmathids[3]
+        textid         = 0
+        scriptid       = lastmathids[2] or 0
+        scriptscriptid = lastmathids[3] or 0
     end
-    if textid then
+    if textid and textid ~= 0 then
         textindex = #usedfonts + 1
+        textdata  = target
         usedfonts[textindex] = { id = textid }
-     -- textdata = identifiers[textid] or target
-        textdata = target
     else
         textdata = target
     end
-    if scriptid then
+    if scriptid and scriptid ~= 0 then
         scriptindex = #usedfonts  + 1
+        scriptdata  = identifiers[scriptid]
         usedfonts[scriptindex] = { id = scriptid }
-        scriptdata = identifiers[scriptid]
     else
         scriptindex = textindex
         scriptdata  = textdata
     end
-    if scriptscriptid then
+    if scriptscriptid and scriptscriptid ~= 0 then
         scriptscriptindex = #usedfonts  + 1
+        scriptscriptdata  = identifiers[scriptscriptid]
         usedfonts[scriptscriptindex] = { id = scriptscriptid }
-        scriptscriptdata = identifiers[scriptscriptid]
     else
         scriptscriptindex = scriptindex
         scriptscriptdata  = scriptdata
     end
- -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
+    -- report_fallbacks("used textid: %S, used script id: %S, used scriptscript id: %S",textid,scriptid,scriptscriptid)
     local data = {
         textdata          = textdata,
         scriptdata        = scriptdata,
@@ -123,7 +111,7 @@ function fallbacks.apply(target,original)
         mathsize          = mathsize,
     }
     target.mathrelation = data
- -- inspect(usedfonts)
+    --
     for k, v in next, virtualcharacters do
         if not characters[k] then
             local tv = type(v)
@@ -166,7 +154,7 @@ end
 
 local function raised(data,down)
     local replacement = data.replacement
-    local character = data.scriptdata.characters[replacement]
+    local character   = data.scriptdata.characters[replacement]
     if character then
         return {
             width    = character.width,
@@ -175,6 +163,7 @@ local function raised(data,down)
             commands = {
                 { "down", down and data.size/4 or -data.size/2 }, -- maybe exheight
                 reference(data.scriptindex,replacement)
+             -- { "slot", data.scriptindex or 0, char } -- hm, data.mathrelation.scriptindex
             }
         }
     end
@@ -239,27 +228,27 @@ end
 local addextra = mathematics.extras.add
 
 addextra(0xFE350, {
-    category="sm",
-    description="MATHEMATICAL DOUBLE ARROW LEFT END",
-    mathclass="relation",
-    mathname="ctxdoublearrowfillleftend",
-    unicodeslot=0xFE350,
+    category    = "sm",
+    description = "MATHEMATICAL DOUBLE ARROW LEFT END",
+    mathclass   = "relation",
+    mathname    = "ctxdoublearrowfillleftend",
+    unicodeslot = 0xFE350,
 } )
 
 addextra(0xFE351, {
-    category="sm",
-    description="MATHEMATICAL DOUBLE ARROW MIDDLE PART",
-    mathclass="relation",
-    mathname="ctxdoublearrowfillmiddlepart",
-    unicodeslot=0xFE351,
+    category    = "sm",
+    description = "MATHEMATICAL DOUBLE ARROW MIDDLE PART",
+    mathclass   = "relation",
+    mathname    = "ctxdoublearrowfillmiddlepart",
+    unicodeslot = 0xFE351,
 } )
 
 addextra(0xFE352, {
-    category="sm",
-    description="MATHEMATICAL DOUBLE ARROW RIGHT END",
-    mathclass="relation",
-    mathname="ctxdoublearrowfillrightend",
-    unicodeslot=0xFE352,
+    category    = "sm",
+    description = "MATHEMATICAL DOUBLE ARROW RIGHT END",
+    mathclass   = "relation",
+    mathname    = "ctxdoublearrowfillrightend",
+    unicodeslot = 0xFE352,
 } )
 
 local push       = { "push" }
@@ -267,6 +256,9 @@ local pop        = { "pop" }
 local leftarrow  = { "char", 0x2190 }
 local relbar     = { "char", 0x2212 }
 local rightarrow = { "char", 0x2192 }
+-- local leftarrow  = { "slot", 0, 0x2190 }
+-- local relbar     = { "slot", 0, 0x2212 }
+-- local rightarrow = { "slot", 0, 0x2192 }
 
 virtualcharacters[0xFE350] = function(data)
  -- return combined(data,0x2190,0x2212) -- leftarrow relbar
@@ -353,6 +345,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
         local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height + (offset or 0)}
         local newdata = {
             commands = { correction, { "slot", 1, oldchr } },
+         -- commands = { correction, { "slot", 0, oldchr } },
             width    = olddata.width,
             height   = height,
             depth    = depth,
@@ -365,6 +358,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
             if oldnextdata then
                 local newnextdata = {
                     commands = { correction, { "slot", 1, nextglyph } },
+                 -- commands = { correction, { "slot", 0, nextglyph } },
                     width    = oldnextdata.width,
                     height   = height,
                     depth    = depth,
@@ -395,6 +389,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                 if olddata then
                     local newdata = {
                         commands = { correction, { "slot", 1, oldglyph } },
+                     -- commands = { correction, { "slot", 0, oldglyph } },
                         width    = olddata.width,
                         height   = height,
                         depth    = depth,
@@ -525,43 +520,64 @@ virtualcharacters[0xFE303] = function(data) return smashed(data,0x0303,0xFE303) 
 -- these primes in fonts are a real mess .. kind of a dead end, so don't wonder about
 -- the values below
 
--- local function smashed(data,unicode,optional)
---     local oldchar = data.characters[unicode]
---     if oldchar then
---         local xheight = data.target.parameters.xheight
---         local height  = 1.25 * xheight
---         local shift   = oldchar.height - height
---         local newchar = {
---             commands = {
---                 { "down", shift },
+local function smashed(data,unicode,optional)
+    local oldchar = data.characters[unicode]
+    if oldchar then
+     -- local height = 1.25 * data.target.parameters.xheight
+        local height = 0.85 * data.target.mathparameters.AccentBaseHeight
+        local shift  = oldchar.height - height
+        local newchar = {
+            commands = {
+                { "down", shift },
+                { "slot", 0, unicode },
 --                 { "char", unicode },
---             },
---             height = height,
---             width  = oldchar.width,
---         }
---         return newchar
---     elseif not optional then
---         report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
---     end
--- end
+            },
+            height = height,
+            width  = oldchar.width,
+        }
+        return newchar
+    elseif not optional then
+        report_fallbacks("missing %U prime in font %a",unicode,data.target.properties.fullname)
+    end
+end
 
--- addextra(0xFE932, { description = "SMASHED PRIME 0x02032", unicodeslot = 0xFE932 } )
--- addextra(0xFE933, { description = "SMASHED PRIME 0x02033", unicodeslot = 0xFE933 } )
--- addextra(0xFE934, { description = "SMASHED PRIME 0x02034", unicodeslot = 0xFE934 } )
--- addextra(0xFE957, { description = "SMASHED PRIME 0x02057", unicodeslot = 0xFE957 } )
+addextra(0xFE932, { description = "SMASHED PRIME 0x02032", unicodeslot = 0xFE932 } )
+addextra(0xFE933, { description = "SMASHED PRIME 0x02033", unicodeslot = 0xFE933 } )
+addextra(0xFE934, { description = "SMASHED PRIME 0x02034", unicodeslot = 0xFE934 } )
+addextra(0xFE957, { description = "SMASHED PRIME 0x02057", unicodeslot = 0xFE957 } )
 
--- addextra(0xFE935, { description = "SMASHED BACKWARD PRIME 0x02035", unicodeslot = 0xFE935 } )
--- addextra(0xFE936, { description = "SMASHED BACKWARD PRIME 0x02036", unicodeslot = 0xFE936 } )
--- addextra(0xFE937, { description = "SMASHED BACKWARD PRIME 0x02037", unicodeslot = 0xFE937 } )
+addextra(0xFE935, { description = "SMASHED BACKWARD PRIME 0x02035", unicodeslot = 0xFE935 } )
+addextra(0xFE936, { description = "SMASHED BACKWARD PRIME 0x02036", unicodeslot = 0xFE936 } )
+addextra(0xFE937, { description = "SMASHED BACKWARD PRIME 0x02037", unicodeslot = 0xFE937 } )
 
--- virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
--- virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
--- virtualcharacters[0xFE934] = function(data) return smashed(data,0x02034) end
--- virtualcharacters[0xFE957] = function(data) return smashed(data,0x02057) end
+virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
+virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
+virtualcharacters[0xFE934] = function(data) return smashed(data,0x02034) end
+virtualcharacters[0xFE957] = function(data) return smashed(data,0x02057) end
 
--- virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) end
--- virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
--- virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
+virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) end
+virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
+virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
+
+function mathematics.getridofprime(target,original)
+--     local mathsize = specification.mathsize
+--     if mathsize == 1 or mathsize == 2 or mathsize == 3) then
+    local mathparameters = original.mathparameters
+    if mathparameters and next(mathparameters) then
+        local changed = original.changed
+        if changed then
+            changed[0x02032] = nil
+            changed[0x02033] = nil
+            changed[0x02034] = nil
+            changed[0x02057] = nil
+            changed[0x02035] = nil
+            changed[0x02036] = nil
+            changed[0x02037] = nil
+        end
+    end
+end
+
+utilities.sequencers.appendaction("beforecopyingcharacters","system","mathematics.getridofprime")
 
 -- actuarian (beware: xits has an ugly one)
 
