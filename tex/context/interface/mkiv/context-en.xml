@@ -1,6 +1,567 @@
 <?xml version='1.0'?>
 <!-- expanded and compacted i-context.xml -->
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+ <cd:interface file="i-accent.xml">
+  <cd:command file="enco-ini.mkiv" name="defineaccent">
+   <cd:arguments>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="definecharacter">
+   <cd:arguments>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="definecommand">
+   <cd:arguments>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:command"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="definemathaccent">
+   <cd:arguments>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildmathaccent">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildtextaccent">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildtextmacron">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildtextbottomdot">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildtextcedilla">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildtextognek">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildtextbottomcomma">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="d">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="buildtextgrave">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="acute">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="grave">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="ddot">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="tilde">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="bar">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="breve">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="check">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="hat">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="vec">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="enco-ini.mkiv" name="dot">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
+ <cd:interface file="i-align.xml">
+  <cd:command file="spac-ali.mkiv" level="style" name="setupalign">
+   <cd:arguments>
+    <cd:keywords list="yes">
+     <cd:constant type="broad"/>
+     <cd:constant type="wide"/>
+     <cd:constant default="yes" type="bottom"/>
+     <cd:constant type="height"/>
+     <cd:constant type="line"/>
+     <cd:constant type="high"/>
+     <cd:constant type="low"/>
+     <cd:constant type="lohi"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="yes"/>
+     <cd:constant type="no"/>
+     <cd:constant default="yes" type="width"/>
+     <cd:constant type="normal"/>
+     <cd:constant type="reset"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+     <cd:constant type="flushinner"/>
+     <cd:constant type="flushouter"/>
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="center"/>
+     <cd:constant type="disable"/>
+     <cd:constant type="last"/>
+     <cd:constant type="end"/>
+     <cd:constant type="paragraph"/>
+     <cd:constant type="lefttoright"/>
+     <cd:constant type="righttoleft"/>
+     <cd:constant type="l2r"/>
+     <cd:constant type="r2l"/>
+     <cd:constant type="table"/>
+     <cd:constant type="lesshyphenation"/>
+     <cd:constant type="morehyphenation"/>
+     <cd:constant type="hanging"/>
+     <cd:constant type="nothanging"/>
+     <cd:constant type="hz"/>
+     <cd:constant type="fullhz"/>
+     <cd:constant type="nohz"/>
+     <cd:constant type="hyphenated"/>
+     <cd:constant type="nothyphenated"/>
+     <cd:constant type="tolerant"/>
+     <cd:constant type="verytolerant"/>
+     <cd:constant type="stretch"/>
+     <cd:constant type="extremestretch"/>
+     <cd:constant type="final"/>
+     <cd:constant type="2*final"/>
+     <cd:constant type="3*final"/>
+     <cd:constant type="4*final"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="system" name="usealignparameter">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="alignment" type="environment">
+   <cd:arguments>
+    <cd:keywords list="yes">
+     <cd:inherit name="setupalign"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="linealignment" type="environment">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="left"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="right"/>
+     <cd:constant type="max"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="leftaligned" type="environment"/>
+  <cd:command file="spac-ali.mkiv" level="document" name="middlealigned" type="environment"/>
+  <cd:command file="spac-ali.mkiv" level="document" name="rightaligned" type="environment"/>
+  <cd:command file="spac-ali.mkiv" level="document" name="maxaligned" type="environment"/>
+  <cd:command file="spac-ali.mkiv" level="document" name="midaligned" type="environment"/>
+  <cd:command file="spac-ali.mkiv" level="document" name="centeraligned" type="environment"/>
+  <cd:command file="spac-ali.mkiv" level="document" name="leftaligned">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="rightaligned">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="middlealigned">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="maxaligned">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="midaligned">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="centeraligned">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="system" name="alignedline">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="center"/>
+     <cd:constant type="max"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+     <cd:constant type="innermargin"/>
+     <cd:constant type="outermargin"/>
+     <cd:constant type="inneredge"/>
+     <cd:constant type="outeredge"/>
+     <cd:constant type="backspace"/>
+     <cd:constant type="cutspace"/>
+     <cd:constant type="leftmargin"/>
+     <cd:constant type="rightmargin"/>
+     <cd:constant type="leftedge"/>
+     <cd:constant type="rightedge"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="center"/>
+     <cd:constant type="max"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+     <cd:constant type="innermargin"/>
+     <cd:constant type="outermargin"/>
+     <cd:constant type="inneredge"/>
+     <cd:constant type="outeredge"/>
+     <cd:constant type="backspace"/>
+     <cd:constant type="cutspace"/>
+     <cd:constant type="leftmargin"/>
+     <cd:constant type="rightmargin"/>
+     <cd:constant type="leftedge"/>
+     <cd:constant type="rightedge"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="document" name="wordright">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="right"/>
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="system" name="simplealignedbox">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="system" name="simplealignedspreadbox">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="system" name="simplealignedboxplus">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="system" name="simplereversealignedbox">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" level="system" name="simplereversealignedboxplus">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="flushleft"/>
+     <cd:constant type="flushright"/>
+     <cd:constant type="inner"/>
+     <cd:constant type="outer"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="pack-box.mkiv" level="system" name="alignedbox">
+   <cd:arguments>
+    <cd:keywords list="yes">
+     <cd:constant type="left"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="right"/>
+     <cd:constant type="top"/>
+     <cd:constant type="bottom"/>
+     <cd:constant type="line"/>
+     <cd:constant type="l"/>
+     <cd:constant type="c"/>
+     <cd:constant type="r"/>
+     <cd:constant type="m"/>
+     <cd:constant type="t"/>
+     <cd:constant type="b"/>
+     <cd:constant type="g"/>
+    </cd:keywords>
+    <cd:csname/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="pack-box.mkiv" level="system" name="aligned">
+   <cd:arguments>
+    <cd:keywords list="yes">
+     <cd:constant type="left"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="right"/>
+     <cd:constant type="top"/>
+     <cd:constant type="bottom"/>
+     <cd:constant type="line"/>
+     <cd:constant type="l"/>
+     <cd:constant type="c"/>
+     <cd:constant type="r"/>
+     <cd:constant type="m"/>
+     <cd:constant type="t"/>
+     <cd:constant type="b"/>
+     <cd:constant type="g"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" name="lefttoright"/>
+  <cd:command file="spac-ali.mkiv" name="righttoleft"/>
+  <cd:command file="spac-ali.mkiv" name="raggedbottom"/>
+  <cd:command file="spac-ali.mkiv" name="alignbottom"/>
+  <cd:command file="spac-ali.mkiv" name="baselinebottom"/>
+  <cd:command file="spac-ali.mkiv" name="notragged"/>
+  <cd:command file="spac-ali.mkiv" name="raggedleft"/>
+  <cd:command file="spac-ali.mkiv" name="raggedcenter"/>
+  <cd:command file="spac-ali.mkiv" name="raggedright"/>
+  <cd:command file="spac-ali.mkiv" name="veryraggedleft"/>
+  <cd:command file="spac-ali.mkiv" name="veryraggedcenter"/>
+  <cd:command file="spac-ali.mkiv" name="veryraggedright"/>
+  <cd:command file="spac-ali.mkiv" name="raggedwidecenter"/>
+  <cd:command file="spac-ali.mkiv" name="centeredlastline"/>
+  <cd:command file="spac-ali.mkiv" name="flushedrightlastline"/>
+  <cd:command file="spac-ali.mkiv" name="ttraggedright"/>
+  <cd:command file="spac-ali.mkiv" name="forgetragged"/>
+  <cd:command file="spac-ali.mkiv" name="line">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" name="leftline">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" name="rightline">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ali.mkiv" name="centerline">
+   <cd:arguments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ver.mkiv" level="document" name="hanging" type="environment">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="location">
+      <cd:constant default="yes" type="left"/>
+      <cd:constant type="right"/>
+     </cd:parameter>
+    </cd:assignments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ver.mkiv" level="document" name="hanging" type="environment" variant="argument">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant default="yes" type="left"/>
+     <cd:constant type="right"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-ver.mkiv" name="fixed" type="environment">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="low"/>
+     <cd:constant type="middle"/>
+     <cd:constant type="high"/>
+     <cd:constant type="lohi"/>
+     <cd:constant default="yes" type="default"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
  <cd:interface file="i-anchor.xml">
   <cd:command file="pack-box.mkiv" level="style" name="defineanchor">
    <cd:arguments>
@@ -21181,6 +21742,9 @@
      </cd:parameter>
      <cd:parameter name="distance">
       <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="number">
+      <cd:constant type="auto"/>
      </cd:parameter>
      <cd:parameter name="separator">
       <cd:constant type="cd:text"/>

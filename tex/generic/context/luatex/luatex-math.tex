@@ -2298,17 +2298,43 @@
 
 \def\*{\discretionary{\thinspace\the\textfont0\char"00D7}{}{}}
 
-\def\t#1% bruno's variant:
-  {\iffontchar\font"0361\relax
-     #1^^^^0361\relax
-   \else\iffontchar\font"2040\relax
-     \accent"2040 #1\relax
-   \else
-     \begingroup
-     \edef\next{\the\font}%
-     \the\textfont0\accent"2040\next#1\relax
-     \endgroup
-   \fi\fi}
+\def\t#1{%
+ %\quitvmode
+  \begingroup
+    \setbox0\hbox{#1}%
+    \setbox2\hbox\bgroup
+      \iffontchar\font"0361\relax
+         \char"0361\relax
+      \else
+         \iffontchar\font"2040\relax\else
+           \the\textfont0
+         \fi
+         \char"2040
+      \fi
+    \egroup
+    \dimen0\wd\ifdim\wd0>\wd2 0\else2\fi
+    \dimen2\dimexpr-\ht2+\ht0+.45ex\relax
+    \hbox to \dimen0\bgroup
+      \hbox to \dimen0{\hss\box0\hss}%
+      \hskip-\dimen0
+      \hbox to \dimen0{\hss\raise\dimen2\box2\hss}%
+    \egroup
+  \endgroup}
+
+% Bruno's variant:
+%
+%  \def\talign#1%
+%    {\leavevmode\vbox{%
+%       \baselineskip  0pt
+%       \lineskip     -1ex
+%       \lineskiplimit 0pt
+%       \ialign{##\crcr#1\crcr}}}
+%
+%  \def\t#1%
+%     {{\setbox0\hbox{%
+%         \iffontchar\font"0361\char"0361\else
+%         \iffontchar\font"2040\else\the\textfont0\fi\char"2040\fi}%
+%       \talign{\hidewidth\unhbox0\hidewidth\crcr#1}}}
 
 % for Bruno, when he tests this file with xetex:
 

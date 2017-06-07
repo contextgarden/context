@@ -26,6 +26,11 @@
 \let\synctexsetfilename  \clf_synctexsetfilename
 \let\synctexresetfilename\clf_synctexresetfilename
 \let\synctexblockfilename\clf_synctexblockfilename
+\let\synctexpause        \clf_synctexpause
+\let\synctexresume       \clf_synctexresume
+
+\appendtoks\clf_synctexpause \to\everybeforeoutput
+\appendtoks\clf_synctexresume\to\everyafteroutput
 
 \unexpanded\def\setupsynctex[#1]%
   {\begingroup

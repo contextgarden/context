@@ -1,5 +1,16 @@
 ----- kern_250 = { bottomright = { { kern = -250 } }, force = true }
 
+-- RadicalVerticalGap             =  50
+-- RadicalDisplayStyleVerticalGap = 175
+
+-- RadicalVerticalGap             = 166
+-- RadicalDisplayStyleVerticalGap = 345
+
+local function FixRadicalDisplayStyleVerticalGap(value,target,original)
+    local o = original.mathparameters.RadicalVerticalGap -- 50
+    return 2 * o * target.parameters.factor
+end
+
 return {
     name = "lucida-opentype-math",
     version = "1.00",
@@ -7,6 +18,9 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        parameters = {
+            RadicalDisplayStyleVerticalGap = FixRadicalDisplayStyleVerticalGap,
+        },
         alternates = {
             italic       = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
             arrow        = { feature = 'ss02', value = 1, comment = "Mathematical Alternative Smaller Arrows" },
@@ -22,7 +36,7 @@ return {
         dimensions = {
             default = { -- experimental values
                 [0x2044] = { xoffset = 275, width = 600 },
---                 [0x2032] = { yoffset = -10 },
+             -- [0x2032] = { yoffset = -10 },
             },
         },
     },

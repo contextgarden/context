@@ -4,27 +4,29 @@
 
 \startcomponent workflows-xml
 
-\startchapter[title=Synctex]
+\logo [SYNCTEX]  {Sync\TeX}
+
+\startchapter[title=\SYNCTEX\]
 
 \startsection[title=Introduction]
 
-Some users like the synctex feature that is built in the \TEX\ engines.
+Some users like the \SYNCTEX\ feature that is built in the \TEX\ engines.
 Personally I never use it because it doesn't work well with the kind of documents
 I maintain. If you have one document source, and don't shuffle around (reuse)
 text too much it probably works out okay but that is not our practice. Here I
-will describe how you can enable a more \CONTEXT\ specific synctex support so
+will describe how you can enable a more \CONTEXT\ specific \SYNCTEX\ support so
 that aware \PDF\ viewers can bring you back to the source.
 
 \stopsection
 
 \startsection[title=What we want]
 
-The synctex method roughly works as follows. Internally \TEX\ constricts linked
+The \SYNCTEX\ method roughly works as follows. Internally \TEX\ constricts linked
 lists of glyphs, kerns, glue, boxes, rules etc. These elements are called nodes.
 Some nodes carry information about the file and line where they were created. In
 the backend this information gets somehow translated in a (sort of) verbose tree
 that describes the makeup in terms of boxes, glue and kerns. From that
-information the synctex parser library, hooked into a pdf viewer, can go back
+information the \SYNCTEX\ parser library, hooked into a pdf viewer, can go back
 from a position on the screen to a line in a file. One would expect this to be a
 relative simple rectangle based model, but as far as I can see it's way more
 complex than that. There are some comments that \CONTEXT\ is not supported well
@@ -36,7 +38,7 @@ mechanism geared for a macro package like \LATEX.
 
 Because we have a couple of users who need to edit complex sets of documents,
 coded in \TEX\ or \XML, I decided to come up with a variant that doesn't use the
-synctex machinery but manipulates the few synctex fields directly \footnote {This
+\SYNCTEX\ machinery but manipulates the few \SYNCTEX\ fields directly \footnote {This
 is something that in my opinion should have been possible right from the start
 but it's too late now to change the system and it would not be used beyond
 \CONTEXT\ anyway.} and eventually outputs a straightforward file for the editor.
@@ -85,12 +87,12 @@ editor} are the following:
 It is unavoidable that we get more run time but I assume that for the average user
 that is no big deal. It pays off when you have a workflow when a book (or even a
 chapter in a book) is generated from hundreds of small \XML\ files. There is no
-overhead when synctex is not used.
+overhead when \SYNCTEX\ is not used.
 
-In \CONTEXT\ we don't use the built|-|in synctex features, that is: we let
+In \CONTEXT\ we don't use the built|-|in \SYNCTEX\ features, that is: we let
 filename and line numbers be set but often these are overloaded explicitly. The
 output file is not compressed and constructed by \CONTEXT. There is no benefit in
-compression and the files are probably smaller than default synctex anyway.
+compression and the files are probably smaller than default \SYNCTEX\ anyway.
 
 \stopsection
 
@@ -109,7 +111,13 @@ speed up processing when needed. This command can also be given in an environmen
 (style). On the command line you can say
 
 \starttyping
-context --synctex=context somefile.tex
+context --synctex somefile.tex
+\stoptyping
+
+A third method is to put this at the top of your file:
+
+\starttyping
+% synctex=yes
 \stoptyping
 
 Often an \XML\ files is very structured and although probably the main body of
@@ -168,7 +176,7 @@ Don't turn on this feature when you don't need it. This is one of those mechanis
 that hits performance badly.
 
 Depending on needs the functionality can be improved and|/|or extended. Of course
-you can always use the traditional synctex method but don't expect it to behave
+you can always use the traditional \SYNCTEX\ method but don't expect it to behave
 as described here.
 
 \stopsection

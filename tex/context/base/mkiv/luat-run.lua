@@ -95,24 +95,29 @@ local function pre_dump_actions()
  -- statistics.savefmtstatus("\jobname","\contextversion","context.tex")
 end
 
+local function wrapup_synctex()
+    luatex.synctex.wrapup()
+end
+
 -- this can be done later
 
-callbacks.register('start_run',             start_run,           "actions performed at the beginning of a run")
-callbacks.register('stop_run',              stop_run,            "actions performed at the end of a run")
+callbacks.register('start_run',               start_run,           "actions performed at the beginning of a run")
+callbacks.register('stop_run',                stop_run,            "actions performed at the end of a run")
 
----------.register('show_open',             show_open,           "actions performed when opening a file")
----------.register('show_close',            show_close,          "actions performed when closing a file")
+---------.register('show_open',               show_open,           "actions performed when opening a file")
+---------.register('show_close',              show_close,          "actions performed when closing a file")
 
-callbacks.register('report_output_pages',   report_output_pages, "actions performed when reporting pages")
-callbacks.register('report_output_log',     report_output_log,   "actions performed when reporting log file")
+callbacks.register('report_output_pages',     report_output_pages, "actions performed when reporting pages")
+callbacks.register('report_output_log',       report_output_log,   "actions performed when reporting log file")
 
-callbacks.register('start_page_number',     start_shipout_page,  "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number',      stop_shipout_page,   "actions performed at the end of a shipout")
+callbacks.register('start_page_number',       start_shipout_page,  "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',        stop_shipout_page,   "actions performed at the end of a shipout")
 
-callbacks.register('process_input_buffer',  false,               "actions performed when reading data")
-callbacks.register('process_output_buffer', false,               "actions performed when writing data")
+callbacks.register('process_input_buffer',    false,               "actions performed when reading data")
+callbacks.register('process_output_buffer',   false,               "actions performed when writing data")
 
-callbacks.register("pre_dump",              pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
+callbacks.register("pre_dump",                pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
+callbacks.register("finish_synctex_callback", wrapup_synctex,      "rename temporary synctex file")
 
 -- an example:
 

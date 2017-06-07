@@ -91,8 +91,6 @@ function mathematics.scaleparameters(target,original)
     end
 end
 
-sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
-
 -- AccentBaseHeight vs FlattenedAccentBaseHeight
 
 function mathematics.checkaccentbaseheight(target,original)
@@ -101,8 +99,6 @@ function mathematics.checkaccentbaseheight(target,original)
         mathparameters.AccentBaseHeight = target.parameters.x_height -- needs checking
     end
 end
-
-sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight") -- should go in lfg instead
 
 function mathematics.checkprivateparameters(target,original)
     local mathparameters = target.mathparameters
@@ -130,8 +126,6 @@ function mathematics.checkprivateparameters(target,original)
         end
     end
 end
-
-sequencers.appendaction("mathparameters","system","mathematics.checkprivateparameters")
 
 function mathematics.overloadparameters(target,original)
     local mathparameters = target.mathparameters
@@ -176,8 +170,6 @@ function mathematics.overloadparameters(target,original)
     end
 end
 
-sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
-
 local function applytweaks(when,target,original)
     local goodies = original.goodies
     if goodies then
@@ -217,6 +209,11 @@ function mathematics.tweakaftercopyingfont(target,original)
         applytweaks("aftercopying",target,original)
     end
 end
+
+sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
+sequencers.appendaction("mathparameters","system","mathematics.checkaccentbaseheight")  -- should go in lfg instead
+sequencers.appendaction("mathparameters","system","mathematics.checkprivateparameters") -- after scaling !
+sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
 
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")

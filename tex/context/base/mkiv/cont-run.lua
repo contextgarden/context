@@ -181,7 +181,7 @@ local function processjob()
     local filename  = environment.filename -- hm, not inputfilename !
 
     if arguments.synctex then
-        directives.enable("system.synctex="..tostring(arguments.synctex))
+        directives.enable("system.synctex")
     end
 
     if not filename or filename == "" then

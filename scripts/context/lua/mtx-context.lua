@@ -192,9 +192,14 @@ local temporary_runfiles = {
 local temporary_suffixes = {
     "prep",                            -- context preprocessed
 }
+
 local synctex_runfiles = {
     "synctex", "synctex.gz", "syncctx" -- synctex
 }
+
+-- local synctex_runfiles = {
+--     "synctex", "synctex.gz",
+-- }
 
 local persistent_runfiles = {
     "tuo", -- mkii two pass file
@@ -583,14 +588,14 @@ end
 
 -- context mode will become the only method some day
 
-local function check_synctex(a_synctex) -- context is intercepted elsewhere
-    return a_synctex and (
-        tonumber(a_synctex) or
-        (toboolean(a_synctex,true) and 1) or
-        (a_synctex == "zipped" and 1) or
-        (a_synctex == "unzipped" and -1)
-    ) or nil
-end
+-- local function check_synctex(a_synctex) -- context is intercepted elsewhere
+--     return a_synctex and (
+--         tonumber(a_synctex) or
+--         (toboolean(a_synctex,true) and 1) or
+--         (a_synctex == "zipped" and 1) or
+--         (a_synctex == "unzipped" and -1)
+--     ) or nil
+-- end
 
 function scripts.context.run(ctxdata,filename)
     --
@@ -649,7 +654,8 @@ function scripts.context.run(ctxdata,filename)
     local a_nonstopmode   = getargument("nonstopmode")
     local a_scollmode     = getargument("scrollmode")
     local a_once          = getargument("once")
-    local a_synctex       = getargument("syncctx") and "context" or getargument("synctex")
+--     local a_synctex       = getargument("syncctx") and "context" or getargument("synctex")
+    local a_synctex       = getargument("synctex")
     local a_backend       = getargument("backend")
     local a_arrange       = getargument("arrange")
     local a_noarrange     = getargument("noarrange")
@@ -675,7 +681,6 @@ function scripts.context.run(ctxdata,filename)
 
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
- -- a_synctex   = check_synctex(a_synctex)
     --
     for i=1,#filelist do
         --
@@ -810,7 +815,7 @@ function scripts.context.run(ctxdata,filename)
                 --
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
-                    ["synctex"]               = check_synctex(a_synctex), -- otherwise not working
+                 -- ["synctex"]               = check_synctex(a_synctex), -- otherwise not working
                     ["no-parse-first-line"]   = true,           -- obsolete
                     ["safer"]                 = a_safer,        -- better use --sandbox
                  -- ["no-mktex"]              = true,
@@ -848,7 +853,7 @@ function scripts.context.run(ctxdata,filename)
                     removefile(fileaddsuffix(jobname,synctex_runfiles[i]))
                 end
                 if a_synctex then
-                    directives[#directives+1] = format("system.synctex=%s",a_synctex)
+                    directives[#directives+1] = format("system.synctex")
                 end
                 --
                 if #directives > 0 then
@@ -904,6 +909,8 @@ function scripts.context.run(ctxdata,filename)
                     end
                     --
                 end
+                --
+                --  this will go away after we update luatex
                 --
                 local syncctx = fileaddsuffix(jobname,"syncctx")
                 if a_synctex == "context" or validfile(syncctx) then
@@ -1318,12 +1325,12 @@ function scripts.context.purge_job(jobname,all,mkiitoo,fulljobname)
                     deleted[#deleted+1] = purge_file(fileaddsuffix(fulljobname,temporary_suffixes[i],true))
                 end
             end
-            if not environment.argument("synctex") then
-                -- special case: not deleted when --synctex is given, but what if given in preamble
-                for i=1,#synctex_runfiles do
-                    deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,synctex_runfiles[i]))
-                end
-            end
+         -- if not environment.argument("synctex") then
+         --     -- special case: not deleted when --synctex is given, but what if given in preamble
+         --     for i=1,#synctex_runfiles do
+         --         deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,synctex_runfiles[i]))
+         --     end
+         -- end
             if all then
                 for i=1,#persistent_runfiles do
                     deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,persistent_runfiles[i]))

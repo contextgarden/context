@@ -543,4 +543,29 @@
     \let\buildtextaccent\secondoftwoarguments
 \to \everysimplifycommands
 
+%D A plain one:
+
+% \unexpanded\def\t#1{%
+%   \dontleavehmode
+%   \begingroup
+%     \setbox\scratchboxone\hpack{#1}%
+%     \setbox\scratchboxtwo\hpack\bgroup
+%       \iffontchar\font"0361\relax
+%          \char"0361\relax
+%       \else
+%          \iffontchar\font"2040\relax\else
+%            \the\textfont0
+%          \fi
+%          \char"2040
+%       \fi
+%     \egroup
+%     \scratchdimenone\wd\ifdim\wd\scratchboxone>\wd\scratchboxtwo\scratchboxone\else\scratchboxtwo\fi
+%     \scratchdimentwo\dimexpr-\ht\scratchboxtwo+\ht\scratchboxone+.45\exheight\relax
+%     \hpack to \scratchdimenone\bgroup
+%       \hpack to \scratchdimenone{\hss\box\scratchboxone\hss}%
+%       \hskip   -\scratchdimenone
+%       \hpack to \scratchdimenone{\hss\raise\scratchdimentwo\box\scratchboxtwo\hss}%
+%     \egroup
+%   \endgroup}
+
 \protect \endinput

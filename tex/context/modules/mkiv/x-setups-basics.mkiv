@@ -271,7 +271,7 @@
                         if resolved then
                             e.__p__.dt[e.ni] = resolved
                             resolve(resolved)
-                         -- logs.report("setups","resolved: %a",name)
+                        -- logs.report("setups","resolved: %a",name)
                         else
                             logs.report("setups","unable to resolve: %a",name)
                         end
@@ -282,7 +282,8 @@
             for e in xml.collected(xmlroot,"cd:interface/cd:define") do
                 e.__p__.dt[e.ni] = ""
             end
-            xml.delete(xmlroot,"/cd:interface/cd:interface/cd:interface/..")
+            --
+            xml.delete(xmlroot,"/cd:interface/cd:interface[@file='i-common-definitions.xml']")
             --
             xmlblob = xml.tostring(xmlroot)
             io.savedata(filename,xmlblob)

@@ -1102,9 +1102,10 @@
 
 \savingvdiscards\plusone
 
-%D We only can set this one via directives (system.synctex).
+%D We only can set this one via directives (system.synctex) and we only support
+%D the context variant.
 
-\let\synctex\undefined \newcount\synctex
+\let\synctex\undefined \newcount\synctex \let\normalsynctex\synctex
 
 %D We get rid of the funny \TEX\ offset defaults of one inch by setting them to zero.
 

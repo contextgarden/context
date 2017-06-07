@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['node-syn'] = {
     license   = "see context related readme files"
 }
 
--- Because we have these fields in some node that are used by sunctex, I decided (because
+-- Because we have these fields in some node that are used by synctex, I decided (because
 -- some users seem to like that feature) to implement a variant that might work out better
 -- for ConTeXt. This is experimental code. I don't use it myself so it will take a while
 -- to mature. There will be some helpers that one can use in more complex situations like
@@ -20,11 +20,18 @@ if not modules then modules = { } end modules ['node-syn'] = {
 
 -- InverseSearchCmdLine = mtxrun.exe --script synctex --edit --name="%f" --line="%l" $
 
+-- Unfortunately syntex always removes the files at the end and not at the start (it
+-- happens in synctexterminate). This forces us to use an intermediate file, no big deal
+-- in context (which has a runner) but definitely not nice.
+
 local type, rawset = type, rawset
 local concat = table.concat
 local formatters = string.formatters
+local replacesuffix = file.replacesuffix
 
 local trace = false  trackers.register("system.synctex.visualize", function(v) trace = v end)
+
+local report_system = logs.reporter("system")
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -164,19 +171,18 @@ end
 
 -- the node stuff
 
-local result             = { }
-local r                  = 0
-local f                  = nil
-local nofsheets          = 0
-local nofobjects         = 0
-local last               = 0
-local filesdone          = 0
-local enabled            = false
-local compact            = true
--- local compact            = false
-local fulltrace          = false
--- local fulltrace          = true
-local logfile            = false
+local result     = { }
+local r          = 0
+local f          = nil
+local nofsheets  = 0
+local nofobjects = 0
+local last       = 0
+local filesdone  = 0
+local enabled    = false
+local compact    = true
+local fulltrace  = false
+local logfile    = false
+local used       = false
 
 local function writeanchor()
     local size = f:seek("end")
@@ -195,7 +201,7 @@ local function writefiles()
 end
 
 local function flushpreamble()
-    logfile = file.replacesuffix(tex.jobname,"syncctx")
+    logfile = replacesuffix(tex.jobname,"syncctx")
     f = io.open(logfile,"wb")
     f:write("SyncTeX Version:1"..eol)
     writefiles()
@@ -206,6 +212,12 @@ local function flushpreamble()
     f:write("Y Offset:0"..eol)
     f:write("Content:"..eol)
     flushpreamble = writefiles
+end
+
+function synctex.wrapup()
+    if logfile then
+        os.rename(logfile,replacesuffix(logfile,"synctex"))
+    end
 end
 
 local function flushpostamble()
@@ -537,9 +549,12 @@ if set_synctex_mode then
             enabled = true
             state   = details or 1
             set_synctex_mode(state)
-            tex.normalsynctex = 0
-            directives.enable("system.synctex.xml")
-            nodes.tasks.appendaction("shipouts", "after", "nodes.synctex.collect")
+            if not used then
+                directives.enable("system.synctex.xml")
+                nodes.tasks.appendaction("shipouts", "after", "nodes.synctex.collect")
+                report_system("synctex functionality is enabled, expect runtime overhead!")
+                used = true
+            end
         elseif state > 0 then
             set_synctex_mode(state)
         end
@@ -548,12 +563,29 @@ if set_synctex_mode then
     function synctex.disable()
         if enabled then
             set_synctex_mode(0)
+            report_system("synctex functionality is disabled!")
+            enabled = false
         end
     end
 
     function synctex.finish()
         if enabled then
             flushpostamble()
+        else
+            os.remove(replacesuffix(tex.jobname,"syncctx"))
+            os.remove(replacesuffix(tex.jobname,"synctex"))
+        end
+    end
+
+    function synctex.pause()
+        if enabled then
+            set_synctex_mode(0)
+        end
+    end
+
+    function synctex.resume()
+        if enabled then
+            set_synctex_mode(state)
         end
     end
 
@@ -562,6 +594,8 @@ else
     function synctex.enable () end
     function synctex.disable() end
     function synctex.finish () end
+    function synctex.pause  () end
+    function synctex.resume () end
 
 end
 
@@ -571,36 +605,16 @@ luatex.registerstopactions(synctex.finish)
 
 nodes.tasks.appendaction("shipouts", "after", "luatex.synctex.collect")
 
--- moved here
-
-local report_system = logs.reporter("system")
-local synctex_used  = false
-
-local function setsynctex(v)
-    if v == "context" then
+directives.register("system.synctex", function(v)
+    if v then
         synctex.enable()
-        setcount("normalsynctex",0)
-        synctex_used = true
     else
-        v = tonumber(v) or (toboolean(v,true) and 1) or (v == "zipped" and 1) or (v == "unzipped" and -1) or 0
-        setcount("normalsynctex",v)
-        synctex_used = v ~= 0
+        synctex.disable()
     end
-    if synctex_used then
-        report_system("synctex functionality is enabled (%s), expect runtime overhead!",tostring(v))
-    else
-        report_system("synctex functionality is disabled!")
-    end
-end
-
-directives.register("system.synctex", setsynctex) -- 0|1|false|true|zipped|unzipped|context
-
-directives.register("system.synctex.context", function(v)
-    setsynctex(v and "context" or false)
 end)
 
 statistics.register("synctex tracing",function()
-    if synctex_used or getcount("normalsynctex") ~= 0 then
+    if used then
         return string.format("%i referenced files, %i files ignored, logfile: %s",noftags,nofblocked,logfile)
     end
 end)
@@ -630,4 +644,14 @@ interfaces.implement {
 interfaces.implement {
     name      = "synctexdisable",
     actions   = synctex.disable,
+}
+
+interfaces.implement {
+    name      = "synctexpause",
+    actions   = synctex.pause,
+}
+
+interfaces.implement {
+    name      = "synctexresume",
+    actions   = synctex.resume,
 }
