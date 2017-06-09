@@ -29,7 +29,7 @@ return {
         --
         "bigskipamount", "medskipamount", "smallskipamount",
         --
-        "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion",
+        "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion", "texenginefunctionality",
         "luatexengine", "pdftexengine", "xetexengine", "unknownengine",
      -- "etexversion",
      -- "pdftexversion", "pdftexrevision",
@@ -370,7 +370,7 @@ return {
         --
         "startimath", "stopimath", "normalstartimath", "normalstopimath",
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
-        "normalsuperscript", "normalsubscript",
+        "normalsuperscript", "normalsubscript", "normalnosuperscript", "normalnosubscript",
         --
         "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",

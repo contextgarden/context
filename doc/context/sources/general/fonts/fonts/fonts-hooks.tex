@@ -572,13 +572,345 @@ version.}
 
 \stopsection
 
+\startsection[title=Extra characters]
+
+When \TEX\ loads a font it gets stored in an internal format. Although \LUATEX\
+can still load \TFM\ files, normally we will load font data using \LUA\ and then
+pass it to \TEX. When that is done the font is basically frozen. After all, once
+you entered text and that text has been processed to a sequence of glyphs, the
+backend has to be sure that it can include the right data in the result. What
+matters there is:
+
+\startitemize[packed]
+\startitem the width of a glyph \stopitem
+\startitem the index of a glyph in the font \stopitem
+\startitem properties of a font, like its name \stopitem
+\startitem all kind manipulations don't with a virtual glyph\stopitem
+\stopitemize
+
+So, changing an already used glyph is not done. But, adding a new one should not
+be a big deal. So, starting with \LUATEX\ 1.0.5 we can add characters (that
+become glyphs) to a font after it got passed to \TEX.
+
+Of course there are some limitations to this. For instance, when \OPENTYPE\
+features are needed, you also need to extend that bit and it's not that trivial.
+But adding independent special characters is no problem. Also, you can decide to
+replace an already processed glyph by another one newly created with the same
+dimensions but a different rendering.
+
+Here I'll give a few (simple) examples. First we define a helper that creates a
+rule. After that we use all kind of \CONTEXT\ data structures and helpers but the
+general setup is not that complicated.
+
+\startbuffer
+\startluacode
+    function document.MakeGlyph(w)
+        local v = 655360
+        local w = w*v
+        local h = v
+        local d = v/3
+        return {
+            width  = w,
+            height = h,
+            depth  = d,
+            commands = {
+                { "down", d },
+                { "rule", h + d, w }
+            },
+        }
+    end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Of course, when one defines a font to be passed to \TEX\ it needs to conform to
+the standard. The \LUATEX\ manual describes what parameters and other properties
+have to be set. We cheat and copy the so called null font. We also create a fonts
+sub table. In such a table, a reference to id zero will be resolved to the id of
+the font.
+
+After defining the font table, we pass it to \TEX\ with \type {font,define} watch
+how we also pass an already reserved id. Then we add some characters and we also
+replace character 122 which is no problem because, after all, we haven't used it
+yet. We just use numbers so don't think we're doing \UNICODE\ here.
+
+\startbuffer
+\startluacode
+    local fontdata = fonts.hashes.identifiers
+
+    local id = font.nextid(true) -- true reserves the id
+    local nf = table.copy(fontdata[0])
+
+    local make = document.MakeGlyph
+    local add  = font.addcharacters
+
+    nf.name       = "foo"
+    nf.type       = "virtual"
+    nf.fonts      = { { id = 0 } }
+    nf.characters = {
+        [122] = make(1),
+        [123] = make(2),
+    }
+
+    font.define(id,nf)
+
+    fontdata[id] = nf
+
+    local t = make(3)
+    nf.characters[124] = t
+    add(id, {
+        fonts      = nf.fonts,
+        characters = { [124] = t }
+    })
+
+    local t = make(4)
+    nf.characters[125] = t
+    add(id, {
+        fonts      = nf.fonts,
+        characters = { [125] = t }
+    })
+
+    local t = make(8)
+    nf.characters[122] = t
+    add(id, {
+        fonts      = nf.fonts,
+        characters = { [122] = t }
+    })
+
+    interfaces.setmacro("MyDemoFontId",id)
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\def\MyDemoFont{\setfontid\MyDemoFontId}
+\stopbuffer
+
+We also define a command to access this font:
+
+\typebuffer \getbuffer
+
+\startbuffer
+{\MyDemoFont \type{[122=}\char122\type{]}}
+{\MyDemoFont \type{[123=}\char123\type{]}}
+{\MyDemoFont \type{[124=}\char124\type{]}}
+{\MyDemoFont \type{[125=}\char125\type{]}}
+\stopbuffer
+
+and we test this font as follows:
+
+\typebuffer
+
+This gives:
+
+\startlines \getbuffer \stoplines
+
+Next we extend an existing font and demonstrate several methods for extending a
+font. First we define a font that we will patch.
+
+\startbuffer
+\definefontfeature[myextension-one][default][myextension=1]
+
+\definefont[MyDemoOne][Serif*myextension-one]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startluacode
+    local currentfont   = font.current()
+    local fontdata      = fonts.hashes.identifiers[currentfont]
+    local characters    = fontdata.characters
+    local cfonts        = fontdata.fonts
+    local addcharacters = font.addcharacters
+
+    local make = document.MakeGlyph
+
+    local function startextension()
+        statistics.starttiming()
+    end
+
+    local function stopextension(n)
+        context.NC() context.formatted.type("\\char%s",n)
+        context.NC() context.char(n)
+        context.NC() context("%0.3f",statistics.stoptiming())
+        context.NC() context.NR()
+    end
+
+    context.starttabulate { "||||" }
+
+    startextension()
+        for i=1000,1999 do
+            local t = make(3)
+            characters[i] = t
+            addcharacters(currentfont, {
+                fonts      = cfonts,
+                characters = { [i] = t }
+            })
+        end
+    stopextension(1500)
+
+    startextension()
+        local t = {
+            fonts      = cfonts,
+            characters = characters
+        }
+        for i=2000,2999 do
+            characters[i] = make(5)
+            addcharacters(currentfont, t)
+        end
+    stopextension(2500)
+
+    startextension()
+        for i=3000,3999 do
+            characters[i] = make(7)
+        end
+        addcharacters(currentfont, {
+            fonts      = cfonts,
+            characters = characters
+        })
+    stopextension(3500)
+
+    startextension()
+        local t = { }
+        for i=4000,4999 do
+            characters[i] = make(9)
+            t[i] = characters[i]
+        end
+        addcharacters(currentfont, {
+            fonts      = cfonts,
+            characters = t
+        })
+    stopextension(4500)
+
+    local addcharacters = fonts.constructors.addcharacters
+
+    startextension()
+        local t = { }
+        for i=5000,5999 do
+            t[i] = make(11)
+        end
+        addcharacters(currentfont, {
+            fonts      = cfonts,
+            characters = t
+        })
+    stopextension(5500)
+
+    context.stoptabulate()
+\stopluacode
+\stopbuffer
+
+Watch how we only pass the new characters. We also need to make sure that the
+table at the \LUA\ end gets updated, because we might need the data later. You
+can see that not all methods are equally efficient. The last extension uses a
+helper that also makes sure that the main character table at the \LUA\ end gets
+updated.
+
+\typebuffer \start \MyDemoOne \getbuffer \stop
+
+\startbuffer
+\startluacode
+    local addcharacters = fonts.constructors.addcharacters
+    local currentfont   = font.current()
+    local parameters    = fonts.hashes.parameters[currentfont]
+
+    local m = metapost.simple
+    local f = string.formatters
+        ["draw fullsquare rotated %i scaled %b randomized 2bp withcolor %s"]
+
+    local push = { "push" }
+    local pop  = { "pop" }
+
+    function make()
+        local r = parameters.size
+        local o = r/2
+        local p1 = m("metafun",f( 0, r, "red"))
+        local p2 = m("metafun",f(30, r, "green"))
+        local p3 = m("metafun",f(60, r, "blue"))
+        return {
+            width  = o + r,
+            height = 2*o,
+            depth  = o,
+            commands = {
+                { "down", -o/2 }, { "right", o/2 + o },
+                push, { "pdf", "origin", p1 }, pop,
+                push, { "pdf", "origin", p2 }, pop,
+                push, { "pdf", "origin", p3 }, pop,
+            },
+        }
+    end
+
+    local t = { }
+    for i=6000,6010 do
+        t[i] = make()
+    end
+    addcharacters(currentfont, {
+        fonts      = cfonts,
+        characters = t
+    })
+\stopluacode
+\stopbuffer
+
+In this example we use \METAPOST\ to generate a shape. There is some juggling
+with dimensions and we need to shift the image in order to get a proper baseline.
+
+\typebuffer \start \MyDemoOne \showglyphs \getbuffer \stop
+
+These shapes show up as follows. We show the bounding box too:
+
+\startbuffer
+\scale [width=\textwidth] {%
+    \char6000 \space
+    \char6001 \space
+    \char6002 \space
+    \char6003
+}
+\stopbuffer
+
+\typebuffer \startlinecorrection \MyDemoOne \showglyphs \getbuffer \stoplinecorrection
+
+When defining virtual characters you need to keep in mind that there are limits to
+how large a character can be. If you go too far \LUATEX\ will quit with a scale
+related message.
+
+In \CONTEXT\ there are a couple of mechanism that were implemented when \LUATEX\
+came around that can be updated to use the tricks described here. I'm not sure if
+I'll do that. After all, it works now too. The main benefit of the fact that we
+can extend a font within reasonable bounds is that future mechanism can benefit
+from it.
+
+There is one thing to keep in mind. Say that we define a font like this:
+
+\starttyping
+\definefont[MyDemoOneX][Serif*myextension-one]
+\stoptyping
+
+Because we already defined a font with the same size, we automatically get the characters
+\type {6000} upto \type {6003}. If we don't want this and want a fresh instance, we can do:
+
+\starttyping
+\definefontfeature[myextension-two][default][myextension=2]
+\definefont[MyDemoOneX][Serif*myextension-two]
+\stoptyping
+
+or just:
+
+\starttyping
+\definefont[MyDemoOneX][Serif*default]
+\stoptyping
+
+Normally this kind of hackery is not arbitrary and part of a well designed set up
+so one knows what one gets.
+
+\stopsection
+
 % - features
 % - subfonts
 % - outlines
 % - math
 % - hashes
-
-\stopsection
 
 \stopchapter
 

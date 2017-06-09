@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/06/17 13:22:11
+-- merge date  : 06/09/17 15:39:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -25135,7 +25135,7 @@ otf.helpers=otf.helpers or {}
 otf.helpers.txtdirstate=txtdirstate
 otf.helpers.pardirstate=pardirstate
 do
-  local fastdisc=context and LUATEXVERSION>=1.005
+  local fastdisc=true
   directives.register("otf.fastdisc",function(v) fastdisc=v end)
   function otf.featuresprocessor(head,font,attr,direction,n)
     local sequences=sequencelists[font] 

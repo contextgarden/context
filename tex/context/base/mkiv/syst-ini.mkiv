@@ -1095,8 +1095,19 @@
 \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
 \def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
 
-\def \texenginename   {LuaTeX}
-\edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
+\ifdefined\texenginename \else
+    %edef\texenginename{luatex}
+    \edef\texenginename{\directlua{tex.print(LUATEXENGINE)}}
+\fi
+
+\ifdefined\texengineversion \else
+    %edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
+    \edef\texengineversion{\directlua{tex.print(LUATEXVERSION)}}
+\fi
+
+\ifdefined\texenginefunctionality \else
+    \edef\texenginefunctionality{\directlua{tex.print(LUATEXFUNCTIONALITY)}}
+\fi
 
 %D We have no reason not to enable this:
 
@@ -1157,12 +1168,14 @@
 
 %D It makes more sense to have these here:
 
-\let\normalsuperscript\Usuperscript
-\let\normalsubscript  \Usubscript
-\let\normalstartimath \Ustartmath
-\let\normalstopimath  \Ustopmath
-\let\normalstartdmath \Ustartdisplaymath
-\let\normalstopdmath  \Ustopdisplaymath
+\let\normalsuperscript  \Usuperscript
+\let\normalsubscript    \Usubscript
+\let\normalnosuperscript\Unosuperscript
+\let\normalnosubscript  \Unosubscript
+\let\normalstartimath   \Ustartmath
+\let\normalstopimath    \Ustopmath
+\let\normalstartdmath   \Ustartdisplaymath
+\let\normalstopdmath    \Ustopdisplaymath
 
 %D For now:
 

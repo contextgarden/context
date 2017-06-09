@@ -96,29 +96,39 @@ local targetpath = "."
 -- environment.jobname = tex.jobname
 -- environment.version = tostring(tex.toks.contextversiontoks)
 
-if LUATEXVERION == nil then
-    LUATEXVERSION = status.luatex_version/100
-                  + tonumber(status.luatex_revision)/1000
-end
+-- traditionally the revision has been a one character string and only
+-- pdftex went beyond "9" but anyway we test for it
 
 if LUATEXENGINE == nil then
-    LUATEXENGINE  = status.luatex_engine and string.lower(status.luatex_engine)
-                 or (find(status.banner,"LuajitTeX") and "luajittex" or "luatex")
+    LUATEXENGINE = status.luatex_engine and string.lower(status.luatex_engine)
+                or (find(status.banner,"LuajitTeX") and "luajittex" or "luatex")
+end
+
+if LUATEXVERION == nil then
+    LUATEXVERSION = status.luatex_revision
+    LUATEXVERSION = status.luatex_version/100
+               -- + tonumber(LUATEXVERSION)/1000
+                  + (tonumber(LUATEXVERSION) or (string.byte(LUATEXVERSION)-string.byte("a")+10))/1000
+end
+
+if LUATEXFUNCTIONALITY == nil then
+    LUATEXFUNCTIONALITY = status.development_id or 6346
 end
 
 if JITSUPPORTED == nil then
-    JITSUPPORTED  = LUATEXENGINE == "luajittex" or jit
+    JITSUPPORTED = LUATEXENGINE == "luajittex" or jit
 end
 
 if INITEXMODE == nil then
-    INITEXMODE    = status.ini_version
+    INITEXMODE = status.ini_version
 end
 
-environment.initex        = INITEXMODE
-environment.initexmode    = INITEXMODE
-environment.luatexversion = LUATEXVERSION
-environment.luatexengine  = LUATEXENGINE
-environment.jitsupported  = JITSUPPORTED
+environment.luatexengine        = LUATEXENGINE
+environment.luatexversion       = LUATEXVERSION
+environment.luatexfuncitonality = LUATEXFUNCTIONALITY
+environment.jitsupported        = JITSUPPORTED
+environment.initex              = INITEXMODE
+environment.initexmode          = INITEXMODE
 
 if not environment.luafilechunk then
 

@@ -3836,8 +3836,7 @@ do
     -- This is a measurable experimental speedup (only with hyphenated text and multiple
     -- fonts per processor call), especially for fonts with lots of contextual lookups.
 
- -- local fastdisc = true
-    local fastdisc = context and LUATEXVERSION >= 1.005
+    local fastdisc = true
 
     directives.register("otf.fastdisc",function(v) fastdisc = v end)
 

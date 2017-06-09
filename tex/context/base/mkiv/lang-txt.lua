@@ -3012,5 +3012,3 @@ local functions = data.labels.functions
 functions.asin = functions.arcsin
 functions.acos = functions.arccos
 functions.atan = functions.arctan
-
-table.save("e:/tmp/x.lua",data.labels)

@@ -105,6 +105,9 @@ function matrix.typeset(m,options)
             template = "%0." .. template .. "F"
         end
         context.startmatrix(whatever)
+            if type(m[1]) ~= "table" then
+                m = { copy(m) }
+            end
             for i=1, #m do
                 local mi = m[i]
                 for j=1,#mi do
@@ -457,14 +460,30 @@ end
 local function solve(m,c)
     local n = #m
     if n ~= #c then
-        return copy(m)
+     -- return "error: size mismatch"
+        return nil
     end
     local newm = copy(m)
     local temp = copy(c)
+    local solution = copy(c)
     for i=1,n do
         insert(newm[i],temp[i])
     end
-    return rowechelon(newm,1)
+    newm = uppertri(newm, 0)
+    for k = n,1,-1 do
+        local val = 0
+        local new = newm[k]
+        for j = k+1, n do
+            val = val + new[j] * solution[j]
+        end
+        if new[k] == 0 then
+         -- return "error: no unique solution"
+            return nil
+        else
+            solution[k] =  (new[n+1] - val)/new[k]
+        end
+    end
+    return solution
 end
 
 matrix.solve = solve

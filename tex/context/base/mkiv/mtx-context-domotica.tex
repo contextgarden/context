@@ -33,6 +33,36 @@
 %
 % end help
 
+%D In case one wonders what domotica has to do with ConTeXt, here is the short
+%D story. One day I'll wrap up a long one.
+%D
+%D After years of keeping an eye on developments and techniques and being somewhat
+%D disappointed by experiments, I decided to settle on a local approach for simple
+%D domotica (criteria are: stability, full open source, decent scripting, future
+%D safe). Eventually I decides to buy a few (overpriced) hue zigbee hubs: one
+%D private and one for the office, so that I could create different lightning
+%D setups, automatically control light to be turned on and off, etc. Unfortunately
+%D those hubs are rather limited in functionality and performance, which is
+%D surprising for an otherwise mature product. So (we're speaking mid 2015) I wrote
+%D a couple of scripts in \LUA\ that would do the real magic, and only use the hub
+%D for controlling the individual lights, buttons and sensors. That way I could
+%D create complex arrangements (think of setups for working, reading, talking,
+%D either of not in parts or rooms) driven by the available buttons and motion
+%D sensors. I really needed multiple sensors and buttons per room, something (again
+%D surprisingly) not supported by the hub at that time. It seems that more than a
+%D year later functionality that I needed and wrote gets added stepwise to the hub:
+%D multiple sensors, multiple use of buttons, etc. Compared to free \TEX\
+%D developments such commercial products evolve slow.
+%D
+%D In addition to these hubs I bought some zwave devices for controlling heating and
+%D a few rf radio things for sunshades. For zwave I uses the same approach: buy a
+%D decent hub (the nice popp hub) and control it via \LUA. In fact, I can now use
+%D one set of scripts to control a mix of technologies. However, when programming
+%D the lot, one needs to have an overview of devices and that is where this module
+%D comes into view. In fact, \LUATEX\ was already in view as I wrote the scripts in
+%D \LUA, using the \CONTEXT\ helper libraries. And the lots runs on a small low
+%D power (<10W) fitlet using stock \LUATEX\ as \LUA\ engine.
+
 % --pattern="e:/domotica/open-zwave/open-zwave-master/config/**.xml"
 
 \input mtx-context-common.tex
