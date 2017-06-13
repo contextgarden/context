@@ -546,6 +546,8 @@
 \newconstant\c_strc_formulas_mode      % this will go away
 \newconstant\c_strc_formulas_space_model
 
+\newconstant\c_strc_math_vertical % experiment
+
 \c_strc_formulas_mode       \plustwo   % 0=native 1=simple (old) 2=align (new)
 \c_strc_formulas_space_model\plusthree % replaces \plusone
 
@@ -750,12 +752,57 @@
      \setformulaparameter\c!grid{\v!math:-\v!halfline}%
    \fi}
 
+\def\strc_math_set_split
+  {\edef\p_split{\formulaparameter\c!split}%
+   \ifx\p_split\v!yes
+     \global\c_strc_math_vertical\plusone
+   \else\ifx\p_split\v!page
+     \global\c_strc_math_vertical\plustwo
+   \else
+     \global\c_strc_math_vertical\zerocount
+   \fi\fi
+   \ifcase\c_strc_math_vertical
+     \clf_setmathpenalties\zerocount
+     \clf_resetmathhang
+   \else
+     \clf_setmathpenalties\plusone
+     \edef\p_hang{\formulaparameter\c!hang}%
+     \ifx\p_hang\v!none
+       \global\setfalse\c_strc_math_indent
+       \clf_resetmathhang
+     \else
+       \global\settrue\c_strc_math_indent
+       \clf_setmathhang {%
+          method   {\p_hang}%
+          distance \formulaparameter\c!distance
+       }%
+     \fi
+   \fi}
+
+\setupformula
+  [\c!split=\v!no,
+   \c!distance=\zeropoint,
+  %\c!interlinespace=1.5\lineheight,
+   \c!interlinespace=,
+   \c!hang=\v!none]
+
+% for the moment (when testing) we use a penalty 1
+
+\unexpanded\def\strc_math_align_here{\ifmmode\penalty\plusone\fi}%
+\unexpanded\def\strc_math_break_here{\ifmmode\hfill\break \fi}%
+
+\appendtoks
+    \let\alignhere\strc_math_align_here
+    \let\breakhere\strc_math_break_here
+\to \everymathematics
+
 \unexpanded\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
   {\ifhmode
      \par
    \fi
    \bgroup % HERE
    \def\currentformula{#1}%
+   \strc_math_set_split
    \dostarttaggedchained\t!formula\currentformula\??formula
    \setfalse\c_strc_formulas_tight
    \d_strc_formulas_display_skip_left   \leftskip

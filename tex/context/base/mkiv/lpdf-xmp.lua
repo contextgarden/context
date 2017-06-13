@@ -250,7 +250,8 @@ local function flushxmpinfo()
 
     local documentid = "no unique document id here"
     local instanceid = "no unique instance id here"
-    local producer   = format("LuaTeX-%i.%i.%s",math.div(version,100),math.mod(version,100),revision)
+ -- local producer   = format("LuaTeX-%i.%02i.%s",math.div(version,100),math.mod(version,100),revision)
+    local producer   = format("LuaTeX-%0.2f.%s",version/100,revision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
     local fullbanner = status.banner

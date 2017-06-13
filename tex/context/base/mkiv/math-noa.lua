@@ -1970,8 +1970,26 @@ end)
 
 -- the normal builder
 
-function builders.kernel.mlist_to_hlist(head,style,penalties)
-    return mlist_to_hlist(head,style,penalties), true
+do
+
+    local force_penalties = false
+
+ -- registertracker("math.penalties",function(v)
+ --     force_penalties = v
+ -- end)
+
+    function builders.kernel.mlist_to_hlist(head,style,penalties)
+        return mlist_to_hlist(head,style,force_penalties or penalties), true
+    end
+
+    implement {
+        name      = "setmathpenalties",
+        arguments = "integer",
+        actions   = function(p)
+            force_penalties = p > 0
+        end,
+    }
+
 end
 
 -- function builders.kernel.mlist_to_hlist(head,style,penalties)

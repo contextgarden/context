@@ -371,6 +371,7 @@ return {
         "startimath", "stopimath", "normalstartimath", "normalstopimath",
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
         "normalsuperscript", "normalsubscript", "normalnosuperscript", "normalnosubscript",
+        "superscript", "subscript", "nosuperscript", "nosubscript",
         --
         "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",

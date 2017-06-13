@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/09/17 15:39:04
+-- merge date  : 06/13/17 17:40:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -15417,12 +15417,14 @@ function gsubhandlers.reversechainedcontextsingle(f,fontdata,lookupid,lookupoffs
     before=readcoveragearray(f,tableoffset,before,true)
     after=readcoveragearray(f,tableoffset,after,true)
     return {
-      coverage={
-        format="reversecoverage",
-        before=before,
-        current=current,
-        after=after,
-        replacements=replacements,
+      format="reversecoverage",
+      rules={
+        {
+          before=before,
+          current=current,
+          after=after,
+          replacements=replacements,
+        }
       }
     },"reversechainedcontextsingle"
   else
@@ -16046,6 +16048,7 @@ do
                   local before=rule.before
                   local current=rule.current
                   local after=rule.after
+                  local replacements=rule.replacements
                   if before then
                     for i=1,#before do
                       before[i]=tohash(before[i])
@@ -16053,8 +16056,21 @@ do
                     rule.before=reversed(before)
                   end
                   if current then
-                    for i=1,#current do
-                      current[i]=tohash(current[i])
+                    if replacements then
+                      local first=current[1]
+                      local hash={}
+                      local repl={}
+                      for i=1,#first do
+                        local c=first[i]
+                        hash[c]=true
+                        repl[c]=replacements[i]
+                      end
+                      rule.current={ hash }
+                      rule.replacements=repl
+                    else
+                      for i=1,#current do
+                        current[i]=tohash(current[i])
+                      end
                     end
                   end
                   if after then
@@ -19456,7 +19472,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.029 
+otf.version=3.030 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
@@ -22316,12 +22332,6 @@ local getthreshold=injections.getthreshold
 local checkstep=(tracers and tracers.steppers.check)  or function() end
 local registerstep=(tracers and tracers.steppers.register) or function() end
 local registermessage=(tracers and tracers.steppers.message) or function() end
-local function checkdisccontent(d)
-  local pre,post,replace=getdisc(d)
-  if pre   then for n in traverse_id(glue_code,pre)   do print("pre",nodes.idstostring(pre))   break end end
-  if post  then for n in traverse_id(glue_code,post)  do print("pos",nodes.idstostring(post))  break end end
-  if replace then for n in traverse_id(glue_code,replace) do print("rep",nodes.idstostring(replace)) break end end
-end
 local function logprocess(...)
   if trace_steps then
     registermessage(...)
@@ -22400,7 +22410,6 @@ local function flattendisk(head,disc)
     elseif next then
       return next,next
     else
-      return 
     end
   else
     if replace then
@@ -23020,7 +23029,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
             if entry then
               local dx,dy,bound=setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
               if trace_cursive then
-                logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
+                logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
               end
               return head,start,true
             end
@@ -23573,7 +23582,7 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
                 if entry then
                   local dx,dy,bound=setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                   if trace_cursive then
-                    logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
+                    logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
                   end
                   return head,start,true
                 end
@@ -23656,11 +23665,15 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
       while start do
         if skipped then
           while start do
-            local char=getchar(start)
-            local class=classes[char]
-            if class then
-              if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
-                start=getnext(start)
+            local char,id=ischar(start,currentfont)
+            if char then
+              local class=classes[char]
+              if class then
+                if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
+                  start=getnext(start)
+                else
+                  break
+                end
               else
                 break
               end
@@ -24015,15 +24028,15 @@ local function chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
   end
   return head,start,done
 end
-local function chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
+local function chaintrac(head,start,dataset,sequence,rlmode,ck,skipped,match)
   local rule=ck[1]
   local lookuptype=ck[8] or ck[2]
   local nofseq=#ck[3]
   local first=ck[4]
   local last=ck[5]
   local char=getchar(start)
-  logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
-    cref(dataset,sequence),rule,gref(char),first-1,last-first+1,nofseq-last,lookuptype)
+  logwarning("%s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a",
+    cref(dataset,sequence),rule,match and "matches" or "nomatch",gref(char),first-1,last-first+1,nofseq-last,lookuptype)
 end
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
   local sweepnode=sweepnode
@@ -24434,7 +24447,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
     end
     if match then
       if trace_contexts then
-        chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
+        chaintrac(head,start,dataset,sequence,rlmode,ck,skipped,true)
       end
       if diskseen or sweepnode then
         head,start,done=chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)

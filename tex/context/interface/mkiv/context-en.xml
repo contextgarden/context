@@ -12871,6 +12871,10 @@
      <cd:parameter name="catcodes">
       <cd:constant type="cd:name"/>
      </cd:parameter>
+     <cd:parameter name="split">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
      <cd:inherit name="setupcounter"/>
     </cd:assignments>
    </cd:arguments>

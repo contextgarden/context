@@ -190,7 +190,7 @@
 \let\normalcheck   \check      \unexpanded\def\dotlesscheck   #1{\normalcheck   {\mathdotless#1}}
 \let\normalbreve   \breve      \unexpanded\def\dotlessbreve   #1{\normalbreve   {\mathdotless#1}}
 \let\normaldot     \dot        \unexpanded\def\dotlessdot     #1{\normaldot     {\mathdotless#1}}
-\let\normalmathring\mathring   \unexpanded\def\dotlessmathring#1{\normalmathring{\mathdotless#1}}
+\let\normalring    \ring       \unexpanded\def\dotlessring    #1{\normalring    {\mathdotless#1}}
 \let\normaltilde   \tilde      \unexpanded\def\dotlesstilde   #1{\normaltilde   {\mathdotless#1}}
 \let\normaldddot   \dddot      \unexpanded\def\dotlessdddot   #1{\normaldddot   {\mathdotless#1}}
 
@@ -205,8 +205,10 @@
 \unexpanded\def\check   {\math_accents_auto_dotless\normalcheck   \dotlesscheck   }
 \unexpanded\def\breve   {\math_accents_auto_dotless\normalbreve   \dotlessbreve   }
 \unexpanded\def\dot     {\math_accents_auto_dotless\normaldot     \dotlessdot     }
-\unexpanded\def\mathring{\math_accents_auto_dotless\normalmathring\dotlessmathring}
+\unexpanded\def\ring    {\math_accents_auto_dotless\normalring    \dotlessring    }
 \unexpanded\def\tilde   {\math_accents_auto_dotless\normaltilde   \dotlesstilde   }
 \unexpanded\def\dddot   {\math_accents_auto_dotless\normaldddot   \dotlessdddot   }
+
+\let\mathring\ring % for a while
 
 \protect \endinput

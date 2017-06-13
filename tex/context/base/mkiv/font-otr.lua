@@ -660,12 +660,10 @@ local widths = {
 setmetatableindex(weights, function(t,k)
     local r = floor((k + 50) / 100) * 100
     local v = (r > 900 and "black") or rawget(t,r) or "normal"
--- print("weight:",k,r,v)
     return v
 end)
 
 setmetatableindex(widths,function(t,k)
--- print("width:",k)
     return "normal"
 end)
 

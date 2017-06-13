@@ -283,12 +283,12 @@ local checkstep          = (tracers and tracers.steppers.check)    or function()
 local registerstep       = (tracers and tracers.steppers.register) or function() end
 local registermessage    = (tracers and tracers.steppers.message)  or function() end
 
-local function checkdisccontent(d)
-    local pre, post, replace = getdisc(d)
-    if pre     then for n in traverse_id(glue_code,pre)     do print("pre",nodes.idstostring(pre))     break end end
-    if post    then for n in traverse_id(glue_code,post)    do print("pos",nodes.idstostring(post))    break end end
-    if replace then for n in traverse_id(glue_code,replace) do print("rep",nodes.idstostring(replace)) break end end
-end
+-- local function checkdisccontent(d)
+--     local pre, post, replace = getdisc(d)
+--     if pre     then for n in traverse_id(glue_code,pre)     do print("pre",nodes.idstostring(pre))     break end end
+--     if post    then for n in traverse_id(glue_code,post)    do print("pos",nodes.idstostring(post))    break end end
+--     if replace then for n in traverse_id(glue_code,replace) do print("rep",nodes.idstostring(replace)) break end end
+-- end
 
 local function logprocess(...)
     if trace_steps then
@@ -391,7 +391,7 @@ local function flattendisk(head,disc)
         elseif next then
             return next, next
         else
-            return -- maybe warning
+         -- return -- maybe warning
         end
     else
         if replace then
@@ -468,123 +468,6 @@ local function markstoligature(head,start,stop,char)
         return head, base
     end
 end
-
--- local function toligature(head,start,stop,char,dataset,sequence,markflag,discfound) -- brr head
---     if getattr(start,a_noligature) == 1 then
---         -- so we can do: e\noligature{ff}e e\noligature{f}fie (we only look at the first)
---         return head, start
---     end
---     if start == stop and getchar(start) == char then
---         resetinjection(start)
---         setchar(start,char)
---         return head, start
---     end
---     local prev = getprev(start)
---     local next = getnext(stop)
---     local comp = start
---     setprev(start)
---     setnext(stop)
---     local base = copy_no_components(start,copyinjection)
---     if start == head then
---         head = base
---     end
---     resetinjection(base)
---     setchar(base,char)
---     setsubtype(base,ligature_code)
---     set_components(base,comp)
---     setlink(prev,base,next)
---     if not discfound then
---         local deletemarks = markflag ~= "mark"
---         local components = start
---         local baseindex = 0
---         local componentindex = 0
---         local head = base
---         local current = base
---         -- first we loop over the glyphs in start .. stop
---         while start do
---             local char = getchar(start)
---             if not marks[char] then
---                 baseindex = baseindex + componentindex
---                 componentindex = getcomponentindex(start,marks)
---             elseif not deletemarks then -- quite fishy
---                 setligaindex(start,baseindex + getligaindex(start,componentindex))
---                 if trace_marks then
---                     logwarning("%s: keep mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
---                 end
---                 local n = copy_node(start)
---                 copyinjection(n,start)
---                 head, current = insert_node_after(head,current,n) -- unlikely that mark has components
---             elseif trace_marks then
---                 logwarning("%s: delete mark %s",pref(dataset,sequence),gref(char))
---             end
---             start = getnext(start)
---         end
---         -- we can have one accent as part of a lookup and another following
---      -- local start = components -- was wrong (component scanning was introduced when more complex ligs in devanagari was added)
---         local start = getnext(current)
---         while start do
---             local char = ischar(start)
---             if char then
---                 if marks[char] then
---                     setligaindex(start,baseindex + getligaindex(start,componentindex))
---                     if trace_marks then
---                         logwarning("%s: set mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
---                     end
---                     start = getnext(start)
---                 else
---                     break
---                 end
---             else
---                 break
---             end
---         end
---     else
---         -- discfound ... forget about marks .. probably no scripts that hyphenate and have marks
---         local discprev, discnext = getboth(discfound)
---         if discprev and discnext then
---             -- we assume normalization in context, and don't care about generic ... especially
---             -- \- can give problems as there we can have a negative char but that won't match
---             -- anyway
---             local pre, post, replace, pretail, posttail, replacetail = getdisc(discfound,true)
---             if not replace then -- todo: signal simple hyphen
---                 local prev     = getprev(base)
---                 local current  = comp
---                 local previous = nil
---                 local copied   = nil
---                 while current do
---                     if getid(current) == glyph_code then
---                         local n = copy_node(current)
---                         if copied then
---                             setlink(previous,n)
---                         else
---                             copied = n
---                         end
---                         previous = n
---                     end
---                     current = getnext(current)
---                 end
---                 setprev(discnext) -- also blocks funny assignments
---                 setnext(discprev) -- also blocks funny assignments
---                 if pre then
---                     setlink(discprev,pre)
---                 end
---                 pre = comp
---                 if post then
---                     setlink(posttail,discnext)
---                     setprev(post)
---                 else
---                     post = discnext
---                 end
---                 setlink(prev,discfound,next)
---                 setboth(base)
---                 set_components(base,copied)
---                 setdisc(discfound,pre,post,base) -- was discretionary_code
---                 base = prev -- restart
---             end
---         end
---     end
---     return head, base
--- end
 
 local function toligature(head,start,stop,char,dataset,sequence,markflag,discfound) -- brr head
     if getattr(start,a_noligature) == 1 then
@@ -1190,7 +1073,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
                         if entry then
                             local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                             if trace_cursive then
-                                logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
+                                logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
                             end
                             return head, start, true
                         end
@@ -1836,7 +1719,7 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
                                 if entry then
                                     local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
                                     if trace_cursive then
-                                        logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
+                                        logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
                                     end
                                     return head, start, true
                                 end
@@ -1973,11 +1856,15 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
             while start do
                 if skipped then
                     while start do
-                        local char  = getchar(start)
-                        local class = classes[char]
-                        if class then
-                            if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
-                                start = getnext(start)
+                        local char, id = ischar(start,currentfont)
+                        if char then
+                            local class = classes[char]
+                            if class then
+                                if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                    start = getnext(start)
+                                else
+                                    break
+                                end
                             else
                                 break
                             end
@@ -2362,15 +2249,15 @@ local function chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
     return head, start, done
 end
 
-local function chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
+local function chaintrac(head,start,dataset,sequence,rlmode,ck,skipped,match)
     local rule       = ck[1]
     local lookuptype = ck[8] or ck[2]
     local nofseq     = #ck[3]
     local first      = ck[4]
     local last       = ck[5]
     local char       = getchar(start)
-    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
-        cref(dataset,sequence),rule,gref(char),first-1,last-first+1,nofseq-last,lookuptype)
+    logwarning("%s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a",
+        cref(dataset,sequence),rule,match and "matches" or "nomatch",gref(char),first-1,last-first+1,nofseq-last,lookuptype)
 end
 
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
@@ -2806,7 +2693,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
         end
         if match then
             if trace_contexts then
-                chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
+                chaintrac(head,start,dataset,sequence,rlmode,ck,skipped,true)
             end
             if diskseen or sweepnode then
                 head, start, done = chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
@@ -2816,6 +2703,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             if done then
                 break -- out of contexts (new, needs checking)
             end
+     -- else
+     --     chaintrac(head,start,dataset,sequence,rlmode,ck,skipped,match)
         end
     end
     if diskseen then
@@ -3045,7 +2934,6 @@ local function kernrun(disc,k_run,font,attr,...)
                 done = true
             end
             setprev(pre,nest)
--- setprev(pre)
             setnext(prev,disc)
         end
     end
@@ -3075,7 +2963,6 @@ local function kernrun(disc,k_run,font,attr,...)
                 done = true
             end
             setprev(replace,nest)
-         -- setprev(replace)
             setnext(prev,disc)
         end
         if next then
@@ -3145,83 +3032,6 @@ local function comprun(disc,c_run,...) -- vararg faster than the whole list
     --
     return getnext(disc), renewed
 end
-
--- local function testrun(disc,t_run,c_run,...)
---     if trace_testruns then
---         report_disc("test",disc)
---     end
---     local prev, next = getboth(disc)
---     if not next then
---         -- weird discretionary
---         return
---     end
---     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
---     local done = false
---     if replace and prev then
---         -- this is a bit strange as we only do replace here and not post
---         -- anyway, we only look ahead ... the idea is that we discard a
---         -- disc when there is a ligature crossing the replace boundary
---         setlink(replacetail,next)
---         local ok, overflow = t_run(replace,next,...)
---         if ok and overflow then
---             -- so, we can have crossed the boundary
---             setfield(disc,"replace")
---             setlink(prev,replace)
---          -- setlink(replacetail,next)
---             setboth(disc)
---             flush_node_list(disc)
---             return replace, true -- restart .. tricky !
---         else
---             -- we stay inside the disc
---             setnext(replacetail)
---             setprev(next,disc)
---         end
---      -- pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
---     end
---     --
---     -- like comprun
---     --
---     local renewed = false
---     --
---     if pre then
---         sweepnode = disc
---         sweeptype = "pre"
---         local new, ok = c_run(pre,...)
---         if ok then
---             pre     = new
---             renewed = true
---         end
---     end
---     --
---     if post then
---         sweepnode = disc
---         sweeptype = "post"
---         local new, ok = c_run(post,...)
---         if ok then
---             post    = new
---             renewed = true
---         end
---     end
---     --
---     if replace then
---         sweepnode = disc
---         sweeptype = "replace"
---         local new, ok = c_run(replace,...)
---         if ok then
---             replace = new
---             renewed = true
---         end
---     end
---     --
---     sweepnode = nil
---     sweeptype = nil
---     if renewed then
---         setdisc(disc,pre,post,replace)
---         return next, true
---     else
---         return next, done
---     end
--- end
 
 local function testrun(disc,t_run,c_run,...)
     if trace_testruns then
@@ -3409,50 +3219,6 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
     return head, done
 end
 
--- local function t_run_single(start,stop,font,attr,lookupcache)
---     while start ~= stop do
---         local char = ischar(start,font)
---         if char then
---             local a -- happens often so no assignment is faster
---             if attr then
---                 a = getattr(start,0)
---             end
---             local startnext = getnext(start)
---             if not a or (a == attr) then
---                 local lookupmatch = lookupcache[char]
---                 if lookupmatch then -- hm, hyphens can match (tlig) so we need to really check
---                     -- if we need more than ligatures we can outline the code and use functions
---                     local s = startnext
---                     local l = nil
---                     local d = 0
---                     while s do
---                         if s == stop then
---                             d = 1
---                         elseif d > 0 then
---                             d = d + 1
---                         end
---                         local lg = lookupmatch[getchar(s)]
---                         if lg then
---                             l = lg
---                             s = getnext(s)
---                         else
---                             break
---                         end
---                     end
---                     if l and l.ligature then
---                         return true, d > 1
---                     end
---                 end
---             else
---                 -- go on can be a mixed one
---             end
---             start = starttnext
---         else
---             break
---         end
---     end
--- end
-
 local function t_run_single(start,stop,font,attr,lookupcache)
     local lastd = nil
     while start ~= stop do
@@ -3610,58 +3376,6 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
     end
     return head, done
 end
-
--- local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
---     while start ~= stop do
---         local char = ischar(start,font)
---         if char then
---             local a -- happens often so no assignment is faster
---             if attr then
---                 a = getattr(start,0)
---             end
---             local startnext = getnext(start)
---             if not a or (a == attr) then
---                 for i=1,nofsteps do
---                     local step = steps[i]
---                     local lookupcache = step.coverage
---                     if lookupcache then
---                         local lookupmatch = lookupcache[char]
---                         if lookupmatch then
---                             -- if we need more than ligatures we can outline the code and use functions
---                             local s = startnext
---                             local l = nil
---                             local d = 0
---                             while s do
---                                 if s == stop then
---                                     d = 1
---                                 elseif d > 0 then
---                                     d = d + 1
---                                 end
---                                 local lg = lookupmatch[getchar(s)]
---                                 if lg then
---                                     l = lg
---                                     s = getnext(s)
---                                 else
---                                     break
---                                 end
---                             end
---                             if l and l.ligature then
---                                 return true, d > 1
---                             end
---                         end
---                     else
---                         report_missing_coverage(dataset,sequence)
---                     end
---                 end
---             else
---                 -- go on can be a mixed one
---             end
---             start = startnext
---         else
---             break
---         end
---     end
--- end
 
 local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
     local lastd = nil
@@ -3925,7 +3639,9 @@ do
                     end
                 end
             elseif typ == "gsub_reversecontextchain" then
-                -- this is a limited case, no special treatments like 'init' etc
+                -- This might need a check: if we have #before or #after > 0 then we might need to reverse
+                -- the before and after lists in the loader. But first I need to see a font that uses multiple
+                -- matches.
                 local start  = find_node_tail(head)
                 local rlmode = 0 -- how important is this .. do we need to check for dir?
                 while start do

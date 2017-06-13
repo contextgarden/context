@@ -1393,12 +1393,14 @@ function gsubhandlers.reversechainedcontextsingle(f,fontdata,lookupid,lookupoffs
         before  = readcoveragearray(f,tableoffset,before,true)
         after   = readcoveragearray(f,tableoffset,after,true)
         return {
-            coverage = {
-                format       = "reversecoverage", -- reversesub
-                before       = before,
-                current      = current,
-                after        = after,
-                replacements = replacements,
+            format = "reversecoverage", -- reversesub
+            rules  = {
+                {
+                    before       = before,
+                    current      = current,
+                    after        = after,
+                    replacements = replacements,
+                }
             }
         }, "reversechainedcontextsingle"
     else
@@ -2091,10 +2093,11 @@ do
                             local rules = step.rules
                             if rules then
                                 for i=1,#rules do
-                                    local rule    = rules[i]
-                                    local before  = rule.before
-                                    local current = rule.current
-                                    local after   = rule.after
+                                    local rule         = rules[i]
+                                    local before       = rule.before
+                                    local current      = rule.current
+                                    local after        = rule.after
+                                    local replacements = rule.replacements
                                     if before then
                                         for i=1,#before do
                                             before[i] = tohash(before[i])
@@ -2103,8 +2106,23 @@ do
                                         rule.before = reversed(before)
                                     end
                                     if current then
-                                        for i=1,#current do
-                                            current[i] = tohash(current[i])
+                                        if replacements then
+                                            -- We have a reverse lookup and therefore only one current entry. We might need
+                                            -- to reverse the order in the before and after lists so that needs checking.
+                                            local first = current[1]
+                                            local hash  = { }
+                                            local repl  = { }
+                                            for i=1,#first do
+                                                local c = first[i]
+                                                hash[c] = true
+                                                repl[c] = replacements[i]
+                                            end
+                                            rule.current      = { hash }
+                                            rule.replacements = repl
+                                        else
+                                            for i=1,#current do
+                                                current[i] = tohash(current[i])
+                                            end
                                         end
                                     end
                                     if after then

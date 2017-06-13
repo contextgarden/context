@@ -2275,6 +2275,9 @@ function readers.expand(data)
                 local steps    = sequence.steps
                 if steps then
                     local kind = sequence.type
+-- if kind == "gsub_reversecontextchain" then
+--     inspect(sequence)
+-- end
                     local markclass = sequence.markclass
                     if markclass then
                         if not markclasses then

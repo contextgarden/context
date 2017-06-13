@@ -1,0 +1,47 @@
+%D \module
+%D   [       file=type-imp-gofonts,
+%D        version=2017.06.13,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Go fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[gofonts]
+
+    \starttypescript [\s!serif] [gofonts] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]           [\s!name:goregular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!name:gobold]        [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!name:goitalic]      [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!name:gobolditalic]  [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [gofonts] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!name:goregular]      [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!name:gobold]         [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!name:goitalic]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!name:gobolditalic]   [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [gofonts] [\s!name]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono]           [\s!name:gomono]         [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]       [\s!name:gomonobold]     [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]     [\s!name:gomoitalic]     [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!name:gomobolditalic] [\s!features=\s!none]
+    \stoptypescript
+
+    \starttypescript[gofonts]
+        \definetypeface [gofonts] [\s!rm] [\s!serif] [gofonts] [\s!default]
+        \definetypeface [gofonts] [\s!ss] [\s!sans]  [gofonts] [\s!default]
+        \definetypeface [gofonts] [\s!tt] [\s!mono]  [gofonts] [\s!default]
+        \definetypeface [gofonts] [\s!mm] [\s!math]  [gofonts] [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

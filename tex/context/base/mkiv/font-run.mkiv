@@ -202,11 +202,13 @@
                   \scratchcounterthree\numexpr\charplane*256+\scratchcounter\relax
                   \iffontchar\font\scratchcounterthree
                     \setbox\scratchbox\ruledhpack{\char\scratchcounterthree}%
+                    \bgroup
                     \tf
                     \startoverlay
                       {\wrapbox\scratchbox}
                       {\textbox\scratchnum}
                     \stopoverlay
+                    \egroup
                   \else
                     \copy\scratchboxthree
                   \fi}}}%
