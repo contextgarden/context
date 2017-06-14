@@ -71,15 +71,16 @@ processors.enabled = true -- this will become a proper state (like trackers)
 
 do
 
-    local has_glyph = nodes.has_glyph
+    local has_glyph   = nodes.has_glyph
+    local count_nodes = nodes.countall
 
     function processors.pre_linebreak_filter(head,groupcode) -- ,size,packtype,direction
         local found = force_processors or has_glyph(head)
         if found then
             if trace_callbacks then
-                local before = nodes.count(head,true)
+                local before = count_nodes(head,true)
                 local head, done = actions(head,groupcode) -- ,size,packtype,direction
-                local after = nodes.count(head,true)
+                local after = count_nodes(head,true)
                 if done then
                     tracer("pre_linebreak","changed",head,groupcode,before,after,true)
                 else
@@ -91,7 +92,7 @@ do
                 return done and head or true
             end
         elseif trace_callbacks then
-            local n = nodes.count(head,false)
+            local n = count_nodes(head,false)
             tracer("pre_linebreak","no chars",head,groupcode,n,n)
         end
         return true
@@ -101,9 +102,9 @@ do
         local found = force_processors or has_glyph(head)
         if found then
             if trace_callbacks then
-                local before = nodes.count(head,true)
+                local before = count_nodes(head,true)
                 local head, done = actions(head,groupcode,size,packtype,direction,attributes)
-                local after = nodes.count(head,true)
+                local after = count_nodes(head,true)
                 if done then
                     tracer("hpack","changed",head,groupcode,before,after,true)
                 else
@@ -115,7 +116,7 @@ do
                 return done and head or true
             end
         elseif trace_callbacks then
-            local n = nodes.count(head,false)
+            local n = count_nodes(head,false)
             tracer("hpack","no chars",head,groupcode,n,n)
         end
         return true
@@ -167,7 +168,8 @@ end
 
 do
 
-    local actions = tasks.actions("finalizers") -- head, where
+    local actions     = tasks.actions("finalizers") -- head, where
+    local count_nodes = nodes.countall
 
     -- beware, these are packaged boxes so no first_glyph test
     -- maybe some day a hash with valid groupcodes
@@ -178,9 +180,9 @@ do
 
     function processors.post_linebreak_filter(head,groupcode)
         if trace_callbacks then
-            local before = nodes.count(head,true)
+            local before = count_nodes(head,true)
             local head, done = actions(head,groupcode)
-            local after = nodes.count(head,true)
+            local after = count_nodes(head,true)
             if done then
                 tracer("post_linebreak","changed",head,groupcode,before,after,true)
             else

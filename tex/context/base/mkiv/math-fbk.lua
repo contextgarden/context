@@ -559,6 +559,8 @@ virtualcharacters[0xFE935] = function(data) return smashed(data,0x02035,true) en
 virtualcharacters[0xFE936] = function(data) return smashed(data,0x02036,true) end
 virtualcharacters[0xFE937] = function(data) return smashed(data,0x02037,true) end
 
+local hack = nil
+
 function mathematics.getridofprime(target,original)
 --     local mathsize = specification.mathsize
 --     if mathsize == 1 or mathsize == 2 or mathsize == 3) then
@@ -566,6 +568,7 @@ function mathematics.getridofprime(target,original)
     if mathparameters and next(mathparameters) then
         local changed = original.changed
         if changed then
+            hack = changed[0x02032]
             changed[0x02032] = nil
             changed[0x02033] = nil
             changed[0x02034] = nil
@@ -577,7 +580,16 @@ function mathematics.getridofprime(target,original)
     end
 end
 
+function mathematics.setridofprime(target,original)
+    local mathparameters = original.mathparameters
+    if mathparameters and next(mathparameters) and original.changed then
+        target.characters[0xFE931] = target.characters[hack or 0x2032]
+        hack = nil
+    end
+end
+
 utilities.sequencers.appendaction("beforecopyingcharacters","system","mathematics.getridofprime")
+utilities.sequencers.appendaction("aftercopyingcharacters", "system","mathematics.setridofprime")
 
 -- actuarian (beware: xits has an ugly one)
 

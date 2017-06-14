@@ -392,6 +392,276 @@ Of course better is to fix the font.
 
 \stopsection
 
+\startsection[title=Multiline]
+
+Inline formulas can span lines but display math normally sits on one line unless
+one uses alignment mechanisms. Take this:
+
+\startbuffer
+\startformula
+    x\dorecurse{30}{ + #1x^{#1x}} = 10
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\par \start \setupformula[split=no]  \getbuffer \stop \par
+
+You can set \type {split} to \type {yes} using \type {\setupformula} and get the
+following:
+
+\par \start \setupformula[split=yes] \getbuffer \stop \par
+
+Maybe nicer is to also set \type {align} to \type {flushleft}:
+
+\par \start \setupformula[split=yes,align=flushleft] \getbuffer \stop \par
+
+There is an experimental alignment mechanism available. Watch the following
+examples:
+
+\startbuffer[demo]
+before
+    \startformula
+        z + 3y = \alignhere x
+                 \dorecurse{20}{ + #1x^{#1x}}
+    \stopformula
+inbetween
+    \startformula
+        z + 3y \alignhere = 1
+               \dorecurse{4}{
+                    \dorecurse{#1}{+ #1x^{##1x}}
+                    \ifnum#1<4\breakhere\fi
+               }
+    \stopformula
+after
+\stopbuffer
+
+\typebuffer[demo]
+
+\startbuffer[setup]
+\setupformula
+  [split=no]
+\stopbuffer
+
+\typebuffer[setup] \start \getbuffer[setup,demo] \stop
+
+\startbuffer[setup]
+\setupformula
+  [split=yes,
+   align=flushleft]
+\stopbuffer
+
+\typebuffer[setup] \start \getbuffer[setup,demo] \stop
+
+\startbuffer[setup]
+\setupformula
+  [split=yes,
+   align=flushleft,
+   hang=auto]
+\stopbuffer
+
+\typebuffer[setup] \start \getbuffer[setup,demo] \stop
+
+\startbuffer[setup]
+\setupformula
+  [split=yes,
+   align=flushleft,
+   hang=auto,
+   distance=1em]
+\stopbuffer
+
+\typebuffer[setup] \start \getbuffer[setup,demo] \stop
+
+\startbuffer[setup]
+\setupformula
+  [split=yes,
+   align=flushleft,
+   hang=yes,
+   distance=2em]
+\stopbuffer
+
+\typebuffer[setup] \start \getbuffer[setup,demo] \stop
+
+\startbuffer[setup]
+\setupformula
+  [split=yes,
+   align=flushleft,
+   hang=yes,
+   distance=2em,
+   interlinespace=1.5\lineheight]
+\stopbuffer
+
+\typebuffer[setup] \start \getbuffer[setup,demo] \stop
+
+If you want to split over pages, you can say:
+
+\starttyping
+\setupformula
+  [split=page,
+   align=middle]
+\stoptyping
+
+but that is rather experimental (especially in combination with other
+number placement related options).
+
+\stopsection
+
+\startsection[title=Scripts]
+
+Superscripts and subscripts are typeset in a smaller size than their nucleus. You
+can influence that as follows:
+
+\startbuffer
+\startformula
+x^{2} = x^{\textstyle 2}
+      = x^{\scriptstyle 2}
+      = x^{\scriptscriptstyle 2}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+You can also use macros instead of a \type {^} and \type {_}, as in:
+
+\startbuffer
+\startformula
+x \superscript   {2} =
+x \superscript   {\textstyle 2} =
+x \superscript   {\scriptstyle 2} =
+x \superscript   {\scriptscriptstyle 2} =
+x \nosuperscript {2}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {\nosuperscript} primitive makes sure that we get the same size as the
+nucleus.
+
+\startbuffer
+\startformula
+x \superscript   {2} \subscript   {i} =
+x \nosuperscript {2} \subscript   {i} =
+x \superscript   {2} \nosubscript {i} =
+x \nosuperscript {2} \nosubscript {i}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsection
+
+\startsection[title=Text accents]
+
+You can put an accent over a character:
+
+\startbuffer
+$\grave{x} \neq \grave{i}$\quad
+$\ddot {x} \neq \ddot {i}$\quad
+$\bar  {x} \neq \bar  {i}$\quad
+$\acute{x} \neq \acute{i}$\quad
+$\hat  {x} \neq \hat  {i}$\quad
+$\check{x} \neq \check{i}$\quad
+$\breve{x} \neq \breve{i}$\quad
+$\dot  {x} \neq \dot  {i}$\quad
+$\ring {x} \neq \ring {i}$\quad
+$\tilde{x} \neq \tilde{i}$\quad
+$\dddot{x} \neq \dddot{i}$\quad
+\stopbuffer
+
+\typebuffer
+
+This comes out as: \inlinebuffer. For regular text you can better use proper composed
+\UTF\ encoded characters.
+
+\stopsection
+
+\startsection[title=Directions]
+
+Math has its own direction control:
+
+\starttexdefinition unexpanded MathTest #1#2#3
+    \ruledvbox \bgroup
+        \mathdir#1\relax
+        \textdir#2\relax
+        \pardir #3\relax
+        \hsize=30mm
+        \startformula
+            a^2+b^2=c^2
+        \stopformula
+   \egroup
+\stoptexdefinition
+
+\starttexdefinition unexpanded MathShow #1#2#3#4
+    \hbox \bgroup
+        \infofont #1 : m=#2 t=#3 p=#4
+    \egroup
+\stoptexdefinition
+
+\startbuffer
+\startcombination[nx=4,ny=2,distance=1cm]
+    {\MathTest{TLT}{TLT}{TLT}} {\MathShow1{TLT}{TLT}{TLT}}
+    {\MathTest{TLT}{TLT}{TRT}} {\MathShow2{TLT}{TLT}{TRT}}
+    {\MathTest{TLT}{TRT}{TLT}} {\MathShow3{TLT}{TRT}{TLT}}
+    {\MathTest{TLT}{TRT}{TRT}} {\MathShow4{TLT}{TRT}{TRT}}
+    {\MathTest{TRT}{TLT}{TLT}} {\MathShow5{TRT}{TLT}{TLT}}
+    {\MathTest{TRT}{TLT}{TRT}} {\MathShow6{TRT}{TLT}{TRT}}
+    {\MathTest{TRT}{TRT}{TLT}} {\MathShow7{TRT}{TRT}{TLT}}
+    {\MathTest{TRT}{TRT}{TRT}} {\MathShow8{TRT}{TRT}{TRT}}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+Normally you will not control directions this way but use the proper parameters
+in layout related setup commands.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Surround]
+
+The spacing around inline formulas is consistent with other
+spacing but it can be enlarged. We just show a few examples:
+
+\startbuffer[demo]
+\hsize 20em
+We have
+\dorecurse {8} {%
+    \ifcase#1\or\else and \fi
+    $x+#1$ and $x-#1$ and $x \times #1$
+}
+\removeunwantedspaces .
+\par
+\stopbuffer
+
+\typebuffer[demo]
+
+\blank \start \getbuffer[demo] \stop
+
+\startbuffer[setup]
+\setupmathematics
+  [textdistance=2pt plus 1pt minus 1pt]
+\stopbuffer
+
+\typebuffer[setup]
+
+\blank \start \getbuffer[setup,demo] \stop
+
+\startbuffer[setup]
+\setupmathematics
+  [textdistance=4pt plus 2pt minus 2pt]
+\stopbuffer
+
+\typebuffer[setup]
+
+\blank \start \getbuffer[setup,demo] \stop
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

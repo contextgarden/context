@@ -1,0 +1,653 @@
+\environment math-layout
+
+\startcomponent math-tricks
+
+\startchapter[title=Tricks]
+
+\startsection[title=Introduction]
+
+Math support in \CONTEXT\ is wrapped around basic \TEX\ primitives and
+unfortunately not all we want is easy to configure. This is not surprising
+because the original ideas behind \TEX\ are that one makes a style per book and a
+one macro package \quote {we-can-do-it-all} approach is not what Don Knuth had in
+mind at that time.
+
+So, for instance support for configurable spacing per math element, coloring of
+specific (sub) elements, simple switching of whatever combination of alignments
+and number placement, these all take quite a bit of code and hackery.
+
+Even configuring something seemingly trivial as fractions or top, bottom, left,
+middle and right fences take some effort. This is because the engine uses
+information from fonts to combine shapes and paste the content and ornaments to
+together.
+
+For that reason already in \MKII\ but more extensively in \MKIV\ we did a lot of
+these things in wrapper macros. When the math renderer was finalized for
+\OPENTYPE\ math some extra control was added that can make these things easier.
+However, because we go a bit beyond what is possible using this new functionality
+these new mechanisms are not yet used in \MKIV, but they might be eventually.
+Here we just show some of the (newer) low level trickery. For details about what
+was already possible in pure \TEX, we refer to the ultimate references: the \TeX
+book (by Donald Knuth) and \TeX\ by Topic (by Victor Eijkhout).
+
+\stopsection
+
+\startsection[title=Kerning]
+
+Kerning in \OPENTYPE\ math is not the same as in traditional \TEX: instead of a
+single value, we have staircase kerns, that is, depending on the location (left
+or right) and the vertical position, at discrete distances between depth and
+height. In addition there is italic correction but that is only applied in
+certain cases, one of which is the script location.
+
+Unfortunately not all fonts follow the same route. Some fonts have a true width
+and a moderate italic correction is added to it (of at all), while other fonts
+lie about the width and depend on an excessive italic correction to compensate
+for that.
+
+\definemeasure[quarter][\dimexpr(\textwidth-3em)/4\relax]
+
+\def\TestKern#1%
+  {\scale
+     [width=\measure{quarter}]
+     {\hbox to 50pt{\hss\showboxes\switchtobodyfont[#1]$V_i^i = W_i^i$\hss}}}
+
+\startlinecorrection
+\startcombination[nx=4,ny=2,distance=1em]
+    {\TestKern  {modern}} {\infofont  modern}
+    {\TestKern {cambria}} {\infofont cambria}
+    {\TestKern{lucidaot}} {\infofont  lucida}
+    {\TestKern  {dejavu}} {\infofont  dejavu}
+    {\TestKern {pagella}} {\infofont pagella}
+    {\TestKern  {termes}} {\infofont  termes}
+    {\TestKern   {bonum}} {\infofont   bonum}
+    {\TestKern  {schola}} {\infofont  schola}
+\stopcombination
+\stoplinecorrection
+
+I will not discuss the details because when a font gets updated, it might look
+better or worse. These fonts were loaded with the following directive set:
+
+\starttyping
+\enabledirectives[fontgoodies.mathkerning]
+\stoptyping
+
+An example of a fontgoodie that fixed the kerning is \type {pagella-math.lfg}. Here
+is the relevant bit:
+
+\starttyping
+local kern_200 = { bottomright = { { kern = -200 } } }
+local kern_100 = { bottomright = { { kern = -100 } } }
+
+return {
+  .....
+  mathematics = {
+    .....
+    kerns = {
+      [0x1D449] = kern_200, -- 𝑉
+      [0x1D44A] = kern_100, -- 𝑊
+    },
+    .....
+  }
+}
+\stoptyping
+
+This fixes the real bad kerning of Pagella Math which at least in 2017 was not
+(yet) fixed. When the fonts are frozen we can start makling permanent runtime
+fixes like this.
+
+\stopsection
+
+\startsection[title=Primes]
+
+Primes are a pain in the butt. The reason for this is that they are independent
+characters on the one hand but can be seen as a superscript on the other. Let's
+first look at the symbols at the three sizes that are used in math.
+
+\startbuffer[prime]
+$
+    {\textstyle        \char"2032}
+    {\scriptstyle      \char"2032}
+    {\scriptscriptstyle\char"2032}
+\quad
+    {\textstyle        \char"FE931}
+    {\scriptstyle      \char"FE931}
+    {\scriptscriptstyle\char"FE931}
+\quad
+    {\textstyle        \char"FE932}
+    {\scriptstyle      \char"FE932}
+    {\scriptscriptstyle\char"FE932}
+$
+\stopbuffer
+
+\typebuffer[prime]
+
+We blow up the characters a bit and get this:
+
+\startlinecorrection
+\scale[scale=5000]{\showglyphs\inlinebuffer[prime]}
+\stoplinecorrection
+
+\def\TestPrime#1%
+  {\scale
+     [width=\measure{quarter}]
+     {\ruledhbox to 65pt{%
+       \hss
+       \showglyphs
+       \switchtobodyfont[#1]%
+       \inlinebuffer[prime]%
+       \hss}}}
+
+The first set is the normal prime character scaled to the text, script and
+scriptscriptsize. The second set shows the characters (at three sizes) as they
+are in the font. The largest character is raised while the other two are closer
+to the baseline. In some fonts the smaller sizes arenot smaller at all. The last
+set is a variant of the the first set but we made them into virtual characters
+with a displacement and different dimensions. Those are the ones we use as
+primes.
+
+\startlinecorrection
+\startcombination[nx=4,ny=2,distance=1em]
+    {\TestPrime  {modern}} {\infofont  modern}
+    {\TestPrime {cambria}} {\infofont cambria}
+    {\TestPrime{lucidaot}} {\infofont  lucida}
+    {\TestPrime  {dejavu}} {\infofont  dejavu}
+    {\TestPrime {pagella}} {\infofont pagella}
+    {\TestPrime  {termes}} {\infofont  termes}
+    {\TestPrime   {bonum}} {\infofont   bonum}
+    {\TestPrime  {schola}} {\infofont  schola}
+\stopcombination
+\stoplinecorrection
+
+Next we show how primes show up in real math. The examples
+explain themselves.
+
+\startbuffer
+{\textstyle         f = g} \quad
+{\scriptstyle       f = g} \quad
+{\scriptscriptstyle f = g}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\scale[scale=2000]{\showglyphs$\inlinebuffer$}
+\stoplinecorrection
+
+\startbuffer
+{\textstyle         f_i' = g_i'} \quad
+{\scriptstyle       f_i' = g_i'} \quad
+{\scriptscriptstyle f_i' = g_i'}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\scale[scale=2000]{\showglyphs$\inlinebuffer$}
+\stoplinecorrection
+
+\startbuffer
+{\textstyle         f^{\char"2032}(0) = g^{\char"2032}(0)} \quad
+{\scriptstyle       f^{\char"2032}(0) = g^{\char"2032}(0)} \quad
+{\scriptscriptstyle f^{\char"2032}(0) = g^{\char"2032}(0)}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\scale[scale=2000]{\showglyphs$\inlinebuffer$}
+\stoplinecorrection
+
+\startbuffer
+{\textstyle         f'(0) = g'(0)} \quad
+{\scriptstyle       f'(0) = g'(0)} \quad
+{\scriptscriptstyle f'(0) = g'(0)}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\scale[scale=2000]{\showglyphs$\inlinebuffer$}
+\stoplinecorrection
+
+\startbuffer
+{\textstyle         f^{\char"2032}(0) = g^{\char"2032}(0)} \quad
+{\scriptstyle       f^{\char"2032}(0) = g^{\char"2032}(0)} \quad
+{\scriptscriptstyle f^{\char"2032}(0) = g^{\char"2032}(0)}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\scale[scale=2000]{\showglyphs$\inlinebuffer$}
+\stoplinecorrection
+
+\startbuffer
+{\textstyle         f^{\char"2032}(0) = g^{\char"2032}(0)} \quad
+{\scriptstyle       f^{\char"2032}(0) = g^{\char"2032}(0)} \quad
+{\scriptscriptstyle f^{\char"2032}(0) = g^{\char"2032}(0)}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\scale[scale=2000]{\showglyphs$\inlinebuffer$}
+\stoplinecorrection
+
+The prime analyzer can deal with sizes, subscripts but also converts a sequence
+of upright quotes into one unicode symbol. So,
+
+\startbuffer
+f'_i \neq f''_i \neq f'''_i \neq f''''_i
+\stopbuffer
+
+\typebuffer
+
+becomes:
+
+\startlinecorrection
+\scale[scale=4000]{\showglyphs$\inlinebuffer$}
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Radicals]
+
+Sometimes users complain about the look of a radical symbol. This is however a matter
+of design. Some fonts let the shape start more below the baseline than others. Soem go
+more straight up than relatives in another font. When largers sizes are needed, some
+fonts offer smaller than others. Just look at the different desings:
+
+\def\TestRadical#1%
+  {\NC
+     \type{#1}\blackrule[width=0pt,height=2.5ex,depth=2ex]\NC
+     \switchtobodyfont[#1]\scale[scale=2000]{\showglyphs$\surd   $}\NC
+     \switchtobodyfont[#1]\scale[scale=2000]{\showglyphs$\sqrt{} $}\NC
+     \switchtobodyfont[#1]\scale[scale=2000]{\showglyphs$\sqrt{.}$}\NC
+     \switchtobodyfont[#1]\scale[scale=2000]{\showglyphs$\sqrt{x}$}\NC
+     \switchtobodyfont[#1]\scale[scale=2000]{\showglyphs$\surd \sqrt{} \sqrt{.} \sqrt{x}$}\NC
+   \NR}
+
+\starttabulate[|l|c|c|c|c|c|]
+    \NC \NC \type{\surd} \NC \type{\sqrt{}} \NC \type{\sqrt{.}} \NC \type{\sqrt{x}} \NC \NR
+    \TestRadical{modern}
+    \TestRadical{cambria}
+    \TestRadical{lucidaot}
+    \TestRadical{dejavu}
+    \TestRadical{pagella}
+    \TestRadical{termes}
+    \TestRadical{bonum}
+    \TestRadical{schola}
+\stoptabulate
+
+The automatic scaling doesn't always work out as expected but on the average is
+okay. Keep in mind that often the content is not that extreme.
+
+\def\TestRadical#1%
+  {\NC
+     \type{#1}\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=1.0ex,color=darkgray]}$\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=1.5ex,color=darkgray]}$\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=2.0ex,color=darkgray]}$\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=2.5ex,color=darkgray]}$\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=3.0ex,color=darkgray]}$\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=3.5ex,color=darkgray]}$\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=4.0ex,color=darkgray]}$\NC
+     \switchtobodyfont[#1]\showglyphs$\sqrt{\blackrule[width=1em,height=4.5ex,color=darkgray]}$\NC
+   \NR}
+
+\starttabulate[|l|c|c|c|c|c|c|c|c|]
+    \NC \NC 1.0ex \NC 1.5ex \NC 2.0ex \NC 2.5ex \NC 3.0ex \NC 3.5ex \NC 4.0ex \NC 4.5ex \NC \NR
+    \TestRadical{modern}
+    \TestRadical{cambria}
+    \TestRadical{lucidaot}
+    \TestRadical{dejavu}
+    \TestRadical{pagella}
+    \TestRadical{termes}
+    \TestRadical{bonum}
+    \TestRadical{schola}
+\stoptabulate
+
+In Lucida (the version at the time of writing this) we have to correct the threshold
+a bit in the goodie file:
+
+\starttyping
+local function FixRadicalDisplayStyleVerticalGap(value,target,original)
+  local o = original.mathparameters.RadicalVerticalGap -- 50
+  return 2 * o * target.parameters.factor
+end
+
+return {
+  .....
+  mathematics = {
+    .....
+    parameters = {
+      RadicalDisplayStyleVerticalGap =
+        FixRadicalDisplayStyleVerticalGap,
+    },
+    .....
+  },
+}
+\stoptyping
+
+\stopsection
+
+\startsection[title=Integrals]
+
+A curious exception in the math system is the integral sign. Its companions are
+the summation and product signs, but integral has as extra property that it has a
+slant. In \LUATEX\ there is rather advanced control over how the (optional)
+scripts are positioned (which relates to italic correction) but in \CONTEXT\ we
+only make limited use of that. The main reason is that we also need to support
+additional features like color. Therefore integrals are handled by the extensible
+mechanism.
+
+The size of an integral is more of less fixed but you can enlarge to your
+liking. One reason for this is that you might want a consistent size across
+formulas. Let's use the following setup:
+
+\startbuffer[setup]
+\setupmathextensible
+  [integral]
+  [rightoffset=-1mu,
+   exact=yes,
+   factor=2]
+
+\let\int\integral
+\stopbuffer
+
+\typebuffer[setup]
+
+We use the following exmaple:
+
+\startbuffer[demo]
+\ruledhbox{$\integral                  f\frac{1}{2}           $}\quad
+\ruledhbox{$\integral[rightoffset=3mu] f\frac{1}{2}           $}\quad
+\ruledhbox{$\integral[exact=no]        f\frac{1}{2}           $}\quad
+\ruledhbox{$\integral                  f\frac{\frac{1}{2}}{x} $}\quad
+\ruledhbox{$\integral[exact=no]        f\frac{\frac{1}{2}}{x} $}\quad
+\ruledhbox{$\integral[factor=1]        f\frac{1}{2}           $}\quad
+\ruledhbox{$\integral[factor=3]        f\frac{\frac{1}{2}}{x} $}\quad
+\ruledhbox{$\integral[factor=3]        f\frac{1}{2}           $}\quad
+\ruledhbox{$\int                       f\frac{1}{2}           $}% bonus
+\stopbuffer
+
+\typebuffer[demo]
+
+This renders as:
+
+\dontleavehmode\hbox{\getbuffer[setup,demo]}
+
+\stopsection
+
+\startsection[title=Fancy fences]
+
+Here I only show an example of fences drawn by \METAPOST. For the implementation
+you can consult the library file \type {meta-imp-mat.mkiv} in the \CONTEXT\
+distribution.
+
+\startbuffer[setup]
+\useMPlibrary[mat]
+
+\setupmathstackers
+  [both] % vfenced]
+  [color=darkred,
+   alternative=mp]
+
+\setupmathstackers
+  [top]
+  [color=darkred,
+   alternative=mp]
+
+\setupmathstackers
+  [bottom]
+  [color=darkred,
+   alternative=mp]
+\stopbuffer
+
+\typebuffer[setup]
+
+We keep the demo simple:
+
+\startbuffer[demo]
+$ \overbracket     {a+b+c+d} \quad
+  \underbracket    {a+b+c+d} \quad
+  \doublebracket   {a+b+c+d} \quad
+  \overparent      {a+b+c+d} \quad
+  \underparent     {a+b+c+d} \quad
+  \doubleparent    {a+b+c+d} $ \blank
+$ \overbrace       {a+b+c+d} \quad
+  \underbrace      {a+b+c+d} \quad
+  \doublebrace     {a+b+c+d} \quad
+  \overbar         {a+b+c+d} \quad
+  \underbar        {a+b+c+d} \quad
+  \doublebar       {a+b+c+d} $ \blank
+$ \overleftarrow   {a+b+c+d} \quad
+  \overrightarrow  {a+b+c+d} \quad
+  \underleftarrow  {a+b+c+d} \quad
+  \underrightarrow {a+b+c+d} $ \blank
+\stopbuffer
+
+\typebuffer[demo]
+
+Or visualized:
+
+\start
+\getbuffer[setup,demo]
+\stop
+
+\stopsection
+
+\stopcomponent
+
+% \enabletrackers[math.makeup=boxes]
+
+% \startTEXpage[offset=10pt]
+%     $\displaystyle      {{1}\normalover{2}}+x$\quad $\crampeddisplaystyle     {{1}\normalover{2}}+x$\blank
+%     $\textstyle         {{1}\normalover{2}}+x$\quad $\crampedtextstyle        {{1}\normalover{2}}+x$\blank
+%     $\scriptstyle       {{1}\normalover{2}}+x$\quad $\crampedscriptstyle      {{1}\normalover{2}}+x$\blank
+%     $\scriptscriptstyle {{1}\normalover{2}}+x$\quad $\crampedscriptscriptstyle{{1}\normalover{2}}+x$\blank
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     $e=mc^2$
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     $\sqrt{\frac{1}{2}+x}$
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     $\int^0_1{\frac{1}{2}+x}$
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     $\displaystyle\the\everydisplay\int^0_1{\frac{1}{2}+x}$
+% \stopTEXpage
+
+% \startbuffer
+% ${}^2_2x^3_4 {}^2x_4$
+% \stopbuffer
+
+% % d : \Umathsubshiftdown
+% % u : \Umathsupshiftup
+% % s : \Umathsubsupshiftdown
+
+% \startTEXpage[offset=10pt]
+%     \starttabulate[|T||cT|cT|]
+%         \NC 0 \NC \mathscriptsmode 0 \inlinebuffer \NC dynamic       \NC dynamic       \NC \NR \TB
+%         \NC 1 \NC \mathscriptsmode 1 \inlinebuffer \NC d             \NC u             \NC \NR \TB
+%         \NC 2 \NC \mathscriptsmode 2 \inlinebuffer \NC s             \NC u             \NC \NR \TB
+%         \NC 3 \NC \mathscriptsmode 3 \inlinebuffer \NC s             \NC u + s − d     \NC \NR \TB
+%         \NC 4 \NC \mathscriptsmode 4 \inlinebuffer \NC d + (s − d)/2 \NC u + (s − d)/2 \NC \NR \TB
+%         \NC 5 \NC \mathscriptsmode 5 \inlinebuffer \NC d             \NC u + s − d     \NC \NR
+%     \stoptabulate
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt] \tt
+%     \starttabulate[|l|ck1|ck1|ck1|ck1|ck1|ck1|]
+%         \NC
+%             \NC \mathnolimitsmode0    $\displaystyle\int\nolimits^0_1$
+%             \NC \mathnolimitsmode1    $\displaystyle\int\nolimits^0_1$
+%             \NC \mathnolimitsmode2    $\displaystyle\int\nolimits^0_1$
+%             \NC \mathnolimitsmode3    $\displaystyle\int\nolimits^0_1$
+%             \NC \mathnolimitsmode4    $\displaystyle\int\nolimits^0_1$
+%             \NC \mathnolimitsmode8000 $\displaystyle\int\nolimits^0_1$
+%         \NC \NR
+%         \TB
+%         \NC \bf mode
+%             \NC 0
+%             \NC 1
+%             \NC 2
+%             \NC 3
+%             \NC 4
+%             \NC 8000
+%         \NC \NR
+%         \NC \bf superscript
+%             \NC 0
+%             \NC font
+%             \NC 0
+%             \NC 0
+%             \NC +ic/2
+%             \NC 0
+%         \NC \NR
+%         \NC \bf subscript
+%             \NC -ic
+%             \NC font
+%             \NC 0
+%             \NC -ic/2
+%             \NC -ic/2
+%             \NC 8000ic/1000
+%         \NC \NR
+%     \stoptabulate
+% \stopTEXpage
+
+{ } \bgroup \egroup \begingroup \endgroup
+
+\startbuffer[1]
+    [a:\mathstyle]\quad
+    \bgroup
+    \mathchoice
+        {\bf \scriptstyle       (x:d :\mathstyle)}
+        {\bf \scriptscriptstyle (x:t :\mathstyle)}
+        {\bf \scriptscriptstyle (x:s :\mathstyle)}
+        {\bf \scriptscriptstyle (x:ss:\mathstyle)}
+    \egroup
+    \quad[b:\mathstyle]\quad
+    \mathchoice
+        {\bf \scriptstyle       (y:d :\mathstyle)}
+        {\bf \scriptscriptstyle (y:t :\mathstyle)}
+        {\bf \scriptscriptstyle (y:s :\mathstyle)}
+        {\bf \scriptscriptstyle (y:ss:\mathstyle)}
+    \quad[c:\mathstyle]\quad
+    \bgroup
+    \mathchoice
+        {\bf \scriptstyle       (z:d :\mathstyle)}
+        {\bf \scriptscriptstyle (z:t :\mathstyle)}
+        {\bf \scriptscriptstyle (z:s :\mathstyle)}
+        {\bf \scriptscriptstyle (z:ss:\mathstyle)}
+    \egroup
+    \quad[d:\mathstyle]
+\stopbuffer
+
+\startbuffer[2]
+    [a:\mathstyle]\quad
+    \begingroup
+    \mathchoice
+        {\bf \scriptstyle       (x:d :\mathstyle)}
+        {\bf \scriptscriptstyle (x:t :\mathstyle)}
+        {\bf \scriptscriptstyle (x:s :\mathstyle)}
+        {\bf \scriptscriptstyle (x:ss:\mathstyle)}
+    \endgroup
+    \quad[b:\mathstyle]\quad
+    \mathchoice
+        {\bf \scriptstyle       (y:d :\mathstyle)}
+        {\bf \scriptscriptstyle (y:t :\mathstyle)}
+        {\bf \scriptscriptstyle (y:s :\mathstyle)}
+        {\bf \scriptscriptstyle (y:ss:\mathstyle)}
+    \quad[c:\mathstyle]\quad
+    \begingroup
+    \mathchoice
+        {\bf \scriptstyle       (z:d :\mathstyle)}
+        {\bf \scriptscriptstyle (z:t :\mathstyle)}
+        {\bf \scriptscriptstyle (z:s :\mathstyle)}
+        {\bf \scriptscriptstyle (z:ss:\mathstyle)}
+    \endgroup
+    \quad[d:\mathstyle]
+\stopbuffer
+
+% % \bgroup .. \egroup
+
+% \startTEXpage[offset=10pt]
+%     $\displaystyle \getbuffer[1]$ \blank
+%     $\textstyle    \getbuffer[1]$
+% \stopTEXpage
+
+% % \begingroup .. \endgroup
+
+% \startTEXpage[offset=10pt]
+%     $\displaystyle \getbuffer[2]$ \blank
+%     $\textstyle    \getbuffer[2]$
+% \stopTEXpage
+
+
+% \startTEXpage[offset=10pt]
+%     $\Uleft                           ( x \Umiddle\| \Uright                           )$
+%     $\Uleft height 3ex                ( x \Umiddle\| \Uright height 3ex                )$
+%     $\Uleft axis height 3ex           ( x \Umiddle\| \Uright axis height 3ex           )$
+%     $\Uleft axis height 3ex depth 1ex ( x \Umiddle\| \Uright axis height 3ex depth 1ex )$
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     $\Uvextensible                                 ( \frac{1}{x}$
+%     $\Uvextensible height 3ex                      ( \frac{1}{x}$
+%     $\Uvextensible axis height 3ex                 ( \frac{1}{x}$
+%     $\Uvextensible axis height 3ex depth 1ex       ( \frac{1}{x}$
+%     $\Uvextensible exact axis height 3ex depth 1ex ( \frac{1}{x}$
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     \ruledhbox{$\Uhextensible                  "0 "23DE$}
+%     \ruledhbox{$\Uhextensible        width 3ex "0 "23DE$}
+%     \ruledhbox{$\Uhextensible middle width 3ex "0 "23DE$}
+%     \ruledhbox{$\Uhextensible left   width 3ex "0 "23DE$}
+%     \ruledhbox{$\Uhextensible right  width 3ex "0 "23DE$}
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     \ruledhbox{$\Umathaccent         "0 "0 "23DE                          {1+x}$}
+%     \ruledhbox{$\Umathaccent fixed   "0 "0 "23DE                          {1+x}$}
+%     \ruledhbox{$\Umathaccent top     "0 "0 "23DE                          {1+x}$}
+%     \ruledhbox{$\Umathaccent bottom              "0 "0 "23DF              {1+x}$}
+%     \ruledhbox{$\Umathaccent both    "0 "0 "23DE "0 "0 "23DF              {1+x}$}
+%     \ruledhbox{$\Umathaccent overlay "0 "0 "23DE                          {1+x}$}
+%     \ruledhbox{$\Umathaccent top     "0 "0 "23DE             fraction 800 {1+x}$}
+% \stopTEXpage
+
+% \startTEXpage[offset=10pt]
+%     ${ {1} \Uskewed           /                   {2} }$
+%     ${ {1} \Uskewed           /     exact         {2} }$
+%     ${ {1} \Uskewed           /     noaxis        {2} }$
+%     ${ {1} \Uskewed           /     exact noaxis  {2} }$
+%     ${ {1} \Uskewedwithdelims / ()                {2} }$
+%     ${ {1} \Uskewedwithdelims / ()  exact         {2} }$
+%     ${ {1} \Uskewedwithdelims / ()  noaxis        {2} }$
+%     ${ {1} \Uskewedwithdelims / ()  exact noaxis  {2} }$
+% \stopTEXpage
+
+% \disabletrackers[math.makeup]
+
+% \stopchapter
+%
+% \stopcomponent
+
+% A \type {\matheqnogapstep} factor that determines the gap between formula and
+% equation number.
+%
+% A \type {\mathdisplayskipmode} directive that controls display skips: 1 = always,
+% 2 = only when not zero, 3 = never.
+%
+% \mathstyle
+%
+% \suppressmathparerror
+

@@ -43,6 +43,7 @@ local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip
 local insert_node_before = nodes.insert_before
 local hpack_node         = nodes.hpack
+local count_nodes        = nodes.countall
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
@@ -193,9 +194,9 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     if head then
         starttiming(builders)
         if trace_vpacking then
-            local before = nodes.count(head)
+            local before = count_nodes(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
-            local after = nodes.count(head)
+            local after = count_nodes(head)
             if done then
                 nodes.processors.tracer("vpack","changed",head,groupcode,before,after,true)
             else

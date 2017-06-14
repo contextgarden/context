@@ -11105,7 +11105,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 9246, stripped down to: 5038
+-- original size: 9400, stripped down to: 5499
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -11120,8 +11120,21 @@ local unquoted,quoted,optionalquoted=string.unquoted,string.quoted,string.option
 local concat,insert,remove=table.concat,table.insert,table.remove
 environment=environment or {}
 local environment=environment
-os.setlocale(nil,nil) 
-function os.setlocale()
+local setlocale=os.setlocale
+setlocale(nil,nil)
+local report=logs.reporter("system")
+function os.setlocale(a,b)
+  if a or b then
+    if report then
+      report()
+      report("You're messing with os.locale in a supposedly locale neutral enviroment. From")
+      report("now on are on your own and without support. Crashes or unexpected side effects")
+      report("can happen but don't bother the luatex and context developer team with it.")
+      report()
+      report=nil
+    end
+    setlocale(a,b)
+  end
 end
 local validengines=allocate {
   ["luatex"]=true,
@@ -20541,8 +20554,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 845532
--- stripped bytes    : 306341
+-- original bytes    : 845686
+-- stripped bytes    : 306034
 
 -- end library merge
 
@@ -21601,6 +21614,42 @@ end
 
 -- joke .. reminds me of messing with gigi terminals
 
+do
+
+    local a_locale = e_argument("locale")
+
+    if a_locale then
+
+        -- I really hate this crap but am too tired of discussing it over and over
+        -- again so for the sake of usiage outside context we will provide ways to
+        -- use locales in an otherwise supposed to be locale agnostic system. And
+        -- forget about support in case of interferences.
+
+        report()
+        report(what == "force" and "forcing locale:" or "original locale:")
+        report()
+        report("  collate  : %s",status.lc_collate  or "<unset>")
+        report("  ctype    : %s",status.lc_ctype    or "<unset>")
+        report("  monetary : %s",status.lc_monetary or "<unset>")
+        report("  numeric  : %s",status.lc_numeric  or "<unset>")
+        report("  time     : %s",status.lc_time     or "<unset>")
+        report()
+
+    end
+
+    if a_locale == "force" then
+        os.setlocale(status.lc_collate ,"collate")
+        os.setlocale(status.lc_ctype   ,"ctype")
+        os.setlocale(status.lc_monetary,"monetary")
+        os.setlocale(status.lc_numeric ,"numeric")
+        os.setlocale(status.lc_time    ,"time")
+    else
+        function os.setlocale()
+        end
+    end
+
+end
+
 if e_argument("ansi") then
 
     logs.setformatters("ansi")
@@ -21934,6 +21983,10 @@ elseif e_argument("exporthelp") then
 elseif e_argument("systeminfo") then
 
     runners.systeminfo()
+
+elseif e_argument("locale") then
+
+    -- already done
 
 elseif e_argument("help") or filename=='help' or filename == "" then
 

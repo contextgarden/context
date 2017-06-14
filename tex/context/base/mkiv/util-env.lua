@@ -17,55 +17,57 @@ local environment   = environment
 
 -- locales are a useless feature in and even dangerous for luatex
 
-os.setlocale(nil,nil) -- setlocale("all","C")
+local setlocale = os.setlocale
 
-function os.setlocale()
-    -- no way you can mess with it
-end
+setlocale(nil,nil) -- setlocale("all","C")
 
--- do
---
---     local setlocale = os.setlocale
---
---     function os.resetlocale()
---         setlocale(nil,nil)
---     end
---
---     function os.pushlocale(l,...)
---         insert(stack, {
---             collate  = setlocale(nil,"collate"),
---             ctype    = setlocale(nil,"ctype"),
---             monetary = setlocale(nil,"monetary"),
---             numeric  = setlocale(nil,"numeric"),
---             time     = setlocale(nil,"time"),
---         })
---         if l then
---             setlocale(l,...)
---         else
---             setlocale(status.lc_collate ,"collate"),
---             setlocale(status.lc_ctype   ,"ctype"),
---             setlocale(status.lc_monetary,"monetary"),
---             setlocale(status.lc_numeric ,"numeric"),
---             setlocale(status.lc_time    ,"time"),
---         end
---     end
---
---     function os.poplocale(...)
---         local l = remove(stack)
---         if l then
---             setlocale(unpack(l))
---         else
---             resetlocale()
---         end
---     end
---
---     function os.setlocale()
---         -- no way you can mess with it, use push/pop
---     end
---
---     setlocale(nil,nil) -- setlocale("all","C")
---
+-- function os.resetlocale()
+--     setlocale(nil,nil)
 -- end
+--
+-- function os.pushlocale(l,...)
+--     insert(stack, {
+--         collate  = setlocale(nil,"collate"),
+--         ctype    = setlocale(nil,"ctype"),
+--         monetary = setlocale(nil,"monetary"),
+--         numeric  = setlocale(nil,"numeric"),
+--         time     = setlocale(nil,"time"),
+--     })
+--     if l then
+--         setlocale(l,...)
+--     else
+--         setlocale(status.lc_collate ,"collate"),
+--         setlocale(status.lc_ctype   ,"ctype"),
+--         setlocale(status.lc_monetary,"monetary"),
+--         setlocale(status.lc_numeric ,"numeric"),
+--         setlocale(status.lc_time    ,"time"),
+--     end
+-- end
+--
+-- function os.poplocale()
+--     local l = remove(stack)
+--     if l then
+--         setlocale(unpack(l))
+--     else
+--         resetlocale()
+--     end
+-- end
+
+local report = logs.reporter("system")
+
+function os.setlocale(a,b)
+    if a or b then
+        if report then
+            report()
+            report("You're messing with os.locale in a supposedly locale neutral enviroment. From")
+            report("now on are on your own and without support. Crashes or unexpected side effects")
+            report("can happen but don't bother the luatex and context developer team with it.")
+            report()
+            report = nil
+        end
+        setlocale(a,b)
+    end
+end
 
 -- dirty tricks (we will replace the texlua call by luatex --luaonly)
 

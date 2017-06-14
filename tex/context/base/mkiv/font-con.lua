@@ -809,7 +809,7 @@ function constructors.scale(tfmdata,specification)
     --
     constructors.trytosharefont(target,tfmdata)
     --
-    -- catch incosnistencies
+    -- catch inconsistencies
     --
     local vfonts = target.fonts
     if isvirtual then

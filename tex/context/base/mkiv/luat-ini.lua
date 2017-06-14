@@ -34,3 +34,7 @@ LUATEXENGINE  = status.luatex_engine and string.lower(status.luatex_engine)
 JITSUPPORTED  = LUATEXENGINE == "luajittex" or jit
 
 INITEXMODE    = status.ini_version
+
+function os.setlocale()
+    -- no need for a message
+end
