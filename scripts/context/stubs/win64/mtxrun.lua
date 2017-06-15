@@ -19963,7 +19963,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 13595, stripped down to: 7500
+-- original size: 14040, stripped down to: 7818
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -19982,6 +19982,7 @@ local pathpart=file.pathpart
 local nameonly=file.nameonly
 local joinfile=file.join
 local removesuffix=file.removesuffix
+local addsuffix=file.addsuffix
 local findfile=resolvers.findfile
 local findfiles=resolvers.findfiles
 local expandpaths=resolvers.expandedpathlistfromvariable
@@ -20001,13 +20002,20 @@ local function locate(required,version,trace,report,action)
   local required_path=pathpart(required_full)
   local required_base=nameonly(required_full)
   if qualifiedpath(required) then
-    if isfile(required) then
+    if isfile(addsuffix(required,os.libsuffix)) then
+      if trace then
+        report("qualified name %a found",required)
+      end
       found_library=required
+    else
+      if trace then
+        report("qualified name %a not found",required)
+      end
     end
   else
     local required_name=required_base.."."..os.libsuffix
     local version=type(version)=="string" and version~="" and version or false
-    local engine=environment.ownmain or false
+    local engine="luatex"
     if trace and not done then
       local list=expandpaths("lib") 
       for i=1,#list do
@@ -20067,8 +20075,9 @@ local function locate(required,version,trace,report,action)
       package.extralibpath(environment.ownpath)
       local paths=package.libpaths()
       for i=1,#paths do
+        required_path=paths[i]
         local found=check(lfs.isfile)
-        if found and (not checkpattern or find(found,checkpattern)) then
+        if type(found)=="string" and (not checkpattern or find(found,checkpattern)) then
           return found
         end
       end
@@ -20098,18 +20107,18 @@ local function locate(required,version,trace,report,action)
     if trace then
       report("found: %a",found_library)
     end
-    local message,result=action(found_library,required_base)
+    local result,message=action(found_library,required_base)
     if result then
       library=result
     else
       library=false
-      report("load error: message %a, library %a",tostring(message),found_library or "no library")
+      report("load error: message %a, library %a",tostring(message or "unknown"),found_library or "no library")
     end
   end
   if not library then
-    report("unknown: %a",required)
+    report("unknown library: %a",required)
   elseif trace then
-    report("stored: %a",required)
+    report("stored library: %a",required)
   end
   return library
 end
@@ -20136,13 +20145,12 @@ do
         local libtype=type(library)
         if libtype=="function" then
           library=library()
-          message=true
         else
           report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
           library=false
         end
         popdir()
-        return message,library
+        return library
       end)
       loadedlibs[required]=library or false
     end
@@ -20188,7 +20196,9 @@ if FFISUPPORTED and ffi and ffi.load then
   trackers.register("resolvers.ffilib",function(v) trace_ffilib=v end)
   local function locateindeed(name)
     local message,library=pcall(savedffiload,removesuffix(name))
-    if type(library)=="userdata" then
+    if type(message)=="userdata" then
+      return message
+    elseif type(library)=="userdata" then
       return library
     else
       return false
@@ -20554,8 +20564,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 845686
--- stripped bytes    : 306034
+-- original bytes    : 846131
+-- stripped bytes    : 306161
 
 -- end library merge
 

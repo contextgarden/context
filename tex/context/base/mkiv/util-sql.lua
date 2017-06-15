@@ -103,7 +103,7 @@ local defaults     = { __index =
         variables      = { },
         username       = "default",
         password       = "default",
-        host           = "localhost",
+        host           = "localhost", -- 127.0.0.1 is sometimes more reliable
         port           = 3306,
         database       = "default",
     },
@@ -285,7 +285,13 @@ local currentmethod
 local currentserver
 
 local function firstexecute(...)
-    local execute = methods[currentmethod].execute
+    local method = methods[currentmethod]
+    if not method then
+        report_state("invalid sql method")
+        sql.execute = function() end
+        return nil
+    end
+    local execute = method.execute
     sql.execute = execute
     return execute(...)
 end
