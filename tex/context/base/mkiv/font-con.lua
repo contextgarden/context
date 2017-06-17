@@ -554,10 +554,31 @@ function constructors.scale(tfmdata,specification)
         local chr, description, index
         if changed then
             local c = changed[unicode]
-            if c then
-                description = descriptions[c] or descriptions[unicode] or character
-                character   = characters[c] or character
-                index       = description.index or c
+            if c and c ~= unicode then
+                while true do
+                    local cc = changed[c]
+                    if not cc then
+                        -- we're done, no (futher) chain
+                        break
+                    elseif cc == unicode then
+                        -- we probably have a bidi swap
+                        break
+                    elseif cc == c then
+                        -- we have a self reference, shouldn't happen
+                        c = nil
+                        break
+                    else
+                        c = cc
+                    end
+                end
+                if c then
+                    description = descriptions[c] or descriptions[unicode] or character
+                    character   = characters[c] or character
+                    index       = description.index or c
+                else
+                    description = descriptions[unicode] or character
+                    index       = description.index or unicode
+                end
             else
                 description = descriptions[unicode] or character
                 index       = description.index or unicode
@@ -1255,11 +1276,13 @@ do
 
         if not enhancers then
 
-            local actions = allocate()
-            local before  = allocate()
-            local after   = allocate()
-            local order   = allocate()
-            local patches = { before = before, after = after }
+            local actions  = allocate() -- no need to allocate thee
+            local before   = allocate()
+            local after    = allocate()
+            local order    = allocate()
+            local known    = { }
+            local nofsteps = 0
+            local patches  = { before = before, after = after }
 
             local trace   = false
             local report  = logs.reporter("fonts",format .. " enhancing")
@@ -1285,7 +1308,7 @@ do
                     report("%s enhancing file %a","start",filename)
                 end
                 ioflush() -- we want instant messages
-                for e=1,#order do
+                for e=1,nofsteps do
                     local enhancer = order[e]
                     local b = before[enhancer]
                     if b then
@@ -1295,7 +1318,7 @@ do
                             end
                         end
                     end
-                    enhance(enhancer,data,filename,raw)
+                    enhance(enhancer,data,filename,raw) -- we have one installed: check extra features
                     local a = after[enhancer]
                     if a then
                         for pattern, action in next, a do
@@ -1317,7 +1340,9 @@ do
                     if actions[what] then
                         -- overloading, e.g."check extra features"
                     else
-                        order[#order+1] = what
+                        nofsteps        = nofsteps + 1
+                        order[nofsteps] = what
+                        known[what]     = nofsteps
                     end
                     actions[what] = action
                 else
@@ -1325,7 +1350,19 @@ do
                 end
             end
 
-            -- fonts.constructors.otf.enhancers.patch("before","migrate metadata","cambria",function() end)
+            -- We used to have a lot of enhancers but no longer with the new font loader. The order of enhancers
+            -- is the order of definition. The before/after patches are there for old times sake and happen
+            -- before or after a (named) enhancer. An example of a set enhancer is "check extra features" so one
+            -- one set patches before or after that is applied. Unknown enhancers are auto-registered. It's a bit
+            -- messy but we keep it for compatibility reasons.
+            --
+            -- fonts.handlers.otf.enhancers.patches.register("before","some patches","somefont",function(data,filename)
+            --     print("!!!!!!!") -- before | after
+            -- end)
+            --
+            -- fonts.handlers.otf.enhancers.register("more patches",function(data,filename)
+            --     print("???????") -- enhance
+            -- end)
 
             local function patch(what,where,pattern,action)
                 local pw = patches[what]
@@ -1334,7 +1371,12 @@ do
                     if ww then
                         ww[pattern] = action
                     else
-                        pw[where] = { [pattern] = action}
+                        pw[where] = { [pattern] = action }
+                        if not known[where] then
+                            nofsteps        = nofsteps + 1
+                            order[nofsteps] = where
+                            known[where]    = nofsteps
+                        end
                     end
                 end
             end
@@ -1343,7 +1385,11 @@ do
                 register = register,
                 apply    = apply,
                 patch    = patch,
-                patches  = { register = patch }, -- for old times sake
+                report   = report,
+                patches  = {
+                    register = patch,
+                    report   = report,
+                }, -- for old times sake
             }
 
             handler.enhancers = enhancers

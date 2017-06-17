@@ -200,12 +200,12 @@ function otf.load(filename,sub,instance)
         otfreaders.expand(data) -- inline tables
         otfreaders.addunicodetable(data) -- only when not done yet
         --
-        otfenhancers.apply(data,filename,data)
+        otfenhancers.apply(data,filename,data) -- in context one can also use treatments
         --
      -- constructors.addcoreunicodes(data.resources.unicodes) -- still needed ?
         --
         if applyruntimefixes then
-            applyruntimefixes(filename,data)
+            applyruntimefixes(filename,data) -- e.g. see treatments.lfg
         end
         --
         data.metadata.math = data.resources.mathconstants

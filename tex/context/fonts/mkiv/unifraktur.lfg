@@ -1,6 +1,6 @@
 -- moved to treatments.lfg
 --
--- fonts.handlers.otf.enhancers.patches.register("after","check metadata","unifraktur*", function(data,filename)
+-- fonts.handlers.otf.enhancers.patches.register("before","check extra features","unifraktur*", function(data,filename)
 --     data.metadata.pfminfo.os2_xheight = nil
 -- end)
 

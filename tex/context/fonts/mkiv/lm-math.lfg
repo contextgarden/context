@@ -30,9 +30,9 @@
 --     end
 -- end
 --
--- patches.register("after","prepare glyphs","^lmroman",     patch)
--- patches.register("after","prepare glyphs","^lmsans",      patch)
--- patches.register("after","prepare glyphs","^lmtypewriter",patch)
+-- patches.register("before","check extra features","^lmroman",     patch)
+-- patches.register("before","check extra features","^lmsans",      patch)
+-- patches.register("before","check extra features","^lmtypewriter",patch)
 
 -- rm-lmr5  : LMMathRoman5-Regular
 -- rm-lmbx5 : LMMathRoman5-Bold          ]

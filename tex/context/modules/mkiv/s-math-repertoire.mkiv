@@ -265,7 +265,7 @@
 
 \unexpanded\def\showmathcharacterssetbodyfonts#1%
   {\edef\showmathcharactersbodyfonts{#1}%
-   \def\doshowmathcharacterssetbodyfonts##1{\setupbodyfont[##1,12pt]}%
+   \def\doshowmathcharacterssetbodyfonts##1{\setupbodyfont[##1,12pt]}% \usebodyfont[##1,12pt]%
    \processcommacommand[\showmathcharactersbodyfonts]\doshowmathcharacterssetbodyfonts}
 
 \unexpanded\def\showmathcharactersbodyfontschars#1%
@@ -453,7 +453,7 @@
 
 \continueifinputfile{s-math-repertoire.mkiv}
 
-\showmathcharacterssetbodyfonts{lucidaot,cambria,xits,modern,pagella,termes,bonum,schola,dejavu}
+\showmathcharacterssetbodyfonts{lucidaot,cambria,xits,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
 
 \starttext
 

@@ -6,16 +6,9 @@ if not modules then modules = { } end modules ['util-sql-imp-sqlite'] = {
     license   = "see context related readme files"
 }
 
-local next = next
+local next, tonumber = next, tonumber
 
-local sql                = require("util-sql")
------ sql                = utilities.sql
-local sqlite             = require("swiglib.sqlite.core")
-local swighelpers        = require("swiglib.helpers.core")
-
--- sql.sqlite = sqlite -- maybe in the module itself
-
--- inspect(table.sortedkeys(sqlite))
+local sql                = utilities.sql or require("util-sql")
 
 local trace_sql          = false  trackers.register("sql.trace",  function(v) trace_sql     = v end)
 local trace_queries      = false  trackers.register("sql.queries",function(v) trace_queries = v end)
@@ -25,26 +18,95 @@ local helpers            = sql.helpers
 local methods            = sql.methods
 local validspecification = helpers.validspecification
 local preparetemplate    = helpers.preparetemplate
-local splitdata          = helpers.splitdata
-local serialize          = sql.serialize
-local deserialize        = sql.deserialize
-local getserver          = sql.getserver
 
 local setmetatable       = setmetatable
 local formatters         = string.formatters
 
-local get_list_item      = sqlite.char_p_array_getitem
-local is_okay            = sqlite.SQLITE_OK
-local execute_query      = sqlite.sqlite3_exec_lua_callback
-local error_message      = sqlite.sqlite3_errmsg
+----- sqlite             = require("swiglib.sqlite.core")
+----- swighelpers        = require("swiglib.helpers.core")
+-----
+----- get_list_item      = sqlite.char_p_array_getitem
+----- is_okay            = sqlite.SQLITE_OK
+----- execute_query      = sqlite.sqlite3_exec_lua_callback
+----- error_message      = sqlite.sqlite3_errmsg
+-----
+----- new_db             = sqlite.new_sqlite3_p_array
+----- open_db            = sqlite.sqlite3_open
+----- get_db             = sqlite.sqlite3_p_array_getitem
+----- close_db           = sqlite.sqlite3_close
+----- dispose_db         = sqlite.delete_sqlite3_p_array
 
-local new_db             = sqlite.new_sqlite3_p_array
-local open_db            = sqlite.sqlite3_open
-local get_db             = sqlite.sqlite3_p_array_getitem
-local close_db           = sqlite.sqlite3_close
-local dispose_db         = sqlite.delete_sqlite3_p_array
+local ffi = require("ffi")
 
-local cache              = { }
+ffi.cdef [[
+
+    typedef struct sqlite3 sqlite3;
+
+    int sqlite3_initialize (
+        void
+
+    ) ;
+
+    int sqlite3_open (
+        const char *filename,
+        sqlite3 **ppDb
+    ) ;
+
+    int sqlite3_close (
+        sqlite3 *
+    ) ;
+
+    int sqlite3_exec (
+        sqlite3*,
+        const char *sql,
+        int (*callback)(void*,int,char**,char**),
+        void *,
+        char **errmsg
+    ) ;
+
+    const char *sqlite3_errmsg (
+        sqlite3*
+    );
+]]
+
+local ffi_tostring = ffi.string
+
+local sqlite = ffi.load("sqlite3")
+
+sqlite.sqlite3_initialize();
+
+local c_errmsg = sqlite.sqlite3_errmsg
+local c_open   = sqlite.sqlite3_open
+local c_close  = sqlite.sqlite3_close
+local c_exec   = sqlite.sqlite3_exec
+
+local is_okay       = 0
+local open_db       = c_open
+local close_db      = c_close
+local execute_query = c_exec
+
+local function error_message(db)
+    return ffi_tostring(c_errmsg(db))
+end
+
+local function new_db(n)
+    return ffi.new("sqlite3*["..n.."]")
+end
+
+local function dispose_db(db)
+end
+
+local function get_db(db,n)
+    return db[n]
+end
+
+-- local function execute_query(dbh,query,callback)
+--     local c = ffi.cast("int (*callback)(void*,int,char**,char**)",callback)
+--     c_exec(dbh,query,c,nil,nil)
+--     c:free()
+-- end
+
+local cache = { }
 
 setmetatable(cache, {
     __gc = function(t)
@@ -135,30 +197,31 @@ local function execute(specification)
             query = preamble .. query -- only needed in open
         end
         if converter then
-            converter = converter.sqlite
+            local convert = converter.sqlite
+            local column  = { }
             callback = function(data,nofcolumns,values,fields)
-                local column = { }
-                for i=0,nofcolumns-1 do
-                    column[i+1] = get_list_item(values,i)
+                for i=1,nofcolumns do
+                 -- column[i] = get_list_item(values,i-1)
+                    column[i] = ffi_tostring(values[i-1])
                 end
-                nofrows  = nofrows + 1
-                result[nofrows] = converter(column)
+                nofrows = nofrows + 1
+                result[nofrows] = convert(column)
                 return is_okay
             end
-            --
-         -- callback = converter.sqlite
         else
+            local column = { }
             callback = function(data,nofcolumns,values,fields)
-                local column = { }
                 for i=0,nofcolumns-1 do
                     local field
                     if keysdone then
                         field = keys[i+1]
                     else
-                        field = get_list_item(fields,i)
+                     -- field = get_list_item(fields,i)
+                        field = ffi_tostring(fields[i])
                         keys[i+1] = field
                     end
-                    column[field] = get_list_item(values,i)
+                 -- column[field] = get_list_item(values,i)
+                    column[field] = ffi_tostring(values[i])
                 end
                 nofrows  = nofrows + 1
                 keysdone = true
@@ -200,34 +263,6 @@ end
 ]]
 
 local celltemplate = "cells[%s]"
-
--- todo: how to deal with result ... pass via temp global .. bah .. or
--- also pass the execute here ... not now
---
--- local wraptemplate = [[
--- local converters    = utilities.sql.converters
--- local deserialize   = utilities.sql.deserialize
---
--- local tostring      = tostring
--- local tonumber      = tonumber
--- local booleanstring = string.booleanstring
---
--- local get_list_item = utilities.sql.sqlite.char_p_array_getitem
--- local is_okay       = utilities.sql.sqlite.SQLITE_OK
---
--- %s
---
--- return function(data,nofcolumns,values,fields)
---     -- no %s (data) needed
---     -- no %s (i) needed
---     local cells = { }
---     for i=0,nofcolumns-1 do
---         cells[i+1] = get_list_item(values,i)
---     end
---     result[#result+1] = { %s }
---     return is_okay
--- end
--- ]]
 
 methods.sqlite = {
     execute      = execute,

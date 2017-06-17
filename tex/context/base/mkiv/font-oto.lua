@@ -67,21 +67,32 @@ local function cref(feature,sequence)
     return formatters["feature %a, type %a, chain lookup %a"](feature,sequence.type,sequence.name)
 end
 
-
-local function report_alternate(feature,sequence,descriptions,unicode,replacement,value,comment)
-    report_prepare("%s: base alternate %s => %s (%S => %S)",
-        cref(feature,sequence),
-        gref(descriptions,unicode),
-        replacement and gref(descriptions,replacement),
-        value,
-        comment)
+local function report_substitution(feature,sequence,descriptions,unicode,substitution)
+    if unicode == substitution then
+        report_prepare("%s: base substitution %s maps onto itself",
+            cref(feature,sequence),
+            gref(descriptions,unicode))
+    else
+        report_prepare("%s: base substitution %s => %S",
+            cref(feature,sequence),
+            gref(descriptions,unicode),
+            gref(descriptions,substitution))
+    end
 end
 
-local function report_substitution(feature,sequence,descriptions,unicode,substitution)
-    report_prepare("%s: base substitution %s => %S",
-        cref(feature,sequence),
-        gref(descriptions,unicode),
-        gref(descriptions,substitution))
+local function report_alternate(feature,sequence,descriptions,unicode,replacement,value,comment)
+    if unicode == replacement then
+        report_prepare("%s: base alternate %s maps onto itself",
+            cref(feature,sequence),
+            gref(descriptions,unicode))
+    else
+        report_prepare("%s: base alternate %s => %s (%S => %S)",
+            cref(feature,sequence),
+            gref(descriptions,unicode),
+            replacement and gref(descriptions,replacement),
+            value,
+            comment)
+    end
 end
 
 local function report_ligature(feature,sequence,descriptions,unicode,ligature)
@@ -221,6 +232,9 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local trace_alternatives = trace_baseinit and trace_alternatives
     local trace_ligatures    = trace_baseinit and trace_ligatures
 
+    -- A chain of changes is handled in font-con which is clesner because
+    -- we can have shared changes and such.
+
     if not changed then
         changed = { }
         tfmdata.changed = changed
@@ -233,39 +247,44 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         if kind == "gsub_single" then
             for i=1,#steps do
                 for unicode, data in next, steps[i].coverage do
-                 -- if not changed[unicode] then -- fails for multiple subs in some math fonts
-                        if trace_singles then
-                            report_substitution(feature,sequence,descriptions,unicode,data)
-                        end
+                    if unicode ~= data then
                         changed[unicode] = data
-                 -- end
+                    end
+                    if trace_singles then
+                        report_substitution(feature,sequence,descriptions,unicode,data)
+                    end
                 end
             end
         elseif kind == "gsub_alternate" then
             for i=1,#steps do
                 for unicode, data in next, steps[i].coverage do
-                    if not changed[unicode] then
-                        local replacement = data[alternate]
-                        if replacement then
+                    local replacement = data[alternate]
+                    if replacement then
+                        if unicode ~= replacement then
                             changed[unicode] = replacement
-                            if trace_alternatives then
-                                report_alternate(feature,sequence,descriptions,unicode,replacement,value,"normal")
-                            end
-                        elseif defaultalt == "first" then
-                            replacement = data[1]
+                        end
+                        if trace_alternatives then
+                            report_alternate(feature,sequence,descriptions,unicode,replacement,value,"normal")
+                        end
+                    elseif defaultalt == "first" then
+                        replacement = data[1]
+                        if unicode ~= replacement then
                             changed[unicode] = replacement
-                            if trace_alternatives then
-                                report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
-                            end
-                        elseif defaultalt == "last" then
-                            replacement = data[#data]
-                            if trace_alternatives then
-                                report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
-                            end
-                        else
-                            if trace_alternatives then
-                                report_alternate(feature,sequence,descriptions,unicode,replacement,value,"unknown")
-                            end
+                        end
+                        if trace_alternatives then
+                            report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
+                        end
+                    elseif defaultalt == "last" then
+                        replacement = data[#data]
+                        if unicode ~= replacement then
+                            changed[unicode] = replacement
+                        end
+                        if trace_alternatives then
+                            report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
+                        end
+                    else
+                        if trace_alternatives then
+                            report_alternate(feature,sequence,descriptions,unicode,replacement,value,"unknown")
                         end
                     end
                 end

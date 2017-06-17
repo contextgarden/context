@@ -341,6 +341,8 @@ We use the same lookup logic for ffi loading.
     local trace_ffilib  = false
     local savedffiload  = ffi.load
 
+ -- ffi.savedload = savedffiload
+
     trackers.register("resolvers.ffilib", function(v) trace_ffilib = v end)
 
     local function locateindeed(name)

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/15/17 22:10:43
+-- merge date  : 06/17/17 20:30:19
 
 do -- begin closure to overcome local limits and interference
 
@@ -7941,10 +7941,28 @@ function constructors.scale(tfmdata,specification)
     local chr,description,index
     if changed then
       local c=changed[unicode]
-      if c then
-        description=descriptions[c] or descriptions[unicode] or character
-        character=characters[c] or character
-        index=description.index or c
+      if c and c~=unicode then
+        while true do
+          local cc=changed[c]
+          if not cc then
+            break
+          elseif cc==unicode then
+            break
+          elseif cc==c then
+            c=nil
+            break
+          else
+            c=cc
+          end
+        end
+        if c then
+          description=descriptions[c] or descriptions[unicode] or character
+          character=characters[c] or character
+          index=description.index or c
+        else
+          description=descriptions[unicode] or character
+          index=description.index or unicode
+        end
       else
         description=descriptions[unicode] or character
         index=description.index or unicode
@@ -8546,10 +8564,12 @@ do
     local handler=handlers[format]
     local enhancers=handler.enhancers
     if not enhancers then
-      local actions=allocate()
+      local actions=allocate() 
       local before=allocate()
       local after=allocate()
       local order=allocate()
+      local known={}
+      local nofsteps=0
       local patches={ before=before,after=after }
       local trace=false
       local report=logs.reporter("fonts",format.." enhancing")
@@ -8571,7 +8591,7 @@ do
           report("%s enhancing file %a","start",filename)
         end
         ioflush() 
-        for e=1,#order do
+        for e=1,nofsteps do
           local enhancer=order[e]
           local b=before[enhancer]
           if b then
@@ -8581,7 +8601,7 @@ do
               end
             end
           end
-          enhance(enhancer,data,filename,raw)
+          enhance(enhancer,data,filename,raw) 
           local a=after[enhancer]
           if a then
             for pattern,action in next,a do
@@ -8601,7 +8621,9 @@ do
         if action then
           if actions[what] then
           else
-            order[#order+1]=what
+            nofsteps=nofsteps+1
+            order[nofsteps]=what
+            known[what]=nofsteps
           end
           actions[what]=action
         else
@@ -8615,7 +8637,12 @@ do
           if ww then
             ww[pattern]=action
           else
-            pw[where]={ [pattern]=action}
+            pw[where]={ [pattern]=action }
+            if not known[where] then
+              nofsteps=nofsteps+1
+              order[nofsteps]=where
+              known[where]=nofsteps
+            end
           end
         end
       end
@@ -8623,7 +8650,11 @@ do
         register=register,
         apply=apply,
         patch=patch,
-        patches={ register=patch },
+        report=report,
+        patches={
+          register=patch,
+          report=report,
+        },
       }
       handler.enhancers=enhancers
     end
@@ -19599,7 +19630,7 @@ function otf.load(filename,sub,instance)
     otfreaders.addunicodetable(data)
     otfenhancers.apply(data,filename,data)
     if applyruntimefixes then
-      applyruntimefixes(filename,data)
+      applyruntimefixes(filename,data) 
     end
     data.metadata.math=data.resources.mathconstants
     local classes=data.resources.classes
@@ -20159,19 +20190,31 @@ end
 local function cref(feature,sequence)
   return formatters["feature %a, type %a, chain lookup %a"](feature,sequence.type,sequence.name)
 end
-local function report_alternate(feature,sequence,descriptions,unicode,replacement,value,comment)
-  report_prepare("%s: base alternate %s => %s (%S => %S)",
-    cref(feature,sequence),
-    gref(descriptions,unicode),
-    replacement and gref(descriptions,replacement),
-    value,
-    comment)
-end
 local function report_substitution(feature,sequence,descriptions,unicode,substitution)
-  report_prepare("%s: base substitution %s => %S",
-    cref(feature,sequence),
-    gref(descriptions,unicode),
-    gref(descriptions,substitution))
+  if unicode==substitution then
+    report_prepare("%s: base substitution %s maps onto itself",
+      cref(feature,sequence),
+      gref(descriptions,unicode))
+  else
+    report_prepare("%s: base substitution %s => %S",
+      cref(feature,sequence),
+      gref(descriptions,unicode),
+      gref(descriptions,substitution))
+  end
+end
+local function report_alternate(feature,sequence,descriptions,unicode,replacement,value,comment)
+  if unicode==replacement then
+    report_prepare("%s: base alternate %s maps onto itself",
+      cref(feature,sequence),
+      gref(descriptions,unicode))
+  else
+    report_prepare("%s: base alternate %s => %s (%S => %S)",
+      cref(feature,sequence),
+      gref(descriptions,unicode),
+      replacement and gref(descriptions,replacement),
+      value,
+      comment)
+  end
 end
 local function report_ligature(feature,sequence,descriptions,unicode,ligature)
   report_prepare("%s: base ligature %s => %S",
@@ -20276,37 +20319,44 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     if kind=="gsub_single" then
       for i=1,#steps do
         for unicode,data in next,steps[i].coverage do
-            if trace_singles then
-              report_substitution(feature,sequence,descriptions,unicode,data)
-            end
+          if unicode~=data then
             changed[unicode]=data
+          end
+          if trace_singles then
+            report_substitution(feature,sequence,descriptions,unicode,data)
+          end
         end
       end
     elseif kind=="gsub_alternate" then
       for i=1,#steps do
         for unicode,data in next,steps[i].coverage do
-          if not changed[unicode] then
-            local replacement=data[alternate]
-            if replacement then
+          local replacement=data[alternate]
+          if replacement then
+            if unicode~=replacement then
               changed[unicode]=replacement
-              if trace_alternatives then
-                report_alternate(feature,sequence,descriptions,unicode,replacement,value,"normal")
-              end
-            elseif defaultalt=="first" then
-              replacement=data[1]
+            end
+            if trace_alternatives then
+              report_alternate(feature,sequence,descriptions,unicode,replacement,value,"normal")
+            end
+          elseif defaultalt=="first" then
+            replacement=data[1]
+            if unicode~=replacement then
               changed[unicode]=replacement
-              if trace_alternatives then
-                report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
-              end
-            elseif defaultalt=="last" then
-              replacement=data[#data]
-              if trace_alternatives then
-                report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
-              end
-            else
-              if trace_alternatives then
-                report_alternate(feature,sequence,descriptions,unicode,replacement,value,"unknown")
-              end
+            end
+            if trace_alternatives then
+              report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
+            end
+          elseif defaultalt=="last" then
+            replacement=data[#data]
+            if unicode~=replacement then
+              changed[unicode]=replacement
+            end
+            if trace_alternatives then
+              report_alternate(feature,sequence,descriptions,unicode,replacement,value,defaultalt)
+            end
+          else
+            if trace_alternatives then
+              report_alternate(feature,sequence,descriptions,unicode,replacement,value,"unknown")
             end
           end
         end
