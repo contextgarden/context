@@ -44,7 +44,6 @@ ffi.cdef [[
 
     int sqlite3_initialize (
         void
-
     ) ;
 
     int sqlite3_open (

@@ -13,6 +13,20 @@
 %D This file is only a helper for generating files that can be used in an
 %D editor for syntax highlighting.
 
+% local all = table.load("mult-prm.lua")
+% local tex = table.tohash(all.tex)
+% for k, v in next, all do
+%     if k ~= "tex" then
+%         local h = table.tohash(v)
+%         for k, v in next, h do
+%             tex[k] = nil
+%         end
+%         all[k] = table.sortedkeys(h)
+%     end
+% end
+% all.tex = table.sortedkeys(tex)
+% print((string.gsub(table.serialize(all,true),' "','\n  "')))
+
 \startluacode
 
     context.starttext()
@@ -33,6 +47,35 @@
             "savingvdiscards",
         },
         pdftex = {
+            "ifpdfabsdim", "ifpdfabsnum", "ifpdfprimitive", "pdfadjustspacing",
+            "pdfannot", "pdfcatalog", "pdfcolorstack", "pdfcolorstackinit",
+            "pdfcompresslevel", "pdfcopyfont", "pdfcreationdate",
+            "pdfdecimaldigits", "pdfdest", "pdfdestmargin", "pdfdraftmode",
+            "pdfeachlinedepth", "pdfeachlineheight", "pdfendlink",
+            "pdfendthread", "pdffirstlineheight", "pdffontattr", "pdffontexpand",
+            "pdffontname", "pdffontobjnum", "pdffontsize", "pdfgamma",
+            "pdfgentounicode", "pdfglyphtounicode", "pdfhorigin",
+            "pdfignoreddimen", "pdfignoreunknownimages", "pdfimageaddfilename",
+            "pdfimageapplygamma", "pdfimagegamma", "pdfimagehicolor",
+            "pdfimageresolution", "pdfincludechars", "pdfinclusioncopyfonts",
+            "pdfinclusionerrorlevel", "pdfinfo", "pdfinfoomitdate",
+            "pdfinsertht", "pdflastannot", "pdflastlinedepth", "pdflastlink",
+            "pdflastobj", "pdflastxform", "pdflastximage", "pdflastximagepages",
+            "pdflastxpos", "pdflastypos", "pdflinkmargin", "pdfliteral",
+            "pdfmapfile", "pdfmapline", "pdfminorversion", "pdfnames",
+            "pdfnoligatures", "pdfnormaldeviate", "pdfobj",
+            "pdfobjcompresslevel", "pdfoutline", "pdfoutput", "pdfpageattr",
+            "pdfpagebox", "pdfpageheight", "pdfpageref", "pdfpageresources",
+            "pdfpagesattr", "pdfpagewidth", "pdfpkfixeddpi", "pdfpkmode",
+            "pdfpkresolution", "pdfprimitive", "pdfprotrudechars", "pdfpxdimen",
+            "pdfrandomseed", "pdfrefobj", "pdfrefxform", "pdfrefximage",
+            "pdfreplacefont", "pdfrestore", "pdfretval", "pdfsave", "pdfsavepos",
+            "pdfsetmatrix", "pdfsetrandomseed", "pdfstartlink", "pdfstartthread",
+            "pdfsuppressoptionalinfo", "pdfsuppressptexinfo", "pdftexbanner",
+            "pdftexrevision", "pdftexversion", "pdfthread", "pdfthreadmargin",
+            "pdftracingfonts", "pdftrailer", "pdftrailerid", "pdfuniformdeviate",
+            "pdfuniqueresname", "pdfvorigin", "pdfxform", "pdfxformattr",
+            "pdfxformmargin", "pdfxformname", "pdfxformresources", "pdfximage",
         },
         luatex = {
         },
@@ -41,10 +84,10 @@
         },
         omega = {
             "Omegaminorversion", "Omegarevision", "Omegaversion",
-            "omathcode", "odelcode", "omathchardef", "omathchar", "omathaccent", "odelimiter", "oradical",
+            "odelcode", "odelimiter", "omathaccent", "omathchar", "omathchardef", "omathcode", "oradical",
         },
         xetex = {
-            "XeTeXversion",
+            "XeTeXversion", -- probably some more
         },
         plain = {
             "TeX",
@@ -63,13 +106,13 @@
     }
 
     local primitives = {
-        tex    = table.sorted( table.merged( missing.tex   , table.fromhash(tex.primitives()) ) ),
-        etex   = table.sorted( table.merged( missing.etex  , tex.extraprimitives('etex')      ) ),
-        pdftex = table.sorted( table.merged( missing.pdftex, tex.extraprimitives('pdftex')    ) ),
-        luatex = table.sorted( table.merged( missing.luatex, tex.extraprimitives('luatex')    ) ),
-        aleph  = table.sorted( table.merged( missing.aleph , tex.extraprimitives('aleph')     ) ),
-        omega  = table.sorted( table.merged( missing.omega , tex.extraprimitives('omega')     ) ),
-        xetex  = table.sorted( table.merged( missing.xetex , { }                              ) ),
+        tex    = table.sorted( table.merged( missing.tex   , tex.primitives() ) ),
+        etex   = table.sorted( table.merged( missing.etex  , tex.extraprimitives('etex') ) ),
+        pdftex = table.sorted( table.merged( missing.pdftex, { } ) ),
+        luatex = table.sorted( table.merged( missing.luatex, tex.extraprimitives('luatex') ) ),
+        aleph  = table.sorted( table.merged( missing.aleph , { } ) ),
+        omega  = table.sorted( table.merged( missing.omega , { } ) ),
+        xetex  = table.sorted( table.merged( missing.xetex , { } ) ),
     }
 
  -- table.remove(primitives.tex,1) -- get rid of \-

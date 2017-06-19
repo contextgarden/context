@@ -289,31 +289,52 @@
 
 % e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
 
-\newmuskip\defaultthickmuskip  \defaultthickmuskip  5mu plus 5mu
-\newmuskip\defaultmedmuskip    \defaultmedmuskip    4mu plus 2mu minus 4mu
-\newmuskip\defaultthinmuskip   \defaultthinmuskip   3mu
+\newmuskip\defaultthickmuskip     \defaultthickmuskip  5mu plus 5mu
+\newmuskip\defaultmedmuskip       \defaultmedmuskip    4mu plus 2mu minus 4mu
+\newmuskip\defaultthinmuskip      \defaultthinmuskip   3mu
 
-\newmuskip\halfthickmuskip     \halfthickmuskip     2.5mu plus 2.5mu
-\newmuskip\halfmedmuskip       \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
-\newmuskip\halfthinmuskip      \halfthinmuskip      1.5mu
+\newmuskip\halfthickmuskip        \halfthickmuskip     2.5mu plus 2.5mu
+\newmuskip\halfmedmuskip          \halfmedmuskip       2.0mu plus 1.0mu minus 2.0mu
+\newmuskip\halfthinmuskip         \halfthinmuskip      1.5mu
 
-\newcount \defaultrelpenalty   \defaultrelpenalty   500
-\newcount \defaultbinoppenalty \defaultbinoppenalty 700
+\newcount \defaultrelpenalty      \defaultrelpenalty       500
+\newcount \defaultbinoppenalty    \defaultbinoppenalty     700
+\newcount \defaultprerelpenalty   \defaultprerelpenalty   -100
+\newcount \defaultprebinoppenalty \defaultprebinoppenalty -100
+
+% we need to control these otherwise:
+%
+% \prerelpenalty  \defaultprerelpenalty
+% \prebinoppenalty\defaultprebinoppenalty
 
 \startsetups math:spacing:default
-    \thickmuskip   \defaultthickmuskip
-    \medmuskip     \defaultmedmuskip
-    \thinmuskip    \defaultthinmuskip
-    \relpenalty    \defaultrelpenalty
-    \binoppenalty  \defaultbinoppenalty
+    \thickmuskip    \defaultthickmuskip
+    \medmuskip      \defaultmedmuskip
+    \thinmuskip     \defaultthinmuskip
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \defaultbinoppenalty
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
+\stopsetups
+
+\startsetups math:spacing:split
+    \thickmuskip    \defaultthickmuskip
+    \medmuskip      \defaultmedmuskip
+    \thinmuskip     \defaultthinmuskip
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \defaultbinoppenalty
+    \prebinoppenalty\defaultprebinoppenalty
+    \prerelpenalty  \defaultprerelpenalty
 \stopsetups
 
 \startsetups math:spacing:half
-    \thickmuskip   \halfthickmuskip
-    \medmuskip     \halfmedmuskip
-    \thinmuskip    \halfthinmuskip
-    \relpenalty    \defaultrelpenalty
-    \binoppenalty  \defaultbinoppenalty
+    \thickmuskip    \halfthickmuskip
+    \medmuskip      \halfmedmuskip
+    \thinmuskip     \halfthinmuskip
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \defaultbinoppenalty
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
 \stopsetups
 
 \startsetups math:spacing:tight
@@ -326,8 +347,10 @@
         \medmuskip    1\halfmedmuskip
         \thinmuskip   1\halfthinmuskip
     \fi
-    \relpenalty    \defaultrelpenalty
-    \binoppenalty  \maxdimen
+    \relpenalty     \defaultrelpenalty
+    \binoppenalty   \maxdimen
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
 \stopsetups
 
 \startsetups math:spacing:fixed
@@ -340,8 +363,10 @@
         \medmuskip    1\halfmedmuskip
         \thinmuskip   1\halfthinmuskip
     \fi
-    \relpenalty    \maxdimen
-    \binoppenalty  \maxdimen
+    \relpenalty     \maxdimen
+    \binoppenalty   \maxdimen
+    \prebinoppenalty\maxdimen
+    \prerelpenalty  \maxdimen
 \stopsetups
 
 % \dorecurse{80}{test \m[i:tight]{\red \fakeformula} test }

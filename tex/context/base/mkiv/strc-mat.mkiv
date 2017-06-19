@@ -752,6 +752,11 @@
      \setformulaparameter\c!grid{\v!math:-\v!halfline}%
    \fi}
 
+% when we have 1.0.6 we wil use \mathpenaltiesmode
+%
+% \prebinoppenalty -100
+% \prerelpenalty   -100
+
 \def\strc_math_set_split
   {\edef\p_split{\formulaparameter\c!split}%
    \ifx\p_split\v!yes
@@ -762,9 +767,11 @@
      \global\c_strc_math_vertical\zerocount
    \fi\fi
    \ifcase\c_strc_math_vertical
+   % \mathpenaltiesmode \zerocount
      \clf_setmathpenalties\zerocount
      \clf_resetmathhang
    \else
+   % \mathpenaltiesmode \plusone
      \clf_setmathpenalties\plusone
      \edef\p_hang{\formulaparameter\c!hang}%
      \ifx\p_hang\v!none

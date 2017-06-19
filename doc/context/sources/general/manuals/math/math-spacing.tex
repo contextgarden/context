@@ -397,24 +397,51 @@ Of course better is to fix the font.
 Inline formulas can span lines but display math normally sits on one line unless
 one uses alignment mechanisms. Take this:
 
-\startbuffer
+\startbuffer[demo]
 \startformula
     x\dorecurse{30}{ + #1x^{#1x}} = 10
 \stopformula
 \stopbuffer
 
-\typebuffer
+\typebuffer[demo]
 
-\par \start \setupformula[split=no]  \getbuffer \stop \par
+\par \start \setupformula[split=no]  \getbuffer[demo] \stop \par
 
 You can set \type {split} to \type {yes} using \type {\setupformula} and get the
 following:
 
-\par \start \setupformula[split=yes] \getbuffer \stop \par
+\par \start \setupformula[split=yes] \getbuffer[demo] \stop \par
 
 Maybe nicer is to also set \type {align} to \type {flushleft}:
 
-\par \start \setupformula[split=yes,align=flushleft] \getbuffer \stop \par
+\par \start \setupformula[split=yes,align=flushleft] \getbuffer[demo] \stop \par
+
+If you want the binary operators to start the lines you can set this:
+
+\startbuffer[setup]
+\setupmathematics[setups=math:spacing:split]
+\setupformulas[split=yes,align=flushleft]
+\stopbuffer
+
+\typebuffer[setup]
+
+\par \start \getbuffer[setup,demo] \stop \par
+
+You can prevent a split with a large penalty. Here is a test that yuou can run
+to play with this feature:
+
+\starttyping
+\dostepwiserecurse {30} {100} {1} {
+    \hsize \dimexpr 40pt + #1pt \relax
+    \startformula
+        y = a \dorecurse {50} {
+            \penalty 10000 {\bf + ##1b}
+             + ##1c^2
+        }
+    \stopformula
+    \page
+}
+\stoptyping
 
 There is an experimental alignment mechanism available. Watch the following
 examples:

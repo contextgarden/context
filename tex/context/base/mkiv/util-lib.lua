@@ -229,10 +229,12 @@ local function locate(required,version,trace,report,action)
             report("load error: message %a, library %a",tostring(message or "unknown"),found_library or "no library")
         end
     end
-    if not library then
-        report("unknown library: %a",required)
-    elseif trace then
-        report("stored library: %a",required)
+    if trace then
+        if not library then
+            report("unknown library: %a",required)
+        else
+            report("stored library: %a",required)
+        end
     end
     return library
 end
@@ -368,10 +370,11 @@ We use the same lookup logic for ffi loading.
         local library = ffilib(name)
         if type(library) == "userdata" then
             return library
-        else
-            report_ffilib("trying to load %a using normal loader",name)
-            return savedffiload(name)
         end
+        if trace_ffilib then
+            report_ffilib("trying to load %a using normal loader",name)
+        end
+        return savedffiload(name)
     end
 
 end

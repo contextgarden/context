@@ -1195,4 +1195,8 @@
 \ifdefined\explicitdiscretionary  \else \let\explicitdiscretionary  \-                   \fi
 \ifdefined\automaticdiscretionary \else \def\automaticdiscretionary{\Uchar\exhyphenchar} \fi
 
+\ifdefined\mathpenaltiesmode      \else \newcount\mathpenaltiesmode \fi
+\ifdefined\prebinoppenalty        \else \newcount\prebinoppenalty   \fi
+\ifdefined\prerelpenalty          \else \newcount\prerelpenalty     \fi
+
 \protect \endinput
