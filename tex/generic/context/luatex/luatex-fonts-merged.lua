@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/17/17 20:30:19
+-- merge date  : 06/21/17 23:03:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -19131,44 +19131,29 @@ end
 local function mergesteps_3(lookup,strict) 
   local steps=lookup.steps
   local nofsteps=lookup.nofsteps
-  local first=steps[1]
   report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
-  local baseclasses={}
   local coverage={}
-  local used={}
   for i=1,nofsteps do
-    local offset=i*10
+    for k,v in next,steps[i].coverage do
+      local tk=coverage[k] 
+      if tk then
+        report("quitting merge due to multiple checks")
+        return nofsteps
+      else
+        coverage[k]=v
+      end
+    end
+  end
+  local first=steps[1]
+  local baseclasses={} 
+  for i=1,nofsteps do
+    local offset=i*10 
     local step=steps[i]
     for k,v in sortedhash(step.baseclasses) do
       baseclasses[offset+k]=v
     end
     for k,v in next,step.coverage do
-      local tk=coverage[k]
-      if tk then
-        for k,v in next,v do
-          if not tk[k] then
-            tk[k]=v
-            local c=offset+v[1]
-            v[1]=c
-            if not used[c] then
-              used[c]=true
-            end
-          end
-        end
-      else
-        coverage[k]=v
-        local c=offset+v[1]
-        v[1]=c
-        if not used[c] then
-          used[c]=true
-        end
-      end
-    end
-  end
-  for k,v in next,baseclasses do
-    if not used[k] then
-      baseclasses[k]=nil
-      report("discarding not used baseclass %i",k)
+      v[1]=offset+v[1]
     end
   end
   first.baseclasses=baseclasses
@@ -19459,6 +19444,7 @@ function readers.expand(data)
                     local cu=coverage[unic]
                     if not cu then
                       coverage[unic]=rulehash 
+                    else
                     end
                   end
                 end
@@ -20917,6 +20903,7 @@ local function showsub(n,what,where)
   report_injections("end subrun")
 end
 local function trace(head,where)
+  report_injections()
   report_injections("begin run %s: %s kerns, %s pairs, %s marks and %s cursives registered",
     where or "",nofregisteredkerns,nofregisteredpairs,nofregisteredmarks,nofregisteredcursives)
   local n=head
@@ -20965,6 +20952,7 @@ local function show_result(head)
     end
     current=getnext(current)
   end
+  report_injections()
 end
 local function inject_kerns_only(head,where)
   head=tonut(head)
@@ -21099,6 +21087,9 @@ local function inject_kerns_only(head,where)
     keepregisteredcounts=false
   else
     nofregisteredkerns=0
+  end
+  if trace_injections then
+    show_result(head)
   end
   return tonode(head),true
 end
@@ -21312,14 +21303,15 @@ local function inject_pairs_only(head,where)
   else
     nofregisteredkerns=0
   end
+  if trace_injections then
+    show_result(head)
+  end
   return tonode(head),true
 end
 local function showoffset(n,flag)
   local x,y=getoffsets(n)
   if x~=0 or y~=0 then
-    setcolor(n,flag and "darkred" or "darkgreen")
-  else
-    resetcolor(n)
+    setcolor(n,"darkgray")
   end
 end
 local function inject_everything(head,where)
@@ -21377,7 +21369,12 @@ local function inject_everything(head,where)
         end
       end
     else
+      if pn.markdir<0 then
         ox=px-pn.markx
++(pn.leftkern or 0)
+      else
+        ox=px-pn.markx
+      end
       if pn.checkmark then
         local wn=getwidth(n) 
         if wn and wn~=0 then
@@ -21391,6 +21388,7 @@ local function inject_everything(head,where)
       end
     end
     local oy=ny+py+pn.marky
+oy=oy+(pn.yoffset or 0)
     setoffsets(n,ox,oy)
     if trace_marks then
       showoffset(n,true)
@@ -21702,6 +21700,9 @@ local function inject_everything(head,where)
     nofregisteredpairs=0
     nofregisteredmarks=0
     nofregisteredcursives=0
+  end
+  if trace_injections then
+    show_result(head)
   end
   return tonode(head),true
 end
@@ -22272,6 +22273,7 @@ local trace_steps=false registertracker("otf.steps",function(v) trace_steps=v en
 local trace_skips=false registertracker("otf.skips",function(v) trace_skips=v end)
 local trace_directions=false registertracker("otf.directions",function(v) trace_directions=v end)
 local trace_plugins=false registertracker("otf.plugins",function(v) trace_plugins=v end)
+local trace_chains=false registertracker("otf.chains",function(v) trace_chains=v end)
 local trace_kernruns=false registertracker("otf.kernruns",function(v) trace_kernruns=v end)
 local trace_discruns=false registertracker("otf.discruns",function(v) trace_discruns=v end)
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
@@ -22714,7 +22716,7 @@ function handlers.gsub_alternate(head,start,dataset,sequence,alternative)
     setchar(start,choice)
   else
     if trace_alternatives then
-      logwarning("%s: no variant %a for %s, %s",pref(dataset,sequence),value,gref(getchar(start)),comment)
+        logwarning("%s: no variant %a for %s, %s",pref(dataset,sequence),value,gref(getchar(start)),comment)
     end
   end
   return head,start,true
@@ -22946,6 +22948,8 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
               pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
           end
           return head,start,true
+        elseif trace_bugs then
+          logwarning("%s: mark %s is not anchored to %s",pref(dataset,sequence),gref(markchar),gref(basechar))
         end
       elseif trace_bugs then
         logwarning("%s: nothing preceding, case %i",pref(dataset,sequence),1)
@@ -23211,13 +23215,13 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
           local choice,comment=get_alternative_glyph(current,alternatives,value)
           if choice then
             if trace_alternatives then
-              logprocess("%s: replacing %s by alternative %a to %s, %s",cref(dataset,sequence),gref(char),choice,gref(choice),comment)
+              logprocess("%s: replacing %s by alternative %a to %s, %s",cref(dataset,sequence),gref(currentchar),choice,gref(choice),comment)
             end
             resetinjection(start)
             setchar(start,choice)
           else
             if trace_alternatives then
-              logwarning("%s: no variant %a for %s, %s",cref(dataset,sequence),value,gref(char),comment)
+              logwarning("%s: no variant %a for %s, %s",cref(dataset,sequence),value,gref(currentchar),comment)
             end
           end
         end
@@ -23712,6 +23716,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
       end
      else
       local i=1
+      local laststart=start
       while start do
         if skipped then
           while start do
@@ -23756,8 +23761,12 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
         if i>size or not start then
           break
         elseif start then
+          laststart=start
           start=getnext(start)
         end
+      end
+      if not start then
+        start=laststart
       end
     end
   else

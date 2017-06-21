@@ -23,6 +23,9 @@ if not modules then modules = { } end modules ['font-otj'] = {
 
 -- Maybe: subtype fontkern when pure kerns.
 
+-- An alternative is to have a list per base of all marks and then do a run over the node
+-- list that resolves the accumulated l/r/x/y and then do an inject pass.
+
 if not nodes.properties then return end
 
 local next, rawget, tonumber = next, rawget, tonumber
@@ -375,7 +378,6 @@ function injections.setkern(current,factor,rlmode,x,injection)
 end
 
 function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk,checkmark) -- ba=baseanchor, ma=markanchor
-
     local dx, dy = factor*(ba[1]-ma[1]), factor*(ba[2]-ma[2])
     nofregisteredmarks = nofregisteredmarks + 1
     if rlmode >= 0 then
@@ -488,6 +490,7 @@ local function showsub(n,what,where)
 end
 
 local function trace(head,where)
+    report_injections()
     report_injections("begin run %s: %s kerns, %s pairs, %s marks and %s cursives registered",
         where or "",nofregisteredkerns,nofregisteredpairs,nofregisteredmarks,nofregisteredcursives)
     local n = head
@@ -537,6 +540,7 @@ local function show_result(head)
         end
         current = getnext(current)
     end
+    report_injections()
 end
 
 -- G  +D-pre        G
@@ -694,6 +698,9 @@ local function inject_kerns_only(head,where)
         keepregisteredcounts = false
     else
         nofregisteredkerns   = 0
+    end
+    if trace_injections then
+        show_result(head)
     end
     return tonode(head), true
 end
@@ -928,15 +935,25 @@ local function inject_pairs_only(head,where)
     else
         nofregisteredkerns   = 0
     end
+    if trace_injections then
+        show_result(head)
+    end
     return tonode(head), true
 end
+
+-- local function showoffset(n,flag)
+--     local x, y = getoffsets(n)
+--     if x ~= 0 or y ~= 0 then
+--         setcolor(n,flag and "darkred" or "darkgreen") -- maybe better grays
+--     else
+--         resetcolor(n)
+--     end
+-- end
 
 local function showoffset(n,flag)
     local x, y = getoffsets(n)
     if x ~= 0 or y ~= 0 then
-        setcolor(n,flag and "darkred" or "darkgreen")
-    else
-        resetcolor(n)
+        setcolor(n,"darkgray")
     end
 end
 
@@ -1011,14 +1028,17 @@ local function inject_everything(head,where)
                 end
             end
         else
-         -- if pn.markdir < 0 then
-         --     ox = px - pn.markx
-         --  -- report_injections("r2l case 3: %p",ox)
-         -- else
-         --  -- ox = px - getwidth(p) + pn.markx
+            if pn.markdir < 0 then
+                ox = px - pn.markx
+-- pair stuff: husayni needs it
++ (pn.leftkern or 0)
+--
+             -- report_injections("r2l case 3: %p",ox)
+            else
+             -- ox = px - getwidth(p) + pn.markx
                 ox = px - pn.markx
              -- report_injections("l2r case 3: %p",ox)
-         -- end
+            end
             if pn.checkmark then
                 local wn = getwidth(n) -- in arial marks have widths
                 if wn and wn ~= 0 then
@@ -1039,12 +1059,14 @@ local function inject_everything(head,where)
             end
         end
         local oy = ny + py + pn.marky
+-- pair stuff: husayni needs it
+oy = oy + (pn.yoffset or 0)
+--
         setoffsets(n,ox,oy)
         if trace_marks then
             showoffset(n,true)
         end
     end
-    -- todo: marks in disc
     while current do
         local next = getnext(current)
         local char, id = ischar(current)
@@ -1376,6 +1398,9 @@ local function inject_everything(head,where)
         nofregisteredpairs    = 0
         nofregisteredmarks    = 0
         nofregisteredcursives = 0
+    end
+    if trace_injections then
+        show_result(head)
     end
     return tonode(head), true
 end

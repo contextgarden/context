@@ -140,6 +140,7 @@ local trace_steps        = false  registertracker("otf.steps",        function(v
 local trace_skips        = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
 local trace_plugins      = false  registertracker("otf.plugins",      function(v) trace_plugins      = v end)
+local trace_chains       = false  registertracker("otf.chains",       function(v) trace_chains       = v end)
 
 local trace_kernruns     = false  registertracker("otf.kernruns",     function(v) trace_kernruns     = v end)
 local trace_discruns     = false  registertracker("otf.discruns",     function(v) trace_discruns     = v end)
@@ -681,7 +682,7 @@ function handlers.gsub_alternate(head,start,dataset,sequence,alternative)
         setchar(start,choice)
     else
         if trace_alternatives then
-            logwarning("%s: no variant %a for %s, %s",pref(dataset,sequence),value,gref(getchar(start)),comment)
+                logwarning("%s: no variant %a for %s, %s",pref(dataset,sequence),value,gref(getchar(start)),comment)
         end
     end
     return head, start, true
@@ -935,6 +936,9 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
                             pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                     end
                     return head, start, true
+                elseif trace_bugs then
+                 -- onetimemessage(currentfont,basechar,"no base anchors",report_fonts)
+                    logwarning("%s: mark %s is not anchored to %s",pref(dataset,sequence),gref(markchar),gref(basechar))
                 end
             elseif trace_bugs then
                 logwarning("%s: nothing preceding, case %i",pref(dataset,sequence),1)
@@ -1275,13 +1279,13 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
                     local choice, comment = get_alternative_glyph(current,alternatives,value)
                     if choice then
                         if trace_alternatives then
-                            logprocess("%s: replacing %s by alternative %a to %s, %s",cref(dataset,sequence),gref(char),choice,gref(choice),comment)
+                            logprocess("%s: replacing %s by alternative %a to %s, %s",cref(dataset,sequence),gref(currentchar),choice,gref(choice),comment)
                         end
                         resetinjection(start)
                         setchar(start,choice)
                     else
                         if trace_alternatives then
-                            logwarning("%s: no variant %a for %s, %s",cref(dataset,sequence),value,gref(char),comment)
+                            logwarning("%s: no variant %a for %s, %s",cref(dataset,sequence),value,gref(currentchar),comment)
                         end
                     end
                 end
@@ -1853,6 +1857,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
             -- Even worse are these family emoji shapes as they can have multiple lookups
             -- per slot (probably only for gpos).
             local i = 1
+            local laststart = start
             while start do
                 if skipped then
                     while start do
@@ -1900,8 +1905,12 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
                 if i > size or not start then
                     break
                 elseif start then
+                    laststart = start
                     start = getnext(start)
                 end
+            end
+            if not start then
+                start = laststart
             end
         end
     else
@@ -2275,6 +2284,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
     local skipped      = false
     local startprev,
           startnext    = getboth(start)
+
     for k=1,#contexts do -- i've only seen ccmp having > 1 (e.g. dejavu)
         local match   = true
         local current = start
@@ -2298,6 +2308,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             local f = ck[4]
             local l = ck[5]
             -- current match
+            -- seq[f][ischar(current,currentfont)] is not nil
             size = l - f + 1
             if size > 1 then
                 -- before/current/after | before/current | current/after
@@ -2703,7 +2714,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             if done then
                 break -- out of contexts (new, needs checking)
             end
-     -- else
+     -- elseif trace_chains then
      --     chaintrac(head,start,dataset,sequence,rlmode,ck,skipped,match)
         end
     end

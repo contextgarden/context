@@ -710,7 +710,13 @@
              \fi}%
        \fi
      \egroup
-   \egroup}
+     \hskip\d_page_mix_rightskip
+   \egroup
+   \wd\b_page_mix_collected\dimexpr
+     \d_page_mix_max_width
+    +\d_page_mix_rightskip
+    +\d_page_mix_leftskip
+   \relax }
 
 \unexpanded\def\page_mix_command_package_column
   {\page_mix_hbox to \d_page_mix_column_width \bgroup

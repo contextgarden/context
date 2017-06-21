@@ -2024,48 +2024,37 @@ local function mergesteps_2(lookup,strict) -- pairs
     return nofsteps - 1
 end
 
+-- we could have a coverage[first][second] = { } already here (because eventually
+-- we also have something like that after loading)
 
 local function mergesteps_3(lookup,strict) -- marks
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
-    local first    = steps[1]
     report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
-    local baseclasses = { }
-    local coverage    = { }
-    local used        = { }
+    -- check first
+    local coverage = { }
     for i=1,nofsteps do
-        local offset = i*10
+        for k, v in next, steps[i].coverage do
+            local tk = coverage[k] -- { class, { x, y } }
+            if tk then
+                report("quitting merge due to multiple checks")
+                return nofsteps
+            else
+                coverage[k] = v
+            end
+        end
+    end
+    -- merge indeed
+    local first       = steps[1]
+    local baseclasses = { } -- let's assume sparse step.baseclasses
+    for i=1,nofsteps do
+        local offset = i*10  -- we assume max 10 classes per step
         local step   = steps[i]
         for k, v in sortedhash(step.baseclasses) do
             baseclasses[offset+k] = v
         end
         for k, v in next, step.coverage do
-            local tk = coverage[k]
-            if tk then
-                for k, v in next, v do
-                    if not tk[k] then
-                        tk[k] = v
-                        local c = offset + v[1]
-                        v[1] = c
-                        if not used[c] then
-                            used[c] = true
-                        end
-                    end
-                end
-            else
-                coverage[k] = v
-                local c = offset + v[1]
-                v[1] = c
-                if not used[c] then
-                    used[c] = true
-                end
-            end
-        end
-    end
-    for k, v in next, baseclasses do
-        if not used[k] then
-            baseclasses[k] = nil
-            report("discarding not used baseclass %i",k)
+            v[1] = offset + v[1]
         end
     end
     first.baseclasses = baseclasses
@@ -2370,6 +2359,8 @@ function readers.expand(data)
                                         local cu = coverage[unic]
                                         if not cu then
                                             coverage[unic] = rulehash -- can now be done cleaner i think
+                                        else
+                                            -- we can have a problem
                                         end
                                     end
                                 end

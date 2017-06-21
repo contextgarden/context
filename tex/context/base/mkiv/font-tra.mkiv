@@ -124,7 +124,18 @@
 
 \unexpanded\def\otfstepcharcommand#1#2#3% font char class
   {\otfstepspace
-   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:\ruledhbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:%
+   \setbox\scratchbox\hbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
+   \ifdim\wd\scratchbox=\zeropoint
+     \scratchwidth.125\onepoint
+     \scratchdistance\dimexpr(\emwidth/2-\scratchwidth)\relax
+     \kern\scratchdistance
+     \ruledhbox to \scratchwidth{\hss\box\scratchbox\hss}%
+     \kern-\scratchwidth
+     \hskip\scratchdistance
+   \else
+     \ruledhbox{\box\scratchbox}%
+   \fi
    \otfstepspace}
 
 \unexpanded\def\otfstepfontcommand#1#2#3% id font size

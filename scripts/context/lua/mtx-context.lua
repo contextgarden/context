@@ -440,13 +440,23 @@ local function pdf_open(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     report(pdfview.status())
-    pdfview.open(filenewsuffix(name,"pdf"))
+    local pdfname = filenewsuffix(name,"pdf")
+    if lfs.isfile(pdfname) then
+        pdfview.open(pdfname)
+    end
+    pdfname = name .. ".pdf" -- agressive
+    pdfview.open(pdfname)
 end
 
 local function pdf_close(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
-    pdfview.close(filenewsuffix(name,"pdf"))
+    local pdfname = filenewsuffix(name,"pdf")
+    if lfs.isfile(pdfname) then
+        pdfview.close(pdfname)
+    end
+    pdfname = name .. ".pdf" -- agressive
+    pdfview.close(pdfname)
 end
 
 -- result file handling

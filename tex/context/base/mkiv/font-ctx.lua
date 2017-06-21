@@ -587,9 +587,10 @@ local function presetcontext(name,parent,features) -- will go to con and shared
             if s then
                 for k, v in next, s do
 -- no, as then we cannot overload: e.g. math,mathextra
---                     if features[k] == nil then
+-- reverted, so we only take from parent when not set
+                    if features[k] == nil then
                         features[k] = v
---                     end
+                    end
                 end
             else
                 -- just ignore an undefined one .. i.e. we can refer to not yet defined
