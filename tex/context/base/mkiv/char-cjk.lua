@@ -1282,11 +1282,40 @@ local cjk_ideograph_extension_b_range = {
     extender = cjk_ideograph_extension_b_extender,
 }
 
+-- Nushu (when we skip them in mtx-unicode)
+
+-- local nushu_metatable = {
+--     __index = {
+--         category    = "lo",
+--         cjkwd       = "w",
+--         description = "<NUSHU CHARACTER>",
+--         direction   = "l",
+--         linebreak   = "id",
+--     }
+-- }
+--
+-- local nushu_extender = function(k)
+--     local t = {
+--      -- shcode      = shcode,
+--         unicodeslot = k,
+--         variants    = variants[k],
+--         description = formatters["NUSHU CHARACTER-%05X"](k)
+--     }
+--     setmetatable(t,nushu_metatable)
+--     return t
+-- end
+--
+-- local nushu_range = {
+--     name     = "nushu character",
+--     first    = 0x1B170,
+--     last     = 0x1B2FF,
+--     extender = nushu_extender,
+-- }
+
 -- Ranges
 
 insert(ranges, hangul_syllable_range)
 insert(ranges, cjk_ideograph_range)
 insert(ranges, cjk_ideograph_extension_a_range)
 insert(ranges, cjk_ideograph_extension_b_range)
-
--- Japanese
+------(ranges, nushu_range)

@@ -86,7 +86,7 @@
   %\c!method=, % \v!hidden = not in menu
   %\c!buffer=
    \c!symbol=,
-   \c!distance=1em,
+   \c!distance=\emwidth,
    \c!width=\v!fit,
    \c!height=\v!fit,
    \c!depth=\v!fit,
@@ -249,7 +249,7 @@
   {\global\setbox\b_scrn_attachment_collect\hbox\bgroup
      \ifvoid\b_scrn_attachment_collect\else
        \box\b_scrn_attachment_collect
-       \hskip\attachmentparameter\c!distance
+       \hskip\attachmentparameter\c!distance\relax
      \fi
      #content%
    \egroup}
@@ -372,7 +372,7 @@
 
 \setupcomment
   [\c!state=\v!start,
-   \c!distance=1em,
+   \c!distance=\emwidth,
    \c!color=\interactionparameter\c!color,
    \c!space=\v!no,
    \c!symbol=,
@@ -505,7 +505,7 @@
   {\global\setbox\b_scrn_comment_collect\hbox\bgroup
      \ifvoid\b_scrn_comment_collect\else
        \box\b_scrn_comment_collect
-       \hskip\commentparameter\c!distance
+       \hskip\commentparameter\c!distance\relax
      \fi
      \box\b_scrn_comment_link
    \egroup}
@@ -702,7 +702,7 @@
 %    \iflocation
 %      \edef\currentlinkedlist{#1}%
 %      \ifcsname\??lk\currentlinkedlist\s!parent\endcsname
-%        \hskip\linkedlistparameter\c!distance
+%        \hskip\linkedlistparameter\c!distance\relax
 %        \clf_addlinklistelement{\currentlinkedlist}%
 %        \expanded{\ctxlatecommand{enhancelinkedlist("\currentlinkedlist",\currentlink)}}% can also be done at the lua end
 %        \dogotosomepage  {\??lk\currentlinkedlist}\gotobegincharacter \firstlink

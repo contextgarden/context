@@ -233,6 +233,7 @@ local blocks = allocate {
     ["cjkunifiedideographsextensionc"]             = { first = 0x2A700, last = 0x2B73F,             description = "CJK Unified Ideographs Extension C" },
     ["cjkunifiedideographsextensiond"]             = { first = 0x2B740, last = 0x2B81F,             description = "CJK Unified Ideographs Extension D" },
     ["cjkunifiedideographsextensione"]             = { first = 0x2B820, last = 0x2CEAF,             description = "CJK Unified Ideographs Extension E" },
+    ["cjkunifiedideographsextensionf"]             = { first = 0x2CEB0, last = 0x2EBEF,             description = "CJK Unified Ideographs Extension F" },
     ["combiningdiacriticalmarks"]                  = { first = 0x00300, last = 0x0036F,             description = "Combining Diacritical Marks" },
     ["combiningdiacriticalmarksextended"]          = { first = 0x01AB0, last = 0x01AFF,             description = "Combining Diacritical Marks Extended" },
     ["combiningdiacriticalmarksforsymbols"]        = { first = 0x020D0, last = 0x020FF,             description = "Combining Diacritical Marks for Symbols" },
@@ -328,6 +329,7 @@ local blocks = allocate {
     ["ipaextensions"]                              = { first = 0x00250, last = 0x002AF,              description = "IPA Extensions" },
     ["javanese"]                                   = { first = 0x0A980, last = 0x0A9DF,              description = "Javanese" },
     ["kaithi"]                                     = { first = 0x11080, last = 0x110CF,              description = "Kaithi" },
+    ["kanaextendeda"]                              = { first = 0x1B100, last = 0x1B12F,              description = "Kana Extended-A" },
     ["kanasupplement"]                             = { first = 0x1B000, last = 0x1B0FF,              description = "Kana Supplement" },
     ["kanbun"]                                     = { first = 0x03190, last = 0x0319F,              description = "Kanbun" },
     ["kangxiradicals"]                             = { first = 0x02F00, last = 0x02FDF,              description = "Kangxi Radicals" },
@@ -384,6 +386,7 @@ local blocks = allocate {
     ["mandaic"]                                    = { first = 0x00840, last = 0x0085F, otf="mand",  description = "Mandaic" },
     ["manichaean"]                                 = { first = 0x10AC0, last = 0x10AFF,              description = "Manichaean" },
     ["marchen"]                                    = { first = 0x11C70, last = 0x11CBF,              description = "Marchen" },
+    ["masaramgondi"]                               = { first = 0x11D00, last = 0x11D5F,              description = "Masaram Gondi" },
     ["mathematicalalphanumericsymbols"]            = { first = 0x1D400, last = 0x1D7FF, math = true, description = "Mathematical Alphanumeric Symbols" },
     ["mathematicaloperators"]                      = { first = 0x02200, last = 0x022FF, math = true, description = "Mathematical Operators" },
     ["meeteimayek"]                                = { first = 0x0ABC0, last = 0x0ABFF,              description = "Meetei Mayek" },
@@ -413,6 +416,7 @@ local blocks = allocate {
     ["newtailue"]                                  = { first = 0x01980, last = 0x019DF,              description = "New Tai Lue" },
     ["nko"]                                        = { first = 0x007C0, last = 0x007FF, otf="nko",   description = "NKo" },
     ["numberforms"]                                = { first = 0x02150, last = 0x0218F,              description = "Number Forms" },
+    ["nushu"]                                      = { first = 0x1B170, last = 0x1B2FF,              description = "Nushu" },
     ["ogham"]                                      = { first = 0x01680, last = 0x0169F, otf="ogam",  description = "Ogham" },
     ["olchiki"]                                    = { first = 0x01C50, last = 0x01C7F,              description = "Ol Chiki" },
     ["oldhungarian"]                               = { first = 0x10C80, last = 0x10CFF,              description = "Old Hungarian" },
@@ -451,6 +455,7 @@ local blocks = allocate {
     ["sinhalaarchaicnumbers"]                      = { first = 0x111E0, last = 0x111FF,              description = "Sinhala Archaic Numbers" },
     ["smallformvariants"]                          = { first = 0x0FE50, last = 0x0FE6F,              description = "Small Form Variants" },
     ["sorasompeng"]                                = { first = 0x110D0, last = 0x110FF,              description = "Sora Sompeng" },
+    ["soyombo"]                                    = { first = 0x11A50, last = 0x11AAF,              description = "Soyombo" },
     ["spacingmodifierletters"]                     = { first = 0x002B0, last = 0x002FF,              description = "Spacing Modifier Letters" },
     ["specials"]                                   = { first = 0x0FFF0, last = 0x0FFFF,              description = "Specials" },
     ["sundanese"]                                  = { first = 0x01B80, last = 0x01BBF,              description = "Sundanese" },
@@ -467,6 +472,7 @@ local blocks = allocate {
     ["suttonsignwriting"]                          = { first = 0x1D800, last = 0x1DAAF,              description = "Sutton SignWriting" },
     ["sylotinagri"]                                = { first = 0x0A800, last = 0x0A82F, otf="sylo",  description = "Syloti Nagri" },
     ["syriac"]                                     = { first = 0x00700, last = 0x0074F, otf="syrc",  description = "Syriac" },
+    ["syriacsupplement"]                           = { first = 0x00860, last = 0x0086F,              description = "Syriac Supplement" },
     ["tagalog"]                                    = { first = 0x01700, last = 0x0171F, otf="tglg",  description = "Tagalog" },
     ["tagbanwa"]                                   = { first = 0x01760, last = 0x0177F, otf="tagb",  description = "Tagbanwa" },
     ["tags"]                                       = { first = 0xE0000, last = 0xE007F,              description = "Tags" },
@@ -517,6 +523,7 @@ local blocks = allocate {
     ["yijinghexagramsymbols"]                      = { first = 0x04DC0, last = 0x04DFF, otf="yi",    description = "Yijing Hexagram Symbols" },
     ["yiradicals"]                                 = { first = 0x0A490, last = 0x0A4CF, otf="yi",    description = "Yi Radicals" },
     ["yisyllables"]                                = { first = 0x0A000, last = 0x0A48F, otf="yi",    description = "Yi Syllables" },
+    ["zanabazarsquare"]                            = { first = 0x11A00, last = 0x11A4F,              description = "Zanabazar Square" },
 }
 
 characters.blocks = blocks
@@ -1544,35 +1551,35 @@ local cache = setmetatable({ }, { __mode = "k" } )
         if h then
             return h
         end
-local h = cache[name]
-if h then
-    return h
-elseif h == false then
-    return
-end
+        local h = cache[name]
+        if h then
+            return h
+        elseif h == false then
+            return
+        end
         -- expand shortcuts
         local name = lpegmatch(pattern_0,name) or name
         -- expand some 25K variants
         local h = lpegmatch(p_special,name)
         if h then
-cache[name] = h
+            cache[name] = h
             return h
         end
         -- simplify
         local s = lpegmatch(pattern_1,name)
         local h = hash[s]
         if h then
-cache[name] = h
+            cache[name] = h
             return h
         end
         -- simplify
         local s = lpegmatch(pattern_2,name)
         local h = hash[s]
         if h then
-cache[name] = h
+            cache[name] = h
             return h
         end
-cache[name] = false
+        cache[name] = false
     end
 
     function emoji.known()

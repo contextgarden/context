@@ -19,7 +19,33 @@
 
 % beware, base mode + dynamics can give weird effects
 
-% rlig ccmp
+% frac : with numr dnom
+%
+% vkrn valt vert vrt2 vpal : when vertical
+%
+% rtlm rtla : in r2l runs
+% ltrm ltra : in l2r runs
+%
+% rvrn : variable fonts
+%
+% rtbd lfbd : opbd
+%
+% rkrf rphf vatu vjmo tjmo rclt psts pstf ljmo haln
+% pres pref nukt
+% abvs abvm blwm blws cjct blwf akhn (indic)
+% half
+% abvf cfar (khmer)
+%
+% ccmp locl calt clig liga rlig
+%
+% mkmk mark kern (palt pwid) curs (by choice but some fonts need it)
+%
+% init medi isol fina (unicode)
+% fin3 fin2 med2 : syriac
+%
+% cpsp : percentage spacing (todo)
+%
+% dtls flac :math
 
 \definefontfeature
   [always]
@@ -27,7 +53,10 @@
    script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
    autoscript=position,
    autolanguage=position,
+% ccmp=yes,
    kern=yes,     % consider skipping the base passes when no base mode is used
+% palt=yes,
+% pwid=yes,
    mark=yes,
    mkmk=yes,
    curs=yes]
@@ -36,6 +65,11 @@
   [default]
   [always]
   [liga=yes,
+% ccmp=yes, % maybe too
+% locl=yes, % maybe too
+% calt=yes, % maybe too
+% clig=yes, % maybe too
+% rlig=yes, % maybe too
    tlig=yes,
    trep=yes] % texligatures=yes,texquotes=yes
 
@@ -101,6 +135,11 @@
   [always]
   [compose=yes,
    liga=yes,
+% ccmp=yes,
+% locl=yes,
+% calt=yes,
+% clig=yes,
+% rlig=yes,
    tlig=yes,
    trep=yes]
 
@@ -114,6 +153,7 @@
   [mode=node,analyze=yes,language=dflt,ccmp=yes,
    autoscript=position,autolanguage=position,
    init=yes,medi=yes,fina=yes,isol=yes,
+% fin2=yes,fin3=yes,med2=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes,
    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes]
 
@@ -122,6 +162,7 @@
   [mode=node,analyze=yes,language=dflt,ccmp=yes,
    autoscript=position,autolanguage=position,
    init=yes,medi=yes,fina=yes,isol=yes,
+% fin2=yes,fin3=yes,med2=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes,
    rlig=yes,calt=yes]
 

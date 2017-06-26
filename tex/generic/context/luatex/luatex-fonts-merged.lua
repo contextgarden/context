@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/21/17 23:03:59
+-- merge date  : 06/26/17 15:34:16
 
 do -- begin closure to overcome local limits and interference
 
@@ -20778,21 +20778,40 @@ function injections.setkern(current,factor,rlmode,x,injection)
     if not injection then
       injection="injections"
     end
-    if p then
-      local i=rawget(p,injection)
-      if i then
-        i.leftkern=dx+(i.leftkern or 0)
+    if rlmode and rlmode<0 then
+      if p then
+        local i=rawget(p,injection)
+        if i then
+          i.rightkern=dx+(i.rightkern or 0)
+        else
+          p[injection]={
+            rightkern=dx,
+          }
+        end
       else
-        p[injection]={
-          leftkern=dx,
+        properties[current]={
+          [injection]={
+            rightkern=dx,
+          },
         }
       end
     else
-      properties[current]={
-        [injection]={
-          leftkern=dx,
-        },
-      }
+      if p then
+        local i=rawget(p,injection)
+        if i then
+          i.leftkern=dx+(i.leftkern or 0)
+        else
+          p[injection]={
+            leftkern=dx,
+          }
+        end
+      else
+        properties[current]={
+          [injection]={
+            leftkern=dx,
+          },
+        }
+      end
     end
     return dx,nofregisteredkerns
   else
@@ -21371,7 +21390,9 @@ local function inject_everything(head,where)
     else
       if pn.markdir<0 then
         ox=px-pn.markx
-+(pn.leftkern or 0)
+if not pn.markmark then 
+  ox=ox+(pn.leftkern or 0)
+end
       else
         ox=px-pn.markx
       end
@@ -21388,7 +21409,9 @@ local function inject_everything(head,where)
       end
     end
     local oy=ny+py+pn.marky
-oy=oy+(pn.yoffset or 0)
+if not pn.markmark then
+  oy=oy+(pn.yoffset or 0)
+end
     setoffsets(n,ox,oy)
     if trace_marks then
       showoffset(n,true)
@@ -22393,8 +22416,8 @@ end
 local function logwarning(...)
   report_direct(...)
 end
-local f_unicode=formatters["%U"]
-local f_uniname=formatters["%U (%s)"]
+local f_unicode=formatters["U+%X"]   
+local f_uniname=formatters["U+%X (%s)"] 
 local f_unilist=formatters["% t (% t)"]
 local function gref(n) 
   if type(n)=="number" then
@@ -22944,8 +22967,8 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
           local ma=markanchors[2]
           local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
           if trace_marks then
-            logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
-              pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+            logprocess("%s, bound %s, anchoring mark %s to basechar %s => (%p,%p)",
+              pref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
           end
           return head,start,true
         elseif trace_bugs then
@@ -23001,8 +23024,8 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
             if ba then
               local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
               if trace_marks then
-                logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
-                  pref(dataset,sequence),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
+                logprocess("%s, index %s, bound %s, anchoring mark %s to baselig %s at index %s => (%p,%p)",
+                  pref(dataset,sequence),index,bound,gref(markchar),gref(basechar),index,dx,dy)
               end
               return head,start,true
             else
@@ -23048,8 +23071,8 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode)
           local ma=markanchors[2]
           local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
           if trace_marks then
-            logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-              pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+            logprocess("%s, bound %s, anchoring mark %s to basemark %s => (%p,%p)",
+              pref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
           end
           return head,start,true
         end
@@ -23456,8 +23479,8 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
               if ma then
                 local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                 if trace_marks then
-                  logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
-                    cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                  logprocess("%s, bound %s, anchoring mark %s to basechar %s => (%p,%p)",
+                    cref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
                 end
                 return head,start,true
               end
@@ -23526,8 +23549,8 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
                 if ba then
                   local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                   if trace_marks then
-                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
-                      cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
+                    logprocess("%s, bound %s, anchoring mark %s to baselig %s at index %s => (%p,%p)",
+                      cref(dataset,sequence),a or bound,gref(markchar),gref(basechar),index,dx,dy)
                   end
                   return head,start,true
                 end
@@ -23582,8 +23605,8 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
               if ma then
                 local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
                 if trace_marks then
-                  logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-                    cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                  logprocess("%s, bound %s, anchoring mark %s to basemark %s => (%p,%p)",
+                    cref(dataset,sequence),bound,gref(markchar),gref(basechar),dx,dy)
                 end
                 return head,start,true
               end

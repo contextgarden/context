@@ -142,6 +142,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
         local order = sequence.order
         if order then
             local featuretype = featuretypes[sequence.type or "unknown"]
+            local lookupdone  = false
             for i=1,#order do --
                 local kind = order[i] --
                 local e_e
@@ -152,16 +153,14 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                     e_e = s_enabled and s_enabled[kind] -- the value (font)
                 end
                 if e_e then
+                    local usedattribute, usedscript, usedlanguage, usedlookup
                     local valid = type(e_e) == "string" and lpegmatch(pattern,e_e)
                     if valid then
                         -- we have hit always
-                        local attribute = autofeatures[kind] or false
-                        if trace_applied then
-                            report_process(
-                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
-                                    font,attr or 0,dynamic,kind,"*","*",sequence.name,valid)
-                        end
-                        ra[#ra+1] = { valid, attribute, sequence, kind }
+                        usedattribute = autofeatures[kind] or false
+                        usedlanguage  = "*"
+                        usedscript    = "*"
+                        usedlookup    = { valid, usedattribute, sequence, kind }
                     else
                         -- we already checked for e_e
                         local scripts   = features[kind] --
@@ -170,7 +169,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                             langages = defaultscript(featuretype,autoscript,scripts)
                         end
                         if languages then
-                            -- we need detailed control over default becase we want to trace
+                            -- we need detailed control over default because we want to trace
                             -- only first attribute match check, so we assume simple fina's
                          -- local valid = false
                             if languages[language] then
@@ -182,14 +181,30 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                             end
                         end
                         if valid then
-                            local attribute = autofeatures[kind] or false
-                            if trace_applied then
-                                report_process(
-                                    "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
-                                        font,attr or 0,dynamic,kind,script,language,sequence.name,valid)
-                            end
-                            ra[#ra+1] = { valid, attribute, sequence, kind }
+                            usedattribute = autofeatures[kind] or false
+                            usedlanguage  = script
+                            usedscript    = language
+                            usedlookup    = { valid, usedattribute, sequence, kind }
                         end
+                    end
+                    if not usedlookup then
+                        -- go on
+                    elseif lookupdone then
+                        if trace_applied then
+                            report_process(
+                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a, lookup already set by %a",
+                                    font,attr or 0,dynamic,kind,usedscript,usedlanguage,sequence.name,valid,ra[#ra][4])
+                        end
+                    else
+                        ra[#ra+1] = usedlookup
+                        if trace_applied then
+                            report_process(
+                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
+                                    font,attr or 0,dynamic,kind,usedscript,usedlanguage,sequence.name,valid)
+                        else
+                            return -- no need to look further
+                        end
+                        lookupdone = true
                     end
                 end
             end

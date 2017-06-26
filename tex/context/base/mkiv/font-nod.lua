@@ -366,7 +366,7 @@ function step_tracers.codes(i,command,space)
             local d = d and d[c]
             context[command](f,c,d and d.class or "")
         else
-            context("[%s:U+%05X]",f,c)
+            context("[%s:U+%X]",f,c)
         end
     end
 

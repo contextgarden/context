@@ -85,6 +85,12 @@ local skipped = {
 for i=0x0FE00,0x0FE0F do skipped[i] = true end -- variant selector
 for i=0xE0100,0xE01EF do skipped[i] = true end -- variant selector extension
 
+-- This can be done:
+--
+--   for i=0x1B170,0x1B2FF do skipped[i] = true end -- nushu
+--
+-- but then also adapt char-cjk.lua bottom part!
+
 function scripts.unicode.update()
     local unicodedata          = texttables.unicodedata
     local bidimirroring        = texttables.bidimirroring

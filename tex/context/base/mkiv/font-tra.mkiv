@@ -286,6 +286,9 @@
 \letvalue{\??otfcompositiondir  +1}\lefttoright
 \letvalue{\??otfcompositiondir   1}\lefttoright
 
+\unexpanded\def\setotfcompositiondirection#1%
+ {\getvalue{\??otfcompositiondir#1}}
+
 \unexpanded\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
   {\begingroup
    \forgetparindent
@@ -294,7 +297,7 @@
    \setupalign[\v!verytolerant,\v!flushleft]%
    \startotfsample
    \nohyphens
-   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\getvalue{\??otfcompositiondir#2}\relax#3}%
+   \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\setotfcompositiondirection{#2}\relax#3}%
    \stopotfsample
    \endgroup}
 

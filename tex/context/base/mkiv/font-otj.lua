@@ -279,7 +279,7 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     return dx, dy, nofregisteredcursives
 end
 
-function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag & tfmchr not used
+function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag not used
     local x = factor*spec[1]
     local y = factor*spec[2]
     local w = factor*spec[3]
@@ -354,22 +354,43 @@ function injections.setkern(current,factor,rlmode,x,injection)
         if not injection then
             injection = "injections"
         end
-        if p then
-         -- local i = rawget(p,injection)
-            local i = rawget(p,injection)
-            if i then
-                i.leftkern = dx + (i.leftkern or 0)
+        if rlmode and rlmode < 0 then
+            -- for kai to check: this branch is new
+            if p then
+             -- local i = rawget(p,injection)
+                local i = rawget(p,injection)
+                if i then
+                    i.rightkern = dx + (i.rightkern or 0)
+                else
+                    p[injection] = {
+                        rightkern = dx,
+                    }
+                end
             else
-                p[injection] = {
-                    leftkern = dx,
+                properties[current] = {
+                    [injection] = {
+                        rightkern = dx,
+                    },
                 }
             end
         else
-            properties[current] = {
-                [injection] = {
-                    leftkern = dx,
-                },
-            }
+            if p then
+             -- local i = rawget(p,injection)
+                local i = rawget(p,injection)
+                if i then
+                    i.leftkern = dx + (i.leftkern or 0)
+                else
+                    p[injection] = {
+                        leftkern = dx,
+                    }
+                end
+            else
+                properties[current] = {
+                    [injection] = {
+                        leftkern = dx,
+                    },
+                }
+            end
         end
         return dx, nofregisteredkerns
     else
@@ -1031,7 +1052,9 @@ local function inject_everything(head,where)
             if pn.markdir < 0 then
                 ox = px - pn.markx
 -- pair stuff: husayni needs it
-+ (pn.leftkern or 0)
+if not pn.markmark then -- check or not (no longer needed)
+    ox = ox + (pn.leftkern or 0)
+end
 --
              -- report_injections("r2l case 3: %p",ox)
             else
@@ -1060,7 +1083,9 @@ local function inject_everything(head,where)
         end
         local oy = ny + py + pn.marky
 -- pair stuff: husayni needs it
-oy = oy + (pn.yoffset or 0)
+if not pn.markmark then
+    oy = oy + (pn.yoffset or 0)
+end
 --
         setoffsets(n,ox,oy)
         if trace_marks then
