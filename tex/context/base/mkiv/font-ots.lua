@@ -1776,13 +1776,26 @@ end
 -- order to handle that we need more complex code which also slows down even more. The main
 -- loop variant could deal with that: test, collapse, backtrack.
 
-local new_kern = nuts.pool.kern
+local userkern = nuts.pool and nuts.pool.newkern -- context
+
+do if not userkern then -- generic
+
+    local thekern = nuts.new("kern",1) -- userkern
+    local setkern = nuts.setkern       -- not injections.setkern
+
+    userkern = function(k)
+        local n = copy_node(thekern)
+        setkern(n,k)
+        return n
+    end
+
+end end
 
 local function checked(head)
     local current = head
     while current do
         if getid(current) == glue_code then
-            local kern = new_kern(getwidth(current))
+            local kern = userkern(getwidth(current))
             if head == current then
                 local next = getnext(current)
                 if next then

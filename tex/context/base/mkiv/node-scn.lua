@@ -48,14 +48,13 @@ local spaceskip_code     = gluecodes.spaceskip
 local xspaceskip_code    = gluecodes.xspaceskip
 local leader_code        = gluecodes.leaders
 
-local kerning_code       = kerncodes.kern
+local fontkern_code      = kerncodes.fontkern
 
 local variables          = interfaces.variables
 
 local privateattributes  = attributes.private
 
 local a_runningtext      = privateattributes('runningtext')
-local a_fontkern         = privateattributes('fontkern')
 
 local v_yes              = variables.yes
 local v_all              = variables.all
@@ -173,7 +172,7 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
                 if f then
                     l = n
                 end
-            elseif id == kern_code and (getsubtype(n) == kerning_code or getattr(n,a_fontkern)) then
+            elseif id == kern_code and getsubtype(n) == fontkern_code then
                 if f then
                     l = n
                 end
@@ -276,7 +275,7 @@ local function processranges(attribute,flush,head,parent,depth,skip)
                 else
                     -- weird
                 end
-            elseif id == kern_code and (getsubtype(n) == kerning_code or getattr(n,a_fontkern)) then
+            elseif id == kern_code and getsubtype(n) == fontkern_code then
                 if f then
                     l = n
                 end

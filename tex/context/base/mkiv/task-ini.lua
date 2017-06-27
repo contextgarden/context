@@ -39,11 +39,8 @@ appendaction("processors",   "characters",  "typesetters.breakpoints.handler")  
 appendaction("processors",   "characters",  "scripts.injectors.handler")                         -- disabled
 
 appendaction("processors",   "words",       "languages.replacements.handler")                    -- disabled
-
-appendaction("processors",   "words",       "languages.hyphenators.handler")                     -- always on
-
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
-
+appendaction("processors",   "words",       "languages.hyphenators.handler")                     -- always on
 appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled  -- might move up
 appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled  -- might move down
 

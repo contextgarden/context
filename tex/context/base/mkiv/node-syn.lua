@@ -44,7 +44,6 @@ local getnext            = nuts.getnext
 local getwhd             = nuts.getwhd
 local getwidth           = nuts.getwidth
 local getsubtype         = nuts.getsubtype
-local getattr            = nuts.getattr
 
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
@@ -69,8 +68,6 @@ local new_hlist          = nodepool.hlist
 
 local getdimensions      = nuts.dimensions
 local getrangedimensions = nuts.rangedimensions
-
-local a_fontkern         = attributes.private("fontkern")
 
 local get_synctex_fields = nuts.get_synctex_fields
 local set_synctex_fields = nuts.set_synctex_fields
@@ -348,7 +345,7 @@ local function collect(head,t,l,dp,ht)
                         t, l = tc, lc
                     end
                     last = current
-                elseif id == kern_code and (getsubtype(current) == fontkern_code or getattr(current,a_fontkern)) then
+                elseif id == kern_code and getsubtype(current) == fontkern_code then
                     local tc, lc = get_synctex_fields(current)
                     if tc and tc > 0 then
                         t, l = tc, lc

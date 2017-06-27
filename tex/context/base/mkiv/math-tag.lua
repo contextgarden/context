@@ -74,7 +74,6 @@ local processnoads        = noads.process
 local a_tagged            = attributes.private('tagged')
 local a_mathcategory      = attributes.private('mathcategory')
 local a_mathmode          = attributes.private('mathmode')
-local a_fontkern          = attributes.private('fontkern')
 
 local tags                = structures.tags
 
@@ -190,7 +189,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 mtexttag = start_tagged("mtext")
             end
             setattr(start,a_tagged,mtexttag)
-        elseif mtexttag and id == kern_code and (getsubtype(start) == fontkern_code or getattr(start,a_fontkern)) then
+        elseif mtexttag and id == kern_code and getsubtype(start) == fontkern_code then
             setattr(start,a_tagged,mtexttag)
         else
             if mtexttag then

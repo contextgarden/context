@@ -2543,25 +2543,7 @@ end
 
 -- a fontkern plug:
 
-do
-
-    local kerncodes = nodes.kerncodes
-    local copy_node = nuts.copy
-    local kern      = nuts.pool.register(nuts.pool.kern())
-
-    setattr(kern,attributes.private('fontkern'),1) -- no gain in setprop as it's shared
-
-    nodes.injections.installnewkern(function(k)
-        local c = copy_node(kern)
-        setfield(c,"kern",k)
-        return c
-    end)
-
-    directives.register("fonts.injections.fontkern", function(v)
-        setsubtype(kern,v and kerncodes.fontkern or kerncodes.userkern)
-    end)
-
-end
+nodes.injections.installnewkern(nuts.pool.fontkern)
 
 do
 

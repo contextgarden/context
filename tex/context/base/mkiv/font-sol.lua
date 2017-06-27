@@ -336,7 +336,6 @@ local splitter_one = usernodeids["splitters.one"]
 local splitter_two = usernodeids["splitters.two"]
 
 local a_word       = attributes.private('word')
-local a_fontkern   = attributes.private('fontkern')
 
 local encapsulate  = false
 
@@ -500,7 +499,7 @@ local function collect_words(list) -- can be made faster for attributes
                         report_splitters("skipped: %C",current.char)
                     end
                 end
-            elseif id == kern_code and (getsubtype(current) == fontkern_code or getattr(current,a_fontkern)) then
+            elseif id == kern_code and getsubtype(current) == fontkern_code then
                 if first then
                     last = current
                 else

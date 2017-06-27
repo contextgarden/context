@@ -52,7 +52,7 @@ local kern_code       = nodecodes.kern
 local disc_code       = nodecodes.disc
 local math_code       = nodecodes.math
 
-local kerning_code    = kerncodes.kerning
+local fontkern_code   = kerncodes.fontkern
 
 local enableaction    = nodes.tasks.enableaction
 
@@ -427,7 +427,7 @@ function cases.handler(head) -- not real fast but also not used on much data
         elseif id == math_code then
             start = end_of_math(start)
             count = 0
-        elseif prev_id == kern_code and getsubtype(prev) == kerning_code then
+        elseif prev_id == kern_code and getsubtype(prev) == fontkern_code then
             -- still inside a word ...normally kerns are added later
         else
             count = 0
@@ -535,7 +535,7 @@ end
 --             elseif id == math_code then
 --                 start = end_of_math(start)
 --                 count = 0
---             elseif prev_id == kern_code and getsubtype(prev) == kerning_code then
+--             elseif prev_id == kern_code and getsubtype(prev) == fontkern_code then
 --                 -- still inside a word ...normally kerns are added later
 --             else
 --                 count = 0

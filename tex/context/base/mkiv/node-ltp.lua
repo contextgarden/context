@@ -232,8 +232,8 @@ local setkern              = nuts.setkern
 local setdir               = nuts.setdir
 local setshift             = nuts.setshift
 local setwidth             = nuts.setwidth
------ getheight            = nuts.getheight
------ getdepth             = nuts.getdepth
+----- setheight            = nuts.setheight
+----- setdepth             = nuts.setdepth
 
 local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
@@ -282,9 +282,10 @@ local leaders_code         = gluecodes.leaders
 
 local localpar_code        = nodecodes.localpar
 
-local kerning_code         = kerncodes.kerning -- font kern
 local userkern_code        = kerncodes.userkern
 local italickern_code      = kerncodes.italiccorrection
+local fontkern_code        = kerncodes.fontkern
+local accentkern_code      = kerncodes.accentkern
 
 local ligature_code        = glyphcodes.ligature
 
@@ -343,8 +344,6 @@ local glyphdir_is_equal    = nodes.glyphdir_is_equal
 local dir_pops             = nodes.dir_is_pop
 local dir_negations        = nodes.dir_negation
 local is_skipable          = nuts.protrusion_skippable
-
-local a_fontkern           = attributes.private('fontkern')
 
 -- helpers --
 
@@ -774,7 +773,7 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
         elseif id == kern_code then
             local kern = getkern(s)
             if kern ~= 0 then
-                if checked_expansion and expand_kerns and (getsubtype(s) == kerning_code or getattr(a_fontkern)) then
+                if checked_expansion and expand_kerns and getsubtype(s) == fontkern_code then
                     local stretch, shrink = kern_stretch_shrink(s,kern)
                     if expand_kerns == "stretch" then
                         adjust_stretch = adjust_stretch + stretch
@@ -1491,7 +1490,7 @@ local function post_line_break(par)
                     break
                 elseif id == kern_code then
                     local subtype = getsubtype(next)
-                    if subtype ~= userkern_code and subtype ~= italickern_code and not getattr(next,a_fontkern) then
+                    if subtype == fontkern_code or subtype == accentkern_code then
                         -- fontkerns and accent kerns as well as otf injections
                         break
                     end
@@ -2394,7 +2393,7 @@ function constructors.methods.basic(head,d)
                     local kern = getkern(current)
                     if kern ~= 0 then
                         active_width.size = active_width.size + kern
-                        if checked_expansion and expand_kerns and (getsubtype(current) == kerning_code or getattr(current,a_fontkern)) then
+                        if checked_expansion and expand_kerns and getsubtype(current) == fontkern_code then
                             local stretch, shrink = kern_stretch_shrink(current,kern)
                             if expand_kerns == "stretch" then
                                 active_width.adjust_stretch = active_width.adjust_stretch + stretch
@@ -2555,7 +2554,7 @@ do
                 write(target," ")
             elseif id == kern_code then
                 local s = getsubtype(a)
-                if s == userkern_code or s == italickern_code or getattr(a,a_fontkern) then
+                if s == fontkern_code or s == accentkern_code then
                     if verbose then
                         write(target,"[|]")
                  -- else
@@ -2850,7 +2849,7 @@ do
     --                 end
     --             elseif id == kern_code then
     --                 local kern = getkern(current)
-    --                 if kern ~= 0 and getsubtype(current) == kerning_code then
+    --                 if kern ~= 0 and getsubtype(current) == fontkern_code then
     --                     setkern(current,font_expand_ratio * kern)
     --                 end
     --             end
@@ -2873,7 +2872,7 @@ do
     --                 end
     --             elseif id == kern_code then
     --                 local kern = getkern(current)
-    --                 if kern ~= 0 and getsubtype(current) == kerning_code then
+    --                 if kern ~= 0 and getsubtype(current) == fontkern_code then
     --                     setkern(current,font_expand_ratio * kern)
     --                 end
     --             end
@@ -2971,7 +2970,7 @@ do
                     local kern = getkern(current)
                     if kern == 0 then
                         -- no kern
-                    elseif getsubtype(current) == kerning_code then -- check getkern(p)
+                    elseif getsubtype(current) == fontkern_code then -- check getkern(p)
                         if cal_expand_ratio then
                             local stretch, shrink = kern_stretch_shrink(current,kern)
                             font_stretch = font_stretch + stretch

@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['typo-krn'] = {
 
 -- glue is still somewhat suboptimal
 -- components: better split on tounicode
+--
+-- maybe ignore when properties[n].injections.cursivex (or mark)
 
 local next, type, tonumber = next, type, tonumber
 
@@ -79,7 +81,7 @@ local user_list_code     = listcodes.unknown
 local discretionary_code = disccodes.discretionary
 local automatic_code     = disccodes.automatic
 
-local kerning_code       = kerncodes.kerning
+local fontkern_code      = kerncodes.fontkern
 local userkern_code      = kerncodes.userkern
 local userskip_code      = skipcodes.userskip
 local spaceskip_code     = skipcodes.spaceskip
@@ -113,7 +115,6 @@ local trace_ligatures_d  = false  trackers.register("typesetters.kerns.ligatures
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
 local a_kerns            = attributes.private("kern")
-local a_fontkern         = attributes.private('fontkern')
 
 local contextsetups      = fonts.specifiers.contextsetups
 
@@ -223,7 +224,7 @@ end
 local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyph
     local char, id = isglyph(boundary)
     if id == kern_code then
-        if getsubtype(boundary) == kerning_code or getattr(boundary,a_fontkern) then
+        if getsubtype(boundary) == fontkern_code then
             local inject = true
             if keeptogether then
                 local next = getnext(boundary)
@@ -259,7 +260,7 @@ local function inject_end(boundary,next,keeptogether,krn,ok)
     local tail = find_node_tail(boundary)
     local char, id = getid(tail)
     if id == kern_code then
-        if getsubtype(tail) == kerning_code or getattr(tail,a_fontkern) then
+        if getsubtype(tail) == fontkern_code then
             local inject = true
             if keeptogether then
                 local prev = getprev(tail)
@@ -309,7 +310,7 @@ local function process_list(head,keeptogether,krn,font,okay)
                 if mark[char] then
                     -- skip
                 elseif pid == kern_code then
-                    if getsubtype(prev) == kerning_code or getattr(prev,a_fontkern) then
+                    if getsubtype(prev) == fontkern_code then
                         local inject = true
                         if keeptogether then
                             local prevprev = getprev(prev)
@@ -408,7 +409,7 @@ function kerns.handler(head)
                 elseif mark[char] then
                     -- skip
                 elseif previd == kern_code then
-                    if getsubtype(prev) == kerning_code or getattr(prev,a_fontkern) then
+                    if getsubtype(prev) == fontkern_code then
                         local inject = true
                         if keeptogether then
                             if previd == glyph_code and keeptogether(prev,start) then
@@ -518,7 +519,7 @@ function kerns.handler(head)
                 end
                 bound = false
             elseif id == kern_code then
-                bound  = getsubtype(start) == kerning_code or getattr(start,a_fontkern)
+                bound  = getsubtype(start) == fontkern_code
                 prev   = start
                 previd = id
             elseif id == glue_code then
@@ -564,7 +565,7 @@ function kerns.handler(head)
                 start = getnext(start)
             end
         elseif id == kern_code then
-            bound  = getsubtype(start) == kerning_code or getattr(start,a_fontkern)
+            bound  = getsubtype(start) == fontkern_code
             prev   = start
             previd = id
             start  = getnext(start)

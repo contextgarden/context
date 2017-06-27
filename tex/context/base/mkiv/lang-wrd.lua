@@ -32,17 +32,18 @@ local registered      = languages.registered
 local nuts            = nodes.nuts
 local tonut           = nuts.tonut
 
-local getfield        = nuts.getfield
+----- getfield        = nuts.getfield
 local getnext         = nuts.getnext
 local getid           = nuts.getid
-local getsubtype      = nuts.getsubtype
+----- getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
 local setattr         = nuts.setattr
+----- getattr         = nuts.getattr
 local getlang         = nuts.getlang
-local isglyph         = nuts.isglyph
+local ischar          = nuts.ischar
 
 local traverse_nodes  = nuts.traverse
-local traverse_ids    = nuts.traverse_id
+----- traverse_ids    = nuts.traverse_id
 
 local wordsdata       = words.data
 local chardata        = characters.data
@@ -51,13 +52,14 @@ local enableaction    = nodes.tasks.enableaction
 local unsetvalue      = attributes.unsetvalue
 
 local nodecodes       = nodes.nodecodes
-local kerncodes       = nodes.kerncodes
+----- kerncodes       = nodes.kerncodes
 
 local glyph_code      = nodecodes.glyph
-local disc_code       = nodecodes.disc
-local kern_code       = nodecodes.kern
+----- disc_code       = nodecodes.disc
+----- kern_code       = nodecodes.kern
 
-local kerning_code    = kerncodes.kerning
+----- fontkern_code   = kerncodes.fontkern
+
 local lowerchar       = characters.lower
 
 local a_color         = attributes.private('color')
@@ -160,8 +162,8 @@ local function mark_words(head,whenfound) -- can be optimized and shared
     -- we haven't done the fonts yet so we have characters (otherwise
     -- we'd have to use the tounicodes)
     while current do
-        local code, id = isglyph(current)
-        if code then
+        local code, id = ischar(current) -- not isglyph because otherwise we can run into
+        if code then                     -- processed streams (\about[foo] does that)
             local a = getlang(current)
             if a then
                 if a ~= language then
@@ -183,25 +185,29 @@ local function mark_words(head,whenfound) -- can be optimized and shared
             elseif s > 0 then
                 action()
             end
-        elseif id == disc_code then -- take the replace
-            if n > 0 then
-                local r = getfield(current,"replace")
-                if r then
-                    -- also disc itself
-                    n = n + 1
-                    nds[n] = current
-                    --
-                    for current in traverse_ids(glyph_code,r) do
-                        local code = getchar(current)
-                        n = n + 1
-                        nds[n] = current
-                        s = s + 1
-                        str[s] = utfchar(code)
-                    end
-                end
-        end
-        elseif id == kern_code and getsubtype(current) == kerning_code and s > 0 then
-            -- ok
+     -- elseif id == disc_code then
+     --     -- take the replace .. we kick in before we hyphenate so we're
+     --     -- not yet seeing many discs and we only handle explicit ones
+     --     -- in fact we could as well decide to ignore words with a disc
+     --     -- because we then have a compound word
+     --     if n > 0 then
+     --         local r = getfield(current,"replace")
+     --         if r then
+     --             -- also disc itself
+     --             n = n + 1
+     --             nds[n] = current
+     --             --
+     --             for current in traverse_ids(glyph_code,r) do
+     --                 local code = getchar(current)
+     --                 n = n + 1
+     --                 nds[n] = current
+     --                 s = s + 1
+     --                 str[s] = utfchar(code)
+     --             end
+     --         end
+     --     end
+     -- elseif id == kern_code and getsubtype(current) == fontkern_code and s > 0 then
+     --     -- ok
         elseif s > 0 then
             action()
         end

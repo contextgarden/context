@@ -144,7 +144,6 @@ local starttiming         = statistics.starttiming
 local stoptiming          = statistics.stoptiming
 
 local a_visual            = attributes.private("visual")
-local a_fontkern          = attributes.private("fontkern")
 local a_layer             = attributes.private("viewerlayer")
 
 local hasbit              = number.hasbit
@@ -1015,8 +1014,7 @@ local function visualize(head,vertical,forced,parent)
             setdisc(current,pre,post,replace)
         elseif id == kern_code then
             local subtype = getsubtype(current)
-            -- tricky ... we don't copy the trace attribute in node-inj (yet)
-            if subtype == font_kern_code or getattr(current,a_fontkern) then
+            if subtype == font_kern_code then
                 if trace_fontkern or prev_trace_fontkern then
                     head, current = fontkern(head,current)
                 end
