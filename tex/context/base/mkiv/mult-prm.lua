@@ -227,6 +227,7 @@ return {
   "begincsname",
   "bodydir",
   "boxdir",
+  "breakafterdirmode",
   "catcodetable",
   "clearmarks",
   "copyfont",

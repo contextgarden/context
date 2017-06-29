@@ -7061,6 +7061,10 @@ return {
    ["pe"]="وضعیت‌پایین",
    ["ro"]="starejos",
   },
+  ["break"]={
+   ["en"]="break",
+   ["nl"]="break",
+  },
   ["buffer"]={
    ["en"]="buffer",
    ["nl"]="buffer",

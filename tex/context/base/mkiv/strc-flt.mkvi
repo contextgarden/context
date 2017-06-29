@@ -1385,8 +1385,11 @@
 \newdimen\d_strc_float_temp_height
 \newdimen\d_strc_float_temp_width
 
-\def\captionminwidth {15\bodyfontsize}
-\def\captionovershoot{2\emwidth}
+\newconditional\c_floats_adapt_to_caption_width
+\newconditional\c_floats_store_minimal_package
+
+\def\captionminwidth {15\bodyfontsize} % can become parameter (but what name)
+\def\captionovershoot{2\emwidth}       % can become parameter (but what name)
 
 \let\strc_floats_mark_pag_as_free\relax
 
@@ -1426,7 +1429,9 @@
    \or
      % manual
    \fi
-   \ifcase\c_strc_floats_rotation
+   \ifconditional\c_floats_store_minimal_package
+      % nothing
+   \else\ifcase\c_strc_floats_rotation
      \doifnotinset\v!margin\floatlocation % brr, really needed! see wm
        {\postcenterfloatbox\d_strc_floats_content
         \strc_floats_mark_pag_as_free}%
@@ -1435,7 +1440,7 @@
      \global\setbox\floatbox\vpack
        {\rotate[\c!rotation=\number\c_strc_floats_rotation]{\box\floatbox}}%
      \strc_floats_mark_pag_as_free
-   \fi
+   \fi\fi
    \egroup}
 
 \def\strc_floats_prepare_no_caption
@@ -1544,6 +1549,10 @@
    \fi
    \edef\captionhsize{\the\wd\b_strc_floats_content}%
    \scratchwidth\floatcaptionparameter\c!maxwidth\relax
+   \ifconditional\c_floats_adapt_to_caption_width
+     \let\captionminwidth \!!zeropoint
+     \let\captionovershoot\!!zeropoint
+   \fi
    \ifdim\captionhsize>\scratchwidth
      % float is wider than \hsize
      \setbox\b_strc_floats_caption\vbox
@@ -1571,6 +1580,9 @@
      \ifdim\captionhsize<\captionminwidth\relax
        \scratchdimen\captionminwidth % float smaller than min width
        \edef\captionhsize{\the\scratchdimen}%
+% \ifconditional\c_floats_adapt_to_caption_width
+%   \setbox\b_strc_floats_content\hpack to \captionhsize{\hss\box\b_strc_floats_content\hss}%
+% \fi
      \fi
      \setbox\scratchbox\vbox     % test with overshoot
        {\settrialtypesetting
@@ -1903,13 +1915,51 @@
   {\global\setbox\floatbox\vbox % pack ? probably not
      {\strc_floats_set_local_hsize
       \forgetall
-      \let\floatcaptionarrangement\s!default
-      \processcommacommand[\floatcaptionparameter\c!location]\strc_floats_build_box_step
-      \ifcsname\??floatbuilder\floatcaptionarrangement\endcsname
-        \lastnamedcs
+      \ifconditional\c_floats_store_minimal_package
+        \strc_floats_build_box_separate_make
       \else
-        \strc_floats_build_box_default
+        \let\floatcaptionarrangement\s!default
+        \processcommacommand[\floatcaptionparameter\c!location]\strc_floats_build_box_step
+        \ifcsname\??floatbuilder\floatcaptionarrangement\endcsname
+          \lastnamedcs
+        \else
+          \strc_floats_build_box_default
+        \fi
       \fi}}
+
+% special purpose: used in floatcombinations
+
+\newbox\b_strc_floats_separate_content
+\newbox\b_strc_floats_separate_caption
+
+\def\strc_floats_build_box_separate_set
+  {\settrue\c_floats_adapt_to_caption_width
+   \settrue\c_floats_store_minimal_package}
+
+\def\strc_floats_build_box_separate_make
+  {\offinterlineskip
+   \vpack to \onepoint{\box\b_strc_floats_content}\break
+   \vpack to \onepoint{\box\b_strc_floats_caption}}
+
+\def\strc_floats_build_box_separate_split#1%
+  {\setbox\scratchbox\vbox{%
+     \setbox\scratchbox\vpack{#1}%
+     \unvbox\scratchbox\relax
+     \setbox\scratchbox\lastbox
+    %\doloop{%
+        \unvbox\scratchbox
+        \setbox\scratchbox\lastbox
+    %   \ifdim\ht\scratchbox=2\onepoint
+          \unvbox\scratchbox
+          \setbox\scratchbox\lastbox
+    %     \exitloop
+    %   \fi}%
+     \splittopskip\zeropoint
+     \global\setbox\b_strc_floats_separate_content\vsplit\scratchbox to \onepoint
+     \global\setbox\b_strc_floats_separate_caption\vsplit\scratchbox to \onepoint
+     \global\setbox\b_strc_floats_separate_content\vpack{\unvbox\b_strc_floats_separate_content\setbox0\lastbox\unvbox0}%
+     \global\setbox\b_strc_floats_separate_caption\tpack{\unvbox\b_strc_floats_separate_caption\setbox0\lastbox\unvbox0}%
+   }}
 
 % \def\strc_floats_build_box_step#1%
 %   {\doifdefined{\??floatbuilder#1}{\def\floatcaptionarrangement{#1}\quitcommalist}}
@@ -2116,13 +2166,17 @@
      \fi
      \strc_floats_set_local_dimensions
      \global\advance\totalnoffloats\plusone
-     \setbox\floatbox\hpack{\strc_float_save_data\box\floatbox}% still needed? we will do renumbering differently
+     \ifconditional\c_floats_store_minimal_package \else
+       \setbox\floatbox\hpack{\strc_float_save_data\box\floatbox}% still needed? we will do renumbering differently
+     \fi
      \global\floatheight\htdp\floatbox
      \global\floatwidth\wd\floatbox
-     \doifnotinset\v!margin\floatlocation % gaat namelijk nog fout
-       {\setbox\floatbox\vpack
-          {\parindent\zeropoint
-           \box\floatbox}}%
+     \ifconditional\c_floats_store_minimal_package \else
+       \doifnotinset\v!margin\floatlocation % gaat namelijk nog fout
+         {\setbox\floatbox\vpack
+            {\parindent\zeropoint
+             \box\floatbox}}%
+     \fi
      \wd\floatbox\floatwidth
      \ifdim\dimexpr\floatheight+\lineheight\relax<\textheight \else
        \global\floatheight\dimexpr\textheight-\lineheight\relax

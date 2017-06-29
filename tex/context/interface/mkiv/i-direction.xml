@@ -22,6 +22,10 @@
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
+                <cd:parameter name="break">
+                    <cd:constant type="both" default="yes"/>
+                    <cd:constant type="before"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

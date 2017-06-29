@@ -78,7 +78,7 @@
 
 \newcount\c_pack_combinations_nesting  % local
 \newcount\c_pack_combinations_x        % global
-\newcount\c_pack_combinations_n        % global
+\newcount\c_pack_combinations_y        % global
 \newcount\c_pack_combinations_max      % global
 \newbox  \b_pack_combinations_captions % global
 \newbox  \b_pack_combinations_temp     % global
@@ -93,7 +93,7 @@
 \initializeboxstack{\??combination temp}
 
 \newcount\c_pack_combinations_x_saved
-\newcount\c_pack_combinations_n_saved
+\newcount\c_pack_combinations_y_saved
 \newcount\c_pack_combinations_max_saved
 \newbox  \b_pack_combinations_captions_saved
 \newbox  \b_pack_combinations_temp_saved
@@ -106,7 +106,7 @@
   {\advance\c_pack_combinations_nesting\plusone
    \ifnum\c_pack_combinations_nesting>\plusone
      \c_pack_combinations_x_saved  \c_pack_combinations_x
-     \c_pack_combinations_n_saved  \c_pack_combinations_n
+     \c_pack_combinations_y_saved  \c_pack_combinations_y
      \c_pack_combinations_max_saved\c_pack_combinations_max
      \setbox\b_pack_combinations_captions_saved\box\b_pack_combinations_captions
      \setbox\b_pack_combinations_temp_saved    \box\b_pack_combinations_temp
@@ -119,7 +119,7 @@
 \def\pack_combinations_pop
   {\ifnum\c_pack_combinations_nesting>\plusone
      \global\c_pack_combinations_x  \c_pack_combinations_x_saved
-     \global\c_pack_combinations_n  \c_pack_combinations_n_saved
+     \global\c_pack_combinations_y  \c_pack_combinations_y_saved
      \global\c_pack_combinations_max\c_pack_combinations_max_saved
      \global\setbox\b_pack_combinations_captions\box\b_pack_combinations_captions_saved
      \global\setbox\b_pack_combinations_temp    \box\b_pack_combinations_temp_saved
@@ -204,7 +204,7 @@
 % \unexpanded\def\stopcombination
 %   {\bgroup
 %    \scratchtoks{{}}%
-%    \dorecurse\c_pack_combinations_n
+%    \dorecurse\c_pack_combinations_y
 %      {\scratchtoks\expandafter{\the\scratchtoks{}{}}}%
 %    \expandafter\egroup\the\scratchtoks
 %    \egroup
@@ -219,7 +219,7 @@
 \unexpanded\def\pack_common_caption_stop {\removeunwantedspaces\egroup}
 
 \unexpanded\def\stopcombination
-  {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_n}% brr
+  {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
    \dostoptagged
    \egroup
    \pack_combinations_pop
@@ -271,15 +271,18 @@
    \let\combination\empty % permits \combination{}{} handy for cld
    \normalexpanded{\pack_combinations_start_indeed[\currentcombinationspec]}}
 
+\let\pack_combinations_check_x_y\relax
+
 \unexpanded\def\pack_combinations_start_indeed[#1*#2*#3]%
   {\global\c_pack_combinations_x#1\relax
-   \global\c_pack_combinations_n#2\relax
+   \global\c_pack_combinations_y#2\relax
+   \pack_combinations_check_x_y
    \dotagcombination
    \global\setbox\b_pack_combinations_captions\emptybox
    \global\c_pack_combinations_max\c_pack_combinations_x
-   \multiply\c_pack_combinations_n\c_pack_combinations_x
+   \multiply\c_pack_combinations_y\c_pack_combinations_x
    \tabskip\zeropoint
-   \halign \ifx\p_width\v!fit\else to \p_width \fi \bgroup
+   \halign \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
    \aligntab
    \m_pack_combinations_leftfiller
    \alignmark\alignmark
@@ -382,8 +385,8 @@
       \m_pack_combinations_valigner{\box\b_pack_combinations_content}%
       % we need to save the caption for a next alignment line
       \pack_combinations_save_caption}%
-   \ifnum\c_pack_combinations_n>\plusone
-     \global\advance\c_pack_combinations_n\minusone
+   \ifnum\c_pack_combinations_y>\plusone
+     \global\advance\c_pack_combinations_y\minusone
      \global\advance\c_pack_combinations_x\minusone
      \ifcase\c_pack_combinations_x
        \doubleexpandafter\pack_combinations_pickup_package_pair_a
@@ -486,19 +489,40 @@
 
 \let\stopfloatcombination\relax
 
+\unexpanded\def\pack_combinations_float_hack_a#1%
+  {\strc_floats_build_box_separate_split{\getlocalfloat{#1}}%
+   \box\b_strc_floats_separate_content}
+
+\unexpanded\def\pack_combinations_float_hack_b#1%
+  {\box\b_strc_floats_separate_caption}
+
 \def\pack_combinations_start_float[#1][#2]%
   {\ifinsidefloat\else\dontleavehmode\fi % tricky, floatcombinations fail to align well otherwise
    \vbox\bgroup
+   \strc_floats_build_box_separate_set
   %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
    \postcenterfloatmethod\zerocount
    \forcelocalfloats
    \unexpanded\def\stopfloatcombination{\pack_combinations_stop_float{#1}}}
 
+\def\pack_combinations_float_check_x_y
+  {\ifnum\numexpr\c_pack_combinations_x*\c_pack_combinations_y\relax<\noflocalfloats\relax
+       \global\c_pack_combinations_x\noflocalfloats
+       \global\c_pack_combinations_y\plusone
+   \fi
+   \let\pack_combinations_check_x_y\relax}%
+
 \def\pack_combinations_stop_float#1%
   {\scratchtoks\emptytoks
    \dorecurse\noflocalfloats
-     {\appendetoks{\getlocalfloat{\recurselevel}}{}\to\scratchtoks}% brrr
-   \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+     {\appendetoks
+        {\pack_combinations_float_hack_a{\recurselevel}}%
+        {\pack_combinations_float_hack_b{\recurselevel}}%
+      \to\scratchtoks}% brrr
+     \let\pack_combinations_check_x_y\pack_combinations_float_check_x_y
+   \doifassignmentelse{#1}
+     {\expanded{\startcombination[#1]\the\scratchtoks}\stopcombination}%
+     {\expanded{\startcombination[#1]\the\scratchtoks}\stopcombination}%
    \resetlocalfloats
    \egroup}
 

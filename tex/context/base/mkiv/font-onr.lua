@@ -89,7 +89,7 @@ do
     local dup           = P("dup")
     local put           = P("put")
     local array         = P("array")
-    local name          = P("/") * C((R("az")+R("AZ")+R("09")+S("-_."))^1)
+    local name          = P("/") * C((R("az","AZ","09")+S("-_."))^1)
     local digits        = R("09")^1
     local cardinal      = digits / tonumber
     local spaces        = P(" ")^1
@@ -103,32 +103,40 @@ do
         return position + 1
     end
 
-    local setroutine = function(str,position,index,size)
+    local setroutine = function(str,position,index,size,filename)
         local forward = position + tonumber(size)
         local stream  = decrypt(sub(str,position+1,forward),4330,4)
         routines[index] = { byte(stream,1,#stream) }
         return forward
     end
 
-    local setvector = function(str,position,name,size)
+    local setvector = function(str,position,name,size,filename)
         local forward = position + tonumber(size)
         if n >= m then
             return #str
         elseif forward < #str then
+            if n == 0 and name ~= ".notdef" then
+                report_pfb("reserving .notdef at index 0 in %a",filename) -- luatex needs that
+                n = n + 1
+            end
             vector[n] = name
-            n = n + 1 -- we compensate for notdef at the cff loader end
+            n = n + 1
             return forward
         else
             return #str
         end
     end
 
-    local setshapes = function(str,position,name,size)
+    local setshapes = function(str,position,name,size,filename)
         local forward = position + tonumber(size)
         local stream  = sub(str,position+1,forward)
         if n > m then
             return #str
         elseif forward < #str then
+            if n == 0 and name ~= ".notdef" then
+                report_pfb("reserving .notdef at index 0 in %a",filename) -- luatex needs that
+                n = n + 1
+            end
             vector[n] = name
             n = n + 1
             chars [n] = decrypt(stream,4330,4)
@@ -144,15 +152,15 @@ do
 
     local p_filterroutines = -- dup <i> <n> RD or -| <n encrypted bytes> NP or |
         (1-subroutines)^0 * subroutines * spaces * Cmt(cardinal,initialize)
-      * (Cmt(cardinal * spaces * cardinal * p_rd, setroutine) * p_np + P(1))^1
+      * (Cmt(cardinal * spaces * cardinal * p_rd * Carg(1), setroutine) * p_np + P(1))^1
 
     local p_filtershapes = -- /foo <n> RD <n encrypted bytes> ND
         (1-charstrings)^0 * charstrings * spaces * Cmt(cardinal,initialize)
-      * (Cmt(name * spaces * cardinal * p_rd, setshapes) * p_nd + P(1))^1
+      * (Cmt(name * spaces * cardinal * p_rd * Carg(1) , setshapes) * p_nd + P(1))^1
 
     local p_filternames = Ct (
         (1-charstrings)^0 * charstrings * spaces * Cmt(cardinal,initialize)
-        * (Cmt(name * spaces * cardinal, setvector) + P(1))^1
+        * (Cmt(name * spaces * cardinal * Carg(1), setvector) + P(1))^1
     )
 
     -- /Encoding 256 array
@@ -196,10 +204,9 @@ do
         local glyphs   = { }
 
         routines, vector, chars = { }, { }, { }
-
         if shapestoo then
-            lpegmatch(p_filterroutines,binary)
-            lpegmatch(p_filtershapes,binary)
+            lpegmatch(p_filterroutines,binary,1,filename)
+            lpegmatch(p_filtershapes,binary,1,filename)
             local data = {
                 dictionaries = {
                     {
@@ -211,7 +218,7 @@ do
             }
             fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,true)
         else
-            lpegmatch(p_filternames,binary)
+            lpegmatch(p_filternames,binary,1,filename)
         end
 
         names = vector
@@ -233,7 +240,7 @@ do
             if trace_loading then
                 report_afm("getting index data from %a",pfbname)
             end
-            for index=1,#vector do
+            for index=0,#vector do -- hm, zero, often space or notdef
                 local name = vector[index]
                 local char = characters[name]
                 if char then
@@ -241,6 +248,10 @@ do
                         report_afm("glyph %a has index %a",name,index)
                     end
                     char.index = index
+                else
+                    if trace_indexing then
+                        report_afm("glyph %a has index %a but no data",name,index)
+                    end
                 end
             end
         end
@@ -405,10 +416,6 @@ local p_parameters = P(false)
       + (fontdata * C("DELIM")          * number * number          * rest) / set_2 -- 20 21
       + (fontdata * C("AXISHEIGHT")     * number                   * rest) / set_1 -- 22
     )
-
-local fullparser = ( P("StartFontMetrics") * fontdata * name / start )
-                 * ( p_charmetrics + p_kernpairs + p_parameters + (1-P("EndFontMetrics")) )^0
-                 * ( P("EndFontMetrics") / stop )
 
 local fullparser = ( P("StartFontMetrics") * fontdata * name / start )
                  * ( p_charmetrics + p_kernpairs + p_parameters + (1-P("EndFontMetrics")) )^0

@@ -81,11 +81,17 @@
     \fi
 \to \everysetupdirections
 
+\appendtoks
+    \edef\p_option{\directionsparameter\c!break}% name can change
+    \breakafterdirmode\ifx\p_option\v!both\plusone\else\zerocount\fi
+\to \everysetupdirections
+
 % bidi: local=obey grouping, global=ignore grouping (unicode has no grouping)
 
 \setupdirections % maybe start/stop
   [\c!bidi=\v!off,
    \c!method=\v!default,
+   \c!break=\v!both, % experimental value, maybe \v!no will be default (bad name too)
    \c!fences=\v!yes]
 
 \unexpanded\edef\bidilre{\normalUchar"202A} % maybe \edef's
