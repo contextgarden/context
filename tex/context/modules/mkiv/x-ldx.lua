@@ -80,7 +80,7 @@ function ldx.load(filename)
     end
     local str = sub(data, i, #data)
     str = gsub(str, "^%s*(.-)%s*$", "%1")
-    if #str > 0 then
+    if str ~= "" then
         t[#t+1] = { code = str }
     end
     return t

@@ -555,22 +555,22 @@ function constructors.scale(tfmdata,specification)
         if changed then
             local c = changed[unicode]
             if c and c ~= unicode then
-                while true do
-                    local cc = changed[c]
-                    if not cc then
-                        -- we're done, no (futher) chain
-                        break
-                    elseif cc == unicode then
-                        -- we probably have a bidi swap
-                        break
-                    elseif cc == c then
-                        -- we have a self reference, shouldn't happen
-                        c = nil
-                        break
-                    else
-                        c = cc
-                    end
-                end
+--                 while true do
+--                     local cc = changed[c]
+--                     if not cc then
+--                         -- we're done, no (futher) chain
+--                         break
+--                     elseif cc == unicode then
+--                         -- we probably have a bidi swap
+--                         break
+--                     elseif cc == c then
+--                         -- we have a self reference, shouldn't happen
+--                         c = nil
+--                         break
+--                     else
+--                         c = cc
+--                     end
+--                 end
                 if c then
                     description = descriptions[c] or descriptions[unicode] or character
                     character   = characters[c] or character

@@ -145,7 +145,8 @@ function debugger.showstats(printer,threshold)
     local functions = 0
     local dataset   = { }
     local length    = 0
-    local wholetime = 0
+    local realtime  = 0
+    local totaltime = 0
     local threshold = threshold or 0
     for name, sources in next, names do
         for source, lines in next, sources do
@@ -162,8 +163,9 @@ function debugger.showstats(printer,threshold)
                         if real < 0 then
                             real = 0
                         end
-                        wholetime = wholetime + real
+                        realtime = realtime + real
                     end
+                    totaltime = totaltime + total
                     if line < 0 then
                         line = 0
                     end
@@ -201,23 +203,22 @@ function debugger.showstats(printer,threshold)
     if length > 50 then
         length = 50
     end
-    local fmt = string.formatters["%4.9k  %4.9k  %3.3k  %8i  %-" .. length .. "s  %4i  %s"]
+    local fmt = string.formatters["%4.9k s  %3.3k %%  %4.9k s  %3.3k %%  %8i #  %-" .. length .. "s  %4i  %s"]
     for i=1,#dataset do
-        local data    = dataset[i]
-        local real    = data[1]
-        local total   = data[2]
-        local count   = data[3]
-        local name    = data[4]
-        local source  = data[5]
-        local line    = data[6]
-        local percent = real / wholetime
+        local data   = dataset[i]
+        local real   = data[1]
+        local total  = data[2]
+        local count  = data[3]
+        local name   = data[4]
+        local source = data[5]
+        local line   = data[6]
         calls     = calls + count
         functions = functions + 1
         name = gsub(name,"%s+"," ")
         if #name > length then
             name = sub(name,1,length)
         end
-        printer(fmt(seconds(total),seconds(real),percent,count,name,line,source))
+        printer(fmt(seconds(total),100*total/totaltime,seconds(real),100*real/realtime,count,name,line,source))
     end
     printer("")
     printer(format("functions : %i", functions))

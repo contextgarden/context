@@ -1934,7 +1934,7 @@ local uncrapped = {
 }
 
 local function convert(str,nowrap)
-    if #str > 0 then
+    if str ~= "" then
         local unicoded = lpegmatch(u_parser,str) or str
         if lpegmatch(p_onechar,unicoded) then
             ctx_mathematics(uncrapped[unicoded] or unicoded)

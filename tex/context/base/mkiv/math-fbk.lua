@@ -423,7 +423,7 @@ end
 virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
 virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
 
--- spacing
+-- spacing (no need for a cache of widths)
 
 local c_zero   = byte('0')
 local c_period = byte('.')
@@ -432,7 +432,7 @@ local function spacefraction(data,fraction)
     local width = fraction * data.target.parameters.space
     return {
         width    = width,
-        commands = { right = width }
+        commands = { { "right", width } }
     }
 end
 
@@ -440,7 +440,7 @@ local function charfraction(data,char)
     local width = data.target.characters[char].width
     return {
         width    = width,
-        commands = { right = width }
+        commands = { { "right", width } }
     }
 end
 
@@ -448,7 +448,7 @@ local function quadfraction(data,fraction)
     local width = fraction * data.target.parameters.quad
     return {
         width    = width,
-        commands = { right = width }
+        commands = { { "right", width } }
     }
 end
 

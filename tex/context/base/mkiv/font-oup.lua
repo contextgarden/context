@@ -15,6 +15,7 @@ local formatters        = string.formatters
 local sortedkeys        = table.sortedkeys
 local sortedhash        = table.sortedhash
 local tohash            = table.tohash
+local setmetatableindex = table.setmetatableindex
 
 local report            = logs.reporter("otf reader")
 
@@ -2256,6 +2257,33 @@ function readers.expand(data)
             end
         end
     end
+
+    -- using a merged combined hash as first test saves some 30% on ebgaramond and
+    -- about 15% on arabtype .. then moving the a test also saves a bit (even when
+    -- often a is not set at all so that one is a bit debatable
+
+    local function mergesteps(t,k)
+        if k == "merged" then
+            local merged = { }
+            for i=1,#t do
+                local step     = t[i]
+                local coverage = step.coverage
+                for k, v in next, coverage do
+                    local m = merged[k]
+                    if m then
+                        m[2] = i
+                     -- m[#m+1] = step
+                    else
+                        merged[k] = { i, i }
+                     -- merged[k] = { step }
+                    end
+                end
+            end
+            t.merged = merged
+            return merged
+        end
+    end
+
     local function expandlookups(sequences)
         if sequences then
             -- we also need to do sublookups
@@ -2263,10 +2291,10 @@ function readers.expand(data)
                 local sequence = sequences[i]
                 local steps    = sequence.steps
                 if steps then
+
+                    setmetatableindex(steps,mergesteps)
+
                     local kind = sequence.type
--- if kind == "gsub_reversecontextchain" then
---     inspect(sequence)
--- end
                     local markclass = sequence.markclass
                     if markclass then
                         if not markclasses then
@@ -2276,7 +2304,8 @@ function readers.expand(data)
                             sequence.markclass = markclasses[markclass]
                         end
                     end
-                    for i=1,sequence.nofsteps do
+                    local nofsteps = sequence.nofsteps
+                    for i=1,nofsteps do
                         local step = steps[i]
                         local baseclasses = step.baseclasses
                         if baseclasses then
@@ -2371,6 +2400,7 @@ function readers.expand(data)
             end
         end
     end
+
     expandlookups(sequences)
     expandlookups(sublookups)
 end

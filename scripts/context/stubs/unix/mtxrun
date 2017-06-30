@@ -1545,7 +1545,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 6419, stripped down to: 3339
+-- original size: 6420, stripped down to: 3339
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -10017,7 +10017,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 8911, stripped down to: 6504
+-- original size: 8984, stripped down to: 6573
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -10143,7 +10143,8 @@ function debugger.showstats(printer,threshold)
   local functions=0
   local dataset={}
   local length=0
-  local wholetime=0
+  local realtime=0
+  local totaltime=0
   local threshold=threshold or 0
   for name,sources in next,names do
     for source,lines in next,sources do
@@ -10160,8 +10161,9 @@ function debugger.showstats(printer,threshold)
             if real<0 then
               real=0
             end
-            wholetime=wholetime+real
+            realtime=realtime+real
           end
+          totaltime=totaltime+total
           if line<0 then
             line=0
           end
@@ -10196,7 +10198,7 @@ function debugger.showstats(printer,threshold)
   if length>50 then
     length=50
   end
-  local fmt=string.formatters["%4.9k  %4.9k  %3.3k  %8i  %-"..length.."s  %4i  %s"]
+  local fmt=string.formatters["%4.9k s  %3.3k %%  %4.9k s  %3.3k %%  %8i #  %-"..length.."s  %4i  %s"]
   for i=1,#dataset do
     local data=dataset[i]
     local real=data[1]
@@ -10205,14 +10207,13 @@ function debugger.showstats(printer,threshold)
     local name=data[4]
     local source=data[5]
     local line=data[6]
-    local percent=real/wholetime
     calls=calls+count
     functions=functions+1
     name=gsub(name,"%s+"," ")
     if #name>length then
       name=sub(name,1,length)
     end
-    printer(fmt(seconds(total),seconds(real),percent,count,name,line,source))
+    printer(fmt(seconds(total),100*total/totaltime,seconds(real),100*real/realtime,count,name,line,source))
   end
   printer("")
   printer(format("functions : %i",functions))
@@ -20567,8 +20568,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 846222
--- stripped bytes    : 306211
+-- original bytes    : 846296
+-- stripped bytes    : 306216
 
 -- end library merge
 

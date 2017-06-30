@@ -286,7 +286,7 @@ local getmargin = (emptyline + normalline)^1
 local function undent(str) -- new version, needs testing: todo: not always needed, like in xtables
     nofspaces = #str
     local margin = lpegmatch(getmargin,str)
-    if nofspaces == #str or nofspaces ==0 then
+    if nofspaces == #str or nofspaces == 0 then
         return str
     end
     local stripper = strippers[nofspaces]

@@ -18,7 +18,7 @@ local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
 --
 --     function string.split(str,pattern)
 --         local t = { }
---         if #str > 0 then
+--         if str ~= "" then
 --             local n = 1
 --             for s in gmatch(str..pattern,"(.-)"..pattern) do
 --                 t[n] = s

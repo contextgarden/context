@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/29/17 09:34:20
+-- merge date  : 06/30/17 19:45:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -7928,19 +7928,6 @@ function constructors.scale(tfmdata,specification)
     if changed then
       local c=changed[unicode]
       if c and c~=unicode then
-        while true do
-          local cc=changed[c]
-          if not cc then
-            break
-          elseif cc==unicode then
-            break
-          elseif cc==c then
-            c=nil
-            break
-          else
-            c=cc
-          end
-        end
         if c then
           description=descriptions[c] or descriptions[unicode] or character
           character=characters[c] or character
@@ -17325,6 +17312,7 @@ local formatters=string.formatters
 local sortedkeys=table.sortedkeys
 local sortedhash=table.sortedhash
 local tohash=table.tohash
+local setmetatableindex=table.setmetatableindex
 local report=logs.reporter("otf reader")
 local trace_markwidth=false trackers.register("otf.markwidth",function(v) trace_markwidth=v end)
 local readers=fonts.handlers.otf.readers
@@ -19332,12 +19320,32 @@ function readers.expand(data)
       end
     end
   end
+  local function mergesteps(t,k)
+    if k=="merged" then
+      local merged={}
+      for i=1,#t do
+        local step=t[i]
+        local coverage=step.coverage
+        for k,v in next,coverage do
+          local m=merged[k]
+          if m then
+            m[2]=i
+          else
+            merged[k]={ i,i }
+          end
+        end
+      end
+      t.merged=merged
+      return merged
+    end
+  end
   local function expandlookups(sequences)
     if sequences then
       for i=1,#sequences do
         local sequence=sequences[i]
         local steps=sequence.steps
         if steps then
+          setmetatableindex(steps,mergesteps)
           local kind=sequence.type
           local markclass=sequence.markclass
           if markclass then
@@ -19348,7 +19356,8 @@ function readers.expand(data)
               sequence.markclass=markclasses[markclass]
             end
           end
-          for i=1,sequence.nofsteps do
+          local nofsteps=sequence.nofsteps
+          for i=1,nofsteps do
             local step=steps[i]
             local baseclasses=step.baseclasses
             if baseclasses then
@@ -22389,12 +22398,10 @@ local factor=0
 local threshold=0
 local checkmarks=false
 local sweepnode=nil
-local sweepprev=nil
-local sweepnext=nil
-local sweephead={}
-local notmatchpre={}
-local notmatchpost={}
-local notmatchreplace={}
+local sweephead={} 
+local notmatchpre={} 
+local notmatchpost={} 
+local notmatchreplace={} 
 local handlers={}
 local isspace=injections.isspace
 local getthreshold=injections.getthreshold
@@ -24039,8 +24046,8 @@ local function chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
       setdisc(lookaheaddisc,cf,post,new)
     end
     start=getprev(lookaheaddisc)
-    sweephead[cf]=getnext(clast)
-    sweephead[new]=getnext(cl)
+    sweephead[cf]=getnext(clast) or false
+    sweephead[new]=getnext(cl) or false
   elseif backtrackdisc then
     local cf=getnext(backtrackdisc)
     local cl=start
@@ -24102,8 +24109,8 @@ local function chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
       setdisc(backtrackdisc,pre,post,replace)
     end
     start=getprev(backtrackdisc)
-    sweephead[post]=getnext(clast)
-    sweephead[replace]=getnext(last)
+    sweephead[post]=getnext(clast) or false
+    sweephead[replace]=getnext(last) or false
   else
     local ok=false
     head,start,ok=chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
@@ -24135,6 +24142,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
   local skipligature=flags[2]
   local skipbase=flags[3]
   local markclass=sequence.markclass
+  local skipsome=skipmark~=false or skipligature~=false or skipbase~=false or markclass
   local skipped=false
   local startprev,
      startnext=getboth(start)
@@ -24148,10 +24156,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
     local size=1
     if s==1 then
       local char=ischar(current,currentfont)
-      if char then
-        if not seq[1][char] then
-          match=false
-        end
+      if char and not seq[1][char] then
+        match=false
       end
     else
       local f=ck[4]
@@ -24169,8 +24175,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
           if last then
             local char,id=ischar(last,currentfont)
             if char then
-              local class=classes[char]
-              if class then
+              if skipsome then
+                local class=classes[char]
                 if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
                   skipped=true
                   if trace_skips then
@@ -24194,15 +24200,22 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   break
                 end
               else
-                if discfound then
-                  notmatchreplace[discfound]=true
-                  if notmatchpre[discfound] then
+                if seq[n][char] then
+                  if n<l then
+                    last=getnext(last)
+                  end
+                  n=n+1
+                else
+                  if discfound then
+                    notmatchreplace[discfound]=true
+                    if notmatchpre[discfound] then
+                      match=false
+                    end
+                  else
                     match=false
                   end
-                else
-                  match=false
+                  break
                 end
-                break
               end
             elseif char==false then
               if discfound then
@@ -24226,10 +24239,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 while pre do
                   if seq[n][getchar(pre)] then
                     n=n+1
-                    pre=getnext(pre)
                     if n>l then
                       break
                     end
+                    pre=getnext(pre)
                   else
                     notmatchpre[last]=true
                     break
@@ -24245,10 +24258,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 while replace do
                   if seq[n][getchar(replace)] then
                     n=n+1
-                    replace=getnext(replace)
                     if n>l then
                       break
                     end
+                    replace=getnext(replace)
                   else
                     notmatchreplace[last]=true
                     if notmatchpre[last] then
@@ -24285,8 +24298,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
               if prev then
                 local char,id=ischar(prev,currentfont)
                 if char then
-                  local class=classes[char]
-                  if class then
+                  if skipsome then
+                    local class=classes[char]
                     if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
                       skipped=true
                       if trace_skips then
@@ -24310,15 +24323,22 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                       break
                     end
                   else
-                    if discfound then
-                      notmatchreplace[discfound]=true
-                      if notmatchpost[discfound] then
+                    if seq[n][char] then
+                      if n>1 then
+                        prev=getprev(prev)
+                      end
+                      n=n-1
+                    else
+                      if discfound then
+                        notmatchreplace[discfound]=true
+                        if notmatchpost[discfound] then
+                          match=false
+                        end
+                      else
                         match=false
                       end
-                    else
-                      match=false
+                      break
                     end
-                    break
                   end
                 elseif char==false then
                   if discfound then
@@ -24346,10 +24366,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                           if posttail==post then
                             break
                           else
-                            posttail=getprev(posttail)
                             if n<1 then
                               break
                             end
+                            posttail=getprev(posttail)
                           end
                         else
                           notmatchpost[prev]=true
@@ -24369,10 +24389,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                           if replacetail==replace then
                             break
                           else
-                            replacetail=getprev(replacetail)
                             if n<1 then
                               break
                             end
+                            replacetail=getprev(replacetail)
                           end
                         else
                           notmatchreplace[prev]=true
@@ -24419,8 +24439,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             if current then
               local char,id=ischar(current,currentfont)
               if char then
-                local class=classes[char]
-                if class then
+                if skipsome then
+                  local class=classes[char]
                   if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
                     skipped=true
                     if trace_skips then
@@ -24444,15 +24464,22 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     break
                   end
                 else
-                  if discfound then
-                    notmatchreplace[discfound]=true
-                    if notmatchpre[discfound] then
+                  if seq[n][char] then
+                    if n<s then 
+                      current=getnext(current) 
+                    end
+                    n=n+1
+                  else
+                    if discfound then
+                      notmatchreplace[discfound]=true
+                      if notmatchpre[discfound] then
+                        match=false
+                      end
+                    else
                       match=false
                     end
-                  else
-                    match=false
+                    break
                   end
-                  break
                 end
               elseif char==false then
                 if discfound then
@@ -24476,10 +24503,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   while pre do
                     if seq[n][getchar(pre)] then
                       n=n+1
-                      pre=getnext(pre)
                       if n>s then
                         break
                       end
+                      pre=getnext(pre)
                     else
                       notmatchpre[current]=true
                       break
@@ -24495,10 +24522,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   while replace do
                     if seq[n][getchar(replace)] then
                       n=n+1
-                      replace=getnext(replace)
                       if n>s then
                         break
                       end
+                      replace=getnext(replace)
                     else
                       notmatchreplace[current]=true
                       if not notmatchpre[current] then
@@ -24540,7 +24567,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
         head,start,done=chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
       end
       if done then
-        break 
+        break
+      else
       end
     end
   end
@@ -24699,13 +24727,12 @@ local function kernrun(disc,k_run,font,attr,...)
       done=true
     end
     if prev then
-      local nest=getprev(pre)
       setlink(prev,pre)
       if k_run(prevmarks,"preinjections",pre,font,attr,...) then 
         done=true
       end
-      setprev(pre,nest)
-      setnext(prev,disc)
+      setprev(pre)
+      setlink(prev,disc)
     end
   end
   if post then
@@ -24718,7 +24745,7 @@ local function kernrun(disc,k_run,font,attr,...)
         done=true
       end
       setnext(posttail)
-      setprev(next,disc)
+      setlink(disc,next)
     end
   end
   if replace then
@@ -24726,13 +24753,12 @@ local function kernrun(disc,k_run,font,attr,...)
       done=true
     end
     if prev then
-      local nest=getprev(replace)
       setlink(prev,replace)
       if k_run(prevmarks,"replaceinjections",replace,font,attr,...) then 
         done=true
       end
-      setprev(replace,nest)
-      setnext(prev,disc)
+      setprev(replace)
+      setlink(prev,disc)
     end
     if next then
       setlink(replacetail,next)
@@ -24740,7 +24766,7 @@ local function kernrun(disc,k_run,font,attr,...)
         done=true
       end
       setnext(replacetail)
-      setprev(next,disc)
+      setlink(disc,next)
     end
   elseif prev and next then
     setlink(prev,next)
@@ -24899,7 +24925,7 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
   local sweep=sweephead[head]
   if sweep then
     start=sweep
-    sweephead[head]=nil
+    sweephead[head]=false
   else
     start=head
   end
@@ -25035,7 +25061,7 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
   local sweep=sweephead[head]
   if sweep then
     start=sweep
-    sweephead[head]=nil
+    sweephead[head]=false
   else
     start=head
   end
@@ -25180,7 +25206,7 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
           if lookupcache then
             local lookupmatch=lookupcache[char]
             if lookupmatch then
-              local h,d,ok=handler(head,n,dataset,sequence,lookupmatch,step,rlmode,i,injection)
+              local h,d,ok=handler(head,n,dataset,sequence,lookupmatch,rlmode,step,i,injection)
               if ok then
                 return true
               end
@@ -25293,32 +25319,38 @@ do
       elseif typ=="gsub_reversecontextchain" then
         local start=find_node_tail(head)
         local rlmode=0 
+        local merged=steps.merged
         while start do
           local char=ischar(start,font)
           if char then
-            local a 
-            if attr then
-              a=getattr(start,0)
-            end
-            if not a or (a==attr) then
-              for i=1,nofsteps do
-                local step=steps[i]
-                local lookupcache=step.coverage
-                if lookupcache then
-                  local lookupmatch=lookupcache[char]
-                  if lookupmatch then
-                    local ok
-                    head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                    if ok then
-                      done=true
-                      break
-                    end
-                  end
-                else
-                  report_missing_coverage(dataset,sequence)
-                end
+            local m=merged[char]
+            if m then
+              local a 
+              if attr then
+                a=getattr(start,0)
               end
-              if start then
+              if not a or (a==attr) then
+                for i=m[1],m[2] do
+                  local step=steps[i]
+                  local lookupcache=step.coverage
+                  if lookupcache then
+                    local lookupmatch=lookupcache[char]
+                    if lookupmatch then
+                      local ok
+                      head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                      if ok then
+                        done=true
+                        break
+                      end
+                    end
+                  else
+                    report_missing_coverage(dataset,sequence)
+                  end
+                end
+                if start then
+                  start=getprev(start)
+                end
+              else
                 start=getprev(start)
               end
             else
@@ -25340,24 +25372,26 @@ do
             while start do
               local char,id=ischar(start,font)
               if char then
-                local a 
-                if attr then
-                  if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+                local lookupmatch=lookupcache[char]
+                if lookupmatch then
+                  local a 
+                  if attr then
+                    if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+                      a=true
+                    end
+                  elseif not attribute or getprop(start,a_state)==attribute then
                     a=true
                   end
-                elseif not attribute or getprop(start,a_state)==attribute then
-                  a=true
-                end
-                if a then
-                  local lookupmatch=lookupcache[char]
-                  if lookupmatch then
+                  if a then
                     local ok
                     head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
                     if ok then
                       done=true
                     end
-                  end
-                  if start then
+                    if start then
+                      start=getnext(start)
+                    end
+                  else
                     start=getnext(start)
                   end
                 else
@@ -25395,38 +25429,44 @@ do
             end
           end
         else
+          local merged=steps.merged
           while start do
             local char,id=ischar(start,font)
             if char then
-              local a 
-              if attr then
-                if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+              local m=merged[char]
+              if m then
+                local a 
+                if attr then
+                  if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+                    a=true
+                  end
+                elseif not attribute or getprop(start,a_state)==attribute then
                   a=true
                 end
-              elseif not attribute or getprop(start,a_state)==attribute then
-                a=true
-              end
-              if a then
-                for i=1,nofsteps do
-                  local step=steps[i]
-                  local lookupcache=step.coverage
-                  if lookupcache then
-                    local lookupmatch=lookupcache[char]
-                    if lookupmatch then
-                      local ok
-                      head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                      if ok then
-                        done=true
-                        break
-                      elseif not start then
-                        break
+                if a then
+                  for i=m[1],m[2] do
+                    local step=steps[i]
+                    local lookupcache=step.coverage
+                    if lookupcache then
+                      local lookupmatch=lookupcache[char]
+                      if lookupmatch then
+                        local ok
+                        head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                        if ok then
+                          done=true
+                          break
+                        elseif not start then
+                          break
+                        end
                       end
+                    else
+                      report_missing_coverage(dataset,sequence)
                     end
-                  else
-                    report_missing_coverage(dataset,sequence)
                   end
-                end
-                if start then
+                  if start then
+                    start=getnext(start)
+                  end
+                else
                   start=getnext(start)
                 end
               else
@@ -25485,14 +25525,14 @@ function otf.plugininitializer(tfmdata,value)
     tfmdata.shared.plugin=plugins[value]
   end
 end
-function otf.pluginprocessor(head,font)
+function otf.pluginprocessor(head,font,attr,direction) 
   local s=fontdata[font].shared
   local p=s and s.plugin
   if p then
     if trace_plugins then
       report_process("applying plugin %a",p[1])
     end
-    return p[2](head,font)
+    return p[2](head,font,attr,direction)
   else
     return head,false
   end
@@ -29020,7 +29060,7 @@ local afm=handlers.afm or {}
 handlers.afm=afm
 local readers=afm.readers or {}
 afm.readers=readers
-afm.version=1.512
+afm.version=1.513
 local get_indexes,get_shapes
 do
   local decrypt

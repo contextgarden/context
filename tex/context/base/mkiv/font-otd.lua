@@ -192,15 +192,15 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                     elseif lookupdone then
                         if trace_applied then
                             report_process(
-                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a, lookup already set by %a",
-                                    font,attr or 0,dynamic,kind,usedscript,usedlanguage,sequence.name,valid,ra[#ra][4])
+                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a, nofsteps %a, lookup already set by %a",
+                                    font,attr or 0,dynamic,kind,usedscript,usedlanguage,sequence.name,valid,sequence.nofsteps,ra[#ra][4])
                         end
                     else
                         ra[#ra+1] = usedlookup
                         if trace_applied then
                             report_process(
-                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a",
-                                    font,attr or 0,dynamic,kind,usedscript,usedlanguage,sequence.name,valid)
+                                "font %s, dynamic %a (%a), feature %a, script %a, language %a, lookup %a, value %a, nofsteps %a",
+                                    font,attr or 0,dynamic,kind,usedscript,usedlanguage,sequence.name,valid,sequence.nofsteps)
                         else
                             return -- no need to look further
                         end
