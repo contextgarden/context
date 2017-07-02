@@ -7041,7 +7041,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7567, stripped down to: 5575
+-- original size: 7644, stripped down to: 5642
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7070,7 +7070,10 @@ function files.close(f)
   f:close()
 end
 function files.size(f)
-  return f:seek("end")
+  local current=f:seek()
+  local size=f:seek("end")
+  f:seek("set",current)
+  return size
 end
 files.getsize=files.size
 function files.setposition(f,n)
@@ -9541,7 +9544,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8263, stripped down to: 5685
+-- original size: 8253, stripped down to: 5675
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -9577,7 +9580,7 @@ local ticks=clock
 local seconds=function(n) return n or 0 end
 local function starttiming(instance)
   local timer=timers[instance or "notimer"]
-  local it=timer.timing or 0
+  local it=timer.timing
   if it==0 then
     timer.starttime=ticks()
     if not timer.loadtime then
@@ -9607,7 +9610,7 @@ local function stoptiming(instance)
 end
 local function elapsed(instance)
   if type(instance)=="number" then
-    return instance or 0
+    return instance
   else
     local timer=timers[instance or "notimer"]
     return timer and seconds(timer.loadtime) or 0
@@ -20568,8 +20571,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 846296
--- stripped bytes    : 306216
+-- original bytes    : 846363
+-- stripped bytes    : 306226
 
 -- end library merge
 

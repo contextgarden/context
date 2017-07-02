@@ -84,7 +84,7 @@ local seconds = function(n) return n or 0 end
 
 local function starttiming(instance)
     local timer = timers[instance or "notimer"]
-    local it = timer.timing or 0
+    local it = timer.timing
     if it == 0 then
         timer.starttime = ticks()
         if not timer.loadtime then
@@ -116,7 +116,7 @@ end
 
 local function elapsed(instance)
     if type(instance) == "number" then
-        return instance or 0
+        return instance
     else
         local timer = timers[instance or "notimer"]
         return timer and seconds(timer.loadtime) or 0

@@ -441,10 +441,9 @@ local function pdf_open(name,method)
     pdfview.setmethod(method)
     report(pdfview.status())
     local pdfname = filenewsuffix(name,"pdf")
-    if lfs.isfile(pdfname) then
-        pdfview.open(pdfname)
+    if not lfs.isfile(pdfname) then
+        pdfname = name .. ".pdf" -- agressive
     end
-    pdfname = name .. ".pdf" -- agressive
     pdfview.open(pdfname)
 end
 

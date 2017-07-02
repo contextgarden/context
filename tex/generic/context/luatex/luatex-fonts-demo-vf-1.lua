@@ -8,6 +8,14 @@ if not modules then modules = { } end modules ['luatex-fonts-demo-vf-1'] = {
 
 local identifiers = fonts.hashes.identifiers
 
+local defaults = {
+    { "pdf", "0 g" },
+    { "pdf", "1 0 0 rg" },
+    { "pdf", "0 1 0 rg" },
+    { "pdf", "0 0 1 rg" },
+    { "pdf", "0 0 1 rg" },
+}
+
 return function(specification)
     local f1, id1 = fonts.constructors.readanddefine('lmroman10-regular',     specification.size)
     local f2, id2 = fonts.constructors.readanddefine('lmsans10-regular',      specification.size)
@@ -20,12 +28,8 @@ return function(specification)
             { id = id2 },
             { id = id3 },
         }
-        local color = { [0] =
-            { "special", "pdf:0 g" },
-            { "special", "pdf:1 0 0 rg" },
-            { "special", "pdf:0 1 0 rg" },
-            { "special", "pdf:0 0 1 rg" },
-            { "special", "pdf:0 0 1 rg" },
+        local color = {
+            [0] = defaults,
         }
         local chars = {
             identifiers[id1].characters,

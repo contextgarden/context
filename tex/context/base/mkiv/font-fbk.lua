@@ -300,11 +300,11 @@ end
 
 -- vf builder
 
--- {'special', 'pdf: q ' .. s .. ' 0 0 '.. s .. ' 0 0 cm'},
--- {'special', 'pdf: q 1 0 0 1 ' .. -w .. ' ' .. -h .. ' cm'},
--- {'special', 'pdf: /Fm\XX\space Do'},
--- {'special', 'pdf: Q'},
--- {'special', 'pdf: Q'},
+-- { "pdf", "q " .. s .. " 0 0 " .. s .. " 0 0 cm" },
+-- { "pdf", "q 1 0 0 1 " .. -w .. " " .. -h .. " cm" },
+-- { "pdf", "/Fm\XX\space Do" },
+-- { "pdf", "Q" },
+-- { "pdf", "Q" },
 
 -- new and experimental
 

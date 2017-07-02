@@ -703,29 +703,29 @@ end
 
 -- this will move to lpdf-spe.lua
 
-local f_slant = formatters["pdf: q 1 0 %F 1 0 0 cm"]
+local f_slant = formatters["q 1 0 %F 1 0 0 cm"]
 
 backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
 
-    red        = { "special", 'pdf: 1 0 0 rg 1 0 0 RG' },
-    green      = { "special", 'pdf: 0 1 0 rg 0 1 0 RG' },
-    blue       = { "special", 'pdf: 0 0 1 rg 0 0 1 RG' },
-    gray       = { "special", 'pdf: .75 g .75 G' },
-    black      = { "special", 'pdf: 0 g 0 G' },
+    red        = { "pdf", "1 0 0 rg 1 0 0 RG" },
+    green      = { "pdf", "0 1 0 rg 0 1 0 RG" },
+    blue       = { "pdf", "0 0 1 rg 0 0 1 RG" },
+    gray       = { "pdf", ".75 g .75 G" },
+    black      = { "pdf", "0 g 0 G" },
 
     rulecolors = {
-            red        = { "special", 'pdf: 1 0 0 rg' },
-            green      = { "special", 'pdf: 0 1 0 rg' },
-            blue       = { "special", 'pdf: 0 0 1 rg' },
-            gray       = { "special", 'pdf: .5 g' },
-            black      = { "special", 'pdf: 0 g' },
-            palered    = { "special", 'pdf: 1 .75 .75 rg' },
-            palegreen  = { "special", 'pdf: .75 1 .75 rg' },
-            paleblue   = { "special", 'pdf: .75 .75 1 rg' },
-            palegray   = { "special", 'pdf: .75 g' },
+            red        = { "pdf", '1 0 0 rg' },
+            green      = { "pdf", '0 1 0 rg' },
+            blue       = { "pdf", '0 0 1 rg' },
+            gray       = { "pdf", '.5 g' },
+            black      = { "pdf", '0 g' },
+            palered    = { "pdf", '1 .75 .75 rg' },
+            palegreen  = { "pdf", '.75 1 .75 rg' },
+            paleblue   = { "pdf", '.75 .75 1 rg' },
+            palegray   = { "pdf", '.75 g' },
     },
 
-    startslant = function(a) return { "special", f_slant(a) } end,
-    stopslant  = { "special", "pdf: Q" },
+    startslant = function(a) return { "pdf", f_slant(a) } end,
+    stopslant  = { "pdf", "Q" },
 
 }

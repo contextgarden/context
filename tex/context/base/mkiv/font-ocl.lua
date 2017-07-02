@@ -18,8 +18,8 @@ local tounicode  = fonts.mappings.tounicode
 
 local otf        = fonts.handlers.otf
 
-local f_color    = formatters["pdf:direct:%f %f %f rg"]
-local f_gray     = formatters["pdf:direct:%f g"]
+local f_color    = formatters["%f %f %f rg"]
+local f_gray     = formatters["%f g"]
 
 if context then
 
@@ -49,7 +49,7 @@ end
 local sharedpalettes = { }
 
 local hash = setmetatableindex(function(t,k)
-    local v = { "special", k }
+    local v = { "pdf", "direct", k }
     t[k] = v
     return v
 end)
@@ -76,11 +76,11 @@ if context then
                 t = transparencies[v]
             end
             if c and t then
-                values[i] = hash["pdf:direct:" .. lpdf.color(1,c) .. " " .. lpdf.transparency(t)]
+                values[i] = hash[lpdf.color(1,c) .. " " .. lpdf.transparency(t)]
             elseif c then
-                values[i] = hash["pdf:direct:" .. lpdf.color(1,c)]
+                values[i] = hash[lpdf.color(1,c)]
             elseif t then
-                values[i] = hash["pdf:direct:" .. lpdf.color(1,t)]
+                values[i] = hash[lpdf.color(1,t)]
             end
         end
     end
@@ -123,6 +123,9 @@ local function convert(t,k)
     return v
 end
 
+local start = { "pdf", "page", "q" }
+local stop  = { "pdf", "raw", "Q" }
+
 local function initializecolr(tfmdata,kind,value) -- hm, always value
     if value then
         local resources = tfmdata.resources
@@ -157,13 +160,11 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             local getactualtext = otf.getactualtext
             local default       = colorvalues[#colorvalues]
             local b, e          = getactualtext(tounicode(0xFFFD))
-            local start         = { "special", "pdf:page:q" }
-            local stop          = { "special", "pdf:raw:Q" }
-            local actualb       = { "special", "pdf:page:" .. b } -- saves tables
-            local actuale       = { "special", "pdf:page:" .. e } -- saves tables
+            local actualb       = { "pdf", "page", b } -- saves tables
+            local actuale       = { "pdf", "page", e } -- saves tables
             --
             local cache = setmetatableindex(function(t,k)
-                local v = { "char", k }
+                local v = { "char", k } -- could he a weak shared hash
                 t[k] = v
                 return v
             end)
@@ -179,7 +180,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                         local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
                         local t = {
                             start,
-                            not u and actualb or { "special", "pdf:raw:" .. getactualtext(tounicode(u)) }
+                            not u and actualb or { "pdf", "raw", getactualtext(tounicode(u)) }
                         }
                         local n = 2
                         local l = nil
@@ -328,13 +329,13 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
                     local ht = character.height or 0
                     local dp = character.depth  or 0
                     character.commands = {
-                        { "special", "pdf:direct:" .. bt },
+                        { "pdf", "direct", bt },
                         { "down", dp + dy * hfactor },
                         { "right", dx * hfactor },
                      -- setcode and { "lua", setcode } or nop,
                         { "image", { filename = name, width = wd, height = ht, depth = dp } },
                      -- nilcode and { "lua", nilcode } or nop,
-                        { "special", "pdf:direct:" .. et },
+                        { "pdf", "direct", et },
                     }
                     character[kind] = true
                 end

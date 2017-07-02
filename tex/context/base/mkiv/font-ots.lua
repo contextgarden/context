@@ -114,40 +114,45 @@ local random = math.random
 local formatters = string.formatters
 local insert = table.insert
 
-local registertracker    = trackers.register
+local registertracker      = trackers.register
 
-local logs               = logs
-local trackers           = trackers
-local nodes              = nodes
-local attributes         = attributes
-local fonts              = fonts
+local logs                 = logs
+local trackers             = trackers
+local nodes                = nodes
+local attributes           = attributes
+local fonts                = fonts
 
-local otf                = fonts.handlers.otf
-local tracers            = nodes.tracers
+local otf                  = fonts.handlers.otf
+local tracers              = nodes.tracers
 
-local trace_singles      = false  registertracker("otf.singles",      function(v) trace_singles      = v end)
-local trace_multiples    = false  registertracker("otf.multiples",    function(v) trace_multiples    = v end)
-local trace_alternatives = false  registertracker("otf.alternatives", function(v) trace_alternatives = v end)
-local trace_ligatures    = false  registertracker("otf.ligatures",    function(v) trace_ligatures    = v end)
-local trace_contexts     = false  registertracker("otf.contexts",     function(v) trace_contexts     = v end)
-local trace_marks        = false  registertracker("otf.marks",        function(v) trace_marks        = v end)
-local trace_kerns        = false  registertracker("otf.kerns",        function(v) trace_kerns        = v end)
-local trace_cursive      = false  registertracker("otf.cursive",      function(v) trace_cursive      = v end)
-local trace_preparing    = false  registertracker("otf.preparing",    function(v) trace_preparing    = v end)
-local trace_bugs         = false  registertracker("otf.bugs",         function(v) trace_bugs         = v end)
-local trace_details      = false  registertracker("otf.details",      function(v) trace_details      = v end)
-local trace_steps        = false  registertracker("otf.steps",        function(v) trace_steps        = v end)
-local trace_skips        = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
-local trace_directions   = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
-local trace_plugins      = false  registertracker("otf.plugins",      function(v) trace_plugins      = v end)
-local trace_chains       = false  registertracker("otf.chains",       function(v) trace_chains       = v end)
+local trace_singles        = false  registertracker("otf.singles",      function(v) trace_singles      = v end)
+local trace_multiples      = false  registertracker("otf.multiples",    function(v) trace_multiples    = v end)
+local trace_alternatives   = false  registertracker("otf.alternatives", function(v) trace_alternatives = v end)
+local trace_ligatures      = false  registertracker("otf.ligatures",    function(v) trace_ligatures    = v end)
+local trace_contexts       = false  registertracker("otf.contexts",     function(v) trace_contexts     = v end)
+local trace_marks          = false  registertracker("otf.marks",        function(v) trace_marks        = v end)
+local trace_kerns          = false  registertracker("otf.kerns",        function(v) trace_kerns        = v end)
+local trace_cursive        = false  registertracker("otf.cursive",      function(v) trace_cursive      = v end)
+local trace_preparing      = false  registertracker("otf.preparing",    function(v) trace_preparing    = v end)
+local trace_bugs           = false  registertracker("otf.bugs",         function(v) trace_bugs         = v end)
+local trace_details        = false  registertracker("otf.details",      function(v) trace_details      = v end)
+local trace_steps          = false  registertracker("otf.steps",        function(v) trace_steps        = v end)
+local trace_skips          = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
+local trace_directions     = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
+local trace_plugins        = false  registertracker("otf.plugins",      function(v) trace_plugins      = v end)
+local trace_chains         = false  registertracker("otf.chains",       function(v) trace_chains       = v end)
 
-local trace_kernruns     = false  registertracker("otf.kernruns",     function(v) trace_kernruns     = v end)
-local trace_discruns     = false  registertracker("otf.discruns",     function(v) trace_discruns     = v end)
-local trace_compruns     = false  registertracker("otf.compruns",     function(v) trace_compruns     = v end)
-local trace_testruns     = false  registertracker("otf.testruns",     function(v) trace_testruns     = v end)
+local trace_kernruns       = false  registertracker("otf.kernruns",     function(v) trace_kernruns     = v end)
+local trace_discruns       = false  registertracker("otf.discruns",     function(v) trace_discruns     = v end)
+local trace_compruns       = false  registertracker("otf.compruns",     function(v) trace_compruns     = v end)
+local trace_testruns       = false  registertracker("otf.testruns",     function(v) trace_testruns     = v end)
 
-local optimizekerns      = true
+local forcediscretionaries = false
+local optimizekerns        = true
+
+directives.register("otf.forcediscretionaries",function(v)
+    forcediscretionaries = v
+end)
 
 local report_direct      = logs.reporter("fonts","otf direct")
 local report_subchain    = logs.reporter("fonts","otf subchain")
@@ -225,7 +230,7 @@ local math_code          = nodecodes.math
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
 
------ discretionary_code = disccodes.discretionary
+local discretionary_code = disccodes.discretionary
 local ligature_code      = glyphcodes.ligature
 
 local a_state            = attributes.private('state')
@@ -566,7 +571,11 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
                 -- here components have a pointer so we can't free it!
                 set_components(base,copied)
                 replace = base
-                setdisc(discfound,pre,post,replace) -- was discretionary_code
+                if forcediscretionaries then
+                    setdisc(discfound,pre,post,replace,discretionary_code)
+                else
+                    setdisc(discfound,pre,post,replace)
+                end
                 base = prev
             end
         end

@@ -2511,12 +2511,12 @@ function readers.gdef(f,fontdata,specification)
         local tableoffset = datatable.offset
         setposition(f,tableoffset)
         local version          = readulong(f)
-        local classoffset      = tableoffset + readushort(f)
-        local attachmentoffset = tableoffset + readushort(f) -- used for bitmaps
-        local ligaturecarets   = tableoffset + readushort(f) -- used in editors (maybe nice for tracing)
-        local markclassoffset  = tableoffset + readushort(f)
-        local marksetsoffset   = version >= 0x00010002 and (tableoffset + readushort(f))
-        local varsetsoffset    = version >= 0x00010003 and (tableoffset + readulong(f))
+        local classoffset      = readushort(f)
+        local attachmentoffset = readushort(f) -- used for bitmaps
+        local ligaturecarets   = readushort(f) -- used in editors (maybe nice for tracing)
+        local markclassoffset  = readushort(f)
+        local marksetsoffset   = version >= 0x00010002 and readushort(f) or 0
+        local varsetsoffset    = version >= 0x00010003 and readulong(f) or 0
         local glyphs           = fontdata.glyphs
         local marks            = { }
         local markclasses      = setmetatableindex("table")
@@ -2525,56 +2525,61 @@ function readers.gdef(f,fontdata,specification)
         fontdata.markclasses   = markclasses
         fontdata.marksets      = marksets
         -- class definitions
-        setposition(f,classoffset)
-        local classformat = readushort(f)
-        if classformat == 1 then
-            local firstindex = readushort(f)
-            local lastindex  = firstindex + readushort(f) - 1
-            for index=firstindex,lastindex do
-                local class = classes[readushort(f)]
-                if class == "mark" then
-                    marks[index] = true
-                end
-                glyphs[index].class = class
-            end
-        elseif classformat == 2 then
-            local nofranges = readushort(f)
-            for i=1,nofranges do
+        if classoffset ~= 0 then
+            setposition(f,tableoffset + classoffset)
+            local classformat = readushort(f)
+            if classformat == 1 then
                 local firstindex = readushort(f)
-                local lastindex  = readushort(f)
-                local class      = classes[readushort(f)]
-                if class then
-                    for index=firstindex,lastindex do
-                        glyphs[index].class = class
-                        if class == "mark" then
-                            marks[index] = true
+                local lastindex  = firstindex + readushort(f) - 1
+                for index=firstindex,lastindex do
+                    local class = classes[readushort(f)]
+                    if class == "mark" then
+                        marks[index] = true
+                    end
+                    glyphs[index].class = class
+                end
+            elseif classformat == 2 then
+                local nofranges = readushort(f)
+                for i=1,nofranges do
+                    local firstindex = readushort(f)
+                    local lastindex  = readushort(f)
+                    local class      = classes[readushort(f)]
+                    if class then
+                        for index=firstindex,lastindex do
+                            glyphs[index].class = class
+                            if class == "mark" then
+                                marks[index] = true
+                            end
                         end
                     end
                 end
             end
         end
         -- mark classes
-        setposition(f,markclassoffset)
-        local classformat = readushort(f)
-        if classformat == 1 then
-            local firstindex = readushort(f)
-            local lastindex  = firstindex + readushort(f) - 1
-            for index=firstindex,lastindex do
-                markclasses[readushort(f)][index] = true
-            end
-        elseif classformat == 2 then
-            local nofranges = readushort(f)
-            for i=1,nofranges do
+        if markclassoffset ~= 0 then
+            setposition(f,tableoffset + markclassoffset)
+            local classformat = readushort(f)
+            if classformat == 1 then
                 local firstindex = readushort(f)
-                local lastindex  = readushort(f)
-                local class      = markclasses[readushort(f)]
+                local lastindex  = firstindex + readushort(f) - 1
                 for index=firstindex,lastindex do
-                    class[index] = true
+                    markclasses[readushort(f)][index] = true
+                end
+            elseif classformat == 2 then
+                local nofranges = readushort(f)
+                for i=1,nofranges do
+                    local firstindex = readushort(f)
+                    local lastindex  = readushort(f)
+                    local class      = markclasses[readushort(f)]
+                    for index=firstindex,lastindex do
+                        class[index] = true
+                    end
                 end
             end
         end
         -- mark sets : todo: just make the same as class sets above
-        if marksetsoffset and marksetsoffset > tableoffset then -- zero offset means no table
+        if marksetsoffset ~= 0 then
+            marksetsoffset = tableoffset + marksetsoffset
             setposition(f,marksetsoffset)
             local format = readushort(f)
             if format == 1 then
@@ -2594,9 +2599,9 @@ function readers.gdef(f,fontdata,specification)
 
         local factors = specification.factors
 
-        if (specification.variable or factors) and varsetsoffset and varsetsoffset > tableoffset then
+        if (specification.variable or factors) and varsetsoffset ~= 0 then
 
-            local regions, deltas = readvariationdata(f,varsetsoffset,factors)
+            local regions, deltas = readvariationdata(f,tableoffset+varsetsoffset,factors)
 
          -- setvariabledata(fontdata,"gregions",regions)
 

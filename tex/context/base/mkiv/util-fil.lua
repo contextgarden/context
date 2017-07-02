@@ -35,7 +35,10 @@ function files.close(f)
 end
 
 function files.size(f)
-    return f:seek("end")
+    local current = f:seek()
+    local size = f:seek("end")
+    f:seek("set",current)
+    return size
 end
 
 files.getsize = files.size

@@ -749,15 +749,15 @@ registerafmfeature(dimensions_specification)
 --
 -- \definecolor[DummyColor][s=.75,t=.5,a=1] {\DummyColor test} \nopdfcompression
 --
--- local gray  = { "special", "pdf: /Tr1 gs .75 g" }
--- local black = { "special", "pdf: /Tr0 gs 0 g" }
+-- local gray  = { "pdf", "/Tr1 gs .75 g" }
+-- local black = { "pdf", "/Tr0 gs 0 g" }
 
 -- sort of obsolete as we now have \showglyphs
 
 local push  = { "push" }
 local pop   = { "pop" }
-local gray  = { "special", "pdf: .75 g" }
-local black = { "special", "pdf: 0 g"   }
+local gray  = { "pdf", ".75 g" }
+local black = { "pdf", "0 g"   }
 
 local downcache = { } -- handy for huge cjk fonts
 local rulecache = { } -- handy for huge cjk fonts

@@ -362,7 +362,7 @@ local function addvariableshapes(tfmdata,key,value)
                      -- we need inline in order to support color
                         local bt, et = getactualtext(char.tounicode or char.unicode or unicode)
                         char.commands = {
-                            { "special",  "pdf:" .. segmentstopdf(segments,factor,bt,et) }
+                            { "pdf", segmentstopdf(segments,factor,bt,et) }
                         }
                     end
                 end

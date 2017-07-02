@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/30/17 19:45:43
+-- merge date  : 07/02/17 19:44:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -4306,7 +4306,10 @@ function files.close(f)
   f:close()
 end
 function files.size(f)
-  return f:seek("end")
+  local current=f:seek()
+  local size=f:seek("end")
+  f:seek("set",current)
+  return size
 end
 files.getsize=files.size
 function files.setposition(f,n)
@@ -16422,12 +16425,12 @@ function readers.gdef(f,fontdata,specification)
     local tableoffset=datatable.offset
     setposition(f,tableoffset)
     local version=readulong(f)
-    local classoffset=tableoffset+readushort(f)
-    local attachmentoffset=tableoffset+readushort(f) 
-    local ligaturecarets=tableoffset+readushort(f) 
-    local markclassoffset=tableoffset+readushort(f)
-    local marksetsoffset=version>=0x00010002 and (tableoffset+readushort(f))
-    local varsetsoffset=version>=0x00010003 and (tableoffset+readulong(f))
+    local classoffset=readushort(f)
+    local attachmentoffset=readushort(f) 
+    local ligaturecarets=readushort(f) 
+    local markclassoffset=readushort(f)
+    local marksetsoffset=version>=0x00010002 and readushort(f) or 0
+    local varsetsoffset=version>=0x00010003 and readulong(f) or 0
     local glyphs=fontdata.glyphs
     local marks={}
     local markclasses=setmetatableindex("table")
@@ -16435,54 +16438,59 @@ function readers.gdef(f,fontdata,specification)
     fontdata.marks=marks
     fontdata.markclasses=markclasses
     fontdata.marksets=marksets
-    setposition(f,classoffset)
-    local classformat=readushort(f)
-    if classformat==1 then
-      local firstindex=readushort(f)
-      local lastindex=firstindex+readushort(f)-1
-      for index=firstindex,lastindex do
-        local class=classes[readushort(f)]
-        if class=="mark" then
-          marks[index]=true
-        end
-        glyphs[index].class=class
-      end
-    elseif classformat==2 then
-      local nofranges=readushort(f)
-      for i=1,nofranges do
+    if classoffset~=0 then
+      setposition(f,tableoffset+classoffset)
+      local classformat=readushort(f)
+      if classformat==1 then
         local firstindex=readushort(f)
-        local lastindex=readushort(f)
-        local class=classes[readushort(f)]
-        if class then
-          for index=firstindex,lastindex do
-            glyphs[index].class=class
-            if class=="mark" then
-              marks[index]=true
+        local lastindex=firstindex+readushort(f)-1
+        for index=firstindex,lastindex do
+          local class=classes[readushort(f)]
+          if class=="mark" then
+            marks[index]=true
+          end
+          glyphs[index].class=class
+        end
+      elseif classformat==2 then
+        local nofranges=readushort(f)
+        for i=1,nofranges do
+          local firstindex=readushort(f)
+          local lastindex=readushort(f)
+          local class=classes[readushort(f)]
+          if class then
+            for index=firstindex,lastindex do
+              glyphs[index].class=class
+              if class=="mark" then
+                marks[index]=true
+              end
             end
           end
         end
       end
     end
-    setposition(f,markclassoffset)
-    local classformat=readushort(f)
-    if classformat==1 then
-      local firstindex=readushort(f)
-      local lastindex=firstindex+readushort(f)-1
-      for index=firstindex,lastindex do
-        markclasses[readushort(f)][index]=true
-      end
-    elseif classformat==2 then
-      local nofranges=readushort(f)
-      for i=1,nofranges do
+    if markclassoffset~=0 then
+      setposition(f,tableoffset+markclassoffset)
+      local classformat=readushort(f)
+      if classformat==1 then
         local firstindex=readushort(f)
-        local lastindex=readushort(f)
-        local class=markclasses[readushort(f)]
+        local lastindex=firstindex+readushort(f)-1
         for index=firstindex,lastindex do
-          class[index]=true
+          markclasses[readushort(f)][index]=true
+        end
+      elseif classformat==2 then
+        local nofranges=readushort(f)
+        for i=1,nofranges do
+          local firstindex=readushort(f)
+          local lastindex=readushort(f)
+          local class=markclasses[readushort(f)]
+          for index=firstindex,lastindex do
+            class[index]=true
+          end
         end
       end
     end
-    if marksetsoffset and marksetsoffset>tableoffset then 
+    if marksetsoffset~=0 then
+      marksetsoffset=tableoffset+marksetsoffset
       setposition(f,marksetsoffset)
       local format=readushort(f)
       if format==1 then
@@ -16500,8 +16508,8 @@ function readers.gdef(f,fontdata,specification)
       end
     end
     local factors=specification.factors
-    if (specification.variable or factors) and varsetsoffset and varsetsoffset>tableoffset then
-      local regions,deltas=readvariationdata(f,varsetsoffset,factors)
+    if (specification.variable or factors) and varsetsoffset~=0 then
+      local regions,deltas=readvariationdata(f,tableoffset+varsetsoffset,factors)
       if factors then
         fontdata.temporary.getdelta=function(outer,inner)
           local delta=deltas[outer+1]
@@ -19484,7 +19492,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.030 
+otf.version=3.031 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
@@ -22304,7 +22312,11 @@ local trace_kernruns=false registertracker("otf.kernruns",function(v) trace_kern
 local trace_discruns=false registertracker("otf.discruns",function(v) trace_discruns=v end)
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
 local trace_testruns=false registertracker("otf.testruns",function(v) trace_testruns=v end)
+local forcediscretionaries=false
 local optimizekerns=true
+directives.register("otf.forcediscretionaries",function(v)
+  forcediscretionaries=v
+end)
 local report_direct=logs.reporter("fonts","otf direct")
 local report_subchain=logs.reporter("fonts","otf subchain")
 local report_chain=logs.reporter("fonts","otf chain")
@@ -22369,6 +22381,7 @@ local disc_code=nodecodes.disc
 local math_code=nodecodes.math
 local dir_code=nodecodes.dir
 local localpar_code=nodecodes.localpar
+local discretionary_code=disccodes.discretionary
 local ligature_code=glyphcodes.ligature
 local a_state=attributes.private('state')
 local a_noligature=attributes.private("noligature")
@@ -22645,7 +22658,11 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
         setboth(base)
         set_components(base,copied)
         replace=base
-        setdisc(discfound,pre,post,replace) 
+        if forcediscretionaries then
+          setdisc(discfound,pre,post,replace,discretionary_code)
+        else
+          setdisc(discfound,pre,post,replace)
+        end
         base=prev
       end
     end
@@ -27706,8 +27723,8 @@ local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
 local otf=fonts.handlers.otf
-local f_color=formatters["pdf:direct:%f %f %f rg"]
-local f_gray=formatters["pdf:direct:%f g"]
+local f_color=formatters["%f %f %f rg"]
+local f_gray=formatters["%f g"]
 if context then
   local startactualtext=nil
   local stopactualtext=nil
@@ -27728,7 +27745,7 @@ else
 end
 local sharedpalettes={}
 local hash=setmetatableindex(function(t,k)
-  local v={ "special",k }
+  local v={ "pdf","direct",k }
   t[k]=v
   return v
 end)
@@ -27752,11 +27769,11 @@ if context then
         t=transparencies[v]
       end
       if c and t then
-        values[i]=hash["pdf:direct:"..lpdf.color(1,c).." "..lpdf.transparency(t)]
+        values[i]=hash[lpdf.color(1,c).." "..lpdf.transparency(t)]
       elseif c then
-        values[i]=hash["pdf:direct:"..lpdf.color(1,c)]
+        values[i]=hash[lpdf.color(1,c)]
       elseif t then
-        values[i]=hash["pdf:direct:"..lpdf.color(1,t)]
+        values[i]=hash[lpdf.color(1,t)]
       end
     end
   end
@@ -27787,6 +27804,8 @@ local function convert(t,k)
   t[k]=v
   return v
 end
+local start={ "pdf","page","q" }
+local stop={ "pdf","raw","Q" }
 local function initializecolr(tfmdata,kind,value) 
   if value then
     local resources=tfmdata.resources
@@ -27817,12 +27836,10 @@ local function initializecolr(tfmdata,kind,value)
       local getactualtext=otf.getactualtext
       local default=colorvalues[#colorvalues]
       local b,e=getactualtext(tounicode(0xFFFD))
-      local start={ "special","pdf:page:q" }
-      local stop={ "special","pdf:raw:Q" }
-      local actualb={ "special","pdf:page:"..b } 
-      local actuale={ "special","pdf:page:"..e }
+      local actualb={ "pdf","page",b } 
+      local actuale={ "pdf","page",e }
       local cache=setmetatableindex(function(t,k)
-        local v={ "char",k }
+        local v={ "char",k } 
         t[k]=v
         return v
       end)
@@ -27837,7 +27854,7 @@ local function initializecolr(tfmdata,kind,value)
             local goback=w~=0 and widths[w] or nil 
             local t={
               start,
-              not u and actualb or { "special","pdf:raw:"..getactualtext(tounicode(u)) }
+              not u and actualb or { "pdf","raw",getactualtext(tounicode(u)) }
             }
             local n=2
             local l=nil
@@ -27927,11 +27944,11 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
           local ht=character.height or 0
           local dp=character.depth or 0
           character.commands={
-            { "special","pdf:direct:"..bt },
+            { "pdf","direct",bt },
             { "down",dp+dy*hfactor },
             { "right",dx*hfactor },
             { "image",{ filename=name,width=wd,height=ht,depth=dp } },
-            { "special","pdf:direct:"..et },
+            { "pdf","direct",et },
           }
           character[kind]=true
         end
