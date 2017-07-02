@@ -1,0 +1,621 @@
+% language=uk
+
+\startcomponent cld-macros
+
+% \usemodule[man-01]
+% \setvariables[document][title=Font Goodies, author=Hans Hagen]
+% \setups[titlepage]
+
+\environment cld-environment
+
+\startchapter[title=Font goodies]
+
+\startsection[title=Introduction]
+
+One of the interesting aspects of \TEX\ is that it provides control over fonts
+and \LUATEX\ provides quite some. In \CONTEXT\ we support basic functionality,
+like \OPENTYPE\ features, as well as some extra functionality. We also have a
+mechanism for making virtual fonts which is mostly used for the transition from
+\TYPEONE\ math fonts to \OPENTYPE\ math fonts. Instead of hard coding specific
+details in the core \LUA\ code, we use so called \LUA\ Font Goodies to control
+them. These goodies are collected in tables and live in files. When a font is
+loaded, one or more such goodie files can be loaded alongside.
+
+In the following typescript we load a goodies file that defines a virtual Lucida
+math font. The goodie file is loaded immediately and some information in the
+table is turned into a form that permits access later on: the virtual font id
+\type {lucida-math} that is used as part of the font specification.
+
+\starttyping
+\starttypescript [math] [lucida]
+    \loadfontgoodies[lucida-math]
+    \definefontsynonym[MathRoman][lucidamath@lucida-math]
+\stoptypescript
+\stoptyping
+
+Not all information is to be used directly. Some can be accessed when needed. In
+the following case the file \type {dingbats.lfg} gets loaded (only once) when the
+font is actually used. In that file, there is information that is used by the
+\type {unicoding} feature.
+
+\starttyping
+\definefontfeature
+  [dingbats]
+  [mode=base,
+   goodies=dingbats,
+   unicoding=yes]
+
+\definefont[dingbats][file:dingbats][features=dingbats]
+\stoptyping
+
+In the following sections some aspects of goodies are discussed. We don't go into
+details of what these goodies are, but just stick to the \LUA\ side of the
+specification.
+
+\stopsection
+
+\startsection[title=Virtual math fonts]
+
+A virtual font is defined using the \type {virtuals} entry in the \type
+{mathematics} subtable. As \TYPEONE\ fonts are used, an additional table \type
+{mapfiles} is needed to specify the files that map filenames onto real files.
+
+\startsmalltyping
+return {
+  name = "px-math",
+  version = "1.00",
+  comment = "Goodies that complement px math.",
+  author = "Hans Hagen",
+  copyright = "ConTeXt development team",
+  mathematics = {
+    mapfiles = {
+        "mkiv-px.map",
+    },
+    virtuals = {
+      ["px-math"] = {
+        { name = "texgyrepagella-regular.otf", features = "virtualmath", main = true },
+        { name = "rpxr.tfm", vector = "tex-mr" } ,
+        { name = "rpxmi.tfm", vector = "tex-mi", skewchar=0x7F },
+        { name = "rpxpplri.tfm", vector = "tex-it", skewchar=0x7F },
+        { name = "pxsy.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
+        { name = "pxex.tfm", vector = "tex-ex", extension = true } ,
+        { name = "pxsya.tfm", vector = "tex-ma" },
+        { name = "pxsyb.tfm", vector = "tex-mb" },
+        { name = "texgyrepagella-bold.otf", vector = "tex-bf" } ,
+        { name = "texgyrepagella-bolditalic.otf", vector = "tex-bi" } ,
+        { name = "lmsans10-regular.otf", vector = "tex-ss", optional=true },
+        { name = "lmmono10-regular.otf", vector = "tex-tt", optional=true },
+      },
+    }
+  }
+}
+\stopsmalltyping
+
+Here the \type {px-math} virtual font is defined. A series of fonts is loaded and
+combined into one. The \type {vector} entry is used to tell the builder how to
+map the glyphs onto \UNICODE. Additional vectors can be defined, for instance:
+
+\starttyping
+fonts.encodings.math["mine"] = {
+    [0x1234] = 0x56,
+}
+\stoptyping
+
+Eventually these specifications wil be replaced by real \OPENTYPE\ fonts, but
+even then we will keep the virtual definitions around.
+
+\startsection[title=Math alternates]
+
+In addition to the official \type {ssty} feature for enforcing usage of script
+and scriptscript glyphs, some stylistic alternates can be present.
+
+\startsmalltyping
+return {
+  name = "xits-math",
+  version = "1.00",
+  comment = "Goodies that complement xits (by Khaled Hosny).",
+  author = "Hans Hagen",
+  copyright = "ConTeXt development team",
+  mathematics = {
+    alternates = {
+      cal       = {
+        feature = 'ss01',
+        value   = 1,
+        comment = "Mathematical Calligraphic Alphabet"
+      },
+      greekssup = {
+        feature = 'ss02',
+        value   = 1,
+        comment = "Mathematical Greek Sans Serif Alphabet"
+      },
+      greekssit = {
+        feature = 'ss03',
+        value   = 1,
+        comment = "Mathematical Italic Sans Serif Digits"
+      },
+      monobfnum = {
+        feature = 'ss04',
+        value   = 1,
+        comment = "Mathematical Bold Monospace Digits"
+      },
+      mathbbbf  = {
+        feature = 'ss05',
+        value   = 1,
+        comment = "Mathematical Bold Double-Struck Alphabet"
+      },
+      mathbbit  = {
+        feature = 'ss06',
+        value   = 1,
+        comment = "Mathematical Italic Double-Struck Alphabet"
+      },
+      mathbbbi  = {
+        feature = 'ss07',
+        value   = 1,
+        comment = "Mathematical Bold Italic Double-Struck Alphabet"
+      },
+      upint     = {
+        feature = 'ss08',
+        value   = 1,
+        comment = "Upright Integrals"
+      },
+    }
+  }
+}
+\stopsmalltyping
+
+These can be activated (in math mode) with the \type {\mathalternate} command
+like:
+
+\starttyping
+$\mathalternate{cal}Z$
+\stoptyping
+
+\stopsection
+
+\startsection[title=Math parameters]
+
+Another goodie related to math is the overload of some parameters (part of the
+font itself) and variables (used in making virtual shapes).
+
+\startsmalltyping
+return {
+  name = "lm-math",
+  version = "1.00",
+  comment = "Goodies that complement latin modern math.",
+  author = "Hans Hagen",
+  copyright = "ConTeXt development team",
+  mathematics = {
+    mapfiles = {
+      "lm-math.map",
+      "lm-rm.map",
+      "mkiv-base.map",
+    },
+    virtuals = {
+      ["lmroman5-math"]      = five,
+      ["lmroman6-math"]      = six,
+      ["lmroman7-math"]      = seven,
+      ["lmroman8-math"]      = eight,
+      ["lmroman9-math"]      = nine,
+      ["lmroman10-math"]     = ten,
+      ["lmroman10-boldmath"] = ten_bold,
+      ["lmroman12-math"]     = twelve,
+      ["lmroman17-math"]     = seventeen,
+    },
+    variables = {
+      joinrelfactor = 3, -- default anyway
+    },
+    parameters = { -- test values
+  --  FactorA = 123.456,
+  --  FactorB = false,
+  --  FactorC = function(value,target,original) return 7.89 * target.factor end,
+  --  FactorD = "Hi There!",
+    },
+  }
+}
+\stopsmalltyping
+
+In this example you see several virtuals defined which is due to the fact that
+Latin Modern has design sizes. The values (like \type {twelve} are tables defined
+before the return happens and are not shown here. The variables are rather
+\CONTEXT\ specific, and the parameters are those that come with regular
+\OPENTYPE\ math fonts (so the example names are invalid).
+
+In the following example we show two wasy to change parameters. In this case we
+have a regular \OPENTYPE\ math font. First we install a patch to the font itself.
+That change will be cached. We could also have changed that parameter using the
+goodies table. The first method is the oldest.
+
+\startsmalltyping
+local patches = fonts.handlers.otf.enhancers.patches
+
+local function patch(data,filename,threshold)
+  local m = data.metadata.math
+  if m then
+    local d = m.DisplayOperatorMinHeight or 0
+    if d < threshold then
+      patches.report("DisplayOperatorMinHeight(%s -> %s)",d,threshold)
+      m.DisplayOperatorMinHeight = threshold
+    end
+  end
+end
+
+patches.register(
+  "after",
+  "check math parameters",
+  "asana",
+  function(data,filename)
+    patch(data,filename,1350)
+  end
+)
+
+local function less(value,target,original)
+  return 0.25 * value
+end
+
+return {
+  name = "asana-math",
+  version = "1.00",
+  comment = "Goodies that complement asana.",
+  author = "Hans Hagen",
+  copyright = "ConTeXt development team",
+  mathematics = {
+    parameters = {
+      StackBottomDisplayStyleShiftDown = less,
+      StackBottomShiftDown             = less,
+      StackDisplayStyleGapMin          = less,
+      StackGapMin                      = less,
+      StackTopDisplayStyleShiftUp      = less,
+      StackTopShiftUp                  = less,
+      StretchStackBottomShiftDown      = less,
+      StretchStackGapAboveMin          = less,
+      StretchStackGapBelowMin          = less,
+      StretchStackTopShiftUp           = less,
+    }
+  }
+}
+\stopsmalltyping
+
+We use a function so that the scaling is taken into account as the values passed
+are those resulting from the scaling of the font to the requested size.
+
+\stopsection
+
+\startsection[title=Unicoding]
+
+We still have to deal with existing \TYPEONE\ fonts, and some of them have an
+encoding that is hard to map onto \UNICODE\ without additional information. The
+following goodie does that. The keys in the \type {unicodes} table are the glyph
+names. Keep in mind that this only works with simple fonts. The \CONTEXT\ code
+takes care of kerns but that's about it.
+
+\startsmalltyping
+return {
+  name = "dingbats",
+  version = "1.00",
+  comment = "Goodies that complement dingbats (funny names).",
+  author = "Hans Hagen",
+  copyright = "ConTeXt development team",
+  remapping = {
+    tounicode = true,
+    unicodes = {
+      a1   = 0x2701,
+      a10  = 0x2721,
+      a100 = 0x275E,
+      a101 = 0x2761,
+      .............
+      a98  = 0x275C,
+      a99  = 0x275D,
+    },
+  },
+}
+\stopsmalltyping
+
+The \type {tounicode} option makes sure that additional information ends ip in
+the output so that cut|-|and|-|paste becomes more trustworthy.
+
+\stopsection
+
+\startsection[title=Typescripts]
+
+Some font collections, like antykwa, come with so many variants that defining
+them all in typescripts becomes somewhat of a nuisance. While a regular font has
+a typescript of a few lines, antykwa needs way more lines. This is why we provide
+a nother way as well, using goodies.
+
+\startsmalltyping
+return {
+  name = "antykwapoltawskiego",
+  version = "1.00",
+  comment = "Goodies that complement Antykwa Poltawskiego",
+  author = "Hans & Mojca",
+  copyright = "ConTeXt development team",
+  files = {
+    name = "antykwapoltawskiego", -- shared
+    list = {
+      ["AntPoltLtCond-Regular.otf"] = {
+     -- name   = "antykwapoltawskiego",
+        weight = "light",
+        style  = "regular",
+        width  = "condensed",
+      },
+      ["AntPoltLtCond-Italic.otf"] = {
+        weight = "light",
+        style  = "italic",
+        width  = "condensed",
+      },
+      ["AntPoltCond-Regular.otf"] = {
+        weight = "normal",
+        style  = "regular",
+        width  = "condensed",
+      },
+
+      .......
+
+
+      ["AntPoltExpd-BoldItalic.otf"] = {
+        weight = "bold",
+        style  = "italic",
+        width  = "expanded",
+      },
+    },
+  },
+  typefaces = { -- for Mojca (experiment, names might change)
+    ["antykwapoltawskiego-light"] = {
+      shortcut     = "rm",
+      shape        = "serif",
+      fontname     = "antykwapoltawskiego",
+      normalweight = "light",
+      boldweight   = "medium",
+      width        = "normal",
+      size         = "default",
+      features     = "default",
+    },
+
+    .......
+
+  },
+}
+\stopsmalltyping
+
+This is a typical example of when a goodies file is loaded directly:
+
+\starttyping
+\loadfontgoodies[antykwapoltawskiego]
+\stoptyping
+
+A bodyfont is now defined by choosing from the defined combinations:
+
+\starttyping
+\definetypeface
+  [name=mojcasfavourite,
+   preset=antykwapoltawskiego,
+   normalweight=light,
+   boldweight=bold,
+   width=expanded]
+
+\setupbodyfont
+  [mojcasfavourite]
+\stoptyping
+
+This mechanism is a follow up on a discussion at a \CONTEXT\ conference, still
+somewhat experimental, and a playground for Mojca.
+
+\stopsection
+
+\startsection[title=Font strategies]
+
+This goodie is closely related to the Oriental \TEX\ project where a dedicated
+paragraph optimizer can be used. A rather advanced font is used (husayni) and its
+associated goodie file is rather extensive. It defines stylistic features,
+implements a couple of feature sets, provides colorschemes and most of all,
+defines some strategies for making paragraphs look better. Some of the goodie
+file is shown here.
+
+\startsmalltyping
+local yes = "yes"
+
+local basics = {
+  analyze  = yes,
+  mode     = "node",
+  language = "dflt",
+  script   = "arab",
+}
+
+local analysis = {
+  ccmp = yes,
+  init = yes, medi = yes, fina = yes,
+}
+
+local regular = {
+  rlig = yes, calt = yes, salt = yes, anum = yes,
+  ss01 = yes, ss03 = yes, ss07 = yes, ss10 = yes, ss12 = yes, ss15 = yes, ss16 = yes,
+  ss19 = yes, ss24 = yes, ss25 = yes, ss26 = yes, ss27 = yes, ss31 = yes, ss34 = yes,
+  ss35 = yes, ss36 = yes, ss37 = yes, ss38 = yes, ss41 = yes, ss42 = yes, ss43 = yes,
+  js16 = yes,
+}
+
+local positioning = {
+  kern = yes, curs = yes, mark = yes, mkmk = yes,
+}
+
+local minimal_stretching = {
+  js11 = yes, js03 = yes,
+}
+
+local medium_stretching = {
+  js12=yes, js05=yes,
+}
+
+local maximal_stretching= {
+  js13 = yes, js05 = yes, js09 = yes,
+}
+
+local wide_all = {
+  js11 = yes, js12 = yes, js13 = yes, js05 = yes, js09 = yes,
+}
+
+local shrink = {
+  flts = yes, js17 = yes, ss05 = yes, ss11 = yes, ss06 = yes, ss09 = yes,
+}
+
+local default = {
+  basics, analysis, regular, positioning, -- xxxx = yes, yyyy = 2,
+}
+
+return {
+  name = "husayni",
+  version = "1.00",
+  comment = "Goodies that complement the Husayni font by Idris Samawi Hamid.",
+  author = "Idris Samawi Hamid and Hans Hagen",
+  featuresets = { -- here we don't have references to featuresets
+    default = {
+      default,
+    },
+    minimal_stretching = {
+      default,
+      js11 = yes, js03 = yes,
+    },
+    medium_stretching = {
+      default,
+      js12=yes, js05=yes,
+    },
+    maximal_stretching= {
+      default,
+      js13 = yes, js05 = yes, js09 = yes,
+    },
+    wide_all = {
+      default,
+      js11 = yes, js12 = yes, js13 = yes, js05 = yes, js09 = yes,
+    },
+    shrink = {
+      default,
+      flts = yes, js17 = yes, ss05 = yes, ss11 = yes, ss06 = yes, ss09 = yes,
+    },
+  },
+  solutions = { -- here we have references to featuresets, so we use strings!
+    experimental = {
+      less = {
+        "shrink"
+      },
+      more = {
+        "minimal_stretching",
+        "medium_stretching",
+        "maximal_stretching",
+        "wide_all"
+      },
+    },
+  },
+  stylistics = {
+    ......
+    ss03 = "level-1 stack over Jiim, initial entry only",
+    ss04 = "level-1 stack over Jiim, initial/medial entry",
+    ......
+    ss54 = "chopped finals",
+    ss55 = "idgham-tanwin",
+    ......
+    js11 = "level-1 stretching",
+    js12 = "level-2 stretching",
+    ......
+    js21 = "Haa.final_alt2",
+  },
+  colorschemes = {
+    default = {
+      [1] = {
+        "Onedotabove", "Onedotbelow", ...
+      },
+      [2] = {
+        "Fathah", "Dammah", "Kasrah", ...
+      },
+      [3] = {
+        "Ttaa.waqf", "SsLY.waqf", "QLY.waqf", ...
+      },
+      [4] = {
+        "ZeroArabic.ayah", "OneArabic.ayah", "TwoArabic.ayah", ...
+      },
+      [5] = {
+        "Ayah", "Ayah.alt1", "Ayah.alt2", ...
+      }
+    }
+  }
+}
+\stopmalltyping
+
+Discussion of these goodies is beyond this document and happens elsewhere.
+
+\stopsection
+
+\startsection[title=Composition]
+
+The \type {compose} features extends a font with additional (virtual) shapes.
+This is mostly used with \TYPEONE\ fonts that lack support for eastern european
+languages. The type {compositions} subtable is used to control placement of
+accents. This can be done per font.
+
+\startmalltyping
+local defaultunits = 193 - 30
+
+-- local compose = {
+--                DY = defaultunits,
+--   [0x010C] = { DY = defaultunits }, -- Ccaron
+--   [0x02C7] = { DY = defaultunits }, -- textcaron
+-- }
+
+-- fractions relative to delta(X_height - x_height)
+
+local defaultfraction = 0.85
+
+local compose = {
+  DY = defaultfraction, -- uppercase compensation
+}
+
+return {
+  name = "lucida-one",
+  version = "1.00",
+  comment = "Goodies that complement lucida.",
+  author = "Hans and Mojca",
+  copyright = "ConTeXt development team",
+  compositions = {
+    ["lbr"]  = compose,
+    ["lbi"]  = compose,
+    ["lbd"]  = compose,
+    ["lbdi"] = compose,
+  }
+}
+\stopsmalltyping
+
+\stopsection
+
+\startsection[title=Postprocessing]
+
+You can hook postprocessors into the scaler. Future versions might provide more
+control over where this happens.
+
+\startsmalltyping
+local function statistics(tfmdata)
+    commands.showfontparameters(tfmdata)
+end
+
+local function squeeze(tfmdata)
+  for k, v in next, tfmdata.characters do
+    v.height = 0.75 * (v.height or 0)
+    v.depth  = 0.75 * (v.depth  or 0)
+  end
+end
+
+return {
+  name = "demo",
+  version = "1.00",
+  comment = "An example of goodies.",
+  author = "Hans Hagen",
+  postprocessors = {
+    statistics = statistics,
+    squeeze    = squeeze,
+  },
+}
+\stopsmalltyping
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

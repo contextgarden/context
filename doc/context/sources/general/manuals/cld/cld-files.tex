@@ -1,0 +1,78 @@
+% language=uk
+
+\startcomponent cld-macros
+
+\environment cld-environment
+
+\startchapter[title=Files]
+
+\startsection[title={Preprocessing}]
+
+Although this option must be used with care, it is possible to preprocess files
+before they enter \TEX. The following example shows this.
+
+\starttyping
+local function showline(str,filename,linenumber,noflines)
+    logs.simple("[lc] file: %s, line: %s of %s, length: %s",
+        file.basename(filename),linenumber,noflines,#str)
+end
+
+local function showfile(str,filename)
+    logs.simple("[fc] file: %s, length: %s",
+        file.basename(filename),#str)
+end
+
+resolvers.installinputlinehandler(showline)
+resolvers.installinputfilehandler(showfile)
+\stoptyping
+
+Preprocessors like this are rather innocent. If you want to manipulate the
+content you need to be aware of the fact that modules and such also pass your
+code, and manipulating them can give unexpected side effects. So, the following
+code will not make \CONTEXT\ happy.
+
+\starttyping
+local function foo()
+    return "bar"
+end
+
+resolvers.installinputlinehandler(foo)
+\stoptyping
+
+But, as we pass the filename, you can base your preprocessing on names.
+
+There can be multiple handlers active at the same time, and although more
+detailed control is possible, the current interface does not provide that, simply
+because having too many handlers active is asking for trouble anyway. What you
+can do, is putting your handler in front or after the built in handlers.
+
+\starttyping
+resolvers.installinputlinehandler("before",showline)
+resolvers.installinputfilehandler("after", showfile)
+\stoptyping
+
+Of course you can also preprocess files outside this mechanism, which in most
+cases might be a better idea. However, the following example code is quite
+efficient and robust.
+
+\starttyping
+local function MyHandler(str,filename)
+    if file.suffix(filename) == "veryspecial" then
+        logs.simple("preprocessing file '%s',filename)
+        return MyConverter(str)
+    else
+        return str
+    end
+end
+
+resolvers.installinputfilehandler("before",MyHandler)
+\stoptyping
+
+In this case only files that have a suffix \type {.veryspecial} will get an extra
+treatment.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

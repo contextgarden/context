@@ -1,0 +1,46 @@
+% language=uk
+
+\startcomponent cld-specialcommands
+
+\environment cld-environment
+
+\startchapter[title=Special commands]
+
+\index{tracing}
+
+There are a few functions in the \type {context} namespace that are no
+macros at the \TEX\ end.
+
+\starttyping
+context.runfile("somefile.cld")
+\stoptyping
+
+Another useful command is:
+
+\starttyping
+context.settracing(true)
+\stoptyping
+
+There are a few tracing options that you can set at the \TEX\ end:
+
+\starttyping
+\enabletrackers[context.files]
+\enabletrackers[context.trace]
+\stoptyping
+
+A few macros have special functions at the \LUA\ end. One of them is \type
+{\char}. The function makes sure that the characters ends up right. The same is
+true for \type {\chardef}. So, you don't need to mess around with \type {\relax}
+or trailing spaces as you would do at the \TEX\ end in order to tell the scanner
+to stop looking ahead.
+
+\starttyping
+context.char(123)
+\stoptyping
+
+Other examples of macros that have optimized functions are \type {\par},
+\type{\bgroup} and \type {\egroup}.
+
+\stopchapter
+
+\stopcomponent

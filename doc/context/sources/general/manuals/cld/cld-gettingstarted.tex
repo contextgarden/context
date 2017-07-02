@@ -1,0 +1,437 @@
+% language=uk
+
+\startcomponent cld-gettingstarted
+
+\environment cld-environment
+
+\startchapter[title=Getting started]
+
+\startsection[title=Some basics]
+
+\index{processing}
+
+I assume that you have either the so called \CONTEXT\ standalone (formerly known
+as minimals) installed or \TEXLIVE. You only need \LUATEX\ and can forget about
+installing \PDFTEX\ or \XETEX, which saves you some megabytes and hassle. Now,
+from the users perspective a \CONTEXT\ run goes like:
+
+\starttyping
+context yourfile
+\stoptyping
+
+and by default a file with suffix \type {tex}, \type {mkvi} or \type {mkvi} will
+be processed. There are however a few other options:
+
+\starttyping
+context yourfile.xml
+context yourfile.rlx --forcexml
+context yourfile.lua
+context yourfile.pqr --forcelua
+context yourfile.cld
+context yourfile.xyz --forcecld
+context yourfile.mp
+context yourfile.xyz --forcemp
+\stoptyping
+
+When processing a \LUA\ file the given file is loaded and just processed. This
+options will seldom be used as it is way more efficient to let \type {mtxrun}
+process that file. However, the last two variants are what we will discuss here.
+The suffix \type {cld} is a shortcut for \CONTEXT\ \LUA\ Document.
+
+A simple \type {cld} file looks like this:
+
+\starttyping
+context.starttext()
+context.chapter("Hello There!")
+context.stoptext()
+\stoptyping
+
+So yes, you need to know the \CONTEXT\ commands in order to use this mechanism.
+In spite of what you might expect, the codebase involved in this interface is not
+that large. If you know \CONTEXT, and if you know how to call commands, you
+basically can use this \LUA\ method.
+
+The examples that I will give are either (sort of) standalone, i.e.\ they are
+dealt with from \LUA, or they are run within this document. Therefore you will
+see two patterns. If you want to make your own documentation, then you can use
+this variant:
+
+\starttyping
+\startbuffer
+context("See this!")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+\stoptyping
+
+I use anonymous buffers here but you can also use named ones. The other variant
+is:
+
+\starttyping
+\startluacode
+context("See this!")
+\stopluacode
+\stoptyping
+
+This will process the code directly. Of course we could have encoded this
+document completely in \LUA\ but that is not much fun for a manual.
+
+\stopsection
+
+\startsection[title=The main command]
+
+There are a few rules that you need to be aware of. First of all no syntax
+checking is done. Second you need to know what the given commands expects in
+terms of arguments. Third, the type of your arguments matters:
+
+\starttabulate[|||]
+\NC \type{nothing} \EQ just the command, no arguments \NC \NR
+\NC \type{string}  \EQ an argument with curly braces \NC \NR
+\NC \type{array}   \EQ a list between square backets (sometimes optional) \NC \NR
+\NC \type{hash}    \EQ an assignment list between square brackets \NC \NR
+\NC \type{boolean} \EQ when \type {true} a newline is inserted \NC \NR
+\NC                \EQ when \type {false}, omit braces for the next argument \NC \NR
+\stoptabulate
+
+In the code above you have seen examples of this but here are some more:
+
+\starttyping
+context.chapter("Some title")
+context.chapter({ "first" }, "Some title")
+context.startchapter({ title = "Some title", label = "first" })
+\stoptyping
+
+This blob of code is equivalent to:
+
+\starttyping
+\chapter{Some title}
+\chapter[first]{Some title}
+\startchapter[title={Some title},label=first]
+\stoptyping
+
+You can simplify the third line of the \LUA\ code to:
+
+\starttyping
+context.startchapter { title = "Some title", label = "first" }
+\stoptyping
+
+In case you wonder what the distinction is between square brackets and curly
+braces: the first category of arguments concerns settings or lists of options or
+names of instances while the second category normally concerns some text to be
+typeset.
+
+Strings are interpreted as \TEX\ input, so:
+
+\starttyping
+context.mathematics("\\sqrt{2^3}")
+\stoptyping
+
+and if you don't want to escape:
+
+\starttyping
+context.mathematics([[\sqrt{2^3}]])
+\stoptyping
+
+are both correct. As \TEX\ math is a language in its own and a de-facto standard
+way of inputting math this is quite natural, even at the \LUA\ end.
+
+\stopsection
+
+\startsection[title=Spaces and Lines]
+
+\index{spaces}
+\index{lines}
+
+In a regular \TEX\ file, spaces and newline characters are collapsed into one
+space. At the \LUA\ end the same happens. Compare the following examples. First
+we omit spaces:
+
+\startbuffer
+context("left")
+context("middle")
+context("right")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+Next we add spaces:
+
+\startbuffer
+context("left")
+context(" middle ")
+context("right")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+We can also add more spaces:
+
+\startbuffer
+context("left ")
+context(" middle ")
+context(" right")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+In principle all content becomes a stream and after that the \TEX\ parser will do
+its normal work: collapse spaces unless configured to do otherwise. Now take the
+following code:
+
+\startbuffer
+context("before")
+context("word 1")
+context("word 2")
+context("word 3")
+context("after")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+Here we get no spaces between the words at all, which is what we expect. So, how
+do we get lines (or paragraphs)?
+
+\startbuffer
+context("before")
+context.startlines()
+context("line 1")
+context("line 2")
+context("line 3")
+context.stoplines()
+context("after")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+This does not work out well, as again there are no lines seen at the \TEX\ end.
+Newline tokens are injected by passing \type {true} to the \type {context}
+command:
+
+\startbuffer
+context("before")
+context.startlines()
+context("line 1") context(true)
+context("line 2") context(true)
+context("line 3") context(true)
+context.stoplines()
+context("after")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+Don't confuse this with:
+
+\startbuffer
+context("before") context.par()
+context("line 1") context.par()
+context("line 2") context.par()
+context("line 3") context.par()
+context("after")  context.par()
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+There we use the regular \type {\par} command to finish the current paragraph and
+normally you will use that method. In that case, when set, whitespace will be
+added between paragraphs.
+
+This newline issue is a somewhat unfortunate inheritance of traditional \TEX,
+where \type {\n} and \type {\r} mean something different. I'm still not sure if
+the \CLD\ do the right thing as dealing with these tokens also depends on the
+intended effect. Catcodes as well as the \LUATEX\ input parser also play a role.
+Anyway, the following also works:
+
+\startbuffer
+context.startlines()
+context("line 1\n")
+context("line 2\n")
+context("line 3\n")
+context.stoplines()
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\startsection[title=Direct output]
+
+\index{direct output}
+\index{verbose}
+
+The \CONTEXT\ user interface is rather consistent and the use of special input
+syntaxes is discouraged. Therefore, the \LUA\ interface using tables and strings
+works quite well. However, imagine that you need to support some weird macro (or
+a primitive) that does not expect its argument between curly braces or brackets.
+The way out is to precede an argument by another one with the value \type
+{false}. We call this the direct interface. This is demonstrated in the following
+example.
+
+\startbuffer
+\unexpanded\def\bla#1{[#1]}
+
+\startluacode
+context.bla(false,"***")
+context.par()
+context.bla("***")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This results in:
+
+\getbuffer
+
+Here, the first call results in three \type {*} being passed, and \type {#1}
+picks up the first token. The second call to \type {bla} gets \type {{***}}
+passed so here \type {#1} gets the triplet. In practice you will seldom need the
+direct interface.
+
+In \CONTEXT\ for historical reasons, combinations accept the following syntax:
+
+\starttyping
+\startcombination % optional specification, like [2*3]
+  {\framed{content one}} {caption one}
+  {\framed{content two}} {caption two}
+\stopcombination
+\stoptyping
+
+You can also say:
+
+\starttyping
+\startcombination
+  \combination {\framed{content one}} {caption one}
+  \combination {\framed{content two}} {caption two}
+\stopcombination
+\stoptyping
+
+When coded in \LUA, we can feed the first variant as follows:
+
+\startbuffer
+context.startcombination()
+  context.direct("one","two")
+  context.direct("one","two")
+context.stopcombination()
+\stopbuffer
+
+\typebuffer
+
+To give you an idea what this looks like, we render it:
+
+\startlinecorrection[blank]
+\ctxluabuffer
+\stoplinecorrection
+
+So, the \type {direct} function is basically a no|-|op and results in nothing by
+itself. Only arguments are passed. An equivalent but bit more ugly looking is:
+
+\starttyping
+context.startcombination()
+  context(false,"one","two")
+  context(false,"one","two")
+context.stopcombination()
+\stoptyping
+
+\stopsection
+
+\startsection[title=Catcodes]
+
+\index{catcodes}
+
+If you are familiar with the inner working of \TEX, you will know that characters
+can have special meanings. This meaning is determined by their catcodes.
+
+\startbuffer
+context("$x=1$")
+\stopbuffer
+
+\typebuffer
+
+This gives: \ctxluabuffer\ because the dollar tokens trigger inline math mode. If
+you think that this is annoying, you can do the following:
+
+\startbuffer
+context.pushcatcodes("text")
+context("$x=1$")
+context.popcatcodes()
+\stopbuffer
+
+\typebuffer
+
+Now we get: \ctxluabuffer. There are several catcode regimes of
+which only a few make sense in the perspective of the cld
+interface.
+
+\starttabulate[|Tl|l|]
+\NC ctx, ctxcatcodes, context   \NC the normal \CONTEXT\ catcode regime \NC \NR
+\NC prt, prtcatcodes, protect   \NC the \CONTEXT\ protected regime, used for modules \NC \NR
+\NC tex, texcatcodes, plain     \NC the traditional (plain) \TEX\ regime \NC \NR
+\NC txt, txtcatcodes, text      \NC the \CONTEXT\ regime but with less special characters \NC \NR
+\NC vrb, vrbcatcodes, verbatim  \NC a regime specially meant for verbatim \NC \NR
+\NC xml, xmlcatcodes            \NC a regime specially meant for \XML\ processing \NC \NR
+\stoptabulate
+
+In the second case you can still get math:
+
+\starttyping
+context.pushcatcodes("text")
+context.mathematics("x=1")
+context.popcatcodes()
+\stoptyping
+
+When entering a lot of math you can also consider this:
+
+\starttyping
+context.startimath()
+context("x")
+context("=")
+context("1")
+context.stopimath()
+\stoptyping
+
+Module writers of course can use \type {unprotect} and \type {protect} as they do
+at the \TEX\ end.
+
+As we've seen, a function call to \type {context} acts like a print, as in:
+
+\startbuffer
+context("test ")
+context.bold("me")
+context(" first")
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+When more than one argument is given, the first argument is considered a format
+conforming the \type {string.format} function.
+
+\startbuffer
+context.startimath()
+context("%s = %0.5f",utf.char(0x03C0),math.pi)
+context.stopimath()
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+This means that when you say:
+
+\starttyping
+context(a,b,c,d,e,f)
+\stoptyping
+
+the variables \type {b} till \type {f} are passed to the format and when the
+format does not use them, they will not end up in your output.
+
+\starttyping
+context("%s %s %s",1,2,3)
+context(1,2,3)
+\stoptyping
+
+The first line results in the three numbers being typeset, but in the second case
+only the number~1 is typeset.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

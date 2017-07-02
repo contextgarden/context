@@ -1,0 +1,354 @@
+% language=uk
+
+\startcomponent cld-moreonfunctions
+
+\environment cld-environment
+
+\startchapter[title=More on functions]
+
+\startsection[title=Why we need them]
+
+\index{functions}
+
+In a previous chapter we introduced functions as arguments. At first sight this
+feature looks strange but you need to keep in mind that a call to a \type
+{context} function has no direct consequences. It generates \TEX\ code that is
+executed after the current \LUA\ chunk ends and control is passed back to \TEX.
+Take the following code:
+
+\startbuffer
+context.framed( {
+    frame = "on",
+    offset = "5mm",
+    align = "middle"
+  },
+  context.input("knuth")
+)
+\stopbuffer
+
+\typebuffer
+
+We call the function \type {framed} but before the function body is executed, the
+arguments get evaluated. This means that \type {input} gets processed before
+\type {framed} gets done. As a result there is no second argument to \type
+{framed} and no content gets passed: an error is reported. This is why we need
+the indirect call:
+
+\startbuffer
+context.framed( {
+    frame = "on",
+    align = "middle"
+  },
+  function() context.input("knuth") end
+)
+\stopbuffer
+
+\typebuffer
+
+This way we get what we want:
+
+\startlinecorrection
+\ctxluabuffer
+\stoplinecorrection
+
+The function is delayed till the \type {framed} command is executed. If your
+applications use such calls a lot, you can of course encapsulate this ugliness:
+
+\starttyping
+mycommands = mycommands or { }
+
+function mycommands.framed_input(filename)
+  context.framed( {
+    frame = "on",
+    align = "middle"
+  },
+  function() context.input(filename) end
+end
+
+mycommands.framed_input("knuth")
+\stoptyping
+
+Of course you can nest function calls:
+
+\starttyping
+context.placefigure(
+  "caption",
+  function()
+    context.framed( {
+      frame = "on",
+      align = "middle"
+    },
+      function() context.input("knuth") end
+    )
+  end
+)
+\stoptyping
+
+Or you can use a more indirect method:
+
+\starttyping
+function text()
+  context.framed( {
+      frame = "on",
+      align = "middle"
+    },
+    function() context.input("knuth") end
+  )
+end
+
+context.placefigure(
+  "none",
+  function() text() end
+)
+\stoptyping
+
+You can develop your own style and libraries just like you do with regular \LUA\
+code. Browsing the already written code can give you some ideas.
+
+\stopsection
+
+\startsection[title=How we can avoid them]
+
+\index{delaying}
+\index{nesting}
+
+As many nested functions can obscure the code rather quickly, there is an
+alternative. In the following examples we use \type {test}:
+
+\startbuffer
+\def\test#1{[#1]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+context.test("test 1 ",context("test 2a")," test 3")
+\stopbuffer
+
+\typebuffer
+
+This gives: \ctxluabuffer. As you can see, the second argument is executed before
+the encapsulating call to \type {test}. So, we should have packed it into a
+function but here is an alternative:
+
+\startbuffer
+context.test("test 1 ",context.delayed("test 2a")," test 3")
+\stopbuffer
+
+\typebuffer
+
+Now we get: \ctxluabuffer. We can also delay functions themselves,
+look at this:
+
+\startbuffer
+context.test("test 1 ",context.delayed.test("test 2b")," test 3")
+\stopbuffer
+
+\typebuffer
+
+The result is: \ctxluabuffer. This feature also conveniently permits the use of
+temporary variables, as in:
+
+\starttyping
+local f = context.delayed.test("test 2c")
+context("before ",f," after")
+\stoptyping
+
+Of course you can limit the amount of keystrokes even more by
+creating a shortcut:
+
+\starttyping
+local delayed = context.delayed
+
+context.test("test 1 ",delayed.test("test 2")," test 3")
+context.test("test 4 ",delayed.test("test 5")," test 6")
+\stoptyping
+
+So, if you want you can produce rather readable code and readability of code is
+one of the reasons why \LUA\ was chosen in the first place. This is a good
+example of why coding in \TEX\ makes sense as it looks more intuitive:
+
+\starttyping
+\test{test 1 \test{test 2} test 3}
+\test{test 4 \test{test 5} test 6}
+\stoptyping
+
+There is also another mechanism available. In the next example the second
+argument is actually a string.
+
+\starttyping
+local nested = context.nested
+
+context.test("test 8",nested.test("test 9"),"test 10")
+\stoptyping
+
+There is a pitfall here: a nested context command needs to be flushed explicitly,
+so in the case of:
+
+\starttyping
+context.nested.test("test 9")
+\stoptyping
+
+a string is created but nothing ends up at the \TEX\ end. Flushing is up to you.
+Beware: \type {nested} only works with the regular \CONTEXT\ catcode regime.
+
+\stopsection
+
+\startsection[title=Trial typesetting]
+
+\index {prerolls}
+\index {trial typesetting}
+
+Some typesetting mechanisms demand a preroll. For instance, when determining the
+most optimal way to analyse and therefore typeset a table, it is necessary to
+typeset the content of cells first. Inside \CONTEXT\ there is a state tagged
+\quote {trial typesetting} which signals other mechanisms that for instance
+counters should not be incremented more than once.
+
+Normally you don't need to worry about these issues, but when writing the code
+that implements the \LUA\ interface to \CONTEXT, it definitely had to be taken
+into account as we either or not can free cached (nested) functions.
+
+You can influence this caching to some extend. If you say
+
+\starttyping
+function()
+  context("whatever")
+end
+\stoptyping
+
+the function will be removed from the cache when \CONTEXT\ is not in the trial
+typesetting state. You can prevent removal of a function by returning \type
+{true}, as in:
+
+\starttyping
+function()
+  context("whatever")
+  return true
+end
+\stoptyping
+
+Whenever you run into a situation that you don't get the outcome that you expect,
+you can consider returning \type {true}. However, keep in mind that it will take
+more memory, something that only matters on big runs. You can force flushing the
+whole cache by:
+
+\starttyping
+context.restart()
+\stoptyping
+
+An example of an occasion where you need to keep the function available is in
+repeated content, for instance in headers and footers.
+
+\starttyping
+context.setupheadertexts {
+  function()
+    context.pagenumber()
+    return true
+  end
+}
+\stoptyping
+
+Of course it is not needed when you use the following method:
+
+\starttyping
+context.pagenumber("pagenumber")
+\stoptyping
+
+Because here \CONTEXT\ itself deals with the content driven by the keyword \type
+{pagenumber}.
+
+\stopsection
+
+\startsection[title=Steppers]
+
+The \type {context} commands are accumulated within a \type {\ctxlua} call and
+only after the call is finished, control is back at the \TEX\ end. Sometimes you
+want (in your \LUA\ code) to go on and pretend that you jump out to \TEX\ for a
+moment, but come back to where you left. The stepper mechanism permits this.
+
+A not so practical but nevertheless illustrative example is the following:
+
+\startbuffer
+\startluacode
+  context.stepwise (function()
+    context.startitemize()
+       context.startitem()
+         context.step("BEFORE 1")
+       context.stopitem()
+       context.step("\\setbox0\\hbox{!!!!}")
+       context.startitem()
+         context.step("%p",tex.getbox(0).width)
+       context.stopitem()
+       context.startitem()
+         context.step("BEFORE 2")
+       context.stopitem()
+       context.step("\\setbox2\\hbox{????}")
+       context.startitem()
+         context.step("%p",tex.getbox(2).width)
+       context.startitem()
+         context.step("BEFORE 3")
+       context.stopitem()
+       context.startitem()
+         context.step("\\copy0\\copy2")
+       context.stopitem()
+       context.startitem()
+         context.step("BEFORE 4")
+         context.startitemize()
+           context.stepwise (function()
+             context.step("\\bgroup")
+             context.step("\\setbox0\\hbox{>>>>}")
+             context.startitem()
+               context.step("%p",tex.getbox(0).width)
+             context.stopitem()
+             context.step("\\setbox2\\hbox{<<<<}")
+             context.startitem()
+               context.step("%p",tex.getbox(2).width)
+             context.stopitem()
+             context.startitem()
+               context.step("\\copy0\\copy2")
+             context.stopitem()
+             context.startitem()
+               context.step("\\copy0\\copy2")
+             context.stopitem()
+             context.step("\\egroup")
+           end)
+         context.stopitemize()
+       context.stopitem()
+       context.startitem()
+         context.step("AFTER 1\\par")
+       context.stopitem()
+       context.startitem()
+         context.step("\\copy0\\copy2\\par")
+       context.stopitem()
+       context.startitem()
+         context.step("\\copy0\\copy2\\par")
+       context.stopitem()
+       context.startitem()
+         context.step("AFTER 2\\par")
+       context.stopitem()
+       context.startitem()
+         context.step("\\copy0\\copy2\\par")
+       context.stopitem()
+       context.startitem()
+         context.step("\\copy0\\copy2\\par")
+       context.stopitem()
+     context.stopitemize()
+end)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This gives an (ugly) itemize with a nested one:
+
+\getbuffer
+
+As you can see in the code, the \type {step} call accepts multiple arguments, but
+when more than one argument is given the first one is treated as a formatter.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

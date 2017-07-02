@@ -1,0 +1,168 @@
+% language=uk
+
+\startcomponent cld-macros
+
+\environment cld-environment
+
+\startchapter[title=Macros]
+
+\startsection[title={Introduction}]
+
+You can skip this chapter if you're not interested in defining macros or are
+quite content with defining them in \TEX. It's just an example of possible future
+interface definitions and it's not the fastest mechanism around.
+
+\stopsection
+
+\startsection[title={Parameters}]
+
+Right from the start \CONTEXT\ came with several user interfaces. As a
+consequence you need to take this into account when you write code that is
+supposed to work with interfaces other than the English one. The \TEX\ command:
+
+\starttyping
+\setupsomething[key=value]
+\stoptyping
+
+and the \LUA\ call:
+
+\starttyping
+context.setupsomething { key = value }
+\stoptyping
+
+are equivalent. However, all keys at the \TEX\ end eventually become English, but
+the values are unchanged. This means that when you code in \LUA\ you should use
+English keys and when dealing with assigned values later on, you need to
+translate them of compare with translations (which is easier). This is why in the
+\CONTEXT\ code you will see:
+
+\starttyping
+if somevalue == interfaces.variables.yes then
+  ...
+end
+\stoptyping
+
+instead of:
+
+\starttyping
+if somevalue == "yes" then
+  ...
+end
+\stoptyping
+
+\stopsection
+
+\startsection[title={User interfacing}]
+
+Unless this is somehow inhibited, users can write their own macros and this is
+done in the \TEX\ language. Passing data to macros is possible and looks like
+this:
+
+\starttyping
+\def\test#1#2{.. #1 .. #2 .. }      \test{a}{b}
+\def\test[#1]#2{.. #1 .. #2 .. }    \test[a]{b}
+\stoptyping
+
+Here \type {#1} and \type {#2} represent an argument and there can be at most 9
+of them. The \type{[]} are delimiters and you can delimit in many ways so the
+following is also right:
+
+\starttyping
+\def\test(#1><#2){.. #1 .. #2 .. }  \test(a><b)
+\stoptyping
+
+Macro packages might provide helper macros that for instance take care of
+optional arguments, so that we can use calls like:
+
+\starttyping
+\test[1,2,3][a=1,b=2,c=3]{whatever}
+\stoptyping
+
+and alike. If you are familiar with the \CONTEXT\ syntax you know that we use
+this syntax all over the place.
+
+If you want to write a macro that calls out to \LUA\ and handles things at that
+end, you might want to avoid defining the macro itself and this is possible.
+
+\startbuffer
+\startluacode
+function test(opt_1, opt_2, arg_1)
+    context.startnarrower()
+    context("options 1: %s",interfaces.tolist(opt_1))
+    context.par()
+    context("options 2: %s",interfaces.tolist(opt_2))
+    context.par()
+    context("argument 1: %s",arg_1)
+    context.stopnarrower()
+end
+
+interfaces.definecommand {
+    name = "test",
+    arguments = {
+        { "option", "list" },
+        { "option", "hash" },
+        { "content", "string" },
+    },
+    macro = test,
+}
+\stopluacode
+
+test: \test[1][a=3]{whatever}
+\stopbuffer
+
+An example of a definition and usage at the \LUA\ end is:
+
+\typebuffer
+
+The call gives:
+
+\startpacked
+\getbuffer
+\stoppacked
+
+\startbuffer
+\startluacode
+local function startmore(opt_1)
+    context.startnarrower()
+    context("start more, options: %s",interfaces.tolist(opt_1))
+    context.startnarrower()
+end
+
+local function stopmore(opt_1)
+    context.stopnarrower()
+    context("stop more, options: %s",interfaces.tolist(opt_1))
+    context.stopnarrower()
+end
+
+interfaces.definecommand ( "more", {
+    environment = true,
+    arguments = {
+        { "option", "list" },
+    },
+    starter = startmore,
+    stopper = stopmore,
+} )
+\stopluacode
+
+more: \startmore[1] one \startmore[2] two \stopmore one \stopmore
+\stopbuffer
+
+If you want to to define an environment (i.e.\ a \type {start}||\type {stop}
+pair, it looks as follows:
+
+\typebuffer
+
+This gives:
+
+\startpacked
+\getbuffer
+\stoppacked
+
+The arguments are know in both \type {startmore} and \type {stopmore} and nesting
+is handled automatically.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

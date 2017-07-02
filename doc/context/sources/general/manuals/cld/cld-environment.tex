@@ -1,0 +1,224 @@
+% language=uk
+
+\startenvironment cld-environment
+
+\usemodule[abr-04]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   backspace=2cm,
+   topspace=1cm,
+   footer=0pt,
+   bottomdistance=1cm,
+   bottom=1cm,
+   bottomspace=2cm]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\definecolor[darkred]  [r=.5]
+\definecolor[darkgreen][g=.5]
+\definecolor[darkblue] [b=.5]
+
+\definecolor[red]  [darkred]
+\definecolor[green][darkgreen]
+\definecolor[blue] [darkblue]
+
+\definetype
+  [boldtypebig]
+  [style=\ttbfa]
+
+\definetype
+  [boldtype]
+  [style=\ttbf]
+
+\definetyping
+  [smalltyping]
+  [bodyfont=small]
+
+\setuptype
+  [color=blue]
+
+\setuptyping
+  [color=blue]
+
+\setupbodyfont
+  [palatino,11pt]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   color=blue]
+
+\setuphead
+  [section]
+  [style=\bfb,
+   color=blue]
+
+\definehead
+  [summary]
+  [subsubsubsubject]
+
+\setuphead
+  [summary]
+  [style=,
+   deeptextcommand=\boldtypebig,
+   color=blue]
+
+\definehead
+  [subsummary]
+  [subsubsubsubsubject]
+
+\setuphead
+  [subsummary]
+  [style=,
+   before=\blank,
+   after=\blank,
+   deeptextcommand=\type,
+   command=\MySubSummaryHead,
+   color=blue]
+
+\unexpanded\def\MySummaryHead#1#2%
+  {\framed
+     [frame=off,
+      bottomframe=on,
+      offset=0cm]
+     {#2}}
+
+\unexpanded\def\MySubSummaryHead#1#2%
+  {\framed
+     [frame=off,
+      bottomframe=on,
+      offset=0cm]
+     {#2}}
+
+\setupwhitespace
+  [big]
+
+\setupheadertexts
+  []
+
+\setupheadertexts
+  []
+  [{\getmarking[chapter]\quad\pagenumber}]
+  [{\pagenumber\quad\getmarking[chapter]}]
+  []
+
+\setupheader
+  [color=darkblue]
+
+\setuplist
+  [chapter,title]
+  [color=darkblue,
+   style=bold]
+
+\setupbottom
+  [style=\bfx,
+   color=darkred]
+
+\setupbottomtexts
+  [preliminary, uncorrected version -- \currentdate]
+
+% special functions
+
+\unexpanded\def\ShowLuaExampleOne#1#2#3%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{table.tocontext(#3)}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleTwo#1#2#3%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{table.tocontext(#1.#2(#3))}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleThree#1#2#3%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{string.tocontext(tostring(#1.#2(#3)))}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleFour#1#2#3#4%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={t=#3 #1.#2(t#4)}]
+   \ctxlua{local t = #3 #1.#2(t#4) table.tocontext(t)}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleFive#1#2%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1.#2}]
+   \ctxlua{string.tocontext(tostring(#1.#2))}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleSix#1#2#3%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{string.tocontext(#1.#2(#3))}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleSeven#1#2#3%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{string.tocontext(table.concat({#1.#2(#3)}," "))}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleTable#1%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1}]
+   \ctxlua{table.tocontext(#1,false)}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleTableHex#1%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1}]
+   \ctxlua{table.tocontext(#1,false,false,true,true)} % name, reduce, noquotes, hex
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleString#1%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1}]
+   \ctxlua{string.tocontext(#1)}
+   \stopsubsummary
+   \egroup}
+
+\unexpanded\def\ShowLuaExampleBoolean#1%
+  {\bgroup
+   \obeyluatokens
+   \startsubsummary[title={#1}]
+   \ctxlua{boolean.tocontext(#1)}
+   \stopsubsummary
+   \egroup}
+
+% interaction
+
+\setupinteraction
+  [state=start,
+   color=,
+   contrastcolor=]
+
+\setuplist
+  [chapter,section]
+  [interaction=all]
+
+\stopenvironment

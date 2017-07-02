@@ -1,0 +1,91 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+
+% \disabledirectives[paragraphs.normalize.global]
+% \disabledirectives[paragraphs.normalize.local]
+
+% \usemodule[s-lan-03]
+% \ctxlua{languages.words.tracers.showwords()} % no run check yet
+% \page
+% \setupspellchecking[state=start,method=2]
+
+% \enabletrackers[structures.export.spaces]
+% \enabletrackers[structures.export.showtree]
+
+% \enabletrackers[export.trace]
+% \enabletrackers[export.trace.spacing]
+% \enabletrackers[export.lessstate]
+% \enabletrackers[export.comment]
+
+% \enablemode[export]
+
+\startmode[export]
+
+    \setupbackend
+      [export=yes]
+
+    \setupexport
+      [hyphen=yes,
+       width=60em]
+
+\stopmode
+
+\setupinteraction
+  [title=Context Lua Documents,
+  %subtitle=preliminary version,
+   author=Hans Hagen]
+
+\startproduct cld-mkiv
+
+\environment cld-environment
+
+\component cld-titlepage
+
+\startfrontmatter
+    \component cld-contents
+    \component cld-introduction
+\stopfrontmatter
+
+\startbodymatter
+    \component cld-abitoflua
+    \component cld-gettingstarted
+    \component cld-moreonfunctions
+    \component cld-afewdetails
+    \component cld-somemoreexamples
+    \component cld-graphics
+    \component cld-macros
+    \component cld-verbatim
+    \component cld-logging
+    \component cld-luafunctions
+    \component cld-ctxfunctions
+    \component cld-callbacks
+    \component cld-backendcode
+    \component cld-goodies
+    \component cld-nicetoknow
+   %\component cld-xml
+    \component cld-summary
+    \component cld-specialcommands
+    \component cld-files
+\stopbodymatter
+
+% \startbackmatter
+%     \component cld-index
+% \stopbackmatter
+
+\stopproduct

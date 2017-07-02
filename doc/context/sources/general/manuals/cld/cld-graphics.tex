@@ -1,0 +1,342 @@
+% language=uk
+
+\startcomponent cld-graphics
+
+\environment cld-environment
+
+\startchapter[title=Graphics]
+
+\startsection[title=The regular interface]
+
+If you are familiar with \CONTEXT, which by now probably is the case, you will
+have noticed that it integrates the \METAPOST\ graphic subsystem. Drawing a
+graphic is not that complex:
+
+\startbuffer
+context.startMPcode()
+context [[
+  draw
+    fullcircle scaled 1cm
+    withpen pencircle scaled 1mm
+    withcolor .5white
+    dashed dashpattern (on 2mm off 2mm) ;
+ ]]
+context.stopMPcode()
+\stopbuffer
+
+\typebuffer
+
+We get a gray dashed circle rendered with an one millimeter thick line:
+
+\startlinecorrection
+\ctxluabuffer
+\stoplinecorrection
+
+So, we just use the regular commands and pass the drawing code as strings.
+Although \METAPOST\ is a rather normal language and therefore offers loops and
+conditions and the lot, you might want to use \LUA\ for anything else than the
+drawing commands. Of course this is much less efficient, but it could be that you
+don't care about speed. The next example demonstrates the interface for building
+graphics piecewise.
+
+\startbuffer
+context.resetMPdrawing()
+
+context.startMPdrawing()
+context([[fill fullcircle scaled 5cm withcolor (0,0,.5) ;]])
+context.stopMPdrawing()
+
+context.MPdrawing("pickup pencircle scaled .5mm ;")
+context.MPdrawing("drawoptions(withcolor white) ;")
+
+for i=0,50,5 do
+  context.startMPdrawing()
+  context("draw fullcircle scaled %smm ;",i)
+  context.stopMPdrawing()
+end
+
+for i=0,50,5 do
+  context.MPdrawing("draw fullsquare scaled " .. i .. "mm ;")
+end
+
+context.MPdrawingdonetrue()
+
+context.getMPdrawing()
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection
+\ctxluabuffer
+\stoplinecorrection
+
+I the first loop we can use the format options associated with the simple \type
+{context} call. This will not work in the second case. Even worse, passing more
+than one argument will definitely give a faulty graphic definition. This is why
+we have a special interface for \METAFUN. The code above can also be written as:
+
+\startbuffer
+local metafun = context.metafun
+
+metafun.start()
+
+metafun("fill fullcircle scaled 5cm withcolor %s ;",
+    metafun.color("darkblue"))
+
+metafun("pickup pencircle scaled .5mm ;")
+metafun("drawoptions(withcolor white) ;")
+
+for i=0,50,5 do
+  metafun("draw fullcircle scaled %smm ;",i)
+end
+
+for i=0,50,5 do
+  metafun("draw fullsquare scaled %smm ;",i)
+end
+
+metafun.stop()
+\stopbuffer
+
+\typebuffer
+
+Watch the call to \type {color}, this will pass definitions at the \TEX\ end to
+\METAPOST. Of course you really need to ask yourself \quotation {Do I want to use
+\METAPOST\ this way?}. Using \LUA\ loops instead of \METAPOST\ ones makes much
+more sense in the following case:
+
+\startbuffer
+local metafun = context.metafun
+
+function metafun.barchart(t)
+  metafun.start()
+  local t = t.data
+  for i=1,#t do
+    metafun("draw unitsquare xyscaled(%s,%s) shifted (%s,0);",
+      10, t[i]*10, i*10)
+  end
+  metafun.stop()
+end
+
+local one = { 1, 4, 6, 2, 3, }
+local two = { 8, 1, 3, 5, 9, }
+
+context.startcombination()
+  context.combination(metafun.delayed.barchart { data = one }, "one")
+  context.combination(metafun.delayed.barchart { data = two }, "two")
+context.stopcombination()
+\stopbuffer
+
+\typebuffer
+
+We get two barcharts alongside:
+
+\startlinecorrection
+\ctxluabuffer
+\stoplinecorrection
+
+\startbuffer
+local template = [[
+  path p, q ; color c[] ;
+  c1 := \MPcolor{darkblue} ;
+  c2 := \MPcolor{darkred} ;
+  p := fullcircle scaled 50 ;
+  l := length p ;
+  n := %s ;
+  q := subpath (0,%s/n*l) of p ;
+  draw q withcolor c2 withpen pencircle scaled 1 ;
+  fill fullcircle scaled 5 shifted point length q of q withcolor c1 ;
+  setbounds currentpicture to unitsquare shifted (-0.5,-0.5) scaled 60 ;
+  draw boundingbox currentpicture withcolor c1 ;
+  currentpicture := currentpicture xsized(1cm) ;
+]]
+
+local function steps(n)
+  for i=0,n do
+    context.metafun.start()
+      context.metafun(template,n,i)
+    context.metafun.stop()
+    if i < n then
+        context.quad()
+    end
+  end
+end
+
+context.hbox(function() steps(10) end)
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\ctxluabuffer
+\stoplinecorrection
+
+Using a template is quite convenient but at some point you can loose track of the
+replacement values. Also, adding an extra value can force you to adapt the
+following ones which enlarges the change for making an error. An alternative is
+to use the template mechanism. Although this mechanism was originally made for
+other purposes, you can use it for whatever you like.
+
+\startbuffer
+local template = [[
+    path p ; p := fullcircle scaled 4cm ;
+    draw p withpen pencircle scaled .5mm withcolor red ;
+    freedotlabel ("%lefttop%",    point 1 of p,origin) ;
+    freedotlabel ("%righttop%",   point 3 of p,origin) ;
+    freedotlabel ("%leftbottom%", point 5 of p,origin) ;
+    freedotlabel ("%rightbottom%",point 7 of p,origin) ;
+]]
+
+local variables = {
+  lefttop     = "one",
+  righttop    = "two",
+  leftbottom  = "three",
+  rightbottom = "four" ,
+}
+
+context.metafun.start()
+  context.metafun(utilities.templates.replace(template,variables))
+context.metafun.stop()
+\stopbuffer
+
+\typebuffer
+
+Here we use named placeholders and pass a table with associated values to the
+replacement function. Apart from convenience it's also more readable. And the
+overhead is rather minimal.
+
+\startlinecorrection
+\ctxluabuffer
+\stoplinecorrection
+
+To some extent we fool ourselves with this kind of \LUA fication of \METAPOST\
+code. Of course we can make a nice \METAPOST\ library and put the code in a macro
+instead. In that sense, doing this in \CONTEXT\ directly often gives better and
+more efficient code.
+
+Of course you can use all relevant commands in the \LUA\ interface, like:
+
+\starttyping
+context.startMPpage()
+  context("draw origin")
+  for i=0,100,10 do
+    context("..{down}(%d,0)",i)
+  end
+  context(" withcolor \\MPcolor{darkred} ;")
+context.stopMPpage()
+\stoptyping
+
+to get a graphic that has its own page. Don't use the \type {metafun} namespace
+here, as it will not work here. This drawing looks like:
+
+\startlinecorrection
+\startluacode
+context.startMPcode()
+  context("draw origin")
+  for i=0,100,10 do
+    context("..{down}(%d,0)",i)
+  end
+  context(" withcolor red ;")
+context.stopMPcode()
+\stopluacode
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=The \LUA\ interface]
+
+Messing around with graphics is normally not needed and if you do it, you'd
+better know what you're doing. For \TEX\ a graphic is just a black box: a
+rectangle with dimensions. You specify a graphic, in a format that the backend
+can deal with, either or not apply some scaling and from then on a reference to
+that graphic, normally wrapped in a normal \TEX\ box, enters the typesetting
+machinery. Because the backend, the part that is responsible for translating
+typeset content onto a viewable or printable format like \PDF, is built into
+\LUATEX, at some point the real image has to be injected and the backend can only
+handle a few image formats: \PNG, \JPG, \JBIG\ and \PDF.
+
+In \CONTEXT\ some more image formats are supported but in practice this boils
+down to converting the image to a format that the backend can handle. Such a
+conversion depends on an external programs and in order not to redo the
+conversion each run \CONTEXT\ keeps track of the need to redo it.
+
+Some converters are built in, for example one that deals with \GIF\ images. This
+is normally not a preferred format, but it happens that we have to deal with it
+in cases where organizations use that format (if only because they use the web).
+Here is how this works at the \LUA\ end:
+
+\starttyping
+figures.converters.gif = {
+  pdf = function(oldname,newname)
+    os.execute(string.format("gm convert %s %s",oldname,newname))
+  end
+}
+\stoptyping
+
+We use \type {gm} (Graphic Magic) for the conversion and pass the old and new
+names. Given this definition at the \TEX\ end we can say:
+
+\starttyping
+\externalfigure[whatever.gif][width=4cm]
+\stoptyping
+
+Here is a another one:
+
+\starttyping
+figures.converters.bmp = {
+  pdf = function(oldname,newname)
+      os.execute(string.format("gm convert %s %s",oldname,newname))
+  end
+}
+\stoptyping
+
+In both examples we convert to \PDF\ because including this filetype is quite
+fast. But you can also go to other formats:
+
+\starttyping
+figures.converters.png = {
+  png = function(oldname,newname,resolution)
+    local command = string.format('gm convert -depth 1 "%s" "%s"',oldname,newname)
+    logs.report(string.format("running command %s",command))
+    os.execute(command)
+  end
+}
+\stoptyping
+
+Instead of directly defining such a table, you can better do this:
+
+\starttyping
+figures.converters.png = figures.converters.png or { }
+
+figures.converters.png.png = function(oldname,newname,resolution)
+  local command = string.format('gm convert -depth 1 "%s" "%s"',oldname,newname)
+  logs.report(string.format("running command %s",command))
+  os.execute(command)
+end
+\stoptyping
+
+Here we check if a table exists and if not we extend the table. Such converters
+work out of the box if you specify the suffix, but you can also opt for a simple:
+
+\starttyping
+\externalfigure[whatever][width=4cm]
+\stoptyping
+
+In this case \CONTEXT\ will check for all known supported formats, which is not
+that efficient when no graphic can be found. In order to let for instance files
+with suffix \type {bmp} can be included you have to register it as follows. The
+second argument is the target.
+
+\starttyping
+figures.registersuffix("bmp","bmp")
+\stoptyping
+
+At some point more of the graphic inclusion helpers will be opened up for general
+use but for now this is what you have available.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,398 @@
+% language=uk
+
+\startcomponent cld-afewdetails
+
+\environment cld-environment
+
+\startchapter[title=A few Details]
+
+\startsection[title=Variables]
+
+\index{user interface}
+
+Normally it makes most sense to use the English version of \CONTEXT. The
+advantage is that you can use English keywords, as in:
+
+\starttyping
+context.framed( {
+    frame = "on",
+  },
+  "some text"
+)
+\stoptyping
+
+If you use the Dutch interface it looks like this:
+
+\starttyping
+context.omlijnd( {
+    kader = "aan",
+  },
+  "wat tekst"
+)
+\stoptyping
+
+A rather neutral way is:
+
+\starttyping
+context.framed( {
+    frame = interfaces.variables.on,
+  },
+  "some text"
+)
+\stoptyping
+
+But as said, normally you will use the English user interface so you can forget
+about these matters. However, in the \CONTEXT\ core code you will often see the
+variables being used this way because there we need to support all user
+interfaces.
+
+\stopsection
+
+\startsection[title=Modes]
+
+\index{modes}
+\index{systemmodes}
+\index{constants}
+
+Context carries a concept of modes. You can use modes to create conditional
+sections in your style (and|/|or content). You can control modes in your styles
+or you can set them at the command line or in job control files. When a mode test
+has to be done at processing time, then you need constructs like the following:
+
+\starttyping
+context.doifmodeelse( "screen",
+  function()
+      ... -- mode == screen
+  end,
+  function()
+      ... -- mode ~= screen
+  end
+)
+\stoptyping
+
+However, often a mode does not change during a run, and then we can use the
+following method:
+
+\starttyping
+if tex.modes["screen"] then
+  ...
+else
+  ...
+end
+\stoptyping
+
+Watch how the \type {modes} table lives in the \type {tex} namespace. We also
+have \type {systemmodes}. At the \TEX\ end these are mode names preceded by a
+\type {*}, so the following code is similar:
+
+\starttyping
+if tex.modes["*mymode"] then
+  -- this is the same
+elseif tex.systemmodes["mymode"] then
+  -- test as this
+else
+  -- but not this
+end
+\stoptyping
+
+Inside \CONTEXT\ we also have so called constants, and again these can be
+consulted at the \LUA\ end:
+
+\starttyping
+if tex.constants["someconstant'] then
+  ...
+else
+  ...
+end
+\stoptyping
+
+But you will hardly need these and, as they are often not public, their
+meaning can change, unless of course they {\em are} documented as public.
+
+\stopsection
+
+\startsection[title={Token lists}]
+
+\index{tokens}
+
+There is normally no need to mess around with nodes and tokens at the \LUA\ end
+yourself. However, if you do, then you might want to flush them as well. Say that
+at the \TEX\ end we have said:
+
+\startbuffer
+\toks0 = {Don't get \inframed{framed}!}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Then at the \LUA\ end you can say:
+
+\startbuffer
+context(tex.toks[0])
+\stopbuffer
+
+\typebuffer
+
+and get: \ctxluabuffer\ In fact, token registers are exposed as strings so here,
+register zero has type \type {string} and is treated as such.
+
+\startbuffer
+context("< %s >",tex.toks[0])
+\stopbuffer
+
+\typebuffer
+
+This gives: \ctxluabuffer. But beware, if you go the reverse way, you don't get
+what you might expect:
+
+\startbuffer
+tex.toks[0] = [[\framed{oeps}]]
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+If we now say \type{\the\toks0} we will get {\tttf \the\toks0} as
+all tokens are considered to be letters.
+
+\stopsection
+
+\startsection[title={Node lists}]
+
+\index{nodes}
+
+If you're not deep into \TEX\ you will never feel the need to manipulate node
+lists yourself, but you might want to flush boxes. As an example we put something
+in box zero (one of the scratch boxes).
+
+\startbuffer
+\setbox0 = \hbox{Don't get \inframed{framed}!}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+At the \TEX\ end you can flush this box (\type {\box0}) or take a copy
+(\type{\copy0}). At the \LUA\ end you would do:
+
+\starttyping
+context.copy()
+context.direct(0)
+\stoptyping
+
+or:
+
+\starttyping
+context.copy(false,0)
+\stoptyping
+
+but this works as well:
+
+\startbuffer
+context(node.copy_list(tex.box[0]))
+\stopbuffer
+
+\typebuffer
+
+So we get: \ctxluabuffer\ If you do:
+
+\starttyping
+context(tex.box[0])
+\stoptyping
+
+you also need to make sure that the box is freed but let's not go into those
+details now.
+
+Here is an example if messing around with node lists that get seen before a
+paragraph gets broken into lines, i.e.\ when hyphenation, font manipulation etc
+take place. First we define some colors:
+
+\startbuffer
+\definecolor[mynesting:0][r=.6]
+\definecolor[mynesting:1][g=.6]
+\definecolor[mynesting:2][r=.6,g=.6]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Next we define a function that colors nodes in such a way that we can see the
+different processing stages.
+
+\startbuffer
+\startluacode
+local enabled  = false
+local count    = 0
+local setcolor = nodes.tracers.colors.set
+
+function userdata.processmystuff(head)
+    if enabled then
+        local color = "mynesting:" .. (count % 3)
+     -- for n in node.traverse(head) do
+        for n in node.traverse_id(nodes.nodecodes.glyph,head) do
+            setcolor(n,color)
+        end
+        count = count + 1
+        return head, true
+    end
+    return head, false
+end
+
+function userdata.enablemystuff()
+    enabled = true
+end
+
+function userdata.disablemystuff()
+    enabled = false
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We hook this function into the normalizers category of the processor callbacks:
+
+\startbuffer
+\startluacode
+nodes.tasks.appendaction("processors", "normalizers", "userdata.processmystuff")
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We now can enable this mechanism and show an example:
+
+\startbuffer
+\startbuffer
+Node lists are processed \hbox {nested from \hbox{inside} out} which is not
+what you might expect. But, \hbox{coloring} does not \hbox {happen} really
+nested here, more \hbox {in} \hbox {the} \hbox {order} \hbox {of} \hbox
+{processing}.
+\stopbuffer
+
+\ctxlua{userdata.enablemystuff()}
+\par \getbuffer \par
+\ctxlua{userdata.disablemystuff()}
+\stopbuffer
+
+\typebuffer
+
+The \type {\par} is needed because otherwise the processing is already disabled
+before the paragraph gets seen by \TEX.
+
+\blank \getbuffer \blank
+
+\startbuffer
+\startluacode
+nodes.tasks.disableaction("processors", "userdata.processmystuff")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Instead of using an boolean to control the state, we can also do this:
+
+\starttyping
+\startluacode
+local count    = 0
+local setcolor = nodes.tracers.colors.set
+
+function userdata.processmystuff(head)
+    count = count + 1
+    local color = "mynesting:" .. (count % 3)
+    for n in node.traverse_id(nodes.nodecodes.glyph,head) do
+        setcolor(n,color)
+    end
+    return head, true
+end
+
+nodes.tasks.appendaction("processors", "after", "userdata.processmystuff")
+\stopluacode
+\stoptyping
+
+\startbuffer
+\startluacode
+nodes.tasks.disableaction("processors", "userdata.processmystuff")
+\stopluacode
+\stopbuffer
+
+Disabling now happens with:
+
+\typebuffer \getbuffer
+
+As you might want to control these things in more details, a simple helper
+mechanism was made: markers. The following example code shows the way:
+
+\startbuffer
+\definemarker[mymarker]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Again we define some colors:
+
+\startbuffer
+\definecolor[mymarker:1][r=.6]
+\definecolor[mymarker:2][g=.6]
+\definecolor[mymarker:3][r=.6,g=.6]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \LUA\ code like similar to the code presented before:
+
+\startbuffer
+\startluacode
+local setcolor    = nodes.tracers.colors.setlist
+local getmarker   = nodes.markers.get
+local hlist_code  = nodes.codes.hlist
+local traverse_id = node.traverse_id
+
+function userdata.processmystuff(head)
+    for n in traverse_id(hlist_code,head) do
+        local m = getmarker(n,"mymarker")
+        if m then
+            setcolor(n.list,"mymarker:" .. m)
+        end
+    end
+    return head, true
+end
+
+nodes.tasks.appendaction("processors", "after", "userdata.processmystuff")
+nodes.tasks.disableaction("processors", "userdata.processmystuff")
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This time we disabled the processor (if only because in this document we don't
+want the overhead.
+
+\startbuffer
+\startluacode
+nodes.tasks.enableaction("processors", "userdata.processmystuff")
+\stopluacode
+
+Node lists are processed \hbox \boxmarker{mymarker}{1} {nested from \hbox{inside}
+out} which is not what you might expect. But, \hbox {coloring} does not \hbox
+{happen} really nested here, more \hbox {in} \hbox \boxmarker{mymarker}{2} {the}
+\hbox {order} \hbox {of} \hbox \boxmarker{mymarker}{3} {processing}.
+
+\startluacode
+nodes.tasks.disableaction("processors", "userdata.processmystuff")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+The result looks familiar:
+
+\getbuffer
+
+% We don't want the burden of this demo to cary on:
+
+% {\em If there's enough interest I will expand this section with some basic
+% information on what nodes are.}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

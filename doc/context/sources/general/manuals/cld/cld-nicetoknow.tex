@@ -1,0 +1,163 @@
+% language=uk
+
+\startcomponent cld-nicetoknow
+
+\environment cld-environment
+
+\startchapter[title=Nice to know]
+
+\startsection[title=Introduction]
+
+As we like to abstract interfaces it is no surprise that \CONTEXT\ and
+therefore it's \LUA\ libraries come with all kind of helpers. In this
+chapter I will explain a few of them. Feel free to remind of adding more
+here.
+
+\stopsection
+
+\startsection[title=Templates]
+
+{\em Eventually we will move this to the utilities section.}
+
+When dealing with data from tables or when order matters it can be handy
+to abstract the actual data from the way it is dealt with. For this we
+provide a template mechanism. The following example demonstrate its use.
+
+\startbuffer
+require("util-ran") -- needed for this example
+
+local preamble = [[|l|l|c|]]
+local template = [[\NC %initials% \NC %surname% \NC %length% \NC \NR]]
+
+context.starttabulate { preamble }
+    for i=1,10 do
+        local row = utilities.templates.replace(template, {
+            surname  = utilities.randomizers.surname(5,10),
+            initials = utilities.randomizers.initials(1,3),
+            length   = string.format("%0.2f",math.random(140,195)),
+        })
+        context(row)
+    end
+context.stoptabulate()
+\stopbuffer
+
+\typebuffer
+
+This renders a table with random entries:
+
+\ctxluabuffer
+
+The nice thing is that when we change the order of the columns, we don't need to
+change the table builder.
+
+\starttyping
+local preamble = [[|c|l|l|]]
+local template = [[\NC %length% \NC %initials% \NC %surname% \NC \NR]]
+\stoptyping
+
+The \type {replace} function takes a few more arguments. There are also a some
+more replacement options.
+
+\starttyping
+replace("test '%[x]%' test",{ x = [[a 'x'  a]] }))
+replace("test '%[x]%' test",{ x = true }))
+replace("test '%[x]%' test",{ x = [[a 'x'  a]], y = "oeps" },'sql'))
+replace("test '%[x]%' test",{ x = [[a '%y%'  a]], y = "oeps" },'sql',true))
+replace([[test %[x]% test]],{ x = [[a "x"  a]]}))
+replace([[test %(x)% test]],{ x = [[a "x"  a]]}))
+\stoptyping
+
+The first argument is the template and the second one a table with mappings from
+keys to values. The third argument can be used to inform the replace mechanism
+what string escaping has to happen. The last argument triggers recursive
+replacement. The above calls result in the following strings:
+
+\starttyping
+test 'a 'x' \127 a' test
+test 'true' test
+test 'a ''x''  a' test
+test 'a ''oeps''  a' test
+test a \"x\" \127 a test
+test "a \"x\" \127 a" test
+\stoptyping
+
+These examples demonstrate that by adding a pair of square brackets we get
+escaped strings. When using parenthesis the quotes get added automatically. This
+is somewhat faster in case when \LUA\ is the target, but in practice it is not
+that noticeable.
+
+% replace(str,mapping,how,recurse)
+
+\stopsection
+
+\startsection [title=Extending]
+
+Instead of extending tex endlessly we can also define our own extensions. Here
+is an example. When you want to manipulate a box at the \LUA\ end you have the
+problem that the following will not always work out well:
+
+\starttyping
+local b = tex.getbox(0)
+-- mess around with b
+tex.setbox(0,b)
+\stoptyping
+
+So we end up with:
+
+\starttyping
+local b = node.copy_list(tex.getbox(0))
+-- mess around with b
+tex.setbox(0,b)
+\stoptyping
+
+The reason is that at the \TEX\ end grouping plays a role which means that values
+are saved and restored. However, there is a save way out by defining a function
+that cheats a bit:
+
+\starttyping
+function tex.takebox(id)
+    local box = tex.getbox(id)
+    if box then
+        local copy = node.copy(box)
+        local list = box.list
+        copy.list = list
+        box.list = nil
+        tex.setbox(id,nil)
+        return copy
+    end
+end
+\stoptyping
+
+Now we can say:
+
+\starttyping
+local b = tex.takebox(0)
+-- mess around with b
+tex.setbox(b)
+\stoptyping
+
+In this case we first get the box content and then let \TEX\ do some housekeeping.
+But, because we only keep the list node (which we copied) in the register the
+overhead of copying a whole list is gone.
+
+\stopsection
+
+% require("util-sto") require("char-def") require("char-ini")
+
+% local myformatter = utilities.strings.formatters.new()
+
+% string.addformatter("upper",  [[upper (%s)]],[[local upper  = characters.upper ]]) -- maybe handy
+% string.addformatter("lower",  [[lower (%s)]],[[local lower  = characters.lower ]]) -- maybe handy
+% string.addformatter("shaped", [[shaped(%s)]],[[local shaped = characters.shaped]]) -- maybe handy
+
+% utilities.strings.formatters.add("upper",  [[lpegmatch(p_toupper,%s)]],[[local p_toupper = lpeg.patterns.toupper]]) -- maybe handy
+% utilities.strings.formatters.add("lower",  [[lpegmatch(p_tolower,%s)]],[[local p_tolower = lpeg.patterns.tolower]]) -- maybe handy
+% utilities.strings.formatters.add("shaped", [[lpegmatch(p_toshape,%s)]],[[local p_toshape = lpeg.patterns.toshape]]) -- maybe handy
+
+% print("\n>>>",string.formatters["Is this %s handy or not?"](characters.upper("ÀÁÂÃÄÅàáâãäå")))
+% print("\n>>>",string.formatters["Is this %!upper! handy or not?"]("ÀÁÂÃÄÅàáâãäå"))
+% print("\n>>>",string.formatters["Is this %!shaped! handy or not?"]("ÀÁÂÃÄÅàáâãäå"))
+
+\stopchapter
+
+\stopcomponent

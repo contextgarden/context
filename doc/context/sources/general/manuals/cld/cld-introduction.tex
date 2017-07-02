@@ -1,0 +1,55 @@
+% language=uk
+
+\startcomponent cld-introduction
+
+\environment cld-environment
+
+\startchapter[title=Introduction]
+
+Sometimes you hear folks complain about the \TEX\ input language, i.e.\ the
+backslashed commands that determine your output. Of course, when alternatives are
+being discussed every one has a favourite programming language. In practice
+coding a document in each of them triggers similar sentiments with regards to
+coding as \TEX\ itself does.
+
+So, just for fun, I added a couple of commands to \CONTEXT\ \MKIV\ that permit
+coding a document in \LUA. In retrospect it has been surprisingly easy to
+implement a feature like this using metatables. Of course it's a bit slower than
+using \TEX\ as input language but sometimes the \LUA\ interface is more readable
+given the problem at hand.
+
+After a while I decided to use that interface in non|-|critical core \CONTEXT\
+code and in styles (modules) and solutions for projects. Using the \LUA\ approach
+is sometimes more convenient, especially if the code mostly manipulates data. For
+instance, if you process \XML\ files of database output you can use the interface
+that is available at the \TEX\ end, or you can use \LUA\ code to do the work, or
+you can use a combination. So, from now on, in \CONTEXT\ you can code your style
+and document source in (a mixture of) \TEX, \XML, \METAPOST\ and in \LUA.
+
+In the following chapters I will introduce typesetting in \LUA, but as we rely on
+\CONTEXT\ it is unavoidable that some regular \CONTEXT\ code shows up. The fact
+that you can ignore backslashes does not mean that you can do without knowledge
+of the underlying system. I expect that the user is somewhat familiar with this
+macro package. Some chapters are follow ups on articles or earlier publications.
+
+Some information (and mechanism) show up in more than one chapter. This is a side
+effect of \LUA\ being integrated in many places, so an isolated discussion is a
+bit hard.
+
+In the meantime most of the code is rather stable and proven. However, this
+manual will never be complete. You can find examples all over the code base, and
+duplicating everything here makes no sense. If you find errors, please let me
+know. If you think that something is missing, you can try to convince me to add
+it. It's hard to keep up with what gets added so input is welcome.
+
+\blank[2*big]
+
+\startlines
+Hans Hagen
+Hasselt NL
+2009 \emdash\ 2016
+\stoplines
+
+\stopchapter
+
+\stopcomponent

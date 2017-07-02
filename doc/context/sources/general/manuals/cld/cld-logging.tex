@@ -1,0 +1,91 @@
+% language=uk
+
+% maybe this will become a section instead
+
+\startcomponent cld-logging
+
+\environment cld-environment
+
+\startchapter[title={Logging}]
+
+Logging and localized messages have always been rather standardized in \CONTEXT,
+so upgrading the related mechanism had been quite doable. In \MKIV\ for a while
+we had two systems in parallel: the old one, mostly targeted at messages at the
+\TEX\ end, and a new one used at the \LUA\ end. But when more and more hybrid
+code showed up, integrating both systems made sense.
+
+Most logging concerns tracing and can be turned on and off on demand. This kind
+of control is now possible for all messages. Given that the right interfaces are
+used, you can turn off all messages:
+
+\starttyping
+context --silent
+\stoptyping
+
+This was already possible in \MKII, but there \TEX's own messages still were
+visible. More important is that we have control:
+
+\starttyping
+context --silent=structure*,resolve*,font*
+\stoptyping
+
+This will disable all reporting for these three categories. It is also possible
+to only disable messages to the console:
+
+\starttyping
+context --noconsole
+\stoptyping
+
+In \CONTEXT\ you can use directives:
+
+\starttyping
+\enabledirectives[logs.blocked=structure*,resolve*,font*]
+\enabledirectives[logs.target=file]
+\stoptyping
+
+As all logging is under \LUA\ control and because this (and other) kind of
+control has to kick in early in the initialization the code might look somewhat
+tricky. Users won't notice this because they only deal with the formal interface.
+Here we will only discuss the \LUA\ interfaces.
+
+Messages related to tracing are done as follows:
+
+\starttyping
+local report_whatever = logs.reporter("modules","whatever")
+
+report_whatever("not found: %s","this or that")
+\stoptyping
+
+The first line defined a logger in the category \type {modules}. You can give a
+second argument as well, the subcategory. Both will be shown as part of the
+message, of which an example is given in the second line.
+
+These messages are shown directly, that is, when the function is called. However,
+when you generate \TEX\ code, as we discuss in this document, you need to make
+sure that the message is synchronized with that code. This can be done with a
+messenger instead of a reporter.
+
+\starttyping
+local report_numbers = logs.reporter("numbers","check")
+local status_numbers = logs.messenger("numbers","check")
+
+status_numbers("number 1: %s, number 2: %s",123,456)
+report_numbers("number 1: %s, number 2: %s",456,123)
+\stoptyping
+
+Both reporters and messages are localized when the pattern given as first
+argument can be found in the \type {patterns} subtable of the interface messages.
+Categories and subcategories are also translated, but these are looked up in the
+\type {translations} subtable. So in the case of
+
+\starttyping
+report_whatever("found: %s",filename)
+report_whatever("not found: %s",filename)
+\stoptyping
+
+you should not be surprised if it gets translated. Of course the category and
+subcategory provide some contextual information.
+
+\stopchapter
+
+\stopcomponent

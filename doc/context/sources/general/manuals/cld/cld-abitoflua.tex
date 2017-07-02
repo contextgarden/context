@@ -1,0 +1,840 @@
+% language=uk
+
+\startcomponent cld-abitoflua
+
+\environment cld-environment
+
+\startchapter[title=A bit of Lua]
+
+\startsection[title=The language]
+
+\index[lua]{\LUA}
+
+Small is beautiful and this is definitely true for the programming language \LUA\
+(moon in Portuguese). We had good reasons for using this language in \LUATEX:
+simplicity, speed, syntax and size to mention a few. Of course personal taste
+also played a role and after using a couple of scripting languages extensively
+the switch to \LUA\ was rather pleasant.
+
+As the \LUA\ reference manual is an excellent book there is no reason to discuss
+the language in great detail: just buy \quote {Programming in \LUA} by the \LUA\
+team. Nevertheless I will give a short summary of the important concepts but
+consult the book if you want more details.
+
+\stopsection
+
+\startsection[title=Data types]
+
+\index{functions}
+\index{variables}
+\index{strings}
+\index{numbers}
+\index{booleans}
+\index{tables}
+
+The most basic data type is \type {nil}. When we define a variable, we don't need
+to give it a value:
+
+\starttyping
+local v
+\stoptyping
+
+Here the variable \type {v} can get any value but till that
+happens it equals \type {nil}. There are simple data types like
+\type {numbers}, \type {booleans} and \type {strings}. Here are
+some numbers:
+
+\starttyping
+local n = 1 + 2 * 3
+local x = 2.3
+\stoptyping
+
+Numbers are always floats \footnote {This is true for all versions upto 5.2 but
+following version can have a more hybrid model.} and you can use the normal
+arithmetic operators on them as well as functions defined in the math library.
+Inside \TEX\ we have only integers, although for instance dimensions can be
+specified in points using floats but that's more syntactic sugar. One reason for
+using integers in \TEX\ has been that this was the only way to guarantee
+portability across platforms. However, we're 30 years along the road and in \LUA\
+the floats are implemented identical across platforms, so we don't need to worry
+about compatibility.
+
+Strings in \LUA\ can be given between quotes or can be so called long strings
+forced by square brackets.
+
+\starttyping
+local s = "Whatever"
+local t = s .. ' you want'
+local u = t .. [[ to know]] .. [[--[ about Lua!]--]]
+\stoptyping
+
+The two periods indicate a concatenation. Strings are hashed, so when you say:
+
+\starttyping
+local s = "Whatever"
+local t = "Whatever"
+local u = t
+\stoptyping
+
+only one instance of \type {Whatever} is present in memory and this fact makes
+\LUA\ very efficient with respect to strings. Strings are constants and therefore
+when you change variable \type {s}, variable \type {t} keeps its value. When you
+compare strings, in fact you compare pointers, a method that is really fast. This
+compensates the time spent on hashing pretty well.
+
+Booleans are normally used to keep a state or the result from an expression.
+
+\starttyping
+local b = false
+local c = n > 10 and s == "whatever"
+\stoptyping
+
+The other value is \type {true}. There is something that you need
+to keep in mind when you do testing on variables that are yet
+unset.
+
+\starttyping
+local b = false
+local n
+\stoptyping
+
+The following applies when \type {b} and \type {n} are defined this way:
+
+\starttabulate[|Tl|Tl|]
+\NC b == false \NC true  \NC \NR
+\NC n == false \NC false \NC \NR
+\NC n == nil   \NC true  \NC \NR
+\NC b == nil   \NC false \NC \NR
+\NC b == n     \NC false \NC \NR
+\NC n == nil   \NC true  \NC \NR
+\stoptabulate
+
+Often a test looks like:
+
+\starttyping
+if somevar then
+    ...
+else
+    ...
+end
+\stoptyping
+
+In this case we enter the else branch when \type {somevar} is either \type {nil}
+or \type {false}. It also means that by looking at the code we cannot beforehand
+conclude that \type {somevar} equals \type {true} or something else. If you want
+to really distinguish between the two cases you can be more explicit:
+
+\starttyping
+if somevar == nil then
+    ...
+elseif somevar == false then
+    ...
+else
+    ...
+end
+\stoptyping
+
+or
+
+\starttyping
+if somevar == true then
+    ...
+else
+    ...
+end
+\stoptyping
+
+but such an explicit test is seldom needed.
+
+There are a few more data types: tables and functions. Tables are very important
+and you can recognize them by the same curly braces that make \TEX\ famous:
+
+\starttyping
+local t = { 1, 2, 3 }
+local u = { a = 4, b = 9, c = 16 }
+local v = { [1] = "a", [3] = "2", [4] = false }
+local w = { 1, 2, 3, a = 4, b = 9, c = 16 }
+\stoptyping
+
+The \type {t} is an indexed table and \type {u} a hashed table. Because the
+second slot is empty, table \type {v} is partially indexed (slot 1) and partially
+hashed (the others). There is a gray area there, for instance, what happens when
+you nil a slot in an indexed table? In practice you will not run into problems as
+you will either use a hashed table, or an indexed table (with no holes), so table
+\type {w} is not uncommon.
+
+We mentioned that strings are in fact shared (hashed) but that an assignment of a
+string to a variable makes that variable behave like a constant. Contrary to
+that, when you assign a table, and then copy that variable, both variables can be
+used to change the table. Take this:
+
+\starttyping
+local t = { 1, 2, 3 }
+local u = t
+\stoptyping
+
+We can change the content of the table as follows:
+
+\starttyping
+t[1], t[3] = t[3], t[1]
+\stoptyping
+
+Here we swap two cells. This is an example of a parallel assigment. However, the
+following does the same:
+
+\starttyping
+t[1], t[3] = u[3], u[1]
+\stoptyping
+
+After this, both \type {t} and \type {u} still share the same table. This kind of
+behaviour is quite natural. Keep in mind that expressions are evaluated first, so
+
+\starttyping
+t[#t+1], t[#t+1] = 23, 45
+\stoptyping
+
+Makes no sense, as the values end up in the same slot. There is no gain in speed
+so using parallel assignments is mostly a convenience feature.
+
+There are a few specialized data types in \LUA, like \type {coroutines} (built
+in), \type {file} (when opened), \type {lpeg} (only when this library is linked
+in or loaded). These are called \quote {userdata} objects and in \LUATEX\ we have
+more userdata objects as we will see in later chapters. Of them nodes are the
+most noticeable: they are the core data type of the \TEX\ machinery. Other
+libraries, like \type {math} and \type {bit32} are just collections of functions
+operating on numbers.
+
+Functions look like this:
+
+\starttyping
+function sum(a,b)
+  print(a, b, a + b)
+end
+\stoptyping
+
+or this:
+
+\starttyping
+function sum(a,b)
+  return a + b
+end
+\stoptyping
+
+There can be many arguments of all kind of types and there can be multiple return
+values. A function is a real type, so you can say:
+
+\starttyping
+local f = function(s) print("the value is: " .. s) end
+\stoptyping
+
+In all these examples we defined variables as \type {local}. This is a good
+practice and avoids clashes. Now watch the following:
+
+\starttyping
+local n = 1
+
+function sum(a,b)
+  n = n + 1
+  return a + b
+end
+
+function report()
+  print("number of summations: " .. n)
+end
+\stoptyping
+
+Here the variable \type {n} is visible after its definition and accessible for
+the two global functions. Actually the variable is visible to all the code
+following, unless of course we define a new variable with the same name. We can
+hide \type {n} as follows:
+
+\starttyping
+do
+  local n = 1
+
+  sum = function(a,b)
+    n = n + 1
+    return a + b
+  end
+
+  report = function()
+    print("number of summations: " .. n)
+  end
+end
+\stoptyping
+
+This example also shows another way of defining the function: by assignment.
+
+The \typ {do ... end} creates a so called closure. There are many places where
+such closures are created, for instance in function bodies or branches like \typ
+{if ... then ... else}. This means that in the following snippet, variable \type
+{b} is not seen after the end:
+
+\starttyping
+if a > 10 then
+  local b = a + 10
+  print(b*b)
+end
+\stoptyping
+
+When you process a blob of \LUA\ code in \TEX\ (using \type {\directlua} or \type
+{\latelua}) it happens in a closure with an implied \typ {do ... end}. So, \type
+{local} defined variables are really local.
+
+\stopsection
+
+\startsection[title=\TEX's data types]
+
+We mentioned \type {numbers}. At the \TEX\ end we have counters as well as
+dimensions. Both are numbers but dimensions are specified differently
+
+\starttyping
+local n = tex.count[0]
+local m = tex.dimen.lineheight
+local o = tex.sp("10.3pt") -- sp or 'scaled point' is the smallest unit
+\stoptyping
+
+The unit of dimension is \quote {scaled point} and this is a pretty small unit:
+10 points equals to 655360 such units.
+
+Another accessible data type is tokens. They are automatically converted to
+strings and vice versa.
+
+\starttyping
+tex.toks[0] = "message"
+print(tex.toks[0])
+\stoptyping
+
+Be aware of the fact that the tokens are letters so the following will come out
+as text and not issue a message:
+
+\starttyping
+tex.toks[0] = "\message{just text}"
+print(tex.toks[0])
+\stoptyping
+
+\stopsection
+
+\startsection[title=Control structures]
+
+\index{loops}
+
+Loops are not much different from other languages: we have \typ {for ... do},
+\typ {while ... do} and \typ {repeat ... until}. We start with the simplest case:
+
+\starttyping
+for index=1,10 do
+  print(index)
+end
+\stoptyping
+
+You can specify a step and go downward as well:
+
+\starttyping
+for index=22,2,-2 do
+  print(index)
+end
+\stoptyping
+
+Indexed tables can be traversed this way:
+
+\starttyping
+for index=1,#list do
+  print(index, list[index])
+end
+\stoptyping
+
+Hashed tables on the other hand are dealt with as follows:
+
+\starttyping
+for key, value in next, list do
+  print(key, value)
+end
+\stoptyping
+
+Here \type {next} is a built in function. There is more to say about this
+mechanism but the average user will use only this variant. Slightly less
+efficient is the following, more readable variant:
+
+\starttyping
+for key, value in pairs(list) do
+  print(key, value)
+end
+\stoptyping
+
+and for an indexed table:
+
+\starttyping
+for index, value in ipairs(list) do
+  print(index, value)
+end
+\stoptyping
+
+The function call to \type {pairs(list)} returns \typ {next, list} so there is an
+(often neglectable) extra overhead of one function call.
+
+The other two loop variants, \type {while} and \type {repeat}, are similar.
+
+\starttyping
+i = 0
+while i < 10  do
+  i = i + 1
+  print(i)
+end
+\stoptyping
+
+This can also be written as:
+
+\starttyping
+i = 0
+repeat
+  i = i + 1
+  print(i)
+until i = 10
+\stoptyping
+
+Or:
+
+\starttyping
+i = 0
+while true do
+  i = i + 1
+  print(i)
+  if i = 10 then
+    break
+  end
+end
+\stoptyping
+\stopsection
+
+Of course you can use more complex expressions in such constructs.
+
+\startsection[title=Conditions]
+
+\index{expressions}
+
+Conditions have the following form:
+
+\starttyping
+if a == b or c > d or e then
+  ...
+elseif f == g then
+  ...
+else
+  ...
+end
+\stoptyping
+
+Watch the double \type {==}. The complement of this is \type {~=}. Precedence is
+similar to other languages. In practice, as strings are hashed. Tests like
+
+\starttyping
+if key == "first" then
+  ...
+end
+\stoptyping
+
+and
+
+\starttyping
+if n == 1 then
+  ...
+end
+\stoptyping
+
+are equally efficient. There is really no need to use numbers to identify states
+instead of more verbose strings.
+
+\stopsection
+
+\startsection[title=Namespaces]
+
+\index{namespaces}
+
+Functionality can be grouped in libraries. There are a few default libraries,
+like \type {string}, \type {table}, \type {lpeg}, \type {math}, \type {io} and
+\type {os} and \LUATEX\ adds some more, like \type {node}, \type {tex} and \type
+{texio}.
+
+A library is in fact nothing more than a bunch of functionality organized using a
+table, where the table provides a namespace as well as place to store public
+variables. Of course there can be local (hidden) variables used in defining
+functions.
+
+\starttyping
+do
+  mylib = { }
+
+  local n = 1
+
+  function mylib.sum(a,b)
+    n = n + 1
+    return a + b
+  end
+
+  function mylib.report()
+    print("number of summations: " .. n)
+  end
+end
+\stoptyping
+
+The defined function can be called like:
+
+\starttyping
+mylib.report()
+\stoptyping
+
+You can also create a shortcut, This speeds up the process because there are less
+lookups then. In the following code multiple calls take place:
+
+\starttyping
+local sum = mylib.sum
+
+for i=1,10 do
+  for j=1,10 do
+    print(i, j, sum(i,j))
+  end
+end
+
+mylib.report()
+\stoptyping
+
+As \LUA\ is pretty fast you should not overestimate the speedup, especially not
+when a function is called seldom. There is an important side effect here: in the
+case of:
+
+\starttyping
+  print(i, j, sum(i,j))
+\stoptyping
+
+the meaning of \type {sum} is frozen. But in the case of
+
+\starttyping
+  print(i, j, mylib.sum(i,j))
+\stoptyping
+
+The current meaning is taken, that is: each time the interpreter will access
+\type {mylib} and get the current meaning of \type {sum}. And there can be a good
+reason for this, for instance when the meaning is adapted to different
+situations.
+
+In \CONTEXT\ we have quite some code organized this way. Although much is exposed
+(if only because it is used all over the place) you should be careful in using
+functions (and data) that are still experimental. There are a couple of general
+libraries and some extend the core \LUA\ libraries. You might want to take a look
+at the files in the distribution that start with \type {l-}, like \type
+{l-table.lua}. These files are preloaded.\footnote {In fact, if you write scripts
+that need their functionality, you can use \type {mtxrun} to process the script,
+as \type {mtxrun} has the core libraries preloaded as well.} For instance, if you
+want to inspect a table, you can say:
+
+\starttyping
+local t = { "aap", "noot", "mies" }
+table.print(t)
+\stoptyping
+
+You can get an overview of what is implemented by running the following command:
+
+\starttyping
+context s-tra-02 --mode=tablet
+\stoptyping
+
+{\em todo: add nice synonym for this module and also add helpinfo at the to so
+that we can do \type {context --styles}}
+
+\stopsection
+
+\startsection[title=Comment]
+
+\index{comment}
+
+You can add comments to your \LUA\ code. There are basically two methods: one
+liners and multi line comments.
+
+\starttyping
+local option = "test" -- use this option with care
+
+local method = "unknown" --[[comments can be very long and when entered
+                             this way they and span multiple lines]]
+\stoptyping
+
+The so called long comments look like long strings preceded by \type {--} and
+there can be more complex boundary sequences.
+
+\stopsection
+
+\startsection[title=Pitfalls]
+
+Sometimes \type {nil} can bite you, especially in tables, as they have a dual nature:
+indexed as well as hashed.
+
+\startbuffer
+\startluacode
+local n1 = # { nil, 1, 2, nil }      -- 3
+local n2 = # { nil, nil, 1, 2, nil } -- 0
+
+context("n1 = %s and n2 = %s",n1,n2)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+results in: \getbuffer
+
+So, you cannot really depend on the length operator here. On the other hand, with:
+
+\startbuffer
+\startluacode
+local function check(...)
+    return select("#",...)
+end
+
+local n1 = check ( nil, 1, 2, nil )      -- 4
+local n2 = check ( nil, nil, 1, 2, nil ) -- 5
+
+context("n1 = %s and n2 = %s",n1,n2)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+we get: \getbuffer, so the \type {select} is quite useable. However, that function also
+has its specialities. The following example needs some close reading:
+
+\startbuffer
+\startluacode
+local function filter(n,...)
+    return select(n,...)
+end
+
+local v1 = { filter ( 1, 1, 2, 3 ) }
+local v2 = { filter ( 2, 1, 2, 3 ) }
+local v3 = { filter ( 3, 1, 2, 3 ) }
+
+context("v1 = %+t and v2 = %+t and v3 = %+t",v1,v2,v3)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+We collect the result in a table and show the concatination:
+
+\getbuffer
+
+So, what you effectively get is the whole list starting with the given offset.
+
+\startbuffer
+\startluacode
+local function filter(n,...)
+    return (select(n,...))
+end
+
+local v1 = { filter ( 1, 1, 2, 3 ) }
+local v2 = { filter ( 2, 1, 2, 3 ) }
+local v3 = { filter ( 3, 1, 2, 3 ) }
+
+context("v1 = %+t and v2 = %+t and v3 = %+t",v1,v2,v3)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Now we get: \getbuffer. The extra \type {()} around the result makes sure that
+we only get one return value.
+
+Of course the same effect can be achieved as follows:
+
+\starttyping
+local function filter(n,...)
+    return select(n,...)
+end
+
+local v1 = filter ( 1, 1, 2, 3 )
+local v2 = filter ( 2, 1, 2, 3 )
+local v3 = filter ( 3, 1, 2, 3 )
+
+context("v1 = %s and v2 = %s and v3 = %s",v1,v2,v3)
+\stoptyping
+
+\stopsection
+
+\startsection[title={A few suggestions}]
+
+You can wrap all kind of functionality in functions but sometimes it makes no
+sense to add the overhead of a call as the same can be done with hardly any code.
+
+If you want a slice of a table, you can copy the range needed to a new table. A
+simple version with no bounds checking is:
+
+\starttyping
+local new = { } for i=a,b do new[#new+1] = old[i] end
+\stoptyping
+
+Another, much faster, variant is the following.
+
+\starttyping
+local new = { unpack(old,a,b) }
+\stoptyping
+
+You can use this variant for slices that are not extremely large. The function
+\type {table.sub} is an equivalent:
+
+\starttyping
+local new = table.sub(old,a,b)
+\stoptyping
+
+An indexed table is empty when its size equals zero:
+
+\starttyping
+if #indexed == 0 then ... else ... end
+\stoptyping
+
+Sometimes this is better:
+
+\starttyping
+if indexed and #indexed == 0 then ... else ... end
+\stoptyping
+
+So how do we test if a hashed table is empty? We can use the
+\type {next} function as in:
+
+\starttyping
+if hashed and next(indexed) then ... else ... end
+\stoptyping
+
+Say that we have the following table:
+
+\starttyping
+local t = { a=1, b=2, c=3 }
+\stoptyping
+
+The call \type {next(t)} returns the first key and value:
+
+\starttyping
+local k, v = next(t)   -- "a", 1
+\stoptyping
+
+The second argument to \type {next} can be a key in which case the
+following key and value in the hash table is returned. The result
+is not predictable as a hash is unordered. The generic for loop
+uses this to loop over a hashed table:
+
+\starttyping
+for k, v in next, t do
+    ...
+end
+\stoptyping
+
+Anyway, when \type {next(t)} returns zero you can be sure that the table is
+empty. This is how you can test for exactly one entry:
+
+\starttyping
+if t and not next(t,next(t)) then ... else ... end
+\stoptyping
+
+Here it starts making sense to wrap it into a function.
+
+\starttyping
+function table.has_one_entry(t)
+    t and not next(t,next(t))
+end
+\stoptyping
+
+On the other hand, this is not that usefull, unless you can spent the runtime on
+it:
+
+\starttyping
+function table.is_empty(t)
+    return not t or not next(t)
+end
+\stoptyping
+
+\stopsection
+
+\startsection[title=Interfacing]
+
+We have already seen that you can embed \LUA\ code using commands like:
+
+\starttyping
+\startluacode
+    print("this works")
+\stopluacode
+\stoptyping
+
+This command should not be confused with:
+
+\starttyping
+\startlua
+    print("this works")
+\stoplua
+\stoptyping
+
+The first variant has its own catcode regime which means that tokens between the start
+and stop command are treated as \LUA\ tokens, with the exception of \TEX\ commands. The
+second variant operates under the regular \TEX\ catcode regime.
+
+Their short variants are \type {\ctxluacode} and \type {\ctxlua} as in:
+
+\starttyping
+\ctxluacode{print("this works")}
+\ctxlua{print("this works")}
+\stoptyping
+
+In practice you will probably use \type {\startluacode} when using or defining % \stopluacode
+a blob of \LUA\ and \type {\ctxlua} for inline code. Keep in mind that the
+longer versions need more initialization and have more overhead.
+
+There are some more commands. For instance \type {\ctxcommand} can be used as
+an efficient way to access functions in the \type {commands} namespace. The
+following two calls are equivalent:
+
+\starttyping
+\ctxlua    {commands.thisorthat("...")}
+\ctxcommand         {thisorthat("...")}
+\stoptyping
+
+There are a few shortcuts to the \type {context} namespace. Their use can best be
+seen from their meaning:
+
+\starttyping
+\cldprocessfile#1{\directlua{context.runfile("#1")}}
+\cldloadfile   #1{\directlua{context.loadfile("#1")}}
+\cldcontext    #1{\directlua{context(#1)}}
+\cldcommand    #1{\directlua{context.#1}}
+\stoptyping
+
+Each time a call out to \LUA\ happens the argument eventually gets parsed, converted
+into tokens, then back into a string, compiled to bytecode and executed. The next
+example code shows a mechanism that avoids this:
+
+\starttyping
+\startctxfunction MyFunctionA
+    context(" A1 ")
+\stopctxfunction
+
+\startctxfunctiondefinition MyFunctionB
+    context(" B2 ")
+\stopctxfunctiondefinition
+\stoptyping
+
+The first command associates a name with some \LUA\ code and that code can be
+executed using:
+
+\starttyping
+\ctxfunction{MyFunctionA}
+\stoptyping
+
+The second definition creates a command, so there we do:
+
+\starttyping
+\MyFunctionB
+\stoptyping
+
+There are some more helpers but for use in document sources they make less sense. You
+can always browse the source code for examples.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

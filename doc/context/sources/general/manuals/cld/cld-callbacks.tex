@@ -1,0 +1,240 @@
+% language=uk
+
+\startcomponent cld-callbacks
+
+\environment cld-environment
+
+\startchapter[title={Callbacks}]
+
+\startsection [title={Introduction}]
+
+\index {callbacks}
+
+The \LUATEX\ engine provides the usual basic \TEX\ functionality plus a bit more.
+It is a deliberate choice not to extend the core engine too much. Instead all
+relevant processes can be overloaded by new functionality written in \LUA. In
+\CONTEXT\ callbacks are wrapped in a protective layer: on the one hand there is
+extra functionality (usually interfaced through macros) and on the other hand
+users can pop in their own handlers using hooks. Of course a plugged in function
+has to do the right thing and not mess up the data structures. In this chapter
+the layer on top of callbacks is described.
+
+\stopsection
+
+\startsection [title={Actions}]
+
+\index {nodelists}
+
+Nearly all callbacks in \LUATEX\ are used in \CONTEXT. In the following list the
+callbacks tagged with \type {enabled} are used and frozen, the ones tagged \type
+{disabled} are blocked and never used, while the ones tagged \type {undefined}
+are yet unused.
+
+% \ctxlua{callbacks.table()} % \ctxlua{callbacks.report()}
+\ctxcommand{showcallbacks()}
+
+Eventually all callbacks will be used so don't rely on undefined callbacks not
+being protected. Some callbacks are only set when certain functionality is
+enabled.
+
+It may sound somewhat harsh but if users kick in their own code, we cannot
+guarantee \CONTEXT's behaviour any more and support becomes a pain. If you really
+need to use a callback yourself, you should use one of the hooks and make sure
+that you return the right values.
+
+All callbacks related to file handling, font definition and housekeeping are
+frozen and cannot be overloaded. A reason for this are that we need some kind of
+protection against misuse. Another reason is that we operate in a well defined
+environment, the so called \TEX\ directory structure, and we don't want to mess
+with that. And of course, the overloading permits \CONTEXT\ to provide extensions
+beyond regular engine functionality.
+
+So as a fact we only open up some of the node list related callbacks and these
+are grouped as follows:
+
+\starttabulate[|l|l|p|]
+\FL
+\NC \bf category \NC \bf callback \NC \bf usage \NC \NR
+\TL
+\NC \type{processors}   \NC \type{pre_linebreak_filter}  \NC called just before the paragraph is broken into lines \NC \NR
+\NC                     \NC \type{hpack_filter}          \NC called just before a horizontal box is constructed \NC \NR
+\NC \type{finalizers}   \NC \type{post_linebreak_filter} \NC called just after the paragraph has been broken into lines \NC \NR
+\NC \type{shipouts}     \NC \type{no callback yet}       \NC applied to the box (or xform) that is to be shipped out \NC \NR
+\NC \type{mvlbuilders}  \NC \type{buildpage_filter}      \NC called after some material has been added to the main vertical list \NC \NR
+\NC \type{vboxbuilders} \NC \type{vpack_filter}          \NC called when some material is added to a vertical box \NC \NR
+%NC \type{parbuilders}  \NC \type{linebreak_filter}      \NC called when a paragraph is to be broken into lines \NC \NR
+%NC \type{pagebuilders} \NC \type{pre_output_filter}     \NC called when a page it fed into the output routing \NC \NR
+\NC \type{math}         \NC \type{mlist_to_hlist}        \NC called just after the math list is created, before it is turned into an horizontal list \NC \NR
+\BL
+\stoptabulate
+
+Each category has several subcategories but for users only two make sense: \type
+{before} and \type {after}. Say that you want to hook some tracing into the \type
+{mvlbuilder}. This is how it's done:
+
+\starttyping
+function third.mymodule.myfunction(where)
+    nodes.show_simple_list(tex.lists.contrib_head)
+end
+
+nodes.tasks.appendaction("processors", "before", "third.mymodule.myfunction")
+\stoptyping
+
+As you can see, in this case the function gets no \type {head} passed (at least
+not currently). This example also assumes that you know how to access the right
+items. The arguments and return values are given below. \footnote {This interface
+might change a bit in future versions of \CONTEXT. Therefore we will not discuss
+the few more optional arguments that are possible.}
+
+\starttabulate[|l|l|p|]
+\FL
+\NC \bf category \NC \bf arguments \NC \bf return value \NC \NR
+\TL
+\NC \type{processors}   \NC \type{head, ...} \NC \type{head, done} \NC \NR
+\NC \type{finalizers}   \NC \type{head, ...} \NC \type{head, done} \NC \NR
+\NC \type{shipouts}     \NC \type{head}      \NC \type{head, done} \NC \NR
+\NC \type{mvlbuilders}  \NC                  \NC \type{done}       \NC \NR
+\NC \type{vboxbuilders} \NC \type{head, ...} \NC \type{head, done} \NC \NR
+\NC \type{parbuilders}  \NC \type{head, ...} \NC \type{head, done} \NC \NR
+\NC \type{pagebuilders} \NC \type{head, ...} \NC \type{head, done} \NC \NR
+\NC \type{math}         \NC \type{head, ...} \NC \type{head, done} \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection [title={Tasks}]
+
+\index {tasks}
+
+In the previous section we already saw that the actions are in fact tasks and
+that we can append (and therefore also prepend) to a list of tasks. The \type
+{before} and \type {after} task lists are valid hooks for users contrary to the
+other tasks that can make up an action. However, the task builder is generic
+enough for users to be used for individual tasks that are plugged into the user
+hooks.
+
+Of course at some point, too many nested tasks bring a performance penalty with
+them. At the end of a run \MKIV\ reports some statistics and timings and these
+can give you an idea how much time is spent in \LUA.
+
+The following tables list all the registered tasks for the processors actions:
+
+\ctxlua{nodes.tasks.table("processors")}
+
+Some of these do have subtasks and some of these even more, so you can imagine
+that quite some action is going on there.
+
+The finalizer tasks are:
+
+\ctxlua{nodes.tasks.table("finalizers")}
+
+Shipouts concern:
+
+\ctxlua{nodes.tasks.table("shipouts")}
+
+There are not that many mvlbuilder tasks currently:
+
+\ctxlua{nodes.tasks.table("mvlbuilders")}
+
+The vboxbuilder perform similar tasks:
+
+\ctxlua{nodes.tasks.table("vboxbuilders")}
+
+In the future we expect to have more parbuilder tasks. Here again there are
+subtasks that depend on the current typesetting environment, so this is the right
+spot for language specific treatments.
+
+\ctxlua{nodes.tasks.table("parbuilders")}
+
+The following actions are applied just before the list is passed on the the
+output routine. The return value is a vlist.
+
+\ctxlua{nodes.tasks.table("pagebuilders")}
+
+{\em Both the parbuilders and pagebuilder tasks are unofficial and not yet meant
+for users.}
+
+Finally, we have tasks related to the math list:
+
+\ctxlua{nodes.tasks.table("math")}
+
+As \MKIV\ is developed in sync with \LUATEX\ and code changes from experimental
+to more final and reverse, you should not be too surprised if the registered
+function names change.
+
+You can create your own task list with:
+
+\starttyping
+nodes.tasks.new("mytasks",{ "one", "two" })
+\stoptyping
+
+After that you can register functions. You can append as well as prepend them
+either or not at a specific position.
+
+\starttyping
+nodes.tasks.appendaction ("mytask","one","bla.alpha")
+nodes.tasks.appendaction ("mytask","one","bla.beta")
+
+nodes.tasks.prependaction("mytask","two","bla.gamma")
+nodes.tasks.prependaction("mytask","two","bla.delta")
+
+nodes.tasks.appendaction ("mytask","one","bla.whatever","bla.alpha")
+\stoptyping
+
+Functions can also be removed:
+
+\starttyping
+nodes.tasks.removeaction("mytask","one","bla.whatever")
+\stoptyping
+
+As removal is somewhat drastic, it is also possible to enable and disable
+functions. From the fact that with these two functions you don't specify a
+category (like \type {one} or \type {two}) you can conclude that the function
+names need to be unique within the task list or else all with the same name
+within this task will be disabled.
+
+\starttyping
+nodes.tasks.enableaction ("mytask","bla.whatever")
+nodes.tasks.disableaction("mytask","bla.whatever")
+\stoptyping
+
+The same can be done with a complete category:
+
+\starttyping
+nodes.tasks.enablegroup ("mytask","one")
+nodes.tasks.disablegroup("mytask","one")
+\stoptyping
+
+There is one function left:
+
+\starttyping
+nodes.tasks.actions("mytask",2)
+\stoptyping
+
+This function returns a function that when called will perform the tasks. In this
+case the function takes two extra arguments in addition to \type {head}.
+\footnote {Specifying this number permits for some optimization but is not really
+needed}
+
+Tasks themselves are implemented on top of sequences but we won't discuss them
+here.
+
+\stopsection
+
+\startsection [title={Paragraph and page builders}]
+
+Building paragraphs and pages is implemented differently and has no user hooks.
+There is a mechanism for plugins but the interface is quite experimental.
+
+\stopsection
+
+\startsection [title={Some examples}]
+
+{\em todo}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,841 @@
+% language=uk
+
+\startcomponent cld-summary
+
+\environment cld-environment
+
+\usemodule[s][characters-properties]
+
+\startchapter[title=A sort of summary]
+
+In this chapter we summarize the functionality provided by the \type {context}
+namespace. We repeat some of what has been explained in other chapter so that in
+fact you can start with this summary.
+
+If you have read this manual (or seen code) you know that you can access all the
+core commands using this namespace:
+
+\starttyping
+context.somecommand("some argument")
+context["somecommand"]("some argument")
+\stoptyping
+
+These calls will eventually expand \type {\somecommand} with the given argument.
+This interface has been around form the start and has proven to be quite flexible
+and robust. In spite of what you might think, the \type {somecommand} is not
+really defined in the \type {context} namespace, but in its own one called \type
+{core}, accessible via \type {context.core}.
+
+Next we describe the commands that are naturally defined in the \type {context}
+namespace. Some have counterparts at the macro level (like \type {bgroup}) but
+many haven't (for instance \type {rule}). We tried not to polute the \type
+{context} namespace too much but although we could have put the helpers in a
+separate namespace it would make usage a bit more unnatural.
+
+\startsection[title=Access to commands]
+
+\startsummary[title={context(".. some text ..")}]
+
+The string is flushed as|-|is:
+
+\starttyping
+.. some text ..
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context("format",...)}]
+
+The first string is a format specification according that is passed to the \LUA\
+function \type {format} in the \type {string} namespace. Following arguments are
+passed too.
+
+\stopsummary
+
+\startsummary[title={context(123,...)}]
+
+The numbers (and following numbers or strings) are flushed without any
+formatting.
+
+\starttyping
+123... (concatenated)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context(true)}]
+
+An explicit \type {endlinechar} is inserted, in \TEX\ speak:
+
+\starttyping
+^^M
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context(false,...)}]
+
+Strings and numbers are flushed surrounded by curly braces, an indexed table is
+flushed as option list, and a hashed table is flushed as parameter set.
+
+\starttyping
+multiple {...} or [...] etc
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context(node)}]
+
+The node (or list of nodes) is injected at the spot. Keep in mind that you need
+to do the proper memory management yourself.
+
+\stopsummary
+
+\startsummary[title={context["command"] context.core["command"]}]
+
+The function that implements \type {\command}. The \type{core} table is where
+these functions realy live.
+
+\stopsummary
+
+\startsummary[title={context["command"](value,...)}]
+
+The value (string or number) is flushed as a curly braced (regular) argument.
+
+\starttyping
+\command {value}...
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context["command"]({ value },...)}]
+
+The table is flushed as value set. This can be an identifier,
+a list of options, or a directive.
+
+\starttyping
+\command [value]...
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context["command"]({ key = val },...)}]
+
+The table is flushed as key|/|value set.
+
+\starttyping
+\command [key={value}]...
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context["command"](true)}]
+
+An explicit \type {endlinechar} is inserted.
+
+\starttyping
+\command ^^M
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context["command"](node)}]
+
+The node(list) is injected at the spot. Keep in mind that you need to do the
+proper memory management yourself.
+
+\starttyping
+\command {node(list)}
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context["command"](false,value)}]
+
+The value is flushed without encapsulating tokens.
+
+\starttyping
+\command value
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context["command"]({ value }, { key = val }, val, false, val)}]
+
+The arguments are flushed accordingly their nature and the order can be any.
+
+\starttyping
+\command [value][key={value}]{value}value
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context.direct(...)}]
+
+The arguments are interpreted the same as if \type {direct} was a command, but no
+\type {\direct} is injected in front. Braces are added:
+
+\startbuffer
+regular \expandafter \bold \ctxlua{context.direct("bold")} regular
+black \expandafter \color \ctxlua{context.direct({"red"})}{red} black
+black \expandafter \color \ctxlua{context.direct({"green"},"green")} black
+\stopbuffer
+
+\typebuffer
+
+The \type {\expandafter} makes sure that the \type {\bold} and \type {\color}
+macros see the following \type{{bold}}, \type {[red]}, and \type {[green]{green}}
+arguments.
+
+\startlines\getbuffer\stoplines
+
+\stopsummary
+
+\startsummary[title={context.delayed(...)}]
+
+The arguments are interpreted the same as in a \type {context} call, but instead
+of a direct flush, the arguments will be flushed in a next cycle.
+
+\stopsummary
+
+\startsummary[title={context.delayed["command"](...)}]
+
+The arguments are interpreted the same as in a \type {command} call, but instead
+of a direct flush, the command and arguments will be flushed in a next cycle.
+
+\stopsummary
+
+\startsummary[title={context.nested["command"]}]
+
+This command returns the command, including given arguments as a string. No
+flushing takes place.
+
+\stopsummary
+
+\startsummary[title={context.nested}]
+
+This command returns the arguments as a string and treats them the same as a
+regular \type {context} call.
+
+\stopsummary
+
+\startsummary[title={context.formatted["command"]([<regime>,]<format>,<arguments>)}]
+
+This command returns the command that will pass it's arguments to the string
+formatter. When the first argument is a number, then it is interpreted as a
+catcode regime.
+
+\stopsummary
+
+\startsummary[title={context.formatted([<regime>,]<format>,<arguments>)}]
+
+This command passes it's arguments to the string formatter. When the first
+argument is a number, then it is interpreted as a catcode regime.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=\METAFUN]
+
+\startsummary[title={context.metafun.start()}]
+
+This starts a \METAFUN\ (or \METAPOST) graphic.
+
+\stopsummary
+
+\startsummary[title={context.metafun.stop()}]
+
+This finishes and flushes a \METAFUN\ (or \METAPOST) graphic.
+
+\stopsummary
+
+\startsummary[title={context.metafun("format",...)}]
+
+The argument is appended to the current graphic data but the string formatter is
+used on following arguments.
+
+\stopsummary
+
+\startsummary[title={context.metafun.delayed}]
+
+This namespace does the same as \type {context.delayed}: it wraps the code in such
+a way that it can be used in a function call.
+
+\stopsummary
+
+\startsection[title=Building blocks]
+
+\startsummary[title={context.bgroup() context.egroup()}]
+
+These are just \type {\bgroup} and \type {\egroup} equivalents and as these are
+in fact shortcuts to the curly braced we output these instead.
+
+\stopsummary
+
+\startsummary[title={context.space()}]
+
+This one directly maps onto \type {\space}.
+
+\stopsummary
+
+\startsummary[title={context.par()}]
+
+This one directly maps onto \type {\par}.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=Basic Helpers]
+
+\startsummary[title={context.rule(wd,ht,dp,direction) context.rule(specification)}]
+
+A rule node is injected with the given properties. A specification is just a
+table with the four fields. The rule gets the current attributes.
+
+\stopsummary
+
+\startsummary[title={context.glyph(fontid,n) context.glyph(n)}]
+
+A glyph node is injected with the given font id. When no id is given, the current font
+is used. The glyph gets the current attributes.
+
+\stopsummary
+
+\startsummary[title={context.char(n) context.char(str)  context.char(tab)}]
+
+This will inject one or more copies of \type {\char} calls. You can pass a
+number, a string representing a number, or a table with numbers.
+
+\stopsummary
+
+\startsummary[title={context.utfchar(n) context.utfchar(str)}]
+
+This injects is \UTF\ character (one or more bytes). You can pass a number
+or a string representing a numbers. You need to be aware of special
+characters in \TEX, like \type {#}.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title={Registers}]
+
+This is a table that hosts a couple of functions. The following \type {new}
+ones are available:
+
+\starttyping
+local n = newdimen (name)
+local n = newskip  (name)
+local n = newcount (name)
+local n = newmuskip(name)
+local n = newtoks  (name)
+local n = newbox   (name)
+\stoptyping
+
+These define a register with name \type {name} at the \LUA\ end and \type {\name}
+at the \TEX\ end. The registers' number is returned. The next function is like
+\type {\chardef}: it defines \type {\name} with value \type {n}.
+
+\starttyping
+local n = newchar(name,n)
+\stoptyping
+
+It's not likely that you will use any of these commands, if only because when
+you're operating from the \LUA\ end using \LUA\ variables is more convenient.
+
+\stopsection
+
+\startsection[title=Catcodes]
+
+Normally we operate under the so called \type {context} catcode regime. This
+means that content gets piped to \TEX\ using the same meanings for characters as
+you normally use in \CONTEXT. So, a \type {$} starts math. In \in {table}
+[tab:catcodes] we show the catcode regimes.
+
+\startplacetable[location=page,title={Catcode regimes},reference=tab:catcodes]
+    \showcharactercatcodes
+\stopplacetable
+
+\startsummary[title={context.catcodes}]
+
+The \type {context.catcodes} tables contains the internal numbers of the
+catcode tables used. The next table shows the names that can be used.
+
+\starttabulate[|lT|cT|lT|]
+\BC name     \BC mnemonic \BC \TEX\ command \NC \NR
+\NC context  \NC ctx      \NC ctxcatcodes   \NC \NR
+\NC protect  \NC prt      \NC prtcatcodes   \NC \NR
+\NC plain    \NC tex      \NC texcatcodes   \NC \NR
+\NC text     \NC txt      \NC txtcatcodes   \NC \NR
+\NC verbatim \NC vrb      \NC vrbcatcodes   \NC \NR
+\stoptabulate
+
+\stopsummary
+
+\startsummary[title={context.newindexer(catcodeindex)}]
+
+This function defines a new indexer. You can think of the context command itself
+as an indexer. There are two (extra) predefined indexers:
+
+\starttyping
+context.verbatim = context.newindexer(context.catcodes.verbatim)
+context.puretext = context.newindexer(context.catcodes.text)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={context.pushcatcodes(n) context.popcatcodes()}]
+
+These commands switch to another catcode regime and back. They have to be used
+in pairs. Only the regimes atthe \LUA\ end are set.
+
+\stopsummary
+
+\startsummary[title={context.unprotect() context.protect()}]
+
+These commands switch to the protected regime and back. They have to be used in
+pairs. Beware: contrary to what its name suggests, the \type {unprotect} enables
+the protected regime. These functions also issue an \type {\unprotect} and \type
+{\protect} equivalent at the \TEX\ end.
+
+\stopsummary
+
+\startsummary[title={context.verbatim context.puretext}]
+
+The differences between these are subtle:
+
+\startbuffer
+\startluacode
+    context.verbatim.bold("Why do we use $ for math?") context.par()
+    context.verbatim.bold("Why do we use { as start?") context.par()
+    context.verbatim.bold("Why do we use } as end?")   context.par()
+    context.puretext.bold("Why do we use {\\bi $} at all?")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Verbatim makes all characters letters while pure text leaves the backslash and
+curly braces special.
+
+\startpacked \getbuffer \stoppacked
+
+\stopsummary
+
+\startsummary[title={context.protected}]
+
+The protected namespace is only used for commands that are in the \CONTEXT\
+private namespace.
+
+\stopsummary
+
+\startsummary[title={context.escaped(str) context.escape(str)}]
+
+The first command pipes the escaped string to \TEX, while the second one just
+returns an unescaped string. The characters \typ {# $ % \ \ { }} are escaped.
+
+\stopsummary
+
+\startsummary[title={context.startcollecting() context.stopcollecting()}]
+
+These two commands will turn flushing to \TEX\ into collecting. This can be handy
+when you want to interface commands that grab arguments using delimiters and as
+such they are used deep down in some table related interfacing. You probably
+don't need them.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title={Templates}]
+
+In addition to the regular template mechanism (part of the utilities) there is a
+dedicated template feature in the \type {context} namespace. An example demonstrates
+its working:
+
+\startbuffer
+\startluacode
+  local MyTable = [[
+    \bTABLE
+      \bTR
+         \bTD \bf %one_first% \eTD
+         \bTD %[one_second]% \eTD
+      \eTR
+      \bTR
+        \bTD \bf %two_first% \eTD
+        \bTD %[two_second]% \eTD
+      \eTR
+    \eTABLE
+  ]]
+
+  context.templates[MyTable] {
+    one_first  = "one",
+    two_first  = "two",
+    one_second = "just one $",
+    two_second = "just two $",
+  }
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This renders:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+You can also use more complex tables. Watch the space before and after the keys:
+
+\startbuffer
+\startluacode
+  local MyOtherTable = [[
+    \bTABLE
+      \bTR
+        \bTD \bf % ['one']['first'] % \eTD
+        \bTD %[ ['one']['second'] ]% \eTD
+      \eTR
+      \bTR
+        \bTD \bf % ['two']['first'] % \eTD
+        \bTD %[ ['two']['second'] ]% \eTD
+      \eTR
+    \eTABLE
+  ]]
+
+  local data = {
+    one = { first = "one", second = "only 1$" },
+    two = { first = "two", second = "only 2$" },
+  }
+
+  context.templates[MyOtherTable](data)
+
+  context.templates(MyOtherTable,data)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Management}]
+
+\startsummary[title={context.functions}]
+
+This is private table that hosts managament of functions. You'd better leave this
+one alone!
+
+\stopsummary
+
+\startsummary[title={context.nodes}]
+
+Normally you will just use \type {context(<somenode>)} to flush a node and this
+private table is more for internal use.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=String handlers]
+
+These two functions implement handlers that split a given string into lines and
+do something with it. We stick to showing their call. They are used for special
+purpose flushing, like flushing content to \TEX\ in commands discussed here. The
+\XML\ subsystem also used a couple of dedicated handlers.
+
+\starttyping
+local foo = newtexthandler {
+    content    = function(s) ... end,
+    endofline  = function(s) ... end,
+    emptyline  = function(s) ... end,
+    simpleline = function(s) ... end,
+}
+
+local foo = newverbosehandler {
+    line    = function(s) ... end,
+    space   = function(s) ... end,
+    content = function(s) ... end,
+    before  = function() ... end,
+    after   = function() ... end,
+}
+\stoptyping
+
+\startsummary[title={context.printlines(str)}]
+
+The low level \type {tex.print} function pipes its content to \TEX\ and thereby
+terminates at at \type {\r} (cariage return, \ASCII\ 13), although it depends on
+the way catcodes and line endings are set up. In fact, a line ending in \TEX\ is
+not really one, as it gets replaced by a space. Only several lines in succession
+indicate a new paragraph.
+
+\startbuffer
+\startluacode
+    tex.print("line 1\n line 2\r line 3")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This renders only two lines:
+
+\getbuffer
+
+\startbuffer
+\startluacode
+    context("line 1\n line 2\r line 3")
+\stopluacode
+\stopbuffer
+
+However, the \type {context} command gives all three lines:
+
+\typebuffer
+
+Like:
+
+\getbuffer
+
+The \type {context.printlines} command is a direct way to print a string in a way
+similar to reading from a file. So,
+
+\starttyping
+tex.print(io.loaddata(resolvers.findfile("tufte")))
+\stoptyping
+
+Gives one line, while:
+
+\starttyping
+context.printlines(io.loaddata(resolvers.findfile("tufte")))
+\stoptyping
+
+gives them all, as does:
+
+\starttyping
+context(io.loaddata(resolvers.findfile("tufte")))
+\stoptyping
+
+as does a na\"ive:
+
+\starttyping
+tex.print((string.gsub(io.loaddata(resolvers.findfile("tufte")),"\r","\n")))
+\stoptyping
+
+But, because successive lines need to become paragraph separators as bit more
+work is needed and that is what \type {printlines} and \type {context} do for
+you. However, a more convenient alternative is presented next.
+
+\stopsummary
+
+\startsummary[title={context.loadfile(name)}]
+
+This function locates and loads the file with the given name. The leading and
+trailing spaces are stripped.
+
+\stopsummary
+
+\startsummary[title={context.runfile(name)}]
+
+This function locates and processes the file with the given name. The assumption
+is that it is a valid \LUA\ file! When no suffix is given, the suffix \type {cld}
+(\CONTEXT\ \LUA\ document) is used.
+
+\stopsummary
+
+\startsummary[title={context.viafile(data[,tag])}]
+
+The \type {data} is saved to a (pseudo) file with the optional name \type {tag}
+and read in again from that file. This is a robust way to make sure that the data
+gets processed like any other data read from file. It permits all kind of
+juggling with catcodes, verbatim and alike.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title={Helpers}]
+
+\startsummary[title={context.tocontext(variable)}]
+
+For documentation or tracing it can be handy to serialize a variable. The \type
+{tocontext} function does this:
+
+\starttyping
+context.tocontext(true)
+context.tocontext(123)
+context.tocontext("foo")
+context.tocontext(tonumber)
+context.tocontext(nil)
+context.tocontext({ "foo", "bar" },true)
+context.tocontext({ this = { foo , "bar" } },true)
+\stoptyping
+
+Beware, \type {tocontext} is also a table that you can assign to, but that might
+spoil serialization. This property makes it possible to extend the serializer.
+
+\stopsummary
+
+\startsummary[title={context.tobuffer(name,str[,catcodes])}]
+
+With this function you can put content in a buffer, optionally under a catcode
+regime.
+
+\stopsummary
+
+\startsummary[title={context.tolines(str[,true])}]
+
+This function splits the string in lines and flushes them one by one. When the
+second argument is \type {true} leading and trailing spaces are stripped. Each
+flushed line always gets one space appended.
+
+\stopsummary
+
+\startsummary[title={context.fprint([regime,]fmt,...),tex.fprint([regime,]fmt,...)}]
+
+The \type {tex.fprint} is just there to complement the other flushers in the
+\type {tex} namespace and therefore we also have it in the \type {context}
+namespace.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=Tracing]
+
+\startsummary[title={context.settracing(true or false))}]
+
+You can trace the \TEX\ code that is generated at the \TEX\ end with:
+
+\starttyping
+\enabletrackers[context.trace]
+\stoptyping
+
+The \LUA\ function sets the tracing from the \LUA\ end. As the \type {context}
+command is used a lot in the core, you can expect some more tracing that the code
+that you're currently checking.
+
+\stopsummary
+
+\startsummary[title={context.pushlogger(fnc) context.poplogger() context.getlogger()}]
+
+You can provide your own logger if needed. The pushed function receives one string
+argument. The getter returns three functions:
+
+\starttyping
+local flush, writer, flushdirect = context.getlogger()
+\stoptyping
+
+The \type{flush} function is similar to \type {tex.sprint} and appends its
+arguments, while \type {flushdirect} treats each argument as a line and behaves
+like \type {tex.print}. The \type {flush} function adds braces and paranthesis
+around its arguments, apartt from the first one, which is considered to be a
+command. Examples are:
+
+\starttyping
+flush("one",2,"three") -- catcode, strings|numbers
+writer("\\color",{"red"},"this is red")
+\stoptyping
+
+and:
+
+\starttyping
+flush(context.catcodes.verbatim,"one",2,"three")
+writer(context.catcodes.verbatim,"\\color",{"red"},"this is red")
+\stoptyping
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=States]
+
+There are several ways to implement alternative code paths in \CONTEXT\ but modes
+and conditionals are used mostly. There area few helpers for that.
+
+\startsummary[title={context.conditionals context.setconditional(name,value)}]
+
+Conditionals are used to keep a state. You can set their value using the setter,
+but their effect is not immediate but part of the current sequence of commands
+which is delegated to \TEX. However, you can easily keep track of your state
+at the \LUA\ end with an extra boolean. So, after
+
+\starttyping
+if context.conditionals.whatever then
+    context.setconditional("dothis",false)
+else
+    context.setconditional("dothat",true)
+end
+\stoptyping
+
+the value of \type {dothis} and \type {dothat} conditions are not yet set in
+\LUA.
+
+\stopsummary
+
+\startsummary[title={context.modes context.setmode(name,value)}]
+
+As with conditionals, you can (re)set the modes in \LUA\ but their values
+get changes as part of the command sequence which is delayed till after the
+\LUA\ call.
+
+\stopsummary
+
+\startsummary[title={context.systemmodes context.setsystemmode(name,value)}]
+
+The same applies as for regular modes.
+
+\stopsummary
+
+\startsummary[title={context.trialtypesetting()}]
+
+This function returns \type {true} if we're in trial typesetting mode (used when
+for instance prerolling a table).
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=Steps]
+
+The stepper permits stepwise processing of \CONTEXT\ code: after a step contyrol
+gets delegated to \CONTEXT\ and afterwards back to \LUA. There main limitation of
+this mechanism is that it cannot exceed the number of input levels.
+
+\startsummary[title={context.stepwise() context.step([str])}]
+
+Usage is as follows:
+
+\starttyping
+context.stepwise (function()
+    ...
+    context.step(...)
+    ...
+    context.step(...)
+    ...
+    context.stepwise (function()
+        ...
+        context.step(...)
+        ...
+    context.step(...)
+    ...
+    end)
+    ...
+    context.step(...)
+    ...
+    context.step(...)
+    ...
+end)
+\stoptyping
+
+\stopsummary
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -10,24 +10,38 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- some users seem to like that feature) to implement a variant that might work out better
 -- for ConTeXt. This is experimental code. I don't use it myself so it will take a while
 -- to mature. There will be some helpers that one can use in more complex situations like
--- included xml files.
+-- included xml files. Currently (somewhere else) we take care of valid files (we prohibit
+-- access to files in the tree as we don't want users to mess up styles) and also support
+-- xml files (and as far as reasonable honour selective flushing of xml nodes as well as
+-- deeply nested inclusions.
 --
 -- It is unclear how the output gets interpreted. For instance, we only need to be able to
 -- go back to a place where text is entered, but still we need all that redundant box
--- wrapping.
+-- wrapping. Anyway, I was able to get a minimal output and cross my fingers that the
+-- parser used in editors is not changed in fundamental ways.
 --
--- Possible optimizations: pack whole lines.
-
+-- A possible optimization is to pack whole lines (or at least multiple words) but there is
+-- not that much gain in it. Also, we can avoid the result table and flush directly (so no
+-- concats, just vararg writes but the current approach is much cleaner. After all we do a
+-- lot latelua nodes so the gain would be relatively small.
+--
+-- I only tested SumatraPDF with SciTE, for which one needs to configure in the viewer:
+--
 -- InverseSearchCmdLine = mtxrun.exe --script synctex --edit --name="%f" --line="%l" $
-
+--
 -- Unfortunately syntex always removes the files at the end and not at the start (it
--- happens in synctexterminate). This forces us to use an intermediate file, no big deal
--- in context (which has a runner) but definitely not nice.
+-- happens in synctexterminate). This forces us to use an intermediate file, this is no
+-- big deal in context (which has a runner) but definitely not nice.
+--
+-- The visualizer code is only needed for testing so we don't use fancy colors or provide
+-- more detail. After all we're only interested in rendered source text anyway. We try to
+-- play safe which sometimes means that we'd better no go somewhere than go someplace wrong.
 
 local type, rawset = type, rawset
 local concat = table.concat
 local formatters = string.formatters
-local replacesuffix = file.replacesuffix
+local replacesuffix, suffixonly, nameonly = file.replacesuffix, file.suffix, file.nameonly
+local openfile, renamefile, removefile = io.open, os.rename, os.remove
 
 local trace = false  trackers.register("system.synctex.visualize", function(v) trace = v end)
 
@@ -48,14 +62,13 @@ local getsubtype         = nuts.getsubtype
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
 
+local glyph_code         = nodecodes.glyph
+local disc_code          = nodecodes.disc
 local glue_code          = nodecodes.glue
 local kern_code          = nodecodes.kern
-local kern_disc          = nodecodes.disc
-local rule_code          = nodecodes.rule
------ math_code          = nodecodes.math
+----- rule_code          = nodecodes.rule
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
-local glyph_code         = nodecodes.glyph
 local fontkern_code      = kerncodes.fontkern
 
 local insert_before      = nuts.insert_before
@@ -67,7 +80,7 @@ local new_rule           = nodepool.rule
 local new_hlist          = nodepool.hlist
 
 local getdimensions      = nuts.dimensions
-local getrangedimensions = nuts.rangedimensions
+----- getrangedimensions = nuts.rangedimensions
 
 local get_synctex_fields = nuts.get_synctex_fields
 local set_synctex_fields = nuts.set_synctex_fields
@@ -78,33 +91,25 @@ local force_synctex_line = tex.force_synctex_line
 ----- get_synctex_tag    = tex.get_synctex_tag
 ----- get_synctex_line   = tex.get_synctex_line
 
-local getcount           = tex.getcount
-local setcount           = tex.setcount
-
 local getpos             = function()
                                getpos = backends.codeinjections.getpos
                                return getpos()
                            end
 
+local foundintree        = resolvers.foundintree
 
 local eol                = "\010"
 
-local f_glue             = formatters["g%i,%i:%i,%i"]
-local f_glyph            = formatters["x%i,%i:%i,%i"]
-local f_kern             = formatters["k%i,%i:%i,%i:%i"]
-local f_rule             = formatters["r%i,%i:%i,%i:%i,%i,%i"]
+----- f_glue             = formatters["g%i,%i:%i,%i"]
+----- f_glyph            = formatters["x%i,%i:%i,%i"]
+----- f_kern             = formatters["k%i,%i:%i,%i:%i"]
+----- f_rule             = formatters["r%i,%i:%i,%i:%i,%i,%i"]
 local f_hlist            = formatters["[%i,%i:%i,%i:%i,%i,%i"]
 local f_vlist            = formatters["(%i,%i:%i,%i:%i,%i,%i"]
 local s_hlist            = "]"
 local s_vlist            = ")"
 local f_hvoid            = formatters["h%i,%i:%i,%i:%i,%i,%i"]
 local f_vvoid            = formatters["v%i,%i:%i,%i:%i,%i,%i"]
-
-local characters         = fonts.hashes.characters
-
-local foundintree        = resolvers.foundintree
-local suffixonly         = file.suffix
-local nameonly           = file.nameonly
 
 local synctex            = { }
 luatex.synctex           = synctex
@@ -178,12 +183,13 @@ local filesdone  = 0
 local enabled    = false
 local compact    = true
 local fulltrace  = false
+local tmpfile    = false
 local logfile    = false
 local used       = false
 
 local function writeanchor()
     local size = f:seek("end")
-    f:write("!" .. (size-last) ..eol)
+    f:write("!",size-last,eol)
     last = size
 end
 
@@ -191,29 +197,42 @@ local function writefiles()
     local total = #stnums
     if filesdone < total then
         for i=filesdone+1,total do
-            f:write("Input:"..i..":"..stnums[i]..eol)
+            f:write("Input:",i,":",stnums[i],eol)
         end
         filesdone = total
     end
 end
 
+local function makenames()
+    logfile = replacesuffix(tex.jobname,"synctex")
+    tmpfile = replacesuffix(logfile,"syncctx")
+end
+
 local function flushpreamble()
-    logfile = replacesuffix(tex.jobname,"syncctx")
-    f = io.open(logfile,"wb")
-    f:write("SyncTeX Version:1"..eol)
-    writefiles()
-    f:write("Output:pdf"..eol)
-    f:write("Magnification:1000"..eol)
-    f:write("Unit:1"..eol)
-    f:write("X Offset:0"..eol)
-    f:write("Y Offset:0"..eol)
-    f:write("Content:"..eol)
-    flushpreamble = writefiles
+    makenames()
+    f = openfile(tmpfile,"wb")
+    if f then
+        f:write("SyncTeX Version:1",eol)
+        writefiles()
+        f:write("Output:pdf",eol)
+        f:write("Magnification:1000",eol)
+        f:write("Unit:1",eol)
+        f:write("X Offset:0",eol)
+        f:write("Y Offset:0",eol)
+        f:write("Content:",eol)
+        flushpreamble = function()
+            writefiles()
+            return f
+        end
+    else
+        enabled = false
+    end
+    return f
 end
 
 function synctex.wrapup()
-    if logfile then
-        os.rename(logfile,replacesuffix(logfile,"synctex"))
+    if tmpfile then
+        renamefile(tmpfile,logfile)
     end
 end
 
@@ -222,21 +241,22 @@ local function flushpostamble()
         return
     end
     writeanchor()
-    f:write("Postamble:"..eol)
-    f:write("Count:"..nofobjects..eol)
+    f:write("Postamble:",eol)
+    f:write("Count:",nofobjects,eol)
     writeanchor()
-    f:write("Post scriptum:"..eol)
+    f:write("Post scriptum:",eol)
     f:close()
     enabled = false
 end
 
 local pageheight = 0 -- todo: set before we do this!
+----- pagewidth  = 0
 
 local function b_hlist(head,current,t,l,w,h,d)
     return insert_before(head,current,new_latelua(function()
         local x, y = getpos()
         r = r + 1
-        result[r] = f_hlist(t,l,x,tex.pageheight-y,w,h,d)
+        result[r] = f_hlist(t,l,x,pageheight-y,w,h,d)
         nofobjects = nofobjects + 1
     end))
 end
@@ -245,7 +265,7 @@ local function b_vlist(head,current,t,l,w,h,d)
     return insert_before(head,current,new_latelua(function()
         local x, y = getpos()
         r = r + 1
-        result[r] = f_vlist(t,l,x,tex.pageheight-y,w,h,d)
+        result[r] = f_vlist(t,l,x,pageheight-y,w,h,d)
         nofobjects = nofobjects + 1
     end))
 end
@@ -270,7 +290,7 @@ local function x_hlist(head,current,t,l,w,h,d)
     return insert_before(head,current,new_latelua(function()
         local x, y = getpos()
         r = r + 1
-        result[r] = f_hvoid(t,l,x,tex.pageheight-y,w,h,d)
+        result[r] = f_hvoid(t,l,x,pageheight-y,w,h,d)
         nofobjects = nofobjects + 1
     end))
 end
@@ -279,7 +299,7 @@ local function x_vlist(head,current,t,l,w,h,d)
     return insert_before(head,current,new_latelua(function()
         local x, y = getpos()
         r = r + 1
-        result[r] = f_vvoid(t,l,x,tex.pageheight-y,w,h,d)
+        result[r] = f_vvoid(t,l,x,pageheight-y,w,h,d)
         nofobjects = nofobjects + 1
     end))
 end
@@ -288,7 +308,7 @@ end
 --     return insert_before(head,current,new_latelua(function()
 --         local x, y = getpos()
 --         r = r + 1
---         result[r] = f_glyph(t,l,x,tex.pageheight-y)
+--         result[r] = f_glyph(t,l,x,pageheight-y)
 --         nofobjects = nofobjects + 1
 --     end))
 -- end
@@ -297,7 +317,7 @@ end
 --     return insert_before(head,current,new_latelua(function()
 --         local x, y = getpos()
 --         r = r + 1
---         result[r] = f_glue(t,l,x,tex.pageheight-y)
+--         result[r] = f_glue(t,l,x,pageheight-y)
 --         nofobjects = nofobjects + 1
 --     end))
 -- end
@@ -306,7 +326,7 @@ end
 --     return insert_before(head,current,new_latelua(function()
 --         local x, y = getpos()
 --         r = r + 1
---         result[r] = f_kern(t,l,x,tex.pageheight-y,k)
+--         result[r] = f_kern(t,l,x,pageheight-y,k)
 --         nofobjects = nofobjects + 1
 --     end))
 -- end
@@ -315,17 +335,12 @@ end
 --     return insert_before(head,current,new_latelua(function()
 --         local x, y = getpos()
 --         r = r + 1
---         result[r] = f_rule(t,l,x,tex.pageheight-y,w,h,d)
+--         result[r] = f_rule(t,l,x,pageheight-y,w,h,d)
 --         nofobjects = nofobjects + 1
 --     end))
 -- end
 
--- todo: why not only lines
--- todo: larger ranges
-
 -- color is already handled so no colors
-
--- we can have ranges .. more efficient but a bit more complex to analyze ... some day
 
 local function collect(head,t,l,dp,ht)
     local current = head
@@ -388,6 +403,7 @@ local function collect(head,t,l,dp,ht)
                 end
             end
         end
+        -- pick up(as id can have changed)
         if id == hlist_code then
             local list = getlist(current)
             local tc, lc = get_synctex_fields(current)
@@ -504,29 +520,28 @@ end
 
 function synctex.flush()
     if enabled then
-        nofsheets = nofsheets + 1 -- could be realpageno
-        flushpreamble()
-        writeanchor()
-        f:write("{"..nofsheets..eol)
-        if compact then
-         -- f:write(f_vlist(0,0,0,0,tex.pagewidth,tex.pageheight,0))
-            f:write(f_hlist(0,0,0,0,0,0,0))
+        nofsheets  = nofsheets + 1 -- could be realpageno
+        pageheight = tex.pageheight
+     -- pagewidth  = tex.pagewidth
+        if flushpreamble() then
+            writeanchor()
+            f:write("{",nofsheets,eol)
+            if compact then
+             -- f:write(f_vlist(0,0,0,0,pagewidth,pageheight,0),eol)
+                f:write(f_hlist(0,0,0,0,0,0,0),eol)
+                f:write(f_vlist(0,0,0,0,0,0,0),eol)
+            end
+            f:write(concat(result,eol))
+            if compact then
+                f:write(eol,s_vlist)
+                f:write(eol,s_hlist)
+            end
             f:write(eol)
-            f:write(f_vlist(0,0,0,0,0,0,0))
-            f:write(eol)
+            writeanchor()
+            f:write("}",nofsheets,eol)
+            nofobjects = nofobjects + 2
+            result, r = { }, 0
         end
-        f:write(concat(result,eol))
-        if compact then
-            f:write(eol)
-            f:write(s_vlist)
-            f:write(eol)
-            f:write(s_hlist)
-        end
-        f:write(eol)
-        writeanchor()
-        f:write("}"..nofsheets..eol)
-        nofobjects = nofobjects + 2
-        result, r = { }, 0
     end
 end
 
@@ -569,8 +584,9 @@ if set_synctex_mode then
         if enabled then
             flushpostamble()
         else
-            os.remove(replacesuffix(tex.jobname,"syncctx"))
-            os.remove(replacesuffix(tex.jobname,"synctex"))
+            makenames()
+            removefile(logfile)
+            removefile(tmpfile)
         end
     end
 
@@ -612,7 +628,8 @@ end)
 
 statistics.register("synctex tracing",function()
     if used then
-        return string.format("%i referenced files, %i files ignored, logfile: %s",noftags,nofblocked,logfile)
+        return string.format("%i referenced files, %i files ignored, %i objects flushed, logfile: %s",
+            noftags,nofblocked,nofobjects,logfile)
     end
 end)
 

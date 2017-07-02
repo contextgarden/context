@@ -1,0 +1,2322 @@
+% language=uk
+
+% table.unnest  : only used in special cases
+% table.derive  : set metatable if unset
+% table.compact : remove empty subtables
+
+\environment cld-environment
+
+\startcomponent cld-luafunctions
+
+\startchapter[title=Lua Functions]
+
+\startsection[title={Introduction}]
+
+When you run \CONTEXT\ you have some libraries preloaded. If you look into the
+\LUA\ files you will find more than is discussed here, but keep in mind that what
+is not documented, might be gone or done different one day. Some extensions live
+in the same namespace as those provided by stock \LUA\ and \LUATEX, others have
+their own. There are many more functions and the more obscure (or never being
+used) ones will go away.
+
+The \LUA\ code in \CONTEXT\ is organized in quite some modules. Those with names
+like \type {l-*.lua} are rather generic and are automatically available when you
+use \type {mtxrun} to run a \LUA\ file. These are discusses in this chapter. A
+few more modules have generic properties, like some in the categories \type
+{util-*.lua}, \type {trac-*.lua}, \type {luat-*.lua}, \type {data-*.lua} and
+\type {lxml-*.lua}. They contain more specialized functions and are discussed
+elsewhere.
+
+Before we move on the the real code, let's introduce a handy helper:
+
+\starttyping
+inspect(somevar)
+\stoptyping
+
+Whenever you feel the need to see what value a variable has you can insert this
+function to get some insight. It knows how to deal with several data types.
+
+\stopsection
+
+\startsection[title={Tables}]
+
+\startsummary[title={[lua] concat}]
+
+These functions come with \LUA\ itself and are discussed in detail in the \LUA\
+reference manual so we stick to some examples. The \type {concat} function
+stitches table entries in an indexed table into one string, with an optional
+separator in between. If can also handle a slice of the table
+
+\starttyping
+local str = table.concat(t)
+local str = table.concat(t,separator)
+local str = table.concat(t,separator,first)
+local str = table.concat(t,separator,first,last)
+\stoptyping
+
+Only strings and numbers can be concatenated.
+
+\ShowLuaExampleThree {table} {concat} {{"a","b","c","d","e"}}
+\ShowLuaExampleThree {table} {concat} {{"a","b","c","d","e"},"+"}
+\ShowLuaExampleThree {table} {concat} {{"a","b","c","d","e"},"+",2,3}
+
+\stopsummary
+
+\startsummary[title={[lua] insert remove}]
+
+You can use \type {insert} and \type {remove} for adding or replacing entries in
+an indexed table.
+
+\starttyping
+table.insert(t,value,position)
+value = table.remove(t,position)
+\stoptyping
+
+The position is optional and defaults to the last entry in the table. For
+instance a stack is built this way:
+
+\starttyping
+table.insert(stack,"top")
+local top = table.remove(stack)
+\stoptyping
+
+Beware, the \type {insert} function returns nothing. You can provide an
+additional position:
+
+\starttyping
+table.insert(list,"injected in slot 2",2)
+local thiswastwo = table.remove(list,2)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={[lua] unpack}]
+
+You can access entries in an indexed table as follows:
+
+\starttyping
+local a, b, c = t[1], t[2], t[3]
+\stoptyping
+
+but this does the same:
+
+\starttyping
+local a, b, c = table.unpack(t)
+\stoptyping
+
+This is less efficient but there are situations where \type {unpack}
+comes in handy.
+
+\stopsummary
+
+\startsummary[title={[lua] sort}]
+
+Sorting is done with \type {sort}, a function that does not return a value but
+operates on the given table.
+
+\starttyping
+table.sort(t)
+table.sort(t,comparefunction)
+\stoptyping
+
+The compare function has to return a consistent equivalent of \type {true} or
+\type {false}. For sorting more complex data structures there is a specialized
+sort module available.
+
+\ShowLuaExampleFour {table} {sort} {{"a","b","c"}} {}
+\ShowLuaExampleFour {table} {sort} {{"a","b","c"}} {,function(x,y) return x > y end}
+\ShowLuaExampleFour {table} {sort} {{"a","b","c"}} {,function(x,y) return x < y end}
+
+\stopsummary
+
+\startsummary[title={sorted}]
+
+The built|-|in \type {sort} function does not return a value but sometimes it can be
+if the (sorted) table is returned. This is why we have:
+
+\starttyping
+local a = table.sorted(b)
+\stoptyping
+
+\stopsummary
+
+% table.strip
+
+\startsummary[title={keys sortedkeys sortedhashkeys sortedhash}]
+
+The \type {keys} function returns an indexed list of keys. The order is undefined
+as it depends on how the table was constructed. A sorted list is provided by
+\type {sortedkeys}. This function is rather liberal with respect to the keys. If
+the keys are strings you can use the faster alternative \type {sortedhashkeys}.
+
+\starttyping
+local s = table.keys (t)
+local s = table.sortedkeys (t)
+local s = table.sortedhashkeys (t)
+\stoptyping
+
+Because a sorted list is often processed there is also an iterator:
+
+\starttyping
+for key, value in table.sortedhash(t) do
+    print(key,value)
+end
+\stoptyping
+
+There is also a synonym \type {sortedpairs} which sometimes looks more natural
+when used alongside the \type {pairs} and \type {ipairs} iterators.
+
+\ShowLuaExampleTwo {table} {keys}           {{ [1] = 2, c = 3, [true] = 1 }}
+\ShowLuaExampleTwo {table} {sortedkeys}     {{ [1] = 2, c = 3, [true] = 1 }}
+\ShowLuaExampleTwo {table} {sortedhashkeys} {{ a = 2, c = 3, b = 1 }}
+
+\stopsummary
+
+\startsummary[title={serialize print tohandle tofile}]
+
+The \type {serialize} function converts a table into a verbose representation.
+The \type {print} function does the same but prints the result to the console
+which is handy for tracing. The \type {tofile} function writes the table to a
+file, using reasonable chunks so that less memory is used. The fourth variant
+\type {tohandle} takes a handle so that you can do whatever you like with the
+result.
+
+\starttyping
+table.serialize (root, name, reduce, noquotes, hexify)
+table.print (root, name, reduce, noquotes, hexify)
+table.tofile (filename, root, name, reduce, noquotes, hexify)
+table.tohandle (handle, root, name, reduce, noquotes, hexify)
+\stoptyping
+
+The serialization can be controlled in several ways. Often only the first two
+options makes sense:
+
+\ShowLuaExampleOne {table} {serialize} {{ a = 2 }}
+\ShowLuaExampleOne {table} {serialize} {{ a = 2 }, "name"}
+\ShowLuaExampleOne {table} {serialize} {{ a = 2 }, true}
+\ShowLuaExampleOne {table} {serialize} {{ a = 2 }, false}
+\ShowLuaExampleOne {table} {serialize} {{ a = 2 }, "return"}
+\ShowLuaExampleOne {table} {serialize} {{ a = 2 }, 12}
+
+\ShowLuaExampleOne {table} {serialize} {{ a = 2, [3] = "b", [true] = "6" }, nil, true}
+\ShowLuaExampleOne {table} {serialize} {{ a = 2, [3] = "b", [true] = "6" }, nil, true, true}
+\ShowLuaExampleOne {table} {serialize} {{ a = 2, [3] = "b", [true] = "6" }, nil, true, true, true}
+
+In \CONTEXT\ there is also a \type {tocontext} function that typesets the table
+verbose. This is handy for manuals and tracing.
+
+\stopsummary
+
+\startsummary[title={identical are_equal}]
+
+These two function compare two tables that have a similar structure. The \type
+{identical} variant operates on a hash while \type {are_equal} assumes an indexed
+table.
+
+\starttyping
+local b = table.identical (one, two)
+local b = table.are_equal (one, two)
+\stoptyping
+
+\ShowLuaExampleThree {table} {identical} {{ a = { x = 2 } }, { a = { x = 3 } }}
+\ShowLuaExampleThree {table} {identical} {{ a = { x = 2 } }, { a = { x = 2 } }}
+
+\ShowLuaExampleThree {table} {are_equal} {{ a = { x = 2 } }, { a = { x = 3 } }}
+\ShowLuaExampleThree {table} {are_equal} {{ a = { x = 2 } }, { a = { x = 2 } }}
+
+\ShowLuaExampleThree {table} {identical} {{ "one", "two" }, { "one", "two" }}
+\ShowLuaExampleThree {table} {identical} {{ "one", "two" }, { "two", "one" }}
+
+\ShowLuaExampleThree {table} {are_equal} {{ "one", "two" }, { "one", "two" }}
+\ShowLuaExampleThree {table} {are_equal} {{ "one", "two" }, { "two", "one" }}
+
+\stopsummary
+
+\startsummary[title={tohash fromhash swapped swaphash reversed reverse mirrored}]
+
+We use \type {tohash} quite a lot in \CONTEXT. It converts a list into a hash so
+that we can easily check if (a string) is in a given set. The \type {fromhash}
+function does the opposite: it creates a list of keys from a hashed table where
+each value that is not \type {false} or \type {nil} is present.
+
+\starttyping
+local hashed  = table.tohash  (indexed)
+local indexed = table.fromhash(hashed)
+\stoptyping
+
+The function \type {swapped} turns keys into values vise versa while the \type
+{reversed} and \type {reverse} reverses the values in an indexed table. The last
+one reverses the table itself (in|-|place).
+
+\starttyping
+local swapped  = table.swapped  (indexedtable)
+local reversed = table.reversed (indexedtable)
+local reverse  = table.reverse  (indexedtable)
+local mirrored = table.mirrored (hashedtable)
+\stoptyping
+
+\ShowLuaExampleTwo {table} {tohash}   {{ "a", "b", "c" }}
+\ShowLuaExampleTwo {table} {fromhash} {{ a = true, b = false, c = true }}
+\ShowLuaExampleTwo {table} {swapped}  {{ "a", "b", "c" }}
+\ShowLuaExampleTwo {table} {reversed} {{ "a", "b", "c" }}
+\ShowLuaExampleTwo {table} {reverse}  {{ 1, 2, 3, 4 }}
+\ShowLuaExampleTwo {table} {mirrored} {{ a = "x", b = "y", c = "z" }}
+
+\stopsummary
+
+\startsummary[title={append prepend}]
+
+These two functions operate on a pair of indexed tables. The first table gets
+appended or prepended by the second. The first table is returned as well.
+
+\starttyping
+table.append (one, two)
+table.prepend(one, two)
+\stoptyping
+
+The functions are similar to loops using \type {insert}.
+
+\ShowLuaExampleTwo {table} {append}  {{ "a", "b", "c" }, { "d", "e" }}
+\ShowLuaExampleTwo {table} {prepend} {{ "a", "b", "c" }, { "d", "e" }}
+
+\stopsummary
+
+\startsummary[title={merge merged imerge imerged}]
+
+You can merge multiple hashes with \type {merge} and indexed tables with \type
+{imerge}. The first table is the target and is returned.
+
+\starttyping
+table.merge   (one, two, ...)
+table.imerge  (one, two, ...)
+\stoptyping
+
+The variants ending with a \type {d} merge the given list of tables and return
+the result leaving the first argument untouched.
+
+\starttyping
+local merged = table.merged  (one, two, ...)
+local merged = table.imerged (one, two, ...)
+\stoptyping
+
+\ShowLuaExampleTwo {table} {merge}  {{ a = 1, b = 2, c = 3 }, { d = 1 }, { a = 0 }}
+\ShowLuaExampleTwo {table} {imerge} {{ "a", "b", "c" }, { "d", "e" }, { "f", "g" }}
+
+% \ShowLuaExampleTwo {table} {merged}   {{ a = 1, b = 2, c = 3 }, { d = 1 }, { a = 0 }}
+% \ShowLuaExampleTwo {table} {imerged}  {{ "a", "b", "c" }, { "d", "e" }, { "f", "g" }}
+
+\stopsummary
+
+\startsummary[title={copy fastcopy}]
+
+When copying a table we need to make a real and deep copy. The \type {copy}
+function is an adapted version from the \LUA\ wiki. The \type {fastopy} is faster
+because it does not check for circular references and does not share tables when
+possible. In practice using the fast variant is okay.
+
+\starttyping
+local copy = table.copy    (t)
+local copy = table.fastcopy(t)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={flattened}]
+
+A nested table can be unnested using \type {flattened}. Normally you will only
+use this function if the content is somewhat predictable. Often using one of the
+merge functions does a similar job.
+
+\starttyping
+local flattened = table.flatten(t)
+\stoptyping
+
+\ShowLuaExampleTwo {table} {flattened} {{ a = 1, b = 2, { c = 3 }, d = 4}}
+\ShowLuaExampleTwo {table} {flattened} {{ 1, 2, { 3, { 4 } }, 5}}
+\ShowLuaExampleTwo {table} {flattened} {{ 1, 2, { 3, { 4 } }, 5}, 1}
+\ShowLuaExampleTwo {table} {flattened} {{ a = 1, b = 2, { c = 3 }, d = 4}}
+\ShowLuaExampleTwo {table} {flattened} {{ 1, 2, { 3, { c = 4 } }, 5}}
+\ShowLuaExampleTwo {table} {flattened} {{ 1, 2, { 3, { c = 4 } }, 5}, 1}
+
+\stopsummary
+
+\startsummary[title={loweredkeys}]
+
+The name says it all: this function returns a new table with the keys being lower
+case. This is handy in cases where the keys have a change to be inconsistent, as
+can be the case when users input keys and values in less controlled ways.
+
+\starttyping
+local normalized = table.loweredkeys { a = "a", A = "b", b = "c" }
+\stoptyping
+
+\ShowLuaExampleTwo {table} {loweredkeys} {{ a = 1, b = 2, C = 3}}
+
+\stopsummary
+
+\startsummary[title={contains}]
+
+This function works with indexed tables. Watch out, when you look for a match,
+the number \type {1} is not the same as string \type {"1"}. The function returns
+the index or \type {false}.
+
+\starttyping
+if table.contains(t, 5 ) then ... else ... end
+if table.contains(t,"5") then ... else ... end
+\stoptyping
+
+\ShowLuaExampleThree {table} {contains} {{ "a", 2, true, "1"}, 1}
+\ShowLuaExampleThree {table} {contains} {{ "a", 2, true, "1"}, "1"}
+
+\stopsummary
+
+\startsummary[title={unique}]
+
+When a table (can) contain duplicate entries you can get rid of them by using the
+\type {unique} helper:
+
+\starttyping
+local t = table.unique { 1, 2, 3, 4, 3, 2, 5, 6 }
+\stoptyping
+
+\ShowLuaExampleTwo {table} {unique} { { "a", "b", "c", "a", "d" } }
+
+\stopsummary
+
+\startsummary[title={count}]
+
+The name speaks for itself: this function counts the number of entries in the
+given table. For an indexed table \type {#t} is faster.
+
+\starttyping
+local n = table.count(t)
+\stoptyping
+
+\ShowLuaExampleThree {table} {count} {{ 1, 2, [4] = 4, a = "a" }}
+
+\stopsummary
+
+\startsummary[title={sequenced}]
+
+Normally, when you trace a table, printing the serialized version is quite
+convenient. However, when it concerns a simple table, a more compact variant is:
+
+\starttyping
+print(table.sequenced(t, separator))
+\stoptyping
+
+% beware: by default sequences has | as separator
+
+\ShowLuaExampleThree {table} {sequenced} {{ 1, 2, 3, 4}}
+\ShowLuaExampleThree {table} {sequenced} {{ 1, 2, [4] = 4, a = "a" }, ", "}
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=Math]
+
+In addition to the built-in math function we provide: \type {round}, \type {odd},
+\type {even}, \type {div}, \type {mod}, \type {sind}, \type {cosd} and
+\type {tand}.
+
+At the \TEX\ end we have a helper \type {luaexpr} that you can use to do
+calculations:
+
+\startbuffer
+  \luaexpr{1 + 2.3 * 4.5 + math.pi} = \cldcontext{1 + 2.3 * 4.5 + math.pi}
+\stopbuffer
+
+\typebuffer
+
+Both calls return the same result, but the first one is normally faster than the
+\type {context} command which has quite some overhead.
+
+\blank \getbuffer \blank
+
+The \type {\luaexpr} command can also better deal with for instance conditions,
+where it returns \type {true} or \type {false}, while \type {\cldcontext} would
+interpret the boolean value as a special signal.
+
+\stopsection
+
+\startsection[title=Booleans]
+
+\startsummary[title={tonumber}]
+
+This function returns the number one or zero. You will seldom need this function.
+
+\starttyping
+local state = boolean.tonumber(str)
+\stoptyping
+
+\ShowLuaExampleThree {boolean} {tonumber} {true}
+
+\stopsummary
+
+\startsummary[title={toboolean}]
+
+When dealing with configuration files or tables a bit flexibility in setting a
+state makes sense, if only because in some cases it's better to say \type {yes}
+than \type {true}.
+
+\starttyping
+local b = toboolean(str)
+local b = toboolean(str,tolerant)
+\stoptyping
+
+When the second argument is true, the strings \type {true}, \type {yes}, \type
+{on}, \type {1}, \type {t} and the number \type {1} all turn into \type {true}.
+Otherwise only \type {true} is honoured. This function is also defined in the
+global namespace.
+
+\ShowLuaExampleThree {string} {toboolean} {"true"}
+\ShowLuaExampleThree {string} {toboolean} {"yes"}
+\ShowLuaExampleThree {string} {toboolean} {"yes",true}
+
+\stopsummary
+
+\startsummary[title={is_boolean}]
+
+This function is somewhat similar to the previous one. It interprets the strings
+\type {true}, \type {yes}, \type {on} and \type {t} as \type {true} and
+\type{false}, \type {no}, \type {off} and \type {f} as \type {false}. Otherwise
+\type {nil} is returned, unless a default value is given, in which case that is
+returned.
+
+\starttyping
+if is_boolean(str)         then ... end
+if is_boolean(str,default) then ... end
+\stoptyping
+
+\ShowLuaExampleThree {string} {is_boolean} {"true"}
+\ShowLuaExampleThree {string} {is_boolean} {"off"}
+\ShowLuaExampleThree {string} {is_boolean} {"crap",true}
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=Strings]
+
+\LUA\ strings are simply sequences of bytes. Of course in some places special
+treatment takes place. For instance \type {\n} expands to one or more characters
+representing a newline, depending on the operating system, but normally, as long
+as you manipulate strings in the perspective of \LUATEX, you don't need to worry
+about such issues too much. As \LUATEX\ is a \UTF-8 engine, strings normally are
+in that encoding but again, it does not matter much as \LUA\ is quite agnostic
+about the content of strings: it does not care about three characters reflecting
+one \UNICODE\ character or not. This means that when you use for instance the
+functions discussed here, or use libraries like \type {lpeg} behave as you
+expect.
+
+Versions later than 0.75 are likely to have some basic \UNICODE\ support on board
+but we can easily adapt to that. At least till \LUATEX\ version 0.75 we provided
+the \type {slunicode} library but users cannot assume that that will be present for
+ever. If you want to mess around with \UTF\ string, use the \type {utf} library
+instead as that is the one we provide in \MKIV. It presents the stable interface to
+whatever \LUA\ itself provides and|/|or what \LUATEX\ offers and|/|or what
+is there because \MKIV\ implements it.
+
+\startsummary[title={[lua] byte char}]
+
+As long as we're dealing with \ASCII\ characters we can use these two functions to
+go from numbers to characters and vise versa.
+
+\ShowLuaExampleSeven {string} {byte} {"luatex"}
+\ShowLuaExampleSeven {string} {byte} {"luatex",1,3}
+\ShowLuaExampleSeven {string} {byte} {"luatex",-3,-1}
+
+\ShowLuaExampleSeven {string} {char} {65}
+\ShowLuaExampleSeven {string} {char} {65,66,67}
+
+\stopsummary
+
+\startsummary[title={[lua] sub}]
+
+You cannot directly access a character in a string but you can take any slice you
+want using \type {sub}. You need to provide a start position and negative values
+will count backwards from the end.
+
+\starttyping
+local slice = string.sub(str,first,last)
+\stoptyping
+
+\ShowLuaExampleThree {string} {sub} {"abcdef",2}
+\ShowLuaExampleThree {string} {sub} {"abcdef",2,3}
+\ShowLuaExampleThree {string} {sub} {"abcdef",-3,-2}
+
+\stopsummary
+
+\startsummary[title={[lua] gsub}]
+
+There are two ways of analyzing the content of a string. The more modern and
+flexible approach is to use \type {lpeg}. The other one uses some functions in
+the \type {string} namespace that accept so called patterns for matching. While
+\type {lpeg} is more powerfull than regular expressions, the pattern matching is
+less powerfull but sometimes faster and also easier to specify. In many cases it
+can do the job quite well.
+
+\starttyping
+local new, count = string.gsub(old,pattern,replacement)
+\stoptyping
+
+The replacement can be a function. Often you don't want the number
+of matches, and the way to avoid this is either to store the result
+in a variable:
+
+\starttyping
+local new = string.gsub(old,"lua","LUA")
+print(new)
+\stoptyping
+
+or to use parentheses to signal the interpreter that only one value
+is return.
+
+\starttyping
+print((string.gsub(old,"lua","LUA"))
+\stoptyping
+
+Patterns can be more complex so you'd better read the \LUA\ manual if you want to
+know more about them.
+
+\ShowLuaExampleThree {string} {gsub} {"abcdef","b","B"}
+\ShowLuaExampleThree {string} {gsub} {"abcdef","[bc]",string.upper}
+
+An optional fourth argument specifies how often the replacement has to happen
+
+\ShowLuaExampleThree {string} {gsub} {"textextextex","tex","abc"}
+\ShowLuaExampleThree {string} {gsub} {"textextextex","tex","abc",1}
+\ShowLuaExampleThree {string} {gsub} {"textextextex","tex","abc",2}
+
+\stopsummary
+
+\startsummary[title={[lua] find}]
+
+The \type {find} function returns the first and last position of the match:
+
+\starttyping
+local first, last = find(str,pattern)
+\stoptyping
+
+If you're only interested if there is a match at all, it's enough to know that
+there is a first position. No match returns \type {nil}. So,
+
+\starttyping
+if find("luatex","tex") then ... end
+\stoptyping
+
+works out okay. You can pass an extra argument to \type {find} that indicates the
+start position. So you can use this function to loop over all matches: just start
+again at the end of the last match.
+
+A fourth optional argument is a boolean that signals not to interpret the pattern
+but use it as|-|is.
+
+\ShowLuaExampleThree {string} {find} {"abc.def","c\letterpercent.d",1,false}
+\ShowLuaExampleThree {string} {find} {"abc.def","c\letterpercent.d",1,true}
+\ShowLuaExampleThree {string} {find} {"abc\letterpercent.def","c\letterpercent.d",1,false}
+\ShowLuaExampleThree {string} {find} {"abc\letterpercent.def","c\letterpercent.d",1,true}
+
+\stopsummary
+
+\startsummary[title={[lua] match gmatch}]
+
+With \type {match} you can split of bits and pieces of a string. The parenthesis
+indicate the captures.
+
+\starttyping
+local a, b, c, ... = string.match(str,pattern)
+\stoptyping
+
+The \type {gmatch} function is used to loop over a string, for instance the
+following code prints the elements in a comma separated list, ignoring spaces
+after commas.
+
+\starttyping
+for s in string.gmatch(str,"([^,%s])+") do
+  print(s)
+end
+\stoptyping
+
+A more detailed description can be found in the \LUA\ reference manual, so we
+only mention the special directives. Characters are grouped in classes:
+
+\starttabulate[|lT|l|]
+\HL
+\NC \letterpercent a \NC letters                  \NC \NR
+\NC \letterpercent l \NC lowercase letters        \NC \NR
+\NC \letterpercent u \NC uppercase letters        \NC \NR
+\NC \letterpercent d \NC digits                   \NC \NR
+\NC \letterpercent w \NC letters and digits       \NC \NR
+\NC \letterpercent c \NC control characters       \NC \NR
+\NC \letterpercent p \NC punctuation              \NC \NR
+\NC \letterpercent x \NC hexadecimal characters   \NC \NR
+\NC \letterpercent s \NC space related characters \NC \NR
+\HL
+\stoptabulate
+
+You can create sets too:
+
+\starttabulate[|lT|l|]
+\HL
+\NC [\letterpercent l\letterpercent d]  \NC lowercase letters and digits \NC \NR
+\NC [^\letterpercent d\letterpercent p] \NC all characters except digits and punctuation \NC \NR
+\NC [p-z]                               \NC all characters in the range \type {p} upto \type {z} \NC \NR
+\NC [pqr]                               \NC all characters \type {p}, \type {q} and \type {r} \NC \NR
+\HL
+\stoptabulate
+
+There are some characters with special meanings:
+
+\starttabulate[|lT|l|]
+\HL
+\NC \letterhat       \NC the beginning of a string \NC \NR
+\NC \letterdollar    \NC end of a string \NC \NR
+\NC .                \NC any character \NC \NR
+\NC *                \NC zero or more of the preceding specifier, greedy \NC \NR
+\NC -                \NC zero or more of the preceding specifier, least possible \NC \NR
+\NC +                \NC one or more of the preceding specifier \NC \NR
+\NC ?                \NC zero or one of the preceding specifier \NC \NR
+\NC ( )              \NC encapsulate capture \NC \NR
+\NC \letterpercent b \NC capture all between the following two characters \NC \NR
+\HL
+\stoptabulate
+
+You can use whatever you like to be matched:
+
+\starttabulate[|lT|l|]
+\HL
+\NC pqr                           \NC the sequence \type {pqr} \NC \NR
+\NC my name is (\letterpercent w) \NC the word following \type {my name is} \NC \NR
+\HL
+\stoptabulate
+
+If you want to specify such a token as it is, then you can precede it with a
+percent sign, so to get a percent, you need two in a row.
+
+\ShowLuaExampleThree {string} {match} {"before:after","^(.-):"}
+\ShowLuaExampleThree {string} {match} {"before:after","^([^:])"}
+\ShowLuaExampleThree {string} {match} {"before:after","bef(.*)ter"}
+\ShowLuaExampleThree {string} {match} {"abcdef","[b-e]+"}
+\ShowLuaExampleThree {string} {match} {"abcdef","[b-e]*"}
+\ShowLuaExampleThree {string} {match} {"abcdef","b-e+"}
+\ShowLuaExampleThree {string} {match} {"abcdef","b-e*"}
+
+\stopsummary
+
+Such patterns should not be confused with regular expressions, although to some
+extent they can do the same. If you really want to do complex matches, you should
+look into \LPEG.
+
+\startsummary[title={[lua] lower upper}]
+
+These two function spreak for themselves.
+
+\ShowLuaExampleThree {string} {lower} {"LOW"}
+\ShowLuaExampleThree {string} {upper} {"upper"}
+
+\stopsummary
+
+\startsummary[title={[lua] format}]
+
+The \type {format} function takes a template as first argument and one or more
+additional arguments depending on the format. The template is similar to the one
+used in \CCODE\ but it has some extensions.
+
+\starttyping
+local s = format(format, str, ...)
+\stoptyping
+
+The following table gives an overview of the possible format directives. The
+\type {s} is the most probably candidate and can handle numbers well as strings.
+Watch how the minus sign influences the alignment. \footnote {There can be
+differences between platforms although so far we haven't run into problems. Also,
+\LUA\ 5.2 does a bit more checking on correct arguments.}
+
+\starttabulate[|lB|lT|lT|lT|]
+\HL
+\NC integer     \NC \letterpercent i    \NC 12345  \NC \cldcontext{"\letterpercent i",   12345 } \NC \NR
+\NC integer     \NC \letterpercent d    \NC 12345  \NC \cldcontext{"\letterpercent d",   12345 } \NC \NR
+\NC unsigned    \NC \letterpercent u    \NC -12345 \NC \cldcontext{"\letterpercent u",   12345 } \NC \NR
+\NC character   \NC \letterpercent c    \NC 123    \NC \cldcontext{"\letterpercent c",   89    } \NC \NR
+\NC hexadecimal \NC \letterpercent x    \NC 123    \NC \cldcontext{"\letterpercent x",   123   } \NC \NR
+\NC             \NC \letterpercent X    \NC 123    \NC \cldcontext{"\letterpercent X",   123   } \NC \NR
+\NC octal       \NC \letterpercent o    \NC 12345  \NC \cldcontext{"\letterpercent o",   12345 } \NC \NR
+\HL
+\NC string      \NC \letterpercent s    \NC abc    \NC \cldcontext{"\letterpercent s",   "abcd"} \NC \NR
+\NC             \NC \letterpercent -8s  \NC 123    \NC \cldcontext{"\letterpercent -8s", 123   } \NC \NR
+\NC             \NC \letterpercent 8s   \NC 123    \NC \cldcontext{"\letterpercent 8s",  123   } \NC \NR
+\HL
+\NC float       \NC \letterpercent 0.2f \NC 12.345 \NC \cldcontext{"\letterpercent 0.2f",12.345} \NC \NR
+\NC exponential \NC \letterpercent 0.2e \NC 12.345 \NC \cldcontext{"\letterpercent 0.2e",12.345} \NC \NR
+\NC             \NC \letterpercent 0.2E \NC 12.345 \NC \cldcontext{"\letterpercent 0.2E",12.345} \NC \NR
+\NC autofloat   \NC \letterpercent 0.2g \NC 12.345 \NC \cldcontext{"\letterpercent 0.2g",12.345} \NC \NR
+\NC             \NC \letterpercent 0.2G \NC 12.345 \NC \cldcontext{"\letterpercent 0.2G",12.345} \NC \NR
+\HL
+\stoptabulate
+
+\startasciimode
+\ShowLuaExampleThree {string} {format} {"U+\letterpercent 05X",2010}
+\stopasciimode
+
+\stopsummary
+
+\startsummary[title={striplines}]
+
+The \type {striplines} function can strip leading and trailing empty lines,
+collapse or delete intermediate empty lines and strips leading and trailing
+spaces. We will demonstrate this with string \type {str}:
+
+\startluacode
+local str = table.concat( {
+"  ",
+"    aap",
+"  noot mies",
+"  ",
+"    ",
+" wim    zus   jet",
+"teun    vuur gijs",
+"       lam    kees bok weide",
+"    ",
+"does hok duif schapen  ",
+"  ",
+}, "\n")
+
+document.TempString = str
+
+function document.ShowStrippedString(str)
+    str = string.gsub(str," ","\\allowbreak<sp>\\allowbreak ")
+    str = string.gsub(str,"([\010])","\\allowbreak<lf>\\allowbreak ")
+    context.startalign { "flushleft,verytolerant" }
+        context("{\\tttf %s}",str)
+    context.stopalign()
+end
+
+function document.ShowStrippedBuffer(name,str)
+    context.tobuffer(name,str)
+    context.typebuffer( { name }, { numbering = "line" })
+    context.resetbuffer { name }
+end
+
+function document.ShowStrippedCommand(option)
+    context.type( { style = "ttbf" }, [[utilities.strings.striplines(str,"]] .. option .. [[")]])
+end
+
+context.blank { "big" }
+document.ShowStrippedString(str)
+document.ShowStrippedBuffer("dummy",str)
+
+\stopluacode
+
+The different options for stripping are demonstrated below, We use verbose
+descriptions instead of vague boolean flags.
+
+\startluacode
+local str = document.TempString ; document.TempString = nil
+
+for option in table.sortedhash(utilities.strings.striplinepatterns) do
+    local s = utilities.strings.striplines(str,option)
+    context.blank()
+    document.ShowStrippedCommand(option)
+    context.blank { "big,samepage" }
+    document.ShowStrippedString(s)
+    context.blank { "big,samepage" }
+    document.ShowStrippedBuffer(option,str)
+end
+\stopluacode
+
+You can of course mix usage with the normal \type {context} helper commands, for
+instance put them in buffers. Buffers normally will prune leading and trailing
+empty lines anyway.
+
+\starttyping
+context.tobuffer("dummy",utilities.strings.striplines(str))
+context.typebuffer( { "dummy" }, { numbering = "line" })
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={formatters}]
+
+The \type {format} function discussed before is the built|-|in. As an alternative
+\CONTEXT\ provides an additional formatter that has some extensions. Interesting
+is that that one is often more efficient, although there are cases where the
+speed is comparable. In addition to the regular \type {format} function we have
+the following extra formatting keys: \footnote {As we run out of keys some are
+somewhat counter intuitive, like \type {l} for booleans (logical).}
+
+\start \setuptype[color=]
+
+\starttabulate[|lB|lT|lT|lT|]
+\HL
+\NC utf character    \NC \letterpercent c            \NC 322           \NC \cldcontext{"\letterpercent c",322} \NC \NR
+\HL
+\NC force tostring   \NC \letterpercent S            \NC nil           \NC \cldcontext{"\letterpercent S",nil} \NC \NR
+\NC                  \NC \letterpercent Q            \NC nil           \NC \cldcontext{"\letterpercent Q",nil} \NC \NR
+\NC                  \NC \letterpercent N            \NC 0123          \NC \cldcontext{"\letterpercent N","0123"} \NC \NR
+\HL
+\NC signed number    \NC \letterpercent I            \NC 1234          \NC \cldcontext{"\letterpercent I",1234} \NC \NR
+\NC rounded number   \NC \letterpercent r            \NC 1234.56       \NC \cldcontext{"\letterpercent r",1234.56} \NC \NR
+\HL
+\NC sparseexp        \NC \letterpercent 0.2j         \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2j",12.345e120} \NC \NR
+\NC                  \NC \letterpercent 0.2J         \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2J",12.345e120} \NC \NR
+\HL
+\NC unicode value 0x \NC \letterpercent h            \NC ł 1234        \NC \cldcontext{"\letterpercent v \letterpercent v", "ł",1234} \NC \NR
+\NC                  \NC \letterpercent H            \NC ł 1234        \NC \cldcontext{"\letterpercent V \letterpercent V", "ł",1234} \NC \NR
+\NC unicode value U+ \NC \letterpercent u            \NC ł 1234        \NC \cldcontext{"\letterpercent u \letterpercent u", "ł",1234} \NC \NR
+\NC                  \NC \letterpercent U            \NC ł 1234        \NC \cldcontext{"\letterpercent U \letterpercent U", "ł",1234} \NC \NR
+\HL
+\NC points           \NC \letterpercent p            \NC 1234567       \NC \cldcontext{"\letterpercent p",1234567} \NC \NR
+\NC basepoints       \NC \letterpercent b            \NC 1234567       \NC \cldcontext{"\letterpercent b",1234567} \NC \NR
+\HL
+\NC table concat     \NC \letterpercent t            \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent t",{1,2,3}}  \NC \NR
+\NC                  \NC \letterpercent *t           \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent *t",{1,2,3}} \NC \NR
+\NC                  \NC \letterpercent \arg{ AND }t \NC \arg{a=1,b=3} \NC \cldcontext{"\letterpercent +{ AND }T",{a=1,b=2}} \NC \NR
+\NC table serialize  \NC \letterpercent T            \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent *t",{1,2,3}} \NC \NR
+\NC                  \NC \letterpercent T            \NC \arg{a=1,b=3} \NC \let|\relax\cldcontext{"\letterpercent T",{a=1,b=2}} \NC \NR
+\NC                  \NC \letterpercent +T           \NC \arg{a=1,b=3} \NC \cldcontext{"\letterpercent [+T]",{a=1,b=2}} \NC \NR
+\HL
+\NC boolean (logic)  \NC \letterpercent l            \NC "a" == "b"    \NC \cldcontext{"\letterpercent l","a"=="b"} \NC \NR
+\NC                  \NC \letterpercent L            \NC "a" == "b"    \NC \cldcontext{"\letterpercent L","a"=="b"} \NC \NR
+\HL
+\NC whitespace       \NC \letterpercent w            \NC 3             \NC \obeyspaces\vl\cldcontext{"\letterpercent w",3}\vl \NC \NR
+\NC                  \NC \letterpercent 2w           \NC 3             \NC \obeyspaces\vl\cldcontext{"\letterpercent 2w",3}\vl \NC \NR
+\NC                  \NC \letterpercent 4W           \NC               \NC \obeyspaces\vl\cldcontext{"\letterpercent 4W"}\vl \NC \NR
+\HL
+\NC skip             \NC \letterpercent 2z            \NC 1,2,3,4      \NC \obeyspaces\vl\cldcontext{"\letterpercent s\letterpercent 2z\letterpercent s",1,2,3,4}\vl \NC \NR
+\HL
+\stoptabulate
+
+\stop
+
+There is also a generic formatter: \type {a} and \type {A}. This one converts the
+argument into a string and deals with strings, number, booleans, tables and
+whatever. We mostly use these in tracing. The lowercase variant uses single
+quotes, and the uppercase variant uses double quotes.
+
+There are two more formatters plugged in: \type {!xml!} and \type {!tex!}. These
+are best demonstrated with an example:
+
+\starttyping
+local xf = formatter["xml escaped: %!xml!"]
+local xr = formatter["tex escaped: %!tex!"]
+
+print(xf("x > 1 && x < 10"))
+print(xt("this will cost me $123.00 at least"))
+\stoptyping
+
+weird, this fails when cld-verbatim is there as part of the big thing:
+catcodetable 4 suddenly lacks the comment being a other
+
+The \type {context} command uses the formatter so one can say:
+
+\startbuffer
+\startluacode
+context("first some xml: %!xml!, and now some %!tex!",
+    "x > 1 && x < 10", "this will cost me $123.00 at least")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This renders as follows:
+
+\blank \getbuffer \blank
+
+You can extend the formatter but we advise you not to do that unless you're sure
+what you're doing. You never know what \CONTEXT\ itself might add for its own
+benefit.
+
+However, you can define your own formatter and add to that without interference.
+In fact, the main formatter is just defined that way. This is how it works:
+
+\startbuffer[definition]
+local MyFormatter = utilities.strings.formatters.new()
+
+utilities.strings.formatters.add (
+    MyFormatter,
+    "upper",
+    "global.string.upper(%s)"
+)
+\stopbuffer
+
+\typebuffer[definition]
+
+Now you can use this one as:
+
+\startbuffer[usage]
+context.bold(MyFormatter["It's %s or %!upper!."]("this","that"))
+\stopbuffer
+
+\typebuffer[usage]
+
+\blank \ctxluabuffer[definition,usage] \blank
+
+Because we're running inside \CONTEXT, a better definition would be this:
+
+\startbuffer
+local MyFormatter = utilities.strings.formatters.new()
+
+utilities.strings.formatters.add (
+    MyFormatter,
+    "uc",
+    "myupper(%s)",
+ -- "local myupper = global.characters.upper"
+    { myupper = global.characters.upper }
+)
+
+utilities.strings.formatters.add (
+    MyFormatter,
+    "lc",
+    "mylower(%s)",
+ -- "local mylower = global.characters.lower"
+    { mylower = global.characters.lower }
+)
+
+utilities.strings.formatters.add (
+    MyFormatter,
+    "sh",
+    "myshaped(%s)",
+ -- "local myshaped = global.characters.shaped"
+    { myshaped = global.characters.shaped }
+)
+
+context(MyFormatter["Uppercased: %!uc!"]("ÀÁÂÃÄÅàáâãäå"))
+context.par()
+context(MyFormatter["Lowercased: %!lc!"]("ÀÁÂÃÄÅàáâãäå"))
+context.par()
+context(MyFormatter["Reduced: %!sh!"]("ÀÁÂÃÄÅàáâãäå"))
+\stopbuffer
+
+\typebuffer
+
+The last arguments creates shortcuts. As expected we get:
+
+\blank \ctxluabuffer \blank
+
+Of course you can also apply the casing functions directly so in practice you
+shouldn't use formatters without need. Among the advantages of using formatters
+are:
+
+\startitemize[packed]
+\startitem They provide a level of abstraction. \stopitem
+\startitem They can replace multiple calls to \type {\context}. \stopitem
+\startitem Sometimes they make source code look better. \stopitem
+\startitem Using them is often more efficient and faster. \stopitem
+\stopitemize
+
+The last argument might sound strange but considering the overhead involved in
+the \type {context} (related) functions, doing more in one step has benefits.
+Also, formatters are implemented quite efficiently, so their overhead can be
+neglected.
+
+In the examples you see that a formatter extension is itself a template.
+
+\startbuffer
+local FakeXML = utilities.strings.formatters.new()
+
+utilities.strings.formatters.add(FakeXML,"b",[["<" ..%s..">" ]])
+utilities.strings.formatters.add(FakeXML,"e",[["</"..%s..">" ]])
+utilities.strings.formatters.add(FakeXML,"n",[["<" ..%s.."/>"]])
+
+context(FakeXML["It looks like %!b!xml%!e! doesn't it?"]("it","it"))
+\stopbuffer
+
+\typebuffer
+
+This gives: \ctxluabuffer. Of course we could go over the top here:
+
+\startbuffer
+local FakeXML = utilities.strings.formatters.new()
+
+local stack = { }
+
+function document.f_b(s)
+    table.insert(stack,s)
+    return "<" .. s .. ">"
+end
+
+function document.f_e()
+    return "</" .. table.remove(stack) .. ">"
+end
+
+utilities.strings.formatters.add(FakeXML,"b",[[global.document.f_b(%s)]])
+utilities.strings.formatters.add(FakeXML,"e",[[global.document.f_e()]])
+
+context(FakeXML["It looks like %1!b!xml%0!e! doesn't it?"]("it"))
+\stopbuffer
+
+\typebuffer
+
+This gives: \ctxluabuffer. Such a template look horrible, although it's not too
+far from the regular format syntax: just compare \type {%1f} with \type {%1!e!}.
+The zero trick permits us to inject information that we've put on the stack. As
+this kind of duplicate usage might occur most, a better solution is available:
+
+\startbuffer
+local FakeXML = utilities.strings.formatters.new()
+
+utilities.strings.formatters.add(FakeXML,"b",[["<"  .. %s .. ">"]])
+utilities.strings.formatters.add(FakeXML,"e",[["</" .. %s .. ">"]])
+
+context(FakeXML["It looks like %!b!xml%-1!e! doesn't it?"]("it"))
+\stopbuffer
+
+\typebuffer
+
+We get: \ctxluabuffer. Anyhow, in most cases you will never feel the need for
+such hackery and the regular formatter works fine. Adding this extension
+mechanism was rather trivial and it doesn't influence the performance.
+
+In \CONTEXT\ we have a few more extensions:
+
+\starttyping
+utilities.strings.formatters.add (
+    strings.formatters, "unichr",
+    [["U+" .. format("%%05X",%s) .. " (" .. utfchar(%s) .. ")"]]
+)
+
+utilities.strings.formatters.add (
+    strings.formatters, "chruni",
+    [[utfchar(%s) .. " (U+" .. format("%%05X",%s) .. ")"]]
+)
+\stoptyping
+
+This one is used in messages:
+
+\startbuffer
+context("Missing character %!chruni! in font.",234) context.par()
+context("Missing character %!unichr! in font.",234)
+\stopbuffer
+
+\typebuffer
+
+This shows up as:
+
+\blank \getbuffer \blank
+
+If you look closely to the definition, you will notice that we use \type {%s}
+twice. This is a feature of the definer function: if only one argument is
+picked up (which is default) then the replacement format can use that two
+times. Because we use a format in the constructor, we need to escape the
+percent sign there.
+
+\stopsummary
+
+\startsummary[title={strip}]
+
+This function removes any leading and trailing whitespace characters.
+
+\starttyping
+local s = string.strip(str)
+\stoptyping
+
+\ShowLuaExampleThree {string} {strip} {" lua + tex = luatex "}
+
+\stopsummary
+
+\startsummary[title={split splitlines checkedsplit}]
+
+The line splitter is a special case of the generic splitter. The \type {split}
+function can get a string as well an \type {lpeg} pattern. The \type
+{checkedsplit} function removes empty substrings.
+
+\starttyping
+local t = string.split        (str, pattern)
+local t = string.split        (str, lpeg)
+local t = string.checkedsplit (str, lpeg)
+local t = string.splitlines   (str)
+\stoptyping
+
+\start \let\ntex\relax % hack
+
+\ShowLuaExampleTwo {string} {split}        {"a, b,c, d", ","}
+\ShowLuaExampleTwo {string} {split}        {"p.q,r", lpeg.S(",.")}
+\ShowLuaExampleTwo {string} {checkedsplit} {";one;;two", ";"}
+\ShowLuaExampleTwo {string} {splitlines}   {"lua\ntex nic"}
+
+\stop
+
+\stopsummary
+
+\startsummary[title={quoted unquoted}]
+
+You will hardly need these functions. The \type {quoted} function can normally be
+avoided using the \type {format} pattern \type {%q}. The \type {unquoted}
+function removes single or double quotes but only when the string starts and ends
+with the same quote.
+
+\starttyping
+local q = string.quoted  (str)
+local u = string.unquoted(str)
+\stoptyping
+
+\ShowLuaExampleThree {string} {quoted}   {[[test]]}
+\ShowLuaExampleThree {string} {quoted}   {[[test"test]]}
+\ShowLuaExampleThree {string} {unquoted} {[["test]]}
+\ShowLuaExampleThree {string} {unquoted} {[["t\"est"]]}
+\ShowLuaExampleThree {string} {unquoted} {[["t\"est"x]]}
+\ShowLuaExampleThree {string} {unquoted} {"\'test\'"}
+
+\stopsummary
+
+\startsummary[title={count}]
+
+The function \type {count} returns the number of times that a given pattern
+occurs. Beware: if you want to deal with \UTF\ strings, you need the variant that
+sits in the \type {lpeg} namespace.
+
+\starttyping
+local n = count(str,pattern)
+\stoptyping
+
+\ShowLuaExampleThree {string} {count} {"test me", "e"}
+
+\stopsummary
+
+\startsummary[title={limit}]
+
+This function can be handy when you need to print messages that can be rather
+long. By default, three periods are appended when the string is chopped.
+
+\starttyping
+print(limit(str,max,sentinel)
+\stoptyping
+
+\ShowLuaExampleThree {string} {limit} {"too long", 6}
+\ShowLuaExampleThree {string} {limit} {"too long", 6, " (etc)"}
+
+\stopsummary
+
+\startsummary[title={is_empty}]
+
+A string considered empty by this function when its length is zero or when it
+only contains spaces.
+
+\starttyping
+if is_empty(str) then ... end
+\stoptyping
+
+\ShowLuaExampleThree {string} {is_empty} {""}
+\ShowLuaExampleThree {string} {is_empty} {" "}
+\ShowLuaExampleThree {string} {is_empty} {" ? "}
+
+\stopsummary
+
+\startsummary[title={escapedpattern topattern}]
+
+These two functions are rather specialized. They come in handy when you need to
+escape a pattern, i.e.\ prefix characters with a special meaning by a \type {%}.
+
+\starttyping
+local e = escapedpattern(str, simple)
+local p = topattern     (str, lowercase, strict)
+\stoptyping
+
+The simple variant does less escaping (only \type {-.?*} and is for instance used
+in wildcard patterns when globbing directories. The \type {topattern} function
+always does the simple escape. A strict pattern gets anchored to the beginning
+and end. If you want to see what these functions do you can best look at their
+implementation.
+
+\stopsummary
+
+% strings.tabtospace(str,n)
+% strings.striplong
+
+\stopsection
+
+\startsection[title=\UTF]
+
+We used to have the \type {slunicode} library available but as most of it is not
+used and because it has a somewhat fuzzy state, we will no longer rely on it. In
+fact we only used a few functions in the \type {utf} namespace so as \CONTEXT\
+user you'd better stick to what is presented here. You don't have to worry how
+they are implemented. Depending on the version of \LUATEX\ it can be that a
+library, a native function, or \LPEG is used.
+
+\startsummary[title={char byte}]
+
+As \UTF\ is a multibyte encoding the term char in fact refers to a \LUA\
+string of one upto four 8|-|bit characters.
+
+\starttyping
+local b = utf.byte("å")
+local c = utf.char(0xE5)
+\stoptyping
+
+The number of places in \CONTEXT\ where do such conversion is not that large:
+it happens mostly in tracing messages.
+
+\starttyping
+logs.report("panic","the character U+%05X is used",utf.byte("æ"))
+\stoptyping
+
+\ShowLuaExampleThree {utf} {byte} {"æ"}
+\ShowLuaExampleThree {utf} {char} {0xE6}
+
+\stopsummary
+
+\startsummary[title={sub}]
+
+If you need to take a slice of an \UTF\ encoded string the \type {sub} function
+can come in handy. This function takes a string and a range defined by two
+numbers. Negative numbers count from the end of the string.
+
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",1,7}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",0,7}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",0,9}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",4}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",0}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",0,0}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",4,4}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",4,0}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",-3,0}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",0,-3}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",-5,-3}
+\ShowLuaExampleThree {utf} {sub} {"123456àáâãäå",-3}
+
+\stopsummary
+
+\startsummary[title={len}]
+
+There are probably not that many people that can instantly see how many bytes the
+string in the following example takes:
+
+\starttyping
+local l = utf.len("ÀÁÂÃÄÅàáâãäå")
+\stoptyping
+
+Programming languages use \ASCII\ mostly so there each characters takes one byte.
+In \CJK\ scripts however, you end up with much longer sequences. If you ever did
+some typesetting of such scripts you have noticed that the number of characters
+on a page is less than in the case of a Latin script. As information is coded
+in less characters, effectively the source of a Latin or \CJK\ document will not
+differ that much.
+
+\ShowLuaExampleThree {utf} {len} {"ÒÓÔÕÖòóôõö"}
+
+\stopsummary
+
+\startsummary[title={values characters}]
+
+There are two iterators that deal with \UTF. In \LUATEX\ these are extensions to
+the \type {string} library but for consistency we've move them to the \type {utf}
+namespace.
+
+The following function loops over the \UTF\ characters in a string and returns
+the \UNICODE\ number in \type {u}:
+
+\starttyping
+for u in utf.values(str) do
+    ... -- u is a number
+end
+\stoptyping
+
+The next one returns a string \type {c} that has one or more characters as \UTF\
+characters can have upto 4 bytes.
+
+\starttyping
+for c in utf.characters(str) do
+    ... -- c is a string
+end
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={ustring xstring tocodes}]
+
+These functions are mostly useful for logging where we want to see the \UNICODE\
+number.
+
+\ShowLuaExampleThree {utf} {ustring} {0xE6}
+\ShowLuaExampleThree {utf} {ustring} {"ù"}
+\ShowLuaExampleThree {utf} {xstring} {0xE6}
+\ShowLuaExampleThree {utf} {xstring} {"à"}
+\ShowLuaExampleThree {utf} {tocodes} {"ùúü"}
+\ShowLuaExampleThree {utf} {tocodes} {"àáä",""}
+\ShowLuaExampleThree {utf} {tocodes} {"òóö","+"}
+
+\stopsummary
+
+\startsummary[title={split splitlines totable}]
+
+The \type {split} function splits a sequence of \UTF\ characters into a table
+which one character per slot. The \type {splitlines} does the same but each slot
+has a line instead. The \type {totable} function is similar to \type {split}, but
+the later strips an optionally present \UTF\ bom.
+
+\ShowLuaExampleThree {utf} {split} {"òóö"}
+
+\stopsummary
+
+\startsummary[title={count}]
+
+This function counts the number of times that a given substring occurs in a
+string. The patterns can be a string or an \LPEG\ pattern.
+
+\ShowLuaExampleThree {utf} {count} {"òóöòóöòóö","ö"}
+\ShowLuaExampleThree {utf} {count} {"äáàa",lpeg.P("á") + lpeg.P("à")}
+
+\stopsummary
+
+\startsummary[title={remapper replacer substituter}]
+
+With \type {remapper} you can create a remapping function that remaps a given
+string using a (hash) table.
+
+\starttyping
+local remap = utf.remapper { a = 'd', b = "c", c = "b", d = "a" }
+
+print(remap("abcd 1234 abcd"))
+\stoptyping
+
+A remapper checks each character against the given mapping table. Its cousin
+\type {replacer} is more efficient and skips non matches. The \type {substituter}
+function only does a quick check first and avoids building a string with no
+replacements. That one is much faster when you expect not that many replacements.
+
+The \type {replacer} and \type {substituter} functions take table as argument
+and an indexed as well as hashed one are acceptable. In fact you can even do
+things like this:
+
+\starttyping
+local rep = utf.replacer { [lpeg.patterns.digit] = "!" }
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={is_valid}]
+
+This function returns false if the argument is no valid \UTF\ string. As \LUATEX\
+is pretty strict with respect to the input, this function is only useful when
+dealing with external files.
+
+\starttyping
+function checkfile(filename)
+  local data = io.loaddata(filename)
+  if data and data ~= "" and not utf.is_valid(data) then
+    logs.report("error","file %q contains invalid utf",filename)
+  end
+end
+\stoptyping
+
+\stopsummary
+
+% not that relevant:
+%
+% -- utf.filetype
+% -- string.toutf
+
+\stopsection
+
+\startsection[title=Numbers and bits]
+
+In the \type {number} namespace we collect some helpers that deal with numbers as
+well as bits. Starting with \LUA\ 5.2 a library \type {bit32} is but the language
+itself doesn't provide for them via operators: the library uses functions to
+manipulate numbers upto 2\high{32}. For advanced bit manipulations you should use
+the \type {bit32} library, otherwise it's best to stick to the functions
+described here.
+
+\startsummary[title={hasbit setbit clearbit}]
+
+As bitsets are numbers you will also use numbers to qualify them. So, if you want to
+set bits 1, 4 and 8, you can to that using the following specification:
+
+\starttyping
+local b = 1 + 4 + 8 -- 0x1 + 0x4 + 0x8
+local b = 13        -- or 0xC
+\stoptyping
+
+However, changing one bit by adding a number to an existing doesn't work out that well
+if that number already has that bit set. Instead we use:
+
+\starttyping
+local b = number.setbit(b,0x4)
+\stoptyping
+
+In a similar fashion you can turn of a bit:
+
+\starttyping
+local b = number.clearbit(b,0x4)
+\stoptyping
+
+Testing for a bit(set) is done as follows:
+
+\starttyping
+local okay = number.hasbit(b,0x4)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={bit}]
+
+Where the previously mentioned helpers work with numbers representing one or more
+bits, it is sometimes handy to work with positions. The \type {bit} function
+returns the associated number value.
+
+\ShowLuaExampleThree {number} {bit} {5}
+
+\stopsummary
+
+\startsummary[title={tobitstring}]
+
+There is no format option to go from number to bits in terms of zeros and ones so
+we provide a helper: \type {tobitsting}.
+
+\ShowLuaExampleThree {number} {tobitstring} {2013}
+\ShowLuaExampleThree {number} {tobitstring} {2013,3}
+\ShowLuaExampleThree {number} {tobitstring} {2013,1}
+
+\stopsummary
+
+\startsummary[title={bits}]
+
+If you ever want to convert a bitset into a table containing the set bits you can
+use this function.
+
+\ShowLuaExampleTwo {number} {bits} {11}
+
+\stopsummary
+
+\startsummary[title={toset}]
+
+A string or number can be split into digits with \type {toset}. Beware, this
+function does not return a function but multiple numbers
+
+\starttyping
+local a, b, c, d = number.toset("1001")
+\stoptyping
+
+The returned values are either numbers or \type {nil} when an valid digit is
+seen.
+
+\ShowLuaExampleSeven {number} {toset} {100101}
+\ShowLuaExampleSeven {number} {toset} {"100101"}
+\ShowLuaExampleSeven {number} {toset} {"21546"}
+
+\stopsummary
+
+\startsummary[title={valid}]
+
+This function can be used to check or convert a number, for instance in user
+interfaces.
+
+\ShowLuaExampleThree {number} {valid} {12}
+\ShowLuaExampleThree {number} {valid} {"34"}
+\ShowLuaExampleThree {number} {valid} {"ab",56}
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=\LPEG\ patterns]
+
+For \LUATEX\ and \CONTEXT\ \MKIV\ the \type {lpeg} library came at the right
+moment as we can use it in lots of places. An in|-|depth discussion makes no
+sense as it's easier to look into \type {l-lpeg.lua}, so we stick to an overview.
+\footnote {If you search the web for \type {lua lpeg} you will end up at the
+official documentation and tutorial.} Most functions return an \type {lpeg}
+object that can be used in a match. In time critical situations it's more
+efficient to use the match on a predefined pattern that to create the pattern new
+each time. Patterns are cached so there is no penalty in predefining a pattern.
+So, in the following example, the \type {splitter} that splits at the asterisk
+will only be created once.
+
+\starttyping
+local splitter_1 = lpeg.splitat("*")
+local splitter_2 = lpeg.splitat("*")
+
+local n, m = lpeg.match(splitter_1,"2*4")
+local n, m = lpeg.match(splitter_2,"2*4")
+\stoptyping
+
+\startsummary[title={[lua] match print P R S V C Cc Cs ...}]
+
+The \type {match} function does the real work. Its first argument is a \type
+{lpeg} object that is created using the functions with the short uppercase names.
+
+\starttyping
+local P, R, C, Ct = lpeg.P, lpeg.R, lpeg.C, lpeg.Ct
+
+local pattern = Ct((P("[") * C(R("az")^0) * P(']') + P(1))^0)
+
+local words = lpeg.match(pattern,"a [first] and [second] word")
+\stoptyping
+
+In this example the words between square brackets are collected in a table. There
+are lots of examples of \type {lpeg} in the \CONTEXT\ code base.
+
+\stopsummary
+
+\startsummary[title={anywhere}]
+
+\starttyping
+local p = anywhere(pattern)
+\stoptyping
+
+\ShowLuaExampleTwo {lpeg} {match} {lpeg.Ct((lpeg.anywhere("->")/"!")^0), "oeps->what->more"}
+
+\stopsummary
+
+\startsummary[title={splitter splitat firstofsplit secondofsplit}]
+
+The \type {splitter} function returns a pattern where each match gets an action
+applied. The action can be a function, table or string.
+
+\starttyping
+local p = splitter(pattern, action)
+\stoptyping
+
+The \type {splitat} function returns a pattern that will return the split off
+parts. Unless the second argument is \type {true} the splitter keeps splitting
+
+\starttyping
+local p = splitat(separator,single)
+\stoptyping
+
+When you need to split off a prefix (for instance in a label) you can use:
+
+\starttyping
+local p = firstofsplit(separator)
+local p = secondofsplit(separator)
+\stoptyping
+
+The first function returns the original when there is no match but the second
+function returns \type {nil} instead.
+
+\ShowLuaExampleTwo {lpeg} {match} {lpeg.Ct(lpeg.splitat("->",false)), "oeps->what->more"}
+\ShowLuaExampleTwo {lpeg} {match} {lpeg.Ct(lpeg.splitat("->",false)), "oeps"}
+\ShowLuaExampleTwo {lpeg} {match} {lpeg.Ct(lpeg.splitat("->",true)), "oeps->what->more"}
+\ShowLuaExampleTwo {lpeg} {match} {lpeg.Ct(lpeg.splitat("->",true)), "oeps"}
+
+\ShowLuaExampleThree {lpeg} {match} {lpeg.firstofsplit(":"), "before:after"}
+\ShowLuaExampleThree {lpeg} {match} {lpeg.firstofsplit(":"), "whatever"}
+\ShowLuaExampleThree {lpeg} {match} {lpeg.secondofsplit(":"), "before:after"}
+\ShowLuaExampleThree {lpeg} {match} {lpeg.secondofsplit(":"), "whatever"}
+
+\stopsummary
+
+\startsummary[title={split checkedsplit}]
+
+The next two functions have counterparts in the \type {string} namespace. They
+return a table with the split parts. The second function omits empty parts.
+
+\starttyping
+local t = split       (separator,str)
+local t = checkedsplit(separator,str)
+\stoptyping
+
+\ShowLuaExampleTwo {lpeg} {split}        {",","a,b,c"}
+\ShowLuaExampleTwo {lpeg} {split}        {",",",a,,b,c,"}
+\ShowLuaExampleTwo {lpeg} {checkedsplit} {",",",a,,b,c,"}
+
+\stopsummary
+
+\startsummary[title={stripper keeper replacer}]
+
+These three functions return patterns that manipulate a string. The \type
+{replacer} gets a mapping table passed.
+
+\starttyping
+local p = stripper(str or pattern)
+local p = keeper  (str or pattern)
+local p = replacer(mapping)
+\stoptyping
+
+\ShowLuaExampleThree {lpeg} {match} {lpeg.stripper(lpeg.R("az")), "[-a-b-c-d-]"}
+\ShowLuaExampleThree {lpeg} {match} {lpeg.stripper("ab"), "[-a-b-c-d-]"}
+\ShowLuaExampleThree {lpeg} {match} {lpeg.keeper(lpeg.R("az")), "[-a-b-c-d-]"}
+\ShowLuaExampleThree {lpeg} {match} {lpeg.keeper("ab"), "[-a-b-c-d-]"}
+\ShowLuaExampleThree {lpeg} {match} {lpeg.replacer{{"a","p"},{"b","q"}}, "[-a-b-c-d-]"}
+
+\stopsummary
+
+\startsummary[title={balancer}]
+
+One of the nice things about \type {lpeg} is that it can handle all kind of
+balanced input. So, a function is provided that returns a balancer pattern:
+
+\starttyping
+local p = balancer(left,right)
+\stoptyping
+
+\ShowLuaExampleTwo {lpeg} {match} {lpeg.Ct((lpeg.C(lpeg.balancer("{","}"))+1)^0),"{a} {b{c}}"}
+\ShowLuaExampleTwo {lpeg} {match} {lpeg.Ct((lpeg.C(lpeg.balancer("((","]"))+1)^0),"((a] ((b((c]]"}
+
+\stopsummary
+
+\startsummary[title={counter}]
+
+The \type {counter} function returns a function that returns the length of a
+given string. The \type {count} function differs from its counterpart living in
+the \type {string} namespace in that it deals with \UTF\ and accepts strings as
+well as patterns.
+
+\starttyping
+local fnc = counter(lpeg.P("á") + lpeg.P("à"))
+local len = fnc("äáàa")
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={UP US UR}]
+
+In order to make working with \UTF-8 input somewhat more convenient a few helpers
+are provided.
+
+\starttyping
+local p = lpeg.UP(utfstring)
+local p = lpeg.US(utfstring)
+local p = lpeg.UR(utfpair)
+local p = lpeg.UR(first,last)
+\stoptyping
+
+\ShowLuaExampleThree {utf} {count} {"äáàa",lpeg.UP("áà")}
+\ShowLuaExampleThree {utf} {count} {"äáàa",lpeg.US("àá")}
+\ShowLuaExampleThree {utf} {count} {"äáàa",lpeg.UR("aá")}
+\ShowLuaExampleThree {utf} {count} {"äáàa",lpeg.UR("àá")}
+\ShowLuaExampleThree {utf} {count} {"äáàa",lpeg.UR(0x0000,0xFFFF)}
+
+\startsummary[title={patterns}]
+
+The following patterns are available in the \type {patterns} table in the \type
+{lpeg} namespace:
+
+\startluacode
+context.startalignment { "flushleft" }
+local done = false
+for k, v in table.sortedpairs(lpeg.patterns) do
+    if done then
+        context.space()
+    else
+        done = true
+    end
+    context.type(k)
+end
+context.stopalignment()
+\stopluacode
+
+There will probably be more of them in the future.
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=IO]
+
+The \type {io} library is extended with a couple of functions as well and
+variables but first we mention a few predefined functions.
+
+\startsummary[title={[lua] open popen...}]
+
+The IO library deals with in- and output from the console and
+files.
+
+\starttyping
+local f  = io.open(filename)
+\stoptyping
+
+When the call succeeds \type {f} is a file object. You close this file
+with:
+
+\starttyping
+f:close()
+\stoptyping
+
+Reading from a file is done with \type {f:read(...)} and writing to a file with
+\type {f:write(...)}. In order to write to a file, when opening a second argument
+has to be given, often \type {wb} for writing (binary) data. Although there are
+more efficient ways, you can use the \type {f:lines()} iterator to process a file
+line by line.
+
+You can open a process with \type {io.popen} but dealing with this one depends a
+bit on the operating system.
+
+\stopsummary
+
+\startsummary[title={fileseparator pathseparator}]
+
+The value of the following two strings depends on the operating system that is
+used.
+
+\starttyping
+io.fileseparator
+io.pathseparator
+\stoptyping
+
+\ShowLuaExampleFive {io} {fileseparator}
+\ShowLuaExampleFive {io} {pathseparator}
+
+\stopsummary
+
+\startsummary[title={loaddata savedata}]
+
+These two functions save you some programming. The first function loads a whole
+file in a string. By default the file is loaded in binary mode, but when the
+second argument is \type {true}, some interpretation takes place (for instance
+line endings). In practice the second argument can best be left alone.
+
+\starttyping
+io.loaddata(filename,textmode)
+\stoptyping
+
+Saving the data is done with:
+
+\starttyping
+io.savedata(filename,str)
+io.savedata(filename,tab,joiner)
+\stoptyping
+
+When a table is given, you can optionally specify a string that
+ends up between the elements that make the table.
+
+\stopsummary
+
+\startsummary[title={exists size noflines}]
+
+These three function don't need much comment.
+
+\starttyping
+io.exists(filename)
+io.size(filename)
+io.noflines(fileobject)
+io.noflines(filename)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={characters bytes readnumber readstring}]
+
+When I wrote the icc profile loader, I needed a few helpers for reading strings
+of a certain length and numbers of a given width. Both accept five values of
+\type {n}: \type {-4}, \type {-2}, \type {1}, \type {2} and \type {4} where the
+negative values swap the characters or bytes.
+
+\starttyping
+io.characters(f,n) --
+io.bytes(f,n)
+\stoptyping
+
+The function \type {readnumber} accepts five sizes: \type {1}, \type {2}, \type
+{4}, \type {8}, \type {12}. The string function handles any size and strings zero
+bytes from the string.
+
+\starttyping
+io.readnumber(f,size)
+io.readstring(f,size)
+\stoptyping
+
+Optionally you can give the position where the reading has to start:
+
+\starttyping
+io.readnumber(f,position,size)
+io.readstring(f,position,size)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={ask}]
+
+In practice you will probably make your own variant of the following function,
+but at least a template is there:
+
+\starttyping
+io.ask(question,default,options)
+\stoptyping
+
+For example:
+
+\starttyping
+local answer = io.ask("choice", "two", { "one", "two" })
+\stoptyping
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=File]
+
+The file library is one of the larger core libraries that comes with
+\CONTEXT.
+
+\startsummary[title={dirname basename extname nameonly}]
+
+We start with a few filename manipulators.
+
+\starttyping
+local path   = file.dirname(name,default)
+local base   = file.basename(name)
+local suffix = file.extname(name,default) -- or file.suffix
+local name   = file.nameonly(name)
+\stoptyping
+
+\ShowLuaExampleThree {file} {dirname}  {"/data/temp/whatever.cld"}
+\ShowLuaExampleThree {file} {dirname}  {"c:/data/temp/whatever.cld"}
+\ShowLuaExampleThree {file} {basename} {"/data/temp/whatever.cld"}
+\ShowLuaExampleThree {file} {extname}  {"c:/data/temp/whatever.cld"}
+\ShowLuaExampleThree {file} {nameonly} {"/data/temp/whatever.cld"}
+
+\stopsummary
+
+\startsummary[title={addsuffix replacesuffix}]
+
+These functions are used quite often:
+
+\starttyping
+local filename = file.addsuffix(filename, suffix, criterium)
+local filename = file.replacesuffix(filename, suffix)
+\stoptyping
+
+The first one adds a suffix unless one is present. When \type {criterium} is
+\type {true} no checking is done and the suffix is always appended. The second
+function replaces the current suffix or add one when there is none.
+
+\ShowLuaExampleThree {file} {addsuffix} {"whatever","cld"}
+\ShowLuaExampleThree {file} {addsuffix} {"whatever.tex","cld"}
+\ShowLuaExampleThree {file} {addsuffix} {"whatever.tex","cld",true}
+
+\ShowLuaExampleThree {file} {replacesuffix} {"whatever","cld"}
+\ShowLuaExampleThree {file} {replacesuffix} {"whatever.tex","cld"}
+
+\stopsummary
+
+\startsummary[title={is_writable is_readable}]
+
+These two test the nature of a file:
+
+\starttyping
+file.is_writable(name)
+file.is_readable(name)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={splitname join collapsepath}]
+
+Instead of splitting off individual components you can get them all in one go:
+
+\starttyping
+local drive, path, base, suffix = file.splitname(name)
+\stoptyping
+
+The \type {drive} variable is empty on operating systems other than \MSWINDOWS.
+Such components are joined with the function:
+
+\starttyping
+file.join(...)
+\stoptyping
+
+The given snippets are joined using the \type {/} as this is
+rather platform independent. Some checking takes place in order
+to make sure that nu funny paths result from this. There is
+also \type {collapsepath} that does some cleanup on a path
+with relative components, like \type {..}.
+
+\ShowLuaExampleSix   {file} {splitname}    {"a:/b/c/d.e"}
+\ShowLuaExampleThree {file} {join}         {"a","b","c.d"}
+\ShowLuaExampleThree {file} {collapsepath} {"a/b/../c.d"}
+\ShowLuaExampleThree {file} {collapsepath} {"a/b/../c.d",true}
+
+\stopsummary
+
+\startsummary[title={splitpath joinpath}]
+
+By default splitting a execution path specification is done using the operating
+system dependant separator, but you can force one as well:
+
+\starttyping
+file.splitpath(str,separator)
+\stoptyping
+
+The reverse operation is done with:
+
+\starttyping
+file.joinpath(tab,separator)
+\stoptyping
+
+Beware: in the following examples the separator is system dependent so
+the outcome depends on the platform you run on.
+
+\ShowLuaExampleTwo   {file} {splitpath} {"a:b:c"}
+\ShowLuaExampleTwo   {file} {splitpath} {"a;b;c"}
+\ShowLuaExampleThree {file} {joinpath}  {{"a","b","c"}}
+
+\stopsummary
+
+\startsummary[title={robustname}]
+
+In workflows filenames with special characters can be a pain so the following
+function replaces characters other than letters, digits, periods, slashes and
+hyphens by hyphens.
+
+\starttyping
+file.robustname(str,strict)
+\stoptyping
+
+\ShowLuaExampleThree {file} {robustname} {"We don't like this!"}
+\ShowLuaExampleThree {file} {robustname} {"We don't like this!",true}
+
+\stopsummary
+
+\startsummary[title={readdata writedata}]
+
+These two functions are duplicates of functions with the
+same name in the \type {io} library.
+
+\stopsummary
+
+\startsummary[title={copy}]
+
+There is not much to comment on this one:
+
+\starttyping
+file.copy(oldname,newname)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={is_qualified_path is_rootbased_path}]
+
+A qualified path has at least one directory component while a rootbased path is
+anchored to the root of a filesystem or drive.
+
+\starttyping
+file.is_qualified_path(filename)
+file.is_rootbased_path(filename)
+\stoptyping
+
+\ShowLuaExampleThree {file} {is_qualified_path} {"a"}
+\ShowLuaExampleThree {file} {is_qualified_path} {"a/b"}
+\ShowLuaExampleThree {file} {is_rootbased_path} {"a/b"}
+\ShowLuaExampleThree {file} {is_rootbased_path} {"/a/b"}
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=Dir]
+
+The \type {dir} library uses functions of the \type {lfs} library that is linked
+into \LUATEX.
+
+\startsummary[title={current}]
+
+This returns the current directory:
+
+\starttyping
+dir.current()
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={glob globpattern globfiles}]
+
+% not yet documented: dir.collectpattern(path,patt,recurse,result) -- collects tree
+
+The \type {glob} function collects files with names that match a given pattern.
+The pattern can have wildcards: \type {*} (oen of more characters), \type {?}
+(one character) or \type {**} (one or more directories). You can pass the
+function a string or a table with strings. Optionally a second argument can be
+passed, a table that the results are appended to.
+
+\starttyping
+local files = dir.glob(pattern,target)
+local files = dir.glob({pattern,...},target)
+\stoptyping
+
+The target is optional and often you end up with simple calls like:
+
+\starttyping
+local files = dir.glob("*.tex")
+\stoptyping
+
+There is a more extensive version where you start at a path, and applies an
+action to each file that matches the pattern. You can either or not force
+recursion.
+
+\starttyping
+dir.globpattern(path,patt,recurse,action)
+\stoptyping
+
+The \type {globfiles} function collects matches in a table that is returned at
+the end. You can pass an existing table as last argument. The first argument is
+the starting path, the second arguments controls analyzing directories and the
+third argument has to be a function that gets a name passed and is supposed to
+return \type {true} or \type {false}. This function determines what gets
+collected.
+
+\starttyping
+dir.globfiles(path,recurse,func,files)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={makedirs}]
+
+With \type {makedirs} you can create the given directory. If more than one
+name is given they are concatinated.
+
+\starttyping
+dir.makedirs(name,...)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={expandname}]
+
+This function tries to resolve the given path, including relative paths.
+
+\starttyping
+dir.expandname(str)
+\stoptyping
+
+\ShowLuaExampleThree {dir} {expandname} {"."}
+
+\stopsummary
+
+\stopsection
+
+\startsection[title=URL]
+
+\startsummary[title={split hashed construct}]
+
+This is a specialized library. You can split an \type {url} into its components.
+An \URL\ is constructed like this:
+
+\starttyping
+foo://example.com:2010/alpha/beta?gamma=delta#epsilon
+\stoptyping
+
+\starttabulate[|T|T|]
+\NC scheme    \NC foo://           \NC \NR
+\NC authority \NC example.com:2010 \NC \NR
+\NC path      \NC /alpha/beta      \NC \NR
+\NC query     \NC gamma=delta      \NC \NR
+\NC fragment  \NC epsilon          \NC \NR
+\stoptabulate
+
+A string is split into a hash table with these keys using the following function:
+
+\starttyping
+url.hashed(str)
+\stoptyping
+
+or in strings with:
+
+\starttyping
+url.split(str)
+\stoptyping
+
+The hash variant is more tolerant than the split. In the hash
+there is also a key \type {original} that holds the original \URL\
+and and the boolean \type {noscheme} indicates if there is a
+scheme at all.
+
+The reverse operation is done with:
+
+\starttyping
+url.construct(hash)
+\stoptyping
+
+\startasciimode
+\ShowLuaExampleTwo {url} {hashed} {"foo://example.com:2010/alpha/beta?gamma=delta#epsilon"}
+\ShowLuaExampleTwo {url} {hashed} {"alpha/beta"}
+\ShowLuaExampleTwo {url} {split}  {"foo://example.com:2010/alpha/beta?gamma=delta#epsilon"}
+\ShowLuaExampleTwo {url} {split}  {"alpha/beta"}
+\stopasciimode
+
+\startsummary[title={hasscheme addscheme filename query}]
+
+There are a couple of helpers and their names speaks for themselves:
+
+\starttyping
+url.hasscheme(str)
+url.addscheme(str,scheme)
+url.filename(filename)
+url.query(str)
+\stoptyping
+
+\ShowLuaExampleThree {url} {hasscheme} {"http://www.pragma-ade.com/cow.png"}
+\ShowLuaExampleThree {url} {hasscheme} {"www.pragma-ade.com/cow.png"}
+\ShowLuaExampleThree {url} {addscheme} {"www.pragma-ade.com/cow.png","http://"}
+\ShowLuaExampleThree {url} {addscheme} {"www.pragma-ade.com/cow.png"}
+\ShowLuaExampleThree {url} {filename}  {"http://www.pragma-ade.com/cow.png"}
+\ShowLuaExampleTwo   {url} {query}     {"a=b&c=d"}
+
+\stopsection
+
+\startsection[title=OS]
+
+\startsummary[title={[lua luatex] env setenv getenv}]
+
+In \CONTEXT\ normally you will use the resolver functions to deal with the
+environment and files. However, a more low level interface is still available.
+You can query and set environment variables with two functions. In addition there
+is the \type {env} table as interface to the environment. This threesome replaces
+the built in functions.
+
+\starttyping
+os.setenv(key,value)
+os.getenv(key)
+os.env[key]
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={[lua] execute}]
+
+There are several functions for running programs. One comes directly from \LUA,
+the otheres come with \LUATEX. All of them are are overloaded in \CONTEXT\ in
+order to get more control.
+
+\starttyping
+os.execute(...)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={[luatex] spawn exec}]
+
+Two other runners are:
+
+\starttyping
+os.spawn(...)
+os.exec (...)
+\stoptyping
+
+The \type {exec} variant will transfer control from the current process to the
+new one and not return to the current job. There is a more detailed explanation
+in the \LUATEX\ manual.
+
+\stopsummary
+
+\startsummary[title={resultof launch}]
+
+The following function runs the command and returns the result as string.
+Multiple lines are combined.
+
+\starttyping
+os.resultof(command)
+\stoptyping
+
+The next one launches a file assuming that the operating system knows
+what application to use.
+
+\starttyping
+os.launch(str)
+\stoptyping
+
+\stopsummary
+
+\startsummary[title={type name platform libsuffix binsuffix}]
+
+There are a couple of strings that reflect the current machinery: \type {type}
+returns either \type {windows} or \type {unix}. The variable \type {name} is more
+detailed: \type {windows}, \type {msdos}, \type {linux}, \type {macosx}, etc. If
+you also want the architecture you can consult \type {platform}.
+
+\starttyping
+local t = os.type
+local n = os.name
+local p = os.platform
+\stoptyping
+
+These three variables as well as the next two are used internally and normally
+they are not needed in your applications as most functions that matter are aware
+of what platform specific things they have to deal with.
+
+\starttyping
+local s = os.libsuffix
+local b = os.binsuffix
+\stoptyping
+
+These are string, not functions.
+
+\ShowLuaExampleFive {os} {type}
+\ShowLuaExampleFive {os} {name}
+\ShowLuaExampleFive {os} {platform}
+\ShowLuaExampleFive {os} {libsuffix}
+\ShowLuaExampleFive {os} {binsuffix}
+
+\stopsummary
+
+\startsummary[title={[lua] time}]
+
+The built in time function returns a number. The accuracy is
+implementation dependent and not that large.
+
+\ShowLuaExampleThree {os} {time} {}
+
+\stopsummary
+
+\startsummary[title={[luatex] times gettimeofday}]
+
+Although \LUA\ has a built in type {os.time} function, we normally will use the
+one provided by \LUATEX\ as it is more precise:
+
+\starttyping
+os.gettimeofday()
+\stoptyping
+
+There is also a more extensive variant:
+
+\starttyping
+os.times()
+\stoptyping
+
+This one is platform dependent and returns a table with \type {utime} (use time),
+\type {stime} (system time), \type {cutime} (children user time), and \type
+{cstime} (children system time).
+
+\stopsummary
+
+\ShowLuaExampleThree {os} {gettimeofday} {}
+\ShowLuaExampleTwo   {os} {times}        {}
+
+\startsummary[title={runtime}]
+
+More interesting is:
+
+\starttyping
+os.runtime()
+\stoptyping
+
+which returns the time spent in the application so far.
+
+\ShowLuaExampleThree {os} {runtime} {}
+
+Sometimes you need to add the timezone to a verbose time and the following
+function does that for you.
+
+\starttyping
+os.timezone(delta)
+\stoptyping
+
+\ShowLuaExampleThree {os} {timezone} {}
+\ShowLuaExampleThree {os} {timezone} {1}
+\ShowLuaExampleThree {os} {timezone} {-1}
+
+\stopsummary
+
+\startsummary[title={uuid}]
+
+A version 4 UUID can be generated with:
+
+\starttyping
+os.uuid()
+\stoptyping
+
+The generator is good enough for our purpose.
+
+\ShowLuaExampleThree {os} {uuid} {}
+
+\stopsummary
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
