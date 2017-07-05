@@ -1,0 +1,212 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-tuningformulas
+
+\startchapter[title={Tuning math formulas}]
+
+Because of its look and feel, a math formula can look too widely spaced when put
+on a grid. There are a few ways to control this. First of all, the default grid
+option bound to math is already more tolerant. But you can control it locally
+too. Take the following formula:
+
+\startbuffer
+\startformula
+  a = b^c
+\stopformula
+\stopbuffer
+
+\blank \fakeline \getbuffer \fakeline \blank
+
+This has been entered as:
+
+\typebuffer
+
+and because it is just a line of math it comes out as expected. The next code
+
+\startbuffer
+\startformula
+  a = \frac {a} {b}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+produces a higher line:
+
+\blank \fakeline \getbuffer \fakeline \blank
+
+as does:
+
+\startbuffer
+\startformula
+  a = \frac {\frac {b} {c}} {\frac {d} {e}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\blank \fakeline \getbuffer \fakeline \blank
+
+We will now demonstrate three ways to compensate fo rexcessive spacing. The first
+variant just sets a grid parameter:
+
+\startbuffer
+\startformula[grid=math:-halfline]
+    a = \frac {\frac {b} {c}} {\frac {d} {e}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\blank \fakeline \getbuffer \fakeline \blank
+
+You can also pass this as an option. Only a few such grid related options are
+defined: \type {halfline}, \type {line}, \type {-halfline} and \type {-grid}.
+
+\startbuffer
+\startformula[-halfline]
+    a = \frac {\frac {b} {c}} {\frac {d} {e}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\blank \fakeline \getbuffer \fakeline \blank
+
+If you need to compensate frequently you can consider defining an instance:
+
+\startbuffer
+\defineformula[tight][grid=math:-halfline]
+
+\starttightformula
+    a = \frac {\frac {b} {c}} {\frac {d} {e}}
+\stoptightformula
+\stopbuffer
+
+\typebuffer
+
+\blank \fakeline \getbuffer \fakeline \blank
+
+The result can be somewhat unexpected at the top and bottom of a page. When we
+subtract half a line from the height we can end up above the text area. This is
+where the \type {split} directive comes in. So, the compensations are actually
+defined as
+
+\starttabulate[|TCT{blue}|T|]
+\NC math            \NC \theexpandedsnapperset{math} \NC \NR
+\NC math:line       \NC \theexpandedsnapperset{math:line} \NC \NR
+\NC math:halfline   \NC \theexpandedsnapperset{math:halfline} \NC \NR
+\NC math:-line      \NC \theexpandedsnapperset{math:-line} \NC \NR
+\NC math:-halfline  \NC \theexpandedsnapperset{math:-halfline} \NC \NR
+\stoptabulate
+
+You can define your own variants building on top of an existing one:
+
+\starttyping
+\definegridsnapping[math:my][math,....]
+\stoptyping
+
+We demonstrate the effect of the \type {split} directive here. It triggers a
+check at the page boundaries but you need to keep in mind that this is not always
+robust as such boundaries themselves can be triggered by and inject anything.
+
+\startbuffer[a]
+\dorecurse {15} {
+    \startformula[grid={math,-halfline}]
+        a = \frac {\frac {b} {c}} {\frac {d} {e}}
+        (\hbox{top #1 default})
+    \stopformula
+    \blank[samepage]
+    \fakeline
+}
+\stopbuffer
+
+\startbuffer[b]
+\dorecurse {15} {
+    \startformula[grid={math,-halfline,split}]
+        a = \frac {\frac {b} {c}} {\frac {d} {e}}
+        (\hbox{top #1 compensated})
+    \stopformula
+    \blank[samepage]
+    \fakeline
+}
+\stopbuffer
+
+\getbuffer[a]
+\getbuffer[b]
+
+As said, the compensation is achieved with the \type {page} directive. The
+previous pages were rendered using:
+
+\typebuffer[a]
+
+and
+
+\typebuffer[b]
+
+In order to get a consistent result we keep the depth of the formula the same but
+effectively shift it down a bit, still honouring the grid. So what about the
+bottom.
+
+We can decide that the snapped formula doesn't fit and force a new page but we
+can also accept that it sticks out to the bottom, which is less worse than the
+top|-|of|-|the|-|page case.
+
+\startbuffer[a]
+\dorecurse{45}{\fakeline}
+\startformula[grid={math,-halfline}]
+    a = \frac {\frac {b} {c}} {\frac {d} {e}}
+    (\hbox{bottom default})
+\stopformula
+\stopbuffer
+
+\startbuffer[b]
+\dorecurse{45}{\fakeline}
+\startformula[grid={math,-halfline,split}]
+    a = \frac {\frac {b} {c}} {\frac {d} {e}}
+    (\hbox{bottom compensated})
+\stopformula
+\stopbuffer
+
+\page \getbuffer[a] % fits on the page
+\page \getbuffer[b] % forces a new page
+
+These mechanisms might be improved over time but as we don't use it frequently
+that might take a while.
+
+The following formula was posted at the \CONTEXT\ mailing list in a grid snapping
+thread and we will use it to demonstrate how you can mess a bit with the
+snapping.
+
+\startbuffer
+g(x_{*}) = \lim_{n\to\infty} g(a_{n}) \leq 0 \leq \lim_{n\to\infty} g(b_{n}) = g(x_{*})
+\stopbuffer
+
+\typebuffer
+
+We show the given grid parameter as well as its expansion into the low level grid
+directives.
+
+\unexpanded\def\SampleFormula#1%
+  {\definegridsnapping[math:temp][#1]
+   \blank
+   \type{grid=#1} \hfill expanded: \normalexpanded{\type{\theexpandedsnapperset{math:temp}}}
+   \blank[samepage]
+   \fakeline
+   \blank[samepage]
+   \startformula[grid={#1}]
+     \getbuffer
+   \stopformula
+   \blank[samepage]
+   \fakeline
+   \blank}
+
+\SampleFormula{math}
+\SampleFormula{low,halfline}
+\SampleFormula{math,nodepth}
+
+\stopchapter
+
+\stopcomponent

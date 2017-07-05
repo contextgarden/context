@@ -1,0 +1,161 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-gridtrickery
+
+\startchapter[title={Grid trickery}]
+
+In this manual we pay quite some words on ways to snap your content on a grid.
+When dealing with grids, we often run into conflicting situations where we have
+to make the best of it. Let's again deal with an aspect of graphics.
+
+One of the strong points of \TEX\ is that it can deal with graphics
+automatically, which means that you seldom have to tweak dimensions or placements
+unless \unknown\ you're dealing with grids. In that case you need to make sure
+that the height of graphics consistently match the height of lines (or multiples
+of lines). It is for this purpose that the graphic inclusion macro has a \type
+{grid} entry.
+
+We will illustrate its usage using a dedicated figure class where we have set the
+space between figure and caption to zero.
+
+\startbuffer
+\definefloat[tightfigure][tightfigures][figure]
+\setupcaption[tightfigure][inbetween=]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {grid} parameter controls rounding of the height of a graphic in the
+following way:
+
+\starttabulate
+
+\NC \type {yes}    \NC safe rounding to an equal number of lines        \NC \NR
+\NC \type {fit}    \NC tight rounding to an equal number of lines       \NC \NR
+\NC \type {height} \NC same as \type {yes} but incremented by linedepth \NC \NR
+\stoptabulate
+
+On the next pages we demonstrate the effects of these settings. At the bottom of
+a page we show the placement commands. On the last pages we've hidden the
+captions with:
+
+\starttyping
+\setupfloat[tightfigure][default={here,none}]
+\stoptyping
+
+As you will notice, the \type {height} option is handy when the caption is
+positioned directly under the graphic.
+
+\start \page
+
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.3,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.7,grid=yes]}
+\fakewords{20}{30}
+
+\starttyping
+\placetightfigure{}{\externalfigure[dummy][lines=1.3,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.4,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.5,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.6,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.7,grid=yes]}
+\stoptyping
+
+\page
+
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.3,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.7,grid=fit]}
+\fakewords{20}{30}
+
+\starttyping
+\placetightfigure{}{\externalfigure[dummy][lines=1.3,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.4,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.5,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.6,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.7,grid=fit]}
+\stoptyping
+
+\page
+
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.3,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.7,grid=height]}
+\fakewords{20}{30}
+
+\starttyping
+\placetightfigure{}{\externalfigure[dummy][lines=1.3,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.4,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.5,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.6,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.7,grid=height]}
+\stoptyping
+
+\page
+
+\setupfloat[tightfigure][default={here,none}]
+
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.3,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=yes]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.7,grid=yes]}
+\fakewords{20}{30}
+
+\starttyping
+\placetightfigure{}{\externalfigure[dummy][lines=1.3,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.4,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.5,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.6,grid=yes]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.7,grid=yes]}
+\stoptyping
+
+\page
+
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.3,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=fit]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.7,grid=fit]}
+\fakewords{20}{30}
+
+\starttyping
+\placetightfigure{}{\externalfigure[dummy][lines=1.3,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.4,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.5,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.6,grid=fit]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.7,grid=fit]}
+\stoptyping
+
+\page
+
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.3,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.4,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.5,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.6,grid=height]}
+\fakewords{20}{30} \placetightfigure{}{\externalfigure[dummy][width=.5\hsize,lines=1.7,grid=height]}
+\fakewords{20}{30}
+
+\starttyping
+\placetightfigure{}{\externalfigure[dummy][lines=1.3,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.4,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.5,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.6,grid=height]}
+\placetightfigure{}{\externalfigure[dummy][lines=1.7,grid=height]}
+\stoptyping
+
+\page \stop
+
+\stopchapter
+
+\page
+
+\stopcomponent

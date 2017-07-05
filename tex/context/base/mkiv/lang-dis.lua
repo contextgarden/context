@@ -267,40 +267,58 @@ end
 
 local wiped = 0
 
-local function wipe(head,delayed)
-    local p, n = getboth(delayed)
-    local _, _, h, _, _, t = getdisc(delayed,true)
-    if p or n then
-        if h then
-            setlink(p,h)
-            setlink(t,n)
-            setfield(delayed,"replace")
-        else
-            setlink(p,n)
-        end
-    end
-    if head == delayed then
-        head = h
-    end
-    wiped = wiped + 1
-    flush_node(delayed)
-    return head
-end
+local flatten_discretionaries = node.flatten_discretionaries -- todo in nodes
 
-function languages.flatten(head)
-    local nuthead = tonut(head)
-    local delayed = nil
-    for d in traverse_id(disc_code,nuthead) do
-        if delayed then
-            nuthead = wipe(nuthead,delayed)
+if flatten_discretionaries then
+
+    -- This is not that much faster than the lua variant simply because there is
+    -- seldom a replace list but it fits in the picture. See luatex-todo.w for the
+    -- code.
+
+    function languages.flatten(head)
+        local h, n = flatten_discretionaries(head)
+        wiped = wiped + n
+        return h, n > 0
+    end
+
+else
+
+    local function wipe(head,delayed)
+        local p, n = getboth(delayed)
+        local _, _, h, _, _, t = getdisc(delayed,true)
+        if p or n then
+            if h then
+                setlink(p,h)
+                setlink(t,n)
+                setfield(delayed,"replace")
+            else
+                setlink(p,n)
+            end
         end
-        delayed = d
+        if head == delayed then
+            head = h
+        end
+        wiped = wiped + 1
+        flush_node(delayed)
+        return head
     end
-    if delayed then
-        return tonode(wipe(nuthead,delayed)), true
-    else
-        return head, false
+
+    function languages.flatten(head)
+        local nuthead = tonut(head)
+        local delayed = nil
+        for d in traverse_id(disc_code,nuthead) do
+            if delayed then
+                nuthead = wipe(nuthead,delayed)
+            end
+            delayed = d
+        end
+        if delayed then
+            return tonode(wipe(nuthead,delayed)), true
+        else
+            return head, false
+        end
     end
+
 end
 
 function languages.nofflattened()

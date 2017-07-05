@@ -1,0 +1,276 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-snappingheads
+
+\startchapter[title={Snapping heads}]
+
+The grid snapper in \MKIV\ is quite different from the one in \MKII. For not too
+complex layouts the old grid snapper was quite ok, but the new one should be a
+bit more robust. In the old situation the running text was assumed to fit on the
+grid and the normal baseline skip should do the job in combination with the grid
+aware spacing features and placement mechanisms like tables and figures.
+
+Snapping on a fixed grid is sort of counter intuitive in \TEX\ because it has an a
+advanced spacing model with glue. Publishers however love grids so we do need to
+support it. Of course when complex layouts are involved in a later stage of
+document preparation the grid is often abandoned. This manual uses the grid but I
+personally never use the grid. There are better ways to make your document look
+good and often a grid snapped document doesn't look that great anyway, because
+all elements should somehow fit in multiples of the line height.
+
+The \MKIV\ snapper does more analysis and therefore can compensate for the more
+nasty cases. Of course it can still fail but we hope to fix those cases when we
+run into them. Grids are controlled by keywords or a combination of them.
+
+\starttabulate[|tCT{blue}||]
+\NC none             \NC don't enlarge \NC \NR
+\NC halfline         \NC enlarge by halfline/halfline \NC \NR
+\NC line             \NC enlarge by line/line \NC \NR
+\NC strut            \NC enlarge by ht/dp (default) \NC \NR
+\NC first            \NC align to top line \NC \NR
+\NC last             \NC align to bottom line \NC \NR
+\NC mindepth         \NC round depth down \NC \NR
+\NC maxdepth         \NC round depth up \NC \NR
+\NC minheight        \NC round height down \NC \NR
+\NC maxheight        \NC round height up \NC \NR
+\NC local            \NC use local interline space \NC \NR
+\NC offset:-3tp      \NC vertical shift within box \NC \NR
+\NC bottom:lines     \NC \NC \NR
+\NC top:lines        \NC \NC \NR
+\NC box              \NC centers a box rounded upwards (box:.5 -> tolerance) \NC \NR
+\NC min              \NC centers a box rounded downwards \NC \NR
+\NC max              \NC centers a box rounded upwards \NC \NR
+\stoptabulate
+
+We combine these directives in so called grid options:
+
+\starttyping
+\definegridsnapping [normal]   [maxheight,maxdepth,strut]
+\definegridsnapping [standard] [maxheight,maxdepth,strut]
+\definegridsnapping [yes]      [maxheight,maxdepth,strut]
+
+\definegridsnapping [strict]   [maxdepth:0.8,maxheight:0.8,strut]
+\definegridsnapping [tolerant] [maxdepth:1.2,maxheight:1.2,strut]
+\definegridsnapping [math]     [maxdepth:1.05,maxheight:1.05,strut]
+
+\definegridsnapping [top]      [minheight,maxdepth,strut]
+\definegridsnapping [bottom]   [maxheight,mindepth,strut]
+\definegridsnapping [both]     [minheight,mindepth,strut]
+
+\definegridsnapping [broad]    [maxheight,maxdepth,strut,0.8]
+\definegridsnapping [fit]      [maxheight,maxdepth,strut,1.2]
+
+\definegridsnapping [first]    [first]
+\definegridsnapping [last]     [last]
+\definegridsnapping [high]     [minheight,maxdepth,none]
+\definegridsnapping [one]      [minheight,mindepth]
+\definegridsnapping [low]      [maxheight,mindepth,none]
+\definegridsnapping [none]     [none]
+\definegridsnapping [line]     [line]
+\definegridsnapping [strut]    [strut]
+\definegridsnapping [box]      [box]
+\definegridsnapping [min]      [min]
+\definegridsnapping [max]      [max]
+
+\definegridsnapping [middle]   [maxheight,maxdepth]
+\stoptyping
+
+As you can see, keys like \type {maxdepth} can take a criterium as extra detail,
+separated by a colon. These options look obscure and often you need to trial and
+error a bit to get what you want. This is no real problem because most cases are
+handles automatically. Only headings and structuring elements that exceed a
+line height might need some treatment. For instance you might want to be more
+tolerant for (fractions of) a point overflow or when you know that always a blank
+follows you can decide to limit the height of some element to a line. Some of
+the options, like \type {math} and \type {middle} are used internally.
+
+On the next pages we show how the \type {maxheight} and \type {maxdepth}
+fractions work on a sample line.
+
+\page
+
+\bgroup
+    \page
+    \enabledirectives[visualizers.fraction=.5]
+    \dostepwiserecurse {0} {10} {1} {
+        \edef\one{\ifnum#1=10 10\else0.#1\fi}
+        \dostepwiserecurse {0} {10} {1} {
+            \edef\two{\ifnum##1=10 10\else0.##1\fi}
+            \definegridsnapping [test:\one:\two][maxdepth:\one,maxheight:\two,strut]
+            \par
+                \blackrule[height=1pt,depth=1pt,width=\textwidth,color=green]
+            \par
+            \par
+                \snaptogrid[test:\one:\two]
+                    \ruledhbox{\backgroundline[red]{\white\bf maxdepth:\one,maxheight:\two}}
+            \par
+        }
+    }
+    \par
+    \blackrule[height=1pt,depth=1pt,width=\textwidth,color=green]
+    \par
+    \page
+    \enabledirectives[visualizers.fraction]
+\egroup
+
+Next we show some of the options in action. For practical reasons we start a new
+page each time. The sample is input as:
+
+\startbuffer
+\bf                             none \par
+\bfb \hskip2cm                  none \par
+\bfd \hskip6cm                  none \par
+\bf                             test \par
+\bfb \hskip2cm                  test \par
+\bfd \hskip6cm                  test \par
+\bf                             grid \par
+\bfb \hskip2cm                  grid \par
+\bfd \hskip6cm                  grid \par
+\bf                      \strut strut \par
+\bfb \hskip2cm           \strut strut \par
+\bfd \hskip6cm           \strut strut \par
+\bfb \hskip2cm \setstrut \strut setstrut \par
+\bfd \hskip6cm \setstrut \strut setstrut \par
+\stopbuffer
+
+\typebuffer
+
+\unexpanded\def\SampleGrid#1%
+  {\page
+   \section{Grid snapping method \quotation{#1}}
+    This is just a line to start with but next we %
+    show what method \type {#1} does. \par
+    \start
+    \setuplayout[grid=#1] % the demo value
+    \showstruts
+    \getbuffer
+    \stop
+    And here we end the demo.
+    \setuplayout[grid=yes] % the document default
+    \page}
+
+\SampleGrid{normal}
+\SampleGrid{strict}
+\SampleGrid{tolerant}
+\SampleGrid{top}
+\SampleGrid{bottom}
+\SampleGrid{both}
+\SampleGrid{broad}
+\SampleGrid{fit}
+\SampleGrid{first}
+\SampleGrid{last}
+\SampleGrid{high}
+\SampleGrid{one}
+\SampleGrid{low}
+\SampleGrid{none}
+\SampleGrid{line}
+\SampleGrid{strut}
+\SampleGrid{box}
+\SampleGrid{min}
+\SampleGrid{max}
+\SampleGrid{middle}
+
+We now come to the topic of this chapter: snapping heads. The problem with
+section heads is that they often exceed the line height. Even worse, they can
+be more than one line high.
+
+The next pages show some ways to control snapping around heads. The result can be
+confusing, even when we use a font that we assume behaves like a regular style.
+For instance in Latin Modern the bold style has larger heights and depths than
+the regular style and even 0.1pt can force the snapper to add a line. The
+examples use that font.
+
+The grid option of \type {setuphead} normally takes one keyword that refers to
+the local snapper. However, the result gets then snapped again. This is because
+the local snapper can use a different line height. Historically the local snapper is
+the default but you can force global snapping by prefixing with the \type
+{global} keyword. The next table summarizes the ways you can control snapping:
+
+\starttabulate
+\NC \type {(nothing)}  \NC local snapping plus global snapping \NC \NR
+\NC \type {local}      \NC local snapping plus global snapping \NC \NR
+\NC \type {foo}        \NC local \type {foo} snapping cf.\ font style plus global snapping \NC \NR
+\NC \type {local:foo}  \NC local \type {foo} snapping cf.\ font style plus global snapping  \NC \NR
+\NC \type {global}     \NC global snapping \NC \NR
+\NC \type {global:foo} \NC global \type {foo} snapping \NC \NR
+\stoptabulate
+
+\startbuffer[demo]
+\setuppapersize
+  [A5][A5]
+
+\setuplayout
+  [grid=yes,
+   width=middle,
+   height=middle,
+   backspace=1cm,
+   topspace=2mm,
+   lines=38,
+   bottomspace=2mm,
+   footer=0cm,
+   header=4mm,
+   headerdistance=5mm]
+
+\definehead
+  [MyHead]
+  [subsubsubject]
+  [style=\tf,
+   textstyle=,
+   numberstyle=,
+   before=,
+   after=]
+
+\showgrid
+
+\starttext
+
+\starttexdefinition TestHead #1
+    \page
+    \setupheadertexts[\type{#1}]
+    \setuphead[MyHead][grid={#1},style=\tf,interlinespace=]
+    \MyHead{some head 1.1}
+    \hskip1cm line following 1.1
+    \MyHead{some head 1.2}
+    \hskip1cm line following 1.2
+    \MyHead{some head 1.3a\par some head 1.3b}
+    \hskip1cm line following 1.3
+    \setuphead[MyHead][grid={#1},style=\bf,interlinespace=]
+    \MyHead{some head 2.1}
+    \hskip1cm line following 2.1
+    \MyHead{some head 2.2}
+    \hskip1cm line following 2.2
+    \MyHead{some head 2.3a\par some head 2.3b}
+    \hskip1cm line following 2.3
+    \setuphead[MyHead][grid=,style=\bf,interlinespace=4ex]
+    \MyHead{some head 3.1}
+    \hskip1cm line following 3.1
+    \MyHead{some head 3.2}
+    \hskip1cm line following 3.2
+    \MyHead{some head 3.3a\par some head 3.3b}
+    \hskip1cm line following 3.3
+    \setuphead[MyHead][grid={#1},style=\bfb,interlinespace=]
+    \MyHead{some head 4.1}
+    \hskip1cm line following 4.1
+    \MyHead{some head 4.2}
+    \hskip1cm line following 4.2
+    \page
+\stoptexdefinition
+
+\TestHead{yes}
+\TestHead{tolerant}
+\TestHead{global:tolerant}
+
+\stoptext
+\stopbuffer
+
+\typebuffer
+
+\placefigure[page]{}{\typesetbuffer[demo][page=1,background=color,backgroundcolor=white,width=\textwidth]}
+\placefigure[page]{}{\typesetbuffer[demo][page=2,background=color,backgroundcolor=white,width=\textwidth]}
+\placefigure[page]{}{\typesetbuffer[demo][page=3,background=color,backgroundcolor=white,width=\textwidth]}
+
+\stopchapter
+
+\stopcomponent

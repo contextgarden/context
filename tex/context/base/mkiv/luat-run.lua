@@ -20,11 +20,13 @@ local report_lua       = logs.reporter("system","lua")
 local report_tex       = logs.reporter("system","status")
 local report_tempfiles = logs.reporter("resolvers","tempfiles")
 
-luatex       = luatex or { }
-local luatex = luatex
+luatex        = luatex or { }
+local luatex  = luatex
+local synctex = luatex.synctex
 
-if not luatex.synctex then
-    luatex.synctex = table.setmetatableindex(function() return function() end end)
+if not synctex then
+    synctex        = table.setmetatableindex(function() return function() end end)
+    luatex.synctex = synctex
 end
 
 local startactions = { }
@@ -64,6 +66,7 @@ local function stop_run()
 end
 
 local function start_shipout_page()
+    synctex.start()
     logs.start_page_number()
 end
 
@@ -72,7 +75,7 @@ local function stop_shipout_page()
     for i=1,#pageactions do
         pageactions[i]()
     end
-    luatex.synctex.flush()
+    synctex.stop()
 end
 
 local function report_output_pages()
@@ -96,7 +99,7 @@ local function pre_dump_actions()
 end
 
 local function wrapup_synctex()
-    luatex.synctex.wrapup()
+    synctex.wrapup()
 end
 
 -- this can be done later
@@ -193,7 +196,7 @@ local function report_start(left,name)
         level = level + 1
      -- report_open("%i > %i > %s",level,total,name or "?")
         report_open("level %i, order %i, name %a",level,total,name or "?")
-        luatex.synctex.setfilename(name)
+        synctex.setfilename(name)
     end
 end
 

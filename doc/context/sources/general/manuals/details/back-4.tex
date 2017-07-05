@@ -1,0 +1,39 @@
+\environment back-0
+
+\startuseMPgraphic{mpos:par:color}
+  for i=1 upto nofmultipars :
+    fill multipars[i] withcolor
+      if     multikind[i]="single" : "darkgray" ;
+      elseif multikind[i]="first"  : "red" ;
+      elseif multikind[i]="middle" : "green" ;
+      elseif multikind[i]="last"   : "blue" ;
+      else                         : "black" ;
+      fi ;
+  endfor ;
+\stopuseMPgraphic
+
+\definecolumnset
+  [three]
+  [n=3,
+   distance=5mm]
+
+\definetextbackground
+  [shade]
+  [location=paragraph,
+   mp=mpos:par:color,
+   before=\blank,
+   after=\blank]
+
+\starttext
+
+\startcolumnset[three]
+
+  \dorecurse {20} {
+    \starttextbackground[shade]
+      \simulatewords[n=50,m=500,min=1,max=5,color=gray]%
+    \stoptextbackground
+  }
+
+\stopcolumnset
+
+\stoptext

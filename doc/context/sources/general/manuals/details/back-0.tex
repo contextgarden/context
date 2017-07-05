@@ -1,0 +1,39 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startenvironment back-0
+
+\usemodule[simulate]
+
+\definecolor[shadecolor][r=.5,g=.5,b=.75] % blue
+\definecolor[shadecolor][r=.5,g=.5,b=.25] % yellow
+
+\definecolor[red]  [r=.5]
+\definecolor[blue] [b=.5]
+\definecolor[green][g=.5]
+
+\setuplayout
+  [width=middle,height=middle,
+   backspace=1cm,topspace=1cm,
+   header=0pt,footer=0pt,grid=yes]
+
+\setuprandomize
+  [medium]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=white]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\setupcolors
+  [state=start]
+
+\showgrid
+
+\setrandomseed{1000}
+
+\stopenvironment

@@ -1,0 +1,43 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-frontpage
+
+\startpagemakeup[doublesided=no,pagestate=stop,page=no]
+    \startMPcode
+        StartPage ;
+            % todo: calculate p[3] from the text dimensions as now it's a gamble
+            path p[] ; picture q[] ;
+            p[1] := Page ;
+            p[2] := Page xscaled .60 shifted (.2PaperWidth,0) ;
+            p[3] := Page yscaled .22 shifted (0,.69PaperHeight) ;
+            q[1] := textext.raw("\color[white] {DETAILS}")        xsized(.98PaperWidth) ;
+            q[2] := textext.raw("\color[white] {IT'S IN THE}")    xsized(.98PaperWidth) ;
+            q[3] := textext.raw("\color[twhite]{\tt HANS HAGEN}") xsized(.60PaperWidth) ;
+            q[4] := textext.raw("\color[twhite]{\tt PRAGMA ADE}") xsized(.60PaperWidth) ;
+            q[5] := textext.raw("\color[twhite]{\tt HASSELT NL}") xsized(.60PaperWidth) ;
+            q[2] := q[2] shifted (0,-   bbheight(q[2])) ;
+            q[3] := q[3] shifted (0,+1.5bbheight(q[3])) ;
+            q[5] := q[5] shifted (0,-1.5bbheight(q[5])) ;
+            fill p[1] withcolor \MPcolor{blue} ;                        % .5blue
+            fill p[2] withcolor \MPcolor{red} ;                         % .5red
+            fill p[3] withcolor \MPcolor{gray} withtransparency(1,.5) ; % .6white
+            draw q[1] shifted (.01PaperWidth,.7PaperHeight) ;
+            draw q[2] shifted (.01PaperWidth,.9PaperHeight) ;
+            draw q[3] shifted (.20PaperWidth,.2PaperHeight) ;
+            draw q[4] shifted (.20PaperWidth,.2PaperHeight) ;
+            draw q[5] shifted (.20PaperWidth,.2PaperHeight) ;
+        StopPage ;
+    \stopMPcode
+\stoppagemakeup
+
+\startpagemakeup[doublesided=no,pagestate=stop,page=no]
+    \startMPcode
+        StartPage ;
+            fill Page withcolor \MPcolor{blue} ; % .5blue ;
+        StopPage ;
+    \stopMPcode
+\stoppagemakeup
+
+\stopcomponent

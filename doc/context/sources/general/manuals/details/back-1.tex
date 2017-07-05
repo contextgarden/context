@@ -1,0 +1,58 @@
+\environment back-0
+
+\setupindenting[big]
+
+\definecolumnset[two][n=3]
+\definecolumnsetspan[test]
+
+\definetextbackground[test]
+  [background=color,
+   backgroundcolor=gray]
+
+\definetextbackground[more]
+  [background=color,
+   backgroundcolor=lightgray,
+   alternative=1,rulethickness=2pt]
+
+\dontcomplain
+
+\starttext
+
+\startcolumnset[two]
+
+  \startcolumnsetspan[test]
+    \input tufte
+  \stopcolumnsetspan
+
+  \starttextbackground[test]
+
+  \input tufte \par
+
+  \startnarrower
+
+    \starttextbackground[more]
+
+    \input tufte \par
+    \input tufte \par
+    \input tufte \par
+    \input tufte \par
+    \input tufte \par
+    \input tufte
+
+    \stoptextbackground
+
+  \stopnarrower
+
+  \stoptextbackground
+
+  \input tufte
+
+  \starttextbackground[more] \input tufte \stoptextbackground
+
+  \starttextbackground[test] \input tufte \stoptextbackground
+
+  \starttextbackground[more] \input tufte \stoptextbackground
+
+\stopcolumnset
+
+\stoptext

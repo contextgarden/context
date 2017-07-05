@@ -1,0 +1,155 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-pseudocolumns
+
+\start \page[right]
+
+\definelayout
+  [temp]
+  [columndistance=12pt,
+   columns=3]
+
+\setuplayout
+  [temp]
+
+\startchapter[title={Pseudo columns}]
+
+\index {grid snapping+columns}
+\index {pseudo columns}
+\index {layers}
+\index {backgrounds}
+
+In desk top publishing applications the grid is pretty dominant in defining
+layouts. On the other hand, \TEX\ is pretty good defining layouts in terms of
+relative dimensions. This means that mapping a desk top publishing layout into
+its \TEX\ (or \CONTEXT) counterpart takes some effort. For what it's worth,
+personally I don't like grids that much, specially not in complex documents,
+unless one makes sure that all elements are suitable sized for the grid used.
+
+We not only have to deal with vertical grids, but also with horizontal ones. Here
+we focus on the second category. When implementing designs, it is best first to
+look into the normal page layout areas. For most documents these are sufficient,
+but occasionally we need a more detailed approach.
+
+When playing with grids, you need to make sure that grid snapping is turned on.
+It helps if you turn on the grid so that you can see where things end up. When a
+horizontal grid is defined, gray vertical rules show their boundaries.
+
+\starttyping
+\setuplayout[grid=yes] \showgrid
+\stoptyping
+
+The \type {\setuplayout} command has a few settings that have to do with so
+called pseudo columns. These are in no sense related to multi|-|column
+typesetting and only play a role in placing text on specific locations.
+
+\starttyping
+\setuplayout
+  [columndistance=12pt,
+   columns=3]
+\stoptyping
+
+You can use \type {\layoutcolumnoffset} for positioning relative to the left
+boundary of the running text:
+
+\startbuffer
+\hskip\layoutcolumnoffset{2}{\red Text positioned in column 2!}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This mechanism is actually meant to ease the definition of complicated (title)
+pages where many text and graphic elements need to be anchored at well defined
+places. The layer mechanism is the most natural candidate for this.
+
+\startbuffer
+\definelayer [text] \setupbackgrounds [text] [background=text]
+\stopbuffer
+
+\typebuffer
+
+When anchoring elements on a layer, you can specify absolute positions using the
+\type {x} and \type {y} keys but grid based positioning is possible with the
+\type {column} and \type {line} keys. We need to pass \type {grid} as location
+specifier.
+
+\startbuffer
+\setlayer[text][column=1,line=48,location=grid]{these are not}
+\setlayer[text][column=2,line=47,location=grid]{real columns}
+\setlayer[text][column=3,line=48,location=grid]{but fake ones}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\page
+
+\startbuffer
+\setlayer [text] [column=1,line=32,location=grid]
+  {\ruledvtop {\hsize\layoutcolumnwidth
+     \style[regular:3]{nitty\par gritty}}}
+
+\setlayer [text] [column=2,line=37,location=grid]
+  {\ruledvbox {\hsize\layoutcolumnwidth
+     \style[regular:3]{nitty\par gritty}}}
+
+\setlayer [text] [column=3,line=42,location=grid]
+  {\ruledvcenter {\hsize\layoutcolumnwidth
+     \style[regular:3]{nitty\par gritty}}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The data that goes into the layer is collected and flushed as soon as \TEX\
+builds the page. The buffer associated to the layer is then ready for new data
+(for the next page).
+
+In this example, you can see that the baselines of the boxes (here visualized by
+dashed rules) are put at the specified lines. You can use the \TEX\ box commands
+\type {\vbox}, \type {\vtop} and \type {\vcenter} to specify where the main
+baseline of the box content is positioned (at the top or bottom line, or
+centered).
+
+\startbuffer
+\setlayer
+  [text]
+  [column=2,line=48,x=\layoutcolumnwidth,location=left]
+  {\framed
+     [background=color,backgroundcolor=red,
+      foregroundstyle=regular:2,foregroundcolor=white,
+      frame=off]
+     {Why ain't I framed?}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\page
+
+On the previous page we demonstrated a more complicated call to \type {\setlayer}
+and more features will be introduced in later chapters. We position the framed
+text in column~2 and at line~48. In addition we shift the text over the pseudo
+column width, i.e. we position the text at the right of the column. The location
+specifier aligns the text left from the point of positioning.
+
+When we have set up the pseudo columns, we have access to a couple of variables:
+
+\starttabulate[|l|l|l|]
+\NC \type {\layoutcolumns}         \NC counter   \NC number of columns    \NC \NR
+\NC \type {\layoutlines}           \NC counter   \NC number of gridlines  \NC \NR
+\NC \type {\layoutcolumnwidth}     \NC dimension \NC width of one column  \NC \NR
+\NC \type {\layoutcolumnoffset{n}} \NC macro     \NC position of column n \NC \NR
+\stoptabulate
+
+This is typically a feature that has been there for quite a while but that I forget
+about. It's probably because I never have to use grids myself.
+
+In the examples before we used some predefined (font) styles:
+
+\typebuffer[regular:sizes]
+
+\page \setuplayout[reset] \stop
+
+\stopchapter
+
+\stopcomponent

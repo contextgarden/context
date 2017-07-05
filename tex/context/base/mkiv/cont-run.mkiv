@@ -34,8 +34,11 @@
 
 \unexpanded\def\setupsynctex[#1]%
   {\begingroup
-   \getdummyparameters[\c!state=,#1]%
-   \doifelse{\dummyparameter\c!state}\v!start\clf_synctexenable\clf_synctexdisable
+   \getdummyparameters[\c!state=\v!stop,\c!method=\v!max,#1]%
+   \clf_setupsynctex
+      state  {\dummyparameter\c!state}%
+      method {\dummyparameter\c!method}%
+   \relax
    \endgroup}
 
 \unexpanded\def\blocksynctexfile[#1]%

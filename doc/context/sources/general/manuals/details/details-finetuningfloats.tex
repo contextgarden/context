@@ -1,0 +1,657 @@
+% language=uk
+
+% todo: \setlayeranchored[text-1]{HELLO WORLD}
+
+\environment details-environment
+
+\startcomponent details-finetuningfloats
+
+\startchapter[title={Finetuning graphics}]
+
+In this chapter we will discuss a few more tricks to control float placement.
+This control is needed if you want to typeset documents in a semi desk top
+publishing way.
+
+When you combine technical graphics, you may wish to align the content optically.
+This can be done with the \type {offset} command. We will demonstrate this with a
+couple of \METAPOST\ graphics:
+
+\startbuffer
+\startreusableMPgraphic{alpha}
+  fill fullsquare xyscaled(  2cm,  2cm) withcolor \MPcolor{red} ;
+  fill unitsquare xyscaled(+.5cm,+.5cm) withcolor \MPcolor{gray} ;
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{beta}
+  fill fullsquare xyscaled(  2cm,  2cm) withcolor \MPcolor{red} ;
+  fill unitsquare xyscaled(+.5cm,-.5cm) withcolor \MPcolor{gray} ;
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{gamma}
+  fill fullsquare xyscaled(  2cm,  2cm) withcolor \MPcolor{red} ;
+  fill unitsquare xyscaled(-.5cm,-.5cm) withcolor \MPcolor{gray} ;
+\stopreusableMPgraphic
+
+\startuseMPgraphic{delta}
+  fill fullsquare xyscaled(  2cm,  2cm) withcolor \MPcolor{red} ;
+  fill unitsquare xyscaled(-.5cm,+.5cm) withcolor \MPcolor{gray} ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startcombination[2*2]
+  {\reuseMPgraphic{alpha}} {alpha}
+  {\reuseMPgraphic {beta}}  {beta}
+  {\reuseMPgraphic{gamma}} {gamma}
+  {\reuseMPgraphic{delta}} {delta}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+In \in {figure} [fig:offset-1] we place these graphics in a \type {2*2} grid. As
+you can see, the centers don't align well.
+
+\placefigure[here][fig:offset-1]{}{\getbuffer}
+
+In \in {figure} [fig:offset-2] the centers of the graphic align well. This is
+accomplished by adding some space around the graphics.
+
+\startbuffer
+\startcombination[2*2]
+  {\ruledhbox{\offset[rightoffset=1cm]  {\reuseMPgraphic{alpha}}}} {alpha}
+  {\ruledhbox{\offset[bottomoffset=.5cm]{\reuseMPgraphic {beta}}}}  {beta}
+  {\ruledhbox{\offset[bottomoffset=.5cm]{\reuseMPgraphic{gamma}}}} {gamma}
+  {\ruledhbox{\offset[leftoffset=1cm]   {\reuseMPgraphic{delta}}}} {delta}
+\stopcombination
+\stopbuffer
+
+\placefigure[here][fig:offset-2]{}{\getbuffer}
+
+\starttyping
+\startcombination[2*2]
+  {\offset[rightoffset=1cm]  {\reuseMPgraphic{alpha}}} {alpha}
+  {\offset[bottomoffset=.5cm]{\reuseMPgraphic {beta}}}  {beta}
+  {\offset[bottomoffset=.5cm]{\reuseMPgraphic{gamma}}} {gamma}
+  {\offset[leftoffset=1cm]   {\reuseMPgraphic{delta}}} {delta}
+\stopcombination
+\stoptyping
+
+If we align the centers vertically, as demonstrated in \in {figure}
+[fig:offset-2] we can stick to a few bottom offsets.
+
+\starttyping
+\startcombination[4*1]
+                             {\reuseMPgraphic{alpha}}  {alpha}
+  {\offset[bottomoffset=.5cm]{\reuseMPgraphic {beta}}}  {beta}
+  {\offset[bottomoffset=.5cm]{\reuseMPgraphic{gamma}}} {gamma}
+                             {\reuseMPgraphic{delta}}  {delta}
+\stopcombination
+\stoptyping
+
+\startbuffer
+\startcombination[4*1]
+  {\ruledhbox                           {\reuseMPgraphic{alpha}}}  {alpha}
+  {\ruledhbox{\offset[bottomoffset=.5cm]{\reuseMPgraphic {beta}}}}  {beta}
+  {\ruledhbox{\offset[bottomoffset=.5cm]{\reuseMPgraphic{gamma}}}} {gamma}
+  {\ruledhbox                           {\reuseMPgraphic{delta}}}  {delta}
+\stopcombination
+\stopbuffer
+
+\placefigure[here][fig:offset-3]{}{\getbuffer}
+
+These examples demonstrate that the dimensions change with the offset. You can
+retain the dimensions but still align them by using the \type {x} and \type {y}
+parameter. This kind of manipulations will often result in a ugly spacing because
+the placement macros handle on the original dimensions. \in {Figure}
+[fig:offset-4] demonstrates this.
+
+\starttyping
+\startcombination[4*1]
+                   {\reuseMPgraphic{alpha}}  {alpha}
+  {\offset[y=-.5cm]{\reuseMPgraphic {beta}}}  {beta}
+  {\offset[y=-.5cm]{\reuseMPgraphic{gamma}}} {gamma}
+                   {\reuseMPgraphic{delta}}  {delta}
+\stopcombination
+\stoptyping
+
+\startbuffer
+\startcombination[4*1]
+  {\ruledhbox                 {\reuseMPgraphic{alpha}}}  {alpha}
+  {\ruledhbox{\offset[y=-.5cm]{\reuseMPgraphic {beta}}}}  {beta}
+  {\ruledhbox{\offset[y=-.5cm]{\reuseMPgraphic{gamma}}}} {gamma}
+  {\ruledhbox                 {\reuseMPgraphic{delta}}}  {delta}
+\stopcombination
+\stopbuffer
+
+\placefigure[here][fig:offset-4]{}{\getbuffer}
+
+In the previous chapter we demonstrated how a side float can be moved up or down
+by providing a placement directive or by preceding the placement with \type
+{\movesidefloat}. Such a move can be used to align a graphic with particular line
+of text. This command can also be used for alignment purposes similar to the
+\type {\offset} command. We will demonstrate this with the following graphics.
+
+\startbuffer
+\startreusableMPgraphic{gnu}
+  fill fullsquare xyscaled( 4cm, 1cm) withcolor \MPcolor{red} ;
+  fill unitsquare xyscaled(-1cm,.5cm)
+                   shifted (0,-.25cm) withcolor \MPcolor{gray} ;
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{gnat}
+  fill fullsquare xyscaled( 4cm, 1cm) withcolor \MPcolor{red} ;
+  fill unitsquare xyscaled(+1cm,.5cm)
+                   shifted (0,-.25cm) withcolor \MPcolor{gray} ;
+\stopreusableMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In the next two examples we shift the \type {gnu} and \type {gnat} graphics
+horizontally in order to get them aligned. The move does not change the
+dimensions of the float, but they do influence the paragraph shape.
+
+\startbuffer[a]
+\movesidefloat [x=.5cm]
+\placefigure   [left,none] {} {\reuseMPgraphic{gnu}}
+\stopbuffer
+
+\startbuffer[b]
+\movesidefloat [x=-.5cm]
+\placefigure   [left,none] {} {\reuseMPgraphic{gnat}}
+\stopbuffer
+
+\typebuffer[a,b]
+
+\getbuffer[a] \fakewords{50}{100}
+\getbuffer[b] \fakewords{50}{100}
+
+\blank
+
+It is possible to shift vertically by setting \type {y}, but this is often a bad
+idea and definitely may spoil alignment of graphics to the grid. If you have to
+revert to this trick, you are probably working in document screw||up mode. This
+is why in grid mode, we automatically round to an equal number of lines.
+
+If you know what text you're dealing with and also can be sure about the height
+of a graphic, you can trick \CONTEXT\ to ignore the dimensions of a graphic. Here
+we use the graphic:
+
+\startbuffer
+\startreusableMPgraphic{gnome}
+  fill fullsquare xyscaled(2cm, 1cm) withcolor \MPcolor{red} ;
+  fill fullsquare xyscaled(1cm,.5cm) withcolor \MPcolor{gray} ;
+\stopreusableMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\placefigure[leftmargin,none,reset]{}{\reuseMPgraphic{gnome}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The graphic is moved into the margin (\type {leftmargin}), has no caption (\type
+{none}), and all kind of tricky housekeeping is reset (\type {reset}).
+
+\startbuffer
+\placefigure[left,none,high,low]{}{\reuseMPgraphic{gnome}}
+\stopbuffer
+
+\getbuffer
+
+Now the next graphic is not influenced by the previous one, so we can place them
+close to each other. Use these tricks with care, especially if your document
+source is reused and the typeset products are not carefully checked.
+
+\typebuffer
+
+When \CONTEXT\ tries to determine if a float fits, it makes a couple of
+assumptions, for instance that the available room equals the text height minus
+the height of the text so far. You can slightly influence the way these values
+are interpreted by setting the calculation method. You can set the methods as
+follows:
+
+\starttyping
+\setupfloats[textmethod=0,sidemethod=1]
+\stoptyping
+
+Method~0 just looks at the raw dimensions, while method~1 lessens the maximum
+text height by one percent, thereby playing safe. Method~2 takes a window of
+1~point. This may lead to better decisions since we may run into rounding errors
+of several scaled points (which is small but troublesome). Method~2 is well
+suited when typesetting on a grid, because there everything has to fit in a
+rounded number of lines, which leaves no room for rounding errors.
+
+\starttabulate[||c|c|]
+\NC \bf grid mode     \NC \bf yes  \NC \bf no   \NC \NR
+\NC \type{sidemethod} \NC \type{2} \NC \type{1} \NC \NR
+\NC \type{textmethod} \NC \type{2} \NC \type{0} \NC \NR
+\stoptabulate
+
+\startusableMPgraphic{demo-1}{color}
+  path p ;
+  p := fullsquare xyscaled (3cm,2LineHeight) ;
+  fill p withcolor \MPvar{color} ;
+\stopusableMPgraphic
+
+\startusableMPgraphic{demo-2}{color,morecolor}
+  path p ; p := fullsquare xyscaled (6cm,4LineHeight) ;
+  path q ; q := fullsquare xyscaled (3cm,2LineHeight) ;
+  fill p withcolor \MPvar{color} ;
+  setbounds currentpicture to q ;
+  fill q withcolor \MPcolor{morecolor} ;
+\stopusableMPgraphic
+
+As you may know by now, we can use the directives \type {high}, \type {low},
+\type {height}, \type {depth} and \type {line} to influence the spacing around a
+side float. A real tight spacing can be achieved with \type {fit}.
+
+\starttyping
+\placefigure[left,fit,none]{}{some graphic}
+\stoptyping
+
+\placefigure[left,fit,none]{}{\useMPgraphic{demo-1}{color=red}}
+
+This kind of placements only make sense in special situations, because normally
+you don't want the graphic to touch the text.
+
+If you think that this is all a user may want, you're wrong. It is not imaginary
+that graphics have small pieces sticking out and|/|or lots of white space as part
+of their design. In that case, the bounding box can be set to a smaller size.
+
+\placefigure
+  [left,fit,none]
+  {}
+  {\setlayer
+      [graphics]
+      {\useMPgraphic{demo-2}{color=red,morecolor=tgreen}}}
+
+Now, when handling a side float, \CONTEXT\ first places the float, and then
+starts with typesetting the paragraph, cleverly avoiding the graphic. However,
+when the graphic is virtually larger than its known size, it may cover part of
+the preceding paragraph.
+
+How come that the graphic starting this paragraph does not do that? It is because
+we explicitly moved it to the background. This involves some preparation. At the
+document level, we define a layer called \type {graphic}.
+
+\starttyping
+\definelayer[graphics][position=yes]
+\stoptyping
+
+The position directive tells \CONTEXT\ that it should honour the position of the
+graphic. Next we must make sure that this layer is placed.
+
+\starttyping
+\setupbackgounds[page][background=graphics]
+\stoptyping
+
+Now we're ready to move graphics to this layer:
+
+\starttyping
+\placefigure
+  [left,fit,none]
+  {}{\setlayer[graphics]{graphic}}
+\stoptyping
+
+It's now a small step to more advanced movements. Say that you want to move the
+graphic a little bit to the left. In that case you can tell the layer placement
+to do so.
+
+\starttyping
+\placefigure
+  [left,fit,none]{}{\setlayer[graphics][hoffset=-12pt]{graphic}}
+\stoptyping
+
+From this you can deduce that there is also a movement in the vertical direction
+using \type {voffset}. In addition you can anchor the graphic using the \type
+{location} parameter and provide offsets.
+
+\placefigure
+  [left,fit,none]
+  {}
+  {\setlayer
+     [graphics][hoffset=-12pt]
+     {\useMPgraphic{demo-2}{color=red,morecolor=tgreen}}}
+
+As soon as you run into situations where float placement is to be consistently
+enforced, you will feel the need for dedicate placement macros. For example:
+
+\startbuffer
+\definefloat
+  [somefloat]
+  [figure]
+
+\setupfloat
+  [somefloat]
+  [sidespaceafter=,
+   sidespacebefore=,
+   default={left,none}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Instead of resetting the side spacing, we could have default to \type {high,low},
+but this way we can overload the default placement and still get zero spacing.
+
+Throughout this manual we discuss features related to overlays and layers. These
+permit you to move content around in ways that either or not depend on the text
+flow. We have now come to another trick based on these mechanisms: bleeding.
+
+When printing a document, you need to take into account that when graphics go
+beyond the page boundary, you need to compensate for inaccuracies in cutting the
+pages. Such graphics are called bleeding graphics and the amount of bleed is
+often a few millimeters.
+
+The best way to handle such graphics is to use the correct dimensions and play
+with the edge widths and distances in combination with backspace and cut space. In
+a properly set up layout and by using a well designed set of predefined graphic
+placements, you can handle this quite well. A bleeding figure can be defined as
+follows:
+
+\startbuffer
+\definefloat
+  [edgefigure]
+  [figure]
+
+\setupfloat
+  [edgefigure]
+  [default={inner,height,high,low,none},
+   maxwidth=4cm]
+
+\defineexternalfigure
+  [edgefigure]
+  [width=\dimexpr\backspace+4cm-1mm\relax,
+   lines=4]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The default placement is pre|-|configured to have no additional vertical space and
+align on the height of a line (this is default behaviour so the \type {height}
+key is redundant here. The 1mm in the previous definition simulates what happens
+when a page is cut off slightly wrong: we get an annoying gap.
+
+\startbuffer[a]
+\placeedgefigure
+  {}
+  {\externalfigure[hacker][edgefigure]}
+\stopbuffer
+
+\typebuffer[a] \getbuffer[a] \fakewords{50}{100}
+
+One of the nice things about \TEX\ is that you can fine tune dimensions pretty
+well. So, instead of the previous placement, which turns out rather ugly, we can
+come up with a better one:
+
+\startbuffer
+\setupfloat
+  [edgefigure]
+  [default={inner,height,high,low,none},
+   maxwidth=4cm,
+   margin=\strutdepth]
+
+\defineexternalfigure
+  [edgefigure]
+  [width=\dimexpr\backspace+4cm+2mm\relax,
+   height=\dimexpr3\lineheight+\strutheight\relax]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This time we take no risk and add 2mm to the dimensions so that we can be sure
+that the edge of the graphic falls outside the page boundary.
+
+\getbuffer[a] \fakewords{50}{100}
+
+The \CONTEXT\ resourse library modules provide means to report back the
+dimensions of graphics used in a document, so that you can develop (tune) them
+with the proper dimensions. In practice a slightly wider than normal graphic
+(scaling it horizontally a few millimeters more) does not harm the visual
+appearance that much, so adapting a graphic to this kind of bleeding is not
+really needed.
+
+In addition to this (rather natural) way of adding bleed to a graphic, you can
+apply the \type {\bleed} macro. In the previously discussed method the figure
+placement mechanisms work with the real dimensions. The \type {bleed} macro is
+using scaling in a different way: from the perspective of \CONTEXT\ the graphic
+remains its original dimensions and the figure placement mechanisms will act
+accordingly. We will give a couple of examples of using this macro.
+
+Permitted bleeding locations are \type {l}, \type {r}, \type {t}, \type {b},
+\type {lr}, \type {bl}, \type {br}, \type {tl} and \type {tr}.
+
+\startbuffer
+\placesomefloat
+  [left,none,fit]
+  {}
+  {\setupbleeding[offset=5mm]%
+   \bleed[width=5cm,height=1cm,location=l]
+     {\externalfigure[mill][bleed]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{50}{100}
+
+\startbuffer
+\placesomefloat
+  [left,none,fit]
+  {}
+  {\setupbleeding[offset=2mm]%
+   \bleed[width=5cm,height=1cm,location=l]
+     {\externalfigure[mill][bleed]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{50}{100}
+
+The amount of bleeding depends on the postprocessing. In the previous paragraph
+we used a bleed offset of 5mm, and here we used 2mm. Because the graphic is
+scaled in order to match the bleed, it will be slightly distorted. With small
+values this will go unnoticed. You can set the offset with:
+
+\starttyping
+\setupbleeding[offset=5mm]
+\stoptyping
+
+Bleeding itself is accomplished by the \type {\bleed} macro as in:
+
+\starttyping
+\bleed
+  [width=5cm,height=1cm,location=l]
+  {\externalfigure[mill][width=\bleedwidth,height=\bleedheight]}
+\stoptyping
+
+It is kind of awkward to pass those two dimensions so here is a shorter way of
+doing the same:
+
+\starttyping
+\bleed
+  [width=5cm,height=1cm,location=l]
+  {\externalfigure[mill][bleed]}
+\stoptyping
+
+In fact, this uses the following definition:
+
+\starttyping
+\defineexternalfigure[bleed][width=\bleedwidth,height=\bleedheight]
+\stoptyping
+
+You can influence the scaling of a graphic by setting the \type {stretch}
+parameters. The location parameter determines the direction of the stretch: \type
+{l}~(left), \type {r}~(right), \type {t}~(top), \type {b}~(bottom) or a
+combination of these. We will now combine the previous example code with this
+knowledge.
+
+\startbuffer
+\placefigure
+  [left]
+  {}
+  {\bleed
+     [stretch=no,voffset=0pt,hoffset=1cm]
+     {\externalfigure[detcow][bleed]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+\startbuffer
+\placefigure
+  [left]
+  {}
+  {\bleed
+     [width=5cm,height=3cm,location=l]
+     {\externalfigure[detcow][bleed]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+\startbuffer
+\placefigure
+  [right]
+  {}
+  {\bleed
+     [width=5cm,height=3cm,location=r]
+     {\externalfigure[detcow][bleed]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+You can combine this feature with layers. We will now show a few applications
+which may look like magic at first glance, but will become natural to your
+repertoire once you have played with them.
+
+The next example moves the graphic to a layer associated with the (current) page.
+
+\startbuffer
+\placefigure
+  [right,none]
+  {}
+  {\setlayer
+     [graphics]
+     {\bleed
+        [width=5cm,height=3cm,location=rb]
+        {\externalfigure[detcow][bleed]}}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+You can also predefine locations where graphics (or other content) needs to be
+anchored. A direct call to anchor looks as follows:
+
+\starttyping
+\placefigure
+  [left,none]
+  {}
+  {\anchor
+     [text-1]
+     [location=lt,hoffset=max,voffset=max]
+     [width=3cm,height=3cm,frame=on]%
+     {\externalfigure[detcow][width=5cm,frame=on]}}
+\stoptyping
+
+This will anchor a graphic in one of the text layers, but at the cost of
+specifying this in the document source. One way around this is to predefine
+anchors.
+
+\startbuffer
+\defineanchor[rightbottom][text-1][location=lt,hoffset=max,voffset=max]
+\defineanchor[righttop]   [text-1][location=lb,hoffset=max]
+\defineanchor[leftbottom] [text-1][location=rt,voffset=max]
+\defineanchor[lefttop]    [text-1][location=rb]
+\stopbuffer
+
+\startbuffer
+\defineanchor[rightbottom][text-1][preset=rightbottom]
+\defineanchor[righttop]   [text-1][preset=righttop]
+\defineanchor[leftbottom] [text-1][preset=leftbottom]
+\defineanchor[lefttop]    [text-1][preset=lefttop]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We will apply this to a predefined float type.
+
+\startbuffer
+\definefloat[myfigure][figure]
+\setupfloat[myfigure][sidespaceafter=,sidespacebefore=]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Our previous example can now be reduced to:
+
+\startbuffer
+\placemyfigure
+  [left,none]
+  {}
+  {\anchor[rightbottom]
+     {\externalfigure[detcow][width=5cm,frame=on]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+You can still specify dimensions and anchors can be combined with bleeding. Of
+course this kind of mixed usage means that you need to have some feeling for what
+these mechanisms do.
+
+\startbuffer
+\placemyfigure
+  [left,none]
+  {}
+  {\anchor
+     [rightbottom]
+     [width=5cm,height=3cm,frame=on]
+     {\bleed
+        [width=5cm,height=3cm,location=l]
+        {\externalfigure[detcow][bleed]}}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+\startbuffer
+\placemyfigure
+  [right,none]
+  {}
+  {\anchor
+     [rightbottom]
+     [width=5cm,height=3cm,frame=on]
+     {\bleed
+        [width=5cm,height=3cm,location=r]
+        {\externalfigure[detcow][bleed]}}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+\startbuffer
+\placemyfigure
+  [left,none]
+  {}
+  {\anchor
+     [lefttop]
+     [width=3cm,height=3cm,frame=on]
+     {\externalfigure[detcow][width=5cm,frame=on]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+\startbuffer
+\placemyfigure
+  [left,none]
+  {}
+  {\anchor
+     [lefttop]
+     [width=3cm,height=3cm,frame=on]
+     [offset=.5cm]
+     {\externalfigure[detcow][width=5cm,frame=on]}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords {100} {150}
+
+\blank {\em Todo: parameter specifications of all those macros.}
+
+\stopchapter
+
+\stopcomponent

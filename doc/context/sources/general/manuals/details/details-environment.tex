@@ -1,0 +1,317 @@
+% language=uk
+
+% this a rather old style and made for mkii, currently the only adaption to mkiv is
+% with respect to fonts
+
+\showgrid
+
+\startenvironment details-environment
+
+\usemodule[abr-02,simulate] % visual
+
+\setupsystem
+  [random=123]
+
+\setupinteraction
+  [state=start,
+   style=,
+   color=]
+
+\setuplist
+  [chapter]
+  [interaction=all]
+
+\setupalign
+  [verytolerant,
+   stretch,
+   hanging]
+
+\setuptolerance
+  [verytolerant,
+   stretch]
+
+\definefontfeature
+  [fullprotrusion]
+  [protrusion=pure]
+
+\definefontfeature[default][default,fullprotrusion]
+
+\setupbodyfont[modernvariable,12pt]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupindenting
+  [medium]
+
+\setuptyping
+  [margin=standard]
+
+\setuptyping
+  [color=blue]
+
+\setuptype
+  [color=blue]
+
+\startmode [screen]
+    \definepapersize[A4-S][width=210mm,height=210mm]
+    \setuppapersize[A4-S][A4-S]
+\stopmode
+
+\setuplayout
+  [header=3cm,
+   footer=0pt,
+   topspace=0cm,
+   bottomspace=2cm,
+   bottom=2cm,
+   bottomdistance=0pt,
+   height=middle,
+   margindistance=.5cm,
+   leftmargin=2.0cm,
+   rightmargin=2.5cm,
+   backspace=2.5cm,
+   cutspace=3cm,
+   width=middle,
+   lines=48, % otherwise background issue
+%    textdistance=\dimexpr-\topskip+\strutheight+.5cm\relax,
+   grid=yes]
+
+\setuplayout
+  [margindistance=.5cm,
+   edgedistance=.25cm,
+   rightmargin=1cm,
+   rightedge=.75cm,
+   leftmargin=1cm,
+   leftedge=.5cm]
+
+\setuppagenumbering
+  [location=]
+
+\definecolor[red]      [r=.5]
+\definecolor[blue]     [b=.5]
+\definecolor[green]    [g=.5]
+\definecolor[yellow]   [r=.5,g=.5]
+\definecolor[gray]     [s=.5]
+
+\definecolor[tred]     [r=.5,t=.5,a=1]
+\definecolor[tblue]    [b=.5,t=.5,a=1]
+\definecolor[tgreen]   [g=.5,t=.5,a=1]
+\definecolor[tyellow]  [r=.5,g=.5,t=.5,a=1]
+\definecolor[twhite]   [s=0,t=.5,a=1]
+
+\definecolor[infogray] [g=.5,t=.5,a=1]
+\definecolor[infogray] [s=.7,t=.5,a=1]
+\definecolor[pagegray] [y=.5,t=.5,a=1]
+\definecolor[textgray] [s=.9,t=.5,a=1]
+\definecolor[areafill] [g=.5,t=.125,a=1]
+\definecolor[areafill] [b=.5,t=.125,a=1]
+
+\definecolor[fakerulecolor]     [green]
+\definecolor[fakeparindentcolor][blue]
+
+\definefont[BigNumber][RegularBold sa 4] % 5
+\definefont[BigText]  [RegularBold sa 2]
+\definefont[MedNumber][RegularBold sa 2]
+
+\startbuffer[regular:sizes]
+\definefont[regular:1][Regular*default sa 1]
+\definefont[regular:2][Regular*default sa 2]
+\definefont[regular:3][Regular*default sa 3]
+\definefont[regular:4][Regular*default sa 4]
+\stopbuffer
+
+\getbuffer[regular:sizes]
+
+\useMPlibrary[dum]
+
+\definecolor[p-red]      [r=1]
+\definecolor[p-blue]     [b=1]
+\definecolor[p-yellow]   [r=1,g=1]
+
+\definepalet
+  [placeholder]
+  [1=p-red,2=p-blue,3=p-yellow]
+
+\definelayer
+  [graphics]
+  [position=yes]
+
+\setupbackgrounds
+  [page]
+  [background={color,graphics},
+   backgroundoffset=1cm,
+   backgroundcolor=pagegray]
+
+\definelayer
+  [extras]
+  [width=\paperwidth,height=\paperheight]
+
+\setupbackgrounds
+  [leftpage]
+  [background=extras]
+
+\setupbackgrounds
+  [rightpage]
+  [background=extras]
+
+\definelayer % we need to compensate the backgroundoffset
+  [text]
+  [hoffset=1cm,
+   voffset=1cm]
+
+\setupbackgrounds
+  [text]
+  [background={color,text},
+   backgroundoffset=1cm,
+   backgroundcolor=textgray]
+
+% chapter head
+
+\setuphead
+  [chapter]
+  [placehead=empty,
+   header=chapter,
+   incrementnumber=details,
+   style=\BigText,
+   numberstyle=\BigNumber]
+
+% we need to check each file
+%
+% \setuphead
+%   [chapter]
+%   [beforesection=\page,
+%    aftersection=\page]
+
+\definetext
+  [chapter]
+  [header]
+  [\setups{chapter}]
+  []
+
+\definelayer
+  [chapter]
+  [width=\dimexpr\makeupwidth+\cutspace\relax,
+   height=\headerheight]
+
+\startsetups chapter
+    \setups[chapter:title]
+    \setups[chapter:number]
+    \setups[chapter:finish]
+\stopsetups
+
+% here we can use mp instead but the following is not that bad either
+
+\startsetups chapter:title
+
+  \setlayerframed
+    [chapter]
+    [x=\dimexpr\makeupwidth+\cutspace\relax,
+     location=lb]
+    [height=\headerheight,
+     foregroundcolor=white,
+     background=color,
+     backgroundcolor=blue,
+     frame=off,
+     offset=none,
+     align={right,lohi}]
+    {\hbox spread .5\cutspace
+       {\hss
+        \doiftextelse{\placeheadtext[chapter]}%
+          {\placeheadtext[chapter]}%
+          {\placeheadtext[title]}%
+        \hss}\space
+     \vskip.5cm}
+
+\stopsetups
+
+\startsetups chapter:number
+
+  \setlayerframed
+    [chapter]
+    [x=\dimexpr\makeupwidth+\cutspace\relax,
+     y=\vsize,
+     location=lb]
+    [width=\dimexpr\cutspace-\rightmargindistance\relax,
+     height=\dimexpr\cutspace-\rightmargindistance\relax,
+     foregroundcolor=white,
+     background=color,
+     backgroundcolor=red,
+     frame=off,
+     offset=none,
+     align={middle,lohi}]
+    {\hbox to \hsize
+       {\hskip.5cm\hss
+        \doifmode{*bodypart}{\placeheadnumber[chapter]}%
+        \hss}}
+
+\stopsetups
+
+\startsetups chapter:finish
+
+  \framed
+    [width=\makeupwidth,
+     height=\headerheight,
+     background=chapter,
+     frame=off]
+    {}
+
+\stopsetups
+
+% page number
+
+\defineframedtext
+  [pagenumbertext]
+  [align={lohi,middle},
+   width=\dimexpr\cutspace-\margindistance\relax, % \hsize,
+   height=\vsize,
+   background=color,
+   backgroundcolor=green,
+   style=\MedNumber,
+   color=white,
+   offset=none,
+   frame=off]
+
+\setupbottomtexts
+  [margin]
+  []
+  [\pagenumbertext{\hbox to \hsize{\hskip.5cm\hss\placepagenumber\hss}}]
+  [\pagenumbertext{\hbox to \hsize{\hss\placepagenumber\hss\hskip.5cm}}]
+  []
+
+% area
+
+\setupbackgrounds [text] [leftedge]    [backgroundoffset=0pt,backgroundcolor=areafill]
+\setupbackgrounds [text] [rightedge]   [backgroundoffset=0pt,backgroundcolor=areafill]
+\setupbackgrounds [text] [leftmargin]  [backgroundoffset=0pt,backgroundcolor=areafill]
+\setupbackgrounds [text] [rightmargin] [backgroundoffset=0pt,backgroundcolor=areafill]
+
+% grids
+
+\setuptextbackground
+  [grid]
+  [state=start]
+
+% intros
+
+% \definetextbackground
+%   [intro]
+%   [backgroundcolor=infogray, % green,
+%    backgroundoffset=.25cm,
+%    offset=.5cm,
+%    frame=off,
+%    color=white]
+
+\setuplist
+  [chapter]
+  [before=,
+   after=,
+   alternative=c,
+   aligntitle=yes]
+
+\startsectionblockenvironment [backpart]
+
+  \writebetweenlist[chapter]{\blank}
+
+\stopsectionblockenvironment
+
+\stopenvironment

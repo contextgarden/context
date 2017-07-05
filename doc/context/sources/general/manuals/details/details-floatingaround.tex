@@ -1,0 +1,1137 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-floatingaround
+
+\startchapter[title={Floating around}]
+
+\index {floats}
+
+Graphics, tables and alike are often treated as floating bodies. This means that
+when such a body does not fit on the current page, it will be moved to the next
+one. In the examples we will use figures, but everything we demonstrate here
+applies to all floats.
+
+A side float is a float which placement one way or another depends on the text
+that follows it. In its simplest form, the text flows around it, for instance in:
+
+\startbuffer
+\placefigure[left,none]{caption}{\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer
+
+The first keyword of such a call is treated as a placement directive, so this
+figure will be placed left. The \type {none} directive nils the caption.
+
+\getbuffer \fakewords{60}{80}
+
+When the figure does not fit on the page, a page break is issued. A figure can
+span multiple paragraphs. When a next graphic is placed the previous figure will
+be padded if needed. First an example of multiple paragraphs.
+
+\getbuffer \fakewords{30}{40} \par \fakewords{30}{40}
+
+Multiple floats in a row will lead to padding. The amount of padding is a
+combination of empty lines and the normal white space following the float. The
+visual quality of the result depends on the graphic itself.
+
+\start \tracesidefloatstrue
+
+\getbuffer \fakewords{30}{40}
+
+\getbuffer \fakewords{30}{40} \fakewords{30}{40}
+
+\stop
+
+Here we show the baseline of the first paragraph after the float as well as the
+filler. The whitespace around a graphic also depends on the inter|-|paragraph
+whitespace. As with many automated mechanisms, compromises are made. A one point
+smaller figure may result in an extra empty line.
+
+Later we will demonstrate a lot of tuning options, but first we give a few more
+examples. Most of the tuning options can be driven by keywords as well as
+(global) settings.
+
+\startbuffer
+\placefigure
+  [left,nonumber]
+  {caption} {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer
+
+The \type {nonumber} keyword suppresses the label and figure number. You can do
+this for all figures with
+
+\starttyping
+\setupcaption[figure][number=no]
+\stoptyping
+
+The previous placement command results in the following side float.
+
+\getbuffer \fakewords{80}{100}
+
+Another handy keyword is \type {none}.
+
+\startbuffer
+\placefigure
+  [left,none]{quoting knuth}
+  {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{80}{100}
+
+Control over spacing is exercised by means of the keywords \type {high}, \type
+{low} and \type {fit}.
+
+\startbuffer
+\placefigure
+  [left,none,high]{}
+  {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{80}{100}
+
+\startbuffer
+\placefigure
+  [left,none,high,low]{}
+  {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{80}{100}
+
+\startbuffer
+\placefigure
+  [left,none,fit]{}
+  {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{80}{100}
+
+In the examples so far, we saw additional spacing around the graphic. We will now
+(for a while) disable the surrounding whitespace.
+
+\startbuffer
+\setupfloat
+  [figure]
+  [sidespacebefore=none,
+   sidespaceafter=none]
+\stopbuffer
+
+\typebuffer
+
+With these settings a simple left placement looks as follows. The top of the side
+float aligns with the maximum height of a line.
+
+\start \getbuffer \tracesidefloatstrue
+
+\startbuffer
+\placefigure
+  [left,none]
+  {} {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40} \par \stop
+
+You can change the alignment by setting the \type {sidealign} variable, for
+instance:
+
+\starttyping
+\setupfloat
+  [figure]
+  [sidealign=line]
+\stoptyping
+
+The three keywords \type {height}, \type {line} and \type {depth} can also be
+passed directly:
+
+\startbuffer
+\placefigure
+  [left,none,height]{}
+  {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\typebuffer
+
+The three alignments disable the spacing before the float and show up as follows.
+
+\bgroup \tracesidefloatstrue \getbuffer \fakewords{30}{40} \par \egroup
+
+\startbuffer
+\placefigure
+  [left,none,line]{}
+  {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\bgroup \tracesidefloatstrue \getbuffer \fakewords{30}{40} \par \egroup
+
+\startbuffer
+\placefigure
+  [left,none,depth]{}
+  {\framed[height=1cm]{graphic}}
+\stopbuffer
+
+\bgroup \tracesidefloatstrue \getbuffer \fakewords{30}{40} \par \egroup
+
+So far the floats took up space in the main text body area. In addition to the
+\type {left} (or \type {right}) directive we can use \type {inner} or \type
+{outer} to force left or right placement depending in the spread.
+
+Instead of spoiling paper in the text areas, we can use the margin and edges:
+\type {leftmargin} and \type {leftedge}, \type {rightmargin} and \type
+{rightedge}, but also \type {innermargin} and \type {outermargin}, \type
+{inneredge} and \type {outeredge}.
+
+The next couple of pages we will highlight the margins and edges so that we can
+see what happens.
+
+\setupbackgrounds [text] [leftedge]    [background=color]
+\setupbackgrounds [text] [rightedge]   [background=color]
+\setupbackgrounds [text] [leftmargin]  [background=color]
+\setupbackgrounds [text] [rightmargin] [background=color]
+
+\startbuffer
+\placefigure
+  [leftmargin,none]
+  {} {\framed{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placefigure
+  [leftmargin,none]
+  {} {\framed[width=1cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placefigure
+  [leftmargin,none]
+  {} {\framed[width=1.5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+The placement directives can be combined with setting distance and width
+parameters, thereby not only opening a world of possibilities, but also creating
+confusion. Therefore, we will illustrate these features by cloning floats.
+
+\startbuffer
+\definefloat
+  [marginfigure]
+  [figure]
+
+\setupfloat
+  [marginfigure]
+  [leftmargindistance=-\leftmargintotal,
+   default={left,none,low}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The definition command clones figure into a new class of figures. There are two
+ways to use such a float :
+
+\starttyping
+\placefloat
+  [marginfigure]
+  {} {\framed[width=1.5cm]{!}}
+\stoptyping
+
+or directly:
+
+\startbuffer
+\placemarginfigure
+  {} {\framed[width=1.5cm]{!}}
+\stopbuffer
+
+\typebuffer
+
+Both placement calls will result in a figure sticking into the margin.
+
+\getbuffer \fakewords{30}{40}
+
+By manipulating the margin distance, you can align graphics to vertical grid
+lines, like the edge:
+
+\startbuffer
+\definefloat
+  [edgefigure]
+  [figure]
+
+\setupfloat
+  [edgefigure]
+  [leftmargindistance=-\innercombitotal,
+   default={left,none,low,high}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {\innercombitotal} is one of the many available dimensions. This
+measure is the combined width of the margin and edge.
+
+\startbuffer
+\placeedgefigure
+  {} {\framed[width=1.5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placeedgefigure
+  {} {\framed[width=\innercombitotal]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+You need to be aware of the fact that the margins and edges are not related to
+the backspace and cut space settings. When you set up a layout, you need to think
+of the right page as starting point. In a double sided layout, the margins are
+swapped in the page composition stage. Unless you explicitly go to a left or
+right page, you don't know if your left margin will be swapped or not.
+
+For this reason \CONTEXT\ provides the inner and outer margin|/|edge dimensions.
+These are automatically synchronized when the float is constructed. So, if you
+want to automatically adapt the float placement and width to the current left
+margin in a double sided document, you can use the inner dimensions.
+
+\starttabulate[||||]
+\NC dimension                  \NC left page
+                               \NC right page                 \NC\NR
+\NC \type{\outermarginwidth}   \NC \type{\leftmarginwidth}
+                               \NC \type{\rightmarginwidth}   \NC\NR
+\NC \type{\innermarginwidth}   \NC \type{\rightmarginwidth}
+                               \NC \type{\leftmarginwidth}    \NC\NR
+\NC \type{\outermargindistance}\NC \type{\leftmargindistance}
+                               \NC \type{\rightmargindistance}\NC\NR
+\NC \type{\innermargindistance}\NC \type{\rightmargindistance}
+                               \NC \type{\leftmargindistance} \NC\NR
+\stoptabulate
+
+Similar dimensions are available for the edges. You can save yourself some
+calculations by using the following dimensions:
+
+\starttabulate[|||||]
+\NC \type{\leftmargintotal}  \NC left  margin width \NC + \NC left  margin distance \NC\NR
+\NC \type{\rightmargintotal} \NC right margin width \NC + \NC right margin distance \NC\NR
+\NC \type{\innermargintotal} \NC inner margin width \NC + \NC inner margin distance \NC\NR
+\NC \type{\outermargintotal} \NC outer margin width \NC + \NC outer margin distance \NC\NR
+\stoptabulate
+
+As you may expect, the edge totals are available as well, which leave a few more
+totals, namely the combinations of margin and edge.
+
+\starttabulate[|||]
+\NC \type{\leftsidetotal}   \NC left  margin width \NC + \NC left  edge total \NC\NR
+\NC \type{\rightsidetotal}  \NC right margin width \NC + \NC right edge total \NC\NR
+\TB
+\NC \type{\innersidetotal}  \NC inner margin width \NC + \NC inner edge total \NC\NR
+\NC \type{\outersidetotal}  \NC outer margin width \NC + \NC outer edge total \NC\NR
+\TB
+\NC \type{\leftcombitotal}  \NC left  margin total \NC + \NC left  edge total \NC\NR
+\NC \type{\rightcombitotal} \NC right margin total \NC + \NC right edge total \NC\NR
+\TB
+\NC \type{\innercombitotal} \NC inner margin total \NC + \NC inner edge total \NC\NR
+\NC \type{\outercombitotal} \NC outer margin total \NC + \NC outer edge total \NC\NR
+\stoptabulate
+
+Adaptive back- and cutspace dimensions are also available:
+
+\starttabulate[|||||]
+\NC \type{\innerspacewidth} \NC adaptive backspace \NC\NR
+\NC \type{\outerspacewidth} \NC adaptive cutspace  \NC\NR
+\stoptabulate
+
+There is one drawback in using the inner and outer dimensions: if you also change
+the height of the float dynamically, you may end up in a kind of loop because a
+page break may occur at a non||expected place.
+
+While negative values move float into the margin, positive values will move the
+float into the text. It will be of no surprise that you can also set the right
+margin distance. Keep in mind that this distance is not related to the text
+margin, but to the float margin.
+
+\startbuffer
+\setupfloat
+  [edgefigure]
+  [leftmargindistance=-\outercombitotal,
+   rightmargindistance=-\outercombitotal,
+   default={outer,none,low,high}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The locations \type {inner} and \type {outer} change with the left or right page.
+
+\startbuffer
+\placeedgefigure
+  {} {\framed[width=\outercombitotal]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placeedgefigure
+  {} {\framed[width=8cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+As a result of manipulating the floats margin settings, the side floats can start
+in the margin (or edge). You should not confuse this with margin floats, i.e.\
+side floats that are explicitly placed in the margins.
+
+\startbuffer
+\placefigure[leftmargin,none]
+  {} {\framed{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placefigure[leftmargin,none]
+  {} {\framed[width=.5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placefigure[leftmargin,none]
+  {} {\framed[width=1.5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placefigure[leftmargin,none]
+  {} {\framed[width=5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+The margin side floats align to the margin and the edge floats to the edge. This
+way you can create bleeding figures.
+
+\startbuffer
+\placefigure[leftedge,none]
+  {} {\framed{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+There are situations where you don't know the dimensions in advance. In order to
+prevent unwanted side effects, for instance part of a graphic disappearing
+outside the page boundary, \CONTEXT\ provides a few options. The most crude one
+is setting the \type {criterium}, as in:
+
+\starttyping
+\setupfloat
+  [figure]
+  [criterium=.25\textwidth]
+\stoptyping
+
+This will automatically turn figures that are wider than 25\% of the text width
+into normal floats instead of side floats. But let's not fall back on that
+feature now.
+
+You can use \type {maxwidth} and \type {minwidth} variables to control the
+placement in more detail. The exact result depends on the settings of \type
+{location}. By default we center, but you can set the location to \type {left} or
+\type {right} to achieve a different alignment.
+
+\startbuffer
+\definefloat
+  [midmarginfigure]
+  [figure]
+
+\setupfloat
+  [midmarginfigure]
+  [minwidth=\leftmarginwidth,
+   default={leftmargin,none}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+You can use \type {maxwidth} and \type {minwidth} variables to control the
+placement in more detail. The exact result depends on the settings of \type
+{location}. By default we center, but you can set the location to \type {left} or
+\type {right} to achieve a different alignment.
+
+\startbuffer
+\placemidmarginfigure
+  {} {\framed[width=1.5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+The meaning of \type {maxwidth} depends on the kind of float. First we place a
+left float with a width smaller than \type {maxwidth}.
+
+\start
+
+\startbuffer
+\setupfloat[figure][maxwidth=2cm]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\placefigure[left,none]{}{\framed[width=1cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+When the width exceeds the maxwidth, the float will be centered. This is because
+we have no reference alignment point.
+
+\startbuffer
+\placefigure[left,none]{}{\framed[width=5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+In margin floats, the \type {maxwidth} settings have a different result. First we
+place a small graphic.
+
+\startbuffer
+\setupfloat[figure][maxwidth=\leftmarginwidth]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\placefigure[leftmargin,none]{}{\framed[width=1cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+Because the left and right margin of this document are the same |<|the edges
+differ|>| we don't need to use inner and outer dimensions.
+
+\startbuffer
+\setupfloat[figure][maxwidth=\leftmarginwidth]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A wider than \type {maxwidth} graphic will behave like a mixture of a margin and
+text side float. Watch how we align the float to the margin.
+
+\startbuffer
+\placefigure[leftmargin,none]{}{\framed[width=5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\stop
+
+Instead of setting the width you can give \type {hanging} a try. The next
+examples demonstrate this.
+
+\startbuffer
+\placefigure[leftmargin,hanging,none]{}{\framed[width=5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placefigure[left,hanging,none]{}{\framed[width=5cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+You can move down|/|up margin floats with the \type {\movesidefloat} macro. Such
+shifts come in handy when you have multiple side floats near to each other.
+
+\startbuffer
+\movesidefloat [+2*line]
+\placemidmarginfigure {} {\framed{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+Given the default placement template, this is equivalent to the following
+command. Watch out, a simple \type {line} has a different effect (alignment).
+
+\starttyping
+\placemidmarginfigure
+  [leftmargin,none,+2*line]
+  {} {\framed{!}}
+\stoptyping
+
+Another nice keyword is \type {long}:
+
+\startbuffer
+\placefigure
+  [leftmargin,none,long]
+  {} {\framed[height=2cm,width=2cm]{!}}
+
+Watch how we move down. The effect is that we skip over the margin figure.
+
+\placefigure
+  [leftmargin,none]
+  {} {\framed[height=1cm,width=2cm]{!}}
+\stopbuffer
+
+\typebuffer \getbuffer \fakewords{30}{40}
+
+\startbuffer
+\placefigure
+  [leftmargin,none]
+  {} {\framed[height=2cm,width=2cm]{!}}
+
+Do we clash or not?
+
+\placefigure
+  [leftmargin,none]
+  {} {\framed[height=2cm,width=2cm]{!}}
+
+Did we clash or not?
+\stopbuffer
+
+\typebuffer \getbuffer
+
+There are a few macros that can be of help with solving clashes in side floats:
+
+\starttabulate
+\NC \tex {flushsidefloats} \NC
+    This macro moves down as much as is needed to separate the side floats of
+    each other. \NC \NR
+\NC \tex {forgetsidefloats} \NC
+    this macro kind of forgets that a side float is in progress. \NC \NR
+\stoptabulate
+
+Use these macros with care. If you change the dimensions of the graphic and|/|or
+content involved, reconsider the use of these directives.
+
+The next couple of spreads we will demonstrate some example definitions. These
+placements are taken from one of the styles we made for typesetting a series of
+school math books which illustrations and tables all over the pages.
+
+First we fine tune the spacing around side floats and verbatim text.
+
+\startbuffer[setupa]
+\setupfloats
+  [sidespacebefore=none,
+   sidespaceafter=depth]
+
+\setuptyping
+  [margin=]
+\stopbuffer
+
+\typebuffer[setupa]
+
+The placements have rather verbose names. In this case the word \quote {edge} is
+used to identify bleeding floats (with an cut||off margin of 3mm). The \quote
+{text} floats are side floats positioned in the main text flow.
+
+\startbuffer[setupb]
+\definefloat [marginfigure]       [marginfigures]       [figure]
+\definefloat [middlemarginfigure] [middlemarginfigures] [figure]
+\definefloat [middlefigure]       [middlefigures]       [figure]
+\definefloat [textfigure]         [textfigures]         [figure]
+\definefloat [leftfigure]         [leftfigures]         [figure]
+\definefloat [rightfigure]        [rightfigures]        [figure]
+\definefloat [bleedfigure]        [bleedfigures]        [figure]
+\stopbuffer
+
+\typebuffer[setupa]
+
+Watch how we define fall backs for too wide content (\type
+{criterium} as well as use \type {maxwidth} to manipulate
+the placement of content that falls off the margins.
+
+The black rules are set up with:
+
+\startbuffer[setupc]
+\setupblackrules[color=tred,depth=0pt,height=1.5cm]
+\stopbuffer
+
+\typebuffer[setupc]
+
+\page[left]
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [marginfigure]
+  [criterium=.5\textwidth,
+   maxwidth=\rightmarginwidth,
+   default={outermargin,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemarginfigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemarginfigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemarginfigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemarginfigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemarginfigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemarginfigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemarginfigure{}{\blackrule[width=16cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [middlemarginfigure]
+  [minwidth=\rightmarginwidth,
+   criterium=\backspace,
+   location=middle,
+   default={outermargin,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemiddlemarginfigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemiddlemarginfigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemiddlemarginfigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemiddlemarginfigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemiddlemarginfigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemiddlemarginfigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placemiddlemarginfigure{}{\blackrule[width=16cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [middlefigure]
+  [default={here,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemiddlefigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemiddlefigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemiddlefigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemiddlefigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemiddlefigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placemiddlefigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+%\startbuffer
+%\placemiddlefigure{}{\blackrule[width=16cm]}
+%\stopbuffer
+%
+%\getbuffer \typebuffer
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [textfigure]
+  [criterium=.5\textwidth,
+   default={outer,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placetextfigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placetextfigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placetextfigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placetextfigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placetextfigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placetextfigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placetextfigure{}{\blackrule[width=16cm]}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [leftfigure]
+  [criterium=.5\textwidth,
+   default={left,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placeleftfigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placeleftfigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placeleftfigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placeleftfigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placeleftfigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placeleftfigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placeleftfigure{}{\blackrule[width=16cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [rightfigure]
+  [criterium=.5\textwidth,
+   default={right,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placerightfigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placerightfigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placerightfigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placerightfigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placerightfigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placerightfigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placerightfigure{}{\blackrule[width=16cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [bleedfigure]
+  [criterium=.5\textwidth,
+   leftmargindistance=-1mm,
+   rightmargindistance=-1mm,
+   default={backspace,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=16cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\startbuffer[series]
+
+\startbuffer
+\setupfloat
+  [bleedfigure]
+  [criterium=.5\textwidth,
+   leftmargindistance=-1mm,
+   rightmargindistance=-1mm,
+   default={cutspace,none}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=.25cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=.5cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=1cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=2cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=4cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=8cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\startbuffer
+\placebleedfigure{}{\blackrule[width=16cm]}
+\stopbuffer
+
+\getbuffer \typebuffer \flushsidefloats
+
+\stopbuffer
+
+{\getbuffer[setupa,setupb,setupc,series]} \page
+{\getbuffer[setupa,setupb,setupc,series]} \page
+
+\page
+
+\setupbackgrounds [text] [leftedge]    [background=]
+\setupbackgrounds [text] [rightedge]   [background=]
+\setupbackgrounds [text] [leftmargin]  [background=]
+\setupbackgrounds [text] [rightmargin] [background=]
+
+\stopchapter
+
+\stopcomponent

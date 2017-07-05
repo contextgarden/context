@@ -1,4 +1,4 @@
-% macros=mkvi
+% interface=english modes=screen
 
 % author    : Hans Hagen
 % copyright : PRAGMA ADE & ConTeXt Development Team
@@ -17,45 +17,34 @@
 %             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
 %             to users for testing, feedback and corrections.
 
-% \tex vs \type vs \syntax vs. \luatex
-% \em \it \/
+\startproduct details
 
-% "context --nodates --nocompression luatex" can be used for comparison
-% runs, not that we do it
+\environment details-environment
 
-% \enabledirectives[hyphenator.flatten]
-
-% \setupsynctex[state=start,method=max] % adds 5 pct overhead
-
-\environment luatex-style
-\environment luatex-logos
-
-\dontcomplain
-
-\startdocument
-  [status=beta,
-   version=1.06.0]
-
-\component luatex-titlepage
+\component details-frontpage
 
 \startfrontmatter
-    \component luatex-contents
-    \component luatex-introduction
+    \component details-introduction
+    \component details-contents
 \stopfrontmatter
 
 \startbodymatter
-    \component luatex-enhancements
-    \component luatex-modifications
-    \component luatex-lua
-    \component luatex-languages
-    \component luatex-fonts
-    \component luatex-math
-    \component luatex-nodes
-    \component luatex-callbacks
-    \component luatex-tex
-    \component luatex-graphics
-    \component luatex-fontloader
-    \component luatex-backend
+    \component details-snappingheads
+    \component details-pseudocolumns
+    \component details-textbackgrounds
+    \component details-tuningformulas
+    \component details-floatingaround
+    \component details-finetuningfloats
+    \component details-ornaments
+    \component details-gridtrickery
+    \component details-captiontrickery
 \stopbodymatter
 
-\stopdocument
+\startbackmatter
+  % \component details-index
+    \component details-colofon
+\stopbackmatter
+
+\component details-backpage
+
+\stopproduct

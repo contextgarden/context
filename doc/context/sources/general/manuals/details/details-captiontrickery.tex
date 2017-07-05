@@ -1,0 +1,290 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-captiontrickery
+
+\startchapter[title={Caption handling}]
+
+\start
+
+It's hard to predict what kind of caption placements users want. The amount of
+variation if large and thereby any system of specifying them will look complex.
+So, examples are the best way to show them.
+
+\startbuffer
+\setupcaption
+  [figure]
+  [location=bottom]
+\placefigure
+  [left]
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\fakewords{60}{80} \par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+% \setupfloats[grid=yes]
+% \setupfloats[grid=tolerant]
+\setupcaption
+  [figure]
+  [location=top]
+\placefigure
+  [left]
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\fakewords{60}{80} \par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In this document we typeset on a grid. For more complex cases and when a document
+is processed without any user intervention, this is often a bad idea because the
+snapper can decide to make sure that there is enough space above and below an
+element. You can however influence the snapper explicitly:
+
+\startbuffer
+\setupcaption
+  [figure]
+  [location=top]
+\placefigure
+  [left,line]
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\fakewords{60}{80} \par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Normally a side float plus caption has a normalized (strut) depth while also
+top skip gets applied. When one of the grid related options \type {height}, \type
+{line}, \type {depth}, \type {grid} or \type {halfline} is given the top skip
+correction is removed. The \type {grid} option removes the depth too. The \type
+{grid} option removes the depth while the \type {height} and \type {depth}
+options adds an extra amount of strut depth. The \type {depth} option also adds a
+line and \type {halfline} removes a line but adds strut height. Indeed this sounds
+complicated so best play with it a bit.
+
+Keep in mind that the snapper plays safe and therefore tends to add more space when
+needed. You can set a grid parameter that controls it:
+
+\starttyping
+\setupfloats[grid=tolerant]
+\stoptyping
+
+Currently this only applies to side floats but in the future we might support it
+for regular floats too.
+
+\startbuffer
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={left,high}]
+\placefigure
+  [left]
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\fakewords{60}{80} \par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={high,lefthanging}]
+\placefigure
+  [left]
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\fakewords{60}{80} \par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupcaption
+  [figure]
+  [width=4cm,align=flushleft,location={high,righthanging}]
+\placefigure
+  [right]
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\fakewords{60}{80} \par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupcaption
+  [figure]
+  [width=4cm,align=flushleft,location={high,rightmargin}]
+\placefigure
+  [right]
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\fakewords{60}{80} \par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The location of a caption is determined by the keywords \type {top}, \type
+{bottom} and for the side captions \type {high}, \type {middle}, \type {low},
+either or not in combination with \type {left}, \type {right}, \type
+{leftmargin}, \type {rightmargin}, {lefthanging} or \type {righthanging}.
+
+The next series of examples shows the regular (non||side) floats.
+
+\startbuffer
+\setupcaption
+  [figure]
+  [location={high,left}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={high,left}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={middle,left}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={low,left}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=right]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location=high]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=right]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={high,left}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+
+\setupfloat
+  [figure]
+  [location=left]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushleft, location={high,left}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=middle]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright, location={high,lefthanging}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=middle]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushleft,  location={high,righthanging}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=right]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushleft, location={high,rightmargin}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=left]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={high,leftmargin}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=middle]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushright,location={high,outermargin}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupfloat
+  [figure]
+  [location=middle]
+\setupcaption
+  [figure]
+  [width=4cm,align=flushleft, location={high,innermargin}]
+\placefigure
+  {}{\externalfigure[dummy][lines=2,width=4cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {innermargin} and \type {outermargin} are special cases. They adapt to
+the kind of page.
+
+\page \stop
+
+\stopchapter
+
+\stopcomponent

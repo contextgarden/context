@@ -1,0 +1,15 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\setupcolors[state=start]
+
+\starttext
+
+\startMPpage
+    loadfigure "detcow.mp" ;
+    refill currentpicture withcolor transparent(1,.5,.5red) ;
+    redraw currentpicture withcolor .5red ;
+\stopMPpage
+
+\stoptext

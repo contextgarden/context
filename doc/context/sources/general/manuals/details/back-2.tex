@@ -1,0 +1,99 @@
+\environment back-0
+
+\startuseMPgraphic{mpos:par:color}
+  for i=1 upto nofmultipars :
+    fill multipars[i] withcolor
+      if     multikind[i]="single" : "darkgray" ;
+      elseif multikind[i]="first"  : "red" ;
+      elseif multikind[i]="middle" : "green" ;
+      elseif multikind[i]="last"   : "blue" ;
+      else                         : "black" ;
+      fi ;
+  endfor ;
+\stopuseMPgraphic
+
+\setupindenting
+  [medium,first]
+
+\definecolumnset
+  [four]
+  [n=4,
+   distance=7.5mm]
+
+\definetextbackground
+  [test]
+  [location=text,
+   mp=mpos:par:color,
+   before=\blank,
+   after=\blank]
+
+\starttext
+
+\starttexdefinition test #1#2#3
+  \blank
+  \bgroup
+    \dontcomplain
+    \hangindent#1\relax
+    \hangafter #2\relax
+    \parindent #3\relax
+    \starttextbackground[test]%
+      \simulatewords[n=200,m=500,min=1,max=5,color=gray]%
+    \stoptextbackground
+    \par
+  \egroup
+  \blank
+\stoptexdefinition
+
+\startcolumnset[four]
+
+\startbuffer[a]
+\test  {2cm} { -2} { 5mm}
+\test  {2cm} { -2} { 0cm}
+\test  {2cm} { -2} {-5mm}
+
+\test  {2cm} { -5} { 5mm}
+\test  {2cm} { -5} { 0cm}
+\test  {2cm} { -5} {-5mm}
+
+\stopbuffer
+
+\startbuffer[b]
+\test {-1cm} { -2} { 5mm}
+\test {-1cm} { -2} { 0cm}
+\test {-1cm} { -2} {-5mm}
+
+\test {-1cm} { -5} { 5mm}
+\test {-1cm} { -5} { 0cm}
+\test {-1cm} { -5} {-5mm}
+\stopbuffer
+
+\startbuffer[c]
+\test { 1cm} {  2} { 5mm}
+\test { 1cm} {  2} { 0cm}
+\test { 1cm} {  2} {-5mm}
+
+\test { 1cm} {  5} { 5mm}
+\test { 1cm} {  5} { 0cm}
+\test { 1cm} {  5} {-5mm}
+\stopbuffer
+
+\startbuffer[d]
+\test {-1cm} {  2} { 5mm}
+\test {-1cm} {  2} { 0cm}
+\test {-1cm} {  2} {-5mm}
+
+\test {-1cm} {  5} { 5mm}
+\test {-1cm} {  5} { 0cm}
+\test {-1cm} {  5} {-5mm}
+\stopbuffer
+
+\dorecurse{2}{
+    \dorecurse{1}{\getbuffer[a]}
+    \dorecurse{1}{\getbuffer[b]}
+    \dorecurse{1}{\getbuffer[c]}
+    \dorecurse{1}{\getbuffer[d]}
+}
+
+\stopcolumnset
+
+\stoptext

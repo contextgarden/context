@@ -1,0 +1,687 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-textbackgrounds
+
+\start \setuphead [chapter] [after=] \startchapter[title={Backgrounds behind text}]
+
+\startbuffer[setup-a]
+\definetextbackground
+  [intro]
+  [backgroundcolor=infogray,
+   backgroundoffset=.25cm,
+   frame=off,
+   location=paragraph,
+   color=red]
+\stopbuffer
+
+\startbuffer[setup-b]
+\definetextbackground
+  [subintro]
+  [backgroundcolor=textgray,
+   backgroundoffset=0pt,
+   frame=off,
+   location=text,
+   color=blue]
+\stopbuffer
+
+\startbuffer[demo-a]
+\starttextbackground[intro]
+A rather common way to draw attention to a passage, is to add a
+background. In this chapter we will therefore discuss how to enhance your
+document with \starttextbackground [subintro] those colorful areas that either
+or not follow the shape of your paragraph. \stoptextbackground\ Be
+warned: this chapter has so many backgrounds that you might start to
+dislike them.
+\stoptextbackground
+\stopbuffer
+
+\getbuffer[setup-a,setup-b,demo-a]
+
+\blank
+
+In the previous paragraph we demonstrated two important features of the
+background handler: you can nest backgrounds and backgrounds can be tight or
+wide. Features like this will often be used in combination with others, like
+special section headers. The raw coding of the previous paragraph is therefore
+not representative.
+
+\typebuffer[demo-a]
+
+The outer background commands is defined as follows:
+
+\typebuffer[setup-a]
+
+Here, the \type {paragraph} option ensures that the background covers the width
+of the body text. The inner background is defined in a similar way, but this time
+we choose \type {text} location.
+
+\typebuffer[setup-b]
+
+In this document we use protruding characters (hanging punctuation) so we've
+chosen a rather large offset, one that also matches the rest of the page design.
+
+Those who are familiar with the way \TEX\ works will probably see what problems
+can occur with backgrounds like this. What happens for instance when we cross
+page boundaries, and how will more complicated paragraph shapes be handled?
+
+The current implementation tries to handle page breaks and paragraph shapes as
+good as possible. This works well in normal one||column mode as well as in
+columns.
+
+\startbuffer[setup-c]
+\definetextbackground [A] [backgroundcolor=infogray]
+\definetextbackground [B] [backgroundcolor=textgray]
+
+\setuptextbackground
+  [backgroundoffset=0pt,
+   offset=0pt,
+   frame=off,
+   location=text]
+\stopbuffer
+
+\getbuffer[setup-c]
+
+\startbuffer[demo-b]
+\placefigure[left]{}{\externalfigure[detcow][width=2cm]}
+
+\starttextbackground [A]
+  In this example, the paragraph shape is determined by the graphic placed
+  left of the text.
+    \starttextbackground [B]
+      This feature is implemented using the \type {\hangindent} and \type
+      {\hangafter} primitives, which means that we need to keep track of
+      their state. In addition, we need to handle the indentation directives
+      \type {\leftskip}, \type {\rightskip} and \type {\parindent}.
+    \stoptextbackground\
+  Because backgrounds end up in a different background overlay, nesting
+  them is no problem, and it is even possible to move them to the front
+  and back, as we will demonstrate later on. While the mechanism discussed
+  here will always be improved when we find border cases, the fundaments
+  it is built upon are quite stable.
+\stoptextbackground
+\stopbuffer
+
+{\setupalign[nothanging]\getbuffer[demo-b]\par}
+
+\typebuffer[demo-b]
+
+The backgrounds were defined as:
+
+\typebuffer[setup-c]
+
+\startbuffer[setup-d]
+\setuptextbackground [B] [backgroundcolor=darkgray,level=+2]
+\stopbuffer
+
+{\setupalign[nothanging]\getbuffer[setup-d,demo-b]\par}
+
+This time we moved the inner background a few levels up. By default they reside
+at \type {level=-1}. This way, by using a non transparent color, we can hide
+information.
+
+\typebuffer[setup-d]
+
+Unless you mess around too much with boxes, backgrounds work as expected in most
+situations. According to the Merriam||Webster on the authors laptop:
+
+\startbuffer
+\starttabulate[|l|p|l|]
+\NC background \NC \starttextbackground [A] the part of a
+    painting representing what lies behind objects is the
+    \starttextbackground [B] foreground \stoptextbackground
+    \stoptextbackground \NC one \NC \NR
+\TB [halfline]
+\NC foreground \NC \starttextbackground [A] the part of a
+    scene or representation that is nearest to and in front
+    of the \starttextbackground [B] spectator
+    \stoptextbackground \stoptextbackground \NC two \NC \NR
+\TB [halfline]
+\NC spectator \NC  \starttextbackground [A] one who looks
+    on or watches \stoptextbackground \NC three \NC \NR
+\stoptabulate
+\stopbuffer
+
+\getbuffer
+
+This is coded similar to normal running text. A table like this is in a way still
+part of the text flow. As floating body (see \in {table} [tab:back]) it can
+virtually end up everywhere. We add a frame to make clear where the boundaries are.
+
+\start
+
+    \setupfloat
+      [table]
+      [frame=on,framecolor=red,rulethickness=1pt]
+
+    \placetable
+      [here] [tab:back]
+      {} {\hsize.75\textwidth\getbuffer}
+
+    \definefloat
+        [mytable]
+        [table]
+
+    \setupfloat
+        [mytable]
+        [leftmargindistance=-\innermargintotal]
+
+    \placemytable
+        [left,high,low]
+        [tab:back-m]
+        {}
+        {\hsize.5\textwidth\getbuffer}
+
+    Keeping track of the state of a paragraph in a table in combination with
+    background is not entirely trivial. The current implementation evolved from
+    less clever ones and, unless you start doing complicated box manipulations
+    with the float content, works quite well. One reason why we made backgrounds
+    work in tables (and especially floating tables) is that is was needed for
+    typesetting books for primary and secundary education. In there, we want to
+    be able to hide the answers that students are supposed to fill in.
+
+    \flushsidefloats
+
+\stop
+
+In \in {figure} [fig:columns:1] you can see an advanced example of backgrounds
+running over columns. If you look carefully, you will notice that the background
+depends on the kind of background at hand:
+
+\startitemize[n,packed]
+\item the text starts and flows on
+\item the text flows on (or stands alone)
+\item the text flows on and ends
+\stopitemize
+
+This information is available when you want to draw your own backgrounds. Here
+the graphic was defined as follows:
+
+\startplacefigure [reference=fig:columns:1]
+    \startcombination[4*1]
+          {\externalfigure[back-4.pdf][page=1,width=\distributedhsize\textwidth\emwidth4]}{Page 1}
+          {\externalfigure[back-4.pdf][page=2,width=\distributedhsize\textwidth\emwidth4]}{Page 2}
+          {\externalfigure[back-4.pdf][page=3,width=\distributedhsize\textwidth\emwidth4]}{Page 3}
+          {\externalfigure[back-4.pdf][page=4,width=\distributedhsize\textwidth\emwidth4]}{Page 4}
+    \stopcombination
+\stopplacefigure
+
+\starttyping
+\startuseMPgraphic{mpos:par:color}
+  for i=1 upto nofmultipars :
+    fill multipars[i] withcolor
+      if     multikind[i]="single" : "darkgray" ;
+      elseif multikind[i]="first"  : "red" ;
+      elseif multikind[i]="middle" : "green" ;
+      elseif multikind[i]="last"   : "blue" ;
+      else                         : "black" ;
+      fi ;
+  endfor ;
+\stopuseMPgraphic
+\stoptyping
+
+This graphic is hooked into the background setup by setting the \type {mp}
+variable.
+
+\starttyping
+\definetextbackground
+  [shade]
+  [location=paragraph,
+   mp=mpos:par:color,
+   before=\blank,
+   after=\blank]
+\stoptyping
+
+A variant is the following. This time we use a shade:
+
+\starttyping
+\startuseMPgraphic{mpos:par:columnset:shade}
+  numeric h ;
+  for i=1 upto nofmultipars :
+    h := bbheight(p) ;
+    if multikind[i] = "single" :
+      fill multipars[i] topenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor boxfillcolor shadedinto .8white ;
+      fill multipars[i] bottomenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor .8white shadedinto boxfillcolor ;
+    elseif multikind[i] = "first" :
+      fill multipars[i]
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor boxfillcolor shadedinto .8white ;
+    elseif multikind[i] = "middle" :
+      fill multipars[i] topenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor boxfillcolor shadedinto .8white ;
+      fill multipars[i] bottomenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor .8white shadedinto boxfillcolor ;
+    elseif multikind[i] = "last" :
+      fill multipars[i]
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor .8white shadedinto boxfillcolor ;
+    fi ;
+  endfor ;
+\stopuseMPgraphic
+\stoptyping
+
+When we hook it into the background we get \in {figure} [fig:columns:2] as result:
+
+\starttyping
+\definetextbackground
+  [shade]
+  [location=paragraph,
+   backgroundcolor=shadecolor,
+   mp=mpos:par:columnset:shade,
+   before=\blank,
+   after=\blank]
+\stoptyping
+
+\startplacefigure [reference=fig:columns:2]
+    \startcombination[4*1]
+          {\externalfigure[back-5.pdf][page=1,width=\distributedhsize\textwidth\emwidth4]}{Page 1}
+          {\externalfigure[back-5.pdf][page=2,width=\distributedhsize\textwidth\emwidth4]}{Page 2}
+          {\externalfigure[back-5.pdf][page=3,width=\distributedhsize\textwidth\emwidth4]}{Page 3}
+          {\externalfigure[back-5.pdf][page=4,width=\distributedhsize\textwidth\emwidth4]}{Page 4}
+    \stopcombination
+\stopplacefigure
+
+The complexity of the backgrounds mechanism is partly due to the fact that we
+want to use arbitrary \METAPOST\ code to render the background. For instance, we
+want to have a proper shape so that not only the filled shape but also the drawn
+shape comes out right. You can compare this to a glyph in a font: when rendered
+filled the outline can be anything as it will not be drawn but when we use the
+outline we can run into overlaps and such. Where glyphs can use the odd|-|even
+filling methods, background can only use that for simple cases.
+
+When a background is rectangular it's all quite easy but as soon as some holes
+occur we need to do more work. Holes can be the result of a image placed next to
+the running text, or an image flushed at a page break or in the middle of a
+background. Paragraph shapes are another example. Backgrounds can cross page
+boundaries too. Yet another property is nesting and in such cases the shape is
+a bit more complex as we cross lines partially.
+
+In \MKII\ the background mechanism already was quite useable but it had some
+limitations. Calculating the background was mostly delegated to \METAPOST\ which
+is reasonable. In \MKIV\ some work is delegated to \LUA\ instead but that doesn't
+mean that the code is cleaner or easier to understand. So, to summarize, there
+are several cases that we need to take into account, like:
+
+\startitemize
+    \startitem
+        A background can run behind a paragraph in which case the start is
+        leftmost and end rightmost. In this case inserts (like floats) have to be
+        dealt with after the shape has been calculated.
+    \stopitem
+    \startitem
+        A background can be in|-|line (the \type {text} location variant) in
+        which case we need to follow the paragraph shape, if set. In that case we
+        have a mix of calculating the background shape and afterwards
+        compensating for inserts.
+    \stopitem
+    \startitem
+        A third case is tabulation and tables where we have dedicated regions to
+        deal with. When these float we need to make sure that the backgrounds are
+        adapted to the where they end up.
+    \stopitem
+    \startitem
+        Yet another case is in columns, where we hape multiple regions to deal
+        with.
+    \stopitem
+    \startitem
+        As mentioned, floats need special treatment and they can be part of the
+        page flow but also end up left or right of the text (either or not
+        shifted) but also in the margins, edges, back- or cutspace. Their
+        placement influences the way backgrounds are calculated so additional
+        information needs to travel with them.
+    \stopitem
+
+\stopitemize
+
+We distinguish between a paragraph background, which runs between the left and right skip
+areas and a text background which follows a shape. In \in {figure} [fig:columns:3] we see a
+test case with several such shapes.
+
+\startplacefigure [reference=fig:columns:3]
+    \startcombination[4*3]
+          {\externalfigure[back-2.pdf][page=1, width=\distributedhsize\textwidth\emwidth4]}{Page  1}
+          {\externalfigure[back-2.pdf][page=2, width=\distributedhsize\textwidth\emwidth4]}{Page  2}
+          {\externalfigure[back-2.pdf][page=3, width=\distributedhsize\textwidth\emwidth4]}{Page  3}
+          {\externalfigure[back-2.pdf][page=4, width=\distributedhsize\textwidth\emwidth4]}{Page  4}
+          {\externalfigure[back-2.pdf][page=5, width=\distributedhsize\textwidth\emwidth4]}{Page  5}
+          {\externalfigure[back-2.pdf][page=6, width=\distributedhsize\textwidth\emwidth4]}{Page  6}
+          {\externalfigure[back-2.pdf][page=7, width=\distributedhsize\textwidth\emwidth4]}{Page  7}
+          {\externalfigure[back-2.pdf][page=8, width=\distributedhsize\textwidth\emwidth4]}{Page  8}
+          {\externalfigure[back-2.pdf][page=9, width=\distributedhsize\textwidth\emwidth4]}{Page  9}
+          {\externalfigure[back-2.pdf][page=10,width=\distributedhsize\textwidth\emwidth4]}{Page 10}
+          {\externalfigure[back-2.pdf][page=11,width=\distributedhsize\textwidth\emwidth4]}{Page 11}
+          {\externalfigure[back-2.pdf][page=12,width=\distributedhsize\textwidth\emwidth4]}{Page 12}
+    \stopcombination
+\stopplacefigure
+
+In the case of side floats the following cases occur. Of course multiple such
+cases can follow each order so in practice we have to deal with an accumulation.
+
+\startlinecorrection[blank]
+\startMPcode
+    linejoin := linecap := butt ;
+
+    numeric u  ; u  := 1mm ;
+    numeric lw ; lw := u/2 ;
+
+    pickup pencircle scaled 2lw ;
+
+    def example (expr n) (text t) (text l) =
+        path b ; b := boundingbox image (
+            for i=t : draw ( 0u,i*2u) -- (20u,i*2u) ; endfor ;
+            for i=l : draw ( 0u,i*2u) -- (20u,i*2u) ; endfor ;
+        ) ;
+        picture p ; p := image (
+            for i=t : draw ( 0u,i*2u) -- (20u,i*2u) ; endfor ;
+            for i=l : draw (11u,i*2u) -- (20u,i*2u) ; endfor ;
+        ) ;
+        setbounds p to b ;
+        path q ; q := unitsquare xysized(10u,10u) shifted (0,4u) ;
+        draw image (
+            fill boundingbox p leftenlarged -lw rightenlarged -lw withcolor "blue" ;
+            draw p withcolor .5white ;
+            fill q withcolor "red"  ;
+            draw textext("\bf " & decimal n) shifted (center q) withcolor white ;
+        ) shifted ((n-1)*30u,0) ;
+    enddef ;
+
+    example (1) (1)   (2,3,4)       ;
+    example (2) (1,8) (2,3,4,5,6,7) ;
+    example (3) (8)   (5,6,7)       ;
+    example (4) ()    (3,4,5,6)     ;
+
+    currentpicture := currentpicture ysized(3*LineHeight- StrutDepth) ;
+
+\stopMPcode
+\stoplinecorrection
+
+As often in \TEX\ coming up with a solution is not a the problem but interference
+is. You can cook up a solution for one case that fails in another. Backgrounds
+fall into this category, as do side floats. In the next pages we will demonstrate
+a few cases. In practice you can probably always come up with something that
+works out well, but in an automated workflow (like unattended \XML\ to \PDF\
+conversion) you can best play safe. We show some examples on the next pages.
+
+\blank
+
+\definetextbackground
+  [demobg]
+  [backgroundcolor=blue,
+   color=white,
+   frame=off,
+   location=paragraph]
+
+\setupfloatcaption
+  [color=black]
+
+\definesimulatewords
+  [demo]
+  [n=50,
+   m=\simulatewordsparameter{n},
+   min=1,
+   max=5,
+   color=text,
+   line=yes,
+   random=100]
+
+\startbuffer
+\placefigure
+  [left]
+  {case 1}
+  {\blackrule[width=12cm,height=1cm,color=red]}
+\simulatewords[demo][n=10]
+\starttextbackground[demobg]
+    \simulatewords[demo][n=30]
+\stoptextbackground
+\flushsidefloats
+
+\blank
+
+\starttextbackground[demobg]
+    \simulatewords[demo][n=40]
+    \placefigure
+      [left]
+      {case 2}
+      {\blackrule[width=12cm,height=1cm,color=red]}
+    \simulatewords[demo][n=40]
+\stoptextbackground
+\flushsidefloats
+
+\blank
+
+\placefigure
+  [left]
+  {case 3}
+  {\blackrule[width=4cm,height=15mm,color=red]}
+\starttextbackground[demobg]
+    \simulatewords[demo][n=40]
+\stoptextbackground
+\simulatewords[demo][n=40]
+\flushsidefloats
+
+\blank
+
+\simulatewords[demo][n=35]
+\placefigure
+  [left]
+  {case 4}
+  {\blackrule[width=4cm,height=1cm,color=red]}
+\simulatewords[demo][n=20]
+\starttextbackground[demobg]
+    \simulatewords[demo][n=25]
+\stoptextbackground
+\simulatewords[demo][n=40]
+\flushsidefloats
+
+\blank
+
+\stopbuffer
+
+\start \setupwhitespace[none] \getbuffer \stop \blank
+
+The previous examples were typeset with:
+
+\typebuffer
+
+Regular (page flow) floats are a different story. Here we have the problem that a
+float might be postpones because there is no room on the current page and they
+are moved forward (which is why they're called float). Again we show some
+examples.
+
+% \page
+
+\startbuffer[sample]
+One problem introduced by the internet is that one can view music online. Well,
+it's actually not really a problem as it is fun to do, but it does interfere with
+development of code: one can enter distraction mode quite easily.
+\stopbuffer
+
+\startbuffer
+\starttextbackground[demobg]
+    \par \getbuffer[sample] \par
+    \placefigure{}{\blackrule[width=4cm,height=1cm,color=red]}
+    \par \getbuffer[sample] \par
+    \placefigure{}{\blackrule[width=4cm,height=3cm,color=red]}
+    \par \getbuffer[sample] \par
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \par \getbuffer[sample] \par
+\stoptextbackground
+\stopbuffer
+
+\blank \getbuffer \blank
+
+The input is:
+
+\typebuffer
+
+A combination of both background avoiding mechanisms is shown on the next page
+(we flush a few more grapohics so that we cross a page boundary):
+
+% \page
+
+\startbuffer
+\starttextbackground[demobg]
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \par \input ward \par
+    \placefigure[left]{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \par \input ward \par
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \par \input ward \par
+    \placefigure{}{\blackrule[width=4cm,height=2cm,color=red]}
+    \par \input ward \par
+\stoptextbackground
+\stopbuffer
+
+\blank \getbuffer \blank
+
+This is the result from:
+
+\typebuffer
+
+You can control the interaction between backgrounds and floars with the \type
+{freeregion} parameter.
+
+\startbuffer
+\starttextbackground[demobg]
+    \simulatewords[demo][n=40]
+    \startplacefigure
+      [location=left,
+       title={free}]
+        \blackrule[width=12cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+    \startplacefigure
+      [location=left,
+       title={non|-|free},
+       freeregion=no,
+       color=textcolor]
+        \blackrule[width=12cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+    \startplacefigure
+      [location=here,
+       title={free}]
+        \blackrule[width=12cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+    \startplacefigure
+      [location=here,
+       title={non|-|free},
+       freeregion=no,
+       color=textcolor]
+        \blackrule[width=12cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+\stoptextbackground
+\stopbuffer
+
+\typebuffer
+
+The next pages show the result, first with some tracing enabled sop that you
+can see what gets freed. This visual effect is enabled with:
+
+\starttyping
+\enabletrackers[floats.freeregion]
+\stoptyping
+
+We now move to the next page.
+
+\page
+    \getbuffer
+\page
+    \enabletrackers[floats.freeregion]
+    \getbuffer
+    \disabletrackers[floats.freeregion]
+\page
+
+We have some control over side float placement and of course that will interfere
+with backgrounds. Say that we have this:
+
+\startbuffer
+\definefloat
+  [demofigureleft]
+  [figure]
+  [default=left,
+  margin=1cm,
+   leftmargindistance=2cm,
+   rightmargindistance=2cm]
+
+\definefloat
+  [demofigureright]
+  [demofigureleft]
+  [default=right]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Combined with the following we get the result on the next pages.
+
+\startbuffer
+\starttextbackground[demobg]
+    \startplacefloat[figure][location=left]
+        \blackrule[width=12cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+    \blank
+    \startplacefloat[figure][location=right]
+        \blackrule[width=12cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+    \blank
+    \startplacefloat[demofigureleft]
+        \blackrule[width=10cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+    \blank
+    \startplacefloat[demofigureright]
+        \blackrule[width=10cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+    \startplacefloat[figure] % [freeregion=no]
+        \blackrule[width=12cm,height=1cm,color=red]
+    \stopplacefigure
+    \simulatewords[demo][n=40]
+\stoptextbackground
+\stopbuffer
+
+\typebuffer
+
+\page
+
+\start
+    \enabletrackers[floats.freeregion]
+    \setupwhitespace[none]
+    \getbuffer
+    \disabletrackers[floats.freeregion]
+\stop
+
+\page
+
+\start
+    \setupwhitespace[none]
+    \getbuffer
+\stop
+
+\page
+
+\stop \stopchapter
+
+\stopcomponent

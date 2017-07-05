@@ -1,0 +1,34 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-backpage
+
+\page[right]
+
+\startpagemakeup[doublesided=no,pagestate=stop,page=no]
+    \startMPcode
+        StartPage ;
+            fill Page withcolor \MPcolor{blue} ; % .5blue ;
+        StopPage ;
+    \stopMPcode
+\stoppagemakeup
+
+\startpagemakeup[doublesided=no,pagestate=stop,page=no]
+    \startMPcode
+        StartPage ;
+            path p[] ; picture q[] ;
+            p[1] := Page ;
+            p[2] := Page xscaled .6 shifted (.2PaperWidth,0) ;
+            q[1] := textext.raw("\color[white]{CONTEXT}")     xsized(.6PaperWidth) ;
+            q[2] := textext.raw("\color[white]{\currentdate}") xsized(.6PaperWidth) ;
+            fill p[1] withcolor \MPcolor{red} ;  % .5red
+            fill p[2] withcolor \MPcolor{blue} ; % .5blue
+            q[2] := q[2] shifted (0,-1.5bbheight(q[2])) ;
+            draw q[1] shifted (.2PaperWidth,.15PaperHeight) ;
+            draw q[2] shifted (.2PaperWidth,.15PaperHeight) ;
+        StopPage ;
+    \stopMPcode
+\stoppagemakeup
+
+\stopcomponent

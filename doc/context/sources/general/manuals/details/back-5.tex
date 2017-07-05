@@ -1,0 +1,64 @@
+\environment back-0
+
+\startuseMPgraphic{mpos:par:columnset:shade}
+  numeric h ;
+  for i=1 upto nofmultipars :
+    h := bbheight(p) ;
+    if multikind[i] = "single" :
+      fill multipars[i] topenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor boxfillcolor shadedinto .8white ;
+      fill multipars[i] bottomenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor .8white shadedinto boxfillcolor ;
+    elseif multikind[i] = "first" :
+      fill multipars[i]
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor boxfillcolor shadedinto .8white ;
+    elseif multikind[i] = "middle" :
+      fill multipars[i] topenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor boxfillcolor shadedinto .8white ;
+      fill multipars[i] bottomenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor .8white shadedinto boxfillcolor ;
+    elseif multikind[i] = "last" :
+      fill multipars[i]
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor .8white shadedinto boxfillcolor ;
+    fi ;
+  endfor ;
+\stopuseMPgraphic
+
+\definecolumnset
+  [four]
+  [n=4,
+   distance=5mm]
+
+\definetextbackground
+  [shade]
+  [location=paragraph,
+   backgroundcolor=shadecolor,
+   mp=mpos:par:columnset:shade,
+   before=\blank,
+   after=\blank]
+
+\starttext
+
+  \startcolumnset[four]
+
+    \dorecurse{15} {
+      \starttextbackground[shade]
+        \simulatewords[n=10,m=500,min=1,max=5,color=text]%
+      \stoptextbackground
+    }
+
+  \stopcolumnset
+
+\stoptext

@@ -4,8 +4,6 @@
 
 \startcomponent workflows-xml
 
-\logo [SYNCTEX]  {Sync\TeX}
-
 \startchapter[title=\SYNCTEX]
 
 \startsection[title=Introduction]
@@ -146,6 +144,28 @@ back to the source at all.
 
 \stopsection
 
+\startsection[title=Methods]
+
+Contrary to the native \SYNCTEX\ we only deal with text which gives reasonable
+efficient output. If you enable tracing (see next section) you can what has
+become clickable. Instead of words you can also work with ranges, which not only
+gives less runtime but also much smaller \type {.synctex} files. Just try:
+
+\starttyping
+\setupsynctex[state=start,method=min]
+\stoptyping
+
+to get words clickable and
+
+\starttyping
+\setupsynctex[state=start,method=max]
+\stoptyping
+
+to get the more efficient ranges. The overhead for \type {min} is some 10 percent
+while \type {max} slows down around 5 percent.
+
+\stopsection
+
 \startsection[title=Tracing]
 
 In case you want to see what gets synced you can enable a tracker:
@@ -161,12 +181,12 @@ trackers only make sense for developers.
 \enabletrackers[system.synctex.xml]
 \stoptyping
 
-At the cost of extra overhead, the next (experimental) directive can be used when
-the accuracy is not optimal.
-
-\starttyping
-\enabledirectives[system.synctex.details]
-\stoptyping
+% At the cost of some extra overhead, the next (experimental) directive can be used
+% when the accuracy is not optimal.
+%
+% \starttyping
+% \enabledirectives[system.synctex.details]
+% \stoptyping
 
 \stopsection
 

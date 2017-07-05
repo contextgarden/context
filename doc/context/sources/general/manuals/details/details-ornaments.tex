@@ -1,0 +1,585 @@
+% language=uk
+
+\environment details-environment
+
+\startcomponent details-ornaments
+
+\startchapter[title={Ornaments everywhere}]
+
+The background mechanisms present in \CONTEXT\ have evolved over time and with
+computers becoming faster, you can expect new functionality to show up and
+existing functionality to start using this technology. A simple background
+consist of a colored area. Many commands accept settings like:
+
+\starttyping
+...[background=color,backgroundcolor=red,backgroundoffset=3pt]
+\stoptyping
+
+Instead of such an area you can define one or more so called
+overlays:
+
+\starttyping
+\defineoverlay[one][...]
+\defineoverlay[two][...]
+
+...[background={one,two}]
+\stoptyping
+
+The name overlay comes from the fact that you stack them on top of each other. A
+special overlay is \type {foreground}, and deep down in \CONTEXT\ there are more
+predefined overlays.
+
+In the \METAFUN\ manual you will find example of usage, so here we stick to a
+simple code snippet for testing this functionality:
+
+\startbuffer
+\defineoverlay[one][\green A]
+\defineoverlay[two][\red   B]
+
+\framed[background=one]       {1}
+\framed[background={one,two}] {1---2}
+\stopbuffer
+
+\typebuffer
+
+The rather ugly result is:
+
+\startlinecorrection
+\hbox{\getbuffer}
+\stoplinecorrection
+
+You can construct overlays by using \TEX\ boxing primitives or commands like
+\type {\framed}. Alternatively you can use another mechanism: layers. Layers
+collect content and flush that when asked, for instance when an overlay is
+constructed. Layers can be independent of a page, or bound to a specific page
+number, left or right hand pages. Here we look at independent layers.
+
+All these mechanisms are fine tuned for cooperating with the output routine (the
+part of \TEX\ that deals with composing pages) and are well interact quite well
+with \METAPOST\ graphics. Details of usage and tricks are revealed in this manual
+as well as in styles that come with \CONTEXT. In this chapter we will apply
+layers to graphics. For this we need a few setups, like:
+
+\starttyping
+\setupbackgrounds
+  [page]
+  [background=pagegraphics]
+\stoptyping
+
+Here we have set up the page background to use an overlay called \type
+{pagegraphics}. However, instead of an overlay, we will use a layer. This layer
+will collect content that goes into the page background. Whenever a layer is
+defined, an overlay is automatically defined as well.
+
+\startbuffer
+\definelayer
+  [pagegraphics]
+  [x=-2mm,
+   y=-2mm,
+   width=\paperwidth,
+   height=\paperheight]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When you fill a layer with content, you can influence the placement with the
+\type {x} and \type {y} parameters as well as \type {hoffset} and \type
+{voffset}, whichever you prefer. The reference point and alignment are set with
+\type {corner} and \type {location}.
+
+Live can be made easier by using presets, especially for our intended usage. The
+following presets are predefined.
+
+\startbuffer
+\definelayerpreset
+  [lefttop]     [corner={left,top},    location={right,bottom}]
+\definelayerpreset
+  [righttop]    [corner={right,top},   location={left,bottom}]
+\definelayerpreset
+  [leftbottom]  [corner={left,bottom}, location={right,top}]
+\definelayerpreset
+  [rightbottom] [corner={right,bottom},location={left,top}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because for this layer we have also preset the \type {x} and \type {y}, those
+corners are laying a few millimeters outside the page area. We have preset the
+size as well, otherwise all corners would end up in the top left corner.
+
+We will now fill this layer. Because the layer is hooked into the page, it will
+be flushed when the page is constructed. After the page is written to the output
+file, the layer is emptied, unless its \type {state} is set to \type {repeat}.
+
+\startbuffer
+\setlayer [extras] [preset=lefttop]     {\externalfigure[hacker]}
+\setlayer [extras] [preset=righttop]    {\externalfigure[hacker]}
+\setlayer [extras] [preset=leftbottom]  {\externalfigure[hacker]}
+\setlayer [extras] [preset=rightbottom] {\externalfigure[hacker]}
+\stopbuffer
+
+\testpage[5] \typebuffer \getbuffer
+
+Once you got the picture of layering, you will start using this mechanism for all
+kind of tasks. Instead of putting layers in a background, you can also directly
+place them, by using one of the two (equivalent) commands:
+
+\starttyping
+\composedlayer{identifier}
+\placelayer[identifier]
+\stoptyping
+
+Layer are quite convenient for defining title pages, colophons, and special
+section heads, especially in combination with \type {\framed}.
+
+On top of the layer mechanism we have build a few more mechanisms, like
+ornaments. You can use ornaments to annotate graphics in such a way that the
+dimensions stay unchanged.
+
+\startbuffer
+\defineornament
+  [affiliation]
+  [rotation=90,corner={right,bottom},location={right,top},
+   hoffset=-.25ex]
+  [frame=on,background=color,backgroundcolor=red,offset=0pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The negative offset will overlay the text outside the graphic. The meaning of the
+sign of coordinates and offsets depends on the corner. \in {Figure} [fig:affi-1]
+shows the result. We have put the reference point in the right bottom corner. The
+ornament is anchored at the right top corner of the dot you can picture at the
+reference point. The ornament is shifted .25ex outwards.
+
+\starttyping
+\placefigure
+  {}
+  {\affiliation{graphic}{\externalfigure[hacker][width=3cm]}}
+\stoptyping
+
+\placefigure
+  [here] [fig:affi-1] {Number 1}
+  {\affiliation{graphic}{\externalfigure[hacker][width=3cm]}}
+
+There are two ways to handle the placement. Alternative \type {a} will change the
+dimensions of the graphic according to the size of the ornament, while
+alternative \type {b} acts as a pure overlay. In \in {figure} [fig:affi-2] the
+ornament is not taken into account when calculating the dimensions of the
+graphic. This is often the preferred placement, because this way the (often
+small) ornament will not it will not spoil visual alignment of similar graphics.
+
+\startbuffer
+\defineornament
+  [affiliation]
+  [rotation=90,corner={right,bottom},location={right,top},
+   hoffset=-.25ex,alternative=b]
+  [frame=on,background=color,backgroundcolor=red,offset=0pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\placefigure
+  [here] [fig:affi-2] {Number 2}
+  {\affiliation{graphic}{\externalfigure[hacker][width=3cm]}}
+
+A positive offset will place the ornament on top of the graphic (see \in {figure}
+[fig:affi-3]).
+
+\startbuffer
+\defineornament
+  [affiliation]
+  [rotation=90,corner={right,bottom},location={left,top},
+   hoffset=.25ex,voffset=.25ex,alternative=a]
+  [background=color,style=\ss\tfxx,backgroundcolor=white,offset=0pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\placefigure
+  [here] [fig:affi-3] {Number 3}
+  {\affiliation{graphic}{\externalfigure[hacker][width=3cm]}}
+
+You need to play a bit with this mechanism in order to get a feeling for what the
+parameters do.
+
+\startbuffer
+\defineornament
+  [affiliation]
+  [rotation=90,corner={right,bottom},location={left,top},
+   hoffset=.25ex,voffset=.25ex,alternative=b]
+  [background=color,style=\ss\tfxx,backgroundcolor=white,offset=0pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\placefigure
+  [here] [fig:affi-4] {Number 4}
+  {\affiliation{graphic}{\externalfigure[hacker][width=3cm]}}
+
+Because the text is normally typeset quite small, you'd better use a font that
+can be scaled down a lot.
+
+\startbuffer
+\definefont[AffiliationFont][Sans sa .25]
+
+\defineornament
+  [SomeAffiliation]
+  [rotation=90,corner={right,bottom},location={right,top},
+   hoffset=-.125ex,alternative=b]
+  [style=AffiliationFont,offset=0pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This affiliation is used as:
+
+\startbuffer
+\placefigure
+  {Affiliations normally are typeset pretty small.}
+  {\SomeAffiliation
+     {author: Hester De Weert}
+     {\externalfigure[hacker]}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Ornaments are implemented in terms of layers and collectors. A few examples
+demonstrate how these can be used.
+
+\startbuffer
+\layeredtext
+  [corner={right,bottom},location={left,top}]
+  [background=color,backgroundcolor=white,offset=0pt]
+  {graphic}
+  {\externalfigure[hacker][width=3cm]}
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\layeredtext
+  [rotation=90,corner={right,bottom},location={right,top}]
+  [frame=on,offset=0pt]
+  {graphic}
+  {\externalfigure[hacker][width=3cm]}
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\layeredtext
+  [rotation=90,corner={left,bottom},location={left,top}]
+  [frame=on,offset=0pt]
+  {graphic}
+  {\externalfigure[hacker][width=3cm]}
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\collectedtext
+  [corner={right,bottom},location={left,top}]
+  [background=color,backgroundcolor=white,offset=0pt]
+  {graphic}
+  {\externalfigure[hacker][width=3cm]}
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\collectedtext
+  [rotation=90,corner={right,bottom},location={right,top}]
+  [frame=on,offset=0pt]
+  {graphic}
+  {\externalfigure[hacker][width=3cm]}
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\collectedtext
+  [rotation=90,corner={left,bottom},location={left,top}]
+  [frame=on,offset=0pt]
+  {graphic}
+  {\externalfigure[hacker][width=3cm]}
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+There are several methods to construct title pages, headers, and other
+compositions. Of course there are the low level box constructors like \type
+{\hbox}, \type {\vbox} and positioning primitives like \type {\hskip}, \type
+{\hfill} and alike.
+
+Another option is to fall back on the low level box macros in the \CONTEXT\
+support file \type {supp-box} or the higher level \type {\framed} macro. You can
+use \type {\framed} nested and by cleverly using the offsets and dimensions you
+can do a lot.
+
+Layers are another means. You can or instance construct a title page in the
+following way:
+
+\starttyping
+\definelayer
+  [titlepage]
+  [width=\textwidth,
+   height=\textheight]
+
+\setlayer
+  [titlepage]
+  [preset=righttop,location={left,bottom},y=1cm,x=1cm]
+  {\definedfont[Regular at 60pt]Welcome}
+
+\setlayer
+  [titlepage]
+  [preset=rightbottom,location={right,top},y=2cm,x=2cm]
+  {\definedfont[Regular at 30pt]By Me}
+\stoptyping
+
+This just fills the layer. Placement is done with:
+
+\starttyping
+\startstandardmakeup
+  \flushlayer[titlepage]
+\stopstandardmakeup
+\stoptyping
+
+or alternatively:
+
+\starttyping
+\setupbackgrounds[text][background=titlepage]
+\startstandardmakeup \stopstandardmakeup
+\setupbackgrounds[text][background=]
+\stoptyping
+
+Another way to collect content is to use a collector. A collector starts out
+empty with:
+
+\startbuffer
+\definecollector[test][state=repeat]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can now stepwise fill this collector. For educational purposes we've turn of
+tracing so that you can see what the anchor points.
+
+\startbuffer
+\setcollector[test]
+  [location={right,bottom}]
+  {\externalfigure[detcow][frame=on,width=3cm]}
+\stopbuffer
+
+\typebuffer {\traceboxplacementtrue \getbuffer}
+
+\startlinecorrection[blank] \flushcollector[test] \stoplinecorrection
+
+\startbuffer
+\setcollector[test]
+  [corner={right,bottom},location={left,top}]
+  {\framed[background=color,backgroundcolor=tyellow]{this is a cow}}
+\stopbuffer
+
+\typebuffer {\traceboxplacementtrue \getbuffer}
+
+\startlinecorrection[blank] \flushcollector[test] \stoplinecorrection
+
+\startbuffer
+\setcollector[test]
+  [corner={right,bottom},location={right,bottom}]
+  {\framed[background=color,backgroundcolor=tblue]{that's for sure}}
+\stopbuffer
+
+\typebuffer {\traceboxplacementtrue \getbuffer}
+
+\startlinecorrection[blank] \flushcollector[test] \stoplinecorrection
+
+\startbuffer
+\setcollector[test]
+  [corner={left,top},location={left,top}]
+  {\framed[background=color,backgroundcolor=tgreen]{a dutch cow}}
+\stopbuffer
+
+\typebuffer {\traceboxplacementtrue \getbuffer}
+
+\startlinecorrection[blank] \flushcollector[test] \stoplinecorrection
+
+\startbuffer
+\setcollector[test]
+  [corner=middle,
+   location=middle]
+  {\framed[background=color,backgroundcolor=tred]{nearly done}}
+\stopbuffer
+
+\typebuffer {\traceboxplacementtrue \getbuffer}
+
+\startlinecorrection[blank] \flushcollector[test] \stoplinecorrection
+
+In addition to the parameters shown here, you can also provide additional ones:
+\type {x}, \type {y}, \type {offset}, \type {hoffset} and \type {voffset} for
+positioning and \type {rotation} for (as expected) rotating the content in steps
+of 90 degrees. As with layers, the coordinates and offsets can be used
+intermixed.
+
+\startbuffer
+\setcollector[test]
+  [hoffset=4cm,
+   voffset=-1cm,
+   corner=middle,
+   location=middle]
+  {\framed{now}}
+\stopbuffer
+
+\typebuffer {\traceboxplacementtrue \getbuffer}
+
+\startlinecorrection[blank] \flushcollector[test] \stoplinecorrection
+
+We can show the intermediate results because we have set the state of this
+collector to repeat. In this case you need to erase the content manually, using:
+
+\startbuffer
+\resetcollector[test]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The chapter titles of this document are (as usual in a \CONTEXT\ document)
+typeset by the \type {\chapter} macro. When thinking about implementing a non
+standard head, those familiar with \CONTEXT's head macros will probably first
+think of using one of the hooks, like:
+
+\starttyping
+\setuphead[chapter][command=\MyChapterHead]
+\stoptyping
+
+Here we have followed a different approach. First we set up the chapter head. The
+\type {empty} directive instructs \CONTEXT\ not to place the head itself, but
+still to include the associated data in the text stream. This means that we will
+not see a chapter title, but that there will be an entry in the table of
+contents, that references will be set up, that so called marks will be available,
+etc.
+
+\starttyping
+\setuphead
+  [chapter]
+  [placehead=empty,
+   header=chapter,
+   style=\BigText,
+   numberstyle=\BigNumber]
+\stoptyping
+
+The \type {header} parameters instructs the head handler to mark this page as
+special with regards to header texts. This text is set up as follows:
+
+\starttyping
+\definetext
+  [chapter]
+  [header]
+  [\setups{chapter}]
+  []
+\stoptyping
+
+The setups are just series of typesetting instructions. For the sake of
+readability, we have split them up.
+
+\starttyping
+\startsetups chapter
+  \setups[chapter:title]
+  \setups[chapter:number]
+  \setups[chapter:finish]
+\stopsetups
+\stoptyping
+
+The setups will use a dedicated layer for the chapter title:
+
+\starttyping
+\definelayer
+  [chapter]
+  [width=\dimexpr\makeupwidth+\cutspace\relax,
+   height=\headerheight]
+\stoptyping
+
+The following code uses a macro \type {\setlayerframed}. This is a combination
+between \type {\setlayer} and \type {\framed}. We use two placement macros to
+typeset the title and number. When doing so, we need to take care of both
+numbered chapters and unnumbered titles.
+
+\starttyping
+\startsetups chapter:title
+
+  \setlayerframed
+    [chapter]
+    [x=\dimexpr\makeupwidth+\cutspace\relax,location={left,bottom}]
+    [height=\headerheight,
+     foregroundcolor=white,
+     background=color,
+     backgroundcolor=blue,
+     frame=off,
+     offset=none,
+     align={right,lohi}]
+    {\hbox spread .5\cutspace
+       {\hss
+        \doiftextelse{\placeheadtext[chapter]}%
+          {\placeheadtext[chapter]}%
+          {\placeheadtext[title]}%
+        \hss}\space
+     \vskip.5cm}
+
+\stopsetups
+\stoptyping
+
+Definitions like these may look complicated but in practice you will construct
+them piece|-|wise.
+
+\starttyping
+\startsetups chapter:number
+
+  \setlayerframed
+    [chapter]
+    [x=\dimexpr\makeupwidth+\cutspace\relax,
+     y=\vsize,
+     location={left,bottom}]
+    [width=\dimexpr\cutspace-\rightmargindistance\relax,
+     height=\dimexpr\cutspace-\rightmargindistance\relax,
+     foregroundcolor=white,
+     background=color,
+     backgroundcolor=red,
+     frame=off,
+     offset=none,
+     align={middle,lohi}]
+    {\hbox to \hsize
+       {\hskip.5cm\hss
+        \doifmode{*bodypart}{\placeheadnumber[chapter]}%
+        \hss}}
+
+\stopsetups
+\stoptyping
+
+The finishing touch is just a dummy frame with the chapter background. We could
+have used the header text background instead.
+
+\starttyping
+\startsetups chapter:finish
+
+  \framed
+    [width=\makeupwidth,
+     height=\headerheight,
+     background=chapter,
+     frame=off]
+    {}
+
+\stopsetups
+\stoptyping
+
+As the title of this manual suggests: it's in the details. Most of our time is
+spent in optimizing spacing issues. If you're designing the layout yourself, for
+a large part you can fall back on the consistent spacing provided by \TEX, i.e.\
+think in terms of \type {em}'s, \type {ex}'s and fractions or multiples of \type
+{\bodyfontsize}, as well as base you're dimensions on those provided by the
+layout. When dealing with translating a \DTP\ layout into something \TEX,
+definitions like the above will often look more messy.
+
+\stopchapter
+
+\stopcomponent
