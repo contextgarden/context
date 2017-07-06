@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/05/17 23:01:18
+-- merge date  : 07/06/17 23:47:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -3761,6 +3761,21 @@ function number.formatted(n,sep1,sep2)
   else
     return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
   end
+end
+local p=Cs(
+    P("-")^0*(P("0")^1/"")^0*(1-P("."))^0*(P(".")*P("0")^1*P(-1)/""+P(".")^0)*P(1-P("0")^1*P(-1))^0
+  )
+function number.compactfloat(n,fmt)
+  if n==0 then
+    return "0"
+  elseif n==1 then
+    return "1"
+  end
+  n=lpegmatch(p,format(fmt or "%0.3f",n))
+  if n=="." or n=="" or n=="-" then
+    return "0"
+  end
+  return n
 end
 local zero=P("0")^1/""
 local plus=P("+")/""
@@ -20926,7 +20941,7 @@ local function show(n,what,nested,symbol)
 end
 local function showsub(n,what,where)
   report_injections("begin subrun: %s",where)
-  for n in traverse_id(glyph_code,n) do
+  for n in traverse_char(n) do
     showchar(n,where)
     show(n,what,where," ")
   end
@@ -21802,7 +21817,7 @@ local function injectspaces(head)
     threshold,
     factor=getthreshold(font)
   end
-  for n in traverse_id(glue_code,tonut(head)) do
+  for n in traverse_char(tonut(head)) do
     local prev,next=getspaceboth(n)
     local prevchar=prev and ischar(prev)
     local nextchar=next and ischar(next)
@@ -21865,6 +21880,7 @@ local function injectspaces(head)
   return head,true
 end
 function injections.handler(head,where)
+triggers={}
   if triggers then
     head=injectspaces(head)
   end

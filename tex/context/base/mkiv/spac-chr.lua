@@ -48,6 +48,7 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
 local traverse_id        = nuts.traverse_id
+local traverse_char      = nuts.traverse_char
 
 local tasks              = nodes.tasks
 
@@ -149,7 +150,8 @@ function characters.replacenbsp(head,original)
 end
 
 function characters.replacenbspaces(head)
-    for current in traverse_id(glyph_code,head) do
+ -- for current in traverse_id(glyph_code,head) do
+    for current in traverse_char(head) do
         if getchar(current) == 0x00A0 then
             local h = nbsp(head,current)
             if h then
@@ -283,14 +285,38 @@ local methods = {
 
 characters.methods = methods
 
-function characters.handler(head) -- todo: use traverse_id
+-- function characters.handler(head) -- todo: use traverse_id
+--     head = tonut(head)
+--     local current = head
+--     local done = false
+--     while current do
+--         local char, id = isglyph(current)
+--         if char then
+--             local next   = getnext(current)
+--             local method = methods[char]
+--             if method then
+--                 if trace_characters then
+--                     report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
+--                 end
+--                 local h = method(head,current)
+--                 if h then
+--                     head = remove_node(h,current,true)
+--                 end
+--                 done = true
+--             end
+--             current = next
+--         else
+--             current = getnext(current)
+--         end
+--     end
+--     return tonode(head), done
+-- end
+
+function characters.handler(head)
     head = tonut(head)
-    local current = head
-    local done = false
-    while current do
-        local char, id = isglyph(current)
+    for current in traverse_char(head) do
+        local char = getchar(current)
         if char then
-            local next   = getnext(current)
             local method = methods[char]
             if method then
                 if trace_characters then
@@ -302,9 +328,6 @@ function characters.handler(head) -- todo: use traverse_id
                 end
                 done = true
             end
-            current = next
-        else
-            current = getnext(current)
         end
     end
     return tonode(head), done

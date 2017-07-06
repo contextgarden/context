@@ -2543,7 +2543,7 @@ end
 
 -- a fontkern plug:
 
-nodes.injections.installnewkern(nuts.pool.fontkern)
+-- nodes.injections.installnewkern(nuts.pool.fontkern)
 
 do
 
@@ -2599,7 +2599,7 @@ do
 
     local unsetvalue      = attributes.unsetvalue
 
-    local traverse_id     = nuts.traverse_id
+    local traverse_char   = nuts.traverse_char
 
     local a_color         = attributes.private('color')
     local a_colormodel    = attributes.private('colormodel')
@@ -2628,7 +2628,7 @@ do
         if head then
             head = tonut(head)
             local model = getattr(head,a_colormodel) or 1
-            for glyph in traverse_id(glyph_code,head) do
+            for glyph in traverse_char(head) do
                 local a = getprop(glyph,a_state)
                 if a then
                     local name = colornames[a]
@@ -2679,7 +2679,7 @@ do
 
 
     function methods.nocolor(head,font,attr)
-        for n in traverse_id(glyph_code,head) do
+        for n in traverse_char(head) do
             if not font or getfont(n) == font then
                 setattr(n,a_color,unsetvalue)
             end

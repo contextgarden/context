@@ -78,7 +78,7 @@ local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
 local flush_node_list  = nuts.flush_list
 local traverse_nodes   = nuts.traverse
-local traverse_id      = nuts.traverse_id
+----- traverse_id      = nuts.traverse_id
 local protect_glyphs   = nuts.protect_glyphs
 
 local nodepool         = nuts.pool
@@ -135,22 +135,22 @@ function char_tracers.collect(head,list,tag,n)
             l[#l+1] = { c, f }
         elseif id == disc_code then
             -- skip
---             local pre, post, replace = getdisc(head)
---             if replace then
---                 for n in traverse_id(glyph_code,replace) do
---                     l[#l+1] = { c, f }
---                 end
---             end
---             if pre then
---                 for n in traverse_id(glyph_code,pre) do
---                     l[#l+1] = { c, f }
---                 end
---             end
---             if post then
---                 for n in traverse_id(glyph_code,post) do
---                     l[#l+1] = { c, f }
---                 end
---             end
+         -- local pre, post, replace = getdisc(head)
+         -- if replace then
+         --     for n in traverse_id(glyph_code,replace) do
+         --         l[#l+1] = { c, f }
+         --     end
+         -- end
+         -- if pre then
+         --     for n in traverse_id(glyph_code,pre) do
+         --         l[#l+1] = { c, f }
+         --     end
+         -- end
+         -- if post then
+         --     for n in traverse_id(glyph_code,post) do
+         --         l[#l+1] = { c, f }
+         --     end
+         -- end
         else
             ok = false
         end

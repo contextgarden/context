@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-vf'] = {
+if not modules then modules = { } end modules ['font-vir'] = {
     version   = 1.001,
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

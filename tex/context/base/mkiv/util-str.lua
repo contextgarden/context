@@ -423,6 +423,27 @@ end
 -- print(number.formatted(12345678,true))
 -- print(number.formatted(1234.56,"!","?"))
 
+local p = Cs(
+        P("-")^0
+      * (P("0")^1/"")^0
+      * (1-P("."))^0
+      * (P(".") * P("0")^1 * P(-1)/"" + P(".")^0)
+      * P(1-P("0")^1*P(-1))^0
+    )
+
+function number.compactfloat(n,fmt)
+    if n == 0 then
+        return "0"
+    elseif n == 1 then
+        return "1"
+    end
+    n = lpegmatch(p,format(fmt or "%0.3f",n))
+    if n == "." or n == "" or n == "-" then
+        return "0"
+    end
+    return n
+end
+
 local zero      = P("0")^1 / ""
 local plus      = P("+")   / ""
 local minus     = P("-")

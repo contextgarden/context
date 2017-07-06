@@ -6,11 +6,11 @@ if not modules then modules = { } end modules ['trac-vis'] = {
     license   = "see context related readme files"
 }
 
-local string, number, table = string, number, table
 local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
 local type = type
 local gmatch = string.gmatch
 local formatters = string.formatters
+local compactfloat = number.compactfloat
 
 -- This module started out in the early days of mkiv and luatex with
 -- visualizing kerns related to fonts. In the process of cleaning up the
@@ -166,6 +166,7 @@ local trace_user
 local trace_math
 local trace_italic
 local trace_discretionary
+local trace_expansion
 
 local report_visualize = logs.reporter("visualize")
 
@@ -190,10 +191,11 @@ local modes = {
     italic        =  8192,
     origin        = 16384,
     discretionary = 32768,
+    expansion     = 65536,
 }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion
 
 local enabled = false
 local layers  = { }
@@ -243,6 +245,7 @@ local function enable()
     l_italic        = layers.italic
     l_origin        = layers.origin
     l_discretionary = layers.discretionary
+    l_expansion     = layers.expansion
     enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -355,6 +358,7 @@ local c_white           = "trace:w"
 local c_math            = "trace:r"
 local c_origin          = "trace:o"
 local c_discretionary   = "trace:o"
+local c_expansion       = "trace:o"
 
 local c_positive_d      = "trace:db"
 local c_negative_d      = "trace:dr"
@@ -369,6 +373,7 @@ local c_white_d         = "trace:dw"
 local c_math_d          = "trace:dr"
 local c_origin_d        = "trace:do"
 local c_discretionary_d = "trace:do"
+local c_expansion_d     = "trace:do"
 
 local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
     local text = hpack_string(str,usedfont)
@@ -430,6 +435,78 @@ local fontkern do
             f_cache[kern] = info
         end
         head = insert_node_before(head,current,copy_list(info))
+        return head, current
+    end
+
+end
+
+local glyphexpansion do
+
+    local f_cache = caches["glyphexpansion"]
+
+    glyphexpansion = function(head,current)
+        local extra = getfield(current,"expansion_factor")
+        if extra ~= 0 then
+            extra = extra / 1000
+            local info = f_cache[extra]
+            if info then
+                -- print("hit fontkern")
+            else
+                local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
+                local rule = new_rule(emwidth/fraction,exheight,2*exheight)
+                local list = getlist(text)
+                if extra > 0 then
+                    setlistcolor(list,c_positive_d)
+                elseif extra < 0 then
+                    setlistcolor(list,c_negative_d)
+                end
+                setlisttransparency(list,c_text_d)
+                setcolor(rule,c_text_d)
+                settransparency(rule,c_text_d)
+                setshift(text,1.5 * exheight)
+                info = new_hlist(setlink(rule,text))
+                setattr(info,a_layer,l_expansion)
+                f_cache[extra] = info
+            end
+            head = insert_node_before(head,current,copy_list(info))
+            return head, current
+        end
+        return head, current
+    end
+
+end
+
+local kernexpansion do
+
+    local f_cache = caches["kernexpansion"]
+
+    kernexpansion = function(head,current)
+        local extra = getfield(current,"expansion_factor")
+        if extra ~= 0 then
+            extra = extra / 1000
+            local info = f_cache[extra]
+            if info then
+                -- print("hit fontkern")
+            else
+                local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
+                local rule = new_rule(emwidth/fraction,exheight,4*exheight)
+                local list = getlist(text)
+                if extra > 0 then
+                    setlistcolor(list,c_positive_d)
+                elseif extra < 0 then
+                    setlistcolor(list,c_negative_d)
+                end
+                setlisttransparency(list,c_text_d)
+                setcolor(rule,c_text_d)
+                settransparency(rule,c_text_d)
+                setshift(text,3.5 * exheight)
+                info = new_hlist(setlink(rule,text))
+                setattr(info,a_layer,l_expansion)
+                f_cache[extra] = info
+            end
+            head = insert_node_before(head,current,copy_list(info))
+            return head, current
+        end
         return head, current
     end
 
@@ -929,151 +1006,161 @@ local ruledpenalty do
 
 end
 
-local function visualize(head,vertical,forced,parent)
-    local trace_hbox     = false
-    local trace_vbox     = false
-    local trace_vtop     = false
-    local trace_kern     = false
-    local trace_glue     = false
-    local trace_penalty  = false
-    local trace_fontkern = false
-    local trace_strut    = false
-    local trace_whatsit  = false
-    local trace_glyph    = false
-    local trace_simple   = false
-    local trace_user     = false
-    local trace_math     = false
-    local trace_italic   = false
-    local trace_origin   = false
-    local current        = head
-    local previous       = nil
-    local attr           = unsetvalue
-    local prev_trace_fontkern = nil
-    while current do
-        local id = getid(current)
-        local a = forced or getattr(current,a_visual) or unsetvalue
-        if a ~= attr then
-            prev_trace_fontkern = trace_fontkern
-            if a == unsetvalue then
-                trace_hbox          = false
-                trace_vbox          = false
-                trace_vtop          = false
-                trace_kern          = false
-                trace_glue          = false
-                trace_penalty       = false
-                trace_fontkern      = false
-                trace_strut         = false
-                trace_whatsit       = false
-                trace_glyph         = false
-                trace_simple        = false
-                trace_user          = false
-                trace_math          = false
-                trace_italic        = false
-                trace_origin        = false
-                trace_discretionary = false
-            else -- dead slow:
-                trace_hbox          = hasbit(a,    1)
-                trace_vbox          = hasbit(a,    2)
-                trace_vtop          = hasbit(a,    4)
-                trace_kern          = hasbit(a,    8)
-                trace_glue          = hasbit(a,   16)
-                trace_penalty       = hasbit(a,   32)
-                trace_fontkern      = hasbit(a,   64)
-                trace_strut         = hasbit(a,  128)
-                trace_whatsit       = hasbit(a,  256)
-                trace_glyph         = hasbit(a,  512)
-                trace_simple        = hasbit(a, 1024)
-                trace_user          = hasbit(a, 2048)
-                trace_math          = hasbit(a, 4096)
-                trace_italic        = hasbit(a, 8192)
-                trace_origin        = hasbit(a,16384)
-                trace_discretionary = hasbit(a,32768)
-            end
-            attr = a
-        end
-        if trace_strut then
-            setattr(current,a_layer,l_strut)
-        elseif id == glyph_code then
-            if trace_glyph then
-                head, current = ruledglyph(head,current,previous)
-            end
-        elseif id == disc_code then
-            if trace_discretionary then
-                head, current = ruleddiscretionary(head,current)
-            end
-            local pre, post, replace = getdisc(current)
-            if pre then
-                pre = visualize(pre,false,a,parent)
-            end
-            if post then
-                post = visualize(post,false,a,parent)
-            end
-            if replace then
-                replace = visualize(replace,false,a,parent)
-            end
-            setdisc(current,pre,post,replace)
-        elseif id == kern_code then
-            local subtype = getsubtype(current)
-            if subtype == font_kern_code then
-                if trace_fontkern or prev_trace_fontkern then
-                    head, current = fontkern(head,current)
-                end
-            else -- if subtype == user_kern_code then
-                if trace_italic then
-                    head, current = ruleditalic(head,current)
-                elseif trace_kern then
-                    head, current = ruledkern(head,current,vertical)
-                end
-            end
-        elseif id == glue_code then
-            local content = getleader(current)
-            if content then
-                setleader(current,visualize(content,false,nil,parent))
-            elseif trace_glue then
-                head, current = ruledglue(head,current,vertical,parent)
-            end
-        elseif id == penalty_code then
-            if trace_penalty then
-                head, current = ruledpenalty(head,current,vertical)
-            end
-        elseif id == hlist_code then
-            local content = getlist(current)
-            if content then
-                setlist(current,visualize(content,false,nil,current))
-            end
-            if trace_hbox then
-                head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
-            end
-        elseif id == vlist_code then
-            local content = getlist(current)
-            if content then
-                setlist(current,visualize(content,true,nil,current))
-            end
-            if trace_vtop then
-                head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous,trace_origin,parent)
-            elseif trace_vbox then
-                head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous,trace_origin,parent)
-            end
-        elseif id == whatsit_code then
-            if trace_whatsit then
-                head, current = whatsit(head,current)
-            end
-        elseif id == user_code then
-            if trace_user then
-                head, current = user(head,current)
-            end
-        elseif id == math_code then
-            if trace_math then
-                head, current = math(head,current)
-            end
-        end
-        previous = current
-        current  = getnext(current)
-    end
-    return head
-end
-
 do
+
+    local function visualize(head,vertical,forced,parent)
+        local trace_hbox     = false
+        local trace_vbox     = false
+        local trace_vtop     = false
+        local trace_kern     = false
+        local trace_glue     = false
+        local trace_penalty  = false
+        local trace_fontkern = false
+        local trace_strut    = false
+        local trace_whatsit  = false
+        local trace_glyph    = false
+        local trace_simple   = false
+        local trace_user     = false
+        local trace_math     = false
+        local trace_italic   = false
+        local trace_origin   = false
+        local current        = head
+        local previous       = nil
+        local attr           = unsetvalue
+        local prev_trace_fontkern  = nil
+        local prev_trace_expansion = nil
+        while current do
+            local id = getid(current)
+            local a = forced or getattr(current,a_visual) or unsetvalue
+            if a ~= attr then
+                prev_trace_fontkern  = trace_fontkern
+                prev_trace_expansion = trace_expansion
+                if a == unsetvalue then
+                    trace_hbox          = false
+                    trace_vbox          = false
+                    trace_vtop          = false
+                    trace_kern          = false
+                    trace_glue          = false
+                    trace_penalty       = false
+                    trace_fontkern      = false
+                    trace_strut         = false
+                    trace_whatsit       = false
+                    trace_glyph         = false
+                    trace_simple        = false
+                    trace_user          = false
+                    trace_math          = false
+                    trace_italic        = false
+                    trace_origin        = false
+                    trace_discretionary = false
+                    trace_expansion     = false
+                else -- dead slow:
+                    trace_hbox          = hasbit(a,    1)
+                    trace_vbox          = hasbit(a,    2)
+                    trace_vtop          = hasbit(a,    4)
+                    trace_kern          = hasbit(a,    8)
+                    trace_glue          = hasbit(a,   16)
+                    trace_penalty       = hasbit(a,   32)
+                    trace_fontkern      = hasbit(a,   64)
+                    trace_strut         = hasbit(a,  128)
+                    trace_whatsit       = hasbit(a,  256)
+                    trace_glyph         = hasbit(a,  512)
+                    trace_simple        = hasbit(a, 1024)
+                    trace_user          = hasbit(a, 2048)
+                    trace_math          = hasbit(a, 4096)
+                    trace_italic        = hasbit(a, 8192)
+                    trace_origin        = hasbit(a,16384)
+                    trace_discretionary = hasbit(a,32768)
+                    trace_expansion     = hasbit(a,65536)
+                end
+                attr = a
+            end
+            if trace_strut then
+                setattr(current,a_layer,l_strut)
+            elseif id == glyph_code then
+                if trace_glyph then
+                    head, current = ruledglyph(head,current,previous)
+                end
+                if trace_expansion then
+                    head, current = glyphexpansion(head,current)
+                end
+            elseif id == disc_code then
+                if trace_discretionary then
+                    head, current = ruleddiscretionary(head,current)
+                end
+                local pre, post, replace = getdisc(current)
+                if pre then
+                    pre = visualize(pre,false,a,parent)
+                end
+                if post then
+                    post = visualize(post,false,a,parent)
+                end
+                if replace then
+                    replace = visualize(replace,false,a,parent)
+                end
+                setdisc(current,pre,post,replace)
+            elseif id == kern_code then
+                local subtype = getsubtype(current)
+                if subtype == font_kern_code then
+                    if trace_fontkern or prev_trace_fontkern then
+                        head, current = fontkern(head,current)
+                    end
+                    if trace_expansion or prev_trace_expansion then
+                        head, current = kernexpansion(head,current)
+                    end
+                else -- if subtype == user_kern_code then
+                    if trace_italic then
+                        head, current = ruleditalic(head,current)
+                    elseif trace_kern then
+                        head, current = ruledkern(head,current,vertical)
+                    end
+                end
+            elseif id == glue_code then
+                local content = getleader(current)
+                if content then
+                    setleader(current,visualize(content,false,nil,parent))
+                elseif trace_glue then
+                    head, current = ruledglue(head,current,vertical,parent)
+                end
+            elseif id == penalty_code then
+                if trace_penalty then
+                    head, current = ruledpenalty(head,current,vertical)
+                end
+            elseif id == hlist_code then
+                local content = getlist(current)
+                if content then
+                    setlist(current,visualize(content,false,nil,current))
+                end
+                if trace_hbox then
+                    head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
+                end
+            elseif id == vlist_code then
+                local content = getlist(current)
+                if content then
+                    setlist(current,visualize(content,true,nil,current))
+                end
+                if trace_vtop then
+                    head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous,trace_origin,parent)
+                elseif trace_vbox then
+                    head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous,trace_origin,parent)
+                end
+            elseif id == whatsit_code then
+                if trace_whatsit then
+                    head, current = whatsit(head,current)
+                end
+            elseif id == user_code then
+                if trace_user then
+                    head, current = user(head,current)
+                end
+            elseif id == math_code then
+                if trace_math then
+                    head, current = math(head,current)
+                end
+            end
+            previous = current
+            current  = getnext(current)
+        end
+        return head
+    end
 
     local function cleanup()
         for tag, cache in next, caches do
@@ -1101,20 +1188,20 @@ do
 
     luatex.registerstopactions(cleanup)
 
-end
-
-function visualizers.box(n)
-    if usedfont then
-        starttiming(visualizers)
-        local box = getbox(n)
-        if box then
-            setlist(box,visualize(getlist(box),getid(box) == vlist_code))
+    function visualizers.box(n)
+        if usedfont then
+            starttiming(visualizers)
+            local box = getbox(n)
+            if box then
+                setlist(box,visualize(getlist(box),getid(box) == vlist_code))
+            end
+            stoptiming(visualizers)
+            return head, true
+        else
+            return head, false
         end
-        stoptiming(visualizers)
-        return head, true
-    else
-        return head, false
     end
+
 end
 
 do
@@ -1162,40 +1249,44 @@ end)
 
 -- interface
 
-local implement = interfaces.implement
+do
 
-implement {
-    name      = "setvisual",
-    arguments = "string",
-    actions   = visualizers.setvisual
-}
-
-implement {
-    name      = "setvisuals",
-    arguments = "string",
-    actions   = visualizers.setvisual
-}
-
-implement {
-    name      = "getvisual",
-    arguments = "string",
-    actions   = { setvisual, context }
-}
+    local implement = interfaces.implement
 
     implement {
-    name      = "setvisuallayer",
-    arguments = "string",
-    actions   = visualizers.setlayer
-}
+        name      = "setvisual",
+        arguments = "string",
+        actions   = visualizers.setvisual
+    }
 
-implement {
-    name      = "markvisualfonts",
-    arguments = "integer",
-    actions   = visualizers.markfonts
-}
+    implement {
+        name      = "setvisuals",
+        arguments = "string",
+        actions   = visualizers.setvisual
+    }
 
-implement {
-    name      = "setvisualfont",
-    arguments = "integer",
-    actions   = visualizers.setfont
-}
+    implement {
+        name      = "getvisual",
+        arguments = "string",
+        actions   = { setvisual, context }
+    }
+
+        implement {
+        name      = "setvisuallayer",
+        arguments = "string",
+        actions   = visualizers.setlayer
+    }
+
+    implement {
+        name      = "markvisualfonts",
+        arguments = "integer",
+        actions   = visualizers.markfonts
+    }
+
+    implement {
+        name      = "setvisualfont",
+        arguments = "integer",
+        actions   = visualizers.setfont
+    }
+
+end

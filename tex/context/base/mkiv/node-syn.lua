@@ -69,6 +69,7 @@ local kerncodes          = nodes.kerncodes
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local glue_code          = nodecodes.glue
+local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
 ----- rule_code          = nodecodes.rule
 local hlist_code         = nodecodes.hlist
@@ -451,6 +452,8 @@ local function collect_max(head,parent)
                         break
                     end
                     id = nil -- so no test later on
+                elseif id == penalty_code then
+                    -- go on (and be nice for math)
                 else
                     if tag > 0 then
                         head = inject(parent,head,first,last,tag,line)

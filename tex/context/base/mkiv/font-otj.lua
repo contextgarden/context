@@ -515,7 +515,7 @@ end
 
 local function showsub(n,what,where)
     report_injections("begin subrun: %s",where)
-    for n in traverse_id(glyph_code,n) do
+    for n in traverse_char(n) do
         showchar(n,where)
         show(n,what,where," ")
     end
@@ -1548,7 +1548,8 @@ local function injectspaces(head)
         factor     = getthreshold(font)
     end
 
-    for n in traverse_id(glue_code,tonut(head)) do
+ -- for n in traverse_id(glue_code,tonut(head)) do
+    for n in traverse_char(tonut(head)) do
         local prev, next = getspaceboth(n)
         local prevchar = prev and ischar(prev)
         local nextchar = next and ischar(next)
@@ -1615,6 +1616,7 @@ end
 --
 
 function injections.handler(head,where)
+triggers = { }
     if triggers then
         head = injectspaces(head)
     end

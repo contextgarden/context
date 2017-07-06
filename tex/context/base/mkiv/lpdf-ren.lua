@@ -49,7 +49,10 @@ local addtocatalog        = lpdf.addtocatalog
 
 local escaped             = lpdf.escaped
 
-local nodepool            = nodes.pool
+local nuts                = nodes.nuts
+local copy_node           = nuts.copy
+
+local nodepool            = nuts.pool
 local register            = nodepool.register
 local pdfliteral          = nodepool.pdfliteral
 
@@ -61,8 +64,6 @@ local pdf_view            = pdfconstant("View")
 local pdf_design          = pdfconstant("Design")
 local pdf_toggle          = pdfconstant("Toggle")
 local pdf_setocgstate     = pdfconstant("SetOCGState")
-
-local copy_node           = node.copy
 
 local pdf_print = {
     [v_yes] = pdfdictionary { PrintState = pdf_on  },

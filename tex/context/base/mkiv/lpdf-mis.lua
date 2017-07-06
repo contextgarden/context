@@ -25,9 +25,10 @@ local nodeinjections       = backends.pdf.nodeinjections
 local codeinjections       = backends.pdf.codeinjections
 local registrations        = backends.pdf.registrations
 
-local copy_node            = node.copy
+local nuts                 = nodes.nuts
+local copy_node            = nuts.copy
 
-local nodepool             = nodes.pool
+local nodepool             = nuts.pool
 local pdfliteral           = nodepool.pdfliteral
 local register             = nodepool.register
 

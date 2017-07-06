@@ -22,7 +22,7 @@ local nodeinjections          = backends.pdf.nodeinjections
 local codeinjections          = backends.pdf.codeinjections
 local registrations           = backends.pdf.registrations
 
-local nodepool                = nodes.pool
+local nodepool                = nodes.nuts.pool
 local register                = nodepool.register
 local pdfliteral              = nodepool.pdfliteral
 
