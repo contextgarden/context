@@ -110,8 +110,9 @@ nodes.set_attribute         = node.set_attribute
 nodes.find_attribute        = node.find_attribute
 nodes.unset_attribute       = node.unset_attribute
 
-nodes.protect_glyphs        = node.protect_glyphs
 nodes.protect_glyph         = node.protect_glyph
+nodes.protect_glyphs        = node.protect_glyphs
+nodes.unprotect_glyph       = node.unprotect_glyph
 nodes.unprotect_glyphs      = node.unprotect_glyphs
 nodes.kerning               = node.kerning
 nodes.ligaturing            = node.ligaturing
@@ -669,3 +670,46 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
+
+-- for the moment (pre 6380)
+
+if not nodes.unprotect_glyph then
+
+    local protect_glyph    = nodes.protect_glyph
+    local protect_glyphs   = nodes.protect_glyphs
+    local unprotect_glyph  = nodes.unprotect_glyph
+    local unprotect_glyphs = nodes.unprotect_glyphs
+
+    local getnext          = nodes.getnext
+    local setnext          = nodes.setnext
+
+    function nodes.protectglyphs(first,last)
+        if first == last then
+            return protect_glyph(first)
+        elseif last then
+            local nxt = getnext(last)
+            setnext(last)
+            local f, b = protect_glyphs(first)
+            setnext(last,nxt)
+            return f, b
+        else
+            return protect_glyphs(first)
+        end
+    end
+
+    function nodes.unprotectglyphs(first,last)
+        if first == last then
+            return unprotect_glyph(first)
+        elseif last then
+            local nxt = getnext(last)
+            setnext(last)
+            local f, b = unprotect_glyphs(first)
+            setnext(last,nxt)
+            return f, b
+        else
+            return unprotect_glyphs(first)
+        end
+    end
+
+end
+

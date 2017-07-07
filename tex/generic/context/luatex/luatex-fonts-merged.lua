@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/06/17 23:47:34
+-- merge date  : 07/07/17 18:38:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -25294,6 +25294,7 @@ otf.helpers.pardirstate=pardirstate
 do
   local fastdisc=true
   directives.register("otf.fastdisc",function(v) fastdisc=v end)
+  local otfdataset=nil 
   function otf.featuresprocessor(head,font,attr,direction,n)
     local sequences=sequencelists[font] 
     if not sequencelists then
@@ -25311,18 +25312,21 @@ do
       threshold,
       factor=getthreshold(font)
       checkmarks=tfmdata.properties.checkmarks
+      if not otfdataset then
+        otfdataset=otf.dataset
+      end
     elseif currentfont~=font then
       report_warning("nested call with a different font, level %s, quitting",nesting)
       nesting=nesting-1
       return head,false
     end
-    head=tonut(head)
+    local head=tonut(head)
     if trace_steps then
       checkstep(head)
     end
     local initialrl=direction=="TRT" and -1 or 0
     local done=false
-    local datasets=otf.dataset(tfmdata,font,attr)
+    local datasets=otfdataset(tfmdata,font,attr)
     local dirstack={} 
     sweephead={}
     local discs=fastdisc and n and n>1 and setmetatableindex(function(t,k)

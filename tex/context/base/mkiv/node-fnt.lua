@@ -56,6 +56,7 @@ local getfield          = nuts.getfield
 ----- getdisc           = nuts.getdisc
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
+local setnext           = nuts.setnext
 local setfield          = nuts.setfield
 local setprev           = nuts.setprev
 
@@ -70,6 +71,9 @@ local flush_node        = nuts.flush
 local disc_code         = nodecodes.disc
 local boundary_code     = nodecodes.boundary
 local word_boundary     = nodes.boundarycodes.word
+
+local protect_glyphs    = nuts.protect_glyphs
+local unprotect_glyphs  = nuts.unprotect_glyphs
 
 local setmetatableindex = table.setmetatableindex
 
@@ -212,8 +216,10 @@ function handlers.characters(head,groupcode,size,packtype,direction)
     local done      = false
     local variants  = nil
     local redundant = nil
-    local none      = false
     local nuthead   = tonut(head)
+    local lastfont  = nil
+    local lastproc  = nil
+    local lastnone  = nil
 
     local a, u, b, r, e = 0, 0, 0, 0, 0
 
@@ -224,54 +230,91 @@ function handlers.characters(head,groupcode,size,packtype,direction)
     -- There is no gain in checking for a single glyph and then having a fast path. On the
     -- metafun manual (with some 2500 single char lists) the difference is just noise.
 
+    local function protectnone()
+        protect_glyphs(firstnone,lastnone)
+        firstnone = nil
+    end
+
+    local function setnone(n)
+        if firstnone then
+            protectnone()
+        end
+        if basefont then
+            basefont[2] = getprev(n)
+            basefont = false
+        end
+        if not firstnone then
+            firstnone = n
+        end
+        lastnone = n
+    end
+
+    local function setbase(n)
+        if firstnone then
+            protectnone()
+        end
+        if force_basepass then
+            if basefont then
+                basefont[2] = getprev(n)
+            end
+            b = b + 1
+            basefont = { n, false }
+            basefonts[b] = basefont
+        end
+    end
+
+    local function setnode(n,font,attr) -- we could use prevfont and prevattr when we set then first
+        if firstnone then
+            protectnone()
+        end
+        if basefont then
+            basefont[2] = getprev(n)
+            basefont = false
+        end
+        if attr > 0 then
+            local used = attrfonts[font]
+            if not used then
+                used = { }
+                attrfonts[font] = used
+            end
+            if not used[attr] then
+                local fd = setfontdynamics[font]
+                if fd then
+                    used[attr] = fd[attr]
+                    a = a + 1
+                end
+            end
+        else
+            local used = usedfonts[font]
+            if not used then
+                lastfont = font
+                lastproc = fontprocesses[font]
+                if lastproc then
+                    usedfonts[font] = lastproc
+                    u = u + 1
+                end
+            end
+        end
+    end
+
     for n in traverse_char(nuthead) do
         local font = getfont(n)
-        local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+     -- local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
         if font ~= prevfont or attr ~= prevattr then
             prevfont = font
             prevattr = attr
             variants = fontvariants[font]
-            none     = fontmodes[font] == "none"
-            if none then
-                -- skip
-             -- variants = false
-                protect_glyph(n)
+            local fontmode = fontmodes[font]
+            if fontmode == "none" then
+                setnone(n)
+            elseif fontmode == "base" then
+                setbase(n)
             else
-                if basefont then
-                    basefont[2] = getprev(n)
-                end
-                if attr > 0 then
-                    local used = attrfonts[font]
-                    if not used then
-                        used = { }
-                        attrfonts[font] = used
-                    end
-                    if not used[attr] then
-                        local fd = setfontdynamics[font]
-                        if fd then
-                            used[attr] = fd[attr]
-                            a = a + 1
-                        elseif force_basepass then
-                            b = b + 1
-                            basefont = { n, false }
-                            basefonts[b] = basefont
-                        end
-                    end
-                else
-                    local used = usedfonts[font]
-                    if not used then
-                        local fp = fontprocesses[font]
-                        if fp then
-                            usedfonts[font] = fp
-                            u = u + 1
-                        elseif force_basepass then
-                            b = b + 1
-                            basefont = { n, false }
-                            basefonts[b] = basefont
-                        end
-                    end
-                end
+                setnode(n,font,attr)
             end
+        elseif firstnone then
+            lastnone = n
         end
         if variants then
             local char = getchar(n)
@@ -307,6 +350,10 @@ function handlers.characters(head,groupcode,size,packtype,direction)
                 end
             end
         end
+    end
+
+    if firstnone then
+        protectnone()
     end
 
     if force_boundaryrun then
@@ -376,42 +423,28 @@ function handlers.characters(head,groupcode,size,packtype,direction)
                 local none     = false
                 for n in traverse_char(r) do
                     local font = getfont(n)
-                    local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+                    local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
                     if font ~= prevfont or attr ~= prevattr then
                         prevfont = font
                         prevattr = attr
-                        none     = fontmodes[font] == "none"  -- very unlikely that we run into disc nodes in none mode
-                        if none then
-                            -- skip
-                         -- variants = false
-                            protect_glyph(n)
-                        elseif attr > 0 then
-                            local used = attrfonts[font]
-                            if not used then
-                                used = { }
-                                attrfonts[font] = used
-                            end
-                            if not used[attr] then
-                                local fd = setfontdynamics[font]
-                                if fd then
-                                    used[attr] = fd[attr]
-                                    a = a + 1
-                                end
-                            end
+                        local fontmode = fontmodes[font]
+                        if fontmode == "none" then
+                            setnone(n)
+                        elseif fontmode == "base" then
+                            setbase(n)
                         else
-                            local used = usedfonts[font]
-                            if not used then
-                                local fp = fontprocesses[font]
-                                if fp then
-                                    usedfonts[font] = fp
-                                    u = u + 1
-                                end
-                            end
+                            setnode(n,font,attr)
                         end
+                    elseif firstnone then
+                     -- lastnone = n
+                        lastnone = nil
                     end
                     -- we assume one font for now (and if there are more and we get into issues then
                     -- we can always remove the break)
                     break
+                end
+                if firstnone then
+                    protectnone()
                 end
             elseif expanders then
                 local subtype = getsubtype(d)
@@ -432,11 +465,9 @@ function handlers.characters(head,groupcode,size,packtype,direction)
     if u == 0 then
         -- skip
     elseif u == 1 then
-        local font, processors = next(usedfonts)
-     -- local attr = a == 0 and false or 0 -- 0 is the savest way
         local attr = a > 0 and 0 or false -- 0 is the savest way
-        for i=1,#processors do
-            local h, d = processors[i](head,font,attr,direction)
+        for i=1,#lastproc do
+            local h, d = lastproc[i](head,lastfont,attr,direction)
             if d then
                 if h then
                     head = h
@@ -549,19 +580,6 @@ function handlers.characters(head,groupcode,size,packtype,direction)
     return head, true
 end
 
-local d_protect_glyphs   = nuts.protect_glyphs
-local d_unprotect_glyphs = nuts.unprotect_glyphs
+handlers.protectglyphs   = function(n) protect_glyphs  (tonut(n)) return n, true end
+handlers.unprotectglyphs = function(n) unprotect_glyphs(tonut(n)) return n, true end
 
-handlers.protectglyphs   = function(n) return d_protect_glyphs  (tonut(n)) end
-handlers.unprotectglyphs = function(n) return d_unprotect_glyphs(tonut(n)) end
-
--- function handlers.protectglyphs(h)
---     local h = tonut(h)
---     for n in traverse_id(disc_code,h) do
---         local pre, post, replace = getdisc(n)
---         if pre     then d_protect_glyphs(pre)     end
---         if post    then d_protect_glyphs(post)    end
---         if replace then d_protect_glyphs(replace) end
---     end
---     return d_protect_glyphs(h)
--- end

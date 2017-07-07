@@ -312,6 +312,7 @@ end
 -- each other with the same color but different color spaces e.g. \showcolor)
 
 local function selective(attribute,head,inheritance,default) -- two attributes
+ -- local head   = head
     local stack  = head
     local done   = false
     local check  = false

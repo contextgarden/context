@@ -4381,6 +4381,8 @@ do
     -- about 15% on arabtype .. then moving the a test also saves a bit (even when
     -- often a is not set at all so that one is a bit debatable
 
+    local otfdataset = nil -- todo: make an installer
+
     function otf.featuresprocessor(head,font,attr,direction,n)
 
         local sequences = sequencelists[font] -- temp hack
@@ -4403,6 +4405,10 @@ do
             factor       = getthreshold(font)
             checkmarks   = tfmdata.properties.checkmarks
 
+            if not otfdataset then
+                otfdataset = otf.dataset
+            end
+
         elseif currentfont ~= font then
 
             report_warning("nested call with a different font, level %s, quitting",nesting)
@@ -4419,7 +4425,7 @@ do
         --     attr = false
         -- end
 
-        head = tonut(head)
+        local head = tonut(head)
 
         if trace_steps then
             checkstep(head)
@@ -4428,7 +4434,8 @@ do
         local initialrl = direction == "TRT" and -1 or 0
 
         local done      = false
-        local datasets  = otf.dataset(tfmdata,font,attr)
+--         local datasets  = otf.dataset(tfmdata,font,attr)
+        local datasets  = otfdataset(tfmdata,font,attr)
         local dirstack  = { } -- could move outside function but we can have local runs
         sweephead       = { }
 

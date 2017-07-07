@@ -283,8 +283,9 @@ nuts.has_attribute         = direct.has_attribute
 nuts.set_attribute         = direct.set_attribute
 nuts.unset_attribute       = direct.unset_attribute
 
-nuts.protect_glyphs        = direct.protect_glyphs
 nuts.protect_glyph         = direct.protect_glyph
+nuts.protect_glyphs        = direct.protect_glyphs
+nuts.unprotect_glyph       = direct.unprotect_glyph
 nuts.unprotect_glyphs      = direct.unprotect_glyphs
 nuts.ligaturing            = direct.ligaturing
 nuts.kerning               = direct.kerning
@@ -898,6 +899,48 @@ if not nuts.uses_font then
 
     function nodes.uses_font(n,font)
         return nuts.uses_font(tonut(n),font)
+    end
+
+end
+
+-- for the moment (pre 6380)
+
+if not nuts.unprotect_glyph then
+
+    local protect_glyph    = nuts.protect_glyph
+    local protect_glyphs   = nuts.protect_glyphs
+    local unprotect_glyph  = nuts.unprotect_glyph
+    local unprotect_glyphs = nuts.unprotect_glyphs
+
+    local getnext          = nuts.getnext
+    local setnext          = nuts.setnext
+
+    function nuts.protectglyphs(first,last)
+        if first == last then
+            return protect_glyph(first)
+        elseif last then
+            local nxt = getnext(last)
+            setnext(last)
+            local f, b = protect_glyphs(first)
+            setnext(last,nxt)
+            return f, b
+        else
+            return protect_glyphs(first)
+        end
+    end
+
+    function nuts.unprotectglyphs(first,last)
+        if first == last then
+            return unprotect_glyph(first)
+        elseif last then
+            local nxt = getnext(last)
+            setnext(last)
+            local f, b = unprotect_glyphs(first)
+            setnext(last,nxt)
+            return f, b
+        else
+            return unprotect_glyphs(first)
+        end
     end
 
 end
