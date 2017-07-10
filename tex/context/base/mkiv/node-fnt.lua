@@ -582,4 +582,3 @@ end
 
 handlers.protectglyphs   = function(n) protect_glyphs  (tonut(n)) return n, true end
 handlers.unprotectglyphs = function(n) unprotect_glyphs(tonut(n)) return n, true end
-

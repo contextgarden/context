@@ -410,18 +410,32 @@ local d_setlink            = direct.setlink
 local d_setboth            = direct.setboth
 local d_getboth            = direct.getboth
 
+-- local function remove(head,current,free_too)
+--     local t = current
+--     head, current = d_remove_node(head,current)
+--     if not t then
+--         -- forget about it
+--     elseif free_too then
+--         d_flush_node(t)
+--         t = nil
+--     else
+--         d_setboth(t) -- (t,nil,nil)
+--     end
+--     return head, current, t
+-- end
+
 local function remove(head,current,free_too)
-    local t = current
-    head, current = d_remove_node(head,current)
-    if not t then
-        -- forget about it
-    elseif free_too then
-        d_flush_node(t)
-        t = nil
-    else
-        d_setboth(t) -- (t,nil,nil)
+    if current then
+        local h, c = d_remove_node(head,current)
+        if free_too then
+            d_flush_node(current)
+            return h, c
+        else
+            d_setboth(current)
+            return h, c, current
+        end
     end
-    return head, current, t
+    return head, current
 end
 
 -- alias

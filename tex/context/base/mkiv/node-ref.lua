@@ -371,61 +371,30 @@ end
 -- we need to do vlists differently
 
 local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
-    if head then
-        local current, first, last, firstdir, reference = head, nil, nil, nil, nil
-        pardir = pardir or "==="
-        txtdir = txtdir or "==="
-        while current do
-            local id = getid(current)
-            if id == hlist_code or id == vlist_code then
-                local r = getattr(current,attribute)
-                -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
-                -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
-             -- if r and (not skip or r >) skip then -- maybe no > test
-             --     inject_list(id,current,r,make,stack,pardir,txtdir)
-             -- end
-                if r then
-                    if not reference then
-                        reference, first, last, firstdir = r, current, current, txtdir
-                    elseif r == reference then
-                        -- same link
-                        last = current
-                    elseif (done[reference] or 0) == 0 then
-                        if not skip or r > skip then -- maybe no > test
-                            head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
-                            reference, first, last, firstdir = nil, nil, nil, nil
-                        end
-                    else
-                        reference, first, last, firstdir = r, current, current, txtdir
-                    end
-                    done[r] = (done[r] or 0) + 1
-                end
-                local list = getlist(current)
-                if list then
-                    local h, ok
-                    h, ok , pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
-                    if h ~= current then
-                        setlist(current,h)
-                    end
-                end
-                if r then
-                    done[r] = done[r] - 1
-                end
-            elseif id == dir_code then
-                txtdir = getdir(current)
-            elseif id == localpar_code then
-                pardir = getdir(current)
-            elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
-                --
-            else
-                local r = getattr(current,attribute)
-                if not r then
-                    -- just go on, can be kerns
-                elseif not reference then
+    local first, last, firstdir, reference
+    if not pardir then
+        pardir = "==="
+    end
+    if not texdir then
+        txtdir = "==="
+    end
+    local current = head
+    while current do
+        local id = getid(current)
+        if id == hlist_code or id == vlist_code then
+            local r = getattr(current,attribute)
+            -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
+            -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
+         -- if r and (not skip or r >) skip then -- maybe no > test
+         --     inject_list(id,current,r,make,stack,pardir,txtdir)
+         -- end
+            if r then
+                if not reference then
                     reference, first, last, firstdir = r, current, current, txtdir
                 elseif r == reference then
+                    -- same link
                     last = current
-                elseif (done[reference] or 0) == 0 then -- or id == glue_code and getsubtype(current) == right_skip_code
+                elseif (done[reference] or 0) == 0 then
                     if not skip or r > skip then -- maybe no > test
                         head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
                         reference, first, last, firstdir = nil, nil, nil, nil
@@ -433,52 +402,88 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 else
                     reference, first, last, firstdir = r, current, current, txtdir
                 end
+                done[r] = (done[r] or 0) + 1
             end
-            current = getnext(current)
+            local list = getlist(current)
+            if list then
+                local h, ok
+                h, ok, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
+                if h ~= current then
+                    setlist(current,h)
+                end
+            end
+            if r then
+                done[r] = done[r] - 1
+            end
+        elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
+            --
+        elseif id == dir_code then
+            txtdir = getdir(current)
+        elseif id == localpar_code then -- only test at begin
+            pardir = getdir(current)
+        else
+            local r = getattr(current,attribute)
+            if not r then
+                -- just go on, can be kerns
+            elseif not reference then
+                reference, first, last, firstdir = r, current, current, txtdir
+            elseif r == reference then
+                last = current
+            elseif (done[reference] or 0) == 0 then -- or id == glue_code and getsubtype(current) == right_skip_code
+                if not skip or r > skip then -- maybe no > test
+                    head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+                    reference, first, last, firstdir = nil, nil, nil, nil
+                end
+            else
+                reference, first, last, firstdir = r, current, current, txtdir
+            end
         end
-        if reference and (done[reference] or 0) == 0 then
-            head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
-        end
+        current = getnext(current)
+    end
+    if reference and (done[reference] or 0) == 0 then
+        head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
     end
     return head, true, pardir, txtdir
 end
 
-local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) -- singular  !
-    if head then
-        pardir = pardir or "==="
-        txtdir = txtdir or "==="
-        local current = head
-        while current do
-            local id = getid(current)
-            if id == hlist_code or id == vlist_code then
-                local r = getattr(current,attribute)
-                if r and not done[r] then
-                    done[r] = true
-                    inject_list(id,current,r,make,stack,pardir,txtdir)
-                end
-                local list = getlist(current)
-                if list then
-                    local h = inject_area(list,attribute,make,stack,done,current,pardir,txtdir)
-                    if h ~= current then
-                        setlist(current,h)
-                    end
-                end
-            elseif id == dir_code then
-                txtdir = getdir(current)
-            elseif id == localpar_code then
-                pardir = getdir(current)
-            else
-                local r = getattr(current,attribute)
-                if r and not done[r] then
-                    done[r] = true
-                    head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
-                end
-            end
-            current = getnext(current)
-        end
-    end
-    return head, true
-end
+-- local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) -- singular  !
+--     if not pardir then
+--         pardir = "==="
+--     end
+--     if not texdir then
+--         txtdir = "==="
+--     end
+--     local current = head
+--     while current do
+--         local id = getid(current)
+--         if id == hlist_code or id == vlist_code then
+--             local r = getattr(current,attribute)
+--             if r and not done[r] then
+--                 done[r] = true
+--                 inject_list(id,current,r,make,stack,pardir,txtdir)
+--             end
+--             local list = getlist(current)
+--             if list then
+--                 local h = inject_area(list,attribute,make,stack,done,current,pardir,txtdir)
+--                 if h ~= current then
+--                     setlist(current,h)
+--                 end
+--             end
+--         elseif id == dir_code then
+--             txtdir = getdir(current)
+--         elseif id == localpar_code then
+--             pardir = getdir(current)
+--         else
+--             local r = getattr(current,attribute)
+--             if r and not done[r] then
+--                 done[r] = true
+--                 head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
+--             end
+--         end
+--         current = getnext(current)
+--     end
+--     return head, true
+-- end
 
 -- tracing: todo: use predefined colors
 
@@ -669,17 +674,9 @@ local function makereference(width,height,depth,reference) -- height and depth a
     end
 end
 
--- function nodes.references.handler(head)
---     if topofstack > 0 then
---         return inject_areas(head,attribute,makereference,stack,done)
---     else
---         return head, false
---     end
--- end
-
 function nodes.references.handler(head)
-    if topofstack > 0 then
-        head = tonut(head)
+    if head and topofstack > 0 then
+        local head = tonut(head)
         local head, done = inject_areas(head,attribute,makereference,stack,done)
         return tonode(head), done
     else
@@ -791,7 +788,7 @@ local function makedestination(width,height,depth,reference)
 end
 
 -- function nodes.destinations.handler(head)
---     if topofstack > 0 then
+--     if head and topofstack > 0 then
 --         return inject_area(head,attribute,makedestination,stack,done) -- singular
 --     else
 --         return head, false
@@ -799,15 +796,14 @@ end
 -- end
 
 function nodes.destinations.handler(head)
-    if topofstack > 0 then
-        head = tonut(head)
+    if head and topofstack > 0 then
+        local head = tonut(head)
         local head, done = inject_areas(head,attribute,makedestination,stack,done)
         return tonode(head), done
     else
         return head, false
     end
 end
-
 
 -- will move
 

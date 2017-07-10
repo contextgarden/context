@@ -13,7 +13,7 @@
 \setuptagging[state=start] % should be set automatically, if 'tagging = true'
 
 \setuplanguage[en]
-  
+
 % DisplayDocTitle key is not set to true
 %
 % [from PDFUA-Reference-09_(English-invoice).pdf]
@@ -21,6 +21,7 @@
 % <</Type/Catalog/Pages 1 0 R/ViewerPreferences<</DisplayDocTitle true>>/PageMode/UseOutlines/Outlines 43 0 R/Lang(en)/StructTreeRoot 2 0 R/MarkInfo<</Marked true/Suspects false>>/OutputIntents[ 128 0 R]/Metadata 127 0 R>>
 % endobj
 % this may interfer with other ViewerPreferences settings?
+
 \startluacode
     lpdf.addtocatalog("ViewerPreferences",lpdf.dictionary{DisplayDocTitle = true})
 \stopluacode
@@ -29,13 +30,13 @@
 
 \starttext
   Warning: This document may contain errors and traces of hazelnuts.
-  
+
   \blank[big]
 
   \startMPcode
     fill fullcircle scaled 3cm withcolor red;
   \stopMPcode
-  
+
   \blank[big]
 
   The \quote{Matterhorn Protocol} gives a condensed overview of the possible failure conditions

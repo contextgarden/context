@@ -73,6 +73,8 @@
     \c!display=\v!yes,
     \c!width=7\emwidth,
     \c!distance=\emwidth,
+    \c!stretch=.50,
+    \c!shrink=.25,
     \c!titledistance=.5\emwidth,
     %c!hang=,
     %c!sample=,
@@ -410,8 +412,12 @@
 \installcommandhandler \??constructionalternative {constructionalternative} \??constructionalternative
 
 \setupconstructionalternative
-  [\c!width=\constructionparameter\c!width,
-   \c!distance=\constructionparameter\c!distance]
+  [%c!left=, % no inheritance
+   %c!right=,% no inheritance
+   \c!width=\constructionparameter\c!width,
+   \c!distance=\constructionparameter\c!distance,
+   \c!stretch=\constructionparameter\c!stretch,
+   \c!shrink=\constructionparameter\c!shrink]
 
 \defineconstructionalternative
   [\v!left]
@@ -463,7 +469,7 @@
 
 \defineconstructionalternative
   [\v!hanging]
-  [%\c!width=\v!fit,
+  [%\c!width=.75\emwidth
    \c!renderingsetup=\??constructionrenderings:\v!hanging]
 
 \defineconstructionalternative
@@ -778,7 +784,10 @@
     \flushconstructionheadbox
     \ifconditional\c_strc_constructions_distance_none \else
         \nobreak
-        \hskip\constructionsheaddistance \s!plus .5\constructionsheaddistance \s!minus .25\constructionsheaddistance\relax
+        \hskip\constructionsheaddistance
+          \s!plus \constructionalternativeparameter\c!stretch\constructionsheaddistance
+          \s!minus\constructionalternativeparameter\c!shrink \constructionsheaddistance
+        \relax
     \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -822,9 +831,9 @@
     \ifconditional\c_strc_constructions_distance_none \else
       % we used to have just a kern, but long lines look bad then
       \scratchdistance\ifdim\constructionsheaddistance=\zeropoint .75\emwidth\else\constructionsheaddistance\fi
-      \hskip     \scratchdistance
-      \s!plus .25\scratchdistance
-      \s!minus.25\scratchdistance
+      \hskip \scratchdistance
+        \s!plus \constructionalternativeparameter\c!stretch\scratchdistance
+        \s!minus\constructionalternativeparameter\c!shrink \scratchdistance
     \fi
     \ifhmode
         \ifx\p_strc_constructions_width\v!line

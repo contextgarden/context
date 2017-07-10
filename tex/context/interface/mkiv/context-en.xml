@@ -7361,6 +7361,12 @@
       <cd:constant type="none"/>
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="stretch">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="shrink">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
      <cd:parameter name="hang">
       <cd:constant type="fit"/>
       <cd:constant type="broad"/>
@@ -8080,6 +8086,12 @@
      <cd:parameter name="distance">
       <cd:constant type="none"/>
       <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="stretch">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="shrink">
+      <cd:constant type="cd:number"/>
      </cd:parameter>
      <cd:parameter name="hang">
       <cd:constant type="fit"/>
@@ -25268,6 +25280,12 @@
      <cd:parameter name="distance">
       <cd:constant type="none"/>
       <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="stretch">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="shrink">
+      <cd:constant type="cd:number"/>
      </cd:parameter>
      <cd:parameter name="hang">
       <cd:constant type="fit"/>

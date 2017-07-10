@@ -1616,7 +1616,6 @@ end
 --
 
 function injections.handler(head,where)
-triggers = { }
     if triggers then
         head = injectspaces(head)
     end

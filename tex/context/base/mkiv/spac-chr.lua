@@ -312,8 +312,12 @@ characters.methods = methods
 --     return tonode(head), done
 -- end
 
+local nn = 0
+local mm = 0
+
 function characters.handler(head)
     head = tonut(head)
+ -- for current, char, font in traverse_char_data(head) will save 0.015 on a 300 page doc
     for current in traverse_char(head) do
         local char = getchar(current)
         if char then

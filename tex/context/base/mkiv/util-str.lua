@@ -1204,3 +1204,21 @@ local pattern = Cs((newline / (os.newline or "\r") + 1)^0)
 function string.replacenewlines(str)
     return lpegmatch(pattern,str)
 end
+
+--
+
+function strings.newcollector()
+    local result, r = { }, 0
+    return
+        function(fmt,str,...) -- write
+            r = r + 1
+            result[r] = str == nil and fmt or formatters[fmt](str,...)
+        end,
+        function(connector) -- flush
+            if result then
+                local str = concat(result,connector)
+                result, r = { }, 0
+                return str
+            end
+        end
+end

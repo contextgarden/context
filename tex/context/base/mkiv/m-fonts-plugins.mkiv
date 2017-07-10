@@ -311,20 +311,20 @@
         results = table.setmetatableindex("table"),
     }
 
-    for i=1,#list do
-
-        local name = list[i]
-
-        context.setupbodyfont { name }
-        context.RunLatinTest (name, 100, "context",  "none",      "latin")
-        context.RunLatinTest (name, 100, "context",  "base",      "latin")
-        context.RunLatinTest (name, 100, "context",  "node",      "latin")
-        context.RunLatinTest (name, 100, "harfbuzz", "native",    "latin")
-     -- context.RunLatinTest (name, 100, "harfbuzz", "uniscribe", "latin")
-     -- context.RunLatinTest (name,   1, "context",  "text",      "latin")
-     -- context.RunLatinTest (name,   1, "harfbuzz", "binary",    "latin")
-
-    end
+--    for i=1,#list do
+--
+--        local name = list[i]
+--
+--        context.setupbodyfont { name }
+--        context.RunLatinTest (name, 100, "context",  "none",      "latin")
+--        context.RunLatinTest (name, 100, "context",  "base",      "latin")
+--        context.RunLatinTest (name, 100, "context",  "node",      "latin")
+--        context.RunLatinTest (name, 100, "harfbuzz", "native",    "latin")
+--     -- context.RunLatinTest (name, 100, "harfbuzz", "uniscribe", "latin")
+--     -- context.RunLatinTest (name,   1, "context",  "text",      "latin")
+--     -- context.RunLatinTest (name,   1, "harfbuzz", "binary",    "latin")
+--
+--    end
 
     context(function()
         context.page()
@@ -344,27 +344,27 @@
         results = table.setmetatableindex("table")
     }
 
-    for i=1,#list do
-
-        local name = list[i]
-
-        context.setupbodyfont { name }
-        context.RunArabicTest (name, 100, "context",  "none",      "arabic")
-        context.RunArabicTest (name, 100, "context",  "base",      "arabic")
-        context.RunArabicTest (name, 100, "context",  "node",      "arabic")
-        context.RunArabicTest (name, 100, "harfbuzz", "native",    "arabic")
-     -- context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "arabic")
-     -- context.RunArabicTest (name,   1, "context",  "text",      "arabic")
-     -- context.RunArabicTest (name,   1, "harfbuzz", "binary",    "arabic")
-
-    end
-
-    context(function()
-        context.page()
-        context.title((jit and "luajittex" or "luatex") .. " arabic")
-        processlist(data.timings["arabic"])
-        context.page()
-    end)
+--    for i=1,#list do
+--
+--        local name = list[i]
+--
+--        context.setupbodyfont { name }
+--        context.RunArabicTest (name, 100, "context",  "none",      "arabic")
+--        context.RunArabicTest (name, 100, "context",  "base",      "arabic")
+--        context.RunArabicTest (name, 100, "context",  "node",      "arabic")
+--        context.RunArabicTest (name, 100, "harfbuzz", "native",    "arabic")
+--     -- context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "arabic")
+--     -- context.RunArabicTest (name,   1, "context",  "text",      "arabic")
+--     -- context.RunArabicTest (name,   1, "harfbuzz", "binary",    "arabic")
+--
+--    end
+--
+--    context(function()
+--        context.page()
+--        context.title((jit and "luajittex" or "luatex") .. " arabic")
+--        processlist(data.timings["arabic"])
+--        context.page()
+--    end)
 
     -- MIXED
 
@@ -382,9 +382,9 @@
         local name = list[i]
 
         context.setupbodyfont { name }
-        context.RunArabicTest (name, 100, "context",  "none",      "mixed")
-        context.RunArabicTest (name, 100, "context",  "base",      "mixed")
-        context.RunArabicTest (name, 100, "context",  "node",      "mixed")
+--        context.RunArabicTest (name, 100, "context",  "none",      "mixed")
+--        context.RunArabicTest (name, 100, "context",  "base",      "mixed")
+--      context.RunArabicTest (name, 100, "context",  "node",      "mixed")
         context.RunArabicTest (name, 100, "harfbuzz", "native",    "mixed")
      -- context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "mixed")
      -- context.RunArabicTest (name,   1, "context",  "text",      "mixed")

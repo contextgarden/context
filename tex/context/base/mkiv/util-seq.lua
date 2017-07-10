@@ -361,6 +361,6 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
         end
     end
     local processor = #calls > 0 and formatters[nostate and template_yes_nostate or template_yes_state](concat(vars,"\n"),args,concat(calls,"\n")) or template_nop
--- print(processor)
+ -- print(processor)
     return processor
 end

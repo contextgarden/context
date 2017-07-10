@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/07/17 18:38:39
+-- merge date  : 07/10/17 14:24:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -4288,6 +4288,21 @@ end
 local pattern=Cs((newline/(os.newline or "\r")+1)^0)
 function string.replacenewlines(str)
   return lpegmatch(pattern,str)
+end
+function strings.newcollector()
+  local result,r={},0
+  return
+    function(fmt,str,...) 
+      r=r+1
+      result[r]=str==nil and fmt or formatters[fmt](str,...)
+    end,
+    function(connector) 
+      if result then
+        local str=concat(result,connector)
+        result,r={},0
+        return str
+      end
+    end
 end
 
 end -- closure
@@ -21880,7 +21895,6 @@ local function injectspaces(head)
   return head,true
 end
 function injections.handler(head,where)
-triggers={}
   if triggers then
     head=injectspaces(head)
   end
@@ -22381,7 +22395,6 @@ local flush_node_list=nuts.flush_list
 local flush_node=nuts.flush_node
 local end_of_math=nuts.end_of_math
 local traverse_nodes=nuts.traverse
-local traverse_id=nuts.traverse_id
 local set_components=nuts.set_components
 local take_components=nuts.take_components
 local count_components=nuts.count_components
