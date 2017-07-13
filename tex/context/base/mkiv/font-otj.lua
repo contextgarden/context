@@ -966,7 +966,7 @@ local function inject_pairs_only(head,where)
     if keepregisteredcounts then
         keepregisteredcounts = false
     else
-        nofregisteredkerns   = 0
+        nofregisteredpairs = 0
     end
     if trace_injections then
         show_result(head)

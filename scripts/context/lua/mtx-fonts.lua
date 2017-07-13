@@ -16,7 +16,7 @@ local lower = string.lower
 local concat = table.concat
 local write_nl = texio.write_nl
 
-local otlversion  = 3.031
+local otlversion  = 3.032
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -286,6 +286,7 @@ local function showfeatures(tag,specification)
         report("no features")
     end
     report()
+    collectgarbage("collect")
 end
 
 local function reloadbase(reload)
@@ -338,6 +339,7 @@ local function list_matches(t,info)
             for k=1,#s do
                 local v = s[k]
                 showfeatures(v,t[v])
+                collectgarbage("collect") -- in case we load a lot
             end
         else
             for k=1,#s do

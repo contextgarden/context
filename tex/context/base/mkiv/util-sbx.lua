@@ -28,6 +28,7 @@ local concat         = string.concat
 local unquoted       = string.unquoted
 local optionalquoted = string.optionalquoted
 local basename       = file.basename
+local nameonly       = file.nameonly
 
 local sandbox        = sandbox
 local validroots     = { }
@@ -122,9 +123,9 @@ local function registerlibrary(name)
             return
         end
         if validlibraries == true then
-            validlibraries = { [name] = true }
+            validlibraries = { [nameonly(name)] = true }
         else
-            validlibraries[name] = true
+            validlibraries[nameonly(name)] = true
         end
     elseif name == true then
         validlibraries = { }
@@ -562,9 +563,9 @@ if FFISUPPORTED and ffi then
         end
     end
 
-    local load = ffi.load
+    local fiiload = ffi.load
 
-    if load then
+    if fiiload then
 
         local reported = { }
 
@@ -573,10 +574,10 @@ if FFISUPPORTED and ffi then
                 -- all blocked
             elseif validlibraries == true then
                 -- all permitted
-                return load(name,...)
-            elseif validlibraries[name] then
+                return fiiload(name,...)
+            elseif validlibraries[nameonly(name)] then
                 -- 'name' permitted
-                return load(name,...)
+                return fiiload(name,...)
             else
                 -- 'name' not permitted
             end

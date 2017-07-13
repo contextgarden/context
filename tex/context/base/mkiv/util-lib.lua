@@ -343,9 +343,16 @@ We use the same lookup logic for ffi loading.
     local trace_ffilib  = false
     local savedffiload  = ffi.load
 
+ -- local pushlibpath = package.pushlibpath
+ -- local poplibpath  = package.poplibpath
+
  -- ffi.savedload = savedffiload
 
     trackers.register("resolvers.ffilib", function(v) trace_ffilib = v end)
+
+ -- pushlibpath(pathpart(name))
+ -- local message, library = pcall(savedffiload,nameonly(name))
+ -- poplibpath()
 
     local function locateindeed(name)
         local message, library = pcall(savedffiload,removesuffix(name))

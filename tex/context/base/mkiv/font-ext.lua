@@ -1486,7 +1486,8 @@ do
                     report_reorder("stop swapping lookups, %i lookups swapped",swapped)
                     report_reorder()
                 end
-                tfmdata.resources.sequences = sequences
+--                 tfmdata.resources.sequences = sequences
+                tfmdata.shared.reorderedsequences = sequences
             end
         end
     end

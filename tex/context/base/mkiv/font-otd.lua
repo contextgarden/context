@@ -268,7 +268,7 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
             -- indexed but we can also add specific data by key in:
         }
         rl[attr] = ra
-        local sequences = tfmdata.resources.sequences
+        local sequences = tfmdata.shared.reorderedsequences or tfmdata.resources.sequences
         if sequences then
             local autoscript   = (s_enabled and s_enabled.autoscript  ) or (a_enabled and a_enabled.autoscript  )
             local autolanguage = (s_enabled and s_enabled.autolanguage) or (a_enabled and a_enabled.autolanguage)

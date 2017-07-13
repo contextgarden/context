@@ -693,6 +693,7 @@
 		<cd:constant name='bottomoffset' value='bottomoffset'/>
 		<cd:constant name='bottomspace' value='bottomspace'/>
 		<cd:constant name='bottomstate' value='bottomstate'/>
+		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='calculate'/>

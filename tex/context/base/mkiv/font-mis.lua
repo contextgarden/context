@@ -21,7 +21,7 @@ local readers  = otf.readers
 
 if readers then
 
-    otf.version = otf.version or 3.031
+    otf.version = otf.version or 3.032
     otf.cache   = otf.cache   or containers.define("fonts", "otl", otf.version, true)
 
     function fonts.helpers.getfeatures(name,save)
@@ -33,10 +33,17 @@ if readers then
             if data then
                 readers.unpack(data)
             else
-                data = readers.loadfont(filename)
-                if data and save then
-                    containers.write(otf.cache,cleanname,data)
-                end
+                data = readers.loadfont(filename) -- we can do a more minimal load
+             -- if data and save then
+             --     -- keep this in sync with font-otl
+             --     readers.compact(data)
+             --     readers.rehash(data,"unicodes")
+             --     readers.addunicodetable(data)
+             --     readers.extend(data)
+             --     readers.pack(data)
+             --     -- till here
+             --     containers.write(otf.cache,cleanname,data)
+             -- end
             end
             return data and data.resources and data.resources.features
         end

@@ -149,17 +149,37 @@ function characters.replacenbsp(head,original)
     return head, current
 end
 
+-- function characters.replacenbspaces(head)
+--     for current in traverse_id(glyph_code,head) do
+--         if getchar(current) == 0x00A0 then
+--             local h = nbsp(head,current)
+--             if h then
+--                 head = remove_node(h,current,true)
+--             end
+--         end
+--     end
+--     return head
+-- end
+
 function characters.replacenbspaces(head)
- -- for current in traverse_id(glyph_code,head) do
-    for current in traverse_char(head) do
+    local head = tonut(head)
+    local wipe = false
+    for current in traverse_id(glyph_code,head) do -- can be anytiem so no traverse_char
         if getchar(current) == 0x00A0 then
+            if wipe then
+                head = remove_node(h,current,true)
+                wipe = false
+            end
             local h = nbsp(head,current)
             if h then
-                head = remove_node(h,current,true)
+                wipe = current
             end
         end
     end
-    return head
+    if wipe then
+        head = remove_node(h,current,true)
+    end
+    return tonode(head)
 end
 
 -- This initialization might move someplace else if we need more of it. The problem is that
@@ -312,27 +332,33 @@ characters.methods = methods
 --     return tonode(head), done
 -- end
 
-local nn = 0
-local mm = 0
+-- for current, char, font in traverse_char_data(head) will save 0.015 on a 300 page doc
 
 function characters.handler(head)
-    head = tonut(head)
- -- for current, char, font in traverse_char_data(head) will save 0.015 on a 300 page doc
+    local head = tonut(head)
+    local wipe = false
     for current in traverse_char(head) do
         local char = getchar(current)
         if char then
             local method = methods[char]
             if method then
+                if wipe then
+                    head = remove_node(head,wipe,true)
+                    wipe = false
+                end
                 if trace_characters then
                     report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
                 end
                 local h = method(head,current)
                 if h then
-                    head = remove_node(h,current,true)
+                    wipe = current
                 end
                 done = true
             end
         end
+    end
+    if wipe then
+        head = remove_node(head,wipe,true)
     end
     return tonode(head), done
 end

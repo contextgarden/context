@@ -690,13 +690,13 @@ end
 
 local function readposition(f,format,mainoffset,getdelta)
     if format == 0 then
-        return
+        return false
     end
     -- a few happen often
     if format == 0x04 then
         local h = readshort(f)
         if h == 0 then
-            return
+            return true -- all zero
         else
             return { 0, 0, h, 0 }
         end
@@ -705,7 +705,7 @@ local function readposition(f,format,mainoffset,getdelta)
         local x = readshort(f)
         local h = readshort(f)
         if x == 0 and h == 0 then
-            return
+            return true -- all zero
         else
             return { x, 0, h, 0 }
         end
@@ -724,7 +724,7 @@ local function readposition(f,format,mainoffset,getdelta)
             skipshort(f,1)
         end
         if h == 0 then
-            return
+            return true -- all zero
         else
             return { 0, 0, h, 0 }
         end
@@ -779,7 +779,7 @@ local function readposition(f,format,mainoffset,getdelta)
         end
         return { x, y, h, v }
     elseif x == 0 and y == 0 and h == 0 and v == 0 then
-        return
+        return true -- all zero
     else
         return { x, y, h, v }
     end
@@ -1521,7 +1521,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                     local first  = value[2]
                     local second = value[3]
                     if first or second then
-                        hash[other] = { first, second } -- needs checking
+                        hash[other] = { first, second or nil } -- needs checking
                     else
                         hash[other] = nil
                     end
@@ -1557,7 +1557,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                             local first  = offsets[1]
                             local second = offsets[2]
                             if first or second then
-                                hash[paired] = { first, second }
+                                hash[paired] = { first, second or nil }
                             else
                                 -- upto the next lookup for this combination
                             end
@@ -1591,18 +1591,27 @@ function gposhandlers.cursive(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
             local entry = readushort(f)
             local exit  = readushort(f)
             records[i] = {
-                entry = entry ~= 0 and (tableoffset + entry) or false,
-                exit  = exit  ~= 0 and (tableoffset + exit ) or false,
+             -- entry = entry ~= 0 and (tableoffset + entry) or false,
+             -- exit  = exit  ~= 0 and (tableoffset + exit ) or nil,
+                entry ~= 0 and (tableoffset + entry) or false,
+                exit  ~= 0 and (tableoffset + exit ) or nil,
             }
         end
+        -- slot 1 will become hash after loading an dit must be unique because we
+        -- pack the tables (packed we turn the cc-* into a zero)
+        local cc = (fontdata.temporary.cursivecount or 0) + 1
+        fontdata.temporary.cursivecount = cc
+        cc = "cc-" .. cc
         coverage = readcoverage(f,coverage)
         for i=1,nofrecords do
             local r = records[i]
-            -- slot 1 will become hash after loading (must be unique per lookup when packed)
             records[i] = {
-                1,
-                readanchor(f,r.entry,getdelta) or nil,
-                readanchor(f,r.exit, getdelta) or nil,
+             -- 1,
+                cc,
+             -- readanchor(f,r.entry,getdelta) or false,
+             -- readanchor(f,r.exit, getdelta) or nil,
+                readanchor(f,r[1],getdelta) or false,
+                readanchor(f,r[2],getdelta) or nil,
             }
         end
         for index, newindex in next, coverage do

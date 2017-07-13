@@ -1067,6 +1067,22 @@ function readers.pack(data)
             end
         end
 
+        local function pack_normal_cc(v)
+            local tag = tabstr_normal(v)
+            local ht = h[tag]
+            if ht then
+                c[ht] = c[ht] + 1
+                return ht
+            else
+                v[1] = 0
+                nt = nt + 1
+                t[nt] = v
+                h[tag] = nt
+                c[nt] = 1
+                return nt
+            end
+        end
+
         local function pack_flat(v)
             local tag = tabstr_flat(v)
             local ht = h[tag]
@@ -1146,6 +1162,25 @@ function readers.pack(data)
             end
         end
 
+        local function pack_final_cc(v)
+            -- v == number
+            if c[v] <= criterium then
+                return t[v]
+            else
+                -- compact hash
+                local hv = hh[v]
+                if hv then
+                    return hv
+                else
+                    ntt = ntt + 1
+                    tt[ntt] = t[v]
+                    hh[v] = ntt
+                    cc[ntt] = c[v]
+                    return ntt
+                end
+            end
+        end
+
         local function success(stage,pass)
             if nt == 0 then
                 if trace_loading or trace_packing then
@@ -1192,9 +1227,9 @@ function readers.pack(data)
 
         local function packers(pass)
             if pass == 1 then
-                return pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed
+                return pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc
             else
-                return pack_final, pack_final, pack_final, pack_final, pack_final
+                return pack_final, pack_final, pack_final, pack_final, pack_final, pack_final_cc
             end
         end
 
@@ -1212,15 +1247,13 @@ function readers.pack(data)
             return
         end
 
-        --
-
         for pass=1,2 do
 
             if trace_packing then
                 report_otf("start packing: stage 1, pass %s",pass)
             end
 
-            local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
+            local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc = packers(pass)
 
             for unicode, description in next, descriptions do
                 local boundingbox = description.boundingbox
@@ -1262,13 +1295,15 @@ function readers.pack(data)
                                 if c then
                                     if step.format == "kern" then
                                         for g1, d1 in next, c do
-                                            c[g1] = pack_normal(d1)
+                                            if d1 ~= true then
+                                                c[g1] = pack_normal(d1)
+                                            end
                                         end
                                     else
                                         for g1, d1 in next, c do
                                             for g2, d2 in next, d1 do
-                                                local f = d2[1] if f then d2[1] = pack_indexed(f) end
-                                                local s = d2[2] if s then d2[2] = pack_indexed(s) end
+                                                local f = d2[1] if f and f ~= true then d2[1] = pack_indexed(f) end
+                                                local s = d2[2] if s and s ~= true then d2[2] = pack_indexed(s) end
                                             end
                                         end
                                     end
@@ -1280,7 +1315,9 @@ function readers.pack(data)
                                         step.coverage = pack_normal(c)
                                     else
                                         for g1, d1 in next, c do
-                                            c[g1] = pack_indexed(d1)
+                                            if d1 ~= true then
+                                                c[g1] = pack_indexed(d1)
+                                            end
                                         end
                                     end
                                 end
@@ -1400,7 +1437,7 @@ function readers.pack(data)
                             for i=1,#deltas do
                                 local di = deltas[i]
                                 local d  = di.deltas
-                                local r  = di.regions
+                             -- local r  = di.regions
                                 for j=1,#d do
                                     d[j] = pack_indexed(d[j])
                                 end
@@ -1440,7 +1477,7 @@ function readers.pack(data)
                     report_otf("start packing: stage 2, pass %s",pass)
                 end
 
-                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
+                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc = packers(pass)
 
                 for unicode, description in next, descriptions do
                     local math = description.math
@@ -1474,11 +1511,22 @@ function readers.pack(data)
                                             end
                                         end
                                     end
---                                 elseif kind == "gpos_mark2base" or kind == "gpos_mark2mark" or kind == "gpos_mark2ligature" then
--- local c = step.baseclasses
--- for k, v in next, c do
---     c[k] = pack_normal(v)
--- end
+                             -- elseif kind == "gpos_cursive" then
+                             --     local c = step.coverage -- new
+                             --     if c then
+                             --         for g1, d1 in next, c do
+                             --             c[g1] = pack_normal_cc(d1)
+                             --         end
+                             --     end
+                                elseif kind == "gpos_mark2ligature" then
+                                    local c = step.baseclasses -- new
+                                    if c then
+                                        for g1, d1 in next, c do
+                                            for g2, d2 in next, d1 do
+                                                d1[g2] = pack_normal(d2)
+                                            end
+                                        end
+                                    end
                                 end
                                 local rules = step.rules
                                 if rules then
@@ -1526,7 +1574,7 @@ function readers.pack(data)
                     report_otf("start packing: stage 3, pass %s",pass)
                 end
 
-                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed = packers(pass)
+                local pack_normal, pack_indexed, pack_flat, pack_boolean, pack_mixed, pack_normal_cc = packers(pass)
 
                 local function packthem(sequences)
                     for i=1,#sequences do
@@ -1548,10 +1596,17 @@ function readers.pack(data)
                                             end
                                         end
                                     end
+                                elseif kind == "gpos_cursive" then
+                                    local c = step.coverage
+                                    if c then
+                                        for g1, d1 in next, c do
+                                            c[g1] = pack_normal_cc(d1)
+                                        end
+                                    end
                                 end
                             end
                         end
-                   end
+                    end
                 end
 
                 if sequences then
@@ -1689,6 +1744,11 @@ function readers.unpack(data)
                                 local c = step.coverage
                                 if c then
                                     for g1, d1 in next, c do
+                                        local tv = tables[d1]
+                                        if tv then
+                                            d1 = tv
+                                            c[g1] = d1
+                                        end
                                         local f = tables[d1[2]] if f then d1[2] = f end
                                         local s = tables[d1[3]] if s then d1[3] = s end
                                     end
@@ -1696,12 +1756,6 @@ function readers.unpack(data)
                             elseif kind == "gpos_mark2base" or kind == "gpos_mark2mark" then
                                 local c = step.baseclasses
                                 if c then
--- for k, v in next, c do
---     local tv = tables[v]
---     if tv then
---         c[k] = tv
---     end
--- end
                                     for g1, d1 in next, c do
                                         for g2, d2 in next, d1 do
                                             local tv = tables[d2]
@@ -1723,14 +1777,13 @@ function readers.unpack(data)
                             elseif kind == "gpos_mark2ligature" then
                                 local c = step.baseclasses
                                 if c then
--- for k, v in next, c do
---     local tv = tables[v]
---     if tv then
---         c[k] = tv
---     end
--- end
                                     for g1, d1 in next, c do
                                         for g2, d2 in next, d1 do
+                                            local tv = tables[d2] -- new
+                                            if tv then
+                                                d2 = tv
+                                                d1[g2] = d2
+                                            end
                                             for g3, d3 in next, d2 do
                                                 local tv = tables[d2[g3]]
                                                 if tv then
@@ -2185,6 +2238,7 @@ function readers.compact(data)
                 allsteps = allsteps + nofsteps
                 if nofsteps > 1 then
                     local kind = lookup.type
+                    local merg = merged
                     if kind == "gsub_single" or kind == "gsub_alternate" or kind == "gsub_multiple" then
                         merged = merged + mergesteps_1(lookup)
                     elseif kind == "gsub_ligature" then
@@ -2199,6 +2253,9 @@ function readers.compact(data)
                         merged = merged + mergesteps_2(lookup)
                     elseif kind == "gpos_mark2mark" or kind == "gpos_mark2base" or kind == "gpos_mark2ligature" then
                         merged = merged + mergesteps_3(lookup)
+                    end
+                    if merg ~= merged then
+                        lookup.merged = true
                     end
                 end
             end
@@ -2268,7 +2325,7 @@ function readers.expand(data)
             for i=1,#t do
                 local step     = t[i]
                 local coverage = step.coverage
-                for k, v in next, coverage do
+                for k in next, coverage do
                     local m = merged[k]
                     if m then
                         m[2] = i
@@ -2291,6 +2348,7 @@ function readers.expand(data)
                 local sequence = sequences[i]
                 local steps    = sequence.steps
                 if steps then
+                    local nofsteps = sequence.nofsteps
 
                     setmetatableindex(steps,mergesteps)
 
@@ -2304,7 +2362,14 @@ function readers.expand(data)
                             sequence.markclass = markclasses[markclass]
                         end
                     end
-                    local nofsteps = sequence.nofsteps
+                    local flags = sequence.flags
+                    if flags then
+                        flags[5] = flags[1] ~= false  -- otherwise "mark"
+                                or flags[2] ~= false  -- otherwise "base"
+                                or flags[3] ~= false  -- otherwise "ligature"
+                                or sequence.markclass
+                                or false
+                    end
                     for i=1,nofsteps do
                         local step = steps[i]
                         local baseclasses = step.baseclasses
@@ -2373,6 +2438,7 @@ function readers.expand(data)
                                     end
                                 end
                                 if sequence[1] then -- we merge coverage into one
+                                    sequence.n = #sequence -- tiny speedup
                                     rulesize = rulesize + 1
                                     rulehash[rulesize] = {
                                         nofrules,     -- 1
@@ -2393,6 +2459,7 @@ function readers.expand(data)
                                         end
                                     end
                                 end
+                                rulehash.n = #rulehash -- tiny speedup
                             end
                         end
                     end

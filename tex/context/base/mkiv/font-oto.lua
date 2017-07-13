@@ -400,6 +400,43 @@ local function initializehashes(tfmdata)
     -- already done
 end
 
+local function checkmathreplacements(tfmdata,fullname)
+    if tfmdata.mathparameters then
+        local characters = tfmdata.characters
+        local changed    = tfmdata.changed
+        if next(changed) then
+            if trace_preparing or trace_baseinit then
+                report_prepare("checking math replacements for %a",fullname)
+            end
+            for unicode, replacement in next, changed do
+                local u = characters[unicode]
+                local r = characters[replacement]
+                local n = u.next
+                local v = u.vert_variants
+                local h = u.horiz_variants
+                if n and not r.next then
+                    if trace_preparing then
+                        report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
+                    end
+                    r.next = n
+                end
+                if v and not r.vert_variants then
+                    if trace_preparing then
+                        report_prepare("forcing %s for %C substituted by %U","vertical variants",unicode,replacement)
+                    end
+                    r.vert_variants = v
+                end
+                if h and not r.horiz_variants then
+                    if trace_preparing then
+                        report_prepare("forcing %s for %C substituted by %U","horizontal variants",unicode,replacement)
+                    end
+                    r.horiz_variants = h
+                end
+            end
+        end
+    end
+end
+
 local function featuresinitializer(tfmdata,value)
     if true then -- value then
         local starttime = trace_preparing and os.clock()
@@ -416,6 +453,8 @@ local function featuresinitializer(tfmdata,value)
             local rawfeatures       = rawresources and rawresources.features
             local basesubstitutions = rawfeatures and rawfeatures.gsub
             local basepositionings  = rawfeatures and rawfeatures.gpos
+            local substitutionsdone = false
+            local positioningsdone  = false
             --
             if basesubstitutions or basepositionings then
                 local sequences = tfmdata.resources.sequences
@@ -438,18 +477,24 @@ local function featuresinitializer(tfmdata,value)
                                         end
                                         preparesubstitutions(tfmdata,feature,value,validlookups,lookuplist)
                                         registerbasefeature(feature,value)
+                                        substitutionsdone = true
                                     elseif basepositionings and basepositionings[feature] then
                                         if trace_preparing then
                                             report_prepare("filtering base %a feature %a for %a with value %a","pos",feature,fullname,value)
                                         end
                                         preparepositionings(tfmdata,feature,value,validlookups,lookuplist)
                                         registerbasefeature(feature,value)
+                                        positioningsdone = true
                                     end
                                 end
                             end
                         end
                     end
                 end
+            end
+            --
+            if substitutionsdone then
+                checkmathreplacements(tfmdata,fullname)
             end
             --
             registerbasehash(tfmdata)

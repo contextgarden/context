@@ -82,7 +82,7 @@ local insert_after       = nuts.insert_after
 local nodepool           = nuts.pool
 local new_latelua        = nodepool.latelua
 local new_rule           = nodepool.rule
-local new_hlist          = nodepool.hlist
+local new_kern           = nodepool.kern
 
 local getdimensions      = nuts.dimensions
 local getrangedimensions = nuts.rangedimensions
@@ -322,7 +322,8 @@ local function inject(head,first,last,tag,line)
         d = depth
     end
     if trace then
-        head = insert_before(head,first,new_hlist(new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth)))
+        head = insert_before(head,first,new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth))
+        head = insert_before(head,first,new_kern(-w))
     end
     head = x_hlist(head,first,tag,line,w,h,d)
     return head
@@ -390,7 +391,8 @@ local function inject(parent,head,first,last,tag,line)
         d = depth
     end
     if trace then
-        head = insert_before(head,first,new_hlist(new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth)))
+        head = insert_before(head,first,new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth))
+        head = insert_before(head,first,new_kern(-w))
     end
     head = x_hlist(head,first,tag,line,w,h,d)
     return head
