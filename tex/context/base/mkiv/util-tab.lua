@@ -616,6 +616,10 @@ local is_simple_table = table.is_simple_table
 --     return nil
 -- end
 
+-- In order to overcome the luajit (65K constant) limitation I tried a split approach,
+-- i.e. outputting the first level tables as locals but that failed with large cjk
+-- fonts too so I removed that ... just use luatex instead.
+
 local function serialize(root,name,specification)
 
     if type(specification) == "table" then

@@ -412,11 +412,9 @@ local function addfeature(data,feature,specifications)
         local rules    = list.rules
         local coverage = { }
         if rules then
-            local rulehash     = { }
-            local rulesize     = 0
-            local sequence     = { }
-            local nofsequences = 0
-            local lookuptype   = types[featuretype]
+            local rulehash   = { }
+            local rulesize   = 0
+            local lookuptype = types[featuretype]
             for nofrules=1,#rules do
                 local rule         = rules[nofrules]
                 local current      = rule.current
@@ -504,8 +502,10 @@ local function addfeature(data,feature,specifications)
                             coverage[unic] = rulehash -- can now be done cleaner i think
                         end
                     end
+                    sequence.n = nofsequences
                 end
             end
+            rulehash.n = rulesize
         end
         return coverage
     end

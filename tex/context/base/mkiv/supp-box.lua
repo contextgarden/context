@@ -350,6 +350,7 @@ implement {
         local result = new_hlist()
         setlist(result,head)
         setbox(target,result)
+     -- setbox(target,new_hlist(head))
     end
 }
 

@@ -368,9 +368,13 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
                         local character = characters[unicode]
                         local kerns     = character.kerns
                         for otherunicode, kern in next, data do
-                            if not kern[2] and not (kerns and kerns[otherunicode]) then
+                            -- kern[2] is true (all zero) or a table
+                            local other = kern[2]
+                            if other == true or (not other and not (kerns and kerns[otherunicode])) then
                                 local kern = kern[1]
-                                if kern[1] ~= 0 or kern[2] ~= 0 or kern[4] ~= 0 then
+                                if kern == true then
+                                    -- all zero
+                                elseif kern[1] ~= 0 or kern[2] ~= 0 or kern[4] ~= 0 then
                                     -- a complex pair not suitable for basemode
                                 else
                                     kern = kern[3]

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/13/17 15:06:46
+-- merge date  : 07/14/17 19:35:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -17914,7 +17914,7 @@ local function checklookups(fontdata,missing,nofmissing)
       end
     end
     if next(done) then
-      report("not unicoded: % t",table.sortedkeys(done))
+      report("not unicoded: % t",sortedkeys(done))
     end
   end
 end
@@ -18332,20 +18332,6 @@ function readers.pack(data)
         return nt
       end
     end
-    local function pack_boolean(v)
-      local tag=tabstr_boolean(v)
-      local ht=h[tag]
-      if ht then
-        c[ht]=c[ht]+1
-        return ht
-      else
-        nt=nt+1
-        t[nt]=v
-        h[tag]=nt
-        c[nt]=1
-        return nt
-      end
-    end
     local function pack_indexed(v)
       local tag=concat(v," ")
       local ht=h[tag]
@@ -18362,6 +18348,20 @@ function readers.pack(data)
     end
     local function pack_mixed(v)
       local tag=tabstr_mixed(v)
+      local ht=h[tag]
+      if ht then
+        c[ht]=c[ht]+1
+        return ht
+      else
+        nt=nt+1
+        t[nt]=v
+        h[tag]=nt
+        c[nt]=1
+        return nt
+      end
+    end
+    local function pack_boolean(v)
+      local tag=tabstr_boolean(v)
       local ht=h[tag]
       if ht then
         c[ht]=c[ht]+1
@@ -18503,9 +18503,7 @@ function readers.pack(data)
                 if c then
                   if step.format=="kern" then
                     for g1,d1 in next,c do
-                      if d1~=true then
-                        c[g1]=pack_normal(d1)
-                      end
+                      c[g1]=pack_normal(d1)
                     end
                   else
                     for g1,d1 in next,c do
@@ -18686,8 +18684,7 @@ function readers.pack(data)
                 if kind=="gpos_pair" then
                   local c=step.coverage
                   if c then
-                    if step.format=="kern" then
-                    else
+                    if step.format~="kern" then
                       for g1,d1 in next,c do
                         for g2,d2 in next,d1 do
                           d1[g2]=pack_normal(d2)
@@ -18759,8 +18756,7 @@ function readers.pack(data)
                 if kind=="gpos_pair" then
                   local c=step.coverage
                   if c then
-                    if step.format=="kern" then
-                    else
+                    if step.format~="kern" then
                       for g1,d1 in next,c do
                         c[g1]=pack_normal(d1)
                       end
@@ -18841,6 +18837,19 @@ function readers.unpack(data)
           local features=sequence.features
           local flags=sequence.flags
           local markclass=sequence.markclass
+          if features then
+            local tv=tables[features]
+            if tv then
+              sequence.features=tv
+              features=tv
+            end
+            for script,feature in next,features do
+              local tv=tables[feature]
+              if tv then
+                features[script]=tv
+              end
+            end
+          end
           if steps then
             for i=1,#steps do
               local step=steps[i]
@@ -19007,19 +19016,6 @@ function readers.unpack(data)
                     end
                   end
                 end
-              end
-            end
-          end
-          if features then
-            local tv=tables[features]
-            if tv then
-              sequence.features=tv
-              features=tv
-            end
-            for script,feature in next,features do
-              local tv=tables[feature]
-              if tv then
-                features[script]=tv
               end
             end
           end
@@ -19313,7 +19309,8 @@ local function checkpairs(lookup)
             break
           else
             local v=d2[1]
-            if v[1]~=0 or v[2]~=0 or v[4]~=0 then
+            if v==true then
+            elseif v and (v[1]~=0 or v[2]~=0 or v[4]~=0) then
               kerns=false
               break
             end
@@ -19324,7 +19321,12 @@ local function checkpairs(lookup)
         report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
         for g1,d1 in next,coverage do
           for g2,d2 in next,d1 do
-            d1[g2]=d2[1][3]
+            local v=d2[1]
+            if v==true then
+              d1[g2]=nil
+            elseif v then
+              d1[g2]=v[3]
+            end
           end
         end
         step.format="kern"
@@ -20527,9 +20529,11 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
             local character=characters[unicode]
             local kerns=character.kerns
             for otherunicode,kern in next,data do
-              if not kern[2] and not (kerns and kerns[otherunicode]) then
+              local other=kern[2]
+              if other==true or (not other and not (kerns and kerns[otherunicode])) then
                 local kern=kern[1]
-                if kern[1]~=0 or kern[2]~=0 or kern[4]~=0 then
+                if kern==true then
+                elseif kern[1]~=0 or kern[2]~=0 or kern[4]~=0 then
                 else
                   kern=kern[3]
                   if kern~=0 then
@@ -21143,7 +21147,6 @@ local function inject_kerns_only(head,where)
   local prev=nil
   local next=nil
   local prevdisc=nil
-  local prevglyph=nil
   local pre=nil 
   local post=nil 
   local replace=nil 
@@ -21199,10 +21202,8 @@ local function inject_kerns_only(head,where)
         end
       end
       prevdisc=nil
-      prevglyph=current
     elseif char==false then
       prevdisc=nil
-      prevglyph=current
     elseif id==disc_code then
       pre,post,replace,pretail,posttail,replacetail=getdisc(current,true)
       local done=false
@@ -21254,10 +21255,8 @@ local function inject_kerns_only(head,where)
       if done then
         setdisc(current,pre,post,replace)
       end
-      prevglyph=nil
       prevdisc=current
     else
-      prevglyph=nil
       prevdisc=nil
     end
     prev=current
@@ -24782,8 +24781,8 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
   local skipped  
   local startprev,
      startnext=getboth(start)
-  local done
-  for k=1,contexts.n do
+  local done   
+  for k=1,contexts.n do 
     local current=start
     local last=start
     local ck=contexts[k]
@@ -25465,12 +25464,10 @@ local function testrun(disc,t_run,c_run,...)
     end
     local d_post=t_run(post,next,...)
     local d_replace=t_run(replace,next,...)
-    if (d_post and d_post>0) or (d_replace and d_replace>0) then
-      local d=d_replace or d_post
-      if d_post and d<d_post then
-        d=d_post
-      end
-      local head,tail=getnext(disc),disc
+    if d_post>0 or d_replace>0 then
+      local d=d_replace>d_post and d_replace or d_post
+      local head=getnext(disc)
+      local tail=head
       for i=1,d do
         tail=getnext(tail)
         if getid(tail)==disc_code then
@@ -25657,6 +25654,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
       break
     end
   end
+  return 0
 end
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
   local a 
@@ -25804,6 +25802,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
       break
     end
   end
+  return 0
 end
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
   local a 
@@ -29120,8 +29119,6 @@ local function addfeature(data,feature,specifications)
     if rules then
       local rulehash={}
       local rulesize=0
-      local sequence={}
-      local nofsequences=0
       local lookuptype=types[featuretype]
       for nofrules=1,#rules do
         local rule=rules[nofrules]
@@ -29207,8 +29204,10 @@ local function addfeature(data,feature,specifications)
               coverage[unic]=rulehash 
             end
           end
+          sequence.n=nofsequences
         end
       end
+      rulehash.n=rulesize
     end
     return coverage
   end

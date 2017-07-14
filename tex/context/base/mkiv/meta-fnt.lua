@@ -66,7 +66,7 @@ local flusher = {
         if inline then
             characters[slot] = {
                 commands = {
-                    { "pdf", code },
+                    { "pdf", "origin", code },
                 }
             }
         else

@@ -707,25 +707,25 @@ local f_slant = formatters["q 1 0 %F 1 0 0 cm"]
 
 backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
 
-    red        = { "pdf", "1 0 0 rg 1 0 0 RG" },
-    green      = { "pdf", "0 1 0 rg 0 1 0 RG" },
-    blue       = { "pdf", "0 0 1 rg 0 0 1 RG" },
-    gray       = { "pdf", ".75 g .75 G" },
-    black      = { "pdf", "0 g 0 G" },
+    red        = { "pdf", "origin", "1 0 0 rg 1 0 0 RG" },
+    green      = { "pdf", "origin", "0 1 0 rg 0 1 0 RG" },
+    blue       = { "pdf", "origin", "0 0 1 rg 0 0 1 RG" },
+    gray       = { "pdf", "origin", ".75 g .75 G" },
+    black      = { "pdf", "origin", "0 g 0 G" },
 
     rulecolors = {
-            red        = { "pdf", '1 0 0 rg' },
-            green      = { "pdf", '0 1 0 rg' },
-            blue       = { "pdf", '0 0 1 rg' },
-            gray       = { "pdf", '.5 g' },
-            black      = { "pdf", '0 g' },
-            palered    = { "pdf", '1 .75 .75 rg' },
-            palegreen  = { "pdf", '.75 1 .75 rg' },
-            paleblue   = { "pdf", '.75 .75 1 rg' },
-            palegray   = { "pdf", '.75 g' },
+            red        = { "pdf", "origin", '1 0 0 rg' },
+            green      = { "pdf", "origin", '0 1 0 rg' },
+            blue       = { "pdf", "origin", '0 0 1 rg' },
+            gray       = { "pdf", "origin", '.5 g' },
+            black      = { "pdf", "origin", '0 g' },
+            palered    = { "pdf", "origin", '1 .75 .75 rg' },
+            palegreen  = { "pdf", "origin", '.75 1 .75 rg' },
+            paleblue   = { "pdf", "origin", '.75 .75 1 rg' },
+            palegray   = { "pdf", "origin", '.75 g' },
     },
 
-    startslant = function(a) return { "pdf", f_slant(a) } end,
-    stopslant  = { "pdf", "Q" },
+    startslant = function(a) return { "pdf", "origin", f_slant(a) } end,
+    stopslant  = { "pdf", "origin", "Q" },
 
 }

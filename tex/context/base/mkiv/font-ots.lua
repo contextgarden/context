@@ -3285,14 +3285,13 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
           startnext    = getboth(start)
     local done      -- = false
 
- -- for k=1,#contexts do
-    for k=1,contexts.n do
+    for k=1,contexts.n do -- or #contexts do
         local current = start
         local last    = start
         local ck      = contexts[k]
         local seq     = ck[3]
      -- local s       = #seq
-        local s       = seq.n
+        local s       = seq.n -- or #seq
         -- f..l = mid string
         if s == 1 then
             -- this seldom happens as it makes no sense (bril, ebgaramond, husayni, minion)
@@ -4084,12 +4083,11 @@ local function testrun(disc,t_run,c_run,...)
         end
         local d_post    = t_run(post,next,...)
         local d_replace = t_run(replace,next,...)
-        if (d_post and d_post > 0) or (d_replace and d_replace > 0) then
-            local d = d_replace or d_post
-            if d_post and d < d_post then
-                d = d_post
-            end
-            local head, tail = getnext(disc), disc
+        if d_post > 0 or d_replace > 0 then
+            local d = d_replace > d_post and d_replace or d_post
+            local head = getnext(disc)
+         -- local tail = disc -- bug
+            local tail = head
             for i=1,d do
                 tail = getnext(tail)
                 if getid(tail) == disc_code then
@@ -4319,6 +4317,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
             break
         end
     end
+    return 0
 end
 
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
@@ -4478,6 +4477,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
             break
         end
     end
+    return 0
 end
 
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)

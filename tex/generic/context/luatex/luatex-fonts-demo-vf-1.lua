@@ -8,12 +8,12 @@ if not modules then modules = { } end modules ['luatex-fonts-demo-vf-1'] = {
 
 local identifiers = fonts.hashes.identifiers
 
-local defaults = {
-    { "pdf", "0 g" },
-    { "pdf", "1 0 0 rg" },
-    { "pdf", "0 1 0 rg" },
-    { "pdf", "0 0 1 rg" },
-    { "pdf", "0 0 1 rg" },
+local defaults = { [0] =
+    { "pdf", "origin", "0 g" },
+    { "pdf", "origin", "1 0 0 rg" },
+    { "pdf", "origin", "0 1 0 rg" },
+    { "pdf", "origin", "0 0 1 rg" },
+    { "pdf", "origin", "0 0 1 rg" },
 }
 
 return function(specification)
@@ -28,9 +28,6 @@ return function(specification)
             { id = id2 },
             { id = id3 },
         }
-        local color = {
-            [0] = defaults,
-        }
         local chars = {
             identifiers[id1].characters,
             identifiers[id2].characters,
@@ -40,9 +37,9 @@ return function(specification)
             local n = math.floor(math.random(1,3)+0.5)
             local c = chars[n][u] or v
             v.commands = {
-                color[n],
+                defaults[n] or defaults[0],
                 { 'slot', n, u },
-                color[0],
+                defaults[0],
                 { 'nop' }
             }
             v.kerns    = nil

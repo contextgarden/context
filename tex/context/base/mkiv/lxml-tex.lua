@@ -34,6 +34,8 @@ local commands          = commands
 local context           = context
 local contextsprint     = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
 
+local synctex           = luatex.synctex
+
 local implement         = interfaces.implement
 
 local xmlelements       = xml.elements
@@ -486,13 +488,8 @@ local noffiles     = 0
 local nofconverted = 0
 local linenumbers  = false
 
--- directives.register("lxml.linenumbers", function(v)
---     linenumbers = v
--- end)
-
-directives.register("system.synctex.xml",function(v)
-    linenumbers = v
-end)
+synctex.registerenabler (function() linenumbers = true  end)
+synctex.registerdisabler(function() linenumbers = false end)
 
 function xml.load(filename,settings)
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
@@ -713,13 +710,8 @@ local setfilename = false
 local trace_name  = false
 local report_name = logs.reporter("lxml")
 
-directives.register("system.synctex.xml",function(v)
-    if v then
-        setfilename = luatex.synctex.setfilename
-    else
-        setfilename = false
-    end
-end)
+synctex.registerenabler (function() setfilename = synctex.setfilename end)
+synctex.registerdisabler(function() setfilename = false end)
 
 local function syncfilename(e,where)
     local cf = e.cf
@@ -1050,9 +1042,6 @@ xml.cprint = cprint local xmlcprint = cprint  -- calls ct  mathml  -> will be re
 
 function lxml.main(id)
     local root = getid(id)
---     if setfilename then
---         syncfilename(root,"main")
---     end
     xmlserialize(root,xmltexhandler) -- the real root (@rt@)
 end
 

@@ -181,7 +181,10 @@ local function processjob()
     local filename  = environment.filename -- hm, not inputfilename !
 
     if arguments.synctex then
-        directives.enable("system.synctex")
+        luatex.synctex.setup {
+            state  = interfaces.variables.start,
+            method = interfaces.variables.max,
+        }
     end
 
     if not filename or filename == "" then
