@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/16/17 12:08:43
+-- merge date  : 07/17/17 00:20:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -18508,7 +18508,7 @@ function readers.pack(data)
                     step.coverage=pack_normal(c)
                   else
                     for g1,d1 in next,c do
-                      if d1~=true then
+                      if d1 and d1~=true then
                         c[g1]=pack_indexed(d1)
                       end
                     end
@@ -19376,6 +19376,28 @@ function readers.compact(data)
     report("%i steps of %i steps turned from pairs into kerns",kerned,allsteps)
   end
 end
+local function mergesteps(t,k)
+  if k=="merged" then
+    local merged={}
+    for i=1,#t do
+      local step=t[i]
+      local coverage=step.coverage
+      for k in next,coverage do
+        local m=merged[k]
+        if m then
+          m[2]=i
+        else
+          merged[k]={ i,i }
+        end
+      end
+    end
+    t.merged=merged
+    return merged
+  end
+end
+if fonts.helpers then
+  fonts.helpers.mergesteps=mergesteps
+end
 function readers.expand(data)
   if not data or data.expanded then
     return
@@ -19412,25 +19434,6 @@ function readers.expand(data)
           d.depth=dp
         end
       end
-    end
-  end
-  local function mergesteps(t,k)
-    if k=="merged" then
-      local merged={}
-      for i=1,#t do
-        local step=t[i]
-        local coverage=step.coverage
-        for k in next,coverage do
-          local m=merged[k]
-          if m then
-            m[2]=i
-          else
-            merged[k]={ i,i }
-          end
-        end
-      end
-      t.merged=merged
-      return merged
     end
   end
   local function expandlookups(sequences)
@@ -29107,7 +29110,7 @@ local function addfeature(data,feature,specifications)
     end
     return coverage
   end
-  local prepare_single=prepare_pair
+  local prepare_single=prepare_pair 
   local function prepare_chain(list,featuretype,sublookups)
     local rules=list.rules
     local coverage={}
@@ -29332,6 +29335,7 @@ local function addfeature(data,feature,specifications)
               steps[nofsteps]=register(coverage,featuretype,format,feature,nofsteps,descriptions,resources)
             end
           end
+          setmetatableindex(steps,fonts.helpers.mergesteps)
           s[i]={
             [stepkey]=steps,
             nofsteps=nofsteps,
@@ -29390,6 +29394,7 @@ local function addfeature(data,feature,specifications)
             askedfeatures[k]=tohash(v)
           end
         end
+        setmetatableindex(steps,fonts.helpers.mergesteps)
         if featureflags[1] then featureflags[1]="mark" end
         if featureflags[2] then featureflags[2]="ligature" end
         if featureflags[3] then featureflags[3]="base" end

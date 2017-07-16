@@ -1376,7 +1376,7 @@ function readers.pack(data)
                                         step.coverage = pack_normal(c)
                                     else
                                         for g1, d1 in next, c do
-                                            if d1 ~= true then
+                                            if d1 and d1 ~= true then
                                                 c[g1] = pack_indexed(d1)
                                             end
                                         end
@@ -2383,6 +2383,32 @@ function readers.compact(data)
     end
 end
 
+local function mergesteps(t,k)
+    if k == "merged" then
+        local merged = { }
+        for i=1,#t do
+            local step     = t[i]
+            local coverage = step.coverage
+            for k in next, coverage do
+                local m = merged[k]
+                if m then
+                    m[2] = i
+                 -- m[#m+1] = step
+                else
+                    merged[k] = { i, i }
+                 -- merged[k] = { step }
+                end
+            end
+        end
+        t.merged = merged
+        return merged
+    end
+end
+
+if fonts.helpers then
+    fonts.helpers.mergesteps = mergesteps
+end
+
 function readers.expand(data)
     if not data or data.expanded then
         return
@@ -2428,28 +2454,6 @@ function readers.expand(data)
     -- using a merged combined hash as first test saves some 30% on ebgaramond and
     -- about 15% on arabtype .. then moving the a test also saves a bit (even when
     -- often a is not set at all so that one is a bit debatable
-
-    local function mergesteps(t,k)
-        if k == "merged" then
-            local merged = { }
-            for i=1,#t do
-                local step     = t[i]
-                local coverage = step.coverage
-                for k in next, coverage do
-                    local m = merged[k]
-                    if m then
-                        m[2] = i
-                     -- m[#m+1] = step
-                    else
-                        merged[k] = { i, i }
-                     -- merged[k] = { step }
-                    end
-                end
-            end
-            t.merged = merged
-            return merged
-        end
-    end
 
     local function expandlookups(sequences)
         if sequences then

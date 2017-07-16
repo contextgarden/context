@@ -747,6 +747,8 @@ local push  = { "push" }
 local pop   = { "pop" }
 local gray  = { "pdf", "origin", ".75 g" }
 local black = { "pdf", "origin", "0 g"   }
+-- local gray  = { "pdf", ".75 g" }
+-- local black = { "pdf", "0 g"   }
 
 local downcache = { } -- handy for huge cjk fonts
 local rulecache = { } -- handy for huge cjk fonts

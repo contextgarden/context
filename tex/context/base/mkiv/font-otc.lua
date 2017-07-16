@@ -405,7 +405,7 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
-    local prepare_single = prepare_pair
+    local prepare_single = prepare_pair -- we could have a better test on the spec
 
     local function prepare_chain(list,featuretype,sublookups)
         -- todo: coveractions
@@ -604,6 +604,7 @@ local function addfeature(data,feature,specifications)
             local steps         = { }
             local sublookups    = specification.lookups
             local category      = nil
+            --
             if sublookups then
                 local s = { }
                 for i=1,#sublookups do
@@ -640,6 +641,9 @@ local function addfeature(data,feature,specifications)
                             steps[nofsteps] = register(coverage,featuretype,format,feature,nofsteps,descriptions,resources)
                         end
                     end
+                    --
+                    setmetatableindex(steps,fonts.helpers.mergesteps) -- speedup
+                    --
                     s[i] = {
                         [stepkey] = steps,
                         nofsteps  = nofsteps,
@@ -699,6 +703,9 @@ local function addfeature(data,feature,specifications)
                         askedfeatures[k] = tohash(v)
                     end
                 end
+                --
+                setmetatableindex(steps,fonts.helpers.mergesteps) -- speedup
+                --
                 if featureflags[1] then featureflags[1] = "mark" end
                 if featureflags[2] then featureflags[2] = "ligature" end
                 if featureflags[3] then featureflags[3] = "base" end
