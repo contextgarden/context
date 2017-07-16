@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/14/17 19:35:39
+-- merge date  : 07/16/17 12:08:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -7843,11 +7843,6 @@ function constructors.scale(tfmdata,specification)
     target.stretch=expansion.stretch
     target.shrink=expansion.shrink
     target.step=expansion.step
-    target.auto_expand=expansion.auto
-  end
-  local protrusion=parameters.protrusion
-  if protrusion then
-    target.auto_protrude=protrusion.auto
   end
   local extendfactor=parameters.extendfactor or 0
   if extendfactor~=0 and extendfactor~=1 then
@@ -7869,7 +7864,7 @@ function constructors.scale(tfmdata,specification)
   targetparameters.units=units
   targetparameters.scaledpoints=askedscaledpoints
   local isvirtual=properties.virtualized or tfmdata.type=="virtual"
-  local hasquality=target.auto_expand or target.auto_protrude
+  local hasquality=parameters.expansion or parameters.protrusion
   local hasitalics=properties.hasitalics
   local autoitalicamount=properties.autoitalicamount
   local stackmath=not properties.nostackmath
@@ -8232,15 +8227,9 @@ function constructors.finalize(tfmdata)
   end
   if not parameters.expansion then
     parameters.expansion={
-      stretch=tfmdata.stretch   or 0,
-      shrink=tfmdata.shrink   or 0,
-      step=tfmdata.step    or 0,
-      auto=tfmdata.auto_expand or false,
-    }
-  end
-  if not parameters.protrusion then
-    parameters.protrusion={
-      auto=auto_protrude
+      stretch=tfmdata.stretch or 0,
+      shrink=tfmdata.shrink or 0,
+      step=tfmdata.step  or 0,
     }
   end
   if not parameters.size then
@@ -8326,8 +8315,6 @@ function constructors.finalize(tfmdata)
   tfmdata.stretch=nil
   tfmdata.shrink=nil
   tfmdata.step=nil
-  tfmdata.auto_expand=nil
-  tfmdata.auto_protrude=nil
   tfmdata.extend=nil
   tfmdata.slant=nil
   tfmdata.units=nil
@@ -22462,8 +22449,12 @@ local trace_discruns=false registertracker("otf.discruns",function(v) trace_disc
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
 local trace_testruns=false registertracker("otf.testruns",function(v) trace_testruns=v end)
 local forcediscretionaries=false
+local forcepairadvance=false 
 directives.register("otf.forcediscretionaries",function(v)
   forcediscretionaries=v
+end)
+directives.register("otf.forcepairadvance",function(v)
+  forcepairadvance=v
 end)
 local report_direct=logs.reporter("fonts","otf direct")
 local report_subchain=logs.reporter("fonts","otf subchain")
@@ -23082,6 +23073,8 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
               logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
             end
             start=snext 
+          elseif forcepairadvance then
+            start=snext 
           end
           return head,start,true
         elseif krn~=0 then
@@ -23562,7 +23555,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
             break
           elseif step.format=="pair" then
             local a,b=krn[1],krn[2]
-            if a then
+            if a==true then
             elseif a then
               local x,y,w,h=setpair(start,factor,rlmode,sequence.flags[4],a,"injections") 
               if trace_kerns then
@@ -23578,6 +23571,8 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                 local startchar=getchar(start)
                 logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
               end
+              start=snext 
+            elseif forcepairadvance then
               start=snext 
             end
             return head,start,true
@@ -26257,7 +26252,7 @@ local function spaceinitializer(tfmdata,value)
                       right[k]=v[3]
                     else
                       local one=v[1]
-                      if one then
+                      if one and one~=true then
                         right[k]=one[3]
                       end
                     end

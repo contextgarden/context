@@ -122,7 +122,6 @@ local function initializeexpansion(tfmdata,value)
                     shrink  = 10 * shrink,
                     step    = 10 * step,
                     factor  = factor,
-                    auto    = true,
                 }
                 local data = characters and characters.data
                 for i, chr in next, tfmdata.characters do
@@ -397,15 +396,6 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
             end
         end
     end
-    local parameters = tfmdata.parameters
-    local protrusion = tfmdata.protrusion
-    if not protrusion then
-        parameters.protrusion = {
-            auto = true
-        }
-    else
-        protrusion.auto = true
-    end
 end
 
 -- The opbd test is just there because it was discussed on the context development list. However,
@@ -435,7 +425,6 @@ local function initializeprotrusion(tfmdata,value)
                         factor = factor,
                         left   = left,
                         right  = right,
-                        auto   = true,
                     }
                     for i, chr in next, tfmdata.characters do
                         local v, pl, pr = vector[i], nil, nil

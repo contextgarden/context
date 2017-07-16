@@ -404,15 +404,9 @@ function constructors.scale(tfmdata,specification)
     -- expansion (hz)
     local expansion = parameters.expansion
     if expansion then
-        target.stretch     = expansion.stretch
-        target.shrink      = expansion.shrink
-        target.step        = expansion.step
-        target.auto_expand = expansion.auto
-    end
-    -- protrusion
-    local protrusion = parameters.protrusion
-    if protrusion then
-        target.auto_protrude = protrusion.auto
+        target.stretch = expansion.stretch
+        target.shrink  = expansion.shrink
+        target.step    = expansion.step
     end
     -- widening
     local extendfactor = parameters.extendfactor or 0
@@ -438,7 +432,7 @@ function constructors.scale(tfmdata,specification)
     targetparameters.scaledpoints = askedscaledpoints
     --
     local isvirtual        = properties.virtualized or tfmdata.type == "virtual"
-    local hasquality       = target.auto_expand or target.auto_protrude
+    local hasquality       = parameters.expansion or parameters.protrusion
     local hasitalics       = properties.hasitalics
     local autoitalicamount = properties.autoitalicamount
     local stackmath        = not properties.nostackmath
@@ -852,16 +846,9 @@ function constructors.finalize(tfmdata)
     --
     if not parameters.expansion then
         parameters.expansion = {
-            stretch = tfmdata.stretch     or 0,
-            shrink  = tfmdata.shrink      or 0,
-            step    = tfmdata.step        or 0,
-            auto    = tfmdata.auto_expand or false,
-        }
-    end
-    --
-    if not parameters.protrusion then
-        parameters.protrusion = {
-            auto = auto_protrude
+            stretch = tfmdata.stretch or 0,
+            shrink  = tfmdata.shrink  or 0,
+            step    = tfmdata.step    or 0,
         }
     end
     --
@@ -965,8 +952,6 @@ function constructors.finalize(tfmdata)
     tfmdata.stretch          = nil
     tfmdata.shrink           = nil
     tfmdata.step             = nil
-    tfmdata.auto_expand      = nil
-    tfmdata.auto_protrude    = nil
     tfmdata.extend           = nil
     tfmdata.slant            = nil
     tfmdata.units            = nil

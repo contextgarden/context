@@ -52,7 +52,7 @@ local implement            = interfaces.implement
 
 local glyph_code           = nodes.nodecodes.glyph
 
-local new_special          = nodes.pool.special
+local new_special          = nodes.pool.special -- todo: literal
 local hpack_node           = node.hpack
 
 local nuts                 = nodes.nuts
@@ -186,7 +186,7 @@ local cache = { } -- saves some tables but not that impressive
 
 local function missingtonode(tfmdata,character)
     local commands  = character.commands
-    local fake  = hpack_node(new_special(commands[1][2]))
+    local fake  = hpack_node(new_special(commands[1][2])) -- todo: literal
     fake.width  = character.width
     fake.height = character.height
     fake.depth  = character.depth

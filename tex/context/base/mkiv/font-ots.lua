@@ -148,9 +148,14 @@ local trace_compruns       = false  registertracker("otf.compruns",     function
 local trace_testruns       = false  registertracker("otf.testruns",     function(v) trace_testruns     = v end)
 
 local forcediscretionaries = false
+local forcepairadvance     = false -- for testing
 
 directives.register("otf.forcediscretionaries",function(v)
     forcediscretionaries = v
+end)
+
+directives.register("otf.forcepairadvance",function(v)
+    forcepairadvance = v
 end)
 
 local report_direct      = logs.reporter("fonts","otf direct")
@@ -886,6 +891,8 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                             logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
                         end
                         start = snext -- cf spec
+                    elseif forcepairadvance then
+                        start = snext -- for testing
                     end
                     return head, start, true
                 elseif krn ~= 0 then
@@ -1463,7 +1470,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                         break
                     elseif step.format == "pair" then
                         local a, b = krn[1], krn[2]
-                        if a then
+                        if a == true then
                             -- zero
                         elseif a then
                             local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,"injections") -- currentlookups flags?
@@ -1482,6 +1489,8 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                                 logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
                             end
                             start = snext -- cf spec
+                        elseif forcepairadvance then
+                            start = snext -- for testing
                         end
                         return head, start, true
                     elseif krn ~= 0 then
@@ -5332,7 +5341,7 @@ local function spaceinitializer(tfmdata,value) -- attr
                                             right[k] = v[3]
                                         else
                                             local one = v[1]
-                                            if one then
+                                            if one and one ~= true then
                                                 right[k] = one[3]
                                             end
                                         end
