@@ -892,7 +892,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                         end
                         start = snext -- cf spec
                     elseif forcepairadvance then
-                        start = snext -- for testing
+                        start = snext -- for testing, not cf spec
                     end
                     return head, start, true
                 elseif krn ~= 0 then
@@ -1490,7 +1490,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                             end
                             start = snext -- cf spec
                         elseif forcepairadvance then
-                            start = snext -- for testing
+                            start = snext -- for testing, not cf spec
                         end
                         return head, start, true
                     elseif krn ~= 0 then
@@ -4887,10 +4887,6 @@ do
 
         local sequences = sequencelists[font] -- temp hack
 
-        if not sequencelists then
-            return head, false
-        end
-
         nesting = nesting + 1
 
         if nesting == 1 then
@@ -5172,6 +5168,104 @@ do
 
         return head, done
     end
+
+    -- This is not an official helpoer and used for tracing experiments. It can be changed as I like
+    -- at any moment. At some point it might be used in a module that can help font development.
+
+    function otf.datasetpositionprocessor(head,font,direction,dataset)
+
+        currentfont     = font
+        tfmdata         = fontdata[font]
+        descriptions    = tfmdata.descriptions -- only needed in gref so we could pass node there instead
+        characters      = tfmdata.characters   -- but this branch is not entered that often anyway
+  local resources       = tfmdata.resources
+        marks           = resources.marks
+        classes         = resources.classes
+        threshold,
+        factor          = getthreshold(font)
+        checkmarks      = tfmdata.properties.checkmarks
+
+        if type(dataset) == "number" then
+            dataset = otfdataset(tfmdata,font,0)[dataset]
+        end
+
+        local sequence  = dataset[3] -- sequences[s] -- also dataset[5]
+        local typ       = sequence.type
+     -- local gpossing  = typ == "gpos_single" or typ == "gpos_pair" -- store in dataset
+
+     -- gpos_contextchain gpos_context
+
+     -- if not gpossing then
+     --     return head, false
+     -- end
+
+        local handler   = handlers[typ] -- store in dataset
+        local steps     = sequence.steps
+        local nofsteps  = sequence.nofsteps
+
+        local head      = tonut(head)
+        local done      = false
+        local dirstack  = { } -- could move outside function but we can have local runs
+        local start     = head
+        local initialrl = direction == "TRT" and -1 or 0
+        local rlmode    = initialrl
+        local rlparmode = initialrl
+        local topstack  = 0
+        local merged    = steps.merged
+
+     -- local matches   = false
+        local position  = 0
+
+        while start do
+            local char, id = ischar(start,font)
+            if char then
+                position = position + 1
+                local m = merged[char]
+                if m then
+                    for i=m[1],m[2] do
+                        local step = steps[i]
+                        local lookupcache = step.coverage
+                        local lookupmatch = lookupcache[char]
+                        if lookupmatch then
+                            local ok
+                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                            if ok then
+                             -- if matches then
+                             --     matches[position] = i
+                             -- else
+                             --     matches = { [position] = i }
+                             -- end
+                                break
+                            elseif not start then
+                                break
+                            end
+                        end
+                    end
+                    if start then
+                        start = getnext(start)
+                    end
+                else
+                    start = getnext(start)
+                end
+            elseif char == false then
+                start = getnext(start)
+            elseif id == glue_code then
+                start = getnext(start)
+            elseif id == math_code then
+                start = getnext(end_of_math(start))
+            elseif id == dir_code then
+                start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
+            elseif id == localpar_code then
+                start, rlparmode, rlmode = pardirstate(start)
+            else
+                start = getnext(start)
+            end
+        end
+
+        return tonode(head) -- , matches
+    end
+
+    -- end of experiment
 
 end
 

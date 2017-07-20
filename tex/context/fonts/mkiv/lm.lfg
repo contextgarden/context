@@ -34,6 +34,8 @@ return {
                     height  = 960,
                     depth   =  40,
                 },
+            -- [0xFE932] = { xoffset = 50, width = 290 }, -- used prime
+            -- [0x2032]  = { xoffset = 50, width = 290 }, -- prime
             },
             signs   = {
                 -- set dimensions

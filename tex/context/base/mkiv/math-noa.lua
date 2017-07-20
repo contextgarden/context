@@ -1467,6 +1467,8 @@ do
         return k
     end)
 
+    -- no correction after prime because that moved to a superscript
+
     kernpairs[math_char] = function(pointer,what,n,parent)
         if getattr(pointer,a_kernpairs) == 1 then
             local font = getfont(pointer)
@@ -1536,6 +1538,8 @@ local movesub = {
     [0x2036] = 0xFE936,
     [0x2037] = 0xFE937,
 }
+
+mathematics.virtualize(movesub)
 
 -- local movesub = {
 --     -- primes

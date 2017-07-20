@@ -132,11 +132,39 @@ local extensibles = allocate {
 
 table.setmetatableindex(extensibles,function(t,k) t[k] = 0 return 0 end)
 
-mathematics.extensibles     = extensibles
-mathematics.classes         = classes
-mathematics.codes           = codes
------------.accents         = codes
-mathematics.families        = families
+local virtualized = allocate {
+}
+
+function mathematics.virtualize(unicode,virtual)
+
+    local function virtualize(k,v)
+        local c = virtualized[k]
+        if c == v then
+            report_math("character %C is already virtualized to %C",k,v)
+        elseif c then
+            report_math("character %C is already virtualized to %C, ignoring mapping to %C",k,c,v)
+        else
+            virtualized[k] = v
+        end
+    end
+
+    if type(unicode) == "table" then
+        for k, v in next, unicode do
+            virtualize(k,v)
+        end
+    elseif type(unicode) == "number" and type(virtual) == "number" then
+        virtualize(unicode,virtual)
+ -- else
+        -- error
+    end
+end
+
+mathematics.extensibles = extensibles
+mathematics.classes     = classes
+mathematics.codes       = codes
+-----------.accents     = codes
+mathematics.families    = families
+mathematics.virtualized = virtualized
 
 -- there will be proper functions soon (and we will move this code in-line)
 -- no need for " in class and family (saves space)

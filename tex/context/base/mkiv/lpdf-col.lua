@@ -50,6 +50,8 @@ local transparenciesvalue     = transparencies.value
 local forcedmodel             = colors.forcedmodel
 local getpagecolormodel       = colors.getpagecolormodel
 
+local setmetatableindex       = table.setmetatableindex
+
 local c_transparency          = pdfconstant("Transparency")
 
 local f_gray   = formatters["%.3F g %.3F G"]
@@ -81,7 +83,7 @@ local transparencygroups = { }
 lpdf.colorspaceconstants = colorspaceconstants
 lpdf.transparencygroups  = transparencygroups
 
-table.setmetatableindex(transparencygroups, function(transparencygroups,colormodel)
+setmetatableindex(transparencygroups, function(transparencygroups,colormodel)
     local cs = colorspaceconstants[colormodel]
     if cs then
         local d = pdfdictionary {
@@ -701,31 +703,90 @@ function lpdf.finishtransparencycode()
     end
 end
 
--- this will move to lpdf-spe.lua
+-- this will move to lpdf-spe.lua an dwe then can also add a metatable with
+-- normal context colors
 
-local f_slant = formatters["q 1 0 %F 1 0 0 cm"]
+do
 
-backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
+    local pdfcolor     = lpdf.color
+    local toattributes = colors.toattributes
 
-    red        = { "pdf", "origin", "1 0 0 rg 1 0 0 RG" },
-    green      = { "pdf", "origin", "0 1 0 rg 0 1 0 RG" },
-    blue       = { "pdf", "origin", "0 0 1 rg 0 0 1 RG" },
-    gray       = { "pdf", "origin", ".75 g .75 G" },
-    black      = { "pdf", "origin", "0 g 0 G" },
+    local f_slant = formatters["q 1 0 %F 1 0 0 cm"]
 
-    rulecolors = {
-            red        = { "pdf", "origin", '1 0 0 rg' },
-            green      = { "pdf", "origin", '0 1 0 rg' },
-            blue       = { "pdf", "origin", '0 0 1 rg' },
-            gray       = { "pdf", "origin", '.5 g' },
-            black      = { "pdf", "origin", '0 g' },
-            palered    = { "pdf", "origin", '1 .75 .75 rg' },
-            palegreen  = { "pdf", "origin", '.75 1 .75 rg' },
-            paleblue   = { "pdf", "origin", '.75 .75 1 rg' },
-            palegray   = { "pdf", "origin", '.75 g' },
-    },
+    -- local fillcolors = {
+    --     red        = { "pdf", "origin", "1 0 0 rg" },
+    --     green      = { "pdf", "origin", "0 1 0 rg" },
+    --     blue       = { "pdf", "origin", "0 0 1 rg" },
+    --     gray       = { "pdf", "origin", ".5 g" },
+    --     black      = { "pdf", "origin", "0 g" },
+    --     palered    = { "pdf", "origin", "1 .75 .75 rg" },
+    --     palegreen  = { "pdf", "origin", ".75 1 .75 rg" },
+    --     paleblue   = { "pdf", "origin", ".75 .75 1 rg" },
+    --     palegray   = { "pdf", "origin", ".75 g" },
+    -- }
+    --
+    -- local strokecolors = {
+    --     red        = { "pdf", "origin", "1 0 0 RG" },
+    --     green      = { "pdf", "origin", "0 1 0 RG" },
+    --     blue       = { "pdf", "origin", "0 0 1 RG" },
+    --     gray       = { "pdf", "origin", ".5 G" },
+    --     black      = { "pdf", "origin", "0 G" },
+    --     palered    = { "pdf", "origin", "1 .75 .75 RG" },
+    --     palegreen  = { "pdf", "origin", ".75 1 .75 RG" },
+    --     paleblue   = { "pdf", "origin", ".75 .75 1 RG" },
+    --     palegray   = { "pdf", "origin", ".75 G" },
+    -- }
+    --
+    -- backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
+    --
+    --     red          = { "pdf", "origin", "1 0 0 rg 1 0 0 RG" },
+    --     green        = { "pdf", "origin", "0 1 0 rg 0 1 0 RG" },
+    --     blue         = { "pdf", "origin", "0 0 1 rg 0 0 1 RG" },
+    --     gray         = { "pdf", "origin", ".75 g .75 G" },
+    --     black        = { "pdf", "origin", "0 g 0 G" },
+    --
+    --  -- rulecolors   = fillcolors,
+    --  -- fillcolors   = fillcolors,
+    --  -- strokecolors = strokecolors,
+    --
+    --     startslant   = function(a) return { "pdf", "origin", f_slant(a) } end,
+    --     stopslant    = { "pdf", "origin", "Q" },
+    --
+    -- }
 
-    startslant = function(a) return { "pdf", "origin", f_slant(a) } end,
-    stopslant  = { "pdf", "origin", "Q" },
+    local slants = setmetatableindex(function(t,k)
+        local v = { "pdf", "origin", f_slant(a) }
+        t[k] = v
+        return k
+    end)
 
-}
+    local function startslant(a)
+        return slants[a]
+    end
+
+    local models = setmetatableindex(function(t,m)
+        local v = setmetatableindex(function(t,c)
+            local p = { "pdf", "origin", pdfcolor(m,c) }
+            t[c] = p
+            return p
+        end)
+        t[m] = v
+        return v
+    end)
+
+    local function startcolor(k)
+        local m, c = toattributes(k)
+        return models[m][c]
+    end
+
+    backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
+
+        startcolor   = startcolor,
+        stopcolor    = { "pdf", "origin", "0 g 0 G" },
+
+        startslant   = startslant,
+        stopslant    = { "pdf", "origin", "Q" },
+
+    }
+
+end

@@ -252,6 +252,8 @@ local function enable()
     tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
 end
 
+local hash = { }
+
 local function setvisual(n,a,what,list) -- this will become more efficient when we have the bit lib linked in
     if not n or n == "reset" then
         return unsetvalue
@@ -276,15 +278,19 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
             a = setbit(a,preset_all)
         end
     else
-        for s in gmatch(n,"[a-z]+") do
-            local m = modes[s]
-            if not m then
-                -- go on
-            elseif not a or a == 0 or a == unsetvalue then
-                a = m
-            else
-                a = setbit(a,m)
+        a = hash[n]
+        if not a then
+            for s in gmatch(n,"[a-z]+") do
+                local m = modes[s]
+                if not m then
+                    -- go on
+                elseif not a or a == 0 or a == unsetvalue then
+                    a = m
+                else
+                    a = setbit(a,m)
+                end
             end
+            hash[n] = a
         end
     end
     if not a or a == 0 or a == unsetvalue then
@@ -303,7 +309,7 @@ function nuts.setvisuals(n,mode)
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true,true))
 end
 
-function nuts.applyvisuals(n,mode)
+local function applyvisuals(n,mode)
     local a = unsetvalue
     if mode == true then
         a = texgetattribute (a_visual)
@@ -311,6 +317,12 @@ function nuts.applyvisuals(n,mode)
         a = setvisual(mode)
     end
     apply_to_nodes(n,function(n) setattr(n,a_visual,a) end)
+end
+
+nuts.applyvisuals = applyvisuals
+
+function nodes.applyvisuals(n,mode)
+    applyvisuals(tonut(n),mode)
 end
 
 function nuts.copyvisual(n,m)
@@ -762,6 +774,10 @@ local ruledbox do
 end
 
 local ruledglyph do
+
+    -- see boundingbox feature .. maybe a pdf stream is more efficient, after all we
+    -- have a frozen color anyway or i need a more detailed cache .. below is a more
+    -- texie approach
 
     ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
         local wd = getwidth(current)

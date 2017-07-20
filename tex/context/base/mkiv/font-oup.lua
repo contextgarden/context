@@ -2261,31 +2261,6 @@ end
 local function checkkerns(lookup)
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
-    for i=1,nofsteps do
-        local step = steps[i]
-        if step.format == "pair" then
-            local coverage = step.coverage
-            local kerns    = true
-            for g1, d1 in next, coverage do
-                if d1[1] ~= 0 or d1[2] ~= 0 or d1[4] ~= 0 then
-                    kerns = false
-                    break
-                end
-            end
-            if kerns then
-                report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
-                for g1, d1 in next, coverage do
-                    coverage[g1] = d1[3]
-                end
-                step.format = "kern"
-            end
-        end
-    end
-end
-
-local function checkpairs(lookup)
-    local steps    = lookup.steps
-    local nofsteps = lookup.nofsteps
     local kerned   = 0
     for i=1,nofsteps do
         local step = steps[i]
@@ -2293,33 +2268,88 @@ local function checkpairs(lookup)
             local coverage = step.coverage
             local kerns    = true
             for g1, d1 in next, coverage do
-                for g2, d2 in next, d1 do
-                    if d2[2] then
-                        --- true or { a, b, c, d }
-                        kerns = false
-                        break
-                    else
-                        local v = d2[1]
-                        if v == true then
-                            -- all zero
-                        elseif v and (v[1] ~= 0 or v[2] ~= 0 or v[4] ~= 0) then
-                            kerns = false
-                            break
-                        end
-                    end
+                if d1 == true then
+                    -- all zero
+                elseif not d1 then
+                    -- null
+                elseif d1[1] ~= 0 or d1[2] ~= 0 or d1[4] ~= 0 then
+                    kerns = false
+                    break
                 end
             end
             if kerns then
                 report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                local c = { }
                 for g1, d1 in next, coverage do
+                    if d1 and d1 ~= true then
+                        c[g1] = d1[3]
+                    end
+                end
+                step.coverage = c
+                step.format = "kern"
+                kerned = kerned + 1
+            end
+        end
+    end
+    return kerned
+end
+
+-- There are several options to optimize but we have this somewhat fuzzy aspect of
+-- advancing (depending on the second of a pair) so we need to retain that information.
+--
+-- We can have:
+--
+--     true, nil|false
+--
+-- which effectively means: nothing to be done and advance to next (so not next of
+-- next) and because coverage should be not overlapping we can wipe these. However,
+-- checking for (true,nil) (false,nil) and omitting them doesn't gain much.
+
+-- Because we pack we cannot mix tables and numbers so we can only turn a whole set in
+-- format kern instead of pair.
+
+local function checkpairs(lookup)
+    local steps    = lookup.steps
+    local nofsteps = lookup.nofsteps
+    local kerned   = 0
+
+    local function onlykerns(step)
+        local coverage = step.coverage
+        for g1, d1 in next, coverage do
+            for g2, d2 in next, d1 do
+                if d2[2] then
+                    --- true or { a, b, c, d }
+                    return false
+                else
+                    local v = d2[1]
+                    if v == true then
+                        -- all zero
+                    elseif v and (v[1] ~= 0 or v[2] ~= 0 or v[4] ~= 0) then
+                        return false
+                    end
+                end
+            end
+        end
+        return coverage
+    end
+
+    for i=1,nofsteps do
+        local step = steps[i]
+        if step.format == "pair" then
+            local coverage = onlykerns(step)
+            if coverage then
+                report("turning pairs of step %a of %a lookup %a into kerns",i,lookup.type,lookup.name)
+                for g1, d1 in next, coverage do
+                    local d = { }
                     for g2, d2 in next, d1 do
                         local v = d2[1]
                         if v == true then
-                            d1[g2] = nil
+                            -- ignore    -- d1[g2] = nil
                         elseif v then
-                            d1[g2] = v[3]
+                            d[g2] = v[3] -- d1[g2] = v[3]
                         end
                     end
+                    coverage[g1] = d
                 end
                 step.format = "kern"
                 kerned = kerned + 1
@@ -2345,9 +2375,9 @@ function readers.compact(data)
             for i=1,#lookups do
                 local lookup   = lookups[i]
                 local nofsteps = lookup.nofsteps
+                local kind     = lookup.type
                 allsteps = allsteps + nofsteps
                 if nofsteps > 1 then
-                    local kind = lookup.type
                     local merg = merged
                     if kind == "gsub_single" or kind == "gsub_alternate" or kind == "gsub_multiple" then
                         merged = merged + mergesteps_1(lookup)
@@ -2355,7 +2385,7 @@ function readers.compact(data)
                         merged = merged + mergesteps_4(lookup)
                     elseif kind == "gpos_single" then
                         merged = merged + mergesteps_1(lookup,true)
-                        checkkerns(lookup)
+                        kerned = kerned + checkkerns(lookup)
                     elseif kind == "gpos_pair" then
                         merged = merged + mergesteps_2(lookup,true)
                         kerned = kerned + checkpairs(lookup)
@@ -2366,6 +2396,12 @@ function readers.compact(data)
                     end
                     if merg ~= merged then
                         lookup.merged = true
+                    end
+                elseif nofsteps == 1 then
+                    if kind == "gpos_single" then
+                        kerned = kerned + checkkerns(lookup)
+                    elseif kind == "gpos_pair" then
+                        kerned = kerned + checkpairs(lookup)
                     end
                 end
             end

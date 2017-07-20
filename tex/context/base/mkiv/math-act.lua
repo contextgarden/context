@@ -218,6 +218,8 @@ sequencers.appendaction("mathparameters","system","mathematics.overloadparameter
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")
 
+local virtualized = mathematics.virtualized
+
 function mathematics.overloaddimensions(target,original,set)
     local goodies = target.goodies
     if goodies then
@@ -235,11 +237,19 @@ function mathematics.overloaddimensions(target,original,set)
                 local hfactor    = parameters.hfactor
                 local vfactor    = parameters.vfactor
                 local addprivate = fonts.helpers.addprivate
-target.type = "virtual"
-target.properties.virtualized = true
+                -- to be sure
+                target.type = "virtual"
+                target.properties.virtualized = true
+                --
                 local function overload(dimensions)
                     for unicode, data in next, dimensions do
                         local character = characters[unicode]
+                        if not character then
+                            local c = virtualized[unicode]
+                            if c then
+                                character = characters[c]
+                            end
+                        end
                         if character then
                             --
                             local width  = data.width

@@ -60,6 +60,8 @@ local formatters      = string.formatters
 local interfaces      = interfaces
 local implement       = interfaces.implement
 
+local texgetattribute = tex.getattribute
+
 -- We can distinguish between rules and glyphs but it's not worth the trouble. A
 -- first implementation did that and while it saves a bit for glyphs and rules, it
 -- costs more resourses for transparencies. So why bother.
@@ -446,6 +448,12 @@ function colors.forcesupport(value) -- can move to attr-div
     colors.supported = value
     report_colors("color is %ssupported",value and "" or "not ")
     colors.enable(value)
+end
+
+function colors.toattributes(name)
+    local mc = list[a_color][name]
+    local mm = texgetattribute(a_selector)
+    return (mm == unsetvalue and 1) or mm or 1, mc or list[a_color][1] or unsetvalue
 end
 
 -- transparencies
