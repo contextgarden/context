@@ -37,6 +37,9 @@ local registerafmfeature = handlers.afm.features.register
 local fontdata           = hashes.identifiers
 local fontproperties     = hashes.properties
 
+local constructors       = fonts.constructors
+local getprivate         = constructors.getprivate
+
 local allocate           = utilities.storage.allocate
 local settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_hash   = utilities.parsers.settings_to_hash
@@ -654,15 +657,13 @@ local function manipulatedimensions(tfmdata,key,value)
             depth  = (spec[3] or 0) * exheight
         end
         if width > 0 then
-            local resources = tfmdata.resources
             local additions = { }
-            local private = resources.private
             for unicode, old_c in next, characters do
                 local oldwidth = old_c.width
                 if oldwidth ~= width then
                     -- Defining the tables in one step is more efficient
                     -- than adding fields later.
-                    private = private + 1
+                    local private = getprivate(tfmdata)
                     local new_c
                     local commands = {
                         { "right", (width - oldwidth) / 2 },
@@ -700,13 +701,12 @@ local function manipulatedimensions(tfmdata,key,value)
                     end
                     setmetatableindex(new_c,old_c)
                     characters[unicode] = new_c
-                    additions[private] = old_c
+                    additions[private]  = old_c
                 end
             end
             for k, v in next, additions do
                 characters[k] = v
             end
-            resources.private = private
         elseif height > 0 and depth > 0 then
             for unicode, old_c in next, characters do
                 old_c.height = height
@@ -753,25 +753,56 @@ registerafmfeature(dimensions_specification)
 
 local push  = { "push" }
 local pop   = { "pop" }
+
 ----- gray  = { "pdf", "origin", ".75 g .75 G" }
 ----- black = { "pdf", "origin", "0 g 0 G" }
 ----- gray  = { "pdf", ".75 g" }
 ----- black = { "pdf", "0 g"   }
 
-local bp = number.dimenfactors.bp
+-- local bp = number.dimenfactors.bp
+--
+-- local downcache = setmetatableindex(function(t,d)
+--     local v = { "down", d }
+--     t[d] = v
+--     return v
+-- end)
+--
+-- local backcache = setmetatableindex(function(t,h)
+--     local h = h * bp
+--     local v = setmetatableindex(function(t,w)
+--      -- local v = { "rule", h, w }
+--         local v = { "pdf", "origin", formatters["0 0 %0.6F %0.6F re F"](w*bp,h) }
+--         t[w] = v
+--         return v
+--     end)
+--     t[h] = v
+--     return v
+-- end)
+--
+-- local forecache = setmetatableindex(function(t,h)
+--     local h = h * bp
+--     local v = setmetatableindex(function(t,w)
+--         local v = { "pdf", "origin", formatters["%0.6F w 0 0 %0.6F %0.6F re S"](0.25*65536*bp,w*bp,h) }
+--         t[w] = v
+--         return v
+--     end)
+--     t[h] = v
+--     return v
+-- end)
 
-local downcache = setmetatableindex(function(t,d)
-    local v = { "down", d }
-    t[d] = v
-    return v
-end)
+local bp = number.dimenfactors.bp
+local r  = 0.25*65536*bp
 
 local backcache = setmetatableindex(function(t,h)
     local h = h * bp
-    local v = setmetatableindex(function(t,w)
-     -- local v = { "rule", h, w }
-        local v = { "pdf", "origin", formatters["0 0 %0.6F %0.6F re F"](w*bp,h) }
-        t[w] = v
+    local v = setmetatableindex(function(t,d)
+        local d = d * bp
+        local v = setmetatableindex(function(t,w)
+            local v = { "pdf", "origin", formatters["%0.6F w 0 %0.6F %0.6F %0.6F re f"](r,-d,w*bp,h+d) }
+            t[w] = v
+            return v
+        end)
+        t[d] = v
         return v
     end)
     t[h] = v
@@ -780,9 +811,16 @@ end)
 
 local forecache = setmetatableindex(function(t,h)
     local h = h * bp
-    local v = setmetatableindex(function(t,w)
-        local v = { "pdf", "origin", formatters["%0.6F w 0 0 %0.6F %0.6F re S"](0.25*65536*bp,w*bp,h) }
-        t[w] = v
+    local v = setmetatableindex(function(t,d)
+        local d = d * bp
+        local v = setmetatableindex(function(t,w)
+            -- the frame goes through the boundingbox
+         -- local v = { "pdf", "origin", formatters["[] 0 d 0 J %0.6F w 0 %0.6F %0.6F %0.6F re S"](r,-d,w*bp,h+d) }
+            local v = { "pdf", "origin", formatters["[] 0 d 0 J %0.6F w %0.6F %0.6F %0.6F %0.6F re S"](r,r/2,-d+r/2,w*bp-r,h+d-r) }
+            t[w] = v
+            return v
+        end)
+        t[d] = v
         return v
     end)
     t[h] = v
@@ -800,9 +838,7 @@ local function showboundingbox(tfmdata,key,value)
             stopcolor  = vfspecials.stopcolor
         end
         local characters = tfmdata.characters
-        local resources  = tfmdata.resources
         local additions  = { }
-        local private    = resources.private
         local rulecache  = backcache
         local showchar   = true
         local color      = "palegray"
@@ -824,41 +860,54 @@ local function showboundingbox(tfmdata,key,value)
         local gray  = startcolor(color)
         local black = stopcolor
         for unicode, old_c in next, characters do
-            private = private + 1
-            local width  = old_c.width  or 0
-            local height = old_c.height or 0
-            local depth  = old_c.depth  or 0
-            local char   = showchar and { "slot", 1, private } or nil -- { "slot", 0, private }
-            local new_c
-            if depth == 0 then
-                new_c = {
-                    width    = width,
-                    height   = height,
-                    commands = {
-                        push,
-                        gray,
-                        rulecache[height][width],
-                        black,
-                        pop,
-                        char,
-                    }
+            local private = getprivate(tfmdata)
+            local width   = old_c.width  or 0
+            local height  = old_c.height or 0
+            local depth   = old_c.depth  or 0
+            local char    = showchar and { "slot", 1, private } or nil -- { "slot", 0, private }
+         -- local new_c
+         -- if depth == 0 then
+         --     new_c = {
+         --         width    = width,
+         --         height   = height,
+         --         commands = {
+         --             push,
+         --             gray,
+         --             rulecache[height][width],
+         --             black,
+         --             pop,
+         --             char,
+         --         }
+         --     }
+         -- else
+         --     new_c = {
+         --         width    = width,
+         --         height   = height,
+         --         depth    = depth,
+         --         commands = {
+         --             push,
+         --             downcache[depth],
+         --             gray,
+         --             rulecache[height+depth][width],
+         --             black,
+         --             pop,
+         --             char,
+         --         }
+         --     }
+         -- end
+            local new_c = {
+                width    = width,
+                height   = height,
+                depth    = depth,
+                commands = {
+                    push,
+                    gray,
+                    rulecache[height][depth][width],
+                    black,
+                    pop,
+                    char,
                 }
-            else
-                new_c = {
-                    width    = width,
-                    height   = height,
-                    depth    = depth,
-                    commands = {
-                        push,
-                        downcache[depth],
-                        gray,
-                        rulecache[height+depth][width],
-                        black,
-                        pop,
-                        char,
-                    }
-                }
-            end
+            }
             setmetatableindex(new_c,old_c)
             characters[unicode] = new_c
             additions[private] = old_c
@@ -866,7 +915,6 @@ local function showboundingbox(tfmdata,key,value)
         for k, v in next, additions do
             characters[k] = v
         end
-        resources.private = private
     end
 end
 
@@ -1159,7 +1207,7 @@ do
         end
     end
 
-    fonts.constructors.newfeatures.otf.register {
+    constructors.newfeatures.otf.register {
         name        = "extraprivates",
         description = "extra privates",
         default     = true,
@@ -1295,15 +1343,13 @@ do -- another hack for a crappy font
 
     local function additalictowidth(tfmdata,key,value)
         local characters = tfmdata.characters
-        local resources  = tfmdata.resources
         local additions  = { }
-        local private    = resources.private
         for unicode, old_c in next, characters do
             -- maybe check for math
             local oldwidth  = old_c.width
             local olditalic = old_c.italic
             if olditalic and olditalic ~= 0 then
-                private = private + 1
+                local private = getprivate(tfmdata)
                 local new_c = {
                     width    = oldwidth + olditalic,
                     height   = old_c.height,
@@ -1323,7 +1369,6 @@ do -- another hack for a crappy font
         for k, v in next, additions do
             characters[k] = v
         end
-        resources.private = private
     end
 
     registerotffeature {

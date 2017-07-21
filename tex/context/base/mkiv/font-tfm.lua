@@ -244,6 +244,8 @@ local function read_from_tfm(specification)
         --
         constructors.enhanceparameters(parameters) -- official copies for us
         --
+        properties.private       =  properties.private or tfmdata.private or privateoffset
+        --
         if newtfmdata then
             --
             -- We do nothing as we assume flat tfm files. It would become real messy
@@ -436,7 +438,7 @@ do
         local originals  = tfmdata.characters
         local indices    = { }
         local parentfont = { "font", 1 }
-        local private    = fonts.constructors.privateoffset
+        local private    = tfmdata or fonts.constructors.privateoffset
         local reported   = encdone[tfmfile][encfile]
 
         -- create characters table
@@ -514,6 +516,7 @@ do
         tfmdata.tounicode     = 1
         tfmdata.embedding     = "subset"
         tfmdata.usedbitmap    = bitmap and virtualid
+        tfmdata.private       = private
 
         return tfmdata
     end

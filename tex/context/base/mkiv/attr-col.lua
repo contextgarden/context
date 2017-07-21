@@ -562,6 +562,10 @@ function transparencies.forcesupport(value) -- can move to attr-div
     transparencies.enable(value)
 end
 
+function transparencies.toattribute(name)
+    return list[a_transparency][name] or unsetvalue
+end
+
 --- colorintents: overprint / knockout
 
 attributes.colorintents = attributes.colorintents or  { }

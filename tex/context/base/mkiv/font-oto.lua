@@ -30,6 +30,8 @@ local registerotffeature     = otffeatures.register
 
 otf.defaultbasealternate     = "none" -- first last
 
+local getprivate             = fonts.constructors.getprivate
+
 local wildcard               = "*"
 local default                = "dflt"
 
@@ -165,13 +167,11 @@ end
 -- messy if we need to take that into account.
 
 local function makefake(tfmdata,name,present)
-    local resources = tfmdata.resources
-    local private   = resources.private
+    local private   = getprivate(tfmdata)
     local character = { intermediate = true, ligatures = { } }
     resources.unicodes[name] = private
     tfmdata.characters[private] = character
     tfmdata.descriptions[private] = { name = name }
-    resources.private = private + 1
     present[name] = private
     return character
 end
@@ -304,7 +304,6 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local nofligatures = #ligatures
 
     if nofligatures > 0 then
-
         local characters = tfmdata.characters
         local present    = { }
         local done       = trace_baseinit and trace_ligatures and { }

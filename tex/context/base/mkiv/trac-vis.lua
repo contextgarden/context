@@ -115,6 +115,8 @@ local hpack_string        = nuts.typesetters.tohpack
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
 
+local setmetatableindex   = table.setmetatableindex
+
 local unsetvalue          = attributes.unsetvalue
 
 local current_font        = font.current
@@ -214,6 +216,8 @@ end
 
 -- we can preset a bunch of bits
 
+local userrule -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
+
 local function enable()
     if not usedfont then
         -- we use a narrow monospaced font -- infofont ?
@@ -250,9 +254,11 @@ local function enable()
     report_visualize("enabled")
     enabled = true
     tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
+    --
+    if not userrule then
+       userrule = nuts.rules.userrule
+    end
 end
-
-local hash = { }
 
 local function setvisual(n,a,what,list) -- this will become more efficient when we have the bit lib linked in
     if not n or n == "reset" then
@@ -278,19 +284,15 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
             a = setbit(a,preset_all)
         end
     else
-        a = hash[n]
-        if not a then
-            for s in gmatch(n,"[a-z]+") do
-                local m = modes[s]
-                if not m then
-                    -- go on
-                elseif not a or a == 0 or a == unsetvalue then
-                    a = m
-                else
-                    a = setbit(a,m)
-                end
+        for s in gmatch(n,"[a-z]+") do
+            local m = modes[s]
+            if not m then
+                -- go on
+            elseif not a or a == 0 or a == unsetvalue then
+                a = m
+            else
+                a = setbit(a,m)
             end
-            hash[n] = a
         end
     end
     if not a or a == 0 or a == unsetvalue then
@@ -309,20 +311,49 @@ function nuts.setvisuals(n,mode)
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true,true))
 end
 
-local function applyvisuals(n,mode)
+-- fast setters
+
+do
+
+    local cached = setmetatableindex(function(t,k)
+        if k == true then
+            return texgetattribute(a_visual)
+        elseif not k then
+            t[k] = unsetvalue
+            return unsetvalue
+        else
+            local v = setvisual(k)
+            t[k] = v
+            return v
+        end
+    end)
+
+ -- local function applyvisuals(n,mode)
+ --     local a = cached[mode]
+ --     apply_to_nodes(n,function(n) setattr(n,a_visual,a) end)
+ -- end
+
     local a = unsetvalue
-    if mode == true then
-        a = texgetattribute (a_visual)
-    elseif mode then
-        a = setvisual(mode)
+
+    local f = function(n) setattr(n,a_visual,a) end
+
+    local function applyvisuals(n,mode)
+        a = cached[mode]
+        apply_to_nodes(n,f)
     end
-    apply_to_nodes(n,function(n) setattr(n,a_visual,a) end)
-end
 
-nuts.applyvisuals = applyvisuals
+    nuts.applyvisuals = applyvisuals
 
-function nodes.applyvisuals(n,mode)
-    applyvisuals(tonut(n),mode)
+    function nodes.applyvisuals(n,mode)
+        applyvisuals(tonut(n),mode)
+    end
+
+    function visualizers.attribute(mode)
+        return cached[mode]
+    end
+
+    visualizers.attributes = cached
+
 end
 
 function nuts.copyvisual(n,m)
@@ -413,7 +444,7 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     return info, width
 end
 
-local caches = table.setmetatableindex("table")
+local caches = setmetatableindex("table")
 
 local fontkern do
 
@@ -636,7 +667,7 @@ local ruledbox do
     local b_cache = caches["box"]
     local o_cache = caches["origin"]
 
-    table.setmetatableindex(o_cache,function(t,size)
+    setmetatableindex(o_cache,function(t,size)
         local rule   = new_rule(2*size,size,size)
         local origin = hpack_nodes(rule)
         setcolor(rule,c_origin_d)
@@ -661,29 +692,29 @@ local ruledbox do
             local linewidth = emwidth/fraction
             local size      = 2*linewidth
             local baseline, baseskip
-            if dp ~= 0 and ht ~= 0 then
-                if wd > 20*linewidth then
-                    local targetsize = wd - size
-                    baseline = b_cache[targetsize]
-                    if not baseline then
-                        -- due to an optimized leader color/transparency we need to set the glue node in order
-                        -- to trigger this mechanism
-                        local leader = setlink(new_glue(size),new_rule(3*size,linewidth,0),new_glue(size))
-                        leader = hpack_nodes(leader)
-                        baseline = new_glue(0,65536,0,2,0)
-                        setleader(baseline,leader)
-                        setsubtype(baseline,cleaders_code)
-                        setlisttransparency(baseline,c_text)
-                        baseline = hpack_nodes(baseline,targetsize)
-                        b_cache[targetsize] = baseline
-                    end
-                    baseline = copy_list(baseline)
-                    baseskip = new_kern(-wd+linewidth)
-                else
-                    baseline = new_rule(wd-size,linewidth,0)
-                    baseskip = new_kern(-wd+size)
-                end
-            end
+         -- if dp ~= 0 and ht ~= 0 then
+         --     if wd > 20*linewidth then
+         --         local targetsize = wd - size
+         --         baseline = b_cache[targetsize]
+         --         if not baseline then
+         --             -- due to an optimized leader color/transparency we need to set the glue node in order
+         --             -- to trigger this mechanism
+         --             local leader = setlink(new_glue(size),new_rule(3*size,linewidth,0),new_glue(size))
+         --             leader = hpack_nodes(leader)
+         --             baseline = new_glue(0,65536,0,2,0)
+         --             setleader(baseline,leader)
+         --             setsubtype(baseline,cleaders_code)
+         --             setlisttransparency(baseline,c_text)
+         --             baseline = hpack_nodes(baseline,targetsize)
+         --             b_cache[targetsize] = baseline
+         --         end
+         --         baseline = copy_list(baseline)
+         --         baseskip = new_kern(-wd+linewidth)
+         --     else
+         --         baseline = new_rule(wd-size,linewidth,0)
+         --         baseskip = new_kern(-wd+size)
+         --     end
+         -- end
             local this
             if not simple then
                 this = b_cache[what]
@@ -696,16 +727,31 @@ local ruledbox do
                 end
             end
             -- we need to trigger the right mode (else sometimes no whatits)
+         -- local info = setlink(
+         --     this and copy_list(this) or nil,
+         --     new_rule(linewidth,ht,dp),
+         --     new_rule(wd-size,-dp+linewidth,dp),
+         --     new_rule(linewidth,ht,dp),
+         --     new_kern(-wd+linewidth),
+         --     new_rule(wd-size,ht,-ht+linewidth),
+         --     baseskip,
+         --     baseskip and baseline or nil
+         -- )
+            --
+            -- userrules:
+            --
             local info = setlink(
                 this and copy_list(this) or nil,
-                new_rule(linewidth,ht,dp),
-                new_rule(wd-size,-dp+linewidth,dp),
-                new_rule(linewidth,ht,dp),
-                new_kern(-wd+linewidth),
-                new_rule(wd-size,ht,-ht+linewidth),
-                baseskip,
-                baseskip and baseline or nil
+                userrule {
+                    width  = wd,
+                    height = ht,
+                    depth  = dp,
+                    line   = linewidth,
+                    type   = "box",
+                    dashed = 3*size,
+                }
             )
+            --
             setlisttransparency(info,c_text)
             info = new_hlist(info)
             --
@@ -793,21 +839,53 @@ local ruledglyph do
             setboth(current)
             local linewidth = emwidth/(2*fraction)
             local baseline
-         -- if dp ~= 0 and ht ~= 0 then
-            if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
-                baseline = new_rule(wd-2*linewidth,linewidth,0)
-            end
-            local doublelinewidth = 2*linewidth
-            -- could be a pdf rule (or a user rule now)
-            local info = setlink(
-                new_rule(linewidth,ht,dp),
-                new_rule(wd-doublelinewidth,-dp+linewidth,dp),
-                new_rule(linewidth,ht,dp),
-                new_kern(-wd+linewidth),
-                new_rule(wd-doublelinewidth,ht,-ht+linewidth),
-                new_kern(-wd+doublelinewidth),
-                baseline
+            local info
+            --
+            -- original
+            --
+         -- if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
+         --     baseline = new_rule(wd-2*linewidth,linewidth,0)
+         -- end
+         -- local doublelinewidth = 2*linewidth
+         -- -- could be a pdf rule (or a user rule now)
+         -- info = setlink(
+         --     new_rule(linewidth,ht,dp),
+         --     new_rule(wd-doublelinewidth,-dp+linewidth,dp),
+         --     new_rule(linewidth,ht,dp),
+         --     new_kern(-wd+linewidth),
+         --     new_rule(wd-doublelinewidth,ht,-ht+linewidth),
+         --     new_kern(-wd+doublelinewidth),
+         --     baseline
+         -- )
+            --
+            -- experiment with subtype outline
+            --
+         -- if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
+         --     baseline = new_rule(wd,linewidth/2,0)
+         -- end
+         -- local r = new_rule(wd-linewidth,ht-linewidth/4,dp-linewidth/4)
+         -- setsubtype(r,nodes.rulecodes.outline)
+         -- setfield(r,"transform",linewidth)
+         -- info = setlink(
+         --     new_kern(linewidth/4),
+         --     r,
+         --     new_kern(-wd+linewidth/2),
+         --     baseline
+         -- )
+            --
+            -- userrules:
+            --
+            info = setlink(
+                userrule {
+                    width  = wd,
+                    height = ht,
+                    depth  = dp,
+                    line   = linewidth,
+                    type   = "box",
+                },
+                new_kern(-wd)
             )
+            --
             local char = chardata[getfont(current)][getchar(current)]
             if char and type(char.unicode) == "table" then -- hackery test
                 setlistcolor(info,c_ligature)
@@ -835,6 +913,10 @@ local ruledglyph do
         else
             return head, current
         end
+    end
+
+    function visualizers.setruledglyph(f)
+        ruledglyph = f or ruledglyph
     end
 
 end

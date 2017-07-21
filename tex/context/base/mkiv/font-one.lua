@@ -41,6 +41,8 @@ local derivetable         = table.derive
 
 local findbinfile         = resolvers.findbinfile
 
+local privateoffset       = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+
 local definers            = fonts.definers
 local readers             = fonts.readers
 local constructors        = fonts.constructors
@@ -139,7 +141,7 @@ local function enhance_unify_names(data, filename)
     local unicodevector = fonts.encodings.agl.unicodes -- loaded runtime in context
     local unicodes      = { }
     local names         = { }
-    local private       = constructors.privateoffset
+    local private       = data.private or privateoffset
     local descriptions  = data.descriptions
     for name, blob in next, data.characters do
         local code = unicodevector[name] -- or characters.name_to_unicode[name]
@@ -179,13 +181,13 @@ local function enhance_unify_names(data, filename)
         end
     end
     data.characters = nil
+    data.private    = private
     local resources = data.resources
-    local filename = resources.filename or file.removesuffix(file.basename(filename))
+    local filename  = resources.filename or file.removesuffix(file.basename(filename))
     resources.filename = resolvers.unresolve(filename) -- no shortcut
     resources.unicodes = unicodes -- name to unicode
-    resources.marks = { } -- todo
- -- resources.names = names -- name to index
-    resources.private = private
+    resources.marks    = { } -- todo
+ -- resources.names    = names -- name to index
 end
 
 local everywhere = { ["*"] = { ["*"] = true } } -- or: { ["*"] = { "*" } }
@@ -587,6 +589,7 @@ local function copytotfm(data)
         properties.fullname      = fullname
         properties.psname        = fullname
         properties.name          = filename or fullname or fontname
+        properties.private       = properties.private or data.private or privateoffset
         --
         if next(characters) then
             return {

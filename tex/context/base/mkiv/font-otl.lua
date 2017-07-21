@@ -79,6 +79,8 @@ local cleanup             = 0     -- mk: 0=885M 1=765M 2=735M (regular run 730M)
 local syncspace           = true
 local forcenotdef         = false
 
+local privateoffset       = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+
 local applyruntimefixes   = fonts.treatments and fonts.treatments.applyfixes
 
 local wildcard            = "*"
@@ -285,7 +287,7 @@ local function copytotfm(data,cache_id)
         end
         if mathspecs then
             for unicode, character in next, characters do
-                local d = descriptions[unicode]
+                local d = descriptions[unicode] -- we could use parent table here
                 local m = d.math
                 if m then
                     -- watch out: luatex uses horiz_variants for the parts
@@ -447,6 +449,8 @@ local function copytotfm(data,cache_id)
         --
      -- properties.name          = specification.name
      -- properties.sub           = specification.sub
+        --
+        properties.private       = properties.private or data.private or privateoffset
         --
         return {
             characters     = characters,

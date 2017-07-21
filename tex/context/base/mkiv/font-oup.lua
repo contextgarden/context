@@ -633,7 +633,6 @@ local function unifymissing(fontdata)
         require("font-agl")
     end
     local unicodes     = { }
-    local private      = fontdata.private
     local resources    = fontdata.resources
     resources.unicodes = unicodes
     for unicode, d in next, fontdata.descriptions do

@@ -1512,7 +1512,7 @@ end
 
 formatreaders[13] = function(f,fontdata,offset)
     --
-    -- this fector is only used for simple fallback fonts
+    -- this vector is only used for simple fallback fonts
     --
     setposition(f,offset+2+2+4+4) -- skip format reserved length language
     local mapping    = fontdata.mapping

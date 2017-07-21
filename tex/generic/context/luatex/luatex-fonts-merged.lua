@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/20/17 23:59:49
+-- merge date  : 07/22/17 00:04:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -7622,6 +7622,12 @@ function constructors.scaled(scaledpoints,designsize)
   else
     return scaledpoints
   end
+end
+function constructors.getprivate(tfmdata)
+  local properties=tfmdata.properties
+  local private=properties.private
+  properties.private=private+1
+  return private
 end
 function constructors.cleanuptable(tfmdata)
   if constructors.autocleanup and tfmdata.properties.virtualized then
@@ -17911,7 +17917,6 @@ local function unifymissing(fontdata)
     require("font-agl")
   end
   local unicodes={}
-  local private=fontdata.private
   local resources=fontdata.resources
   resources.unicodes=unicodes
   for unicode,d in next,fontdata.descriptions do
@@ -19628,6 +19633,7 @@ local forceload=false
 local cleanup=0   
 local syncspace=true
 local forcenotdef=false
+local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
 local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
 local wildcard="*"
 local default="dflt"
@@ -19792,7 +19798,7 @@ local function copytotfm(data,cache_id)
     end
     if mathspecs then
       for unicode,character in next,characters do
-        local d=descriptions[unicode]
+        local d=descriptions[unicode] 
         local m=d.math
         if m then
           local italic=m.italic
@@ -19932,6 +19938,7 @@ local function copytotfm(data,cache_id)
     properties.fullname=fullname
     properties.psname=psname
     properties.name=filename or fullname
+    properties.private=properties.private or data.private or privateoffset
     return {
       characters=characters,
       descriptions=descriptions,
@@ -20262,6 +20269,7 @@ local otf=fonts.handlers.otf
 local otffeatures=otf.features
 local registerotffeature=otffeatures.register
 otf.defaultbasealternate="none" 
+local getprivate=fonts.constructors.getprivate
 local wildcard="*"
 local default="dflt"
 local formatters=string.formatters
@@ -20352,13 +20360,11 @@ local function registerbasefeature(feature,value)
   applied[#applied+1]=feature.."="..tostring(value)
 end
 local function makefake(tfmdata,name,present)
-  local resources=tfmdata.resources
-  local private=resources.private
+  local private=getprivate(tfmdata)
   local character={ intermediate=true,ligatures={} }
   resources.unicodes[name]=private
   tfmdata.characters[private]=character
   tfmdata.descriptions[private]={ name=name }
-  resources.private=private+1
   present[name]=private
   return character
 end
@@ -30105,6 +30111,7 @@ local report_afm=logs.reporter("fonts","afm loading")
 local setmetatableindex=table.setmetatableindex
 local derivetable=table.derive
 local findbinfile=resolvers.findbinfile
+local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
 local definers=fonts.definers
 local readers=fonts.readers
 local constructors=fonts.constructors
@@ -30175,7 +30182,7 @@ local function enhance_unify_names(data,filename)
   local unicodevector=fonts.encodings.agl.unicodes 
   local unicodes={}
   local names={}
-  local private=constructors.privateoffset
+  local private=data.private or privateoffset
   local descriptions=data.descriptions
   for name,blob in next,data.characters do
     local code=unicodevector[name] 
@@ -30214,12 +30221,12 @@ local function enhance_unify_names(data,filename)
     end
   end
   data.characters=nil
+  data.private=private
   local resources=data.resources
   local filename=resources.filename or file.removesuffix(file.basename(filename))
   resources.filename=resolvers.unresolve(filename) 
   resources.unicodes=unicodes 
   resources.marks={}
-  resources.private=private
 end
 local everywhere={ ["*"]={ ["*"]=true } } 
 local noflags={ false,false,false,false }
@@ -30573,6 +30580,7 @@ local function copytotfm(data)
     properties.fullname=fullname
     properties.psname=fullname
     properties.name=filename or fullname or fontname
+    properties.private=properties.private or data.private or privateoffset
     if next(characters) then
       return {
         characters=characters,
@@ -31075,6 +31083,7 @@ local function read_from_tfm(specification)
     parameters.quad=parameters.quad      or parameters[6] or 0
     parameters.extra_space=parameters.extra_space  or parameters[7] or 0
     constructors.enhanceparameters(parameters)
+    properties.private=properties.private or tfmdata.private or privateoffset
     if newtfmdata then
     elseif constructors.resolvevirtualtoo then
       fonts.loggers.register(tfmdata,file.suffix(filename),specification) 
@@ -31221,7 +31230,7 @@ do
     local originals=tfmdata.characters
     local indices={}
     local parentfont={ "font",1 }
-    local private=fonts.constructors.privateoffset
+    local private=tfmdata or fonts.constructors.privateoffset
     local reported=encdone[tfmfile][encfile]
     local backmap=vector and table.swapped(vector)
     local done={} 
@@ -31288,6 +31297,7 @@ do
     tfmdata.tounicode=1
     tfmdata.embedding="subset"
     tfmdata.usedbitmap=bitmap and virtualid
+    tfmdata.private=private
     return tfmdata
   end
 end
@@ -31999,6 +32009,7 @@ if context then
 end
 local fonts=fonts
 local otffeatures=fonts.constructors.features.otf
+local getprivate=fonts.constructors.getprivate
 local function initializeitlc(tfmdata,value)
   if value then
     local parameters=tfmdata.parameters
@@ -32216,14 +32227,12 @@ otffeatures.register {
 local setmetatableindex=table.setmetatableindex
 local function additalictowidth(tfmdata,key,value)
   local characters=tfmdata.characters
-  local resources=tfmdata.resources
   local additions={}
-  local private=resources.private
   for unicode,old_c in next,characters do
     local oldwidth=old_c.width
     local olditalic=old_c.italic
     if olditalic and olditalic~=0 then
-      private=private+1
+      local private=getprivate(tfmdata)
       local new_c={
         width=oldwidth+olditalic,
         height=old_c.height,
@@ -32241,7 +32250,6 @@ local function additalictowidth(tfmdata,key,value)
   for k,v in next,additions do
     characters[k]=v
   end
-  resources.private=private
 end
 otffeatures.register {
   name="italicwidths",

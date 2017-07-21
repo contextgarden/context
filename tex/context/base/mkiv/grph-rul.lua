@@ -127,13 +127,17 @@ end
 
 do
 
-    local f_rectangle = formatters["%F w %F %F %F %F re %s"]
+    -- maybe %.6F
+
+    local f_rectangle = formatters["%.6F w %.6F %.6F %.6F %.6F re %s"]
+    local f_baselined = formatters["%.6F w %.6F %.6F %.6F %.6F re s %.6F %.6F m %.6F %.6F l s"]
+    local f_dashlined = formatters["%.6F w %.6F %.6F %.6F %.6F re s [%.6F %.6F] 2 d %.6F %.6F m %.6F %.6F l s"]
     local f_radtangle = formatters[ [[
-        %F w %F %F m
-        %F %F l %F %F %F %F y
-        %F %F l %F %F %F %F y
-        %F %F l %F %F %F %F y
-        %F %F l %F %F %F %F y
+        %.6F w %.6F %.6F m
+        %.6F %.6F l %.6F %.6F %.6F %.6F y
+        %.6F %.6F l %.6F %.6F %.6F %.6F y
+        %.6F %.6F l %.6F %.6F %.6F %.6F y
+        %.6F %.6F l %.6F %.6F %.6F %.6F y
         h %s
     ]] ]
 
@@ -159,6 +163,30 @@ do
 
     ruleactions.draw   = ruleactions.fill
     ruleactions.stroke = ruleactions.fill
+
+    local getwhd = nodes.nuts.getwhd
+
+    ruleactions.box = function(p,h,v,i,n)
+        local w, h, d = getwhd(n)
+        local line = p.line or 65536
+        local l = line *bpfactor
+        local w = w * bpfactor
+        local h = h * bpfactor
+        local d = d * bpfactor
+        local o = l / 2
+        if (d >= 0 and h >= 0) or (d <= 0 and h <= 0) then
+            local dashed = tonumber(p.dashed)
+            if dashed and dashed > 5*line then
+                dashed = dashed * bpfactor
+                local delta = (w - 2*dashed*floor(w/(2*dashed)))/2
+                pdfprint("direct",f_dashlined(l,o,o,w-l,h+d-l,dashed,dashed,delta,d,w-delta,d))
+            else
+                pdfprint("direct",f_baselined(l,o,o,w-l,h+d-l,0,d,w,d))
+            end
+        else
+            pdfprint("direct",f_rectangle(l,o,o,w-l,h+d-l))
+        end
+    end
 
 end
 
