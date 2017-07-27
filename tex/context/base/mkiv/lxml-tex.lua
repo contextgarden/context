@@ -58,6 +58,7 @@ local xmlcontent        = xml.content
 local xmllastmatch      = xml.lastmatch
 local xmlpushmatch      = xml.pushmatch
 local xmlpopmatch       = xml.popmatch
+local xmlstring         = xml.string
 
 directives.enable("xml.path.keeplastmatch")
 
@@ -2239,8 +2240,12 @@ texfinalizers.lowerall = xmlfinalizers.lowerall
 function lxml.tobuffer(id,pattern,name,unescaped)
     local collected = xmlapplylpath(getid(id),pattern)
     if collected then
-        if unescaped then
+        if unescaped == true then
             collected = xmlcontent(collected[1]) -- expanded entities !
+        elseif unescaped == false then
+            local t = { }
+            xmlstring(collected[1],function(s) t[#t+1] = s end)
+            collected = concat(t)
         else
             collected = tostring(collected[1])
         end

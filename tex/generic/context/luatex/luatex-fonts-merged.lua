@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/22/17 00:04:04
+-- merge date  : 07/27/17 16:17:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -17357,7 +17357,7 @@ local f_index=formatters["I%05X"]
 local f_character_y=formatters["%C"]
 local f_character_n=formatters["[ %C ]"]
 local check_duplicates=true 
-local check_soft_hyphen=false 
+local check_soft_hyphen=true 
 directives.register("otf.checksofthyphen",function(v)
   check_soft_hyphen=v
 end)

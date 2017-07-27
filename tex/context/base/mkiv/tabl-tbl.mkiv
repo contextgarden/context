@@ -216,6 +216,7 @@
 
 \newconstant     \c_tabl_tabulate_pass
 \newconstant     \c_tabl_tabulate_type
+\newconstant     \c_tabl_tabulate_kind % 1=strong  2=equals
 \newconstant     \c_tabl_tabulate_splitlinemode  \c_tabl_tabulate_splitlinemode\plusone
 \newconstant     \c_tabl_tabulate_colorspan
 \newconstant     \c_tabl_tabulate_localcolorspan
@@ -262,12 +263,6 @@
      \expandafter\tabl_tabulate_initialize_boxes_step
    \fi}
 
-% \def\tabl_tabulate_initialize_box#1% also used elsewhere
-%   {\ifcsname\??tabulatebox\number#1\endcsname
-%      \tabl_tabulate_initialize_box_yes#1%
-%    \else
-%      \tabl_tabulate_initialize_box_nop#1%
-%    \fi}
 \def\tabl_tabulate_initialize_box#1% also used elsewhere
   {\ifcsname\??tabulatebox\number#1\endcsname
      \tabl_tabulate_initialize_box_yes
@@ -275,7 +270,6 @@
      \tabl_tabulate_initialize_box_nop#1%
    \fi}
 
-%def\tabl_tabulate_initialize_box_yes#1{\global     \setbox\csname\??tabulatebox\number#1\endcsname\emptybox}
 \def\tabl_tabulate_initialize_box_yes  {\global     \setbox\lastnamedcs\emptybox}
 \def\tabl_tabulate_initialize_box_nop#1{\expandafter\newbox\csname\??tabulatebox\number#1\endcsname}
 
@@ -1346,7 +1340,13 @@
      \tabl_tabulate_process}
 
 \def\tabulateEQ
-  {\ifconditional\c_tabl_tabulate_firstflushed\else\tabulationparameter{EQ}\fi
+  {\ifconditional\c_tabl_tabulate_firstflushed\else
+     \dostarttaggedchained\t!ignore\empty\empty
+     \dostarttagged\t!ignore\empty
+     \tabulationparameter{EQ}%
+     \dostoptagged
+     \dostoptagged
+   \fi
    \global\setfalse\c_tabl_tabulate_equal}
 
 % The next ones will be token registers
@@ -1420,43 +1420,46 @@
    \doifelsefastoptionalcheck{\tabl_tabulate_set_color_column_yes#1}{\tabl_tabulate_set_color_column_nop#1}}
 
 \def\tabl_tabulate_set_color_column_nop
-  {\tabl_tabulate_column_normal}
+  {\tabl_tabulate_column_normal\zerocount}
 
 \def\tabl_tabulate_set_color_column_yes#1[#2]%
   {\xdef\m_tabl_tabulate_color_local{#2}%
-   \tabl_tabulate_column_normal#1}
+   \tabl_tabulate_column_normal\zerocount#1}
 
 % normal columns:
 
-\def\tabl_tabulate_column_normal#1%
+\def\tabl_tabulate_column_normal#1#2%
   {\unskip
    \aligntab
    \ifconditional\c_tabl_tabulate_equal\tabulateequalpos\else\tabulatenormalpos\fi
    \aligntab
-   \global\c_tabl_tabulate_type#1%
+   \global\c_tabl_tabulate_kind#1%
+   \global\c_tabl_tabulate_type#2%
    \aligntab}
 
 % equal columns
 
-\def\tabl_tabulate_column_equal#1%
+\def\tabl_tabulate_column_equal#1#2%
   {\unskip
    \aligntab
    \tabulateequalpos
-   \aligntab\global\c_tabl_tabulate_type#1%
+   \aligntab
+   \global\c_tabl_tabulate_kind#1%
+   \global\c_tabl_tabulate_type#2%
    \aligntab}
 
 % ruled columns
 
-\def\tabl_tabulate_column_vruled#1%
+\def\tabl_tabulate_column_vruled#1#2%
   {\unskip % 0-n
-%    \ifnum\c_tabl_tabulate_column=\plusone
-%      \global\c_tabl_tabulate_has_rule_spec_first\plusone
-%    \else\ifnum\c_tabl_tabulate_column=\c_tabl_tabulate_nofcolumns
-%      \global\c_tabl_tabulate_has_rule_spec_last\plusone
-%    \fi\fi
+  %\ifnum\c_tabl_tabulate_column=\plusone
+  %  \global\c_tabl_tabulate_has_rule_spec_first\plusone
+  %\else\ifnum\c_tabl_tabulate_column=\c_tabl_tabulate_nofcolumns
+  %  \global\c_tabl_tabulate_has_rule_spec_last\plusone
+  %\fi\fi
    \global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
    \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default
-   \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1}{\tabl_tabulate_column_vruled_nop#1}}
+   \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1#2}{\tabl_tabulate_column_vruled_nop#1#2}}
 
 \def\tabl_tabulate_column_vruled_nop
   {\tabl_tabulate_column_normal}
@@ -1466,9 +1469,9 @@
      {\global\d_tabl_tabulate_vrulethickness_local#1\d_tabl_tabulate_vrulethickness_default}
      {\xdef\m_tabl_tabulate_vrule_color_local{#1}}}
 
-\def\tabl_tabulate_column_vruled_yes#1[#2]%
-  {\rawprocesscommalist[#2]\tabl_tabulate_column_vruled_step
-   \tabl_tabulate_column_normal#1}
+\def\tabl_tabulate_column_vruled_yes#1#2[#3]%
+  {\rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step
+   \tabl_tabulate_column_normal#1#2}
 
 \def\tabl_tabulate_column_vruled_normal
   {\vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
@@ -1506,7 +1509,7 @@
 % auto columns
 
 \def\tabl_tabulate_column_inject_auto
-  {\tabl_tabulate_column_normal\zerocount
+  {\tabl_tabulate_column_normal\zerocount\zerocount
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_columns\relax
      \expandafter\NR
    \else
@@ -1802,22 +1805,22 @@
 
 % so far
 
-\unexpanded\def\tabl_tabulate_VL_first{\tabl_tabulate_column_vruled\zerocount}
-\unexpanded\def\tabl_tabulate_NC_first{\tabl_tabulate_column_normal\zerocount}
-\unexpanded\def\tabl_tabulate_RC_first{\tabl_tabulate_column_normal\plusone}
-\unexpanded\def\tabl_tabulate_HC_first{\tabl_tabulate_column_normal\plustwo}
-\unexpanded\def\tabl_tabulate_EQ_first{\tabl_tabulate_column_equal \zerocount}
-\unexpanded\def\tabl_tabulate_RQ_first{\tabl_tabulate_column_equal \plusone}
-\unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \plustwo}
+\unexpanded\def\tabl_tabulate_VL_first{\tabl_tabulate_column_vruled\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_NC_first{\tabl_tabulate_column_normal\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_RC_first{\tabl_tabulate_column_normal\zerocount\plusone}
+\unexpanded\def\tabl_tabulate_HC_first{\tabl_tabulate_column_normal\zerocount\plustwo}
+\unexpanded\def\tabl_tabulate_EQ_first{\tabl_tabulate_column_equal \plustwo  \zerocount}
+\unexpanded\def\tabl_tabulate_RQ_first{\tabl_tabulate_column_equal \zerocount\plusone}
+\unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \zerocount\plustwo}
 
 %unexpanded\def\tabl_tabulate_NG_first{\NC\tabl_tabulate_charalign}
 %unexpanded\def\tabl_tabulate_NG_first{\NC}
 %unexpanded\def\tabl_tabulate_NN_first{\NC\tabl_tabulate_digits} % new, undocumented, test first
 %unexpanded\def\tabl_tabulate_ND_first{\NC\tabl_tabulate_digits} % same, for old times sake
 
-\unexpanded\def\tabl_tabulate_NG_first{\tabl_tabulate_column_normal\zerocount}
-\unexpanded\def\tabl_tabulate_NN_first{\tabl_tabulate_column_normal\zerocount\tabl_tabulate_digits} % new, undocumented, test first
-\unexpanded\def\tabl_tabulate_ND_first{\tabl_tabulate_column_normal\zerocount\tabl_tabulate_digits} % same, for old times sake
+\unexpanded\def\tabl_tabulate_NG_first{\tabl_tabulate_column_normal\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_NN_first{\tabl_tabulate_column_normal\zerocount\zerocount\tabl_tabulate_digits} % new, undocumented, test first
+\unexpanded\def\tabl_tabulate_ND_first{\tabl_tabulate_column_normal\zerocount\zerocount\tabl_tabulate_digits} % same, for old times sake
 
 \unexpanded\def\tabl_tabulate_NR_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_check_penalties} % next row
 \unexpanded\def\tabl_tabulate_NB_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_nobreak_inject } % next row no break
@@ -1833,7 +1836,11 @@
 %D The following shortcut is handy for tables where one needs bold headers:
 
 %unexpanded\def\tabl_tabulate_BC_first{\NC\let\fontstyle\globalfontstyle\bf}
-\unexpanded\def\tabl_tabulate_BC_first{\tabl_tabulate_column_normal\zerocount\let\fontstyle\globalfontstyle\bf}
+
+\unexpanded\def\tabl_tabulate_BC_first
+  {\tabl_tabulate_column_normal\plusone\zerocount
+   \let\fontstyle\globalfontstyle
+   \bf}
 
 \appendtoks
    \let\VL\tabl_tabulate_VL_first

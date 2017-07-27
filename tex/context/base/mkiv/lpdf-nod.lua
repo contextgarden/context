@@ -24,10 +24,10 @@ local new_node         = nuts.new
 local nodepool         = nuts.pool
 local register         = nodepool.register
 
-local pdforiginliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdforiginliteral,"mode",0) -- set_origin_code
-local pdfpageliteral   = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfpageliteral,  "mode",1) -- page_code
-local pdfdirectliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfdirectliteral,"mode",2) -- direct_code
-local pdfrawliteral    = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfrawliteral,   "mode",3) -- raw_code
+local pdforiginliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdforiginliteral,"mode",0) -- set_origin_code
+local pdfpageliteral   = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfpageliteral,  "mode",1) -- page_code
+local pdfdirectliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfdirectliteral,"mode",2) -- direct_code
+local pdfrawliteral    = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfrawliteral,   "mode",3) -- raw_code
 
 local pdfsave          = register(new_node("whatsit", whatsitcodes.pdfsave))
 local pdfrestore       = register(new_node("whatsit", whatsitcodes.pdfrestore))
@@ -53,7 +53,7 @@ function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) se
 function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setfield(t,"data",str) return t end
 function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setfield(t,"data",str) return t end
 
-nodepool.pdfliteral = nodepool.pdfpageliteral
+nodepool.pdfliteral = nodepool.pdfpageliteral -- best is to use a specific one: origin | page | direct | raw
 
 function nodepool.pdfsave()
     return copy_node(pdfsave)

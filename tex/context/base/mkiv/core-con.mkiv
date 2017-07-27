@@ -416,8 +416,7 @@
 \def\syst_converters_current_date[#1]%
   {\begingroup
    \the\everycurrentdate
-   \doifsomething{#1}{\edef\currentdatespecification{#1}}%
-   \clf_currentdate{\currentdatespecification}{\labellanguage}%
+   \clf_currentdate{#1}{\currentdatespecification}{\labellanguage}%
    \endgroup}
 
 \unexpanded\def\date
@@ -438,7 +437,7 @@
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
-  {\clf_rawdate{\currentdatespecification}}
+  {\clf_currentdate{#1}{\currentdatespecification}{}}
 
 %D \macros
 %D   {currenttime}

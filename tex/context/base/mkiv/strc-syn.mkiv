@@ -335,14 +335,16 @@
   [\c!alternative=\v!normal]
 
 \unexpanded\def\strc_synonyms_insert_meaning#1#2% name tag
-  {\begingroup
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
    \def\currentsimplelist{#1}%
    \def\currentsynonymtag{#2}%
    \fastsetup{\??simplelistrenderings::\v!text}%
    \endgroup}
 
 \unexpanded\def\strc_synonyms_insert#1#2% name tag
-  {\begingroup
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
    \edef\currentsimplelist{#1}%
    \let \currentsynonym\currentsimplelist % for a while
    \def \currentsynonymtag{#2}%
@@ -549,7 +551,8 @@
   [\c!alternative=\v!normal]
 
 \unexpanded\def\strc_sorting_insert#1#2% name tag
-  {\begingroup
+  {\dontleavehmode % otherwise we don't get it right at the beginning of a par
+   \begingroup
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
    \def \currentsortingtag{#2}%

@@ -182,6 +182,16 @@ local rightskip         = register_nut(new_nut("glue",skipcodes.rightskip))
 local temp              = register_nut(new_nut("temp",0))
 
 local noad              = register_nut(new_nut("noad"))
+local delimiter         = register_nut(new_nut("delim"))
+local fence             = register_nut(new_nut("fence"))
+local submlist          = register_nut(new_nut("sub_mlist"))
+local accent            = register_nut(new_nut("accent"))
+local radical           = register_nut(new_nut("radical"))
+local fraction          = register_nut(new_nut("fraction"))
+local subbox            = register_nut(new_nut("sub_box"))
+local mathchar          = register_nut(new_nut("math_char"))
+local mathtextchar      = register_nut(new_nut("math_text_char"))
+local choice            = register_nut(new_nut("choice"))
 
 local boundary          = register_nut(new_nut("boundary",boundarycodes.user))
 local wordboundary      = register_nut(new_nut("boundary",boundarycodes.word))
@@ -378,7 +388,6 @@ function nutpool.leader(width,list)
     return n
 end
 
-
 function nutpool.latelua(code)
     local n = copy_nut(latelua)
     setfield(n,"string",code)
@@ -421,9 +430,20 @@ function nutpool.temp()
     return copy_nut(temp)
 end
 
-function nutpool.noad()
-    return copy_nut(noad)
-end
+function nutpool.noad()         return copy_nut(noad)         end
+function nutpool.delimiter()    return copy_nut(delimiter)    end
+function nutpool.fence()        return copy_nut(fence)        end
+function nutpool.submlist()     return copy_nut(submlist)     end
+function nutpool.noad()         return copy_nut(noad)         end
+function nutpool.delimiter()    return copy_nut(delim)        end   nutpool.delim = nutpool.delimiter
+function nutpool.fence()        return copy_nut(fence)        end
+function nutpool.accent()       return copy_nut(accent)       end
+function nutpool.radical()      return copy_nut(radical)      end
+function nutpool.fraction()     return copy_nut(fraction)     end
+function nutpool.subbox()       return copy_nut(subbox)       end
+function nutpool.mathchar()     return copy_nut(mathchar)     end
+function nutpool.mathtextchar() return copy_nut(mathtextchar) end
+function nutpool.choice()       return copy_nut(choice)       end
 
 local function new_hlist(list,width,height,depth,shift)
     local n = copy_nut(hlist)

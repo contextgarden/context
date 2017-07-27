@@ -111,6 +111,7 @@
 \let\xmltext                   \clf_xmltext
 \let\xmltobuffer               \clf_xmltobuffer           % id pattern name
 \let\xmltobufferverbose        \clf_xmltobufferverbose    % id pattern name
+\let\xmltobuffertextonly       \clf_xmltobuffertextonly   % id pattern name
 \let\xmltofile                 \clf_xmltofile             % id pattern filename
 \let\xmltoparameters           \clf_xmltoparameters
 \let\xmlverbatim               \clf_xmlverbatim
@@ -129,13 +130,22 @@
 
 % goodie:
 
-\unexpanded\def\xmlprettyprint#1#2%
-  {\xmltobufferverbose{#1}{.}{xml-temp}%
-   \ifdefined\scitebuffer
-     \scitebuffer[#2][xml-temp]%
+\def\xmltempbuffername{xml-temp}
+
+\unexpanded\def\prettyprintbuffer#1#2% only used here
+  {\ifdefined\scitebuffer
+     \scitebuffer[#2][#1]%
    \else
-     \typebuffer[xml-temp][\c!option=#2]%
+     \typebuffer[#1][\c!option=#2]%
    \fi}
+
+\unexpanded\def\xmlprettyprint#1#2%
+  {\xmltobufferverbose{#1}{.}{\xmltempbuffername}%
+   \prettyprintbuffer\xmltempbuffername{#2}}
+
+\unexpanded\def\xmlprettyprinttext#1#2%
+  {\xmltobuffertextonly{#1}{.}{\xmltempbuffername}%
+   \prettyprintbuffer\xmltempbuffername{#2}}
 
 % kind of special:
 

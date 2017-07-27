@@ -30,8 +30,8 @@ local f_index           = formatters["I%05X"]
 local f_character_y     = formatters["%C"]
 local f_character_n     = formatters["[ %C ]"]
 
-local check_duplicates  = true  -- can become an option (pseudo feature) / aways needed anyway
-local check_soft_hyphen = false -- can become an option (pseudo feature) / needed for tagging
+local check_duplicates  = true -- can become an option (pseudo feature) / aways needed anyway
+local check_soft_hyphen = true -- can become an option (pseudo feature) / needed for tagging
 
 directives.register("otf.checksofthyphen",function(v)
     check_soft_hyphen = v
@@ -371,6 +371,7 @@ local function copyduplicates(fontdata)
         local duplicates   = resources.duplicates
         if check_soft_hyphen then
             -- ebgaramond has a zero width empty soft hyphen
+            -- antykwatorunsks lacks a soft hyphen
             local ds = descriptions[0xAD]
             if not ds or ds.width == 0 then
                 if ds then

@@ -41,7 +41,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2017.07.22 00:04}
+\edef\contextversion{2017.07.27 16:17}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -456,8 +456,6 @@
 \loadmarkfile{meta-grd}
 \loadmarkfile{meta-fnt}
 
-\loadmarkfile{node-rul} % used in trac-vis ... order issue
-
 \loadmarkfile{page-mrk} % depends on mp
 
 \loadmarkfile{page-flw}
@@ -500,7 +498,7 @@
 \loadmarkfile{typo-scr}
 \loadmarkfile{phys-dim}
 
-%loadmarkfile{node-rul}
+\loadmarkfile{node-rul} % beware, defined \underbar so after math 
 \loadmkvifile{font-sol} % font solutions
 
 \loadmkvifile{strc-not}

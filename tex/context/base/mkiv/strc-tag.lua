@@ -60,7 +60,7 @@ tags.specifications  = specifications
 local p_splitter     = C((1-S(">"))^1) * P(">") * C(P(1)^1)
 tagpatterns.splitter = p_splitter
 
-local properties     = allocate {
+local properties     = allocate { -- todo: more "record = true" to improve formatting
 
     document              = { pdf = "Div",        nature = "display" },
 
@@ -71,6 +71,7 @@ local properties     = allocate {
     highlight             = { pdf = "Span",       nature = "inline"  },
 
     section               = { pdf = "Sect",       nature = "display" },
+    sectioncaption        = { pdf = "Div",        nature = "display", record = true },
     sectiontitle          = { pdf = "H",          nature = "mixed"   },
     sectionnumber         = { pdf = "H",          nature = "mixed"   },
     sectioncontent        = { pdf = "Div",        nature = "display" },
@@ -280,6 +281,10 @@ function tags.registermetadata(data)
     else
         merge(documentdata,d)
     end
+end
+
+function tags.getmetadata()
+    return documentdata or { }
 end
 
 function tags.start(tag,specification)

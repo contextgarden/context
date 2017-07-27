@@ -116,7 +116,6 @@ local setsub               = nuts.setsub
 local setsup               = nuts.setsup
 
 local flush_node           = nuts.flush
-local new_node             = nuts.new -- todo: pool: math_noad math_sub
 local copy_node            = nuts.copy
 local slide_nodes          = nuts.slide
 local set_visual           = nuts.setvisual
@@ -126,6 +125,10 @@ local mlist_to_hlist       = nodes.mlist_to_hlist
 local font_of_family       = node.family_font
 
 local new_kern             = nodepool.kern
+local new_submlist         = nodepool.submlist
+local new_noad             = nodepool.noad
+local new_delimiter        = nodepool.delimiter
+local new_fence            = nodepool.fence
 
 local fonthashes           = fonts.hashes
 local fontdata             = fonthashes.identifiers
@@ -174,8 +177,8 @@ local math_noad            = nodecodes.noad           -- attr nucleus sub sup
 local math_accent          = nodecodes.accent         -- attr nucleus sub sup accent
 local math_radical         = nodecodes.radical        -- attr nucleus sub sup left degree
 local math_fraction        = nodecodes.fraction       -- attr nucleus sub sup left right
-local math_box             = nodecodes.subbox         -- attr list
-local math_sub             = nodecodes.submlist       -- attr list
+local math_subbox          = nodecodes.subbox         -- attr list
+local math_submlist        = nodecodes.submlist       -- attr list
 local math_char            = nodecodes.mathchar       -- attr fam char
 local math_textchar        = nodecodes.mathtextchar   -- attr fam char
 local math_delim           = nodecodes.delim          -- attr small_fam small_char large_fam large_char
@@ -253,7 +256,7 @@ local function process(start,what,n,parent)
                   noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
-        elseif id == math_box or id == math_sub then
+        elseif id == math_subbox or id == math_submlist then
             local noad = getlist(start)                 if noad then process(noad,what,n,start) end -- list (not getlist !)
         elseif id == math_fraction then
             local noad = getfield(start,"num")          if noad then process(noad,what,n,start) end -- list
@@ -298,7 +301,7 @@ local function processnested(current,what,n)
         noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
-    elseif id == math_box or id == math_sub then
+    elseif id == math_subbox or id == math_submlist then
         noad = getlist(current)                 if noad then process(noad,what,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
         noad = getfield(current,"num")          if noad then process(noad,what,n,current) end -- list
@@ -334,7 +337,7 @@ local function processstep(current,process,n,id)
         noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,n,current) end -- list
-    elseif id == math_box or id == math_sub then
+    elseif id == math_subbox or id == math_submlist then
         noad = getlist(current)                 if noad then process(noad,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
         noad = getfield(current,"num")          if noad then process(noad,n,current) end -- list
@@ -733,8 +736,8 @@ processors.autofences = autofences
 local dummyfencechar  = 0x2E
 
 local function makefence(what,char)
-    local d = new_node(math_delim)
-    local f = new_node(math_fence)
+    local d = new_delimiter()
+    local f = new_fence()
     if char then
         local sym = getnucleus(char)
         local chr = getchar(sym)
@@ -753,7 +756,7 @@ local function makefence(what,char)
 end
 
 local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
-    local list = new_node(math_sub)
+    local list = new_submlist()
     setlist(list,f_o)
     setsubtype(noad,noad_inner)
     setnucleus(noad,list)
@@ -986,7 +989,7 @@ local function replace(pointer,what,n,parent)
         if start_super == stop_super then
             setsup(pointer,getnucleus(start_super))
         else
-            local list = new_node(math_sub) -- todo attr
+            local list = new_submlist() -- todo attr
             setlist(list,start_super)
             setsup(pointer,list)
         end
@@ -999,7 +1002,7 @@ local function replace(pointer,what,n,parent)
         if start_sub == stop_sub then
             setsub(pointer,getnucleus(start_sub))
         else
-            local list = new_node(math_sub) -- todo attr
+            local list = new_submlist() -- todo attr
             setlist(list,start_sub)
             setsub(pointer,list)
         end
@@ -1267,12 +1270,13 @@ local default_factor = 1/20
 local setcolor     = nodes.tracers.colors.set
 local resetcolor   = nodes.tracers.colors.reset
 local italic_kern  = new_kern
+
 local c_positive_d = "trace:dg"
 local c_negative_d = "trace:dr"
 
 local function insert_kern(current,kern)
-    local sub  = new_node(math_sub)  -- todo: pool
-    local noad = new_node(math_noad) -- todo: pool
+    local sub  = new_submlist()
+    local noad = new_noad()
     setlist(sub,kern)
     setnext(kern,noad)
     setnucleus(noad,current)

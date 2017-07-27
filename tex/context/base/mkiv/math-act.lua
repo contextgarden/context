@@ -521,12 +521,14 @@ local function horizontalcode(family,unicode)
         end
     elseif kind == e_right then
         local charlist = data[3].horiz_variants
-        local right = charlist[#charlist]
-        roffset = abs((right["start"] or 0) - (right["end"] or 0))
+        if charlist then
+            local right = charlist[#charlist]
+            roffset = abs((right["start"] or 0) - (right["end"] or 0))
+        end
      elseif kind == e_horizontal then
         local charlist = data[3].horiz_variants
         if charlist then
-            local left = charlist[1]
+            local left  = charlist[1]
             local right = charlist[#charlist]
             loffset = abs((left ["start"] or 0) - (left ["end"] or 0))
             roffset = abs((right["start"] or 0) - (right["end"] or 0))

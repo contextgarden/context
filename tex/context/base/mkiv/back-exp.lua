@@ -149,7 +149,7 @@ local overloads         = fonts.mappings.overloads
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.34"
+local exportversion     = "0.35"
 local mathmlns          = "http://www.w3.org/1998/Math/MathML"
 local contextns         = "http://www.contextgarden.net/context/export" -- whatever suits
 local cssnamespaceurl   = "@namespace context url('%namespace%') ;"
@@ -347,16 +347,17 @@ do
     -- /* text-align : justify ; */
 
 local documenttemplate = [[
-document, %namespace%div.document {
+document,
+%namespace%div.document {
     font-size  : %size% !important ;
     max-width  : %width% !important ;
     text-width : %align% !important ;
     hyphens    : %hyphens% !important ;
-}
-]]
+}]]
 
 local styletemplate = [[
-%element%[detail="%detail%"], %namespace%div.%element%.%detail% {
+%element%[detail="%detail%"],
+%namespace%div.%element%.%detail% {
     display      : inline ;
     font-style   : %style% ;
     font-variant : %variant% ;
@@ -416,7 +417,7 @@ local styletemplate = [[
         })
         --
         local colorspecification = xml.css.colorspecification
-        local fontspecification = xml.css.fontspecification
+        local fontspecification  = xml.css.fontspecification
         for element, details in sortedhash(usedstyles) do
             for detail, data in sortedhash(details) do
                 local s = fontspecification(data.style)
@@ -431,6 +432,7 @@ local styletemplate = [[
                     weight    = s.weight  or "inherit",
                     family    = s.family  or "inherit",
                     color     = c         or "inherit",
+                    display   = s.display and "block" or nil,
                 })
             end
         end
@@ -550,7 +552,7 @@ end
 
 do
 
-    local fields = { "title", "subtitle", "author", "keywords" }
+    local fields = { "title", "subtitle", "author", "keywords", "url", "version" }
 
     local function checkdocument(root)
         local data = root.data
@@ -717,16 +719,32 @@ end
 
 do
 
-    local highlight      = { }
-    usedstyles.highlight = highlight
-
     local strippedtag    = structurestags.strip -- we assume global styles
 
-    function structurestags.sethighlight(style,color)
-        highlight[strippedtag(locatedtag("highlight"))] = {
-            style = style, -- xml.css.fontspecification(style),
-            color = color, -- xml.css.colorspec(color),
-        }
+    local highlight      = { }
+    local construct      = { }
+
+    usedstyles.highlight = highlight
+    usedstyles.construct = construct
+
+    function structurestags.sethighlight(name,style,color,mode)
+        if not highlight[name] then
+            highlight[name] = {
+                style = style,
+                color = color,
+                mode  = mode == 1 and "display" or nil,
+            }
+        end
+    end
+
+    function structurestags.setconstruct(name,style,color,mode)
+        if not construct[name] then
+            construct[name] = {
+                style = style,
+                color = color,
+                mode  = mode == 1 and "display" or nil,
+            }
+        end
     end
 
 end
@@ -1735,21 +1753,26 @@ do
     local function hascontent(data)
         for i=1,#data do
             local di = data[i]
-            if not di then
+            if not di or di.tg == "ignore" then
                 --
-            elseif di.content then
-                return true
             else
-                local d = di.data
-                if d and #d > 0 and hascontent(d) then
+                local content = di.content
+                if content == " " then
+                    --
+                elseif content then
                     return true
+                else
+                    local d = di.data
+                    if d and #d > 0 and hascontent(d) then
+                        return true
+                    end
                 end
             end
         end
     end
 
     function structurestags.settablecell(rows,columns,align)
-        if align > 0 or rows > 1 or columns > 1 then
+        if align > 0 or rows > 1 or columns > 1 or kind > 0 then
             tabledata[locatedtag("tablecell")] = {
                 rows    = rows,
                 columns = columns,
@@ -1784,10 +1807,11 @@ do
 
     local tabulatedata = { }
 
-    function structurestags.settabulatecell(align)
-        if align > 0 then
+    function structurestags.settabulatecell(align,kind)
+        if align > 0 or kind > 0 then
             tabulatedata[locatedtag("tabulatecell")] = {
                 align = align,
+                kind  = kind, -- 1 = bold head
             }
         end
     end
@@ -1814,6 +1838,12 @@ do
                 setattribute(di,"align","flushright")
             elseif align == 3 then
                 setattribute(di,"align","middle")
+            end
+            local kind = hash.kind
+            if kind == 1 then
+                setattribute(di,"kind","strong")
+            elseif kind == 2 then
+                setattribute(di,"kind","equals")
             end
         end
     end
@@ -1891,13 +1921,6 @@ do
     local depth  = 0
     local inline = 0
 
-    local function bpar(result)
-        result[#result+1] = "\n<p>"
-    end
-    local function epar(result)
-        result[#result+1] = "</p>\n"
-    end
-
     local function emptytag(result,embedded,element,nature,di) -- currently only break but at some point
         local a = di.attributes                       -- we might add detail etc
         if a then -- happens seldom
@@ -1915,6 +1938,34 @@ do
                 result[#result+1] = f_empty_mixed(depth,namespaced[element])
             else
                 result[#result+1] = f_empty_inline(namespaced[element])
+            end
+        end
+    end
+
+ -- local function stripspaces(di)
+ --     local d = di.data
+ --     local n = #d
+ --     local m = 0
+ --     for i=1,n do
+ --         local di = d[i]
+ --         if di.tg then
+ --             m = m + 1
+ --             d[m] = di
+ --         end
+ --     end
+ --     for i=n,m+1,-1 do
+ --         d[i] = nil
+ --     end
+ -- end
+ --
+ -- -- simpler:
+
+    local function stripspaces(di)
+        local d = di.data
+        for i=1,#d do
+            local di = d[i]
+            if not di.tg then
+                di.content = ""
             end
         end
     end
@@ -1972,6 +2023,11 @@ do
             if extra then
                 extra(di,element,index,fulltag)
             end
+            --
+            if di.record then
+                stripspaces(di)
+            end
+            --
             if exportproperties then
                 local p = specification.userdata
                 if not p then
@@ -2044,7 +2100,9 @@ do
         if metadata then
             result[#result+1] = f_metadata_begin(depth)
             for k, v in table.sortedpairs(metadata) do
-                result[#result+1] = f_metadata(depth+1,k,lpegmatch(p_entity,v))
+                if v ~= "" then
+                    result[#result+1] = f_metadata(depth+1,k,lpegmatch(p_entity,v))
+                end
             end
             result[#result+1] = f_metadata_end(depth)
         end
@@ -2333,7 +2391,7 @@ end
 -- collector code
 
 local function push(fulltag,depth)
-    local tg, n, detail
+    local tg, n, detail, element, nature, record
     local specification = specifications[fulltag]
     if specification then
         tg     = specification.tagname
@@ -2344,9 +2402,12 @@ local function push(fulltag,depth)
         tg, n = lpegmatch(tagsplitter,fulltag)
         n = tonumber(n) -- to tonumber in tagsplitter
     end
-    local p        = properties[tg]
-    local element  = p and p.export or tg
-    local nature   = p and p.nature or "inline" -- defaultnature
+    local p = properties[tg]
+    if p then
+        element = p.export or tg
+        nature  = p.nature or "inline" -- defaultnature
+        record  = p.record
+    end
     local treedata = tree.data
     local t = { -- maybe we can use the tag table
         tg         = tg,
@@ -2358,6 +2419,7 @@ local function push(fulltag,depth)
         data       = { },
         attribute  = currentattribute,
         parnumber  = currentparagraph,
+        record     = record, -- we can consider storing properties
     }
     treedata[#treedata+1] = t
     currentdepth = currentdepth + 1
@@ -2540,6 +2602,8 @@ local function finishexport()
         report_export("%w<!-- stop finalizing -->",currentdepth)
     end
 end
+
+-- inserts ?
 
 local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
     local p
@@ -2859,19 +2923,6 @@ function nodes.handlers.export(head) -- hooks into the page builder
     end
  -- continueexport()
     restart = true
-
--- local function f(head,depth,pat)
---     for n in node.traverse(head) do
---         local a = n[a_tagged] or pat
---         local t = taglist[a]
---         print(depth,n,a,t and table.concat(t," "))
---         if n.id == hlist_code or n.id == vlist_code and n.list then
---             f(n.list,depth+1,a)
---         end
---     end
--- end
--- f(head,1)
-
     collectresults(tonut(head))
     if trace_export then
         report_export("%w<!-- stop flushing page -->",currentdepth)
@@ -2886,7 +2937,7 @@ function builders.paragraphs.tag(head)
         local subtype = getsubtype(n)
         if subtype == line_code then
             setattr(n,a_textblock,noftextblocks)
-        elseif subtype == glue_code or subtype == kern_code then
+        elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
             setattr(n,a_textblock,0)
         end
     end
@@ -2894,6 +2945,9 @@ function builders.paragraphs.tag(head)
 end
 
 do
+
+    local xmlcollected  = xml.collected
+    local xmlsetcomment = xml.setcomment
 
 local xmlpreamble = [[
 <?xml version="1.0" encoding="UTF-8" standalone="%standalone%" ?>
@@ -2955,14 +3009,16 @@ local cssheadlink = [[
 local elementtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%, %namespace%div.%element% {
+%element%,
+%namespace%div.%element% {
     display: %display% ;
 }]]
 
 local detailtemplate = [[
 /* element="%element%" detail="%detail%" chain="%chain%" */
 
-%element%[detail=%detail%], %namespace%div.%element%.%detail% {
+%element%[detail=%detail%],
+%namespace%div.%element%.%detail% {
     display: %display% ;
 }]]
 
@@ -2983,7 +3039,7 @@ local htmltemplate = [[
 
     </head>
     <body>
-        <div xmlns="http://www.pragma-ade.com/context/export">
+        <div class="document" xmlns="http://www.pragma-ade.com/context/export">
 
 <div class="warning">Rendering can be suboptimal because there is no default/fallback css loaded.</div>
 
@@ -3061,7 +3117,7 @@ local htmltemplate = [[
             local implicits = { }
             local explicits = { }
             local overloads = { }
-            for e in xml.collected(xmltree,"*") do
+            for e in xmlcollected(xmltree,"*") do
                 local at = e.at
                 if at then
                     local explicit = at.explicit
@@ -3082,7 +3138,7 @@ local htmltemplate = [[
                     end
                 end
             end
-            for e in xml.collected(xmltree,"*") do
+            for e in xmlcollected(xmltree,"*") do
                 local at = e.at
                 if at then
                     local internal = at.internal
@@ -3214,7 +3270,7 @@ local htmltemplate = [[
 
     local function remap(specification,source,target)
         local comment = nil -- share comments
-        for c in xml.collected(source,"*") do
+        for c in xmlcollected(source,"*") do
             if not c.special then
                 local tg = c.tg
                 local ns = c.ns
@@ -3226,44 +3282,45 @@ local htmltemplate = [[
              -- elseif tg == "a" then
              --     c.ns = ""
                 else
-                 -- if tg == "tabulatecell" or tg == "tablecell" then
-                        local dt = c.dt
-                        local nt = #dt
-                        if nt == 0 or (nt == 1 and dt[1] == "") then
-                            if comment then
-                                c.dt = comment
-                            else
-                                xml.setcomment(c,"empty")
-                                comment = c.dt
-                            end
+                    local dt = c.dt
+                    local nt = #dt
+                    if nt == 0 or (nt == 1 and dt[1] == "") then
+                        if comment then
+                            c.dt = comment
+                        else
+                            xmlsetcomment(c,"empty")
+                            comment = c.dt
                         end
-                 -- end
+                    end
                     local at    = c.at
                     local class = nil
+                    local label = nil
                     if tg == "document" then
                         at.href   = nil
                         at.detail = nil
                         at.chain  = nil
                     elseif tg == "metavariable" then
-                        at.detail = "metaname-" .. at.name
+                        label = at.name
+                        at.detail = "metaname-" .. label
                         class = makeclass(tg,at)
                     else
                         class = makeclass(tg,at)
                     end
                     local id   = at.id
                     local href = at.href
+                    local attr = nil
                     if id then
-                        id = lpegmatch(p_cleanid,  id)   or id
+                        id = lpegmatch(p_cleanid, id) or id
                         if href then
                             href = lpegmatch(p_cleanhref,href) or href
-                            c.at = {
+                            attr = {
                                 class   = class,
                                 id      = id,
                                 href    = href,
                                 onclick = addclicks and f_onclick(href) or nil,
                             }
                         else
-                            c.at = {
+                            attr = {
                                 class = class,
                                 id    = id,
                             }
@@ -3271,18 +3328,22 @@ local htmltemplate = [[
                     else
                         if href then
                             href = lpegmatch(p_cleanhref,href) or href
-                            c.at = {
+                            attr = {
                                 class   = class,
                                 href    = href,
                                 onclick = addclicks and f_onclick(href) or nil,
                             }
                         else
-                            c.at = {
+                            attr = {
                                 class = class,
                             }
                         end
                     end
                     c.tg = "div"
+                    c.at = attr
+                    if label then
+                        attr.label = label
+                    end
                 end
             end
         end
@@ -3292,11 +3353,19 @@ local htmltemplate = [[
 
     local addsuffix = file.addsuffix
     local joinfile  = file.join
+    local nameonly  = file.nameonly
+    local basename  = file.basename
 
     local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
     local embedmath = false
 
-    local function stopexport(v)
+    function structurestags.finishexport()
+
+        if exporting then
+            exporting = false
+        else
+            return
+        end
 
         starttiming(treehash)
         --
@@ -3314,10 +3383,8 @@ local htmltemplate = [[
         --
         wrapups.hashlistdata()
         --
-        if type(v) ~= "string" or v == v_yes or v == "" then
-            v = tex.jobname
-        end
-
+        local askedname = finetuning.file
+        --
         -- we use a dedicated subpath:
         --
         -- ./jobname-export
@@ -3333,8 +3400,12 @@ local htmltemplate = [[
         -- ./jobname-export/styles/jobname-images.css
         -- ./jobname-export/styles/jobname-templates.css
 
-        local basename  = file.basename(v)
-        local basepath  = basename .. "-export"
+        if type(askedname) ~= "string" or askedname == v_yes or askedname == "" then
+            askedname = tex.jobname
+        end
+
+        local usedname  = nameonly(askedname)
+        local basepath  = usedname .. "-export"
         local imagepath = joinfile(basepath,"images")
         local stylepath = joinfile(basepath,"styles")
 
@@ -3358,21 +3429,23 @@ local htmltemplate = [[
         end
 
         -- we're now on the dedicated export subpath so we can't clash names
+        --
+        -- a xhtml suffix no longer seems to be work well with browsers
 
-        local xmlfilebase           = addsuffix(basename .. "-raw","xml"  )
-        local xhtmlfilebase         = addsuffix(basename .. "-tag","xhtml")
-        local htmlfilebase          = addsuffix(basename .. "-div","xhtml")
-        local specificationfilebase = addsuffix(basename .. "-pub","lua"  )
+        local xmlfilebase           = addsuffix(usedname .. "-raw","xml"  )
+        local xhtmlfilebase         = addsuffix(usedname .. "-tag","xhtml")
+        local htmlfilebase          = addsuffix(usedname .. "-div","html")
+        local specificationfilebase = addsuffix(usedname .. "-pub","lua"  )
 
         local xmlfilename           = joinfile(basepath, xmlfilebase          )
         local xhtmlfilename         = joinfile(basepath, xhtmlfilebase        )
         local htmlfilename          = joinfile(basepath, htmlfilebase         )
         local specificationfilename = joinfile(basepath, specificationfilebase)
         --
-        local defaultfilebase       = addsuffix(basename .. "-defaults", "css")
-        local imagefilebase         = addsuffix(basename .. "-images",   "css")
-        local stylefilebase         = addsuffix(basename .. "-styles",   "css")
-        local templatefilebase      = addsuffix(basename .. "-templates","css")
+        local defaultfilebase       = addsuffix(usedname .. "-defaults", "css")
+        local imagefilebase         = addsuffix(usedname .. "-images",   "css")
+        local stylefilebase         = addsuffix(usedname .. "-styles",   "css")
+        local templatefilebase      = addsuffix(usedname .. "-templates","css")
         --
         local defaultfilename       = joinfile(stylepath,defaultfilebase )
         local imagefilename         = joinfile(stylepath,imagefilebase   )
@@ -3410,7 +3483,7 @@ local htmltemplate = [[
             local list = table.unique(settings_to_array(cssfile))
             for i=1,#list do
                 local source = addsuffix(list[i],"css")
-                local target = joinfile(stylepath,file.basename(source))
+                local target = joinfile(stylepath,basename(source))
                 cssfiles[#cssfiles+1] = source
                 if not lfs.isfile(source) then
                     source = joinfile("../",source)
@@ -3445,7 +3518,7 @@ local htmltemplate = [[
             -- only for testing
             attach {
                 data       = concat{ wholepreamble(true), result },
-                name       = file.basename(xmlfilename),
+                name       = basename(xmlfilename),
                 registered = "export",
                 title      = "raw xml export",
                 method     = v_hidden,
@@ -3457,8 +3530,8 @@ local htmltemplate = [[
      --     for k, v in sortedhash(embedded) do
      --         attach {
      --             data       = v,
-     --             file       = file.basename(k),
-     --             name       = file.addsuffix(k,"xml"),
+     --             file       = basename(k),
+     --             name       = addsuffix(k,"xml"),
      --             registered = k,
      --             reference  = k,
      --             title      = "xml export snippet: " .. k,
@@ -3483,13 +3556,13 @@ local htmltemplate = [[
         io.savedata(xmlfilename,result)
 
         report_export("saving css image definitions in %a",imagefilename)
-        io.savedata(imagefilename,wrapups.allusedimages(basename))
+        io.savedata(imagefilename,wrapups.allusedimages(usedname))
 
         report_export("saving css style definitions in %a",stylefilename)
-        io.savedata(stylefilename,wrapups.allusedstyles(basename))
+        io.savedata(stylefilename,wrapups.allusedstyles(usedname))
 
         report_export("saving css template in %a",templatefilename)
-        io.savedata(templatefilename,allusedelements(basename))
+        io.savedata(templatefilename,allusedelements(usedname))
 
         -- additionally we save an xhtml file; for that we load the file as xml tree
 
@@ -3505,9 +3578,10 @@ local htmltemplate = [[
         -- at the tex end
 
         local identity = interactions.general.getidentity()
+        local metadata = structures.tags.getmetadata()
 
         local specification = {
-            name        = file.removesuffix(v),
+            name        = usedname,
             identifier  = os.uuid(),
             images      = wrapups.uniqueusedimages(),
             imagefile   = joinfile("styles",imagefilebase),
@@ -3524,6 +3598,7 @@ local htmltemplate = [[
             author      = validstring(finetuning.author) or validstring(identity.author),
             firstpage   = validstring(finetuning.firstpage),
             lastpage    = validstring(finetuning.lastpage),
+            metadata    = metadata,
         }
 
         report_export("saving specification in %a",specificationfilename,specificationfilename)
@@ -3537,10 +3612,15 @@ local htmltemplate = [[
 
         remap(specification,xmltree)
 
+        -- believe it or not, but a <title/> can prevent viewing in browsers
+
         local title = specification.title
 
         if not title or title == "" then
-            title = "no title" -- believe it or not, but a <title/> can prevent viewing in browsers
+            title = metadata.title
+            if not title or title == "" then
+                title = usedname -- was: "no title"
+            end
         end
 
         local variables = {
@@ -3555,7 +3635,7 @@ local htmltemplate = [[
         -- finally we report how an epub file can be made (using the specification)
 
         report_export("")
-        report_export('create epub with: mtxrun --script epub --make "%s" [--purge --rename --svgmath]',file.nameonly(basename))
+        report_export('create epub with: mtxrun --script epub --make "%s" [--purge --rename --svgmath]',usedname)
         report_export("")
 
         stoptiming(treehash)
@@ -3564,17 +3644,8 @@ local htmltemplate = [[
     local appendaction = nodes.tasks.appendaction
     local enableaction = nodes.tasks.enableaction
 
-    function structurestags.setupexport(t)
-        merge(finetuning,t)
-        keephyphens      = finetuning.hyphen == v_yes
-        exportproperties = finetuning.properties
-        if exportproperties == v_no then
-            exportproperties = false
-        end
-    end
-
-    local function startexport(v)
-        if v and not exporting then
+    function structurestags.initializeexport()
+        if not exporting then
             report_export("enabling export to xml")
          -- not yet known in task-ini
             appendaction("shipouts","normalizers", "nodes.handlers.export")
@@ -3584,18 +3655,18 @@ local htmltemplate = [[
          -- appendaction("finalizers","lists","builders.paragraphs.tag")
          -- enableaction("finalizers","builders.paragraphs.tag")
             luatex.registerstopactions(structurestags.finishexport)
-            exporting = v
+            exporting = true
         end
     end
 
-    function structurestags.finishexport()
-        if exporting then
-            stopexport(exporting)
-            exporting = false
+    function structurestags.setupexport(t)
+        merge(finetuning,t)
+        keephyphens      = finetuning.hyphen == v_yes
+        exportproperties = finetuning.properties
+        if exportproperties == v_no then
+            exportproperties = false
         end
     end
-
-    directives.register("backend.export",startexport) -- maybe .name
 
     statistics.register("xml exporting time", function()
         if exporting then
@@ -3624,6 +3695,7 @@ implement {
             { "lastpage" },
             { "svgstyle" },
             { "cssfile" },
+            { "file" },
         }
     }
 }
@@ -3632,6 +3704,12 @@ implement {
     name      = "finishexport",
     actions   = structurestags.finishexport,
 }
+
+implement {
+    name      = "initializeexport",
+    actions   = structurestags.initializeexport,
+}
+
 
 implement {
     name      = "settagitemgroup",
@@ -3684,7 +3762,13 @@ implement {
 implement {
     name      = "settaghighlight",
     actions   = structurestags.sethighlight,
-    arguments = { "string", "integer" }
+    arguments = { "string", "string", "integer", "integer" }
+}
+
+implement {
+    name      = "settagconstruct",
+    actions   = structurestags.setconstruct,
+    arguments = { "string", "string", "integer", "integer" }
 }
 
 implement {
@@ -3708,7 +3792,7 @@ implement {
 implement {
     name      = "settagtabulatecell",
     actions   = structurestags.settabulatecell,
-    arguments = "integer"
+    arguments = { "integer", "integer" },
 }
 
 implement {

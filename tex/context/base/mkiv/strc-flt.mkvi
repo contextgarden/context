@@ -540,7 +540,7 @@
 
 \def\strc_floats_place_indeed[#location][#reference]#caption%
   {\strc_floats_reset_variables
-   \edef\floatlocation{#location}%
+   \edef\floatlocation{\ifexporting\v!here\else#location\fi}%
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
    \fi
@@ -592,7 +592,7 @@
    \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
    \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
    \def\m_strc_floats_saved_userdata{#2}%
-   \edef\floatlocation{\floatcaptionparameter\c!location}%
+   \edef\floatlocation{\ifexporting\v!here\else\floatcaptionparameter\c!location\fi}%
    \setfloatcaptionparameter\c!location{\savedfloatlocation}% not expanded
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}%
@@ -1097,6 +1097,7 @@
       % already be set at this point
       \processcommacommand[\floatlocation]\strc_floats_check_extra_actions_step
       \ifx\extrafloatlocation\empty \else
+        % maybe not when exporting
         \edef\floatlocation{\extrafloatlocation,\floatlocation}%
         \setfloatmethodvariables\floatlocation
       \fi}}
@@ -1246,7 +1247,7 @@
    \global\floatwidth    \wd\floatbox
    \global\floatheight   \ht\floatbox % forget about the depth
    \global\floattextwidth\dimexpr\hsize-\floatwidth-\rootfloatparameter\c!margin\relax
-   \edef\floatlocation{\floatlocationmethod}% to be sure .. why
+   \edef\floatlocation{\ifexporting\v!here\else\floatlocationmethod\fi}% to be sure .. why
    \doifelseinset\v!tall\floatlocationmethod
      {\floattextheight\dimexpr\pagegoal-\pagetotal-\bigskipamount\relax % ugly, this bigskip
       \ifdim\floattextheight>\textheight

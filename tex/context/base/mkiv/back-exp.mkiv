@@ -94,7 +94,9 @@
 
 \appendtoks
     \unexpanded\def\dotagtabulatecell
-      {\iftrialtypesetting\else\clf_settagtabulatecell\c_tabl_tabulate_align\fi}%
+      {\iftrialtypesetting\else
+         \clf_settagtabulatecell\c_tabl_tabulate_align\c_tabl_tabulate_kind
+       \fi}%
     \unexpanded\def\dotagtabulatesignal
       {\dontleavehmode\signalcharacter\ignorespaces}%
 \to \everyenableelements
@@ -110,9 +112,26 @@
 \to \everyenableelements
 
 \appendtoks % frozen and assumed global per highlight class
+    \unexpanded\def\dotagconstruct
+      {\iftrialtypesetting\else
+         \clf_settagconstruct
+           {\currentstartstop}%
+           {\startstopparameter\c!style}%
+           \attribute\colorattribute
+           \ifvmode\plusone\else\zerocount\fi
+           \relax
+       \fi}%
+\to \everyenableelements
+
+\appendtoks % frozen and assumed global per highlight class
     \unexpanded\def\dotaghighlight
       {\iftrialtypesetting\else
-         \clf_settaghighlight{\highlightparameter\c!style}\attribute\colorattribute\relax
+         \clf_settaghighlight
+           {\currenthighlight}%
+           {\highlightparameter\c!style}
+           \attribute\colorattribute
+           \ifvmode\plusone\else\zerocount\fi
+           \relax
        \fi}%
 \to \everyenableelements
 
@@ -239,10 +258,24 @@
    \c!properties=\v!no, % no: ignore, yes: as attribute, otherwise: use as prefix
    \c!hyphen=\v!no,
    \c!svgstyle=,
-   \c!cssfile=]
+   \c!cssfile=,
+   \c!file={\backendparameter\c!export}] % downward compatibility
 
-\def\dosynchronizeexport
-  {\let\currentexport\empty
+\resetsystemmode\v!export
+
+\unexpanded\def\doinitializeexport
+  {\edef\p_export{\backendparameter\c!export}%
+   \ifx\p_export\empty \else
+      \setuptagging[\c!state=\v!start]%
+      \clf_initializeexport
+      \setsystemmode\v!export
+      \exportingtrue
+      \glet\doinitializeexport\relax
+   \fi}
+
+\unexpanded\def\dostartexport
+  {%\glet\dostartexport\relax
+   \let\currentexport\empty
    \clf_setupexport
        align      {\exportparameter\c!align}%
        bodyfont   \dimexpr\exportparameter\c!bodyfont\relax
@@ -256,37 +289,35 @@
        lastpage   {\exportparameter\c!lastpage}%
        svgstyle   {\exportparameter\c!svgstyle}%
        cssfile    {\exportparameter\c!cssfile}%
+       file       {\exportparameter\c!file}%
    \relax}
 
+\unexpanded\def\dostopexport
+  {\glet\dostopexport\relax
+   \clf_finishexport}
+
 \appendtoks
-    \doifsomething{\backendparameter\c!export}\dosynchronizeexport
+    \doinitializeexport
+\to \everysetupbackend
+
+\appendtoks
+    \ifexporting
+        \dostartexport
+    \fi
 \to \everystarttext
 
 % better (before pdf gets closed, so we can embed), but it needs testing:
 
 \appendtoks
-    \clf_finishexport
+    \ifexporting
+        \dostopexport
+    \fi
 \to \everystoptext
 
 \appendtoks
-    \doifsomething{\backendparameter\c!export}\dosynchronizeexport % in case it is done inside \starttext
+    \ifexporting
+        \dostartexport % in case it is done inside \starttext
+    \fi
 \to \everysetupdocument
-
-% \appendtoks
-%     \doifsomething{\backendparameter\c!xhtml}
-%       {\enabledirectives[backend.export.xhtml=\backendparameter\c!xhtml]}%
-%     \doifsomething{\backendparameter\c!css}
-%       {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
-%     \doifsomething{\backendparameter\c!alternative}
-%       {\enabledirectives[backend.export.alternative={\backendparameter\c!alternative}]}%
-% \to \everysetupbackend
-
-\appendtoks
-    \doifelsenothing{\backendparameter\c!export}
-      {\resetsystemmode\v!export}
-      {\setuptagging[\c!state=\v!start]%
-       \enabledirectives[backend.export=\backendparameter\c!export]%
-       \setsystemmode\v!export}%
-\to \everysetupbackend
 
 \protect \endinput

@@ -31,7 +31,7 @@ local pdfgraycode               = lpdf.graycode
 local pdfspotcode               = lpdf.spotcode
 local pdftransparencycode       = lpdf.transparencycode
 local pdffinishtransparencycode = lpdf.finishtransparencycode
-local pdfliteral                = nodes.pool.pdfliteral
+----- pdfpageliteral            = nodes.pool.pdfpageliteral
 
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
@@ -64,7 +64,7 @@ resetall()
 -- -- comment hack
 --
 -- local function pdfcode(str)
---    context(pdfliteral(str))
+--    context(pdfpageliteral(str))
 -- end
 
 local pdfcode = context.pdfliteral

@@ -56,6 +56,7 @@ local variables          = interfaces.variables
 local v_background       = variables.background
 local v_frame            = variables.frame
 local v_empty            = variables.empty
+local v_none             = variables.none
 
 -- -- -- -- -- --
 -- shared
@@ -852,13 +853,15 @@ local function showboundingbox(tfmdata,key,value)
                     rulecache = backcache
                 elseif v == v_empty then
                     showchar = false
+                elseif v == v_none then
+                    color = nil
                 else
                     color = v
                 end
             end
         end
-        local gray  = startcolor(color)
-        local black = stopcolor
+        local gray  = color and startcolor(color) or nil
+        local black = gray and stopcolor or nil
         for unicode, old_c in next, characters do
             local private = getprivate(tfmdata)
             local width   = old_c.width  or 0
@@ -895,16 +898,20 @@ local function showboundingbox(tfmdata,key,value)
          --         }
          --     }
          -- end
+            local rule  = rulecache[height][depth][width]
             local new_c = {
                 width    = width,
                 height   = height,
                 depth    = depth,
-                commands = {
-                    push,
+                commands = gray and {
+                 -- push,
                     gray,
-                    rulecache[height][depth][width],
+                    rule,
                     black,
-                    pop,
+                 -- pop,
+                    char,
+                } or {
+                    rule,
                     char,
                 }
             }

@@ -21,7 +21,7 @@ local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, s
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
 local P, S, R, Cc, Cf, Cg, Ct, Cs, C = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local context            = context
 local commands           = commands
@@ -44,7 +44,6 @@ local languages          = languages
 
 local ctx_labeltext      = context.labeltext
 local ctx_LABELTEXT      = context.LABELTEXT
-local ctx_WORD           = context.WORD
 local ctx_space          = context.space
 local ctx_convertnumber  = context.convertnumber
 local ctx_highordinalstr = context.highordinalstr
@@ -1149,15 +1148,19 @@ implement {
 -- These are just helpers but not really for the tex end. Do we have to
 -- use translate here?
 
-local whitespace  = lpeg.patterns.whitespace
-local word        = lpeg.patterns.utf8uppercharacter^-1 * (1-whitespace)^1
+local whitespace  = lpegpatterns.whitespace
+local word        = lpegpatterns.utf8uppercharacter^-1 * (1-whitespace)^1
 local pattern_one = Cs( whitespace^0 * word^-1 * P(1)^0)
 local pattern_all = Cs((whitespace^1 + word)^1)
 
 function converters.word (s) return s end -- dummies for typos
 function converters.words(s) return s end -- dummies for typos
-function converters.Word (s) return lpegmatch(pattern_one,s) or s end
-function converters.Words(s) return lpegmatch(pattern_all,s) or s end
+
+local function Word (s) return lpegmatch(pattern_one,s) or s end
+local function Words(s) return lpegmatch(pattern_all,s) or s end
+
+converters.Word  = Word
+converters.Words = Words
 
 converters.upper = characters.upper
 converters.lower = characters.lower
@@ -1324,7 +1327,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 context("%02i",year % 100)
             elseif tag == v_month or tag == "m" then
                 if currentlanguage == false then
-                    context(months[month])
+                    context(Word(months[month]))
                 elseif mnemonic then
                     ctx_labeltext(variables[mnemonic[month]])
                 else
@@ -1332,7 +1335,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 end
             elseif tag == v_MONTH then
                 if currentlanguage == false then
-                    ctx_WORD(variables[months[month]])
+                    context(Word(variables[months[month]]))
                 elseif mnemonic then
                     ctx_LABELTEXT(variables[mnemonic[month]])
                 else
@@ -1344,7 +1347,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 context(month)
             elseif tag == v_day or tag == "d" then
                 if currentlanguage == false then
-                    context(days[day])
+                    context(day)
                 else
                     ctx_convertnumber(v_day,day) -- why not direct
                 end
@@ -1358,14 +1361,14 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
             elseif tag == v_weekday or tag == "w" then
                 local wd = weekday(day,month,year)
                 if currentlanguage == false then
-                    context(days[wd])
+                    context(Word(days[wd]))
                 else
                     ctx_labeltext(variables[days[wd]])
                 end
             elseif tag == v_WEEKDAY then
                 local wd = weekday(day,month,year)
                 if currentlanguage == false then
-                    ctx_WORD(days[wd])
+                    context(Word(days[wd]))
                 else
                     ctx_LABELTEXT(variables[days[wd]])
                 end
@@ -1391,30 +1394,31 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
     end
 end
 
-implement {
-    name      = "currentdate",
-    actions   = currentdate,
-    arguments = { "string",  "string" }
-}
+
 
 implement {
-    name      = "rawdate",
-    actions   = currentdate,
-    arguments = { "string", false }
+    name      = "currentdate",
+    arguments = { "string", "string", "string" },
+    actions   = function(pattern,default,language)
+        currentdate(
+            pattern  == "" and default or pattern,
+            language == "" and false   or language
+        )
+    end,
 }
 
 implement {
     name      = "unihex",
+    arguments = "integer",
     actions   = { formatters["U+%05X"], context },
-    arguments = "integer"
 }
 
-local n = lpeg.R("09")^1 / tonumber
+local n = R("09")^1 / tonumber
 
 local p = Cf( Ct("")
     * Cg(Cc("year")  * (n           )) * P("-")^-1
     * Cg(Cc("month") * (n + Cc(   1))) * P("-")^-1
-    * Cg(Cc("day")   * (n + Cc(   1))) * lpeg.patterns.whitespace^-1
+    * Cg(Cc("day")   * (n + Cc(   1))) * whitespace^-1
     * Cg(Cc("hour")  * (n + Cc(   0))) * P(":")^-1
     * Cg(Cc("min")   * (n + Cc(   0)))
     , rawset)

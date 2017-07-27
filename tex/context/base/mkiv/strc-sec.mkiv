@@ -852,6 +852,7 @@
        \strc_sectioning_before_yes
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
        \ifconditional\headshownumber
@@ -860,18 +861,23 @@
        \else
          \strc_rendering_place_head_text
        \fi
+       \dostoptagged
        \strc_sectioning_after_yes
      \else\ifconditional\c_strc_sectioning_hidden
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_hidden % only something when tracing
+       \dostoptagged
      \else
        \strc_sectioning_before_nop % toegevoegd ivm subpaginanr / tug sheets
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_empty % just flush 'm
+       \dostoptagged
        \strc_sectioning_after_nop
      \fi\fi
    \else
@@ -879,22 +885,28 @@
        \strc_sectioning_before_yes
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
        \strc_rendering_place_head_text
+       \dostoptagged
        \strc_sectioning_after_yes
      \else\ifconditional\c_strc_sectioning_hidden
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
+       \dostarttagged\t!sectioncaption\empty
        \strc_rendering_place_head_hidden % only something when tracing
+       \dostoptagged
      \else
        % do nothing / should be vbox to 0pt
        \strc_sectioning_before_nop
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
+       \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
        \strc_rendering_place_head_empty % just flush 'm
+       \dostoptagged
        \strc_sectioning_after_nop
      \fi\fi
    \fi

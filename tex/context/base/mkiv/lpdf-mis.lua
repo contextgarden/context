@@ -29,7 +29,7 @@ local nuts                 = nodes.nuts
 local copy_node            = nuts.copy
 
 local nodepool             = nuts.pool
-local pdfliteral           = nodepool.pdfliteral
+local pdfpageliteral       = nodepool.pdfpageliteral
 local register             = nodepool.register
 
 local pdfdictionary        = lpdf.dictionary
@@ -69,10 +69,10 @@ local v_paper              = variables.paper
 local v_attachment         = variables.attachment
 local v_layer              = variables.layer
 
-local positive             = register(pdfliteral("/GSpositive gs"))
-local negative             = register(pdfliteral("/GSnegative gs"))
-local overprint            = register(pdfliteral("/GSoverprint gs"))
-local knockout             = register(pdfliteral("/GSknockout gs"))
+local positive             = register(pdfpageliteral("/GSpositive gs"))
+local negative             = register(pdfpageliteral("/GSnegative gs"))
+local overprint            = register(pdfpageliteral("/GSoverprint gs"))
+local knockout             = register(pdfpageliteral("/GSknockout gs"))
 
 local function initializenegative()
     local a = pdfarray { 0, 1 }

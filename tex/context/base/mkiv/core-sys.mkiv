@@ -208,6 +208,8 @@
     \setuevalue        {\currentstartstop}{\syst_startstop_indeed{\currentstartstop}}%
 \to \everydefinestartstop
 
+\ifdefined\dotagconstruct \else \let\dotagconstruct\relax \fi
+
 \unexpanded\def\syst_startstop_start#1%
   {\namedstartstopparameter{#1}\c!before\relax
    \bgroup
@@ -217,7 +219,8 @@
    % this is the new method:
    \usesetupsparameter\startstopparameter\relax % only in the display version
    \dostarttagged\t!construct\currentstartstop
-   \usestartstopstyleandcolor\c!style\c!color}
+   \usestartstopstyleandcolor\c!style\c!color
+   \dotagconstruct}
 
 \unexpanded\def\syst_startstop_stop#1%
   {\dostoptagged
@@ -231,7 +234,7 @@
       \dostarttagged\t!construct\currentstartstop
       \usestartstopstyleandcolor\c!style\c!color
       \startstopparameter\c!left\relax}
-     {\def\currentstartstop{#1}% safeguard, nto really needed
+     {\def\currentstartstop{#1}% safeguard, not really needed
       \startstopparameter\c!right\relax
       \dostoptagged
       \startstopparameter\c!inbetween\relax}}

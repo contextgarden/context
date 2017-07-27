@@ -9,8 +9,8 @@ if not modules then modules = { } end modules ['lpdf-ren'] = {
 -- rendering
 
 local tostring, tonumber, next = tostring, tonumber, next
-local format, rep = string.format, string.rep
 local concat = table.concat
+local formatters = string.formatters
 local settings_to_array = utilities.parsers.settings_to_array
 local getrandom = utilities.randomizer.get
 
@@ -54,7 +54,7 @@ local copy_node           = nuts.copy
 
 local nodepool            = nuts.pool
 local register            = nodepool.register
-local pdfliteral          = nodepool.pdfliteral
+local pdfpageliteral      = nodepool.pdfpageliteral
 
 local pdf_ocg             = pdfconstant("OCG")
 local pdf_ocmd            = pdfconstant("OCMD")
@@ -239,33 +239,38 @@ function executers.togglelayer(arguments) return setlayer(pdf_toggle,arguments) 
 
 -- injection
 
+local f_bdc = formatters["/OC /%s BDC"]
+local s_emc = "EMC"
+
 function codeinjections.startlayer(name) -- used in mp
     if not name then
         name = "unknown"
     end
     useviewerlayer(name)
-    return format("/OC /%s BDC",escapednames[name])
+    return f_bdc(escapednames[name])
 end
 
 function codeinjections.stoplayer(name) -- used in mp
-    return "EMC"
+    return s_emc
 end
 
 local cache = { }
+local stop  = nil
 
 function nodeinjections.startlayer(name)
     local c = cache[name]
     if not c then
         useviewerlayer(name)
-        c = register(pdfliteral(format("/OC /%s BDC",escapednames[name])))
+        c = register(pdfpageliteral(f_bdc(escapednames[name])))
         cache[name] = c
     end
     return copy_node(c)
 end
 
-local stop = register(pdfliteral("EMC"))
-
 function nodeinjections.stoplayer()
+    if not stop then
+        stop = register(pdfpageliteral(s_emc))
+    end
     return copy_node(stop)
 end
 
@@ -281,7 +286,7 @@ function nodeinjections.startstackedlayer(s,t,first,last)
         r[#r+1] = startlayer(values[t[i]])
     end
     r = concat(r," ")
-    return pdfliteral(r)
+    return pdfpageliteral(r)
 end
 
 function nodeinjections.stopstackedlayer(s,t,first,last)
@@ -290,7 +295,7 @@ function nodeinjections.stopstackedlayer(s,t,first,last)
         r[#r+1] = stoplayer()
     end
     r = concat(r," ")
-    return pdfliteral(r)
+    return pdfpageliteral(r)
 end
 
 function nodeinjections.changestackedlayer(s,t1,first1,last1,t2,first2,last2)
@@ -302,7 +307,7 @@ function nodeinjections.changestackedlayer(s,t1,first1,last1,t2,first2,last2)
         r[#r+1] = startlayer(values[t2[i]])
     end
     r = concat(r," ")
-    return pdfliteral(r)
+    return pdfpageliteral(r)
 end
 
 -- transitions
