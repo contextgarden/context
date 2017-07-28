@@ -462,10 +462,10 @@ local function addfeature(data,feature,specifications)
                                     subtype = lookup.type
                                 end
                             else
-                                lookups[k] = false -- new
+                                lookups[k] = { false } -- new
                             end
                         else
-                            lookups[k] = false -- new
+                            lookups[k] = { false } -- new
                         end
                     end
                 end
@@ -626,8 +626,8 @@ local function addfeature(data,feature,specifications)
                             coverage = prepare_alternate(list,featuretype,nocheck)
                         elseif featuretype == "multiple" then
                             coverage = prepare_multiple(list,featuretype,nocheck)
-                        elseif featuretype == "kern" then
-                            format   = "kern"
+                        elseif featuretype == "kern" or featuretype == "move" then
+                            format   = featuretype
                             coverage = prepare_kern(list,featuretype)
                         elseif featuretype == "pair" then
                             format   = "pair"
@@ -669,9 +669,9 @@ local function addfeature(data,feature,specifications)
                 elseif featuretype == "multiple" then
                     category = "gsub"
                     coverage = prepare_multiple(list,featuretype,nocheck)
-                elseif featuretype == "kern" then
+                elseif featuretype == "kern" or featuretype == "move" then
                     category = "gpos"
-                    format   = "kern"
+                    format   = featuretype
                     coverage = prepare_kern(list,featuretype)
                 elseif featuretype == "pair" then
                     category = "gpos"

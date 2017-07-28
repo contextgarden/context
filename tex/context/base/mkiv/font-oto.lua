@@ -338,8 +338,9 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
         local format   = sequence.format
         if kind == "gpos_pair" then
             for i=1,#steps do
-                local step = steps[i]
-                if step.format == "kern" then
+                local step   = steps[i]
+                local format = step.format
+                if format == "kern" or format == "move" then
                     for unicode, data in next, steps[i].coverage do
                         local character = characters[unicode]
                         local kerns = character.kerns

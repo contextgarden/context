@@ -112,54 +112,25 @@ end end
 
 function injections.installnewkern() end -- obsolete
 
-local nofregisteredkerns    = 0
-local nofregisteredpairs    = 0
-local nofregisteredmarks    = 0
-local nofregisteredcursives = 0
-local keepregisteredcounts  = false
+local nofregisteredkerns     = 0
+local nofregisteredpositions = 0
+local nofregisteredmarks     = 0
+local nofregisteredcursives  = 0
+local keepregisteredcounts   = false
 
 function injections.keepcounts()
     keepregisteredcounts = true
 end
 
 function injections.resetcounts()
-    nofregisteredkerns    = 0
-    nofregisteredpairs    = 0
-    nofregisteredmarks    = 0
-    nofregisteredcursives = 0
-    keepregisteredcounts  = false
+    nofregisteredkerns     = 0
+    nofregisteredpositions = 0
+    nofregisteredmarks     = 0
+    nofregisteredcursives  = 0
+    keepregisteredcounts   = false
 end
 
 -- We need to make sure that a possible metatable will not kick in unexpectedly.
-
--- function injections.reset(n)
---     local p = rawget(properties,n)
---     if p and rawget(p,"injections") then
---         p.injections = nil
---     end
--- end
-
--- function injections.copy(target,source)
---     local sp = rawget(properties,source)
---     if sp then
---         local tp = rawget(properties,target)
---         local si = rawget(sp,"injections")
---         if si then
---             si = fastcopy(si)
---             if tp then
---                 tp.injections = si
---             else
---                 properties[target] = {
---                     injections = si,
---                 }
---             end
---         else
---             if tp then
---                 tp.injections = nil
---             end
---         end
---     end
--- end
 
 function injections.reset(n)
     local p = rawget(properties,n)
@@ -291,7 +262,7 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     return dx, dy, nofregisteredcursives
 end
 
-function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag not used
+function injections.setposition(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag not used
     local x = factor*spec[1]
     local y = factor*spec[2]
     local w = factor*spec[3]
@@ -301,7 +272,7 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
         local leftkern  = x      -- both kerns are set in a pair kern compared
         local rightkern = w - x  -- to normal kerns where we set only leftkern
         if leftkern ~= 0 or rightkern ~= 0 or yoffset ~= 0 then
-            nofregisteredpairs = nofregisteredpairs + 1
+            nofregisteredpositions = nofregisteredpositions + 1
             if rlmode and rlmode < 0 then
                 leftkern, rightkern = rightkern, leftkern
             end
@@ -348,15 +319,15 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
                     },
                 }
             end
-            return x, y, w, h, nofregisteredpairs
+            return x, y, w, h, nofregisteredpositions
          end
     end
     return x, y, w, h -- no bound
 end
 
--- This needs checking for rl < 0 but it is unlikely that a r2l script uses kernclasses between
--- glyphs so we're probably safe (KE has a problematic font where marks interfere with rl < 0 in
--- the previous case)
+-- The next one is used for simple kerns coming from a truetype kern table. The r2l
+-- variant variant needs checking but it is unlikely that a r2l script uses thsi
+-- feature.
 
 function injections.setkern(current,factor,rlmode,x,injection)
     local dx = factor * x
@@ -367,27 +338,78 @@ function injections.setkern(current,factor,rlmode,x,injection)
             injection = "injections"
         end
         if rlmode and rlmode < 0 then
-            -- for kai to check: this branch is new
+            -- was right kern but why ... we need to check this (kai)
             if p then
-             -- local i = rawget(p,injection)
                 local i = rawget(p,injection)
                 if i then
-                    i.rightkern = dx + (i.rightkern or 0)
+                    i.leftkern = dx + (i.leftkern or 0)
                 else
                     p[injection] = {
-                        rightkern = dx,
+                        leftkern = dx,
                     }
                 end
             else
                 properties[current] = {
                     [injection] = {
-                        rightkern = dx,
+                        leftkern = dx,
                     },
                 }
             end
         else
             if p then
-             -- local i = rawget(p,injection)
+                local i = rawget(p,injection)
+                if i then
+                    i.leftkern = dx + (i.leftkern or 0)
+                else
+                    p[injection] = {
+                        leftkern = dx,
+                    }
+                end
+            else
+                properties[current] = {
+                    [injection] = {
+                        leftkern = dx,
+                    },
+                }
+            end
+        end
+        return dx, nofregisteredkerns
+    else
+        return 0, 0
+    end
+end
+
+-- This one is an optimization of pairs where we have only a "w" entry. This one is
+-- potentially different from the previous one wrt r2l. It needs checking. The
+-- optimization relates to smaller tma files.
+
+function injections.setmove(current,factor,rlmode,x,injection)
+    local dx = factor * x
+    if dx ~= 0 then
+        nofregisteredkerns = nofregisteredkerns + 1
+        local p = rawget(properties,current)
+        if not injection then
+            injection = "injections"
+        end
+        if rlmode and rlmode < 0 then
+            if p then
+                local i = rawget(p,injection)
+                if i then
+                    i.leftkern = dx + (i.leftkern or 0)
+                else
+                    p[injection] = {
+                        leftkern = dx,
+                    }
+                end
+            else
+                properties[current] = {
+                    [injection] = {
+                        leftkern = dx,
+                    },
+                }
+            end
+        else
+            if p then
                 local i = rawget(p,injection)
                 if i then
                     i.leftkern = dx + (i.leftkern or 0)
@@ -524,8 +546,8 @@ end
 
 local function trace(head,where)
     report_injections()
-    report_injections("begin run %s: %s kerns, %s pairs, %s marks and %s cursives registered",
-        where or "",nofregisteredkerns,nofregisteredpairs,nofregisteredmarks,nofregisteredcursives)
+    report_injections("begin run %s: %s kerns, %s positions, %s marks and %s cursives registered",
+        where or "",nofregisteredkerns,nofregisteredpositions,nofregisteredmarks,nofregisteredcursives)
     local n = head
     while n do
         local id = getid(n)
@@ -593,7 +615,7 @@ local function inject_kerns_only(head,where)
     local prev        = nil
     local next        = nil
     local prevdisc    = nil
-    local prevglyph   = nil
+ -- local prevglyph   = nil
     local pre         = nil -- saves a lookup
     local post        = nil -- saves a lookup
     local replace     = nil -- saves a lookup
@@ -655,11 +677,11 @@ local function inject_kerns_only(head,where)
                 end
             end
             prevdisc  = nil
-            prevglyph = current
+         -- prevglyph = current
         elseif char == false then
             -- other font
             prevdisc  = nil
-            prevglyph = current
+         -- prevglyph = current
         elseif id == disc_code then
             pre, post, replace, pretail, posttail, replacetail = getdisc(current,true)
             local done = false
@@ -717,10 +739,10 @@ local function inject_kerns_only(head,where)
             if done then
                 setdisc(current,pre,post,replace)
             end
-            prevglyph = nil
+         -- prevglyph = nil
             prevdisc  = current
         else
-            prevglyph = nil
+         -- prevglyph = nil
             prevdisc  = nil
         end
         prev    = current
@@ -738,10 +760,10 @@ local function inject_kerns_only(head,where)
     return tonode(head), true
 end
 
-local function inject_pairs_only(head,where)
+local function inject_positions_only(head,where)
     head = tonut(head)
     if trace_injections then
-        trace(head,"pairs")
+        trace(head,"positions")
     end
     local current     = head
     local prev        = nil
@@ -966,7 +988,7 @@ local function inject_pairs_only(head,where)
     if keepregisteredcounts then
         keepregisteredcounts = false
     else
-        nofregisteredpairs = 0
+        nofregisteredpositions = 0
     end
     if trace_injections then
         show_result(head)
@@ -1431,10 +1453,10 @@ end
     if keepregisteredcounts then
         keepregisteredcounts  = false
     else
-        nofregisteredkerns    = 0
-        nofregisteredpairs    = 0
-        nofregisteredmarks    = 0
-        nofregisteredcursives = 0
+        nofregisteredkerns     = 0
+        nofregisteredpositions = 0
+        nofregisteredmarks     = 0
+        nofregisteredcursives  = 0
     end
     if trace_injections then
         show_result(head)
@@ -1625,11 +1647,11 @@ function injections.handler(head,where)
             report_injections("injection variant %a","everything")
         end
         return inject_everything(head,where)
-    elseif nofregisteredpairs > 0 then
+    elseif nofregisteredpositions > 0 then
         if trace_injections then
-            report_injections("injection variant %a","pairs")
+            report_injections("injection variant %a","positions")
         end
-        return inject_pairs_only(head,where)
+        return inject_positions_only(head,where)
     elseif nofregisteredkerns > 0 then
         if trace_injections then
             report_injections("injection variant %a","kerns")

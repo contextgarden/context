@@ -21,7 +21,7 @@ local readers  = otf.readers
 
 if readers then
 
-    otf.version = otf.version or 3.032
+    otf.version = otf.version or 3.100
     otf.cache   = otf.cache   or containers.define("fonts", "otl", otf.version, true)
 
     function fonts.helpers.getfeatures(name,save)

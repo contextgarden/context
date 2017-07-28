@@ -1468,7 +1468,7 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
             coverage[index] = value
         end
         return {
-            format   = "pair",
+            format   = "single",
             coverage = coverage,
         }
     elseif subtype == 2 then
@@ -1484,7 +1484,7 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
             coverage[index] = values[newindex+1]
         end
         return {
-            format   = "pair",
+            format   = "single",
             coverage = coverage,
         }
     else
@@ -1509,7 +1509,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
         local sets     = readarray(f)
               sets     = readpairsets(f,tableoffset,sets,format1,format2,mainoffset,getdelta)
               coverage = readcoverage(f,tableoffset + coverage)
-     -- local allzero  = 0
         for index, newindex in next, coverage do
             local set  = sets[newindex+1]
             local hash = { }
@@ -1519,10 +1518,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                     local other  = value[1]
                     local first  = value[2]
                     local second = value[3]
-                 -- if first == true and second == true then
-                 --     -- upto the next lookup for this combination
-                 --     allzero = allzero + 1
-                 -- end
                     if first or second then
                         hash[other] = { first, second or nil } -- needs checking
                     else
@@ -1532,9 +1527,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
             end
             coverage[index] = hash
         end
-     -- if allzero > 0 then
-     --     report("%s allzero pairs in %a positioning lookup %a subtype %a",allzero,"pair",lookupid,subtype)
-     -- end
         return {
             format   = "pair",
             coverage = coverage,
@@ -1552,7 +1544,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
               classdef1    = readclassdef(f,tableoffset+classdef1,coverage)
               classdef2    = readclassdef(f,tableoffset+classdef2,nofglyphs)
         local usedcoverage = { }
-     -- local allzero      = 0
         for g1, c1 in next, classdef1 do
             if coverage[g1] then
                 local l1 = classlist[c1]
@@ -1563,10 +1554,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                         if offsets then
                             local first  = offsets[1]
                             local second = offsets[2]
-                         -- if first == true and second == true then
-                         --     -- upto the next lookup for this combination
-                         --     allzero = allzero + 1
-                         -- end
                             if first or second then
                                 hash[paired] = { first, second or nil }
                             else
@@ -1578,9 +1565,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                 end
             end
         end
-     -- if allzero > 0 then
-     --     report("%s allzero pairs in %a positioning lookup %a subtype %a",allzero,"pair",lookupid,subtype)
-     -- end
         return {
             format   = "pair",
             coverage = usedcoverage,
@@ -2498,7 +2482,6 @@ do
                 },
                 nofsteps  = 1,
                 type      = "gpos_pair",
-             -- type      = "gpos_single", -- maybe better
                 flags     = { false, false, false, false },
                 order     = { name },
                 features  = { [name] = feature },

@@ -1356,30 +1356,30 @@ function readers.pack(data)
                             if kind == "gpos_pair" then
                                 local c = step.coverage
                                 if c then
-                                    if step.format == "kern" then
-                                        for g1, d1 in next, c do
-                                            c[g1] = pack_normal(d1)
-                                        end
-                                    else
+                                    if step.format == "pair" then
                                         for g1, d1 in next, c do
                                             for g2, d2 in next, d1 do
                                                 local f = d2[1] if f and f ~= true then d2[1] = pack_indexed(f) end
                                                 local s = d2[2] if s and s ~= true then d2[2] = pack_indexed(s) end
                                             end
                                         end
+                                    else
+                                        for g1, d1 in next, c do
+                                            c[g1] = pack_normal(d1)
+                                        end
                                     end
                                 end
                             elseif kind == "gpos_single" then
                                 local c = step.coverage
                                 if c then
-                                    if step.format == "kern" then
-                                        step.coverage = pack_normal(c)
-                                    else
+                                    if step.format == "single" then
                                         for g1, d1 in next, c do
                                             if d1 and d1 ~= true then
                                                 c[g1] = pack_indexed(d1)
                                             end
                                         end
+                                    else
+                                        step.coverage = pack_normal(c)
                                     end
                                 end
                             elseif kind == "gpos_cursive" then
@@ -1562,7 +1562,7 @@ function readers.pack(data)
                                 if kind == "gpos_pair" then
                                     local c = step.coverage
                                     if c then
-                                        if step.format ~= "kern" then
+                                        if step.format == "pair" then
                                             for g1, d1 in next, c do
                                                 for g2, d2 in next, d1 do
                                                     d1[g2] = pack_normal(d2)
@@ -1647,7 +1647,7 @@ function readers.pack(data)
                                 if kind == "gpos_pair" then
                                     local c = step.coverage
                                     if c then
-                                        if step.format ~= "kern" then
+                                        if step.format == "pair" then
                                             for g1, d1 in next, c do
                                                 c[g1] = pack_normal(d1)
                                             end
@@ -1776,14 +1776,7 @@ function readers.unpack(data)
                             if kind == "gpos_pair" then
                                 local c = step.coverage
                                 if c then
-                                    if step.format == "kern" then
-                                        for g1, d1 in next, c do
-                                            local tv = tables[d1]
-                                            if tv then
-                                                c[g1] = tv
-                                            end
-                                        end
-                                    else
+                                    if step.format == "pair" then
                                         for g1, d1 in next, c do
                                             local tv = tables[d1]
                                             if tv then
@@ -1800,22 +1793,29 @@ function readers.unpack(data)
                                                 local s = tables[d2[2]] if s then d2[2] = s end
                                             end
                                         end
-                                    end
-                                end
-                            elseif kind == "gpos_single" then
-                                local c = step.coverage
-                                if c then
-                                    if step.format == "kern" then
-                                        local tv = tables[c]
-                                        if tv then
-                                            step.coverage = tv
-                                        end
                                     else
                                         for g1, d1 in next, c do
                                             local tv = tables[d1]
                                             if tv then
                                                 c[g1] = tv
                                             end
+                                        end
+                                    end
+                                end
+                            elseif kind == "gpos_single" then
+                                local c = step.coverage
+                                if c then
+                                    if step.format == "single" then
+                                        for g1, d1 in next, c do
+                                            local tv = tables[d1]
+                                            if tv then
+                                                c[g1] = tv
+                                            end
+                                        end
+                                    else
+                                        local tv = tables[c]
+                                        if tv then
+                                            step.coverage = tv
                                         end
                                     end
                                 end
@@ -2286,7 +2286,7 @@ local function checkkerns(lookup)
                     end
                 end
                 step.coverage = c
-                step.format = "kern"
+                step.format = "move"
                 kerned = kerned + 1
             end
         end
@@ -2351,13 +2351,19 @@ local function checkpairs(lookup)
                     end
                     coverage[g1] = d
                 end
-                step.format = "kern"
+                step.format = "move"
                 kerned = kerned + 1
             end
         end
     end
     return kerned
 end
+
+local compact_pairs   = true
+local compact_singles = true
+
+directives.register("otf.compact.pairs",   function(v) compact_pairs   = v end)
+directives.register("otf.compact.singles", function(v) compact_singles = v end)
 
 function readers.compact(data)
     if not data or data.compacted then
@@ -2385,10 +2391,14 @@ function readers.compact(data)
                         merged = merged + mergesteps_4(lookup)
                     elseif kind == "gpos_single" then
                         merged = merged + mergesteps_1(lookup,true)
-                        kerned = kerned + checkkerns(lookup)
+                        if compact_singles then
+                            kerned = kerned + checkkerns(lookup)
+                        end
                     elseif kind == "gpos_pair" then
                         merged = merged + mergesteps_2(lookup,true)
-                        kerned = kerned + checkpairs(lookup)
+                        if compact_pairs then
+                            kerned = kerned + checkpairs(lookup)
+                        end
                     elseif kind == "gpos_cursive" then
                         merged = merged + mergesteps_2(lookup)
                     elseif kind == "gpos_mark2mark" or kind == "gpos_mark2base" or kind == "gpos_mark2ligature" then
@@ -2399,9 +2409,13 @@ function readers.compact(data)
                     end
                 elseif nofsteps == 1 then
                     if kind == "gpos_single" then
-                        kerned = kerned + checkkerns(lookup)
+                        if compact_singles then
+                            kerned = kerned + checkkerns(lookup)
+                        end
                     elseif kind == "gpos_pair" then
-                        kerned = kerned + checkpairs(lookup)
+                        if compact_pairs then
+                            kerned = kerned + checkpairs(lookup)
+                        end
                     end
                 end
             end

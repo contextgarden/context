@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/27/17 16:17:50
+-- merge date  : 07/28/17 22:51:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -15515,7 +15515,7 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
       coverage[index]=value
     end
     return {
-      format="pair",
+      format="single",
       coverage=coverage,
     }
   elseif subtype==2 then
@@ -15531,7 +15531,7 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
       coverage[index]=values[newindex+1]
     end
     return {
-      format="pair",
+      format="single",
       coverage=coverage,
     }
   else
@@ -18493,30 +18493,30 @@ function readers.pack(data)
               if kind=="gpos_pair" then
                 local c=step.coverage
                 if c then
-                  if step.format=="kern" then
-                    for g1,d1 in next,c do
-                      c[g1]=pack_normal(d1)
-                    end
-                  else
+                  if step.format=="pair" then
                     for g1,d1 in next,c do
                       for g2,d2 in next,d1 do
                         local f=d2[1] if f and f~=true then d2[1]=pack_indexed(f) end
                         local s=d2[2] if s and s~=true then d2[2]=pack_indexed(s) end
                       end
                     end
+                  else
+                    for g1,d1 in next,c do
+                      c[g1]=pack_normal(d1)
+                    end
                   end
                 end
               elseif kind=="gpos_single" then
                 local c=step.coverage
                 if c then
-                  if step.format=="kern" then
-                    step.coverage=pack_normal(c)
-                  else
+                  if step.format=="single" then
                     for g1,d1 in next,c do
                       if d1 and d1~=true then
                         c[g1]=pack_indexed(d1)
                       end
                     end
+                  else
+                    step.coverage=pack_normal(c)
                   end
                 end
               elseif kind=="gpos_cursive" then
@@ -18676,7 +18676,7 @@ function readers.pack(data)
                 if kind=="gpos_pair" then
                   local c=step.coverage
                   if c then
-                    if step.format~="kern" then
+                    if step.format=="pair" then
                       for g1,d1 in next,c do
                         for g2,d2 in next,d1 do
                           d1[g2]=pack_normal(d2)
@@ -18748,7 +18748,7 @@ function readers.pack(data)
                 if kind=="gpos_pair" then
                   local c=step.coverage
                   if c then
-                    if step.format~="kern" then
+                    if step.format=="pair" then
                       for g1,d1 in next,c do
                         c[g1]=pack_normal(d1)
                       end
@@ -18848,14 +18848,7 @@ function readers.unpack(data)
               if kind=="gpos_pair" then
                 local c=step.coverage
                 if c then
-                  if step.format=="kern" then
-                    for g1,d1 in next,c do
-                      local tv=tables[d1]
-                      if tv then
-                        c[g1]=tv
-                      end
-                    end
-                  else
+                  if step.format=="pair" then
                     for g1,d1 in next,c do
                       local tv=tables[d1]
                       if tv then
@@ -18872,22 +18865,29 @@ function readers.unpack(data)
                         local s=tables[d2[2]] if s then d2[2]=s end
                       end
                     end
-                  end
-                end
-              elseif kind=="gpos_single" then
-                local c=step.coverage
-                if c then
-                  if step.format=="kern" then
-                    local tv=tables[c]
-                    if tv then
-                      step.coverage=tv
-                    end
                   else
                     for g1,d1 in next,c do
                       local tv=tables[d1]
                       if tv then
                         c[g1]=tv
                       end
+                    end
+                  end
+                end
+              elseif kind=="gpos_single" then
+                local c=step.coverage
+                if c then
+                  if step.format=="single" then
+                    for g1,d1 in next,c do
+                      local tv=tables[d1]
+                      if tv then
+                        c[g1]=tv
+                      end
+                    end
+                  else
+                    local tv=tables[c]
+                    if tv then
+                      step.coverage=tv
                     end
                   end
                 end
@@ -19287,7 +19287,7 @@ local function checkkerns(lookup)
           end
         end
         step.coverage=c
-        step.format="kern"
+        step.format="move"
         kerned=kerned+1
       end
     end
@@ -19332,13 +19332,17 @@ local function checkpairs(lookup)
           end
           coverage[g1]=d
         end
-        step.format="kern"
+        step.format="move"
         kerned=kerned+1
       end
     end
   end
   return kerned
 end
+local compact_pairs=true
+local compact_singles=true
+directives.register("otf.compact.pairs",function(v) compact_pairs=v end)
+directives.register("otf.compact.singles",function(v) compact_singles=v end)
 function readers.compact(data)
   if not data or data.compacted then
     return
@@ -19365,10 +19369,14 @@ function readers.compact(data)
             merged=merged+mergesteps_4(lookup)
           elseif kind=="gpos_single" then
             merged=merged+mergesteps_1(lookup,true)
-            kerned=kerned+checkkerns(lookup)
+            if compact_singles then
+              kerned=kerned+checkkerns(lookup)
+            end
           elseif kind=="gpos_pair" then
             merged=merged+mergesteps_2(lookup,true)
-            kerned=kerned+checkpairs(lookup)
+            if compact_pairs then
+              kerned=kerned+checkpairs(lookup)
+            end
           elseif kind=="gpos_cursive" then
             merged=merged+mergesteps_2(lookup)
           elseif kind=="gpos_mark2mark" or kind=="gpos_mark2base" or kind=="gpos_mark2ligature" then
@@ -19379,9 +19387,13 @@ function readers.compact(data)
           end
         elseif nofsteps==1 then
           if kind=="gpos_single" then
-            kerned=kerned+checkkerns(lookup)
+            if compact_singles then
+              kerned=kerned+checkkerns(lookup)
+            end
           elseif kind=="gpos_pair" then
-            kerned=kerned+checkpairs(lookup)
+            if compact_pairs then
+              kerned=kerned+checkpairs(lookup)
+            end
           end
         end
       end
@@ -19613,7 +19625,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.032 
+otf.version=3.100 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
@@ -20514,7 +20526,8 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
     if kind=="gpos_pair" then
       for i=1,#steps do
         local step=steps[i]
-        if step.format=="kern" then
+        local format=step.format
+        if format=="kern" or format=="move" then
           for unicode,data in next,steps[i].coverage do
             local character=characters[unicode]
             local kerns=character.kerns
@@ -20755,7 +20768,7 @@ do if not fontkern then
 end end
 function injections.installnewkern() end 
 local nofregisteredkerns=0
-local nofregisteredpairs=0
+local nofregisteredpositions=0
 local nofregisteredmarks=0
 local nofregisteredcursives=0
 local keepregisteredcounts=false
@@ -20764,7 +20777,7 @@ function injections.keepcounts()
 end
 function injections.resetcounts()
   nofregisteredkerns=0
-  nofregisteredpairs=0
+  nofregisteredpositions=0
   nofregisteredmarks=0
   nofregisteredcursives=0
   keepregisteredcounts=false
@@ -20887,7 +20900,7 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
   end
   return dx,dy,nofregisteredcursives
 end
-function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) 
+function injections.setposition(current,factor,rlmode,r2lflag,spec,injection) 
   local x=factor*spec[1]
   local y=factor*spec[2]
   local w=factor*spec[3]
@@ -20897,7 +20910,7 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection)
     local leftkern=x   
     local rightkern=w-x 
     if leftkern~=0 or rightkern~=0 or yoffset~=0 then
-      nofregisteredpairs=nofregisteredpairs+1
+      nofregisteredpositions=nofregisteredpositions+1
       if rlmode and rlmode<0 then
         leftkern,rightkern=rightkern,leftkern
       end
@@ -20943,7 +20956,7 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection)
           },
         }
       end
-      return x,y,w,h,nofregisteredpairs
+      return x,y,w,h,nofregisteredpositions
      end
   end
   return x,y,w,h 
@@ -20960,16 +20973,64 @@ function injections.setkern(current,factor,rlmode,x,injection)
       if p then
         local i=rawget(p,injection)
         if i then
-          i.rightkern=dx+(i.rightkern or 0)
+          i.leftkern=dx+(i.leftkern or 0)
         else
           p[injection]={
-            rightkern=dx,
+            leftkern=dx,
           }
         end
       else
         properties[current]={
           [injection]={
-            rightkern=dx,
+            leftkern=dx,
+          },
+        }
+      end
+    else
+      if p then
+        local i=rawget(p,injection)
+        if i then
+          i.leftkern=dx+(i.leftkern or 0)
+        else
+          p[injection]={
+            leftkern=dx,
+          }
+        end
+      else
+        properties[current]={
+          [injection]={
+            leftkern=dx,
+          },
+        }
+      end
+    end
+    return dx,nofregisteredkerns
+  else
+    return 0,0
+  end
+end
+function injections.setmove(current,factor,rlmode,x,injection)
+  local dx=factor*x
+  if dx~=0 then
+    nofregisteredkerns=nofregisteredkerns+1
+    local p=rawget(properties,current)
+    if not injection then
+      injection="injections"
+    end
+    if rlmode and rlmode<0 then
+      if p then
+        local i=rawget(p,injection)
+        if i then
+          i.leftkern=dx+(i.leftkern or 0)
+        else
+          p[injection]={
+            leftkern=dx,
+          }
+        end
+      else
+        properties[current]={
+          [injection]={
+            leftkern=dx,
           },
         }
       end
@@ -21101,8 +21162,8 @@ local function showsub(n,what,where)
 end
 local function trace(head,where)
   report_injections()
-  report_injections("begin run %s: %s kerns, %s pairs, %s marks and %s cursives registered",
-    where or "",nofregisteredkerns,nofregisteredpairs,nofregisteredmarks,nofregisteredcursives)
+  report_injections("begin run %s: %s kerns, %s positions, %s marks and %s cursives registered",
+    where or "",nofregisteredkerns,nofregisteredpositions,nofregisteredmarks,nofregisteredcursives)
   local n=head
   while n do
     local id=getid(n)
@@ -21285,10 +21346,10 @@ local function inject_kerns_only(head,where)
   end
   return tonode(head),true
 end
-local function inject_pairs_only(head,where)
+local function inject_positions_only(head,where)
   head=tonut(head)
   if trace_injections then
-    trace(head,"pairs")
+    trace(head,"positions")
   end
   local current=head
   local prev=nil
@@ -21493,7 +21554,7 @@ local function inject_pairs_only(head,where)
   if keepregisteredcounts then
     keepregisteredcounts=false
   else
-    nofregisteredpairs=0
+    nofregisteredpositions=0
   end
   if trace_injections then
     show_result(head)
@@ -21893,7 +21954,7 @@ end
     keepregisteredcounts=false
   else
     nofregisteredkerns=0
-    nofregisteredpairs=0
+    nofregisteredpositions=0
     nofregisteredmarks=0
     nofregisteredcursives=0
   end
@@ -22035,11 +22096,11 @@ function injections.handler(head,where)
       report_injections("injection variant %a","everything")
     end
     return inject_everything(head,where)
-  elseif nofregisteredpairs>0 then
+  elseif nofregisteredpositions>0 then
     if trace_injections then
-      report_injections("injection variant %a","pairs")
+      report_injections("injection variant %a","positions")
     end
-    return inject_pairs_only(head,where)
+    return inject_positions_only(head,where)
   elseif nofregisteredkerns>0 then
     if trace_injections then
       report_injections("injection variant %a","kerns")
@@ -22535,6 +22596,7 @@ local take_components=nuts.take_components
 local count_components=nuts.count_components
 local copy_no_components=nuts.copy_no_components
 local copy_only_glyphs=nuts.copy_only_glyphs
+local setmetatable=setmetatable
 local setmetatableindex=table.setmetatableindex
 local nodecodes=nodes.nodecodes
 local glyphcodes=nodes.glyphcodes
@@ -22553,7 +22615,8 @@ local injections=nodes.injections
 local setmark=injections.setmark
 local setcursive=injections.setcursive
 local setkern=injections.setkern
-local setpair=injections.setpair
+local setmove=injections.setmove
+local setposition=injections.setposition
 local resetinjection=injections.reset
 local copyinjection=injections.copy
 local setligaindex=injections.setligaindex
@@ -22575,6 +22638,7 @@ local factor=0
 local threshold=0
 local checkmarks=false
 local discs=false
+local spaces=false
 local sweepnode=nil
 local sweephead={} 
 local notmatchpre={} 
@@ -23052,15 +23116,16 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
 end
 function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,step,i,injection)
   local startchar=getchar(start)
-  if step.format=="pair" or type(kerns)=="table" then
-    local dx,dy,w,h=setpair(start,factor,rlmode,sequence.flags[4],kerns,injection)
+  local format=step.format
+  if format=="single" or type(kerns)=="table" then 
+    local dx,dy,w,h=setposition(start,factor,rlmode,sequence.flags[4],kerns,injection)
     if trace_kerns then
-      logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",pref(dataset,sequence),gref(startchar),dx,dy,w,h)
+      logprocess("%s: shifting single %s by %s xy (%p,%p) and wh (%p,%p)",pref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
     end
   else
-    local k=setkern(start,factor,rlmode,kerns,injection)
+    local k=(format=="move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
     if trace_kerns then
-      logprocess("%s: shifting single %s by %p",pref(dataset,sequence),gref(startchar),k)
+      logprocess("%s: shifting single %s by %s %p",pref(dataset,sequence),gref(startchar),format,k)
     end
   end
   return head,start,false
@@ -23080,37 +23145,40 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
           snext=getnext(snext)
         elseif not krn then
           break
-        elseif step.format=="pair" then
-          local a,b=krn[1],krn[2]
-          if a==true then
-          elseif a then 
-            local x,y,w,h=setpair(start,factor,rlmode,sequence.flags[4],a,injection)
-            if trace_kerns then
-              local startchar=getchar(start)
-              logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+        else
+          local format=step.format
+          if format=="pair" then
+            local a,b=krn[1],krn[2]
+            if a==true then
+            elseif a then 
+              local x,y,w,h=setposition(start,factor,rlmode,sequence.flags[4],a,injection)
+              if trace_kerns then
+                local startchar=getchar(start)
+                logprocess("%s: shifting first of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+              end
             end
-          end
-          if b==true then
-            start=snext 
-          elseif b then 
-            local x,y,w,h=setpair(snext,factor,rlmode,sequence.flags[4],b,injection)
-            if trace_kerns then
-              local startchar=getchar(snext)
-              logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+            if b==true then
+              start=snext 
+            elseif b then 
+              local x,y,w,h=setposition(snext,factor,rlmode,sequence.flags[4],b,injection)
+              if trace_kerns then
+                local startchar=getchar(snext)
+                logprocess("%s: shifting second of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
+              end
+              start=snext 
+            elseif forcepairadvance then
+              start=snext 
             end
-            start=snext 
-          elseif forcepairadvance then
-            start=snext 
+            return head,start,true
+          elseif krn~=0 then
+            local k=(format=="move" and setmove or setkern)(snext,factor,rlmode,krn,injection)
+            if trace_kerns then
+              logprocess("%s: inserting %s %p between %s and %s as %s",pref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar),injection or "injections")
+            end
+            return head,start,true
+          else 
+            break
           end
-          return head,start,true
-        elseif krn~=0 then
-          local k=setkern(snext,factor,rlmode,krn,injection)
-          if trace_kerns then
-            logprocess("%s: inserting kern %p between %s and %s as %s",pref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar),injection or "injections")
-          end
-          return head,start,true
-        else 
-          break
         end
       else
         break
@@ -23538,15 +23606,18 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
     local step=steps[1]
     local kerns=step.coverage[startchar]
     if not kerns then
-    elseif step.format=="pair" then
-      local dx,dy,w,h=setpair(start,factor,rlmode,sequence.flags[4],kerns) 
-      if trace_kerns then
-        logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),dx,dy,w,h)
-      end
-    else 
-      local k=setkern(start,factor,rlmode,kerns,injection)
-      if trace_kerns then
-        logprocess("%s: shifting single %s by %p",cref(dataset,sequence),gref(startchar),k)
+    else
+      local format=step.format
+      if format=="single" then
+        local dx,dy,w,h=setposition(start,factor,rlmode,sequence.flags[4],kerns) 
+        if trace_kerns then
+          logprocess("%s: shifting single %s by %s (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
+        end
+      else 
+        local k=(format=="move" and setmove or setkern)(start,factor,rlmode,kerns,injection)
+        if trace_kerns then
+          logprocess("%s: shifting single %s by %s %p",cref(dataset,sequence),gref(startchar),format,k)
+        end
       end
     end
   end
@@ -23579,37 +23650,40 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
             snext=getnext(snext)
           elseif not krn then
             break
-          elseif step.format=="pair" then
-            local a,b=krn[1],krn[2]
-            if a==true then
-            elseif a then
-              local x,y,w,h=setpair(start,factor,rlmode,sequence.flags[4],a,"injections") 
-              if trace_kerns then
-                local startchar=getchar(start)
-                logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
-              end
-            end
-            if b==true then
-              start=snext 
-            elseif b then 
-              local x,y,w,h=setpair(snext,factor,rlmode,sequence.flags[4],b,"injections")
-              if trace_kerns then
-                local startchar=getchar(start)
-                logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
-              end
-              start=snext 
-            elseif forcepairadvance then
-              start=snext 
-            end
-            return head,start,true
-          elseif krn~=0 then
-            local k=setkern(snext,factor,rlmode,krn)
-            if trace_kerns then
-              logprocess("%s: inserting kern %s between %s and %s",cref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar))
-            end
-            return head,start,true
           else
-            break
+            local format=step.format
+            if format=="pair" then
+              local a,b=krn[1],krn[2]
+              if a==true then
+              elseif a then
+                local x,y,w,h=setposition(start,factor,rlmode,sequence.flags[4],a,"injections") 
+                if trace_kerns then
+                  local startchar=getchar(start)
+                  logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+                end
+              end
+              if b==true then
+                start=snext 
+              elseif b then 
+                local x,y,w,h=setposition(snext,factor,rlmode,sequence.flags[4],b,"injections")
+                if trace_kerns then
+                  local startchar=getchar(start)
+                  logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+                end
+                start=snext 
+              elseif forcepairadvance then
+                start=snext 
+              end
+              return head,start,true
+            elseif krn~=0 then
+              local k=(format=="move" and setmove or setkern)(snext,factor,rlmode,krn)
+              if trace_kerns then
+                logprocess("%s: inserting %s %p between %s and %s",cref(dataset,sequence),format,k,gref(getchar(prev)),gref(nextchar))
+              end
+              return head,start,true
+            else
+              break
+            end
           end
         end
       end
@@ -24598,7 +24672,16 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     end
                   end
                   prev=getprev(prev)
-                elseif id==glue_code and seq[n][32] and isspace(prev,threshold,id) then
+                elseif id==glue_code then
+                  local sn=seq[n]
+                  if (sn[32] and spaces[prev]) or sn[0xFFFC] then
+                    n=n-1
+                    prev=getprev(prev)
+                  else
+                    match=false
+                    break
+                  end
+                elseif seq[n][0xFFFC] then
                   n=n-1
                   prev=getprev(prev)
                 else
@@ -24730,7 +24813,16 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 else
                 end
                 current=getnext(current)
-              elseif id==glue_code and seq[n][32] and isspace(current,threshold,id) then
+              elseif id==glue_code then
+                local sn=seq[n]
+                if (sn[32] and spaces[current]) or sn[0xFFFC] then
+                  n=n+1
+                  current=getnext(current)
+                else
+                  match=false
+                  break
+                end
+              elseif seq[n][0xFFFC] then
                 n=n+1
                 current=getnext(current)
               else
@@ -25057,7 +25149,15 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                     end
                   end
                   prev=getprev(prev)
-                elseif id==glue_code and seq[n][32] and isspace(prev,threshold,id) then
+                elseif id==glue_code then
+                  local sn=seq[n]
+                  if (sn[32] and spaces[prev]) or sn[0xFFFC] then
+                    n=n-1
+                    prev=getprev(prev)
+                  else
+                    goto next
+                  end
+                elseif seq[n][0xFFFC] then
                   n=n-1
                   prev=getprev(prev)
                 else
@@ -25184,7 +25284,15 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                 else
                 end
                 current=getnext(current)
-              elseif id==glue_code and seq[n][32] and isspace(current,threshold,id) then
+              elseif id==glue_code then
+                local sn=seq[n]
+                if (sn[32] and spaces[current]) or sn[0xFFFC] then
+                  n=n+1
+                  current=getnext(current)
+                else
+                  goto next
+                end
+              elseif seq[n][0xFFFC] then
                 n=n+1
                 current=getnext(current)
               else
@@ -25895,11 +26003,16 @@ do
   local fastdisc=true
   directives.register("otf.fastdisc",function(v) fastdisc=v end)
   local otfdataset=nil 
-  local getfastdics=function(t,k)
+  local getfastdisc={ __index=function(t,k)
     local v=usesfont(k,currentfont)
     t[k]=v
     return v
-  end
+  end }
+  local getfastspace={ __index=function(t,k)
+    local v=isspace(k,threshold) or false
+    t[k]=v
+    return v
+  end }
   function otf.featuresprocessor(head,font,attr,direction,n)
     local sequences=sequencelists[font] 
     nesting=nesting+1
@@ -25917,7 +26030,8 @@ do
       if not otfdataset then
         otfdataset=otf.dataset
       end
-      discs=fastdisc and n and n>1 and setmetatableindex(getfastdisc) 
+      discs=fastdisc and n and n>1 and setmetatable({},getfastdisc) 
+      spaces=setmetatable({},getfastspace)
     elseif currentfont~=font then
       report_warning("nested call with a different font, level %s, quitting",nesting)
       nesting=nesting-1
@@ -29255,10 +29369,10 @@ local function addfeature(data,feature,specifications)
                   subtype=lookup.type
                 end
               else
-                lookups[k]=false 
+                lookups[k]={ false } 
               end
             else
-              lookups[k]=false 
+              lookups[k]={ false } 
             end
           end
         end
@@ -29411,8 +29525,8 @@ local function addfeature(data,feature,specifications)
               coverage=prepare_alternate(list,featuretype,nocheck)
             elseif featuretype=="multiple" then
               coverage=prepare_multiple(list,featuretype,nocheck)
-            elseif featuretype=="kern" then
-              format="kern"
+            elseif featuretype=="kern" or featuretype=="move" then
+              format=featuretype
               coverage=prepare_kern(list,featuretype)
             elseif featuretype=="pair" then
               format="pair"
@@ -29452,9 +29566,9 @@ local function addfeature(data,feature,specifications)
         elseif featuretype=="multiple" then
           category="gsub"
           coverage=prepare_multiple(list,featuretype,nocheck)
-        elseif featuretype=="kern" then
+        elseif featuretype=="kern" or featuretype=="move" then
           category="gpos"
-          format="kern"
+          format=featuretype
           coverage=prepare_kern(list,featuretype)
         elseif featuretype=="pair" then
           category="gpos"
