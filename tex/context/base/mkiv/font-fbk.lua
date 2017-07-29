@@ -65,10 +65,10 @@ local function composecharacters(tfmdata)
         local vfspecials   = backends.tables.vfspecials --brr
         local red, green, blue, black
         if trace_combining_visualize then
-            red   = vfspecials.red
-            green = vfspecials.green
-            blue  = vfspecials.blue
-            black = vfspecials.black
+            red   = vfspecials.startcolor("red")
+            green = vfspecials.startcolor("green")
+            blue  = vfspecials.startcolor("blue")
+            black = vfspecials.stopcolor
         end
         local compose = fonts.goodies.getcompositions(tfmdata)
         if compose and trace_combining_visualize then
@@ -214,15 +214,15 @@ local function composecharacters(tfmdata)
                                                 dy = - deltaxheight + extraxheight
                                             end
                                             if trace_combining_visualize then
-                                                t.commands = { push, {"right", dx+dd}, {"down", dy}, green, acc_t, black, pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd }, { "down", dy }, green, acc_t, black, pop, chr_t }
                                             else
-                                                t.commands = { push, {"right", dx+dd}, {"down", dy},        acc_t,        pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd }, { "down", dy },        acc_t,        pop, chr_t }
                                             end
                                         else
                                             if trace_combining_visualize then
-                                                t.commands = { push, {"right", dx+dd},               blue,  acc_t, black, pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd },                 blue,  acc_t, black, pop, chr_t }
                                             else
-                                                t.commands = { push, {"right", dx+dd},                      acc_t,        pop, chr_t }
+                                                t.commands = { push, { "right", dx+dd },                        acc_t,        pop, chr_t }
                                             end
                                         end
                                     end

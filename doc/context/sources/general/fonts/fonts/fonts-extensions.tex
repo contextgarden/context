@@ -1714,6 +1714,199 @@ Here the dataset is a sequence of rules. There can be a \type {before}, \type
 {lookups} entry and the numbers are indices in the provided \type {lookups}
 table.
 
+Here is another example. This one demonstrates that one can check against spaces
+(some fonts kerns against them) and against boundaries as well. The later is
+something \CONTEXT\ specific. First we define a feature that create ligatures but
+only when we touch a space:
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "test-a",
+        type    = "chainsubstitution",
+        lookups = {
+            {
+                type = "ligature",
+                data = {
+                    ['1'] = { "a", "b" },
+                    ['2'] = { "c", "d" },
+                },
+            },
+        },
+        data = {
+            rules = {
+                {
+                    before  = { { " " } },
+                    current = { { "a" }, { "b" } },
+                    lookups = { 1 },
+                },
+                {
+                    current = { { "c" }, { "d" } },
+                    after   = { { " " } },
+                    lookups = { 1 },
+                },
+            },
+        },
+    }
+
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The next example also checks against whatever boundary we have.
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "test-b",
+        type    = "chainsubstitution",
+        lookups = {
+            {
+                type = "ligature",
+                data = {
+                    ['1'] = { "a", "b" },
+                    ['2'] = { "c", "d" },
+                },
+            },
+        },
+        data = {
+            rules = {
+                {
+                    before  = { { " ", 0xFFFC } },
+                    current = { { "a" }, { "b" } },
+                    lookups = { 1 },
+                },
+                {
+                    current = { { "c" }, { "d" } },
+                    after   = { { 0xFFFC, " " } },
+                    lookups = { 1 },
+                },
+            },
+        },
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can actually simplify this one to:
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "test-c",
+        type    = "chainsubstitution",
+        lookups = {
+            {
+                type = "ligature",
+                data = {
+                    ['1'] = { "a", "b" },
+                    ['2'] = { "c", "d" },
+                },
+            },
+        },
+        data = {
+            rules = {
+                {
+                    before  = { { 0xFFFC } },
+                    current = { { "a" }, { "b" } },
+                    lookups = { 1 },
+                },
+                {
+                    current = { { "c" }, { "d" } },
+                    after   = { { 0xFFFC } },
+                    lookups = { 1 },
+                },
+            },
+        },
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As a bonus we show how to do more complex things:
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "test-d",
+        type    = "chainsubstitution",
+        lookups = {
+            {
+                type = "substitution",
+                data = {
+                    ["a"] = "A",
+                    ["b"] = "B",
+                    ["c"] = "C",
+                    ["d"] = "D",
+                },
+            },
+            {
+                type = "ligature",
+                data = {
+                    ['1'] = { "a", "b" },
+                    ['2'] = { "c", "d" },
+                },
+            },
+        },
+        data = {
+            rules = {
+                {
+                    before  = { { 0xFFFC } },
+                    current = { { "a" }, { "b" } },
+                    lookups = { 2 },
+                },
+                {
+                    current = { { "c" }, { "d" } },
+                    after   = { { 0xFFFC } },
+                    lookups = { 2 },
+                },
+                {
+                    current = { { "a" } },
+                    after   = { { "b" } },
+                    lookups = { 1 },
+                },
+                {
+                    current = { { "c" } },
+                    after   = { { "d" } },
+                    lookups = { 1 },
+                },
+            },
+        },
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\definefontfeature[test-a][test-a=yes]
+\definefontfeature[test-b][test-b=yes]
+\definefontfeature[test-c][test-c=yes]
+\definefontfeature[test-d][test-d=yes]
+
+\startbuffer
+abababcdcd abababcdcd abababcdcd
+\stopbuffer
+
+With the test text:
+
+\typebuffer
+
+These four result in:
+
+\blank \start
+
+    \definedfont[file:dejavu-serif.ttf*default]
+
+    \start \addff{test-a} \getbuffer \stop\par
+    \start \addff{test-b} \getbuffer \stop\par
+    \start \addff{test-c} \getbuffer \stop\par
+    \start \addff{test-d} \getbuffer \stop\par
+
+\stop \blank
+
 \stopsubsection
 
 \startsubsection[title={Language dependencies}]
@@ -2074,7 +2267,6 @@ fonts.handlers.otf.addfeature {
                 { "right", -width/5 },
                 { "down", depth + height },
                 { "rule", 3*height, width/5 },
-
 
             }
         }

@@ -373,6 +373,10 @@
 %      \nonoindentation % recently added, was a bug
 %    \fi}
 
+\def\strc_sectioning_stay_on_this_line
+  {\directcheckedvspacing{\v!samepage,-\v!line}%
+   \directcheckedvspacing\v!disable}
+
 \def\strc_rendering_stop_placement
   {\n_strc_rendering_hang_lines\zerocount
    \ifconditional\headisdisplay
@@ -409,7 +413,7 @@
      \unhbox\b_strc_rendering_head
      \getheadsyncs
      \ifconditional\headissomewhere
-        % nothing special
+       \strc_sectioning_stay_on_this_line % test case: alternative=margintext and \startparagraph ..
      \else
       %\hskip\headnumberdistance\s!plus\headnumberdistance\s!minus.25\dimexpr\headnumberdistance\relax
        \hskip\headtextdistance\relax

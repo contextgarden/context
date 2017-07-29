@@ -251,7 +251,7 @@ local function domath(head,current, done)
                             if trace_italics then
                                 report_italics("adding italic between math %C and non punctuation %C",getchar(glyph),char)
                             end
-                            insert_node_after(head,glyph,new_correction_kern(a))
+                            insert_node_after(head,glyph,correction_kern(a,glyph))
                             done = true
                         end
                     end
@@ -415,7 +415,6 @@ local function texthandler(head)
                                         lastattr    = attr
                                         replacechar = char
                                         replacehead = replace
-                                        replace     = current
                                         updated     = true
                                     end
                                 end
@@ -439,7 +438,7 @@ local function texthandler(head)
                             if attr and attr > 0 then
                                 local cd = data[char]
                                 if not cd then
-                                        -- this really can happen
+                                    -- this really can happen
                                     -- postitalic = 0
                                 else
                                     postitalic = cd.italic
@@ -452,8 +451,7 @@ local function texthandler(head)
                                         lastattr = attr
                                         postchar = char
                                         posthead = post
-                                        post     = current
-                                        updated     = true
+                                        updated  = true
                                     end
                                 end
                             end

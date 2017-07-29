@@ -12,22 +12,16 @@ local gmatch = string.gmatch
 local formatters = string.formatters
 local compactfloat = number.compactfloat
 
--- This module started out in the early days of mkiv and luatex with
--- visualizing kerns related to fonts. In the process of cleaning up the
--- visual debugger code it made sense to integrate some other code that
--- I had laying around and replace the old supp-vis debugging code. As
--- only a subset of the old visual debugger makes sense it has become a
--- different implementation. Soms of the m-visual functionality will also
--- be ported. The code is rather trivial. The caching is not really needed
--- but saves upto 50% of the time needed to add visualization. Of course
--- the overall runtime is larger because of color and layer processing in
--- the backend (can be times as much) so the runtime is somewhat larger
--- with full visualization enabled. In practice this will never happen
--- unless one is demoing.
-
--- We could use pdf literals and re stream codes but it's not worth the
--- trouble because we would end up in color etc mess. Maybe one day I'll
--- make a nodeinjection variant.
+-- This module started out in the early days of mkiv and luatex with visualizing
+-- kerns related to fonts. In the process of cleaning up the visual debugger code it
+-- made sense to integrate some other code that I had laying around and replace the
+-- old supp-vis debugging code. As only a subset of the old visual debugger makes
+-- sense it has become a different implementation. Soms of the m-visual
+-- functionality will also be ported. The code is rather trivial. The caching is not
+-- really needed but saves upto 50% of the time needed to add visualization. Of
+-- course the overall runtime is larger because of color and layer processing in the
+-- backend (can be times as much) so the runtime is somewhat larger with full
+-- visualization enabled. In practice this will never happen unless one is demoing.
 
 -- todo: global switch (so no attributes)
 -- todo: maybe also xoffset, yoffset of glyph
@@ -37,32 +31,6 @@ local compactfloat = number.compactfloat
 -- todo: dir and localpar nodes
 
 local nodecodes           = nodes.nodecodes
-local disc_code           = nodecodes.disc
-local kern_code           = nodecodes.kern
-local glyph_code          = nodecodes.glyph
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glue_code           = nodecodes.glue
-local penalty_code        = nodecodes.penalty
-local whatsit_code        = nodecodes.whatsit
-local user_code           = nodecodes.user
-local math_code           = nodecodes.math
-local gluespec_code       = nodecodes.gluespec
-
-local kerncodes           = nodes.kerncodes
-local font_kern_code      = kerncodes.fontkern
-local user_kern_code      = kerncodes.userkern
-
-local gluecodes           = nodes.gluecodes
-local cleaders_code       = gluecodes.cleaders
-local userskip_code       = gluecodes.userskip
-local space_code          = gluecodes.space
-local xspace_code         = gluecodes.xspace
-local leftskip_code       = gluecodes.leftskip
-local rightskip_code      = gluecodes.rightskip
-
-local whatsitcodes        = nodes.whatsitcodes
-local mathcodes           = nodes.mathcodes
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
@@ -446,19 +414,17 @@ end
 
 local caches = setmetatableindex("table")
 
-local fontkern do
+local fontkern, italickern do
 
     local f_cache = caches["fontkern"]
+    local i_cache = caches["italickern"]
 
-    fontkern = function(head,current)
+    local function somekern(head,current,cache,color,layer)
         local width = getkern(current)
         local extra = getfield(current,"expansion_factor")
         local kern  = width + extra
-        local info  = f_cache[kern]
-     -- report_visualize("fontkern: %p ex %p",width,extra)
-        if info then
-            -- print("hit fontkern")
-        else
+        local info  = cache[kern]
+        if not info then
             local text = hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
             local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
             local list = getlist(text)
@@ -469,16 +435,24 @@ local fontkern do
             else
                 setlistcolor(list,c_zero_d)
             end
-            setlisttransparency(list,c_text_d)
-            setcolor(rule,c_text_d)
-            settransparency(rule,c_text_d)
+            setlisttransparency(list,color)
+            setcolor(rule,color)
+            settransparency(rule,color)
             setshift(text,-5 * exheight)
             info = new_hlist(setlink(rule,text))
-            setattr(info,a_layer,l_fontkern)
+            setattr(info,a_layer,layer)
             f_cache[kern] = info
         end
         head = insert_node_before(head,current,copy_list(info))
         return head, current
+    end
+
+    fontkern = function(head,current)
+        return somekern(head,current,f_cache,c_text_d,l_fontkern)
+    end
+
+    italickern = function(head,current)
+        return somekern(head,current,i_cache,c_glyph_d,l_italic)
     end
 
 end
@@ -492,9 +466,7 @@ local glyphexpansion do
         if extra ~= 0 then
             extra = extra / 1000
             local info = f_cache[extra]
-            if info then
-                -- print("hit fontkern")
-            else
+            if not info then
                 local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
                 local rule = new_rule(emwidth/fraction,exheight,2*exheight)
                 local list = getlist(text)
@@ -528,9 +500,7 @@ local kernexpansion do
         if extra ~= 0 then
             extra = extra / 1000
             local info = f_cache[extra]
-            if info then
-                -- print("hit fontkern")
-            else
+            if not info then
                 local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
                 local rule = new_rule(emwidth/fraction,exheight,4*exheight)
                 local list = getlist(text)
@@ -557,9 +527,10 @@ end
 
 local whatsit do
 
-    local w_cache = caches["whatsit"]
+    local whatsitcodes = nodes.whatsitcodes
+    local w_cache      = caches["whatsit"]
 
-    local tags    = {
+    local tags         = {
         open             = "FIC",
         write            = "FIW",
         close            = "FIC",
@@ -625,12 +596,12 @@ end
 
 local math do
 
-    local m_cache = {
+    local mathcodes = nodes.mathcodes
+    local m_cache   = {
         beginmath = caches["bmath"],
         endmath   = caches["emath"],
     }
-
-    local tags    = {
+    local tags      = {
         beginmath = "B",
         endmath   = "E",
     }
@@ -799,13 +770,13 @@ local ruledbox do
             if next then
                 setlink(info,next)
             end
-            if prev then
-                if getid(prev) == gluespec_code then
-                    report_visualize("ignoring invalid prev")
-                    -- weird, how can this happen, an inline glue-spec, probably math
-                else
+            if prev and prev > 0 then
+             -- if getid(prev) == gluespec_code then
+             --     report_visualize("ignoring invalid prev")
+             --     -- weird, how can this happen, an inline glue-spec, probably math
+             -- else
                     setlink(prev,info)
-                end
+             -- end
             end
             if head == current then
                 return info, info
@@ -923,6 +894,14 @@ end
 
 local ruledglue do
 
+    local gluecodes      = nodes.gluecodes
+    local cleaders_code  = gluecodes.cleaders
+    local userskip_code  = gluecodes.userskip
+    local space_code     = gluecodes.space
+    local xspace_code    = gluecodes.xspace
+    local leftskip_code  = gluecodes.leftskip
+    local rightskip_code = gluecodes.rightskip
+
     local g_cache_v = caches["vglue"]
     local g_cache_h = caches["hglue"]
 
@@ -1029,9 +1008,7 @@ local ruleditalic do
     ruleditalic = function(head,current)
         local kern = getkern(current)
         local info = i_cache[kern]
-        if info then
-            -- print("kern hit")
-        else
+        if not info then
             local amount = formatters["%s:%0.3f"]("IC",kern*pt_factor)
             if kern > 0 then
                 info = sometext(amount,l_kern,c_positive)
@@ -1106,6 +1083,22 @@ end
 
 do
 
+    local disc_code           = nodecodes.disc
+    local kern_code           = nodecodes.kern
+    local glyph_code          = nodecodes.glyph
+    local glue_code           = nodecodes.glue
+    local penalty_code        = nodecodes.penalty
+    local whatsit_code        = nodecodes.whatsit
+    local user_code           = nodecodes.user
+    local math_code           = nodecodes.math
+    local hlist_code          = nodecodes.hlist
+    local vlist_code          = nodecodes.vlist
+
+    local kerncodes           = nodes.kerncodes
+    local font_kern_code      = kerncodes.fontkern
+    local italic_kern_code    = kerncodes.italiccorrection
+    ----- user_kern_code      = kerncodes.userkern
+
     local function visualize(head,vertical,forced,parent)
         local trace_hbox     = false
         local trace_vbox     = false
@@ -1126,12 +1119,14 @@ do
         local previous       = nil
         local attr           = unsetvalue
         local prev_trace_fontkern  = nil
+        local prev_trace_italic    = nil
         local prev_trace_expansion = nil
         while current do
             local id = getid(current)
             local a = forced or getattr(current,a_visual) or unsetvalue
             if a ~= attr then
                 prev_trace_fontkern  = trace_fontkern
+                prev_trace_italic    = trace_italic
                 prev_trace_expansion = trace_expansion
                 if a == unsetvalue then
                     trace_hbox          = false
@@ -1205,10 +1200,14 @@ do
                     if trace_expansion or prev_trace_expansion then
                         head, current = kernexpansion(head,current)
                     end
-                else -- if subtype == user_kern_code then
-                    if trace_italic then
-                        head, current = ruleditalic(head,current)
+                elseif subtype == italic_kern_code then
+                    if trace_italic or prev_trace_italic then
+                        head, current = italickern(head,current)
                     elseif trace_kern then
+                        head, current = ruleditalic(head,current)
+                    end
+                else
+                    if trace_kern then
                         head, current = ruledkern(head,current,vertical)
                     end
                 end
@@ -1304,10 +1303,13 @@ end
 
 do
 
-    local last = nil
-    local used = nil
+    local hlist_code = nodecodes.hlist
+    local vlist_code = nodecodes.vlist
 
-    local mark = {
+    local last       = nil
+    local used       = nil
+
+    local mark       = {
         "trace:1", "trace:2", "trace:3",
         "trace:4", "trace:5", "trace:6",
         "trace:7",

@@ -2893,7 +2893,7 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                 local n = f + 1
                 last = startnext -- the second in current (first already matched)
                 while n <= l do
-                    if not last and postreplace then
+                    if postreplace and not last then
                         last      = getnext(sweepnode)
                         sweeptype = nil
                     end

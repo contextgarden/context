@@ -44859,6 +44859,7 @@
   <cd:command file="trc-vis.mkiv" name="showboxes"/>
   <cd:command file="trc-vis.mkiv" name="showglyphs"/>
   <cd:command file="trc-vis.mkiv" name="showfontkerns"/>
+  <cd:command file="trc-vis.mkiv" name="showfontitalics"/>
   <cd:command file="trc-vis.mkiv" name="setvisualizerfont">
    <cd:arguments>
     <cd:keywords optional="yes">

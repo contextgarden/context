@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/28/17 22:51:33
+-- merge date  : 07/29/17 23:08:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -24914,7 +24914,7 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
         local n=f+1
         last=startnext 
         while n<=l do
-          if not last and postreplace then
+          if postreplace and not last then
             last=getnext(sweepnode)
             sweeptype=nil
           end
