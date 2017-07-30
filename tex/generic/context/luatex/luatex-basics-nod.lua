@@ -201,6 +201,7 @@ nuts.setchar             = direct.setchar
 nuts.getdisc             = direct.getdisc
 nuts.setdisc             = direct.setdisc
 nuts.setlink             = direct.setlink
+nuts.setsplit            = direct.setsplit
 nuts.getlist             = direct.getlist
 nuts.setlist             = direct.setlist
 

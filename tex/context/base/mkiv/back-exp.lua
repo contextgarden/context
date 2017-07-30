@@ -121,7 +121,6 @@ local getdisc           = nuts.getdisc
 local getcomponents     = nuts.getcomponents
 local getlist           = nuts.getlist
 local getid             = nuts.getid
-local getfield          = nuts.getfield
 local getattr           = nuts.getattr
 local setattr           = nuts.setattr -- maybe use properties
 local isglyph           = nuts.isglyph

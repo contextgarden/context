@@ -69,7 +69,6 @@ local getkern          = nuts.getkern
 local getdir           = nuts.getdir
 local getwidth         = nuts.getwidth
 
-local setfield         = nuts.setfield
 local setbox           = nuts.setbox
 local setchar          = nuts.setchar
 local setsubtype       = nuts.setsubtype

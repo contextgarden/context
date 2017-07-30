@@ -33,6 +33,10 @@ local setattr             = nuts.setattr
 local getcomponents       = nuts.getcomponents
 local getwidth            = nuts.getwidth
 
+local getnucleus          = nuts.getnucleus
+local getsub              = nuts.getsub
+local getsup              = nuts.getsup
+
 local set_attributes      = nuts.setattributes
 local traverse_nodes      = nuts.traverse
 
@@ -100,9 +104,9 @@ local function processsubsup(start)
     -- At some point we might need to add an attribute signaling the
     -- super- and subscripts because TeX and MathML use a different
     -- order. The mrows are needed to keep mn's separated.
-    local nucleus = getfield(start,"nucleus")
-    local sup     = getfield(start,"sup")
-    local sub     = getfield(start,"sub")
+    local nucleus = getnucleus(start)
+    local sup     = getsup(start)
+    local sub     = getsub(start)
     if sub then
         if sup then
             setattr(start,a_tagged,start_tagged("msubsup"))

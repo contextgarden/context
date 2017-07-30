@@ -21,7 +21,6 @@ local nuts            = nodes.nuts
 local tonode          = nuts.tonode
 local tonut           = nuts.tonut
 
-local getfield        = nuts.getfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getid           = nuts.getid
@@ -32,7 +31,6 @@ local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
 local getdisc         = nuts.getdisc
 
-local setfield        = nuts.setfield
 local setattr         = nuts.setattr
 local setchar         = nuts.setchar
 local setfont         = nuts.setfont

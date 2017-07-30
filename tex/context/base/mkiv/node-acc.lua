@@ -22,7 +22,6 @@ local getlist            = nuts.getlist
 local getchar            = nuts.getchar
 local getnext            = nuts.getnext
 
-local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setchar            = nuts.setchar

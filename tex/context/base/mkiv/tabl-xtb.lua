@@ -65,11 +65,11 @@ local tonode              = nuts.tonode
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getlist             = nuts.getlist
+local getwidth            = nuts.getwidth
 local getfield            = nuts.getfield
 local getbox              = nuts.getbox
 local getwhd              = nuts.getwhd
 
-local setfield            = nuts.setfield
 local setlink             = nuts.setlink
 local setdir              = nuts.setdir
 local setshift            = nuts.setshift
@@ -909,7 +909,7 @@ function xtables.construct()
         texsetdimen("global","d_tabl_x_final_width",0)
     else
         texsetcount("global","c_tabl_x_state",1)
-        texsetdimen("global","d_tabl_x_final_width",getfield(body[1][1],"width"))
+        texsetdimen("global","d_tabl_x_final_width",getfield(body[1][1],"width")) -- why not: getfield(body[1][1])
     end
 end
 

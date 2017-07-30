@@ -28,7 +28,6 @@ local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 local setlink            = nuts.setlink

@@ -56,8 +56,6 @@ local setmetatablenewindex = table.setmetatablenewindex
 
 local nuts              = nodes.nuts
 
-local getfield          = nuts.getfield
-local setfield          = nuts.setfield
 local setlink           = nuts.setlink
 local getlist           = nuts.getlist
 local setlist           = nuts.setlist

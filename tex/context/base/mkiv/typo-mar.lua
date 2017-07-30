@@ -66,7 +66,6 @@ local traverse_id        = nuts.traverse_id
 local flush_node_list    = nuts.flush_list
 
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
@@ -165,7 +164,7 @@ setmetatable(displaystore,mt2)
 local defaults = {
     __index  = {
         location  = v_left,
-        align     = v_normal,
+        align     = v_normal, -- not used
         method    = "",
         name      = "",
         threshold = 0, -- .25ex

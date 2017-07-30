@@ -62,7 +62,6 @@ local tonode               = nuts.tonode
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
 
-local setfield             = nuts.setfield
 local setchar              = nuts.setchar
 
 local traverse_id          = nuts.traverse_id

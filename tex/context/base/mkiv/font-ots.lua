@@ -175,7 +175,6 @@ local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local setnext            = nuts.setnext
 local getprev            = nuts.getprev
@@ -1951,6 +1950,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
                                 done = true
                                 if n and n > 1 and i + n > nofchainlookups then
                                     -- this is a safeguard, we just ignore the rest of the lookups
+i = size -- prevents an advance
                                     break
                                 end
                             end
@@ -2333,7 +2333,7 @@ end
 -- tests because they have many steps with one context (having multiple contexts makes more sense)
 -- also because we (can) reduce them.
 
-local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
+local function traditional_handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
     local sweepnode    = sweepnode
     local sweeptype    = sweeptype
     local currentfont  = currentfont
@@ -3336,18 +3336,22 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
     return head, start, done
 end
 
+------------------------------
+
+local handle_contextchain = traditional_handle_contextchain
+
 directives.register("otf.optimizechains",function(v)
     if v then
         report_chain()
         report_chain("using experimental optimized code")
         report_chain()
     end
-    local handle = v and optimized_handle_contextchain or handle_contextchain
-    handlers.gsub_context             = handle
-    handlers.gsub_contextchain        = handle
-    handlers.gsub_reversecontextchain = handle
-    handlers.gpos_contextchain        = handle
-    handlers.gpos_context             = handle
+    handle_contextchain = v and optimized_handle_contextchain or traditional_handle_contextchain
+    handlers.gsub_context             = handle_contextchain
+    handlers.gsub_contextchain        = handle_contextchain
+    handlers.gsub_reversecontextchain = handle_contextchain
+    handlers.gpos_contextchain        = handle_contextchain
+    handlers.gpos_context             = handle_contextchain
 end)
 
 ------------------------------
@@ -3374,6 +3378,8 @@ chainprocs.gsub_contextchain        = chained_contextchain
 chainprocs.gsub_reversecontextchain = chained_contextchain
 chainprocs.gpos_contextchain        = chained_contextchain
 chainprocs.gpos_context             = chained_contextchain
+
+------------------------------
 
 -- experiment (needs no handler in font-otc so not now):
 --

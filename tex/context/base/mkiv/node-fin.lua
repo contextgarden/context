@@ -19,7 +19,6 @@ local nuts               = nodes.nuts
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
-local getfield           = nuts.getfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
@@ -395,7 +394,7 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                 if leader then
                     -- begin nested
                     if nstrigger and getattr(stack,nstrigger) then
-                        local outer = getatribute(stack,attribute)
+                        local outer = getattr(stack,attribute)
                         if outer ~= inheritance then
                             local list, ok = selective(attribute,leader,inheritance,outer)
                             if leader ~= list then

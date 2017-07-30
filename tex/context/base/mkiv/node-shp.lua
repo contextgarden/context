@@ -37,7 +37,6 @@ local tonode         = nuts.tonode
 local remove_node    = nuts.remove
 local traverse_nodes = nuts.traverse
 
-local getfield       = nuts.getfield
 local setfield       = nuts.setfield
 local setlink        = nuts.setlink
 local setprev        = nuts.setprev

@@ -30,7 +30,7 @@ local nuts            = nodes.nuts
 local tonut           = nuts.tonut
 local tonode          = nuts.tonode
 
-local getfield        = nuts.getfield
+----- getfield        = nuts.getfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getdisc         = nuts.getdisc
@@ -42,7 +42,7 @@ local getdir          = nuts.getdir
 local getwidth        = nuts.getwidth
 local takebox         = nuts.takebox
 
-local setfield        = nuts.setfield
+----- setfield        = nuts.setfield
 local setlink         = nuts.setlink
 local setboth         = nuts.setboth
 local setnext         = nuts.setnext

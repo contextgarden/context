@@ -42,8 +42,6 @@ local vpack               = nuts.vpack
 local flushlist           = nuts.flush_list
 ----- removenode          = nuts.remove
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
 local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 local setnext             = nuts.setnext
@@ -768,7 +766,8 @@ end
 --     while head do
 --         local id = getid(head)
 --         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
---             used = used + getfield(head,"height") + getfield(head,"depth")
+--             local wd, ht, dp = getwhd(head)
+--             used = used + ht + dp
 --             line = true
 --         elseif id == glue_code then
 --             if line then
@@ -860,7 +859,8 @@ end
 --         local id = getid(head)
 --         local hd = 0
 --         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
---             hd = getfield(head,"height") + getfield(head,"depth")
+--             local wd, ht, dp = getwhd(head)
+--             hd = ht + dp
 --         elseif id == glue_code then
 --             hd = getwidth(head)
 --         elseif id == kern_code then

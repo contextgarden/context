@@ -33,7 +33,6 @@ local insert_node_after  = nuts.insert_after
 local end_of_math        = nuts.end_of_math
 local use_components     = nuts.use_components
 
-local getfield           = nuts.getfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid

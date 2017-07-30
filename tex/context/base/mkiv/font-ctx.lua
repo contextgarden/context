@@ -75,8 +75,6 @@ local aglunicodes         = nil -- delayed loading
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getprop             = nuts.getprop

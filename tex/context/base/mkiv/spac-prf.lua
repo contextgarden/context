@@ -58,7 +58,6 @@ local getwidth          = nuts.getwidth
 local getheight         = nuts.getheight
 local getdepth          = nuts.getdepth
 
-local setfield          = nuts.setfield
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
 local setattr           = nuts.setattr

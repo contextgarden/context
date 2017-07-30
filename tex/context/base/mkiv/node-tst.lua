@@ -26,7 +26,6 @@ local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
 
 local nuts                       = nodes.nuts
 
-local getfield                   = nuts.getfield
 local getnext                    = nuts.getnext
 local getprev                    = nuts.getprev
 local getid                      = nuts.getid

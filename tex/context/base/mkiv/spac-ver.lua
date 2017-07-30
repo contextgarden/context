@@ -30,8 +30,6 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 -- todo: strip baselineskip around display math
 
--- todo: getglue(n,false) instead of getfield
-
 local next, type, tonumber = next, type, tonumber
 local gmatch, concat = string.gmatch, table.concat
 local ceil, floor = math.ceil, math.floor
@@ -119,7 +117,6 @@ local tonode              = nuts.tonode
 local tonut               = nuts.tonut
 
 local getfield            = nuts.getfield
-local setfield            = nuts.setfield
 local getnext             = nuts.getnext
 local setlink             = nuts.setlink
 local getprev             = nuts.getprev

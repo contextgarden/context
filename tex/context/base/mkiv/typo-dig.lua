@@ -29,7 +29,6 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getwidth           = nuts.getwidth
-local getfield           = nuts.getfield
 local takeattr           = nuts.takeattr
 
 local setlink            = nuts.setlink

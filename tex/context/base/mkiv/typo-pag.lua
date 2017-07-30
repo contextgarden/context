@@ -28,8 +28,6 @@ local a_keeptogether      = attributes.private("keeptogether")
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid

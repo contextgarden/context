@@ -57,7 +57,6 @@ local getfield          = nuts.getfield
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
 local setnext           = nuts.setnext
-local setfield          = nuts.setfield
 local setprev           = nuts.setprev
 
 local isglyph           = nuts.isglyph -- unchecked

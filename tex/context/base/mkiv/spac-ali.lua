@@ -18,7 +18,6 @@ local nodepool         = nuts.pool
 local tonode           = nuts.tonode
 local tonut            = nuts.tonut
 
-local getfield         = nuts.getfield
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getid            = nuts.getid

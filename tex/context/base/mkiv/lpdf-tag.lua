@@ -64,7 +64,6 @@ local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getlist             = nuts.getlist
 
-local setfield            = nuts.setfield
 local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 

@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ["page-mix"] = {
 
 -- inserts.getname(name)
 
--- getfield(l,"head") -> getlist
-
 -- local node, tex = node, tex
 -- local nodes, interfaces, utilities = nodes, interfaces, utilities
 -- local trackers, logs, storage = trackers, logs, storage
@@ -47,7 +45,6 @@ local flushnode           = nuts.flush
 local concatnodes         = nuts.concat
 local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
 
-local setfield            = nuts.setfield
 local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 local setnext             = nuts.setnext
@@ -57,7 +54,6 @@ local setwhd              = nuts.setwhd
 local setheight           = nuts.setheight
 local setdepth            = nuts.setdepth
 
-local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid

@@ -55,13 +55,11 @@ local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
-local getfield           = nuts.getfield
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
 local getdir            = nuts.getdir
 local isglyph            = nuts.isglyph -- or ischar
 
-local setfield           = nuts.setfield
 local setprop            = nuts.setprop
 local setchar            = nuts.setchar
 

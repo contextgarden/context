@@ -38,7 +38,6 @@ local nuts             = nodes.nuts
 local tonut            = nuts.tonut
 local tonode           = nuts.tonode
 
-local getfield         = nuts.getfield
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getid            = nuts.getid
@@ -376,8 +375,7 @@ local f_z_f = formatters["%0.5Fpt minus %0.5F%s"]
 local f_z_m = formatters["%0.5Fpt minus %0.5Fpt"]
 local f_z_z = formatters["%0.5Fpt"]
 
-local tonut    = nodes.tonut
-local getfield = nodes.nuts.getfield
+local tonut = nodes.tonut
 
 local function nodetodimen(n)
     n = tonut(n)

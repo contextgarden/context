@@ -23,7 +23,6 @@ local tonut              = nuts.tonut
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 
-local setfield           = nuts.setfield
 local setfont            = nuts.setfont
 
 local traverse_id        = nuts.traverse_id

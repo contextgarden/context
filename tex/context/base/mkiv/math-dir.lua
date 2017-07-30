@@ -33,7 +33,6 @@ local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 
-local setfield           = nuts.setfield
 local setchar            = nuts.setchar
 local setlist            = nuts.setlist
 

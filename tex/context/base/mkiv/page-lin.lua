@@ -71,7 +71,6 @@ local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getlist            = nuts.getlist
 local getbox             = nuts.getbox
-local getfield           = nuts.getfield
 ----- getdir             = nuts.getdir
 ----- getwidth           = nuts.getwidth
 local getheight          = nuts.getheight
@@ -79,8 +78,6 @@ local getdepth           = nuts.getdepth
 
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
-
-local setfield           = nuts.setfield
 
 local traverse_id        = nuts.traverse_id
 local traverse           = nuts.traverse

@@ -24,8 +24,6 @@ local setmetatableindex  = table.setmetatableindex
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
 
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr

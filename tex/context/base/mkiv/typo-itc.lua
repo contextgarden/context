@@ -31,7 +31,6 @@ local nodepool            = nuts.pool
 local tonode              = nuts.tonode
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
 local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -42,7 +41,6 @@ local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getattrlist         = nuts.getattrlist
 local setattrlist         = nuts.setattrlist
-local setfield            = nuts.setfield
 local setdisc             = nuts.setdisc
 local isglyph             = nuts.isglyph
 local setkern             = nuts.setkern

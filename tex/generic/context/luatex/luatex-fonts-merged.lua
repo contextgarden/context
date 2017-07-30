@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/29/17 23:08:35
+-- merge date  : 07/30/17 19:30:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -5118,6 +5118,7 @@ nuts.setchar=direct.setchar
 nuts.getdisc=direct.getdisc
 nuts.setdisc=direct.setdisc
 nuts.setlink=direct.setlink
+nuts.setsplit=direct.setsplit
 nuts.getlist=direct.getlist
 nuts.setlist=direct.setlist
 nuts.getoffsets=direct.getoffsets or
@@ -20732,7 +20733,6 @@ local nuts=nodes.nuts
 local nodepool=nuts.pool
 local tonode=nuts.tonode
 local tonut=nuts.tonut
-local getfield=nuts.getfield
 local setfield=nuts.setfield
 local getnext=nuts.getnext
 local getprev=nuts.getprev
@@ -22557,7 +22557,6 @@ local nuts=nodes.nuts
 local tonode=nuts.tonode
 local tonut=nuts.tonut
 local getfield=nuts.getfield
-local setfield=nuts.setfield
 local getnext=nuts.getnext
 local setnext=nuts.setnext
 local getprev=nuts.getprev
@@ -24048,6 +24047,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
               if ok then
                 done=true
                 if n and n>1 and i+n>nofchainlookups then
+i=size 
                   break
                 end
               end
@@ -24396,7 +24396,7 @@ local function chaintrac(head,start,dataset,sequence,rlmode,ck,skipped,match)
   logwarning("%s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a",
     cref(dataset,sequence),rule,match and "matches" or "nomatch",gref(char),first-1,last-first+1,nofseq-last,lookuptype)
 end
-local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
+local function traditional_handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
   local sweepnode=sweepnode
   local sweeptype=sweeptype
   local currentfont=currentfont
@@ -25327,18 +25327,19 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
   end
   return head,start,done
 end
+local handle_contextchain=traditional_handle_contextchain
 directives.register("otf.optimizechains",function(v)
   if v then
     report_chain()
     report_chain("using experimental optimized code")
     report_chain()
   end
-  local handle=v and optimized_handle_contextchain or handle_contextchain
-  handlers.gsub_context=handle
-  handlers.gsub_contextchain=handle
-  handlers.gsub_reversecontextchain=handle
-  handlers.gpos_contextchain=handle
-  handlers.gpos_context=handle
+  handle_contextchain=v and optimized_handle_contextchain or traditional_handle_contextchain
+  handlers.gsub_context=handle_contextchain
+  handlers.gsub_contextchain=handle_contextchain
+  handlers.gsub_reversecontextchain=handle_contextchain
+  handlers.gpos_contextchain=handle_contextchain
+  handlers.gpos_context=handle_contextchain
 end)
 handlers.gsub_context=handle_contextchain
 handlers.gsub_contextchain=handle_contextchain

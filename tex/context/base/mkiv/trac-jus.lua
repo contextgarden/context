@@ -18,7 +18,6 @@ local nuts            = nodes.nuts
 local tonut           = nuts.tonut
 
 local getfield        = nuts.getfield
-local setfield        = nuts.setfield
 local getlist         = nuts.getlist
 local getattr         = nuts.getattr
 local setattr         = nuts.setattr

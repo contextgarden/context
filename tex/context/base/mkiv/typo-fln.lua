@@ -39,7 +39,6 @@ local getboth            = nuts.getboth
 local setboth            = nuts.setboth
 local getid              = nuts.getid
 local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
 local getattr            = nuts.getattr
