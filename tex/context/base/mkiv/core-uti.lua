@@ -19,7 +19,7 @@ saves much runtime but at the cost of more memory usage.</p>
 
 local math = math
 local format, match = string.format, string.match
-local next, type, tostring = next, type, tostring
+local next, type, tostring, tonumber = next, type, tostring, tonumber
 local concat = table.concat
 
 local definetable    = utilities.tables.definetable

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['typo-cap'] = {
     license   = "see context related readme files"
     }
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local format, insert = string.format, table.insert
 local div, getrandom = math.div, utilities.randomizer.get
 

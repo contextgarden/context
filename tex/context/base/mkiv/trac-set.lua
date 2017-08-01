@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 
 -- maybe this should be util-set.lua
 
-local type, next, tostring = type, next, tostring
+local type, next, tostring, tonumber = type, next, tostring, tonumber
 local concat = table.concat
 local format, find, lower, gsub, topattern = string.format, string.find, string.lower, string.gsub, string.topattern
 local is_boolean = string.is_boolean

@@ -11,9 +11,9 @@ local format = string.format
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, Cs, R, S, C, Cc = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc
 
-local context = context
-
-metapost = metapost or { }
+metapost       = metapost or { }
+local metapost = metapost
+local context  = context
 
 -- experimental
 

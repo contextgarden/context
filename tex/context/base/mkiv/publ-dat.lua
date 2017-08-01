@@ -24,7 +24,7 @@ end
 
 local lower, find, sub = string.lower, string.find, string.sub
 local concat, copy, tohash = table.concat, table.copy, table.tohash
-local next, type, rawget = next, type, rawget
+local next, type, rawget, tonumber = next, type, rawget, tonumber
 local utfchar = utf.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local textoutf = characters and characters.tex.toutf

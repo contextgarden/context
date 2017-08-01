@@ -24,6 +24,8 @@ local report_blocked    = logs.reporter("backend","blocked")
 local implement         = interfaces.implement
 local two_strings       = interfaces.strings[2]
 
+local context           = context
+
 -- In ConTeXt MkIV we use utf8 exclusively so all strings get mapped onto a hex
 -- encoded utf16 string type between <>. We could probably save some bytes by using
 -- strings between () but then we end up with escaped ()\ too.

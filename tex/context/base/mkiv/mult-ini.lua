@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
 local format, gmatch, match, find, sub = string.format, string.gmatch, string.match, string.find, string.sub
 local lpegmatch = lpeg.match
 local serialize, concat = table.serialize, table.concat
-local rawget, type = rawget, type
+local rawget, type, tonumber = rawget, type, tonumber
 
 local context             = context
 local commands            = commands

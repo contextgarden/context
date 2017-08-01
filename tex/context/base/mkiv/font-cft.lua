@@ -20,7 +20,7 @@ if not modules then modules = { } end modules ['font-cft'] = {
 --
 -- Needs to be checked and updated.
 
-local type = type
+local type, tonumber = type, tonumber
 
 local fonts  = fonts or { }
 local tables = fonts.tables or { }

@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['back-pdf'] = {
 
 -- we could do \pdfmatrix sx <> sy <> etc
 
-local tonumber = tonumber
 local sind, cosd = math.sind, math.cosd
 local insert, remove = table.insert, table.remove
 

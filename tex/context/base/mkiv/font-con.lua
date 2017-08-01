@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-con'] = {
 
 -- some names of table entries will be changed (no _)
 
-local next, tostring, rawget = next, tostring, rawget
+local next, tostring, tonumber, rawget = next, tostring, tonumber, rawget
 local format, match, lower, gsub, find = string.format, string.match, string.lower, string.gsub, string.find
 local sort, insert, concat = table.sort, table.insert, table.concat
 local sortedkeys, sortedhash, serialize, fastcopy = table.sortedkeys, table.sortedhash, table.serialize, table.fastcopy

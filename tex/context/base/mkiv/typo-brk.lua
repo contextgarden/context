@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['typo-brk'] = {
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
 
-local next, type, tonumber = next, type, tonumber
+local next, type, tonumber, tostring = next, type, tonumber, tostring
 local utfbyte, utfchar = utf.byte, utf.char
 local format = string.format
 

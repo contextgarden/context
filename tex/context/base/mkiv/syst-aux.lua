@@ -23,7 +23,7 @@ local formatters        = string.formatters
 local setcatcode        = tex.setcatcode
 local utf8character     = lpeg.patterns.utf8character
 local settings_to_array = utilities.parsers.settings_to_array
-local settings_to_set  = utilities.parsers.settings_to_set
+local settings_to_set   = utilities.parsers.settings_to_set
 local setmacro          = interfaces.setmacro
 
 local pattern           = C(utf8character^-1) * C(P(1)^0)

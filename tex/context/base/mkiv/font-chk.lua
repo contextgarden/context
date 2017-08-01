@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['font-chk'] = {
 
 local next = next
 
+local context              = context
+
 local formatters           = string.formatters
 local bpfactor             = number.dimenfactors.bp
 local fastcopy             = table.fastcopy

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
     license   = "see context related readme files"
 }
 
-local type = type
+local type, tonumber = type, tonumber
 local formatters, gsub = string.formatters, string.gsub
 local concat = table.concat
 local round = math.round

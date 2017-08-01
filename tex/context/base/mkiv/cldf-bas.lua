@@ -22,6 +22,7 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 --     flush(ctxcatcodes,"}")
 -- end
 
+local tonumber     = tonumber
 local type         = type
 local format       = string.format
 local utfchar      = utf.char

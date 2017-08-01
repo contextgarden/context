@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['node-res'] = {
 }
 
 local gmatch, format = string.gmatch, string.format
-local tonumber, round = tonumber, math.round
 
 --[[ldx--
 <p>The next function is not that much needed but in <l n='context'/> we use

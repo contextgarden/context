@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['colo-ini'] = {
     license   = "see context related readme files"
 }
 
-local type, tonumber = type, tonumber
+local type, tonumber, tostring = type, tonumber, tostring
 local concat, insert, remove = table.concat, table.insert, table.remove
 local format, gmatch, gsub, lower, match, find = string.format, string.gmatch, string.gsub, string.lower, string.match, string.find
 local P, R, C, Cc = lpeg.P, lpeg.R, lpeg.C, lpeg.Cc

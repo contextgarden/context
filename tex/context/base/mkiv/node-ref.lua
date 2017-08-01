@@ -16,6 +16,7 @@ if not modules then modules = { } end modules ['node-ref'] = {
 
 -- is grouplevel still used?
 
+local tonumber = tonumber
 local concat = table.concat
 
 local attributes, nodes, node = attributes, nodes, node
@@ -68,6 +69,7 @@ local getsubtype           = nuts.getsubtype
 local getwhd               = nuts.getwhd
 local getdir               = nuts.getdir
 local setshift             = nuts.setshift
+local getboxglue           = nuts.getboxglue
 
 local hpack_list           = nuts.hpack
 local vpack_list           = nuts.vpack
@@ -282,18 +284,16 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
                     reference,pardir or "---",txtdir or "---",
                     tosequence(first,last,true),width,height,depth)
             end
-if first == last and getid(parent) == vlist_code and getid(first) == hlist_code then
-    if trace_areas then
-        -- think of a button without \dontleavehmode in the mvl
-        report_area("compensating for link in vlist")
-    end
-    setlink(result,getlist(first))
-    setlist(first,result)
-else
-         -- setlink(getprev(first),result)
-         -- setlink(result,first)
-            setlink(getprev(first),result,first)
-end
+            if first == last and getid(parent) == vlist_code and getid(first) == hlist_code then
+                if trace_areas then
+                    -- think of a button without \dontleavehmode in the mvl
+                    report_area("compensating for link in vlist")
+                end
+                setlink(result,getlist(first))
+                setlist(first,result)
+            else
+                setlink(getprev(first),result,first)
+            end
             return head, last
         end
     else
@@ -319,10 +319,11 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
                     if prev and getid(prev) == glue_code and getsubtype(prev) == parfillskip_code then
                         width = dimensions(current,first,getprev(prev)) -- maybe not current as we already take care of it
                     else
+                        local set, order, sign = getboxglue(current)
                         if moveright then
-                            width = width - getfield(first,"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
+                            width = width - getfield(first,"stretch") * set * sign
                         end
-                        width = width - getfield(last,"stretch") * getfield(current,"glue_set") * getfield(current,"glue_sign")
+                        width = width - getfield(last,"stretch") * set * sign
                     end
                 end
             else
@@ -350,8 +351,6 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             setlist(current,result)
         elseif moveright then -- brr no prevs done
             -- result after first
-         -- setlink(result,getnext(first))
-         -- setlink(first,result)
             setlink(first,result,getnext(first))
         else
             -- first after result
@@ -559,8 +558,6 @@ local function colorize(width,height,depth,n,reference,what,sr,offset)
         local text = addstring(what,sr,shift)
         if text then
             local kern = new_kern(-getwidth(text))
-         -- setlink(kern,text)
-         -- setlink(text,rule)
             setlink(kern,text,rule)
             return kern
         end

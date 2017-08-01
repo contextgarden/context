@@ -11,7 +11,9 @@ if not modules then modules = { } end modules ['lpdf-swf'] = {
 
 local format, gsub = string.format, string.gsub
 
-local backends, lpdf = backends, lpdf
+local backends       = backends
+local lpdf           = lpdf
+local context        = context
 
 local pdfconstant    = lpdf.constant
 local pdfstring      = lpdf.string

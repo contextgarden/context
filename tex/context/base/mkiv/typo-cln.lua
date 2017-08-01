@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['typo-cln'] = {
 -- this case Dream Theaters' Octavium). Of course extensions will take
 -- more time.
 
+local tonumber = tonumber
 local utfbyte = utf.byte
 
 local trace_cleaners = false  trackers.register("typesetters.cleaners",         function(v) trace_cleaners = v end)

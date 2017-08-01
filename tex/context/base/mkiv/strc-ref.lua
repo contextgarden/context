@@ -123,6 +123,8 @@ local currentreference   = nil
 
 local txtcatcodes        = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
 
+local context                      = context
+
 local ctx_pushcatcodes             = context.pushcatcodes
 local ctx_popcatcodes              = context.popcatcodes
 local ctx_dofinishreference        = context.dofinishreference

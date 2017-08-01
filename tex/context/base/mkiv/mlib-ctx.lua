@@ -20,9 +20,8 @@ local stoptiming         = statistics.stoptiming
 
 local mplib              = mplib
 
-metapost                 = metapost or {}
+metapost                 = metapost or { }
 local metapost           = metapost
-
 local context            = context
 
 local setters            = tokens.setters

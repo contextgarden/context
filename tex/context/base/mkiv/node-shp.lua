@@ -151,10 +151,10 @@ function handlers.cleanupbox(head)
     return tonode(cleanup_flushed(tonut(head))), true
 end
 
-local actions = tasks.actions("shipouts")  -- no extra arguments
+local actions = tasks.actions("shipouts")
 
-function handlers.finalize(head) -- problem, attr loaded before node, todo ...
-    return actions(head)
+function handlers.finalize(head,where) -- problem, attr loaded before node, todo ...
+    return actions(head,where)
 end
 
 -- handlers.finalize = actions

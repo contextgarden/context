@@ -41,7 +41,7 @@
     \resetcharacterspacing
 \to \everyinitializeverbatim
 
-\def\setverbatimspaceskip % to be checked: must happen after font switch
+\unexpanded\def\setverbatimspaceskip % to be checked: must happen after font switch
   {\spaceskip\fontcharwd\font`x\relax
    \xspaceskip\spaceskip}
 

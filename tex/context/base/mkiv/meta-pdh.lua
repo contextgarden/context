@@ -30,7 +30,9 @@ local concat, format, find, gsub, gmatch = table.concat, string.format, string.f
 local tostring, tonumber, select = tostring, tonumber, select
 local lpegmatch = lpeg.match
 
-local metapost = metapost
+metapost         = metapost or { }
+local metapost   = metapost
+local context    = context
 
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf

@@ -65,7 +65,7 @@ if not modules then modules = { } end modules ['font-otr'] = {
 --     require("char-ini")
 -- end
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local byte, lower, char, gsub = string.byte, string.lower, string.char, string.gsub
 local floor, round = math.floor, math.round
 local P, R, S, C, Cs, Cc, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg, lpeg.Cmt

@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['font-off'] = {
     license   = "see context related readme files"
 }
 
+local tonumber          = tonumber
 local lower             = string.lower
 local round             = math.round
 local setmetatableindex = table.setmetatableindex

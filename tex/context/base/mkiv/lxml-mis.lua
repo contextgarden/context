@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['lxml-mis'] = {
 
 local xml, lpeg, string = xml, lpeg, string
 
+local type = type
 local concat = table.concat
-local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring
 local format, gsub, match = string.format, string.gsub, string.match
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, S, R, C, V, Cc, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Cs
@@ -39,7 +39,7 @@ local function xmlgsub(t,old,new) -- will be replaced
     end
 end
 
---~ xml.gsub = xmlgsub
+-- xml.gsub = xmlgsub
 
 function xml.stripleadingspaces(dk,d,k) -- cosmetic, for manual
     if d and k then
@@ -51,12 +51,12 @@ function xml.stripleadingspaces(dk,d,k) -- cosmetic, for manual
     end
 end
 
---~ xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
---~ xml.unescapes = { } for k,v in next, xml.escapes do xml.unescapes[v] = k end
+-- xml.escapes   = { ['&'] = '&amp;', ['<'] = '&lt;', ['>'] = '&gt;', ['"'] = '&quot;' }
+-- xml.unescapes = { } for k,v in next, xml.escapes do xml.unescapes[v] = k end
 
---~ function xml.escaped  (str) return (gsub(str,"(.)"   , xml.escapes  )) end
---~ function xml.unescaped(str) return (gsub(str,"(&.-;)", xml.unescapes)) end
---~ function xml.cleansed (str) return (gsub(str,"<.->"  , ''           )) end -- "%b<>"
+-- function xml.escaped  (str) return (gsub(str,"(.)"   , xml.escapes  )) end
+-- function xml.unescaped(str) return (gsub(str,"(&.-;)", xml.unescapes)) end
+-- function xml.cleansed (str) return (gsub(str,"<.->"  , ''           )) end -- "%b<>"
 
 -- 100 * 2500 * "oeps< oeps> oeps&" : gsub:lpeg|lpeg|lpeg
 --
@@ -66,8 +66,8 @@ end
 --
 -- 1559:0257:0288:0190 (last one suggested by roberto)
 
---    escaped = Cs((S("<&>") / xml.escapes + 1)^0)
---    escaped = Cs((S("<")/"&lt;" + S(">")/"&gt;" + S("&")/"&amp;" + 1)^0)
+----- escaped = Cs((S("<&>") / xml.escapes + 1)^0)
+----- escaped = Cs((S("<")/"&lt;" + S(">")/"&gt;" + S("&")/"&amp;" + 1)^0)
 local normal  = (1 - S("<&>"))^0
 local special = P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;"
 local escaped = Cs(normal * (special * normal)^0)

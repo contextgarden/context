@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['cldf-scn'] = {
     license   = "see context related readme files"
 }
 
-local load, type  = load, type
+local load, type, tostring  = load, type, tostring
 
 local formatters  = string.formatters
 local char        = string.char

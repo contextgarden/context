@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['file-job'] = {
 -- in retrospect dealing it's not that bad to deal with the nesting
 -- and push/poppign at the tex end
 
-local rawget = rawget
+local rawget, tostring, tonumber = rawget, tostring, tonumber
 local gsub, match, find = string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
 local validstring, formatters = string.valid, string.formatters

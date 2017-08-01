@@ -55,7 +55,7 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 -- for printing especially when highlighting (those colorfull foregrounds) is
 -- on.
 
-local tostring, next = tostring, next
+local tostring, tonumber, next = tostring, tonumber, next
 local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
 local lpegmatch = lpeg.match
 local bpfactor, todimen = number.dimenfactors.bp, string.todimen

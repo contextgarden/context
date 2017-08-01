@@ -13,15 +13,19 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
 -- We can make it even more efficient if needed, but as we don't use this
 -- code often in \MKIV\ it makes no sense.
 
+local tonumber = tonumber
 local concat, unpack = table.concat, table.unpack
 local gsub, find, byte, gmatch, match = string.gsub, string.find, string.byte, string.gmatch, string.match
 local lpegmatch = lpeg.match
 local round = math.round
 local formatters, format = string.formatters, string.format
 
-local report_mptopdf = logs.reporter("graphics","mptopdf")
+local mplib                     = mplib
+local metapost                  = metapost
+local lpdf                      = lpdf
+local context                   = context
 
-local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
+local report_mptopdf            = logs.reporter("graphics","mptopdf")
 
 local texgetattribute           = tex.getattribute
 

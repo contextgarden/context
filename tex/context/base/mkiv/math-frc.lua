@@ -6,15 +6,15 @@ if not modules then modules = { } end modules ['math-frc'] = {
     license   = "see context related readme files"
 }
 
-local utfchar = utf.char
+local utfchar   = utf.char
 
-local context = context
+local context   = context
 local variables = interfaces.variables
 
-local v_no  = variables.no
-local v_yes = variables.yes
+local v_no      = variables.no
+local v_yes     = variables.yes
 
-local resolved = {
+local resolved  = {
     [0x007B] = "\\{",
     [0x007D] = "\\}",
 }

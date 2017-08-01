@@ -6,12 +6,14 @@ if not modules then modules = { } end modules ['meta-tex'] = {
     license   = "see context related readme files"
 }
 
-local tostring = tostring
+local tostring, tonumber = tostring, tonumber
 local format, gsub, find, match = string.format, string.gsub, string.find, string.match
 local formatters = string.formatters
 local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
 
-metapost = metapost or { }
+metapost       = metapost or { }
+local metapost = metapost
+local context  = context
 
 local implement = interfaces.implement
 

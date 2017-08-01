@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['unic-ini'] = {
     license   = "see context related readme files"
 }
 
+local context = context
 local utfchar = utf.char
 
 -- Beware, initializing unicodechar happens at first usage and takes

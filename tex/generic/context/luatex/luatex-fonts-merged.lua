@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/30/17 19:30:11
+-- merge date  : 08/01/17 18:10:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -130,7 +130,8 @@ if not modules then modules={} end modules ['l-lpeg']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-lpeg=require("lpeg")
+lpeg=require("lpeg") 
+local lpeg=lpeg
 if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
 local type,next,tostring=type,next,tostring
 local byte,char,gmatch,format=string.byte,string.char,string.gmatch,string.format
@@ -1048,7 +1049,7 @@ if not modules then modules={} end modules ['l-table']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local type,next,tostring,tonumber,ipairs,select=type,next,tostring,tonumber,ipairs,select
+local type,next,tostring,tonumber,select=type,next,tostring,tonumber,select
 local table,string=table,string
 local concat,sort,insert,remove=table.concat,table.sort,table.insert,table.remove
 local format,lower,dump=string.format,string.lower,string.dump
@@ -1350,7 +1351,7 @@ function table.tohash(t,value)
   local h={}
   if t then
     if value==nil then value=true end
-    for _,v in next,t do 
+    for _,v in next,t do
       h[v]=value
     end
   end
@@ -1358,7 +1359,7 @@ function table.tohash(t,value)
 end
 function table.fromhash(t)
   local hsh,h={},0
-  for k,v in next,t do 
+  for k,v in next,t do
     if v then
       h=h+1
       hsh[h]=k
@@ -7573,7 +7574,7 @@ if not modules then modules={} end modules ['font-con']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local next,tostring,rawget=next,tostring,rawget
+local next,tostring,tonumber,rawget=next,tostring,tonumber,rawget
 local format,match,lower,gsub,find=string.format,string.match,string.lower,string.gsub,string.find
 local sort,insert,concat=table.sort,table.insert,table.concat
 local sortedkeys,sortedhash,serialize,fastcopy=table.sortedkeys,table.sortedhash,table.serialize,table.fastcopy
@@ -9637,7 +9638,7 @@ if not modules then modules={} end modules ['font-otr']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local next,type=next,type
+local next,type,tonumber=next,type,tonumber
 local byte,lower,char,gsub=string.byte,string.lower,string.char,string.gsub
 local floor,round=math.floor,math.round
 local P,R,S,C,Cs,Cc,Ct,Carg,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Carg,lpeg.Cmt
@@ -24934,45 +24935,42 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                     last=getnext(last)
                   end
                   n=n+1
-                else
-                  if discfound then
-                    notmatchreplace[discfound]=true
-                    if notmatchpre[discfound] then
-                      goto next
-                    end
-                  else
+                elseif discfound then
+                  notmatchreplace[discfound]=true
+                  if notmatchpre[discfound] then
                     goto next
+                  else
+                    break
                   end
+                else
+                  goto next
+                end
+              elseif seq[n][char] then
+                if n<l then
+                  last=getnext(last)
+                end
+                n=n+1
+              elseif discfound then
+                notmatchreplace[discfound]=true
+                if notmatchpre[discfound] then
+                  goto next
+                else
                   break
                 end
               else
-                if seq[n][char] then
-                  if n<l then
-                    last=getnext(last)
-                  end
-                  n=n+1
-                else
-                  if discfound then
-                    notmatchreplace[discfound]=true
-                    if notmatchpre[discfound] then
-                      goto next
-                    end
-                  else
-                    goto next
-                  end
-                  break
-                end
+                goto next
               end
             elseif char==false then
               if discfound then
                 notmatchreplace[discfound]=true
                 if notmatchpre[discfound] then
                   goto next
+                else
+                  break
                 end
               else
                 goto next
               end
-              break
             elseif id==disc_code then
               diskseen=true
               discfound=last
@@ -25012,8 +25010,9 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                     notmatchreplace[last]=true
                     if notmatchpre[last] then
                       goto next
+                    else
+                      break
                     end
-                    break
                   end
                 end
                 if notmatchpre[last] then
@@ -25055,34 +25054,30 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                         prev=getprev(prev)
                       end
                       n=n-1
-                    else
-                      if discfound then
-                        notmatchreplace[discfound]=true
-                        if notmatchpost[discfound] then
-                          goto next
-                        end
-                      else
+                    elseif discfound then
+                      notmatchreplace[discfound]=true
+                      if notmatchpost[discfound] then
                         goto next
+                      else
+                        break
                       end
+                    else
+                      goto next
+                    end
+                  elseif seq[n][char] then
+                    if n>1 then
+                      prev=getprev(prev)
+                    end
+                    n=n-1
+                  elseif discfound then
+                    notmatchreplace[discfound]=true
+                    if notmatchpost[discfound] then
+                      goto next
+                    else
                       break
                     end
                   else
-                    if seq[n][char] then
-                      if n>1 then
-                        prev=getprev(prev)
-                      end
-                      n=n-1
-                    else
-                      if discfound then
-                        notmatchreplace[discfound]=true
-                        if notmatchpost[discfound] then
-                          goto next
-                        end
-                      else
-                        goto next
-                      end
-                      break
-                    end
+                    goto next
                   end
                 elseif char==false then
                   if discfound then
@@ -25107,12 +25102,9 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                       while posttail do
                         if seq[n][getchar(posttail)] then
                           n=n-1
-                          if posttail==post then
+                          if posttail==post or n<1 then
                             break
                           else
-                            if n<1 then
-                              break
-                            end
                             posttail=getprev(posttail)
                           end
                         else
@@ -25130,20 +25122,18 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                       while replacetail do
                         if seq[n][getchar(replacetail)] then
                           n=n-1
-                          if replacetail==replace then
+                          if replacetail==replace or n<1 then
                             break
                           else
-                            if n<1 then
-                              break
-                            end
                             replacetail=getprev(replacetail)
                           end
                         else
                           notmatchreplace[prev]=true
                           if notmatchpost[prev] then
                             goto next
+                          else
+                            break
                           end
-                          break
                         end
                       end
                     end
@@ -25199,45 +25189,42 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                       current=getnext(current) 
                     end
                     n=n+1
-                  else
-                    if discfound then
-                      notmatchreplace[discfound]=true
-                      if notmatchpre[discfound] then
-                        goto next
-                      end
+                  elseif discfound then
+                    notmatchreplace[discfound]=true
+                    if notmatchpre[discfound] then
+                      break
                     else
                       goto next
                     end
+                  else
+                    goto next
+                  end
+                elseif seq[n][char] then
+                  if n<s then 
+                    current=getnext(current) 
+                  end
+                  n=n+1
+                elseif discfound then
+                  notmatchreplace[discfound]=true
+                  if notmatchpre[discfound] then
+                    goto next
+                  else
                     break
                   end
                 else
-                  if seq[n][char] then
-                    if n<s then 
-                      current=getnext(current) 
-                    end
-                    n=n+1
-                  else
-                    if discfound then
-                      notmatchreplace[discfound]=true
-                      if notmatchpre[discfound] then
-                        goto next
-                      end
-                    else
-                      goto next
-                    end
-                    break
-                  end
+                  goto next
                 end
               elseif char==false then
                 if discfound then
                   notmatchreplace[discfound]=true
                   if notmatchpre[discfound] then
                     goto next
+                  else
+                    break
                   end
                 else
                   goto next
                 end
-                break
               elseif id==disc_code then
                 diskseen=true
                 discfound=current
@@ -25252,8 +25239,9 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                       n=n+1
                       if n>s then
                         break
+                      else
+                        pre=getnext(pre)
                       end
-                      pre=getnext(pre)
                     else
                       notmatchpre[current]=true
                       break
@@ -25271,14 +25259,16 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                       n=n+1
                       if n>s then
                         break
+                      else
+                        replace=getnext(replace)
                       end
-                      replace=getnext(replace)
                     else
                       notmatchreplace[current]=true
                       if not notmatchpre[current] then
                         goto next
+                      else
+                        break
                       end
-                      break
                     end
                   end
                 else
@@ -26140,9 +26130,7 @@ do
               else
                 start=getnext(start)
               end
-            elseif char==false then
-              start=getnext(start)
-            elseif id==glue_code then
+            elseif char==false or id==glue_code then
               start=getnext(start)
             elseif id==disc_code then
               if not discs or discs[start]==true then
@@ -26210,9 +26198,7 @@ do
               else
                 start=getnext(start)
               end
-            elseif char==false then
-              start=getnext(start)
-            elseif id==glue_code then
+            elseif char==false or id==glue_code then
               start=getnext(start)
             elseif id==disc_code then
               if not discs or discs[start]==true then
@@ -26305,9 +26291,7 @@ do
         else
           start=getnext(start)
         end
-      elseif char==false then
-        start=getnext(start)
-      elseif id==glue_code then
+      elseif char==false or id==glue_code then
         start=getnext(start)
       elseif id==math_code then
         start=getnext(end_of_math(start))
@@ -28509,7 +28493,7 @@ if not modules then modules={} end modules ['font-ocl']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local tostring,next,format=tostring,next,string.format
+local tostring,tonumber,next=tostring,tonumber,next
 local round,max=math.round,math.round
 local sortedkeys,sortedhash=table.sortedkeys,table.sortedhash
 local setmetatableindex=table.setmetatableindex

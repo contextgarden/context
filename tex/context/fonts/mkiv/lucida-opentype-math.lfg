@@ -35,8 +35,16 @@ return {
      -- },
         dimensions = {
             default = { -- experimental values
-                [0x2044] = { xoffset = 275, width = 600 },
-             -- [0x2032] = { yoffset = -10 },
+                [0x02044] = { xoffset = 275, width = 600 },
+                -- primes
+                [0xFE932] = { width =  200 },
+                [0xFE933] = { width =  500 },
+                [0xFE934] = { width =  800 },
+                [0xFE935] = { width = 1100 },
+                -- reverse primes
+                [0xFE935] = { width =  200 },
+                [0xFE936] = { width =  500 },
+                [0xFE937] = { width =  800 },
             },
         },
     },

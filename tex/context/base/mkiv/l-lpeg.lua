@@ -17,7 +17,9 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 -- move utf    -> l-unicode
 -- move string -> l-string or keep it here
 
-lpeg = require("lpeg")
+lpeg = require("lpeg") -- does lpeg register itself global?
+
+local lpeg = lpeg
 
 -- The latest lpeg doesn't have print any more, and even the new ones are not
 -- available by default (only when debug mode is enabled), which is a pitty as

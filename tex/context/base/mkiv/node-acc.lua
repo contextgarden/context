@@ -16,7 +16,6 @@ local tonut              = nodes.tonut
 local tonode             = nodes.tonode
 
 local getid              = nuts.getid
-local getfield           = nuts.getfield
 local getattr            = nuts.getattr
 local getlist            = nuts.getlist
 local getchar            = nuts.getchar

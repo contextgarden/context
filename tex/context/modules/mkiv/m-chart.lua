@@ -16,6 +16,8 @@ local type, tonumber, rawget, next = type, tonumber, rawget, next
 local gsub, find, lower = string.gsub, string.find, string.lower
 local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
 
+local context           = context
+
 local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
 

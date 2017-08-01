@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['l-table'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tostring, tonumber, ipairs, select = type, next, tostring, tonumber, ipairs, select
+local type, next, tostring, tonumber, select = type, next, tostring, tonumber, select
 local table, string = table, string
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, lower, dump = string.format, string.lower, string.dump
@@ -460,7 +460,7 @@ function table.tohash(t,value)
     local h = { }
     if t then
         if value == nil then value = true end
-        for _, v in next, t do -- no ipairs here
+        for _, v in next, t do
             h[v] = value
         end
     end
@@ -469,7 +469,7 @@ end
 
 function table.fromhash(t)
     local hsh, h = { }, 0
-    for k, v in next, t do -- no ipairs here
+    for k, v in next, t do
         if v then
             h = h + 1
             hsh[h] = k

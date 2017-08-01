@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['typo-dig'] = {
 -- we might consider doing this after the otf pass because now osf do not work
 -- out well in node mode.
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local format, insert = string.format, table.insert
 local round, div = math.round, math.div
 

@@ -766,7 +766,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 37748, stripped down to: 20111
+-- original size: 37804, stripped down to: 20128
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -775,7 +775,8 @@ if not modules then modules={} end modules ['l-lpeg']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-lpeg=require("lpeg")
+lpeg=require("lpeg") 
+local lpeg=lpeg
 if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
 local type,next,tostring=type,next,tostring
 local byte,char,gmatch,format=string.byte,string.char,string.gmatch,string.format
@@ -1699,7 +1700,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 39726, stripped down to: 23243
+-- original size: 39674, stripped down to: 23227
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1708,7 +1709,7 @@ if not modules then modules={} end modules ['l-table']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local type,next,tostring,tonumber,ipairs,select=type,next,tostring,tonumber,ipairs,select
+local type,next,tostring,tonumber,select=type,next,tostring,tonumber,select
 local table,string=table,string
 local concat,sort,insert,remove=table.concat,table.sort,table.insert,table.remove
 local format,lower,dump=string.format,string.lower,string.dump
@@ -2010,7 +2011,7 @@ function table.tohash(t,value)
   local h={}
   if t then
     if value==nil then value=true end
-    for _,v in next,t do 
+    for _,v in next,t do
       h[v]=value
     end
   end
@@ -2018,7 +2019,7 @@ function table.tohash(t,value)
 end
 function table.fromhash(t)
   local hsh,h={},0
-  for k,v in next,t do 
+  for k,v in next,t do
     if v then
       h=h+1
       hsh[h]=k
@@ -6471,7 +6472,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 27407, stripped down to: 17116
+-- original size: 27638, stripped down to: 17116
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -8474,7 +8475,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12898, stripped down to: 9156
+-- original size: 12918, stripped down to: 9174
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -8483,7 +8484,7 @@ if not modules then modules={} end modules ['trac-set']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local type,next,tostring=type,next,tostring
+local type,next,tostring,tonumber=type,next,tostring,tonumber
 local concat=table.concat
 local format,find,lower,gsub,topattern=string.format,string.find,string.lower,string.gsub,string.topattern
 local is_boolean=string.is_boolean
@@ -14107,7 +14108,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-mis"] = package.loaded["lxml-mis"] or true
 
--- original size: 3684, stripped down to: 1957
+-- original size: 3574, stripped down to: 1863
 
 if not modules then modules={} end modules ['lxml-mis']={
   version=1.001,
@@ -14117,8 +14118,8 @@ if not modules then modules={} end modules ['lxml-mis']={
   license="see context related readme files"
 }
 local xml,lpeg,string=xml,lpeg,string
+local type=type
 local concat=table.concat
-local type,next,tonumber,tostring,setmetatable,loadstring=type,next,tonumber,tostring,setmetatable,loadstring
 local format,gsub,match=string.format,string.gsub,string.match
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local P,S,R,C,V,Cc,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.V,lpeg.Cc,lpeg.Cs
@@ -14176,7 +14177,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 30085, stripped down to: 21385
+-- original size: 30075, stripped down to: 21379
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -14196,7 +14197,7 @@ local type,next,setmetatable,getmetatable=type,next,setmetatable,getmetatable
 local insert,remove,fastcopy,concat=table.insert,table.remove,table.fastcopy,table.concat
 local gmatch,gsub,format,find,strip=string.gmatch,string.gsub,string.format,string.find,string.strip
 local utfbyte=utf.byte
-local lpegmatch=lpeg.match
+local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local striplinepatterns=utilities.strings.striplinepatterns
 local function report(what,pattern,c,e)
   report_xml("%s element %a, root %a, position %a, index %a, pattern %a",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
@@ -14627,13 +14628,12 @@ end
 function xml.badinclusions(e,sorted)
   return getinclusions("badinclusions",e,sorted)
 end
-local b_collapser=lpeg.patterns.b_collapser
-local m_collapser=lpeg.patterns.m_collapser
-local e_collapser=lpeg.patterns.e_collapser
-local b_stripper=lpeg.patterns.b_stripper
-local m_stripper=lpeg.patterns.m_stripper
-local e_stripper=lpeg.patterns.e_stripper
-local lpegmatch=lpeg.match
+local b_collapser=lpegpatterns.b_collapser
+local m_collapser=lpegpatterns.m_collapser
+local e_collapser=lpegpatterns.e_collapser
+local b_stripper=lpegpatterns.b_stripper
+local m_stripper=lpegpatterns.m_stripper
+local e_stripper=lpegpatterns.e_stripper
 local function stripelement(e,nolines,anywhere)
   local edt=e.dt
   if edt then
@@ -15053,7 +15053,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-xml"] = package.loaded["lxml-xml"] or true
 
--- original size: 10274, stripped down to: 7538
+-- original size: 10300, stripped down to: 7562
 
 if not modules then modules={} end modules ['lxml-xml']={
   version=1.001,
@@ -15062,6 +15062,7 @@ if not modules then modules={} end modules ['lxml-xml']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local tonumber=tonumber
 local concat=table.concat
 local find,lower,upper=string.find,string.lower,string.upper
 local xml=xml
@@ -19545,7 +19546,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6653, stripped down to: 5467
+-- original size: 6673, stripped down to: 5485
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -19554,7 +19555,7 @@ if not modules then modules={} end modules ['data-sch']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local load=load
+local load,tonumber=load,tonumber
 local gsub,concat,format=string.gsub,table.concat,string.format
 local finders,openers,loaders=resolvers.finders,resolvers.openers,resolvers.loaders
 local trace_schemes=false trackers.register("resolvers.schemes",function(v) trace_schemes=v end)
@@ -20631,8 +20632,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 848367
--- stripped bytes    : 306689
+-- original bytes    : 848548
+-- stripped bytes    : 306909
 
 -- end library merge
 

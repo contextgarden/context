@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['grph-con'] = {
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
+local tonumber          = tonumber
 local longtostring      = string.longtostring
 local formatters        = string.formatters
 local expandfilename    = dir.expandname

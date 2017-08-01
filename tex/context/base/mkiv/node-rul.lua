@@ -17,6 +17,9 @@ if not modules then modules = { } end modules ['node-rul'] = {
 -- fill s withcolor .5white ;
 -- draw boundingbox s withcolor yellow;
 
+local tonumber           = tonumber
+
+local context            = context
 local attributes         = attributes
 local nodes              = nodes
 local properties         = nodes.properties

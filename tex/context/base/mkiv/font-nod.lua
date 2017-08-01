@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['font-nod'] = {
 might become a runtime module instead. This module will be cleaned up!</p>
 --ldx]]--
 
-local tonumber, tostring, rawget = tonumber, tostring, rawget
 local utfchar = utf.char
 local concat, fastcopy = table.concat, table.fastcopy
 local match, rep = string.match, string.rep

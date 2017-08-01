@@ -13,7 +13,7 @@ end
 
 local lpeg = lpeg
 
-local type, next, tostring = type, next, tostring
+local type, next, tostring, tonumber = type, next, tostring, tonumber
 local concat = table.concat
 local utfsub = utf.sub
 local formatters = string.formatters

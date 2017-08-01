@@ -178,10 +178,8 @@ local function process(attribute,head,inheritance,default) -- one attribute
     local leader = nil
     while stack do
         local id = getid(stack)
-        if id == glyph_code then
-            check = true
-        elseif id == disc_code then
-            check = true -- no longer needed as we flatten replace
+        if id == glyph_code or id == disc_code then
+            check = true -- disc no longer needed as we flatten replace
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then
@@ -318,10 +316,8 @@ local function selective(attribute,head,inheritance,default) -- two attributes
     local leader = nil
     while stack do
         local id = getid(stack)
-        if id == glyph_code then
-            check = true
-        elseif id == disc_code then
-            check = true -- not needed when we flatten replace
+        if id == glyph_code or id == disc_code then
+            check = true -- disc no longer needed as we flatten replace
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then

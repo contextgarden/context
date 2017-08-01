@@ -33,6 +33,7 @@ millisecond it's not that much of a burden.
 
 local trace_prepfiles = false  trackers.register("system.prepfiles", function(v) trace_prepfiles = v end)
 
+local tostring = tostring
 local gsub, find, match, validstring = string.gsub, string.find, string.match, string.valid
 local concat = table.concat
 local xmltext = xml.text

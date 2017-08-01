@@ -8,9 +8,11 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 -- this is preliminary code, use insert_before etc
 
-local lpegmatch = lpeg.match
-
 local report_hyphenation = logs.reporter("languages","hyphenation")
+
+local tonumber        = tonumber
+
+local lpegmatch       = lpeg.match
 
 local tex             = tex
 local context         = context

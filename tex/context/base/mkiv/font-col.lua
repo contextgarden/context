@@ -13,7 +13,7 @@ local context, commands, trackers, logs = context, commands, trackers, logs
 local node, nodes, fonts, characters = node, nodes, fonts, characters
 local file, lpeg, table, string = file, lpeg, table, string
 
-local type, next, toboolean = type, next, toboolean
+local type, next, tonumber, toboolean = type, next, tonumber, toboolean
 local gmatch = string.gmatch
 local fastcopy = table.fastcopy
 

@@ -2914,45 +2914,42 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                         last = getnext(last)
                                     end
                                     n = n + 1
-                                else
-                                    if discfound then
-                                        notmatchreplace[discfound] = true
-                                        if notmatchpre[discfound] then
-                                            goto next
-                                        end
-                                    else
+                                elseif discfound then
+                                    notmatchreplace[discfound] = true
+                                    if notmatchpre[discfound] then
                                         goto next
+                                    else
+                                        break
                                     end
+                                else
+                                    goto next
+                                end
+                            elseif seq[n][char] then
+                                if n < l then
+                                    last = getnext(last)
+                                end
+                                n = n + 1
+                            elseif discfound then
+                                notmatchreplace[discfound] = true
+                                if notmatchpre[discfound] then
+                                    goto next
+                                else
                                     break
                                 end
                             else
-                                if seq[n][char] then
-                                    if n < l then
-                                        last = getnext(last)
-                                    end
-                                    n = n + 1
-                                else
-                                    if discfound then
-                                        notmatchreplace[discfound] = true
-                                        if notmatchpre[discfound] then
-                                            goto next
-                                        end
-                                    else
-                                        goto next
-                                    end
-                                    break
-                                end
+                                goto next
                             end
                         elseif char == false then
                             if discfound then
                                 notmatchreplace[discfound] = true
                                 if notmatchpre[discfound] then
                                     goto next
+                                else
+                                    break
                                 end
                             else
                                 goto next
                             end
-                            break
                         elseif id == disc_code then
                      -- elseif id == disc_code and (not discs or discs[last]) then
                             diskseen              = true
@@ -2994,8 +2991,9 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                         notmatchreplace[last] = true
                                         if notmatchpre[last] then
                                             goto next
+                                        else
+                                            break
                                         end
-                                        break
                                     end
                                 end
                                 -- why here again
@@ -3041,34 +3039,30 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                                 prev = getprev(prev)
                                             end
                                             n = n - 1
-                                        else
-                                            if discfound then
-                                                notmatchreplace[discfound] = true
-                                                if notmatchpost[discfound] then
-                                                    goto next
-                                                end
-                                            else
+                                        elseif discfound then
+                                            notmatchreplace[discfound] = true
+                                            if notmatchpost[discfound] then
                                                 goto next
+                                            else
+                                                break
                                             end
+                                        else
+                                            goto next
+                                        end
+                                    elseif seq[n][char] then
+                                        if n > 1 then
+                                            prev = getprev(prev)
+                                        end
+                                        n = n - 1
+                                    elseif discfound then
+                                        notmatchreplace[discfound] = true
+                                        if notmatchpost[discfound] then
+                                            goto next
+                                        else
                                             break
                                         end
                                     else
-                                        if seq[n][char] then
-                                            if n > 1 then
-                                                prev = getprev(prev)
-                                            end
-                                            n = n - 1
-                                        else
-                                            if discfound then
-                                                notmatchreplace[discfound] = true
-                                                if notmatchpost[discfound] then
-                                                    goto next
-                                                end
-                                            else
-                                                goto next
-                                            end
-                                            break
-                                        end
+                                        goto next
                                     end
                                 elseif char == false then
                                     if discfound then
@@ -3095,12 +3089,9 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                             while posttail do
                                                 if seq[n][getchar(posttail)] then
                                                     n = n - 1
-                                                    if posttail == post then
+                                                    if posttail == post or n < 1 then
                                                         break
                                                     else
-                                                        if n < 1 then
-                                                            break
-                                                        end
                                                         posttail = getprev(posttail)
                                                     end
                                                 else
@@ -3119,20 +3110,18 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                             while replacetail do
                                                 if seq[n][getchar(replacetail)] then
                                                     n = n - 1
-                                                    if replacetail == replace then
+                                                    if replacetail == replace or n < 1 then
                                                         break
                                                     else
-                                                        if n < 1 then
-                                                            break
-                                                        end
                                                         replacetail = getprev(replacetail)
                                                     end
                                                 else
                                                     notmatchreplace[prev] = true
                                                     if notmatchpost[prev] then
                                                         goto next
+                                                    else
+                                                        break
                                                     end
-                                                    break
                                                 end
                                             end
                                         end
@@ -3194,45 +3183,42 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                             current = getnext(current) -- was absent
                                         end
                                         n = n + 1
-                                    else
-                                        if discfound then
-                                            notmatchreplace[discfound] = true
-                                            if notmatchpre[discfound] then
-                                                goto next
-                                            end
+                                    elseif discfound then
+                                        notmatchreplace[discfound] = true
+                                        if notmatchpre[discfound] then
+                                            break
                                         else
                                             goto next
                                         end
+                                    else
+                                        goto next
+                                    end
+                                elseif seq[n][char] then
+                                    if n < s then -- new test
+                                        current = getnext(current) -- was absent
+                                    end
+                                    n = n + 1
+                                elseif discfound then
+                                    notmatchreplace[discfound] = true
+                                    if notmatchpre[discfound] then
+                                        goto next
+                                    else
                                         break
                                     end
                                 else
-                                    if seq[n][char] then
-                                        if n < s then -- new test
-                                            current = getnext(current) -- was absent
-                                        end
-                                        n = n + 1
-                                    else
-                                        if discfound then
-                                            notmatchreplace[discfound] = true
-                                            if notmatchpre[discfound] then
-                                                goto next
-                                            end
-                                        else
-                                            goto next
-                                        end
-                                        break
-                                    end
+                                    goto next
                                 end
                             elseif char == false then
                                 if discfound then
                                     notmatchreplace[discfound] = true
                                     if notmatchpre[discfound] then
                                         goto next
+                                    else
+                                        break
                                     end
                                 else
                                     goto next
                                 end
-                                break
                             elseif id == disc_code then
                          -- elseif id == disc_code and (not discs or discs[current]) then
                                 diskseen                 = true
@@ -3248,8 +3234,9 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                             n = n + 1
                                             if n > s then
                                                 break
+                                            else
+                                                pre = getnext(pre)
                                             end
-                                            pre = getnext(pre)
                                         else
                                             notmatchpre[current] = true
                                             break
@@ -3268,15 +3255,17 @@ local function optimized_handle_contextchain(head,start,dataset,sequence,context
                                             n = n + 1
                                             if n > s then
                                                 break
+                                            else
+                                                replace = getnext(replace)
                                             end
-                                            replace = getnext(replace)
                                         else
                                             notmatchreplace[current] = true
                                             -- different than others, needs checking if "not" is okay
                                             if not notmatchpre[current] then
                                                 goto next
+                                            else
+                                                break
                                             end
-                                            break
                                         end
                                     end
                                 else
@@ -3560,13 +3549,10 @@ local function kernrun(disc,k_run,font,attr,...)
             done = true
         end
         if prev then
---             local nest = getprev(pre)
             setlink(prev,pre)
             if k_run(prevmarks,"preinjections",pre,font,attr,...) then -- or prev?
                 done = true
             end
---             setprev(pre,nest)
---             setnext(prev,disc)
             setprev(pre)
             setlink(prev,disc)
         end
@@ -3582,7 +3568,6 @@ local function kernrun(disc,k_run,font,attr,...)
                 done = true
             end
             setnext(posttail)
---             setprev(next,disc)
             setlink(disc,next)
         end
     end
@@ -3592,13 +3577,10 @@ local function kernrun(disc,k_run,font,attr,...)
             done = true
         end
         if prev then
---             local nest = getprev(replace)
             setlink(prev,replace)
             if k_run(prevmarks,"replaceinjections",replace,font,attr,...) then -- getnext(replace))
                 done = true
             end
---             setprev(replace,nest)
---             setnext(prev,disc)
             setprev(replace)
             setlink(prev,disc)
         end
@@ -3608,7 +3590,6 @@ local function kernrun(disc,k_run,font,attr,...)
                 done = true
             end
             setnext(replacetail)
---             setprev(next,disc)
             setlink(disc,next)
         end
     elseif prev and next then
@@ -3698,7 +3679,6 @@ local function testrun(disc,t_run,c_run,...)
         if d_post > 0 or d_replace > 0 then
             local d = d_replace > d_post and d_replace or d_post
             local head = getnext(disc)
-         -- local tail = disc -- bug
             local tail = head
             for i=1,d do
                 tail = getnext(tail)
@@ -4657,12 +4637,9 @@ do
                             else
                                start = getnext(start)
                             end
-                        elseif char == false then
-                           -- whatever glyph
-                           start = getnext(start)
-                        elseif id == glue_code then
-                            -- happens often
-                           start = getnext(start)
+                        elseif char == false or id == glue_code then
+                            -- a different font|state or glue (happens often)
+                            start = getnext(start)
                         elseif id == disc_code then
                             if not discs or discs[start] == true then
                                 local ok
@@ -4733,11 +4710,8 @@ do
                             else
                                 start = getnext(start)
                             end
-                        elseif char == false then
-                           -- whatever glyph
-                            start = getnext(start)
-                        elseif id == glue_code then
-                            -- happens often
+                        elseif char == false or id == glue_code then
+                            -- a different font|state or glue (happens often)
                             start = getnext(start)
                         elseif id == disc_code then
                             if not discs or discs[start] == true then
@@ -4858,9 +4832,8 @@ do
                 else
                     start = getnext(start)
                 end
-            elseif char == false then
-                start = getnext(start)
-            elseif id == glue_code then
+            elseif char == false or id == glue_code then
+                -- a different font|state or glue (happens often)
                 start = getnext(start)
             elseif id == math_code then
                 start = getnext(end_of_math(start))

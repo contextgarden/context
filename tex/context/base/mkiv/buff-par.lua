@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['buff-par'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
 local insert, remove, find, gmatch, match = table.insert, table.remove, string.find, string.gmatch, string.match
 local fullstrip, formatters = string.fullstrip, string.formatters
 

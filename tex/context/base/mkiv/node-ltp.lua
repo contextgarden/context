@@ -134,6 +134,7 @@ if not modules then modules = { } end modules ['node-par'] = {
 
 ]]--
 
+local tonumber = tonumber
 local utfchar = utf.char
 local write, write_nl = texio.write, texio.write_nl
 local sub, formatters = string.sub, string.formatters

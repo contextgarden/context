@@ -88,6 +88,8 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 
 local insert, remove = table.insert, table.remove
 
+local context         = context
+
 local nodecodes       = nodes.nodecodes
 local glyph_code      = nodecodes.glyph
 local localpar_code   = nodecodes.localpar

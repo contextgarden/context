@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['syst-lua'] = {
 }
 
 local find, match = string.find, string.match
-local tonumber = tonumber
 local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpeg.tsplitat
 
 commands        = commands or { }

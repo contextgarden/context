@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['strc-reg'] = {
     license   = "see context related readme files"
 }
 
-local next, type = next, type
+local next, type, tonumber = next, type, tonumber
 local format, gmatch = string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
 local lpegmatch, P, C, Ct = lpeg.match, lpeg.P, lpeg.C, lpeg.Ct

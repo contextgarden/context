@@ -79,6 +79,8 @@ local type, rawset, tonumber, next = type, rawset, tonumber, next
 local P, R, S, Cg, Cf, Ct, Cc, C, Carg, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cc, lpeg.C, lpeg.Carg, lpeg.Cs
 local lpegmatch = lpeg.match
 
+local context    = context
+
 local concat     = table.concat
 local insert     = table.insert
 local remove     = table.remove

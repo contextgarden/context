@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['typo-itc'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
 

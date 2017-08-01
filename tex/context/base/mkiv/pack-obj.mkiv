@@ -55,10 +55,10 @@
 
 % todo formmargin per obj
 
-\unexpanded\def\setreferencedobject       #1#2{\begingroup\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
-\unexpanded\def\settightreferencedobject  #1#2{\begingroup\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
-\unexpanded\def\setunreferencedobject     #1#2{\begingroup\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
-\unexpanded\def\settightunreferencedobject#1#2{\begingroup\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
+\unexpanded\def\setreferencedobject       #1#2{\begingroup\synctexpause\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
+\unexpanded\def\settightreferencedobject  #1#2{\begingroup\synctexpause\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
+\unexpanded\def\setunreferencedobject     #1#2{\begingroup\synctexpause\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
+\unexpanded\def\settightunreferencedobject#1#2{\begingroup\synctexpause\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
 
 \let\setobject     \setreferencedobject
 \let\settightobject\settightreferencedobject
@@ -70,6 +70,7 @@
      \setbox\objectbox\box\nextbox
    \fi
    \clf_registerreferencedobject{#1}{#2}\objectbox
+   \synctexresume
    \endgroup}
 
 \unexpanded\def\pack_objects_set_nop#1#2%
@@ -79,6 +80,7 @@
      \setbox\objectbox\box\nextbox
    \fi
    \clf_registerobject{#1}{#2}\objectbox
+   \synctexresume
    \endgroup}
 
 \def\pack_objects_package
@@ -105,11 +107,13 @@
 
 \unexpanded\def\getobject#1#2%
   {\begingroup
+   \synctexpause
    \clf_restoreobject{#1}{#2}%
    \ifdim\objectoff>\zeropoint
      \pack_objects_repackage
    \fi
    \box\objectbox
+   \synctexresume
    \endgroup}
 
 %D If needed one can ask for the dimensions of an object with:

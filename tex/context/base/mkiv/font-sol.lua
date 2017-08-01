@@ -67,6 +67,7 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getdir             = nuts.getdir
 local getwidth           = nuts.getwidth
+local getboxglue         = nuts.getboxglue
 
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
@@ -724,9 +725,7 @@ variants[v_random] = function(words,list,best,width,badness,line,set,listdir)
 end
 
 local function show_quality(current,what,line)
-    local set    = getfield(current,"glue_set")
-    local sign   = getfield(current,"glue_sign")
-    local order  = getfield(current,"glue_order")
+    local set, order, sign = getboxglue(current)
     local amount = set * ((sign == 2 and -1) or 1)
     report_optimizers("line %a, category %a, amount %a, set %a, sign %a, how %a, order %a",line,what,amount,set,sign,how,order)
 end

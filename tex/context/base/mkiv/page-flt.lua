@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['page-flt'] = {
 -- floats -> managers.floats
 -- some functions are a tex/lua mix so we need a separation
 
+local tostring = tostring
 local insert, remove = table.insert, table.remove
 local find = string.find
 

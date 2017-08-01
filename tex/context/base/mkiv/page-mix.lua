@@ -24,6 +24,8 @@ local trace_detail = false  trackers.register("mixedcolumns.detail", function(v)
 
 local report_state = logs.reporter("mixed columns")
 
+local context             = context
+
 local nodecodes           = nodes.nodecodes
 
 local hlist_code          = nodecodes.hlist

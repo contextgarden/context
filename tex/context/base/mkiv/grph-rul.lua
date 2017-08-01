@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['grph-rul'] = {
     license   = "see context related readme files"
 }
 
+local tonumber       = tonumber
+
 local attributes     = attributes
 local nodes          = nodes
 local context        = context

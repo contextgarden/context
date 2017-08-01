@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-ocl'] = {
 
 -- todo : user list of colors
 
-local tostring, next, format = tostring, next, string.format
+local tostring, tonumber, next = tostring, tonumber, next
 local round, max = math.round, math.round
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex

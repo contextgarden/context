@@ -24,7 +24,7 @@ local type, next, setmetatable, getmetatable = type, next, setmetatable, getmeta
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
 local gmatch, gsub, format, find, strip = string.gmatch, string.gsub, string.format, string.find, string.strip
 local utfbyte = utf.byte
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local striplinepatterns = utilities.strings.striplinepatterns
 
 local function report(what,pattern,c,e)
@@ -509,15 +509,13 @@ function xml.badinclusions(e,sorted)
     return getinclusions("badinclusions",e,sorted)
 end
 
-local b_collapser  = lpeg.patterns.b_collapser
-local m_collapser  = lpeg.patterns.m_collapser
-local e_collapser  = lpeg.patterns.e_collapser
+local b_collapser  = lpegpatterns.b_collapser
+local m_collapser  = lpegpatterns.m_collapser
+local e_collapser  = lpegpatterns.e_collapser
 
-local b_stripper   = lpeg.patterns.b_stripper
-local m_stripper   = lpeg.patterns.m_stripper
-local e_stripper   = lpeg.patterns.e_stripper
-
-local lpegmatch    = lpeg.match
+local b_stripper   = lpegpatterns.b_stripper
+local m_stripper   = lpegpatterns.m_stripper
+local e_stripper   = lpegpatterns.e_stripper
 
 local function stripelement(e,nolines,anywhere)
     local edt = e.dt

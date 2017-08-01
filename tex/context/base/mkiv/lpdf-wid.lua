@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
 local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array

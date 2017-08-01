@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['lpdf-mov'] = {
 
 local format = string.format
 
-local lpdf = lpdf
+local lpdf               = lpdf
+local context            = context
 
 local nodeinjections     = backends.pdf.nodeinjections
 local pdfconstant        = lpdf.constant

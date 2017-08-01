@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['lpdf-fmt'] = {
 
 -- context --directives="backend.format=PDF/X-1a:2001" --trackers=backend.format yourfile
 
+local tonumber = tonumber
 local lower, gmatch, format, find = string.lower, string.gmatch, string.format, string.find
 local concat, serialize, sortedhash = table.concat, table.serialize, table.sortedhash
 

@@ -6,9 +6,8 @@ if not modules then modules = { } end modules ['char-tex'] = {
     license   = "see context related readme files"
 }
 
-
 local lpeg = lpeg
-local next, type = next, type
+local tonumber, next, type = tonumber, next, type
 local format, find, gmatch = string.format, string.find, string.gmatch
 local utfchar, utfbyte = utf.char, utf.byte
 local concat, tohash = table.concat, table.tohash

@@ -40,6 +40,80 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- as it made no sense. Also, collecting output in a table was not faster than
 -- directly piping to the file, probably because the amount is not that large. We
 -- keep some left-overs commented.
+--
+-- A significate reduction in file size can be realized when reusing the same
+-- values. Actually that triggered the current approach in ConTeXt. In the latest
+-- synctex parser vertical positions can be repeated by an "=" sign but for some
+-- reason only for that field. It's probably trivial to do that for all of "w h d v
+-- h" but it currently not the case so I'll delay that till all are supported. (We
+-- could benefit a lot from such a repetition scheme but not much from a "v" alone
+-- which -alas- indicates that synctex is still mostly a latex targeted story.)
+--
+-- It's kind of hard to fight the parser because it really wants to go to some file
+-- but maybe some day I can figure it out. Some untagged text (in the pdf) somehow
+-- gets seen as part of the last box. Anonymous content is simply not part of the
+-- concept. Using a dummy name doesn't help either as the editor gets a signal to
+-- open that dummy. Even an empty filename doesn't work.
+--
+-- We output really simple and compact code, like:
+--
+-- SyncTeX Version:1
+-- Input:1:e:/tmp/oeps.tex
+-- Input:2:c:/data/develop/context/sources/klein.tex
+-- Output:pdf
+-- Magnification:1000
+-- Unit:1
+-- X Offset:0
+-- Y Offset:0
+-- Content:
+-- !160
+-- {1
+-- h0,0:0,0,0,0,0
+-- v0,0:0,55380990:39158276,55380990,0
+-- h2,1:4661756,9176901:27969941,655360,327680
+-- h2,2:4661756,10125967:26048041,655360,327680
+-- h2,3:30962888,10125967:1668809,655360,327680
+-- h2,3:4661756,11075033:23142527,655360,327680
+-- h2,4:28046650,11075033:4585047,655360,327680
+-- h2,4:4661756,12024099:22913954,655360,327680
+-- h2,5:27908377,12024099:4723320,655360,327680
+-- h2,5:4661756,12973165:22918783,655360,327680
+-- h2,6:27884864,12973165:4746833,655360,327680
+-- h2,6:4661756,13922231:18320732,655360,327680
+-- )
+-- ]
+-- !533
+-- }1
+-- Input:3:c:/data/develop/context/sources/ward.tex
+-- !57
+-- {2
+-- h0,0:0,0,0,0,0
+-- v0,0:0,55380990:39158276,55380990,0
+-- h3,1:4661756,9176901:18813145,655360,327680
+-- h3,2:23713999,9176901:8917698,655360,327680
+-- h3,2:4661756,10125967:10512978,655360,327680
+-- h3,3:15457206,10125967:17174491,655360,327680
+-- h3,3:4661756,11075033:3571223,655360,327680
+-- h3,4:8459505,11075033:19885281,655360,327680
+-- h3,5:28571312,11075033:4060385,655360,327680
+-- h3,5:4661756,12024099:15344870,655360,327680
+-- )
+-- ]
+-- !441
+-- }2
+-- !8
+-- Postamble:
+-- Count:22
+-- !23
+-- Post scriptum:
+--
+-- But for some reason, when the pdf file has some extra content (like page numbers)
+-- the main document is consulted. Bah. It would be nice to have a mode for *only*
+-- looking at marked areas. It somehow works not but maybe depends on the parser.
+--
+-- Supporting reuseable objects makes not much sense as these are often graphics or
+-- ornamental. They can not have hyperlinks etc (at least not without some hackery
+-- which I'm not willing to do) so basically they are sort of useless for text.
 
 local type, rawset = type, rawset
 local concat = table.concat
@@ -110,17 +184,26 @@ local eol                = "\010"
 ----- f_glyph            = formatters["x%i,%i:%i,%i\010"]
 ----- f_kern             = formatters["k%i,%i:%i,%i:%i\010"]
 ----- f_rule             = formatters["r%i,%i:%i,%i:%i,%i,%i\010"]
------ f_hlist            = formatters["[%i,%i:%i,%i:%i,%i,%i\010"]
------ f_vlist            = formatters["(%i,%i:%i,%i:%i,%i,%i\010"]
+----- f_form             = formatters["f%i,%i,%i\010"]
 local z_hlist            = "[0,0:0,0:0,0,0\010"
 local z_vlist            = "(0,0:0,0:0,0,0\010"
+----- z_xform            = "<0,0:0,0,0\010" -- or so
 local s_hlist            = "]\010"
 local s_vlist            = ")\010"
-local f_hvoid            = formatters["h%i,%i:%i,%i:%i,%i,%i\010"]
------ f_vvoid            = formatters["v%i,%i:%i,%i:%i,%i,%i\010"]
+----- s_xform            = ">\010"
+local f_hlist_1          = formatters["h%i,%i:%i,%i:%i,%i,%i\010"]
+local f_hlist_2          = formatters["h%i,%i:%i,%s:%i,%i,%i\010"]
+local f_vlist_1          = formatters["v%i,%i:%i,%i:%i,%i,%i\010"]
+local f_vlist_2          = formatters["v%i,%i:%i,%s:%i,%i,%i\010"]
 
 local synctex            = luatex.synctex or { }
 luatex.synctex           = synctex
+
+-- status stuff
+
+local enabled = false
+local paused  = 0
+local used    = false
 
 -- the file name stuff
 
@@ -136,7 +219,6 @@ local blockedsuffixes    = {
     mkxi = true,
  -- lfg  = true,
 }
-
 
 local sttags = table.setmetatableindex(function(t,name)
     if blockedsuffixes[suffixonly(name)] then
@@ -164,6 +246,7 @@ function synctex.blockfilename(name)
 end
 
 function synctex.setfilename(name,line)
+if paused == 0 then
     if force_synctex_tag and name then
         force_synctex_tag(sttags[name])
         if line then
@@ -171,12 +254,15 @@ function synctex.setfilename(name,line)
         end
     end
 end
+end
 
 function synctex.resetfilename()
+if paused == 0 then
     if force_synctex_tag then
         force_synctex_tag(0)
         force_synctex_line(0)
     end
+end
 end
 
 -- the node stuff
@@ -186,10 +272,8 @@ local nofsheets  = 0
 local nofobjects = 0
 local last       = 0
 local filesdone  = 0
-local enabled    = false
 local tmpfile    = false
 local logfile    = false
-local used       = false
 
 local function writeanchor()
     local size = filehandle:seek("end")
@@ -281,21 +365,67 @@ end
 -- end
 --
 -- local function x_vlist(head,current,t,l,w,h,d)
---     return insert_before(head,current,new_latelua(function() doaction(f_vvoid,t,l,w,h,d) end))
+--     return insert_before(head,current,new_latelua(function() doaction(f_vlist_1,t,l,w,h,d) end))
 -- end
 --
 -- local function x_hlist(head,current,t,l,w,h,d)
---     return insert_before(head,current,new_latelua(function() doaction(f_hvoid,t,l,w,h,d) end))
+--     return insert_before(head,current,new_latelua(function() doaction(f_hlist_1,t,l,w,h,d) end))
+-- end
+--
+-- generic
+--
+-- local function doaction(t,l,w,h,d)
+--     local x, y = getpos()
+--     filehandle:write(f_hlist_1(t,l,x,tex.pageheight-y,w,h,d))
+--     nofobjects = nofobjects + 1
 -- end
 
-local function doaction(t,l,w,h,d)
-    local x, y = getpos()
-    filehandle:write(f_hvoid(t,l,x,tex.pageheight-y,w,h,d))
-    nofobjects = nofobjects + 1
-end
+local x_hlist  do
 
-local function x_hlist(head,current,t,l,w,h,d)
-    return insert_before(head,current,new_latelua(function() doaction(t,l,w,h,d) end))
+    local function doaction_1(t,l,w,h,d)
+        local x, y = getpos()
+        filehandle:write(f_hlist_1(t,l,x,tex.pageheight-y,w,h,d))
+        nofobjects = nofobjects + 1
+    end
+
+    -- local lastx, lasty, lastw, lasth, lastd
+    --
+    -- local function doaction_2(t,l,w,h,d)
+    --     local x, y = getpos()
+    --     y = tex.pageheight-y
+    --     filehandle:write(f_hlist_2(t,l,
+    --         x == lastx and "=" or x,
+    --         y == lasty and "=" or y,
+    --         w == lastw and "=" or w,
+    --         h == lasth and "=" or h,
+    --         d == lastd and "=" or d
+    --     ))
+    --     lastx, lasty, lastw, lasth, lastd = x, y, w, h, d
+    --     nofobjects = nofobjects + 1
+    -- end
+    --
+    -- but ... only y is supported:
+
+    local lasty = false
+
+    local function doaction_2(t,l,w,h,d)
+        local x, y = getpos()
+        y = tex.pageheight - y
+        filehandle:write(f_hlist_2(t,l,x,y == lasty and "=" or y,w,h,d))
+        lasty = y
+        nofobjects = nofobjects + 1
+    end
+
+    local doaction = doaction_1
+
+    x_hlist = function(head,current,t,l,w,h,d)
+        return insert_before(head,current,new_latelua(function() doaction(t,l,w,h,d) end))
+    end
+
+    directives.register("system.synctex.compression", function(v)
+        doaction = tonumber(v) == 2 and doaction_2 or doaction_1
+    end)
+
 end
 
 -- color is already handled so no colors
@@ -379,8 +509,6 @@ local function collect_min(head)
     end
     return head
 end
-
-collect = collect_max
 
 local function inject(parent,head,first,last,tag,line)
     local w, h, d = getrangedimensions(parent,first,getnext(last))
@@ -489,11 +617,17 @@ local function collect_max(head,parent)
     return head
 end
 
-function synctex.collect(head)
+collect = collect_max
+
+function synctex.collect(head,where)
     if enabled then
-        local h = tonut(head)
-        h = collect(h,h)
-        return tonode(h), true
+        if where == "object" then
+            return head, false
+        else
+            local h = tonut(head)
+            h = collect(h,h)
+            return tonode(h), true
+        end
     else
         return head, false
     end
@@ -507,7 +641,11 @@ function synctex.start()
         if flushpreamble() then
             writeanchor()
             filehandle:write("{",nofsheets,eol)
-            filehandle:write(z_hlist,z_vlist)
+            -- this seems to work:
+            local h = tex.pageheight
+            local w = tex.pagewidth
+            filehandle:write(z_hlist)
+            filehandle:write(f_vlist_1(0,0,0,h,w,h,0))
         end
     end
 end
@@ -527,6 +665,7 @@ local disablers = { }
 function synctex.registerenabler(f)
     enablers[#enablers+1] = f
 end
+
 function synctex.registerdisabler(f)
     disablers[#disablers+1] = f
 end
@@ -568,15 +707,17 @@ function synctex.finish()
 end
 
 function synctex.pause()
-    if enabled then
+    paused = paused + 1
+    if paused == 1 and enabled then
         set_synctex_mode(0)
     end
 end
 
 function synctex.resume()
-    if enabled then
+    if paused == 1 and enabled then
         set_synctex_mode(3)
     end
+    paused = paused - 1
 end
 
 -- not the best place

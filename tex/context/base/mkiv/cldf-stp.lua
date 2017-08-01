@@ -28,6 +28,8 @@ if not modules then modules = { } end modules ['cldf-stp'] = {
 --     ...
 -- end)
 
+local context = context
+
 local create  = coroutine.create
 local yield   = coroutine.yield
 local resume  = coroutine.resume

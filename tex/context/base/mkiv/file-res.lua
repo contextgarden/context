@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['file-res'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
 local format, find = string.format, string.find
 local isfile = lfs.isfile
 local is_qualified_path = file.is_qualified_path

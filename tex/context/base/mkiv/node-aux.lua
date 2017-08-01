@@ -10,7 +10,8 @@ if not modules then modules = { } end modules ['node-aux'] = {
 
 local type, tostring = type, tostring
 
-local nodes, node = nodes, node
+local nodes              = nodes
+local context            = context
 
 local utfvalues          = utf.values
 
@@ -39,6 +40,8 @@ local getboth            = nuts.getboth
 local getcomponents      = nuts.getcomponents
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
+local getboxglue         = nuts.getboxglue
+local setboxglue         = nuts.setboxglue
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -456,9 +459,8 @@ local function rehpack(n,width)
     local size = width or getwidth(n)
     local temp = hpack_nodes(head,size,"exactly")
     setwidth(n,size)
-    setfield(n,"glue_set",  getfield(temp,"glue_set"))
-    setfield(n,"glue_sign", getfield(temp,"glue_sign"))
-    setfield(n,"glue_order",getfield(temp,"glue_order"))
+    local set, order, sign = getboxglue(temp)
+    setboxglue(n,set,order,sign)
     setlist(temp)
     flush_node(temp)
     return n

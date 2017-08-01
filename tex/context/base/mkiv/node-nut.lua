@@ -306,6 +306,8 @@ nuts.effective_glue        = direct.effective_glue
 
 nuts.getglue               = direct.getglue
 nuts.setglue               = direct.setglue
+nuts.getboxglue            = direct.getglue
+nuts.setboxglue            = direct.setglue
 
 nuts.getdisc               = direct.getdisc
 nuts.setdisc               = direct.setdisc
@@ -945,3 +947,21 @@ if not nuts.unprotect_glyph then
 
 end
 
+if LUATEXFUNCTIONALITY < 6384 then
+
+    local getfield = nuts.getfield
+
+    function nuts.getboxglue(n,glue_set,glue_order,glue_sign)
+        return
+            getfield(n,"glue_set"),
+            getfield(n,"glue_order"),
+            getfield(h,"glue_sign")
+    end
+
+    function nuts.setboxglue(n,glue_set,glue_order,glue_sign)
+        setfield(n,"glue_set",  glue_set   or 0)
+        setfield(n,"glue_order",glue_order or 0)
+        setfield(h,"glue_sign", glue_sign  or 0)
+    end
+
+end

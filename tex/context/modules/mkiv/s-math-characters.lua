@@ -73,10 +73,11 @@ function moduledata.math.characters.showlist(specification)
         sorted = table.sortedkeys(characters)
     end
     if virtual then
-        for k, v in ipairs(tfmdata.fonts) do
-            local id = v.id
+        local fonts = tfmdata.fonts
+        for i=1,#fonts do
+            local id = fonts[i].id
             local name = fontdata[id].properties.name
-            names[k] = (name and file.basename(name)) or id
+            names[i] = (name and file.basename(name)) or id
         end
     end
     if check then

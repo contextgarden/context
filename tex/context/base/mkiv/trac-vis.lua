@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['trac-vis'] = {
 }
 
 local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
-local type = type
+local type, tonumber = type, tonumber
 local gmatch = string.gmatch
 local formatters = string.formatters
 local compactfloat = number.compactfloat
@@ -36,7 +36,7 @@ local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
 
-local setfield            = nuts.setfield
+----- setfield            = nuts.setfield
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
 local setdisc             = nuts.setdisc
@@ -368,7 +368,7 @@ local c_ligature        = "trace:s"
 local c_white           = "trace:w"
 local c_math            = "trace:r"
 local c_origin          = "trace:o"
-local c_discretionary   = "trace:o"
+local c_discretionary   = "trace:d"
 local c_expansion       = "trace:o"
 
 local c_positive_d      = "trace:db"
@@ -383,7 +383,7 @@ local c_ligature_d      = "trace:ds"
 local c_white_d         = "trace:dw"
 local c_math_d          = "trace:dr"
 local c_origin_d        = "trace:do"
-local c_discretionary_d = "trace:do"
+local c_discretionary_d = "trace:dd"
 local c_expansion_d     = "trace:do"
 
 local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
@@ -976,11 +976,10 @@ local ruledkern do
     local k_cache_h = caches["hkern"]
 
     ruledkern = function(head,current,vertical)
-        local kern = getkern(current)
-        local info = (vertical and k_cache_v or k_cache_h)[kern]
-        if info then
-            -- print("kern hit")
-        else
+        local kern  = getkern(current)
+        local cache = vertical and k_cache_v or k_cache_h
+        local info  = cache[kern]
+        if not info then
             local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*pt_factor)
             if kern > 0 then
                 info = sometext(amount,l_kern,c_positive)
@@ -989,7 +988,7 @@ local ruledkern do
             else
                 info = sometext(amount,l_kern,c_zero)
             end
-            (vertical and k_cache_v or k_cache_h)[kern] = info
+            cache[kern] = info
         end
         info = copy_list(info)
         if vertical then
@@ -1003,7 +1002,7 @@ end
 
 local ruleditalic do
 
-    local i_cache = caches["itatalic"]
+    local i_cache = caches["italic"]
 
     ruleditalic = function(head,current)
         local kern = getkern(current)
