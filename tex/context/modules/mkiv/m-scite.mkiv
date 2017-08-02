@@ -254,7 +254,7 @@ end
   {\dosingleargument\module_scite_file}
 
 \unexpanded\def\module_scite_file[#1]%
-  {\start
+  {\begingroup
    \ctxlua{buffers.scite.lexfile("#1")}%
    \installscitecommands
    \tt
@@ -265,13 +265,13 @@ end
    \getbuffer[lex]
    \stoplines
    \stopcontextcode
-   \stop}
+   \endgroup}
 
 \unexpanded\def\scitebuffer
   {\dodoubleargument\module_scite_buffer}
 
 \unexpanded\def\module_scite_buffer[#1][#2]%
-  {\start
+  {\begingroup
    \ifsecondargument
      \ctxlua{buffers.scite.lexbuffer("#2","#1")}%
    \else
@@ -285,7 +285,25 @@ end
    \startlines
    \getbuffer[lex]%
    \stoplines
-   \stop}
+   \endgroup}
+
+\unexpanded\def\sciteinlinebuffer
+  {\dodoubleargument\module_scite_buffer_inline}
+
+\unexpanded\def\module_scite_buffer[#1][#2]%
+  {\dontleavehmode
+   \begingroup
+   \ifsecondargument
+     \ctxlua{buffers.scite.lexbuffer("#2","#1")}%
+   \else
+     \ctxlua{buffers.scite.lexbuffer("#1","tex")}%
+   \fi
+   \installscitecommands
+   \tt
+   \dontcomplain
+   \setcatcodetable\ctxcatcodes % needed in xml
+   \getbuffer[lex]%
+   \endgroup}
 
 \protect
 

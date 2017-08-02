@@ -93,7 +93,17 @@ local insert_node_after  = nuts.insert_after
 
 local properties         = nodes.properties.data
 
-local fontkern           = nuts.pool and nuts.pool.fontkern -- context
+local fontkern           = nuts.pool and nuts.pool.fontkern   -- context
+local italickern         = nuts.pool and nuts.pool.italickern -- context
+
+local useitalickerns     = false
+
+directives.register("fonts.injections.useitalics", function(v)
+    if v then
+        report_injections("using italics for space kerns (tracing only)")
+    end
+    useitalickerns = v
+end)
 
 do if not fontkern then -- generic
 
@@ -102,6 +112,16 @@ do if not fontkern then -- generic
     local copy_node = nuts.copy_node
 
     fontkern = function(k)
+        local n = copy_node(thekern)
+        setkern(n,k)
+        return n
+    end
+
+    local thekern   = nuts.new("kern",3) -- italiccorrection
+    local setkern   = nuts.setkern
+    local copy_node = nuts.copy_node
+
+    italickern = function(k)
         local n = copy_node(thekern)
         setkern(n,k)
         return n
@@ -336,41 +356,21 @@ function injections.setkern(current,factor,rlmode,x,injection)
         if not injection then
             injection = "injections"
         end
-        if rlmode and rlmode < 0 then
-            -- was right kern but why ... we need to check this (kai)
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
+        if p then
+            local i = rawget(p,injection)
+            if i then
+                i.leftkern = dx + (i.leftkern or 0)
             else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
+                p[injection] = {
+                    leftkern = dx,
                 }
             end
         else
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
-            else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
-                }
-            end
+            properties[current] = {
+                [injection] = {
+                    leftkern = dx,
+                },
+            }
         end
         return dx, nofregisteredkerns
     else
@@ -390,40 +390,21 @@ function injections.setmove(current,factor,rlmode,x,injection)
         if not injection then
             injection = "injections"
         end
-        if rlmode and rlmode < 0 then
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
+        if p then
+            local i = rawget(p,injection)
+            if i then
+                i.leftkern = dx + (i.leftkern or 0)
             else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
+                p[injection] = {
+                    leftkern = dx,
                 }
             end
         else
-            if p then
-                local i = rawget(p,injection)
-                if i then
-                    i.leftkern = dx + (i.leftkern or 0)
-                else
-                    p[injection] = {
-                        leftkern = dx,
-                    }
-                end
-            else
-                properties[current] = {
-                    [injection] = {
-                        leftkern = dx,
-                    },
-                }
-            end
+            properties[current] = {
+                [injection] = {
+                    leftkern = dx,
+                },
+            }
         end
         return dx, nofregisteredkerns
     else
@@ -1560,6 +1541,7 @@ local function injectspaces(head)
     local threshold  = 0
     local leftkern   = false
     local rightkern  = false
+    local nuthead    = tonut(head)
 
     local function updatefont(font,trig)
         leftkerns  = trig.left
@@ -1569,8 +1551,7 @@ local function injectspaces(head)
         factor     = getthreshold(font)
     end
 
- -- for n in traverse_id(glue_code,tonut(head)) do
-    for n in traverse_char(tonut(head)) do
+    for n in traverse_id(glue_code,nuthead) do
         local prev, next = getspaceboth(n)
         local prevchar = prev and ischar(prev)
         local nextchar = next and ischar(next)
@@ -1602,18 +1583,38 @@ local function injectspaces(head)
             local old = getwidth(n)
             if old > threshold then
                 if rightkern then
-                    local new = old + (leftkern + rightkern) * factor
-                    if trace_spaces then
-                        report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
+                    if useitalickerns then
+                        local new = old + (leftkern + rightkern) * factor
+                        if trace_spaces then
+                            report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
+                        end
+                        setwidth(n,new)
+                    else
+                        local new = (leftkern + rightkern) * factor
+                        if trace_spaces then
+                            report_spaces("%C [%p + %p] %C",prevchar,old,new,nextchar)
+                        end
+                        local h = insert_node_before(nuthead,n,italickern(new))
+                        if h == nuthead then
+                            head = tonode(h)
+                            nuthead = h
+                        end
                     end
-                    setwidth(n,new)
-                    leftkern  = false
+                    leftkern = false
                 else
-                    local new = old + leftkern * factor
-                    if trace_spaces then
-                        report_spaces("%C [%p -> %p]",prevchar,old,new)
+                    if useitalickerns then
+                        local new = leftkern * factor
+                        if trace_spaces then
+                            report_spaces("%C [%p + %p]",prevchar,old,new)
+                        end
+                        insert_node_after(nuthead,n,italickern(new)) -- tricky with traverse but ok
+                    else
+                        local new = old + leftkern * factor
+                        if trace_spaces then
+                            report_spaces("%C [%p -> %p]",prevchar,old,new)
+                        end
+                        setwidth(n,new)
                     end
-                    setwidth(n,new)
                 end
             end
             leftkern  = false

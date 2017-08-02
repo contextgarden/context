@@ -282,6 +282,15 @@
 %D {\localnext} because we don't want clashes with \type
 %D {\next}.
 
+\let\next          \relax
+\let\nextnext      \relax
+\let\nextnextnext  \relax
+\let\nexttoken     \relax
+\let\charactertoken\relax
+
+\let\m_syst_action_yes\relax
+\let\m_syst_action_nop\relax
+
 \unexpanded\def\doifelsenextchar#1#2#3% #1 should not be {} !
   {\let\charactertoken=#1% = needed here
    \def\m_syst_action_yes{#2}%

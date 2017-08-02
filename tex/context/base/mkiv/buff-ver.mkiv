@@ -342,7 +342,7 @@
      method  {\p_buff_option}%
      compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)
      escape  {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
-   % nature  {inline}% is default
+   % nature  {\v!inline}% is default
    \relax
    \dostoptagged
    \buff_verbatim_right_of_type
@@ -356,7 +356,7 @@
      tab    {\typeparameter\c!tab}%
      method {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
      escape {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
-   % nature {inline}% is default
+   % nature {\v!inline}% is default
      method {nested}%
    \relax
    \dostoptagged
@@ -799,21 +799,6 @@
     \setuevalue{\e!type\currenttyping\v!buffer}{\buff_verbatim_type_buffer_class{\currenttyping}}%
 \to \everydefinetyping
 
-% \unexpanded\def\buff_verbatim_type_buffer[#1][#2]%
-%   {\begingroup
-%    \ifsecondargument
-%      \setuptyping[\v!buffer][#2]%
-%      \processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}% [name] [settings]
-%    \else\iffirstargument
-%      \doifelseassignment{#1}
-%        {\setuptyping[\v!buffer][#1]%
-%         \buff_verbatim_type_buffer_indeed\v!buffer\empty}% [settings]
-%        {\processcommalist[#1]{\buff_verbatim_type_buffer_indeed\v!buffer}}% [name]
-%    \else
-%      \buff_verbatim_type_buffer_indeed\v!buffer\empty% []
-%    \fi\fi
-%    \endgroup}
-
 \unexpanded\def\buff_verbatim_type_buffer[#1][#2]%
   {\ifsecondargument
      \setupcurrenttyping[#2]%
@@ -866,6 +851,27 @@
    \dostoptagged
    \stoppacked
    \typingparameter\c!after}
+
+\unexpanded\def\typeinlinebuffer
+  {\dontleavehmode
+   \begingroup
+   \let\buff_verbatim_type_buffer_indeed\buff_verbatim_type_buffer_indeed_inline
+   \let\setupcurrenttyping\setupcurrenttype % a terrible hack but it saves code
+   \let\currenttype\empty
+   \dodoubleempty\buff_verbatim_type_buffer}
+
+\unexpanded\def\buff_verbatim_type_buffer_indeed_inline#1#2% category name
+  {\edef\currenttype{#1}%
+   \buff_verbatim_initialize_type_one
+   \dostarttaggedchained\t!verbatim\currenttype\??type
+   \clf_typebuffer
+     name   {#2}%
+     strip  {\v!yes}%
+     regime {\currentregime}%
+     method {\p_buff_option}%
+     nature {\v!inline}%
+   \relax
+   \dostoptagged}
 
 % get     : before/after of buffer
 % typing  : before/after of typing

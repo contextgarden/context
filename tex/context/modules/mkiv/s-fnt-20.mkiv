@@ -123,19 +123,23 @@
 \setupcolors
   [state=start]
 
+\startsetups otftracker-steps
+    \doifsomething {\getvariable{otftracker}{figure}} {
+        \startlinecorrection
+            \externalfigure[\getvariable{otftracker}{figure}][maxwidth=\hsize,frame=on]
+        \stoplinecorrection
+    }
+    \showotfcomposition
+        {\getvariable{otftracker}{font}*\getvariable{otftracker}{features} at \getvariable{otftracker}{size}}
+        {\getvariable{otftracker}{direction}}
+        {\getvariable{otftracker}{sample}}
+\stopsetups
+
 \startsetups otftracker
     \setupbodyfont[tt,10pt]
     \starttext
         \normalexpanded{\startchapter[title={\getvariable{otftracker}{title}}]}
-            \doifsomething {\getvariable{otftracker}{figure}} {
-                \startlinecorrection
-                    \externalfigure[\getvariable{otftracker}{figure}][maxwidth=\hsize,frame=on]
-                \stoplinecorrection
-            }
-            \showotfcomposition
-                {\getvariable{otftracker}{font}*\getvariable{otftracker}{features} at \getvariable{otftracker}{size}}
-                {\getvariable{otftracker}{direction}}
-                {\getvariable{otftracker}{sample}}
+            \directsetup{otftracker-steps}
             \directsetup{otftracker-extra}
         \stopchapter
     \stoptext

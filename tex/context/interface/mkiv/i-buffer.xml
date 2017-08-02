@@ -164,7 +164,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getbufferdata" file="buff-ini.mkiv">  
+    <cd:command name="getbufferdata" file="buff-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-optional"/>
         </cd:arguments>
@@ -175,6 +175,15 @@
             <cd:resolve name="keyword-buffer-list-optional"/>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typeinlinebuffer" level="document" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-buffer-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

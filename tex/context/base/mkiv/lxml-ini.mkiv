@@ -147,6 +147,21 @@
   {\xmltobuffertextonly{#1}{.}{\xmltempbuffername}%
    \prettyprintbuffer\xmltempbuffername{#2}}
 
+\unexpanded\def\inlineprettyprintbuffer#1#2% only used here
+  {\ifdefined\sciteinlinebuffer
+     \sciteinlinebuffer[#2][#1]%
+   \else
+     \typeinlinebuffer[#1][\c!option=#2]%
+   \fi}
+
+\unexpanded\def\xmlinlineprettyprint#1#2%
+  {\xmltobufferverbose{#1}{.}{\xmltempbuffername}%
+   \inlineprettyprintbuffer\xmltempbuffername{#2}}
+
+\unexpanded\def\xmlinlineprettyprinttext#1#2%
+  {\xmltobuffertextonly{#1}{.}{\xmltempbuffername}%
+   \inlineprettyprintbuffer\xmltempbuffername{#2}}
+
 % kind of special:
 
 \let\xmlstartraw\clf_xmlstartraw

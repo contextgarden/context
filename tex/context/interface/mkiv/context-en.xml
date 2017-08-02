@@ -3016,6 +3016,16 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
+  <cd:command file="buff-ver.mkiv" level="document" name="typeinlinebuffer">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:buffer"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setuptype"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
   <cd:command file="buff-ver.mkiv" generated="yes" level="document" name="typebuffer" variant="instance">
    <cd:sequence>
     <cd:string value="type"/>

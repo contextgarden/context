@@ -358,7 +358,7 @@ local function reviver(data,n)
         else
             local model = colors.forcedmodel(v[1])
             if model == 2 then
-                local gray= graycolor(v[2])
+                local gray = graycolor(v[2])
                 d = { gray, gray, gray, gray }
             elseif model == 3 then
                 local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])

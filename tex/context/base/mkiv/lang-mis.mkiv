@@ -266,6 +266,9 @@
       \futurelet\nextnext\next}%
    \next}
 
+\let\discretionarytoken   \relax
+\let\textmodediscretionary\relax
+
 \unexpanded\def\activedododotextmodediscretionary#1#2%
   {\edef\discretionarytoken{\detokenize{#2}}%
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%

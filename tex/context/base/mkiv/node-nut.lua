@@ -950,6 +950,7 @@ end
 if LUATEXFUNCTIONALITY < 6384 then
 
     local getfield = nuts.getfield
+    local setfield = nuts.setfield
 
     function nuts.getboxglue(n,glue_set,glue_order,glue_sign)
         return

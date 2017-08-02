@@ -133,6 +133,10 @@
      \page_boxes_apply_negate#box%
    \fi\fi}
 
+\let\p_page_layouts_scale\relax
+\let\p_page_layouts_sx   \relax
+\let\p_page_layouts_sy   \relax
+
 \def\page_boxes_apply_scale#box%
   {\edef\p_page_layouts_scale{\layoutparameter\c!scale}%
    \ifdim\p_page_layouts_scale\points=\onepoint

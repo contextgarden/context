@@ -482,6 +482,8 @@
           \c!rightstyle\c!rightcolor\c!rightwidth{#one}}%
    \fi\fi\fi}
 
+\let\currentlayoutelement\relax
+
 \unexpanded\def\resettextcontent
   {\dotripleempty\page_layouts_reset_text_content}
 
@@ -501,6 +503,8 @@
 
 %D The placement of a whole line is handled by the next two macros. These are hooked
 %D into the general purpose token list registers mentioned before.
+
+\let\currentlayouttextline\relax
 
 \def\page_layouts_place_text_line_indeed#vertical#height%
   {\let\currentlayouttextline#vertical%

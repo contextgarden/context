@@ -2145,8 +2145,10 @@ local function mergesteps_1(lookup,strict)
     return nofsteps - 1
 end
 
-
 local function mergesteps_2(lookup,strict) -- pairs
+    -- this can be tricky as we can have a match on a mark with no marks skip flag
+    -- in which case with multiple steps a hit can prevent a next step while in the
+    -- merged case we can hit differently (a messy font then anyway)
     local steps    = lookup.steps
     local nofsteps = lookup.nofsteps
     local first    = steps[1]
@@ -2165,9 +2167,9 @@ local function mergesteps_2(lookup,strict) -- pairs
         for k, v in next, steps[i].coverage do
             local tk = target[k]
             if tk then
-                for k, v in next, v do
-                    if not tk[k] then
-                        tk[k] = v
+                for kk, vv in next, v do
+                    if tk[kk] == nil then
+                        tk[kk] = vv
                     end
                 end
             else
@@ -2176,7 +2178,8 @@ local function mergesteps_2(lookup,strict) -- pairs
         end
     end
     lookup.nofsteps = 1
-    lookup.steps = { first }
+    lookup.merged   = true
+    lookup.steps    = { first }
     return nofsteps - 1
 end
 
@@ -2216,6 +2219,7 @@ local function mergesteps_3(lookup,strict) -- marks
     first.baseclasses = baseclasses
     first.coverage    = coverage
     lookup.nofsteps   = 1
+    lookup.merged     = true
     lookup.steps      = { first }
     return nofsteps - 1
 end
@@ -2359,11 +2363,29 @@ local function checkpairs(lookup)
     return kerned
 end
 
-local compact_pairs   = true
-local compact_singles = true
+local compact_pairs       = true
+local compact_singles     = true
 
-directives.register("otf.compact.pairs",   function(v) compact_pairs   = v end)
-directives.register("otf.compact.singles", function(v) compact_singles = v end)
+local merge_pairs         = true
+local merge_singles       = true
+local merge_substitutions = true
+local merge_alternates    = true
+local merge_multiples     = true
+local merge_ligatures     = true
+local merge_cursives      = true
+local merge_marks         = true
+
+directives.register("otf.compact.pairs",       function(v) compact_pairs   = v end)
+directives.register("otf.compact.singles",     function(v) compact_singles = v end)
+
+directives.register("otf.merge.pairs",         function(v) merge_pairs         = v end)
+directives.register("otf.merge.singles",       function(v) merge_singles       = v end)
+directives.register("otf.merge.substitutions", function(v) merge_substitutions = v end)
+directives.register("otf.merge.alternates",    function(v) merge_alternates    = v end)
+directives.register("otf.merge.multiples",     function(v) merge_multiples     = v end)
+directives.register("otf.merge.ligatures",     function(v) merge_ligatures     = v end)
+directives.register("otf.merge.cursives",      function(v) merge_cursives      = v end)
+directives.register("otf.merge.marks",         function(v) merge_marks         = v end)
 
 function readers.compact(data)
     if not data or data.compacted then
@@ -2385,24 +2407,44 @@ function readers.compact(data)
                 allsteps = allsteps + nofsteps
                 if nofsteps > 1 then
                     local merg = merged
-                    if kind == "gsub_single" or kind == "gsub_alternate" or kind == "gsub_multiple" then
-                        merged = merged + mergesteps_1(lookup)
+                    if kind == "gsub_single" then
+                        if merge_substitutions then
+                            merged = merged + mergesteps_1(lookup)
+                        end
+                    elseif kind == "gsub_alternate" then
+                        if merge_alternates then
+                            merged = merged + mergesteps_1(lookup)
+                        end
+                    elseif kind == "gsub_multiple" then
+                        if merge_multiples then
+                            merged = merged + mergesteps_1(lookup)
+                        end
                     elseif kind == "gsub_ligature" then
-                        merged = merged + mergesteps_4(lookup)
+                        if merge_ligatures then
+                            merged = merged + mergesteps_4(lookup)
+                        end
                     elseif kind == "gpos_single" then
-                        merged = merged + mergesteps_1(lookup,true)
+                        if merge_singles then
+                            merged = merged + mergesteps_1(lookup,true)
+                        end
                         if compact_singles then
                             kerned = kerned + checkkerns(lookup)
                         end
                     elseif kind == "gpos_pair" then
-                        merged = merged + mergesteps_2(lookup,true)
+                        if merge_pairs then
+                            merged = merged + mergesteps_2(lookup,true)
+                        end
                         if compact_pairs then
                             kerned = kerned + checkpairs(lookup)
                         end
                     elseif kind == "gpos_cursive" then
-                        merged = merged + mergesteps_2(lookup)
+                        if merge_cursives then
+                            merged = merged + mergesteps_2(lookup)
+                        end
                     elseif kind == "gpos_mark2mark" or kind == "gpos_mark2base" or kind == "gpos_mark2ligature" then
-                        merged = merged + mergesteps_3(lookup)
+                        if merge_marks then
+                            merged = merged + mergesteps_3(lookup)
+                        end
                     end
                     if merg ~= merged then
                         lookup.merged = true
@@ -2455,8 +2497,30 @@ local function mergesteps(t,k)
     end
 end
 
+local function checkflags(sequence,resources)
+    if not sequence.skipsome then
+        local flags = sequence.flags
+        if flags then
+            local skipmark     = flags[1]
+            local skipligature = flags[2]
+            local skipbase     = flags[3]
+            local markclass    = sequence.markclass
+            local skipsome     = skipmark or skipligature or skipbase or markclass or false
+            if skipsome then
+                sequence.skipsome = setmetatableindex(function(t,k)
+                    local c = resources.classes[k] -- delayed table
+                    local v = c == skipmark or (markclass and c == "mark" and not markclass[k]) or c == skipligature or c == skipbase
+                    t[k] = v or false
+                    return v
+                end)
+            end
+        end
+    end
+end
+
 if fonts.helpers then
     fonts.helpers.mergesteps = mergesteps
+    fonts.helpers.checkflags = checkflags
 end
 
 function readers.expand(data)
@@ -2526,14 +2590,9 @@ function readers.expand(data)
                             sequence.markclass = markclasses[markclass]
                         end
                     end
-                    local flags = sequence.flags
-                    if flags then
-                        flags[5] = flags[1] ~= false  -- otherwise "mark"
-                                or flags[2] ~= false  -- otherwise "base"
-                                or flags[3] ~= false  -- otherwise "ligature"
-                                or sequence.markclass
-                                or false
-                    end
+
+                    checkflags(sequence,resources)
+
                     for i=1,nofsteps do
                         local step = steps[i]
                         local baseclasses = step.baseclasses

@@ -1586,7 +1586,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         next = getnext(current)
                         local tmp = getnext(next)
                         local changestop = next == stop
-                        setnext(next,nil)
+                        setnext(next)
                         setprop(current,a_state,s_pref)
                         current = processcharacters(current,font)
                         setprop(current,a_state,s_blwf)
