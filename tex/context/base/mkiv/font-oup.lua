@@ -2145,7 +2145,7 @@ local function mergesteps_1(lookup,strict)
     return nofsteps - 1
 end
 
-local function mergesteps_2(lookup,strict) -- pairs
+local function mergesteps_2(lookup) -- pairs
     -- this can be tricky as we can have a match on a mark with no marks skip flag
     -- in which case with multiple steps a hit can prevent a next step while in the
     -- merged case we can hit differently (a messy font then anyway)
@@ -2259,6 +2259,43 @@ local function mergesteps_4(lookup) -- ligatures
     end
     lookup.nofsteps = 1
     lookup.steps = { first }
+    return nofsteps - 1
+end
+
+-- so we assume only one cursive entry and exit and even then the first one seems
+-- to win anyway: no exit or entry quite the lookup match and then we take the
+-- next step; this means that we can as well merge them
+
+local function mergesteps_5(lookup) -- cursive
+    local steps    = lookup.steps
+    local nofsteps = lookup.nofsteps
+    local first    = steps[1]
+    report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
+    local target = first.coverage
+    local hash   = nil
+    for k, v in next, target do
+        hash = v[1]
+        break
+    end
+    for i=2,nofsteps do
+        for k, v in next, steps[i].coverage do
+            local tk = target[k]
+            if tk then
+                if not tk[2] then
+                    tk[2] = v[2]
+                end
+                if not tk[3] then
+                    tk[3] = v[3]
+                end
+            else
+                target[k] = v
+                v[1] = hash
+            end
+        end
+    end
+    lookup.nofsteps = 1
+    lookup.merged   = true
+    lookup.steps    = { first }
     return nofsteps - 1
 end
 
@@ -2432,14 +2469,14 @@ function readers.compact(data)
                         end
                     elseif kind == "gpos_pair" then
                         if merge_pairs then
-                            merged = merged + mergesteps_2(lookup,true)
+                            merged = merged + mergesteps_2(lookup)
                         end
                         if compact_pairs then
                             kerned = kerned + checkpairs(lookup)
                         end
                     elseif kind == "gpos_cursive" then
                         if merge_cursives then
-                            merged = merged + mergesteps_2(lookup)
+                            merged = merged + mergesteps_5(lookup)
                         end
                     elseif kind == "gpos_mark2mark" or kind == "gpos_mark2base" or kind == "gpos_mark2ligature" then
                         if merge_marks then
@@ -2497,8 +2534,15 @@ local function mergesteps(t,k)
     end
 end
 
+local function checkmerge(sequence)
+    local steps = sequence.steps
+    if steps then
+        setmetatableindex(steps,mergesteps)
+    end
+end
+
 local function checkflags(sequence,resources)
-    if not sequence.skipsome then
+    if not sequence.skiphash then
         local flags = sequence.flags
         if flags then
             local skipmark     = flags[1]
@@ -2507,20 +2551,38 @@ local function checkflags(sequence,resources)
             local markclass    = sequence.markclass
             local skipsome     = skipmark or skipligature or skipbase or markclass or false
             if skipsome then
-                sequence.skipsome = setmetatableindex(function(t,k)
+                sequence.skiphash = setmetatableindex(function(t,k)
                     local c = resources.classes[k] -- delayed table
                     local v = c == skipmark or (markclass and c == "mark" and not markclass[k]) or c == skipligature or c == skipbase
+-- local v = (skipmark     and c == "mark")
+--        or (markclass    and c == "mark" and not markclass[k])
+--        or (skipligature and c == "ligature")
+--        or (skipbase     and c == "base")
                     t[k] = v or false
                     return v
                 end)
+            else
+                sequence.skiphash = false
             end
+        else
+            sequence.skiphash = false
+        end
+    end
+end
+
+local function checksteps(sequence)
+    local steps = sequence.steps
+    if steps then
+        for i=1,#steps do
+            steps[i].index = i
         end
     end
 end
 
 if fonts.helpers then
-    fonts.helpers.mergesteps = mergesteps
+    fonts.helpers.checkmerge = checkmerge
     fonts.helpers.checkflags = checkflags
+    fonts.helpers.checksteps = checksteps -- has to happen last
 end
 
 function readers.expand(data)
@@ -2578,8 +2640,6 @@ function readers.expand(data)
                 if steps then
                     local nofsteps = sequence.nofsteps
 
-                    setmetatableindex(steps,mergesteps)
-
                     local kind = sequence.type
                     local markclass = sequence.markclass
                     if markclass then
@@ -2591,7 +2651,9 @@ function readers.expand(data)
                         end
                     end
 
+                    checkmerge(sequence)
                     checkflags(sequence,resources)
+                    checksteps(sequence)
 
                     for i=1,nofsteps do
                         local step = steps[i]

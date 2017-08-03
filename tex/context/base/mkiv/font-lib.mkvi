@@ -43,9 +43,21 @@
 \registerctxluafile{font-otl}{1.001}
 \registerctxluafile{font-oto}{1.001}
 \registerctxluafile{font-otj}{1.001}
-\registerctxluafile{font-oup}{1.001}
+
+\doifelsefile{font-oup-new.lua} {
+    \registerctxluafile{font-oup-new}{1.001}
+} {
+    \registerctxluafile{font-oup}{1.001}
+}
+
 \registerctxluafile{font-ota}{1.001}
-\registerctxluafile{font-ots}{1.001}
+
+\doifelsefile{font-ots-new.lua} {
+    \registerctxluafile{font-ots-new}{1.001}
+} {
+    \registerctxluafile{font-ots}{1.001}
+}
+
 \registerctxluafile{font-otd}{1.001}
 \registerctxluafile{font-otc}{1.001}
 \registerctxluafile{font-oth}{1.001}

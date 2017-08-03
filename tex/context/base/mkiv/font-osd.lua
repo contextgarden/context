@@ -461,7 +461,6 @@ local sequence_reorder_matras = {
     nofsteps  = 1,
     steps     = {
         {
-            osdstep  = true,
             coverage = pre_mark,
         }
     }
@@ -476,7 +475,6 @@ local sequence_reorder_reph = {
     nofsteps  = 1,
     steps     = {
         {
-            osdstep  = true,
             coverage = { },
         }
     }
@@ -491,7 +489,6 @@ local sequence_reorder_pre_base_reordering_consonants = {
     nofsteps  = 1,
     steps     = {
         {
-            osdstep  = true,
             coverage = { },
         }
     }
@@ -505,7 +502,7 @@ local sequence_remove_joiners = {
     type      = "devanagari_remove_joiners",
     nofsteps  = 1,
     steps     = {
-        {  osdstep  = true,
+        {
            coverage = both_joiners_true,
         },
     }
@@ -633,35 +630,22 @@ local function initializedevanagi(tfmdata)
                             if coverage then
                                 local reph = false
                                 if kind == "rphf" then
-                                 --
-                                 -- KE: I don't understand the rationale behind osdstep. The original if
-                                 --     statement checked whether coverage is contextual chaining.
-                                 --
-                                 -- HH: The osdstep signals that we deal with our own feature here, not
-                                 --     one in the font itself so it was just a safeguard against us overloading
-                                 --     something driven by the font.
-                                 --
-                                 -- if step.osdstep then -- selective
-                                    if true then -- always
-                                        -- rphf acts on consonant + halant
-                                        for k, v in next, ra do
-                                            local r = coverage[k]
-                                            if r then
-                                                local h = false
-                                                for k, v in next, halant do
-                                                    local h = r[k]
-                                                    if h then
-                                                        reph = h.ligature or false
-                                                        break
-                                                    end
-                                                end
-                                                if reph then
+                                    -- rphf acts on consonant + halant
+                                    for k, v in next, ra do
+                                        local r = coverage[k]
+                                        if r then
+                                            local h = false
+                                            for k, v in next, halant do
+                                                local h = r[k]
+                                                if h then
+                                                    reph = h.ligature or false
                                                     break
                                                 end
                                             end
+                                            if reph then
+                                                break
+                                            end
                                         end
-                                    else
-                                        -- rphf might be result of other handler/chainproc
                                     end
                                 end
                                 seqsubset[#seqsubset+1] = { kind, coverage, reph }
@@ -1289,7 +1273,11 @@ end
 -- 2  Try to find a target position the same way as for pre-base matra. If it is found, reorder pre-base consonant glyph.
 -- 3  If position is not found, reorder immediately before main consonant.
 
--- UNTESTED: NOT CALLED IN EXAMPLE
+-- Here we implement a few handlers:
+--
+--   function(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
+--       return head, start, done
+--   end
 
 function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
     local current   = start
@@ -1348,32 +1336,6 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
     end
     return head, start, true
 end
-
--- function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replacement)
---     local stop = getnext(start)
---     local font = getfont(start)
---     while stop do
---         local char = ischar(stop)
---         if char and (char == c_zwnj or char == c_zwj) then
---             stop = getnext(stop)
---         else
---             break
---         end
---     end
---     if stop then
---         setnext(getprev(stop))
---         setprev(stop,getprev(start))
---     end
---     local prev = getprev(start)
---     if prev then
---         setnext(prev,stop)
---     end
---     if head == start then
---     	head = stop
---     end
---     flush_list(start)
---     return head, stop, true
--- end
 
 function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replacement)
     local stop = getnext(start)

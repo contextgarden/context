@@ -21,8 +21,9 @@ local otf                 = fonts.handlers.otf
 local registerotffeature  = otf.features.register
 local setmetatableindex   = table.setmetatableindex
 
-local mergesteps          = fonts.helpers.mergesteps
+local checkmerge          = fonts.helpers.checkmerge
 local checkflags          = fonts.helpers.checkflags
+local checksteps          = fonts.helpers.checksteps
 
 local normalized = {
     substitution      = "substitution",
@@ -647,7 +648,8 @@ local function addfeature(data,feature,specifications)
                         end
                     end
                     --
-                    setmetatableindex(steps,mergesteps) -- speedup
+                    checkmerge(specification)
+                    checksteps(specification)
                     --
                     s[i] = {
                         [stepkey] = steps,
@@ -709,8 +711,6 @@ local function addfeature(data,feature,specifications)
                     end
                 end
                 --
-                setmetatableindex(steps,mergesteps) -- speedup
-                --
                 if featureflags[1] then featureflags[1] = "mark" end
                 if featureflags[2] then featureflags[2] = "ligature" end
                 if featureflags[3] then featureflags[3] = "base" end
@@ -725,8 +725,10 @@ local function addfeature(data,feature,specifications)
                     nofsteps  = nofsteps,
                     type      = steptype,
                 }
-                -- new
+                --
                 checkflags(sequence,resources)
+                checkmerge(sequence)
+                checksteps(sequence)
                 -- position | prepend | append
                 local first, last = getrange(sequences,category)
                 inject(specification,sequences,sequence,first,last,category,feature)

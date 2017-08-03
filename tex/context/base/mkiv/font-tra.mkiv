@@ -198,6 +198,41 @@
 %       \blank}%
 %    \endgroup}
 
+\newconstant\showotfstepsmode  \showotfstepsmode\plusfour
+
+\unexpanded\def\showotfsteps_n
+  {\blank
+   \begingroup
+     \advance\leftskip6\emwidth
+     \showotfstepmessages\recurselevel
+     \par
+   \endgroup
+   \blank
+   \dontleavehmode
+   \hbox to \hsize \bgroup
+     \hbox to 6\emwidth \bgroup
+       \bf
+       \ifnum\recurselevel=\scratchcounter result\else step \recurselevel\fi
+       \hss
+     \egroup
+     \vtop \bgroup
+       \hsize\dimexpr\hsize-6\emwidth\relax
+       \resetallattributes
+       \pardir TLT\textdir TLT\relax
+       \dontleavehmode
+       \ifnum\recurselevel=\scratchcounter
+         \ruledhbox{\box\otfcompositionbox}%
+       \else
+         \ruledhbox{\showotfstepglyphs\recurselevel}%
+       \fi
+       \quad
+       \showotfstepchars\recurselevel
+       \hfill
+       \par
+     \egroup
+   \egroup
+   \blank}
+
 \unexpanded\def\showotfsteps
   {\begingroup
    \veryraggedright
@@ -226,37 +261,24 @@
    \blank
    \scratchcounter\otfnoffeaturesteps\relax
    \dorecurse\scratchcounter
-     {\blank
-      \begingroup
-        \advance\leftskip6\emwidth
-        \showotfstepmessages\recurselevel
-        \par
-      \endgroup
-      \blank
-      \dontleavehmode
-      \hbox to \hsize \bgroup
-        \hbox to 6\emwidth \bgroup
-          \bf
-          \ifnum\recurselevel=\scratchcounter result\else step \recurselevel\fi
-          \hss
-        \egroup
-        \vtop \bgroup
-          \hsize\dimexpr\hsize-6\emwidth\relax
-          \resetallattributes
-          \pardir TLT\textdir TLT\relax
-          \dontleavehmode
-          \ifnum\recurselevel=\scratchcounter
-            \ruledhbox{\box\otfcompositionbox}%
-          \else
-            \ruledhbox{\showotfstepglyphs\recurselevel}%
-          \fi
-          \quad
-          \showotfstepchars\recurselevel
-          \hfill
-          \par
-        \egroup
-      \egroup
-      \blank}%
+     {\ifcase\showotfstepsmode
+      \or % 1 = only first
+        \ifnum\recurselevel=\plusone
+          \showotfsteps_n
+        \fi
+      \or % 2 = only last
+        \ifnum\recurselevel=\scratchcounter
+          \showotfsteps_n
+        \fi
+      \or % 3 = first and last
+        \ifnum\recurselevel=\plusone
+          \showotfsteps_n
+        \else\ifnum\recurselevel=\scratchcounter
+          \showotfsteps_n
+        \fi\fi
+      \else % everything
+        \showotfsteps_n
+      \fi}%
    \endgroup}
 
 \unexpanded\def\startotfsample
