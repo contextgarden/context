@@ -2553,11 +2553,10 @@ local function checkflags(sequence,resources)
             if skipsome then
                 sequence.skiphash = setmetatableindex(function(t,k)
                     local c = resources.classes[k] -- delayed table
-                    local v = c == skipmark or (markclass and c == "mark" and not markclass[k]) or c == skipligature or c == skipbase
--- local v = (skipmark     and c == "mark")
---        or (markclass    and c == "mark" and not markclass[k])
---        or (skipligature and c == "ligature")
---        or (skipbase     and c == "base")
+                    local v = c == skipmark
+                           or (markclass and c == "mark" and not markclass[k])
+                           or c == skipligature
+                           or c == skipbase
                     t[k] = v or false
                     return v
                 end)

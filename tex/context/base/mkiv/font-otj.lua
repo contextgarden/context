@@ -164,7 +164,6 @@ function injections.copy(target,source)
     local sp = rawget(properties,source)
     if sp then
         local tp = rawget(properties,target)
-     -- local si = rawget(sp,"injections")
         local si = sp.injections
         if si then
             si = fastcopy(si)
@@ -193,7 +192,6 @@ end
 function injections.setligaindex(n,index)
     local p = rawget(properties,n)
     if p then
-     -- local i = rawget(p,"injections")
         local i = p.injections
         if i then
             i.ligaindex = index
@@ -214,7 +212,6 @@ end
 function injections.getligaindex(n,default)
     local p = rawget(properties,n)
     if p then
-     -- local i = rawget(p,"injections")
         local i = p.injections
         if i then
             return i.ligaindex or default
@@ -241,7 +238,6 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     --
     local p = rawget(properties,start)
     if p then
-     -- local i = rawget(p,"injections")
         local i = p.injections
         if i then
             i.cursiveanchor = true
@@ -259,7 +255,6 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     end
     local p = rawget(properties,nxt)
     if p then
-     -- local i = rawget(p,"injections")
         local i = p.injections
         if i then
             i.cursivex = dx
@@ -300,8 +295,7 @@ function injections.setposition(current,factor,rlmode,r2lflag,spec,injection) --
             end
             local p = rawget(properties,current)
             if p then
-             -- local i = p[injection]
-                local i = rawget(p,injection)
+                local i = p[injection]
                 if i then
                     if leftkern ~= 0 then
                         i.leftkern  = (i.leftkern  or 0) + leftkern
@@ -357,7 +351,7 @@ function injections.setkern(current,factor,rlmode,x,injection)
             injection = "injections"
         end
         if p then
-            local i = rawget(p,injection)
+            local i = p[injection]
             if i then
                 i.leftkern = dx + (i.leftkern or 0)
             else
@@ -391,7 +385,7 @@ function injections.setmove(current,factor,rlmode,x,injection)
             injection = "injections"
         end
         if p then
-            local i = rawget(p,injection)
+            local i = p[injection]
             if i then
                 i.leftkern = dx + (i.leftkern or 0)
             else
@@ -421,7 +415,6 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk,checkmar
     local p = rawget(properties,start)
     -- hm, dejavu serif does a sloppy mark2mark before mark2base
     if p then
-     -- local i = rawget(p,"injections")
         local i = p.injections
         if i then
             if i.markmark then
@@ -475,7 +468,7 @@ local function show(n,what,nested,symbol)
     if n then
         local p = rawget(properties,n)
         if p then
-            local i = rawget(p,what)
+            local i = p[what]
             if i then
                 local leftkern  = i.leftkern  or 0
                 local rightkern = i.rightkern or 0
@@ -608,7 +601,6 @@ local function inject_kerns_only(head,where)
         if char then
             local p = rawget(properties,current)
             if p then
-             -- local i = rawget(p,"injections")
                 local i = p.injections
                 if i then
                     -- left|glyph|right
@@ -620,7 +612,6 @@ local function inject_kerns_only(head,where)
                 if prevdisc then
                     local done = false
                     if post then
-                     -- local i = rawget(p,"postinjections")
                         local i = p.postinjections
                         if i then
                             local leftkern = i.leftkern
@@ -631,7 +622,6 @@ local function inject_kerns_only(head,where)
                         end
                     end
                     if replace then
-                     -- local i = rawget(p,"replaceinjections")
                         local i = p.replaceinjections
                         if i then
                             local leftkern = i.leftkern
@@ -641,7 +631,6 @@ local function inject_kerns_only(head,where)
                             end
                         end
                     else
-                     -- local i = rawget(p,"emptyinjections")
                         local i = p.emptyinjections
                         if i then
                             -- glyph|disc|glyph (special case)
@@ -670,7 +659,6 @@ local function inject_kerns_only(head,where)
                 for n in traverse_char(pre) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"preinjections")
                         local i = p.injections or p.preinjections
                         if i then
                             local leftkern = i.leftkern
@@ -687,7 +675,6 @@ local function inject_kerns_only(head,where)
                 for n in traverse_char(post) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"postinjections")
                         local i = p.injections or p.postinjections
                         if i then
                             local leftkern = i.leftkern
@@ -704,7 +691,6 @@ local function inject_kerns_only(head,where)
                 for n in traverse_char(replace) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"replaceinjections")
                         local i = p.injections or p.replaceinjections
                         if i then
                             local leftkern = i.leftkern
@@ -762,7 +748,6 @@ local function inject_positions_only(head,where)
         if char then
             local p = rawget(properties,current)
             if p then
-             -- local i = rawget(p,"injections")
                 local i = p.injections
                 if i then
                     -- left|glyph|right
@@ -779,11 +764,9 @@ local function inject_positions_only(head,where)
                         insert_node_after(head,current,fontkern(rightkern))
                     end
                 else
-                 -- local i = rawget(p,"emptyinjections")
                     local i = p.emptyinjections
                     if i then
                         -- glyph|disc|glyph (special case)
--- is this okay?
                         local rightkern = i.rightkern
                         if rightkern and rightkern ~= 0 then
                             if next and getid(next) == disc_code then
@@ -799,7 +782,6 @@ local function inject_positions_only(head,where)
                 if prevdisc then
                     local done = false
                     if post then
-                     -- local i = rawget(p,"postinjections")
                         local i = p.postinjections
                         if i then
                             local leftkern = i.leftkern
@@ -810,7 +792,6 @@ local function inject_positions_only(head,where)
                         end
                     end
                     if replace then
-                     -- local i = rawget(p,"replaceinjections")
                         local i = p.replaceinjections
                         if i then
                             local leftkern = i.leftkern
@@ -847,7 +828,6 @@ local function inject_positions_only(head,where)
                 for n in traverse_char(pre) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"preinjections")
                         local i = p.injections or p.preinjections
                         if i then
                             local yoffset = i.yoffset
@@ -873,7 +853,6 @@ local function inject_positions_only(head,where)
                 for n in traverse_char(post) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"postinjections")
                         local i = p.injections or p.postinjections
                         if i then
                             local yoffset = i.yoffset
@@ -899,7 +878,6 @@ local function inject_positions_only(head,where)
                 for n in traverse_char(replace) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"replaceinjections")
                         local i = p.injections or p.replaceinjections
                         if i then
                             local yoffset = i.yoffset
@@ -924,7 +902,6 @@ local function inject_positions_only(head,where)
                 if pre then
                     local p = rawget(properties,prevglyph)
                     if p then
-                     -- local i = rawget(p,"preinjections")
                         local i = p.preinjections
                         if i then
                             -- glyph|pre glyphs
@@ -939,7 +916,6 @@ local function inject_positions_only(head,where)
                 if replace then
                     local p = rawget(properties,prevglyph)
                     if p then
-                     -- local i = rawget(p,"replaceinjections")
                         local i = p.replaceinjections
                         if i then
                             -- glyph|replace glyphs
@@ -975,15 +951,6 @@ local function inject_positions_only(head,where)
     end
     return tonode(head), true
 end
-
--- local function showoffset(n,flag)
---     local x, y = getoffsets(n)
---     if x ~= 0 or y ~= 0 then
---         setcolor(n,flag and "darkred" or "darkgreen") -- maybe better grays
---     else
---         resetcolor(n)
---     end
--- end
 
 local function showoffset(n,flag)
     local x, y = getoffsets(n)
@@ -1031,7 +998,6 @@ local function inject_everything(head,where)
         local rightkern = nil
         local pp = rawget(properties,p)
         if pp then
-         -- pp = rawget(pp,"injections")
             pp = pp.injections
             if pp then
                 rightkern = pp.rightkern
@@ -1041,7 +1007,9 @@ local function inject_everything(head,where)
             if pn.markdir < 0 then
                 -- kern(w-x) glyph(p) kern(x) mark(n)
                 ox = px - pn.markx - rightkern
-             -- report_injections("r2l case 1: %p",ox)
+                if not pn.markmark then
+                    ox = ox + (pn.leftkern or 0)
+                end
             else
                 -- kern(x) glyph(p) kern(w-x) mark(n)
              -- ox = px - getwidth(p) + pn.markx - pp.leftkern
@@ -1050,31 +1018,28 @@ local function inject_everything(head,where)
                 -- pretty sure I've run into a case where it was needed so maybe
                 -- some day we need something more clever here.
                 --
+                -- maybe we need to apply both then
+                --
+                ox = px - pn.markx - rightkern -- seguiemj needs the rightkern
                 if false then
-                    -- a mark with kerning
+                    -- a mark with kerning (maybe husayni needs it )
                     local leftkern = pp.leftkern
                     if leftkern then
-                        ox = px - pn.markx - leftkern
-                    else
-                        ox = px - pn.markx
+                        ox = ox - leftkern
                     end
-                else
-                    ox = px - pn.markx - rightkern -- seguiemj needs the rightkern
                 end
             end
         else
             if pn.markdir < 0 then
                 ox = px - pn.markx
--- pair stuff: husayni needs it
-if not pn.markmark then -- check or not (no longer needed)
-    ox = ox + (pn.leftkern or 0)
-end
---
-             -- report_injections("r2l case 3: %p",ox)
+                if not pn.markmark then
+                    local leftkern = pn.leftkern
+                    if leftkern then
+                        ox = ox + leftkern -- husayni needs it
+                    end
+                end
             else
-             -- ox = px - getwidth(p) + pn.markx
                 ox = px - pn.markx
-             -- report_injections("l2r case 3: %p",ox)
             end
             if pn.checkmark then
                 local wn = getwidth(n) -- in arial marks have widths
@@ -1084,23 +1049,28 @@ end
                         report_injections("correcting non zero width mark %C",getchar(n))
                     end
                     -- -- bad: we should center
+                    --
                     -- pn.leftkern  = -wn
                     -- pn.rightkern = -wn
-                    -- -- we're too late anyway as kerns are already injected so
-                    -- -- we do it the ugly way (no checking if the previous is
-                    -- -- already a kern) .. maybe we should fix the font instead
-                    -- hm, no head ?
+                    --
+                    -- -- we're too late anyway as kerns are already injected so we do it the
+                    -- -- ugly way (no checking if the previous is already a kern) .. maybe we
+                    -- -- should fix the font instead
+                    --
+                    -- todo: head and check for prev / next kern
+                    --
                     insert_node_before(n,n,fontkern(-wn))
                     insert_node_after(n,n,fontkern(-wn))
                 end
             end
         end
         local oy = ny + py + pn.marky
--- pair stuff: husayni needs it
-if not pn.markmark then
-    oy = oy + (pn.yoffset or 0)
-end
---
+        if not pn.markmark then
+            local yoffset = pn.yoffset
+            if yoffset then
+                oy = oy + yoffset -- husayni needs it
+            end
+        end
         setoffsets(n,ox,oy)
         if trace_marks then
             showoffset(n,true)
@@ -1112,7 +1082,6 @@ end
         if char then
             local p = rawget(properties,current)
             if p then
-             -- local i = rawget(p,"injections")
                 local i = p.injections
                 if i then
                     local pm = i.markbasenode
@@ -1186,11 +1155,9 @@ end
                         end
                     end
                 else
-                 -- local i = rawget(p,"emptyinjections")
                     local i = p.emptyinjections
                     if i then
                         -- glyph|disc|glyph (special case)
-                        -- okay?
                         local rightkern = i.rightkern
                         if rightkern and rightkern ~= 0 then
                             if next and getid(next) == disc_code then
@@ -1207,7 +1174,6 @@ end
                     if p then
                         local done = false
                         if post then
-                         -- local i = rawget(p,"postinjections")
                             local i = p.postinjections
                             if i then
                                 local leftkern = i.leftkern
@@ -1218,7 +1184,6 @@ end
                             end
                         end
                         if replace then
-                         -- local i = rawget(p,"replaceinjections")
                             local i = p.replaceinjections
                             if i then
                                 local leftkern = i.leftkern
@@ -1228,7 +1193,6 @@ end
                                 end
                             end
                         else
-                         -- local i = rawget(p,"emptyinjections")
                             local i = p.emptyinjections
                             if i then
                                 local leftkern = i.leftkern
@@ -1269,7 +1233,6 @@ end
                 for n in traverse_char(pre) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"preinjections")
                         local i = p.injections or p.preinjections
                         if i then
                             local yoffset = i.yoffset
@@ -1301,7 +1264,6 @@ end
                 for n in traverse_char(post) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"postinjections")
                         local i = p.injections or p.postinjections
                         if i then
                             local yoffset = i.yoffset
@@ -1333,7 +1295,6 @@ end
                 for n in traverse_char(replace) do
                     local p = rawget(properties,n)
                     if p then
-                     -- local i = rawget(p,"injections") or rawget(p,"replaceinjections")
                         local i = p.injections or p.replaceinjections
                         if i then
                             local yoffset = i.yoffset
@@ -1364,7 +1325,6 @@ end
                 if pre then
                     local p = rawget(properties,prevglyph)
                     if p then
-                     -- local i = rawget(p,"preinjections")
                         local i = p.preinjections
                         if i then
                             -- glyph|pre glyphs
@@ -1379,7 +1339,6 @@ end
                 if replace then
                     local p = rawget(properties,prevglyph)
                     if p then
-                     -- local i = rawget(p,"replaceinjections")
                         local i = p.replaceinjections
                         if i then
                             -- glyph|replace glyphs
@@ -1421,7 +1380,6 @@ end
         for i=1,nofmarks do
             local m = marks[i]
             local p = rawget(properties,m)
-         -- local i = rawget(p,"injections")
             local i = p.injections
             local b = i.markbasenode
             processmark(b,m,i)

@@ -430,11 +430,10 @@ function nutpool.temp()
 end
 
 function nutpool.noad()         return copy_nut(noad)         end
-function nutpool.delimiter()    return copy_nut(delimiter)    end
+function nutpool.delimiter()    return copy_nut(delimiter)    end  nutpool.delim = nutpool.delimiter
 function nutpool.fence()        return copy_nut(fence)        end
 function nutpool.submlist()     return copy_nut(submlist)     end
 function nutpool.noad()         return copy_nut(noad)         end
-function nutpool.delimiter()    return copy_nut(delim)        end   nutpool.delim = nutpool.delimiter
 function nutpool.fence()        return copy_nut(fence)        end
 function nutpool.accent()       return copy_nut(accent)       end
 function nutpool.radical()      return copy_nut(radical)      end

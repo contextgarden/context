@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/03/17 21:46:44
+-- merge date  : 08/04/17 11:49:30
 
 do -- begin closure to overcome local limits and interference
 
@@ -19519,7 +19519,10 @@ local function checkflags(sequence,resources)
       if skipsome then
         sequence.skiphash=setmetatableindex(function(t,k)
           local c=resources.classes[k] 
-          local v=c==skipmark or (markclass and c=="mark" and not markclass[k]) or c==skipligature or c==skipbase
+          local v=c==skipmark
+              or (markclass and c=="mark" and not markclass[k])
+              or c==skipligature
+              or c==skipbase
           t[k]=v or false
           return v
         end)
@@ -21040,7 +21043,7 @@ function injections.setposition(current,factor,rlmode,r2lflag,spec,injection)
       end
       local p=rawget(properties,current)
       if p then
-        local i=rawget(p,injection)
+        local i=p[injection]
         if i then
           if leftkern~=0 then
             i.leftkern=(i.leftkern or 0)+leftkern
@@ -21091,7 +21094,7 @@ function injections.setkern(current,factor,rlmode,x,injection)
       injection="injections"
     end
     if p then
-      local i=rawget(p,injection)
+      local i=p[injection]
       if i then
         i.leftkern=dx+(i.leftkern or 0)
       else
@@ -21120,7 +21123,7 @@ function injections.setmove(current,factor,rlmode,x,injection)
       injection="injections"
     end
     if p then
-      local i=rawget(p,injection)
+      local i=p[injection]
       if i then
         i.leftkern=dx+(i.leftkern or 0)
       else
@@ -21197,7 +21200,7 @@ local function show(n,what,nested,symbol)
   if n then
     local p=rawget(properties,n)
     if p then
-      local i=rawget(p,what)
+      local i=p[what]
       if i then
         local leftkern=i.leftkern or 0
         local rightkern=i.rightkern or 0
@@ -21692,24 +21695,27 @@ local function inject_everything(head,where)
     if rightkern then 
       if pn.markdir<0 then
         ox=px-pn.markx-rightkern
+        if not pn.markmark then
+          ox=ox+(pn.leftkern or 0)
+        end
       else
+        ox=px-pn.markx-rightkern 
         if false then
           local leftkern=pp.leftkern
           if leftkern then
-            ox=px-pn.markx-leftkern
-          else
-            ox=px-pn.markx
+            ox=ox-leftkern
           end
-        else
-          ox=px-pn.markx-rightkern 
         end
       end
     else
       if pn.markdir<0 then
         ox=px-pn.markx
-if not pn.markmark then 
-  ox=ox+(pn.leftkern or 0)
-end
+        if not pn.markmark then
+          local leftkern=pn.leftkern
+          if leftkern then
+            ox=ox+leftkern 
+          end
+        end
       else
         ox=px-pn.markx
       end
@@ -21726,9 +21732,12 @@ end
       end
     end
     local oy=ny+py+pn.marky
-if not pn.markmark then
-  oy=oy+(pn.yoffset or 0)
-end
+    if not pn.markmark then
+      local yoffset=pn.yoffset
+      if yoffset then
+        oy=oy+yoffset 
+      end
+    end
     setoffsets(n,ox,oy)
     if trace_marks then
       showoffset(n,true)
@@ -22907,7 +22916,7 @@ local function markstoligature(head,start,stop,char)
     return head,base
   end
 end
-local function toligature(head,start,stop,char,dataset,sequence,markflag,discfound) 
+local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound) 
   if getattr(start,a_noligature)==1 then
     return head,start
   end
@@ -22931,7 +22940,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
   set_components(base,comp)
   setlink(prev,base,next)
   if not discfound then
-    local deletemarks=markflag~="mark"
+    local deletemarks=not skiphash
     local components=start
     local baseindex=0
     local componentindex=0
@@ -23008,7 +23017,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
   end
   return head,base
 end
-local function multiple_glyphs(head,start,multiple,ignoremarks,what)
+local function multiple_glyphs(head,start,multiple,skiphash,what) 
   local nofmultiples=#multiple
   if nofmultiples>0 then
     resetinjection(start)
@@ -23083,7 +23092,7 @@ function handlers.gsub_single(head,start,dataset,sequence,replacement)
   setchar(start,replacement)
   return head,start,true
 end
-function handlers.gsub_alternate(head,start,dataset,sequence,alternative,rlmode,skiphash)
+function handlers.gsub_alternate(head,start,dataset,sequence,alternative)
   local kind=dataset[4]
   local what=dataset[1]
   local value=what==true and tfmdata.shared.features[kind] or what
@@ -23105,7 +23114,7 @@ function handlers.gsub_multiple(head,start,dataset,sequence,multiple,rlmode,skip
   if trace_multiples then
     logprocess("%s: replacing %s by multiple %s",pref(dataset,sequence),gref(getchar(start)),gref(multiple))
   end
-  return multiple_glyphs(head,start,multiple,sequence.flags[1],dataset[1])
+  return multiple_glyphs(head,start,multiple,skiphash,dataset[1])
 end
 function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skiphash)
   local current=getnext(start)
@@ -23114,7 +23123,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
   end
   local stop=nil
   local startchar=getchar(start)
-  if marks[startchar] then
+  if skiphash and skiphash[startchar] then
     while current do
       local char=ischar(current,currentfont)
       if char then
@@ -23145,13 +23154,12 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
       end
     end
   else
-    local skipmark=sequence.flags[1]
     local discfound=false
     local lastdisc=nil
     while current do
       local char,id=ischar(current,currentfont)
       if char then
-        if skipmark and marks[char] then
+        if skiphash and skiphash[char] then
           current=getnext(current)
         else 
           local lg=ligature[char] 
@@ -23199,10 +23207,10 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
       if stop then
         if trace_ligatures then
           local stopchar=getchar(stop)
-          head,start=toligature(head,start,stop,lig,dataset,sequence,skipmark,discfound)
+          head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound)
           logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(lig))
         else
-          head,start=toligature(head,start,stop,lig,dataset,sequence,skipmark,discfound)
+          head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound)
         end
       else
         resetinjection(start)
@@ -23242,7 +23250,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
     while snext do
       local nextchar=ischar(snext,currentfont)
       if nextchar then
-        if marks[nextchar] and sequence.flags[1] then
+        if skiphash and skiphash[nextchar] then 
           prev=snext
           snext=getnext(snext)
         else
@@ -23513,17 +23521,30 @@ end
 local function reportmoresteps(dataset,sequence)
   logwarning("%s: more than 1 step",cref(dataset,sequence))
 end
-function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+local function getmapping(dataset,sequence,currentlookup)
   local steps=currentlookup.steps
   local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
-  end
   if nofsteps==0 then
     reportzerosteps(dataset,sequence)
+    currentlookup.mapping=false
+    return false
   else
-    local current=start
+    if nofsteps>1 then
+      reportmoresteps(dataset,sequence)
+    end
     local mapping=steps[1].coverage
+    currentlookup.mapping=mapping
+    currentlookup.format=steps[1].format
+    return mapping
+  end
+end
+function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
+  end
+  if mapping then
+    local current=start
     while current do
       local currentchar=ischar(current)
       if currentchar then
@@ -23551,44 +23572,16 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,r
   end
   return head,start,false
 end
-function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
-    local startchar=getchar(start)
-    local replacement=steps[1].coverage[startchar]
-    if not replacement or replacement=="" then
-      if trace_bugs then
-        logwarning("%s: no multiple for %s",cref(dataset,sequence),gref(startchar))
-      end
-    else
-      if trace_multiples then
-        logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
-      end
-      return multiple_glyphs(head,start,replacement,sequence.flags[1],dataset[1])
-    end
-  end
-  return head,start,false
-end
-function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlookup)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
-  end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local kind=dataset[4]
     local what=dataset[1]
     local value=what==true and tfmdata.shared.features[kind] or what 
     local current=start
-    local mapping=steps[1].coverage
     while current do
       local currentchar=ischar(current)
       if currentchar then
@@ -23619,17 +23612,35 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
   end
   return head,start,false
 end
-function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup,chainindex)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local startchar=getchar(start)
-    local ligatures=steps[1].coverage[startchar]
+    local replacement=mapping[startchar]
+    if not replacement or replacement=="" then
+      if trace_bugs then
+        logwarning("%s: no multiple for %s",cref(dataset,sequence),gref(startchar))
+      end
+    else
+      if trace_multiples then
+        logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
+      end
+      return multiple_glyphs(head,start,replacement,skiphash,dataset[1])
+    end
+  end
+  return head,start,false
+end
+function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
+  end
+  if mapping then
+    local startchar=getchar(start)
+    local ligatures=mapping[startchar]
     if not ligatures then
       if trace_bugs then
         logwarning("%s: no ligatures starting with %s",cref(dataset,sequence,chainindex),gref(startchar))
@@ -23639,7 +23650,6 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
       local discfound=false
       local last=stop
       local nofreplacements=1
-      local skipmark=currentlookup.flags[1] 
       while current do
         local id=getid(current)
         if id==disc_code then
@@ -23653,7 +23663,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
           end
         else
           local schar=getchar(current)
-          if skipmark and marks[schar] then
+          if skiphash and skiphash[schar] then
               current=getnext(current)
           else
             local lg=ligatures[schar]
@@ -23684,7 +23694,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
             logprocess("%s: replacing character %s upto %s by ligature %s case 4",cref(dataset,sequence,chainindex),gref(startchar),gref(getchar(stop)),gref(ligature))
           end
         end
-        head,start=toligature(head,start,stop,ligature,dataset,sequence,skipmark,discfound)
+        head,start=toligature(head,start,stop,ligature,dataset,sequence,skiphash,discfound)
         return head,start,true,nofreplacements,discfound
       elseif trace_bugs then
         if start==stop then
@@ -23698,20 +23708,15 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
   return head,start,false,0,false
 end
 function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local startchar=getchar(start)
-    local step=steps[1]
-    local kerns=step.coverage[startchar]
-    if not kerns then
-    else
-      local format=step.format
+    local kerns=mapping[startchar]
+    if kerns then
+      local format=currentlookup.format
       if format=="single" then
         local dx,dy,w,h=setposition(start,factor,rlmode,sequence.flags[4],kerns) 
         if trace_kerns then
@@ -23728,19 +23733,15 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
   return head,start,false
 end
 function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex) 
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local snext=getnext(start)
     if snext then
       local startchar=getchar(start)
-      local step=steps[1]
-      local kerns=step.coverage[startchar] 
+      local kerns=mapping[startchar] 
       if kerns then
         local prev=start
         while snext do
@@ -23748,7 +23749,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
           if not nextchar then
             break
           end
-          if marks[nextchar] and sequence.flags[1] then
+          if skiphash and skiphash[nextchar] then
             prev=snext
             snext=getnext(snext)
           else
@@ -23756,7 +23757,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
             if not krn then
               break
             end
-            local format=step.format
+            local format=currentlookup.format
             if format=="pair" then
               local a,b=krn[1],krn[2]
               if a==true then
@@ -23796,18 +23797,15 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
   end
   return head,start,false
 end
-function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local markchar=getchar(start)
     if marks[markchar] then
-      local markanchors=steps[1].coverage[markchar] 
+      local markanchors=mapping[markchar] 
       if markanchors then
         local base=getprev(start) 
         if base then
@@ -23863,18 +23861,15 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
   end
   return head,start,false
 end
-function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local markchar=getchar(start)
     if marks[markchar] then
-      local markanchors=steps[1].coverage[markchar] 
+      local markanchors=mapping[markchar] 
       if markanchors then
         local base=getprev(start) 
         if base then
@@ -23934,18 +23929,15 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
   end
   return head,start,false
 end
-function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local markchar=getchar(start)
     if marks[markchar] then
-      local markanchors=steps[1].coverage[markchar] 
+      local markanchors=mapping[markchar] 
       if markanchors then
         local base=getprev(start) 
         local slc=getligaindex(start)
@@ -23989,17 +23981,14 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
   end
   return head,start,false
 end
-function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash)
-  local steps=currentlookup.steps
-  local nofsteps=currentlookup.nofsteps
-  if nofsteps>1 then
-    reportmoresteps(dataset,sequence)
+function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  local mapping=currentlookup.mapping
+  if mapping==nil then
+    mapping=getmapping(dataset,sequence,currentlookup)
   end
-  if nofsteps==0 then
-    reportzerosteps(dataset,sequence)
-  else
+  if mapping then
     local startchar=getchar(start)
-    local exitanchors=steps[1].coverage[startchar] 
+    local exitanchors=mapping[startchar] 
     if exitanchors then
       if marks[startchar] then
         if trace_cursive then
@@ -24133,7 +24122,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
             local chainproc=chainprocs[chainkind]
             if chainproc then
               local ok,n
-              head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash)
+              head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainstep,rlmode,skiphash,i)
               if ok then
                 done=true
                 if n and n>1 and i+n>nofchainlookups then
@@ -24484,7 +24473,8 @@ local function chaintrac(head,start,dataset,sequence,rlmode,skiphash,ck,match)
   local last=ck[5]
   local char=getchar(start)
   logwarning("%s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a",
-    cref(dataset,sequence),rule,match and "matches" or "nomatch",gref(char),first-1,last-first+1,nofseq-last,lookuptype)
+    cref(dataset,sequence),rule,match and "matches" or "nomatch",
+    gref(char),first-1,last-first+1,nofseq-last,lookuptype)
 end
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,skiphash)
   local sweepnode=sweepnode

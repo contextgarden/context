@@ -39,21 +39,15 @@
    liga=yes,dlig=yes,rlig=yes,clig=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes]
 
-% \definefontfeature
-%   [otftracker-husayni]
-%   [analyze=yes,mode=node,
-%    language=dflt,script=arab,ccmp=yes,
-%    init=yes,medi=yes,fina=yes,isol=yes,
-%    calt=yes,
-%    mark=yes,mkmk=yes,kern=yes,curs=yes]
-
 \definefontfeature
-  [otftracker-husayni]
+  [otftracker-husayni-default]
   [analyze=yes,mode=node,
    language=dflt,script=arab,
    init=yes,medi=yes,fina=yes,
+   calt=yes,
    rlig=yes,
    ccmp=yes,
+   salt=yes,
    ss01=yes, % full Allah, Muhammad, Allahumma
    ss05=yes, % full Jiim stacking
    ss09=yes, % full Haa stacking
@@ -76,6 +70,10 @@
    ss40=yes, % diagonal entry
    ss41=yes, % initial alternates
    mark=yes,mkmk=yes,kern=yes,curs=yes]
+
+\definefontfeature
+  [otftracker-husayni]
+  [otftracker-husayni-default]
 
 \definefontfeature
   [otftracker-simplenaskhi]
@@ -143,6 +141,7 @@
             \directsetup{otftracker-steps}
             \directsetup{otftracker-extra}
         \stopchapter
+        \setvariables[otftracker][comment=]
     \stoptext
 \stopsetups
 
