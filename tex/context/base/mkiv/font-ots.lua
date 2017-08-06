@@ -169,6 +169,7 @@ registertracker("otf.substitutions", "otf.singles","otf.multiples","otf.alternat
 registertracker("otf.positions",     "otf.marks","otf.kerns","otf.cursive")
 registertracker("otf.actions",       "otf.substitutions","otf.positions")
 registertracker("otf.sample",        "otf.steps","otf.substitutions","otf.positions","otf.analyzing")
+registertracker("otf.sample.silent", "otf.steps=silent","otf.substitutions","otf.positions","otf.analyzing")
 
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode
@@ -305,6 +306,9 @@ local registermessage    = (tracers and tracers.steppers.message)  or function()
 local function logprocess(...)
     if trace_steps then
         registermessage(...)
+        if trace_steps == "silent" then
+            return
+        end
     end
     report_direct(...)
 end
@@ -1125,6 +1129,9 @@ local chainprocs = { }
 local function logprocess(...)
     if trace_steps then
         registermessage(...)
+        if trace_steps == "silent" then
+            return
+        end
     end
     report_subchain(...)
 end
@@ -1134,6 +1141,9 @@ local logwarning = report_subchain
 local function logprocess(...)
     if trace_steps then
         registermessage(...)
+        if trace_steps == "silent" then
+            return
+        end
     end
     report_chain(...)
 end
@@ -2785,6 +2795,9 @@ local resolved   = { } -- we only resolve a font,script,language pair once
 local function logprocess(...)
     if trace_steps then
         registermessage(...)
+        if trace_steps == "silent" then
+            return
+        end
     end
     report_process(...)
 end

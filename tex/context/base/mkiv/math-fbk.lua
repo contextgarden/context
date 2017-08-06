@@ -227,29 +227,9 @@ end
 
 local addextra = mathematics.extras.add
 
-addextra(0xFE350, {
-    category    = "sm",
-    description = "MATHEMATICAL DOUBLE ARROW LEFT END",
-    mathclass   = "relation",
-    mathname    = "ctxdoublearrowfillleftend",
-    unicodeslot = 0xFE350,
-} )
-
-addextra(0xFE351, {
-    category    = "sm",
-    description = "MATHEMATICAL DOUBLE ARROW MIDDLE PART",
-    mathclass   = "relation",
-    mathname    = "ctxdoublearrowfillmiddlepart",
-    unicodeslot = 0xFE351,
-} )
-
-addextra(0xFE352, {
-    category    = "sm",
-    description = "MATHEMATICAL DOUBLE ARROW RIGHT END",
-    mathclass   = "relation",
-    mathname    = "ctxdoublearrowfillrightend",
-    unicodeslot = 0xFE352,
-} )
+addextra(0xFE350) -- MATHEMATICAL DOUBLE ARROW LEFT END
+addextra(0xFE351) -- MATHEMATICAL DOUBLE ARROW MIDDLE PART
+addextra(0xFE352) -- MATHEMATICAL DOUBLE ARROW RIGHT END
 
 local push       = { "push" }
 local pop        = { "pop" }
@@ -481,17 +461,17 @@ local function smashed(data,unicode,swap,private)
     end
 end
 
-addextra(0xFE3DE, { description="EXTENSIBLE OF 0x03DE", unicodeslot=0xFE3DE, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
-addextra(0xFE3DC, { description="EXTENSIBLE OF 0x03DC", unicodeslot=0xFE3DC, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
-addextra(0xFE3B4, { description="EXTENSIBLE OF 0x03B4", unicodeslot=0xFE3B4, mathextensible = "r", mathstretch = "h", mathclass = "topaccent" } )
+addextra(0xFE3DE) -- EXTENSIBLE OF 0x03DE
+addextra(0xFE3DC) -- EXTENSIBLE OF 0x03DC
+addextra(0xFE3B4) -- EXTENSIBLE OF 0x03B4
 
 virtualcharacters[0xFE3DE] = function(data) return smashed(data,0x23DE,0x23DF,0xFE3DE) end
 virtualcharacters[0xFE3DC] = function(data) return smashed(data,0x23DC,0x23DD,0xFE3DC) end
 virtualcharacters[0xFE3B4] = function(data) return smashed(data,0x23B4,0x23B5,0xFE3B4) end
 
-addextra(0xFE3DF, { description="EXTENSIBLE OF 0x03DF", unicodeslot=0xFE3DF, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
-addextra(0xFE3DD, { description="EXTENSIBLE OF 0x03DD", unicodeslot=0xFE3DD, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
-addextra(0xFE3B5, { description="EXTENSIBLE OF 0x03B5", unicodeslot=0xFE3B5, mathextensible = "r", mathstretch = "h", mathclass = "botaccent" } )
+addextra(0xFE3DF) -- EXTENSIBLE OF 0x03DF
+addextra(0xFE3DD) -- EXTENSIBLE OF 0x03DD
+addextra(0xFE3B5) -- EXTENSIBLE OF 0x03B5
 
 virtualcharacters[0xFE3DF] = function(data) local c = data.target.characters[0x23DF] if c then c.unicode = 0x23DF return c end end
 virtualcharacters[0xFE3DD] = function(data) local c = data.target.characters[0x23DD] if c then c.unicode = 0x23DD return c end end
@@ -499,8 +479,8 @@ virtualcharacters[0xFE3B5] = function(data) local c = data.target.characters[0x2
 
 -- todo: add some more .. numbers might change
 
-addextra(0xFE302, { description="EXTENSIBLE OF 0x0302", unicodeslot=0xFE302, mathstretch = "h", mathclass = "topaccent" } )
-addextra(0xFE303, { description="EXTENSIBLE OF 0x0303", unicodeslot=0xFE303, mathstretch = "h", mathclass = "topaccent" } )
+addextra(0xFE302) -- EXTENSIBLE OF 0x0302
+addextra(0xFE303) -- EXTENSIBLE OF 0x0303
 
 local function smashed(data,unicode,private)
     local target = data.target
@@ -541,14 +521,14 @@ local function smashed(data,unicode,optional)
     end
 end
 
-addextra(0xFE932, { description = "SMASHED PRIME 0x02032", unicodeslot = 0xFE932 } )
-addextra(0xFE933, { description = "SMASHED PRIME 0x02033", unicodeslot = 0xFE933 } )
-addextra(0xFE934, { description = "SMASHED PRIME 0x02034", unicodeslot = 0xFE934 } )
-addextra(0xFE957, { description = "SMASHED PRIME 0x02057", unicodeslot = 0xFE957 } )
+addextra(0xFE932) -- SMASHED PRIME 0x02032
+addextra(0xFE933) -- SMASHED PRIME 0x02033
+addextra(0xFE934) -- SMASHED PRIME 0x02034
+addextra(0xFE957) -- SMASHED PRIME 0x02057
 
-addextra(0xFE935, { description = "SMASHED BACKWARD PRIME 0x02035", unicodeslot = 0xFE935 } )
-addextra(0xFE936, { description = "SMASHED BACKWARD PRIME 0x02036", unicodeslot = 0xFE936 } )
-addextra(0xFE937, { description = "SMASHED BACKWARD PRIME 0x02037", unicodeslot = 0xFE937 } )
+addextra(0xFE935) -- SMASHED BACKWARD PRIME 0x02035
+addextra(0xFE936) -- SMASHED BACKWARD PRIME 0x02036
+addextra(0xFE937) -- SMASHED BACKWARD PRIME 0x02037
 
 virtualcharacters[0xFE932] = function(data) return smashed(data,0x02032) end
 virtualcharacters[0xFE933] = function(data) return smashed(data,0x02033) end
@@ -593,7 +573,7 @@ utilities.sequencers.appendaction("aftercopyingcharacters", "system","mathematic
 
 -- actuarian (beware: xits has an ugly one)
 
-addextra(0xFE940, { category = "mn", description="SMALL ANNUITY SYMBOL", unicodeslot=0xFE940, mathclass="topaccent", mathname="smallactuarial" })
+addextra(0xFE940) -- SMALL ANNUITY SYMBOL
 
 local function actuarian(data)
     local characters = data.target.characters
@@ -620,3 +600,49 @@ end
 
 virtualcharacters[0x020E7] = actuarian -- checked
 virtualcharacters[0xFE940] = actuarian -- unchecked
+
+local function equals(data,unicode,snippet,advance,n) -- mathpair needs them
+    local characters = data.target.characters
+    local parameters = data.target.parameters
+    local basechar   = characters[snippet]
+    local advance    = advance * parameters.quad
+    return {
+        unicode   = unicode,
+        width     = n*basechar.width + (n-1)*advance,
+        commands  = {
+            { "char", snippet },
+            { "right", advance },
+            { "char", snippet },
+            n > 2 and { "right", advance } or nil,
+            n > 2 and { "char", snippet } or nil,
+        },
+    }
+end
+
+virtualcharacters[0x2A75] = function(data) return equals(data,0x2A75,0x003D, 1/5,2) end -- ==
+virtualcharacters[0x2A76] = function(data) return equals(data,0x2A76,0x003D, 1/5,3) end -- ===
+virtualcharacters[0x2980] = function(data) return equals(data,0x2980,0x007C,-1/8,3) end -- |||
+
+addextra(0xFE941) -- EXTREMELY IDENTICAL TO
+
+virtualcharacters[0xFE941] = function(data) -- this character is only needed for mathpairs
+    local characters = data.target.characters
+    local parameters = data.target.parameters
+    local basechar   = characters[0x003D]
+    local width      = basechar.width or 0
+    local height     = basechar.height or 0
+    local depth      = basechar.depth or 0
+    return {
+        unicode   = 0xFE941,
+        width     = width,
+        height    = height,         -- we cheat (no time now)
+        depth     = depth,          -- we cheat (no time now)
+        commands  = {
+            { "down", - height/2 }, -- sort of works
+            { "char", 0x003D },
+            { "right", -width },
+            { "down", height },     -- sort of works
+            { "char", 0x003D },
+        },
+    }
+end

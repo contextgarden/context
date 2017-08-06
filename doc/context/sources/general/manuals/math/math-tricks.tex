@@ -438,6 +438,50 @@ Or visualized:
 
 \stopsection
 
+\startsection[title=Combined characters]
+
+We have some magic built with respect to sequences of characters. Currently
+it is implemented as a recursive replacement of character pairs but eventually
+it might become more advanced. The original repertoire has been extended by
+some suggested by Aditya.
+
+\def\SampleRow#1#2%
+  {\NC \type{#1} \NC \type {#2} \NC $#2$ \NC \NR}
+
+\starttabulate[|l|c|c|]
+  \BC name \BC shortcut \BC rendering \NC \NR
+  \HL
+  \SampleRow {\doubleprime}        {''}
+  \SampleRow {\tripleprime}        {'''}
+  \SampleRow {\quadrupleprime}     {''''}
+  \SampleRow {\colonequals}        {:=}
+  \SampleRow {\equalscolon}        {=:}
+  \SampleRow {\le}                 {<=}
+  \SampleRow {\ge}                 {>=}
+  \SampleRow {\neq}                {!=}
+  \SampleRow {\ll}                 {<<}
+  \SampleRow {\gg}                 {>>}
+  \SampleRow {\lll}                {<<<}
+  \SampleRow {\ggg}                {>>>}
+  \SampleRow {\equiv}              {==}
+  \SampleRow {\eqequiv}            {===}
+  \SampleRow {\rightarrow}         {->}
+  \SampleRow {\leftarrow}          {<-}
+  \SampleRow {\leftrightarrow}     {<->}
+  \SampleRow {\Rightarrow}         {==>}
+  \SampleRow {\Leftarrow}          {<==}
+  \SampleRow {\Leftrightarrow}     {<=>}
+  \SampleRow {\Longleftarrow}      {<===}
+  \SampleRow {\Longleftrightarrow} {<==>}
+  \SampleRow {\eqeq}               { }
+  \SampleRow {\eqeqeq}             { }
+  \SampleRow {\Longrightarrow}     {===>}
+  \SampleRow {\doubleverticalbar}  {||}
+  \SampleRow {\tripleverticalbar}  {|||}
+\stoptabulate
+
+\stopsection
+
 \stopcomponent
 
 % \enabletrackers[math.makeup=boxes]

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/04/17 11:49:30
+-- merge date  : 08/06/17 16:12:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -22666,6 +22666,7 @@ registertracker("otf.substitutions","otf.singles","otf.multiples","otf.alternati
 registertracker("otf.positions","otf.marks","otf.kerns","otf.cursive")
 registertracker("otf.actions","otf.substitutions","otf.positions")
 registertracker("otf.sample","otf.steps","otf.substitutions","otf.positions","otf.analyzing")
+registertracker("otf.sample.silent","otf.steps=silent","otf.substitutions","otf.positions","otf.analyzing")
 local nuts=nodes.nuts
 local tonode=nuts.tonode
 local tonut=nuts.tonut
@@ -22765,6 +22766,9 @@ local registermessage=(tracers and tracers.steppers.message) or function() end
 local function logprocess(...)
   if trace_steps then
     registermessage(...)
+    if trace_steps=="silent" then
+      return
+    end
   end
   report_direct(...)
 end
@@ -23489,6 +23493,9 @@ local chainprocs={}
 local function logprocess(...)
   if trace_steps then
     registermessage(...)
+    if trace_steps=="silent" then
+      return
+    end
   end
   report_subchain(...)
 end
@@ -23496,6 +23503,9 @@ local logwarning=report_subchain
 local function logprocess(...)
   if trace_steps then
     registermessage(...)
+    if trace_steps=="silent" then
+      return
+    end
   end
   report_chain(...)
 end
@@ -24892,6 +24902,9 @@ local resolved={}
 local function logprocess(...)
   if trace_steps then
     registermessage(...)
+    if trace_steps=="silent" then
+      return
+    end
   end
   report_process(...)
 end

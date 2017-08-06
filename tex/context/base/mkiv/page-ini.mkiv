@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Initializations}
 
+\registerctxluafile{page-ini}{1.001}
+
 %D The \type {\processpage} command has become obsolete. It's original
 %D purpose was to flush only parts of a document but nowadays we have
 %D project structure and modes. This is just one of those very early
@@ -260,11 +262,19 @@
 % \appendtoks
 %     \ifvoid\thispageinsert\else\hbox{\smashedbox\thispageinsert}\fi
 % \to \everyshipout
-%
-% %D Idea:
-%
-% \definemarkedpage[nobackgrounds]
-% \markpage[nobackgrounds]
-% \doifmarkedpageelse{nobackgrounds}
+
+% not yet in i-* file
+
+\installcorenamespace{markedpage}
+
+\unexpanded\def\markpage
+  {\dodoubleempty\page_mark}
+
+\def\page_mark[#1][#2]%
+  {\clf_markpage{#1}{#2}}
+
+\unexpanded\def\doifelsemarkedpage#1%
+  {\clf_doifelsemarkedpage{#1}}
+
 
 \protect \endinput

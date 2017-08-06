@@ -27426,6 +27426,7 @@
    </cd:arguments>
   </cd:command>
  </cd:interface>
+ <cd:interface file="i-pagemarks.xml"/>
  <cd:interface file="i-pairedbox.xml">
   <cd:command file="pack-com.mkiv" level="style" name="definepairedbox">
    <cd:arguments>

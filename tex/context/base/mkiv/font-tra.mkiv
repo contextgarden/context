@@ -282,7 +282,7 @@
    \endgroup}
 
 \unexpanded\def\startotfsample
-  {\enabletrackers[*otf.sample]% beware, kind of global
+  {\enabletrackers[otf.sample.silent]% beware, kind of global
    \startotfcollecting
    \begingroup
    \veryraggedright
@@ -292,7 +292,7 @@
 \unexpanded\def\stopotfsample
   {\endgroup
    \stopotfcollecting
-   \disabletrackers[*otf.sample]% beware, kind of global: otf.sample
+   \disabletrackers[otf.sample]% beware, kind of global: otf.sample
    \showotfsteps
    \resetotfcollecting}
 

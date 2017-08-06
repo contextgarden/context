@@ -63,6 +63,20 @@ else
 end
 
 --[[ldx--
+Extending the table.
+--ldx]]--
+
+if context and not characters.private then
+
+    require("char-prv")
+
+    for unicode, d in next, characters.private do
+        data[unicode] = d
+    end
+
+end
+
+--[[ldx--
 <p>This converts a string (if given) into a number.</p>
 --ldx]]--
 

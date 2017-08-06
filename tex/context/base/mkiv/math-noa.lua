@@ -1516,20 +1516,23 @@ local collapse = { } processors.collapse = collapse
 
 local mathpairs = characters.mathpairs -- next will move to char-def
 
+-- I should redo this: ligatures but only when attribute. Adn then the prime anchoring will
+-- be the only one left. Then the mathpairs definitions might go from char-def to here.
+
 -- 0x02B9 modifier
 
-mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
-mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
-mathpairs[0x2034] = { [0x2032] = 0x2057 }                                       -- (tripleprime,prime)
+-- mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034, [0x2034] = 0x2057 } -- (prime,prime) (prime,doubleprime) (prime,tripleprime)
+-- mathpairs[0x2033] = { [0x2032] = 0x2034, [0x2033] = 0x2057 }                    -- (doubleprime,prime) (doubleprime,doubleprime)
+-- mathpairs[0x2034] = { [0x2032] = 0x2057 }                                       -- (tripleprime,prime)
 
-mathpairs[0x2035] = { [0x2035] = 0x2036, [0x2036] = 0x2037 }                    -- (reversedprime,reversedprime) (reversedprime,doublereversedprime)
-mathpairs[0x2036] = { [0x2035] = 0x2037 }                                       -- (doublereversedprime,reversedprime)
+-- mathpairs[0x2035] = { [0x2035] = 0x2036, [0x2036] = 0x2037 }                    -- (reversedprime,reversedprime) (reversedprime,doublereversedprime)
+-- mathpairs[0x2036] = { [0x2035] = 0x2037 }                                       -- (doublereversedprime,reversedprime)
 
-mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D }
-mathpairs[0x222C] = { [0x222B] = 0x222D }
+-- mathpairs[0x222B] = { [0x222B] = 0x222C, [0x222C] = 0x222D } -- integrals
+-- mathpairs[0x222C] = { [0x222B] = 0x222D }
 
-mathpairs[0x007C] = { [0x007C] = 0x2016, [0x2016] = 0x2980 } -- bar+bar=double bar+double=triple
-mathpairs[0x2016] = { [0x007C] = 0x2980, [0x02B9] = 0x2016 } -- double+bar=triple
+-- mathpairs[0x007C] = { [0x007C] = 0x2016, [0x2016] = 0x2980 } -- bar+bar=double bar+double=triple
+-- mathpairs[0x2016] = { [0x007C] = 0x2980, [0x02B9] = 0x2016 } -- double+bar=triple
 
 local movesub = {
     -- primes
@@ -1617,6 +1620,8 @@ local function movesubscript(parent,current_nucleus,current_char,new_char)
     end
 end
 
+-- this is not that efficient as we are actually doing kind of ligatures
+
 local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
     if parent then
         if validpair[getsubtype(parent)] then
@@ -1629,39 +1634,38 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                     local mathpair = mathpairs[current_char]
                     if mathpair then
                         local next_noad = getnext(parent)
-                        if next_noad and getid(next_noad) == math_noad then
-                            if validpair[getsubtype(next_noad)] then
-                                local next_nucleus = getnucleus(next_noad)
-                                if getid(next_nucleus) == math_char then
-                                    local next_char = getchar(next_nucleus)
-                                    local newchar   = mathpair[next_char]
-                                    if newchar then
-                                        local id         = getfont(current_nucleus)
-                                        local characters = fontcharacters[id]
-                                        if characters and characters[newchar] then
-                                            if trace_collapsing then
-                                                report_collapsing("%U + %U => %U",current_char,next_char,newchar)
-                                            end
-                                            setchar(current_nucleus,newchar)
-                                            local next_next_noad = getnext(next_noad)
-                                            if next_next_noad then
-                                                setlink(parent,next_next_noad)
-                                            else
-                                                setnext(parent)
-                                            end
-                                            local nsup = getsup(next_noad)
-                                            local nsub = getsub(next_noad)
-                                            if nsup then
-                                                setsup(parent,nsup)
-                                                setsup(next_noad)
-                                            end
-                                            if nsub then
-                                                setsub(parent,nsub)
-                                                setsub(next_noad)
-                                            end
-                                            flush_node(next_noad)
-                                            collapsepair(pointer,what,n,parent,true)
+                        if next_noad and getid(next_noad) == math_noad and validpair[getsubtype(next_noad)] then
+                            local next_nucleus = getnucleus(next_noad)
+                            if getid(next_nucleus) == math_char then
+                                local next_char = getchar(next_nucleus)
+                                local newchar   = mathpair[next_char]
+                                if newchar then
+                                    local id         = getfont(current_nucleus)
+                                    local characters = fontcharacters[id]
+                                    local replace    = characters and characters[newchar]
+                                    if replace then
+                                        if trace_collapsing then
+                                            report_collapsing("%U + %U => %U",current_char,next_char,newchar)
                                         end
+                                        setchar(current_nucleus,newchar)
+                                        local next_next_noad = getnext(next_noad)
+                                        if next_next_noad then
+                                            setlink(parent,next_next_noad)
+                                        else
+                                            setnext(parent)
+                                        end
+                                        local nsup = getsup(next_noad)
+                                        local nsub = getsub(next_noad)
+                                        if nsup then
+                                            setsup(parent,nsup)
+                                            setsup(next_noad)
+                                        end
+                                        if nsub then
+                                            setsub(parent,nsub)
+                                            setsub(next_noad)
+                                        end
+                                        flush_node(next_noad)
+                                        collapsepair(pointer,what,n,parent,true)
                                     end
                                 end
                             end

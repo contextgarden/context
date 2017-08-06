@@ -159,6 +159,7 @@
     <cd:interfacefile filename="i-pageselection.xml"/>
     <cd:interfacefile filename="i-pageshift.xml"/>
     <cd:interfacefile filename="i-pagestate.xml"/>
+    <cd:interfacefile filename="i-pagemarks.xml"/>
     <cd:interfacefile filename="i-pairedbox.xml"/>
     <cd:interfacefile filename="i-papersize.xml"/>
     <cd:interfacefile filename="i-paragraph.xml"/>
