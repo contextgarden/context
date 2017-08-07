@@ -55,6 +55,15 @@ characters = characters or { }
 --     unicodeslot = 0xFE305,
 --     accents     = { 0x023DE, 0x023DF },
 -- },
+--  [0xFE941]={
+--      category       = "sm",
+--      description    = "EXTREMELY IDENTICAL TO",
+--      mathclass      = "relation",
+--      mathextensible = "h",
+--      mathname       = "eqequiv",
+--      mathpair       = { 0x2261, 0x3D },
+--      unicodeslot    = 0xFE941,
+--  },
 
 characters.private={
  [0xFE302]={
@@ -190,15 +199,6 @@ characters.private={
   mathclass="topaccent",
   mathname="smallactuarial",
   unicodeslot=0xFE940,
- },
- [0xFE941]={
-  category="sm",
-  description="EXTREMELY IDENTICAL TO",
-  mathclass="relation",
-  mathextensible="h",
-  mathname="eqequiv",
-  mathpair={ 0x2261, 0x3D },
-  unicodeslot=0xFE941,
  },
  [0xFE957]={
   description="SMASHED PRIME 0x02057",

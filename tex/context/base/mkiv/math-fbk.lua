@@ -623,26 +623,26 @@ virtualcharacters[0x2A75] = function(data) return equals(data,0x2A75,0x003D, 1/5
 virtualcharacters[0x2A76] = function(data) return equals(data,0x2A76,0x003D, 1/5,3) end -- ===
 virtualcharacters[0x2980] = function(data) return equals(data,0x2980,0x007C,-1/8,3) end -- |||
 
-addextra(0xFE941) -- EXTREMELY IDENTICAL TO
-
-virtualcharacters[0xFE941] = function(data) -- this character is only needed for mathpairs
-    local characters = data.target.characters
-    local parameters = data.target.parameters
-    local basechar   = characters[0x003D]
-    local width      = basechar.width or 0
-    local height     = basechar.height or 0
-    local depth      = basechar.depth or 0
-    return {
-        unicode   = 0xFE941,
-        width     = width,
-        height    = height,         -- we cheat (no time now)
-        depth     = depth,          -- we cheat (no time now)
-        commands  = {
-            { "down", - height/2 }, -- sort of works
-            { "char", 0x003D },
-            { "right", -width },
-            { "down", height },     -- sort of works
-            { "char", 0x003D },
-        },
-    }
-end
+-- addextra(0xFE941) -- EXTREMELY IDENTICAL TO
+--
+-- virtualcharacters[0xFE941] = function(data) -- this character is only needed for mathpairs
+--     local characters = data.target.characters
+--     local parameters = data.target.parameters
+--     local basechar   = characters[0x003D]
+--     local width      = basechar.width or 0
+--     local height     = basechar.height or 0
+--     local depth      = basechar.depth or 0
+--     return {
+--         unicode   = 0xFE941,
+--         width     = width,
+--         height    = height,         -- we cheat (no time now)
+--         depth     = depth,          -- we cheat (no time now)
+--         commands  = {
+--             { "down", - height/2 }, -- sort of works
+--             { "char", 0x003D },
+--             { "right", -width },
+--             { "down", height },     -- sort of works
+--             { "char", 0x003D },
+--         },
+--     }
+-- end

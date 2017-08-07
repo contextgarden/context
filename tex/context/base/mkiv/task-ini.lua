@@ -100,6 +100,7 @@ appendaction("math",         "normalizers", "noads.handlers.families",  nil, "no
 
 appendaction("math",         "normalizers", "noads.handlers.render",    nil, "nohead")           -- always on
 appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead") -- * first-- always on
+appendaction("math",         "normalizers", "noads.handlers.fixscripts",nil, "nohead") -- * first-- always on
 appendaction("math",         "normalizers", "noads.handlers.domains",   nil, "nohead") -- * last -- disabled
 appendaction("math",         "normalizers", "noads.handlers.autofences",nil, "nohead")           -- disabled
 appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "nohead")           -- always on

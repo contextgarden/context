@@ -84,17 +84,17 @@ characters.decomposed = decomposed
 
 local graphemes = characters.graphemes
 local collapsed = characters.collapsed
-local mathpairs = characters.mathpairs
+local mathlists = characters.mathlists
 
 if not graphemes then
 
     graphemes = allocate()
     collapsed = allocate()
-    mathpairs = allocate()
+    mathlists = allocate()
 
     characters.graphemes = graphemes
     characters.collapsed = collapsed
-    characters.mathpairs = mathpairs
+    characters.mathlists = mathlists
 
     local function backtrack(v,last,target)
         local vs = v.specials
@@ -106,57 +106,60 @@ if not graphemes then
         end
     end
 
-    local function setpair(one,two,unicode,first,second,combination)
-        local mps = mathpairs[one]
-        if not mps then
-            mps = { [two] = unicode }
-            mathpairs[one] = mps
-        else
-            mps[two] = unicode
-        end
-        local mps = mathpairs[first]
-        if not mps then
-            mps = { [second] = combination }
-            mathpairs[first] = mps
-        else
-            mps[second] = combination
+    local function setlist(unicode,list,start)
+        if list[start] ~= 0x20 then
+            local t = mathlists
+            for i=start,#list do
+                local l = list[i]
+                local f = t[l]
+                if f then
+                    t = f
+                else
+                    f = { }
+                    t[l] = f
+                    t = f
+                end
+            end
+            t.ligature = unicode
         end
     end
 
     for unicode, v in next, data do
         local vs = v.specials
-        if vs and #vs == 3 and vs[1] == "char" then
-            --
-            local one, two = vs[2], vs[3]
-            local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
-            --
-            collapsed[first..second] = combination
-            backtrack(data[one],second,combination)
-            -- sort of obsolete:
-            local cgf = graphemes[first]
-            if not cgf then
-                cgf = { [second] = combination }
-                graphemes[first] = cgf
-            else
-                cgf[second] = combination
+        if vs then
+            local kind = vs[1]
+            local size = #vs
+            if kind == "char" and size == 3 then -- what if more than 3
+                --
+                local one, two = vs[2], vs[3]
+                local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
+                --
+                collapsed[first..second] = combination
+                backtrack(data[one],second,combination)
+                -- sort of obsolete:
+                local cgf = graphemes[first]
+                if not cgf then
+                    cgf = { [second] = combination }
+                    graphemes[first] = cgf
+                else
+                    cgf[second] = combination
+                end
+                --
             end
-            --
-            if v.mathclass or v.mathspec then
-                setpair(two,one,unicode,second,first,combination) -- watch order
+            if (kind == "char" or kind == "compat") and (size > 2) and (v.mathclass or v.mathspec) then
+                setlist(unicode,vs,2)
             end
         end
-        local mp = v.mathpair
-        if mp then
-            local one, two = mp[1], mp[2]
-            local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
-            setpair(one,two,unicode,first,second,combination)
+        local ml = v.mathlist
+        if ml then
+            setlist(unicode,ml,1)
         end
     end
 
     if storage then
         storage.register("characters/graphemes", characters.graphemes, "characters.graphemes")
         storage.register("characters/collapsed", characters.collapsed, "characters.collapsed")
-        storage.register("characters/mathpairs", characters.mathpairs, "characters.mathpairs")
+        storage.register("characters/mathlists", characters.mathlists, "characters.mathlists")
     end
 
 end
