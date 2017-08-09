@@ -551,9 +551,9 @@
 
 \startsetups [btx:aps:list:page-or-pages]
     \ifx\currentbtxlastpage\empty
-        \btxlabeltext{p}.
+        \btxlabeltext{p}
     \else
-        \btxlabeltext{pp}.
+        \btxlabeltext{pp}
     \fi
     \btxnbsp
 \stopsetups
@@ -1040,8 +1040,16 @@
         \btxflush{organization}
         \btxcomma
     }
-    \btxdoif {howpublished} {
+    \btxdoifelse {howpublished} {
         \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{howpublished}}
+    } {
+        \btxdoifelse {doi} {
+            \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{doi}}
+        } {
+            \btxdoif {url} {
+                \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{url}}
+            }
+        }
     }
     \btxleftparenthesis
     \texdefinition{btx:aps:year}

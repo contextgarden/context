@@ -129,8 +129,8 @@ sections.tobesaved  = tobesaved
 --
 -- job.register('structures.sections.collected', tobesaved, initializer)
 
-sections.registered = sections.registered or allocate()
-local registered    = sections.registered
+local registered    = sections.registered or allocate()
+sections.registered = registered
 
 storage.register("structures/sections/registered", registered, "structures.sections.registered")
 
@@ -411,11 +411,6 @@ function sections.setentry(given)
             v[2](k)
         end
     end
---     local n = { }
---     for i=1,newdepth do
---         n[i] = numbers[i]
---     end
---     numberdata.numbers = n
     numberdata.numbers = { unpack(numbers,1,newdepth) }
     if not numberdata.block then
         numberdata.block = getcurrentblock() -- also in references
@@ -447,8 +442,9 @@ function sections.reportstructure()
         local d = status[depth]
         local o = concat(ownnumbers,".",1,depth)
         local n = (numbers and concat(numbers,".",1,min(depth,#numbers))) or 0
-        local l = d.titledata.title or ""
-        local t = (l ~= "" and l) or d.titledata.title or "[no title]"
+        local t = d.titledata.title
+        local l = t or ""
+        local t = (l ~= "" and l) or t or "[no title]"
         local m = d.metadata.name
         if o and not find(o,"^%.*$") then
             report_structure("%s @ level %i : (%s) %s -> %s",m,depth,n,o,t)
@@ -460,17 +456,24 @@ function sections.reportstructure()
     end
 end
 
+-- function sections.setnumber(depth,n)
+--     local forced, depth, new = data.forced, depth or data.depth, tonumber(n) or 0
+--     if type(n) == "string" then
+--         if find(n,"^[%+%-]") then
+--             forced[depth] = { "add", new }
+--         else
+--             forced[depth] = { "set", new }
+--         end
+--     else
+--         forced[depth] = { "set", new }
+--     end
+-- end
+
 function sections.setnumber(depth,n)
-    local forced, depth, new = data.forced, depth or data.depth, tonumber(n)
-    if type(n) == "string" then
-        if find(n,"^[%+%-]") then
-            forced[depth] = { "add", new }
-        else
-            forced[depth] = { "set", new }
-        end
-    else
-        forced[depth] = { "set", new }
-    end
+    data.forced[depth or data.depth] = {
+        type(n) == "string" and find(n,"^[%+%-]") and "add" or "set",
+        tonumber(n) or 0
+    }
 end
 
 function sections.numberatdepth(depth)
@@ -774,10 +777,13 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                         if number then
                             local ownnumber = ownnumbers and ownnumbers[index] or ""
                             if number > 0 or (ownnumber ~= "") then
-                                if bb == 0 then bb = k end
+                                if bb == 0 then
+                                    bb = k
+                                end
                                 ee = k
-                            else
-                                bb, ee = 0, 0
+                            elseif criterium >= 0 then
+                                bb = 0
+                                ee = 0
                             end
                         else
                             break
@@ -1028,7 +1034,7 @@ implement { name = "namedstructureuservariable", actions = sections.userdata,   
 
 implement { name = "setstructurelevel",          actions = sections.setlevel,        arguments = { "string", "string" } }
 implement { name = "getstructurelevel",          actions = sections.getcurrentlevel, arguments = { "string" } }
-implement { name = "setstructurenumber",         actions = sections.setnumber,       arguments = { "integer", "string" } }
+implement { name = "setstructurenumber",         actions = sections.setnumber,       arguments = { "integer", "string" } } -- string as we support +-
 implement { name = "getstructurenumber",         actions = sections.getnumber,       arguments = { "integer" } }
 implement { name = "getsomestructurenumber",     actions = sections.getnumber,       arguments = { "integer", "string" } }
 implement { name = "getfullstructurenumber",     actions = sections.fullnumber,      arguments = { "integer" } }
@@ -1099,6 +1105,7 @@ implement {
                     { "segments" },
                     { "ownnumber" },
                     { "language" },
+                    { "criterium" },
                 },
             },
             { "userdata" },

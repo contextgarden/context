@@ -86,7 +86,8 @@
    \c!sectionset=\headparameter\c!sectionset,
    \c!sectionsegments=\headparameter\c!sectionsegments,
    \c!reference=\headparameter\c!reference,
-   \c!referenceprefix=\headparameter\c!referenceprefix]
+   \c!referenceprefix=\headparameter\c!referenceprefix,
+   \c!criterium=\headparameter\c!criterium]
 
 % see lists/neat-001.tex for usage of:
 
@@ -112,7 +113,14 @@
    \globallet\currentstructurebookmark\tempstring
    \endgroup}
 
-% so it's an experiment
+% zeros:
+%
+% \setuphead[subsection][criterium=all]
+%
+% \dorecurse{3} {
+%     \chapter{Blabla}                 \subsection{bla 1 1} \subsection{bla 1 2}
+%                      \section{bla 2} \subsection{bla 2 1} \subsection{bla 2 2}
+% }
 
 \unexpanded\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
@@ -236,6 +244,7 @@
             segments      {\structureparameter\c!sectionsegments}
             ownnumber     {\currentstructureownnumber}
             language      {\currentlanguage}% for the moment, needed for bookmarks conversion
+            criterium     {\structureparameter\c!criterium}
         }
         userdata {\detokenize{#3}}% will be converted to table at the lua end
    \relax

@@ -15,6 +15,7 @@ local trace_goodies      = false  trackers.register("fonts.goodies", function(v)
 local report_goodies     = logs.reporter("fonts","goodies")
 
 local registerotffeature = fonts.handlers.otf.features.register
+
 local fontgoodies        = fonts.goodies or { }
 
 local fontcharacters     = fonts.hashes.characters

@@ -1,0 +1,50 @@
+%D \module
+%D   [      file=s-math-ligatures.mkiv,
+%D        version=2017.08.03,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Math Ligature Checking,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[math-ligatures]
+
+\registerctxluafile{s-math-ligatures}{}
+
+\unprotect
+
+\unexpanded\def\showmathligatures
+  {\dosingleempty\module_math_ligatures_show}
+
+\def\module_math_ligatures_show[#1]%
+  {\begingroup
+   \ctxlua{moduledata.math.ligatures.showlist{ }}%
+   \endgroup}
+
+\protect
+
+\stopmodule
+
+\continueifinputfile{s-math-ligatures.mkiv}
+
+\setupbodyfont[dejavu,10pt]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   topspace=15mm,
+   backspace=15mm,
+   bottomspace=15mm,
+   header=1cm,
+   headerdistance=0.5cm,
+   footer=0pt]
+
+\starttext
+
+    \showmathligatures
+
+\stoptext

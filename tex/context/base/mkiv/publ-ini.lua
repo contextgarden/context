@@ -57,6 +57,8 @@ local enhancers          = publications.enhancers
 local tracers            = publications.tracers or { }
 publications.tracers     = tracers
 
+local setmacro           = interfaces.setmacro   -- todo
+local setcounter         = tex.setcounter        -- todo
 local variables          = interfaces.variables
 
 local v_local            = variables["local"]
@@ -125,7 +127,6 @@ local ctx_btxnumberingsetup       = context.btxnumberingsetup
 local ctx_btxpagesetup            = context.btxpagesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
------ ctx_btxsetthird             = context.btxsetthird
 local ctx_btxsetsuffix            = context.btxsetsuffix
 local ctx_btxsetinternal          = context.btxsetinternal
 local ctx_btxsetlefttext          = context.btxsetlefttext
@@ -373,18 +374,9 @@ do
                                     nofunique = nofunique + 1
                                 end
                                 -- alternative: collect prev in group
-                                local bck = userdata.btxbck
-                                if bck then
-                                    lpegmatch(p_collect,bck,1,entry) -- for s in string.gmatch(bck,"[^ ]+") do listtocite[tonumber(s)] = entry end
-                                    local lst = tonumber(userdata.btxlst)
-                                    if lst then
-                                        listtolist[lst] = entry
-                                    end
-                                else
-                                    local int = tonumber(userdata.btxint)
-                                    if int then
-                                        listtocite[int] = entry
-                                    end
+                                local int = tonumber(userdata.btxint)
+                                if int then
+                                    listtocite[int] = entry
                                 end
                                 local detail = datasets[set].details[tag]
 -- todo: these have to be pluggable
@@ -1591,6 +1583,8 @@ end
 
 -- lists
 
+local renderings = { } --- per dataset
+
 do
 
     publications.lists = publications.lists or { }
@@ -1603,8 +1597,6 @@ do
     local sections    = structures.sections
 
     -- per rendering
-
-    local renderings = { } --- per dataset
 
     setmetatableindex(renderings,function(t,k)
         local v = {
@@ -2140,6 +2132,18 @@ do
             ctx_btxsetcategory(entry.category or "unknown")
             ctx_btxsettag(tag)
             ctx_btxsetnumber(n)
+            --
+            local citation = citetolist[n]
+            if citation then
+                local references = citation.references
+                if references then
+                    local internal = references.internal
+                    if internal and internal > 0 then
+                        ctx_btxsetinternal(internal)
+                    end
+                end
+            end
+            --
             if language then
                 ctx_btxsetlanguage(language)
             end
@@ -2449,24 +2453,26 @@ do
             for i=1,#source do
                 local entry   = source[i]
                 local current = entry.sortkey -- so we need a sortkey !
-                if entry.suffix then
-                    if not first then
-                        first, last, firstr, lastr = current, current, entry, entry
+                if type(sortkey) == "number" then
+                    if entry.suffix then
+                        if not first then
+                            first, last, firstr, lastr = current, current, entry, entry
+                        else
+                            flushrange()
+                            first, last, firstr, lastr = current, current, entry, entry
+                        end
                     else
-                        flushrange()
-                        first, last, firstr, lastr = current, current, entry, entry
+                        if not first then
+                            first, last, firstr, lastr = current, current, entry, entry
+                        elseif current == last + 1 then
+                            last, lastr = current, entry
+                        else
+                            flushrange()
+                            first, last, firstr, lastr = current, current, entry, entry
+                        end
                     end
-                else
-                    if not first then
-                        first, last, firstr, lastr = current, current, entry, entry
-                    elseif current == last + 1 then
-                        last, lastr = current, entry
-                    else
-                        flushrange()
-                        first, last, firstr, lastr = current, current, entry, entry
-                    end
+                    tags[#tags+1] = entry.tag
                 end
-                tags[#tags+1] = entry.tag
             end
             if first and last then
                 flushrange()
@@ -2524,9 +2530,6 @@ do
         --
         local found, todo, list = findallused(dataset,reference,internal,method == v_text or method == v_always) -- also when not in list
         --
--- inspect(found)
--- inspect(todo)
--- inspect(list)
         if not found or #found == 0 then
             report("no entry %a found in dataset %a",reference,dataset)
         elseif not setup then
@@ -2589,11 +2592,12 @@ do
                     local bl = listtocite[currentcitation]
                     if bl then
                         -- we refer to a coming list entry
-                        ctx_btxsetinternal(bl.references.internal or "")
+                        bl = bl.references.internal
                     else
                         -- we refer to a previous list entry
-                        ctx_btxsetinternal(entry.internal or "")
+                        bl = entry.internal
                     end
+                    ctx_btxsetinternal(bl and bl > 0 and bl or "")
                 end
                 local language = entry.language
                 if language then
@@ -3080,10 +3084,6 @@ do
             ctx_btxstartciteauthor()
             local tag = entry.tag
             ctx_btxsettag(tag)
-         -- local currentcitation = markcite(entry.dataset,tag)
-         -- ctx_btxsetbacklink(currentcitation)
-         -- local bl = listtocite[currentcitation]
-         -- ctx_btxsetinternal(bl and bl.references.internal or "")
             ctx_btxsetfirst(entry[key] or "") -- f_missing(tag)
             if suffix then
                 ctx_btxsetsuffix(entry.suffix)
@@ -3239,7 +3239,10 @@ do
     local function btxlistvariant(dataset,block,tag,variant,listindex)
         local action = listvariants[variant] or listvariants.default
         if action then
-            action(dataset,block,tag,variant,tonumber(listindex) or 0)
+            listindex = tonumber(listindex)
+            if listindex then
+                action(dataset,block,tag,variant,listindex)
+            end
         end
     end
 
@@ -3297,33 +3300,6 @@ do
             report("expanding %a list setup %a","short",variant)
         end
         ctx_btxnumberingsetup(variant or "short")
-    end
-
-    function listvariants.page(dataset,block,tag,variant,listindex)
-        local rendering     = renderings[dataset]
-        local specification = rendering.list[listindex]
-        for i=3,#specification do
-            local backlink = tonumber(specification[i])
-            if backlink then
-                local citation = citetolist[backlink]
-                if citation then
-                    local references = citation.references
-                    if references then
-                        local internal = references.internal
-                        local realpage = references.realpage
-                        if internal and realpage then
-                            ctx_btxsetconcat(i-2)
-                            ctx_btxsetfirst(realpage)
-                            ctx_btxsetsecond(backlink)
-                            if trace_detail then
-                                report("expanding %a list setup %a","page",variant)
-                            end
-                            ctx_btxlistsetup(variant)
-                        end
-                    end
-                end
-            end
-        end
     end
 
 end

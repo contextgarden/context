@@ -68,7 +68,6 @@
 \def\s!btxset       {btxset}
 \def\s!btxref       {btxref}
 \def\s!btxint       {btxint}
-\def\s!btxbck       {btxbck}
 \def\s!btxltx       {btxltx}
 \def\s!btxrtx       {btxrtx}
 \def\s!btxatx       {btxatx}
@@ -356,15 +355,6 @@
 \unexpanded\def\definebtxcommand#1% {body} #1..#n{body}
   {\setuvalue{\??btxcommand\csstring#1}}%
 
-% tracing
-
-\installtextracker
-  {publications.crosslinks}
-  {\let\btx_trace_list_cross\strc_references_tracer}
-  {\let\btx_trace_list_cross\gobbletwoarguments}
-
-\let\btx_trace_list_cross\gobbletwoarguments
-
 % access
 
 \let\currentbtxtag    \empty
@@ -424,13 +414,11 @@
 %D Variables:
 
 \let\currentbtxbacklink     \empty    \unexpanded\def\btxsetbacklink     {\def\currentbtxbacklink}
-\let\currentbtxbacktrace    \empty    \unexpanded\def\btxsetbacktrace    {\def\currentbtxbacktrace}
 \let\currentbtxcategory     \empty    \unexpanded\def\btxsetcategory     {\def\currentbtxcategory}
 \let\currentbtxcombis       \empty    \unexpanded\def\btxsetcombis       {\def\currentbtxcombis}
 \let\currentbtxdataset      \empty    \unexpanded\def\btxsetdataset      {\def\currentbtxdataset}
 \let\currentbtxfirst        \empty    \unexpanded\def\btxsetfirst        {\def\currentbtxfirst}
 \let\currentbtxsecond       \empty    \unexpanded\def\btxsetsecond       {\def\currentbtxsecond}
-%let\currentbtxthird        \empty    \unexpanded\def\btxsetthird        {\def\currentbtxthird}
 \let\currentbtxsuffix       \empty    \unexpanded\def\btxsetsuffix       {\def\currentbtxsuffix}
 \let\currentbtxinternal     \empty    \unexpanded\def\btxsetinternal     {\def\currentbtxinternal}
 \let\currentbtxlefttext     \empty    \unexpanded\def\btxsetlefttext     {\def\currentbtxlefttext}
@@ -477,7 +465,6 @@
    \let\currentbtxbefore   \empty
    \let\currentbtxafter    \empty
    \let\currentbtxbacklink \empty
-   \let\currentbtxbacktrace\empty
    \let\currentbtxlanguage \empty
    \let\currentbtxsuffix   \empty
   %\let\currentbtxdataset  \empty % will always be set
@@ -494,7 +481,6 @@
    \let        \currentbtxbefore     \empty
    \let        \currentbtxafter      \empty
    \let        \currentbtxbacklink   \empty
-   \let        \currentbtxbacktrace  \empty % not used here
    \let        \currentbtxlanguage   \empty
   %\let        \currentbtxdataset    \empty % will always be set, beware of local reset ~
   %\let        \currentbtxtag        \empty % will always be set, beware of local reset ~
@@ -576,6 +562,7 @@
   [\c!prefixstopper=:,
    \c!state=\v!start,
    \c!alternative=a,
+   \c!interaction=\v!none,
   %\c!alternative=\v!paragraph,
   %\c!width=\v!auto,
   %\c!distance=\emwidth,
@@ -635,7 +622,7 @@
       \btxparameter\c!right}%
    \endgroup}
 
-\unexpanded\def\btxpagesetup#1% there will b eno left|right|command|style at this inner level
+\unexpanded\def\btxpagesetup#1% there will be no left|right|command|style at this inner level
   {\begingroup
    \publ_fast_setup\plusfive\s!list\s!page
    \endgroup
@@ -653,6 +640,22 @@
 
 % end of page stuff
 
+\unexpanded\def\btxflushlisttext
+  {\begingroup
+   \usebtxstyleandcolor\c!style\c!color
+   \ignorespaces
+   \publ_fast_setup\plusfour\s!list\currentbtxcategory
+   \removeunwantedspaces
+   \endgroup}
+
+\unexpanded\def\btxflushlistcombis
+  {\begingroup
+   \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi % maybe in lua
+   \endgroup}
+
+\def\btx_entry_inject_list_text
+  {\publ_fast_setup\plusfour\s!list\s!text}
+
 \unexpanded\def\btx_entry_inject
   {\begingroup
    \redoconvertfont % see (**) in strc-lst, this will become an configuration option
@@ -661,19 +664,7 @@
    \ifconditional\c_btx_list_texts
      \currentbtxbefore
    \fi
-   \begingroup
-   \usebtxstyleandcolor\c!style\c!color
-   \ignorespaces
-   \publ_fast_setup\plusfour\s!list\currentbtxcategory
-   \removeunwantedspaces
-   \endgroup
-   \ifx\currentbtxcombis\empty \else
-     \btxrenderingparameter\c!separator
-     % maybe move this loop to lua
-     \begingroup
-       \processcommacommand[\currentbtxcombis]\btx_entry_inject_combi
-     \endgroup
-   \fi
+   \btx_entry_inject_list_text
    \ifconditional\c_btx_list_pages
      \btx_entry_inject_pages
    \fi
@@ -743,6 +734,8 @@
     %
     \iflocation
         \letinteractionparameter\c!style\empty
+%         \letinteractionparameter\c!color\empty
+%         \letinteractionparameter\c!contrastcolor\empty
     \fi
 \to \everybtxlistrendering
 
@@ -976,16 +969,16 @@
    \endgroup}
 
 \def\btx_list_reference_inject_now
-  {\btx_trace_list_cross\empty\currentbtxbacktrace
-   \strc_references_direct_full_user
+  {\strc_references_direct_full_user
       {\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
        \s!btxspc=\currentbtxspecification,%
        \s!btxlst=\number\c_btx_list_reference,% check if needed
-      %\ifx\currentbtxcombis\empty\else\s!btxcom={\currentbtxcombis},\fi%
-       \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
-       \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
-       \ifx\currentbtxbacklink\currentbtxbacktrace\s!btxint=\currentbtxbacklink\else\s!btxbck=\currentbtxbacktrace\fi}%
+      %\ifx\currentbtxcombis  \empty\else\s!btxcom={\currentbtxcombis},\fi%
+       \ifx\currentbtxbefore  \empty\else\s!btxbtx={\currentbtxbefore},\fi%
+       \ifx\currentbtxafter   \empty\else\s!btxatx={\currentbtxafter },\fi%
+       \ifx\currentbtxbacklink\empty\else\s!btxint=\number\currentbtxbacklink\fi
+      }%
       {\s!btx::\v!list::\number\c_btx_list_reference}%
       {\currentbtxnumber}}
 
@@ -998,27 +991,26 @@
      \iftrialtypesetting \else
        \ifx\currentbtxbacklink\empty
          % can be made empty when combining author / year
-       \else
+       \else\ifnum\currentbtxbacklink>\zerocount
          \btx_cite_reference_inject_indeed
          \settrue\c_btx_cite_reference_injected
-       \fi
+       \fi\fi
      \fi
   \fi}
 
 \newtoks\t_btx_reference_inject
 
 \def\btx_cite_reference_inject_indeed
-  {\btx_trace_list_cross\currentbtxbacklink\empty
-   \the\t_btx_reference_inject
+  {\the\t_btx_reference_inject
    \strc_lists_inject_direct % todo: make like \btx_list_reference_inject_now with { }
       [\s!btx]%
       [\c!type=\s!btx]% \c!location=\v!none
       [\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
-      %\ifx\currentbtxcombis\empty\else\s!btxcom={\currentbtxcombis},\fi%
-       \ifx\currentbtxbefore\empty\else\s!btxbtx={\currentbtxbefore},\fi%
-       \ifx\currentbtxafter \empty\else\s!btxatx={\currentbtxafter },\fi%
-       \s!btxint=\number\currentbtxbacklink
+      %\ifx\currentbtxcombis  \empty\else\s!btxcom={\currentbtxcombis},\fi%
+       \ifx\currentbtxbefore  \empty\else\s!btxbtx={\currentbtxbefore},\fi%
+       \ifx\currentbtxafter   \empty\else\s!btxatx={\currentbtxafter },\fi%
+       \ifx\currentbtxbacklink\empty\else\s!btxint=\number\currentbtxbacklink,\fi
        \ifx\currentbtxciteuservariables\empty\else,\currentbtxciteuservariables\fi]}
 
 \def\currentbtxuservariable #1{\clf_btxuservariable        {\currentbtxdataset}{#1}}
@@ -1149,35 +1141,48 @@
 % \btxflushauthor[invertedshort]{author}
 
 % Interaction
+%
+% Because we have more complex entries in lists we don't use the normal list
+% interaction features.
 
 \newconditional\btxinteractive
-\newconditional\btx_interactive
+\newconditional\btxinteractivenumber
+\newconditional\btxinteractivetext
+\newconditional\btxinteractivepage
 
-% of maybe modes?
+\let\currentbtxinteraction\empty
+
+\installcorenamespace{btxinteraction}
+
+\setvalue{\??btxinteraction\v!number}{\settrue\btxinteractivenumber}
+\setvalue{\??btxinteraction\v!text  }{\settrue\btxinteractivetext}
+\setvalue{\??btxinteraction\v!page  }{\settrue\btxinteractivepage}
+\setvalue{\??btxinteraction\v!all   }{\settrue\btxinteractivenumber
+                                      \settrue\btxinteractivetext
+                                      \settrue\btxinteractivepage}
+
+% \setupbtx[interaction=page] % or text or number or all
+% \setupbtxrendering[pagestate=start]
 
 \appendtoks
     \iflocation
-        \edef\p_interaction{\btxparameter\c!interaction}%
-        \ifx\p_interaction\v!stop
+        \edef\currentbtxinteraction{\btxparameter\c!interaction}%
+        \ifx\currentbtxinteraction\v!stop
             \setfalse\btxinteractive
         \else
+            \let\structurelistlocation\empty
             \settrue\btxinteractive
-            \ifx\p_interaction\v!all
-                \settrue\btx_interactive
-            \else
-                \setfalse\btx_interactive
-            \fi
+            \begincsname\??btxinteraction\currentbtxinteraction\endcsname
         \fi
     \else
         \setfalse\btxinteractive
-        \setfalse\btx_interactive
     \fi
 \to \everysetupbtxlistplacement
 
 \appendtoks
     \iflocation
-        \edef\p_interaction{\btxparameter\c!interaction}%
-        \ifx\p_interaction\v!stop
+        \edef\currentbtxinteraction{\btxparameter\c!interaction}%
+        \ifx\currentbtxinteraction\v!stop
             \setfalse\btxinteractive
         \else
             \settrue\btxinteractive

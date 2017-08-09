@@ -330,11 +330,13 @@ local ctx_btxsetfirstnames    = context.btxsetfirstnames
 local ctx_btxsetvons          = context.btxsetvons
 local ctx_btxsetsurnames      = context.btxsetsurnames
 local ctx_btxsetjuniors       = context.btxsetjuniors
-local ctx_btxciteauthorsetup  = context.btxciteauthorsetup
-local ctx_btxlistauthorsetup  = context.btxlistauthorsetup
 local ctx_btxsetauthorvariant = context.btxsetauthorvariant
+
 local ctx_btxstartauthor      = context.btxstartauthor
 local ctx_btxstopauthor       = context.btxstopauthor
+
+local ctx_btxciteauthorsetup  = context.btxciteauthorsetup
+local ctx_btxlistauthorsetup  = context.btxlistauthorsetup
 
 local concatstate = publications.concatstate
 local f_invalid   = formatters["<invalid %s: %s>"]

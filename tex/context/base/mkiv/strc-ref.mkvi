@@ -2252,27 +2252,6 @@
 %D \in{figure}[match(mess)]
 %D \stoptyping
 
-%D Tracing:
-
-\unexpanded\def\strc_references_tracer#1#2% \csleft csright
-  {\hbox to \zeropoint \bgroup
-     \hss
-     \infofont
-     \darkblue
-     \ifx#1\empty\else
-         \raise\strutht \hbox \s!to \zeropoint \bgroup
-           \hss#1\hskip.2\emwidth
-         \egroup
-     \fi
-     \vrule \s!height 1.5\strutht \s!depth \strutdp \s!width .1\emwidth
-     \ifx#2\empty\else
-       \raise\strutht \hbox \s!to \zeropoint \bgroup
-         \hskip.2\emwidth#2\hss
-       \egroup
-     \fi
-     \hss
-   \egroup}%
-
 \protect \endinput
 
 % tricky:

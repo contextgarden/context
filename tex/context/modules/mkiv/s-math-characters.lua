@@ -16,6 +16,8 @@ local lower = string.lower
 local utfchar = utf.char
 local round = math.round
 
+local context        = context
+
 local fontdata       = fonts.hashes.identifiers
 local chardata       = characters.data
 local blocks         = characters.blocks

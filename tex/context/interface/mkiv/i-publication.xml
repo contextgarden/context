@@ -1026,6 +1026,7 @@
 
     <cd:command name="showbtxdatasetfields" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="specification">
                     <cd:constant type="cd:name"/>
@@ -1048,6 +1049,7 @@
 
     <cd:command name="showbtxdatasetcompleteness" category="bibliography" file="publ-tra.mkiv">
         <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="specification">
                     <cd:constant type="cd:name"/>

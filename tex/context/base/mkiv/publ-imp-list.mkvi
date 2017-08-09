@@ -13,8 +13,34 @@
 
 \unprotect
 
-\starttexdefinition unexpanded btx:list:inject #content
-    \ifconditional\btxinteractive
+\starttexdefinition unexpanded btx:list:inject:text #content
+    \ifconditional\btxinteractivetext
+        \ifx\currentbtxinternal\empty
+            #content
+        \else
+            \goto {
+                #content
+            } [
+                \s!internal(\currentbtxinternal)
+            ]
+        \fi
+    \else
+        #content
+    \fi
+\stoptexdefinition
+
+\startsetups \s!btx:\s!list:text
+   \texdefinition {\s!btx:\s!list:inject:text} {
+        \btxflushlisttext
+        \ifx\currentbtxcombis\empty \else
+            \btxrenderingparameter\c!separator
+            \btxflushlistcombis
+        \fi
+   }
+\stopsetups
+
+\starttexdefinition unexpanded btx:list:inject:number #content
+    \ifconditional\btxinteractivenumber
         \ifx\currentbtxinternal\empty
             #content
         \else
@@ -33,64 +59,39 @@
     \space
 \stoptexdefinition
 
-\startsetups[\s!btx:\s!list:\s!page]
-    \texdefinition{\s!btx:\s!list:concat}
-    \texdefinition{\s!btx:\s!list:inject} {
-        % real pagenumber: todo, userpage
-        \currentbtxfirst
-        % order
-        \high{\currentbtxsecond}
-    }
-\stopsetups
-
 \startsetups[\s!btx:\s!list:\s!numbering]
-    \texdefinition {\s!btx:\s!list:inject} {
+    \texdefinition {\s!btx:\s!list:inject:number} {
         \currentbtxfirst
         \btxparameter\c!stopper
     }
 \stopsetups
 
-% Hans: can the following setups be condensed to one using some variable?
-
-\startsetups[\s!btx:\s!list:\s!numbering:default]
-    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:default]
-        \btxusecommand[\currentbtxspecification:\s!list:\s!numbering:default] {
+\starttexdefinition unexpanded btx:list:numbering #variant
+    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:#variant]
+        \btxusecommand[\currentbtxspecification:\s!list:\s!numbering:#variant] {
             \fastsetup{\s!btx:\s!list:\s!numbering}
         }
     \btxstopstyleandcolor
+\stoptexdefinition
+
+\startsetups[\s!btx:\s!list:\s!numbering:default]
+    \texdefinition {\s!btx:\s!list:\s!numbering} {default}
 \stopsetups
 
 \startsetups[\s!btx:\s!list:\s!numbering:num]
-    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:num]
-        \btxusecommand[\currentbtxspecification:\s!list:\s!numbering:num] {
-            \fastsetup{\s!btx:\s!list:\s!numbering}
-        }
-    \btxstopstyleandcolor
+    \texdefinition {\s!btx:\s!list:\s!numbering} {num}
 \stopsetups
 
 \startsetups[\s!btx:\s!list:\s!numbering:short]
-    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:short]
-        \btxusecommand [\currentbtxspecification:\s!list:\s!numbering:short] {
-            \fastsetup{\s!btx:\s!list:\s!numbering}
-            \btxflushsuffix
-        }
-    \btxstopstyleandcolor
+    \texdefinition {\s!btx:\s!list:\s!numbering} {short}
 \stopsetups
 
 \startsetups[\s!btx:\s!list:\s!numbering:tag]
-    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:tag]
-        \btxusecommand [\currentbtxspecification:\s!list:\s!numbering:tag] {
-            \fastsetup{\s!btx:\s!list:\s!numbering}
-        }
-    \btxstopstyleandcolor
+    \texdefinition {\s!btx:\s!list:\s!numbering} {tag}
 \stopsetups
 
 \startsetups[\s!btx:\s!list:\s!numbering:index]
-    \btxstartstyleandcolor [\currentbtxspecification:\s!list:\s!numbering:index]
-        \btxusecommand [\currentbtxspecification:\s!list:\s!numbering:index] {
-            \fastsetup{\s!btx:\s!list:\s!numbering}
-        }
-    \btxstopstyleandcolor
+    \texdefinition {\s!btx:\s!list:\s!numbering} {index}
 \stopsetups
 
 \protect

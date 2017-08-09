@@ -135,6 +135,7 @@ local function nbsp(head,current)
         setsubtype(current,space_skip_code)
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+        setsubtype(current,space_skip_code)
     end
     return head, current
 end

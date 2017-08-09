@@ -1452,40 +1452,7 @@
      \strc_lists_interaction_check_nop
    \fi}
 
-% \def\strc_lists_interaction_check_yes
-%   {\edef\p_interaction_forward{\listparameter\c!interaction}%
-%    \ifcsname\??listinteractions\p_interaction_forward\endcsname
-%      \expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
-%      \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
-%      \a_strc_lists_reference\currentreferenceattribute
-%    \else
-%      \a_strc_lists_reference\attributeunsetvalue
-%    \fi
-%    \ifnum\a_strc_lists_reference=\attributeunsetvalue
-%       \let\strc_lists_get_reference_attribute\gobbleoneargument
-%       \let\strc_lists_set_reference_attribute\gobbleoneargument
-%       \let\strc_lists_set_style_color        \strc_lists_set_style_color_normal
-%    \else
-%       \let\strc_lists_get_reference_attribute\strc_lists_get_reference_attribute_indeed
-%       \let\strc_lists_set_reference_attribute\strc_lists_set_reference_attribute_indeed
-%       \let\strc_lists_set_style_color        \strc_lists_set_style_color_special
-%    \fi
-%    \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
-%    \ifx\p_interaction_backward\v!list
-%      \strc_references_set_simple_reference{*\currentlistentrylocation}%
-%      \a_strc_lists_destination\currentdestinationattribute
-%    \else
-%      \a_strc_lists_destination\attributeunsetvalue
-%    \fi
-%    \ifnum\a_strc_lists_destination=\attributeunsetvalue
-%       \let\strc_lists_get_destination_attribute\empty
-%       \let\strc_lists_set_destination_attribute\empty
-%    \else
-%       \let\strc_lists_get_destination_attribute\strc_lists_get_destination_attribute_indeed
-%       \let\strc_lists_set_destination_attribute\strc_lists_set_destination_attribute_indeed
-%    \fi}
-
-\def\strc_lists_interaction_check_yes
+\def\strc_lists_interaction_check_yes_yes
   {\edef\p_interaction_forward{\listparameter\c!interaction}%
    \ifcsname\??listinteractions\p_interaction_forward\endcsname
     %\expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
@@ -1496,13 +1463,13 @@
      \a_strc_lists_reference\attributeunsetvalue
    \fi
    \ifnum\a_strc_lists_reference=\attributeunsetvalue
-      \let\strc_lists_get_reference_attribute\gobbleoneargument
-      \let\strc_lists_set_reference_attribute\gobbleoneargument
-      \let\strc_lists_set_style_color        \strc_lists_set_style_color_normal
+     \let\strc_lists_get_reference_attribute\gobbleoneargument
+     \let\strc_lists_set_reference_attribute\gobbleoneargument
+     \let\strc_lists_set_style_color        \strc_lists_set_style_color_normal
    \else
-      \let\strc_lists_get_reference_attribute\strc_lists_get_reference_attribute_indeed
-      \let\strc_lists_set_reference_attribute\strc_lists_set_reference_attribute_indeed
-      \let\strc_lists_set_style_color        \strc_lists_set_style_color_special
+     \let\strc_lists_get_reference_attribute\strc_lists_get_reference_attribute_indeed
+     \let\strc_lists_set_reference_attribute\strc_lists_set_reference_attribute_indeed
+     \let\strc_lists_set_style_color        \strc_lists_set_style_color_special
    \fi
    \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
    \ifx\p_interaction_backward\v!list
@@ -1512,12 +1479,30 @@
      \a_strc_lists_destination\attributeunsetvalue
    \fi
    \ifnum\a_strc_lists_destination=\attributeunsetvalue
-      \let\strc_lists_get_destination_attribute\empty
-      \let\strc_lists_set_destination_attribute\empty
+     \let\strc_lists_get_destination_attribute\empty
+     \let\strc_lists_set_destination_attribute\empty
    \else
-      \let\strc_lists_get_destination_attribute\strc_lists_get_destination_attribute_indeed
-      \let\strc_lists_set_destination_attribute\strc_lists_set_destination_attribute_indeed
+     \let\strc_lists_get_destination_attribute\strc_lists_get_destination_attribute_indeed
+     \let\strc_lists_set_destination_attribute\strc_lists_set_destination_attribute_indeed
    \fi}
+
+\def\strc_lists_interaction_check_yes_nop
+  {\a_strc_lists_reference  \attributeunsetvalue
+   \a_strc_lists_destination\attributeunsetvalue
+   \let\strc_lists_get_reference_attribute\gobbleoneargument
+   \let\strc_lists_set_reference_attribute\gobbleoneargument
+   \let\strc_lists_get_destination_attribute\empty
+   \let\strc_lists_set_destination_attribute\empty
+   \let\strc_lists_set_style_color\strc_lists_set_style_color_normal}
+
+\def\strc_lists_interaction_check_yes
+  {\ifx\currentlistentrylocation\empty
+     \strc_lists_interaction_check_yes_nop
+   \else\ifnum\currentlistentrylocation=\zerocount
+     \strc_lists_interaction_check_yes_nop
+   \else
+     \strc_lists_interaction_check_yes_yes
+   \fi\fi}
 
 \def\strc_lists_interaction_check_nop
   {\let\strc_lists_get_reference_attribute  \gobbleoneargument
