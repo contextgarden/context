@@ -110,7 +110,7 @@ implement { name = "xmlpure",              actions = lxml.pure,              arg
 implement { name = "xmlflushtext",         actions = lxml.text,              arguments = "string" }
 implement { name = "xmlflushpure",         actions = lxml.pure,              arguments = "string" }
 implement { name = "xmltobuffer",          actions = lxml.tobuffer,          arguments = { "string", "string", "string" } }
-implement { name = "xmltobufferverbose",   actions = lxml.tobuffer,          arguments = { "string", "string", "string", true } }
+implement { name = "xmltobufferverbose",   actions = lxml.tobuffer,          arguments = { "string", "string", "string", true, true } }
 implement { name = "xmltobuffertextonly",  actions = lxml.tobuffer,          arguments = { "string", "string", "string", false } }
 implement { name = "xmltofile",            actions = lxml.tofile,            arguments = { "string", "string", "string" } }
 implement { name = "xmltoparameters",      actions = lxml.toparameters,      arguments = "string" }

@@ -1036,20 +1036,14 @@
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
     \btxdoif {organization} {
-        \btxspace
-        \btxflush{organization}
-        \btxcomma
-    }
-    \btxdoifelse {howpublished} {
-        \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{howpublished}}
-    } {
-        \btxdoifelse {doi} {
-            \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{doi}}
-        } {
-            \btxdoif {url} {
-                \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{url}}
-            }
+        \doifnot {\btxfoundname{author}} {organization} {
+            \btxspace
+            \btxflush{organization}
+            \btxcomma
         }
+    }
+    \btxdoif {howpublished} {
+        \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{howpublished}}
     }
     \btxleftparenthesis
     \texdefinition{btx:aps:year}

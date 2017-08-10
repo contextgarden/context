@@ -162,6 +162,10 @@ local function xmltotext(root)
     end
 end
 
+function xml.serializetotext(root)
+    return root and xmlserialize(root,xmltexthandler) or ""
+end
+
 --
 
 local function text(collected) -- hybrid

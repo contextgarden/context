@@ -863,7 +863,7 @@ vardef graph_gridline_picture@#(suffix $)(expr c, f, u)(text w) =
         if c : graph_xyscale fi
         shifted (((.5 + mfun_laboff@# dotprod (.5,.5)) * mfun_laboff@#) graph_xyscale) ;
     image(draw p w ;
-        label@#(if string f : format(f,u) else : f fi, point 0 of p))
+        label@#(if string f : format(f,u) else : f fi, point 0 of p) w)
   fi
 enddef ;
 

@@ -4062,11 +4062,13 @@ otf.handlers = handlers
 
 local setspacekerns = nodes.injections.setspacekerns if not setspacekerns then os.exit() end
 
+local tag = "kern" -- maybe some day a merge
+
 if fontfeatures then
 
     function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,attr)
         local features = fontfeatures[font]
-        local enabled  = features and features.spacekern and features.kern
+        local enabled  = features and features.spacekern and features[tag]
         if enabled then
             setspacekerns(font,sequence)
         end
@@ -4078,7 +4080,7 @@ else -- generic (no hashes)
     function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,attr)
         local shared   = fontdata[font].shared
         local features = shared and shared.features
-        local enabled  = features and features.spacekern and features.kern
+        local enabled  = features and features.spacekern and features[tag]
         if enabled then
             setspacekerns(font,sequence)
         end
@@ -4087,22 +4089,62 @@ else -- generic (no hashes)
 
 end
 
+-- There are fonts out there that change the space but we don't do that kind of
+-- things in TeX.
+
 local function hasspacekerns(data)
-    local sequences = data.resources.sequences
-    for i=1,#sequences do
-        local sequence = sequences[i]
-        local steps    = sequence.steps
-        if steps and sequence.features.kern then
-            for i=1,#steps do
-                local coverage = steps[i].coverage
-                if not coverage then
-                    -- maybe an issue, can't happen
-                elseif coverage[32] then
-                    return true
-                else
-                    for k, v in next, coverage do
-                        if v[32] then
-                            return true
+    local resources = data.resources
+    local sequences = resources.sequences
+    local validgpos = resources.features.gpos
+    if validgpos and sequences then
+        for i=1,#sequences do
+            local sequence = sequences[i]
+            local steps    = sequence.steps
+            if steps and sequence.features[tag] then
+                local kind = sequence.type
+                if kind == "gpos_pair" or kind == "gpos_single" then
+                    for i=1,#steps do
+                        local step     = steps[i]
+                        local coverage = step.coverage
+                        local rules    = step.rules
+                        if rules then
+                            -- not now: analyze (simple) rules
+                        elseif not coverage then
+                            -- nothing to do
+                        elseif kind == "gpos_single" then
+                            -- maybe a message that we ignore
+                        elseif kind == "gpos_pair" then
+                            local format = step.format
+                            if format == "move" or format == "kern" then
+                                local kerns  = coverage[32]
+                                if kerns then
+                                    return true
+                                end
+                                for k, v in next, coverage do
+                                    if v[32] then
+                                        return true
+                                    end
+                                end
+                            elseif format == "pair" then
+                                local kerns  = coverage[32]
+                                if kerns then
+                                    for k, v in next, kerns do
+                                        local one = v[1]
+                                        if one and one ~= true then
+                                            return true
+                                        end
+                                    end
+                                end
+                                for k, v in next, coverage do
+                                    local kern = v[32]
+                                    if kern then
+                                        local one = kern[1]
+                                        if one and one ~= true then
+                                            return true
+                                        end
+                                    end
+                                end
+                            end
                         end
                     end
                 end
@@ -4119,115 +4161,120 @@ otf.readers.registerextender {
     end
 }
 
--- we merge the lookups but we still honor the language / script
-
 local function spaceinitializer(tfmdata,value) -- attr
     local resources  = tfmdata.resources
     local spacekerns = resources and resources.spacekerns
-    local properties = tfmdata.properties
     if value and spacekerns == nil then
+        local rawdata    = tfmdata.shared and tfmdata.shared.rawdata
+        local properties = rawdata.properties
         if properties and properties.hasspacekerns then
             local sequences = resources.sequences
-            local left  = { }
-            local right = { }
-            local last  = 0
-            local feat  = nil
-            for i=1,#sequences do
-                local sequence = sequences[i]
-                local steps    = sequence.steps
-                if steps then
-                    local kern = sequence.features.kern
-                    if kern then
-                        if feat then
-                            for script, languages in next, kern do
-                                local f = feat[script]
-                                if f then
-                                    for l in next, languages do
-                                        f[l] = true
+            local validgpos = resources.features.gpos
+            if validgpos and sequences then
+                local left  = { }
+                local right = { }
+                local last  = 0
+                local feat  = nil
+                for i=1,#sequences do
+                    local sequence = sequences[i]
+                    local steps    = sequence.steps
+                    if steps then
+                        -- we don't support space kerns in other features
+                        local kern = sequence.features[tag]
+                        if kern then
+                            local kind = sequence.type
+                            if kind == "gpos_pair" or kind == "gpos_single" then
+                                if feat then
+                                    for script, languages in next, kern do
+                                        local f = feat[script]
+                                        if f then
+                                            for l in next, languages do
+                                                f[l] = true
+                                            end
+                                        else
+                                            feat[script] = languages
+                                        end
                                     end
                                 else
-                                    feat[script] = languages
+                                    feat = kern
                                 end
+                                for i=1,#steps do
+                                    local step     = steps[i]
+                                    local coverage = step.coverage
+                                    local rules    = step.rules
+                                    if rules then
+                                        -- not now: analyze (simple) rules
+                                    elseif not coverage then
+                                        -- nothng to do
+                                    elseif kind == "gpos_single" then
+                                        -- makes no sense in TeX
+                                    elseif kind == "gpos_pair" then
+                                        local format = step.format
+                                        if format == "move" or format == "kern" then
+                                            local kerns  = coverage[32]
+                                            if kerns then
+                                                for k, v in next, kerns do
+                                                    right[k] = v
+                                                end
+                                            end
+                                            for k, v in next, coverage do
+                                                local kern = v[32]
+                                                if kern then
+                                                    left[k] = kern
+                                                end
+                                            end
+                                        elseif format == "pair" then
+                                            local kerns  = coverage[32]
+                                            if kerns then
+                                                for k, v in next, kerns do
+                                                    local one = v[1]
+                                                    if one and one ~= true then
+                                                        right[k] = one[3]
+                                                    end
+                                                end
+                                            end
+                                            for k, v in next, coverage do
+                                                local kern = v[32]
+                                                if kern then
+                                                    local one = kern[1]
+                                                    if one and one ~= true then
+                                                        left[k] = one[3]
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                                last = i
                             end
                         else
-                            feat = kern
+                            -- no steps ... needed for old one ... we could use the basekerns
+                            -- instead
                         end
-                        for i=1,#steps do
-                            local step     = steps[i]
-                            local coverage = step.coverage
-                            local rules    = step.rules
-                            local format   = step.format
-                            if rules then
-                                -- not now: analyze (simple) rules
-                            elseif coverage then
-                                -- what to do if we have no [1] but only [2]
-                                local single = format == "gpos_single"
-                                local kerns  = coverage[32]
-                                if kerns then
-                                    for k, v in next, kerns do
-                                        if type(v) ~= "table" then
-                                            right[k] = v
-                                        elseif single then
-                                            right[k] = v[3]
-                                        else
-                                            local one = v[1]
-                                            if one and one ~= true then
-                                                right[k] = one[3]
-                                            end
-                                        end
-                                    end
-                                end
-                                for k, v in next, coverage do
-                                    local kern = v[32]
-                                    if kern then
-                                        if type(kern) ~= "table" then
-                                            left[k] = kern
-                                        elseif single then
-                                            left[k] = kern[3]
-                                        else
-                                            local one = kern[1]
-                                            if one and one ~= true then
-                                                left[k] = one[3]
-                                            end
-                                        end
-                                    end
-                                end
-                            else
-                                -- can't happen
-                            end
-                        end
-                        last = i
                     end
-                else
-                    -- no steps ... needed for old one ... we could use the basekerns
-                    -- instead
                 end
-            end
-            left  = next(left)  and left  or false
-            right = next(right) and right or false
-            if left or right then
-                spacekerns = {
-                    left  = left,
-                    right = right,
-                }
-                if last > 0 then
-                    local triggersequence = {
-                        -- no steps, see (!!)
-                        features = { kern = feat or { dflt = { dflt = true, } } },
-                        flags    = noflags,
-                        name     = "trigger_space_kerns",
-                        order    = { "kern" },
-                        type     = "trigger_space_kerns",
-                        left     = left,
-                        right    = right,
+                left  = next(left)  and left  or false
+                right = next(right) and right or false
+                if left or right then
+                    spacekerns = {
+                        left  = left,
+                        right = right,
                     }
-                    insert(sequences,last,triggersequence)
+                    if last > 0 then
+                        local triggersequence = {
+                            -- no steps, see (!!)
+                            features = { [tag] = feat or { dflt = { dflt = true, } } },
+                            flags    = noflags,
+                            name     = "trigger_space_kerns",
+                            order    = { tag },
+                            type     = "trigger_space_kerns",
+                            left     = left,
+                            right    = right,
+                        }
+                        insert(sequences,last,triggersequence)
+                    end
                 end
-            else
-                spacekerns = false
             end
-        else
-            spacekerns = false
         end
         resources.spacekerns = spacekerns
     end

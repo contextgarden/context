@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/09/17 15:35:46
+-- merge date  : 08/10/17 10:46:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -25911,10 +25911,11 @@ registerotffeature {
 }
 otf.handlers=handlers
 local setspacekerns=nodes.injections.setspacekerns if not setspacekerns then os.exit() end
+local tag="kern" 
 if fontfeatures then
   function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,attr)
     local features=fontfeatures[font]
-    local enabled=features and features.spacekern and features.kern
+    local enabled=features and features.spacekern and features[tag]
     if enabled then
       setspacekerns(font,sequence)
     end
@@ -25924,7 +25925,7 @@ else
   function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,attr)
     local shared=fontdata[font].shared
     local features=shared and shared.features
-    local enabled=features and features.spacekern and features.kern
+    local enabled=features and features.spacekern and features[tag]
     if enabled then
       setspacekerns(font,sequence)
     end
@@ -25932,20 +25933,55 @@ else
   end
 end
 local function hasspacekerns(data)
-  local sequences=data.resources.sequences
-  for i=1,#sequences do
-    local sequence=sequences[i]
-    local steps=sequence.steps
-    if steps and sequence.features.kern then
-      for i=1,#steps do
-        local coverage=steps[i].coverage
-        if not coverage then
-        elseif coverage[32] then
-          return true
-        else
-          for k,v in next,coverage do
-            if v[32] then
-              return true
+  local resources=data.resources
+  local sequences=resources.sequences
+  local validgpos=resources.features.gpos
+  if validgpos and sequences then
+    for i=1,#sequences do
+      local sequence=sequences[i]
+      local steps=sequence.steps
+      if steps and sequence.features[tag] then
+        local kind=sequence.type
+        if kind=="gpos_pair" or kind=="gpos_single" then
+          for i=1,#steps do
+            local step=steps[i]
+            local coverage=step.coverage
+            local rules=step.rules
+            if rules then
+            elseif not coverage then
+            elseif kind=="gpos_single" then
+            elseif kind=="gpos_pair" then
+              local format=step.format
+              if format=="move" or format=="kern" then
+                local kerns=coverage[32]
+                if kerns then
+                  return true
+                end
+                for k,v in next,coverage do
+                  if v[32] then
+                    return true
+                  end
+                end
+              elseif format=="pair" then
+                local kerns=coverage[32]
+                if kerns then
+                  for k,v in next,kerns do
+                    local one=v[1]
+                    if one and one~=true then
+                      return true
+                    end
+                  end
+                end
+                for k,v in next,coverage do
+                  local kern=v[32]
+                  if kern then
+                    local one=kern[1]
+                    if one and one~=true then
+                      return true
+                    end
+                  end
+                end
+              end
             end
           end
         end
@@ -25963,104 +25999,110 @@ otf.readers.registerextender {
 local function spaceinitializer(tfmdata,value) 
   local resources=tfmdata.resources
   local spacekerns=resources and resources.spacekerns
-  local properties=tfmdata.properties
   if value and spacekerns==nil then
+    local rawdata=tfmdata.shared and tfmdata.shared.rawdata
+    local properties=rawdata.properties
     if properties and properties.hasspacekerns then
       local sequences=resources.sequences
-      local left={}
-      local right={}
-      local last=0
-      local feat=nil
-      for i=1,#sequences do
-        local sequence=sequences[i]
-        local steps=sequence.steps
-        if steps then
-          local kern=sequence.features.kern
-          if kern then
-            if feat then
-              for script,languages in next,kern do
-                local f=feat[script]
-                if f then
-                  for l in next,languages do
-                    f[l]=true
+      local validgpos=resources.features.gpos
+      if validgpos and sequences then
+        local left={}
+        local right={}
+        local last=0
+        local feat=nil
+        for i=1,#sequences do
+          local sequence=sequences[i]
+          local steps=sequence.steps
+          if steps then
+            local kern=sequence.features[tag]
+            if kern then
+              local kind=sequence.type
+              if kind=="gpos_pair" or kind=="gpos_single" then
+                if feat then
+                  for script,languages in next,kern do
+                    local f=feat[script]
+                    if f then
+                      for l in next,languages do
+                        f[l]=true
+                      end
+                    else
+                      feat[script]=languages
+                    end
                   end
                 else
-                  feat[script]=languages
+                  feat=kern
                 end
+                for i=1,#steps do
+                  local step=steps[i]
+                  local coverage=step.coverage
+                  local rules=step.rules
+                  if rules then
+                  elseif not coverage then
+                  elseif kind=="gpos_single" then
+                  elseif kind=="gpos_pair" then
+                    local format=step.format
+                    if format=="move" or format=="kern" then
+                      local kerns=coverage[32]
+                      if kerns then
+                        for k,v in next,kerns do
+                          right[k]=v
+                        end
+                      end
+                      for k,v in next,coverage do
+                        local kern=v[32]
+                        if kern then
+                          left[k]=kern
+                        end
+                      end
+                    elseif format=="pair" then
+                      local kerns=coverage[32]
+                      if kerns then
+                        for k,v in next,kerns do
+                          local one=v[1]
+                          if one and one~=true then
+                            right[k]=one[3]
+                          end
+                        end
+                      end
+                      for k,v in next,coverage do
+                        local kern=v[32]
+                        if kern then
+                          local one=kern[1]
+                          if one and one~=true then
+                            left[k]=one[3]
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+                last=i
               end
             else
-              feat=kern
             end
-            for i=1,#steps do
-              local step=steps[i]
-              local coverage=step.coverage
-              local rules=step.rules
-              local format=step.format
-              if rules then
-              elseif coverage then
-                local single=format=="gpos_single"
-                local kerns=coverage[32]
-                if kerns then
-                  for k,v in next,kerns do
-                    if type(v)~="table" then
-                      right[k]=v
-                    elseif single then
-                      right[k]=v[3]
-                    else
-                      local one=v[1]
-                      if one and one~=true then
-                        right[k]=one[3]
-                      end
-                    end
-                  end
-                end
-                for k,v in next,coverage do
-                  local kern=v[32]
-                  if kern then
-                    if type(kern)~="table" then
-                      left[k]=kern
-                    elseif single then
-                      left[k]=kern[3]
-                    else
-                      local one=kern[1]
-                      if one and one~=true then
-                        left[k]=one[3]
-                      end
-                    end
-                  end
-                end
-              else
-              end
-            end
-            last=i
           end
-        else
         end
-      end
-      left=next(left) and left or false
-      right=next(right) and right or false
-      if left or right then
-        spacekerns={
-          left=left,
-          right=right,
-        }
-        if last>0 then
-          local triggersequence={
-            features={ kern=feat or { dflt={ dflt=true,} } },
-            flags=noflags,
-            name="trigger_space_kerns",
-            order={ "kern" },
-            type="trigger_space_kerns",
+        left=next(left) and left or false
+        right=next(right) and right or false
+        if left or right then
+          spacekerns={
             left=left,
             right=right,
           }
-          insert(sequences,last,triggersequence)
+          if last>0 then
+            local triggersequence={
+              features={ [tag]=feat or { dflt={ dflt=true,} } },
+              flags=noflags,
+              name="trigger_space_kerns",
+              order={ tag },
+              type="trigger_space_kerns",
+              left=left,
+              right=right,
+            }
+            insert(sequences,last,triggersequence)
+          end
         end
-      else
-        spacekerns=false
       end
-    else
-      spacekerns=false
     end
     resources.spacekerns=spacekerns
   end

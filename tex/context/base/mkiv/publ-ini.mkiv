@@ -428,13 +428,15 @@
 \let\currentbtxlanguage     \empty    \unexpanded\def\btxsetlanguage     {\def\currentbtxlanguage}
 \let\currentbtxtag          \empty    \unexpanded\def\btxsettag          {\def\currentbtxtag}
 \let\currentbtxnumber       \empty    \unexpanded\def\btxsetnumber       {\def\currentbtxnumber}
-\let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
+\let\currentbtxfirstinternal\empty    \unexpanded\def\btxsetfirstinternal{\def\currentbtxfirstinternal}
+\let\currentbtxlastinternal \empty    \unexpanded\def\btxsetlastinternal {\def\currentbtxlastinternal}
 
-\let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames{\let\currentbtxfirstnames\currentbtxfirstnames_indeed}
-\let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials  {\let\currentbtxinitials  \currentbtxinitials_indeed  }
-\let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors   {\let\currentbtxjuniors   \currentbtxjuniors_indeed   }
-\let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames  {\let\currentbtxsurnames  \currentbtxsurnames_indeed  }
-\let\currentbtxvons         \empty    \unexpanded\def\btxsetvons      {\let\currentbtxvons      \currentbtxvons_indeed      }
+\let\currentbtxauthorvariant\v!normal \unexpanded\def\btxsetauthorvariant{\def\currentbtxauthorvariant}
+\let\currentbtxfirstnames   \empty    \unexpanded\def\btxsetfirstnames   {\let\currentbtxfirstnames\currentbtxfirstnames_indeed}
+\let\currentbtxinitials     \empty    \unexpanded\def\btxsetinitials     {\let\currentbtxinitials  \currentbtxinitials_indeed  }
+\let\currentbtxjuniors      \empty    \unexpanded\def\btxsetjuniors      {\let\currentbtxjuniors   \currentbtxjuniors_indeed   }
+\let\currentbtxsurnames     \empty    \unexpanded\def\btxsetsurnames     {\let\currentbtxsurnames  \currentbtxsurnames_indeed  }
+\let\currentbtxvons         \empty    \unexpanded\def\btxsetvons         {\let\currentbtxvons      \currentbtxvons_indeed      }
 
 \newconstant\currentbtxoverflow       \unexpanded\def\btxsetoverflow   #1{\currentbtxoverflow   #1\relax}
 \newconstant\currentbtxconcat         \unexpanded\def\btxsetconcat     #1{\currentbtxconcat     #1\relax}
@@ -449,10 +451,8 @@
 \unexpanded\def\currentbtxsurnames_indeed  {\clf_btxcurrentsurnames  \numexpr\currentbtxauthorindex\relax}
 \unexpanded\def\currentbtxvons_indeed      {\clf_btxcurrentvons      \numexpr\currentbtxauthorindex\relax}
 
-\let\currentbtxfirstpage    \empty \unexpanded\def\btxsetfirstpage    #1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
-\let\currentbtxlastpage     \empty \unexpanded\def\btxsetlastpage     #1{\def\currentbtxlastpage {\btx_page_number{#1}}}
-\let\currentbtxfirstinternal\empty \unexpanded\def\btxsetfirstinternal  {\def\currentbtxfirstinternal}
-\let\currentbtxlastinternal \empty \unexpanded\def\btxsetlastinternal   {\def\currentbtxlastinternal}
+\let\currentbtxfirstpage    \empty \unexpanded\def\btxsetfirstpage#1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
+\let\currentbtxlastpage     \empty \unexpanded\def\btxsetlastpage #1{\def\currentbtxlastpage {\btx_page_number{#1}}}
 
 \def\currentbtxauthorvariant{normal}
 
@@ -917,7 +917,7 @@
 
 \unexpanded\def\btx_reference_indeed
   {\begingroup
-   % redundantm will go away:
+   % redundant will go away:
    \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering
    %
    \ifx\currentbtxnumbering\empty
@@ -1336,6 +1336,7 @@
 \def\publ_cite_handle_variant_indeed[#1]%
   {\letbtxparameter\c!alternative\currentbtxcitealternative
    \edef\currentbtxreference{#1}%
+   \saverunningstyleandcolor
    \usebtxstyleandcolor\c!style\c!color
    \uselanguageparameter\btxdatasetparameter % new
    \btxparameter\c!left
@@ -1557,6 +1558,7 @@
 \unexpanded\def\btxstartsubcite#1%
   {\begingroup
    \btx_reset_cite % todo: limited set
+ % \saverunningstyleandcolor % let's see when Alan needs it
    \def\currentbtxcitealternative{#1}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \usebtxstyleandcolor\c!style\c!color
@@ -1788,6 +1790,14 @@
 
 \unexpanded\def\btxusecommand[#1]#2% using #2 permits space after []
   {\namedbtxparameter{#1}\c!command{#2}}
+
+\unexpanded\def\startbtxrunningstyleandcolor
+  {\dontleavehmode
+   \begingroup
+   \restorerunningstyleandcolor}
+
+\unexpanded\def\stopbtxrunningstyleandcolor
+  {\endgroup}
 
 %D Defaults:
 

@@ -2713,6 +2713,18 @@
 \def\saveddefinedfontid  {\number\fontid\font}
 \def\saveddefinedfontname{\fontname\font}
 
+%D Ugly helper:
+
+\unexpanded\def\saverunningstyleandcolor
+  {\unexpanded\edef\restorerunningstyleandcolor
+     {\setfontid                      \number\fontid\font
+      \attribute\colormodelattribute  \the\attribute\colormodelattribute
+      \attribute\colorattribute       \the\attribute\colorattribute
+      \attribute\transparencyattribute\the\attribute\transparencyattribute
+      \relax}}
+
+\let\restorerunningstyleandcolor\relax
+
 %D Handy for defining additional glyphs:
 
 \let\getprivateglyphslot\clf_getprivateglyphslot % kind of private macro

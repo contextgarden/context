@@ -26,70 +26,71 @@ local basename, dirname, joinfile = file.basename, file.dirname, file.join
 lxml = lxml or { }
 local lxml = lxml
 
-local catcodenumbers    = catcodes.numbers
-local ctxcatcodes       = catcodenumbers.ctxcatcodes -- todo: use different method
-local notcatcodes       = catcodenumbers.notcatcodes -- todo: use different method
+local catcodenumbers     = catcodes.numbers
+local ctxcatcodes        = catcodenumbers.ctxcatcodes -- todo: use different method
+local notcatcodes        = catcodenumbers.notcatcodes -- todo: use different method
 
-local commands          = commands
-local context           = context
-local contextsprint     = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
+local commands           = commands
+local context            = context
+local contextsprint      = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
 
-local synctex           = luatex.synctex
+local synctex            = luatex.synctex
 
-local implement         = interfaces.implement
+local implement          = interfaces.implement
 
-local xmlelements       = xml.elements
-local xmlcollected      = xml.collected
-local xmlsetproperty    = xml.setproperty
-local xmlwithelements   = xml.withelements
-local xmlserialize      = xml.serialize
-local xmlcollect        = xml.collect
-local xmltext           = xml.text
-local xmltostring       = xml.tostring
-local xmlapplylpath     = xml.applylpath
-local xmlunspecialized  = xml.unspecialized
-local xmldespecialized  = xml.despecialized -- nicer in expanded xml
-local xmlprivatetoken   = xml.privatetoken
-local xmlstripelement   = xml.stripelement
-local xmlinclusion      = xml.inclusion
-local xmlinclusions     = xml.inclusions
-local xmlbadinclusions  = xml.badinclusions
-local xmlcontent        = xml.content
-local xmllastmatch      = xml.lastmatch
-local xmlpushmatch      = xml.pushmatch
-local xmlpopmatch       = xml.popmatch
-local xmlstring         = xml.string
+local xmlelements        = xml.elements
+local xmlcollected       = xml.collected
+local xmlsetproperty     = xml.setproperty
+local xmlwithelements    = xml.withelements
+local xmlserialize       = xml.serialize
+local xmlcollect         = xml.collect
+local xmltext            = xml.text
+local xmltostring        = xml.tostring
+local xmlapplylpath      = xml.applylpath
+local xmlunspecialized   = xml.unspecialized
+local xmldespecialized   = xml.despecialized -- nicer in expanded xml
+local xmlprivatetoken    = xml.privatetoken
+local xmlstripelement    = xml.stripelement
+local xmlinclusion       = xml.inclusion
+local xmlinclusions      = xml.inclusions
+local xmlbadinclusions   = xml.badinclusions
+local xmlcontent         = xml.content
+local xmllastmatch       = xml.lastmatch
+local xmlpushmatch       = xml.pushmatch
+local xmlpopmatch        = xml.popmatch
+local xmlstring          = xml.string
+local xmlserializetotext = xml.serializetotext
+
+local variables          = interfaces and interfaces.variables or { }
+
+local settings_to_hash   = utilities.parsers.settings_to_hash
+local settings_to_set    = utilities.parsers.settings_to_set
+local options_to_hash    = utilities.parsers.options_to_hash
+local options_to_array   = utilities.parsers.options_to_array
+
+local insertbeforevalue  = utilities.tables.insertbeforevalue
+local insertaftervalue   = utilities.tables.insertaftervalue
+
+local resolveprefix      = resolvers.resolve
+
+local starttiming        = statistics.starttiming
+local stoptiming         = statistics.stoptiming
+
+local trace_setups       = false  trackers.register("lxml.setups",   function(v) trace_setups    = v end)
+local trace_loading      = false  trackers.register("lxml.loading",  function(v) trace_loading   = v end)
+local trace_access       = false  trackers.register("lxml.access",   function(v) trace_access    = v end)
+local trace_comments     = false  trackers.register("lxml.comments", function(v) trace_comments  = v end)
+local trace_entities     = false  trackers.register("xml.entities",  function(v) trace_entities  = v end)
+local trace_selectors    = false  trackers.register("lxml.selectors",function(v) trace_selectors = v end)
+
+local report_lxml        = logs.reporter("lxml","tex")
+local report_xml         = logs.reporter("xml","tex")
+
+local forceraw           = false
+
+local p_texescape        = patterns.texescape
 
 directives.enable("xml.path.keeplastmatch")
-
-local variables         = interfaces and interfaces.variables or { }
-
-local settings_to_hash  = utilities.parsers.settings_to_hash
-local settings_to_set   = utilities.parsers.settings_to_set
-local options_to_hash   = utilities.parsers.options_to_hash
-local options_to_array  = utilities.parsers.options_to_array
-
-local insertbeforevalue = utilities.tables.insertbeforevalue
-local insertaftervalue  = utilities.tables.insertaftervalue
-
-local resolveprefix     = resolvers.resolve
-
-local starttiming       = statistics.starttiming
-local stoptiming        = statistics.stoptiming
-
-local trace_setups      = false  trackers.register("lxml.setups",   function(v) trace_setups    = v end)
-local trace_loading     = false  trackers.register("lxml.loading",  function(v) trace_loading   = v end)
-local trace_access      = false  trackers.register("lxml.access",   function(v) trace_access    = v end)
-local trace_comments    = false  trackers.register("lxml.comments", function(v) trace_comments  = v end)
-local trace_entities    = false  trackers.register("xml.entities",  function(v) trace_entities  = v end)
-local trace_selectors   = false  trackers.register("lxml.selectors",function(v) trace_selectors = v end)
-
-local report_lxml       = logs.reporter("lxml","tex")
-local report_xml        = logs.reporter("xml","tex")
-
-local forceraw          = false
-
-local p_texescape       = patterns.texescape
 
 -- tex entities
 
@@ -2237,23 +2238,30 @@ end
 texfinalizers.upperall = xmlfinalizers.upperall
 texfinalizers.lowerall = xmlfinalizers.lowerall
 
-function lxml.tobuffer(id,pattern,name,unescaped)
+function lxml.tobuffer(id,pattern,name,unescaped,contentonly)
     local collected = xmlapplylpath(getid(id),pattern)
     if collected then
+        local collected = collected[1]
         if unescaped == true then
-            collected = xmlcontent(collected[1]) -- expanded entities !
+            -- expanded entities !
+            if contentonly then
+                collected = xmlserializetotext(collected.dt)
+            else
+                collected = xmlcontent(collected)
+            end
         elseif unescaped == false then
             local t = { }
-            xmlstring(collected[1],function(s) t[#t+1] = s end)
+            xmlstring(collected,function(s) t[#t+1] = s end)
             collected = concat(t)
         else
-            collected = tostring(collected[1])
+            collected = tostring(collected)
         end
         buffers.assign(name,collected)
     else
         buffers.erase(name)
     end
 end
+
 
 -- relatively new:
 

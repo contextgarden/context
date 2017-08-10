@@ -121,10 +121,6 @@ local ctx_btxsetnumber            = context.btxsetnumber
 local ctx_btxsetlanguage          = context.btxsetlanguage
 local ctx_btxsetcombis            = context.btxsetcombis
 local ctx_btxsetcategory          = context.btxsetcategory
-local ctx_btxcitesetup            = context.btxcitesetup
-local ctx_btxsubcitesetup         = context.btxsubcitesetup
-local ctx_btxnumberingsetup       = context.btxnumberingsetup
-local ctx_btxpagesetup            = context.btxpagesetup
 local ctx_btxsetfirst             = context.btxsetfirst
 local ctx_btxsetsecond            = context.btxsetsecond
 local ctx_btxsetsuffix            = context.btxsetsuffix
@@ -134,12 +130,30 @@ local ctx_btxsetrighttext         = context.btxsetrighttext
 local ctx_btxsetbefore            = context.btxsetbefore
 local ctx_btxsetafter             = context.btxsetafter
 local ctx_btxsetbacklink          = context.btxsetbacklink
-local ctx_btxsetcount             = context.btxsetcount
-local ctx_btxsetconcat            = context.btxsetconcat
-local ctx_btxsetfirstpage         = context.btxsetfirstpage
-local ctx_btxsetlastpage          = context.btxsetlastpage
 local ctx_btxsetfirstinternal     = context.btxsetfirstinternal
 local ctx_btxsetlastinternal      = context.btxsetlastinternal
+
+-- local ctx_btxsetdataset           = function(s) setmacro("currentbtxdataset",       s) end -- context.btxsetdataset
+-- local ctx_btxsettag               = function(s) setmacro("currentbtxtag",           s) end -- context.btxsettag
+-- local ctx_btxsetnumber            = function(s) setmacro("currentbtxnumber",        s) end -- context.btxsetnumber
+-- local ctx_btxsetlanguage          = function(s) setmacro("currentbtxlanguage",      s) end -- context.btxsetlanguage
+-- local ctx_btxsetcombis            = function(s) setmacro("currentbtxcombis",        s) end -- context.btxsetcombis
+-- local ctx_btxsetcategory          = function(s) setmacro("currentbtxcategory",      s) end -- context.btxsetcategory
+-- local ctx_btxsetfirst             = function(s) setmacro("currentbtxfirst",         s) end -- context.btxsetfirst
+-- local ctx_btxsetsecond            = function(s) setmacro("currentbtxsecond",        s) end -- context.btxsetsecond
+-- local ctx_btxsetsuffix            = function(s) setmacro("currentbtxsuffix",        s) end -- context.btxsetsuffix
+-- local ctx_btxsetinternal          = function(s) setmacro("currentbtxinternal",      s) end -- context.btxsetinternal
+-- local ctx_btxsetlefttext          = function(s) setmacro("currentbtxlefttext",      s) end -- context.btxsetlefttext
+-- local ctx_btxsetrighttext         = function(s) setmacro("currentbtxrighttext",     s) end -- context.btxsetrighttext
+-- local ctx_btxsetbefore            = function(s) setmacro("currentbtxbefore",        s) end -- context.btxsetbefore
+-- local ctx_btxsetafter             = function(s) setmacro("currentbtxafter",         s) end -- context.btxsetafter
+-- local ctx_btxsetbacklink          = function(s) setmacro("currentbtxbacklink",      s) end -- context.btxsetbacklink
+-- local ctx_btxsetfirstinternal     = function(s) setmacro("currentbtxfirstinternal", s) end -- context.btxsetfirstinternal
+-- local ctx_btxsetlastinternal      = function(s) setmacro("currentbtxlastinternal",  s) end -- context.btxsetlastinternal
+
+local ctx_btxsetfirstpage         = context.btxsetfirstpage
+local ctx_btxsetlastpage          = context.btxsetlastpage
+
 local ctx_btxstartcite            = context.btxstartcite
 local ctx_btxstopcite             = context.btxstopcite
 local ctx_btxstartciteauthor      = context.btxstartciteauthor
@@ -150,11 +164,21 @@ local ctx_btxstartlistentry       = context.btxstartlistentry
 local ctx_btxstoplistentry        = context.btxstoplistentry
 local ctx_btxstartcombientry      = context.btxstartcombientry
 local ctx_btxstopcombientry       = context.btxstopcombientry
-local ctx_btxlistsetup            = context.btxlistsetup
+
 local ctx_btxflushauthor          = context.btxflushauthor
+
 local ctx_btxsetnoflistentries    = context.btxsetnoflistentries
 local ctx_btxsetcurrentlistentry  = context.btxsetcurrentlistentry
 local ctx_btxsetcurrentlistindex  = context.btxsetcurrentlistindex
+
+local ctx_btxsetcount             = context.btxsetcount
+local ctx_btxsetconcat            = context.btxsetconcat
+
+local ctx_btxcitesetup            = context.btxcitesetup
+local ctx_btxsubcitesetup         = context.btxsubcitesetup
+local ctx_btxnumberingsetup       = context.btxnumberingsetup
+local ctx_btxpagesetup            = context.btxpagesetup
+local ctx_btxlistsetup            = context.btxlistsetup
 
 local trialtypesetting            = context.trialtypesetting
 
@@ -2453,7 +2477,7 @@ do
             for i=1,#source do
                 local entry   = source[i]
                 local current = entry.sortkey -- so we need a sortkey !
-                if type(sortkey) == "number" then
+                if type(current) == "number" then
                     if entry.suffix then
                         if not first then
                             first, last, firstr, lastr = current, current, entry, entry
@@ -3099,8 +3123,6 @@ do
         local partialinteractive = false
 
         local function authorgetter(first,last,key,specification) -- only first
-         -- ctx_btxsetfirst(first.author)         -- unformatted
-         -- ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             if first.type == "author" then
                 ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             else
