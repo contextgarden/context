@@ -1,0 +1,88 @@
+% \endinput
+
+\environment publications-style
+
+\startcomponent publications-journals
+
+\startchapter[title=Journals]
+
+An experimental feature is the ability to load a list of mapping from complete
+journal names to abbreviated forms.
+
+\startbuffer
+\btxloadjournallist[journals.txt] % the jabref list
+
+\btxexpandedjournal   {Z. Ökol. Nat.schutz} or
+\btxabbreviatedjournal{Z. Ökol. Nat.schutz} or
+\btxabbreviatedjournal{Z. Ökol. Nat. schutz}
+\stopbuffer
+
+\typeTEXbuffer \getbuffer
+
+In this case the text file looks like:
+
+\starttyping
+Zeitschrift für Ökologie und Naturschutz = Z. Ökol. Nat..schutz
+....
+\stoptyping
+
+Instead you can have a \LUA\ file that looks like:
+
+\startLUA
+return {
+    ["Zeitschrift für Ökologie und Naturschutz"] = "Z. Ökol. Nat.schutz",
+    ...
+}
+\stopLUA
+
+or
+
+\startLUA
+return {
+    { "Zeitschrift für Ökologie und Naturschutz", "Z. Ökol. Nat.schutz" },
+    ...
+}
+\stopLUA
+
+A file can be saved with:
+
+\startTEX
+\btxsavejournallist[journals.lua]
+\stopTEX
+
+and then loaded again in a second run. For small lists it makes not much sense
+to cache the lists but if you have tens thousands of journals it can be
+considered. Normally loading is can be neglected compared to the run. Anyhow,
+such a list looks like this:
+
+\startLUA
+return {
+    ["abbreviations"]={
+        ["zeitschriftfürökologieundnaturschutz"] = "Z. Ökol. Nat.schutz",
+    },
+    ["expansions"]={
+        ["zökolnatschutz"] = "Zeitschrift für Ökologie und Naturschutz",
+    },
+}
+\stopLUA
+
+In the future \type {mtx-bibtex} might be able to generate such lists (once we know
+what users come up with).
+
+You can add additional entries with:
+
+\startTEX
+\btxaddjournal
+  [Zeitschrift für Ökologie und Naturschutz]
+  [Z. Ökol. Nat.schutz]
+\stopTEX
+
+As usual with such mechanisms, internally spaces, punctuation and case are
+ignored with a lookup.
+
+There are also two manipulators for journals: \type {expandedjournal} and
+\type {abbreviatedjournal}.
+
+\stopchapter
+
+\stopcomponent

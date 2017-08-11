@@ -21785,6 +21785,12 @@
       <cd:constant type="right"/>
       <cd:constant default="yes" type="normal"/>
      </cd:parameter>
+     <cd:parameter name="location">
+      <cd:constant type="top"/>
+      <cd:constant type="center"/>
+      <cd:constant type="bottom"/>
+      <cd:constant default="yes" type="normal"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -32160,9 +32166,6 @@
   </cd:command>
   <cd:command category="bibliography" file="publ-tra.mkiv" name="showbtxdatasetfields">
    <cd:arguments>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
     <cd:assignments list="yes" optional="yes">
      <cd:parameter name="specification">
       <cd:constant type="cd:name"/>
@@ -32215,9 +32218,6 @@
   </cd:command>
   <cd:command category="bibliography" file="publ-tra.mkiv" name="showbtxdatasetcompleteness">
    <cd:arguments>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
     <cd:assignments list="yes" optional="yes">
      <cd:parameter name="specification">
       <cd:constant type="cd:name"/>

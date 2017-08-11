@@ -103,7 +103,7 @@ function tracers.showdatasetcompleteness(settings)
 
     local preamble = { "|lTBw(5em)|lBTp(10em)|plT|" }
 
-    local function identified(tag,category,crossref,index)
+    local function do_identified(tag,category,crossref,index)
         ctx_NC() ctx_monobold(index)
         ctx_NC() ctx_monobold(category)
         ctx_NC() if crossref then
@@ -114,7 +114,7 @@ function tracers.showdatasetcompleteness(settings)
         ctx_NC() ctx_NR()
     end
 
-    local function required(done,foundfields,key,value,indirect)
+    local function do_required(done,found,key,value,indirect)
         ctx_NC() if not done then ctx_monobold("required") end
         ctx_NC() context(key)
         ctx_NC()
@@ -131,11 +131,11 @@ function tracers.showdatasetcompleteness(settings)
                 context("\\darkred\\tttf [missing value]")
             end
         ctx_NC() ctx_NR()
-        foundfields[key] = nil
+        found[key] = nil
         return done or true
     end
 
-    local function optional(done,foundfields,key,value,indirect)
+    local function do_optional(done,found,key,value,indirect)
         ctx_NC() if not done then ctx_monobold("optional") end
         ctx_NC() context(key)
         ctx_NC()
@@ -146,11 +146,11 @@ function tracers.showdatasetcompleteness(settings)
                 ctx_verbatim(value)
             end
         ctx_NC() ctx_NR()
-        foundfields[key] = nil
+        found[key] = nil
         return done or true
     end
 
-    local function special(done,key,value)
+    local function do_special(done,key,value)
         ctx_NC() if not done then ctx_monobold("special") end
         ctx_NC() context(key)
         ctx_NC() if value then ctx_verbatim(value) end
@@ -158,7 +158,7 @@ function tracers.showdatasetcompleteness(settings)
         return done or true
     end
 
-    local function extra(done,key,value)
+    local function do_extra(done,key,value)
         ctx_NC() if not done then ctx_monobold("extra") end
         ctx_NC() context(key)
         ctx_NC() if value then ctx_verbatim(value) end
@@ -168,84 +168,112 @@ function tracers.showdatasetcompleteness(settings)
 
     if next(luadata) then
         for tag, entry in sortedhash(luadata) do
-            local category    = entry.category
-            local fields      = categories[category]
-            local foundfields = { }
+            local category = entry.category
+            local fields   = categories[category]
+            local found    = { }
+            local flushed  = { }
             for k, v in next, entry do
-                foundfields[k] = true
+                found[k] = true
             end
             ctx_starttabulate(preamble)
-            identified(tag,category,entry.crossref,entry.index)
+            do_identified(tag,category,entry.crossref,entry.index)
             ctx_FL()
             if fields then
-                local requiredfields = fields.required
-                local sets = fields.sets or { }
-                local done = false
-                if requiredfields then
-                    for i=1,#requiredfields do
-                        local r = requiredfields[i]
+                local required = fields.required
+                local sets     = fields.sets or { }
+                local done     = false
+                if required then
+                    for i=1,#required do
+                        local r = required[i]
                         local r = sets[r] or r
                         if type(r) == "table" then
                             local okay = false
                             for i=1,#r do
                                 local ri = r[i]
-                                if rawget(entry,ri) then
-                                    done = required(done,foundfields,ri,entry[ri])
-                                    okay = true
-                                elseif entry[ri] then
-                                    done = required(done,foundfields,ri,entry[ri],true)
-                                    okay = true
+                                if not flushed[ri] then
+                                    -- already done
+                                    if rawget(entry,ri) then
+                                        done = do_required(done,found,ri,entry[ri])
+                                        okay = true
+                                        flushed[ri] = true
+                                    elseif entry[ri] then
+                                        done = do_required(done,found,ri,entry[ri],true)
+                                        okay = true
+                                        flushed[ri] = true
+                                    end
                                 end
                             end
-                            if not okay then
-                                done = required(done,foundfields,table.concat(r," {\\letterbar} "))
+                            if not okay and not flushed[r] then
+                                done = do_required(done,found,concat(r," {\\letterbar} "))
+                                flushed[r] = true
                             end
                         elseif rawget(entry,r) then
-                            done = required(done,foundfields,r,entry[r])
+                            if not flushed[r] then
+                                done = do_required(done,found,r,entry[r])
+                                flushed[r] = true
+                            end
                         elseif entry[r] then
-                            done = required(done,foundfields,r,entry[r],true)
+                            if not flushed[r] then
+                                done = do_required(done,found,r,entry[r],true)
+                                flushed[r] = true
+                            end
                         else
-                            done = required(done,foundfields,r)
+                            if not flushed[r] then
+                                done = do_required(done,found,r)
+                                flushed[r] = true
+                            end
                         end
                     end
                 end
-                local optionalfields = fields.optional
-                local done = false
-                if optionalfields then
-                    for i=1,#optionalfields do
-                        local o = optionalfields[i]
+                local optional = fields.optional
+                local done     = false
+                if optional then
+                    for i=1,#optional do
+                        local o = optional[i]
                         local o = sets[o] or o
                         if type(o) == "table" then
                             for i=1,#o do
                                 local oi = o[i]
-                                if rawget(entry,oi) then
-                                    done = optional(done,foundfields,oi,entry[oi])
-                                elseif entry[oi] then
-                                    done = optional(done,foundfields,oi,entry[oi],true)
+                                if not flushed[oi] then
+                                    if rawget(entry,oi) then
+                                        done = do_optional(done,found,oi,entry[oi])
+                                        flushed[oi] = true
+                                    elseif entry[oi] then
+                                        done = do_optional(done,found,oi,entry[oi],true)
+                                        flushed[oi] = true
+                                    end
                                 end
                             end
                         elseif rawget(entry,o) then
-                            done = optional(done,foundfields,o,entry[o])
+                            if not flushed[o] then
+                                done = do_optional(done,found,o,entry[o])
+                                flushed[o] = true
+                            end
                         elseif entry[o] then
-                            done = optional(done,foundfields,o,entry[o],true)
+                            if not flushed[o] then
+                                done = do_optional(done,found,o,entry[o],true)
+                                flushed[o] = true
+                            end
                         end
                     end
                 end
             end
             local done = false
-            for k, v in sortedhash(foundfields) do
+            for k, v in sortedhash(found) do
                 if privates[k] then
                     -- skip
-                elseif specials[k] then
-                    done = special(done,k,entry[k])
+                elseif specials[k] and not flushed[k] then
+                    done = do_special(done,k,entry[k])
+                    flushed[k] = true
                 end
             end
             local done = false
-            for k, v in sortedhash(foundfields) do
+            for k, v in sortedhash(found) do
                 if privates[k] then
                     -- skip
-                elseif not specials[k] then
-                    done = extra(done,k,entry[k])
+                elseif not specials[k] and not flushed[k] then
+                    done = do_extra(done,k,entry[k])
+                    flushed[k] = true
                 end
             end
             ctx_stoptabulate()

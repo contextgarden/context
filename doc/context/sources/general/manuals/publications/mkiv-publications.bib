@@ -1,0 +1,680 @@
+@Comment{Start example}
+@Article{article,
+  Title                    = {Article title},
+  Title:fr                 = {Titre de l'article},
+  Author                   = {First Last}
+                      # { and First Middle Last}
+                      # { and Last, First-Combined}
+                      # { and First van Last}
+                      # { and van Last, First Middle}
+                      # { and Last, Junior, First Middle}
+                      # { and van Last, Junior III, First Middle}
+                      # { and De La, Last, Junior III, First Middle},
+  Journal                  = {Journal name},
+  Year                     = {YYYY},
+
+  Note                     = {note...},
+  Number                   = {number},
+  Pages                    = {ff--tt},
+  Subtitle                 = {Subtitle},
+  Type                     = {Special Issue},
+  Volume                   = {volume},
+
+  Month                    = {MM-ignored!},
+  Day                      = {DD-ignored!},
+  Abstract                 = {Abstract...},
+  Warning                  = {Notice that Comment= also exists},
+  Comment                  = {Comment...},
+  XCrossref                = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {keyword1; keyword2; keyword3},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+@Comment{Stop example}
+@Article{article,
+  Title                    = {Article title},
+  Title:fr                 = {Titre de l'article},
+  Author                   = {First Last}
+                      # { and First Middle Last}
+                      # { and Last, First-Combined}
+                      # { and First van Last}
+                      # { and van Last, First Middle}
+                      # { and Last, Junior, First Middle}
+                      # { and van Last, Junior III, First Middle}
+                      # { and De La, Last, Junior III, First Middle},
+  Journal                  = {Journal name},
+  Year                     = {YYYY},
+
+  Note                     = {note...},
+  Number                   = {number},
+  Pages                    = {ff--tt},
+  Subtitle                 = {Subtitle},
+  Type                     = {Special Issue},
+  Volume                   = {volume},
+
+  Month                    = {MM-ignored!},
+  Day                      = {DD-ignored!},
+  Abstract                 = {Abstract...},
+  Warning                  = {Notice that Comment= also exists},
+  Comment                  = {Comment...},
+  XCrossref                = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {keyword1; keyword2; keyword3},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Comment{We define a few other instances of Article to test some realistic contingencies.}
+
+@Article{advancedonline,
+  Message                  = {This is an example of an advanced online publication.},
+  Title                    = {Advanced article title},
+  Author                   = {LastnameA, FirstnameA
+                          and LastnameB, FirstnameB
+                          and LastnameC, FirstnameC
+                          and LastnameD, FirstnameD
+                          and LastnameE, FirstnameE
+                          and LastnameF, FirstnameF
+                          and LastnameG, FirstnameG},
+  Journal                  = {Journal name},
+
+  Language                 = {english},
+  Url                      = {url},
+}
+
+@Magazine{magazine,
+  Message                  = {This is a magazine article.},
+  Title                    = {Magazine article title},
+  Author                   = {MagazineLastname, Firstname},
+  Journal                  = {Magazine name},
+  Year                     = {YYYY},
+
+  Month                    = {Month},
+  Day                      = {DD},
+  Note                     = {note...},
+  Number                   = {number},
+  Pages                    = {ff--tt},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Keywords                 = {magazine},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Newspaper{newspaper,
+  Message                  = {This is a newspaper article.},
+  Title                    = {Article title},
+  Author                   = {NewspaperLastname, Firstname},
+  Journal                  = {Newspaper name},
+  Year                     = {YYYY},
+
+  Month                    = {Month},
+  Day                      = {DD},
+  Note                     = {note...},
+  Number                   = {number},
+  Pages                    = {ff--tt},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Keywords                 = {newspaper},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Newspaper{editorial,
+  Message                  = {This is a newspaper editorial.},
+  Editor                   = {EditorLastname, Firstname},
+  Title                    = {Editorial title},
+  Journal                  = {Newspaper name},
+  Year                     = {YYYY},
+
+  Month                    = {Month},
+  Day                      = {DD},
+  Note                     = {note...},
+  Number                   = {number},
+  Pages                    = {ff--tt},
+  Type                     = {Editorial},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Keywords                 = {editorial},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Book{book,
+  Title                    = {Book title},
+  Title                    = {Title2},
+  Author                   = {BookAuthorLastnameA, Firstname
+                          and BookAuthorLastnameB, Firstname Middle
+                          and BookAuthorLastnameC, Firstname-Combined},
+  Editor                   = {EditorLastname, Firstname},
+  Editor                   = {EditorLastname2, Firstname},
+  Publisher                = {Publisher},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Edition                  = {edition},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Series                   = {series},
+  Type                     = {Translated title, for example},
+  Volume                   = {volume},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {book},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Book{selfpublished,
+  Title                    = {Book title},
+  Author                   = {BookAuthorLastname, Firstname},
+  Author                   = {BookAuthorLastname2, Firstname},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+
+  Comment                  = {A self-published book},
+  Language                 = {english},
+}
+
+@Book{editedbook,
+  Editor                   = {EditorLastnameA, Firstname
+                          and EditorLastnameB, Firstname},
+  Publisher                = {Publisher},
+  Title                    = {Book title},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+
+  Comment                  = {Editors as authors},
+  Language                 = {english},
+}
+
+@Book{noauthor,
+  Title                    = {Book title},
+  Publisher                = {Publisher},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+
+  Comment                  = {Publisher as author},
+  Language                 = {english},
+}
+
+@Booklet{booklet,
+  Title                    = {Booklet title},
+
+  Address                  = {Address},
+  Author                   = {BookletAuthorLastname, Firstname},
+  HowPublished             = {howpublished},
+  Month                    = {Month},
+  Note                     = {note...},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {booklet},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Conference{conference,
+  Title                    = {Conference title},
+  Author                   = {ConferenceAuthorLastname, Firstname},
+  Booktitle                = {Booktitle},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Editor                   = {EditorLastname, Firstname},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Organization             = {<Symposium conducted at the meeting of> Organization},
+  Pages                    = {ff--tt},
+  Publisher                = {publisher},
+  Series                   = {series},
+  Volume                   = {volume},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {conference},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Electronic{electronic,
+  Title                    = {Electronic title},
+
+  Address                  = {Address},
+  Author                   = {ElectronicAuthorLastname, Firstname},
+  HowPublished             = {howpublished},
+  Language                 = {english},
+  Month                    = {Month},
+  Note                     = {note...},
+  Organization             = {Organization},
+  Url                      = {url},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {electronic},
+  Review                   = {Review...},
+}
+
+@Film{film,
+  Title                    = {Film title},
+
+  Director                 = {DirectorLastname, Firstname},
+  Producer                 = {ProducerLastName, Firstname},
+  Publisher                = {studio},
+  Address                  = {address},
+  Note                     = {note...},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Keywords                 = {misc},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@InBook{inbook,
+  Title                    = {InBook title},
+  Author                   = {InBookAuthorLastname, Firstname},
+  Chapter                  = {Chapter title},
+  Editor                   = {EditorLastname, Firstname},
+  Pages                    = {ff--tt},
+  Publisher                = {publisher},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Edition                  = {edition},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Series                   = {series},
+  Type                     = {type},
+  Volume                   = {volume},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {inbook},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@InCollection{incollection,
+  Title                    = {InCollection title},
+  Author                   = {InCollectionAuthorLastname, Firstname},
+  Booktitle                = {Booktitle},
+  Publisher                = {publisher},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Chapter                  = {Chaptertitle},
+  Edition                  = {edition},
+  Editor                   = {EditorLastname, Firstname},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Pages                    = {ff--tt},
+  Series                   = {series},
+  Type                     = {type},
+  Volume                   = {volume},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {incollection},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@InProceedings{inproceedings,
+  Title                    = {InProceedings title},
+  Author                   = {InProceedingsAuthorLastname, Firstname},
+  Booktitle                = {Booktitle},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Editor                   = {EditorLastname, Firstname},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Organization             = {<Symposium conducted at the meeting of> Organization},
+  Pages                    = {ff--tt},
+  Publisher                = {publisher},
+  Series                   = {series},
+  Volume                   = {volume},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {inproceedings},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Manual{manual,
+  Title                    = {Manual title},
+
+  Address                  = {Address},
+  Author                   = {ManualLastname, Firstname},
+  Edition                  = {Edition},
+  Month                    = {Month},
+  Note                     = {note...},
+  Organization             = {Organization},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  Doi                      = {doi-specification},
+  Keywords                 = {manual},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@MastersThesis{mastersthesis,
+  Title                    = {MastersThesis title},
+  Author                   = {MastersThesisAuthorLastname, Firstname},
+  School                   = {school},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Month                    = {Month},
+  Note                     = {note...},
+  Type                     = {type},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {mastersthesis},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Thesis{thesis,
+  Title                    = {Thesis title},
+  Author                   = {ThesisAuthorLastname, Firstname},
+  School                   = {school},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Month                    = {Month},
+  Note                     = {note...},
+  Type                     = {type of thesis},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {mastersthesis},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Misc{misc,
+  Title                    = {Misc title},
+
+  Author                   = {MiscAuthorLastname, Firstname},
+  HowPublished             = {howpublished},
+  Month                    = {Month},
+  Note                     = {note...},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {misc},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Music{music,
+  Title                    = {Music title},
+  Album                    = {Album title},
+
+  Artist                   = {ArtistLastname, Firstname},
+  Composer                 = {ComposerLastName, Firstname},
+  Publisher                = {label},
+  Address                  = {address},
+  Note                     = {note...},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Keywords                 = {misc},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Other{other,
+  Title                    = {Other title},
+  Abstract                 = {Abstract...},
+  Author                   = {OtherAuthorLastname, Firstname},
+  Comment                  = {Comment...},
+  PercentCrossref                 = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {other},
+  Language                 = {english},
+  Note                     = {note...},
+  Review                   = {Review...},
+  Url                      = {url},
+  Year                     = {YYYY}
+}
+
+@Patent{patent,
+  Title                    = {Patent title},
+  Nationality              = {nationality},
+  Number                   = {number},
+  Year                     = {YYYY},
+  Yearfiled                = {YYYYfiled},
+  Author                   = {PatentAuthorLastname, Firstname},
+  Language                 = {english},
+  Note                     = {note...},
+  Url                      = {url},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {patent},
+  Review                   = {Review...},
+}
+
+@Periodical{periodical,
+  Title                    = {Periodical title},
+
+  Editor                   = {EditorLastname, Firstname},
+  Language                 = {english},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Organization             = {Organization},
+  Series                   = {series},
+  Url                      = {url},
+  Volume                   = {volume},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Author                   = {PeriodicalAuthorLastname, Firstname},
+  Journal                  = {Periodical Journal},
+  Comment                  = {Complete issue of a periodical, such as
+                              a special issue of a journal},
+  PercentCrossref          = {crossref},
+  Day                      = {DD},
+  Keywords                 = {periodical},
+  Review                   = {Review...},
+}
+
+@PhdThesis{phdthesis,
+  Title                    = {PhDThesis title},
+  Author                   = {PhDThesisAuthorLastname, Firstname},
+  School                   = {school},
+  Year                     = {YYYY},
+  Note                     = {note...},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref                 = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {phdthesis},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Proceedings{proceedings,
+  Title                    = {Proceedings title},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Editor                   = {EditorLastname, Firstname},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Organization             = {<Symposium conducted at the meeting of> Organization},
+  Publisher                = {Publisher},
+  Series                   = {series},
+  Volume                   = {volume},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {proceedings},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Proceedings{proceedings-organization,
+  Title                    = {Proceedings title},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Month                    = {Month},
+  Day                      = {DD},
+  Note                     = {note...},
+  Number                   = {number},
+  Organization             = {Organization},
+  Publisher                = {Publisher},
+  Series                   = {series},
+  Volume                   = {volume},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Conference preceedings with no identified editor(s)},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {proceedings},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Standard{standard,
+  Title                    = {Standard title},
+  Institution              = {institution},
+  Organization             = {Organization},
+  Author                   = {StandardAuthorLastname, Firstname},
+  Language                 = {english},
+  Note                     = {note...},
+  Url                      = {url},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref                 = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {standard},
+  Review                   = {Review...},
+}
+
+@TechReport{techreport,
+  Title                    = {TechReport title},
+  Author                   = {TechReportAuthorLastname, Firstname},
+  Institution              = {institution},
+  Year                     = {YYYY},
+
+  Address                  = {Address},
+  Month                    = {Month},
+  Note                     = {note...},
+  Number                   = {number},
+  Type                     = {type},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {techreport},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Unpublished{unpublished,
+  Title                    = {Unpublished title},
+  Author                   = {UnpublishedAuthorLastname, Firstname},
+  Note                     = {note...},
+
+  Month                    = {Month},
+  Year                     = {YYYY},
+
+  Abstract                 = {Abstract...},
+  Comment                  = {Comment...},
+  PercentCrossref          = {crossref},
+  Doi                      = {doi-specification},
+  Keywords                 = {unpublished},
+  Language                 = {english},
+  Review                   = {Review...},
+  Url                      = {url}
+}
+
+@Literal{literal,
+  Key                      = {ZZZZ-end},
+  Text                     = {Copied literally to the bibliography},
+}
+
+@Book{selfpublished2,
+  Crossref                 = selfpublished,
+  Author                   = {BookAuthorLastname2, Firstname},
+}

@@ -1,0 +1,333 @@
+\environment publications-style
+
+\startcomponent publications-datasets
+
+\startchapter[title=Datasets]
+
+Normally in a document you will use only one bibliographic database, whether or
+not its source is distributed over multiple files. Nevertheless, we support
+multiple database formats as well which is why we talk of datasets instead. The
+use of multiple datasets allows the isolation of different bibliographies (a
+single bibliography can nevertheless be rendered by structure element: section,
+chapter, part, etc. as we shall see later). A good example of the use of multiple
+datasets would be for a proper bibliography itself in addition to a reference
+catalog (of equipment, suppliers, software, patents, legal jurisprudence, music,
+\unknown). Indeed, datasets can be used to hold both bibliographic and
+non|-|bibliographic information.
+
+A dataset is initiated with the \Cindex {definebtxdataset} command.
+
+\cindex{definebtxdataset}
+
+\startTEX
+\definebtxdataset[default]
+\stopTEX
+
+\startaside
+A default database, \TEXcode {default}, is predefined, yet we recommend defining
+it explicitly because in the future we may provide more options.
+\stopaside
+
+Like other commands in \CONTEXT, the dataset options can be setup using the
+command \Cindex {setupbtxdataset}.
+
+\cindex{definebtxdataset}
+\showsetup[definebtxdataset]
+
+\cindex{setupbtxdataset}
+\showsetup[setupbtxdataset]
+
+A dataset is loaded from some source through the use of the
+\Cindex {usebtxdataset} command.
+
+Here are some examples:
+
+\cindex{usebtxdataset}
+\tindex{.bib}
+\tindex{.xml}
+\tindex{.lua}
+\tindex{.bbl}
+
+\startTEX
+\usebtxdataset[tugboat][tugboat.bib]
+\usebtxdataset[default][mtx-bibtex-output.xml]
+\usebtxdataset[default][test-001-btx-standard.lua]
+\usebtxdataset[default][mkii-publications.bbl]
+\usebtxdataset[default][named.buffer]
+\stopTEX
+
+\cindex{usebtxdataset}
+\showsetup[usebtxdataset]
+
+The four suffixes illustrated in the example above are understood by the loader.
+Here the dataset (other than the first) has the name \TEXcode {default} and the
+four database files are merged. The last example shows that a \TEXcode {named}
+\Index {buffer} can also be employed to add dataset entries (in \BIBTEX\ format).
+This may be useful for small additions or examples, but it is generally a better
+idea (for convenience of management of data) to place them in files separate from
+the document source code.
+
+Definitions in the document source (coded in \TEX\ speak) are also added, and
+they are saved for successive runs. This means that if you load and define
+entries, they will be known at a next run beforehand, so that references to them
+are independent of where in the document source loading and definitions take
+place. This is convenient to eventually break|-|up the dataset loading calls to
+relevant sections of the document structure.
+
+In this document we use some example databases, so let's load one of them now:
+\startfootnote This code snippet demonstrates that \TEXcode {\usebtxdataset} will
+implicitly declare an undefined dataset name, although this practice is to be
+discouraged. Similarly, omitting to specify the dataset name \TEXcode {[default]}
+in the examples given earlier would fall|-|back correctly, but this, too, is to
+be discouraged as being potentially error|-|prone. \stopfootnote
+
+\startbuffer
+\usebtxdataset[example][mkiv-publications.bib]
+\stopbuffer
+
+\cindex{definebtxdataset}
+\cindex{usebtxdataset}
+
+\typeTEXbuffer
+
+\getbuffer
+
+The beginning of the file \type {mkiv-publications.bib} is shown below in \in
+{table} [tab:mkiv-publications.bib]. This bibliography database test file
+contains one entry of each standard type or category, with the \Index {tag} set
+to the entry type name. This entry shown here illustrates many features that will
+be explained elsewhere in the text.
+
+\startplacetable
+  [reference=tab:mkiv-publications.bib,
+   title={mkiv-publications.bib\\
+          This test file was constructed to illustrate various features of the
+          \BIBTEX\ format and contains some fields that might at first glance
+          appear somewhat curious.}].
+  \typeBTXfile
+    [range={@Comment{Start example},@Comment{Stop example}}]
+    {mkiv-publications.bib}
+\stopplacetable
+
+\startsection[title=Dataset coverage]
+
+You can load much more data than you actually need. Usually only those entries
+that are referred to explicitly will be shown in lists, and commands used to
+select these dataset entries will described in \in {chapter} [ch:cite].
+
+A single bibliography list can span groups of datasets; also multiple datasets
+can loaded from the same source, for example, one per chapter, in order to
+achieve a complete \Index {isolation} of bibliographies with respect to numbering
+and references.
+
+As this concept is not obvious but can be quite useful, we will repeat this last
+point: multiple datasets can be loaded using the same source file, i.e.\
+containing the same data, to be used in parallel, independently. There is little
+penalty in keeping even very large datasets as multiple copies in memory.
+
+The current active dataset to be used by default can be set with
+
+\startbuffer
+\setupbtx[dataset=example]
+\stopbuffer
+
+\cindex{setupbtx}
+
+\typeTEXbuffer
+
+\getbuffer
+
+However, most publication|-|related commands accept optional arguments that
+denote the dataset and references to entries can always be prefixed with a
+dataset identifier. More about that later.
+
+\showsetup[setupbtx]
+
+\stopsection
+
+\startsection [title=Specification]
+
+The content of a dataset can really be anything: entries of type (or categories)
+of all sorts, each containing arbitrary fields. The use to be made of this data
+can vary greatly since the system is not limited to the production of
+bibliography lists, in particular. The intended use is reflected through a set of
+specifications, specific to each bibliography (or non|-|bibliography) style.
+These specifications affect the interpretation of dataset categories and fields
+as well as their rendering. They will also affect the rendering of citations or
+the reference or invocation of individual data entries.
+
+The \TEXcode {default} bibliography specification is very simple: only the
+categories \TEXcode {book} and \TEXcode {article} are explicitly defined. These
+were shown along with their default rendering in the quick|-|start example on \at
+{page} [ch:quick]. We purposely limited this \TEXcode {default} specification as
+a minimal example for a bibliography.
+
+The notion of categories and the fields that they might contain and their
+interpretation depend on a particular specification, although the dataset
+\emphasis {content} is independent of all eventual rendering specifications that
+may be applied.
+
+An alternative set of specifications can be selected using, for example
+
+\startbuffer
+\usebtxdefinitions[apa]
+\stopbuffer
+
+\cindex{usebtxdefinitions}
+\index{style+APA}
+\seeindex{specification}{style}
+
+\typeTEXbuffer
+
+\getbuffer
+
+Alternately, the set of specifications can be loaded and (later) activated using
+
+\cindex{loadbtxdefinitionfile}
+\cindex{setupbtx}
+\index{style+APA}
+
+\startTEX
+\loadbtxdefinitionfile[apa]
+...
+\setupbtx[specification=apa]
+\stopTEX
+
+but it is safer to use the \TEXcode {\use} rather than \TEXcode {\load} form, in
+particular with specifications that may themselves have several variants. Also,
+it is way too easy to later forget to set the \TEXcode {specification} parameter
+and then wonder why the loaded specification was not applied.
+
+\startaside
+We wish to clarify that each specification defines the categories of entries and
+the interpretation or use of the fields that they contain, but does not alter the
+data itself, only how this data is used. It also defines \emphasis {setups} that
+control the rendering of lists as well as citations (to be described below).
+Additionally, it creates a namespace with settings for particular \emphasis
+{parameters} controlling the formatting of names, for example, punctuation as
+well as other stylistic features. The user can tune or overload these settings as
+needed.
+\stopaside
+
+A specification need not be activated before loading a dataset; indeed the
+contents of a dataset are stored independent of the specification, and multiple
+specifications can be applied to the same dataset (although this will not usually
+be the case). Furthermore, multiple specification files can be loaded
+simultaneously as they reside in separate namespaces, but only one specification
+can be selected at a time. We introduce these commands here in the context of
+datasets as the labeling of categories and of field use can change depending on
+the specification. Indeed, some specifications might ignore certain fields
+present in the dataset that may be used with other specifications. The details of
+how this is programmed will be explained in \in {Chapter} [ch:custom].
+
+So a specification is both a definition of how a dataset is to be interpreted as
+well as stylistic tuning of how it is to be rendered.
+
+\cindex   {loadbtxdefinitionfile}
+\showsetup[loadbtxdefinitionfile]
+
+\cindex   {usebtxdefinitions}
+\showsetup[usebtxdefinitions]
+
+\stopsection
+
+\startsection [title=Dataset diagnostics]
+
+You can ask for an overview of entries present in a dataset with:
+
+\startbuffer
+\showbtxdatasetfields[example]
+\stopbuffer
+
+\cindex{showbtxdatasetfields}
+
+\typeTEXbuffer
+
+The listing that this produces is shown in \in {Appendix} [ch:datasetfields].
+
+\cindex   {showbtxdatasetfields}
+\showsetup[showbtxdatasetfields]
+\showsetup[showbtxdatasetfields:argument]
+
+Sometimes you might want to check a database, listing all of its entries in
+detail. This can be particularly useful when in doubt concerning the correctness
+or the completeness of the data source, remembering that invalid entries and some
+syntax errors are simply skipped over. One way of examining the loaded dataset in
+detail is the following:
+
+\startbuffer
+\showbtxdatasetcompleteness[example]
+\stopbuffer
+
+\cindex{showbtxdatasetcompleteness}
+
+\typeTEXbuffer
+
+The diagnostic listing (which can be rather long) is shown in \in {Appendix}
+[ch:datasetcompleteness].
+
+\cindex   {showbtxdatasetcompleteness}
+\showsetup[showbtxdatasetcompleteness]
+\showsetup[showbtxdatasetcompleteness:argument]
+
+The dataset contains many entries and each entry is assigned to a \Index
+{category}. It must be stressed, so we repeat ourselves here, that these \quote
+{categories} can be of any sort whatsoever, the meaning of which resides in the
+rendering style that is chosen. The entries contain fields, and these too can be
+of any sort; their use also depends on the rendering style and the \Index
+{category} in which they belong. \BibTeX\ has conventionally defined a number of
+standard categories, each making use of a number of fields considered either
+\index {field+required}required, \index {field+optional}optional or \index
+{field+ignored}ignored. However, different traditional \BIBTEX\ rendering styles
+can make inconsistant use of these standard categories and fields. To make
+matters worse, different \Tindex {.bib} database handling programs might use (and
+impose) differing \quote {standards} as well, as mentioned above. \startfootnote
+For example, \Tindex {jabref}, in addition to discarding all comments contained
+in the database file, will convert all unrecognized, preciously named categories
+to \tindex {@other}\BTXcode {@Other}! Of course, \Tindex {jabref} is flexible
+enough to be configured with new categories and additional fields, so users of
+\Tindex {jabref} with \CONTEXT\ will probably want to use an extended, custom
+configuration. \stopfootnote This situation arises from the complexity of
+handling bibliographic data of all sorts.
+
+You can see all (currently known) \index {category}categories and \index
+{field}fields with:
+
+\cindex{showbtxfields}
+
+\startTEX
+\showbtxfields[rotation=...]
+\stopTEX
+
+The result is shown \in {table} [tab:fields], below.
+
+\startplacetable
+  [reference=tab:fields,
+   list={\TEXcode {\showbtxfields[rotation=90]}},
+   title={\cindex {showbtxfields}\TEXcode {\showbtxfields[rotation=90]} The entry
+          \Index {category} and \Index {field} names (and how they are used) are
+          defined by both the rendering style as well as by the contents of the
+          dataset. \index {field+required}\quote {Required} fields are indicated
+          in green. All unmarked fields are normally \index
+          {field+ignored}ignored in the rendering.}]
+    \small
+    \showbtxfields[rotation=90]
+\stopplacetable
+
+\cindex   {showbtxfields}
+\showsetup[showbtxfields]
+\showsetup[showbtxfields:argument]
+
+Note that other, possibly non|-|bibliographic use of the present dataset system
+might define entirely different categories and field types, possibly having
+nothing at all to do with the names shown here. An example of such use is given
+in \in {chapter} [ch:duane].
+
+Just as a database can be much larger than needed for a document, the same is
+true for the fields that make up an entry; not all entry fields will be
+necessarily used. This idea will be developed in the next section describing the
+rendering of bibliography lists.
+
+\stopsection
+
+\stopcomponent

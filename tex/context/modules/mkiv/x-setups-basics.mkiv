@@ -161,15 +161,38 @@
 %     }
 % \stopxmlsetups
 
+\settrue\c_cmd_show_registered
+
+\let\currentSETUPinclusion\empty
+
+\installtextracker
+  {cmd.showregistered}
+  {\settrue\c_cmd_show_registered}
+  {\setfalse\c_cmd_show_registered}
+
 \startxmlsetups xml:setups:register
+    \ifconditional\c_cmd_show_registered
+        \edef\currentSETUPinclusion{\xmlinclusionbase{#1}}%
+        \ifx\currentSETUPinclusion\empty\else
+            \edef\currentSETUPinclusion{\currentSETUPinclusion: }
+        \fi
+    \else
+        \let\currentSETUPinclusion\empty
+    \fi
     \doif {\xmlatt{#1}{variant}} {instance} {
-        \def\docommand##1%
-          {\xmlsetup{#1}{xml:setups:assemblename:instance}
-           \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
+        \def\docommand##1{
+            \xmlsetup{#1}{xml:setups:assemblename:instance}
+            \ifconditional\c_cmd_show_registered
+                \writestatus{known setup}{\currentSETUPinclusion stp:x:\currentSETUPfullname:##1}%
+            \fi
+            \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
         \processcommacommand[\clf_getinstances{#1}]\docommand
     }
     \xmlsetup{#1}{xml:setups:assemblename}
     % not really needed if we just use setups
+    \ifconditional\c_cmd_show_registered
+        \writestatus{known setup}{\currentSETUPinclusion stp:x:\currentSETUPfullname}%
+    \fi
     \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
 \stopxmlsetups
 
@@ -414,6 +437,7 @@
    \ifx\m_cmd_asked_setups\empty \else
      \doonlyonce{setups:#1}
        {\doglobal\prependtocommalist{setups:#1}\loadedsetups
+        \edef\currentloadedsetup{#1}%
         \doiffileexistselse{#1}
            {\xmlloadonly{setups:#1}{#1}{setups}}%
            {\xmlloadonly{setups:#1}{#1.xml}{setups}}%
@@ -648,22 +672,31 @@
     \fi
 \stopxmlsetups
 
+\startsetups xml:setups:start
+    \csname\e!start setuptext\endcsname
+\stopsetups
+
+\startsetups xml:setups:stop
+    \csname\e!stop setuptext\endcsname
+\stopsetups
+
 \startxmlsetups xml:setups:typeset:yes
+    \forgetparskip
     \glet\m_cmd_current_file\empty
     \ifcase\c_cmd_kind
         \xmlsetup{#1}{xml:setups:typeset:line}
     \or
-        \getvalue{\e!start setuptext}
+        \directsetup{xml:setups:start}
         \xmlsetup{#1}{xml:setups:typeset:raw}
-        \getvalue{\e!stop setuptext}
+        \directsetup{xml:setups:stop}
     \or
-        \getvalue{\e!start setuptext}
+        \directsetup{xml:setups:start}
         \xmlsetup{#1}{xml:setups:typeset:raw}
         \endgraf
         \xmlsetup{#1}{xml:setups:typeset:detail}
         \endgraf
         \xmlsetup{#1}{xml:setups:typeset:instances}
-        \getvalue{\e!stop setuptext}
+        \directsetup{xml:setups:stop}
     \fi
     \glet\m_cmd_current_file\empty
 \stopxmlsetups

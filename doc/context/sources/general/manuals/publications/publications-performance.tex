@@ -1,0 +1,46 @@
+\environment publications-style
+
+\startcomponent publications-performance
+
+\startchapter[title=Performance]
+
+The move from external \BIBTEX\ processing to internal processing has the
+advantage that we stay within the same run. In the traditional approach we had
+roughly the following steps:
+
+\startitemize[packed]
+\startitem
+    In the first \CONTEXT\ run information is collected and written to file.
+\stopitem
+\startitem
+    fter the first run the \BIBTEX\ program converts that file to another
+    one, a so called \type {bbl} file with \TEX\ commands.
+\stopitem
+\startitem
+    Successive runs use that file for typesetting references and producing
+    lists of publications that are reffered to.
+\stopitem
+\stopitemize
+
+In the \MKIV\ approach the bibliographic database is loaded in memory each run
+and processing also happens each run. On paper this looks less efficient but as
+\LUA\ is quite fast, in practice performance is much better.
+
+Probably most demanding is the treatment of authors as we have to analyze names,
+split multiple authors and reassemble firstnames, vons, surnames and juniors.
+When we sort by author sorting vectors have to be made which also has a penalty.
+However, in practice the user will not notice a performance degradation. We did
+some tests with a list of 500.000 authors, sorted them and typeset them as list
+(producing some 5400 dense pages in a small font and with small margins). This is
+typical one of these cases where using \LUAJITTEX\ saves quite time. On my
+machine it took just over 100 seconds to get this done. Unfortunately not all
+operating systems performed equally well: 32 bit versions worked fine, but 64 bit
+\LINUX\ either crashed (stalled) the machine or ran out of memory rather fast,
+while \MACOSX\ and \WINDOWS\ performed fine. In practice you will never run into
+this, unless you produce massive amounts of bibliographic entries. \LUAJIT\ has
+some benefits but also some drawbacks. In practice you will not run into these
+problems.
+
+\stopchapter
+
+\stopcomponent

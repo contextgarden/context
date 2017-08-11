@@ -621,10 +621,10 @@ function lxml.include(id,pattern,attribute,options)
     stoptiming(xml)
 end
 
-function lxml.inclusion(id,default)
+function lxml.inclusion(id,default,base)
     local inclusion = xmlinclusion(getid(id),default)
     if inclusion then
-        context(inclusion)
+        context(base and basename(inclusion) or inclusion)
     end
 end
 

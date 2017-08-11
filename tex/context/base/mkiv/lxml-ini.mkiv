@@ -75,6 +75,7 @@
 \let\xmlinclude                \clf_xmlinclude
 \let\xmlincludeoptions         \clf_xmlincludeoptions
 \let\xmlinclusion              \clf_xmlinclusion
+\let\xmlinclusionbase          \clf_xmlinclusionbase
 \let\xmlinclusions             \clf_xmlinclusions
 \let\xmlbadinclusions          \clf_xmlbadinclusions
 \let\xmlindex                  \clf_xmlindex
@@ -116,8 +117,8 @@
 \let\xmltoparameters           \clf_xmltoparameters
 \let\xmlverbatim               \clf_xmlverbatim
 
-\unexpanded\def\xmlinfo                #1{\hbox{\ttxx[\clf_xmlname{#1}]}}
-\unexpanded\def\xmlshow                #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
+\unexpanded\def\xmlinfo#1{\hbox{\ttxx[\clf_xmlname{#1}]}}
+\unexpanded\def\xmlshow#1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
 
 % the next one is handy for mode runs because it enforces a consistent
 % #1 indexing (needed when using \xmltext{main:123}{...} like calls

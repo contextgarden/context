@@ -1,0 +1,346 @@
+\startenvironment publications-style
+
+\dontcomplain
+
+\setupbodyfont
+  [dejavu,10pt]
+
+\definecolor[fore:one]  [darkmagenta]
+\definecolor[fore:two]  [darkcyan]
+\definecolor[fore:three][darkyellow]
+
+% \definecolor[back:one][.85(darkblue,white)]
+% \definecolor[back:two][.85(darkcyan,white)]
+\definecolor[back:one]  [.90(darkyellow,white)]
+\definecolor[back:two]  [.90(darkyellow,white)]
+\definecolor[back:three][.90(darkblue,white)]
+
+\setuphead
+  [chapter]
+  [header=high,
+   style=\bfc]
+
+\setuphead
+  [section,subject]
+  [style=\bfb]
+
+\setuphead
+  [subsection,subsubject]
+  [style=\bfa]
+
+\setuphead
+  [chapter,section,subject,subsection,subsubject]
+  [color=fore:one]
+
+\setupheader
+  [color=fore:one]
+
+\setuplayout
+  [topspace=1.5cm,
+   bottomspace=1cm,
+   width=middle,
+   height=middle]
+
+\setupfootertexts
+  [pagenumber]
+
+\setupheadertexts
+  [chapter]
+
+\setupnotes
+  [location=none]
+
+\setupnotation
+  [way=bychapter]
+
+\startsetups chapter:after
+     \ifcase\rawcountervalue[footnote]\relax
+     \or
+         \startsubject[title=Footnote]
+             \placefootnotes
+         \stopsubject
+     \else
+         \startsubject[title=Footnotes]
+             \placefootnotes
+         \stopsubject
+     \fi
+\stopsetups
+
+\setuphead
+  [chapter]
+  [aftersection=\setups{chapter:after}]
+
+\setupwhitespace
+  [big]
+
+% All this syntax highlighting doesn't look good but Alan likes it, so:
+
+\definetype[BTXcode][option=TEX]
+\definetype[XMLcode][option=XML]
+\definetype[TEXcode][option=TEX]
+\definetype[LUAcode][option=LUA]
+\definetype[MPcode] [option=MP]
+
+\definetyping[BTX]  [option=LUA] % we don't have a highlight yet
+
+\setuptyping
+  [keeptogether=yes]
+
+% I guess that Hans finds the syntax highlighting to be distracting ... Indeed,
+% too much color.
+
+\startmode[atpragma]
+
+    \setuptype         [option=,color=fore:two]
+    \setuptype[BTXcode][option=,color=fore:two]
+    \setuptype[XMLcode][option=,color=fore:two]
+    \setuptype[TEXcode][option=,color=fore:two]
+    \setuptype[LUAcode][option=,color=fore:two]
+    \setuptype[MPcode] [option=,color=fore:two]
+
+    \setuptyping     [option=,color=fore:one]
+    \setuptyping[BTX][option=,color=fore:one]
+    \setuptyping[XML][option=,color=fore:one]
+    \setuptyping[TEX][option=,color=fore:one]
+    \setuptyping[LUA][option=,color=fore:one]
+    \setuptyping[MP] [option=,color=fore:one]
+
+\stopmode
+
+% \setupinteraction
+%   [state=start,
+%    style=bold,
+%    color=fore:two,
+%    contrastcolor=fore:two]
+
+\setupinteraction
+  [state=start,
+   style=,
+   color=,
+   contrastcolor=]
+
+\setupalign
+  [verytolerant]
+
+\definehighlight
+  [emphasis]
+  [style=italic]
+
+% This bit of MP magic keeps the text aligned and puts the left frame in the margin.
+
+\startuseMPgraphic{mpos:region:aside}
+    for i=1 upto nofmultipars :
+        multipars[i] := multipars[i] leftenlarged ExHeight ;
+    endfor ;
+    draw_multi_pars ;
+    draw_multi_side ;
+\stopuseMPgraphic
+
+\definetextbackground
+  [framedbg]
+  [location=paragraph,
+   before=\blank,
+   after=\blank,
+   mp=mpos:region:aside,
+   topoffset=.5ex,
+   leftoffset=0pt,
+   rightoffset=1ex,
+   bottomoffset=.5ex,
+   frame=off,
+   leftframe=on,
+   frameoffset=1ex,
+   rulethickness=2pt,
+   framecolor=fore:two,
+   background=color,
+   backgroundcolor=back:two]
+
+\definetextbackground
+  [aside]
+  [framedbg]
+  [framecolor=fore:one,
+   backgroundcolor=back:one]
+
+\setupbtxrendering
+  [before={\startframedbg\blank[disable]},
+   after={\blank[back]\stopframedbg}]
+
+% HH: low level, no high level switch (yet):
+
+\setnewconstant\kindofpagetextareas 1
+
+\defineregister
+  [indexofauthors]
+
+\definebtxregister
+  [authors]
+  [field=author,
+   register=indexofauthors,
+   method=always,
+   dataset={default,tugboat,boekplan},
+   alternative=invertedshort]
+
+% the \textbackslash variant doesn't always work out well with inline verbatim as \tt is
+% something else .. also, following that by some arguments in \type is messy
+%
+% bad: \cindex {cite}\TEXcode{\cite[field][tag]}
+
+\define [1] \Index {\index {#1}#1}
+\define [1] \tindex{\index [#1]{\tt#1}}
+\define [1] \Tindex{\tindex{#1}{\tt#1}}
+\define [1] \cindex{\expanded{\index [#1]{\TEXcode{\expandafter\string\csname#1\endcsname}}}} % bah
+\define [1] \Cindex{\expanded{\cindex{#1}{\TEXcode{\expandafter\string\csname#1\endcsname}}}} % bah
+
+% hm
+
+\define [2] \name  {\btxregisterauthor{#1 #2}\indexofauthors{#1, #2}}
+\define [2] \Name  {\name{#1}{#2}#1}
+
+\setupnote
+  [footnote]
+  [next={ }] % Why should this be necessary?
+
+\setupfloat
+  [table]
+  [default={here,force}]
+
+\setupcaption
+  [table]
+  [location=top]
+
+\setuplist
+  [table]
+  [interaction=all,
+   alternative=c]
+
+\usemodule[abr-02]
+\usemodule[set-11]
+
+\logo [BibTeX] {Bib\TeX}
+
+\startmode[export]
+
+    \setupbackend
+      [export=yes]%,
+
+   % \setupexport
+   %   [hyphen=yes,
+   %    width=60em]
+
+    \setuptagging
+      [state=start]
+
+    % HH: bah:
+
+    \setupinteraction [option=bookmark]
+    \setupinteractionscreen [option=bookmark]
+    \placebookmarks [chapter,title,section,subsection]
+
+\stopmode
+
+\setupinteraction
+  [title={\documentvariable{title}},
+   subtitle={\documentvariable{subtitle}},
+   author={\documentvariable{author}}]
+
+\usemodule[setups-basics]
+
+\loadsetups[i-context]
+
+% \setupframedtext
+%   [setuptext]
+%   [rulethickness=2pt,
+%    framecolor=fore:three,
+%    leftframe=on,
+%    frame=off,
+%    width=\dimexpr\hsize\relax,
+%    background=color,
+%    backgroundcolor=back:three]
+
+\definetextbackground
+  [mysetuptext]
+  [framedbg]
+  [framecolor=fore:three,
+   backgroundcolor=back:three]
+
+\startsetups xml:setups:start
+    \starttextbackground[mysetuptext]
+\stopsetups
+
+\startsetups xml:setups:stop
+    \stoptextbackground
+\stopsetups
+
+% Since this is a manual about bibliographies, let us use citations...
+
+\startbuffer [bibliography]
+@Book{Ierusalimschy2006,
+    author    = {Ierusalimschy, R.},
+    title     = {Programming in Lua},
+    year      = {2006},
+    publisher = {Lua.org},
+    isbn      = {8590379817},
+    url       = {http://www.lua.org/pil/contents.html},
+}
+
+@Book{APA2010,
+    title     = {Publication Manual of the American Psychological Association},
+    year      = {2010},
+    edition   = {Sixth},
+    address   = {Washington, DC},
+    publisher = {American Psychological Association},
+    note      = {291 pages},
+    ISBN      = {1-4338-0559-6 (hardcover)},
+    url       = {http://www.apa.org/books/},
+}
+
+@Article{Patashnik1988,
+    title     = {Bib\TEX ing},
+    author    = {Patashnik, Oren},
+    year      = {1988},
+    month     = {February},
+    day       = {8},
+    url       = {https://www.ctan.org/tex-archive/biblio/bibtex/base/btxdoc..pdf},
+}
+
+@Article{Markey2009,
+    title     = {Tame the BeaST},
+    subtitle  = {The B to X of Bib\TEX},
+    author    = {Markey, Nicolas},
+    year      = {2009},
+    month     = {October},
+    day       = {11},
+    url       = {http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf},
+}
+
+@Book{vanLeunen1992,
+    title     = {A Handbook for Scholars},
+    author    = {van Leunen, Mary-Claire},
+    year      = {1992},
+    edition   = {revised},
+    publisher = {Oxford University Press},
+    address   = {New York},
+}
+
+@BOOK{Darwin1859,
+    author    = {Darwin, C.},
+    year      = {1859},
+    title     = {On the Origin of Species by Means of Natural Selection, or The Preservation
+                 of Favoured Races in the Struggle for Life},
+    publisher = {John Murray},
+    address   = {London}
+}
+\stopbuffer
+
+\usebtxdataset
+  [bibliography.buffer]
+
+% also used:
+
+%\definebtxdataset
+%  [tugboat]
+
+%\usebtxdataset
+%  [tugboat]
+%  [tugboat.bib]
+
+\stopenvironment

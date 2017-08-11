@@ -232,20 +232,46 @@
    \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr#2\crcr\egroup
    \math_finish_eqalign_no}
 
+% \def\math_both_eqalign_no_aligned#1%
+%   {\ifmmode
+%      \the\mathdisplayaligntweaks
+%      \global\mathnumberstatus\plusone
+%      \ifcase\mathraggedstatus
+%        \def\math_finish_eqalign_no{\crcr\egroup}%
+%      \else
+%        % we're in a mathbox
+%        \vcenter\bgroup
+%        \def\math_finish_eqalign_no{\crcr\egroup\egroup}%
+%      \fi
+%    \fi
+%    #1%
+%    \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr}
+
+\installcorenamespace {mathalignlocation}
+
+\setvalue{\??mathalignlocation\v!top   }{\let\math_alignment_halign_method\halign\tpack}
+\setvalue{\??mathalignlocation\v!bottom}{\let\math_alignment_halign_method\halign\vpack}
+\setvalue{\??mathalignlocation\v!center}{\let\math_alignment_halign_method\halign\vcenter}
+
 \def\math_both_eqalign_no_aligned#1%
-  {\ifmmode
+  {\let\math_alignment_halign_method\math_halign_checked
+   \ifmmode
      \the\mathdisplayaligntweaks
      \global\mathnumberstatus\plusone
      \ifcase\mathraggedstatus
        \def\math_finish_eqalign_no{\crcr\egroup}%
-     \else
-       % we're in a mathbox
-       \vcenter\bgroup
+     \else % we're in a mathbox
+       \ifcsname\??mathalignlocation\mathalignmentparameter\c!location\endcsname
+         \lastnamedcs % top|bottom|center as suggested by HM
+       \else
+         \vcenter
+       \fi
+       \bgroup
        \def\math_finish_eqalign_no{\crcr\egroup\egroup}%
      \fi
    \fi
    #1%
-   \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr}
+   \math_alignment_halign_method\expandafter\bgroup\the\scratchtoks\crcr}
 
 \def\math_rlap#1%
   {\setbox\scratchbox\hbox{#1}%

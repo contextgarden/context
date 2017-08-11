@@ -1,0 +1,107 @@
+\environment publications-style
+
+\startcomponent publications-tracing
+
+\startchapter
+  [title=Tracing]
+
+There are several tracing options. If you want to see where a citations refers to
+and where a list entry point back to, you can say:
+
+\startTEX
+\enabletrackers[publications.crosslinks]
+\stopTEX
+
+This injects markers in both places. One list entry can point to multiple
+citations. The other tracers a more for debugging and can generate lots of
+messages.
+
+\startTEX
+publications
+publications.authorhash
+publications.cite
+publications.cite.missing
+publications.cite.references
+publications.detail
+publications.duplicates
+publications.match
+publications.sorters
+publications.suffixes
+\stopTEX
+
+You can also trace the databases. Take this one:
+
+\startbuffer
+\startbuffer[phony]
+@comment { warning :
+    Hello Allan!
+    How are you doing today?
+}
+
+@CoMMeNT { message :
+    Hello Allan!
+    How are you doing today?
+}
+
+@comment {
+    all kind of crap
+}
+
+@Article{Myarticle,
+  Title                    = {My title},
+  Author                   = {Myself, Me},
+  Journal                  = {My favorite journal},
+  Year                     = {2014},
+  Pages                    = {1},
+}
+
+@Foo{foo,
+  Goo = goo,
+}
+\stopbuffer
+\stopbuffer
+
+\typeBTXbuffer \getbuffer
+
+\startbuffer
+\usebtxdataset [phony] [phony.buffer]
+\stopbuffer
+
+When we load this database (buffer) with:
+
+\typeTEXbuffer \getbuffer
+
+We get this on the console and in the log
+
+\starttyping
+publications > adding bib data to set 'phony' from source 'phony'
+publications > phony > warning : Hello Allan!
+publications > phony > warning : How are you doing today?
+publications > phony > message : Hello Allan!
+publications > phony > message : How are you doing today?
+\stoptyping
+
+You can use this feature to add warnings to your database for entries that you
+need to check.
+
+You can also use comment to hide entries:
+
+\startBTX
+@comment {
+
+    @article{Hobby1999,
+      author  = {Hobby, John D.},
+      year    = {1999},
+      title   = {Introduction to MetaPost},
+      journal = {Eutupon},
+      volume  = {2},
+      month   = {April},
+      pages   = {39-53},
+    }
+
+}
+\stopBTX
+
+\stopchapter
+
+\stopcomponent

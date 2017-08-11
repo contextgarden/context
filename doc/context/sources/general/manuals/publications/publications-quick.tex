@@ -1,0 +1,44 @@
+\environment publications-style
+
+\startcomponent publications-quick
+
+\startchapter
+  [reference=ch:quick,
+   list={Quick start},
+   title={\Index{Quick start}, for the impatient}]
+
+\cindex{usebtxdataset}
+\cindex{cite}
+\cindex{placelistofpublications}
+
+Without \emphasis {any} explanation:
+
+\typeTEXfile
+  {publications-quick-example.tex}
+
+\startcombination[c=2,r=1,distance=\emwidth]
+    \startcontent
+        \typesetfile
+            [publications-quick-example.tex]
+            [width=.5\dimexpr\textwidth-\emwidth\relax,frame=on,page=1]
+    \stopcontent
+    \startcaption
+        bodymatter
+    \stopcaption
+    \startcontent
+        \typesetfile
+            [publications-quick-example.tex]
+            [width=.5\dimexpr\textwidth-\emwidth\relax,frame=on,page=2]
+    \stopcontent
+    \startcaption
+        backmatter
+    \stopcaption
+\stopcombination
+
+This example demonstrates that the basic usage in the production of bibliography
+citations and lists is rather simple. However, once the user starts asking for
+particular customizations, then things can get quite complicated rather quickly.
+
+\stopchapter
+
+\stopcomponent

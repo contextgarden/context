@@ -1,0 +1,224 @@
+\environment publications-style
+
+\startcomponent publications-lua
+
+\startchapter[title=The \LUA\ view]
+
+The following is reserved for \LUA\ programmers.
+
+Because we manage data at the \LUA\ end it is tempting to access it there for
+other purposes. This is fine as long as you keep in mind that aspects of the
+implementation may change over time, although this is unlikely once the modules
+become stable.
+
+The entries are collected in datasets and each set has a unique name. In this
+document we have the set named \type {example}. A dataset table has several
+fields, and probably the one of most interest is the \type {luadata} field. Each
+entry in this table describes a publication. Take, for example \type
+{publications.datasets.example.luadata["article"]}:
+
+\startluacode
+    context.tocontext(publications.datasets.example.luadata["article"])
+\stopluacode
+
+There is a companion entry in the parallel \type {details} table,\\
+\type {publications.datasets.example.details["article"]}:
+
+\startluacode
+    context.tocontext(publications.datasets.example.details["article"])
+\stopluacode
+
+tracking further information derived from the publication entry and its use.
+
+You can loop over the entries using regular \LUA\ code combined with \MKIV\
+helpers:
+
+\startbuffer
+local dataset = publications.datasets.example
+
+context.starttabulate { "|l|l|l|" }
+context.NC() context("tag")
+context.NC() context("short")
+context.NC() context("title")
+context.NC() context.NR()
+context.HL()
+for tag, entry in table.sortedhash(dataset.luadata) do
+    local detail = dataset.details[tag] or { }
+    context.NC() context.type(tag)
+    context.NC() context(detail.shorthash)
+    context.NC() context(entry.title)
+    context.NC() context.NR()
+end
+context.stoptabulate()
+\stopbuffer
+
+\typeLUAbuffer
+
+This results in:
+
+\ctxluabuffer
+
+Notice that the years in this example dataset given as \type {YYYY} are
+interpreted as if they were \index {9999}\type {9999}.
+
+You can manipulate a dataset after loading. Of course this assumes that you know
+what kind of content you have and what you need for rendering. As example we load
+a small dataset.
+
+\startbuffer
+\definebtxdataset[drumming]
+\usebtxdataset[drumming][mkiv-publications.lua]
+\stopbuffer
+
+\cindex{definebtxdataset}
+\cindex{usebtxdataset}
+
+\typeTEXbuffer
+
+\getbuffer
+
+Because we're going to do some \LUA, we could have loaded this dataset using:
+
+\startTEX
+\startluacode
+publications.load("drumming","mkiv-publications.lua","lua")
+\stopluacode
+\stopTEX
+
+The dataset has three entries:%
+\startfootnote
+Gavin Harrison is in my (Hans) opinion one of the most creative, diverse and
+interesting drummers of our time. It's also fascinating to watch him play and a
+welcome distraction from writing code and manuals.
+\stopfootnote
+
+\typeLUAfile{mkiv-publications.lua}
+
+As you can see, we can have a subtitle. As an exercise, we will combine the
+title and subtitle into one:
+
+\startbuffer
+\startluacode
+local luadata = publications.datasets.drumming.luadata
+
+for tag, entry in next, luadata do
+    if entry.subtitle then
+        if entry.title then
+            entry.title = entry.title .. ", " .. entry.subtitle
+        else
+            entry.title = entry.subtitle
+        end
+        entry.subtitle = nil
+        logs.report("btx",
+            "combining title and subtitle of entry tagged %a into %a",
+            tag,entry.title)
+    end
+end
+\stopluacode
+\stopbuffer
+
+\typeTEXbuffer \getbuffer
+
+As a hash comes in a different order each run (something that demands a lot of
+care in multi|-|pass workflows that save data in between), so it is probably
+better to use this instead:
+
+\startTEX
+\startluacode
+local ordered = publications.datasets.drumming.ordered
+
+for i=1,#ordered do
+    local entry = ordered[i]
+    if entry.subtitle then
+        if entry.title then
+            entry.title = entry.title .. ", " .. entry.subtitle
+        else
+            entry.title = entry.subtitle
+        end
+        entry.subtitle = nil
+        logs.report("btx",
+            "combining title and subtitle of entry tagged %a into %a",
+            entry.tag,entry.title)
+    end
+end
+\stopluacode
+\stopTEX
+
+This loops processes in the order of definition. Alternately, one can sort by
+\Index{tag}:
+
+\startTEX
+\startluacode
+local luadata = publications.datasets.drumming.luadata
+
+for tag, entry in table.sortedhash(luadata) do
+    if entry.subtitle then
+        if entry.title then
+            entry.title = entry.title .. ", " .. entry.subtitle
+        else
+            entry.title = entry.subtitle
+        end
+        entry.subtitle = nil
+        logs.report("btx",
+            "combining title and subtitle of entry tagged %a into %a",
+            entry.tag,entry.title)
+    end
+end
+\stopluacode
+\stopTEX
+
+The original data is stored in a \LUA\ table, hashed by tag. Starting with \LUA\ 5.2
+each run of \LUA\ gets a different ordering of such a hash. In older versions, when you
+looped over a hash, the order was undefined, but the same as long as you used the same
+binary. This had the advantage that successive runs, something we often have in document
+processing gave consistent results. In today's \LUA\ we need to do much more sorting of
+hashes before we loop, especially when we save multi||pass data. It is for this reason
+that the \XML\ tree is sorted by hash key by default. That way lookups (especially
+the first of a set) give consistent outcomes.
+
+We can now simply typeset the entries with:
+
+\cindex{definebtxrendering}
+\cindex{placebtxrendering}
+
+\startbuffer
+\definebtxrendering[drumming][dataset=drumming,method=dataset]
+\placebtxrendering[drumming]
+\stopbuffer
+
+\typeTEXbuffer \getbuffer
+
+Because we just want to show the entries, and have no citations that force them
+to be shown, we have to set the \type {method} to \type {dataset}.
+
+Of course, none of these manipulations in \LUA\ are really necessary, as the
+rendering could be setup as:
+
+\cindex {btxfetch}
+\cindex {btxdoif}
+\cindex {btxcomma}
+\cindex {starttexdefinition}
+\cindex {stoptexdefinition}
+
+\startTEX
+\starttexdefinition btx:default:title
+    \btxfetch{author}
+    \btxdoif{subtitle} {
+        \btxcomma
+        \btxfetch{subtitle}
+    }
+\stoptexdefinition
+\stopTEX
+
+which is indeed the case in many of the styles (the \type {default} style uses
+\Cindex {btxcolon}). \startfootnote The specifications could be modified to use a
+parameter \type {inbetween={, }} for titles:subtitles that the user can easily
+setup as needed. But as such style questions are, in general, well defined in the
+specifications, this was not deemed necessary. \stopfootnote
+
+It is always a question of how much should be done in \LUA\ and how much should
+be done in \TEX. In the end, it is often a question of taste.
+
+\stopchapter
+
+\stopcomponent

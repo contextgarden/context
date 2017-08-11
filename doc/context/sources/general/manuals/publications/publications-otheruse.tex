@@ -1,0 +1,168 @@
+\environment publications-style
+
+\startcomponent publications-otheruse
+
+\startchapter
+   [reference=ch:duane,
+    title=Other use of datasets]
+
+Because a bibliography is just a kind of database, you can use the publications
+mechanism for other purposes as well. During the re|-|implementation \name
+{Miklavec}{M.}Mojca came up with the following definitions:
+
+\startbuffer
+\startbuffer[duane]
+@IMAGE {tug2013,
+    title       = "TUG 2013",
+    url         = "http://tug.org/tug2013/",
+    url_image   = "http://tug.org/tug2013/tug2013-color-300.jpg",
+    url_thumb   = "http://tug.org/tug2013/t2013-thumb.jpg",
+    description = "Official drawing of the TUG 2013 conference",
+    author      = "Duane Bibby",
+    year        = 2013,
+    copyright   = "TUG",
+}
+
+@IMAGE {tug2014,
+    title       = "TUG 2014",
+    url         = "http://tug.org/tug2014/",
+    url_image   = "http://tug.org/art/tug2014-color.jpg",
+    url_thumb   = "http://tug.org/tug2014/t2014-thumb.jpg",
+    description = "Official drawing of the TUG 2014 conference",
+    author      = "Duane Bibby",
+    year        = 2014,
+    copyright   = "TUG",
+}
+\stopbuffer
+\stopbuffer
+
+\typeBTXbuffer \name{Bibby}{D.}\getbuffer
+
+For documentation purposes we can have a definition in a buffer so that we can
+show it verbatim but also load it. The following code defines a dataset, loads
+the buffer and sets up a rendering.
+
+\startbuffer
+\definebtxdataset
+  [duane]
+
+\usebtxdataset
+  [duane]
+  [duane.buffer]
+
+\definebtx
+  [duane]
+  [default=,
+   specification=duane,
+   authorconversion=normal]
+
+\definebtx
+  [duane:list]
+  [duane]
+
+\definebtx
+  [duane:list:author]
+  [duane:list]
+
+\definebtx
+  [duane:list:image]
+  [duane:list]
+
+\definebtxrendering
+  [duane]
+  [specification=duane,
+   dataset=duane,
+   method=dataset,
+   numbering=no,
+   criterium=all]
+
+\stopbuffer
+
+\cindex{definebtxdataset}
+\cindex{usebtxdataset}
+\cindex{definebtx}
+\cindex{definebtxrendering}
+
+\typeTEXbuffer \getbuffer
+
+Instead of for instance \TEXcode {apa} we create a specification named \TEXcode
+{duane}. Because categories are rendered with a setup, we can define the
+following:
+
+\startbuffer
+\startsetups btx:duane:list:image
+  \tbox \bgroup
+    \bTABLE[offset=1ex]
+      \bTR
+        \bTD[ny=4]
+          \dontleavehmode
+          \externalfigure[\btxflush{url_thumb}][width=3cm]
+        \eTD
+        \bTD \btxflush{title} \eTD
+      \eTR
+      \bTR
+        \bTD \btxflush{author} \eTD
+      \eTR
+      \bTR
+        \bTD \btxflush{description} \eTD
+      \eTR
+      \bTR
+        \bTD
+          \goto{high res variant}[url(\btxflush{url_image})]
+        \eTD
+      \eTR
+    \eTABLE
+  \egroup
+\stopsetups
+
+\placebtxrendering[duane][criterium=all]
+\stopbuffer
+
+\cindex{startsetups}
+\cindex{stopsetups}
+\cindex{placebtxrendering}
+\cindex{btxflush}
+
+\typeTEXbuffer \getbuffer
+
+An alternative rendering is:
+
+\startbuffer
+\startsetups btx:duane:list:image
+  \bgroup
+    \bTABLE[offset=1ex]
+      \bTR
+        \bTD
+          \dontleavehmode
+          \goto{\externalfigure[\btxflush{url_thumb}][width=3cm]}
+            [url(\btxflush{url_image})]
+        \eTD
+        \bTD
+          \bold{\btxflush{title}}
+          \blank
+          \btxflush{description}
+          \blank [3*line]
+          \btxflush{author}
+        \eTD
+      \eTR
+    \eTABLE
+  \egroup
+\stopsetups
+
+\placebtxrendering[duane]
+\stopbuffer
+
+\cindex{startsetups}
+\cindex{stopsetups}
+\cindex{placebtxrendering}
+\cindex{btxflush}
+
+\typeTEXbuffer \getbuffer
+
+We only get the second rendering because we specified \TEXcode {criterium} as
+\TEXcode {all}. Future version of \CONTEXT\ will probably provide \Index{sorting}
+options and ways to plug in additional functionality.
+
+\stopchapter
+
+\stopcomponent

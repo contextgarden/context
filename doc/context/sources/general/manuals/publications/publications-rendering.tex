@@ -1,0 +1,549 @@
+\environment publications-style
+
+\startcomponent publications-rendering
+
+\startchapter[title=Renderings,reference=ch:renderings]
+
+\startsection
+  [reference=sec:styles,
+   title={Generating lists of publications}]
+
+A list of publications can be rendered at any place in the document, and multiple
+renderings can appear under certain limitations (according to \Index {scope}).
+The specification introduced previously defines the style of the rendering as
+well as what data it will contain.
+
+If you want to see what publications are in the database, the easiest way is to
+ask for a complete list:
+
+\startbuffer
+\usebtxdataset            % illustrated again here
+  [example]               % although already loaded
+  [mkiv-publications.bib] % in the previous chapter
+
+\definebtxrendering
+  [example]               % named rendering
+  [apa]                   % parent namespace
+  [dataset=example,
+   group=examples]        % group will be presented later
+
+\placelistofpublications  % aka \placebtxrendering
+  [example]               % rendering defined above
+  [method=dataset]        % i.e. all entries
+\stopbuffer
+
+\cindex{definebtxrendering}
+\cindex{placelistofpublications}
+\cindex{placebtxrendering}
+
+\typeTEXbuffer
+
+The commands \Cindex {placelistofpublications} (that is just a synonym for
+\Cindex {placebtxrendering}) refer to a named rendering and accept a list of
+options (inherited from \Cindex {setupbtxrendering}). When applied to a named
+dataset (other than \TEXcode {default}), a named rendering needs to be associated
+through \Cindex {definebtxrendering} as is done here.
+
+Note that the define shown above explicitly inherits from a rendering named
+\TEXcode {apa} that was itself defined when loading the specification file.
+\startfootnote The rendering parent \index {style+APA}\TEXcode {[apa]} sets the
+parameters: \TEXcode {specification=apa,} \TEXcode {sorttype=authoryear,} and
+\TEXcode {numbering=no,} described below. It also sets various list parameters in
+a protected \TEXcode {apa} namespace to produce a \quote {hanging} bibliography
+list. \stopfootnote Had this inheritance not been specified, the new rendering
+would inherit default, minimal settings. This notion of inheritance will be
+further illustrated later.
+
+The bibliography list rendering of our example dataset, following the \index
+{style+APA}APA style, is:
+
+\getbuffer
+
+The rendering is a list whose appearance can be tuned, as any list in \CONTEXT.
+It is somewhat more complex to manage, though, because we can have not only many
+different standards but also many fields that can be set up. This means that
+there are several commands involved. As we saw demonstrated above, a rendering is
+defined and setup using the commands:
+
+\cindex{definebtxrendering}
+
+\showsetup{definebtxrendering}
+
+\cindex{setupbtxrendering}
+
+\showsetup{setupbtxrendering}
+
+\startbuffer
+    \showrootvalues[btxrendering]
+    \showinstancevalues[btxrendering][default]
+    \usebtxdefinitions[apa] % needed for:
+    \showinstancevalues[btxrendering][apa]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A rendering is then placed using \Cindex {placebtxrendering}, a \CONTEXT\ command
+that accepts the same arguments as for its setup. Using \TEXcode
+{method=dataset}, as above, one renders the entire contents of the dataset.
+Normally, however, one would not use this \TEXcode {method} and place only a
+selection of entries that are to be used in the document, whereas the dataset may
+very well contain many other, unused references. The \TEXcode {method=global} or
+\TEXcode {method=local} option can be used to specify if this use is to be global
+for the entire document or else local to a structure element such as a part or a
+chapter.
+
+\cindex{placebtxrendering}
+
+\showsetup{placebtxrendering}
+
+\cindex{placelistofpublications}
+
+\showsetup{placelistofpublications}
+
+The rendering is a \TEXcode {list} and this reference list is numbered. These
+numbers can be displayed, or not, depending on the bibliography style
+specification through the use of the \index {numbering}\TEXcode {numbering=yes}
+or \TEXcode {no} parameter values. The \index {style+APA}APA style, illustrated
+above, normally does not number the bibliography list.
+
+The reference list is also \index {sorting}sorted, controlled by the parameter
+\TEXcode {sorttype}; here \TEXcode {sorttype=authoryear}, appropriate for the
+\index {style+APA}APA style, \Index {sorting} first by author list, then by
+publication year, then by title, finally by page. One can sort the list in many
+ways: for example \TEXcode {sorttype=index} will render the list in the order in
+which it was loaded into the dataset (see \in {table} [tab:sorttype] for an
+explanation of list sorting schemes).
+
+\startplacetable [location=force,
+  title={\TEXcode {sorttype=}},
+  reference=tab:sorttype]
+\index{sorting}
+\starttabulate [|Tp(5.5em)|p(.75\textwidth)|]
+\HL
+\NC default\\none\\cite\\list
+\NC render the list in the order in which it was built,
+    that is, in the order that references were selected from the dataset for
+    inclusion in the list. \NC \NR
+\HL
+\NC dataset\\index
+\NC sort the list according to the dataset index, that is, in the order in that
+    references were added to the dataset. \NC \NR
+\HL
+\NC reference
+\NC sort the list in alphabetical order of the citation \Index{tag}s of the
+    dataset. Note that all entries missing tags get assigned the dataset index as
+    their tag. \NC \NR
+\HL
+\NC key
+\NC sort the list in alphabetical order of the entry field \TEXcode {key}
+    (traditionally used in \BIBTEX\ as an alternate sorting key). Falls back on
+    the dataset index if no such field is present. \NC \NR
+\HL
+\NC short
+\NC sort the list in alphabetical order of the short tag (first three letters
+    of the author name or first letter of the first three authors followed by
+    the last two digits of the year). \NC \NR
+\HL
+\NC authoryear
+\NC sort the list in alphabetical order of the authors (or editors or publisher),
+    then by publication year, then by title (or by journal and volume) and
+    finally by page. \NC \NR
+\stoptabulate
+\stopplacetable
+
+As a concrete example, the rendering named \TEXcode {example} above inherits from
+the rendering instance named \TEXcode {apa} that is defined in the specification
+file as:
+
+\cindex{definebtxrendering}
+
+\startTEX
+\definebtxrendering
+  [apa]
+  [specification=apa,
+   sorttype=authoryear,
+   numbering=no]
+\stopTEX
+
+\startaside
+A more subtle characteristic of renderings is that one generally would not want a
+bibliography list to appear redundantly in a document as that would be confusing,
+unless of course it is desired that elements of the list reappear in later lists,
+for example when placing partial bibliographies at the end of each chapter and a
+complete bibliography list at the end of a book. One must specify \TEXcode
+{repeat=yes} in order to get multiple renderings of a bibliography list;
+otherwise, as they appear, entries get marked as placed and will be inhibited
+from being placed again elsewhere.
+\stopaside
+
+All renderings of bibliography lists such as the one shown earlier in this
+section also depend on a set of general list parameters that apply to each
+individual entry (a cited publication), as for any list item in \CONTEXT. These
+can be adjusted through the command \Cindex {setupbtxlist} (further described in
+\in {section} [sec:list], below). As an example, the \TEXcode {apa} specification
+file includes:
+
+\cindex{setupbtxlist}
+
+\startTEX
+\setupbtxlist
+  [apa]
+  [alternative=paragraph,
+   width=fit,
+   distance=.5em,
+   margin=3em]
+\stopTEX
+
+Such settings (yielding a hanging list that would be inappropriate with a
+numbered bibliography list) get inherited from the \TEXcode {apa} namespace in
+the rendering that we named \TEXcode {example} above.
+
+Let's try a new example (using a file taken from the \index {TUG bibliography
+archive}\goto {TUG bibliography archive}
+[url(http://ftp.math.utah.edu/pub/tex/bib/index.html)]): \startfootnote \index
+{template.bib} The file \TEXcode {template2.bib} is simply a copy of \TEXcode
+{template.bib} that has been cleaned|-|up to remove the empty entries.
+\stopfootnote
+
+\startbuffer
+\definebtxdataset[template]
+\usebtxdataset   [template][template2.bib]
+
+\loadbtxdefinitionfile[aps]
+\definebtxrendering
+  [template]
+  [aps]
+  [dataset=template,
+   group=examples]
+
+\placelistofpublications
+  [template]
+  [method=dataset]
+\stopbuffer
+
+\cindex{definebtxdataset}
+\cindex{usebtxdataset}
+\cindex{loadbtxdefinitionfile}
+\cindex{definebtxrendering}
+\cindex{placelistofpublications}
+
+\typeTEXbuffer
+
+Here, the new rendering is defined to inherit explicitly from a rendering named
+\index {style+APS}\TEXcode {aps} (whose specification is loaded but not activated
+here). Notice, in particular, compared to the previous rendering example, that
+the list is numbered and that there is no hanging margin (it uses the standard
+list \TEXcode {alternative=b}):
+
+\getbuffer
+
+The \Index {numbering} of the references are unique and pick|-|up from where the
+previous numbering stops (the first example contains 33 references, although this
+numbering is not displayed). This behavior can be \TEXcode {method=global} for
+the entire document, or else \TEXcode {method=local}, limited to a structural
+element such as a chapter or a part. Furthermore, one can associate renderings
+into particular number groups, effectively isolating them from any other
+renderings. For example, as seen above in the rendering definitions, the present
+manual uses:
+
+\cindex{setupbtxrendering}
+
+\startTEX
+\setupbtxrendering[example] [group=examples]
+\setupbtxrendering[template][group=examples]
+\stopTEX
+
+thus setting the numbering of the group \TEXcode {examples} apart from the
+numbering of the dataset \TEXcode {default} and its named rendering that contains
+this manual's own bibliography (that will be placed later, on \at {page}
+[ch:biblio]).
+
+\stopsection
+
+\startsection
+  [reference=sec:styles,
+   title={Rendering styles, or more on specifications}]
+
+The default rendering style implemented in the \MKII\ module was loosely based on
+the \index {style+APA}APA standard. In contrast, we made a design choice in the
+present \MKIV\ system to provide a very minimal \TEXcode {default} style, and one
+should not expect much from this default: in fact, it only recognizes \type
+{article} and \type {book} entries. A user requiring a more complete rendering
+will want to explicitly load another style file. One such complete specification,
+illustrated above and appropriately named \index {style+APA}\TEXcode {apa}, is
+described in the \cite [title] [default::APA2010] \cite [num] [default::APA2010].
+
+\startaside
+\emphasis {A note on the \index {style+APA}APA style:} We get the strong
+impression that the APA bibliography style standard was made with the implicit
+assumption that manual intervention would be involved in the editing and
+production process; It has been an arduous task to create a system capable of
+fully conforming to these specifications.
+
+Furthermore, we note that it has sometimes been argued that a numbered citation
+system and bibliography list is supposedly superior to the author|-|year scheme
+as is employed in the \index {style+APA}APA style (amongst others); indeed,
+handling numbered citations is certainly much easier from the point of view of
+the programmer of an automated typesetting system such as \TEX. Yet many find
+that the longer author|-|year citations can be of great use to the reader (as
+well as the writer) so we take no stand in this debate and provide both
+possibilities.
+
+We have made (and continue to make) a great effort to scrupulously respect the
+\index {style+APA}APA style in the so|-|named rendering. Yet be warned that very
+few editors and publishers in fact follow this style exactly so some
+customization will always be required.
+\stopaside
+
+In addition to the APA specification, there are many prescribed styles to render
+bibliographic descriptions that can be programmed as standards. Alternatives to
+\index {style+APA}\TEXcode {specification=apa} might be \index
+{style+MLA}\TEXcode {mla}, \index {style+Chicago}\TEXcode {chicago}, \index
+{style+Harvard}\TEXcode {harvard}, \index {style+IEEE}\TEXcode {ieee}, \index
+{style+APS}\TEXcode {aps} (commonly used in the physical sciences), \index
+{style+Vancouver}\TEXcode {vancouver} (used in the biological sciences), or many
+others. At this time, we only provide two description files, with \index
+{style+APS}\TEXcode {aps} being an example\startfootnote The \index
+{style+APS}APS style attempts to be very compact, providing complete yet minimal
+information, in contrast to the \index {style+APA}APA style which is rather
+verbose. \stopfootnote of a number|-|based rather than an authoryear|-|based
+scheme; more style schemes may be added in the future and the customization of a
+rendering style will be described in a later chapter.
+
+The rendering style usually also implies a particular bibliography list \Index
+{sorting} scheme as well as the use of a particular citation style. Indeed, the
+rendering of bibliography lists and references to it are intimately coupled. This
+question will be explained a bit later. The \index {style+APA}APA style, for
+example, specifies that the bibliography list be sorted by author and then by
+year, then by title. The list is not numbered (references are cited by author and
+year). Note, however, as can be seen from the two examples shown above that the
+references were indeed assigned numbers even though they are not displayed in the
+\index {style+APA}\TEXcode {apa} rendering (the user can easily choose to display
+these numbers, if desired).
+
+\stopsection
+
+\startsection
+  [list={Bibliography list scope},
+   title={Bibliography list \Index{scope}}]
+
+A single dataset can by used with multiple renderings. Although these renderings
+may illustrate different styles (as here for the purpose of demonstration in a
+manual on bibliographies), this would not be a coherent choice for a document
+that would normally employ a single bibliography style.
+
+The most obvious use of multiple renderings (employing a single specification) is
+the placement of bibliography lists localized by structure elements: parts,
+chapters in a book, sections, etc. through the option \TEXcode
+{criterium=chapter}, for example. This can be setup using:
+
+\cindex{setupbtxrendering}
+
+\startTEX
+\setupbtxrendering
+    [default]
+    [repeat=yes,
+     continue=yes,
+     method=global]
+\stopTEX
+
+followed at the end of each chapter by
+
+\cindex{placelistofpublications}
+
+\startTEX
+\placelistofpublications
+    [criterium=chapter]
+\stopTEX
+
+The numbering might alternately be made local through the option \TEXcode
+{method=local}. If desired, the reference numbers can also get prefixed:
+
+\cindex{setupbtxlist}
+
+\startTEX
+\setupbtxlist
+    [default]
+    [prefix=yes,
+     width=1cm]
+\stopTEX
+
+A bibliography list rendering placed at a single location, at the end of a book,
+for example, can also be easily split into structural parts. The following code
+(given without any explanation) illustrates this idea nicely:
+
+\cindex{placelistofpublications}
+
+\startTEX
+\startbackmatter
+    \startchapter [title=Bibliography,number=no,incrementnumber=no]
+        \startsubject [title=Introduction]
+            \placelistofpublications
+                [criterium=reference,reference=introduction]
+        \stopsubject
+        \dorecurse{12} {
+            \startsubject [title={Chapter #1}]
+                \placelistofpublications
+                    [criterium=bodypart:chapter,reference=#1]
+            \stopsubject
+        }
+    \stopchapter
+\stopbackmatter
+\stopTEX
+
+Note, as the above demonstrates, that the list of bibliography citations for
+\emphasis {any} referenced structural element can be placed \emphasis {anywhere}
+in the document, not simply within the structural element itself.
+
+\stopsection
+
+\startsection[title=Language]
+
+Bibliography lists (and citations in the text, see below) are rendered in the
+language of the document (\Cindex {mainlanguage}). However, a bibliography entry
+can contain a \TEXcode {language=} field and this can be used (if present),
+depending on the specification, in the rendering and hyphenation of the \TEXcode
+{title}, for example.
+
+One might choose to override this behavior and impose a single language for all
+bibliography entries (as well as for all other \CONTEXT\ constructs) using
+\Cindex {setupdelimitedtext} \TEXcode {[language=global]}.
+
+Since this directive is general for all delimited text in \CONTEXT\ and is not
+specific to bibliographies, one can apply it to force a particular language
+within a unique section, as in:
+
+\cindex{setupdelimitedtext}
+\cindex{placelistofpublications}
+
+\startTEX
+\startsection[title=Bibliografía]
+    \setupdelimitedtext[language=es]
+    \placelistofpublications
+\stopsection
+\stopTEX
+
+% to Hans: This currently does not work!
+% to Alan: I need an example!
+
+The language setting also influences the sorting of \UTF\ strings, in particular
+authors and titles.
+
+\startplacetable [title={\cindex{setupdelimitedtext}\TEXcode{\setupdelimitedtext[language=…]}}]
+    \starttabulate [|Tl|p(.7\textwidth)|]
+        \NC language= \NC \NC \NR
+        \HL
+        \NC {\it<blank>} \NC (the default) use the current active language; \NC \NR
+        \NC local        \NC respect local language directives (such as the
+                             entry's \TEXcode {language={…},} field, if present
+                             and managed by the rendering specification) \NC \NR
+        \NC global       \NC impose the main document language; \NC \NR
+        \NC en, de, nl,
+            \unknown     \NC impose the specified language. \NC \NR
+        \HL
+    \stoptabulate
+\stopplacetable
+
+\cindex   {setupdelimitedtext}
+\showsetup[setupdelimitedtext]
+
+\startsubsubject[title=Translated titles]
+
+Going beyond this handling of punctuation, labels and sorting, we have also
+introduced an entirely new feature, allowing for dataset entries to contain
+fields describing translated titles, for example. This is particularly useful
+when including citations to references published in languages other than the
+document language.
+
+Below is an example including \emphasis{three} languages: \startfootnote In this
+reference, the \TEXcode {title} and the \TEXcode {booktitle} are in different
+languages and the \TEXcode {language = {french},} field refers to the cited text.
+Both titles would have been rendered using French hyphenation rules had this not
+been overridden by including the switch \TEXcode {\de} that otherwise should be
+avoided in a database. The solution used here is sloppy, but fortunately, a
+complicated situation such as this is not very common.
+\stopfootnote
+
+% We could have
+%   booktitle:de = {Die ...},
+%
+% but what simple logic could be used to indicate choosing this title?
+% The present case could, perhaps should, have language = {german}, but this
+% would simply switch the problem to title = {\fr Principes ...},
+
+\startbuffer
+\startbuffer[leibniz]
+@INCOLLECTION{Leibniz1885,
+  author       = {Leibniz, G. W.},
+  title        = {Principes de la nature et de la grâce fondés en raison, 1714},
+  title:en     = {Principles of Nature and Grace Founded in Reason},
+  booktitle    = {\de Die Philosophischen Schriften von Gottfried Wilhelm Leibniz},
+  booktitle:en = {The Philosophical Writings of Gottfried Wilhelm Leibniz},
+  editor       = {Gerhardt, C. G.},
+  publisher    = {Weidmann},
+  year         = {1885},
+  volume       = {6},
+  chapter      = {8},
+  pages        = {598–606},
+  address      = {Berlin},
+  language     = {french},
+}
+\stopbuffer
+\stopbuffer
+
+\typeTEXbuffer \getbuffer
+
+\startbuffer
+\usebtxdataset     [leibniz][leibniz.buffer]
+\definebtxrendering[leibniz][apa][dataset=leibniz]
+\placebtxrendering [leibniz][group=examples,method=dataset]
+\stopbuffer
+
+with
+
+\typeTEXbuffer
+
+that gets rendered as:
+
+\getbuffer
+
+In the \index {style+APA}APA bibliography style, the original reference title is
+listed followed by the translated title (within square brackets), the translation
+chosen being that of the \Cindex {mainlanguage} of the document (if present in
+the entry, of course). In other bibliography styles, this feature might not be
+implemented or may be ignored.
+
+\stopsubsubject
+
+\startsubsubject
+  [title=Multilingual bibliographies]
+
+The present handling of languages is only the beginning, and these features will
+be developed further in the future: multilingual typesetting being one of the
+great strengths behind \CONTEXT.
+
+\stopsubsubject
+
+\stopsection
+
+\startsection
+  [title=Page index]
+
+The list renderings can also include a page index of citations to each entry.
+This can be enabled using the parameter \TEXcode {pagestate}:
+
+\cindex{setupbtxrendering}
+
+\startTEX
+\setupbtxrendering [pagestate=start]
+\stopTEX
+
+As this is more of a subject related to the citation mechanism, it will be
+described in the following chapter (see \in {section} [sec:index], \at {p.}
+[sec:index]).
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

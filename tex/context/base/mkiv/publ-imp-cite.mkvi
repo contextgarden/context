@@ -88,15 +88,17 @@
      {\tt <\currentbtxreference>}
 \stopsetups
 
-\starttexdefinition unexpanded btx:cite:concat
-    \btxparameter{\c!separator:\number\currentbtxconcat}
-\stoptexdefinition
+\startsetups btx:cite:concat
+    \startbtxrunningstyleandcolor
+        \btxparameter{\c!separator:\number\currentbtxconcat}
+    \stopbtxrunningstyleandcolor
+\stopsetups
 
 % when we have an author-year combination, the first and seconds is not
 % fields data but something more complex (that itself calls for a setup)
 
 \startsetups btx:cite:normal
-    \texdefinition{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
@@ -123,7 +125,7 @@
 \stopsetups
 
 \startsetups btx:cite:range
-    \texdefinition{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
@@ -146,7 +148,7 @@
 % somehow related to keywords:
 
 \startsetups btx:cite:listelement
-    \texdefinition{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
@@ -160,7 +162,7 @@
 \stopsetups
 
 \startsetups \s!btx:\s!cite:entry
-    \texdefinition{\s!btx:\s!cite:concat}
+    \fastsetup{\s!btx:\s!cite:concat}
     \fastsetup{\s!btx:\s!cite:lefttext}
     \btxhandleciteentry
     \fastsetup{\s!btx:\s!cite:righttext}

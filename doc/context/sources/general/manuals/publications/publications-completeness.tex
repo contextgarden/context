@@ -1,0 +1,23 @@
+\environment publications-style
+
+\startcomponent publications-completeness
+
+\startchapter
+  [reference=ch:datasetcompleteness,
+   title={Dataset completeness}]
+
+\startbuffer
+\showbtxdatasetcompleteness[example]
+\stopbuffer
+
+\typeTEXbuffer
+
+\cindex {showbtxdatasetcompleteness}The listing can be rather long \unknown\ The
+header for each entry gives the \TEXcode {index}, \TEXcode {category} and
+\TEXcode {tag}.
+
+\getbuffer
+
+\stopchapter
+
+\stopcomponent

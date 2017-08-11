@@ -1,0 +1,119 @@
+\environment publications-style
+
+\startcomponent publications-extensions
+
+\startchapter[title=Extensions]
+
+As \TEX\ and \LUA\ are both open and accessible in \CONTEXT\ it is possible to
+extend the functionality of the bibliography related code. For instance, you
+could add extra loaders, sketched as follows:
+
+\startTEX
+\startluacode
+function publications.loaders.myformat(dataset,filename)
+    local t = { }
+    -- Load data from 'filename' and convert it to a Lua table 't' with
+    -- the key as hash entry and fields conforming the luadata table
+    -- format.
+    loaders.lua(dataset,t)
+end
+\stopluacode
+\stopTEX
+
+This would then permit the loading a database (into a dataset) with the command:
+
+\cindex{usebtxdataset}
+
+\startTEX
+\usebtxdataset[default][myfile.myformat]
+\stopTEX
+
+The \type {myformat} suffix is recognized automatically. If you want to use another
+suffix, you can do this:
+
+\cindex{usebtxdataset}
+
+\startTEX
+\usebtxdataset[default][myformat::myfile.txt]
+\stopTEX
+
+%% NO SETUP BTX:APA:LEFTTEXT SO THE FOLLOWING DOES NOT WORK:
+%%
+%% If you want to add information to an entry at runtime you can pass so called user
+%% variables with the \type {\cite} command. The following example demonstrates
+%% this. First we define a dataset:
+%%
+%% \startbuffer
+%% \startbuffer [knuth]
+%% @Book{knuth-texbook,
+%%     title     = {The TeXbook},
+%%     author    = {Knuth, Donald Ervin},
+%%     isbn      = {0-201-13447-0},
+%%     series    = {Computers {\&} Typesetting},
+%%     volume    = {A},
+%%     year      = {1986},
+%%     publisher = {Addison Wesley},
+%%     address   = {Reading, MA},
+%% }
+%% \stopbuffer
+%%
+%% \definebtxdataset[knuth]
+%% \usebtxdataset [knuth] [knuth.buffer]
+%% \definebtxrendering[knuth][dataset=knuth]
+%% \stopbuffer
+%%
+%% \typeTEXbuffer
+%% \getbuffer
+%%
+%% \startbuffer[setup]
+%% \startsetups btx:apa:lefttext
+%%     \currentbtxlefttext
+%%     \btxspace
+%%     \btxdoifelseuservariable {notabene} {
+%%         {\bs \currentbtxuservariable{notabene}}
+%%     } {
+%%         % nothing
+%%     }
+%%     \btxspace
+%% \stopsetups
+%% \stopbuffer
+%%
+%% \getbuffer[setup]
+%%
+%% \startbuffer
+%% We all know the \TeX book by Don Knuth \citation [reference=knuth::knuth-texbook,
+%% lefttext={\bf >}] [notabene=Well known to \TEX\ users:].
+%% \stopbuffer
+%%
+%% We use this example where we use \type {\citation} instead of \type {\cite} because
+%% it is more tolerant with spaces. Because we pass user variables as second argument
+%% the first argument also has to be a key|/|value set.
+%%
+%% \typeTEXbuffer
+%%
+%% \getbuffer
+%%
+%% The list is typeset using:
+%%
+%% \startbuffer
+%% \placelistofpublications [knuth] [criterium=all]
+%% \stopbuffer
+%%
+%% \typeTEXbuffer
+%%
+%% and looks like this:
+%%
+%% \getbuffer
+%%
+%% The injection of the user variables is up to you. Here we hooked it into an
+%% existing setup that we overload:
+%%
+%% \typeTEXbuffer [setup]
+%%
+%% The \type {lefttext} and \type {righttext} variables are also kept with the
+%% entry but these are checked for automatically. In this case it means that
+%% when no \type {lefttext} is specified, the \type {notabene} doesn't show up.
+
+\stopchapter
+
+\stopcomponent

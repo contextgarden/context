@@ -175,6 +175,7 @@ categories.book = {
         "editionset", "series",
         "address",
         "doi", "note",
+        "abstract",
     },
 }
 

@@ -1,0 +1,63 @@
+% language=en % uk - Is behaviour really better than behavior, defence than defense?
+
+% todo : index key in chapters
+
+% \enabletrackers[publications*]
+% \enabletrackers[publications.cite.match]
+% \enabletrackers[publications.setups]
+% \enabletrackers[publications.authorhash]
+
+% We use the following bib files:
+%
+% tugboat.bib
+% template2.bib
+%
+% boekplan.bib
+% duane.bib
+% manuals.bib
+%
+% mkiv-publications.bib
+% mkiv-publications.lua
+
+\environment publications-style
+
+\startdocument
+  [title={Bibliographies},
+   subtitle={The \CONTEXT\ way},
+   author={Hans Hagen and Alan Braslau}]
+
+\component publications-titlepage
+
+\startfrontmatter
+    \component publications-contents
+    \component publications-introduction
+\stopfrontmatter
+
+\startbodymatter
+    \component publications-quick
+    \component publications-database
+    \component publications-datasets
+    \component publications-rendering
+    \component publications-citations
+    \component publications-customize
+    \component publications-exporting
+    \component publications-lua
+    \component publications-xml
+    \component publications-extensions
+  % \component publications-journals
+    \component publications-otheruse
+    \component publications-tracing
+\stopbodymatter
+
+\startappendices
+    \component publications-fields
+    \component publications-completeness
+    \component publications-transition
+    \component publications-performance
+\stopappendices
+
+\startbackmatter
+    \component publications-overviews
+\stopbackmatter
+
+\stopdocument

@@ -1,0 +1,109 @@
+\environment publications-style
+
+\startcomponent publications-introduction
+
+\startchapter[title=Introduction]
+
+\startsubject[title=How Hans got involved]
+
+This manual is dedicated to Taco \Name{Hoekwater}{T.} who in a previous century
+implemented the first \BIBTEX\ module and saw it morph into a \TEX||\LUA\ hybrid
+in this century. The fact that there was support for bibliographies made it
+possible for users to use \CONTEXT\ in an academic environment, dominated by
+bibliographic databases encoded in the \BIBTEX\ format.
+
+This manual describes how \MKIV\ now handles bibliographies. Support in \CONTEXT\
+started in \MKII\ for \BIBTEX, as mentioned above, using a module written by Taco
+\Name {Hoekwater} {T.}. Later his code was adapted to \MKIV, but because users
+demanded more, I decided that reimplementing made more sense than patching. In
+particular, through the use of \LUA, the \BIBTEX\ data files can be easily
+directly parsed, thus liberating \CONTEXT\ from the dependency on an external
+\BIBTEX\ executable. The \Index{CritEd project} (by Thomas \Name {Schmitz} {T.},
+Alan \Name {Braslau} {A.}, Luigi \Name {Scarso} {L.} and \name {Hagen}
+{H.}myself) was a good reason to undertake this rewrite. As part that project
+users were invited to come up with ideas about extensions. Not all of them are
+(yet) honored, but the rewrite makes more functionality possible.
+
+The subsystem described here is one of the most complex and messy of all
+\CONTEXT\ subsystems. This has to do with the fact that it combines (multiple)
+lists and (multiple) forward and backward references, all kind of rendering of
+the citation as well as the entry in the list, rather complex interactivity,
+multiple databases, datasets and renderings and of course combinations of this.
+The implementation uses a mix of \TEX\ and \LUA\ code with so called setups as
+rendering specifications. At the cost of complexity (and some runtime penalty)
+this provides a lot of freedom and flexibility.
+
+% \startlines
+% Hans \Name {Hagen} {H.}
+% PRAGMA ADE
+% Hasselt NL
+% \stoplines
+
+\stopsubject
+
+\startsubject[title=How Alan got involved]
+
+Bibliographies and citations are of utmost importance in any scholarly work.
+Nevertheless, the production of bibliography lists and the insertion of
+citations, just like the production of an index, is a task that is often
+postponed to a later stage in the writing of an article, a book, or a manual.
+Perhaps this is because it can be more important to create than to refer, but
+maybe the necessary tools are found to be insufficient or unnatural.
+
+A computerized typesetting system should help an author produce a text, not
+impose any preset format or unnecessary constraint. In a referenced work, a
+bibliography system should be flexible enough to adapt to very different styles
+and practices. Creating such a system is quite a challenge.
+
+\CONTEXT\ \MKII\ implemented a system that was based on a use of \BIBTEX, an
+external program that built upon basic bibliographic macros introduced in \LATEX.
+\CONTEXT\ \MKIV\ moved away from this dependency, opening up many possibilities
+for new functionality and, we hoped, providing more natural and flexible tools
+for authors. For my own use, the most important of which is a very powerful
+search and match mechanism that has been made possible though the use of \LUA.
+
+I had started by asking simple questions on details of the workings of this new
+system and making \quotation{wouldn't it be nice to} requests for functionality
+that I knew was somehow buried in the inner workings of \CONTEXT. As a result of
+these inquiries, I got drawn into the project to make this new system a reality.
+
+% \startlines
+% Alan \Name{Braslau}{A.}
+% Paris, France
+% \stoplines
+
+\stopsubject
+
+\startsubject[title=How you can be involved]
+
+Bibliography management is indeed one of the most complex subsystems in \CONTEXT,
+and many, many design decisions had to be made during its development.
+Experimental features were added, some of which were later abandoned as being
+inappropriate or else superseded by some better mechanism. The effort (and time)
+that we spent in reimplementing the treatment of bibliographies was much greater
+than any of us had anticipated when we undertook this project. Hopefully, now the
+system is stable enough to be more widely used and this manual is an attempt to
+make it accessible to all users.
+
+There are \CONTEXT\ users who will just use whatever the bibliograpy modules
+provide by default. For many, the \APA\ style is good enough; others may have
+specific needs. This manual should provide insight on how to adapt the system to
+new styles. But sometimes users will ask questions on the mailing list that are
+not answered here. Feel free to come up with additional examples that can be
+added to the test suite, or when we consider them to be of general use, to this
+manual.
+
+\stopsubject
+
+\startsubject[title=Hyperlinks]
+
+Please note \startfootnote Footnotes are placed at the end of each chapter.
+\stopfootnote that this document contains hyperlinks that are not highlighted for
+aesthetic reasons. In addition to standard interaction (table of contents, index,
+and cross|-|references, some external web sources are selectable.
+
+\stopsubject
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,39 @@
+\environment publications-style
+
+\startcomponent publications-overviews
+
+\startchapter[title=Bibliography,reference=ch:biblio]
+
+\setupbtxrendering
+  [default]
+  [pagestate=start,
+   before=,
+   after=]
+
+\placelistofpublications
+
+\stopchapter
+
+\startchapter[reference=ch:listoftables,title=List of tables]
+    \placelistoftables [criterium=all]
+\stopchapter
+
+\startchapter[reference=ch:indexofauthors,title=Index of names]
+    \placeregister[indexofauthors] [criterium=all,compress=yes]
+\stopchapter
+
+\startchapter[reference=ch:index,title=Index of subjects]
+    \placeindex [criterium=all,compress=yes]
+\stopchapter
+
+\startchapter[title=Hashed authors]
+
+\start
+    \small
+    \small
+    \showbtxhashedauthors
+\stop
+
+\stopchapter
+
+\stopcomponent

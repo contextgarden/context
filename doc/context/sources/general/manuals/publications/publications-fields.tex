@@ -1,0 +1,38 @@
+\environment publications-style
+
+\startcomponent publications-fields
+
+\startchapter
+  [title={Dataset fields},
+   reference=ch:datasetfields]
+
+\setupbtx
+  [specification=apa]
+
+\usebtxdataset
+  [example]
+  [mkiv-publications.bib]
+
+\startbuffer
+\showbtxdatasetfields[example]
+\stopbuffer
+
+\typeTEXbuffer
+
+\cindex {showbtxdatasetfields}The field names for each entry \Index {category}
+are colored according to their status with respect to the bibliography rendering
+style. The \index {field+required}\quote {required} field names are colored in
+green, where required means that if this field is missing, one is probably not
+using the correct entry type or category. Some fields are \index
+{field+optional}\quote {optional} (and some \index {field+required}\quote
+{required} fields can become conditionally optional, see below). Fields that
+normally would be \index {field+ignored}ignored (defined as neither required, nor
+optional) are colored in dark yellow. Some fields are treated as \index
+{field+special}\quote {special}, that is are used internally, not necessarily
+directly rendered, and are colored here in blue.
+
+\getbuffer
+
+\stopchapter
+
+\stopcomponent

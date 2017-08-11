@@ -1,0 +1,33 @@
+\environment publications-style
+
+\startcomponent publications-exporting
+
+\startchapter[title=Exporting datasets]
+
+A dataset can be much more complete than necessary. Furthermore, it may be
+desirable to isolate bibliography data by chapter, for example, or by any other
+structural element such as part. To achieve this, it is possible to export the
+entries of a dataset following certain criteria.
+
+\cindex{savebtxdataset}
+
+Take as an example, the bibliography of the present manual that was entered in
+the source as buffers for convenience. The entries can be saved to a legitimate
+\BIBTEX\ format file using:
+
+\startTEX
+\savebtxdataset
+  [default]
+  [mkvi-publications.bib]
+  [alternative=bib,
+   criterium=all]
+\stopTEX
+
+This can also be used to convert older bibliography source files (for example,
+kept in the \tindex {.bbl}\MKII\ format) into the \tindex {.bib}\type {bib},
+\tindex {.lua}\type {lua} or even \tindex {.xml}\type {xml} format that could be
+more convenient for future manipulation.
+
+\stopchapter
+
+\stopcomponent

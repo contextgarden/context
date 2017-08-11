@@ -1,0 +1,659 @@
+\environment publications-style
+
+\startcomponent publications-customize
+
+\startchapter[title=Custom renderings,reference=ch:custom]
+
+\startsection[title=Introduction]
+
+The rendering of citations and bibliography lists is highly configurable and
+custom rendering schemes can be added. The details can get quite complicated so
+we will begin with a description of how citation variations can be used in the
+running text, followed by a description on how to control the rending of the
+associated bibliography list.
+
+\startaside
+Loading the specification file defines a \Index {namespace}, say \TEXcode {apa},
+containing subspaces \TEXcode {apa:list} and \TEXcode {apa:cite} as well as
+variants, for example \TEXcode {apa:cite:authoryear}, allowing \emphasis
+{parameters} to be tuned independently for each form. This insures independence
+but can get somewhat confusing. Most users will not encounter any problems as all
+of this setup work is taken care of in the specification file; only those needing
+to fine|-|tune specific settings need to better understand the underlying
+mechanism.
+
+The rendering of the variants can be adjusted through \Cindex {setupbtx} in the
+appropriate \Index {namespace}, for example modifying (or suppressing)
+parenthesis or activating or deactivating interaction \Index {hyperlink}s. Beyond
+the settings of parameters in the appropriate \Index {namespace},
+\emphasis{setups} are used to perform the actual renderings of citations as well
+as of lists. One must be aware of \Index {namespace} \Index {isolation} and
+\Index {inheritance} as well as fall|-|back when attempting to make changes.
+
+When small modifications on one of the pre|-|defined specifications are desired,
+we suggest loading the specification and then adjusting certain parameters and
+overloading the appropriate setups. Eventually, a new specification might be
+necessary.
+\stopaside
+
+A common setup will enable or disable interaction:
+
+\startbuffer
+\setupbtx [interaction=start]
+\stopbuffer
+
+\cindex{setupbtx}
+
+\typeTEXbuffer
+
+Notice that this is applied to the root \Index {namespace}.
+
+Other root|-|\Index {namespace} parameters that have been used are \TEXcode
+{specification}, \TEXcode {dataset} and \TEXcode {numbering}.
+
+Associated with \TEXcode {specification} is an additional parameter \TEXcode
+{default=} that defines a fall|-|back specification to be used to complete a
+derived specification. \startfootnote For example, a variant on a specification
+can be defined by only addressing specific differences, for example \index
+{style+RMP}\TEXcode {specification=rmp} would be associated with \index
+{style+APS}\TEXcode {default=aps}, as this describes a style used by the journal:
+The Review of Modern Physics, mostly based on the style of the American Physical
+Society. \stopfootnote
+
+Further \quote {low|-|level} formatting parameters, mostly dealing with the
+formatting of names, are also defined by default in the root namespace. These are
+listed in \in {table} [tab:setupbtx]. Some might eventually be redefined by the
+specification in other namespaces, and may with good reason differ by context:
+between the \TEXcode {[cite]} and \TEXcode {[list]} namespaces, for example.
+
+In order to insure the independence of specifications, each one defines its own
+root namespace, for example \TEXcode {[default]}, \TEXcode {[apa]} or \TEXcode
+{[aps]}, inheriting its settings from root, upon which are built the other
+namespaces.
+
+\startplacetable
+  [reference=tab:setupbtx,
+   list={\TEXcode {\setupbtx} low|-|level formatting parameters},
+   title={\Cindex {setupbtx} low|-|level formatting parameters. Some may be
+   redefined differently in the \TEXcode {cite} and \TEXcode {list} namespaces.}]
+\starttabulate [|Tr|Tl|p|]
+    \NC specification                \NC default               \NC default style \NC \NR
+    \NC default                      \NC <null>                \NC fall|-|back style \NC \NR
+    \NC interaction                  \NC start                 \NC active hyperlinks \NC \NR
+    \NC separator                    \NC \Cindex{btxsemicolon} \NC between multiple references \NC \NR
+    \NC separator:firstnames         \NC \Cindex{btxspace}     \NC between first names \NC \NR
+    \NC separator:juniors            \NC \Cindex{btxspace}     \NC before \quote{juniors} \NC \NR
+    \NC separator:vons               \NC \Cindex{btxspace}     \NC before \quote{vons} \NC \NR
+    \NC separator:initials           \NC \Cindex{btxspace}     \NC between initials \NC \NR
+    \NC stopper:initials             \NC .                     \NC initialization truncation symbol \NC \NR
+    \NC separator:invertedinitials   \NC \Cindex{btxcomma}     \NC before initials, inverted form \NC \NR
+    \NC separator:invertedfirstnames \NC \Cindex{btxcomma}     \NC before first names, inverted form \NC \NR
+    \NC authorconversion             \NC normal                \NC normal, normalshort, inverted, invertedshort, name (see \in{table}[tab:authorconversion]) \NC \NR
+    \NC monthconversion              \NC number                \NC month, month:mnen (see \TEXcode {\convertnumber}) \NC \NR
+    \NC journalconversion            \NC normal                \NC normal, abbreviated(short?) \NC \NR
+    \NC etallimit                    \NC 3                     \NC length of author list \NC \NR
+    \NC etaldisplay                  \NC 3                     \NC length of truncated author list \NC \NR
+    \NC \tindex{others}otherstext    \NC et al.                \NC author list truncation text \NC \NR
+    \NC separator:names:2            \NC \Cindex{btxcomma}     \NC separates multiple names \NC \NR
+    \NC separator:names:3            \NC \Cindex{btxcomma}     \NC before last name in a list \NC \NR
+    \NC separator:names:4            \NC \Cindex{btxcomma}     \NC between only two names \NC \NR
+    \NC separator:2                  \NC \Cindex{btxsemicolon} \NC separates multiple objects \NC \NR
+    \NC separator:3                  \NC \Cindex{btxsemicolon} \NC before last object in a list \NC \NR
+    \NC separator:4                  \NC \Cindex{btxsemicolon} \NC between only two objects \NC \NR
+\stoptabulate
+\stopplacetable
+
+\cindex   {setupbtx}
+\showsetup[setupbtx]
+
+\stopsection
+
+\startsection
+  [reference=sec:customcite,
+   title=Custom citation renderings]
+
+\startsubsubject [title=Parameters]
+
+Citation variants are mostly controlled though adjustment of their parameters
+within the appropriate \Index {namespace}. For example, the cite variant \cindex
+{cite}\TEXcode {\cite[num]} would be addressed through
+
+
+\cindex {setupbtx}
+
+\startTEX
+\setupbtx[default:cite:num]
+\stopTEX
+
+for the \TEXcode {default} specification, or alternately, through
+
+\cindex {setupbtx}
+
+\startTEX
+\setupbtx[apa:cite:num]
+\stopTEX
+
+for the \index {style+APA}\TEXcode {apa} specification. For example, superscript
+numbered citations in the \index {style+APS}\TEXcode {aps} specification could be
+obtained through
+
+\cindex{setupbtx}
+
+\startTEX
+\setupbtx[aps:cite:num][command=\high]
+\stopTEX
+
+Typical parameters (in addition to those listed in \in {table} [tab:setupbtx])
+are presented in \in {table} [tab:setupbtxcite].
+
+\startplacetable
+  [reference=tab:setupbtxcite,
+   location=force,
+   list= {\TEXcode{\setupbtx [cite]} parameters},
+   title={\cindex{setupbtx}\TEXcode{\setupbtx[cite]} parameters}]
+\starttabulate [|Tr|l|l|]
+\NC alternative \NC num               \NC default cite form \NC \NR
+\NC left        \NC                   \NC opening string    \NC \NR
+\NC right       \NC                   \NC closing string    \NC \NR
+\NC inbetween   \NC \Cindex{btxspace} \NC  \NC \NR
+\NC range       \NC \TEXcode{\endash} \NC  \NC \NR
+\NC command     \NC                   \NC  \NC \NR
+\NC style       \NC                   \NC  \NC \NR
+\NC sorttype    \NC normal            \NC  \NC \NR
+\NC compress    \NC yes               \NC  \NC \NR
+\stoptabulate
+\stopplacetable
+
+A demonstration of how these parameters can be manipulated in an individual
+\TEXcode {\cite} call is shown in \in{table} [tab:authorconversion], which also
+illustrates the different ways of formatting names.
+
+\startplacetable
+  [title={\TEXcode{authorconversion}},
+   reference=tab:authorconversion]
+\starttabulate [|Tl|p|]
+\NC ac            \NC \TEXcode{\cite[alternative=author,etallimit=,authorconversion=ac][article]} \NC \NR
+\HL
+\NC name          \NC \cite[alternative=author,etallimit=,authorconversion=name]         [article] \NC \NR
+\NC normal        \NC \cite[alternative=author,etallimit=,authorconversion=normal]       [article] \NC \NR
+\NC normalshort   \NC \cite[alternative=author,etallimit=,authorconversion=normalshort]  [article] \NC \NR
+\NC inverted      \NC \cite[alternative=author,etallimit=,authorconversion=inverted]     [article] \NC \NR
+\NC invertedshort \NC \cite[alternative=author,etallimit=,authorconversion=invertedshort][article] \NC \NR
+\stoptabulate
+\stopplacetable
+
+\stopsubsubject
+
+\startsubsubject [title=Setups]
+
+The next step in the customization of citation variants is through the overlaying
+of setups that handle the actual rendering of the citation. These rarely will
+need to be changed as most tuning can be done through the adjustment of
+parameters such as those given above. \startfootnote An exception is for special
+features, such as in the \index {style+APA}\TEXcode {apa} specification where a
+missing date is replaced by the notation \quotation {n..d.}. \stopfootnote
+
+It is to be pointed|-|out that original citation variants can be easily added. As
+an example, imagine that one might like to access the field \TEXcode {abstract}
+that is normally not rendered (like many other unused dataset fields). One would
+start by defining a parameter \Index {namespace} inheriting from the \TEXcode
+{cite} \Index {namespace}, followed by a simple setup (remember that the \TEXcode
+{apa} specification is currently active):
+
+\startbuffer
+\definebtx[apa:cite:abstract][apa:cite]
+\startsetups btx:apa:cite:abstract
+    \btxcitereference
+    \btxflush{abstract}
+\stopsetups
+
+\startparagraph [style=slanted]
+\cite[abstract][boekplan::Hagen2010metafun]
+\stopparagraph
+\stopbuffer
+
+\cindex{definebtx}
+\cindex{btxcitereference}
+\cindex{btxflush}
+\cindex{cite}
+\cindex{startsetups}
+\cindex{stopsetups}
+\tindex{::}
+
+\typeTEXbuffer
+
+\getbuffer
+
+If no special manipulation is known, the field with the same name (if found) will
+be simply flushed. This will only work, however, if the field is identified as
+either required or optional, that is not flagged as ignored in \in {table}
+[tab:fields] (see also \in {Appendix} [ch:datasetfields]). For the sake of the
+present manual, the field \BTXcode{abstract} has been defined as optional for the
+\BTXcode{book} entry in the specification's lua file.
+
+But don't expect too much support for such low|-|level rendering control.
+
+\stopsubsubject
+
+\stopsection
+
+\startsection[title=Custom list renderings,reference=sec:list]
+
+The rendering of lists is much more flexible and configurable than the rendering
+of citation markers. This is because the nature of data to be rendered requires
+many tools and helpers to deal with all of the eventual contingencies inherent in
+describing bibliographical references.
+
+The same \quote {low|-|level} formatting parameters used for citations also apply
+for \TEXcode {list} \Index {namespace}s, although their settings may differ from
+those of the citations. Consider the \index {style+APA}\TEXcode {apa} style that
+specifies the use of \tindex {others} \quotation {et al.} in citations but
+\quotation {\textellipsis} in the bibliography list, \quotation {and} in
+citations but \quotation {\textampersand} in lists, last names only in \TEXcode
+{authoryear} citations, etc.
+
+\startsubsubject[title=Bibliographies as lists]
+
+At another level of detail, the bibliography list is rendered in a standard
+\CONTEXT\ list environment that can be setup using the command \Cindex
+{setupbtxlist} (which is only \Cindex {setuplist} working in the protected
+bibliography environment: \TEXcode {btx}). The root settings, appropriate for a
+numbered bibliography list, are:
+
+\cindex{setuplist}
+
+\startTEX
+\setuplist
+  [btx]
+  [prefixstopper=:,
+   state=start,
+   alternative=a,
+   before=\blank,
+   after=\blank]
+\stopTEX
+
+whereas an unnumbered, author|-|year sorted list might have:
+
+\cindex{setupbtxlist}
+
+\startTEX
+\setupbtxlist
+  [apa]
+  [alternative=paragraph,
+   margin=3\emwidth]
+\stopTEX
+
+as already seen in \in {Chapter} [ch:renderings]. The above demonstrate that
+\cindex {setupbtxlist}\TEXcode {\setupbtxlist[name]} is just a synonym for
+\cindex {setuplist}\TEXcode {\setuplist[btx:name]}.
+
+\cindex   {setupbtxlist}
+\showsetup[setupbtxlist]
+
+\cindex   {setuplist}
+\showsetup[setuplist] % too big for the page!
+
+Each specification will have its own list \Index {namespace} (\TEXcode
+{btx:specification}) that inherits from the root \TEXcode {btx} \Index
+{namespace}. This model of inheritance holds true for the citation and list
+details as described earlier.
+
+\stopsubsubject
+
+\startsubsubject[title=Setups]
+
+The layout of the information presented in the list is entirely controlled
+through setups, with the help of some underlying \LUA\ code organizing the data
+stored in the dataset. These setups rely on further setups as well as some
+convenient helpers or defined special commands. To understand this, consider as
+an illustration the setups defined for the \TEXcode {default} specification
+(taken from the source file \type {publ-imp-default.mkvi}):
+
+\cindex{startsetups}
+\cindex{stopsetups}
+\cindex{texdefinition}
+\cindex{btxperiod}
+
+\startTEX
+\startsetups btx:default:list:book
+    \texdefinition{btx:default:author}
+    \texdefinition{btx:default:title}
+    \texdefinition{btx:default:editionset}
+    \texdefinition{btx:default:publisher}
+    \texdefinition{btx:default:year}
+    \btxperiod
+\stopsetups
+\stopTEX
+
+\cindex{startsetups}
+\cindex{stopsetups}
+\cindex{texdefinition}
+\cindex{btxperiod}
+
+\startTEX
+\startsetups btx:default:list:article
+    \texdefinition{btx:default:author}
+    \texdefinition{btx:default:title}
+    \texdefinition{btx:default:journal}
+    \texdefinition{btx:default:year}
+    \btxperiod
+\stopsetups
+\stopTEX
+
+This specification could be extended to handle publication categories other than
+\TEXcode {book} and \TEXcode {article} simply by defining an additional setup,
+\emphasis {almost} (see the following).
+
+\stopsubsubject
+
+\startsubsubject[title=\LUA\ tables]
+
+The qualification above is to bring attention to an important \LUA\ component
+that is defined in a companion source file: \TEXcode {publ-imp-default.lua}. This
+file defines a hierarchical \LUA\ table containing an element \TEXcode
+{categories} that itself contains the entries \TEXcode {book}, \TEXcode
+{article}, etc. The entries for each \Index {category} themselves contain the
+entries \index {field+required}\TEXcode {required} and \index
+{field+optional}\TEXcode {optional} listing the dataset fields that are to be
+used. Any field that is not declared either \index {field+required}required or
+\index {field+optional}optional will be \index {field+ignored}\emphasis
+{ignored}. \startfootnote The difference between \index {field+required}\quote
+{required} and \index {field+optional}\quote {optional} is only a question of
+diagnostics as described in the Appendices. Their functional meaning is rather
+\quote {handled} in contrast to \index {field+ignored}\quote {ignored}.
+\stopfootnote Note that if a category is \emphasis {not} declared in this \LUA\
+table, than \emphasis {all} of its fields will be considered \index
+{field+optional}\quote {optional}. Thus, ignoring this level of control and
+simply defining additional setups might be sufficient for most use.
+
+The advantage of the \LUA\ table is a great simplification of the logic of the
+helper setups. Fields that might be irrelevant for one category yet used in
+another can be tested; if the field is to be \index {field+ignored}\quote
+{ignored}, than a fetch will return nothing. Indeed, the above two setups could
+be replaced by a single setup as \TEXcode {journal} is irrelevant and thus
+ignored for the \Index {category} \TEXcode {book} but not for the \Index
+{category} \TEXcode {journal}. However, an oversimplification such as just
+described would be rather confusing and would not extend well to a more complete
+specification (such as \index {style+APA}\TEXcode {apa}) handling many different
+categories.
+
+Note, as well, that fields \index {field+ignored}\quote {ignored} for certain
+\index {category}categories in the bibliography list will also be ignored in
+citations. For example, choosing to ignore \TEXcode {title} in some \Index
+{category}, say \TEXcode {article}, will cause \TEXcode {\cite[title]} to fail
+(return nothing) when referring to an entry of that category. In the example
+shown in \in {section} [sec:customcite], the abstract field would not return
+anything if it did not appear in the \LUA\ table.
+
+This \LUA\ table also defines (as \index {type}\quote {types}, outside of \index
+{category}\quote {categories}) what fields are to be interpreted as names, what
+fields are to eventually be interpreted as a number or range of numbers, and what
+fields are to be interpreted specially as a (semi|-|colon) separated list (for
+example, \TEXcode {keywords}).
+
+A more subtle feature of the \LUA\ level is the notion of \index {set}\quote
+{sets}. Related fields can be grouped into sets, for example.
+
+\startLUA
+book = {
+    sets = {
+        author     = { "author", "editor", },
+        editionset = { "edition", "volume", "number" },
+    },
+},
+\stopLUA
+
+A fetch of the set \text {author} (i.e. \cindex {btxflush}\TEXcode
+{\btxflush{author}}, to be described below) will return the \text {author} field
+if this is present, otherwise it will return the \TEXcode {editor} field, for an
+edited book, for example. Testing for the presence of a set in a data entry is
+equivalent to a logical \emphasis{or} in testing for the presence of each element
+of the set. This mechanism can appear confusing yet it has served to greatly
+simplify the logic of the various setups. \startfootnote Sometimes a \Index {set}
+will be defined using the same name as its first element, sometimes it can be
+given a unique name (typically ending in \quote {set}). \stopfootnote
+
+The \TEXcode {author} set is a bit special given its use in the \TEXcode
+{authoryear(s)}, \TEXcode {authornum}, and \TEXcode {short} citation variants.
+This \Index {set} determines what fields are to enter into the citation \Index
+{tag}s, a generalization of the notion of author. For example, in the \index
+{style+APA}APA style, this set would include the author, editor, or title fields
+or an article and the author, editor, publisher, or title fields for a book and
+still other sequences of fields for other categories of publications.
+
+\stopsubsubject
+
+\startsubsubject[title=Defined helpers]
+
+Fetching data from the dataset is performed using the command encountered above:
+\TEXcode {\btxflush}. If the field (or no elements of the set) is not found, then
+this command will return nothing.
+
+\cindex   {btxflush}
+\showsetup[btxflush]
+
+Alternately, one might need to explicitly test for the presence or absence of the
+field, in order to conditionally include punctuation or not to trigger
+separators, for example. Three test macros have been defined:
+
+\startplacetable [title=Conditional macros]
+\cindex{btxdoifelse}
+\cindex{btxdoif}
+\cindex{btxdoifnot}
+\startTEX
+\btxdoifelse{fieldname}{action when found}{action when not found}
+\btxdoif    {fieldname}{action when found}
+\btxdoifnot {fieldname}                   {action when not found}
+\stopTEX
+\stopplacetable
+
+In many cases, the readability can be improved by using further setups, for
+instance:
+
+\cindex{btxdoifelse}
+\cindex{fastsetup}
+
+\startTEX
+\btxdoifelse {author} {
+    \fastsetup{btx:apa:author:yes}
+} {
+    \fastsetup{btx:apa:author:nop}
+}
+\stopTEX
+
+Note that the choice between using setups (defined through \Cindex {startsetups}
+\unknown\ \Cindex {stopsetups} and recalled through \Cindex {fastsetup}) versus
+textdefinitions without arguments (defined through \Cindex {starttexdefinition}
+\unknown\ \Cindex {stoptexdefinition} and recalled through \Cindex
+{texdefinition}) is a question of taste and opportunity. One should keep in mind
+not get carried away abusing setups and texdefinitions for simple code fragments
+that are to be used uniquely.
+
+An extra conditional is available for testing interactivity:
+
+\cindex{btxdoifelseinteraction}
+
+\startTEX
+\btxdoifelseinteraction{action when true}{action when false}
+\stopTEX
+
+There is also a conditional \Cindex {btxinteractive} which is more efficient,
+although in practice efficiency is not so important here.
+
+\blank
+
+In addition to \Index {set}s, there are derived or special fields such as
+\TEXcode {num} (for the reference number), \TEXcode {suffix} (to be appended in
+some cases to \TEXcode {year}), \TEXcode {short} (for names), etc. These all can
+be retrieved using \Cindex {btxflush}. Sometimes one might want to force access
+to a particular data field (such as \TEXcode {author}) rather than eventually an
+element of a \Index {set} having the same name. There are three basic commands to
+flush data and a few others to flush associated information:
+
+\startplacetable [title=Field access macros]
+\starttabulate[|l|l|]
+\NC \Cindex{btxflush}     \NC fetch a derived or explicit field \NC \NR
+\NC \Cindex{btxdetail}    \NC fetch a derived field (e.g.\ \TEXcode {short}) \NC \NR
+\NC \Cindex{btxfield}     \NC fetch a explicit field (e.g.\ \TEXcode {year}) \NC \NR
+\NR
+\NC \Cindex{btxfieldname} \NC fetch the field name \NC \NR
+\NC \Cindex{btxfieldtype} \NC fetch the field type (e.g.\ \TEXcode{author}, \TEXcode{range}, \unknown \NC \NR
+\NC \Cindex{btxfoundname} \NC fetch the field name of a set (or field) \NC \NR
+\NC \Cindex{btxfoundtype} \NC fetch the field type of a set (or field) \NC \NR
+\stoptabulate
+\stopplacetable
+
+A few helpers are provided to inject symbols but also take care of leading and
+trailing spaces: \startfootnote These make use of the \CONTEXT\ command \Cindex
+{removeunwantedspaces}. There is also a \quote {secret} command \TEXcode
+{\removepunctuation} that can be quite useful, but also lead to undesired
+consequences when wielded blindly! \stopfootnote
+
+\startplacetable [title=Punctuation macros]
+\starttabulate[|||]
+\NC \Cindex{btxspace}                  \NC before \btxspace        after \NC \NR
+\NC \Cindex{btxnbsp}                   \NC before \btxnbsp         after \NC \NR
+\NC \Cindex{btxnobreakspace}           \NC before \btxnobreakspace after (same as \Cindex {btxnbsp}) \NC \NR
+\NC \Cindex{btxperiod}                 \NC before \btxperiod       after \NC \NR
+\NC \Cindex{btxcomma}                  \NC before \btxcomma        after \NC \NR
+\NC \Cindex{btxcommabreak}             \NC before \btxcommabreak   after (allows a line break) \NC \NR
+\NC \Cindex{btxleftparenthesis}        \NC before \btxleftparenthesis  after \NC \NR
+\NC \Cindex{btxrightparenthesis}       \NC before \btxrightparenthesis after \NC \NR
+\NC \Cindex{btxrightparenthesiscomma}  \NC before \btxrightparenthesiscomma after \NC \NR
+\NC \Cindex{btxrightparenthesisperiod} \NC before \btxrightparenthesisperiod after \NC \NR
+\NC \Cindex{btxleftbracket}            \NC before \btxleftbracket  after \NC \NR
+\NC \Cindex{btxrightbracket}           \NC before \btxrightbracket after \NC \NR
+\NC \Cindex{btxrightbracketcomma}      \NC before \btxrightbracketcomma after \NC \NR
+\NC \Cindex{btxrightbracketperiod}     \NC before \btxrightbracketperiod after \NC \NR
+\stoptabulate
+\stopplacetable
+
+\stopsubsubject
+
+\starthiding
+
+Normally you can use \TEXcode {\btxfield} or \TEXcode {\btxflush} as derived
+fields just like analyzed author fields are flushed in a special way. There is
+experimental support for so called manipulators. You can for instance say this:
+
+\starttyping
+\btxflush{lowercase->title}
+\stoptyping
+
+A sequence of manipulators is applied to fetched field, where a sequence is one
+or more manipulators:
+
+\starttyping
+\btxflush{stripperiod->uppercase->title}
+\stoptyping
+
+Some actions are recognized (built|-|in) but you can also use actions from other
+namespaces, like in:
+
+\starttyping
+\btxflush{converters.Word -> title}
+\stoptyping
+
+Watch how we can use spaces around the \TEXcode {->} which is nicer for wrapped
+around usage. Eventually, we might put some more function in the default
+namespace.
+
+So, the previous example setup can be rewritten as:
+
+\starttyping
+\btxdoif {title} {
+   \bold{\btxfield{title}}
+   \btxcomma
+}
+\stoptyping
+
+There is a special command for rendering a (combination) of authors:
+
+\starttyping
+\btxflushauthor{author}
+\btxflushauthor{editor}
+\btxflushauthor[inverted]{editor}
+\stoptyping
+
+Instead of the last one you can also use:
+
+\starttyping
+\btxflushauthorinverted{editor}
+\stoptyping
+
+You can use a (configurable) default or pass directives: Valid directives are
+
+\starttabulate
+\NC \bf conversion          \NC \bf rendering        \NC \NR
+\HL
+\NC \TEXcode{inverted}      \NC the Frog jr, Kermit  \NC \NR
+\NC \TEXcode{invertedshort} \NC the Frog jr, K       \NC \NR
+\NC \TEXcode{normal}        \NC Kermit, the Frog, jr \NC \NR
+\NC \TEXcode{normalshort}   \NC K, the Frog, jr      \NC \NR
+\stoptabulate
+
+The list itself is not a list in the sense of a regular \CONTEXT\ structure
+related list. We do use the list mechanism to keep track of used entries but that
+is mostly because we can then reuse filtering mechanisms. The actual rendering of
+a reference and entry runs on top of so called constructions (other examples of
+constructions are descriptions, enumerations and notes).
+
+\showsetup[setupbtxlist]
+
+You need to be aware what command is used to achieve the desired result. For
+instance, in order to put parentheses around a number reference you say:
+
+\starttyping
+\setupbtxlistvariant
+ [num]
+ [left=(,
+  right=)]
+\stoptyping
+
+If you want automated width calculations, the following does the trick:
+
+\starttyping
+\setupbtxrendering
+ [default]
+ [width=auto]
+\stoptyping
+
+but if you want to control it yourself you say something:
+
+\starttyping
+\setupbtxrendering
+ [width=none]
+
+\setupbtxlist
+ [default]
+ [width=3cm,
+  distance=\emwidth,
+  color=red,
+  headcolor=blue,
+  headalign=flushright]
+\stoptyping
+
+In most cases the defaults will work out fine.
+
+Normally the references are numbered using one counter for the whole document. If
+you want each list to have its own number, then you can set the \TEXcode
+{continue} parameter:
+
+\starttyping
+\setupbtxrendering[continue=no]
+\stoptyping
+
+In a similar fashion you can influence if references are included only once of in
+each list:
+
+\starttyping
+\setupbtxrendering[repeat=yes]
+\stoptyping
+
+\stophiding
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

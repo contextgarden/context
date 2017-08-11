@@ -1,0 +1,30 @@
+return {
+    ["GH0001"] = {
+        category  = "book",
+        title     = "Rhythmic Illusions",
+        subtitle  = "for drums",
+        author    = "Gavin Harrison",
+        publisher = "Warner",
+        isbn      = "1576236870",
+        year      = "1996",
+        comment   = "plus cd",
+    },
+    ["GH0002"] = { -- no reference in brittisch library
+        category  = "book",
+        title     = "Rhythmic Perspectives",
+        subtitle  = "a multidimensional study of rhythmic composition",
+        author    = "Gavin Harrison",
+        publisher = "Alfred Publishing Co., Inc",
+        year      = "1999",
+        comment   = "plus cd",
+    },
+    ["GH0003"] = {
+        category  = "book",
+        title     = "Rhythmic Designs",
+        subtitle  = "a study of practical creativity",
+        author    = "Gavin Harrison and Terry Branham",
+        publisher = "Hudson",
+        year      = "2010",
+        comment   = "plus dvd",
+    },
+}

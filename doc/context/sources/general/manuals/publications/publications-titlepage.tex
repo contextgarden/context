@@ -1,0 +1,39 @@
+\environment publications-style
+
+\startcomponent publications-titlepage
+
+\startMPpage
+
+    StartPage ;
+
+        picture pic ; pic := image (
+            path pth ; pth := ((0,0) for i=1 step 2 until 20 : -- (i,1) -- (i+1,0) endfor) ;
+            for i=0 upto 9 : draw pth shifted (0,2*i) ; endfor ;
+        ) ;
+
+        picture btx ; btx := textext("\ssbf\WORDS{\getvariable{document}{title}}") ;
+        picture ctx ; ctx := textext("\ssbf\WORDS{\getvariable{document}{subtitle}}") ;
+        picture dtx ; dtx := textext("\ssbf       \getvariable{document}{author}") ;
+
+        pic := pic shifted - llcorner pic ;
+        btx := btx shifted - llcorner btx ;
+        ctx := ctx shifted - llcorner ctx ;
+        dtx := dtx shifted - llcorner dtx ;
+
+        pic := pic xysized (PaperWidth,PaperHeight) ;
+        btx := btx xsized (2PaperWidth/3) shifted (.25PaperWidth,.225PaperHeight) ;
+        ctx := ctx xsized (2PaperWidth/3) shifted (.25PaperWidth,.150PaperHeight) ;
+        dtx := dtx xsized (2PaperWidth/3) shifted (.25PaperWidth,.075PaperHeight) ;
+
+        fill Page withcolor \MPcolor{fore:two} ;
+
+        draw pic withcolor \MPcolor{fore:one} ;
+        draw btx withcolor \MPcolor{lightgray} ;
+        draw ctx withcolor \MPcolor{lightgray} ;
+        draw dtx withcolor \MPcolor{lightgray} ;
+
+    StopPage ;
+
+\stopMPpage
+
+\stopcomponent

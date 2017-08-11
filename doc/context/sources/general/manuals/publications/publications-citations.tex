@@ -1,0 +1,870 @@
+\environment publications-style
+
+\startcomponent publications-citations
+
+\startchapter
+  [title=Citations,
+   reference=ch:cite]
+
+The \index {style+APA}APA Style Guide as well as good practice demand that
+\emphasis {all} references appearing in the bibliography be cited at least once
+in the text (and, of course, all citations must have a corresponding
+bibliographical reference). Other publishing styles, textbooks in particular,
+might additionally include lists of general references for \quote {further
+reading} (and these lists might sometimes be split into sections according to
+subject). An author may, in contrast, choose not to interrupt a text with many
+citations, nevertheless, including a list of references. Furthermore, one might
+refer in the text to certain works that need not necessarily be accompanied by a
+full bibliography listing (for example, \Name {Darwin} {C.}'s \emph {Origin}).
+\startfootnote \textcite[entry] [default::Darwin1859] \stopfootnote Thus, a
+system providing tools to handle bibliographies needs to be flexible.
+
+A good, general reference on bibliography practice (in the English language),
+independent of any particular specification, can be found in \cite [title]
+[default::vanLeunen1992] \cite [default::vanLeunen1992]. Note that rules and
+traditions may differ slightly in other languages and cultures.
+
+The examples of bibliography listings of the previous chapter were simplified by
+the fact that the entire bibliographical dataset was rendered. In practice, the
+same dataset source(s) could be used over many documents, and the dataset might
+contain many more references than are used in any one document. That is, the data
+source might be more complete than the final rendered bibliography list or lists.
+The mechanism of citation allows you to select references from the dataset(s) to
+build the list rendering as well as to place a indicator of the reference (or
+not) in the text of the document corresponding to a list entry (a publication).
+These citation renderings can be of many forms.
+
+A citation is normally pretty short as its main purpose is to refer uniquely to a
+more detailed description. But, there are several ways to refer, which is why the
+citation subsystem is configurable and extensible. Just look at the following
+commands:
+
+\cindex{cite}
+\tindex{::}
+
+\starttabulate
+\NC \TEXcode{\cite[num][article]}            \NC \cite[num]        [article]    \NC \NR
+\NC \TEXcode{\cite[textnum][article]}        \NC \cite[textnum]    [article]    \NC \NR
+\NC \TEXcode{\cite[authornum][article]}      \NC \cite[authornum]  [article]    \NC \NR
+\NC \TEXcode{\cite[authoryear][article]}     \NC \cite[authoryear] [article]    \NC \NR
+\NC \TEXcode{\cite[authoryears][article]}    \NC \cite[authoryears][article]    \NC \NR
+\NC \TEXcode{\cite[short][article]}          \NC \cite[short]      [article]    \NC \NR
+\NC \TEXcode{\cite[tag][article]}            \NC \cite[tag]        [article]    \NC \NR
+\NC \TEXcode{\cite[index][article]}          \NC \cite[index]      [article]    \NC \NR
+\NC \TEXcode{\cite[category][article]}       \NC \cite[category]   [article]    \NC \NR
+\NC \TEXcode{\cite[author][article]}         \NC \cite[author]     [article]    \NC \NR
+\NC \TEXcode{\cite[year][article]}           \NC \cite[year]       [article]    \NC \NR
+\NC \TEXcode{\cite[title][article]}          \NC \cite[title]      [article]    \NC \NR
+\NC \TEXcode{\cite[keywords][article]}       \NC \cite[keywords]   [article]    \NC \NR
+\NC \TEXcode{\cite[none][article]}           \NC \cite[none]       [article]    \NC \NR
+\NC \TEXcode{\cite[X]}                       \NC \cite[X]                       \NC \NR
+\NC \TEXcode{\cite[]}                        \NC \cite[]                        \NC \NR
+\NC \TEXcode{\cite[template::Chen:1988:IPP]} \NC \cite[template::Chen:1988:IPP] \NC \NR
+\NC \TEXcode{\cite[entry][article]}          \NC \cite[entry]      [article]    \NC \NR
+\stoptabulate
+
+The first argument is optional and if omitted, the default citation rendering
+(for example, \TEXcode {num} or \TEXcode {authoryear}, depending on the
+specification) will be selected.
+
+\startbuffer
+\cite[article]
+\stopbuffer
+\cindex{cite}
+
+\typeTEXbuffer \getbuffer
+
+\startaside
+The default citation alternative is defined via \cindex {setupbtx}
+
+\startTEX
+\setupbtx[alternative=num]
+\stopTEX
+
+However, this is not used as it is overridden by the specification, even the
+\TEXcode {default} specification:
+
+\startTEX
+\setupbtx[default:cite][alternative=num]
+\setupbtx    [apa:cite][alternative=authoryear]
+\stopTEX
+
+These examples introduce the concept of \Index {namespace}s that is extensively
+used in the bibliography subsystem. The \TEXcode {cite} namespace will inherit
+from the root namespace; similarly, the \TEXcode {default} specification will
+inherit elements from the \TEXcode {cite} namespace, but will be distinct from
+the \TEXcode {apa} specification's \TEXcode {cite} namespace, and so forth.
+Normally, we need not to worry about this as it is handled through the loading of
+the specification.
+\stopaside
+
+\cindex   {cite}
+\showsetup[cite]
+
+The \Cindex{citation} command is synonymous to \Cindex{cite}.
+
+\cindex   {citation}
+\showsetup[citation]
+%\showsetup[citation:userdata]
+\showsetup[citation:alternative]
+\showsetup[citation:direct]
+
+\startaside
+Note that the \MKII\ module based on \Tindex {bibtex} allowed the use of curly
+brackets enclosing the \Index {tag} (for reasons of backward compatibility with
+traditional \LATEX\ practice). A side|-|effect made this a bit picky about spaces
+between its arguments, the first of which is optional. We have chosen to remove
+this restriction through the use of standard \CONTEXT\ syntax using square
+brackets (reserving curly brackets to usually be used to enclose text that is to
+be typeset).
+
+The system will tolerate the \Index {depreciated} syntax \cindex {cite}\TEXcode
+{\cite{tag}}, but this practice is to be strongly discouraged and cannot be mixed
+with any other options.
+\stopaside
+
+The most commonly used citation variants (or alternatives) are \TEXcode {num} and
+\TEXcode {authoryear} introduced above. The first is typically employed in
+conjunction with a numbered bibliography list, usually sorted in the citation
+order in the text; the second is typically used in conjunction with a
+bibliography list sorted by author and year of publication.
+
+Other citation variants may be quite useful, even when used in the context of the
+above standard schemes. One such example would be \Cindex {cite}\TEXcode
+{[title][tag]} that can be used to include the title of the work in the running
+text (as can be seen earlier in \in {section} [sec:styles]; another one is
+\cindex {cite}\TEXcode {\cite[year][tag]} that can be used to include the
+publication date and \cindex {cite}\TEXcode {\cite[author][tag]} can be used to
+extract the authors' names. These are examples of a general rule where \cindex
+{cite}\TEXcode {\cite[field][tag]} will return the contents of the given field
+for an entry, if the entry contains such a field.
+
+The variants \TEXcode {textnum} and \TEXcode {authoryears} are intended to be
+used in the running text when the reference becomes part of the syntax of the
+sentence: typically, they will not be set|-|off by parenthesis, for example.
+
+\startaside
+The name \TEXcode {authoryears} (with an \quote{s}) is a shorthand that was used
+in \MKII. Whereas its name is not immediately obvious at first view, in practice
+it is a quite convenient variant of \TEXcode {authoryear} that differs only in
+the style of punctuation, thus its place in a sentence structure.
+\stopaside
+
+Notice that in the example \TEXcode{\cite[template::Chen:1988:IPP]} shown above,
+the \TEXcode {tag} was prefixed with an alternate dataset name (\tindex
+{::}\TEXcode {template::}) rather than to the default \TEXcode {dataset=example}
+that was specified in the \Cindex {setupbtx} command earlier. The reason behind
+the double|-|colon syntax should be made obvious here (where the \Index {tag}
+itself uses single colons).
+
+In the last of the examples shown above, \TEXcode{\cite[entry][article]}, the
+full rendered bibliographic entry gets placed.
+
+Unless the placed rendering uses \TEXcode {method=dataset}, only publications
+that are explicitly cited will end up in the lists. You can force a citation into
+a list using \Cindex {usecitation}, for example:
+
+\cindex{usecitation}
+
+\startTEX
+\usecitation[patent]
+\stopTEX
+
+This command has two synonyms: \Cindex {nocite} and \Cindex {nocitation} so you
+can choose whatever fits you best.
+
+\cindex   {nocite}
+\showsetup[nocite]
+
+\cindex   {nocitation}
+\showsetup[nocitation]
+
+The purpose and utility of these commands (and their synonyms) is not only to
+draw a citation from the dataset for inclusion in the bibliography, but also to
+mark the place in the text where the citation is relevant. Normally, one might
+claim that this should be done through one of the forms of the \Cindex {cite} (or
+\Cindex {citation}) command, as all references appearing in the bibliography are
+to be cited at least once in the text. However, even if one does not disagree
+with this statement, one might still wish attach the citation to the reference in
+the text of a \Index {floating object} such as a table or a figure, thus
+establishing a proper order in the numbering since the explicit citation
+rendering might occur within the table or the figure caption that might get
+placed on a much later page. Consider the following schematic illustration:
+
+\cindex{nocite}
+\cindex{cite}
+
+\startTEX
+(see \nocite [MyReference]\in {table} [tab:mytable]).
+
+\startplacetable[reference=tab:mytable]
+    \unknown\ \cite[MyReference]
+\stopplacetable
+\stopTEX
+
+The citation rendering and the bibliographic list rendering are intimately
+coupled reciprocally and cannot be dissociated. This coupling can be through the
+reference number for example, but unnumbered reference lists also contain
+interacting hyperlinks. A failure to take into account this interdependence can
+lead to fundamental misunderstandings in use.
+
+\startaside
+Both the citation and the list must be rendered. For example, a common error
+would be to omit (or comment|-|out) the list rendering during the writing stage
+of a document. Such an error will cause the citations to fail to render properly.
+
+Whereas this might seem to be an unnecessary limitation, it results from a
+specific design choice and from the possibility of placing multiple renderings
+freely, anywhere in a document. It is preferable not to render citations at all
+than to render these citations possibly incorrectly.
+\stopaside
+
+\startsection[title=Combining citations]
+
+\startbuffer
+\cite[num][article,book,booklet]
+\stopbuffer
+
+A single citation might refer to several sources, obtained through the use of a
+comma separated list of \Index{tag}s, for example: \getbuffer
+
+\cindex{cite}
+
+\typeTEXbuffer
+
+A comma separated list of three (or more) consecutive numbers will get collapsed
+or compressed into a range of numbers (if possible).
+
+\cindex {cite} The order in which the citation \Index {tag}s appear in the list
+may or may not be important, depending upon the citation variant and on the style
+specification. Consider the following examples:
+
+\startbuffer
+\cite[num]        [article,book]
+\cite[textnum]    [article,book]
+\cite[authoryear] [article,book]
+\cite[authoryears][article,book]
+\cite[short]      [article,book]
+\cite[author]     [article,book]
+\cite[year]       [article,book]
+\cite[title]      [article,book]
+\stopbuffer
+
+\typeTEXbuffer
+
+This gives:
+
+\cindex{cite}
+\startlines \getbuffer \stoplines
+
+Now we swap the order:
+
+\startbuffer
+\cite[num]        [book,article]
+\cite[textnum]    [book,article]
+\cite[authoryear] [book,article]
+\cite[authoryears][book,article]
+\cite[short]      [book,article]
+\cite[author]     [book,article]
+\cite[year]       [book,article]
+\cite[title]      [book,article]
+\stopbuffer
+
+\typeTEXbuffer
+
+and get:
+
+\startlines \getbuffer \stoplines
+
+Note that the numbered citation reference is always rendered in numerical order,
+where the numbers correspond to the order in which the entries appear in the
+bibliography list. This order depends on the \Index {sorting} of the list
+rendering (this sorting may be, in some styles, in the order in which the
+references are cited) and is controlled by the \TEXcode {[list]} \TEXcode
+{sorttype} parameter. In the \index {style+APA}APA style, presently active, the
+citations are always sorted according to author and year. Thus, \quotation
+{BookAuthorLastname} appears before \quotation {Last} in our example here,
+regardless of the order in which the references appear in the \Cindex {cite}
+command (i.e. either \TEXcode {\cite[article,book]} or \TEXcode
+{\cite[book,article]}).
+
+The user can control the state of sorting of the \cindex{cite}\TEXcode {cite}
+variants through the parameter \TEXcode {sorttype=normal}; other choices are
+\TEXcode {reverse} and \TEXcode {none}:
+
+\startTEX
+\setupbtx[aps:cite:num][sorttype=none]
+\stopTEX
+
+\startsubsubject [title=Single list item containing multiple publication entries]
+
+Some bibliography styles admit the combination of several bibliographical sources
+into a single list item having a unique reference number. The combination of
+multiple bibliographic entries into as single bibliography list item is more
+compact and this practice is often encountered in short \quote {letter}|-|type
+journal articles. (Note, however, that entries combined as such do not make any
+sense in an authoryear scheme such as \index {style+APA}APA.)
+
+One can combine \Index {tag}s using the addition operator symbol (\TEXcode {+}),
+best illustrated though an example:
+
+\startbuffer
+\METAFUN\ began as an expression of love and appreciation for \METAPOST.
+\citation [num] [tugboat::Berdnikov:TB21-2-129+Hobby:TB21-2-131]
+
+\definebtxrendering[tugboat][aps][dataset=tugboat,group=examples]
+\placebtxrendering [tugboat][criterium=section]
+\stopbuffer
+
+\cindex{citation}
+\cindex{definebtxrendering}
+\cindex{placebtxrendering}
+\tindex{::}
+
+\typeTEXbuffer
+
+\getbuffer
+
+% To Hans: We need to suppress the closing period before the combining semi-colon.
+% To Alan: Can't we use \removepunctuation ?
+
+Combined entries are joined using a separator that can be specified, as in:
+
+\startbuffer
+\setupbtxrendering[tugboat][separator={\break}]
+\stopbuffer
+
+\cindex{setupbtxrendering}
+\tindex{separator}
+
+\typeTEXbuffer
+
+or suppressed (using \tindex {separator}\TEXcode {separator=,}); By default,
+\cindex {removepunctuation}\TEXcode {separator={\removepunctuation;\space}}.
+
+Dataset entries that are combined cannot also appear apart (nor does this really
+make any logical sense). All of the following:
+
+\startbuffer
+\cite[num][tugboat::Berdnikov:TB21-2-129]
+\cite[num][tugboat::Berdnikov:TB21-2-129,Hobby:TB21-2-131]
+\cite[num][tugboat::Hobby:TB21-2-131]
+\stopbuffer
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer \getbuffer
+
+will point to the combined reference (as they should). However, beware that
+attempting to include any of these references in a \emphasis {different} combined
+list item is undefined, meaning unsupported.
+
+Combining list entries is another instance showing that citations and the
+rendered bibliography list interact and cannot be separated.
+
+\stopsubsubject
+
+\stopsection
+
+\startsection[title=Additional text]
+
+\startsubsubject [title=Additional text in a citation reference]
+
+Sometimes one would like to include additional text in a citation, for example
+a specific commentary or page number reference.
+
+\startbuffer
+\cite[righttext={ p.\nbsp xx}][article]
+\stopbuffer
+
+\cindex{cite}
+
+\typeTEXbuffer
+
+yielding:
+
+\getbuffer
+
+The additional text can be either before (\TEXcode {lefttext=}) or after
+(\TEXcode {righttext=}) \startfootnote The \MKII\ bib module used the keyword
+\TEXcode {extra=} in the place of \TEXcode {righttext=}. We chose not to support
+this as a synonym as the name is ambiguous. Furthermore, we seek to limit the
+number of keywords used in \CONTEXT. \stopfootnote each citation entry and are
+not to be confused with the delimiters \TEXcode {left={(},} and \TEXcode
+{right={)},} used to surround the entire citation. The difference becomes
+important when referencing multiple citations.
+
+The following examples further illustrate the syntax:
+
+\startbuffer
+\cite[lefttext={See },righttext={ p.\nbsp yy}][book]
+\stopbuffer
+
+\typeTEXbuffer \getbuffer
+
+\startbuffer
+\cite[alternative=num,righttext={{ p.\nbsp xx},{ p.\nbsp yy}}]
+     [article,book,booklet]
+\stopbuffer
+
+\cindex{cite}
+
+\typeTEXbuffer \getbuffer
+
+\startbuffer
+\cite[lefttext={In the article: },righttext={.}][article]
+\stopbuffer
+
+\cindex{cite}
+
+\typeTEXbuffer \getbuffer
+
+\startbuffer
+\cite[lefttext={{In the article: },{in the book: }},alternative=title]
+     [article,book]
+\stopbuffer
+
+\cindex{cite}
+
+\typeTEXbuffer \getbuffer
+
+% To Hans: the text should probably NOT get the title's style (italics).
+% To Alan: is this still an issue? I fixed the 'and'.
+
+Notice that the text is typeset using the \TEXcode {style} of the \TEXcode
+{title}.
+
+\startbuffer
+\cite[righttext={{ p.\nbsp xx},}][article,book]
+\stopbuffer
+
+\cindex{cite} \typeTEXbuffer \getbuffer
+
+Because \CONTEXT\ does not allow mixing key|-|value pair lists with single value
+keys, the keyword \TEXcode {alternative=} must be used, if needed, as shown in
+the examples above.
+
+\stopsubsubject
+
+\startsubsubject [title=Additional text in a list entry]
+
+Additional text such as notes and page numbers can also get placed with the entry
+in the bibliography list. Of course, the bibliography data entry can contain a
+\TEXcode {note=} field that may or may not get rendered, but often is, according
+to the style specification.
+
+It is also possible to specify notes or page references to be rendered \TEXcode
+{before} or \TEXcode {after} a bibliography entry through the citation call.
+
+\startbuffer
+\cite
+  [alternative=num,
+   before={{Introducing MetaPost: },},
+   after={,{ See, also, the references therein, p.\nbsp 58.}}]
+  [tugboat::Hobby:TB10-4-505,Hobby:TB22-1-46]
+\blank
+\placebtxrendering [tugboat][criterium=section]
+\stopbuffer
+
+\cindex{cite}
+\cindex{placebtxrendering}
+\tindex{::}
+
+\typeTEXbuffer \getbuffer
+
+Clearly, such additional text can be added to each entry only once, so the first
+such \Cindex {cite} call wins.
+
+\stopsubsubject
+
+\stopsection
+
+\startsection[title=Placing a single citation]
+
+Sometimes, one would like to place a single citation somewhere in the text
+without necessarily adding it to a bibliography list. Take, for example,
+
+\startbuffer
+\placecitation[tugboat::Mahajan:TB31-1-88]
+\stopbuffer
+
+\getbuffer
+
+obtained by using
+
+\cindex{placecitation}
+\tindex{::}
+
+\typeTEXbuffer
+
+Note that \Cindex {placecitation}\TEXcode {[tag]} is a synonym for \Cindex
+{citation}\TEXcode {[entry][tag]} (that was seen earlier).
+
+\showsetup[placecitation]
+
+As for other citation reference, this will fail if a bibliography list rendering
+is not placed somewhere in the document so let's do that here:
+
+\startbuffer
+\placebtxrendering[tugboat][criterium=section]
+\stopbuffer
+
+\cindex{placebtxrendering}
+
+\typeTEXbuffer \getbuffer
+
+Whereas this might seem redundant above (placing the citation entry as well as
+its list rendering), this will only exceptionally be the case (as in this highly
+artificial example of this manual); Indeed, all cited work (such as \cite
+[textnum] [tugboat::Mahajan:TB31-1-88], above) will logically always be placed in
+a list of references.
+
+The placement of a single citation brings to light a subtle point: The \TEXcode
+{specification} that is used by citations is that set in the root namespace
+(through \Cindex {setupbtx}\TEXcode {[specification=apa]} or possibly through
+\Cindex {usebtxdefinitions}\TEXcode {[apa]}. This is \emphasis {not} necessarily
+the same as that of the rendering (if a different rendering specification is
+declared). Note that the named rendering used above (\TEXcode {[tugboat]}) was
+not declared a child of the rendering named \TEXcode {[aps]}, though the \TEXcode
+{specification=apa} is active. Thus, the style of the citations can be made to
+differ from the style of their bibliography list, as here, but this is not really
+a very good practice.
+
+\stopsection
+
+\startsection[title=Placing citations as footnotes]
+
+A \Cindex {placecitation} command can occur inside a footnote or other \Index
+{floating object} such as a figure or table caption. No specification or style
+that places its bibliography list renderings as footnotes has been implemented
+yet.
+
+% bibliographies as endnotes intercalated with footnotes...
+
+\stopsection
+
+\startsection[title=Searching]
+
+Finding the right \Index {tag} in a database can be a pain. In particular,
+datasets having their origin in multiple source files may contain conflicting
+\Index {tag}s, though duplicate \Index {tag}s get suffixed automatically so this
+should not be a real problem.
+
+On the other hand, asking for a \Index {wildcard} also makes no sense.
+\startfootnote Note that \cindex {nocite}\TEXcode {\nocite{*}} is a valid
+\LATEX/\BIBTEX\ practice that is used to include all entries of a \Tindex {.bib}
+file in the final bibliography. This result can be obtained in \CONTEXT\ through
+the \TEXcode {method=dataset} list rendering parameter. Alternately, one can use
+the syntax \cindex {cite}\TEXcode {\cite[match(*:*)]} which is a shorthand to
+match all values of all fields. \stopfootnote Nevertheless, we provide a powerful
+mechanism for matching a query. Keep in mind that a \Index {tag} is used as a
+quick look|-|up in a hashed table whereas a search will look through the entire
+dataset. If processing speed is critical, one should use the cite \Index {tag}
+lookup; in practice, even on a big book project employing a very large dataset,
+the search is not a penalty.
+
+Let's look in more detail at the \Cindex {cite} command. In order to distinguish
+efficiently between a normal reference and a more clever one, we use the \TEXcode
+{match()} function:
+
+\tindex{::}
+\startTEX
+match(query)
+dataset::match(query)
+dataset :: match ( query )
+\stopTEX
+
+The handler is rather tolerant for spaces (as well as capitalization) which is
+handy if you have long queries that wrap around in the source code. Of course the
+\tindex {::}\TEXcode {dataset::} prefix is optional in which case the current
+dataset is taken. Such match queries can be mixed in a multiple reference
+citation indifferently with hashed cite \Index {tag}s so the system is really
+flexible.
+
+\blank
+
+To demonstrate the use a search query, we load a small bibliographic database:
+
+\startbuffer
+\usebtxdataset[boekplan][boekplan.bib]
+\stopbuffer
+
+\cindex{usebtxdataset}
+
+\typeTEXbuffer
+
+\getbuffer
+
+We could switch to this base using:
+
+\cindex{setupbtx}
+\startTEX
+\setupbtx[dataset=boekplan]
+\stopTEX
+
+but instead we shall use a prefix as seen previously. Consider the following:
+
+\startbuffer
+everything that you might want to know about layouts
+\cite[boekplan::match(author:Egger)]
+\stopbuffer
+
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer
+
+We will get: \quotation {\inlinebuffer}. Of course this assumes that we also
+typeset a list of references somewhere in our document, so let's do that here:
+
+\startbuffer
+\definebtxrendering[boekplan][apa][dataset=boekplan,group=examples]
+\placebtxrendering [boekplan][criterium=chapter]
+\stopbuffer
+
+\cindex{definebtxrendering}
+\cindex{placebtxrendering}
+
+\typeTEXbuffer \getbuffer
+
+\startbuffer
+\cite[authoryears][          match(title:Lua)]\\
+\cite[authoryears][default:: match(title:Lua)]\\
+\cite[authoryears][boekplan::match(title:Lua)]
+\stopbuffer
+
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer \getbuffer
+
+Notice that no match is found in the \quote {current} dataset (\TEXcode {example}).
+
+A query eventually becomes a \LUA\ expression so you can use helpers to achieve
+your goal. As a convenience there are some shortcuts to access fields. The
+following examples demonstrate this:
+
+\startbuffer
+\cite
+  [authoryears]
+  [boekplan::match(author:hagen and year:2010-2011)]\\
+\cite
+  [authoryears]
+  [boekplan::match(author:{Willi Egger})]\\
+\cite
+  [authoryears]
+  [boekplan::match(author:Hans and (tonumber(field:year) or 0) > 2011)]
+\stopbuffer
+
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer \getbuffer
+
+You can use grouping braces when spaces are involved. Ranges (of numbers) are
+recognized. Of course, you can use other characters that the basic alphabet.
+
+\startbuffer
+\cite[authoryears][tugboat::match(author:{Bogusław Jackowski})]\\
+\stopbuffer
+
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer \getbuffer
+
+This demonstrates further the interest in converting classical \TEX\ accent
+sequences into proper \UTF\ characters. The citations found above \bold{must}
+correspond to some bibliography list entries, so we will place this list here:
+
+\startbuffer
+\placebtxrendering [tugboat][criterium=section]
+\stopbuffer
+
+\cindex{placebtxrendering}
+
+\typeTEXbuffer \getbuffer
+
+String lookups are partial and case insensitive.
+
+\startbuffer
+\cite [boekplan::match(author:e)]\\
+\cite [boekplan::match(author:h)]
+\stopbuffer
+
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer
+
+so one must take care in formulating cite queries as both lookups above  will
+get all five entries: \inlinebuffer, whereas
+
+\startbuffer
+\cite [boekplan::match(author:eg)]\\
+\cite [boekplan::match(author:e*r)]
+\stopbuffer
+
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer
+
+only finds \inlinebuffer.
+
+% To Hans: It is curious that match(author:e*r) finds [Hag]en and Br[aslau].
+% To Alan: We match the whole (original) string.
+
+Note also that the order of the match criteria is not significant.
+
+\startaside
+The search mechanism is very powerful. However, a \bold {major \Index{pitfall}}
+or risk comes from the possibility to easily under|-|specify the match criteria.
+For example, \TEXcode {match(author:Hagen and author:Hoekwater)} will find \cite
+[title] [boekplan::match(title:Fonts)], but it will also find \cite [title]
+[boekplan::match(title:Layouts)]; Nor would adding the criterium \TEXcode {and
+year:2011} be of any help. The solution is
+
+\startbuffer
+\cite
+  [authoryear]
+  [boekplan::match(author:Hagen and author:Hoekwater and title:fonts)]
+\stopbuffer
+
+\cindex{cite}
+\tindex{::}
+
+\typeTEXbuffer \getbuffer
+
+Note that using \TEXcode {match(title:fonts)} alone would also work, that is
+until another reference work containing the word \quote {fonts} in its title gets
+added to the dataset! \startfootnote Multiple hits would have occurred in the
+examples above containing \TEXcode {title:lua} had only one dataset been used in
+the typesetting of the present manual. \stopfootnote Thus, whereas it might
+appear that the match mechanism be a more robust way of identifying dataset
+entries then short cite \Index {tag}s, incomplete search queries might return
+unwanted, excess matches.
+
+It is quite common in real bibliography databases for some author or authors to
+appear in many different references published in the same year, perhaps buried in
+a longer list of authors, so some care has to be taken to uniquely identify the
+desired work. Of course, this feature can also be a good shorthand as well to
+select several different matching works when that is the desired result.
+\stopaside
+
+% This only begins to touch on the search mechanism.
+% This section needs to be expanded.
+
+\stopsection
+
+\startsection[title=Page index and interaction,reference=sec:index]
+
+Each citation in the text not only marks the dataset entry for inclusion in the
+bibliography list but also records the page number on which the citation occurs.
+Each named list rendering can be instructed to include these pages just like an
+index.
+
+\startbuffer
+\setupbtxrendering
+    [default]
+    [pagestate=start]
+\stopbuffer
+
+\cindex{setupbtxrendering}
+
+\typeTEXbuffer
+
+The result can be observed in the \about [ch:biblio] on \at {page} [ch:biblio].
+If interaction is active (\cindex {setupinteraction}\TEXcode
+{\setupinteraction[state=start]}), then these page numbers will be \Index
+{hyperlink}s back to the citations. If \TEXcode {numbering=yes}, then the
+numbered bibliography entries will also contain \Index {hyperlink}s back to the
+first occurrence in the text where the entry is cited (which is the same as the
+first page indexed).
+
+% to Hans: Hyperlinks on the list num or APA authoryear is no longer working!
+% to Alan: Still?
+
+Some styles, such as \index {style+APA}\TEXcode {apa}, will have other \Index
+{hyperlink}s. The author list including the year will be active just like the
+numbers above (an \TEXcode {authoryear} list is usually not numbered).
+Furthermore, any doi or url that is included in the entry will be a \Index
+{hyperlink} to the external resource. Finally, all titles will contain \Index
+{hyperlink}s to the local downloaded file of the cited work if this exists and
+was specified (using the data field \TEXcode {file={},}).
+
+In addition to the index of pages of citations in the text associated with each
+entry in the bibliography list, one has the possibility of adding bibliography
+items to any standard index list. This can be illustrated through the creation of
+a list of authors or names:
+
+\startbuffer
+\defineregister
+  [indexofauthors]
+
+\definebtxregister
+  [authors]
+  [field=author,
+   register=indexofauthors,
+   method=always,
+   dataset=default,
+   alternative=invertedshort]
+\stopbuffer
+
+\cindex{defineregister}
+\cindex{definebtxregister}
+
+\typeTEXbuffer
+
+placed in the preamble of the document and to be followed later, typically
+towards the end of the document, by
+
+\cindex{placeregister}
+
+\startTEX
+\startchapter[title=Index of Names]
+    \placeregister[indexofauthors][compress=yes]
+\stopchapter
+\stopTEX
+
+as can be see in the present manual on \at {page} [ch:indexofauthors].
+
+\cindex   {definebtxregister}
+\showsetup[definebtxregister]
+
+\cindex   {setupbtxregister}
+\showsetup[setupbtxregister]
+
+Any field can be indexed, as desired, for example \TEXcode {field=title}. One
+particularly useful field is \TEXcode {keywords={}}: a semi|-|colon separated
+list of keywords will be split into individual index entries for each cited work.
+
+The handling of fields to be interpreted as names (as in \TEXcode {author}) or as
+keywords (split into fields separated by semi|-|colons), etc. depends on the
+specification and is declared in a lua file associated with the specification
+definition file. This will be described in the next chapter.
+
+\stopsection
+
+\startsection [title=Summary and explanation of the \TEXcode {\cite} mechanism]
+
+As the list of cited references is being built in memory, each used dataset entry
+is flagged. As the list gets placed, either partially or fully, eventual conflits
+in \TEXcode {short} and in \TEXcode {authoryear} tags are resolved through an
+assignment of suffixes. These are then fed|-|back to the citation references.
+
+A dataset can have multiple renderings and multiple datasets and renderings can
+be grouped. The many citation variants can be freely used together and this may
+or may not make coherent sense. For example, an \TEXcode {authoryear} sorted list
+is assigned numbers that are available for use as numbered citation references,
+but these numbers will follow the order of the list and not the order of
+citations. Conversely, a list that is sorted in the order of citations will still
+have \TEXcode {authoryear} and \TEXcode {short} citation tags, but these will be
+of less use for the reader in this case than the \TEXcode {authornum} variant.
+With such flexibility comes complication.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
