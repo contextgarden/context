@@ -122,6 +122,7 @@
 \definesystemattribute[mathkernpairs]  [public]
 \definesystemattribute[mathbidi]       [public]
 \definesystemattribute[mathdomain]     [public]
+\definesystemattribute[mathcollapsing] [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -1335,6 +1336,39 @@
    \s!lcgreek=\v!italic,
    \s!ucgreek=\v!normal] % was: none
 
+%D Math collapsing (ligatures)
+
+\installcorenamespace{mathcollapsing}
+
+\setnewconstant\c_math_collapsing_attribute\attributeunsetvalue
+
+\letvalue{\??mathcollapsing       1}\plusone              % specials
+\letvalue{\??mathcollapsing       2}\plustwo              % specials + mathlist
+\letvalue{\??mathcollapsing       3}\plusthree            % mathlist + specials
+\letvalue{\??mathcollapsing\v!none }\attributeunsetvalue
+\letvalue{\??mathcollapsing\v!reset}\attributeunsetvalue
+
+\def\math_collapsing_initialize
+  {\ifnum\c_math_collapsing_attribute=\attributeunsetvalue \else
+     \clf_initializemathcollapsing % one time
+     \global\let\math_collapsing_initialize\relax
+   \fi}
+
+\appendtoks
+    \edef\p_collapsing{\mathematicsparameter\s!collapsing}%
+    \c_math_collapsing_attribute
+        \ifcsname\??mathcollapsing\p_collapsing\endcsname\lastnamedcs\else\attributeunsetvalue\fi
+    \relax
+\to \everyswitchmathematics % only in mathematics
+
+\appendtoks
+    \math_collapsing_initialize
+    \attribute\mathcollapsingattribute\c_math_collapsing_attribute
+\to \everymathematics
+
+\setupmathematics
+  [\s!collapsing=3] % mathlist wins over specials
+
 %D Math italics (experiment)
 
 %D We need keys but what names to use and because we have hardcoded solution
@@ -1356,14 +1390,6 @@
      \clf_initializemathitalics % one time
      \global\let\math_italics_initialize\relax
    \fi}
-
-% \appendtoks
-%     \edef\p_italics{\mathematicsparameter\s!italics}%
-%     \c_math_italics_attribute\csname\??mathitalics
-%         \ifcsname\??mathitalics\p_italics\endcsname\p_italics\else\v!none\fi
-%     \endcsname\relax
-%   % \math_italics_initialize
-% \to \everyswitchmathematics % only in mathematics
 
 \appendtoks
     \edef\p_italics{\mathematicsparameter\s!italics}%

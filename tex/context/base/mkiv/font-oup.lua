@@ -2487,6 +2487,7 @@ function readers.compact(data)
                         lookup.merged = true
                     end
                 elseif nofsteps == 1 then
+                    local kern = kerned
                     if kind == "gpos_single" then
                         if compact_singles then
                             kerned = kerned + checkkerns(lookup)
@@ -2495,6 +2496,9 @@ function readers.compact(data)
                         if compact_pairs then
                             kerned = kerned + checkpairs(lookup)
                         end
+                    end
+                    if kern ~= kerned then
+                     -- lookup.kerned = true
                     end
                 end
             end

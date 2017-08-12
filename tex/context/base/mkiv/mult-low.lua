@@ -427,5 +427,7 @@ return {
         "frule",
         --
         "compoundhyphenpenalty",
+        --
+        "start", "stop",
     }
 }

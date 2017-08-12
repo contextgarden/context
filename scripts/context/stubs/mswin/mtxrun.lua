@@ -9939,7 +9939,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 5396, stripped down to: 3708
+-- original size: 6406, stripped down to: 4574
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -9950,12 +9950,14 @@ if not modules then modules={} end modules ['util-lua']={
   license="see context related readme files"
 }
 local rep,sub,byte,dump,format=string.rep,string.sub,string.byte,string.dump,string.format
-local load,loadfile,type=load,loadfile,type
+local load,loadfile,type,collectgarbage=load,loadfile,type,collectgarbage
 utilities=utilities or {}
 utilities.lua=utilities.lua or {}
 local luautilities=utilities.lua
 local report_lua=logs.reporter("system","lua")
+local report_mem=logs.reporter("system","lua memory")
 local tracestripping=false
+local tracememory=false
 local forcestupidcompile=true 
 luautilities.stripcode=true 
 luautilities.alwaysstripcode=false 
@@ -10071,6 +10073,26 @@ setmetatable(finalizers,{
 } )
 function luautilities.registerfinalizer(f)
   finalizers[#finalizers+1]=f
+end
+function luautilities.checkmemory(previous,threshold,trace) 
+  local current=collectgarbage("count")
+  if previous then
+    local checked=(threshold or 64)*1024
+    local delta=current-previous
+    if current-previous>checked then
+      collectgarbage("collect")
+      local afterwards=collectgarbage("count")
+      if trace or tracememory then
+        report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB, afterwards %i MB",
+          previous/1024,current/1024,delta/1024,threshold,afterwards)
+      end
+      return afterwards
+    elseif trace or tracememory then
+      report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB",
+        previous/1024,current/1024,delta/1024,threshold)
+    end
+  end
+  return current
 end
 
 
@@ -20635,8 +20657,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 848648
--- stripped bytes    : 306912
+-- original bytes    : 849658
+-- stripped bytes    : 307056
 
 -- end library merge
 

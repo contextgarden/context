@@ -45,7 +45,7 @@
 -- todo: hook into the pretty print code
 -- todo: a simple catcode regime with only \ { }
 
-local gsub, sub, find = string.gsub, string.sub, string.find
+local gsub, sub, find, lower = string.gsub, string.sub, string.find, string.lower
 local concat = table.concat
 local formatters = string.formatters
 local lpegmatch = lpeg.match
@@ -167,52 +167,125 @@ function scite.installcommands()
     context(exportcolors())
 end
 
-local p1 = lpeg.tsplitat(lpeg.patterns.newline)
-local p2 = lpeg.P("\\slxS ")^1
-local p3 = lpeg.Cs((lpeg.Cp() * lpeg.P(" ") * lpeg.Cp() / function(b,e) return "\\slxF{" .. (e-b-1) .. "}" end
-         + (1-lpeg.P(" "))^1)^0)
+local function slxF(b,e)
+    local d = (e - b)/6
+    if d > 0 then
+        return "\\slxF{" .. d .. "}"
+    else
+        return " "
+    end
+end
 
--- slxb could have a \hskip so then we can replace the slxS's
+local p1 = lpeg.tsplitat(lpeg.patterns.newline)
+local p2 = lpeg.P("\\slxS ")
+local p3 = p2^1
+local p4 = lpeg.Cs( ( (lpeg.Cp() * p2 * p2^1 * lpeg.Cp()) / slxF + lpeg.P(1) )^0 )
 
 local function indent(str)
     local l = lpegmatch(p1,str)
     for i=1,#l do
         local s = l[i]
         if #s > 0 then
-            local n = lpegmatch(p2,s)
+            local n = lpegmatch(p3,s)
             if n then
-                n = (n-1)/6
+                n = (n-1)/6 -- length of "\\slxS "
             else
                 n = 0
             end
-s = lpegmatch(p3,s) -- can be combined
+            if n > 0 then
+                s = sub(s,n*6+1)
+            end
+            s = lpegmatch(p4,s)   -- can be combined
             l[i] = f_hanging(n,s) -- "\\slxb{%s}%s\\slxe "
--- print(">",s)
--- print("<",l[i])
         end
     end
     return concat(l,"\n")
 end
 
+local assignbuffer = buffers.assign
+local getcontent   = buffers.getcontent
+local loaddata     = io.loaddata
+local loadedlexers = scite.loadedlexers
+
 local function lexdata(data,lexname)
-    local styled = exportstyled(scite.loadedlexers[lexname],data or "")
+    local styled = exportstyled(loadedlexers[lexname],data or "")
     styled = indent(styled)
-    buffers.assign("lex",styled)
+    assignbuffer("lex",styled)
 end
 
 scite.lexdata = lexdata
 
 function scite.lexbuffer(name,lexname)
-    lexdata(buffers.getcontent(name) or "",lexname or "tex")
+    lexdata(getcontent(name) or "",lexname or "tex")
 end
 
 function scite.lexfile(filename,lexname)
-    lexdata(io.loaddata(filename) or "",lexname or file.suffix(filename))
+    lexdata(loaddata(filename) or "",lexname or file.suffix(filename))
 end
 
--- html output
+interfaces.implement {
+    name      = "scitelexfile",
+    arguments = "string",
+    actions   = scite.lexfile,
+}
+
+interfaces.implement {
+    name      = "scitelexbuffer",
+    arguments = { "string", "string" },
+    actions   = scite.lexbuffer,
+}
+
+interfaces.implement {
+    name      = "sciteinstallcommands",
+    actions   = scite.installcommands,
+}
+
+local startInlineScite  = context.startInlineScite
+local stopInlineScite   = context.stopInlineScite
+local startDisplayScite = context.startDisplayScite
+local stopDisplayScite  = context.stopDisplayScite
+
+local lexdata           = buffers.scite.lexdata
+
+local handler = visualizers.newhandler {
+    startinline  = function(settings) startInlineScite(settings.name or "") end,
+    stopinline   = function(settings) stopInlineScite() end,
+    startdisplay = function(settings) startDisplayScite(settings.name or "") end,
+    stopdisplay  = function(settings) stopDisplayScite() end,
+}
+
+local knownlexers = scite.knownlexers
+
+local parser = function(content,specification)
+    local method = lower(specification.method)
+    lexdata(content,knownlexers[method] or method)
+end
+
+local visualizer = {
+    handler = handler,
+    parser  = parser,
+}
+
+visualizers.register("cld",   visualizer)
+visualizers.register("tex",   visualizer)
+visualizers.register("lua",   visualizer)
+visualizers.register("mps",   visualizer)
+visualizers.register("xml",   visualizer)
+visualizers.register("bibtex",visualizer)
+visualizers.register("btx",   visualizer)
+visualizers.register("web",   visualizer)
+visualizers.register("cpp",   visualizer)
+-----------.register("sql",   visualizer)
 
 \stopluacode
+
+\definetyping[TEX][option=cld]
+\definetyping[LUA][option=lua]
+\definetyping[BTX][option=bibtex]
+\definetyping[MPS][option=mps]
+\definetyping[MP] [option=mps]
+\definetyping[CPP][option=web]
+\definetyping[WEB][option=web]
 
 % This is a preliminary interface.
 
@@ -221,22 +294,34 @@ end
 \newdimen\scitespaceskip
 
 \unexpanded\def\buff_scite_slxb#1%
-  {%\begingroup
-   \hangindent\numexpr#1+2\relax\scitespaceskip
+  {\hangindent\numexpr#1+2\relax\scitespaceskip
+   \hskip#1\scitespaceskip
    \hangafter 1\relax}
 
 \unexpanded\def\buff_scite_slxe
-  {\par
-   }%\endgroup}
+  {\par}
 
-\unexpanded\def\installscitecommands
-  {\ctxlua{buffers.scite.installcommands()}%
-   \let\installscitecommands\relax
-   \scitespaceskip\fontcharwd\font`0\relax
-   \unexpanded\def\slxS{\hskip\scitespaceskip}%
-   \unexpanded\def\slxF##1{\hskip##1\scitespaceskip\relax}%
+\unexpanded\def\buff_scite_slxs  {\hskip\scitespaceskip}
+\unexpanded\def\buff_scite_slxf#1{\hskip#1\scitespaceskip\relax}
+
+\unexpanded\def\installscitecommandsinline
+  {\scitespaceskip\interwordspace % \fontcharwd\font`0\relax % brrrrr
+   \let\slxb\gobbleoneargument
+   \let\slxe\relax
+   \let\installscitecommandsinline\relax}
+
+\unexpanded\def\installscitecommandsdisplay
+  {\scitespaceskip\interwordspace % \fontcharwd\font`0\relax % brrrrr
    \let\slxb\buff_scite_slxb
-   \let\slxe\buff_scite_slxe}
+   \let\slxe\buff_scite_slxe
+   \let\installscitecommandsdisplay\relax}
+
+\clf_sciteinstallcommands
+
+\installscitecommandsinline
+
+\let\slxS\buff_scite_slxs
+\let\slxF\buff_scite_slxf
 
 \unexpanded\def\startscite
   {\begingroup
@@ -255,9 +340,10 @@ end
 
 \unexpanded\def\module_scite_file[#1]%
   {\begingroup
-   \ctxlua{buffers.scite.lexfile("#1")}%
-   \installscitecommands
+   \setcatcodetable\ctxcatcodes % needed in xml
+   \clf_scitelexfile{#1}%
    \tt
+   \installscitecommandsdisplay
    \dontcomplain
    \raggedright
    \startcontextcode
@@ -272,16 +358,16 @@ end
 
 \unexpanded\def\module_scite_buffer[#1][#2]%
   {\begingroup
+   \setcatcodetable\ctxcatcodes % needed in xml
    \ifsecondargument
-     \ctxlua{buffers.scite.lexbuffer("#2","#1")}%
+     \clf_scitelexbuffer{#2}{#1}%
    \else
-     \ctxlua{buffers.scite.lexbuffer("#1","tex")}%
+     \clf_scitelexbuffer{#1}{tex}%
    \fi
-   \installscitecommands
    \tt
+   \installscitecommandsdisplay
    \dontcomplain
    \raggedright
-   \setcatcodetable\ctxcatcodes % needed in xml
    \startlines
    \getbuffer[lex]%
    \stoplines
@@ -290,19 +376,47 @@ end
 \unexpanded\def\sciteinlinebuffer
   {\dodoubleargument\module_scite_buffer_inline}
 
-\unexpanded\def\module_scite_buffer[#1][#2]%
+\unexpanded\def\module_scite_buffer_inline[#1][#2]%
   {\dontleavehmode
    \begingroup
-   \ifsecondargument
-     \ctxlua{buffers.scite.lexbuffer("#2","#1")}%
-   \else
-     \ctxlua{buffers.scite.lexbuffer("#1","tex")}%
-   \fi
-   \installscitecommands
-   \tt
-   \dontcomplain
    \setcatcodetable\ctxcatcodes % needed in xml
+   \ifsecondargument
+     \clf_scitelexbuffer{#2}{#1}%
+   \else
+     \clf_scitelexbuffer{#1}{tex}%
+   \fi
+   \tt
+   \installscitecommandsinline
+   \dontcomplain
    \getbuffer[lex]%
+   \endgroup}
+
+\unexpanded\def\startInlineScite#1%
+  {\dontleavehmode
+   \begingroup
+   \setcatcodetable\ctxcatcodes % needed in xml
+   \tt
+   \installscitecommandsinline
+   \dontcomplain
+   \ignorespaces
+   \clf_getbuffercontent{lex}% much faster than getbuffer
+   \removeunwantedspaces}
+
+\unexpanded\def\stopInlineScite
+  {\endgroup}
+
+\unexpanded\def\startDisplayScite#1%
+  {\begingroup
+   \setcatcodetable\ctxcatcodes % needed in xml
+   \tt
+   \installscitecommandsdisplay
+   \dontcomplain
+   \raggedright
+   \startlines
+   \clf_getbuffer{lex}}
+
+\unexpanded\def\stopDisplayScite
+  {\stoplines
    \endgroup}
 
 \protect

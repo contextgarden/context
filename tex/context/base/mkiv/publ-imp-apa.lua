@@ -123,7 +123,7 @@ categories.newspaper = categories.magazine
 
 categories.periodical = {
     sets = {
-        author = { "editor", "publisher" },
+        author = { "editor", "publisher", "organization", },
         doi    = generic.doi,
     },
     required = {
@@ -437,6 +437,7 @@ categories.unpublished = {
 categories.electronic = {
     sets = {
         doi = generic.doi,
+        author = { "author", "organization", },
     },
     required = {
         "title"

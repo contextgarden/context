@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/11/17 14:00:42
+-- merge date  : 08/12/17 16:50:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -19458,6 +19458,7 @@ function readers.compact(data)
             lookup.merged=true
           end
         elseif nofsteps==1 then
+          local kern=kerned
           if kind=="gpos_single" then
             if compact_singles then
               kerned=kerned+checkkerns(lookup)
@@ -19466,6 +19467,8 @@ function readers.compact(data)
             if compact_pairs then
               kerned=kerned+checkpairs(lookup)
             end
+          end
+          if kern~=kerned then
           end
         end
       end
@@ -19766,7 +19769,25 @@ registerdirective("fonts.otf.loader.cleanup",function(v) cleanup=tonumber(v) or 
 registerdirective("fonts.otf.loader.force",function(v) forceload=v end)
 registerdirective("fonts.otf.loader.syncspace",function(v) syncspace=v end)
 registerdirective("fonts.otf.loader.forcenotdef",function(v) forcenotdef=v end)
-registerotfenhancer("check extra features",function() end) 
+registerotfenhancer("check extra features",function() end)
+local checkmemory=utilities.lua and utilities.lua.checkmemory
+local threshold=100 
+local tracememory=false
+registertracker("fonts.otf.loader.memory",function(v) tracememory=v end)
+if not checkmemory then 
+  local collectgarbage=collectgarbage
+  checkmemory=function(previous,threshold) 
+    local current=collectgarbage("count")
+    if previous then
+      local checked=(threshold or 64)*1024
+      if current-previous>checked then
+        collectgarbage("collect")
+        current=collectgarbage("count")
+      end
+    end
+    return current
+  end
+end
 function otf.load(filename,sub,instance)
   local base=file.basename(file.removesuffix(filename))
   local name=file.removesuffix(base) 
@@ -19795,9 +19816,13 @@ function otf.load(filename,sub,instance)
     starttiming(otfreaders)
     data=otfreaders.loadfont(filename,sub or 1,instance) 
     if data then
+      local used=checkmemory()
       local resources=data.resources
       local svgshapes=resources.svgshapes
       local sbixshapes=resources.sbixshapes
+      if cleanup==0 then
+        checkmemory(used,threshold,tracememory)
+      end
       if svgshapes then
         resources.svgshapes=nil
         if otf.svgenabled then
@@ -19810,6 +19835,11 @@ function otf.load(filename,sub,instance)
             hash=hash,
             timestamp=timestamp,
           }
+        end
+        if cleanup>1 then
+          collectgarbage("collect")
+        else
+          checkmemory(used,threshold,tracememory)
         end
       end
       if sbixshapes then
@@ -19825,17 +19855,30 @@ function otf.load(filename,sub,instance)
             timestamp=timestamp,
           }
         end
+        if cleanup>1 then
+          collectgarbage("collect")
+        else
+          checkmemory(used,threshold,tracememory)
+        end
       end
       otfreaders.compact(data)
+      if cleanup==0 then
+        checkmemory(used,threshold,tracememory)
+      end
       otfreaders.rehash(data,"unicodes")
       otfreaders.addunicodetable(data)
       otfreaders.extend(data)
+      if cleanup==0 then
+        checkmemory(used,threshold,tracememory)
+      end
       otfreaders.pack(data)
       report_otf("loading done")
       report_otf("saving %a in cache",filename)
       data=containers.write(otf.cache,hash,data)
       if cleanup>1 then
         collectgarbage("collect")
+      else
+        checkmemory(used,threshold,tracememory)
       end
       stoptiming(otfreaders)
       if elapsedtime then
@@ -19843,10 +19886,14 @@ function otf.load(filename,sub,instance)
       end
       if cleanup>3 then
         collectgarbage("collect")
+      else
+        checkmemory(used,threshold,tracememory)
       end
       data=containers.read(otf.cache,hash) 
       if cleanup>2 then
         collectgarbage("collect")
+      else
+        checkmemory(used,threshold,tracememory)
       end
     else
       data=nil

@@ -222,10 +222,12 @@ local p_comment              = commentline
 ----- p_helper               = backslash * exact_match(helpers)
 ----- p_primitive            = backslash * exact_match(primitives)
 
-local p_command              = backslash * lexer.helpers.utfchartabletopattern(currentcommands) * #(1-cstoken)
-local p_constant             = backslash * lexer.helpers.utfchartabletopattern(constants)       * #(1-cstoken)
-local p_helper               = backslash * lexer.helpers.utfchartabletopattern(helpers)         * #(1-cstoken)
-local p_primitive            = backslash * lexer.helpers.utfchartabletopattern(primitives)      * #(1-cstoken)
+local p_csdone               = #(1-cstoken) + P(-1)
+
+local p_command              = backslash * lexer.helpers.utfchartabletopattern(currentcommands) * p_csdone
+local p_constant             = backslash * lexer.helpers.utfchartabletopattern(constants)       * p_csdone
+local p_helper               = backslash * lexer.helpers.utfchartabletopattern(helpers)         * p_csdone
+local p_primitive            = backslash * lexer.helpers.utfchartabletopattern(primitives)      * p_csdone
 
 local p_ifprimitive          = P("\\if") * cstoken^1
 local p_csname               = backslash * (cstoken^1 + P(1))
@@ -448,8 +450,8 @@ local stopmetafuncode        = token("embedded", stopmetafun)
 local callers                = token("embedded", P("\\") * metafuncall) * metafunarguments
                              + token("embedded", P("\\") * luacall)
 
-lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
+lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 
 contextlexer._rules = {
     { "whitespace",  spacing     },

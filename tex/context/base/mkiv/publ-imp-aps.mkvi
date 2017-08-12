@@ -283,6 +283,10 @@
   [aps:\s!cite]
 
 \definebtx
+  [aps:\s!cite:organization]
+  [aps:\s!cite]
+
+\definebtx
   [aps:\s!cite:authoryear]
   [aps:\s!cite:author]
   [\c!left={(},
@@ -651,6 +655,16 @@
     \btxcomma
 \stoptexdefinition
 
+\starttexdefinition unexpanded btx:aps:organization-if-not-author
+    \btxdoif {organization} {
+        \doifnot {\btxfoundname{author}} {organization} {
+            \btxspace
+            \btxflush{organization}
+            \btxcomma
+        }
+    }
+\stoptexdefinition
+
 \starttexdefinition unexpanded btx:aps:editor-in
     \btxdoif {booktitle} {
         \btxlabeltext{In}
@@ -903,6 +917,7 @@
     \texdefinition{btx:aps:title}
     \texdefinition{btx:aps:editor-in}
     \texdefinition{btx:aps:editionset}
+   %\texdefination{btx:aps:organization-if-not-author}% first check publ-imp-aps.lua
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
@@ -1035,13 +1050,7 @@
 \startsetups btx:aps:list:electronic
     \texdefinition{btx:aps:author}
     \texdefinition{btx:aps:title}
-    \btxdoif {organization} {
-        \doifnot {\btxfoundname{author}} {organization} {
-            \btxspace
-            \btxflush{organization}
-            \btxcomma
-        }
-    }
+    \texdefinition{btx:aps:organization-if-not-author}
     \btxdoif {howpublished} {
         \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{howpublished}}
     }

@@ -235,7 +235,7 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
         interfaces= userinterfaces
     end
     --
---     local filename = "i-context.xml"
+ -- local filename = "i-context.xml"
     local filename = "context-en.xml"
     local xmlfile  = resolvers.findfile(filename) or ""
     if xmlfile == "" then
@@ -310,7 +310,7 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
                         if name then
                             local c = variables[name]
                             local n = c and (c[interface] or c.en) or name
-                            if type == "environment" then
+                            if type ~= "environment" then
                                 i_commands[n] = true
                             elseif split then
                                 i_environments[n] = true

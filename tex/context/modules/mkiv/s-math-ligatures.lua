@@ -17,7 +17,7 @@ local uformat = string.formatters["%U"]
 function moduledata.math.ligatures.showlist(specification)
  -- specification = interfaces.checkedspecification(specification)
 
-    local function setlist(unicode,list,start,v)
+    local function setlist(unicode,list,start,v,how)
         if list[start] ~= 0x20 then
             local t, u = { }, { }
             for i=start,#list do
@@ -25,6 +25,7 @@ function moduledata.math.ligatures.showlist(specification)
                 t[#t+1] = utfchar(li)
                 u[#u+1] = uformat(li)
             end
+            context.NC() context(how)
             context.NC() context("%U",unicode)
             context.NC() context("%c",unicode)
             context.NC() context("% t",u)
@@ -53,18 +54,18 @@ function moduledata.math.ligatures.showlist(specification)
         end
     end
 
-    context.starttabulate { "|T|m|T|T|m|pl|" }
+    context.starttabulate { "|T|T|m|T|T|m|pl|" }
     for unicode, v in table.sortedhash(characters.data) do
         local vs = v.specials
         if vs and #vs > 2 then
             local kind = vs[1]
             if (v.mathclass or v.mathspec) and (kind == "char" or kind == "compat") then
-                setlist(unicode,vs,2,v)
+                setlist(unicode,vs,2,v,"sp")
             end
         end
         local ml = v.mathlist
         if ml then
-            setlist(unicode,ml,1,v)
+            setlist(unicode,ml,1,v,"ml")
         end
     end
     context.stoptabulate()

@@ -310,7 +310,8 @@
    \c!etallimit=5,
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
-   \c!sorttype=normal,
+   \c!sorttype=\v!normal,
+   \c!style=,
    \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
    \c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
    \c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % not \textampersand
@@ -342,6 +343,10 @@
 
 \definebtx
   [apa:\s!cite:author]
+  [apa:\s!cite]
+
+\definebtx
+  [apa:\s!cite:organization]
   [apa:\s!cite]
 
 \definebtx
@@ -950,6 +955,16 @@
     }
 \stoptexdefinition
 
+\starttexdefinition unexpanded btx:apa:organization-if-not-author
+    \btxdoif {organization} {
+        \doifnot {\btxfoundname{author}} {organization} {
+            \btxspace
+            \btxflush{organization}
+            \btxcomma
+        }
+    }
+\stoptexdefinition
+
 % TODO: The title is terminated with period. However,
 % we probably don't want this before the parenthesis.
 
@@ -1280,11 +1295,7 @@
     \texdefinition{btx:apa:title-if-not-placed}
     \texdefinition{btx:apa:editor-in}
     \texdefinition{btx:apa:editionset}
-    \btxdoif {organization} {
-        \btxspace
-        \btxflush{organization}
-        \btxcomma
-    }
+    \texdefinition{btx:apa:organization-if-not-author}
     \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1411,11 +1422,7 @@
 \startsetups btx:apa:list:electronic
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
-    \btxdoif {organization} {
-        \btxspace
-        \btxflush{organization}
-        \btxperiod
-    }
+    \texdefinition{btx:apa:organization-if-not-author}
     \btxdoif {howpublished} {
         \btxspace
         \btxflush{howpublished}

@@ -10,15 +10,17 @@ if not modules then modules = { } end modules ['util-lua'] = {
 -- we will remove the 5.1 code some day soon
 
 local rep, sub, byte, dump, format = string.rep, string.sub, string.byte, string.dump, string.format
-local load, loadfile, type = load, loadfile, type
+local load, loadfile, type, collectgarbage = load, loadfile, type, collectgarbage
 
 utilities          = utilities or {}
 utilities.lua      = utilities.lua or { }
 local luautilities = utilities.lua
 
 local report_lua = logs.reporter("system","lua")
+local report_mem = logs.reporter("system","lua memory")
 
 local tracestripping           = false
+local tracememory              = false
 local forcestupidcompile       = true  -- use internal bytecode compiler
 luautilities.stripcode         = true  -- support stripping when asked for
 luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
@@ -175,4 +177,25 @@ setmetatable(finalizers, {
 
 function luautilities.registerfinalizer(f)
     finalizers[#finalizers+1] = f
+end
+
+function luautilities.checkmemory(previous,threshold,trace) -- threshold in MB
+    local current = collectgarbage("count")
+    if previous then
+        local checked = (threshold or 64)*1024
+        local delta   = current - previous
+        if current - previous > checked then
+            collectgarbage("collect")
+            local afterwards = collectgarbage("count")
+            if trace or tracememory then
+                report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB, afterwards %i MB",
+                    previous/1024,current/1024,delta/1024,threshold,afterwards)
+            end
+            return afterwards
+        elseif trace or tracememory then
+            report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB",
+                previous/1024,current/1024,delta/1024,threshold)
+        end
+    end
+    return current
 end

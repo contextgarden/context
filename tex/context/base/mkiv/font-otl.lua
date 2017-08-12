@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.101 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.102 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl",  otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg",  otf.version, true)
 otf.sbixcache             = containers.define("fonts", "sbix", otf.version, true)
@@ -101,6 +101,33 @@ registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = 
 
 registerotfenhancer("check extra features", function() end) -- placeholder
 
+-- Kai has memory problems on osx so here is an experiment (I only tested on windows as
+-- my test mac is old and gets no updates and is therefore rather useless.):
+
+local checkmemory = utilities.lua and utilities.lua.checkmemory
+local threshold   = 100 -- MB
+local tracememory = false
+
+registertracker("fonts.otf.loader.memory",function(v) tracememory = v end)
+
+if not checkmemory then -- we need a generic plug (this code might move):
+
+    local collectgarbage = collectgarbage
+
+    checkmemory = function(previous,threshold) -- threshold in MB
+        local current = collectgarbage("count")
+        if previous then
+            local checked = (threshold or 64)*1024
+            if current - previous > checked then
+                collectgarbage("collect")
+                current = collectgarbage("count")
+            end
+        end
+        return current
+    end
+
+end
+
 function otf.load(filename,sub,instance)
     local base = file.basename(file.removesuffix(filename))
     local name = file.removesuffix(base) -- already no suffix
@@ -132,9 +159,13 @@ function otf.load(filename,sub,instance)
         data = otfreaders.loadfont(filename,sub or 1,instance) -- we can pass the number instead (if it comes from a name search)
         if data then
             -- todo: make this a plugin
+            local used       = checkmemory()
             local resources  = data.resources
             local svgshapes  = resources.svgshapes
             local sbixshapes = resources.sbixshapes
+            if cleanup == 0 then
+                checkmemory(used,threshold,tracememory)
+            end
             if svgshapes then
                 resources.svgshapes = nil
                 if otf.svgenabled then
@@ -148,6 +179,11 @@ function otf.load(filename,sub,instance)
                         hash      = hash,
                         timestamp = timestamp,
                     }
+                end
+                if cleanup > 1 then
+                    collectgarbage("collect")
+                else
+                    checkmemory(used,threshold,tracememory)
                 end
             end
             if sbixshapes then
@@ -164,18 +200,31 @@ function otf.load(filename,sub,instance)
                         timestamp = timestamp,
                     }
                 end
+                if cleanup > 1 then
+                    collectgarbage("collect")
+                else
+                    checkmemory(used,threshold,tracememory)
+                end
             end
             --
             otfreaders.compact(data)
+            if cleanup == 0 then
+                checkmemory(used,threshold,tracememory)
+            end
             otfreaders.rehash(data,"unicodes")
             otfreaders.addunicodetable(data)
             otfreaders.extend(data)
+            if cleanup == 0 then
+                checkmemory(used,threshold,tracememory)
+            end
             otfreaders.pack(data)
             report_otf("loading done")
             report_otf("saving %a in cache",filename)
             data = containers.write(otf.cache, hash, data)
             if cleanup > 1 then
                 collectgarbage("collect")
+            else
+                checkmemory(used,threshold,tracememory)
             end
             stoptiming(otfreaders)
             if elapsedtime then
@@ -183,10 +232,14 @@ function otf.load(filename,sub,instance)
             end
             if cleanup > 3 then
                 collectgarbage("collect")
+            else
+                checkmemory(used,threshold,tracememory)
             end
             data = containers.read(otf.cache,hash) -- this frees the old table and load the sparse one
             if cleanup > 2 then
                 collectgarbage("collect")
+            else
+                checkmemory(used,threshold,tracememory)
             end
         else
             data = nil

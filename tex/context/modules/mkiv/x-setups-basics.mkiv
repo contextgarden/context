@@ -645,7 +645,8 @@
             \setfalse\c_cmd_doing_line
             \global\c_cmd_current_argument\zerocount
            %\blank[\v!line] % packed mode (we could do \startunpacked ...)
-            \godown[.75\lineheight]
+%             \godown[.75\lineheight]
+            \blank[\v!samepage,\v!medium]
             \switchtobodyfont[\v!small]
             \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
         \egroup
@@ -663,7 +664,8 @@
 \startxmlsetups xml:setups:typeset:instances
     \ifx\m_cmd_instance\empty
         \xmldoif{#1}{/instances} {
-            \godown[.75\lineheight]
+%             \godown[.75\lineheight]
+            \blank[\v!samepage,\v!medium]
             {\ttbf instances:}
             \enspace
             \xmlfilter{#1}{/instances/(constant|resolve)/command(xml:setups:instance)}
@@ -822,7 +824,8 @@
                \unknown
             }
         \cmd_column_one_stop
-        \godown[.75\lineheight]
+%         \godown[.75\lineheight]
+        \blank[\v!samepage,\v!medium]
         \ignorespaces
     \fi
 \stopxmlsetups
@@ -839,7 +842,8 @@
             \ignorespaces
             \xmlflush{#1}
         \cmd_column_one_stop
-        \godown[.75\lineheight]
+%         \godown[.75\lineheight]
+        \blank[\v!samepage,\v!medium]
         \ignorespaces
     \fi
 \stopxmlsetups
@@ -928,7 +932,8 @@
   {\cmd_column_one_start
       \cmd_internal_value{#1}%
    \cmd_column_one_stop
-   \godown[.75\lineheight]
+%    \godown[.75\lineheight]
+   \blank[\v!samepage,\v!medium]
    \ignorespaces}
 
 %D Auxiliary.
@@ -1060,7 +1065,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:parameters:values
-    \blank[\v!big]
+    \blank[\v!big,\v!samepage]
     \expanded {
         \parametercommand {
             \currentsetupparametercommand

@@ -106,7 +106,7 @@ if not graphemes then
         end
     end
 
-    local function setlist(unicode,list,start)
+    local function setlist(unicode,list,start,category)
         if list[start] ~= 0x20 then
             local t = mathlists
             for i=start,#list do
@@ -120,9 +120,11 @@ if not graphemes then
                     t = f
                 end
             end
-            t.ligature = unicode
+            t[category] = unicode
         end
     end
+
+    local mlists = { }
 
     for unicode, v in next, data do
         local vs = v.specials
@@ -147,14 +149,22 @@ if not graphemes then
                 --
             end
             if (kind == "char" or kind == "compat") and (size > 2) and (v.mathclass or v.mathspec) then
-                setlist(unicode,vs,2)
+                setlist(unicode,vs,2,"specials")
             end
         end
         local ml = v.mathlist
         if ml then
-            setlist(unicode,ml,1)
+            mlists[unicode] = ml
         end
     end
+
+    -- these win:
+
+    for unicode, ml in next, mlists do
+        setlist(unicode,ml,1,"mathlist")
+    end
+
+    mlists = nil
 
     if storage then
         storage.register("characters/graphemes", characters.graphemes, "characters.graphemes")

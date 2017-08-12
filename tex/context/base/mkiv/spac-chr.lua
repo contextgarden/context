@@ -333,6 +333,10 @@ characters.methods = methods
 
 -- for current, char, font in traverse_char_data(head) will save 0.015 on a 300 page doc
 
+-- this also works ok in math as we run over glyphs and these stay glyphs ... not sure
+-- about scripts and such but that is not important anyway ... some day we can consider
+-- special definitions in math
+
 function characters.handler(head)
     local head = tonut(head)
     local wipe = false

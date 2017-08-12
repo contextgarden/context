@@ -1,5 +1,9 @@
 \startenvironment publications-style
 
+\startmode[atpragma]
+    \usemodule[scite] % gives the default lexing
+\stopmode
+
 \dontcomplain
 
 \setupbodyfont
@@ -75,37 +79,42 @@
 
 % All this syntax highlighting doesn't look good but Alan likes it, so:
 
-\definetype[BTXcode][option=TEX]
-\definetype[XMLcode][option=XML]
-\definetype[TEXcode][option=TEX]
-\definetype[LUAcode][option=LUA]
-\definetype[MPcode] [option=MP]
+\ifdefined\scitebuffer
 
-\definetyping[BTX]  [option=LUA] % we don't have a highlight yet
+    \definetype  [BTXcode] [option=bibtex]
+    \definetype  [XMLcode] [option=xml]
+    \definetype  [TEXcode] [option=tex]
+    \definetype  [LUAcode] [option=lua]
+    \definetype  [MPcode]  [option=mps]
+
+    \definetyping[BTX]     [option=bibtex]
+
+\else
+
+    \definetype  [BTXcode] [option=,color=fore:two]
+    \definetype  [XMLcode] [option=,color=fore:two]
+    \definetype  [TEXcode] [option=,color=fore:two]
+    \definetype  [LUAcode] [option=,color=fore:two]
+    \definetype  [MPcode]  [option=,color=fore:two]
+
+    \setuptyping [BTX]     [option=,color=fore:one]
+    \setuptyping [XML]     [option=,color=fore:one]
+    \setuptyping [TEX]     [option=,color=fore:one]
+    \setuptyping [LUA]     [option=,color=fore:one]
+    \setuptyping [MP]      [option=,color=fore:one]
+
+\fi
+
+\setuptype
+  [option=,
+   color=fore:two]
+
+\setuptyping
+  [option=,
+   color=fore:one]
 
 \setuptyping
   [keeptogether=yes]
-
-% I guess that Hans finds the syntax highlighting to be distracting ... Indeed,
-% too much color.
-
-\startmode[atpragma]
-
-    \setuptype         [option=,color=fore:two]
-    \setuptype[BTXcode][option=,color=fore:two]
-    \setuptype[XMLcode][option=,color=fore:two]
-    \setuptype[TEXcode][option=,color=fore:two]
-    \setuptype[LUAcode][option=,color=fore:two]
-    \setuptype[MPcode] [option=,color=fore:two]
-
-    \setuptyping     [option=,color=fore:one]
-    \setuptyping[BTX][option=,color=fore:one]
-    \setuptyping[XML][option=,color=fore:one]
-    \setuptyping[TEX][option=,color=fore:one]
-    \setuptyping[LUA][option=,color=fore:one]
-    \setuptyping[MP] [option=,color=fore:one]
-
-\stopmode
 
 % \setupinteraction
 %   [state=start,
@@ -260,6 +269,8 @@
   [mysetuptext]
   [framedbg]
   [framecolor=fore:three,
+   topoffset=1ex,
+   bottomoffset=1ex,
    backgroundcolor=back:three]
 
 \startsetups xml:setups:start

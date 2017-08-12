@@ -62,7 +62,7 @@ local trace_domains        = false  registertracker("math.domains",     function
 local trace_families       = false  registertracker("math.families",    function(v) trace_families    = v end)
 local trace_fences         = false  registertracker("math.fences",      function(v) trace_fences      = v end)
 
-local check_coverage       = true   registerdirective("math.checkcoverage", function(v) check_coverage = v end)
+local check_coverage       = true   registerdirective("math.checkcoverage",  function(v) check_coverage  = v end)
 
 local report_processing    = logreporter("mathematics","processing")
 local report_remapping     = logreporter("mathematics","remapping")
@@ -1399,9 +1399,7 @@ do
         return true
     end
 
-    local enable
-
-    enable = function()
+    local enable = function()
         enableaction("math", "noads.handlers.italics")
         if trace_italics then
             report_italics("enabling math italics")
@@ -1538,9 +1536,10 @@ do
 
     -- is validpair stil needed?
 
-    local collapse  = { }
-    local mathlists = characters.mathlists
-    local validpair = {
+    local a_mathcollapsing = privateattribute("mathcollapsing")
+    local collapse         = { }
+    local mathlists        = characters.mathlists
+    local validpair        = {
         [noad_ord]             = true,
         [noad_rel]             = true,
         [noad_bin]             = true, -- new
@@ -1557,7 +1556,7 @@ do
     collapse[math_char] = function(pointer,what,n,parent)
 
         if parent and mathlists[getchar(pointer)] then
-            local found, last, lucleus, lsup, lsub
+            local found, last, lucleus, lsup, lsub, category
             local tree    = mathlists
             local current = parent
             while current and validpair[getsubtype(current)] do
@@ -1568,19 +1567,34 @@ do
                 if char then
                     local match = tree[char]
                     if match then
-                        local ligature = match.ligature
-                        if ligature then
-                            found   = ligature
-                            last    = current
-                            lucleus = nucleus
-                            lsup    = sup
-                            lsub    = sub
-                        end
-                        tree = match
-                        if sub or sup then
-                            break
+                        local method = getattr(current,a_mathcollapsing)
+                        if method and method > 0 and method <= 3 then
+                            local specials = match.specials
+                            local mathlist = match.mathlist
+                            local ligature
+                            if method == 1 then
+                                ligature = specials
+                            elseif method == 2 then
+                                ligature = specials or mathlist
+                            else -- 3
+                                ligature = mathlist or specials
+                            end
+                            if ligature then
+                                category = mathlist and "mathlist" or "specials"
+                                found    = ligature
+                                last     = current
+                                lucleus  = nucleus
+                                lsup     = sup
+                                lsub     = sub
+                            end
+                            tree = match
+                            if sub or sup then
+                                break
+                            else
+                                current = getnext(current)
+                            end
                         else
-                            current = getnext(current)
+                            break
                         end
                     else
                         break
@@ -1596,10 +1610,10 @@ do
                 if not replace then
                     if not reported[id][found] then
                         reported[id][found] = true
-                        report_collapsing("missing ligature %C",found)
+                        report_collapsing("%s ligature %C from %s","ignoring",found,category)
                     end
                 elseif trace_collapsing then
-                    report_collapsing("creating ligature %C",found)
+                    report_collapsing("%s ligature %C from %s","creating",found,category)
                 end
                 setchar(pointer,found)
                 local l = getnext(last)
@@ -1626,6 +1640,20 @@ do
         processnoads(head,collapse,"collapse")
         return true
     end
+
+    local enable = function()
+        enableaction("math", "noads.handlers.collapse")
+        if trace_collapsing then
+            report_collapsing("enabling math collapsing")
+        end
+        enable = false
+    end
+
+    implement {
+        name      = "initializemathcollapsing",
+        actions   = enable,
+        onlyonce  = true,
+    }
 
 end
 
