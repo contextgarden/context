@@ -206,6 +206,7 @@ local usesfont           = nuts.uses_font
 local insert_node_after  = nuts.insert_after
 local copy_node          = nuts.copy
 local copy_node_list     = nuts.copy_list
+local remove_node        = nuts.remove
 local find_node_tail     = nuts.tail
 local flush_node_list    = nuts.flush_list
 local flush_node         = nuts.flush_node
@@ -494,7 +495,15 @@ local function markstoligature(head,start,stop,char)
     end
 end
 
-local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound) -- brr head
+-- Remark for Kai: (some arabic fonts do mark + mark = other mark and such)
+--
+-- The hasmarks is needed for ligatures of marks that are part of a ligature in
+-- which case we assume that we can delete the marks anyway (we can always become
+-- more clever if needed) .. in fact the whole logic here should be redone. We're
+-- in the not discfound branch then. We now have skiphash too so we can be more
+-- selective if needed (todo).
+
+local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound,hasmarks) -- brr head
     if getattr(start,a_noligature) == 1 then
         -- so we can do: e\noligature{ff}e e\noligature{f}fie (we only look at the first)
         return head, start
@@ -519,19 +528,21 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     set_components(base,comp)
     setlink(prev,base,next)
     if not discfound then
-        local deletemarks = not skiphash
+        local deletemarks = not skiphash or hasmarks
         local components = start
         local baseindex = 0
         local componentindex = 0
         local head = base
         local current = base
-        -- first we loop over the glyphs in start .. stop
+        -- first we loop over the glyphs in start ... stop
         while start do
             local char = getchar(start)
             if not marks[char] then
                 baseindex = baseindex + componentindex
                 componentindex = count_components(start,marks)
-            elseif not deletemarks then -- quite fishy
+            -- we can be more clever here: "not deletemarks or (skiphash and not skiphash[char])"
+            -- and such:
+            elseif not deletemarks then
                 setligaindex(start,baseindex + getligaindex(start,componentindex))
                 if trace_marks then
                     logwarning("%s: keep mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
@@ -549,6 +560,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
         while start do
             local char = ischar(start)
             if char then
+                -- also something skiphash here?
                 if marks[char] then
                     setligaindex(start,baseindex + getligaindex(start,componentindex))
                     if trace_marks then
@@ -724,7 +736,8 @@ function handlers.gsub_multiple(head,start,dataset,sequence,multiple,rlmode,skip
 end
 
 -- Don't we deal with disc otherwise now? I need to check if the next one can be
--- simplified.
+-- simplified. Anyway, it can be way messier: marks that get removed as well as
+-- marks that are kept.
 
 function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skiphash)
     local current   = getnext(start)
@@ -764,20 +777,25 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 -- ok, goto next lookup
             end
         end
-    else
+    else -- is the check for disc still valid here ? and why only replace then
         local discfound = false
         local lastdisc  = nil
+        local hasmarks  = marks[startchar]
         while current do
             local char, id = ischar(current,currentfont)
             if char then
                 if skiphash and skiphash[char] then
                     current = getnext(current)
+                 -- if stop then stop = current end -- ?
                 else -- ligature is a tree
                     local lg = ligature[char] -- can there be multiple in a row? maybe in a bad font
                     if lg then
                         if not discfound and lastdisc then
                             discfound = lastdisc
                             lastdisc  = nil
+                        end
+                        if marks[char] then
+                            hasmarks = true
                         end
                         stop     = current -- needed for fake so outside then
                         ligature = lg
@@ -790,8 +808,20 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 -- kind of weird
                 break
             elseif id == disc_code then
-                -- tricky .. we also need to do pre here
-                local replace = getfield(current,"replace")
+                --
+                -- Kai: see chainprocs, we probably could do the same here or was there a reason
+                -- why we kept the replace check here.
+                --
+                -- if not discfound then
+                --     discfound = current
+                -- end
+                -- if current == stop then
+                --     break -- okay? or before the disc
+                -- else
+                --     current = getnext(current)
+                -- end
+                --
+                local replace = getfield(current,"replace") -- hm: pre and post
                 if replace then
                     -- of{f-}{}{f}e  o{f-}{}{f}fe  o{-}{}{ff}e (oe and ff ligature)
                     -- we can end up here when we have a start run .. testruns start at a disc but
@@ -801,6 +831,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                         if char then
                             local lg = ligature[char] -- can there be multiple in a row? maybe in a bad font
                             if lg then
+                                if marks[char] then
+                                    hasmarks = true -- very unlikely
+                                end
                                 ligature = lg
                                 replace  = getnext(replace)
                             else
@@ -823,10 +856,10 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             if stop then
                 if trace_ligatures then
                     local stopchar = getchar(stop)
-                    head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound)
+                    head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound,hasmarks)
                     logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(lig))
                 else
-                    head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound)
+                    head, start = toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound,hasmarks)
                 end
             else
                 -- weird but happens (in some arabic font)
@@ -848,7 +881,7 @@ function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,skiphash,
     local startchar = getchar(start)
     local format    = step.format
     if format == "single" or type(kerns) == "table" then -- the table check can go
-        local dx, dy, w, h = setposition(start,factor,rlmode,sequence.flags[4],kerns,injection)
+        local dx, dy, w, h = setposition(0,start,factor,rlmode,kerns,injection)
         if trace_kerns then
             logprocess("%s: shifting single %s by %s xy (%p,%p) and wh (%p,%p)",pref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
         end
@@ -858,7 +891,7 @@ function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,skiphash,
             logprocess("%s: shifting single %s by %s %p",pref(dataset,sequence),gref(startchar),format,k)
         end
     end
-    return head, start, false
+    return head, start, true
 end
 
 function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,step,injection)
@@ -884,7 +917,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
                         if a == true then
                             -- zero
                         elseif a then -- #a > 0
-                            local x, y, w, h = setposition(start,factor,rlmode,sequence.flags[4],a,injection)
+                            local x, y, w, h = setposition(1,start,factor,rlmode,a,injection)
                             if trace_kerns then
                                 local startchar = getchar(start)
                                 logprocess("%s: shifting first of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
@@ -894,7 +927,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
                             -- zero
                             start = snext -- cf spec
                         elseif b then -- #b > 0
-                            local x, y, w, h = setposition(snext,factor,rlmode,sequence.flags[4],b,injection)
+                            local x, y, w, h = setposition(2,snext,factor,rlmode,b,injection)
                             if trace_kerns then
                                 local startchar = getchar(snext)
                                 logprocess("%s: shifting second of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
@@ -1104,7 +1137,8 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,sk
                     if entry then
                         entry = entry[2]
                         if entry then
-                            local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                            local r2lflag = sequence.flags[4] -- mentioned in the standard
+                            local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar],r2lflag)
                             if trace_cursive then
                                 logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
                             end
@@ -1364,6 +1398,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
                 logwarning("%s: no ligatures starting with %s",cref(dataset,sequence,chainindex),gref(startchar))
             end
         else
+            local hasmarks        = marks[startchar]
             local current         = getnext(start)
             local discfound       = false
             local last            = stop
@@ -1394,6 +1429,9 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
                             ligatures       = lg
                             last            = current
                             nofreplacements = nofreplacements + 1
+                            if marks[char] then
+                                hasmarks = true
+                            end
                             if current == stop then
                                 break
                             else
@@ -1417,7 +1455,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
                         logprocess("%s: replacing character %s upto %s by ligature %s case 4",cref(dataset,sequence,chainindex),gref(startchar),gref(getchar(stop)),gref(ligature))
                     end
                 end
-                head, start = toligature(head,start,stop,ligature,dataset,sequence,skiphash,discfound)
+                head, start = toligature(head,start,stop,ligature,dataset,sequence,skiphash,discfound,hasmarks)
                 return head, start, true, nofreplacements, discfound
             elseif trace_bugs then
                 if start == stop then
@@ -1442,7 +1480,7 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
         if kerns then
             local format = currentlookup.format
             if format == "single" then
-                local dx, dy, w, h = setposition(start,factor,rlmode,sequence.flags[4],kerns) -- currentlookup.flags ?
+                local dx, dy, w, h = setposition(0,start,factor,rlmode,kerns) -- currentlookup.flags ?
                 if trace_kerns then
                     logprocess("%s: shifting single %s by %s (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
                 end
@@ -1452,6 +1490,7 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
                     logprocess("%s: shifting single %s by %s %p",cref(dataset,sequence),gref(startchar),format,k)
                 end
             end
+            return head, start, true
         end
     end
     return head, start, false
@@ -1488,7 +1527,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                             if a == true then
                                 -- zero
                             elseif a then
-                                local x, y, w, h = setposition(start,factor,rlmode,sequence.flags[4],a,"injections") -- currentlookups flags?
+                                local x, y, w, h = setposition(1,start,factor,rlmode,a,"injections") -- currentlookups flags?
                                 if trace_kerns then
                                     local startchar = getchar(start)
                                     logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
@@ -1498,7 +1537,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                                 -- zero
                                 start = snext -- cf spec
                             elseif b then -- #b > 0
-                                local x, y, w, h = setposition(snext,factor,rlmode,sequence.flags[4],b,"injections")
+                                local x, y, w, h = setposition(2,snext,factor,rlmode,b,"injections")
                                 if trace_kerns then
                                     local startchar = getchar(start)
                                     logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
@@ -1741,7 +1780,8 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
                             if entry then
                                 entry = entry[2]
                                 if entry then
-                                    local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                                    local r2lflag = sequence.flags[4] -- mentioned in the standard
+                                    local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar],r2lflag)
                                     if trace_cursive then
                                         logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
                                     end
@@ -3808,11 +3848,11 @@ do
                     while start do
                         local char, id = ischar(start,font)
                         if char then
-                            local m = merged[char]
-                            if m then
-                                if skiphash and skiphash[char] then -- we never needed it here but let's try
-                                    start = getnext(start)
-                                else
+                            if skiphash and skiphash[char] then -- we never needed it here but let's try
+                                start = getnext(start)
+                            else
+                                local m = merged[char]
+                                if m then
                                     local a -- happens often so no assignment is faster
                                     if attr then
                                         if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
@@ -3847,9 +3887,9 @@ do
                                     else
                                         start = getnext(start)
                                     end
+                                else
+                                    start = getnext(start)
                                 end
-                            else
-                                start = getnext(start)
                             end
                         elseif char == false or id == glue_code then
                             -- a different font|state or glue (happens often)

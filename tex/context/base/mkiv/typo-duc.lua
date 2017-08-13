@@ -62,8 +62,8 @@ local tonode              = nuts.tonode
 local getnext             = nuts.getnext
 local getid               = nuts.getid
 local getsubtype          = nuts.getsubtype
-local getchar             = nuts.getchar
 local getlist             = nuts.getlist
+local getchar             = nuts.getchar
 local getattr             = nuts.getattr
 local getprop             = nuts.getprop
 local getdir              = nuts.getdir
@@ -73,7 +73,7 @@ local setchar             = nuts.setchar
 local setdir              = nuts.setdir
 local setattrlist         = nuts.setattrlist
 
-local properties          = nodes.properties
+local properties          = nodes.properties.data
 
 local remove_node         = nuts.remove
 local insert_node_after   = nuts.insert_after
@@ -244,26 +244,28 @@ end
 
 local mt_space  = { __index = { char = 0x0020, direction = "ws",  original = "ws",  level = 0 } }
 local mt_lre    = { __index = { char = 0x202A, direction = "lre", original = "lre", level = 0 } }
-local mt_lre    = { __index = { char = 0x202B, direction = "rle", original = "rle", level = 0 } }
+local mt_rle    = { __index = { char = 0x202B, direction = "rle", original = "rle", level = 0 } }
 local mt_pdf    = { __index = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 } }
 local mt_object = { __index = { char = 0xFFFC, direction = "on",  original = "on",  level = 0 } }
+
+local stack = table.setmetatableindex("table") -- shared
+local list  = { }                              -- shared
 
 local function build_list(head) -- todo: store node pointer ... saves loop
     -- P1
     local current = head
-    local list    = { }
     local size    = 0
     while current do
         size = size + 1
         local id = getid(current)
         local p  = properties[current]
-        local t
         if p and p.directions then
             local skip = 0
             local last = id
             current    = getnext(current)
             while current do
                 local id = getid(current)
+                local p  = properties[current]
                 if p and p.directions then
                     skip    = skip + 1
                     last    = id
@@ -273,35 +275,29 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                 end
             end
             if id == last then -- the start id
-                t = { skip = skip, id = id }
+                list[size] = setmetatable({ skip = skip, id = id },mt_object)
             else
-                t = { skip = skip, id = id, last = last }
+                list[size] = setmetatable({ skip = skip, id = id, last = last },mt_object)
             end
-            setmetatable(t,mt_object)
         elseif id == glyph_code then
-            local chr = getchar(current)
-            local dir = directiondata[chr]
-            t = { char = chr, direction = dir, original = dir, level = 0 }
-            current = getnext(current)
+            local chr  = getchar(current)
+            local dir  = directiondata[chr]
+            list[size] = { char = chr, direction = dir, original = dir, level = 0 }
+            current    = getnext(current)
          -- if not list[dir] then list[dir] = true end -- not faster when we check for usage
         elseif id == glue_code then -- and how about kern
-            t = { }
-            setmetatable(t,mt_space)
-            current = getnext(current)
+            list[size] = setmetatable({ },mt_space)
+            current    = getnext(current)
         elseif id == dir_code then
             local dir = getdir(current)
             if dir == "+TLT" then
-                t = { }
-                setmetatable(t,mt_lre)
+                list[size] = setmetatable({ },mt_lre)
             elseif dir == "+TRT" then
-                t = { }
-                setmetatable(t,mt_rle)
+                list[size] = setmetatable({ },mt_rle)
             elseif dir == "-TLT" or dir == "-TRT" then
-                t = { }
-                setmetatable(t,mt_pdf)
+                list[size] = setmetatable({ },mt_pdf)
             else
-                t = { id = id }
-                setmetatable(t,mt_object)
+                list[size] = setmetatable({ id = id },mt_object)
             end
             current = getnext(current)
         elseif id == math_code then
@@ -313,8 +309,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             end
             skip       = skip + 1
             current    = getnext(current)
-            t = { id = id, skip = skip }
-            setmetatable(t,mt_object)
+            list[size] = setmetatable({ id = id, skip = skip },mt_object)
         else
             local skip = 0
             local last = id
@@ -329,16 +324,12 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                     break
                 end
             end
-            if skip == 0 then
-                t = { id = id }
-            elseif id == last then -- the start id
-                t = { id = id, skip = skip }
+            if id == last then -- the start id
+                list[size] = setmetatable({ id = id, skip = skip },mt_object)
             else
-                t = { id = id, skip = skip, last = last }
+                list[size] = setmetatable({ id = id, skip = skip, last = last },mt_object)
             end
-            setmetatable(t,mt_object)
         end
-        list[size] = t
     end
     return list, size
 end
@@ -359,8 +350,8 @@ end
 
 local function resolve_fences(list,size,start,limit)
     -- N0: funny effects, not always better, so it's an option
-    local stack = { }
-    local top   = 0
+ -- local stack    = { }
+    local nofstack = 0
     for i=start,limit do
         local entry = list[i]
         if entry.direction == "on" then
@@ -371,15 +362,18 @@ local function resolve_fences(list,size,start,limit)
                 entry.mirror = mirror
                 entry.class  = class
                 if class == "open" then
-                    top = top + 1
-                    stack[top] = { mirror, i, false }
-                elseif top == 0 then
+                    nofstack       = nofstack + 1
+                    local stacktop = stack[nofstack]
+                    stacktop[1]    = mirror
+                    stacktop[2]    = i
+                    stacktop[3]    = false -- not used
+                elseif nofstack == 0 then
                     -- skip
                 elseif class == "close" then
-                    while top > 0 do
-                        local s = stack[top]
-                        if s[1] == char then
-                            local open  = s[2]
+                    while nofstack > 0 do
+                        local stacktop = stack[nofstack]
+                        if stacktop[1] == char then
+                            local open  = stacktop[2]
                             local close = i
                             list[open ].paired = close
                             list[close].paired = open
@@ -387,7 +381,7 @@ local function resolve_fences(list,size,start,limit)
                         else
                             -- do we mirror or not
                         end
-                        top = top - 1
+                        nofstack = nofstack - 1
                     end
                 end
             end
@@ -438,7 +432,7 @@ local function resolve_explicit(list,size,baselevel)
     -- X1
     local level    = baselevel
     local override = "on"
-    local stack    = { }
+ -- local stack    = { }
     local nofstack = 0
     for i=1,size do
         local entry     = list[i]
@@ -447,7 +441,9 @@ local function resolve_explicit(list,size,baselevel)
         if direction == "rle" then
             if nofstack < maximum_stack then
                 nofstack        = nofstack + 1
-                stack[nofstack] = { level, override }
+                local stacktop  = stack[nofstack]
+                stacktop[1]     = level
+                stacktop[2]     = override
                 level           = level + (level % 2 == 1 and 2 or 1) -- least_greater_odd(level)
                 override        = "on"
                 entry.level     = level
@@ -460,7 +456,9 @@ local function resolve_explicit(list,size,baselevel)
         elseif direction == "lre" then
             if nofstack < maximum_stack then
                 nofstack        = nofstack + 1
-                stack[nofstack] = { level, override }
+                local stacktop  = stack[nofstack]
+                stacktop[1]     = level
+                stacktop[2]     = override
                 level           = level + (level % 2 == 1 and 1 or 2) -- least_greater_even(level)
                 override        = "on"
                 entry.level     = level
@@ -473,7 +471,9 @@ local function resolve_explicit(list,size,baselevel)
         elseif direction == "rlo" then
             if nofstack < maximum_stack then
                 nofstack        = nofstack + 1
-                stack[nofstack] = { level, override }
+                local stacktop  = stack[nofstack]
+                stacktop[1]     = level
+                stacktop[2]     = override
                 level           = level + (level % 2 == 1 and 2 or 1) -- least_greater_odd(level)
                 override        = "r"
                 entry.level     = level
@@ -486,7 +486,9 @@ local function resolve_explicit(list,size,baselevel)
         elseif direction == "lro" then
             if nofstack < maximum_stack then
                 nofstack        = nofstack + 1
-                stack[nofstack] = { level, override }
+                local stacktop  = stack[nofstack]
+                stacktop[1]     = level
+                stacktop[2]     = override
                 level           = level + (level % 2 == 1 and 1 or 2) -- least_greater_even(level)
                 override        = "l"
                 entry.level     = level
@@ -499,9 +501,9 @@ local function resolve_explicit(list,size,baselevel)
         elseif direction == "pdf" then
             if nofstack < maximum_stack then
                 local stacktop  = stack[nofstack]
-                nofstack        = nofstack - 1
                 level           = stacktop[1]
                 override        = stacktop[2]
+                nofstack        = nofstack - 1
                 entry.level     = level
                 entry.direction = "bn"
                 entry.remove    = true
@@ -568,6 +570,7 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
     -- W4: make separators number
 -- if list.es or list.cs then
         -- skip
+--     if false then
     if false then
         for i=start+1,limit-1 do
             local entry     = list[i]
@@ -1012,7 +1015,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    head, done = apply_to_list(list,size,head,pardir)
+    local head, done = apply_to_list(list,size,head,pardir)
     return tonode(head), done
 end
 

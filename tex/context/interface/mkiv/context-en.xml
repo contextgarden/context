@@ -29578,6 +29578,9 @@
      <cd:parameter name="interaction">
       <cd:constant default="yes" type="start"/>
       <cd:constant type="stop"/>
+      <cd:constant type="number"/>
+      <cd:constant type="text"/>
+      <cd:constant type="page"/>
       <cd:constant type="all"/>
      </cd:parameter>
      <cd:parameter name="alternative">
@@ -31254,6 +31257,20 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="bibliography" file="publ-ini.mkiv" level="document" name="nocitation" variant="direct">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:reference"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="bibliography" file="publ-ini.mkiv" level="document" name="usecitation">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:reference"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="bibliography" file="publ-ini.mkiv" level="document" name="usecitation" variant="direct">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:reference"/>

@@ -77,6 +77,9 @@
                 <cd:parameter name="interaction">
                     <cd:constant type="start" default="yes"/>
                     <cd:constant type="stop"/>
+                    <cd:constant type="number"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="page"/>
                     <cd:constant type="all"/>
                 </cd:parameter>
                 <cd:parameter name="alternative">
@@ -665,6 +668,18 @@
     </cd:command>
 
     <cd:command name="nocitation" variant="direct" category="bibliography" level="document" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usecitation" category="bibliography" level="document" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usecitation" variant="direct" category="bibliography" level="document" file="publ-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>

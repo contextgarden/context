@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/12/17 16:50:10
+-- merge date  : 08/13/17 16:37:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -15514,7 +15514,7 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
     local value=readposition(f,format,tableoffset,getdelta)
     local coverage=readcoverage(f,tableoffset+coverage)
     for index,newindex in next,coverage do
-      coverage[index]=value
+      coverage[index]=value 
     end
     return {
       format="single",
@@ -19526,7 +19526,8 @@ local function checkflags(sequence,resources)
               or (markclass and c=="mark" and not markclass[k])
               or c==skipligature
               or c==skipbase
-          t[k]=v or false
+              or false
+          t[k]=v
           return v
         end)
       else
@@ -21018,7 +21019,7 @@ function injections.getligaindex(n,default)
   end
   return default
 end
-function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext) 
+function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext,r2lflag)
   local dx=factor*(exit[1]-entry[1])
   local dy=-factor*(exit[2]-entry[2])
   local ws=tfmstart.width
@@ -21071,7 +21072,7 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
   end
   return dx,dy,nofregisteredcursives
 end
-function injections.setposition(current,factor,rlmode,r2lflag,spec,injection) 
+function injections.setposition(kind,current,factor,rlmode,spec,injection)
   local x=factor*spec[1]
   local y=factor*spec[2]
   local w=factor*spec[3]
@@ -21169,6 +21170,24 @@ function injections.setmove(current,factor,rlmode,x,injection)
     if not injection then
       injection="injections"
     end
+if rlmode and rlmode<0 then
+    if p then
+      local i=p[injection]
+      if i then
+        i.rightkern=dx+(i.rightkern or 0)
+      else
+        p[injection]={
+          rightkern=dx,
+        }
+      end
+    else
+      properties[current]={
+        [injection]={
+          rightkern=dx,
+        },
+      }
+    end
+else
     if p then
       local i=p[injection]
       if i then
@@ -21185,6 +21204,7 @@ function injections.setmove(current,factor,rlmode,x,injection)
         },
       }
     end
+end
     return dx,nofregisteredkerns
   else
     return 0,0
@@ -21508,10 +21528,15 @@ local function inject_positions_only(head,where)
             setoffsets(current,false,yoffset)
           end
           local leftkern=i.leftkern
-          if leftkern and leftkern~=0 then
-            head=insert_node_before(head,current,fontkern(leftkern))
-          end
           local rightkern=i.rightkern
+          if leftkern and leftkern~=0 then
+if rightkern and leftkern==-rightkern then
+  setoffsets(current,leftkern,false)
+  rightkern=0
+else
+            head=insert_node_before(head,current,fontkern(leftkern))
+end
+          end
           if rightkern and rightkern~=0 then
             insert_node_after(head,current,fontkern(rightkern))
           end
@@ -21709,8 +21734,6 @@ local function inject_everything(head,where)
   local hasmarks=nofregisteredmarks>0
   local current=head
   local last=nil
-  local font=font
-  local markdata=nil
   local prev=nil
   local next=nil
   local prevdisc=nil
@@ -21859,10 +21882,15 @@ local function inject_everything(head,where)
               end
             end
             local leftkern=i.leftkern
-            if leftkern and leftkern~=0 then
-              head=insert_node_before(head,current,fontkern(leftkern))
-            end
             local rightkern=i.rightkern
+            if leftkern and leftkern~=0 then
+if rightkern and leftkern==-rightkern then
+  setoffsets(current,leftkern,false)
+  rightkern=0
+else
+              head=insert_node_before(head,current,fontkern(leftkern))
+end
+            end
             if rightkern and rightkern~=0 then
               insert_node_after(head,current,fontkern(rightkern))
             end
@@ -22746,6 +22774,7 @@ local usesfont=nuts.uses_font
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
 local copy_node_list=nuts.copy_list
+local remove_node=nuts.remove
 local find_node_tail=nuts.tail
 local flush_node_list=nuts.flush_list
 local flush_node=nuts.flush_node
@@ -22967,7 +22996,7 @@ local function markstoligature(head,start,stop,char)
     return head,base
   end
 end
-local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound) 
+local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfound,hasmarks) 
   if getattr(start,a_noligature)==1 then
     return head,start
   end
@@ -22991,7 +23020,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
   set_components(base,comp)
   setlink(prev,base,next)
   if not discfound then
-    local deletemarks=not skiphash
+    local deletemarks=not skiphash or hasmarks
     local components=start
     local baseindex=0
     local componentindex=0
@@ -23002,7 +23031,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
       if not marks[char] then
         baseindex=baseindex+componentindex
         componentindex=count_components(start,marks)
-      elseif not deletemarks then 
+      elseif not deletemarks then
         setligaindex(start,baseindex+getligaindex(start,componentindex))
         if trace_marks then
           logwarning("%s: keep mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
@@ -23204,9 +23233,10 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
       else
       end
     end
-  else
+  else 
     local discfound=false
     local lastdisc=nil
+    local hasmarks=marks[startchar]
     while current do
       local char,id=ischar(current,currentfont)
       if char then
@@ -23219,6 +23249,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
               discfound=lastdisc
               lastdisc=nil
             end
+            if marks[char] then
+              hasmarks=true
+            end
             stop=current 
             ligature=lg
             current=getnext(current)
@@ -23229,13 +23262,16 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
       elseif char==false then
         break
       elseif id==disc_code then
-        local replace=getfield(current,"replace")
+        local replace=getfield(current,"replace") 
         if replace then
           while replace do
             local char,id=ischar(replace,currentfont)
             if char then
               local lg=ligature[char] 
               if lg then
+                if marks[char] then
+                  hasmarks=true 
+                end
                 ligature=lg
                 replace=getnext(replace)
               else
@@ -23258,10 +23294,10 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
       if stop then
         if trace_ligatures then
           local stopchar=getchar(stop)
-          head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound)
+          head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound,hasmarks)
           logprocess("%s: replacing %s upto %s by ligature %s case 2",pref(dataset,sequence),gref(startchar),gref(stopchar),gref(lig))
         else
-          head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound)
+          head,start=toligature(head,start,stop,lig,dataset,sequence,skiphash,discfound,hasmarks)
         end
       else
         resetinjection(start)
@@ -23280,7 +23316,7 @@ function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,skiphash,
   local startchar=getchar(start)
   local format=step.format
   if format=="single" or type(kerns)=="table" then 
-    local dx,dy,w,h=setposition(start,factor,rlmode,sequence.flags[4],kerns,injection)
+    local dx,dy,w,h=setposition(0,start,factor,rlmode,kerns,injection)
     if trace_kerns then
       logprocess("%s: shifting single %s by %s xy (%p,%p) and wh (%p,%p)",pref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
     end
@@ -23290,7 +23326,7 @@ function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,skiphash,
       logprocess("%s: shifting single %s by %s %p",pref(dataset,sequence),gref(startchar),format,k)
     end
   end
-  return head,start,false
+  return head,start,true
 end
 function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,step,injection)
   local snext=getnext(start)
@@ -23314,7 +23350,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
             local a,b=krn[1],krn[2]
             if a==true then
             elseif a then 
-              local x,y,w,h=setposition(start,factor,rlmode,sequence.flags[4],a,injection)
+              local x,y,w,h=setposition(1,start,factor,rlmode,a,injection)
               if trace_kerns then
                 local startchar=getchar(start)
                 logprocess("%s: shifting first of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
@@ -23323,7 +23359,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
             if b==true then
               start=snext 
             elseif b then 
-              local x,y,w,h=setposition(snext,factor,rlmode,sequence.flags[4],b,injection)
+              local x,y,w,h=setposition(2,snext,factor,rlmode,b,injection)
               if trace_kerns then
                 local startchar=getchar(snext)
                 logprocess("%s: shifting second of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
@@ -23522,7 +23558,8 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,sk
           if entry then
             entry=entry[2]
             if entry then
-              local dx,dy,bound=setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+              local r2lflag=sequence.flags[4] 
+              local dx,dy,bound=setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar],r2lflag)
               if trace_cursive then
                 logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
               end
@@ -23703,6 +23740,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
         logwarning("%s: no ligatures starting with %s",cref(dataset,sequence,chainindex),gref(startchar))
       end
     else
+      local hasmarks=marks[startchar]
       local current=getnext(start)
       local discfound=false
       local last=stop
@@ -23728,6 +23766,9 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
               ligatures=lg
               last=current
               nofreplacements=nofreplacements+1
+              if marks[char] then
+                hasmarks=true
+              end
               if current==stop then
                 break
               else
@@ -23751,7 +23792,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
             logprocess("%s: replacing character %s upto %s by ligature %s case 4",cref(dataset,sequence,chainindex),gref(startchar),gref(getchar(stop)),gref(ligature))
           end
         end
-        head,start=toligature(head,start,stop,ligature,dataset,sequence,skiphash,discfound)
+        head,start=toligature(head,start,stop,ligature,dataset,sequence,skiphash,discfound,hasmarks)
         return head,start,true,nofreplacements,discfound
       elseif trace_bugs then
         if start==stop then
@@ -23775,7 +23816,7 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
     if kerns then
       local format=currentlookup.format
       if format=="single" then
-        local dx,dy,w,h=setposition(start,factor,rlmode,sequence.flags[4],kerns) 
+        local dx,dy,w,h=setposition(0,start,factor,rlmode,kerns) 
         if trace_kerns then
           logprocess("%s: shifting single %s by %s (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),format,dx,dy,w,h)
         end
@@ -23785,6 +23826,7 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
           logprocess("%s: shifting single %s by %s %p",cref(dataset,sequence),gref(startchar),format,k)
         end
       end
+      return head,start,true
     end
   end
   return head,start,false
@@ -23819,7 +23861,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
               local a,b=krn[1],krn[2]
               if a==true then
               elseif a then
-                local x,y,w,h=setposition(start,factor,rlmode,sequence.flags[4],a,"injections") 
+                local x,y,w,h=setposition(1,start,factor,rlmode,a,"injections") 
                 if trace_kerns then
                   local startchar=getchar(start)
                   logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
@@ -23828,7 +23870,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
               if b==true then
                 start=snext 
               elseif b then 
-                local x,y,w,h=setposition(snext,factor,rlmode,sequence.flags[4],b,"injections")
+                local x,y,w,h=setposition(2,snext,factor,rlmode,b,"injections")
                 if trace_kerns then
                   local startchar=getchar(start)
                   logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
@@ -24066,7 +24108,8 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
               if entry then
                 entry=entry[2]
                 if entry then
-                  local dx,dy,bound=setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                  local r2lflag=sequence.flags[4] 
+                  local dx,dy,bound=setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar],r2lflag)
                   if trace_cursive then
                     logprocess("%s: moving %s to %s cursive (%p,%p) using bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,bound,mref(rlmode))
                   end
@@ -25765,11 +25808,11 @@ do
           while start do
             local char,id=ischar(start,font)
             if char then
-              local m=merged[char]
-              if m then
-                if skiphash and skiphash[char] then 
-                  start=getnext(start)
-                else
+              if skiphash and skiphash[char] then 
+                start=getnext(start)
+              else
+                local m=merged[char]
+                if m then
                   local a 
                   if attr then
                     if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
@@ -25800,9 +25843,9 @@ do
                   else
                     start=getnext(start)
                   end
+                else
+                  start=getnext(start)
                 end
-              else
-                start=getnext(start)
               end
             elseif char==false or id==glue_code then
               start=getnext(start)

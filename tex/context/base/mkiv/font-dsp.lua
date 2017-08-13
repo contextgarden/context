@@ -1465,7 +1465,7 @@ function gposhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
         local value    = readposition(f,format,tableoffset,getdelta)
         local coverage = readcoverage(f,tableoffset+coverage)
         for index, newindex in next, coverage do
-            coverage[index] = value
+            coverage[index] = value -- will be packed and shared anyway
         end
         return {
             format   = "single",

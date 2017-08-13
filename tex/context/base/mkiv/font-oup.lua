@@ -2561,7 +2561,8 @@ local function checkflags(sequence,resources)
                            or (markclass and c == "mark" and not markclass[k])
                            or c == skipligature
                            or c == skipbase
-                    t[k] = v or false
+                           or false
+                    t[k] = v
                     return v
                 end)
             else

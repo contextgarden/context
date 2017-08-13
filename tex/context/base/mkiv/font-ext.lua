@@ -1463,10 +1463,10 @@ do
     vectors.arab = {
         gsub = {
             ccmp =  1,
-            init =  2,
-            medi =  3,
-            fina =  4,
-            isol =  5,
+            isol =  2,
+            fina =  3,
+            medi =  4,
+            init =  5,
             rlig =  6,
             rclt =  7,
             calt =  8,

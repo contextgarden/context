@@ -26,6 +26,9 @@ if not modules then modules = { } end modules ['font-otj'] = {
 
 -- if needed we can flag a kern node as immutable
 
+-- The thing with these positioning options is that it is not clear what Uniscribe does with
+-- the 2rl flag and we keep oscillating a between experiments.
+
 if not nodes.properties then return end
 
 local next, rawget, tonumber = next, rawget, tonumber
@@ -220,7 +223,15 @@ function injections.getligaindex(n,default)
     return default
 end
 
-function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext) -- hm: nuts or nodes
+function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmnext,r2lflag)
+
+    -- The standard says something about the r2lflag related to the first in a series:
+    --
+    --   When this bit is set, the last glyph in a given sequence to which the cursive
+    --   attachment lookup is applied, will be positioned on the baseline.
+    --
+    -- But it looks like we don't need to consider it.
+
     local dx =  factor*(exit[1]-entry[1])
     local dy = -factor*(exit[2]-entry[2])
     local ws = tfmstart.width
@@ -276,7 +287,9 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
     return dx, dy, nofregisteredcursives
 end
 
-function injections.setposition(current,factor,rlmode,r2lflag,spec,injection) -- r2lflag not used
+-- kind: 0=single 1=first of pair, 2=second of pair
+
+function injections.setposition(kind,current,factor,rlmode,spec,injection)
     local x = factor*spec[1]
     local y = factor*spec[2]
     local w = factor*spec[3]
@@ -384,6 +397,26 @@ function injections.setmove(current,factor,rlmode,x,injection)
         if not injection then
             injection = "injections"
         end
+if rlmode and rlmode < 0 then
+        -- we need to swap with a single so then we also need to to it here
+        -- as move is just a simple single
+        if p then
+            local i = p[injection]
+            if i then
+                i.rightkern = dx + (i.rightkern or 0)
+            else
+                p[injection] = {
+                    rightkern = dx,
+                }
+            end
+        else
+            properties[current] = {
+                [injection] = {
+                    rightkern = dx,
+                },
+            }
+        end
+else
         if p then
             local i = p[injection]
             if i then
@@ -400,6 +433,7 @@ function injections.setmove(current,factor,rlmode,x,injection)
                 },
             }
         end
+end
         return dx, nofregisteredkerns
     else
         return 0, 0
@@ -755,11 +789,16 @@ local function inject_positions_only(head,where)
                     if yoffset and yoffset ~= 0 then
                         setoffsets(current,false,yoffset)
                     end
-                    local leftkern = i.leftkern
-                    if leftkern and leftkern ~= 0 then
-                        head = insert_node_before(head,current,fontkern(leftkern))
-                    end
+                    local leftkern  = i.leftkern
                     local rightkern = i.rightkern
+                    if leftkern and leftkern ~= 0 then
+if rightkern and leftkern == -rightkern then
+    setoffsets(current,leftkern,false)
+    rightkern = 0
+else
+                        head = insert_node_before(head,current,fontkern(leftkern))
+end
+                    end
                     if rightkern and rightkern ~= 0 then
                         insert_node_after(head,current,fontkern(rightkern))
                     end
@@ -969,8 +1008,6 @@ local function inject_everything(head,where)
     --
     local current       = head
     local last          = nil
-    local font          = font
-    local markdata      = nil
     local prev          = nil
     local next          = nil
     local prevdisc      = nil
@@ -1145,11 +1182,16 @@ local function inject_everything(head,where)
                             end
                         end
                         -- left|glyph|right
-                        local leftkern = i.leftkern
-                        if leftkern and leftkern ~= 0 then
-                            head = insert_node_before(head,current,fontkern(leftkern))
-                        end
+                        local leftkern  = i.leftkern
                         local rightkern = i.rightkern
+                        if leftkern and leftkern ~= 0 then
+if rightkern and leftkern == -rightkern then
+    setoffsets(current,leftkern,false)
+    rightkern = 0
+else
+                            head = insert_node_before(head,current,fontkern(leftkern))
+end
+                        end
                         if rightkern and rightkern ~= 0 then
                             insert_node_after(head,current,fontkern(rightkern))
                         end

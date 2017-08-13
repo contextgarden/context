@@ -1400,8 +1400,9 @@
 \unexpanded\def\citation  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
 \unexpanded\def\nocitation{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}
 
-\let\cite  \citation
-\let\nocite\nocitation
+\let\cite       \citation
+\let\nocite     \nocitation
+\let\usecitation\citation
 
 \unexpanded\def\publ_entry_citation  {\doifelsenextoptionalcs\btxlistcitation  \btxdirectlistcite}
 \unexpanded\def\publ_entry_nocitation{\doifelsenextoptionalcs\btxhiddencitation\btxdirecthiddencite}

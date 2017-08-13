@@ -240,7 +240,7 @@ end
 
 -- local space  = { char = 0x0020, direction = "ws",  original = "ws"  }
 -- local lre    = { char = 0x202A, direction = "lre", original = "lre" }
--- local lre    = { char = 0x202B, direction = "rle", original = "rle" }
+-- local rle    = { char = 0x202B, direction = "rle", original = "rle" }
 -- local pdf    = { char = 0x202C, direction = "pdf", original = "pdf" }
 -- local object = { char = 0xFFFC, direction = "on",  original = "on"  }
 --
