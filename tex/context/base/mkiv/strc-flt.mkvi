@@ -1834,7 +1834,7 @@
         \strc_floats_align_content{\box\b_strc_floats_content}%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
-   \vbox to \noflines\lineheight{\unvbox\scratchbox}}
+   \vbox to \noflines\lineheight{\unvbox\scratchbox}} % \vpack ?
 
 \def\strc_floats_build_box_bottom_stack_grid
   {\dp\b_strc_floats_caption\strutdepth
@@ -1851,7 +1851,7 @@
         \strc_floats_locate_text_float{\box\b_strc_floats_caption}%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
-   \vbox to \noflines\lineheight{\unvbox\scratchbox}}
+   \vbox to \noflines\lineheight{\unvbox\scratchbox}} % \vpack ?
 
 \def\strc_floats_build_box_top_stack_stretch
   {\dp\b_strc_floats_caption\strutdepth
@@ -2051,14 +2051,14 @@
    \forgetall
    \postponenotes
    \dontcomplain
-   \setbox\b_strc_floats_content\vbox{\borderedfloatbox}%
+   \setbox\b_strc_floats_content\vbox{\borderedfloatbox}% \vpack >?
   %\page_backgrounds_add_local_to_box\b_strc_floats_content
    \ifnofloatcaption
      \global\setbox\floatbox\vpack{\box\b_strc_floats_content}%
    \else
      \strc_floats_check_caption_content
      \strc_floats_prepare_side_caption
-     \setbox\b_strc_floats_caption\hbox{\floatcaptionparameter\c!command{\box\b_strc_floats_caption}}%
+     \setbox\b_strc_floats_caption\hbox{\floatcaptionparameter\c!command{\box\b_strc_floats_caption}}% \hpack ?
      \moveboxontogrid\b_strc_floats_caption{\floatcaptionparameter\c!grid}\d_strc_floats_caption_height
     %\page_backgrounds_add_local_to_box\b_strc_floats_caption
      \strc_floats_build_side_box

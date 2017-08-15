@@ -199,7 +199,8 @@ def begingraph(expr w, h) =
           graph_number_of_arrowheads = 0 ;
 
   if known graph_background : % new feature!
-    fill origin--(w,0)--(w,h)--(0,h)--cycle withcolor graph_background ;
+    addto graph_finished_graph contour
+      origin--(w,0)--(w,h)--(0,h)--cycle withcolor graph_background ;
   fi
 enddef ;
 

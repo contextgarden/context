@@ -52,6 +52,7 @@ local trace_processing     = false  registertracker("math.processing",  function
 local trace_analyzing      = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
 local trace_normalizing    = false  registertracker("math.normalizing", function(v) trace_normalizing = v end)
 local trace_collapsing     = false  registertracker("math.collapsing",  function(v) trace_collapsing  = v end)
+local trace_fixing         = false  registertracker("math.fixing",      function(v) trace_foxing      = v end)
 local trace_patching       = false  registertracker("math.patching",    function(v) trace_patching    = v end)
 local trace_goodies        = false  registertracker("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants       = false  registertracker("math.variants",    function(v) trace_variants    = v end)
@@ -68,6 +69,7 @@ local report_processing    = logreporter("mathematics","processing")
 local report_remapping     = logreporter("mathematics","remapping")
 local report_normalizing   = logreporter("mathematics","normalizing")
 local report_collapsing    = logreporter("mathematics","collapsing")
+local report_fixing        = logreporter("mathematics","fixing")
 local report_patching      = logreporter("mathematics","patching")
 local report_goodies       = logreporter("mathematics","goodies")
 local report_variants      = logreporter("mathematics","variants")
@@ -1680,12 +1682,12 @@ do
     local function fixsupscript(parent,current,current_char,new_char)
         if new_char ~= current_char and new_char ~= true then
             setchar(current,new_char)
-            if trace_collapsing then
-                report_collapsing("fixing subscript, replacing supscript %U by %U",current_char,new_char)
+            if trace_fixing then
+                report_fixing("fixing subscript, replacing superscript %U by %U",current_char,new_char)
             end
         else
-            if trace_collapsing then
-                report_collapsing("fixing subscript, supscript %U",current_char)
+            if trace_fixing then
+                report_fixing("fixing subscript, superscript %U",current_char)
             end
         end
         if options_supported then
@@ -1693,14 +1695,68 @@ do
         end
     end
 
-    local function movesubscript(parent,current_nucleus,current_char,new_char)
+--     local function movesubscript(parent,current_nucleus,current_char,new_char)
+--         local prev = getprev(parent)
+--         if prev and getid(prev) == math_noad then
+--             local psup = getsup(prev)
+--             local psub = getsub(prev)
+--             if not psup and not psub then
+--                 -- {f} {'}_n => f_n^'
+--                 fixsupscript(prev,current_nucleus,current_char,new_char)
+--                 local nucleus = getnucleus(parent)
+--                 local sub     = getsub(parent)
+--                 setsup(prev,nucleus)
+--                 setsub(prev,sub)
+--                 local dummy = copy_node(nucleus)
+--                 setchar(dummy,0)
+--                 setnucleus(parent,dummy)
+--                 setsub(parent)
+--             elseif not psup then
+--                 -- {f} {'}_n => f_n^'
+--                 fixsupscript(prev,current_nucleus,current_char,new_char)
+--                 local nucleus = getnucleus(parent)
+--                 setsup(prev,nucleus)
+--                 local dummy = copy_node(nucleus)
+--                 setchar(dummy,0)
+--                 setnucleus(parent,dummy)
+--             end
+--         end
+--     end
+
+--     fixscripts[math_char] = function(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
+--         if parent then
+--             local nucleus = getnucleus(parent)
+--             if getid(nucleus) == math_char then
+--                 local sub = getsub(parent)
+--                 local sup = getsup(parent)
+--                 if sup and getid(sup) == math_char then
+--                     local oldchar = getchar(sup)
+--                     local newchar = movesub[oldchar]
+--                     if newchar then
+--                         fixsupscript(parent,sup,oldchar,newchar)
+--                     end
+--                 end
+--                 if sub then
+--                     local oldchar = getchar(nucleus)
+--                     local newchar = movesub[oldchar]
+--                     if newchar then
+--                         movesubscript(parent,nucleus,oldchar,newchar)
+--                     end
+--                 end
+--             end
+--         end
+--     end
+
+    -- move this inline
+
+    local function movesubscript(parent,current_nucleus,oldchar,newchar)
         local prev = getprev(parent)
         if prev and getid(prev) == math_noad then
             local psup = getsup(prev)
             local psub = getsub(prev)
             if not psup and not psub then
                 -- {f} {'}_n => f_n^'
-                fixsupscript(prev,current_nucleus,current_char,new_char)
+                fixsupscript(prev,current_nucleus,oldchar,newchar)
                 local nucleus = getnucleus(parent)
                 local sub     = getsub(parent)
                 setsup(prev,nucleus)
@@ -1711,7 +1767,7 @@ do
                 setsub(parent)
             elseif not psup then
                 -- {f} {'}_n => f_n^'
-                fixsupscript(prev,current_nucleus,current_char,new_char)
+                fixsupscript(prev,current_nucleus,oldchar,newchar)
                 local nucleus = getnucleus(parent)
                 setsup(prev,nucleus)
                 local dummy = copy_node(nucleus)
@@ -1723,24 +1779,47 @@ do
 
     fixscripts[math_char] = function(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
         if parent then
-            local nucleus = getnucleus(parent)
-            if getid(nucleus) == math_char then
-                local current_char = getchar(nucleus)
-                local sub = getsub(parent)
-                local sup = getsup(parent)
-                if sup and getid(sup) == math_char then
-                    local oldchar = getchar(sup)
-                    local newchar = movesub[oldchar]
-                    if newchar then
-                        fixsupscript(parent,sup,oldchar,newchar)
+            local oldchar = getchar(pointer)
+            local newchar = movesub[oldchar]
+            if newchar then
+                local nuc = getnucleus(parent)
+                if pointer == nuc then
+                    local sub = getsub(pointer)
+                    local sup = getsup(pointer)
+                    if sub then
+                        if sup then
+--                             print("[char] sub sup")
+                        else
+--                             print("[char] sub ---")
+                        end
+                    elseif sup then
+--                         print("[char] --- sup")
+                    else
+                        local prev = getprev(parent)
+                        if prev and getid(prev) == math_noad then
+                            local psub = getsub(prev)
+                            local psup = getsup(prev)
+                            if psub then
+                                if psup then
+--                                     print("sub sup [char] --- ---")
+                                else
+                                    -- {f} {'}_n => f_n^'
+--                                     print("sub --- [char] --- ---")
+                                    movesubscript(parent,nuc,oldchar,newchar)
+                                end
+                            elseif psup then
+--                                 print("--- sup [char] --- ---")
+                            else
+                                -- {f} {'}_n => f_n^'
+--                                 print("[char] --- ---")
+                                movesubscript(parent,nuc,oldchar,newchar)
+                            end
+                        else
+--                             print("no prev [char]")
+                        end
                     end
-                end
-                if sub then
-                    local oldchar = getchar(nucleus)
-                    local newchar = movesub[oldchar]
-                    if newchar then
-                        movesubscript(parent,nucleus,oldchar,newchar)
-                    end
+                else
+--                     print("[char]")
                 end
             end
         end

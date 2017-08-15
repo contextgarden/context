@@ -1862,11 +1862,31 @@ end
 --     end,
 -- }
 
--- local fig = figures.push { name = pdffile }
--- figures.identify()
--- figures.check()
--- local nofpages = fig.used.pages
--- figures.pop()
+-- local n = "foo.pdf"
+-- local d = figures.getinfo(n)
+-- if d then
+--     for i=1,d.used.pages do
+--         local p = figures.getinfo(n,i)
+--         if p then
+--             local u = p.used
+--             print(u.width,u.height,u.orientation)
+--         end
+--     end
+-- end
+
+function figures.getinfo(name,page)
+    if type(name) == "string" then
+        name = { name = name, page = page }
+    end
+    if name.name then
+        local data = figures.push(name)
+        figures.identify()
+        figures.check()
+        inspect(data)
+        figures.pop()
+        return data
+    end
+end
 
 -- interfacing
 

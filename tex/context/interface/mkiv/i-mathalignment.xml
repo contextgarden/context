@@ -45,6 +45,10 @@
                     <cd:constant type="bottom"/>
                     <cd:constant type="normal" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="grid">
+                    <cd:constant type="math" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

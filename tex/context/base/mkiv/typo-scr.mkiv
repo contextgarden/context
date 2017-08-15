@@ -146,9 +146,9 @@
    \setbox\plussix \hbox{\typo_scripts_lowhigh_low_high\raise\c!up  \t!sup{#3}}%
    \doif{#1}{\v!left}
      {\ifdim\wd\plusfour<\wd\plussix
-        \setbox\plusfour\hbox to \wd\plussix {\hss\box\plusfour}%
+        \setbox\plusfour\hpack to \wd\plussix {\hss\box\plusfour}%
       \else
-        \setbox\plussix \hbox to \wd\plusfour{\hss\box\plussix }%
+        \setbox\plussix \hpack to \wd\plusfour{\hss\box\plussix }%
       \fi}%
    \ifdim\wd\plusfour<\wd\plussix
      \wd\plusfour\zeropoint
@@ -252,9 +252,9 @@
           \fi
         \fi
      \relax
-     \setbox\plustwo \hbox to \scratchdimen{\hss\lower\lowmidhighparameter\c!down\box\plustwo \hss}%
-     \setbox\plusfour\hbox to \scratchdimen{\hss                                 \box\plusfour\hss}%
-     \setbox\plussix \hbox to \scratchdimen{\hss\raise\lowmidhighparameter\c!up  \box\plussix \hss}%
+     \setbox\plustwo \hpack to \scratchdimen{\hss\lower\lowmidhighparameter\c!down\box\plustwo \hss}%
+     \setbox\plusfour\hpack to \scratchdimen{\hss                                 \box\plusfour\hss}%
+     \setbox\plussix \hpack to \scratchdimen{\hss\raise\lowmidhighparameter\c!up  \box\plussix \hss}%
      \wd\plustwo \zeropoint
      \wd\plusfour\zeropoint
      \box\plusfour

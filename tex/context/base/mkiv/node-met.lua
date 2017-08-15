@@ -40,6 +40,11 @@ if not modules then modules = { } end modules ['node-nut'] = {
 -- As lots of testing and experimenting was part of this project, I could not have
 -- done without stacks of new \CD s and \DVD s. This time Porcupine Tree, No-Man
 -- and Archive were came to rescue.
+--
+-- It all started with testing performance of:
+--
+-- node.getfield = metatable.__index
+-- node.setfield = metatable.__newindex
 
 local type, select = type, select
 local setmetatableindex = table.setmetatableindex
@@ -118,43 +123,13 @@ nodes.kerning               = node.kerning
 nodes.ligaturing            = node.ligaturing
 nodes.mlist_to_hlist        = node.mlist_to_hlist
 
-if not node.getwhd then
-    local getfield = node.getfield
-    function node.getwhd(n)
-        return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
-    end
-end
-
-if not node.setwhd then
-    local setfield = node.setfield
-    function node.setwhd(n,w,h,d)
-        setfield(n,"width",w or 0)
-        setfield(n,"height",h or 0)
-        setfield(n,"depth",d or 0)
-    end
-end
-
-nodes.getwhd = node.getwhd
-nodes.setwhd = node.setwhd
-
 nodes.effective_glue       = node.effective_glue
 nodes.getglue              = node.getglue
 nodes.setglue              = node.setglue
 nodes.is_zero_glue         = node.is_zero_glue
 
--- if not gonuts or not node.getfield then
---     node.getfield = metatable.__index
---     node.setfield = metatable.__newindex
--- end
-
 nodes.tonode = function(n) return n end
 nodes.tonut  = function(n) return n end
-
-local getfield          = node.getfield
-local setfield          = node.setfield
-
-local getattr           = node.get_attribute
-local setattr           = setfield
 
 local n_getid           = node.getid
 local n_getlist         = node.getlist
@@ -163,30 +138,27 @@ local n_getprev         = node.getprev
 local n_getchar         = node.getchar
 local n_getfont         = node.getfont
 local n_getsubtype      = node.getsubtype
-local n_setfield        = node.setfield
 local n_getfield        = node.getfield
-local n_setattr         = node.setattr
-local n_getattr         = node.getattr
+local n_getattr         = node.get_attribute
 local n_getdisc         = node.getdisc
 local n_getleader       = node.getleader
 
+local n_setfield        = node.setfield
+local n_setattr         = n_setfield
+
 local n_setnext         = node.setnext or -- always
     function(c,n)
-        setfield(c,"next",n)
+        n_setfield(c,"next",n)
     end
 local n_setprev         = node.setprev or -- always
     function(c,p)
-        setfield(c,"prev",p)
+        n_setfield(c,"prev",p)
     end
 local n_setlist         = node.setlist or -- always
     function(c,l)
-        setfield(c,"list",l)
+        n_setfield(c,"list",l)
     end
 local n_setlink         = node.setlink or -- always
---     function(c1,c2)
---         if c1 then setfield(c1,"next",c2) end
---         if c2 then setfield(c2,"prev",c1) end
---     end
     function(...)
         -- not that fast but not used often anyway
         local h = nil
@@ -195,8 +167,8 @@ local n_setlink         = node.setlink or -- always
             if not n then
                 -- go on
             elseif h then
-                setfield(h,"next",n)
-                setfield(n,"prev",h)
+                n_setfield(h,"next",n)
+                n_setfield(n,"prev",h)
             else
                 h = n
             end
@@ -205,8 +177,8 @@ local n_setlink         = node.setlink or -- always
     end
 local n_setboth         = node.setboth or -- always
     function(c,p,n)
-        setfield(c,"prev",p)
-        setfield(c,"next",n)
+        n_setfield(c,"prev",p)
+        n_setfield(c,"next",n)
     end
 
 nodes.setnext         = n_setnext
@@ -230,6 +202,23 @@ nodes.getsubtype      = n_getsubtype
 nodes.getlist         = n_getlist
 nodes.getleader       = n_getleader
 nodes.getdisc         = n_getdisc
+
+if not node.getwhd then
+    function node.getwhd(n)
+        return n_getfield(n,"width"), n_getfield(n,"height"), n_getfield(n,"depth")
+    end
+end
+
+if not node.setwhd then
+    function node.setwhd(n,w,h,d)
+        n_setfield(n,"width",w or 0)
+        n_setfield(n,"height",h or 0)
+        n_setfield(n,"depth",d or 0)
+    end
+end
+
+nodes.getwhd = node.getwhd
+nodes.setwhd = node.setwhd
 
 nodes.is_char         = node.is_char
 nodes.ischar          = node.is_char

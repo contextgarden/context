@@ -14,6 +14,8 @@
 % not yet mkiv! probably namespace issues with localframed (only one left)
 %
 % getnoflines vs getrawnoflines
+%
+% can have some vpack and hpack
 
 % This is a rather old mechanism and we can best keep it as it is. If it gets
 % replaced by a more modern solution, it will be an extra mechanism. So, we
@@ -410,7 +412,7 @@
    \letcolumnsetparameter\c!height\!!heighta
    \letcolumnsetparameter\c!lines \empty
    \letcolumnsetparameter\c!region\currentcolumnset
-   \setbox\scratchbox\hbox\inheritedcolumnsetframed{}% maybe \fastlocalframed
+   \setbox\scratchbox\hpack\inheritedcolumnsetframed{}% maybe \fastlocalframed
    \wd\scratchbox\d_page_set_local_hsize
    \ht\scratchbox\!!heighta
    \ifcase\columndirection

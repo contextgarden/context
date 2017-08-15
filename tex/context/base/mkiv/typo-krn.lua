@@ -104,8 +104,8 @@ local v_auto             = interfaces.variables.auto
 typesetters              = typesetters or { }
 local typesetters        = typesetters
 
-typesetters.kerns        = typesetters.kerns or { }
-local kerns              = typesetters.kerns
+local kerns              = typesetters.kerns or { }
+typesetters.kerns        = kerns
 
 local report             = logs.reporter("kerns")
 local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",       function(v) trace_ligatures   = v end)

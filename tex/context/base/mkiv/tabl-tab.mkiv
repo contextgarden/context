@@ -1605,11 +1605,11 @@
    \setbox\tsplitcontent\box#1%
    \ifconditional\c_tabl_table_repeat_head \ifconditional\hassometablehead
      \setbox\tsplithead\vsplit\tsplitcontent to \lineheight
-     \setbox\tsplithead\vbox{\unvbox\tsplithead}%
+     \setbox\tsplithead\vbox{\unvbox\tsplithead}% \vpack ?
    \fi \fi
    \ifconditional\c_tabl_table_repeat_tail \ifconditional\hassometabletail
      \setbox\tsplittail\vsplit\tsplitcontent to \lineheight
-     \setbox\tsplittail\vbox{\unvbox\tsplittail}%
+     \setbox\tsplittail\vbox{\unvbox\tsplittail}% \vpack ?
    \fi \fi
    \ifinsidefloat\else
      \def\tsplitbeforeresult{\startbaselinecorrection}%

@@ -114,7 +114,7 @@
    \fi}
 
 \def\scrn_help_register#text%
-  {\setbox\b_scrn_help_box\hbox{\inheritedhelpframed{#text}}%
+  {\setbox\b_scrn_help_box\hbox{\inheritedhelpframed{#text}}% \hpack ?
    \definesymbol
      [\currenthelpname]
      [\copy\b_scrn_help_box]%

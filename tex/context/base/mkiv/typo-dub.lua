@@ -812,11 +812,57 @@ local function resolve_levels(list,size,baselevel,analyze_fences)
     end
 end
 
+-- local function insert_dir_points(list,size)
+--     -- L2, but no actual reversion is done, we simply annotate where
+--     -- begindir/endddir node will be inserted.
+--     local maxlevel = 0
+--     local finaldir = false
+--     for i=1,size do
+--         local level = list[i].level
+--         if level > maxlevel then
+--             maxlevel = level
+--         end
+--     end
+--     for level=0,maxlevel do
+--         local started  = false
+--         local begindir = nil
+--         local enddir   = nil
+--         if level % 2 == 1 then
+--             begindir = "+TRT"
+--             enddir   = "-TRT"
+--         else
+--             begindir = "+TLT"
+--             enddir   = "-TLT"
+--         end
+--         for i=1,size do
+--             local entry = list[i]
+--             if entry.level >= level then
+--                 if not started then
+--                     entry.begindir = begindir
+--                     started        = true
+--                 end
+--             else
+--                 if started then
+--                     list[i-1].enddir = enddir
+--                     started          = false
+--                 end
+--             end
+--         end
+--         -- make sure to close the run at end of line
+--         if started then
+--             finaldir = enddir
+--         end
+--     end
+--     if finaldir then
+--         list[size].enddir = finaldir
+--     end
+-- end
+
 local function insert_dir_points(list,size)
     -- L2, but no actual reversion is done, we simply annotate where
     -- begindir/endddir node will be inserted.
     local maxlevel = 0
-    local finaldir = false
+    local toggle   = true
     for i=1,size do
         local level = list[i].level
         if level > maxlevel then
@@ -824,15 +870,18 @@ local function insert_dir_points(list,size)
         end
     end
     for level=0,maxlevel do
-        local started  = false
-        local begindir = nil
-        local enddir   = nil
-        if level % 2 == 1 then
-            begindir = "+TRT"
-            enddir   = "-TRT"
-        else
+        local started  -- = false
+        local begindir -- = nil
+        local enddir   -- = nil
+        local prev     -- = nil
+        if toggle then
             begindir = "+TLT"
             enddir   = "-TLT"
+            toggle   = false
+        else
+            begindir = "+TRT"
+            enddir   = "-TRT"
+            toggle   = true
         end
         for i=1,size do
             local entry = list[i]
@@ -843,18 +892,36 @@ local function insert_dir_points(list,size)
                 end
             else
                 if started then
-                    list[i-1].enddir = enddir
-                    started          = false
+                    prev.enddir = enddir
+                    started     = false
                 end
             end
-        end
-        -- make sure to close the run at end of line
-        if started then
-            finaldir = enddir
+            prev = entry
         end
     end
-    if finaldir then
-        list[size].enddir = finaldir
+    -- make sure to close the run at end of line
+    local last = list[size]
+    if not last.enddir then
+        local s = { }
+        local n = 0
+        for i=1,size do
+            local entry = list[i]
+            local e = entry.enddir
+            local b = entry.begindir
+            if e then
+                n = n - 1
+            end
+            if b then
+                n = n + 1
+                s[n] = b
+            end
+        end
+        if n > 0 then
+            if trace_list and n > 1 then
+                report_directions("unbalanced list")
+            end
+            last.enddir = s[n] == "+TRT" and "-TRT" or "-TLT"
+        end
     end
 end
 

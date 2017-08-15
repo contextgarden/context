@@ -957,7 +957,7 @@
    \setxvalue{\??hiddenheadsync\currenthead}%
      {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
       \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
-      \hbox\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
+      \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
       \currentstructuresynchronize}} % and it's a node anyway
 
 \def\synchronizehead           #1{\csname\??hiddenheadsync#1\endcsname}

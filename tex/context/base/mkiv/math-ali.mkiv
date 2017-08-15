@@ -358,12 +358,17 @@
 
 \def\math_alignment_snap_start
   {\ifgridsnapping
-     \snaptogrid[\v!math]\vbox\bgroup
+     \edef\p_math_alignment_grid{\mathalignmentparameter\c!grid}%
+     \ifx\p_math_alignment_grid\v!no\else
+       \snaptogrid[\p_math_alignment_grid]\vbox\bgroup
+     \fi
    \fi}
 
 \def\math_alignment_snap_stop
   {\ifgridsnapping
-     \egroup
+     \ifx\p_math_alignment_grid\v!no\else
+       \egroup
+     \fi
    \fi}
 
 % end of experimental
@@ -376,10 +381,10 @@
 
 \def\math_alignment_start_indeed[#1]%
   {% \begingroup not permitted ($$...assignments...\halign... )
-   \math_alignment_snap_start
    \iffirstargument
      \setupmathalignment[\currentmathalignment][#1]% bad! ungrouped
    \fi
+   \math_alignment_snap_start
    \the\everymathalignment
    \c_math_eqalign_column\zerocount
    \edef\p_math_alignment_number{\mathalignmentparameter\c!number}%
@@ -411,7 +416,8 @@
 \setupmathalignment
   [\c!n=2,
    \c!m=1,
-   \c!distance=\emwidth]
+   \c!distance=\emwidth,
+   \c!grid=\v!math]
 
 \definemathalignment[align]            % default case (this is what amstex users expect)
 \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)

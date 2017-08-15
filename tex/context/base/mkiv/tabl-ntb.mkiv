@@ -1446,8 +1446,8 @@
      % case: nc=maxcolumns
    \else
      \scratchdimen\tabl_ntb_get_hei{#1}%
-     \setbox\scratchbox\hbox
-       {\lower\ht\scratchbox\hbox{\raise\scratchdimen\box\scratchbox}}%
+     \setbox\scratchbox\hpack
+       {\lower\ht\scratchbox\hpack{\raise\scratchdimen\box\scratchbox}}%
      \ht\scratchbox\scratchdimen
    \fi
    \dp\scratchbox\zeropoint
@@ -1656,10 +1656,10 @@
    \ifmultipleTBLheads
      \dorecurse\c_tabl_ntb_n_of_head_lines
        {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
-        \setbox\tsplithead\vbox{\unvcopy\tsplithead\unvcopy\scratchbox}}%
+        \setbox\tsplithead\vbox{\unvcopy\tsplithead\unvcopy\scratchbox}}% \vpack ?
      \dorecurse\c_tabl_ntb_n_of_next_lines
        {\setbox\scratchbox\vsplit\tsplitcontent to \lineheight
-        \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}%
+        \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}% \vpack ?
    \fi
    \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
    \ifx\p_spaceinbetween\empty\else

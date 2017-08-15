@@ -201,7 +201,7 @@
      \setupblackrules[\c!width=\scratchdimenone]%
      \setbox\scratchbox\hbox to \d_scrn_bar_width
        {\hskip2\emwidth
-        \setbox\scratchbox\hbox{\blackrule[\c!color=\interactionbarparameter\c!backgroundcolor]}%
+        \setbox\scratchbox\hpack{\blackrule[\c!color=\interactionbarparameter\c!backgroundcolor]}%
         \dorecurse\scratchcounter
           {\hss\normalexpanded{\directgotodumbbox{\copy\scratchbox}[page(\the\numexpr\recurselevel*\lastpage/\scratchcounter\relax)]}}%
         \hss
@@ -288,7 +288,7 @@
      \d_scrn_bar_height  \interactionbarparameter\c!height
      \d_scrn_bar_depth   \interactionbarparameter\c!depth
      \scratchdimenone\d_scrn_bar_width
-     \noindent\hbox{\scrn_bar_goto_x{\hskip\d_scrn_bar_distance}}%
+     \noindent\hbox{\scrn_bar_goto_x{\hskip\d_scrn_bar_distance}}% \hpack ?
    }\fi}
 
 \def\scrn_bar_alternative_e
@@ -302,7 +302,7 @@
      \ifdim\scratchdimenone<\d_scrn_bar_distance
        \scrn_bar_alternative_f
      \else
-       \noindent\hbox to \d_scrn_bar_width{\scrn_bar_goto_x{\hss}\unskip}%
+       \noindent\hbox to \d_scrn_bar_width{\scrn_bar_goto_x{\hss}\unskip}% \hpack ?
      \fi
    }\fi}
 

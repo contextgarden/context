@@ -794,7 +794,7 @@
      \ifx\p_strc_pagenumbers_width\empty
        \box\scratchbox\tfskip
      \else
-       \hbox to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
+       \hpack to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
      \fi
    \fi
    \endgroup}
@@ -807,7 +807,7 @@
      \ifx\p_strc_pagenumbers_width\empty
        \tfskip\box\scratchbox
      \else
-       \hbox to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
+       \hpack to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
      \fi
    \fi
    \endgroup}

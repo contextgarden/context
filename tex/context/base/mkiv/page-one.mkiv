@@ -380,7 +380,7 @@
                \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
              \fi
              \ifdim\wd\floatbox>\makeupwidth % \hsize
-               \hbox to \makeupwidth{\hss\box\floatbox\hss}%
+               \hpack to \makeupwidth{\hss\box\floatbox\hss}%
              \else
                \box\floatbox
              \fi

@@ -495,13 +495,13 @@
   {\scratchwidth \wd\nextbox
    \scratchheight\ht\nextbox
    \scratchdepth \dp\nextbox
-   \setbox\nextbox\hbox
+   \setbox\nextbox\hbox % \hpack ?
      {\framed[\c!frame=\v!off,#2]{\box\nextbox}}%
    \strc_references_set_simple_reference{#1}%
-   \setbox\nextbox\hbox attr \destinationattribute \currentdestinationattribute
+   \setbox\nextbox\hbox attr \destinationattribute \currentdestinationattribute % \hpack ?
      {\strc_references_flush_destination_nodes
       \box\nextbox}%
-   \setbox\nextbox\hbox{\box\nextbox}%
+   \setbox\nextbox\hpack{\box\nextbox}%
    \wd\nextbox\scratchwidth
    \ht\nextbox\scratchheight
    \dp\nextbox\scratchdepth
@@ -510,7 +510,7 @@
 
 \def\strc_references_content_nop_finish#1#2%
   {\strc_references_set_simple_reference{#1}%
-   \hbox attr \destinationattribute \currentdestinationattribute
+   \hbox attr \destinationattribute \currentdestinationattribute % \hpack ?
      {\strc_references_flush_destination_nodes
       \box\nextbox}%
    \egroup}

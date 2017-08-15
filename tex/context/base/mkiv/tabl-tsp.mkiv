@@ -188,7 +188,7 @@
       \forcelocalfloats
       \setuplocalfloats[\c!before=,\c!after=,\c!inbetween=]%
       \splitfloatcommand{\hbox to #1{\strut}}% dummy line
-      \setbox\scratchbox\vbox{\flushlocalfloats}%
+      \setbox\scratchbox\vbox{\flushlocalfloats}% \vpack ?
       \getnoflines{\ht\scratchbox}%
       \resetlocalfloats
       \advance\noflines\minusone % compensate dummy line
@@ -307,7 +307,7 @@
      {\setbox\scratchbox\vsplit\tsplitcontent to \onepoint % \lineheight
       \setbox\scratchbox\vbox % \vpack
         {\unvbox\scratchbox
-         \setbox\scratchbox\vbox
+         \setbox\scratchbox\vbox % \vpack
            {\splitdiscards
             \ifnum\lastpenalty>-\plustenthousand\else
                % so that \bTR[before=\page] works
@@ -328,7 +328,7 @@
         \ifvoid\tsplitcontent \exitloop \fi
       \else\ifconditional\c_tabl_split_head
         % we only have a tablehead so far
-        \setbox\tsplitresult\vbox{\unvbox\tsplitresult\unvbox\scratchbox}%
+        \setbox\tsplitresult\vbox{\unvbox\tsplitresult\unvbox\scratchbox}% \vpack
         \exitloop
       \else\ifconditional\c_tabl_split_full
         % we have text height available, but the (one) cell is too
