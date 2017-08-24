@@ -109,11 +109,11 @@ return {
                 editionset = { "edition", "volume", "number" },
             },
             required = {
-                "author", -- a set
                 "title",
                 "year",
             },
             optional = {
+                "author", -- a set
                 "subtitle",
                 "keywords",
                 "publisher", "address",

@@ -310,7 +310,7 @@
    \c!etallimit=5,
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
-   \c!sorttype=\v!normal,
+   \c!sorttype=normal, % \v!normal ?
    \c!style=,
    \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
    \c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
@@ -833,6 +833,14 @@
     \btxdoifelse {year} {
         \btxflush{year}
         \btxflushsuffix
+        \btxdoif {month} { % month and day optional in publ-imp-apa.lua
+            \btxcomma
+            \btxflush{month}
+            \btxdoif {day} {
+                \btxspace
+                \btxflush{day}
+            }
+        }
     } {
         \fastsetup{btx:apa:nd}
         % Hans: the following won't work but should.
@@ -1180,21 +1188,25 @@
     \removeunwantedspaces
 \stoptexdefinition
 
+\starttexdefinition unexpanded btx:apa:type
+    \btxdoif {type} {
+        \btxleftbracket
+        \btxflush{type}
+        \btxrightbracketperiod
+    }
+\stoptexdefinition
+
 % Then setups, by category
 
 % An article from a journal
-% Required fields: author or editor or title, journal, (year).
+% Required fields: author or organization or editor or title, journal, (year).
 % Optional fields: volume, number, pages, type, doi, url, note.
 % Note that bibtex (and tools) do not include editor (e.g. special issue or section)
 
 \startsetups btx:apa:list:article
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
-    \btxdoif {type} {
-        \btxleftbracket
-        \btxflush{type}
-        \btxrightbracketperiod
-    }
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:journal-volume-number-pages}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1245,6 +1257,7 @@
 \startsetups btx:apa:list:book
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url-doi-note}
@@ -1262,6 +1275,7 @@
 \startsetups btx:apa:list:inbook
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:editor-in}
     \texdefinition{btx:apa:editionset}
     \texdefinition{btx:apa:wherefrom-publisher}
@@ -1397,7 +1411,11 @@
             \btxflush{nationality}
         }
         \btxspace
-        \btxlabeltext{patent}
+        \btxdoifelse{type}{
+            \btxflush{type}
+        }{
+            \btxlabeltext{patent}
+        }
         \btxdoif {number} {
             \btxspace
             \btxlabeltext{apa:number}
@@ -1422,6 +1440,7 @@
 \startsetups btx:apa:list:electronic
     \texdefinition{btx:apa:authoryear}
     \texdefinition{btx:apa:title-if-not-placed}
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:organization-if-not-author}
     \btxdoif {howpublished} {
         \btxspace
@@ -1473,11 +1492,7 @@
             \btxperiod
         }
     }
-    \btxdoif {type} {
-        \btxleftbracket
-        \btxflush{type}
-        \btxrightbracketperiod
-    }
+    \texdefinition{btx:apa:type}
     \texdefinition{btx:apa:wherefrom-publisher}
     \texdefinition{btx:apa:url-doi-note}
 \stopsetups
@@ -1490,7 +1505,7 @@
     \fastsetup{btx:apa:list:book}
 \stopsetups
 
-% Use this type when nothing else fits.
+% Use this category when nothing else fits.
 % Required fields: none.
 % Optional fields: author, title, howpublished, month, year, note.
 

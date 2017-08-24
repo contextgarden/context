@@ -137,35 +137,37 @@ local trace_math
 local trace_italic
 local trace_discretionary
 local trace_expansion
+local trace_line
 
 local report_visualize = logs.reporter("visualize")
 
 local modes = {
-    hbox          =     1,
-    vbox          =     2,
-    vtop          =     4,
-    kern          =     8,
-    glue          =    16,
- -- skip          =    16,
-    penalty       =    32,
-    fontkern      =    64,
-    strut         =   128,
-    whatsit       =   256,
-    glyph         =   512,
-    simple        =  1024,
-    simplehbox    =  1024 + 1,
-    simplevbox    =  1024 + 2,
-    simplevtop    =  1024 + 4,
-    user          =  2048,
-    math          =  4096,
-    italic        =  8192,
-    origin        = 16384,
-    discretionary = 32768,
-    expansion     = 65536,
+    hbox          =      1,
+    vbox          =      2,
+    vtop          =      4,
+    kern          =      8,
+    glue          =     16,
+ -- skip          =     16,
+    penalty       =     32,
+    fontkern      =     64,
+    strut         =    128,
+    whatsit       =    256,
+    glyph         =    512,
+    simple        =   1024,
+    simplehbox    =   1024 + 1,
+    simplevbox    =   1024 + 2,
+    simplevtop    =   1024 + 4,
+    user          =   2048,
+    math          =   4096,
+    italic        =   8192,
+    origin        =  16384,
+    discretionary =  32768,
+    expansion     =  65536,
+    line          = 131072,
 }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion, l_line
 
 local enabled = false
 local layers  = { }
@@ -218,6 +220,7 @@ local function enable()
     l_origin        = layers.origin
     l_discretionary = layers.discretionary
     l_expansion     = layers.expansion
+    l_line          = layers.line
     enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -1098,6 +1101,9 @@ do
     local italic_kern_code    = kerncodes.italiccorrection
     ----- user_kern_code      = kerncodes.userkern
 
+    local listcodes           = nodes.listcodes
+    local line_code           = listcodes.line
+
     local function visualize(head,vertical,forced,parent)
         local trace_hbox     = false
         local trace_vbox     = false
@@ -1145,24 +1151,26 @@ do
                     trace_origin        = false
                     trace_discretionary = false
                     trace_expansion     = false
+                    trace_line          = false
                 else -- dead slow:
-                    trace_hbox          = hasbit(a,    1)
-                    trace_vbox          = hasbit(a,    2)
-                    trace_vtop          = hasbit(a,    4)
-                    trace_kern          = hasbit(a,    8)
-                    trace_glue          = hasbit(a,   16)
-                    trace_penalty       = hasbit(a,   32)
-                    trace_fontkern      = hasbit(a,   64)
-                    trace_strut         = hasbit(a,  128)
-                    trace_whatsit       = hasbit(a,  256)
-                    trace_glyph         = hasbit(a,  512)
-                    trace_simple        = hasbit(a, 1024)
-                    trace_user          = hasbit(a, 2048)
-                    trace_math          = hasbit(a, 4096)
-                    trace_italic        = hasbit(a, 8192)
-                    trace_origin        = hasbit(a,16384)
-                    trace_discretionary = hasbit(a,32768)
-                    trace_expansion     = hasbit(a,65536)
+                    trace_hbox          = hasbit(a,     1)
+                    trace_vbox          = hasbit(a,     2)
+                    trace_vtop          = hasbit(a,     4)
+                    trace_kern          = hasbit(a,     8)
+                    trace_glue          = hasbit(a,    16)
+                    trace_penalty       = hasbit(a,    32)
+                    trace_fontkern      = hasbit(a,    64)
+                    trace_strut         = hasbit(a,   128)
+                    trace_whatsit       = hasbit(a,   256)
+                    trace_glyph         = hasbit(a,   512)
+                    trace_simple        = hasbit(a,  1024)
+                    trace_user          = hasbit(a,  2048)
+                    trace_math          = hasbit(a,  4096)
+                    trace_italic        = hasbit(a,  8192)
+                    trace_origin        = hasbit(a, 16384)
+                    trace_discretionary = hasbit(a, 32768)
+                    trace_expansion     = hasbit(a, 65536)
+                    trace_line          = hasbit(a,131072)
                 end
                 attr = a
             end
@@ -1226,7 +1234,9 @@ do
                 if content then
                     setlist(current,visualize(content,false,nil,current))
                 end
-                if trace_hbox then
+                if trace_line and getsubtype(current) == line_code then
+                    head, current = ruledbox(head,current,false,l_line,"L__",trace_simple,previous,trace_origin,parent)
+                elseif trace_hbox then
                     head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
                 end
             elseif id == vlist_code then

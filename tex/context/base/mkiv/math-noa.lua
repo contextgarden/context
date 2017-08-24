@@ -1695,86 +1695,49 @@ do
         end
     end
 
---     local function movesubscript(parent,current_nucleus,current_char,new_char)
---         local prev = getprev(parent)
---         if prev and getid(prev) == math_noad then
---             local psup = getsup(prev)
---             local psub = getsub(prev)
---             if not psup and not psub then
---                 -- {f} {'}_n => f_n^'
---                 fixsupscript(prev,current_nucleus,current_char,new_char)
---                 local nucleus = getnucleus(parent)
---                 local sub     = getsub(parent)
---                 setsup(prev,nucleus)
---                 setsub(prev,sub)
---                 local dummy = copy_node(nucleus)
---                 setchar(dummy,0)
---                 setnucleus(parent,dummy)
---                 setsub(parent)
---             elseif not psup then
---                 -- {f} {'}_n => f_n^'
---                 fixsupscript(prev,current_nucleus,current_char,new_char)
---                 local nucleus = getnucleus(parent)
---                 setsup(prev,nucleus)
---                 local dummy = copy_node(nucleus)
---                 setchar(dummy,0)
---                 setnucleus(parent,dummy)
---             end
---         end
---     end
+ -- local function movesubscript(parent,current_nucleus,oldchar,newchar)
+ --     local prev = getprev(parent)
+ --     if prev and getid(prev) == math_noad then
+ --         local psup = getsup(prev)
+ --         local psub = getsub(prev)
+ --         if not psup and not psub then
+ --             fixsupscript(prev,current_nucleus,oldchar,newchar)
+ --             local nucleus = getnucleus(parent)
+ --             local sub     = getsub(parent)
+ --             setsup(prev,nucleus)
+ --             setsub(prev,sub)
+ --             local dummy = copy_node(nucleus)
+ --             setchar(dummy,0)
+ --             setnucleus(parent,dummy)
+ --             setsub(parent)
+ --         elseif not psup then
+ --             fixsupscript(prev,current_nucleus,oldchar,newchar)
+ --             local nucleus = getnucleus(parent)
+ --             setsup(prev,nucleus)
+ --             local dummy = copy_node(nucleus)
+ --             setchar(dummy,0)
+ --             setnucleus(parent,dummy)
+ --         end
+ --     end
+ -- end
 
---     fixscripts[math_char] = function(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
---         if parent then
---             local nucleus = getnucleus(parent)
---             if getid(nucleus) == math_char then
---                 local sub = getsub(parent)
---                 local sup = getsup(parent)
---                 if sup and getid(sup) == math_char then
---                     local oldchar = getchar(sup)
---                     local newchar = movesub[oldchar]
---                     if newchar then
---                         fixsupscript(parent,sup,oldchar,newchar)
---                     end
---                 end
---                 if sub then
---                     local oldchar = getchar(nucleus)
---                     local newchar = movesub[oldchar]
---                     if newchar then
---                         movesubscript(parent,nucleus,oldchar,newchar)
---                     end
---                 end
---             end
---         end
---     end
+    local function move_none_none(parent,prev,nuc,oldchar,newchar)
+        fixsupscript(prev,nuc,oldchar,newchar)
+        local sub = getsub(parent)
+        setsup(prev,nuc)
+        setsub(prev,sub)
+        local dummy = copy_node(nuc)
+        setchar(dummy,0)
+        setnucleus(parent,dummy)
+        setsub(parent)
+    end
 
-    -- move this inline
-
-    local function movesubscript(parent,current_nucleus,oldchar,newchar)
-        local prev = getprev(parent)
-        if prev and getid(prev) == math_noad then
-            local psup = getsup(prev)
-            local psub = getsub(prev)
-            if not psup and not psub then
-                -- {f} {'}_n => f_n^'
-                fixsupscript(prev,current_nucleus,oldchar,newchar)
-                local nucleus = getnucleus(parent)
-                local sub     = getsub(parent)
-                setsup(prev,nucleus)
-                setsub(prev,sub)
-                local dummy = copy_node(nucleus)
-                setchar(dummy,0)
-                setnucleus(parent,dummy)
-                setsub(parent)
-            elseif not psup then
-                -- {f} {'}_n => f_n^'
-                fixsupscript(prev,current_nucleus,oldchar,newchar)
-                local nucleus = getnucleus(parent)
-                setsup(prev,nucleus)
-                local dummy = copy_node(nucleus)
-                setchar(dummy,0)
-                setnucleus(parent,dummy)
-            end
-        end
+    local function move_none_psub(parent,prev,nuc,oldchar,newchar)
+        fixsupscript(prev,nuc,oldchar,newchar)
+        setsup(prev,nuc)
+        local dummy = copy_node(nuc)
+        setchar(dummy,0)
+        setnucleus(parent,dummy)
     end
 
     fixscripts[math_char] = function(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
@@ -1788,12 +1751,12 @@ do
                     local sup = getsup(pointer)
                     if sub then
                         if sup then
---                             print("[char] sub sup")
+                            -- print("[char] sub sup")
                         else
---                             print("[char] sub ---")
+                            -- print("[char] sub ---")
                         end
                     elseif sup then
---                         print("[char] --- sup")
+                        -- print("[char] --- sup")
                     else
                         local prev = getprev(parent)
                         if prev and getid(prev) == math_noad then
@@ -1801,25 +1764,23 @@ do
                             local psup = getsup(prev)
                             if psub then
                                 if psup then
---                                     print("sub sup [char] --- ---")
+                                    -- print("sub sup [char] --- ---")
                                 else
-                                    -- {f} {'}_n => f_n^'
---                                     print("sub --- [char] --- ---")
-                                    movesubscript(parent,nuc,oldchar,newchar)
+                                    -- print("sub --- [char] --- ---")
+                                    move_none_psub(parent,prev,nuc,oldchar,newchar)
                                 end
                             elseif psup then
---                                 print("--- sup [char] --- ---")
+                                -- print("--- sup [char] --- ---")
                             else
-                                -- {f} {'}_n => f_n^'
---                                 print("[char] --- ---")
-                                movesubscript(parent,nuc,oldchar,newchar)
+                                -- print("[char] --- ---")
+                                move_none_none(parent,prev,nuc,oldchar,newchar)
                             end
                         else
---                             print("no prev [char]")
+                            -- print("no prev [char]")
                         end
                     end
                 else
---                     print("[char]")
+                    -- print("[char]")
                 end
             end
         end
