@@ -816,7 +816,8 @@
 \let\math_matrix_NC\relax
 
 \unexpanded\def\math_matrix_start#1%
-  {\begingroup
+  {\pushmacro\math_matrix_NC % not tested that well
+   \begingroup
    \edef\currentmathmatrix{#1}%
    \dosingleempty\math_matrix_start_indeed}
 
@@ -864,10 +865,10 @@
      \noalign{\vskip-\baselineskip}%
  % \fi
    \egroup
-   \popmacro\math_matrix_NC
    \egroup
    \mathmatrixright
-   \endgroup}
+   \endgroup
+   \popmacro\math_matrix_NC} % not tested that well
 
 \definemathmatrix[matrix]
 \definemathmatrix[\v!mathmatrix]

@@ -645,7 +645,7 @@
         -->
     </cd:define>
 
-    <!-- tochar = ... --->
+    <!-- tochar = ... -->
 
     <cd:define name="value-tochar">
         <cd:constant prefix="e" type="cd:name" method="range"/>

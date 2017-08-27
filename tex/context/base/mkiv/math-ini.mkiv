@@ -1523,44 +1523,50 @@
 %
 % The next one is more efficient as it produces more flat noad lists for numbers.
 
-\setnewconstant\c_math_comma  "002C
-\setnewconstant\c_math_period "002E
-\setnewconstant\c_math_special"8000
+\setnewconstant\c_math_comma    "002C
+\setnewconstant\c_math_period   "002E
+%setnewconstant\c_math_colon    "003A
+\setnewconstant\c_math_semicolon"003B
+\setnewconstant\c_math_special  "8000
 
-\def\math_set_o_period{\Umathcode\c_math_period\mathordcode  \zerocount\c_math_period}
-\def\math_set_p_period{\Umathcode\c_math_period\mathpunctcode\zerocount\c_math_period}
-\def\math_set_o_comma {\Umathcode\c_math_comma \mathordcode  \zerocount\c_math_comma }
-\def\math_set_p_comma {\Umathcode\c_math_comma \mathpunctcode\zerocount\c_math_comma }
+\def\math_set_o_comma    {\Umathcode\c_math_comma    \mathordcode  \zerocount\c_math_comma}
+\def\math_set_p_comma    {\Umathcode\c_math_comma    \mathpunctcode\zerocount\c_math_comma}
+\def\math_set_o_period   {\Umathcode\c_math_period   \mathordcode  \zerocount\c_math_period}
+\def\math_set_p_period   {\Umathcode\c_math_period   \mathpunctcode\zerocount\c_math_period}
+\def\math_set_o_semicolon{\Umathcode\c_math_semicolon\mathordcode  \zerocount\c_math_semicolon}
+\def\math_set_p_semicolon{\Umathcode\c_math_semicolon\mathpunctcode\zerocount\c_math_semicolon}
 
 \edef\math_set_o_both {\math_set_o_period\math_set_o_comma}
 \edef\math_set_p_both {\math_set_p_period\math_set_p_comma}
 
-\unexpanded\def\math_punctuation_nop_comma {\begingroup\math_set_p_comma ,\endgroup}
-\unexpanded\def\math_punctuation_nop_period{\begingroup\math_set_o_period.\endgroup}
+\unexpanded\def\math_punctuation_nop_comma    {\begingroup\math_set_p_comma    ,\endgroup}
+\unexpanded\def\math_punctuation_nop_period   {\begingroup\math_set_o_period   .\endgroup}
+\unexpanded\def\math_punctuation_nop_semicolon{\begingroup\math_set_p_semicolon;\endgroup}
 
-\unexpanded\def\math_punctuation_all_comma {\futurelet\nexttoken\math_punctuation_comma_next}
-\unexpanded\def\math_punctuation_all_period{\futurelet\nexttoken\math_punctuation_period_next}
+\unexpanded\def\math_punctuation_all_comma    {\futurelet\nexttoken\math_punctuation_comma_next}
+\unexpanded\def\math_punctuation_all_period   {\futurelet\nexttoken\math_punctuation_period_next}
+\unexpanded\def\math_punctuation_all_semicolon{\futurelet\nexttoken\math_punctuation_semicolon_next}
 
-           \let\math_punctuation_yes_comma \math_punctuation_all_comma
-           \let\math_punctuation_yes_period\math_punctuation_nop_period
+           \let\math_punctuation_yes_comma    \math_punctuation_all_comma
+           \let\math_punctuation_yes_period   \math_punctuation_nop_period
+           \let\math_punctuation_yes_semicolon\math_punctuation_all_semicolon
 
-\def\math_punctuation_comma_next {\begingroup\Umathcode\c_math_comma \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_comma ,\endgroup}
-\def\math_punctuation_period_next{\begingroup\Umathcode\c_math_period\ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_period.\endgroup}
-
-\setnewconstant\c_math_comma  "002C
-\setnewconstant\c_math_period "002E
-\setnewconstant\c_math_special"8000
+\def\math_punctuation_comma_next    {\begingroup\Umathcode\c_math_comma    \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_comma    ,\endgroup}
+\def\math_punctuation_period_next   {\begingroup\Umathcode\c_math_period   \ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_period   .\endgroup}
+\def\math_punctuation_semicolon_next{\begingroup\Umathcode\c_math_semicolon\ifx\nexttoken\blankspace\mathordcode\else\mathordcode\fi\zerocount\c_math_semicolon;\endgroup}
 
 \installcorenamespace {mathautopunctuation}
 
 \bgroup
 
-    \catcode\c_math_comma \activecatcode
-    \catcode\c_math_period\activecatcode
+    \catcode\c_math_comma    \activecatcode
+    \catcode\c_math_period   \activecatcode
+    \catcode\c_math_semicolon\activecatcode
 
     \setgvalue{\??mathautopunctuation\v!no}%
       {\let,\math_punctuation_nop_comma
-       \let.\math_punctuation_nop_period}
+       \let.\math_punctuation_nop_period
+       \let;\math_punctuation_nop_semicolon}
 
   %  more efficient list:
   %
@@ -1570,26 +1576,51 @@
 
     \setgvalue{\??mathautopunctuation\v!yes}%
       {\let,\math_punctuation_yes_comma
-       \let.\math_punctuation_yes_period}
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_nop_semicolon}
 
     \setgvalue{\??mathautopunctuation\v!all}%
       {\let,\math_punctuation_all_comma
-       \let.\math_punctuation_all_period}
+       \let.\math_punctuation_all_period
+       \let;\math_punctuation_nop_semicolon}
+
+    \setgvalue{\??mathautopunctuation comma}%
+      {\let,\math_punctuation_yes_comma
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_nop_semicolon}
+
+    \setgvalue{\??mathautopunctuation\v!yes\string,semicolon}%
+      {\let,\math_punctuation_yes_comma
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_yes_semicolon}
+
+    \setgvalue{\??mathautopunctuation comma\string,semicolon}%
+      {\let,\math_punctuation_yes_comma
+       \let.\math_punctuation_yes_period
+       \let;\math_punctuation_yes_semicolon}
+
+    \setgvalue{\??mathautopunctuation\v!all\string,semicolon}%
+      {\let,\math_punctuation_all_comma
+       \let.\math_punctuation_all_period
+       \let;\math_punctuation_all_semicolon}
 
 \egroup
 
 % \appendtoks
-%     \global\mathcode\c_math_comma \c_math_special
-%     \global\mathcode\c_math_period\c_math_special
+%     \global\mathcode\c_math_comma    \c_math_special
+%     \global\mathcode\c_math_period   \c_math_special
+%     \global\mathcode\c_math_semicolon\c_math_special
 % \to \everyjob
 
 % \activatemathcharacter\c_math_comma
 % \activatemathcharacter\c_math_period
+% \activatemathcharacter\c_math_semicolon
 
 \appendtoks
-    \mathcode\c_math_comma \c_math_special
-    \mathcode\c_math_period\c_math_special
-    \csname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname
+    \mathcode\c_math_comma    \c_math_special
+    \mathcode\c_math_period   \c_math_special
+    \mathcode\c_math_semicolon\c_math_special
+    \begincsname\??mathautopunctuation\mathematicsparameter\v!autopunctuation\endcsname
 \to \everymathematics
 
 \appendtoks
@@ -1602,7 +1633,25 @@
 \def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
 
 \setupmathematics
-  [\v!autopunctuation=\v!no] % no | yes | all
+  [\v!autopunctuation=\v!no] % no | yes | all | comma | yes,semicolon | all,semicolon
+
+%D The consequences of settign this are as follows:
+%D
+%D \def\TestA#1#2#3%
+%D   {\ifnum#1=0 \type{#2}\else\setupmathematics[autopunctuation={#2}]$#3$\fi}
+%D \def\TestB#1#2%
+%D   {\NC \TestA{#1}{no}           {#2}
+%D    \NC \TestA{#1}{yes}          {#2}
+%D    \NC \TestA{#1}{yes,semicolon}{#2}
+%D    \NC \TestA{#1}{all}          {#2}
+%D    \NC \TestA{#1}{all,semicolon}{#2}
+%D    \NC \NR}
+%D \starttabulate[|c|c|c|c|c|]
+%D     \TestB{0}{}
+%D     \TestB{1}{(1,2)=(1, 2)}
+%D     \TestB{1}{(1.2)=(1. 2)}
+%D     \TestB{1}{(1;2)=(1; 2)}
+%D \stoptabulate
 
 %D \macros
 %D   {mathstyle}

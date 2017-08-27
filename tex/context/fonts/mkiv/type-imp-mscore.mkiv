@@ -56,17 +56,17 @@
     \stoptypescript
 
     \starttypescript[mscore]
-        \definetypeface [mscore] [\s!rm] [\s!serif] [mscoretimes]   [\s!default]
-        \definetypeface [mscore] [\s!ss] [\s!sans]  [mscorearial]   [\s!default] [\s!rscale=0.860]
-        \definetypeface [mscore] [\s!tt] [\s!mono]  [mscorecourier] [\s!default] [\s!rscale=1.065]
-        \definetypeface [mscore] [\s!mm] [\s!math]  [times]         [\s!default] [\s!rscale=1.020]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mscoretimes]   [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mscorearial]   [\s!default] [\s!rscale=0.860]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mscorecourier] [\s!default] [\s!rscale=1.065]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [times]         [\s!default] [\s!rscale=1.020]
     \stoptypescript
 
-    \starttypescript[mscorenarrow]
-        \definetypeface [mscorenarrow] [\s!rm] [\s!serif] [mscoretimes]       [\s!default]
-        \definetypeface [mscorenarrow] [\s!ss] [\s!sans]  [mscorearialnarrow] [\s!default] [\s!rscale=0.860]
-        \definetypeface [mscorenarrow] [\s!tt] [\s!mono]  [mscorecourier]     [\s!default] [\s!rscale=1.065]
-        \definetypeface [mscorenarrow] [\s!mm] [\s!math]  [times]             [\s!default] [\s!rscale=1.020]
+    \starttypescript[mscorenarrow,mscore-narrow]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mscoretimes]       [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mscorearialnarrow] [\s!default] [\s!rscale=0.860]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mscorecourier]     [\s!default] [\s!rscale=1.065]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [times]             [\s!default] [\s!rscale=1.020]
     \stoptypescript
 
   % \starttypescript[mscoress]
@@ -75,5 +75,55 @@
   %     \definetypeface [mscoress] [\s!tt] [\s!mono]  [mscorecourier] [\s!default] [rscale=1.240]
   %     \definetypeface [mscoress] [\s!mm] [\s!math]  [times]         [\s!default] [rscale=1.185]
   % \stoptypescript
+
+\stoptypescriptcollection
+
+% http://archive1.village.virginia.edu/spw4s/fonts/
+
+\starttypescriptcollection[microsoft-chinese-old]
+
+  % \starttypescript [\s!serif] [mschinese,mschinese-light]
+  %     \definefontsynonym [STSong]      [\s!file:stsong.ttf]   [\s!features=chinese]
+  %     \definefontsynonym [STKaiti]     [\s!file:stkaiti.ttf]  [\s!features=chinese]
+  %     \definefontsynonym [STZHongsong] [\s!file:stzhongs.ttf] [\s!features=chinese]
+  %     \definefontsynonym [STFangsong]  [\s!file:stfangso.ttf] [\s!features=chinese]
+  % \stoptypescript
+
+  % \starttypescript [\s!sans] [mschinese]
+  %     \definefontsynonym [STXIHei] [\s!file:stxihei.ttf] [\s!features=chinese]
+  % \stoptypescript
+
+    \starttypescript [\s!serif] [mschinese]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]       [\s!file:stsong.ttf]   [\s!features=chinese]
+        \definefontsynonym [\s!SerifItalic] [\s!file:stkaiti.ttf]  [\s!features=chinese]
+        \definefontsynonym [\s!SerifBold]   [\s!file:stzhongs.ttf] [\s!features=chinese]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [mschinese-light]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]       [\s!file:stfangso.ttf] [\s!features=chinese]
+        \definefontsynonym [\s!SerifItalic] [\s!file:stkaiti.ttf]  [\s!features=chinese]
+        \definefontsynonym [\s!SerifBold]   [\s!file:stzhongs.ttf] [\s!features=chinese]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [mschinese]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans] [\s!file:stxihei.ttf] [\s!features=chinese]
+    \stoptypescript
+
+    \starttypescript[mschinese]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mschinese] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mschinese] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [cambria]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mscorecourier]
+    \stoptypescript
+
+    \starttypescript[mschineselight,mschinese-light]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mschinese-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mschinese]       [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [cambria]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mscorecourier]
+    \stoptypescript
 
 \stoptypescriptcollection
