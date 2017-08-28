@@ -874,4 +874,18 @@
   [\v!continued]
   [\continuednumber]
 
+%D Taken from x-asciimath (see digits-001.tex for an example):
+
+\let\spaceddigitsmethod   \empty % alternative methods   : 1 default, 2 and 3 only when > 4
+\let\spaceddigitssymbol   \empty % extra splitter symbol : {,}
+\let\spaceddigitsseparator\empty % separator symbol      : {\Uchar{"2008}}
+
+\unexpanded\def\spaceddigits#1%
+  {\clf_spaceddigits
+      method    {\spaceddigitsmethod}%
+      symbol    {\spaceddigitssymbol}%
+      separator {\spaceddigitsseparator}%
+      data      {#1}%
+   \relax}
+
 \protect \endinput

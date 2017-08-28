@@ -20,7 +20,7 @@ local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
-local P, S, R, Cc, Cf, Cg, Ct, Cs, C = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C
+local P, S, R, Cc, Cf, Cg, Ct, Cs, C, V, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C, lpeg.V, lpeg.Carg
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local context            = context
@@ -1448,3 +1448,141 @@ function converters.settime(t)
         texset("time", (t.hour or 0) * 60 + (t.min or 0))
     end
 end
+
+-- taken from x-asciimath (where we needed it for a project)
+
+local d_one         = lpegpatterns.digit
+local d_two         = d_one * d_one
+local d_three       = d_two * d_one
+local d_four        = d_three * d_one
+local d_split       = P(-1) + Carg(2) * (lpegpatterns.period /"")
+
+local d_spaced      = (Carg(1) * d_three)^1
+
+local digitized_1   = Cs ( (
+                        d_three * d_spaced * d_split +
+                        d_two   * d_spaced * d_split +
+                        d_one   * d_spaced * d_split +
+                        P(1)
+                      )^1 )
+
+local p_fourbefore  = d_four * d_split
+local p_fourafter   = d_four * P(-1)
+
+local p_beforesplit = d_three * d_spaced^0 * d_split
+                    + d_two   * d_spaced^0 * d_split
+                    + d_one   * d_spaced^0 * d_split
+                    + d_one   * d_split
+
+local p_aftersplit  = p_fourafter
+                    + d_three * d_spaced
+                    + d_two   * d_spaced
+                    + d_one   * d_spaced
+
+local digitized_2   = Cs (
+                         p_fourbefore  *  (p_aftersplit^0) +
+                         p_beforesplit * ((p_aftersplit + d_one^1)^0)
+                      )
+
+local p_fourbefore  = d_four * d_split
+local p_fourafter   = d_four
+local d_spaced      = (Carg(1) * (d_three + d_two + d_one))^1
+local p_aftersplit  = p_fourafter * P(-1)
+                    + d_three * d_spaced * P(1)^0
+                    + d_one^1
+
+local digitized_3   = Cs((p_fourbefore + p_beforesplit) * p_aftersplit^0)
+
+local digits_space  = utfchar(0x2008)
+
+local splitmethods  = {
+    digitized_1,
+    digitized_2,
+    digitized_3,
+}
+
+local replacers     = table.setmetatableindex(function(t,k)
+    local v = lpeg.replacer(".",k)
+    t[k] = v
+    return v
+end)
+
+function converters.spaceddigits(settings,data)
+    local data = tostring(data or settings.data or "")
+    if data ~= "" then
+        local method = settings.method
+        local split  = splitmethods[tonumber(method) or 1]
+        if split then
+            local symbol    = settings.symbol
+            local separator = settings.separator
+            if not symbol or symbol == "" then
+                symbol = "."
+            end
+            if type(separator) ~= "string" or separator == "" then
+                separator = digits_space
+            end
+            local result = lpegmatch(split,data,1,separator,symbol)
+            if not result and symbol ~= "." then
+                result = lpegmatch(replacers[symbol],data)
+            end
+            if result then
+             -- print(method,symbol,separator,data,result)
+                return result
+            end
+        end
+    end
+    return str
+end
+
+-- method 2 : split 3 before and 3 after
+-- method 3 : split 3 before and 3 after with > 4 before
+
+-- symbols is extra split (in addition to period)
+
+-- local setup = { splitmethod = 3, symbol = "," }
+-- local setup = { splitmethod = 2, symbol = "," }
+-- local setup = { splitmethod = 1, symbol = "," }
+--
+-- local t = {
+--     "0.00002",
+--     "1", "12", "123", "1234", "12345", "123456", "1234567", "12345678", "123456789",
+--     "1.1",
+--     "12.12",
+--     "123.123",
+--     "1234.123",
+--     "1234.1234",
+--     "12345.1234",
+--     "1234.12345",
+--     "12345.12345",
+--     "123456.123456",
+--     "1234567.1234567",
+--     "12345678.12345678",
+--     "123456789.123456789",
+--     "0.1234",
+--     "1234.0",
+--     "1234.00",
+--     "0.123456789",
+--     "100.00005",
+--     "0.80018",
+--     "10.80018",
+--     "100.80018",
+--     "1000.80018",
+--     "10000.80018",
+-- }
+--
+-- for i=1,#t do
+--     print(formatters["%-20s : [%s]"](t[i],converters.spaceddigits(setup,t[i])))
+-- end
+
+implement {
+    name      = "spaceddigits",
+    actions   = { converters.spaceddigits, context },
+    arguments = {
+        {
+            { "symbol" },
+            { "separator" },
+            { "data" },
+            { "method" },
+        }
+    }
+}

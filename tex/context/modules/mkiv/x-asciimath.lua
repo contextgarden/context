@@ -834,7 +834,8 @@ local issimplified = {
 
 --
 
--- special mess
+-- special mess (we have a generic one now but for the moment keep this)
+-- special mess (we have a generic one now but for the moment keep this)
 
 local d_one         = R("09")
 local d_two         = d_one * d_one
@@ -894,6 +895,8 @@ local symbolmethod   = nil
 local digitseparator = utfchar(0x2008)
 local digitsymbol    = "."
 
+local v_yes_digits   = interfaces and interfaces.variables.yes or true
+
 function asciimath.setup(settings)
     splitmethod = splitmethods[tonumber(settings.splitmethod) or 0]
     if splitmethod then
@@ -902,7 +905,8 @@ function asciimath.setup(settings)
              digitsymbol = "."
         end
         local separator = settings.separator
-        if separator == true or not interfaces or interfaces.variables.yes then
+     -- if separator == true or not interfaces or interfaces.variables.yes then
+        if separator == true or separator == nil or separator == v_yes_digits then
             digitseparator = utfchar(0x2008)
         elseif type(separator) == "string" and separator ~= "" then
             digitseparator = separator
