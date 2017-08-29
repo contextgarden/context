@@ -69,12 +69,19 @@
 % currently no italic correction ... problem is that we don't know yet if we have an italic
 % below so we we need to postpone
 
-\def\math_stackers_fallback
-  {\hbox to \scratchwidth{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname}}
- %{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname }
+% \def\math_stackers_fallback
+%   {\hbox to \scratchwidth{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname}}
+%  %{\csname\??mathextensiblefallbacks\ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname\number\scratchunicode\fi\endcsname }
 
-% \def\math_stackers_regular
-%   {\mathstylehbox{\Umathaccent\fam\zerocount\scratchunicode{\hskip\scratchwidth}}}
+\def\math_stackers_fallback
+  {\mathstylehbox to \scratchwidth{\usemathstackerscolorparameter\c!color
+     \hss
+     \ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname
+       \lastnamedcs
+     \else
+       \Umathchar \fam \zerocount \scratchunicode
+     \fi
+     \hss}}
 
 \def\math_stackers_regular
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
@@ -89,7 +96,8 @@
 % $\Umathaccent   0 0 "2190{x}$ \par $\Umathaccent   0 0 "27F8{x}$\par
 % $\Udelimiterunder 0 "2190{x}$ \par $\Udelimiterunder 0 "27F8{x}$\par
 
-\setvalue{\??mathextensiblefallbacks}{\hbox{\vrule\!!width\scratchwidth\!!height.1\exheight\!!depth\zeropoint}}
+\setvalue{\??mathextensiblefallbacks}%
+  {\hbox{\vrule\s!width\scratchwidth\s!height.1\exheight\s!depth\zeropoint}}
 
 % \def\math_stackers_with_fallback#codepoint%
 %   {\begingroup
@@ -645,21 +653,50 @@
 \unexpanded\def\mathunder {\begingroup\dosingleempty\math_stackers_handle_under }
 \unexpanded\def\mathdouble{\begingroup\dodoubleempty\math_stackers_handle_double}
 
-\def\math_stackers_handle_over[#category]%
-  {\math_stackers_direct_double\plusone\zerocount
-     {\iffirstargument#category\else\v!top   \fi}} % will be defined later on
+\unexpanded\def\definemathover  {\dotripleargument   \math_stackers_define_over  }
+\unexpanded\def\definemathunder {\dotripleargument   \math_stackers_define_under }
+\unexpanded\def\definemathdouble{\doquadrupleargument\math_stackers_define_double}
 
-\def\math_stackers_handle_under[#category]%
-  {\math_stackers_direct_double\zerocount\plusone
-     {\iffirstargument#category\else\v!bottom\fi}} % will be defined later on
+\def\math_stackers_define_over[#category][#command][#topcode]%
+  {\setuvalue{#command}{\math_stackers_handle_direct\plusone\zerocount{#category}{#topcode}{0}}}
 
-\def\math_stackers_handle_double[#topcategory][#bottomcategory]%
-  {\math_stackers_direct_double\plusone\plusone
-     {\iffirstargument    #topcategory\else\v!top   \fi}%
-     {\ifsecondargument#bottomcategory\else\v!bottom\fi}}
+\def\math_stackers_define_under[#category][#command][#bottomcode]%
+  {\setuvalue{#command}{\math_stackers_handle_direct\zerocount\plusone{#category}{#bottomcode}{0}}}
 
-\def\math_stackers_direct_double#top#bottom#category#codepoint#text%
-  {\math_stackers_make_double#top#bottom{#category}{#codepoint}{0}{#text}%
+\def\math_stackers_define_double[#category][#command][#topcode][#bottomcode]%
+  {\setuvalue{#command}{\math_stackers_handle_direct\plusone\plusone{#category}{#topcode}{#bottomcode}}}
+
+\unexpanded\def\mathover  {\begingroup\dosingleempty\math_stackers_handle_over  }
+\unexpanded\def\mathunder {\begingroup\dosingleempty\math_stackers_handle_under }
+\unexpanded\def\mathdouble{\begingroup\dosingleempty\math_stackers_handle_double}
+
+\def\math_stackers_handle_over[#category]#topcode#text%
+  {\math_stackers_make_double\plusone\zerocount
+     {\iffirstargument#category\else\v!top\fi}%
+     {#topcode}%
+     {0}%
+     {#text}%
+   \endgroup}
+
+\def\math_stackers_handle_under[#category]#bottomcode#text%
+  {\math_stackers_make_double\zerocount\plusone
+     {\iffirstargument#category\else\v!bottom\fi}%
+     {#bottomcode}%
+     {0}%
+     {#text}%
+   \endgroup}
+
+\def\math_stackers_handle_double[#category]#topcode#bottomcode#text%
+  {\math_stackers_make_double\plusone\plusone
+     {\iffirstargument#category\else\v!both\fi}%
+     {#topcode}%
+     {#bottomcode}%
+     {#text}%
+   \endgroup}
+
+\def\math_stackers_handle_direct#top#bottom#category#topcode#bottomcode#text%
+  {\begingroup
+   \math_stackers_make_double#top#bottom{#category}{#topcode}{#bottomcode}{#text}%
    \endgroup}
 
 %D A relative new one is a combination of accents and text (as needed in mathml):
@@ -1197,14 +1234,14 @@
 \unexpanded\def\defineextensiblefiller
   {\dodoubleargument\math_stackers_define_filler}
 
-\def\math_stackers_define_filler[#1][#2]%
-  {\setuevalue{#1}{\leaders\number#2\hfill}}
+% \def\math_stackers_define_filler[#1][#2]%
+%   {\setuevalue{#1}{\leaders\number#2\hfill}}
 
-%D For the moment:
+%D For the moment (needs checking):
 
 \def\math_stackers_define_filler[#1][#2]%
   {\expandafter\let\csname\??mathextensiblefallbacks\number#2\expandafter\endcsname\csname#1\endcsname
-   \expandafter\let\csname                                 #1\expandafter\endcsname\csname#1\endcsname}
+   \expandafter\let\csname                                 #1\expandafter\endcsname\csname#1\endcsname} % huh?
 
 \defineextensiblefiller [barfill]                ["203E]
 \defineextensiblefiller [relfill]                ["002D]
@@ -1282,6 +1319,12 @@
 \definemathunstacked [\v!wide] [impliedby] ["27F8] % \mathrel{\;\Longleftarrow\;}
 \definemathunstacked [\v!wide] [implies]   ["27F9] % \mathrel{\;\Longrightarrow\;}
 \definemathunstacked [\v!wide] [iff]       ["27FA] % \mathrel{\;\Longleftrightarrow\;}
+
+% New (an example of using \mathexheight):
+
+\definemathstackers[\v!symbol][\c!voffset=-.40\mathexheight,\c!hoffset=\zeropoint]
+
+\definemathover[\v!symbol][interiorset]["2217]
 
 \protect \endinput
 

@@ -138,4 +138,114 @@
         \normalstartimath\tabskip\zeroskip\everycr\emptytoks\hfil\displaystyle\alignmark\alignmark\hfil\normalstopimath}\crcr
         #1\crcr}}
 
+%D This comes from plain but I gave it a \CONTEXT\ touch:
+
+\def\math_border_NC_indeed
+  {\gdef\math_border_NC{\aligntab}}
+
+\let\math_border_NC\math_border_NC_indeed
+
+\def\math_border_NR
+  {\glet\math_border_NC\math_border_NC_indeed
+   \cr}
+
+\unexpanded\def\math_border_matrix#1#2#3% adapted plain
+  {\begingroup
+   %
+   \pushmacro\cr
+   %
+   \setbox\scratchbox\hbox\bgroup
+     \mr B%
+   \egroup
+   \scratchdimenone\wd\scratchbox
+   %
+   \scratchdimentwo.2\bodyfontsize
+   %
+   \mathsurround\zeropoint
+   %
+   \def\NC{\math_border_NC}%
+   \def\NR{\math_border_NR}%
+   %
+   \setbox\scratchboxone\vbox\bgroup
+     \def\cr{%
+       \crcr
+       \noalign\bgroup
+         \kern\scratchdimentwo
+         \global\let\cr\endline
+       \egroup
+     }%
+     \ialign{%
+       \startimath\alignmark\alignmark\stopimath
+       \hfil
+       \kern\dimexpr\scratchdimentwo+\scratchdimenone\relax
+       \aligntab
+       \thinspace
+       \hfil
+       \startimath\alignmark\alignmark\stopimath
+       \hfil
+       \aligntab
+       \aligntab
+       \quad
+       \hfil
+       \startimath\alignmark\alignmark\stopimath
+       \hfil
+       \crcr
+       \omit
+       \strut
+       \hfil
+       \crcr
+       \noalign{\kern-\baselineskip}%
+       #3\crcr
+       \omit
+       \strut
+       \cr
+     }%
+   \egroup
+   \setbox\scratchboxtwo\vbox\bgroup
+     \unvcopy\scratchboxone
+     \global\setbox\globalscratchbox\lastbox
+   \egroup
+   \setbox\scratchboxtwo\hbox\bgroup
+     \unhbox\globalscratchbox
+     \unskip
+     \global\setbox\globalscratchbox\lastbox
+   \egroup
+   \setbox\scratchboxtwo\hbox\bgroup
+     \startimath
+     \kern\dimexpr\wd\globalscratchbox-\scratchdimenone\relax
+     \left#1\relax
+     \kern-\wd\globalscratchbox
+     \global\setbox\globalscratchbox\vbox\bgroup
+       \box\globalscratchbox
+       \kern\scratchdimentwo
+     \egroup
+     \vcenter\bgroup
+       \kern-\ht\globalscratchbox
+       \unvbox\scratchboxone
+       \kern-\baselineskip
+     \egroup
+     \thinspace
+     \right#2\relax
+     \stopimath
+   \egroup
+   \null
+   \thickspace
+   \vbox\bgroup
+     \kern\ht\globalscratchbox
+     \box\scratchboxtwo
+   \egroup
+   %
+   \popmacro\cr
+   %
+   \endgroup}
+
+\unexpanded\def\bordermatrix {\math_border_matrix()}
+\unexpanded\def\bbordermatrix{\math_border_matrix[]}
+
+\unexpanded\def\startbordermatrix #1\stopbordermatrix {\math_border_matrix(){#1}}
+\unexpanded\def\startbbordermatrix#1\stopbbordermatrix{\math_border_matrix[]{#1}}
+
+\let\stopbordermatrix \relax
+\let\stopbbordermatrix\relax
+
 \protect \endinput

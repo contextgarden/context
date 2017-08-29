@@ -1807,6 +1807,40 @@
 
 \unexpanded\def\showmathstyle{\verbosemathstyle\normalmathstyle}
 
+%D Some dimension fun:
+
+\def\mathexheight
+  {\fontdimen
+     \plusfive
+     \ifcase\numexpr\normalmathstyle\relax
+       \textfont         \or % 0
+       \textfont         \or % 1
+       \textfont         \or % 2
+       \textfont         \or % 3
+       \scriptfont       \or % 4
+       \scriptfont       \or % 5
+       \scriptscriptfont \or % 6
+       \scriptscriptfont \else
+       \textfont
+     \fi
+     \zeropoint}
+
+\def\mathemwidth
+  {\fontdimen
+     \plussix
+     \ifcase\numexpr\normalmathstyle\relax
+       \textfont         \or % 0
+       \textfont         \or % 1
+       \textfont         \or % 2
+       \textfont         \or % 3
+       \scriptfont       \or % 4
+       \scriptfont       \or % 5
+       \scriptscriptfont \or % 6
+       \scriptscriptfont \else
+       \textfont
+     \fi
+     \zeropoint}
+
 %D A plain inheritance:
 
 \def\mathpalette#1#2%
@@ -1826,9 +1860,16 @@
 
 % to be tested: {#1} but it could have side effects
 
-\unexpanded\def\mathstylehbox#1% sensitive for: a \over b => {a\over b} or \frac{a}{b}
-  {\normalexpanded{\hbox\bgroup
-     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
+% \unexpanded\def\mathstylehbox#1% sensitive for: a \over b => {a\over b} or \frac{a}{b}
+%   {\normalexpanded{\hbox\bgroup
+%      \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
+
+\unexpanded\def\mathstylehbox#1#% sensitive for: a \over b => {a\over b} or \frac{a}{b}
+  {\math_style_hbox{#1}}
+
+\unexpanded\def\math_style_hbox#1#2% sensitive for: a \over b => {a\over b} or \frac{a}{b}
+  {\normalexpanded{\hbox#1\bgroup
+     \startimath\triggermathstyle\normalmathstyle}\mathsurround\zeropoint#2\stopimath\egroup}
 
 \unexpanded\def\mathstylevbox#1%
   {\normalexpanded{\vbox\bgroup

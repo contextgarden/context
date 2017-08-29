@@ -33,6 +33,8 @@ local context              = context
 local commands             = commands
 local implement            = interfaces.implement
 
+local formatters           = string.formatters
+
 local tabtospace           = utilities.strings.tabtospace
 local variables            = interfaces.variables
 local settings_to_array    = utilities.parsers.settings_to_array
@@ -267,14 +269,15 @@ function visualizers.register(name,specification)
         report_visualizers("registering visualizer %a",name)
     end
     specifications[name] = specification
-    local parser, handler = specification.parser, specification.handler
-    local displayparser = specification.display or parser
-    local inlineparser = specification.inline or parser
-    local isparser = is_lpeg(parser)
+    local parser         = specification.parser
+    local handler        = specification.handler
+    local displayparser  = specification.display or parser
+    local inlineparser   = specification.inline  or parser
+    local isparser       = is_lpeg(parser)
     local start, stop
     if isparser then
         start = makepattern(handler,"start",patterns.alwaysmatched)
-        stop = makepattern(handler,"stop",patterns.alwaysmatched)
+        stop  = makepattern(handler,"stop", patterns.alwaysmatched)
     end
     if handler then
         if isparser then
@@ -375,7 +378,7 @@ function visualizers.registerescapepattern(name,befores,afters,normalmethod,esca
                     name,i,before,after,processor or "default")
             end
             before = P(before) * space_pattern
-            after = space_pattern * P(after)
+            after  = space_pattern * P(after)
             local action
             if processor then
                 action = function(s) apply_processor(processor,s) end
@@ -452,15 +455,16 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
     return escapepattern
 end
 
-local escapedvisualizers = { }
+local escapedvisualizers  = { }
+local f_escapedvisualizer = formatters["%s : %s"]
 
 local function visualize(content,settings) -- maybe also method in settings
     if content and content ~= "" then
         local method = lower(settings.method or "default")
-        local m
+        local m = specifications[method] or specifications.default
         local e = settings.escape
-        if e and e ~= "" then
-            local newname = format("%s : %s",method,e)
+        if e and e ~= "" and not m.handler.noescape then
+            local newname = f_escapedvisualizer(method,e)
             local newspec = specifications[newname]
             if newspec then
                 m = newspec
@@ -484,9 +488,10 @@ local function visualize(content,settings) -- maybe also method in settings
                         end
                     end
                 end
-                local oldvisualizer = specifications[method] or specifications.default
-                local oldparser = oldvisualizer.direct
-                local newparser
+                local oldm       = m
+                local oldparser  = oldm.direct
+                local newhandler = oldm.handler
+                local newparser  = oldm.parser -- nil
                 if starts[1] and stops[1] ~= "" then
                     newparser = visualizers.registerescapepattern(newname,starts,stops,oldparser,nil,processors)
                 elseif starts[1] then
@@ -496,7 +501,7 @@ local function visualize(content,settings) -- maybe also method in settings
                 end
                 m = visualizers.register(newname, {
                     parser  = newparser,
-                    handler = oldvisualizer.handler,
+                    handler = newhandler,
                 })
             end
         else

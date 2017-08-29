@@ -85,6 +85,7 @@ return {
         --
         "fontslantperpoint", "fontinterwordspace", "fontinterwordstretch", "fontinterwordshrink",
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
+        "mathexheight", "mathemwidth",
         "interwordspace", "interwordstretch", "interwordshrink", "exheight", "emwidth", "extraspace",
         "mathsupdisplay", "mathsupnormal", "mathsupcramped", "mathsubnormal", "mathsubcombined",  "mathaxisheight",
         "muquad",

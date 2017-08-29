@@ -252,6 +252,7 @@ local handler = visualizers.newhandler {
     stopinline   = function(settings) stopInlineScite() end,
     startdisplay = function(settings) startDisplayScite(settings.name or "") end,
     stopdisplay  = function(settings) stopDisplayScite() end,
+    noescape     = true,
 }
 
 local knownlexers = scite.knownlexers

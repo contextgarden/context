@@ -354,22 +354,27 @@
 \let\math_alignment_snap_start\relax
 \let\math_alignment_snap_stop \relax
 
-% experimental
+% % experimental:
+%
+% \def\math_alignment_snap_start
+%   {\ifgridsnapping
+%      \edef\p_math_alignment_grid{\mathalignmentparameter\c!grid}%
+%      \ifx\p_math_alignment_grid\v!no\else
+%        \snaptogrid[\p_math_alignment_grid]\vbox\bgroup
+%      \fi
+%    \fi}
+%
+% \def\math_alignment_snap_stop
+%   {\ifgridsnapping
+%      \ifx\p_math_alignment_grid\v!no\else
+%        \egroup
+%      \fi
+%    \fi}
+%
+% % doesn't work well, so:
 
-\def\math_alignment_snap_start
-  {\ifgridsnapping
-     \edef\p_math_alignment_grid{\mathalignmentparameter\c!grid}%
-     \ifx\p_math_alignment_grid\v!no\else
-       \snaptogrid[\p_math_alignment_grid]\vbox\bgroup
-     \fi
-   \fi}
-
-\def\math_alignment_snap_stop
-  {\ifgridsnapping
-     \ifx\p_math_alignment_grid\v!no\else
-       \egroup
-     \fi
-   \fi}
+\let\math_alignment_snap_start\relax
+\let\math_alignment_snap_stop \relax
 
 % end of experimental
 
@@ -860,10 +865,8 @@
 
 \def\math_matrix_stop
   {\crcr
- % \ifgridsnapping \else
-     \mathstrut\crcr
-     \noalign{\vskip-\baselineskip}%
- % \fi
+   \mathstrut\crcr
+   \noalign{\vskip-\baselineskip}%
    \egroup
    \egroup
    \mathmatrixright
@@ -1132,28 +1135,29 @@
    \egroup
    \endgroup}
 
-%D \macros
-%D   {bordermatrix}
-%D
-%D In \PLAIN\ \TEX\ the width of a parenthesis is stored in
-%D the \DIMENSION\ \type{\mathparentwd}. This value is derived from
-%D the width of \type{\tenrm B}, so let's take care of it now:
-
-\ifx\mathparentwd\undefined \newdimen\mathparentwd \fi
-
-\let\normalbordermatrix\bordermatrix % move that code to here instead
-
-\def\bordermatrix
-  {\begingroup
-   \setbox\scratchbox\hbox{\mr\char"239C}%
-   \global\mathparentwd\wd\scratchbox
-   \endgroup
-   \normalbordermatrix}
-
-% to be tested
+% %D \macros
+% %D   {bordermatrix}
+% %D
+% %D In \PLAIN\ \TEX\ the width of a parenthesis is stored in
+% %D the \DIMENSION\ \type{\mathparentwd}. This value is derived from
+% %D the width of \type{\tenrm B}, so let's take care of it now:
+%
+% \ifx\mathparentwd\undefined \newdimen\mathparentwd \fi
+%
+% \let\normalbordermatrix\bordermatrix % move that code to here instead
+%
+% \unexpanded\def\bordermatrix
+%   {\begingroup
+%    \setbox\scratchbox\hbox{\mr\char"239C}%
+%    \global\mathparentwd\wd\scratchbox
+%    \endgroup
+%    \normalbordermatrix}
 %
 % \def\bordermatrix
-%   {\begingroup\mr\global\mathparentwd\fontcharwd\font"239C\relax\endgroup
+%   {\begingroup
+%    \mr
+%    \global\mathparentwd\fontcharwd\font"239C\relax
+%    \endgroup
 %    \normalbordermatrix}
 
 %D \macros{overset, underset}
@@ -1612,11 +1616,6 @@
 \unexpanded\def\strc_math_box_stop
   {\stopforceddisplaymath
    \egroup
- % % not needed, attribute driven
- % \ifgridsnapping
- %   \snaptogrid[\v!math]\vbox
- % \fi
- % \bgroup
    % check number
    \d_strc_math_number_width\wd\b_strc_formulas_number
    %
