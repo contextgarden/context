@@ -47,6 +47,8 @@ local registerdirective    = directives.register
 local logreporter          = logs.reporter
 local setmetatableindex    = table.setmetatableindex
 
+local colortracers         = nodes.tracers.colors
+
 local trace_remapping      = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
 local trace_processing     = false  registertracker("math.processing",  function(v) trace_processing  = v end)
 local trace_analyzing      = false  registertracker("math.analyzing",   function(v) trace_analyzing   = v end)
@@ -547,7 +549,7 @@ do
 
     local remapalphabets    = mathematics.remapalphabets
     local fallbackstyleattr = mathematics.fallbackstyleattr
-    local setnodecolor      = nodes.tracers.colors.set
+    local setnodecolor      = colortracers.set
 
     local function report_remap(tag,id,old,new,extra)
         report_remapping("remapping %s in font (%s,%s) from %C to %C%s",
@@ -1289,8 +1291,8 @@ do
     local italics        = { }
     local default_factor = 1/20
 
-    local setcolor     = nodes.tracers.colors.set
-    local resetcolor   = nodes.tracers.colors.reset
+    local setcolor     = colortracers.set
+    local resetcolor   = colortracers.reset
     local italic_kern  = new_kern
 
     local c_positive_d = "trace:dg"
@@ -1877,6 +1879,9 @@ do
      -- [noad_over             = "",
      -- [noad_vcenter          = "",
     }
+
+    local setcolor   = colortracers.set
+    local resetcolor = colortracers.reset
 
     classes[math_char] = function(pointer,what,n,parent)
         local color = colors[getsubtype(parent)]

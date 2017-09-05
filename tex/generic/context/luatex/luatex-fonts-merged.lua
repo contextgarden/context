@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/29/17 19:35:06
+-- merge date  : 09/05/17 15:10:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -19625,7 +19625,7 @@ function readers.expand(data)
             end
             local rules=step.rules
             if rules then
-              local rulehash={}
+              local rulehash={ n=0 }
               local rulesize=0
               local coverage={}
               local lookuptype=sequence.type
@@ -19695,8 +19695,8 @@ function readers.expand(data)
                     else
                     end
                   end
+                  rulehash.n=rulesize 
                 end
-                rulehash.n=#rulehash 
               end
             end
           end
@@ -19738,7 +19738,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.102 
+otf.version=3.103 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
@@ -24597,7 +24597,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
   local skipped  
   local startprev,
      startnext=getboth(start)
-  local done   
+  local done
   for k=1,contexts.n do 
     local current=start
     local last=start
@@ -24979,7 +24979,12 @@ local function chained_contextchain(head,start,stop,dataset,sequence,currentlook
   if nofsteps>1 then
     reportmoresteps(dataset,sequence)
   end
-  return handle_contextchain(head,start,dataset,sequence,currentlookup,rlmode,skiphash)
+  local l=steps[1].coverage[getchar(start)]
+  if l then
+    return handle_contextchain(head,start,dataset,sequence,l,rlmode,skiphash)
+  else
+    return head,start,false
+  end
 end
 chainprocs.gsub_context=chained_contextchain
 chainprocs.gsub_contextchain=chained_contextchain
@@ -29898,6 +29903,7 @@ local abs=math.abs
 local bxor,rshift=bit32.bxor,bit32.rshift
 local P,S,R,Cmt,C,Ct,Cs,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.Cmt,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
+local sortedhash=table.sortedhash
 local trace_features=false trackers.register("afm.features",function(v) trace_features=v end)
 local trace_indexing=false trackers.register("afm.indexing",function(v) trace_indexing=v end)
 local trace_loading=false trackers.register("afm.loading",function(v) trace_loading=v end)
@@ -29919,7 +29925,7 @@ local afmfeatures=constructors.features.afm
 local registerafmfeature=afmfeatures.register
 local afmenhancers=constructors.enhancers.afm
 local registerafmenhancer=afmenhancers.register
-afm.version=1.512 
+afm.version=1.513 
 afm.cache=containers.define("fonts","one",afm.version,true)
 afm.autoprefixed=true 
 afm.helpdata={} 
@@ -29979,7 +29985,7 @@ local function enhance_unify_names(data,filename)
   local names={}
   local private=data.private or privateoffset
   local descriptions=data.descriptions
-  for name,blob in next,data.characters do
+  for name,blob in sortedhash(data.characters) do 
     local code=unicodevector[name] 
     if not code then
       code=lpegmatch(uparser,name)

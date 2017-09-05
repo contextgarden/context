@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['x-cals'] = {
 
 local next = next
 local format, lower = string.format, string.lower
-local xmlsprint, xmlcprint, xmlcollected, xmlelements = xml.sprint, xml.cprint, xml.collected, xml.elements
+local xmlcprint, xmlcollected, xmlelements = xml.cprint, xml.collected, xml.elements
 local n_todimen, s_todimen = number.todimen, string.todimen
 
 -- there is room for speedups as well as cleanup (using context functions)

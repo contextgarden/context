@@ -187,14 +187,15 @@ local function action(hyphenatedurl,str,left,right,disc)
                 word = letter
             end
         end
-        what = "\\" .. what .. "{" .. utfbyte(char) .. "}"
         if dodi then
-            list[i] = "\\d" .. what
+            list[i] = "\\d"
         else
-            list[i] = what
+            list[i] = "\\" .. what .. "{" .. utfbyte(char) .. "}"
         end
     end
-    context(concat(list))
+    list = concat(list)
+    print(list)
+    context(list)
 end
 
 -- urls.action = function(_,...) action(...) end -- sort of obsolete

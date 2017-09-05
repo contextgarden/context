@@ -363,6 +363,9 @@
    \doifelse{\taggingparameter\c!state}\v!start{\the\everyenableelements}{\the\everydisableelements}%
 \to \everysetuptagging
 
+\unexpanded\def\forgettagging
+  {\attribute\taggedattribute\attributeunsetvalue}
+
 \setuptagging
   [\c!state=\v!stop,
    \c!method=\v!auto]

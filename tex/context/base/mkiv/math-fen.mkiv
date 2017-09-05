@@ -38,7 +38,8 @@
 \let\setupmathfences\setupmathfence
 
 \setupmathfences
-  [\c!left=,
+  [\c!method=,
+   \c!left=,
    \c!right=,
    \c!middle=,
    \c!mathstyle=,
@@ -771,18 +772,27 @@
 \unexpanded\def\stopcheckedfences
   {\endgroup}
 
-\appendtoks
+% \appendtoks
    % maybe: safeguard against overloading
    %
    % \let\left       \math_fences_used_left
    % \let\right      \math_fences_used_right
    % \let\middle     \math_fences_used_middle
    % \let\leftorright\math_fences_used_both
-\to \everymathematics
+% \to \everymathematics
 
 \appendtoks
     \ifx\currentmathfence\empty
         \doifelse{\mathfenceparameter\c!state}\v!auto\enableautofences\disableautofences
+    \fi
+\to \everysetupmathfence
+
+\unexpanded\def\enableautofencemode {\mathdelimitersmode\plusseven}
+\unexpanded\def\disableautofencemode{\mathdelimitersmode\zerocount}
+
+\appendtoks
+    \ifx\currentmathfence\empty
+        \doifelse{\mathfenceparameter\c!method}\v!auto\enableautofencemode\disableautofencemode
     \fi
 \to \everysetupmathfence
 

@@ -2381,6 +2381,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
           startnext    = getboth(start)
     local done      -- = false
 
+    -- hm, contexts can also be nested
+
     for k=1,contexts.n do -- or #contexts do
         local current = start
         local last    = start
@@ -2799,7 +2801,13 @@ local function chained_contextchain(head,start,stop,dataset,sequence,currentlook
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    return handle_contextchain(head,start,dataset,sequence,currentlookup,rlmode,skiphash)
+    -- probably wrong
+    local l = steps[1].coverage[getchar(start)]
+    if l then
+        return handle_contextchain(head,start,dataset,sequence,l,rlmode,skiphash)
+    else
+        return head, start, false
+    end
 end
 
 chainprocs.gsub_context             = chained_contextchain

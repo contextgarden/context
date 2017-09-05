@@ -624,32 +624,68 @@
      \directvspacing\p_spaceafter
    \fi}
 
-\def\strc_math_obey_depth
-  {\ifvmode\ifdim\prevdepth<\zeropoint\else\ifdim\prevdepth<\strutdp
-     % maybe add a tracing option here
-     \ifgridsnapping
-       \directvspacing\v!depth
-     \else
-       \kern\dimexpr\strutdp-\prevdepth\relax
-       \prevdepth\strutdp
-     \fi
-   \fi\fi\fi}
+% \def\strc_math_obey_depth
+%   {\ifvmode\ifdim\prevdepth<\zeropoint\else\ifdim\prevdepth<\strutdp
+%      % maybe add a tracing option here
+%      \ifgridsnapping
+%        \directvspacing\v!depth
+%      \else
+%        \kern\dimexpr\strutdp-\prevdepth\relax
+%        \prevdepth\strutdp
+%      \fi
+%    \fi\fi\fi}
+%
+% \setvalue{\??mathdisplayspacemodel\v!before:3}%
+%   {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
+%    \ifdim\lastskip>\zeropoint
+%      % bah
+%    \else
+%      \strc_math_obey_depth % somehow \fakenextstrutline doesn't work here
+%      \nointerlineskip
+%    \fi
+%    \ifx\p_spacebefore\v!none
+%      % nothing
+%    \else\ifx\p_spacebefore\empty
+%      \directvspacing\currentvspacing
+%    \else
+%      \directvspacing\p_spacebefore
+%    \fi\fi}
 
 \setvalue{\??mathdisplayspacemodel\v!before:3}%
   {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
-   \ifdim\lastskip>\zeropoint
-     % bah
-   \else
-     \strc_math_obey_depth % somehow \fakenextstrutline doesn't work here
+   \let\m_spacebefore\empty
+   \ifvmode
+     \ifdim\lastskip>\zeropoint\else
+       \ifdim\prevdepth<\zeropoint\else
+         \ifdim\prevdepth<\strutdp
+           % maybe add a tracing option here
+           \ifgridsnapping
+             \let\m_spacebefore\v!depth
+           \else
+             \edef\m_spacebefore{\the\dimexpr\strutdp-\prevdepth\relax}%
+           \fi
+         \fi
+       \fi
+     \fi
      \nointerlineskip
    \fi
-   \ifx\p_spacebefore\v!none
-     % nothing
-   \else\ifx\p_spaceafter\empty
-     \directvspacing\currentvspacing
+   \ifx\m_spacebefore\empty
+     \ifx\p_spacebefore\v!none
+       % nothing
+     \else\ifx\p_spacebefore\empty
+       \directvspacing\currentvspacing
+     \else
+       \directvspacing{\p_spacebefore,\the\scratchdimen}%
+     \fi\fi
    \else
-     \directvspacing\p_spacebefore
-   \fi\fi}
+     \ifx\p_spacebefore\v!none
+       \directvspacing{\m_spacebefore}%
+     \else\ifx\p_spacebefore\empty
+       \directvspacing{\m_spacebefore,\currentvspacing}%
+     \else
+       \directvspacing{\m_spacebefore,\p_spacebefore}%
+     \fi\fi
+   \fi}
 
 \setvalue{\??mathdisplayspacemodel\v!after:3}%
   {\prevdepth\strutdp % \directvspacing\v!depth

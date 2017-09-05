@@ -1172,6 +1172,7 @@ do
         mfrac    = true,
         mroot    = true,
         msqrt    = true,
+        mtable   = true,
         mi       = true,
         mo       = true,
         mn       = true,
@@ -1206,14 +1207,14 @@ do
                  -- sub.__o__, sup.__o__ = subscript, superscript
                     sub.__i__, sup.__i__ = superscript, subscript
                 end
---             elseif roottg == "msup" or roottg == "msub" then
---                 -- m$^2$
---                 if ndata == 1 then
---                     local d = data[1]
---                     data[2] = d
---                     d.__i__ = 2
---                     data[1] = dummy_nucleus
---                 end
+         -- elseif roottg == "msup" or roottg == "msub" then
+         --     -- m$^2$
+         --     if ndata == 1 then
+         --         local d = data[1]
+         --         data[2] = d
+         --         d.__i__ = 2
+         --         data[1] = dummy_nucleus
+         --     end
             elseif roottg == "mfenced" then
                 local s = specifications[root.fulltag]
                 local l, m, r = s.left, s.middle, s.right
@@ -1240,15 +1241,21 @@ do
                 return
             elseif ndata == 1 then
                 local d = data[1]
-                if not d then
+                if not d or d == "" or d.content then
                     return
-                elseif d.content then
-                    return
-                elseif #root.data == 1 then
+                else -- if ndata == 1 then
                     local tg = d.tg
                     if automathrows and roottg == "mrow" then
                         -- maybe just always ! check spec first
                         if no_mrow[tg] then
+-- local r = root.__p__
+-- while r do
+--     if r.data[1].tg == "mrow" then
+--         r.data[1].skip = "comment"
+--         r.skip = "comment"
+--     end
+--     break
+-- end
                             root.skip = "comment"
                         end
                     elseif roottg == "mo" then
@@ -1417,8 +1424,10 @@ do
                                     }
                                 elseif di.tg == "math" then
                                     local di = di.data[1]
-                                    data[i] = di
-                                    checkmath(di)
+                                    if di then
+                                        data[i] = di
+                                        checkmath(di)
+                                    end
                                 end
                             end
                             di.element = "mrow"
@@ -1578,7 +1587,6 @@ do
                 if #data > 0 then
                     return di
                 end
--- end
             end
             -- could be integrated but is messy then
 --             while roottg == "mrow" and #data == 1 do
@@ -1771,7 +1779,7 @@ do
     end
 
     function structurestags.settablecell(rows,columns,align)
-        if align > 0 or rows > 1 or columns > 1 or kind > 0 then
+        if align > 0 or rows > 1 or columns > 1 then -- or kind > 0
             tabledata[locatedtag("tablecell")] = {
                 rows    = rows,
                 columns = columns,

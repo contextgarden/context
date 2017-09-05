@@ -76,6 +76,7 @@
 \def\math_stackers_fallback
   {\mathstylehbox to \scratchwidth{\usemathstackerscolorparameter\c!color
      \hss
+     \hskip\mathstackersparameter\c!topoffset\relax % for manual italic correction
      \ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname
        \lastnamedcs
      \else
@@ -165,6 +166,7 @@
    \c!mpoffset=.25\exheight,
    \c!voffset=.25\exheight,
    \c!hoffset=.5\emwidth,
+   \c!topoffset=\zeropoint, % for manual italic correction
    \c!distance=\mathstackersparameter\c!voffset, % distance between symbol and base (can be different from voffset)
    \c!minheight=\exheight,
    \c!mindepth=\zeropoint,
@@ -1322,9 +1324,15 @@
 
 % New (an example of using \mathexheight):
 
-\definemathstackers[\v!symbol][\c!voffset=-.40\mathexheight,\c!hoffset=\zeropoint]
+\definemathstackers
+  [\v!symbol]
+  [\c!voffset=-.3\mathexheight,
+   \c!hoffset=\zeropoint,
+   \c!mathclass=ord,
+   \c!topoffset=.4\mathemwidth, % poor man's italic correction
+   \c!middlecommand=\mathematics]
 
-\definemathover[\v!symbol][interiorset]["2217]
+\definemathover[\v!symbol][interiorset]["2218]
 
 \protect \endinput
 

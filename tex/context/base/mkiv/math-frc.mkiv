@@ -195,6 +195,11 @@
   {\begingroup
    \edef\currentmathfraction{#1}%
    %
+   \edef\p_math_fraction_fences{\mathfractionparameter\c!fences}%
+   \ifx\p_math_fraction_fences\empty \else
+     \math_fenced_fenced_start\p_math_fraction_fences
+   \fi
+   %
    \d_math_fraction_margin\mathfractionparameter\c!margin
    %
    \edef\p_math_fractions_color{\mathfractionparameter\c!color}%
@@ -212,6 +217,12 @@
      \expandafter\math_frac_colored
    \fi}
 
+\unexpanded\def\math_frac_wrapup
+  {\ifx\p_math_fraction_fences\empty \else
+     \math_fenced_fenced_stop\p_math_fraction_fences
+   \fi
+   \endgroup}
+
 \unexpanded\def\math_frac_colored#1#2%
   {\savecolor
    \colo_helpers_activate\p_math_fractions_color
@@ -222,11 +233,18 @@
 
 % we use utfchar anyway so we can as well do all at the lua end
 
+\def\math_frac_no_delim{0x2E}
+
 \def\math_frac_command
   {\clf_mathfraction
      {\mathfractionparameter\c!rule}%
-     \mathfractionparameter\c!left\space
-     \mathfractionparameter\c!right\space
+     \ifx\p_math_fraction_fences\empty
+       \mathfractionparameter\c!left \space
+       \mathfractionparameter\c!right\space
+     \else
+       \math_frac_no_delim\space
+       \math_frac_no_delim\space
+     \fi
      \dimexpr\mathfractionparameter\c!rulethickness\relax
    \relax}
 
@@ -267,7 +285,8 @@
        \math_frac_command
        {\usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}}%
      }%
-   }\endgroup}
+   }%
+   \math_frac_wrapup}
 
 \def\math_fraction_outer_normal#1#2%
   {\Ustack{%
@@ -277,7 +296,8 @@
        \math_frac_command
        {\m_fractions_strut_bot#2}%
      }%
-   }\endgroup}
+   }%
+   \math_frac_wrapup}
 
 \def\math_fraction_both_normal#1#2%
   {\Ustack{%
@@ -287,7 +307,8 @@
        \math_frac_command
        {\usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2}%
      }%
-   }\endgroup}
+   }%
+   \math_frac_wrapup}
 
 \def\math_fraction_inner_margin#1#2%
   {\Ustack{%
@@ -300,7 +321,8 @@
         \usemathstyleparameter\mathfractionparameter{\m_fractions_strut_bot#2}%
         \kern\d_math_fraction_margin}%
      }%
-   }\endgroup}
+   }%
+   \math_frac_wrapup}
 
 \def\math_fraction_outer_margin#1#2%
   {\Ustack{%
@@ -314,7 +336,8 @@
         \m_fractions_strut_bot#2%
         \kern\d_math_fraction_margin}%
      }%
-   }\endgroup}
+   }%
+   \math_frac_wrapup}
 
 \def\math_fraction_both_margin#1#2%
   {\Ustack{%
@@ -328,7 +351,8 @@
         \usemathstyleparameter\mathfractionparameter\m_fractions_strut_bot#2%
         \kern\d_math_fraction_margin}%
      }%
-   }\endgroup}
+   }%
+   \math_frac_wrapup}
 
 \definemathfraction[xfrac] [\c!alternative=\v!inner,\c!mathstyle=\s!script]
 \definemathfraction[xxfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
@@ -370,6 +394,47 @@
         \fi
     \fi
 \to \everymathematics
+
+% theshold is new!
+
+\let\math_fraction_set_threshold_inline \relax
+\let\math_fraction_set_threshold_display\relax
+
+\appendtoks
+    \math_fraction_set_threshold_inline
+    \math_fraction_set_threshold_display
+\to \everymathematics
+
+\appendtoks
+    \ifx\currentmathfraction\empty
+      \edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
+      \ifx\p_threshold\empty
+        \let\math_fraction_set_threshold_inline\relax
+      \else\ifx\p_threshold\v!auto
+        \let\math_fraction_set_threshold_inline\relax
+      \else
+        \let\math_fraction_set_threshold_inline\math_fraction_set_theshold_inline
+      \fi\fi
+      \edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
+      \ifx\p_threshold\empty
+        \let\math_fraction_set_threshold_display\relax
+      \else\ifx\p_threshold\v!auto
+        \let\math_fraction_set_threshold_display\relax
+      \else
+        \let\math_fraction_set_threshold_display\math_fraction_set_theshold_display
+      \fi\fi
+    \fi
+\to \everysetupmathfraction
+
+\def\math_fraction_set_theshold_inline
+  {\edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
+   \Umathfractiondelsize\textstyle        \p_threshold\dimexpr\textface\relax
+   \Umathfractiondelsize\scriptstyle      \p_threshold\dimexpr\scriptface\relax
+   \Umathfractiondelsize\scriptscriptstyle\p_threshold\dimexpr\scriptscriptface\relax}
+
+\def\math_fraction_set_theshold_display
+  {\edef\p_threshold{\mathfractionparameter\c!displaythreshold}%
+   \Umathfractiondelsize\displaystyle     \p_threshold\dimexpr\textface\relax}
 
 %D \macros
 %D   {dfrac, tfrac, frac, dbinom, tbinom, binom}
@@ -452,9 +517,23 @@
 % \unexpanded\def\dbinom#1#2{{\displaystyle{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 % \unexpanded\def\tbinom#1#2{{\textstyle   {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 
-\definemathfraction[binom] [\c!alternative=\v!outer,\c!rule=\v!no,\c!left=0x28,\c!right=0x29,\c!mathstyle=\s!auto]
-\definemathfraction[dbinom][\c!alternative=\v!outer,\c!rule=\v!no,\c!left=0x28,\c!right=0x29,\c!mathstyle=\s!display]
-\definemathfraction[tbinom][\c!alternative=\v!outer,\c!rule=\v!no,\c!left=0x28,\c!right=0x29,\c!mathstyle=\s!text]
+\definemathfraction
+  [binom]
+  [\c!alternative=\v!outer,
+   \c!rule=\v!no,
+   \c!left=0x28,
+   \c!right=0x29,
+   \c!mathstyle=\s!auto]
+
+\definemathfraction
+  [dbinom]
+  [binom]
+  [\c!mathstyle=\s!display]
+
+\definemathfraction
+  [tbinom]
+  [binom]
+  [\c!mathstyle=\s!text]
 
 %D \macros
 %D   {cfrac}

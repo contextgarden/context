@@ -2675,7 +2675,7 @@ function readers.expand(data)
                         end
                         local rules = step.rules
                         if rules then
-                            local rulehash   = { }
+                            local rulehash   = { n = 0 }
                             local rulesize   = 0
                             local coverage   = { }
                             local lookuptype = sequence.type
@@ -2747,8 +2747,8 @@ function readers.expand(data)
                                             -- we can have a problem
                                         end
                                     end
+                                    rulehash.n = rulesize -- tiny speedup
                                 end
-                                rulehash.n = #rulehash -- tiny speedup
                             end
                         end
                     end

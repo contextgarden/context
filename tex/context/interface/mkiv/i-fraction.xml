@@ -52,6 +52,15 @@
                 <cd:parameter name="right">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="inlinethreshold">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="displaythreshold">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="fences">
+                    <cd:constant type="cd:string"/>
+                </cd:parameter>
                 <cd:parameter name="rulethickness">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>

@@ -11036,6 +11036,12 @@ return {
   ["threshold"]={
    ["en"]="threshold",
   },
+  ["displaythreshold"]={
+   ["en"]="displaythreshold",
+  },
+  ["inlinethreshold"]={
+   ["en"]="inlinethreshold",
+  },
   ["title"]={
    ["cs"]="titul",
    ["de"]="titel",

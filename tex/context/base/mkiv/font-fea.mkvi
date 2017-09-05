@@ -139,6 +139,10 @@
 
 \attribute\zerocount\zerocount % first in list, so fast match
 
+\prependtoks
+    \attribute\zerocount\attributeunsetvalue % new per 2017-08-30
+\to \t_attr_list_local
+
 % beware: these are global features on top of existing font features
 
 \let\currentfeature      \s!current

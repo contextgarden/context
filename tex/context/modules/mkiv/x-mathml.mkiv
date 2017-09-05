@@ -69,6 +69,7 @@
 \startxmlsetups mml:math
     \begingroup
         \enableautofences
+        \enableautofencemode
         \xmlval {mml:math:dir} {\xmlatt{#1}{dir}} {}
         \xmlval {mml:math:display} {\xmlatt{#1}{display}} {
             \xmlval {mml:math:mode} {\xmlatt{#1}{mode}} {
@@ -87,6 +88,7 @@
 \startxmlsetups mml:imath
     \inlinemathematics {
         \enableautofences
+        \enableautofencemode
        %\math_fences_checked_start
            %\MMLhack
             \xmlflush{#1}
@@ -97,6 +99,7 @@
 \startxmlsetups mml:dmath
     \displaymathematics {
         \enableautofences
+        \enableautofencemode
        %\math_fences_checked_start
            %\MMLhack
             \xmlflush{#1}

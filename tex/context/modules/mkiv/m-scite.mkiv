@@ -64,6 +64,7 @@ local f_none_none = formatters["\\unexpanded\\def\\slx%s#1{{#1}}%%"]
 local f_texstyled = formatters["\\slx%s{%s}"]
 local f_hanging   = formatters["\\slxb{%s}%s\\slxe"]
 
+local v_none      = interfaces.variables.none
 
 local f_mapping   = [[
 \let\string\slxL\string\letterleftbrace
@@ -152,7 +153,9 @@ local function exportstyled(lexer,text)
         local position = result[i+1]
         local txt = sub(text,start,position-1)
         txt = lpegmatch(replacer,txt)
-        if whites[style] then
+        if txt == "" then
+            -- skip
+        elseif whites[style] then
             buffer[#buffer+1] = txt
         else
             buffer[#buffer+1] = f_texstyled(style,txt)
@@ -208,9 +211,21 @@ local loaddata     = io.loaddata
 local loadedlexers = scite.loadedlexers
 
 local function lexdata(data,lexname)
-    local styled = exportstyled(loadedlexers[lexname],data or "")
-    styled = indent(styled)
-    assignbuffer("lex",styled)
+    if not data then
+        data = ""
+    elseif data ~= "" then
+        if data and not find(data,"[\r\n]$") then
+            -- fix for lexbyline
+            data = data .. "\r"
+        end
+        if lexname == v_none then
+            data = string.formatters["%!tex!"](data)
+        else
+            data = exportstyled(loadedlexers[lexname] or loadedlexers.tex,data)
+        end
+        data = indent(data)
+    end
+    assignbuffer("lex",data)
 end
 
 scite.lexdata = lexdata
@@ -276,17 +291,20 @@ visualizers.register("bibtex",visualizer)
 visualizers.register("btx",   visualizer)
 visualizers.register("web",   visualizer)
 visualizers.register("cpp",   visualizer)
+visualizers.register("txt",   visualizer)
 -----------.register("sql",   visualizer)
 
 \stopluacode
 
-\definetyping[TEX][option=cld]
-\definetyping[LUA][option=lua]
-\definetyping[BTX][option=bibtex]
-\definetyping[MPS][option=mps]
-\definetyping[MP] [option=mps]
-\definetyping[CPP][option=web]
-\definetyping[WEB][option=web]
+\definetyping[TEX] [option=cld]
+\definetyping[LUA] [option=lua]
+\definetyping[BTX] [option=bibtex]
+\definetyping[MPS] [option=mps]
+\definetyping[MP]  [option=mps]
+\definetyping[CPP] [option=web]
+\definetyping[WEB] [option=web]
+\definetyping[TXT] [option=txt]
+\definetyping[NONE][option=none]
 
 % This is a preliminary interface.
 
@@ -308,7 +326,7 @@ visualizers.register("cpp",   visualizer)
 \unexpanded\def\installscitecommandsinline
   {\scitespaceskip\interwordspace % \fontcharwd\font`0\relax % brrrrr
    \let\slxb\gobbleoneargument
-   \let\slxe\relax
+   \let\slxe\space
    \let\installscitecommandsinline\relax}
 
 \unexpanded\def\installscitecommandsdisplay
@@ -355,7 +373,7 @@ visualizers.register("cpp",   visualizer)
    \endgroup}
 
 \unexpanded\def\scitebuffer
-  {\dodoubleargument\module_scite_buffer}
+  {\dodoubleempty\module_scite_buffer}
 
 \unexpanded\def\module_scite_buffer[#1][#2]%
   {\begingroup
@@ -370,12 +388,12 @@ visualizers.register("cpp",   visualizer)
    \dontcomplain
    \raggedright
    \startlines
-   \getbuffer[lex]%
+   \getbuffer[lex]
    \stoplines
    \endgroup}
 
 \unexpanded\def\sciteinlinebuffer
-  {\dodoubleargument\module_scite_buffer_inline}
+  {\dodoubleempty\module_scite_buffer_inline}
 
 \unexpanded\def\module_scite_buffer_inline[#1][#2]%
   {\dontleavehmode
@@ -467,5 +485,14 @@ visualizers.register("cpp",   visualizer)
 \scitefile[e:/tmp/test.bib]        \page
 
 % \getbuffer[demo] \scitebuffer[demo]
+
+\startbuffer[foo]
+This is text. % line 1
+This is text. % line 2
+\stopbuffer
+
+\scitebuffer[none][foo]
+
+\sciteinlinebuffer[none][foo]
 
 \stoptext

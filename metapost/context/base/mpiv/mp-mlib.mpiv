@@ -1254,9 +1254,9 @@ def withproperties expr p =
         withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
     fi
     withpen penpart p
-    if dashpart p <> nullpicture :
+  % if dashpart p <> nullpicture : % fails
         dashed dashpart p
-    fi
+  % fi
     withprescript prescriptpart p
     withpostscript postscriptpart p
 enddef ;

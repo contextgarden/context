@@ -63,7 +63,7 @@ appendaction("processors",   "lists",       "typesetters.digits.handler")       
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 appendaction("processors",   "lists",       "languages.visualizediscretionaries")                -- disabled
 
-appendaction ("processors",  "after",       "typesetters.marksuspects")
+appendaction("processors",   "after",       "typesetters.marksuspects")
 
 appendaction("shipouts",     "normalizers", "typesetters.showsuspects")
 appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
