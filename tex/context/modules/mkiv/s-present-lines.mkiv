@@ -1,0 +1,160 @@
+%D \module
+%D   [      file=s-present-lines,
+%D        version=1017.09.01,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Balls,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style was made for the \CONTEXT\ 2017 meeting. According to Alan Braslau we
+%D should not display items that we discuss but for now I stick to it. As a
+%D compromise this is a simple and effective style.
+
+\startmodule[present-lines]
+
+\definecolor[backcolor][s=.6]
+\definecolor[pagecolor][s=.3]
+\definecolor[dotscolor][s=.2]
+\definecolor[maincolor][b=.6]
+
+\definecolor[maincolor][r=.6]
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [header=0pt,
+   footer=0pt,
+   topspace=20mm,
+   backspace=20mm,
+   width=middle,
+   height=middle]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\setupitemgroup
+% [color=dotscolor]
+  [color=maincolor]
+
+\definesymbol
+  [1][{\symbol[\char"25A0]}]
+
+\setupbodyfont
+  [dejavu]
+
+\startuseMPgraphic{page}
+    StartPage ;
+        numeric d ; d := 15pt ;
+        fill Page
+            enlarged 2d
+            withcolor "pagecolor" ;
+        fill Field[Text][Text]
+            enlarged 2d
+            withcolor "backcolor" ;
+        draw leftboundary Field[Text][Text]
+            bottomenlarged 3d
+            topenlarged -(d/10)
+            shifted (-d,0)
+            withpen pensquare scaled (d/5)
+            withcolor "maincolor" ;
+        draw bottomboundary Field[Text][Text]
+            leftenlarged 3d
+            rightenlarged -(d/10)
+            shifted (0,-d)
+            withpen pensquare scaled (d/5)
+            withcolor "maincolor" ;
+        draw rightboundary Field[Text][Text]
+            topenlarged 3d
+            bottomenlarged -(d/10)
+            shifted (d,0)
+            withpen pensquare scaled (d/5)
+            withcolor "maincolor" ;
+        draw topboundary Field[Text][Text]
+            rightenlarged 3d
+            leftenlarged -(d/10)
+            shifted (0,d)
+            withpen pensquare scaled (d/5)
+            withcolor "maincolor" ;
+    StopPage ;
+\stopuseMPgraphic
+
+\setuphead
+  [chapter,title]
+  [placehead=empty,
+   number=no,
+   after={\blank[disable]},
+   before=]
+
+\setuptext
+  [color=pagecolor,
+   style=\bfd]
+
+\setuptexttexts
+  [\directsetup{text:texts}]
+
+\startsetups text:texts
+    \vbox to \textheight {
+        \vfill
+        \hfill
+        \setstrut
+        \strut
+        \getmarking[chapter]
+        \getmarking[title]
+        \vskip-\strutdp
+    }
+\stopsetups
+
+\startsetups document:start
+    \startstandardmakeup
+        \startparagraph
+            % Per 01-02-2017 the Bold abstraction also makes sure that CurrentFont
+            % works well which in turn makes MixedCaps and such working.
+            \definedfont[Bold*default @ 42pt]
+            \setupinterlinespace
+            \startcolor[pagecolor]
+                \begstrut
+                    \documentvariable{title}
+                \endstrut
+            \stopcolor
+        \stopparagraph
+        \blank[2*line]
+        \determinelistcharacteristics[chapter]
+        \ifnum\listlength>10\relax
+            \startcolumns
+                \placelist[chapter][alternative=f]
+            \stopcolumns
+        \else
+            \placelist[chapter][alternative=f]
+        \fi
+        \vfill
+        \hfill
+        \bfb
+        \setstrut
+        \strut
+        \startcolor[pagecolor]
+            \documentvariable{subtitle}
+        \stopcolor
+        \vskip-\strutdp
+    \stopstandardmakeup
+\stopsetups
+
+\usemodule[abr-04]
+
+\stopmodule
+
+\continueifinputfile{s-present-lines.mkiv}
+
+% \usemodule[present-common]
+
+% \inputpresentationfile{examples/....} % todo, 2017 presentations

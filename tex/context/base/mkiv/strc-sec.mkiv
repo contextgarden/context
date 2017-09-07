@@ -471,9 +471,11 @@
 % compatible but better
 
 \appendtoks
-   \doifelse{\headparameter\c!ownnumber}\v!yes
-     {\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}
-     {\setuevalue\currenthead{\strc_sectioning_handle_nop[\currenthead]}}%
+    \ifx\currenthead\empty \else
+      \doifelse{\headparameter\c!ownnumber}\v!yes
+        {\setuevalue\currenthead{\strc_sectioning_handle_own[\currenthead]}}
+        {\setuevalue\currenthead{\strc_sectioning_handle_nop[\currenthead]}}%
+    \fi
 \to \everysetuphead
 
 \unexpanded\def\doredefinehead#1#2% called at lua end

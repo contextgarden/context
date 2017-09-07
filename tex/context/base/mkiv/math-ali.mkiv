@@ -891,8 +891,7 @@
    \let\endmath\relax
    \def\MC{\NC}%
    %
-   \mathmatrixleft
-   \mathmatrixbox \bgroup
+   \setbox\nextbox\vbox\bgroup
    \math_matrix_start_table
    \halign \bgroup
      % preamble
@@ -907,6 +906,8 @@
    \egroup
    \math_matrix_stop_table
    \egroup
+   \mathmatrixleft
+   \math_matrix_finish_nextbox
    \mathmatrixright
    \egroup}
 
@@ -951,7 +952,6 @@
      \setupcurrentmathmatrix[#1]%
    \fi
    \math_matrix_check_settings
-   \math_matrix_align_method_analyze
    \math_matrix_set_defaults
    \math_matrix_set_columns
    \math_matrix_start_processing}
@@ -961,51 +961,34 @@
    \endgroup
    \popmacro\NC}
 
-\installcorenamespace{mathmatrixalignmethod}
+% vcenter:
+%
+% delta     = (height(v) + depth(v))/2
+% axis      = math_axis_size(cur_size)
+% height(v) = delta + axis
+% depth(v)  = delta - axis
+
+\installcorenamespace{mathmatrixalignlocation}
 
 \let\mathmatrixleft \empty % experimental hook
 \let\mathmatrixright\empty % experimental hook
 
-\def\math_matrix_process#1#2%
-  {\dowithnextbox
-     {\scratchdimen\dimexpr(\nextboxdp-\nextboxht)/2 \ifcase#2\or+\mathaxisheight\textfont2\fi\relax
-      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi\hbox\bgroup
-        \forgettagging % otherwise dummy mrows and such
-        \normalstartimath
-        \mathmatrixparameter\c!left
-        \vcenter{\unvbox\nextbox}%
-        \mathmatrixparameter\c!right
-        \normalstopimath
-      \egroup}%
-   \vbox}
+\setvalue{\??mathmatrixalignlocation\v!top   }{\raise\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\textfont\zerocount\relax}
+\setvalue{\??mathmatrixalignlocation\v!high  }{\raise\dimexpr(\nextboxdp-\nextboxht)/2\relax}
+\setvalue{\??mathmatrixalignlocation\v!center}{\relax}
+\setvalue{\??mathmatrixalignlocation\v!lohi}  {\relax}
+\setvalue{\??mathmatrixalignlocation\v!normal}{\relax}
+\setvalue{\??mathmatrixalignlocation\v!bottom}{\lower\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\textfont\zerocount\relax}
+\setvalue{\??mathmatrixalignlocation\v!low   }{\lower\dimexpr(\nextboxdp-\nextboxht)/2\relax}
 
-\unexpanded\def\installmathmatrixalignmethod#1#2%
-  {\setvalue{\??mathmatrixalignmethod#1}{#2}}
-
-\def\math_matrix_box_normal{\math_matrix_process\plustwo\zerocount}
-
-\let\mathmatrixbox\math_matrix_box_normal
-
-% \def\math_matrix_align_method_analyze
-%   {\csname\??mathmatrixalignmethod\ifcsname\??mathmatrixalignmethod\mathmatrixparameter\c!location\endcsname
-%      \mathmatrixparameter\c!location
-%    \else
-%      \v!normal
-%    \fi\endcsname}
-
-\def\math_matrix_align_method_analyze
-  {\ifcsname\??mathmatrixalignmethod\mathmatrixparameter\c!location\endcsname
-     \lastnamedcs
-   \else
-     \let\mathmatrixbox\math_matrix_box_normal
-   \fi}
-
-\installmathmatrixalignmethod\v!top   {\def\mathmatrixbox{\math_matrix_process\plusthree\plusone  }}
-\installmathmatrixalignmethod\v!high  {\def\mathmatrixbox{\math_matrix_process\plusthree\zerocount}}
-\installmathmatrixalignmethod\v!lohi  {\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}}
-\installmathmatrixalignmethod\v!low   {\def\mathmatrixbox{\math_matrix_process\plusone  \zerocount}}
-\installmathmatrixalignmethod\v!bottom{\def\mathmatrixbox{\math_matrix_process\plusone  \plusone  }}
-\installmathmatrixalignmethod\v!normal{\let\mathmatrixbox \math_matrix_box_normal} % lohi
+\def\math_matrix_finish_nextbox
+  {\begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
+     \normalstartimath
+     \mathmatrixparameter\c!left
+     \vcenter{\box\nextbox}%
+     \mathmatrixparameter\c!right
+     \normalstopimath
+   \egroup}
 
 \definemathmatrix[matrix]
 \definemathmatrix[\v!mathmatrix]

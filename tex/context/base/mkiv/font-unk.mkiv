@@ -52,17 +52,19 @@
 \definefontsynonym [Handwriting]        [unknown]
 \definefontsynonym [Calligraphic]       [unknown]
 
-%D This permit us to define (use) fonts that refer to the default
-%D style (so, Bold may expand to SansBold or SerifBold, depending
-%D on the default style in the typeface).
+%D This permit us to define (use) fonts that refer to the default style (so, Bold
+%D may expand to SansBold or SerifBold, depending on the default style in the
+%D typeface). The \LUA\ call is used to set the current alternative in a
+%D non|-|interfering way. This make sure that the CurrentFont synonym (in font-sym)
+%D is working as expected (e.g.\ in MixedCaps). Yes, this is complicates stuff.
 
-\definefontsynonym[\s!Normal]     [\noexpand\v_font_string_d]
-\definefontsynonym[\s!Bold]       [\noexpand\v_font_string_d\noexpand\s!Bold]
-\definefontsynonym[\s!Italic]     [\noexpand\v_font_string_d\noexpand\s!Italic]
-\definefontsynonym[\s!Slanted]    [\noexpand\v_font_string_d\noexpand\s!Slanted]
-\definefontsynonym[\s!BoldItalic] [\noexpand\v_font_string_d\noexpand\s!BoldItalic]
-\definefontsynonym[\s!BoldSlanted][\noexpand\v_font_string_d\noexpand\s!BoldSlanted]
-\definefontsynonym[\s!Caps]       [\noexpand\v_font_string_d\noexpand\s!Caps]
+\definefontsynonym[\s!Normal]     [\noexpand\clf_tf\noexpand\v_font_string_d]
+\definefontsynonym[\s!Bold]       [\noexpand\clf_bf\noexpand\v_font_string_d\noexpand\s!Bold]
+\definefontsynonym[\s!Italic]     [\noexpand\clf_it\noexpand\v_font_string_d\noexpand\s!Italic]
+\definefontsynonym[\s!Slanted]    [\noexpand\clf_sl\noexpand\v_font_string_d\noexpand\s!Slanted]
+\definefontsynonym[\s!BoldItalic] [\noexpand\clf_bi\noexpand\v_font_string_d\noexpand\s!BoldItalic]
+\definefontsynonym[\s!BoldSlanted][\noexpand\clf_bs\noexpand\v_font_string_d\noexpand\s!BoldSlanted]
+\definefontsynonym[\s!Caps]       [\noexpand\clf_tf\noexpand\v_font_string_d\noexpand\s!Caps]
 
 %D Also handy:
 
@@ -143,8 +145,7 @@
 \definebodyfont [default] [cg]
   [\s!tf=Calligraphy sa 1]
 
-%D These definitions come into action as soon as names are
-%D mapped onto real file names (or names that themselves are
-%D mapped).
+%D These definitions come into action as soon as names are mapped onto real file
+%D names (or names that themselves are mapped).
 
 \protect \endinput

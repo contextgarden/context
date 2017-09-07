@@ -219,7 +219,8 @@ local function lexdata(data,lexname)
             data = data .. "\r"
         end
         if lexname == v_none then
-            data = string.formatters["%!tex!"](data)
+--             data = string.formatters["%!tex!"](data)
+            data = exportstyled(loadedlexers["dummy"] or loadedlexers.tex,data)
         else
             data = exportstyled(loadedlexers[lexname] or loadedlexers.tex,data)
         end
@@ -342,6 +343,10 @@ visualizers.register("txt",   visualizer)
 \let\slxS\buff_scite_slxs
 \let\slxF\buff_scite_slxf
 
+\def\module_scite_inherit_typing
+  {\buff_verbatim_initialize_typing_one
+   \buff_verbatim_set_line_margin}
+
 \unexpanded\def\startscite
   {\begingroup
    \dosingleempty\buff_scite_start}
@@ -363,6 +368,7 @@ visualizers.register("txt",   visualizer)
    \clf_scitelexfile{#1}%
    \tt
    \installscitecommandsdisplay
+   \module_scite_inherit_typing
    \dontcomplain
    \raggedright
    \startcontextcode
@@ -385,6 +391,7 @@ visualizers.register("txt",   visualizer)
    \fi
    \tt
    \installscitecommandsdisplay
+   \module_scite_inherit_typing
    \dontcomplain
    \raggedright
    \startlines
@@ -406,6 +413,7 @@ visualizers.register("txt",   visualizer)
    \fi
    \tt
    \installscitecommandsinline
+   \module_scite_inherit_typing
    \dontcomplain
    \getbuffer[lex]%
    \endgroup}
@@ -430,6 +438,8 @@ visualizers.register("txt",   visualizer)
    \tt
    \installscitecommandsdisplay
    \dontcomplain
+\buff_verbatim_initialize_typing_one
+\buff_verbatim_set_line_margin
    \raggedright
    \startlines
    \clf_getbuffer{lex}}

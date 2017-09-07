@@ -64,6 +64,7 @@ local math_fixed_both     = accentcodes.fixedboth
 local kerncodes           = nodes.kerncodes
 
 local fontkern_code       = kerncodes.fontkern
+local italickern_code     = kerncodes.italickern
 
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
@@ -88,7 +89,7 @@ local taglist             = tags.taglist
 
 local chardata            = characters.data
 
-local getmathcode         = tex.getmathcode
+local getmathcodes        = tex.getmathcodes
 local mathcodes           = mathematics.codes
 local ordinary_code       = mathcodes.ordinary
 local variable_code       = mathcodes.variable
@@ -193,7 +194,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 mtexttag = start_tagged("mtext")
             end
             setattr(start,a_tagged,mtexttag)
-        elseif mtexttag and id == kern_code and getsubtype(start) == fontkern_code then
+        elseif mtexttag and id == kern_code and (getsubtype(start) == fontkern_code or getsubtype(start) == italickern_code) then -- italickern
             setattr(start,a_tagged,mtexttag)
         else
             if mtexttag then
@@ -202,10 +203,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             end
             if id == math_char_code then
                 local char = getchar(start)
-                local code = getmathcode(char)
-                if code then
-                    code = code[1]
-                end
+                local code = getmathcodes(char)
                 local tag
                 if code == ordinary_code or code == variable_code then
                     local ch = chardata[char]
@@ -250,6 +248,9 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             elseif id == math_box_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on math_box_code and see what ends up in there
                 local attr = getattr(start,a_tagged)
+if not attr then
+    -- just skip
+else
                 local specification = taglist[attr]
                 if specification then
                     local tag = specification.tagname
@@ -321,7 +322,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                     if id == hlist_code or id == vlist_code then
                                         runner(getlist(n),depth+1)
                                     elseif id == glyph_code then
-                                        runner(getcomponents(n),depth+1) -- this should not be needed
+                                        -- this should not be needed (todo: use tounicode info)
+                                        runner(getcomponents(n),depth+1)
                                     elseif id == disc_code then
                                         local pre, post, replace = getdisc(n)
                                         runner(pre,depth+1)     -- idem
@@ -341,6 +343,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         stop_tagged()
                     end
                 end
+end
             elseif id == math_sub_code then -- normally a hbox
                 local list = getlist(start)
                 if list then
@@ -425,7 +428,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     -- left
                     local properties = { }
                     insert(fencesstack,properties)
-                    setattr(start,a_tagged,start_tagged("mfenced",{ properties = properties })) -- needs checking
+                    setattr(start,a_tagged,start_tagged("mfenced",properties)) -- needs checking
                     if delim then
                         start_tagged("ignore")
                         local chr = getfield(delim,"small_char")

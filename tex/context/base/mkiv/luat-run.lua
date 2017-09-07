@@ -207,6 +207,7 @@ local function report_stop(right)
          -- report_close("%i > %i > %s",level,total,name or "?")
             report_close("level %i, order %i, name %a",level,total,name or "?")
             level = level - 1
+            synctex.setfilename(stack[#stack] or tex.jobname)
         end
     end
 end

@@ -1238,24 +1238,23 @@ do
                 }
             end
             if ndata == 0 then
+root.skip = "comment" -- get rid of weird artefacts
+root.nota = "weird"
                 return
             elseif ndata == 1 then
                 local d = data[1]
-                if not d or d == "" or d.content then
+                if not d or d == "" then
+root.skip = "comment"
+                    return
+                elseif d.content then
                     return
                 else -- if ndata == 1 then
                     local tg = d.tg
-                    if automathrows and roottg == "mrow" then
+--                     if automathrows and roottg == "mrow" then
+if automathrows and (roottg == "mrow" or roottg == "mtext") then
                         -- maybe just always ! check spec first
+-- or we can have chesks.* for each as we then can flatten
                         if no_mrow[tg] then
--- local r = root.__p__
--- while r do
---     if r.data[1].tg == "mrow" then
---         r.data[1].skip = "comment"
---         r.skip = "comment"
---     end
---     break
--- end
                             root.skip = "comment"
                         end
                     elseif roottg == "mo" then
@@ -1588,53 +1587,155 @@ do
                     return di
                 end
             end
-            -- could be integrated but is messy then
---             while roottg == "mrow" and #data == 1 do
---                 data = data[1]
---                 for k, v in next, data do
---                     root[k] = v
---                 end
---                 roottg = data.tg
---             end
         end
     end
 
     function checks.math(di)
-        local specification = specifications[di.fulltag]
-        local mode = specification and specification.mode == "display" and "block" or "inline"
-        di.attributes = {
-            ["display"] = mode,
-            ["xmlns:m"] = mathmlns,
-        }
-        -- can be option if needed:
-        if mode == "inline" then
-         -- di.nature = "mixed"  -- else spacing problem (maybe inline)
-            di.nature = "inline" -- we need to catch x$X$x and x $X$ x
+        if di.skip == "comment" then
+            -- already done, kind of weird, happens in mathmatrix, maybe some collapse
+            -- issue that i need to look into
         else
-            di.nature = "display"
+            local specification = specifications[di.fulltag]
+            local mode = specification and specification.mode == "display" and "block" or "inline"
+            di.attributes = {
+                ["display"] = mode,
+                ["xmlns:m"] = mathmlns,
+            }
+            -- can be option if needed:
+            if mode == "inline" then
+             -- di.nature = "mixed"  -- else spacing problem (maybe inline)
+                di.nature = "inline" -- we need to catch x$X$x and x $X$ x
+            else
+                di.nature = "display"
+            end
+            if automathstrip then
+                stripmath(di)
+            end
+            checkmath(di)
         end
-        if automathstrip then
-            stripmath(di)
-        end
-        checkmath(di)
     end
 
-    local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
+    -- this one can replace some of the previous code .. todo (test on mathmatrix)
 
-    function extras.mi(di,element,n,fulltag) -- check with content
-        local str = di.data[1].content
-        if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
-            for v in utfvalues(str) do
-                if (v >= a and v <= z) or (v >= A and v <= Z) then
-                    local a = di.attributes
-                    if a then
-                        a.mathvariant = "normal"
+    -- ignore with no data can be removed
+
+    local function checked(d)
+        local n = #d
+        if n == 1 then
+            local di = d[1]
+            local tg = di.tg
+            if tg == "ignore" then
+                -- todo: we can move ignore's data one level up
+                return 1
+            elseif di.content then
+                return 1
+            else
+                local dd = di.data
+                if #dd > 0 and checked(dd) > 0 then
+                    return 1
+                else
+                    return 0
+                end
+            end
+        else
+            local m = 0
+            for i=1,n do
+                local di = d[i]
+                local tg = di.tg
+                if tg == "ignore" then
+                    -- skip
+                elseif di.content then
+                    m = m + 1
+                    d[m] = di
+                else
+                    local dd = di.data
+                    if #dd > 0 and checked(dd) > 0 then
+                        m = m + 1
+                        d[m] = di
+                    end
+                end
+            end
+            if m < n then
+                for i=n,m+1,-1 do
+                    d[i] = nil
+                end
+            end
+            return m
+        end
+    end
+
+    function checks.mrow(di)
+--         local d = di.data
+--         if d then
+--             checked(d)
+--         end
+    end
+
+    -- we can move more checks here
+
+    local function flatten(di)
+        local r = di.__p__
+        while r do
+            local d = r.data
+            local n = #d
+            if d and n > 1 then
+                n = checked(d)
+            end
+            local tg = r.tg
+            if n == 1 and (tg == "mtext" or tg == "mrow") then
+                r.skip = "comment" -- weird error
+                r = r.__p__
+            else
+                break
+            end
+        end
+    end
+
+    function checks.mtable(di)
+        flatten(di)
+        local d = di.data
+        for i=1,#d do
+            local d = d[i]
+            if d.tg == "mtr" then
+                local d = d.data
+                for i=1,#d do
+                    local d = d[i]
+                    if d.tg == "mtd" then
+                        -- okay
+                    elseif d.content then
+                        d.content = ""
                     else
-                        di.attributes = { mathvariant = "normal" }
+                        d.skip = "comment" -- weird error
+                    end
+                end
+            elseif d.content then
+                d.content = ""
+            else
+                d.skip = "comment" -- weird error
+            end
+        end
+    end
+
+    do
+
+        local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
+
+        function extras.mi(di,element,n,fulltag) -- check with content
+            local str = di.data[1].content
+            if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
+                for v in utfvalues(str) do
+                    if (v >= a and v <= z) or (v >= A and v <= Z) then
+                        local a = di.attributes
+                        if a then
+                            a.mathvariant = "normal"
+                        else
+                            di.attributes = { mathvariant = "normal" }
+                        end
                     end
                 end
             end
         end
+
     end
 
     function extras.msub(di,element,n,fulltag)
@@ -2380,7 +2481,7 @@ do
                     if check then
                         check(d)
                     end
-                    checktree(d)
+                    checktree(d) -- so parts can pass twice
                 end
             end
         end
@@ -3576,6 +3677,15 @@ local htmltemplate = [[
         report_export("saving xhtml variant in %a",xhtmlfilename)
 
         local xmltree = cleanxhtmltree(xml.convert(result))
+
+-- local xmltree = xml.convert(result)
+-- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
+--     print(c)
+-- end
+-- for c in xml.collected(xmltree,"mtext/mrow") do
+--     print(c)
+-- end
+-- local xmltree = cleanxhtmltree(xmltree)
 
         xml.save(xmltree,xhtmlfilename)
 

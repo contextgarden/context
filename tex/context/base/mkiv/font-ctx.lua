@@ -1673,6 +1673,15 @@ do  -- else too many locals
         return infofont
     end
 
+    -- abstract interfacing
+
+    implement { name = "tf", actions = function() setmacro("fontalternative","tf") end }
+    implement { name = "bf", actions = function() setmacro("fontalternative","bf") end }
+    implement { name = "it", actions = function() setmacro("fontalternative","it") end }
+    implement { name = "sl", actions = function() setmacro("fontalternative","sl") end }
+    implement { name = "bi", actions = function() setmacro("fontalternative","bi") end }
+    implement { name = "bs", actions = function() setmacro("fontalternative","bs") end }
+
 end
 
 local enable_auto_r_scale = false

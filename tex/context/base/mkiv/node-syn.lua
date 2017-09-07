@@ -246,23 +246,19 @@ function synctex.blockfilename(name)
 end
 
 function synctex.setfilename(name,line)
-if paused == 0 then
-    if force_synctex_tag and name then
+    if paused == 0 and force_synctex_tag and name then
         force_synctex_tag(sttags[name])
         if line then
             force_synctex_line(line)
         end
     end
 end
-end
 
 function synctex.resetfilename()
-if paused == 0 then
-    if force_synctex_tag then
+    if paused == 0 and force_synctex_tag then
         force_synctex_tag(0)
         force_synctex_line(0)
     end
-end
 end
 
 -- the node stuff
@@ -705,6 +701,8 @@ function synctex.finish()
         removefile(tmpfile)
     end
 end
+
+local filename = nil
 
 function synctex.pause()
     paused = paused + 1
