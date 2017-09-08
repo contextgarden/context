@@ -866,8 +866,25 @@
      \alignmark\alignmark
    \math_matrix_stop_cell}
 
-\def\math_matrix_make_pickup
-   {\gdef\NC{\gdef\NC{\aligntab}}}
+\newconditional\c_math_matrix_first
+
+\def\math_matrix_NR
+  {\aligntab\omit
+   \math_matrix_stop_row
+   \math_matrix_pickup
+   \crcr
+   \math_matrix_start_row}
+
+\def\math_matrix_NC
+  {\ifconditional\c_math_matrix_first
+     \expandafter\math_matrix_NC_yes
+   \else
+     \expandafter\math_matrix_NC_nop
+   \fi}
+
+\def\math_matrix_pickup{\global\settrue \c_math_matrix_first}
+\def\math_matrix_NC_yes{\global\setfalse\c_math_matrix_first}
+\def\math_matrix_NC_nop{\aligntab} % avoids lookahead
 
 % \def\math_matrix_stop_wrapup
 %   {\crcr
@@ -879,17 +896,12 @@
   {\dontleavehmode
    \bgroup
    \tabskip\zeropoint
-   \math_matrix_make_pickup
-   \def\NR{%
-     \aligntab\omit
-     \math_matrix_stop_row
-     \math_matrix_make_pickup
-     \crcr
-     \math_matrix_start_row
-   }%
+   \math_matrix_pickup
+   \let\NR\math_matrix_NR
+   \let\NC\math_matrix_NC
+   \let\MC\math_matrix_NC
    %
    \let\endmath\relax
-   \def\MC{\NC}%
    %
    \setbox\nextbox\vbox\bgroup
    \math_matrix_start_table
@@ -942,8 +954,8 @@
    \rawprocesscommacommand[\mathmatrixparameter\c!align]\math_matrix_set_columns_step}
 
 \unexpanded\def\math_matrix_start#1%
-  {\pushmacro\NC % not tested that well
-   \begingroup
+  {\begingroup
+   \globalpushmacro\c_math_matrix_first
    \edef\currentmathmatrix{#1}%
    \dosingleempty\math_matrix_start_indeed}
 
@@ -958,8 +970,8 @@
 
 \def\math_matrix_stop
   {\math_matrix_stop_processing
-   \endgroup
-   \popmacro\NC}
+   \globalpopmacro\c_math_matrix_first
+   \endgroup}
 
 % vcenter:
 %
