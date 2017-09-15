@@ -2128,9 +2128,9 @@ local function readdata(f,offset,specification)
                 if factors then
                     specification.factors = factors
                     fontdata.factors = factors
-                    report("factors: % t",factors)
-                else
-                    report("bad factors")
+             --     report("factors: % t",factors)
+             -- else
+             --     report("bad factors")
                 end
             else
              -- report("unknown instance")

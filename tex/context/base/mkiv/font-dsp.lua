@@ -2046,8 +2046,8 @@ do
 
     local function resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
 
-        local sequences      = fontdata.sequences   or { }
-        local sublookuplist  = fontdata.sublookups  or { }
+        local sequences      = fontdata.sequences  or { }
+        local sublookuplist  = fontdata.sublookups or { }
         fontdata.sequences   = sequences
         fontdata.sublookups  = sublookuplist
         local nofsublookups  = #sublookuplist
@@ -2061,6 +2061,8 @@ do
         local nofglyphs      = fontdata.nofglyphs or #glyphs
         local noflookups     = #lookups
         local lookupprefix   = sub(what,2,2) -- g[s|p][ub|os]
+        --
+        local usedlookups    = false -- setmetatableindex("number")
         --
         for lookupid=1,noflookups do
             local lookup     = lookups[lookupid]
@@ -2131,10 +2133,24 @@ do
                                                 current[i] = tohash(current[i])
                                             end
                                         end
+                                    else
+                                        -- weird lookup
                                     end
                                     if after then
                                         for i=1,#after do
                                             after[i] = tohash(after[i])
+                                        end
+                                    end
+                                    if usedlookups then
+                                        local lookups = rule.lookups
+                                        if lookups then
+                                            for k, v in next, lookups do
+                                                if v then
+                                                    for k, v in next, v do
+                                                        usedlookups[v] = usedlookups[v] + 1
+                                                    end
+                                                end
+                                            end
                                         end
                                     end
                                 end
@@ -2186,6 +2202,10 @@ do
             else
                 report("no handler for lookup %a with type %a",lookupid,lookuptype)
             end
+        end
+
+        if usedlookups then
+            report("used %s lookups: % t",what,sortedkeys(usedlookups))
         end
 
         -- When we have a context, we have sublookups that resolve into lookups for which we need to
@@ -2243,7 +2263,7 @@ do
                                                     if d then
                                                         nofsublookups = nofsublookups + 1
                                                      -- report("registering %i as sublookup %i",lookupid,nofsublookups)
-                                                        h = {
+                                                        local l = {
                                                             index     = nofsublookups, -- handy for tracing
                                                             name      = f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
                                                             derived   = true,          -- handy for tracing
@@ -2254,7 +2274,7 @@ do
                                                             flags     = d.flags,
                                                          -- chain     = d.chain,
                                                         }
-                                                        sublookuplist[nofsublookups] = copy(h) -- we repack later
+                                                        sublookuplist[nofsublookups] = copy(l) -- we repack later
                                                         sublookuphash[lookupid] = nofsublookups
                                                         sublookupcheck[lookupid] = 1
                                                         h = nofsublookups
@@ -2277,7 +2297,9 @@ do
                                             end
                                         end
                                     end
+-- report("before : % t",rlookups[index])
                                     rlookups[index] = noffound > 0 and found or false
+-- report("after  : % t",rlookups[index])
                                 else
                                     rlookups[index] = false
                                 end

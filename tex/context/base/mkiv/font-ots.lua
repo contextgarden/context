@@ -543,12 +543,13 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
             -- we can be more clever here: "not deletemarks or (skiphash and not skiphash[char])"
             -- and such:
             elseif not deletemarks then
+                -- we can get a loop when the font expects otherwise (i.e. unexpected deletemarks)
                 setligaindex(start,baseindex + getligaindex(start,componentindex))
                 if trace_marks then
                     logwarning("%s: keep mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
                 end
                 local n = copy_node(start)
-                copyinjection(n,start)
+                copyinjection(n,start) -- is this ok ? we position later anyway
                 head, current = insert_node_after(head,current,n) -- unlikely that mark has components
             elseif trace_marks then
                 logwarning("%s: delete mark %s",pref(dataset,sequence),gref(char))
@@ -2352,7 +2353,7 @@ end
 -- are real torture tests because they have many steps with one context (having
 -- multiple contexts makes more sense) also because we (can) reduce them. Instead of
 -- a match boolean variable and check for that I decided to use a goto with labels
--- instead. This is one of the cases where it makes th ecode more readable and we
+-- instead. This is one of the cases where it makes the code more readable and we
 -- might even gain a bit performance.
 
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,skiphash)
@@ -2381,50 +2382,295 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
           startnext    = getboth(start)
     local done      -- = false
 
-    -- hm, contexts can also be nested
+    -- we can have multiple hits and as we scan (currently) all we need to check
+    -- if we have a match ... contextchains have no real coverage table (with
+    -- unique entries)
 
-    for k=1,contexts.n do -- or #contexts do
+    -- fonts can have many steps (each doing one check) or many contexts
+
+    -- todo: make a per-char cache so that we have small contexts (when we have a context
+    -- n == 1 and otherwise it can be more so we can even distingish n == 1 or more)
+
+    local nofcontexts = contexts.n -- #contexts
+
+    local startchar = nofcontext == 1 or ischar(start,currentfont) -- only needed in a chain
+
+
+    for k=1,nofcontexts do
+
+        local ck  = contexts[k]
+        local seq = ck[3]
+        local f   = ck[4] -- first current
+        if not startchar or not seq[f][startchar] then
+            -- report("no hit in %a at %i of %i contexts",sequence.type,k,nofcontexts)
+            goto next
+        end
+        local s       = seq.n -- or #seq
+        local l       = ck[5] -- last current
         local current = start
         local last    = start
-        local ck      = contexts[k]
-        local seq     = ck[3]
-     -- local s       = #seq
-        local s       = seq.n -- or #seq
-        -- f..l = mid string
-        if s == 1 then
-            -- this seldom happens as it makes no sense (bril, ebgaramond, husayni, minion)
-            local char = ischar(current,currentfont)
-            if char and not seq[1][char] then
+
+        -- current match
+
+        if l > f then
+            -- before/current/after | before/current | current/after
+            local discfound -- = nil
+            local n = f + 1
+            last = startnext -- the second in current (first already matched)
+            while n <= l do
+                if postreplace and not last then
+                    last      = getnext(sweepnode)
+                    sweeptype = nil
+                end
+                if last then
+                    local char, id = ischar(last,currentfont)
+                    if char then
+                        if skiphash and skiphash[char] then
+                            skipped = true
+                            if trace_skips then
+                                show_skip(dataset,sequence,char,ck,classes[char])
+                            end
+                            last = getnext(last)
+                        elseif seq[n][char] then
+                            if n < l then
+                                last = getnext(last)
+                            end
+                            n = n + 1
+                        elseif discfound then
+                            notmatchreplace[discfound] = true
+                            if notmatchpre[discfound] then
+                                goto next
+                            else
+                                break
+                            end
+                        else
+                            goto next
+                        end
+                    elseif char == false then
+                        if discfound then
+                            notmatchreplace[discfound] = true
+                            if notmatchpre[discfound] then
+                                goto next
+                            else
+                                break
+                            end
+                        else
+                            goto next
+                        end
+                    elseif id == disc_code then
+                 -- elseif id == disc_code and (not discs or discs[last]) then
+                        diskseen              = true
+                        discfound             = last
+                        notmatchpre[last]     = nil
+                        notmatchpost[last]    = true
+                        notmatchreplace[last] = nil
+                        local pre, post, replace = getdisc(last)
+                        if pre then
+                            local n = n
+                            while pre do
+                                if seq[n][getchar(pre)] then
+                                    n = n + 1
+                                    if n > l then
+                                        break
+                                    end
+                                    pre = getnext(pre)
+                                else
+                                    notmatchpre[last] = true
+                                    break
+                                end
+                            end
+                            if n <= l then
+                                notmatchpre[last] = true
+                            end
+                        else
+                            notmatchpre[last] = true
+                        end
+                        if replace then
+                            -- so far we never entered this branch
+                            while replace do
+                                if seq[n][getchar(replace)] then
+                                    n = n + 1
+                                    if n > l then
+                                        break
+                                    end
+                                    replace = getnext(replace)
+                                else
+                                    notmatchreplace[last] = true
+                                    if notmatchpre[last] then
+                                        goto next
+                                    else
+                                        break
+                                    end
+                                end
+                            end
+                            -- why here again
+                            if notmatchpre[last] then
+                                goto next
+                            end
+                        end
+                        -- maybe only if match
+                        last = getnext(last)
+                    else
+                        goto next
+                    end
+                else
+                    goto next
+                end
+            end
+        end
+
+        -- before
+
+        if f > 1 then
+            if startprev then
+                local prev = startprev
+                if prereplace and prev == checkdisc then
+                    prev = getprev(sweepnode)
+                end
+                if prev then
+                    local discfound -- = nil
+                    local n = f - 1
+                    while n >= 1 do
+                        if prev then
+                            local char, id = ischar(prev,currentfont)
+                            if char then
+                                if skiphash and skiphash[char] then
+                                    skipped = true
+                                    if trace_skips then
+                                        show_skip(dataset,sequence,char,ck,classes[char])
+                                    end
+                                    prev = getprev(prev)
+                                elseif seq[n][char] then
+                                    if n > 1 then
+                                        prev = getprev(prev)
+                                    end
+                                    n = n - 1
+                                elseif discfound then
+                                    notmatchreplace[discfound] = true
+                                    if notmatchpost[discfound] then
+                                        goto next
+                                    else
+                                        break
+                                    end
+                                else
+                                    goto next
+                                end
+                            elseif char == false then
+                                if discfound then
+                                    notmatchreplace[discfound] = true
+                                    if notmatchpost[discfound] then
+                                        goto next
+                                    end
+                                else
+                                    goto next
+                                end
+                                break
+                            elseif id == disc_code then
+                         -- elseif id == disc_code and (not discs or discs[prev]) then
+                                -- the special case: f i where i becomes dottless i ..
+                                diskseen              = true
+                                discfound             = prev
+                                notmatchpre[prev]     = true
+                                notmatchpost[prev]    = nil
+                                notmatchreplace[prev] = nil
+                                local pre, post, replace, pretail, posttail, replacetail = getdisc(prev,true)
+                                if pre ~= start and post ~= start and replace ~= start then
+                                    if post then
+                                        local n = n
+                                        while posttail do
+                                            if seq[n][getchar(posttail)] then
+                                                n = n - 1
+                                                if posttail == post or n < 1 then
+                                                    break
+                                                else
+                                                    posttail = getprev(posttail)
+                                                end
+                                            else
+                                                notmatchpost[prev] = true
+                                                break
+                                            end
+                                        end
+                                        if n >= 1 then
+                                            notmatchpost[prev] = true
+                                        end
+                                    else
+                                        notmatchpost[prev] = true
+                                    end
+                                    if replace then
+                                        -- we seldom enter this branch (e.g. on brill efficient)
+                                        while replacetail do
+                                            if seq[n][getchar(replacetail)] then
+                                                n = n - 1
+                                                if replacetail == replace or n < 1 then
+                                                    break
+                                                else
+                                                    replacetail = getprev(replacetail)
+                                                end
+                                            else
+                                                notmatchreplace[prev] = true
+                                                if notmatchpost[prev] then
+                                                    goto next
+                                                else
+                                                    break
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                                prev = getprev(prev)
+                         -- elseif id == glue_code and seq[n][32] and isspace(prev,threshold,id) then
+                         -- elseif seq[n][32] and spaces[prev] then
+                         --     n = n - 1
+                         --     prev = getprev(prev)
+                            elseif id == glue_code then
+                                local sn = seq[n]
+                                if (sn[32] and spaces[prev]) or sn[0xFFFC] then
+                                    n = n - 1
+                                    prev = getprev(prev)
+                                else
+                                    goto next
+                                end
+                            elseif seq[n][0xFFFC] then
+                                n = n - 1
+                                prev = getprev(prev)
+                            else
+                                goto next
+                            end
+                        else
+                            goto next
+                        end
+                    end
+                else
+                    goto next
+                end
+            else
                 goto next
             end
-        else
-            -- maybe we need a better space check (maybe check for glue or category or combination)
-            local f = ck[4]
-            local l = ck[5]
-            -- current match
-            -- seq[f][ischar(current,currentfont)] is not nil
-            if l > f then
-                -- before/current/after | before/current | current/after
+        end
+
+        -- after
+
+        if s > l then
+            local current = last and getnext(last)
+            if not current and postreplace then
+                current   = getnext(sweepnode)
+            end
+            if current then
                 local discfound -- = nil
-                local n = f + 1
-                last = startnext -- the second in current (first already matched)
-                while n <= l do
-                    if postreplace and not last then
-                        last      = getnext(sweepnode)
-                        sweeptype = nil
-                    end
-                    if last then
-                        local char, id = ischar(last,currentfont)
+                local n = l + 1
+                while n <= s do
+                    if current then
+                        local char, id = ischar(current,currentfont)
                         if char then
                             if skiphash and skiphash[char] then
                                 skipped = true
                                 if trace_skips then
                                     show_skip(dataset,sequence,char,ck,classes[char])
                                 end
-                                last = getnext(last)
+                                current = getnext(current) -- was absent
                             elseif seq[n][char] then
-                                if n < l then
-                                    last = getnext(last)
+                                if n < s then -- new test
+                                    current = getnext(current) -- was absent
                                 end
                                 n = n + 1
                             elseif discfound then
@@ -2449,318 +2695,85 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                 goto next
                             end
                         elseif id == disc_code then
-                     -- elseif id == disc_code and (not discs or discs[last]) then
-                            diskseen              = true
-                            discfound             = last
-                            notmatchpre[last]     = nil
-                            notmatchpost[last]    = true
-                            notmatchreplace[last] = nil
-                            local pre, post, replace = getdisc(last)
+                     -- elseif id == disc_code and (not discs or discs[current]) then
+                            diskseen                 = true
+                            discfound                = current
+                            notmatchpre[current]     = nil
+                            notmatchpost[current]    = true
+                            notmatchreplace[current] = nil
+                            local pre, post, replace = getdisc(current)
                             if pre then
                                 local n = n
                                 while pre do
                                     if seq[n][getchar(pre)] then
                                         n = n + 1
-                                        if n > l then
+                                        if n > s then
                                             break
+                                        else
+                                            pre = getnext(pre)
                                         end
-                                        pre = getnext(pre)
                                     else
-                                        notmatchpre[last] = true
+                                        notmatchpre[current] = true
                                         break
                                     end
                                 end
-                                if n <= l then
-                                    notmatchpre[last] = true
+                                if n <= s then
+                                    notmatchpre[current] = true
                                 end
                             else
-                                notmatchpre[last] = true
+                                notmatchpre[current] = true
                             end
                             if replace then
                                 -- so far we never entered this branch
                                 while replace do
                                     if seq[n][getchar(replace)] then
                                         n = n + 1
-                                        if n > l then
+                                        if n > s then
                                             break
+                                        else
+                                            replace = getnext(replace)
                                         end
-                                        replace = getnext(replace)
                                     else
-                                        notmatchreplace[last] = true
-                                        if notmatchpre[last] then
+                                        notmatchreplace[current] = true
+                                        -- different than others, needs checking if "not" is okay
+                                        if not notmatchpre[current] then
                                             goto next
                                         else
                                             break
                                         end
                                     end
-                                end
-                                -- why here again
-                                if notmatchpre[last] then
-                                    goto next
-                                end
-                            end
-                            -- maybe only if match
-                            last = getnext(last)
-                        else
-                            goto next
-                        end
-                    else
-                        goto next
-                    end
-                end
-            end
-            -- before
-            if f > 1 then
-                if startprev then
-                    local prev = startprev
-                    if prereplace and prev == checkdisc then
-                        prev = getprev(sweepnode)
-                    end
-                    if prev then
-                        local discfound -- = nil
-                        local n = f - 1
-                        while n >= 1 do
-                            if prev then
-                                local char, id = ischar(prev,currentfont)
-                                if char then
-                                    if skiphash and skiphash[char] then
-                                        skipped = true
-                                        if trace_skips then
-                                            show_skip(dataset,sequence,char,ck,classes[char])
-                                        end
-                                        prev = getprev(prev)
-                                    elseif seq[n][char] then
-                                        if n > 1 then
-                                            prev = getprev(prev)
-                                        end
-                                        n = n - 1
-                                    elseif discfound then
-                                        notmatchreplace[discfound] = true
-                                        if notmatchpost[discfound] then
-                                            goto next
-                                        else
-                                            break
-                                        end
-                                    else
-                                        goto next
-                                    end
-                                elseif char == false then
-                                    if discfound then
-                                        notmatchreplace[discfound] = true
-                                        if notmatchpost[discfound] then
-                                            goto next
-                                        end
-                                    else
-                                        goto next
-                                    end
-                                    break
-                                elseif id == disc_code then
-                             -- elseif id == disc_code and (not discs or discs[prev]) then
-                                    -- the special case: f i where i becomes dottless i ..
-                                    diskseen              = true
-                                    discfound             = prev
-                                    notmatchpre[prev]     = true
-                                    notmatchpost[prev]    = nil
-                                    notmatchreplace[prev] = nil
-                                    local pre, post, replace, pretail, posttail, replacetail = getdisc(prev,true)
-                                    if pre ~= start and post ~= start and replace ~= start then
-                                        if post then
-                                            local n = n
-                                            while posttail do
-                                                if seq[n][getchar(posttail)] then
-                                                    n = n - 1
-                                                    if posttail == post or n < 1 then
-                                                        break
-                                                    else
-                                                        posttail = getprev(posttail)
-                                                    end
-                                                else
-                                                    notmatchpost[prev] = true
-                                                    break
-                                                end
-                                            end
-                                            if n >= 1 then
-                                                notmatchpost[prev] = true
-                                            end
-                                        else
-                                            notmatchpost[prev] = true
-                                        end
-                                        if replace then
-                                            -- we seldom enter this branch (e.g. on brill efficient)
-                                            while replacetail do
-                                                if seq[n][getchar(replacetail)] then
-                                                    n = n - 1
-                                                    if replacetail == replace or n < 1 then
-                                                        break
-                                                    else
-                                                        replacetail = getprev(replacetail)
-                                                    end
-                                                else
-                                                    notmatchreplace[prev] = true
-                                                    if notmatchpost[prev] then
-                                                        goto next
-                                                    else
-                                                        break
-                                                    end
-                                                end
-                                            end
-                                        end
-                                    end
-                                    prev = getprev(prev)
-                             -- elseif id == glue_code and seq[n][32] and isspace(prev,threshold,id) then
-                             -- elseif seq[n][32] and spaces[prev] then
-                             --     n = n - 1
-                             --     prev = getprev(prev)
-                                elseif id == glue_code then
-                                    local sn = seq[n]
-                                    if (sn[32] and spaces[prev]) or sn[0xFFFC] then
-                                        n = n - 1
-                                        prev = getprev(prev)
-                                    else
-                                        goto next
-                                    end
-                                elseif seq[n][0xFFFC] then
-                                    n = n - 1
-                                    prev = getprev(prev)
-                                else
-                                    goto next
                                 end
                             else
-                                goto next
+                                -- skip 'm
                             end
-                        end
-                    else
-                        goto next
-                    end
-                else
-                    goto next
-                end
-            end
-            -- after
-            if s > l then
-                local current = last and getnext(last)
-                if not current and postreplace then
-                    current   = getnext(sweepnode)
-                end
-                if current then
-                    local discfound -- = nil
-                    local n = l + 1
-                    while n <= s do
-                        if current then
-                            local char, id = ischar(current,currentfont)
-                            if char then
-                                if skiphash and skiphash[char] then
-                                    skipped = true
-                                    if trace_skips then
-                                        show_skip(dataset,sequence,char,ck,classes[char])
-                                    end
-                                    current = getnext(current) -- was absent
-                                elseif seq[n][char] then
-                                    if n < s then -- new test
-                                        current = getnext(current) -- was absent
-                                    end
-                                    n = n + 1
-                                elseif discfound then
-                                    notmatchreplace[discfound] = true
-                                    if notmatchpre[discfound] then
-                                        goto next
-                                    else
-                                        break
-                                    end
-                                else
-                                    goto next
-                                end
-                            elseif char == false then
-                                if discfound then
-                                    notmatchreplace[discfound] = true
-                                    if notmatchpre[discfound] then
-                                        goto next
-                                    else
-                                        break
-                                    end
-                                else
-                                    goto next
-                                end
-                            elseif id == disc_code then
-                         -- elseif id == disc_code and (not discs or discs[current]) then
-                                diskseen                 = true
-                                discfound                = current
-                                notmatchpre[current]     = nil
-                                notmatchpost[current]    = true
-                                notmatchreplace[current] = nil
-                                local pre, post, replace = getdisc(current)
-                                if pre then
-                                    local n = n
-                                    while pre do
-                                        if seq[n][getchar(pre)] then
-                                            n = n + 1
-                                            if n > s then
-                                                break
-                                            else
-                                                pre = getnext(pre)
-                                            end
-                                        else
-                                            notmatchpre[current] = true
-                                            break
-                                        end
-                                    end
-                                    if n <= s then
-                                        notmatchpre[current] = true
-                                    end
-                                else
-                                    notmatchpre[current] = true
-                                end
-                                if replace then
-                                    -- so far we never entered this branch
-                                    while replace do
-                                        if seq[n][getchar(replace)] then
-                                            n = n + 1
-                                            if n > s then
-                                                break
-                                            else
-                                                replace = getnext(replace)
-                                            end
-                                        else
-                                            notmatchreplace[current] = true
-                                            -- different than others, needs checking if "not" is okay
-                                            if not notmatchpre[current] then
-                                                goto next
-                                            else
-                                                break
-                                            end
-                                        end
-                                    end
-                                else
-                                    -- skip 'm
-                                end
-                                current = getnext(current)
-                         -- elseif id == glue_code and seq[n][32] and isspace(current,threshold,id) then
-                         -- elseif seq[n][32] and spaces[current] then
-                         --     n = n + 1
-                         --     current = getnext(current)
-                            elseif id == glue_code then
-                                local sn = seq[n]
-                                if (sn[32] and spaces[current]) or sn[0xFFFC] then
-                                    n = n + 1
-                                    current = getnext(current)
-                                else
-                                    goto next
-                                end
-                            elseif seq[n][0xFFFC] then
+                            current = getnext(current)
+                     -- elseif id == glue_code and seq[n][32] and isspace(current,threshold,id) then
+                     -- elseif seq[n][32] and spaces[current] then
+                     --     n = n + 1
+                     --     current = getnext(current)
+                        elseif id == glue_code then
+                            local sn = seq[n]
+                            if (sn[32] and spaces[current]) or sn[0xFFFC] then
                                 n = n + 1
                                 current = getnext(current)
                             else
                                 goto next
                             end
+                        elseif seq[n][0xFFFC] then
+                            n = n + 1
+                            current = getnext(current)
                         else
                             goto next
                         end
+                    else
+                        goto next
                     end
-                else
-                    goto next
                 end
+            else
+                goto next
             end
         end
+
         if trace_contexts then
             chaintrac(head,start,dataset,sequence,rlmode,skipped and skiphash,ck,true)
         end

@@ -219,6 +219,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         -- --reload --force --simple option).
 
         loadmodule('font-ini.lua')
+        loadmodule('luatex-fonts-mis.lua')
         loadmodule('font-con.lua')
         loadmodule('luatex-fonts-enc.lua') -- will load font-age on demand
         loadmodule('font-cid.lua')

@@ -15,8 +15,7 @@ local allocate   = utilities.storage.allocate
 fonts            = fonts or { }
 local fonts      = fonts
 
-fonts.hashes     = { identifiers = allocate() }
-
+fonts.hashes     = fonts.hashes     or { identifiers = allocate() }
 fonts.tables     = fonts.tables     or { }
 fonts.helpers    = fonts.helpers    or { }
 fonts.tracers    = fonts.tracers    or { } -- for the moment till we have move to moduledata

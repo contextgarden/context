@@ -2655,10 +2655,6 @@ function readers.expand(data)
                         end
                     end
 
-                    checkmerge(sequence)
-                    checkflags(sequence,resources)
-                    checksteps(sequence)
-
                     for i=1,nofsteps do
                         local step = steps[i]
                         local baseclasses = step.baseclasses
@@ -2675,13 +2671,14 @@ function readers.expand(data)
                         end
                         local rules = step.rules
                         if rules then
-                            local rulehash   = { n = 0 }
+                            local rulehash   = { n = 0 } -- is contexts in font-ots
                             local rulesize   = 0
                             local coverage   = { }
                             local lookuptype = sequence.type
+                            local nofrules   = #rules
                             step.coverage    = coverage -- combined hits
-                            for nofrules=1,#rules do
-                                local rule         = rules[nofrules]
+                            for currentrule=1,nofrules do
+                                local rule         = rules[currentrule]
                                 local current      = rule.current
                                 local before       = rule.before
                                 local after        = rule.after
@@ -2712,7 +2709,7 @@ function readers.expand(data)
                                     for i=1,#lookups do
                                         local lookups = lookups[i]
                                         if lookups then
-                                            for k, v in next, lookups do
+                                            for k, v in next, lookups do -- actually this one is indexed
                                                 local lookup = sublookups[v]
                                                 if lookup then
                                                     lookups[k] = lookup
@@ -2728,9 +2725,8 @@ function readers.expand(data)
                                 end
                                 if sequence[1] then -- we merge coverage into one
                                     sequence.n = #sequence -- tiny speedup
-                                    rulesize = rulesize + 1
-                                    rulehash[rulesize] = {
-                                        nofrules,     -- 1
+                                    local ruledata = {
+                                        currentrule,  -- 1 -- original rule number, only use this for tracing!
                                         lookuptype,   -- 2
                                         sequence,     -- 3
                                         start,        -- 4
@@ -2739,19 +2735,56 @@ function readers.expand(data)
                                         replacements, -- 7
                                         subtype,      -- 8
                                     }
-                                    for unic in next, sequence[start] do
-                                        local cu = coverage[unic]
-                                        if not cu then
-                                            coverage[unic] = rulehash -- can now be done cleaner i think
-                                        else
-                                            -- we can have a problem
-                                        end
-                                    end
+                                    --
+                                    -- possible optimization: per [unic] a rulehash, but beware:
+                                    -- contexts have unique coverage and chains can have multiple
+                                    -- hits (rules) per coverage entry
+                                    --
+                                    -- so: we can combine multiple steps as well as multiple rules
+                                    -- but that takes careful checking, in which case we can go the
+                                    -- step list approach and turn contexts into steps .. in fact,
+                                    -- if we turn multiple contexts into steps we're already ok as
+                                    -- steps gets a coverage hash by metatable
+                                    --
+                                    rulesize = rulesize + 1
+                                    rulehash[rulesize] = ruledata
                                     rulehash.n = rulesize -- tiny speedup
+                                    --
+                                    if true then -- nofrules > 1
+
+                                        for unic in next, sequence[start] do
+                                            local cu = coverage[unic]
+                                            if cu then
+                                                local n = #cu+1
+                                                cu[n] = ruledata
+                                                cu.n = n
+                                            else
+                                                coverage[unic] = { ruledata, n = 1 }
+                                            end
+                                        end
+
+                                    else
+
+                                        for unic in next, sequence[start] do
+                                            local cu = coverage[unic]
+                                            if cu then
+                                                -- we can have a contextchains with many matches which we
+                                                -- can actually optimize
+                                            else
+                                                coverage[unic] = rulehash
+                                            end
+                                        end
+
+                                    end
                                 end
                             end
                         end
                     end
+
+                    checkmerge(sequence)
+                    checkflags(sequence,resources)
+                    checksteps(sequence)
+
                 end
             end
         end

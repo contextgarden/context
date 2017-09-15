@@ -414,7 +414,7 @@ function scripts.fonts.list()
         end
     elseif pattern then
         --~ mtxrun --script font --list --pattern=*somename*
-       list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
+        list_matches(fonts.names.list(string.topattern(pattern,true),reload,all),info)
     elseif given then
         --~ mtxrun --script font --list somename
         list_matches(fonts.names.list(given,reload,all),info)

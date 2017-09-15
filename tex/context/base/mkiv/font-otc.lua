@@ -466,10 +466,10 @@ local function addfeature(data,feature,specifications)
                                     subtype = lookup.type
                                 end
                             else
-                                lookups[k] = { false } -- new
+                                lookups[k] = false -- { false } -- new
                             end
                         else
-                            lookups[k] = { false } -- new
+                            lookups[k] = false -- { false } -- new
                         end
                     end
                 end

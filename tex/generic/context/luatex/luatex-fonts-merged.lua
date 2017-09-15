@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/08/17 17:24:08
+-- merge date  : 09/15/17 20:03:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -7550,7 +7550,7 @@ if not modules then modules={} end modules ['font-ini']={
 local allocate=utilities.storage.allocate
 fonts=fonts or {}
 local fonts=fonts
-fonts.hashes={ identifiers=allocate() }
+fonts.hashes=fonts.hashes   or { identifiers=allocate() }
 fonts.tables=fonts.tables   or {}
 fonts.helpers=fonts.helpers  or {}
 fonts.tracers=fonts.tracers  or {} 
@@ -7562,6 +7562,38 @@ fonts.loggers={ register=function() end }
 if context then
   fontloader=nil
 end
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['luatex-font-mis']={
+  version=1.001,
+  comment="companion to luatex-*.tex",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+if context then
+  texio.write_nl("fatal error: this module is not for context")
+  os.exit()
+end
+local currentfont=font.current
+local hashes=fonts.hashes
+local identifiers=hashes.identifiers or {}
+local marks=hashes.marks    or {}
+hashes.identifiers=identifiers
+hashes.marks=marks
+table.setmetatableindex(marks,function(t,k)
+  if k==true then
+    return marks[currentfont()]
+  else
+    local resources=identifiers[k].resources or {}
+    local marks=resources.marks or {}
+    t[k]=marks
+    return marks
+  end
+end)
 
 end -- closure
 
@@ -11087,9 +11119,6 @@ local function readdata(f,offset,specification)
         if factors then
           specification.factors=factors
           fontdata.factors=factors
-          report("factors: % t",factors)
-        else
-          report("bad factors")
         end
       else
       end
@@ -16029,7 +16058,7 @@ do
   end
   local f_lookupname=formatters["%s_%s_%s"]
   local function resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
-    local sequences=fontdata.sequences  or {}
+    local sequences=fontdata.sequences or {}
     local sublookuplist=fontdata.sublookups or {}
     fontdata.sequences=sequences
     fontdata.sublookups=sublookuplist
@@ -16044,6 +16073,7 @@ do
     local nofglyphs=fontdata.nofglyphs or #glyphs
     local noflookups=#lookups
     local lookupprefix=sub(what,2,2)
+    local usedlookups=false
     for lookupid=1,noflookups do
       local lookup=lookups[lookupid]
       local lookuptype=lookup.type
@@ -16107,10 +16137,23 @@ do
                         current[i]=tohash(current[i])
                       end
                     end
+                  else
                   end
                   if after then
                     for i=1,#after do
                       after[i]=tohash(after[i])
+                    end
+                  end
+                  if usedlookups then
+                    local lookups=rule.lookups
+                    if lookups then
+                      for k,v in next,lookups do
+                        if v then
+                          for k,v in next,v do
+                            usedlookups[v]=usedlookups[v]+1
+                          end
+                        end
+                      end
                     end
                   end
                 end
@@ -16159,6 +16202,9 @@ do
         report("no handler for lookup %a with type %a",lookupid,lookuptype)
       end
     end
+    if usedlookups then
+      report("used %s lookups: % t",what,sortedkeys(usedlookups))
+    end
     local reported={}
     local function report_issue(i,what,sequence,kind)
       local name=sequence.name
@@ -16200,7 +16246,7 @@ do
                           local d=lookup.done
                           if d then
                             nofsublookups=nofsublookups+1
-                            h={
+                            local l={
                               index=nofsublookups,
                               name=f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
                               derived=true,
@@ -16210,7 +16256,7 @@ do
                               markclass=d.markclass or nil,
                               flags=d.flags,
                             }
-                            sublookuplist[nofsublookups]=copy(h) 
+                            sublookuplist[nofsublookups]=copy(l) 
                             sublookuphash[lookupid]=nofsublookups
                             sublookupcheck[lookupid]=1
                             h=nofsublookups
@@ -19606,9 +19652,6 @@ function readers.expand(data)
               sequence.markclass=markclasses[markclass]
             end
           end
-          checkmerge(sequence)
-          checkflags(sequence,resources)
-          checksteps(sequence)
           for i=1,nofsteps do
             local step=steps[i]
             local baseclasses=step.baseclasses
@@ -19625,13 +19668,14 @@ function readers.expand(data)
             end
             local rules=step.rules
             if rules then
-              local rulehash={ n=0 }
+              local rulehash={ n=0 } 
               local rulesize=0
               local coverage={}
               local lookuptype=sequence.type
+              local nofrules=#rules
               step.coverage=coverage 
-              for nofrules=1,#rules do
-                local rule=rules[nofrules]
+              for currentrule=1,nofrules do
+                local rule=rules[currentrule]
                 local current=rule.current
                 local before=rule.before
                 local after=rule.after
@@ -19662,7 +19706,7 @@ function readers.expand(data)
                   for i=1,#lookups do
                     local lookups=lookups[i]
                     if lookups then
-                      for k,v in next,lookups do
+                      for k,v in next,lookups do 
                         local lookup=sublookups[v]
                         if lookup then
                           lookups[k]=lookup
@@ -19677,9 +19721,8 @@ function readers.expand(data)
                 end
                 if sequence[1] then 
                   sequence.n=#sequence 
-                  rulesize=rulesize+1
-                  rulehash[rulesize]={
-                    nofrules,
+                  local ruledata={
+                    currentrule,
                     lookuptype,
                     sequence,
                     start,
@@ -19688,18 +19731,36 @@ function readers.expand(data)
                     replacements,
                     subtype,
                   }
-                  for unic in next,sequence[start] do
-                    local cu=coverage[unic]
-                    if not cu then
-                      coverage[unic]=rulehash 
-                    else
+                  rulesize=rulesize+1
+                  rulehash[rulesize]=ruledata
+                  rulehash.n=rulesize
+                  if true then 
+                    for unic in next,sequence[start] do
+                      local cu=coverage[unic]
+                      if cu then
+                        local n=#cu+1
+                        cu[n]=ruledata
+                        cu.n=n
+                      else
+                        coverage[unic]={ ruledata,n=1 }
+                      end
+                    end
+                  else
+                    for unic in next,sequence[start] do
+                      local cu=coverage[unic]
+                      if cu then
+                      else
+                        coverage[unic]=rulehash
+                      end
                     end
                   end
-                  rulehash.n=rulesize 
                 end
               end
             end
           end
+          checkmerge(sequence)
+          checkflags(sequence,resources)
+          checksteps(sequence)
         end
       end
     end
@@ -20875,6 +20936,7 @@ local attributes,nodes,node=attributes,nodes,node
 fonts=fonts
 local hashes=fonts.hashes
 local fontdata=hashes.identifiers
+local fontmarks=hashes.marks
 nodes.injections=nodes.injections or {}
 local injections=nodes.injections
 local tracers=nodes.tracers
@@ -20990,7 +21052,7 @@ function injections.copy(target,source)
     end
   end
 end
-function injections.setligaindex(n,index)
+function injections.setligaindex(n,index) 
   local p=rawget(properties,n)
   if p then
     local i=p.injections
@@ -21170,41 +21232,41 @@ function injections.setmove(current,factor,rlmode,x,injection)
     if not injection then
       injection="injections"
     end
-if rlmode and rlmode<0 then
-    if p then
-      local i=p[injection]
-      if i then
-        i.rightkern=dx+(i.rightkern or 0)
+    if rlmode and rlmode<0 then
+      if p then
+        local i=p[injection]
+        if i then
+          i.rightkern=dx+(i.rightkern or 0)
+        else
+          p[injection]={
+            rightkern=dx,
+          }
+        end
       else
-        p[injection]={
-          rightkern=dx,
+        properties[current]={
+          [injection]={
+            rightkern=dx,
+          },
         }
       end
     else
-      properties[current]={
-        [injection]={
-          rightkern=dx,
-        },
-      }
-    end
-else
-    if p then
-      local i=p[injection]
-      if i then
-        i.leftkern=dx+(i.leftkern or 0)
+      if p then
+        local i=p[injection]
+        if i then
+          i.leftkern=dx+(i.leftkern or 0)
+        else
+          p[injection]={
+            leftkern=dx,
+          }
+        end
       else
-        p[injection]={
-          leftkern=dx,
+        properties[current]={
+          [injection]={
+            leftkern=dx,
+          },
         }
       end
-    else
-      properties[current]={
-        [injection]={
-          leftkern=dx,
-        },
-      }
     end
-end
     return dx,nofregisteredkerns
   else
     return 0,0
@@ -21222,9 +21284,15 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk,checkmar
     if i then
       if i.markmark then
       else
-        i.markx=dx
-        i.marky=dy
-        i.markdir=rlmode or 0
+        if dx~=0 then
+          i.markx=dx
+        end
+        if y~=0 then
+          i.marky=dy
+        end
+        if rlmode then
+          i.markdir=rlmode
+        end
         i.markbase=nofregisteredmarks
         i.markbasenode=base
         i.markmark=mkmk
@@ -21530,12 +21598,12 @@ local function inject_positions_only(head,where)
           local leftkern=i.leftkern
           local rightkern=i.rightkern
           if leftkern and leftkern~=0 then
-if rightkern and leftkern==-rightkern then
-  setoffsets(current,leftkern,false)
-  rightkern=0
-else
-            head=insert_node_before(head,current,fontkern(leftkern))
-end
+            if rightkern and leftkern==-rightkern then
+              setoffsets(current,leftkern,false)
+              rightkern=0
+            else
+              head=insert_node_before(head,current,fontkern(leftkern))
+            end
           end
           if rightkern and rightkern~=0 then
             insert_node_after(head,current,fontkern(rightkern))
@@ -21762,14 +21830,14 @@ local function inject_everything(head,where)
         rightkern=pp.rightkern
       end
     end
+    local markdir=pn.markdir
     if rightkern then 
-      if pn.markdir<0 then
-        ox=px-pn.markx-rightkern
+      ox=px-(pn.markx or 0)-rightkern
+      if markdir and markdir<0 then
         if not pn.markmark then
           ox=ox+(pn.leftkern or 0)
         end
       else
-        ox=px-pn.markx-rightkern 
         if false then
           local leftkern=pp.leftkern
           if leftkern then
@@ -21778,16 +21846,14 @@ local function inject_everything(head,where)
         end
       end
     else
-      if pn.markdir<0 then
-        ox=px-pn.markx
+      ox=px-(pn.markx or 0)
+      if markdir and markdir<0 then
         if not pn.markmark then
           local leftkern=pn.leftkern
           if leftkern then
             ox=ox+leftkern 
           end
         end
-      else
-        ox=px-pn.markx
       end
       if pn.checkmark then
         local wn=getwidth(n) 
@@ -21801,7 +21867,7 @@ local function inject_everything(head,where)
         end
       end
     end
-    local oy=ny+py+pn.marky
+    local oy=ny+py+(pn.marky or 0)
     if not pn.markmark then
       local yoffset=pn.yoffset
       if yoffset then
@@ -21813,15 +21879,64 @@ local function inject_everything(head,where)
       showoffset(n,true)
     end
   end
+  local base=nil
   while current do
     local next=getnext(current)
     local char,id=ischar(current)
     if char then
       local p=rawget(properties,current)
+      if hascursives then
+        if not p then
+          local m=fontmarks[getfont(current)]
+          if m and m[char] then
+            if base then
+              p={ injections={ markbasenode=base } }
+              nofmarks=nofmarks+1
+              marks[nofmarks]=current
+              properties[current]=p
+              hasmarks=true
+            end
+          else
+            base=current
+          end
+        end
+      end
       if p then
         local i=p.injections
+        if hascursives then
+          if not i then
+            local m=fontmarks[getfont(current)]
+            if m and m[char] then
+              if base then
+                i={ markbasenode=base }
+                nofmarks=nofmarks+1
+                marks[nofmarks]=current
+                p.injections=i
+                hasmarks=true
+              end
+            else
+              base=current
+            end
+          end
+        end
         if i then
           local pm=i.markbasenode
+          if hascursives then
+            if not pm then
+              local m=fontmarks[getfont(current)]
+              if m and m[char] then
+                if base then
+                  pm=base
+                  i.markbasenode=pm
+                  hasmarks=true
+                end
+              else
+                base=current
+              end
+            else
+              base=current
+            end
+          end
           if pm then
             nofmarks=nofmarks+1
             marks[nofmarks]=current
@@ -21884,12 +21999,12 @@ local function inject_everything(head,where)
             local leftkern=i.leftkern
             local rightkern=i.rightkern
             if leftkern and leftkern~=0 then
-if rightkern and leftkern==-rightkern then
-  setoffsets(current,leftkern,false)
-  rightkern=0
-else
-              head=insert_node_before(head,current,fontkern(leftkern))
-end
+              if rightkern and leftkern==-rightkern then
+                setoffsets(current,leftkern,false)
+                rightkern=0
+              else
+                head=insert_node_before(head,current,fontkern(leftkern))
+              end
             end
             if rightkern and rightkern~=0 then
               insert_node_after(head,current,fontkern(rightkern))
@@ -22092,6 +22207,7 @@ end
     else
       prevglyph=nil
       prevdisc=nil
+base=nil
     end
     prev=current
     current=next
@@ -22226,23 +22342,25 @@ local function injectspaces(head)
       if old>threshold then
         if rightkern then
           if useitalickerns then
+            local lnew=leftkern*factor
+            local rnew=rightkern*factor
+            if trace_spaces then
+              report_spaces("%C [%p + %p + %p] %C",prevchar,lnew,old,rnew,nextchar)
+            end
+            local h=insert_node_before(nuthead,n,italickern(lnew))
+            if h==nuthead then
+              head=tonode(h)
+              nuthead=h
+            end
+            insert_node_after(nuthead,n,italickern(rnew))
+          else
             local new=old+(leftkern+rightkern)*factor
             if trace_spaces then
               report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
             end
             setwidth(n,new)
-          else
-            local new=(leftkern+rightkern)*factor
-            if trace_spaces then
-              report_spaces("%C [%p + %p] %C",prevchar,old,new,nextchar)
-            end
-            local h=insert_node_before(nuthead,n,italickern(new))
-            if h==nuthead then
-              head=tonode(h)
-              nuthead=h
-            end
           end
-          leftkern=false
+          rightkern=false
         else
           if useitalickerns then
             local new=leftkern*factor
@@ -22263,11 +22381,19 @@ local function injectspaces(head)
     elseif rightkern then
       local old=getwidth(n)
       if old>threshold then
-        local new=old+rightkern*factor
-        if trace_spaces then
-          report_spaces("[%p -> %p] %C",nextchar,old,new)
+        if useitalickerns then
+          local new=rightkern*factor
+          if trace_spaces then
+            report_spaces("%C [%p + %p]",nextchar,old,new)
+          end
+          insert_node_after(nuthead,n,italickern(new))
+        else
+          local new=old+rightkern*factor
+          if trace_spaces then
+            report_spaces("[%p -> %p] %C",nextchar,old,new)
+          end
+          setwidth(n,new)
         end
-        setwidth(n,new)
       end
       rightkern=false
     end
@@ -23037,7 +23163,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
           logwarning("%s: keep mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
         end
         local n=copy_node(start)
-        copyinjection(n,start)
+        copyinjection(n,start) 
         head,current=insert_node_after(head,current,n) 
       elseif trace_marks then
         logwarning("%s: delete mark %s",pref(dataset,sequence),gref(char))
@@ -24598,41 +24724,260 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
   local startprev,
      startnext=getboth(start)
   local done
-  for k=1,contexts.n do 
-    local current=start
-    local last=start
+  local nofcontexts=contexts.n 
+  local startchar=nofcontext==1 or ischar(start,currentfont) 
+  for k=1,nofcontexts do
     local ck=contexts[k]
     local seq=ck[3]
-    local s=seq.n
-    if s==1 then
-      local char=ischar(current,currentfont)
-      if char and not seq[1][char] then
+    local f=ck[4] 
+    if not startchar or not seq[f][startchar] then
+      goto next
+    end
+    local s=seq.n 
+    local l=ck[5] 
+    local current=start
+    local last=start
+    if l>f then
+      local discfound 
+      local n=f+1
+      last=startnext 
+      while n<=l do
+        if postreplace and not last then
+          last=getnext(sweepnode)
+          sweeptype=nil
+        end
+        if last then
+          local char,id=ischar(last,currentfont)
+          if char then
+            if skiphash and skiphash[char] then
+              skipped=true
+              if trace_skips then
+                show_skip(dataset,sequence,char,ck,classes[char])
+              end
+              last=getnext(last)
+            elseif seq[n][char] then
+              if n<l then
+                last=getnext(last)
+              end
+              n=n+1
+            elseif discfound then
+              notmatchreplace[discfound]=true
+              if notmatchpre[discfound] then
+                goto next
+              else
+                break
+              end
+            else
+              goto next
+            end
+          elseif char==false then
+            if discfound then
+              notmatchreplace[discfound]=true
+              if notmatchpre[discfound] then
+                goto next
+              else
+                break
+              end
+            else
+              goto next
+            end
+          elseif id==disc_code then
+            diskseen=true
+            discfound=last
+            notmatchpre[last]=nil
+            notmatchpost[last]=true
+            notmatchreplace[last]=nil
+            local pre,post,replace=getdisc(last)
+            if pre then
+              local n=n
+              while pre do
+                if seq[n][getchar(pre)] then
+                  n=n+1
+                  if n>l then
+                    break
+                  end
+                  pre=getnext(pre)
+                else
+                  notmatchpre[last]=true
+                  break
+                end
+              end
+              if n<=l then
+                notmatchpre[last]=true
+              end
+            else
+              notmatchpre[last]=true
+            end
+            if replace then
+              while replace do
+                if seq[n][getchar(replace)] then
+                  n=n+1
+                  if n>l then
+                    break
+                  end
+                  replace=getnext(replace)
+                else
+                  notmatchreplace[last]=true
+                  if notmatchpre[last] then
+                    goto next
+                  else
+                    break
+                  end
+                end
+              end
+              if notmatchpre[last] then
+                goto next
+              end
+            end
+            last=getnext(last)
+          else
+            goto next
+          end
+        else
+          goto next
+        end
+      end
+    end
+    if f>1 then
+      if startprev then
+        local prev=startprev
+        if prereplace and prev==checkdisc then
+          prev=getprev(sweepnode)
+        end
+        if prev then
+          local discfound 
+          local n=f-1
+          while n>=1 do
+            if prev then
+              local char,id=ischar(prev,currentfont)
+              if char then
+                if skiphash and skiphash[char] then
+                  skipped=true
+                  if trace_skips then
+                    show_skip(dataset,sequence,char,ck,classes[char])
+                  end
+                  prev=getprev(prev)
+                elseif seq[n][char] then
+                  if n>1 then
+                    prev=getprev(prev)
+                  end
+                  n=n-1
+                elseif discfound then
+                  notmatchreplace[discfound]=true
+                  if notmatchpost[discfound] then
+                    goto next
+                  else
+                    break
+                  end
+                else
+                  goto next
+                end
+              elseif char==false then
+                if discfound then
+                  notmatchreplace[discfound]=true
+                  if notmatchpost[discfound] then
+                    goto next
+                  end
+                else
+                  goto next
+                end
+                break
+              elseif id==disc_code then
+                diskseen=true
+                discfound=prev
+                notmatchpre[prev]=true
+                notmatchpost[prev]=nil
+                notmatchreplace[prev]=nil
+                local pre,post,replace,pretail,posttail,replacetail=getdisc(prev,true)
+                if pre~=start and post~=start and replace~=start then
+                  if post then
+                    local n=n
+                    while posttail do
+                      if seq[n][getchar(posttail)] then
+                        n=n-1
+                        if posttail==post or n<1 then
+                          break
+                        else
+                          posttail=getprev(posttail)
+                        end
+                      else
+                        notmatchpost[prev]=true
+                        break
+                      end
+                    end
+                    if n>=1 then
+                      notmatchpost[prev]=true
+                    end
+                  else
+                    notmatchpost[prev]=true
+                  end
+                  if replace then
+                    while replacetail do
+                      if seq[n][getchar(replacetail)] then
+                        n=n-1
+                        if replacetail==replace or n<1 then
+                          break
+                        else
+                          replacetail=getprev(replacetail)
+                        end
+                      else
+                        notmatchreplace[prev]=true
+                        if notmatchpost[prev] then
+                          goto next
+                        else
+                          break
+                        end
+                      end
+                    end
+                  end
+                end
+                prev=getprev(prev)
+              elseif id==glue_code then
+                local sn=seq[n]
+                if (sn[32] and spaces[prev]) or sn[0xFFFC] then
+                  n=n-1
+                  prev=getprev(prev)
+                else
+                  goto next
+                end
+              elseif seq[n][0xFFFC] then
+                n=n-1
+                prev=getprev(prev)
+              else
+                goto next
+              end
+            else
+              goto next
+            end
+          end
+        else
+          goto next
+        end
+      else
         goto next
       end
-    else
-      local f=ck[4]
-      local l=ck[5]
-      if l>f then
+    end
+    if s>l then
+      local current=last and getnext(last)
+      if not current and postreplace then
+        current=getnext(sweepnode)
+      end
+      if current then
         local discfound 
-        local n=f+1
-        last=startnext 
-        while n<=l do
-          if postreplace and not last then
-            last=getnext(sweepnode)
-            sweeptype=nil
-          end
-          if last then
-            local char,id=ischar(last,currentfont)
+        local n=l+1
+        while n<=s do
+          if current then
+            local char,id=ischar(current,currentfont)
             if char then
               if skiphash and skiphash[char] then
                 skipped=true
                 if trace_skips then
                   show_skip(dataset,sequence,char,ck,classes[char])
                 end
-                last=getnext(last)
+                current=getnext(current) 
               elseif seq[n][char] then
-                if n<l then
-                  last=getnext(last)
+                if n<s then 
+                  current=getnext(current) 
                 end
                 n=n+1
               elseif discfound then
@@ -24658,294 +25003,73 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
               end
             elseif id==disc_code then
               diskseen=true
-              discfound=last
-              notmatchpre[last]=nil
-              notmatchpost[last]=true
-              notmatchreplace[last]=nil
-              local pre,post,replace=getdisc(last)
+              discfound=current
+              notmatchpre[current]=nil
+              notmatchpost[current]=true
+              notmatchreplace[current]=nil
+              local pre,post,replace=getdisc(current)
               if pre then
                 local n=n
                 while pre do
                   if seq[n][getchar(pre)] then
                     n=n+1
-                    if n>l then
+                    if n>s then
                       break
+                    else
+                      pre=getnext(pre)
                     end
-                    pre=getnext(pre)
                   else
-                    notmatchpre[last]=true
+                    notmatchpre[current]=true
                     break
                   end
                 end
-                if n<=l then
-                  notmatchpre[last]=true
+                if n<=s then
+                  notmatchpre[current]=true
                 end
               else
-                notmatchpre[last]=true
+                notmatchpre[current]=true
               end
               if replace then
                 while replace do
                   if seq[n][getchar(replace)] then
                     n=n+1
-                    if n>l then
+                    if n>s then
                       break
+                    else
+                      replace=getnext(replace)
                     end
-                    replace=getnext(replace)
                   else
-                    notmatchreplace[last]=true
-                    if notmatchpre[last] then
+                    notmatchreplace[current]=true
+                    if not notmatchpre[current] then
                       goto next
                     else
                       break
                     end
                   end
-                end
-                if notmatchpre[last] then
-                  goto next
-                end
-              end
-              last=getnext(last)
-            else
-              goto next
-            end
-          else
-            goto next
-          end
-        end
-      end
-      if f>1 then
-        if startprev then
-          local prev=startprev
-          if prereplace and prev==checkdisc then
-            prev=getprev(sweepnode)
-          end
-          if prev then
-            local discfound 
-            local n=f-1
-            while n>=1 do
-              if prev then
-                local char,id=ischar(prev,currentfont)
-                if char then
-                  if skiphash and skiphash[char] then
-                    skipped=true
-                    if trace_skips then
-                      show_skip(dataset,sequence,char,ck,classes[char])
-                    end
-                    prev=getprev(prev)
-                  elseif seq[n][char] then
-                    if n>1 then
-                      prev=getprev(prev)
-                    end
-                    n=n-1
-                  elseif discfound then
-                    notmatchreplace[discfound]=true
-                    if notmatchpost[discfound] then
-                      goto next
-                    else
-                      break
-                    end
-                  else
-                    goto next
-                  end
-                elseif char==false then
-                  if discfound then
-                    notmatchreplace[discfound]=true
-                    if notmatchpost[discfound] then
-                      goto next
-                    end
-                  else
-                    goto next
-                  end
-                  break
-                elseif id==disc_code then
-                  diskseen=true
-                  discfound=prev
-                  notmatchpre[prev]=true
-                  notmatchpost[prev]=nil
-                  notmatchreplace[prev]=nil
-                  local pre,post,replace,pretail,posttail,replacetail=getdisc(prev,true)
-                  if pre~=start and post~=start and replace~=start then
-                    if post then
-                      local n=n
-                      while posttail do
-                        if seq[n][getchar(posttail)] then
-                          n=n-1
-                          if posttail==post or n<1 then
-                            break
-                          else
-                            posttail=getprev(posttail)
-                          end
-                        else
-                          notmatchpost[prev]=true
-                          break
-                        end
-                      end
-                      if n>=1 then
-                        notmatchpost[prev]=true
-                      end
-                    else
-                      notmatchpost[prev]=true
-                    end
-                    if replace then
-                      while replacetail do
-                        if seq[n][getchar(replacetail)] then
-                          n=n-1
-                          if replacetail==replace or n<1 then
-                            break
-                          else
-                            replacetail=getprev(replacetail)
-                          end
-                        else
-                          notmatchreplace[prev]=true
-                          if notmatchpost[prev] then
-                            goto next
-                          else
-                            break
-                          end
-                        end
-                      end
-                    end
-                  end
-                  prev=getprev(prev)
-                elseif id==glue_code then
-                  local sn=seq[n]
-                  if (sn[32] and spaces[prev]) or sn[0xFFFC] then
-                    n=n-1
-                    prev=getprev(prev)
-                  else
-                    goto next
-                  end
-                elseif seq[n][0xFFFC] then
-                  n=n-1
-                  prev=getprev(prev)
-                else
-                  goto next
                 end
               else
-                goto next
               end
-            end
-          else
-            goto next
-          end
-        else
-          goto next
-        end
-      end
-      if s>l then
-        local current=last and getnext(last)
-        if not current and postreplace then
-          current=getnext(sweepnode)
-        end
-        if current then
-          local discfound 
-          local n=l+1
-          while n<=s do
-            if current then
-              local char,id=ischar(current,currentfont)
-              if char then
-                if skiphash and skiphash[char] then
-                  skipped=true
-                  if trace_skips then
-                    show_skip(dataset,sequence,char,ck,classes[char])
-                  end
-                  current=getnext(current) 
-                elseif seq[n][char] then
-                  if n<s then 
-                    current=getnext(current) 
-                  end
-                  n=n+1
-                elseif discfound then
-                  notmatchreplace[discfound]=true
-                  if notmatchpre[discfound] then
-                    goto next
-                  else
-                    break
-                  end
-                else
-                  goto next
-                end
-              elseif char==false then
-                if discfound then
-                  notmatchreplace[discfound]=true
-                  if notmatchpre[discfound] then
-                    goto next
-                  else
-                    break
-                  end
-                else
-                  goto next
-                end
-              elseif id==disc_code then
-                diskseen=true
-                discfound=current
-                notmatchpre[current]=nil
-                notmatchpost[current]=true
-                notmatchreplace[current]=nil
-                local pre,post,replace=getdisc(current)
-                if pre then
-                  local n=n
-                  while pre do
-                    if seq[n][getchar(pre)] then
-                      n=n+1
-                      if n>s then
-                        break
-                      else
-                        pre=getnext(pre)
-                      end
-                    else
-                      notmatchpre[current]=true
-                      break
-                    end
-                  end
-                  if n<=s then
-                    notmatchpre[current]=true
-                  end
-                else
-                  notmatchpre[current]=true
-                end
-                if replace then
-                  while replace do
-                    if seq[n][getchar(replace)] then
-                      n=n+1
-                      if n>s then
-                        break
-                      else
-                        replace=getnext(replace)
-                      end
-                    else
-                      notmatchreplace[current]=true
-                      if not notmatchpre[current] then
-                        goto next
-                      else
-                        break
-                      end
-                    end
-                  end
-                else
-                end
-                current=getnext(current)
-              elseif id==glue_code then
-                local sn=seq[n]
-                if (sn[32] and spaces[current]) or sn[0xFFFC] then
-                  n=n+1
-                  current=getnext(current)
-                else
-                  goto next
-                end
-              elseif seq[n][0xFFFC] then
+              current=getnext(current)
+            elseif id==glue_code then
+              local sn=seq[n]
+              if (sn[32] and spaces[current]) or sn[0xFFFC] then
                 n=n+1
                 current=getnext(current)
               else
                 goto next
               end
+            elseif seq[n][0xFFFC] then
+              n=n+1
+              current=getnext(current)
             else
               goto next
             end
+          else
+            goto next
           end
-        else
-          goto next
         end
+      else
+        goto next
       end
     end
     if trace_contexts then
@@ -29051,10 +29175,10 @@ local function addfeature(data,feature,specifications)
                   subtype=lookup.type
                 end
               else
-                lookups[k]={ false } 
+                lookups[k]=false 
               end
             else
-              lookups[k]={ false } 
+              lookups[k]=false 
             end
           end
         end

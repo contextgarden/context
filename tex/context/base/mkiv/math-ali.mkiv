@@ -831,7 +831,8 @@
 
 \unexpanded\def\math_matrix_start_cell
   {\dostarttagged\t!mathtablecell\empty
-   \math_left_of_equalign
+   \hss
+  %\math_left_of_equalign
    \startimath
    \math_matrix_set_style
    \tabskip\zeropoint
@@ -839,7 +840,8 @@
 
 \unexpanded\def\math_matrix_stop_cell
   {\stopimath
-   \math_right_of_eqalign
+  %\math_right_of_eqalign
+   \hss
    \dostoptagged}
 
 % We could construct a preamble with alignment and such embedded but the number
@@ -1187,25 +1189,22 @@
 %D
 %D \typebuffer which gives \getbuffer
 
+% no tagging yet : how is it supposed to be coded?
+
 \unexpanded\def\startsubstack
   {\begingroup
    \vcenter\bgroup
    \baselineskip\mathstacktotal
    \lineskip\mathstackvgap
    \lineskiplimit\lineskip
-   \let\stopmathmode\relax
-   \def\NC{\math_matrix_NC}%
-   \def\MC{\math_matrix_NC\startmathmode}%
-   \global\let\math_matrix_NC\math_matrix_NC_indeed
-   \def\NR
-     {\stopmathmode
-      \global\let\math_matrix_NC\math_matrix_NC_indeed
-      \crcr}%
    \mathsurround\zeropoint
    \everycr\emptytoks
+   \let\NC\relax
+   \let\MC\relax
+   \let\NR\crcr
    \halign\bgroup\hfil\normalstartimath\scriptstyle\alignmark\alignmark\normalstopimath\hfil\crcr}
 
-\def\stopsubstack
+\def\stopsubstack % todo: \unexpanded and delayed
   {\crcr
    \egroup
    \egroup
