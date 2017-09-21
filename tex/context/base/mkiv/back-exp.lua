@@ -3519,7 +3519,7 @@ local htmltemplate = [[
 
         local function validpath(what,pathname)
             if lfs.isdir(pathname) then
-                report_export("using exiting %s path %a",what,pathname)
+                report_export("using existing %s path %a",what,pathname)
                 return pathname
             end
             lfs.mkdir(pathname)

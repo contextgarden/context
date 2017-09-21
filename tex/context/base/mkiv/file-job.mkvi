@@ -345,4 +345,14 @@
 
 %S The document: namespace will be used elsewhere too.
 
+% Bonus:
+
+\installcorenamespace{samplefile}
+
+\unexpanded\def\samplefile#1%
+  {\ifcsname\??samplefile#1\endcsname \else
+     \setxvalue{\??samplefile#1}{\cldloadfile{#1}}%
+   \fi
+   \lastnamedcs}
+
 \protect \endinput

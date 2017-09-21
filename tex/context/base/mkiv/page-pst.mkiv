@@ -69,10 +69,15 @@
 % officially we should flush again after a flush as there can be new future pages
 % but that will be looked into when we run into it
 
+\c_page_postponed_mode\plusone
+
 \unexpanded\def\page_postponed_blocks_flush_indeed
   {\begingroup
    \setsystemmode\v!postponing
    \settrue\c_page_postponed_busy
+   \ifnum\c_page_postponed_mode=\plusone
+     \savepagecontent
+   \fi
    \pagetotal\zeropoint        % here? still needed? (was after flush pagefloats)
    \the\everytopofpage\relax
   %\flushrestfloats
@@ -84,6 +89,9 @@
      % page {123}
    \relax
    \page_otr_command_flush_floats     % new but potential dangerous, maybe we need a classification
+   \ifnum\c_page_postponed_mode=\plusone
+     \flushpagecontent
+   \fi
    \endgroup}                         % of blocks: with and without flush
 
 \unexpanded\def\page_postponed_blocks_flush

@@ -9,17 +9,36 @@ if not modules then modules = { } end modules ['mtx-server-ctx-fonttest'] = {
 -- probably too much but who cares
 
 dofile(resolvers.findfile("trac-lmx.lua","tex"))
+dofile(resolvers.findfile("char-def.lua","tex"))
+
 dofile(resolvers.findfile("font-ini.lua","tex"))
+dofile(resolvers.findfile("font-log.lua","tex"))
 dofile(resolvers.findfile("font-con.lua","tex"))
--- dofile(resolvers.findfile("font-oti.lua","tex"))
--- dofile(resolvers.findfile("font-otf.lua","tex"))
--- dofile(resolvers.findfile("font-otp.lua","tex"))
+dofile(resolvers.findfile("font-cft.lua","tex"))
+dofile(resolvers.findfile("font-enc.lua","tex"))
+dofile(resolvers.findfile("font-agl.lua","tex"))
+dofile(resolvers.findfile("font-cid.lua","tex"))
+dofile(resolvers.findfile("font-map.lua","tex"))
 dofile(resolvers.findfile("font-otr.lua","tex"))
+dofile(resolvers.findfile("font-web.lua","tex"))
 dofile(resolvers.findfile("font-cff.lua","tex"))
--- dofile(resolvers.findfile("font-ttf.lua","tex"))
--- dofile(resolvers.findfile("font-ott.lua","tex"))
+dofile(resolvers.findfile("font-ttf.lua","tex"))
 dofile(resolvers.findfile("font-dsp.lua","tex"))
+dofile(resolvers.findfile("font-hsh.lua","tex"))
+dofile(resolvers.findfile("font-oti.lua","tex"))
+dofile(resolvers.findfile("font-ott.lua","tex"))
+dofile(resolvers.findfile("font-otl.lua","tex"))
+-- dofile(resolvers.findfile("font-oto.lua","tex"))
+-- dofile(resolvers.findfile("font-otj.lua","tex"))
+dofile(resolvers.findfile("font-oup.lua","tex"))
+-- dofile(resolvers.findfile("font-ots.lua","tex"))
+-- dofile(resolvers.findfile("font-otd.lua","tex"))
+-- dofile(resolvers.findfile("font-otc.lua","tex"))
+-- dofile(resolvers.findfile("font-oth.lua","tex"))
+-- dofile(resolvers.findfile("font-osd.lua","tex"))
+-- dofile(resolvers.findfile("font-ocl.lua","tex"))
 dofile(resolvers.findfile("font-onr.lua","tex"))
+
 dofile(resolvers.findfile("font-syn.lua","tex"))
 dofile(resolvers.findfile("font-mis.lua","tex"))
 
@@ -102,7 +121,7 @@ local javascripts = formatters [ [[
 function selected_radio(name) {
     var form = document.forms["main-form"] ;
     var script = form.elements[name] ;
-	if (script) {
+    if (script) {
         var n = script.length ;
         if (n) {
             for (var i=0; i<n; i++) {
@@ -110,8 +129,8 @@ function selected_radio(name) {
                     return script[i].value ;
                 }
             }
-		}
-	}
+        }
+    }
     return "" ;
 }
 

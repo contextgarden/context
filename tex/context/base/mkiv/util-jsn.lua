@@ -158,4 +158,11 @@ end
 
 -- inspect(json.tostring(true))
 
+function json.load(filename)
+    local data = io.loaddata(filename)
+    if data then
+        return lpegmatch(jsonconverter,data)
+    end
+end
+
 return json

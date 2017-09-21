@@ -531,6 +531,38 @@ that these programs are not standards and many of them may introduce invalid
 extensions that might not even be handled correctly by \BIBTEX\ itself.
 \stopaside
 
+Here is an example of a loader. Each loader takes two arguments, a dataset
+identifier and a filename. The \LUA\ loader takes an extra optional argument: a
+function that returns a \LUA\ table. Here we use one of the loaders present in
+\CONTEXT:
+
+\starttyping
+\startluacode
+    function publications.loaders.json(dataset,filename)
+        publications.loaders.lua(dataset,filename,utilities.json.load)
+    end
+\stopluacode
+\stoptyping
+
+Here is an easy way to debug your own functions:
+
+\starttyping
+\startluacode
+    local function myloader(filename)
+        inspect(filename) -- shows the full filename used
+        local result = {
+            -- loaded entries
+        }
+        inspect(result) -- shows the loaded data
+        return result
+    end
+
+    function publications.loaders.json(dataset,filename)
+        return publications.loaders.lua(dataset,filename,myloader)
+    end
+\stopluacode
+\stoptyping
+
 \stopsection
 
 \stopchapter

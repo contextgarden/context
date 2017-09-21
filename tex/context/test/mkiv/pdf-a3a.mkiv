@@ -8,7 +8,7 @@
 \setupbackend
   [format=PDF/A-3a,
    intent=sRGB IEC61966-2.1, % use <info> entry here; otherwise problems with predefined default profile
-   profile=sRGB.icc, % use <filename> here
+   profile={sRGB.icc,default_gray.icc},
    level=0]
 
 \setuptagging[state=start]

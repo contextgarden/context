@@ -538,9 +538,20 @@
     \setupfloat[\c!spacebefore=\v!none,\c!spaceafter=\v!none]%
 \to \c_floats_every_table_float
 
+\appendtoks
+    \showmessage\m!floatblocks{14}\v!here
+\to \everyinitializeexport
+
+\def\strc_floats_set_checked_location#location%
+  {\edef\floatlocation{#location}%
+   \ifexporting \ifx\floatlocation\v!here \else
+     \showmessage\m!floatblocks{15}{\floatlocation,\v!here}%
+     \let\floatlocation\v!here
+   \fi \fi}
+
 \def\strc_floats_place_indeed[#location][#reference]#caption%
   {\strc_floats_reset_variables
-   \edef\floatlocation{\ifexporting\v!here\else#location\fi}%
+   \strc_floats_set_checked_location{#location}%
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
    \fi
@@ -592,7 +603,7 @@
    \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
    \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
    \def\m_strc_floats_saved_userdata{#2}%
-   \edef\floatlocation{\ifexporting\v!here\else\floatcaptionparameter\c!location\fi}%
+   \strc_floats_set_checked_location{\floatcaptionparameter\c!location}%
    \setfloatcaptionparameter\c!location{\savedfloatlocation}% not expanded
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}%
@@ -1037,10 +1048,13 @@
 
 \unexpanded\def\installfloatmovement#1#2{\setvalue{\??floatmovement#1}{#2}}
 
+% \def\strc_floats_move_down#setting%
+%   {\csname\??floatmovement
+%      \ifcsname\??floatmovement#setting\endcsname#setting\fi
+%    \endcsname}
+
 \def\strc_floats_move_down#setting%
-  {\csname\??floatmovement
-     \ifcsname\??floatmovement#setting\endcsname#setting\fi
-   \endcsname}
+  {\begincsname\??floatmovement#setting\endcsname}
 
 \def\strc_floats_move_down_line#sign%
   {\if!!donea \else
@@ -1247,7 +1261,7 @@
    \global\floatwidth    \wd\floatbox
    \global\floatheight   \ht\floatbox % forget about the depth
    \global\floattextwidth\dimexpr\hsize-\floatwidth-\rootfloatparameter\c!margin\relax
-   \edef\floatlocation{\ifexporting\v!here\else\floatlocationmethod\fi}% to be sure .. why
+   \strc_floats_set_checked_location\floatlocationmethod% to be sure .. why
    \doifelseinset\v!tall\floatlocationmethod
      {\floattextheight\dimexpr\pagegoal-\pagetotal-\bigskipamount\relax % ugly, this bigskip
       \ifdim\floattextheight>\textheight

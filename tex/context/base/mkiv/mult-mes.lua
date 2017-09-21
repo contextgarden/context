@@ -490,6 +490,14 @@ return {
             no = "there is nothing to split",
             ro = "there is nothing to split",
         },
+        ["floatblocks:14"] = {
+            en = "float locations will be forced to %a due to exporting",
+            nl = "blok plaatsing is altijd %a vanwege export",
+        },
+        ["floatblocks:15"] = {
+            en = "location %a changed to %a due to exporting",
+            nl = "plaatsing %a vervangen door %a vanwege export",
+        },
         ["floatblocks:1"] = {
             en = "%a is empty",
         },

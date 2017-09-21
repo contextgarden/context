@@ -862,7 +862,7 @@ do
         publications.loadbibdata(dataset,data,fullname,kind)
     end
 
-    function loaders.lua(dataset,filename) -- if filename is a table we load that one
+    function loaders.lua(dataset,filename,loader) -- if filename is a table we load that one
         local current, data, fullname
         if type(filename) == "table" then
             current = datasets[dataset]
@@ -873,7 +873,7 @@ do
                 return
             end
             current = datasets[dataset]
-            data    = table.load(fullname)
+            data    = (loader or table.load)(fullname)
         end
         if data then
             local luadata = current.luadata
@@ -886,6 +886,10 @@ do
                 end
             end
         end
+    end
+
+    function loaders.json(dataset,filename)
+        loaders.lua(dataset,filename,utilities.json.load)
     end
 
     function loaders.buffer(dataset,name) -- if filename is a table we load that one

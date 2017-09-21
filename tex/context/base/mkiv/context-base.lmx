@@ -25,6 +25,9 @@
         <style type="text/css">
             <?lua inject(variables.cssdata) ?>
         </style>
+        <?lua if variables.javascriptfiles then for k, v in ipairs(variables.javascriptfiles) do ?>
+            <script src="<?lua inject(v) ?>"></script>
+        <?lua end end ?>
         <?lua if variables.styles then for k, v in ipairs(variables.styles) do ?>
             <link rel="StyleSheet" href="<?lua inject(v) ?>" type="text/css" />
         <?lua end end ?>
@@ -36,10 +39,14 @@
             </script>
         <![endif]-->
     <?lua end ?>
-    <?lua if variables.action then ?>
-        <form action="<?lua inject(variables.action) ?>" enctype="multi-part/form-data" method="post">
-    <?lua end ?>
     <body>
+    <?lua if variables.action then ?>
+        <?lua if variables.formmethod == "get" then ?>
+            <form action="<?lua inject(variables.action) ?>" method="get">
+        <?lua else ?>
+            <form action="<?lua inject(variables.action) ?>" enctype="multi-part/form-data" method="post">
+        <?lua end ?>
+    <?lua end ?>
         <div id="top"><?lua if variables.title then ?>
             <div id="top-one">
                 <div id="top-two"><?lua
@@ -81,8 +88,8 @@
                 <?lua inject(variables.maintext) ?>
             </div>
         </div>
-    </body>
     <?lua if variables.action then ?>
         </form>
     <?lua end ?>
+    </body>
 </html>

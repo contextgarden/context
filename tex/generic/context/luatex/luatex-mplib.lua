@@ -230,7 +230,14 @@ else
             return ""
         end
 
-        function metapost.load(name)
+        local modes = {
+            scaled  = true,
+            decimal = true,
+            binary  = true,
+            double  = true,
+        }
+
+        function metapost.load(name,mode)
             local mpd = {
                 buffer   = { },
                 verbatim = { }
@@ -241,6 +248,7 @@ else
                 make_text   = function(...) return metapost.maketext (mpd,...) end,
                 run_script  = function(...) return metapost.runscript(mpd,...) end,
                 extensions  = 1,
+                math_mode   = mode and modes[mode] and mode or "scaled",
             }
             local result
             if not mpx then
@@ -283,9 +291,9 @@ else
         return true
     end
 
-    function metapost.process(mpx, data)
+    function metapost.process(format,data,mode)
         local converted, result = false, {}
-        mpx = metapost.load(mpx)
+        local mpx = metapost.load(format,mode)
         if mpx and data then
             local result = mpx:execute(data)
             if not result then
@@ -300,6 +308,8 @@ else
             else
                 metapost.report("mp error: unknown error, maybe no beginfig/endfig")
             end
+--             mpx:finish()
+--             mpx = nil
         else
            metapost.report("mp error: mem file not found")
         end

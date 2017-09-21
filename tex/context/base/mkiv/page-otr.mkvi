@@ -166,6 +166,26 @@
       #content\relax
       \the\everyafteroutput}}
 
+% Just as fuzzy (and in 'one' we are okay with \aftergroup anyway):
+%
+% \ifdefined\everybeforeoutputgroup \else \newtoks\everybeforeoutputgroup \fi
+% \ifdefined\everyafteroutputgroup  \else \newtoks\everyafteroutputgroup  \fi
+%
+% \def\page_otf_set_engine_output_routine#content%
+%   {\the\everybeforeoutputgroup
+%    \global\output
+%      {\inotrtrue
+%       \the\everybeforeoutput
+%       #content\relax
+%       \the\everyafteroutput
+%       \aftergroup\the\aftergroup\everyafteroutputgroup}}
+%
+% \appendtoks
+%     \ifnum\c_page_postponed_mode=\plusone
+%         \page_postponed_blocks_flush % and then not in \page_otr_construct_and_shipout
+%     \fi
+% \to \everyafteroutputgroup
+
 \page_otf_set_engine_output_routine\page_otr_triggered_output_routine
 
 \installoutputroutine\synchronizeoutput

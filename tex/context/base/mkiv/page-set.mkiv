@@ -560,14 +560,14 @@
   {\ifdim\ht\OTRfinalpagebox=\textheight
      \bgroup
      \ifcase\OTRSETbalancemethod
-       \page_otr_construct_and_shipout\box\OTRfinalpagebox
+       \page_otr_construct_and_shipout\box\OTRfinalpagebox\zerocount % three arguments
      \else\ifdim\OTRSETbalht>\zeropoint
        % catch a bordercase
        \scratchdimen\OTRSETbalht
        \advance\scratchdimen\lineheight\relax
        \ifdim\scratchdimen>\textheight
          % full page
-         \page_otr_construct_and_shipout\box\OTRfinalpagebox
+         \page_otr_construct_and_shipout\box\OTRfinalpagebox\zerocount % three arguments
        \else
          % same page
          \global\setbox\OTRfinalpagebox \iftracecolumnset\ruledvbox\else\vbox\fi to \OTRSETbalht
@@ -576,7 +576,7 @@
          \snaptogrid\vbox{\vskip\OTRSETbalht}% hack
        \fi
      \else
-       \page_otr_construct_and_shipout\box\OTRfinalpagebox
+       \page_otr_construct_and_shipout\box\OTRfinalpagebox\zerocount % three arguments
      \fi \fi
      \globallet\OTRSETbalht\zeropoint
      \egroup

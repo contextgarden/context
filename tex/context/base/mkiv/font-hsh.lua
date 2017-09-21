@@ -61,8 +61,8 @@ hashes.originals    = originals
 hashes.modes        = modes
 hashes.variants     = variants
 
-local nodepool      = nodes.pool
-local dummyglyph    = nodepool.register(nodepool.glyph())
+local nodepool      = nodes and nodes.pool
+local dummyglyph    = nodepool and nodepool.register(nodepool.glyph())
 
 local nulldata = allocate {
     name         = "nullfont",
@@ -239,7 +239,7 @@ setmetatableindex(quads, function(t,k)
         local quad
         if parameters then
             quad = parameters.quad
-        else
+        elseif dummyglyph then
             dummyglyph.font = k
             dummyglyph.char = 0x2014  -- emdash
             quad            = dummyglyph.width -- dirty trick
@@ -260,7 +260,7 @@ setmetatableindex(xheights, function(t,k)
         local xheight
         if parameters then
             xheight = parameters.xheight
-        else
+        elseif dummyglyph then
             dummyglyph.font = k
             dummyglyph.char = 0x78     -- x
             xheight         = dummyglyph.height -- dirty trick

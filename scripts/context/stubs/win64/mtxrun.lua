@@ -21463,7 +21463,7 @@ function runners.execute_ctx_script(filename,...)
             end
             filename = environment.files[1]
             if e_verbose then
-                report("using script: %s\n",fullname)
+                report("using script: %s (if --path is used don't run on path where mtxrun lives)\n",fullname)
             end
             environment.ownscript = fullname
             dofile(fullname)

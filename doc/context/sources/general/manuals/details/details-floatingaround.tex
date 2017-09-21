@@ -1132,6 +1132,169 @@ The black rules are set up with:
 \setupbackgrounds [text] [leftmargin]  [background=]
 \setupbackgrounds [text] [rightmargin] [background=]
 
+We will now demonstrate some features in a way that makes it possible to
+compare to the simple default case. Options can be passed as keywords:
+
+\starttyping
+\placefigure
+  [left,...]
+  [fig:whatever]
+  {caption}
+  {content}
+\stoptyping
+
+or as settings:
+
+\starttyping
+\startplacefigure
+  [default={left,...},
+   title=caption,
+   reference=fig:whatever]
+
+    content
+
+\stopplacefigure
+\stoptyping
+
+It is important to realize that all that spacing can interfere with additional
+hard coded corrections at the users end. We don't show the effects of \type
+{sidespacebefore} and \type {sidespaceafter}, the two general vertical spacing
+hooks. These are currently set to {\tttf \rootfloatparameter {sidespacebefore}}
+and {\tttf \rootfloatparameter {sidespaceafter}} respectively. The \type
+{sidealign} parameter is always winning from a keyword doing the same.
+
+The last few examples demonstrate that you can define an instance. Often that's
+the best way to deal with special cases in a consistent way. For instance:
+
+\starttyping
+\definefloat
+  [LeftTwo]
+  [figure]
+
+\setupfloat
+  [LeftTwo]
+  [default=left,
+   sidealign=line]
+\stoptyping
+
+First we show some keyword variant, next some parameter driven versions.
+
+\def\SampleKeyword#1%
+  {\setbuffer[foo]
+     \useMPlibrary[dum]
+     \setupbodyfont[dejavu]
+     \setuplayout[page]
+     \placefigure[left]{}{\externalfigure[dummy]} \samplefile{sapolsky} \samplefile{sapolsky}
+     \placefigure[#1]  {}{\externalfigure[dummy]} \samplefile{sapolsky} \samplefile{sapolsky}
+   \endbuffer
+   \framed
+     [background=color,backgroundcolor=white]
+     {\scale
+        [width=.45\textwidth]
+        {\typesetbuffer[foo]}}}
+
+\def\SampleSettings#1#2#3%
+  {\setbuffer[foo]
+     \useMPlibrary[dum]
+     \setupbodyfont[dejavu]
+     \setuplayout[page]
+     \definefloat[#1][figure]
+     \setupfloat[#1][default=left]
+     \definefloat[#2][figure]
+     \setupfloat[#2][#3]
+     \startplacefloat[#1] \externalfigure[dummy] \stopplacefloat \samplefile{sapolsky} \samplefile{sapolsky}
+     \startplacefloat[#2] \externalfigure[dummy] \stopplacefloat \samplefile{sapolsky} \samplefile{sapolsky}
+   \endbuffer
+   \framed
+     [background=color,backgroundcolor=white]
+     {\scale
+        [width=.45\textwidth]
+        {\typesetbuffer[foo]}}}
+
+\startbuffer[LeftOne]
+\definefloat[LeftOne][figure]
+
+\setupfloat
+  [LeftOne]
+  [default=left]
+\stopbuffer
+
+\startbuffer[LeftTwo]
+\definefloat[LeftTwo][figure]
+
+\setupfloat
+  [LeftTwo]
+  [default=left,
+   sidealign=line]
+\stopbuffer
+
+\startbuffer[LeftThree]
+\definefloat[LeftThree][figure]
+
+\setupfloat
+  [LeftThree]
+  [default={left,2*line}]
+\stopbuffer
+
+\startbuffer[LeftFour]
+\definefloat[LeftFour][figure]
+
+\setupfloat
+  [LeftFour]
+  [default={left},
+   topoffset=5pt]
+\stopbuffer
+
+\startbuffer[LeftFive]
+\definefloat[LeftFive][figure]
+
+\setupfloat
+  [LeftFive]
+  [default={left},
+   bottomoffset=5pt,
+   topoffset=5pt]
+\stopbuffer
+
+\startlinecorrection
+\startcombination[2*2]
+    {\SampleKeyword{left,high}}     {\type{left,high}}
+    {\SampleKeyword{left,low}}      {\type{left,low}}
+    {\SampleKeyword{left,high,low}} {\type{left,high,low}}
+    {\SampleKeyword{left,fit}}      {\type{left,fit}}
+\stopcombination
+\stoplinecorrection
+
+\startlinecorrection
+\startcombination[2*2]
+    {\SampleKeyword{left,halfline}} {\type{left,halfline}}
+    {\SampleKeyword{left,height}}   {\type{left,height}}
+    {\SampleKeyword{left,depth}}    {\type{left,depth}}
+    {\SampleKeyword{left,grid}}     {\type{left,grid}}
+\stopcombination
+\stoplinecorrection
+
+\startlinecorrection
+\startcombination[2*2]
+    {\SampleKeyword{left,line}}     {\type{left,line}}
+    {\SampleKeyword{left,1*line}}   {\type{left,1*line}}
+    {\SampleKeyword{left,2*line}}   {\type{left,2*line}}
+    {\SampleKeyword{left,3*line}}   {\type{left,3*line}}
+\stopcombination
+\stoplinecorrection
+
+\startlinecorrection
+\startcombination[2*2]
+    {\SampleSettings{LeftOne}{LeftTwo}  {default={left,line}}}
+                                        {\typ{default={left,line}}}
+    {\SampleSettings{LeftOne}{LeftThree}{default={left,2*line}}}
+                                        {\typ{default={left,2*line}}}
+    {\SampleSettings{LeftOne}{LeftFour} {default=left,topoffset=5pt}}
+                                        {\typ{default=left, topoffset=5pt}}
+    {\SampleSettings{LeftOne}{LeftFive} {default=left, topoffset=5pt, bottomoffset=5pt}}
+                                        {\typ{default=left, topoffset=5pt, bottomoffset=5pt}}
+\stopcombination
+\stoplinecorrection
+
 \stopchapter
 
 \stopcomponent

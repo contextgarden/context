@@ -57,6 +57,33 @@ resolvers.inputstack = resolvers.inputstack or { }
 
 local inputstack = resolvers.inputstack
 
+----------------------------------------
+
+local lpegmatch  = lpeg.match
+local newline    = lpeg.patterns.newline
+local tsplitat   = lpeg.tsplitat
+
+local linesplitters = {
+    tsplitat(newline),                       -- default since we started
+    tsplitat(lpeg.S(" ")^0 * newline),
+    tsplitat(lpeg.S(" \t")^0 * newline),
+    tsplitat(lpeg.S(" \f\t")^0 * newline),   -- saves a bit of space at the cost of runtime
+ -- tsplitat(lpeg.S(" \v\f\t")^0 * newline),
+ -- tsplitat(lpeg.R("\0\31")^0 * newline),
+}
+
+local linesplitter = linesplitters[1]
+
+directives.register("system.linesplitmethod",function(v)
+    linesplitter = linesplitters[tonumber(v) or 1] or linesplitters[1]
+end)
+
+local function splitlines(str)
+    return lpegmatch(linesplitter,str)
+end
+
+-----------------------------------------
+
 function helpers.textopener(tag,filename,filehandle,coding)
     local lines
     local t_filehandle = type(filehandle)

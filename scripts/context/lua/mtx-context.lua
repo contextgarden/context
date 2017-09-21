@@ -755,7 +755,10 @@ function scripts.context.run(ctxdata,filename)
             if formatfile and scriptfile then
                 local suffix     = validstring(getargument("suffix"))
                 local resultname = validstring(getargument("result"))
-                if suffix then
+                local resultpath = file.pathpart(resultname)
+                if resultpath ~= "" then
+                    resultname  = nil
+                elseif suffix then
                     resultname = removesuffix(jobname) .. suffix
                 end
                 local oldbase = ""
@@ -962,6 +965,10 @@ function scripts.context.run(ctxdata,filename)
                         result_save_keep(oldbase,newbase)
                     end
                     report("result renamed to: %s",newbase)
+                elseif resultpath ~= "" then
+                    report()
+                    report("results are to be on the running path, not on %a, ignoring --result",resultpath)
+                    report()
                 end
                 --
              -- -- needs checking

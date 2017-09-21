@@ -36,7 +36,7 @@
 
 \newconditional\c_otr_shipout_enabled \settrue\c_otr_shipout_enabled
 
-\unexpanded\def\page_otr_shipout
+\unexpanded\def\page_otr_shipout % not used at all
   {\ifconditional\c_otr_shipout_enabled
      \expandafter\page_otr_shipout_yes
    \else
@@ -90,13 +90,57 @@
    \fi}
 
 \def\page_otr_flush_pending_content
-  {\vskip\zeropoint\relax % brrr .. get rid of this
+  {\vskip\zeropoint\relax
    \ifvoid\normalpagebox \else
      \unvbox\normalpagebox
      \penalty\outputpenalty
    \fi}
 
-\def\page_otr_construct_and_shipout#1#2%
+\newconstant\c_page_postponed_mode % \c_page_postponed_mode\plusone
+\newbox     \b_page_otr_saved
+
+\installoutputroutine\savepagecontent
+  {\global\setbox\b_page_otr_saved\box\normalpagebox}
+
+\unexpanded\def\flushpagecontent
+  {\ifvoid\b_page_otr_saved\else\unvbox\b_page_otr_saved\fi}
+
+% Test case: assumes one group level for output routine, todo:
+% a toks.
+%
+% \starttext
+%
+% \startbuffer[makeup]
+% \startpagemakeup[pagestate=start,page=no]
+%     \color[red]{
+%         \vfill
+%         \dorecurse{3}{
+%             \samplefile{klein}
+%             \vfill
+%         }
+%     }
+% \stoppagemakeup
+% \stopbuffer
+%
+% \startcolor[green]
+%     \dorecurse{10}{
+%         \dontleavehmode{\bf 1:#1:} \samplefile{sapolsky}\par
+%     }
+% \stopcolor
+%
+% \startpostponing % [+3]
+%     \getbuffer[makeup]
+% \stoppostponing
+%
+% \startcolor[blue]
+%     \dorecurse{25}{
+%         \dontleavehmode{\bf 2:#1:} \samplefile{sapolsky}\par
+%     }
+% \stopcolor
+%
+% \stoptext
+
+\def\page_otr_construct_and_shipout#1#2#3%
   {\forgetall
    \page_boxes_shipout{\page_boxes_constructed_page#1#2}% \hbox removed
    \page_otr_flush_pending_content
@@ -112,7 +156,16 @@
    \page_otr_check_for_pending_inserts
    \page_floats_flush_page_floats % before postponed blocks
    \page_spread_flush % defined later
-   \page_postponed_blocks_flush}
+   \ifnum#3=\plusone
+     % this is tricky! we need to make sure we are in the output group
+     \ifnum\c_page_postponed_mode=\plusone
+       \aftergroup\page_postponed_blocks_flush
+     \else
+       \page_postponed_blocks_flush
+     \fi
+   \else
+     \page_postponed_blocks_flush
+   \fi}
 
 % Can't we get rid of this hackery? It's used in some widgets
 % stuff so probably not.

@@ -239,7 +239,7 @@
 
 \def\page_mix_routine_error
   {\showmessage\m!columns3\empty
-   \page_otr_construct_and_shipout\unvbox\normalpagebox}
+   \page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
 %D Some settings (and actions) depend on the current output routine and setting the
 %D hsize and vsize is among them. The calculation of the hsize is done elsewhere.
@@ -737,7 +737,7 @@
    \setbox\b_page_mix_collected\vpack{\unvbox\normalpagebox}% brrr we need to make a tight box (combine this in lua)
    \page_mix_routine_construct\v!no
    \page_mix_routine_package
-   \page_otr_construct_and_shipout\box\b_page_mix_collected
+   \page_otr_construct_and_shipout\box\b_page_mix_collected\zerocount % three arguments
    \clf_mixflushrest
    \clf_mixcleanup
    \egroup}
@@ -775,7 +775,7 @@
         % 1 = we have stuff left, so flush and rebalance
         %writestatus\m!columns{flush continue}%
         \page_mix_routine_package
-        \page_otr_construct_and_shipout\box\b_page_mix_collected
+        \page_otr_construct_and_shipout\box\b_page_mix_collected\zerocount % three arguments
         \setbox\b_page_mix_collected\vpack{\clf_mixflushrest}% we could avoid this
         \clf_mixcleanup
         \ifdim\ht\b_page_mix_collected=\zeropoint
@@ -938,10 +938,10 @@
 \unexpanded\def\page_mix_place_float_force
   {\page_one_place_float_force}
 
-\unexpanded\def\page_mix_command_side_float_output       % hm
-  {\page_otr_construct_and_shipout\unvbox\normalpagebox}
+\unexpanded\def\page_mix_command_side_float_output
+  {\page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
-\unexpanded\def\page_mix_command_synchronize_side_floats % hm
+\unexpanded\def\page_mix_command_synchronize_side_floats
   {\page_sides_forget_floats}
 
 \unexpanded\def\page_mix_command_flush_side_floats

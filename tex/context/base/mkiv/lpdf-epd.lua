@@ -57,6 +57,8 @@ local dictGetLength, dictGetVal, dictGetValNF, dictGetKey
 local arrayGetLength, arrayGetNF, arrayGet
 local streamReset, streamGetDict, streamGetChar
 
+-- getCatalog getNumPages getPageRef fetch getXRef getDocInfo
+
 do
     local object     = epdf.Object()
     --
@@ -538,6 +540,8 @@ function lpdf_epdf.load(filename)
             --
             local Catalog          = some_dictionary(__xref__:getCatalog():getDict(),document)
             local Info             = some_dictionary(__xref__:getDocInfo():getDict(),document)
+-- local Catalog          = some_dictionary(getDict(__xref__:getCatalog()),document)
+-- local Info             = some_dictionary(getDict(__xref__:getDocInfo()),document)
             --
             document.Catalog       = Catalog
             document.Info          = Info

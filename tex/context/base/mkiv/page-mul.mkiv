@@ -86,7 +86,7 @@
   {\page_one_place_float_force}
 
 \unexpanded\def\page_mul_command_side_float_output
-  {\page_otr_construct_and_shipout\unvbox\normalpagebox}
+  {\page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
 \unexpanded\def\page_mul_command_flush_side_floats
   {\page_sides_forget_floats}
@@ -341,7 +341,7 @@
 
 \def\page_mul_routine_error
   {\showmessage\m!columns3\empty
-   \page_otr_construct_and_shipout\unvbox\normalpagebox}
+   \page_otr_construct_and_shipout\unvbox\normalpagebox\zerocount} % three arguments
 
 %D When we leave the multi||column mode, we have to process the not yet shipped out
 %D part of the columns. When we don't balance, we simply force a continuous output,
@@ -858,7 +858,7 @@
        {\ht\currentcolumnbox\d_page_mul_balance_target}% redundant
    \fi
    \setbox\b_page_mul_preceding\vbox{\page_mul_flush_packaged_columns_continued}%
-   \page_otr_construct_and_shipout\box\b_page_mul_preceding
+   \page_otr_construct_and_shipout\box\b_page_mul_preceding\zerocount % three arguments
    \page_otr_command_set_hsize
    \page_otr_command_set_vsize
    \page_mul_flush_floats
