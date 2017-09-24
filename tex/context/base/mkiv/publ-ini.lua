@@ -79,10 +79,6 @@ local v_dataset          = variables.dataset
 
 local conditionals       = tex.conditionals
 
-local logsnewline        = logs.newline
-local logspushtarget     = logs.pushtarget
-local logspoptarget      = logs.poptarget
-
 local isdefined          = tex.isdefined
 
 ----- basicsorter        = sorters.basicsorter -- (a,b)
@@ -224,15 +220,13 @@ statistics.register("publications load time", function()
     end
 end)
 
-luatex.registerstopactions(function()
-    local done = false
+logs.registerfinalactions(function()
+    local done    = false
+    local unknown = false
     for name, dataset in sortedhash(datasets) do
         for command, n in sortedhash(dataset.commands) do
             if not done then
-                logspushtarget("logfile")
-                logsnewline()
-                report("start used btx commands")
-                logsnewline()
+                logs.startfilelogging(report,"used btx commands")
                 done = true
             end
             if isdefined[command] then
@@ -241,14 +235,23 @@ luatex.registerstopactions(function()
                 report("%-20s %-20s % 5i %s",name,command,n,"KNOWN")
             else
                 report("%-20s %-20s % 5i %s",name,command,n,"unknown")
+                unknown = true
             end
         end
     end
     if done then
-        logsnewline()
-        report("stop used btx commands")
-        logsnewline()
-        logspoptarget()
+        logs.stopfilelogging()
+    end
+    if unknown and logs.loggingerrors() then
+        logs.starterrorlogging(report,"unknown btx commands")
+        for name, dataset in sortedhash(datasets) do
+            for command, n in sortedhash(dataset.commands) do
+                if not isdefined[command] and not isdefined[upper(command)] then
+                    report("%-20s %-20s % 5i %s",name,command,n,"unknown")
+                end
+            end
+        end
+        logs.stoperrorlogging()
     end
 end)
 

@@ -44,6 +44,7 @@ local tonumber, tostring = tonumber, tostring
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
 local longtostring = string.longtostring
 local contains = table.contains
+local sortedhash = table.sortedhash
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
@@ -90,10 +91,8 @@ local trace_usage       = false  trackers.register  ("graphics.usage",      func
 local extra_check       = false  directives.register("graphics.extracheck",    function(v) extra_check    = v end)
 local auto_transform    = true   directives.register("graphics.autotransform", function(v) auto_transform = v end)
 
+local report            = logs.reporter("graphics")
 local report_inclusion  = logs.reporter("graphics","inclusion")
-local report_figures    = logs.reporter("system","graphics")
-local report_figure     = logs.reporter("used graphic")
-local report_newline    = logs.newline
 
 local f_hash_part       = formatters["%s->%s->%s->%s"]
 local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s"]
@@ -208,6 +207,7 @@ figures.defaultwidth    = 0
 figures.defaultheight   = 0
 figures.defaultdepth    = 0
 figures.nofprocessed    = 0
+figures.nofmissing      = 0
 figures.preferquality   = true -- quality over location
 
 local figures_loaded    = allocate()   figures.loaded      = figures_loaded
@@ -302,31 +302,38 @@ function figures.badname(name)
     end
 end
 
-luatex.registerstopactions(function()
+logs.registerfinalactions(function()
+    local done = false
     if trace_usage and figures.nofprocessed > 0 then
-        logs.pushtarget("logfile")
-        report_newline()
-        report_figures("start names")
-        for _, data in table.sortedhash(figures_found) do
-            report_newline()
-            report_figure("asked   : %s",data.askedname)
+        logs.startfilelogging(report,"names")
+        for _, data in sortedhash(figures_found) do
+            if done then
+                report()
+            else
+                done = true
+            end
+            report("asked   : %s",data.askedname)
             if data.found then
-                report_figure("format  : %s",data.format)
-                report_figure("found   : %s",data.foundname)
-                report_figure("used    : %s",data.fullname)
+                report("format  : %s",data.format)
+                report("found   : %s",data.foundname)
+                report("used    : %s",data.fullname)
                 if data.badname then
-                    report_figure("comment : %s","bad name")
+                    report("comment : %s","bad name")
                 elseif data.comment then
-                    report_figure("comment : %s",data.comment)
+                    report("comment : %s",data.comment)
                 end
             else
-                report_figure("comment : %s","not found")
+                report("comment : %s","not found")
             end
         end
-        report_newline()
-        report_figures("stop names")
-        report_newline()
-        logs.poptarget()
+        logs.stopfilelogging()
+    end
+    if figures.nofmissing > 0 and logs.loggingerrors() then
+        logs.starterrorlogging(report,"missing figures")
+        for _, data in sortedhash(figures_found) do
+            report("%w%s",6,data.askedname)
+        end
+        logs.stoperrorlogging()
     end
 end)
 
@@ -841,6 +848,9 @@ local function register(askedname,specification)
         specification.arguments  or ""
     )
     figures_found[askedhash] = specification
+    if not specification.found then
+        figures.nofmissing = figures.nofmissing + 1
+    end
     return specification
 end
 
@@ -1184,7 +1194,7 @@ statistics.register("used graphics",function()
         local filename = file.nameonly(environment.jobname) .. "-figures-usage.lua"
         if next(figures_found) then
             local found = { }
-            for _, data in table.sortedhash(figures_found) do
+            for _, data in sortedhash(figures_found) do
                 found[#found+1] = data
                 for k, v in next, data do
                     if v == false or v == "" then

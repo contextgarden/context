@@ -52,12 +52,24 @@ local function stop_run()
     for i=1,#stopactions do
         stopactions[i]()
     end
+    local quit = logs.finalactions()
     if trace_job_status then
         statistics.show()
     end
     if trace_tex_status then
+        logs.newline()
         for k, v in table.sortedhash(status.list()) do
             report_tex("%S=%S",k,v)
+        end
+    end
+    if quit then
+        if status.setexitcode then
+            status.setexitcode(1)
+            if type(quit) == "table" then
+                logs.newline()
+                report_tex("quitting due to: %, t",quit)
+                logs.newline()
+            end
         end
     end
     if logs.stop_run then

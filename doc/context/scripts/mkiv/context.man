@@ -65,6 +65,9 @@ set directive variables (show list with --showdirectives)
 .B --silent=list
 disable logcatgories (show list with --showlogcategories)
 .TP
+.B --errors=list
+show errors at the end of a run, quit when in list (also when ----silent)
+.TP
 .B --noconsole
 disable logging to the console (logfile only)
 .TP

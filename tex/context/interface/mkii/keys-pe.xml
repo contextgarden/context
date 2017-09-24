@@ -759,6 +759,7 @@
 		<cd:constant name='direction' value='جهت'/>
 		<cd:constant name='directory' value='پوشه'/>
 		<cd:constant name='display' value='نمایش'/>
+		<cd:constant name='displaythreshold' value='displaythreshold'/>
 		<cd:constant name='distance' value='فاصله'/>
 		<cd:constant name='domain' value='domain'/>
 		<cd:constant name='dot' value='نقطه'/>
@@ -868,6 +869,7 @@
 		<cd:constant name='index' value='index'/>
 		<cd:constant name='indicator' value='اندیکاتور'/>
 		<cd:constant name='initialsep' value='initialsep'/>
+		<cd:constant name='inlinethreshold' value='inlinethreshold'/>
 		<cd:constant name='inner' value='داخلی'/>
 		<cd:constant name='innermargin' value='حاشیه‌داخلی'/>
 		<cd:constant name='inputfile' value='پرونده‌ورودی'/>

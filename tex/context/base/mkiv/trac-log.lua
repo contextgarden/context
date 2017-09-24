@@ -20,8 +20,8 @@ local openfile = io.open
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
-
-local texgetcount       = tex and tex.getcount
+local settings_to_hash  = utilities.parsers.settings_to_hash
+local sortedkeys        = table.sortedkeys
 
 -- variant is set now
 
@@ -575,15 +575,15 @@ logs.newline         = newline
 
 -- todo: renew (un) locks when a new one is added and wildcard
 
-local data, states = { }, nil
+local data   = { }
+local states = nil
+local force  = false
 
 function logs.reporter(category,subcategory)
     local logger = data[category]
     if not logger then
-        local state = false
-        if states == true then
-            state = true
-        elseif type(states) == "table" then
+        local state = states == true
+        if not state and type(states) == "table" then
             for c, _ in next, states do
                 if find(category,c) then
                     state = true
@@ -593,7 +593,7 @@ function logs.reporter(category,subcategory)
         end
         logger = {
             reporters = { },
-            state = state,
+            state     = state,
         }
         data[category] = logger
     end
@@ -601,7 +601,7 @@ function logs.reporter(category,subcategory)
     if not reporter then
         if subcategory then
             reporter = function(...)
-                if not logger.state then
+                if force or not logger.state then
                     subreport(category,subcategory,...)
                 end
             end
@@ -609,7 +609,7 @@ function logs.reporter(category,subcategory)
         else
             local tag = category
             reporter = function(...)
-                if not logger.state then
+                if force or not logger.state then
                     report(category,...)
                 end
             end
@@ -645,7 +645,7 @@ end
 -- so far
 
 local function setblocked(category,value) -- v.state == value == true : disable
-    if category == true then
+    if category == true or category == "all" then
         -- lock all
         category, value = "*", true
     elseif category == false then
@@ -661,7 +661,8 @@ local function setblocked(category,value) -- v.state == value == true : disable
             v.state = value
         end
     else
-        states = utilities.parsers.settings_to_hash(category,type(states)=="table" and states or nil)
+        alllocked = false
+        states = settings_to_hash(category,type(states)=="table" and states or nil)
         for c in next, states do
             local v = data[c]
             if v then
@@ -687,7 +688,7 @@ function logs.enable(category)
 end
 
 function logs.categories()
-    return table.sortedkeys(data)
+    return sortedkeys(data)
 end
 
 function logs.show()
@@ -710,7 +711,7 @@ function logs.show()
                 max = m
             end
         end
-        local subcategories = concat(table.sortedkeys(reporters),", ")
+        local subcategories = concat(sortedkeys(reporters),", ")
         if state == true then
             state = "disabled"
         elseif state == false then
@@ -746,59 +747,64 @@ end)
 
 -- tex specific loggers (might move elsewhere)
 
-local report_pages = logs.reporter("pages") -- not needed but saves checking when we grep for it
+if tex then
 
-local real, user, sub
+    local report      = logs.reporter("pages") -- not needed but saves checking when we grep for it
+    local texgetcount = tex and tex.getcount
 
-function logs.start_page_number()
-    real = texgetcount("realpageno")
-    user = texgetcount("userpageno")
-    sub  = texgetcount("subpageno")
-end
+    local real, user, sub
 
-local timing    = false
-local starttime = nil
-local lasttime  = nil
-
-trackers.register("pages.timing", function(v) -- only for myself (diagnostics)
-    starttime = os.clock()
-    timing    = true
-end)
-
-function logs.stop_page_number() -- the first page can includes the initialization so we omit this in average
-    if timing then
-        local elapsed, average
-        local stoptime = os.clock()
-        if not lasttime or real < 2 then
-            elapsed   = stoptime
-            average   = stoptime
-            starttime = stoptime
-        else
-            elapsed  = stoptime - lasttime
-            average  = (stoptime - starttime) / (real - 1)
-        end
-        lasttime = stoptime
-        if real <= 0 then
-            report_pages("flushing page, time %0.04f / %0.04f",elapsed,average)
-        elseif user <= 0 then
-            report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
-        elseif sub <= 0 then
-            report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
-        else
-            report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
-        end
-    else
-        if real <= 0 then
-            report_pages("flushing page")
-        elseif user <= 0 then
-            report_pages("flushing realpage %s",real)
-        elseif sub <= 0 then
-            report_pages("flushing realpage %s, userpage %s",real,user)
-        else
-            report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-        end
+    function logs.start_page_number()
+        real = texgetcount("realpageno")
+        user = texgetcount("userpageno")
+        sub  = texgetcount("subpageno")
     end
-    logs.flush()
+
+    local timing    = false
+    local starttime = nil
+    local lasttime  = nil
+
+    trackers.register("pages.timing", function(v) -- only for myself (diagnostics)
+        starttime = os.clock() -- todo: use other timer
+        timing    = true
+    end)
+
+    function logs.stop_page_number() -- the first page can includes the initialization so we omit this in average
+        if timing then
+            local elapsed, average
+            local stoptime = os.clock()
+            if not lasttime or real < 2 then
+                elapsed   = stoptime
+                average   = stoptime
+                starttime = stoptime
+            else
+                elapsed  = stoptime - lasttime
+                average  = (stoptime - starttime) / (real - 1)
+            end
+            lasttime = stoptime
+            if real <= 0 then
+                report("flushing page, time %0.04f / %0.04f",elapsed,average)
+            elseif user <= 0 then
+                report("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
+            elseif sub <= 0 then
+                report("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
+            else
+                report("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
+            end
+        else
+            if real <= 0 then
+                report("flushing page")
+            elseif user <= 0 then
+                report("flushing realpage %s",real)
+            elseif sub <= 0 then
+                report("flushing realpage %s, userpage %s",real,user)
+            else
+                report("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
+            end
+        end
+        logs.flush()
+    end
+
 end
 
 -- we don't have show_open and show_close callbacks yet
@@ -1038,4 +1044,90 @@ io.stderr:setvbuf('no')
 
 if package.helpers.report then
     package.helpers.report = logs.reporter("package loader") -- when used outside mtxrun
+end
+
+if tex then
+
+    local finalactions  = { }
+    local fatalerrors   = { }
+    local loggingerrors = false
+    local possiblefatal = { }
+
+    function logs.loggingerrors()
+        return loggingerrors
+    end
+
+    directives.register("logs.errors",function(v)
+        loggingerrors = v
+        if type(v) == "string" then
+            fatalerrors = settings_to_hash(v)
+        else
+            fatalerrors = { }
+        end
+    end)
+
+    function logs.registerfinalactions(...)
+        insert(finalactions,...) -- so we can force an order if needed
+    end
+
+    function logs.finalactions()
+        if #finalactions > 0 then
+            for i=1,#finalactions do
+                finalactions[i]()
+            end
+            return next(possiblefatal) and sortedkeys(possiblefatal) or false
+        end
+    end
+
+    local what   = nil
+    local report = nil
+    local state  = nil
+    local target = nil
+
+    local function startlogging(t,r,w,s)
+        target = t
+        state  = force
+        force  = true
+        report = type(r) == "function" and r or logs.reporter(r)
+        what   = w
+        pushtarget(target)
+        newline()
+        if s then
+            report("start %s: %s",what,s)
+        else
+            report("start %s",what)
+        end
+        if target == "logfile" then
+            newline()
+        end
+        return report
+    end
+
+    local function stoplogging()
+        if target == "logfile" then
+            newline()
+        end
+        report("stop %s",what)
+        if target == "logfile" then
+            newline()
+        end
+        poptarget()
+        state = oldstate
+    end
+
+    function logs.startfilelogging(...)
+        return startlogging("logfile", ...)
+    end
+
+    function logs.starterrorlogging(r,w,...)
+        errorlogs[w] = true
+        if fatalerrors[w] then
+            possiblefatal[w] = true
+        end
+        return startlogging("terminal",r,w,...)
+    end
+
+    logs.stopfilelogging  = stoplogging
+    logs.stoperrorlogging = stoplogging
+
 end

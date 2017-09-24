@@ -8804,7 +8804,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 30007, stripped down to: 20818
+-- original size: 32332, stripped down to: 22624
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -8823,7 +8823,8 @@ local datetime=os.date
 local openfile=io.open
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
-local texgetcount=tex and tex.getcount
+local settings_to_hash=utilities.parsers.settings_to_hash
+local sortedkeys=table.sortedkeys
 local variant="default"
 logs=logs or {}
 local logs=logs
@@ -9250,14 +9251,14 @@ logs.direct=direct
 logs.subdirect=subdirect
 logs.writer=writer
 logs.newline=newline
-local data,states={},nil
+local data={}
+local states=nil
+local force=false
 function logs.reporter(category,subcategory)
   local logger=data[category]
   if not logger then
-    local state=false
-    if states==true then
-      state=true
-    elseif type(states)=="table" then
+    local state=states==true
+    if not state and type(states)=="table" then
       for c,_ in next,states do
         if find(category,c) then
           state=true
@@ -9275,7 +9276,7 @@ function logs.reporter(category,subcategory)
   if not reporter then
     if subcategory then
       reporter=function(...)
-        if not logger.state then
+        if force or not logger.state then
           subreport(category,subcategory,...)
         end
       end
@@ -9283,7 +9284,7 @@ function logs.reporter(category,subcategory)
     else
       local tag=category
       reporter=function(...)
-        if not logger.state then
+        if force or not logger.state then
           report(category,...)
         end
       end
@@ -9309,7 +9310,7 @@ function logs.messenger(category,subcategory)
   end
 end
 local function setblocked(category,value) 
-  if category==true then
+  if category==true or category=="all" then
     category,value="*",true
   elseif category==false then
     category,value="*",false
@@ -9322,7 +9323,8 @@ local function setblocked(category,value)
       v.state=value
     end
   else
-    states=utilities.parsers.settings_to_hash(category,type(states)=="table" and states or nil)
+    alllocked=false
+    states=settings_to_hash(category,type(states)=="table" and states or nil)
     for c in next,states do
       local v=data[c]
       if v then
@@ -9345,7 +9347,7 @@ function logs.enable(category)
   setblocked(category,false)
 end
 function logs.categories()
-  return table.sortedkeys(data)
+  return sortedkeys(data)
 end
 function logs.show()
   local n,c,s,max=0,0,0,0
@@ -9367,7 +9369,7 @@ function logs.show()
         max=m
       end
     end
-    local subcategories=concat(table.sortedkeys(reporters),", ")
+    local subcategories=concat(sortedkeys(reporters),", ")
     if state==true then
       state="disabled"
     elseif state==false then
@@ -9394,54 +9396,57 @@ end)
 directives.register("logs.target",function(v)
   settarget(v)
 end)
-local report_pages=logs.reporter("pages") 
-local real,user,sub
-function logs.start_page_number()
-  real=texgetcount("realpageno")
-  user=texgetcount("userpageno")
-  sub=texgetcount("subpageno")
-end
-local timing=false
-local starttime=nil
-local lasttime=nil
-trackers.register("pages.timing",function(v) 
-  starttime=os.clock()
-  timing=true
-end)
-function logs.stop_page_number() 
-  if timing then
-    local elapsed,average
-    local stoptime=os.clock()
-    if not lasttime or real<2 then
-      elapsed=stoptime
-      average=stoptime
-      starttime=stoptime
-    else
-      elapsed=stoptime-lasttime
-      average=(stoptime-starttime)/(real-1)
-    end
-    lasttime=stoptime
-    if real<=0 then
-      report_pages("flushing page, time %0.04f / %0.04f",elapsed,average)
-    elseif user<=0 then
-      report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
-    elseif sub<=0 then
-      report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
-    else
-      report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
-    end
-  else
-    if real<=0 then
-      report_pages("flushing page")
-    elseif user<=0 then
-      report_pages("flushing realpage %s",real)
-    elseif sub<=0 then
-      report_pages("flushing realpage %s, userpage %s",real,user)
-    else
-      report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-    end
+if tex then
+  local report=logs.reporter("pages") 
+  local texgetcount=tex and tex.getcount
+  local real,user,sub
+  function logs.start_page_number()
+    real=texgetcount("realpageno")
+    user=texgetcount("userpageno")
+    sub=texgetcount("subpageno")
   end
-  logs.flush()
+  local timing=false
+  local starttime=nil
+  local lasttime=nil
+  trackers.register("pages.timing",function(v) 
+    starttime=os.clock() 
+    timing=true
+  end)
+  function logs.stop_page_number() 
+    if timing then
+      local elapsed,average
+      local stoptime=os.clock()
+      if not lasttime or real<2 then
+        elapsed=stoptime
+        average=stoptime
+        starttime=stoptime
+      else
+        elapsed=stoptime-lasttime
+        average=(stoptime-starttime)/(real-1)
+      end
+      lasttime=stoptime
+      if real<=0 then
+        report("flushing page, time %0.04f / %0.04f",elapsed,average)
+      elseif user<=0 then
+        report("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
+      elseif sub<=0 then
+        report("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
+      else
+        report("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
+      end
+    else
+      if real<=0 then
+        report("flushing page")
+      elseif user<=0 then
+        report("flushing realpage %s",real)
+      elseif sub<=0 then
+        report("flushing realpage %s, userpage %s",real,user)
+      else
+        report("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
+      end
+    end
+    logs.flush()
+  end
 end
 local nesting=0
 local verbose=false
@@ -9595,6 +9600,79 @@ io.stdout:setvbuf('no')
 io.stderr:setvbuf('no')
 if package.helpers.report then
   package.helpers.report=logs.reporter("package loader") 
+end
+if tex then
+  local finalactions={}
+  local fatalerrors={}
+  local loggingerrors=false
+  local possiblefatal={}
+  function logs.loggingerrors()
+    return loggingerrors
+  end
+  directives.register("logs.errors",function(v)
+    loggingerrors=v
+    if type(v)=="string" then
+      fatalerrors=settings_to_hash(v)
+    else
+      fatalerrors={}
+    end
+  end)
+  function logs.registerfinalactions(...)
+    insert(finalactions,...) 
+  end
+  function logs.finalactions()
+    if #finalactions>0 then
+      for i=1,#finalactions do
+        finalactions[i]()
+      end
+      return next(possiblefatal) and sortedkeys(possiblefatal) or false
+    end
+  end
+  local what=nil
+  local report=nil
+  local state=nil
+  local target=nil
+  local function startlogging(t,r,w,s)
+    target=t
+    state=force
+    force=true
+    report=type(r)=="function" and r or logs.reporter(r)
+    what=w
+    pushtarget(target)
+    newline()
+    if s then
+      report("start %s: %s",what,s)
+    else
+      report("start %s",what)
+    end
+    if target=="logfile" then
+      newline()
+    end
+    return report
+  end
+  local function stoplogging()
+    if target=="logfile" then
+      newline()
+    end
+    report("stop %s",what)
+    if target=="logfile" then
+      newline()
+    end
+    poptarget()
+    state=oldstate
+  end
+  function logs.startfilelogging(...)
+    return startlogging("logfile",...)
+  end
+  function logs.starterrorlogging(r,w,...)
+    errorlogs[w]=true
+    if fatalerrors[w] then
+      possiblefatal[w]=true
+    end
+    return startlogging("terminal",r,w,...)
+  end
+  logs.stopfilelogging=stoplogging
+  logs.stoperrorlogging=stoplogging
 end
 
 
@@ -11545,7 +11623,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 59348, stripped down to: 37757
+-- original size: 59364, stripped down to: 37773
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -12457,7 +12535,7 @@ local function _xmlconvert_(data,settings)
       if errorhandler then
         local currentresource=settings.currentresource
         if currentresource and currentresource~="" then
-          xml.errorhandler(formatters["load error in [%s]: %s"](currentresource,errorstr))
+          xml.errorhandler(formatters["load error in [%s]: %s"](currentresource,errorstr),currentresource)
         else
           xml.errorhandler(formatters["load error: %s"](errorstr))
         end
@@ -20425,7 +20503,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 9144, stripped down to: 7291
+-- original size: 9268, stripped down to: 7401
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -20464,6 +20542,9 @@ local function secondaryflags()
   if arguments.silent then
     flags[#flags+1]="--c:silent"
   end
+  if arguments.errors then
+    flags[#flags+1]="--c:errors"
+  end
   if arguments.jit then
     flags[#flags+1]="--c:jiton"
   end
@@ -20500,6 +20581,7 @@ local runners={
 function environment.make_format(name,arguments)
   local engine=environment.ownmain or "luatex"
   local silent=environment.arguments.silent
+  local errors=environment.arguments.errors
   local olddir=dir.current()
   local path=caches.getwritablepath("formats",engine) or "" 
   if path~="" then
@@ -20657,8 +20739,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 849658
--- stripped bytes    : 307056
+-- original bytes    : 852123
+-- stripped bytes    : 307589
 
 -- end library merge
 
@@ -20846,30 +20928,37 @@ local e_verbose = false
 -- some common flags (also passed through environment)
 
 local e_silent       = environment.argument("silent")
+local e_errors       = environment.argument("errors")
 local e_noconsole    = environment.argument("noconsole")
 
 local e_trackers     = environment.argument("trackers")
 local e_directives   = environment.argument("directives")
 local e_experiments  = environment.argument("experiments")
 
-if e_silent == true then
-    e_silent = "*"
+local t = { }
+
+if type(e_directives) == "string" then
+    t[#t+1] = e_directives
 end
 
 if type(e_silent) == "string" then
-    if type(e_directives) == "string" then
-        e_directives = format("%s,logs.blocked={%s}",e_directives,e_silent)
-    else
-        e_directives = format("logs.blocked={%s}",e_silent)
-    end
+    t[#t+1] = format("logs.blocked={%s}",e_silent)
+elseif e_silent == true then
+    t[#t+1] = "logs.blocked"
+end
+
+if type(e_errors) == "string" then
+    t[#t+1] = format("logs.errors={%s}",e_errors)
+elseif e_errors == true then
+    t[#t+1] = "logs.errors"
 end
 
 if e_noconsole then
-    if type(e_directives) == "string" then
-        e_directives = format("%s,logs.target=file",e_directives)
-    else
-        e_directives = format("logs.target=file")
-    end
+    t[#t+1] = format("logs.target=file")
+end
+
+if #t > 0 then
+    e_directives = concat(t,",")
 end
 
 if e_trackers    then trackers   .enable(e_trackers)    end
@@ -20890,7 +20979,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtxrun</entry>
   <entry name="detail">ConTeXt TDS Runner Tool</entry>
-  <entry name="version">1.32</entry>
+  <entry name="version">1.33</entry>
  </metadata>
  <flags>
   <category name="basic">

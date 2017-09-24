@@ -39,6 +39,9 @@ local function secondaryflags()
     if arguments.silent then
         flags[#flags+1] = "--c:silent"
     end
+    if arguments.errors then
+        flags[#flags+1] = "--c:errors"
+    end
     if arguments.jit then
         flags[#flags+1] = "--c:jiton"
     end
@@ -82,6 +85,7 @@ local runners = {
 function environment.make_format(name,arguments)
     local engine = environment.ownmain or "luatex"
     local silent = environment.arguments.silent
+    local errors = environment.arguments.errors
     -- change to format path (early as we need expanded paths)
     local olddir = dir.current()
     local path = caches.getwritablepath("formats",engine) or "" -- maybe platform

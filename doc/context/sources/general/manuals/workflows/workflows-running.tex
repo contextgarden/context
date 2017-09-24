@@ -1,0 +1,53 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-running
+
+\startchapter[title={Running}]
+
+\startsection[title={Errors}]
+
+A \CONTEXT\ runs normally spits out quite some information to the console. In
+fact, even more information can go to the log file. It makes sense to have a look
+at the end of the log file occasionally because there you can find information
+about the (file) structure loaded, modules, issues with references and|/|or
+fonts, etc.
+
+One problem with the terminal is that you can miss an issue easily, but there is
+a way out of this:
+
+\starttyping
+\enabledirectives[logs.errors]
+\stoptyping
+
+The command line argument \type {--errors} has the same consequence. If you want
+to quit in an error, you can say for instance:
+
+\starttyping
+\enabledirectives[logs.errors=missing characters]
+\stoptyping
+
+If you run \CONTEXT\ with \type {--trackers} or \type {--directives} you get some
+information about the possible extra tracing. It might be illustrative to run a
+file with:
+
+\starttyping
+\enabletrackers[*]
+\stoptyping
+
+\stopsection
+
+\startsection[title={Silent}]
+
+The \type {--silent} options blocks most message. You can also pass a list (or
+pattern) of categories to silence. The \type {--noconsole} option only disables
+logging to the console. The error reporting mentioned in the previous section
+will never be silenced.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

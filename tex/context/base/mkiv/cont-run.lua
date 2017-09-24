@@ -187,6 +187,18 @@ local function processjob()
         }
     end
 
+ -- -- already done in mtxrun / mtx-context, has to happen very early
+ --
+ -- if arguments.silent then
+ --     directives.enable("logs.blocked",arguments.silent)
+ -- end
+ --
+ -- -- already done in mtxrun / mtx-context, can as well happen here
+ --
+ -- if arguments.errors then
+ --     directives.enable("logs.errors",arguments.errors)
+ -- end
+
     if not filename or filename == "" then
         -- skip
     elseif suffix == "xml" or arguments.forcexml then

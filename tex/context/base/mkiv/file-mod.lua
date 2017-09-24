@@ -19,11 +19,13 @@ at the <l n='tex'/> side.</p>
 --ldx]]--
 
 local format, find, concat, tonumber = string.format, string.find, table.concat, tonumber
+local sortedhash = table.sortedhash
+local basename = file.basename
 
 local trace_modules     = false  trackers  .register("modules.loading",          function(v) trace_modules     = v end)
 local permit_unprefixed = false  directives.register("modules.permitunprefixed", function(v) permit_unprefixed = v end)
 
-local report_modules    = logs.reporter("resolvers","modules")
+local report            = logs.reporter("modules")
 
 local commands          = commands
 local context           = context
@@ -54,6 +56,7 @@ local suffixes  = {
 }
 
 local modstatus = { }
+local missing   = false
 
 local function usemodule(name,hasscheme)
     local foundname
@@ -62,19 +65,19 @@ local function usemodule(name,hasscheme)
         -- so we only add one if missing
         local fullname = file.addsuffix(name,"tex")
         if trace_modules then
-            report_modules("checking url %a",fullname)
+            report("checking url %a",fullname)
         end
         foundname = resolvers.findtexfile(fullname) or ""
     elseif file.suffix(name) ~= "" then
         if trace_modules then
-            report_modules("checking file %a",name)
+            report("checking file %a",name)
         end
         foundname = findbyscheme("any",name) or ""
     else
         for i=1,#suffixes do
             local fullname = file.addsuffix(name,suffixes[i])
             if trace_modules then
-                report_modules("checking file %a",fullname)
+                report("checking file %a",fullname)
             end
             foundname = findbyscheme("any",fullname) or ""
             if foundname ~= "" then
@@ -84,7 +87,7 @@ local function usemodule(name,hasscheme)
     end
     if foundname ~= "" then
         if trace_modules then
-            report_modules("loading file %a",foundname)
+            report("loading file %a",foundname)
         end
         context.startreadingfile()
         resolvers.jobs.usefile(foundname,true) -- once, notext
@@ -107,7 +110,7 @@ function environment.usemodules(prefix,askedname,truename)
         status = status + 1
     else
         if trace_modules then
-            report_modules("locating, prefix %a, askedname %a, truename %a",prefix,askedname,truename)
+            report("locating, prefix %a, askedname %a, truename %a",prefix,askedname,truename)
         end
         local hasscheme = url.hasscheme(truename)
         if hasscheme then
@@ -136,10 +139,10 @@ function environment.usemodules(prefix,askedname,truename)
                 -- ok, don't change
             elseif find(truename,"%-") and usemodule(truename) then
                 -- assume a user namespace
-                report_modules("using user prefixed file %a",truename)
+                report("using user prefixed file %a",truename)
                 status = 1
             elseif permit_unprefixed and usemodule(truename) then
-                report_modules("using unprefixed file %a",truename)
+                report("using unprefixed file %a",truename)
                 status = 1
             else
                 status = 0
@@ -147,11 +150,12 @@ function environment.usemodules(prefix,askedname,truename)
         end
     end
     if status == 0 then
-        report_modules("%a is not found",askedname)
+        missing = true
+        report("%a is not found",askedname)
     elseif status == 1 then
-        report_modules("%a is loaded",trace_modules and truename or askedname)
+        report("%a is loaded",trace_modules and truename or askedname)
     else
-        report_modules("%a is already loaded",trace_modules and truename or askedname)
+        report("%a is already loaded",trace_modules and truename or askedname)
     end
     modstatus[hashname] = status
 end
@@ -159,14 +163,14 @@ end
 statistics.register("loaded tex modules", function()
     if next(modstatus) then
         local t, f, nt, nf = { }, { }, 0, 0
-        for k, v in table.sortedhash(modstatus) do
-            k = file.basename(k)
+        for k, v in sortedhash(modstatus) do
+            local b = basename(k)
             if v == 0 then
                 nf = nf + 1
-                f[nf] = k
+                f[nf] = b
             else
                 nt = nt + 1
-                t[nt] = k
+                t[nt] = b
             end
         end
         if nf == 0 then
@@ -178,6 +182,23 @@ statistics.register("loaded tex modules", function()
         end
     else
         return nil
+    end
+end)
+
+logs.registerfinalactions(function()
+    logs.startfilelogging(report,"used modules")
+    for k, v in sortedhash(modstatus) do
+        report(v == 0 and "missing: %s" or "loaded : %s",basename(k))
+    end
+    logs.stopfilelogging()
+    if missing and logs.loggingerrors() then
+        logs.starterrorlogging(report,"missing modules")
+        for k, v in sortedhash(modstatus) do
+            if v == 0 then
+                report("%w%s",6,basename(k))
+            end
+        end
+        logs.stoperrorlogging()
     end
 end)
 

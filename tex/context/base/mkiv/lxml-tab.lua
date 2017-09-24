@@ -1190,7 +1190,7 @@ local function _xmlconvert_(data,settings)
             if errorhandler then
                 local currentresource = settings.currentresource
                 if currentresource and currentresource ~= "" then
-                    xml.errorhandler(formatters["load error in [%s]: %s"](currentresource,errorstr))
+                    xml.errorhandler(formatters["load error in [%s]: %s"](currentresource,errorstr),currentresource)
                 else
                     xml.errorhandler(formatters["load error: %s"](errorstr))
                 end

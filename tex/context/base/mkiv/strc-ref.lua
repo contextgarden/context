@@ -37,10 +37,10 @@ local check_duplicates   = true
 directives.register("structures.referencing.checkduplicates", function(v) check_duplicates = v end)
 
 local report_references  = logs.reporter("references")
-local report_unknown     = logs.reporter("references","unknown")
 local report_identifying = logs.reporter("references","identifying")
 local report_importing   = logs.reporter("references","importing")
 local report_empty       = logs.reporter("references","empty")
+local report             = report_references
 
 local variables          = interfaces.variables
 local v_page             = variables.page
@@ -58,10 +58,6 @@ local texconditionals    = tex.conditionals
 
 local productcomponent   = resolvers.jobs.productcomponent
 local justacomponent     = resolvers.jobs.justacomponent
-
-local logsnewline        = logs.newline
-local logspushtarget     = logs.pushtarget
-local logspoptarget      = logs.poptarget
 
 ----- settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_table  = utilities.parsers.settings_to_array_obey_fences
@@ -1871,26 +1867,26 @@ implement {
     }
 }
 
-function references.reportproblems() -- might become local
+logs.registerfinalactions(function()
     if nofunknowns > 0 then
         statistics.register("cross referencing", function()
             return format("%s identified, %s unknown",nofidentified,nofunknowns)
         end)
-        logspushtarget("logfile")
-        logsnewline()
-        report_references("start problematic references")
-        logsnewline()
-        for k, v in table.sortedpairs(unknowns) do
-            report_unknown("%4i: %s",v,k)
+        local sortedhash = table.sortedhash
+        logs.startfilelogging(report,"missing references")
+        for k, v in table.sortedhash(unknowns) do
+            report("%4i  %s",v,k)
         end
-        logsnewline()
-        report_references("stop problematic references")
-        logsnewline()
-        logspoptarget()
+        logs.stopfilelogging()
+        if logs.loggingerrors() then
+            logs.starterrorlogging(report,"missing references")
+            for k, v in table.sortedhash(unknowns) do
+                report("%4i  %s",v,k)
+            end
+            logs.stoperrorlogging()
+        end
     end
-end
-
-luatex.registerstopactions(references.reportproblems)
+end)
 
 -- The auto method will try to avoid named internals in a clever way which
 -- can make files smaller without sacrificing external references. Some of

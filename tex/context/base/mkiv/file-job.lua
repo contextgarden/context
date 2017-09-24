@@ -9,11 +9,12 @@ if not modules then modules = { } end modules ['file-job'] = {
 -- in retrospect dealing it's not that bad to deal with the nesting
 -- and push/poppign at the tex end
 
-local rawget, tostring, tonumber = rawget, tostring, tonumber
+local next, rawget, tostring, tonumber = next, rawget, tostring, tonumber
 local gsub, match, find = string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
 local validstring, formatters = string.valid, string.formatters
 local sortedhash = table.sortedhash
+local setmetatableindex, setmetatablenewindex = table.setmetatableindex, table.setmetatablenewindex
 
 local commands          = commands
 local resolvers         = resolvers
@@ -25,6 +26,7 @@ local implement         = interfaces.implement
 
 local trace_jobfiles    = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
 
+local report            = logs.reporter("system")
 local report_jobfiles   = logs.reporter("system","jobfiles")
 local report_functions  = logs.reporter("system","functions")
 
@@ -32,9 +34,6 @@ local texsetcount       = tex.setcount
 local elements          = interfaces.elements
 local constants         = interfaces.constants
 local variables         = interfaces.variables
-local logsnewline       = logs.newline
-local logspushtarget    = logs.pushtarget
-local logspoptarget     = logs.poptarget
 local settings_to_array = utilities.parsers.settings_to_array
 local allocate          = utilities.storage.allocate
 
@@ -171,8 +170,6 @@ implement {
     end
 }
 
-local report_system  = logs.reporter("system")
-
 -- moved from tex to lua:
 
 local texpatterns = { "%s.mkvi", "%s.mkiv", "%s.tex" }
@@ -224,7 +221,7 @@ implement {
 
 local function startprocessing(name,notext)
     if not notext then
-     -- report_system("begin file %a at line %a",name,status.linenumber or 0)
+     -- report("begin file %a at line %a",name,status.linenumber or 0)
         context.dostarttextfile(name)
     end
 end
@@ -232,7 +229,7 @@ end
 local function stopprocessing(notext)
     if not notext then
         context.dostoptextfile()
-     -- report_system("end file %a at line %a",name,status.linenumber or 0)
+     -- report("end file %a at line %a",name,status.linenumber or 0)
     end
 end
 
@@ -240,12 +237,28 @@ end
 
 local typestack   = { }
 local currenttype = v_text
+local nofmissing  = 0
+local missing     = {
+    tex = setmetatableindex("number"),
+    lua = setmetatableindex("number"),
+    cld = setmetatableindex("number"),
+    xml = setmetatableindex("number"),
+}
+
+local function reportfailure(kind,name)
+    nofmissing = nofmissing + 1
+    missing[kind][name] = true
+    report_jobfiles("unknown %s file %a",kind,name)
+end
 
 --
 
-local action  = function(name,foundname) input(foundname) end
-local failure = function(name,foundname) report_jobfiles("unknown %s file %a","tex",name) end
-
+local function action(name,foundname)
+    input(foundname)
+end
+local function failure(name,foundname)
+    reportfailure("tex",name)
+end
 local function usetexfile(name,onlyonce,notext)
     startprocessing(name,notext)
     uselibrary {
@@ -258,9 +271,12 @@ local function usetexfile(name,onlyonce,notext)
     stopprocessing(notext)
 end
 
-local action  = function(name,foundname) dofile(foundname) end
-local failure = function(name,foundname) report_jobfiles("unknown %s file %a","lua",name) end
-
+local function action(name,foundname)
+    dofile(foundname)
+end
+local function failure(name,foundname)
+    reportfailure("lua",name)
+end
 local function useluafile(name,onlyonce,notext)
     uselibrary {
         name     = name,
@@ -271,9 +287,12 @@ local function useluafile(name,onlyonce,notext)
     }
 end
 
-local action  = function(name,foundname) dofile(foundname) end
-local failure = function(name,foundname) report_jobfiles("unknown %s file %a","cld",name) end
-
+local function action(name,foundname)
+    dofile(foundname)
+end
+local function failure(name,foundname)
+    reportfailure("cld",name)
+end
 local function usecldfile(name,onlyonce,notext)
     startprocessing(name,notext)
     uselibrary {
@@ -286,9 +305,12 @@ local function usecldfile(name,onlyonce,notext)
     stopprocessing(notext)
 end
 
-local action  = function(name,foundname) context.xmlprocess(foundname,"main","") end
-local failure = function(name,foundname) report_jobfiles("unknown %s file %a","xml",name) end
-
+local function action(name,foundname)
+    context.xmlprocess(foundname,"main","")
+end
+local function failure(name,foundname)
+    reportfailure("xml",name)
+end
 local function usexmlfile(name,onlyonce,notext)
     startprocessing(name,notext)
     uselibrary {
@@ -353,7 +375,7 @@ local textlevel = 0 -- inaccessible for user, we need to define counter textleve
 local function dummyfunction() end
 
 local function startstoperror()
-    report_system("invalid \\%s%s ... \\%s%s structure",elements.start,v_text,elements.stop,v_text)
+    report("invalid \\%s%s ... \\%s%s structure",elements.start,v_text,elements.stop,v_text)
     startstoperror = dummyfunction
 end
 
@@ -399,9 +421,9 @@ implement {
     arguments = "string",
     actions   = function(reason)
         if reason then
-            report_system("forcing quit: %s",reason)
+            report("forcing quit: %s",reason)
         else
-            report_system("forcing quit")
+            report("forcing quit")
         end
         context.batchmode()
         while textlevel >= 0 do
@@ -413,7 +435,7 @@ implement {
 implement {
     name    = "forceendjob",
     actions = function()
-        report_system([[don't use \end to finish a document]])
+        report([[don't use \end to finish a document]])
         context.stoptext()
     end
 }
@@ -422,7 +444,7 @@ implement {
     name    = "autostarttext",
     actions = function()
         if textlevel == 0 then
-            report_system([[auto \starttext ... \stoptext]])
+            report([[auto \starttext ... \stoptext]])
         end
         context.starttext()
     end
@@ -472,9 +494,6 @@ local stacks = {
 
 --
 
-local report_structures = logs.reporter("system","structure")
-local report_structure  = logs.reporter("used structure")
-
 local function pushtree(what,name)
     local t = { }
     top[#top+1] = { type = what, name = name, branches = t }
@@ -487,29 +506,38 @@ local function poptree()
  -- inspect(top)
 end
 
-local function log_tree(top,depth)
-    report_structure("%s%s: %s",depth,top.type,top.name)
-    local branches = top.branches
-    if #branches > 0 then
-        depth = depth .. "  "
-        for i=1,#branches do
-            log_tree(branches[i],depth)
+do
+
+    local function log_tree(report,top,depth)
+        report("%s%s: %s",depth,top.type,top.name)
+        local branches = top.branches
+        if #branches > 0 then
+            depth = depth .. "  "
+            for i=1,#branches do
+                log_tree(report,branches[i],depth)
+            end
         end
     end
-end
 
-luatex.registerstopactions(function()
-    logspushtarget("logfile")
-    logsnewline()
-    report_structures("start used structure")
-    logsnewline()
-    root.name = environment.jobname
-    log_tree(root,"")
-    logsnewline()
-    report_structures("stop used structure")
-    logsnewline()
-    logspoptarget()
-end)
+    logs.registerfinalactions(function()
+        root.name = environment.jobname
+        --
+        logs.startfilelogging(report,"used files")
+        log_tree(report,root,"")
+        logs.stopfilelogging()
+        --
+        if nofmissing > 0 and logs.loggingerrors() then
+            logs.starterrorlogging(report,"missing files")
+            for kind, list in sortedhash(missing) do
+                for name in sortedhash(list) do
+                    report("%w%s  %s",6,kind,name)
+                end
+            end
+            logs.stoperrorlogging()
+        end
+    end)
+
+end
 
 local jobstructure      = job.structure or { }
 job.structure           = jobstructure
@@ -1095,113 +1123,76 @@ implement { name = "setdocumentmodules",       actions = document.setmodules,   
 implement { name = "setdocumentenvironments",  actions = document.setenvironments, onlyonce = true }
 implement { name = "setdocumentfilenames",     actions = document.setfilenames,    onlyonce = true }
 
-local report_files    = logs.reporter("system","files")
-local report_options  = logs.reporter("system","options")
-local report_file     = logs.reporter("used file")
-local report_option   = logs.reporter("used option")
+do
 
-luatex.registerstopactions(function()
-    local foundintrees = resolvers.foundintrees()
-    if #foundintrees > 0 then
-        logspushtarget("logfile")
-        logsnewline()
-        report_files("start used files")
-        logsnewline()
-        for i=1,#foundintrees do
-            report_file("%4i: % T",i,foundintrees[i])
+    logs.registerfinalactions(function()
+        local foundintrees = resolvers.foundintrees()
+        if #foundintrees > 0 then
+            logs.startfilelogging(report,"used files")
+            for i=1,#foundintrees do
+                report("%4i: % T",i,foundintrees[i])
+            end
+            logs.stopfilelogging()
         end
-        logsnewline()
-        report_files("stop used files")
-        logsnewline()
-        logspoptarget()
-    end
-end)
+    end)
 
-luatex.registerstopactions(function()
-    local files = document.files -- or environment.files
-    local arguments = document.arguments -- or environment.arguments
-    --
-    logspushtarget("logfile")
-    logsnewline()
-    report_options("start commandline options")
-    logsnewline()
-    if arguments and next(arguments) then
-        for argument, value in sortedhash(arguments) do
-            report_option("%s=%A",argument,value)
+    logs.registerfinalactions(function()
+        local files = document.files -- or environment.files
+        local arguments = document.arguments -- or environment.arguments
+        --
+        logs.startfilelogging(report,"commandline options")
+        if arguments and next(arguments) then
+            for argument, value in sortedhash(arguments) do
+                report("%s=%A",argument,value)
+            end
+        else
+            report("no arguments")
         end
-    else
-        report_file("no arguments")
-    end
-    logsnewline()
-    report_options("stop commandline options")
-    logsnewline()
-    report_options("start commandline files")
-    logsnewline()
-    if files and #files > 0 then
-        for i=1,#files do
-            report_file("% 4i: %s",i,files[i])
+        logs.stopfilelogging()
+        --
+        logs.startfilelogging(report,"commandline files")
+        if files and #files > 0 then
+            for i=1,#files do
+                report("% 4i: %s",i,files[i])
+            end
+        else
+            report("no files")
         end
-    else
-        report_file("no files")
-    end
-    logsnewline()
-    report_options("stop commandline files")
-    logsnewline()
-    logspoptarget()
-end)
+        logs.stopfilelogging()
+    end)
+
+end
 
 if environment.initex then
 
-    local report_storage       = logs.reporter("system","storage")
-    local report_table         = logs.reporter("stored table")
-    local report_module        = logs.reporter("stored module")
-    local report_attribute     = logs.reporter("stored attribute")
-    local report_catcodetable  = logs.reporter("stored catcodetable")
-    local report_corenamespace = logs.reporter("stored corenamespace")
-
-    luatex.registerstopactions(function()
-        logspushtarget("logfile")
-        logsnewline()
-        report_storage("start stored tables")
-        logsnewline()
+    logs.registerfinalactions(function()
+        local startfilelogging = logs.startfilelogging
+        local stopfilelogging  = logs.stopfilelogging
+        startfilelogging(report,"stored tables")
         for k,v in sortedhash(storage.data) do
-            report_table("%03i %s",k,v[1])
+            report("%03i %s",k,v[1])
         end
-        logsnewline()
-        report_storage("stop stored tables")
-        logsnewline()
-        report_storage("start stored modules")
-        logsnewline()
+        stopfilelogging()
+        startfilelogging(report,"stored modules")
         for k,v in sortedhash(lua.bytedata) do
-            report_module("%03i %s %s",k,v[2],v[1])
+            report("%03i %s %s",k,v[2],v[1])
         end
-        logsnewline()
-        report_storage("stop stored modules")
-        logsnewline()
-        report_storage("start stored attributes")
-        logsnewline()
+        stopfilelogging()
+        startfilelogging(report,"stored attributes")
         for k,v in sortedhash(attributes.names) do
-            report_attribute("%03i %s",k,v)
+            report("%03i %s",k,v)
         end
-        logsnewline()
-        report_storage("stop stored attributes")
-        logsnewline()
-        report_storage("start stored catcodetables")
-        logsnewline()
+        stopfilelogging()
+        startfilelogging(report,"stored catcodetables")
         for k,v in sortedhash(catcodes.names) do
-            report_catcodetable("%03i % t",k,v)
+            report("%03i % t",k,v)
         end
-        logsnewline()
-        report_storage("stop stored catcodetables")
-        logsnewline()
-        report_storage("start stored corenamespaces")
+        stopfilelogging()
+        startfilelogging(report,"stored corenamespaces")
         for k,v in sortedhash(interfaces.corenamespaces) do
-            report_corenamespace("%03i %s",k,v)
+            report("%03i %s",k,v)
         end
-        logsnewline()
-        report_storage("stop stored corenamespaces")
-        logsnewline()
-        logspoptarget()
+        stopfilelogging()
     end)
 
 end
@@ -1218,7 +1209,7 @@ implement {
             continue = inpnamefull == basename(inpfilefull)
         end
         if continue then
-            report_system("continuing input file %a",inpname)
+            report("continuing input file %a",inpname)
         end
         ctx_doifelse(continue)
     end

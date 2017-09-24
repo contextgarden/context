@@ -201,8 +201,8 @@ end
 
 -- tex interface
 
-lxml.loaded  = lxml.loaded or { }
-local loaded = lxml.loaded
+local loaded    = lxml.loaded or { }
+lxml.loaded     = loaded
 
 -- print(contextdirective("context-mathml-directive function reduction yes "))
 -- print(contextdirective("context-mathml-directive function "))
@@ -321,6 +321,40 @@ function lxml.rawroot()
 end
 
 -- storage
+
+do
+
+    local noferrors    = 0
+    local errors       = setmetatableindex("number")
+    local errorhandler = xml.errorhandler
+
+    function xml.errorhandler(message,filename)
+        if filename and filename ~= "" then
+            noferrors = noferrors + 1
+            errors[filename] = errors[filename] + 1
+        end
+        errorhandler(filename)
+    end
+
+    logs.registerfinalactions(function()
+        if noferrors > 0 then
+            local report = logs.startfilelogging("lxml","problematic xml files")
+            for k, v in table.sortedhash(errors) do
+                report("%4i  %s",v,k)
+            end
+            logs.stopfilelogging()
+            --
+            if logs.loggingerrors() then
+                logs.starterrorlogging(report,"problematic xml files")
+                for k, v in table.sortedhash(errors) do
+                    report("%4i  %s",v,k)
+                end
+                logs.stoperrorlogging()
+            end
+        end
+    end)
+
+end
 
 function lxml.store(id,root,filename)
     loaded[id] = root
@@ -557,8 +591,8 @@ function lxml.load(id,filename,compress)
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
     starttiming(xml)
     local ok, data = resolvers.loadbinfile(filename)
---     local xmltable = lxmlconvert(id,(ok and data) or "",compress,formatters["id: %s, file: %s"](id,filename))
-local xmltable = lxmlconvert(id,(ok and data) or "",compress,filename)
+ -- local xmltable = lxmlconvert(id,(ok and data) or "",compress,formatters["id: %s, file: %s"](id,filename))
+    local xmltable = lxmlconvert(id,(ok and data) or "",compress,filename)
     stoptiming(xml)
     lxml.store(id,xmltable,filename)
     return xmltable, filename
@@ -600,19 +634,18 @@ function lxml.include(id,pattern,attribute,options)
                 filename = resolveprefix(filename) or filename
             end
             -- some protection
-            if options.rootpath then
-                if dirname(filename) == "" and root.filename then
-                    local dn = dirname(root.filename)
-                    if dn ~= "" then
-                        filename = joinfile(dn,filename)
-                    end
+            if options.rootpath and dirname(filename) == "" and root.filename then
+                local dn = dirname(root.filename)
+                if dn ~= "" then
+                    filename = joinfile(dn,filename)
                 end
             end
             if trace_loading then
                 report_lxml("including file %a",filename)
             end
             noffiles, nofconverted = noffiles + 1, nofconverted + 1
-            return resolvers.loadtexfile(filename) or "",
+            return
+                resolvers.loadtexfile(filename) or "",
                 resolvers.findtexfile(filename) or ""
         else
             return ""

@@ -37,12 +37,12 @@ local trace_mapfiles      = false  trackers.register("fonts.mapfiles",   functio
 local trace_automode      = false  trackers.register("fonts.automode",   function(v) trace_automode   = v end)
 local trace_merge         = false  trackers.register("fonts.merge",      function(v) trace_merge      = v end)
 
+local report              = logs.reporter("fonts")
 local report_features     = logs.reporter("fonts","features")
 local report_cummulative  = logs.reporter("fonts","cummulative")
 local report_defining     = logs.reporter("fonts","defining")
 local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
-local report_newline      = logs.newline
 
 local setmetatableindex   = table.setmetatableindex
 
@@ -2127,18 +2127,16 @@ function loggers.reportdefinedfonts()
             }
         end
         formatcolumns(t,"  ")
-        logs.pushtarget("logfile")
-        report_newline()
-        report_status("defined fonts:")
-        report_newline()
+        --
+        logs.startfilelogging(report,"defined fonts")
         for k=1,tn do
-            report_status(t[k])
+            report(t[k])
         end
-        logs.poptarget()
+        logs.stopfilelogging()
     end
 end
 
-luatex.registerstopactions(loggers.reportdefinedfonts)
+logs.registerfinalactions(loggers.reportdefinedfonts)
 
 function loggers.reportusedfeatures()
     -- numbers, setups, merged
@@ -2153,18 +2151,15 @@ function loggers.reportusedfeatures()
             setup.number = n -- restore it (normally not needed as we're done anyway)
         end
         formatcolumns(t,"  ")
-        logs.pushtarget("logfile")
-        report_newline()
-        report_status("defined featuresets:")
-        report_newline()
+        logs.startfilelogging(report,"defined featuresets")
         for k=1,n do
-            report_status(t[k])
+            report(t[k])
         end
-        logs.poptarget()
+        logs.stopfilelogging()
     end
 end
 
-luatex.registerstopactions(loggers.reportusedfeatures)
+logs.registerfinalactions(loggers.reportusedfeatures)
 
 -- maybe move this to font-log.lua:
 

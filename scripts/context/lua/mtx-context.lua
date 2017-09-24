@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 1.01",
+    banner   = "ConTeXt Process Management 1.02",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -1778,6 +1778,13 @@ do
         directives.enable(format("logs.blocked={%s}",silent))
     elseif silent then
         directives.enable("logs.blocked")
+    end
+
+    local errors = getargument("errors")
+    if type(errors) == "errors" then
+        directives.enable(format("logs.errors={%s}",silent))
+    elseif errors then
+        directives.enable("logs.errors")
     end
 
 end
