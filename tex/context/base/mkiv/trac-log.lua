@@ -1050,8 +1050,8 @@ if tex then
 
     local finalactions  = { }
     local fatalerrors   = { }
-    local loggingerrors = false
     local possiblefatal = { }
+    local loggingerrors = false
 
     function logs.loggingerrors()
         return loggingerrors
@@ -1120,7 +1120,6 @@ if tex then
     end
 
     function logs.starterrorlogging(r,w,...)
-        errorlogs[w] = true
         if fatalerrors[w] then
             possiblefatal[w] = true
         end

@@ -1833,6 +1833,37 @@
 \unexpanded\def\tabl_tabulate_CM_first{\global\c_tabl_tabulate_localcolorspan\plustwo  \tabl_tabulate_set_color_column\zerocount}
 \unexpanded\def\tabl_tabulate_CR_first{\global\c_tabl_tabulate_localcolorspan\plusthree\tabl_tabulate_set_color_column\zerocount}
 
+%D Sort of special:
+%D
+%D \startbuffer
+%D \startitemize[n]
+%D \starttabulate[|||||]
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \stoptabulate
+%D \stopitemize
+%D
+%D \startitemize[n]
+%D \starttabulate[|||||]
+%D \NI b \NC c \NC d \NC \NR
+%D \NC a \NI c \NC d \NC \NR
+%D \NC a \NC b \NI d \NC \NR
+%D \NC a \NC b \NC c \NI \NR
+%D \stoptabulate
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\let\NI\relax
+
+\unexpanded\def\tabl_tabulate_NI_first{\doifelsefastoptionalcheck\tabl_tbl_NI_yes\tabl_tbl_NI_nop}
+
+\def\tabl_tbl_NI_yes[#1]{\NC \itemtag[#1]\NC}
+\def\tabl_tbl_NI_nop    {\NC \itemtag    \NC}
+
 %D The following shortcut is handy for tables where one needs bold headers:
 
 %unexpanded\def\tabl_tabulate_BC_first{\NC\let\fontstyle\globalfontstyle\bf}
@@ -1843,36 +1874,37 @@
    \bf}
 
 \appendtoks
-   \let\VL\tabl_tabulate_VL_first
-   \let\NC\tabl_tabulate_NC_first
-   \let\BC\tabl_tabulate_BC_first
-   \let\RC\tabl_tabulate_RC_first
-   \let\HC\tabl_tabulate_HC_first
-   \let\EQ\tabl_tabulate_EQ_first
-   \let\RQ\tabl_tabulate_RQ_first
-   \let\HQ\tabl_tabulate_HQ_first
-   \let\NG\tabl_tabulate_NG_first
-   \let\NN\tabl_tabulate_NN_first
-   \let\ND\tabl_tabulate_ND_first
-   \let\NR\tabl_tabulate_NR_first
-   \let\NB\tabl_tabulate_NB_first
-   \let\CC\tabl_tabulate_CC_first
-   \let\CL\tabl_tabulate_CL_first
-   \let\CM\tabl_tabulate_CM_first
-   \let\CR\tabl_tabulate_CR_first
+    \let\VL\tabl_tabulate_VL_first
+    \let\NC\tabl_tabulate_NC_first
+    \let\BC\tabl_tabulate_BC_first
+    \let\RC\tabl_tabulate_RC_first
+    \let\HC\tabl_tabulate_HC_first
+    \let\EQ\tabl_tabulate_EQ_first
+    \let\RQ\tabl_tabulate_RQ_first
+    \let\HQ\tabl_tabulate_HQ_first
+    \let\NG\tabl_tabulate_NG_first
+    \let\NN\tabl_tabulate_NN_first
+    \let\ND\tabl_tabulate_ND_first
+    \let\NR\tabl_tabulate_NR_first
+    \let\NB\tabl_tabulate_NB_first
+    \let\CC\tabl_tabulate_CC_first
+    \let\CL\tabl_tabulate_CL_first
+    \let\CM\tabl_tabulate_CM_first
+    \let\CR\tabl_tabulate_CR_first
+    \let\NI\tabl_tabulate_NI_first
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
-   \let\NR\tabl_tabulate_NR_second
-   \let\NB\tabl_tabulate_NB_second
+    \let\NR\tabl_tabulate_NR_second
+    \let\NB\tabl_tabulate_NB_second
 \to \t_tabl_tabulate_initializers_second
 
 \appendtoks
-   \let\SR\NR
-   \let\FR\NR
-   \let\MR\NR
-   \let\LR\NR
-   \let\AR\NR
+    \let\SR\NR
+    \let\FR\NR
+    \let\MR\NR
+    \let\LR\NR
+    \let\AR\NR
 \to \t_tabl_tabulate_initializers_first
 
 \unexpanded\def\tabl_tabulate_NR_common#1#2%

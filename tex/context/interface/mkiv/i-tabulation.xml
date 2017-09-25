@@ -204,6 +204,8 @@
 
         <cd:command name="NC" scope="tabulate" file="tabl-tbl.mkiv"/>
 
+        <cd:command name="NI" scope="tabulate" file="tabl-tbl.mkiv"/>
+
         <cd:command name="RC" scope="tabulate" file="tabl-tbl.mkiv"/>
 
         <cd:command name="HC" scope="tabulate" file="tabl-tbl.mkiv"/>
