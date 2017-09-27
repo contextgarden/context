@@ -6111,40 +6111,46 @@
 %D \macros
 %D   {ScaledPointsToBigPoints,ScaledPointsToWholeBigPoints}
 %D
-%D One characteristic of \POSTSCRIPT\ and \PDF\ is that both
-%D used big points (\TEX's bp). The next macros convert points
-%D and scaled points into big points.
+%D One characteristic of \POSTSCRIPT\ and \PDF\ is that both used big points (\TEX's
+%D bp). The next macros convert points and scaled points into big points. The magic
+%D factor $72/72.27$ can be found in most \TEX\ related books.
 %D
 %D \starttyping
 %D \ScaledPointsToBigPoints      {number} \target
 %D \ScaledPointsToWholeBigPoints {number} \target
 %D \stoptyping
 %D
-%D The magic factor $72/72.27$ can be found in most \TEX\
-%D related books.
 
-% \PointsToBigPoints{10.53940pt}\test \test
-% \PointsToBigPoints{10.53941pt}\test \test
-% \PointsToBigPoints{10.53942pt}\test \test
+%D In pure \TEX:
 
-% \PointsToWholeBigPoints{10.53940pt}\test \test
-% \PointsToWholeBigPoints{10.53941pt}\test \test
-% \PointsToWholeBigPoints{10.53942pt}\test \test
+% \unexpanded\def\PointsToBigPoints#1#2%
+%   {\edef#2{\withoutpt\the\dimexpr.996264\dimexpr#1\relax\relax}}
+%
+% \unexpanded\def\PointsToWholeBigPoints#1#2%
+%   {\edef#2{\the\numexpr\dimexpr.996264\dimexpr#1\relax\relax/\maxcard\relax}}
+%
+% \unexpanded\def\ScaledPointsToBigPoints#1%    %  #2
+%   {\PointsToBigPoints{\number#1\scaledpoint}} % {#2}
+%
+% \unexpanded\def\ScaledPointsToWholeBigPoints#1%    %  #2
+%   {\PointsToWholeBigPoints{\number#1\scaledpoint}} % {#2}
 
-\unexpanded\def\PointsToBigPoints#1#2%
-  {\edef#2{\withoutpt\the\dimexpr.996264\dimexpr#1\relax\relax}}
+%D This is slower but cleaner and more accurate too. The only place these are still
+%D used is in a few backend related macros.
 
-\unexpanded\def\PointsToWholeBigPoints#1#2%
-  {\edef#2{\the\numexpr\dimexpr.996264\dimexpr#1\relax\relax/\maxcard\relax}}
+\let\tobigpoints     \clf_tobigpoints
+\let\towholebigpoints\clf_towholebigpoints
 
-\unexpanded\def\ScaledPointsToBigPoints     #1{\PointsToBigPoints     {\number#1\scaledpoint}}
-\unexpanded\def\ScaledPointsToWholeBigPoints#1{\PointsToWholeBigPoints{\number#1\scaledpoint}}
+\unexpanded\def\PointsToBigPoints           #1#2{\edef#2{\tobigpoints     #1}}             % can be avoided
+\unexpanded\def\PointsToWholeBigPoints      #1#2{\edef#2{\towholebigpoints#1}}             % can be avoided
+\unexpanded\def\ScaledPointsToBigPoints     #1#2{\edef#2{\tobigpoints     #1\scaledpoint}} % obsolete
+\unexpanded\def\ScaledPointsToWholeBigPoints#1#2{\edef#2{\towholebigpoints#1\scaledpoint}} % obsolete
 
 %D \macros
 %D   {PointsToReal}
 %D
-%D Points can be stripped from their suffix by using
-%D \type{\withoutpt}. The next macro enveloppes this macro.
+%D Points can be stripped from their suffix by using \type {\withoutpt}. The next
+%D macro enveloppes this macro.
 %D
 %D \starttyping
 %D \PointsToReal {dimension} \target

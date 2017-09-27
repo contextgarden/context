@@ -1070,15 +1070,6 @@ if tex then
         insert(finalactions,...) -- so we can force an order if needed
     end
 
-    function logs.finalactions()
-        if #finalactions > 0 then
-            for i=1,#finalactions do
-                finalactions[i]()
-            end
-            return next(possiblefatal) and sortedkeys(possiblefatal) or false
-        end
-    end
-
     local what   = nil
     local report = nil
     local state  = nil
@@ -1119,14 +1110,39 @@ if tex then
         return startlogging("logfile", ...)
     end
 
+    logs.stopfilelogging = stoplogging
+
+    local done = false
+
     function logs.starterrorlogging(r,w,...)
+        if not done then
+            pushtarget("terminal")
+            newline()
+            logs.report("error logging","start possible issues")
+            poptarget()
+            done = true
+        end
         if fatalerrors[w] then
             possiblefatal[w] = true
         end
         return startlogging("terminal",r,w,...)
     end
 
-    logs.stopfilelogging  = stoplogging
     logs.stoperrorlogging = stoplogging
+
+    function logs.finalactions()
+        if #finalactions > 0 then
+            for i=1,#finalactions do
+                finalactions[i]()
+            end
+            if done then
+                pushtarget("terminal")
+                newline()
+                logs.report("error logging","stop possible issues")
+                poptarget()
+            end
+            return next(possiblefatal) and sortedkeys(possiblefatal) or false
+        end
+    end
 
 end

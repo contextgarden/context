@@ -16,6 +16,8 @@ local report_schemes = logs.reporter("resolvers","schemes")
 local http           = require("socket.http")
 local ltn12          = require("ltn12")
 
+if mbox then mbox = nil end -- useless and even bugged (helper overwrites lib)
+
 local resolvers      = resolvers
 local schemes        = resolvers.schemes or { }
 resolvers.schemes    = schemes

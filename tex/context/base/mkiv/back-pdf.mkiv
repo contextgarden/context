@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D The less ther ei shere, the better.
+
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
 %registerctxluafile{lpdf-aux}{1.001} % common helpers
@@ -37,8 +39,8 @@
 
 \unprotect
 
-%D We will minimize the number of calls to \PDF\ specific primitives
-%D and delegate all management and injection of code to the backend.
+%D We will minimize the number of calls to \PDF\ specific primitives and delegate
+%D all management and injection of code to the backend.
 %D
 %D Here we initialize some internal quantities. We also protect them.
 
@@ -71,8 +73,8 @@
 \unexpanded\def\pdfannot{\clf_pdfannot}
 \unexpanded\def\pdfdest {\clf_pdfdest}
 
-%D Here we do intercept (silently) what gets passed. One should use the
-%D \CONTEXT\ interfaces instead.
+%D Here we do intercept (silently) what gets passed. One should use the \CONTEXT\
+%D interfaces instead.
 
 \let\pdfcatalog       \relax  \newtoks\pdfcatalog
 \let\pdfinfo          \relax  \newtoks\pdfinfo
@@ -84,8 +86,8 @@
 \let\pdfxformattr     \relax  \newtoks\pdfxformattr
 \let\pdfxformresources\relax  \newtoks\pdfxformresources
 
-%D We use the \LUA\ interface (which then permits more control over
-%D possible pdf/x extensions).
+%D We use the \LUA\ interface (which then permits more control over possible pdf/x
+%D extensions).
 
 \let\pdfcompresslevel   \relax  \newcount\pdfcompresslevel
 \let\pdfobjcompresslevel\relax  \newcount\pdfobjcompresslevel
@@ -157,9 +159,8 @@
 \let\pdfxform                  \saveboxresource
 \let\pdfximage                 \saveimageresource
 
-%D For the moment we keep these as they are but they will become \LUA\
-%D calls eventually, after which we will nil the three \type {\pdf}
-%D interface primitives.
+%D For the moment we keep these as they are but they will become \LUA\ calls
+%D eventually, after which we will nil the three \type {\pdf} interface primitives.
 
 \normalprotected\def\pdfliteral  {\pdfextension literal }
 \normalprotected\def\pdfobj      {\pdfextension obj }
@@ -169,8 +170,7 @@
 \normalprotected\def\pdfsave     {\pdfextension save\relax}
 \normalprotected\def\pdfsetmatrix{\pdfextension setmatrix }
 
-%D This one can be consulted by users although the suffix is also
-%D a system mode.
+%D This one can be consulted by users although the suffix is also a system mode.
 
 \back_job_set_suffix{pdf}
 
@@ -303,8 +303,8 @@
 
 \unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
   {\forcecolorhack
-   \PointsToBigPoints{#2}\width
-   \PointsToBigPoints{#3}\height
+   \edef\width {\tobigpoints#2}%
+   \edef\height{\tobigpoints#3}%
    \meta_grab_clip_path{#1}\width\height{%
      0            0             m %
      \width\space 0             l %
@@ -323,252 +323,221 @@
 %def\TransparencyHack{\ctxlua{backends.codeinjections.addtransparencygroup()}}
 \def\TransparencyHack{\setupcolors[\c!pagecolormodel=\v!auto]}
 
-% \let\lastpredefinedsymbol\empty % some day we can do more at the lua end
-%
-% \unexpanded\def\predefinesymbol[#1]%
-%   {\begingroup
-%    \xdef\lastpredefinedsymbol{#1}%
-%    \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
-%    \dogetobjectreference{SYM}{#1}\m_back_object_reference
-%    \clf_registerbackendsymbol{#1}\m_back_object_reference\relax
-%    \endgroup}
-
 % Still here:
 
 %D \macros
 %D  {back_ovalbox}
 %D
-%D Drawing frames with round corners is inherited from the
-%D main module.
-%D
-%D For drawing ovals we use quite raw \PDF\ code. The next
-%D implementation does not differ that much from the one
-%D implemented in the \POSTSCRIPT\ driver. This code is
-%D somewhat obsolete as we now have metapost embedded.
-
-% \def\back_oval_calculate#1#2#3%
-%   {\PointsToBigPoints{\dimexpr#2+#3\relax}#1}
+%D Drawing frames with round corners is inherited from the main module. For drawing
+%D ovals we use quite raw \PDF\ code. The next implementation does not differ that
+%D much from the one implemented in the \POSTSCRIPT\ driver. This code is somewhat
+%D obsolete as we now have metapost embedded.
 
 \unexpanded\def\back_ovalbox#1#2#3#4#5#6#7#8%
   {\forcecolorhack
    \bgroup
-%    \scratchdimen#4%
-%    \divide\scratchdimen\plustwo
-%    \back_oval_calculate\xmin  \zeropoint\scratchdimen
-%    \back_oval_calculate\xmax  {#1}{-\scratchdimen}%
-%    \back_oval_calculate\ymax  {#2}{-\scratchdimen}%
-%    \back_oval_calculate\ymin  {-#3}\scratchdimen
-%    \advance\scratchdimen by #5%
-%    \back_oval_calculate\xxmin \zeropoint\scratchdimen
-%    \back_oval_calculate\xxmax {#1}{-\scratchdimen}%
-%    \back_oval_calculate\yymax {#2}{-\scratchdimen}%
-%    \back_oval_calculate\yymin {-#3}\scratchdimen
-%    \back_oval_calculate\stroke{#4}\zeropoint
-%    \back_oval_calculate\radius{#5}\zeropoint
-   %
-   \PointsToBigPoints{#4}                       \stroke
-   \PointsToBigPoints{#5}                       \radius
+   \edef\stroke{\tobigpoints\dimexpr#4\relax\space}%
+   \edef\radius{\tobigpoints\dimexpr#5\relax\space}%
    \scratchdimen\dimexpr#4/\plustwo\relax
-   \PointsToBigPoints             \scratchdimen \xmin
-   \PointsToBigPoints{\dimexpr #1-\scratchdimen}\xmax
-   \PointsToBigPoints{\dimexpr #2-\scratchdimen}\ymax
-   \PointsToBigPoints{\dimexpr-#3+\scratchdimen}\ymin
+   \edef\xmin {\tobigpoints            \scratchdimen      \space}%
+   \edef\xmax {\tobigpoints\dimexpr #1-\scratchdimen\relax\space}%
+   \edef\ymax {\tobigpoints\dimexpr #2-\scratchdimen\relax\space}%
+   \edef\ymin {\tobigpoints\dimexpr-#3+\scratchdimen\relax\space}%
    \advance\scratchdimen by #5\relax
-   \PointsToBigPoints             \scratchdimen \xxmin
-   \PointsToBigPoints{\dimexpr #1-\scratchdimen}\xxmax
-   \PointsToBigPoints{\dimexpr #2-\scratchdimen}\yymax
-   \PointsToBigPoints{\dimexpr-#3+\scratchdimen}\yymin
+   \edef\xxmin{\tobigpoints            \scratchdimen      \space}%
+   \edef\xxmax{\tobigpoints\dimexpr #1-\scratchdimen\relax\space}%
+   \edef\yymax{\tobigpoints\dimexpr #2-\scratchdimen\relax\space}%
+   \edef\yymin{\tobigpoints\dimexpr-#3+\scratchdimen\relax\space}%
    %
    \edef\dostroke{\number#6}%
-   \edef\dofill{\number#7}%
-   \edef\mode{\number#8}%
-   % no \ifcase, else \relax in pdfcode
+   \edef\dofill  {\number#7}%
+   \scratchcounter#8\relax
    \setbox\scratchbox\naturalhpack
      {\ifnum\dostroke\dofill>\zerocount
         \pdfliteral
           {q
-           \stroke\space               w
-           \ifcase\mode\space
-             \xxmin\space \ymin \space m
-             \xxmax\space \ymin \space l
-             \xmax \space \ymin \space \xmax \space \yymin\space y
-             \xmax \space \yymax\space l
-             \xmax \space \ymax \space \xxmax\space \ymax \space y
-             \xxmin\space \ymax \space l
-             \xmin \space \ymax \space \xmin \space \yymax\space y
-             \xmin \space \yymin\space l
-             \xmin \space \ymin \space \xxmin\space \ymin \space y
+           \stroke w
+           \ifcase\scratchcounter
+             \xxmin \ymin  m
+             \xxmax \ymin  l
+             \xmax  \ymin  \xmax  \yymin y
+             \xmax  \yymax l
+             \xmax  \ymax  \xxmax \ymax  y
+             \xxmin \ymax  l
+             \xmin  \ymax  \xmin  \yymax y
+             \xmin  \yymin l
+             \xmin  \ymin  \xxmin \ymin  y
              h
            \or % 1
-             \xxmin\space \ymin \space m
-             \xxmax\space \ymin \space l
-             \xmax \space \ymin \space \xmax \space \yymin\space y
-             \xmax \space \ymax \space l
-             \xmin \space \ymax \space l
-             \xmin \space \yymin\space l
-             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             \xxmin \ymin  m
+             \xxmax \ymin  l
+             \xmax  \ymin  \xmax  \yymin y
+             \xmax  \ymax  l
+             \xmin  \ymax  l
+             \xmin  \yymin l
+             \xmin  \ymin  \xxmin \ymin  y
              h
            \or % 2
-             \xxmin\space \ymin \space m
-             \xmax \space \ymin \space l
-             \xmax \space \ymax \space l
-             \xxmin\space \ymax \space l
-             \xmin \space \ymax \space \xmin \space \yymax\space y
-             \xmin \space \yymin\space l
-             \xmin \space \ymin \space \xxmin\space \ymin \space y
+             \xxmin \ymin  m
+             \xmax  \ymin  l
+             \xmax  \ymax  l
+             \xxmin \ymax  l
+             \xmin  \ymax  \xmin  \yymax y
+             \xmin  \yymin l
+             \xmin  \ymin  \xxmin \ymin  y
              h
            \or % 3
-             \xmin \space \ymin \space m
-             \xmax \space \ymin \space l
-             \xmax \space \yymax\space l
-             \xmax \space \ymax \space \xxmax\space \ymax \space y
-             \xxmin\space \ymax \space l
-             \xmin \space \ymax \space \xmin \space \yymax\space y
-             \xmin \space \ymin \space l
+             \xmin  \ymin  m
+             \xmax  \ymin  l
+             \xmax  \yymax l
+             \xmax  \ymax  \xxmax \ymax  y
+             \xxmin \ymax  l
+             \xmin  \ymax  \xmin  \yymax y
+             \xmin  \ymin  l
              h
            \or % 4
-             \xmin \space \ymin \space m
-             \xxmax\space \ymin \space l
-             \xmax \space \ymin \space \xmax \space \yymin\space y
-             \xmax \space \yymax\space l
-             \xmax \space \ymax \space \xxmax\space \ymax \space y
-             \xmin \space \ymax \space l
-             \xmin \space \ymin\space l
+             \xmin  \ymin  m
+             \xxmax \ymin  l
+             \xmax  \ymin  \xmax  \yymin y
+             \xmax  \yymax l
+             \xmax  \ymax  \xxmax \ymax  y
+             \xmin  \ymax  l
+             \xmin  \ymin  l
              h
            \or % 5
-             \xmin \space \ymin \space m
-             \xmax \space \ymin \space l
-             \xmax \space \yymax\space l
-             \xmax \space \ymax \space \xxmax\space \ymax \space y
-             \xmin \space \ymax \space l
-             \xmin \space \ymin \space l
+             \xmin  \ymin  m
+             \xmax  \ymin  l
+             \xmax  \yymax l
+             \xmax  \ymax  \xxmax \ymax  y
+             \xmin  \ymax  l
+             \xmin  \ymin  l
              h
            \or % 6
-             \xmin \space \ymin \space m
-             \xxmax\space \ymin \space l
-             \xmax \space \ymin \space \xmax \space \yymin\space y
-             \xmax \space \ymax \space l
-             \xmin \space \ymax \space l
-             \xmin \space \ymin \space l
+             \xmin  \ymin  m
+             \xxmax \ymin  l
+             \xmax  \ymin  \xmax  \yymin y
+             \xmax  \ymax  l
+             \xmin  \ymax  l
+             \xmin  \ymin  l
              h
-           \or
-             \xxmin\space \ymin \space m
-             \xmax \space \ymin \space l
-             \xmax \space \ymax \space l
-             \xmin \space \ymax \space l
-             \xmin \space \yymin\space l
-             \xmin \space \ymin \space \xxmin\space \ymin \space y
+           \or % 7
+             \xxmin \ymin  m
+             \xmax  \ymin  l
+             \xmax  \ymax  l
+             \xmin  \ymax  l
+             \xmin  \yymin l
+             \xmin  \ymin  \xxmin \ymin  y
              h
-           \or
-             \xmin \space \ymin \space m
-             \xmax \space \ymin \space l
-             \xmax \space \ymax \space l
-             \xxmin\space \ymax \space l
-             \xmin \space \ymax \space \xmin \space \yymax\space y
-             \xmin \space \ymin \space l
+           \or % 8
+             \xmin  \ymin  m
+             \xmax  \ymin  l
+             \xmax  \ymax  l
+             \xxmin \ymax  l
+             \xmin  \ymax  \xmin  \yymax y
+             \xmin  \ymin  l
              h
            \or % 9 top open
-             \xmin \space \ymax \space m
-             \xmin \space \yymin\space l
-             \xmin \space \ymin \space \xxmin\space \ymin \space y
-             \xxmax\space \ymin \space l
-             \xmax \space \ymin \space \xmax \space \yymin\space y
-             \xmax \space \ymax \space l
+             \xmin  \ymax  m
+             \xmin  \yymin l
+             \xmin  \ymin  \xxmin \ymin  y
+             \xxmax \ymin  l
+             \xmax  \ymin  \xmax  \yymin y
+             \xmax  \ymax  l
            \or % 10 right open
-             \xmax \space \ymax \space m
-             \xxmin\space \ymax \space l
-             \xmin \space \ymax \space \xmin \space \yymax\space y
-             \xmin \space \yymin\space l
-             \xmin \space \ymin \space \xxmin\space \ymin \space y
-             \xmax\space  \ymin \space l
+             \xmax  \ymax  m
+             \xxmin \ymax  l
+             \xmin  \ymax  \xmin  \yymax y
+             \xmin  \yymin l
+             \xmin  \ymin  \xxmin \ymin  y
+             \xmax  \ymin  l
            \or % 11 bottom open
-             \xmax \space \ymin \space m
-             \xmax \space \yymax\space l
-             \xmax \space \ymax \space \xxmax \space \ymax\space y
-             \xxmin\space \ymax \space l
-             \xmin \space \ymax \space \xmin \space \yymax\space y
-             \xmin \space \ymin \space l
+             \xmax  \ymin  m
+             \xmax  \yymax l
+             \xmax  \ymax  \xxmax  \ymax y
+             \xxmin \ymax  l
+             \xmin  \ymax  \xmin  \yymax y
+             \xmin  \ymin  l
            \or % 12 left open
-             \xmin \space \ymax \space m
-             \xxmax\space \ymax \space l
-             \xmax \space \ymax \space \xmax \space \yymax\space y
-             \xmax \space \yymin\space l
-             \xmax \space \ymin \space \xxmax\space \ymin \space y
-             \xmin \space \ymin \space l
+             \xmin  \ymax  m
+             \xxmax \ymax  l
+             \xmax  \ymax  \xmax  \yymax y
+             \xmax  \yymin l
+             \xmax  \ymin  \xxmax \ymin  y
+             \xmin  \ymin  l
            \or % 13
-             \xmin \space \ymax \space m
-             \xxmax\space \ymax \space l
-             \xmax \space \ymax \space \xmax \space \yymax\space y
-             \xmax\space  \ymin \space l
+             \xmin  \ymax  m
+             \xxmax \ymax  l
+             \xmax  \ymax  \xmax  \yymax y
+             \xmax  \ymin  l
            \or % 14
-             \xmax \space \ymax \space m
-             \xmax \space \yymin\space l
-             \xmax \space \ymin \space \xxmax\space \ymin \space y
-             \xmin \space \ymin \space l
+             \xmax  \ymax  m
+             \xmax  \yymin l
+             \xmax  \ymin  \xxmax \ymin  y
+             \xmin  \ymin  l
            \or % 15
-             \xmax \space \ymin \space m
-             \xxmin\space \ymin \space l
-             \xmin \space \ymin \space \xmin \space \yymin\space y
-             \xmin \space \ymax \space l
+             \xmax  \ymin  m
+             \xxmin \ymin  l
+             \xmin  \ymin  \xmin  \yymin y
+             \xmin  \ymax  l
            \or % 16
-             \xmin \space \ymin \space m
-             \xmin \space \yymax\space l
-             \xmin \space \ymax \space \xxmin\space \ymax \space y
-             \xmax \space \ymax \space l
+             \xmin  \ymin  m
+             \xmin  \yymax l
+             \xmin  \ymax  \xxmin \ymax  y
+             \xmax  \ymax  l
            \or % 17
-             \xxmax\space \ymax \space m
-             \xmax \space \ymax \space \xmax \space \yymax\space y
+             \xxmax \ymax  m
+             \xmax  \ymax  \xmax  \yymax y
            \or % 18
-             \xmax \space \yymin\space m
-             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xmax  \yymin m
+             \xmax  \ymin  \xxmax \ymin  y
            \or % 19
-             \xxmin\space \ymin \space m
-             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xxmin \ymin  m
+             \xmin  \ymin  \xmin  \yymin y
            \or % 20
-             \xmin \space \yymax\space m
-             \xmin \space \ymax \space \xxmin\space \ymax \space y
+             \xmin  \yymax m
+             \xmin  \ymax  \xxmin \ymax  y
            \or % 21
-             \xxmax\space \ymax \space m
-             \xmax \space \ymax \space \xmax \space \yymax\space y
-             \xmin \space \yymax\space m
-             \xmin \space \ymax \space \xxmin\space \ymax \space y
+             \xxmax \ymax  m
+             \xmax  \ymax  \xmax  \yymax y
+             \xmin  \yymax m
+             \xmin  \ymax  \xxmin \ymax  y
            \or % 22
-             \xxmax\space \ymax \space m
-             \xmax \space \ymax \space \xmax \space \yymax\space y
-             \xmax \space \yymin\space m
-             \xmax \space \ymin \space \xxmax\space \ymin \space y
+             \xxmax \ymax  m
+             \xmax  \ymax  \xmax  \yymax y
+             \xmax  \yymin m
+             \xmax  \ymin  \xxmax \ymin  y
            \or % 23
-             \xmax \space \yymin\space m
-             \xmax \space \ymin \space \xxmax\space \ymin \space y
-             \xxmin\space \ymin \space m
-             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xmax  \yymin m
+             \xmax  \ymin  \xxmax \ymin  y
+             \xxmin \ymin  m
+             \xmin  \ymin  \xmin  \yymin y
            \or % 24
-             \xxmin\space \ymin \space m
-             \xmin \space \ymin \space \xmin \space \yymin\space y
-             \xmin \space \yymax\space m
-             \xmin \space \ymax \space \xxmin\space \ymax \space y
+             \xxmin \ymin  m
+             \xmin  \ymin  \xmin  \yymin y
+             \xmin  \yymax m
+             \xmin  \ymax  \xxmin \ymax  y
            \or % 25
-             \xxmax\space \ymax \space m
-             \xmax \space \ymax \space \xmax \space \yymax\space y
-             \xmax \space \yymin\space m
-             \xmax \space \ymin \space \xxmax\space \ymin \space y
-             \xxmin\space \ymin \space m
-             \xmin \space \ymin \space \xmin \space \yymin\space y
-             \xmin \space \yymax\space m
-             \xmin \space \ymax \space \xxmin\space \ymax \space y
+             \xxmax \ymax  m
+             \xmax  \ymax  \xmax  \yymax y
+             \xmax  \yymin m
+             \xmax  \ymin  \xxmax \ymin  y
+             \xxmin \ymin  m
+             \xmin  \ymin  \xmin  \yymin y
+             \xmin  \yymax m
+             \xmin  \ymax  \xxmin \ymax  y
            \or % 26
-             \xmax \space \yymin\space m
-             \xmax \space \ymin \space \xxmax\space \ymin \space y
-             \xmin \space \yymax\space m
-             \xmin \space \ymax \space \xxmin\space \ymax \space y
+             \xmax  \yymin m
+             \xmax  \ymin  \xxmax \ymin  y
+             \xmin  \yymax m
+             \xmin  \ymax  \xxmin \ymax  y
            \or % 27
-             \xxmax\space \ymax \space m
-             \xmax \space \ymax \space \xmax \space \yymax\space y
-             \xxmin\space \ymin \space m
-             \xmin \space \ymin \space \xmin \space \yymin\space y
+             \xxmax \ymax  m
+             \xmax  \ymax  \xmax  \yymax y
+             \xxmin \ymin  m
+             \xmin  \ymin  \xmin  \yymin y
            \or % 28
            \fi
-           \ifnum\mode>\pluseight\space
+           \ifnum\scratchcounter>\pluseight
                                        S
            \else
              \ifnum\dostroke=\plusone  S \fi
@@ -594,14 +563,3 @@
 % \stoptext
 
 \protect \endinput
-
-% \chapter{FIRST}
-%
-% \goto{bar}[bar]
-%
-% HERE \pdfannot width 20pt height 20pt depth 20pt {/Subtype /Link /Dest (bar) /Border [1 1 1] /F 4}\par
-% HERE \pdfannot width 20pt height 20pt depth 20pt {/Subtype /Link /Dest (foo) /Border [1 1 1] /F 4}\par
-%
-% \chapter[bar]{SECOND}
-%
-% THERE \pdfdest name {foo} \par

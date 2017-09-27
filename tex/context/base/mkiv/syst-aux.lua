@@ -652,3 +652,18 @@ implement {
 --         context(s)
 --     end
 -- }
+
+local bp = number.dimenfactors.bp
+
+interfaces.implement {
+    name      = "tobigpoints",
+    actions   = function(d) context("%.5F",bp * d) end,
+    arguments = "dimension",
+}
+
+interfaces.implement {
+    name      = "towholebigpoints",
+    actions   = function(d) context("%r",bp * d) end,
+    arguments = "dimension",
+}
+

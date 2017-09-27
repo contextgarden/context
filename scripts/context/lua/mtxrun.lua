@@ -766,7 +766,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 37804, stripped down to: 20128
+-- original size: 37621, stripped down to: 20262
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1336,7 +1336,13 @@ function lpeg.append(list,pp,delayed,checked)
 end
 local p_false=P(false)
 local p_true=P(true)
-local function make(t,rest)
+local lower=utf and utf.lower or string.lower
+local upper=utf and utf.upper or string.upper
+function lpeg.setutfcasers(l,u)
+  lower=l or lower
+  upper=u or upper
+end
+local function make1(t,rest)
   local p=p_false
   local keys=sortedkeys(t)
   for i=1,#keys do
@@ -1347,7 +1353,7 @@ local function make(t,rest)
         p=p+P(k)*p_true
       elseif v==false then
       else
-        p=p+P(k)*make(v,v[""])
+        p=p+P(k)*make1(v,v[""])
       end
     end
   end
@@ -1356,32 +1362,27 @@ local function make(t,rest)
   end
   return p
 end
-local function collapse(t,x)
-  if type(t)~="table" then
-    return t,x
-  else
-    local n=next(t)
-    if n==nil then
-      return t,x
-    elseif next(t,n)==nil then
-      local k=n
+local function make2(t,rest) 
+  local p=p_false
+  local keys=sortedkeys(t)
+  for i=1,#keys do
+    local k=keys[i]
+    if k~="" then
       local v=t[k]
-      if type(v)=="table" then
-        return collapse(v,x..k)
+      if v==true then
+        p=p+(P(lower(k))+P(upper(k)))*p_true
+      elseif v==false then
       else
-        return v,x..k
+        p=p+(P(lower(k))+P(upper(k)))*make2(v,v[""])
       end
-    else
-      local tt={}
-      for k,v in next,t do
-        local vv,kk=collapse(v,k)
-        tt[kk]=vv
-      end
-      return tt,x
     end
   end
+  if rest then
+    p=p+p_true
+  end
+  return p
 end
-function lpeg.utfchartabletopattern(list) 
+function lpeg.utfchartabletopattern(list,insensitive) 
   local tree={}
   local n=#list
   if n==0 then
@@ -1452,7 +1453,7 @@ function lpeg.utfchartabletopattern(list)
       end
     end
   end
-  return make(tree)
+  return (insensitive and make2 or make1)(tree)
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -8804,7 +8805,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 32304, stripped down to: 22602
+-- original size: 32737, stripped down to: 22946
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -9620,14 +9621,6 @@ if tex then
   function logs.registerfinalactions(...)
     insert(finalactions,...) 
   end
-  function logs.finalactions()
-    if #finalactions>0 then
-      for i=1,#finalactions do
-        finalactions[i]()
-      end
-      return next(possiblefatal) and sortedkeys(possiblefatal) or false
-    end
-  end
   local what=nil
   local report=nil
   local state=nil
@@ -9664,14 +9657,36 @@ if tex then
   function logs.startfilelogging(...)
     return startlogging("logfile",...)
   end
+  logs.stopfilelogging=stoplogging
+  local done=false
   function logs.starterrorlogging(r,w,...)
+    if not done then
+      pushtarget("terminal")
+      newline()
+      logs.report("error logging","start possible issues")
+      poptarget()
+      done=true
+    end
     if fatalerrors[w] then
       possiblefatal[w]=true
     end
     return startlogging("terminal",r,w,...)
   end
-  logs.stopfilelogging=stoplogging
   logs.stoperrorlogging=stoplogging
+  function logs.finalactions()
+    if #finalactions>0 then
+      for i=1,#finalactions do
+        finalactions[i]()
+      end
+      if done then
+        pushtarget("terminal")
+        newline()
+        logs.report("error logging","stop possible issues")
+        poptarget()
+      end
+      return next(possiblefatal) and sortedkeys(possiblefatal) or false
+    end
+  end
 end
 
 
@@ -19648,7 +19663,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6673, stripped down to: 5485
+-- original size: 6753, stripped down to: 5512
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -19664,6 +19679,7 @@ local trace_schemes=false trackers.register("resolvers.schemes",function(v) trac
 local report_schemes=logs.reporter("resolvers","schemes")
 local http=require("socket.http")
 local ltn12=require("ltn12")
+if mbox then mbox=nil end 
 local resolvers=resolvers
 local schemes=resolvers.schemes or {}
 resolvers.schemes=schemes
@@ -20738,8 +20754,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 852095
--- stripped bytes    : 307583
+-- original bytes    : 852425
+-- stripped bytes    : 307408
 
 -- end library merge
 

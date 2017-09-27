@@ -10,6 +10,7 @@ local format, insert, sortedkeys, tohash = string.format, table.insert, table.so
 local type, next = type, next
 local lpegmatch = lpeg.match
 local utfbyte, utflen, utfsplit = utf.byte, utf.len, utf.split
+local match = string.match
 
 -- we assume that the other otf stuff is loaded already
 
@@ -1031,7 +1032,8 @@ registerotffeature {
 local lookups = { }
 local protect = { }
 local revert  = { }
-local zwj     = { 0x200C }
+local zwjchar = 0x200C
+local zwj     = { zwjchar }
 
 otf.addfeature {
     name    = "blockligatures",
@@ -1075,21 +1077,47 @@ registerotffeature {
 local settings_to_array = utilities.parsers and utilities.parsers.settings_to_array
                        or function(s) return string.split(s,",") end -- for generic
 
+local splitter = lpeg.splitat(":")
+
 local function blockligatures(str)
 
     local t = settings_to_array(str)
 
     for i=1,#t do
-        local ti = utfsplit(t[i])
-        if #ti > 1 then
-            local one = ti[1]
-            local two = ti[2]
-            lookups[one] = { one, 0x200C }
+        local ti = t[i]
+        local before, current, after = lpegmatch(splitter,ti)
+        if before and current and after then
+            -- experimental joke
+            if before then
+                before = utfsplit(before)
+                for i=1,#before do
+                    before[i] = { before[i] }
+                end
+            end
+            if current then
+                current = utfsplit(current)
+            end
+            if after then
+                after = utfsplit(after)
+                for i=1,#after do
+                    after[i] = { after[i] }
+                end
+            end
+
+        else
+            current = utfsplit(ti)
+        end
+        if #current > 1 then
+            local one = current[1]
+            local two = current[2]
+            lookups[one] = { one, zwjchar }
             local one = { one }
             local two = { two }
             local new = #protect + 1
             protect[new] = {
+                before  = before,
                 current = { one, two },
+                after   = after,
                 lookups = { 1 }, -- not shared !
             }
             revert[new] = {
@@ -1099,7 +1127,6 @@ local function blockligatures(str)
             }
         end
     end
-
 end
 
 -- blockligatures("\0\0")
@@ -1108,6 +1135,7 @@ otf.helpers.blockligatures = blockligatures
 
 -- blockligatures("fi,ff")
 -- blockligatures("fl")
+-- blockligatures("u:fl:age")
 
 if context then
 

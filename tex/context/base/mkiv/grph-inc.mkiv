@@ -65,8 +65,8 @@
    \c!symbol         =\v!no,
    \c!controls       =\v!no,
    \c!resources      =,
-   \c!preview        =\v!no
-   \c!repeat         =\v!no
+   \c!preview        =\v!no,
+   \c!repeat         =\v!no,
    \c!foregroundcolor=,
    \c!interaction    =\v!none,
    \c!hfactor        =,
@@ -118,14 +118,14 @@
 % \useexternalfigure[gamma][cow][alpha]
 % \useexternalfigure[delta][cow][alpha][width=2cm]
 %
-% volle breedte: \externalfigure[cow]               \par
-% 3cm breed:     \externalfigure[cow]  [width=3cm]  \par
-% volle breedte: \externalfigure[alpha]             \par
-% 1cm breed:     \externalfigure[beta]              \par
-% volle breedte: \externalfigure[gamma]             \par
-% 2cm breed:     \externalfigure[delta]             \par
-% 4cm breed:     \externalfigure[beta] [width=4cm]  \par
-% 5cm breed:     \externalfigure[gamma][width=5cm]  \par
+% full width : \externalfigure[cow]               \par
+% 3cm width  : \externalfigure[cow]  [width=3cm]  \par
+% full width : \externalfigure[alpha]             \par
+% 1cm width  : \externalfigure[beta]              \par
+% full width : \externalfigure[gamma]             \par
+% 2cm width  : \externalfigure[delta]             \par
+% 4cm width  : \externalfigure[beta] [width=4cm]  \par
+% 5cm width  : \externalfigure[gamma][width=5cm]  \par
 %
 % \defineexternalfigure[a][width=10cm]
 % \defineexternalfigure[b][width=5cm]
@@ -153,14 +153,13 @@
 %
 % \defineexternalfigure[name][settings]
 
-%D Defining is persistent, i.e.\ when you redefine an instance,
-%D the already set parameters need to be set again or otherwise
-%D the old values will be used.
-
+%D Defining is persistent, i.e.\ when you redefine an instance, the already set
+%D parameters need to be set again or otherwise the old values will be used.
+%D
 %D New: \type {method=auto}: strips suffix and uses \quote {order} which is handy in
-%D some of four workflows where sources are used for web and print and where
-%D the web tools need a suffix (like gif) which we don't want as we want a high
-%D quality format.
+%D some of four workflows where sources are used for web and print and where the web
+%D tools need a suffix (like gif) which we don't want as we want a high quality
+%D format.
 
 \newconditional\c_grph_include_trace_inheritance
 
@@ -910,9 +909,10 @@
 
 \protect \endinput
 
-% Moved here because this already old code is nowhere documents (so I need to
-% check it:
+%D Moved here because this already old code is nowhere documents (so I need to check
+%D it:
 %
+% \starttyping
 % \starttext
 %
 % \startluaparameterset [u3d:myset:controls:1]

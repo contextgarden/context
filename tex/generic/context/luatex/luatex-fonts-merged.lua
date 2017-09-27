@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/24/17 23:06:01
+-- merge date  : 09/27/17 19:12:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -691,7 +691,13 @@ function lpeg.append(list,pp,delayed,checked)
 end
 local p_false=P(false)
 local p_true=P(true)
-local function make(t,rest)
+local lower=utf and utf.lower or string.lower
+local upper=utf and utf.upper or string.upper
+function lpeg.setutfcasers(l,u)
+  lower=l or lower
+  upper=u or upper
+end
+local function make1(t,rest)
   local p=p_false
   local keys=sortedkeys(t)
   for i=1,#keys do
@@ -702,7 +708,7 @@ local function make(t,rest)
         p=p+P(k)*p_true
       elseif v==false then
       else
-        p=p+P(k)*make(v,v[""])
+        p=p+P(k)*make1(v,v[""])
       end
     end
   end
@@ -711,32 +717,27 @@ local function make(t,rest)
   end
   return p
 end
-local function collapse(t,x)
-  if type(t)~="table" then
-    return t,x
-  else
-    local n=next(t)
-    if n==nil then
-      return t,x
-    elseif next(t,n)==nil then
-      local k=n
+local function make2(t,rest) 
+  local p=p_false
+  local keys=sortedkeys(t)
+  for i=1,#keys do
+    local k=keys[i]
+    if k~="" then
       local v=t[k]
-      if type(v)=="table" then
-        return collapse(v,x..k)
+      if v==true then
+        p=p+(P(lower(k))+P(upper(k)))*p_true
+      elseif v==false then
       else
-        return v,x..k
+        p=p+(P(lower(k))+P(upper(k)))*make2(v,v[""])
       end
-    else
-      local tt={}
-      for k,v in next,t do
-        local vv,kk=collapse(v,k)
-        tt[kk]=vv
-      end
-      return tt,x
     end
   end
+  if rest then
+    p=p+p_true
+  end
+  return p
 end
-function lpeg.utfchartabletopattern(list) 
+function lpeg.utfchartabletopattern(list,insensitive) 
   local tree={}
   local n=#list
   if n==0 then
@@ -807,7 +808,7 @@ function lpeg.utfchartabletopattern(list)
       end
     end
   end
-  return make(tree)
+  return (insensitive and make2 or make1)(tree)
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -28763,6 +28764,7 @@ local format,insert,sortedkeys,tohash=string.format,table.insert,table.sortedkey
 local type,next=type,next
 local lpegmatch=lpeg.match
 local utfbyte,utflen,utfsplit=utf.byte,utf.len,utf.split
+local match=string.match
 local trace_loading=false trackers.register("otf.loading",function(v) trace_loading=v end)
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
@@ -29582,7 +29584,8 @@ registerotffeature {
 local lookups={}
 local protect={}
 local revert={}
-local zwj={ 0x200C }
+local zwjchar=0x200C
+local zwj={ zwjchar }
 otf.addfeature {
   name="blockligatures",
   type="chainsubstitution",
@@ -29621,19 +29624,42 @@ registerotffeature {
 }
 local settings_to_array=utilities.parsers and utilities.parsers.settings_to_array
             or function(s) return string.split(s,",") end 
+local splitter=lpeg.splitat(":")
 local function blockligatures(str)
   local t=settings_to_array(str)
   for i=1,#t do
-    local ti=utfsplit(t[i])
-    if #ti>1 then
-      local one=ti[1]
-      local two=ti[2]
-      lookups[one]={ one,0x200C }
+    local ti=t[i]
+    local before,current,after=lpegmatch(splitter,ti)
+    if before and current and after then
+      if before then
+        before=utfsplit(before)
+        for i=1,#before do
+          before[i]={ before[i] }
+        end
+      end
+      if current then
+        current=utfsplit(current)
+      end
+      if after then
+        after=utfsplit(after)
+        for i=1,#after do
+          after[i]={ after[i] }
+        end
+      end
+    else
+      current=utfsplit(ti)
+    end
+    if #current>1 then
+      local one=current[1]
+      local two=current[2]
+      lookups[one]={ one,zwjchar }
       local one={ one }
       local two={ two }
       local new=#protect+1
       protect[new]={
+        before=before,
         current={ one,two },
+        after=after,
         lookups={ 1 },
       }
       revert[new]={

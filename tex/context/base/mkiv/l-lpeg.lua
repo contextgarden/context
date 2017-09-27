@@ -843,48 +843,42 @@ end
 local p_false = P(false)
 local p_true  = P(true)
 
--- local function making(t)
---     local p    = p_false
---     local keys = sortedkeys(t)
---     for i=1,#keys do
---         local k = keys[i]
---         if k ~= "" then
+-- local function collapse(t,x)
+--     if type(t) ~= "table" then
+--         return t, x
+--     else
+--         local n = next(t)
+--         if n == nil then
+--             return t, x
+--         elseif next(t,n) == nil then
+--             -- one entry
+--             local k = n
 --             local v = t[k]
---             if v == true then
---                 p = p + P(k) * p_true
---             elseif v == false then
---                 -- can't happen
+--             if type(v) == "table" then
+--                 return collapse(v,x..k)
 --             else
---                 p = p + P(k) * making(v)
+--                 return v, x .. k
 --             end
+--         else
+--             local tt = { }
+--             for k, v in next, t do
+--                 local vv, kk = collapse(v,k)
+--                 tt[kk] = vv
+--             end
+--             return tt, x
 --         end
 --     end
---     if t[""] then
---         p = p + p_true
---     end
---     return p
 -- end
 
--- local function make(t)
---     local p    = p_false
---     local keys = sortedkeys(t)
---     for i=1,#keys do
---         local k = keys[i]
---         if k ~= "" then
---             local v = t[k]
---             if v == true then
---                 p = p + P(k) * p_true
---             elseif v == false then
---                 -- can't happen
---             else
---                 p = p + P(k) * making(v)
---             end
---         end
---     end
---     return p
--- end
+local lower = utf and utf.lower or string.lower
+local upper = utf and utf.upper or string.upper
 
-local function make(t,rest)
+function lpeg.setutfcasers(l,u)
+    lower = l or lower
+    upper = u or upper
+end
+
+local function make1(t,rest)
     local p    = p_false
     local keys = sortedkeys(t)
     for i=1,#keys do
@@ -896,7 +890,7 @@ local function make(t,rest)
             elseif v == false then
                 -- can't happen
             else
-                p = p + P(k) * make(v,v[""])
+                p = p + P(k) * make1(v,v[""])
             end
         end
     end
@@ -906,34 +900,29 @@ local function make(t,rest)
     return p
 end
 
-local function collapse(t,x)
-    if type(t) ~= "table" then
-        return t, x
-    else
-        local n = next(t)
-        if n == nil then
-            return t, x
-        elseif next(t,n) == nil then
-            -- one entry
-            local k = n
+local function make2(t,rest) -- only ascii
+    local p    = p_false
+    local keys = sortedkeys(t)
+    for i=1,#keys do
+        local k = keys[i]
+        if k ~= "" then
             local v = t[k]
-            if type(v) == "table" then
-                return collapse(v,x..k)
+            if v == true then
+                p = p + (P(lower(k))+P(upper(k))) * p_true
+            elseif v == false then
+                -- can't happen
             else
-                return v, x .. k
+                p = p + (P(lower(k))+P(upper(k))) * make2(v,v[""])
             end
-        else
-            local tt = { }
-            for k, v in next, t do
-                local vv, kk = collapse(v,k)
-                tt[kk] = vv
-            end
-            return tt, x
         end
     end
+    if rest then
+        p = p + p_true
+    end
+    return p
 end
 
-function lpeg.utfchartabletopattern(list) -- goes to util-lpg
+function lpeg.utfchartabletopattern(list,insensitive) -- goes to util-lpg
     local tree = { }
     local n = #list
     if n == 0 then
@@ -1006,9 +995,9 @@ function lpeg.utfchartabletopattern(list) -- goes to util-lpg
             end
         end
     end
---     collapse(tree,"") -- needs testing, maybe optional, slightly faster because P("x")*P("X") seems slower than P"(xX") (why)
---     inspect(tree)
-    return make(tree)
+ -- collapse(tree,"") -- needs testing, maybe optional, slightly faster because P("x")*P("X") seems slower than P"(xX") (why)
+ -- inspect(tree)
+    return (insensitive and make2 or make1)(tree)
 end
 
 -- local t = { "start", "stoep", "staart", "paard" }
