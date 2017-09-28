@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/27/17 19:12:17
+-- merge date  : 09/28/17 10:07:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -29630,7 +29630,7 @@ local function blockligatures(str)
   for i=1,#t do
     local ti=t[i]
     local before,current,after=lpegmatch(splitter,ti)
-    if before and current and after then
+    if current and after then
       if before then
         before=utfsplit(before)
         for i=1,#before do
@@ -29647,7 +29647,9 @@ local function blockligatures(str)
         end
       end
     else
+      before=nil
       current=utfsplit(ti)
+      after=nil
     end
     if #current>1 then
       local one=current[1]

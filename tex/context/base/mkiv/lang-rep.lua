@@ -16,6 +16,7 @@ if not modules then modules = { } end modules ['lang-rep'] = {
 -- is somewhat unique.
 
 local type, tonumber = type, tonumber
+local gmatch, gsub = string.gmatch, string.gsub
 local utfbyte, utfsplit = utf.byte, utf.split
 local P, C, U, Cc, Ct, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.match
 local find = string.find
@@ -137,6 +138,26 @@ function replacements.add(category,word,replacement)
         end
     else
         add(root,word,replacement or "")
+    end
+end
+
+-- local strip = lpeg.stripper("{}")
+
+function languages.replacements.addlist(category,list)
+    local root = lists[category].list
+    if type(list) == "string" then
+        for new in gmatch(list,"%S+") do
+            local old = gsub(new,"[{}]","")
+         -- local old = lpegmatch(strip,new)
+            add(root,old,new)
+        end
+    else
+        for i=1,#list do
+            local new = list[i]
+            local old = gsub(new,"[{}]","")
+         -- local old = lpegmatch(strip,new)
+            add(root,old,new)
+        end
     end
 end
 
@@ -335,4 +356,10 @@ implement {
     name      = "addreplacements",
     actions   = replacements.add,
     arguments = { "string", "string", "string" }
+}
+
+implement {
+    name      = "addreplacementslist",
+    actions   = replacements.addlist,
+    arguments = { "string", "string" }
 }

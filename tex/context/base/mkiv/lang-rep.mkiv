@@ -57,12 +57,14 @@
   {\attribute\replacementsattribute\attributeunsetvalue}
 
 \unexpanded\def\replaceword
-  {\dotripleargument\languages_replacements_replace}
+  {\dotripleempty\languages_replacements_replace}
 
 \unexpanded\def\languages_replacements_replace[#1][#2][#3]%
   {\ifthirdargument
      \clf_addreplacements{#1}{#2}{#3}%
-   \fi}
+   \else\ifsecondargument
+     \clf_addreplacementslist{#1}{#2}%
+   \fi\fi}
 
 \appendtoks
     \resetreplacements

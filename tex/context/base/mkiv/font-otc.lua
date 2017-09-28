@@ -1086,7 +1086,7 @@ local function blockligatures(str)
     for i=1,#t do
         local ti = t[i]
         local before, current, after = lpegmatch(splitter,ti)
-        if before and current and after then
+        if current and after then -- before is returned when no match
             -- experimental joke
             if before then
                 before = utfsplit(before)
@@ -1105,7 +1105,9 @@ local function blockligatures(str)
             end
 
         else
+            before  = nil
             current = utfsplit(ti)
+            after   = nil
         end
         if #current > 1 then
             local one = current[1]
