@@ -1604,7 +1604,7 @@
 \setuppapersize
   [A4] % [samesized]
 
-%D A few goodies:
+%D A few goodies, first a full page layout:
 
 \definelayout
   [\v!page]
@@ -1631,9 +1631,24 @@
    \c!lines=0,
    \c!grid=\v!no]
 
+%D A quick and dirty one:
+
 \definelayout
   [\v!middle]
   [\c!width=\v!middle,
    \c!height=\v!middle]
+
+%D One for testing examples (5mm is often the non printable area):
+
+\definelayout
+  [\v!tight]
+
+\definelayout
+  [\v!tight]
+  [\v!page]
+  [\c!backspace=5mm,
+   \c!cutspace=5mm,
+   \c!topspace=5mm,
+   \c!bottomspace=5mm]
 
 \protect \endinput

@@ -8476,7 +8476,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12918, stripped down to: 9174
+-- original size: 13044, stripped down to: 9231
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -8486,7 +8486,7 @@ if not modules then modules={} end modules ['trac-set']={
   license="see context related readme files"
 }
 local type,next,tostring,tonumber=type,next,tostring,tonumber
-local concat=table.concat
+local concat,sortedhash=table.concat,table.sortedhash
 local format,find,lower,gsub,topattern=string.format,string.find,string.lower,string.gsub,string.topattern
 local is_boolean=string.is_boolean
 local settings_to_hash=utilities.parsers.settings_to_hash
@@ -8503,7 +8503,7 @@ function setters.initialize(filename,name,values)
     frozen=true
     local data=setter.data
     if data then
-      for key,newvalue in next,values do
+      for key,newvalue in sortedhash(values) do
         local newvalue=is_boolean(newvalue,newvalue,true) 
         local functions=data[key]
         if functions then
@@ -8552,7 +8552,7 @@ local function set(t,what,newvalue)
       done={}
       t.done=done
     end
-    for w,value in next,what do
+    for w,value in sortedhash(what) do
       if value=="" then
         value=newvalue
       elseif not value then
@@ -8561,7 +8561,7 @@ local function set(t,what,newvalue)
         value=is_boolean(value,value,true) 
       end
       w=topattern(w,true,true)
-      for name,functions in next,data do
+      for name,functions in sortedhash(data) do
         if done[name] then
         elseif find(name,w) then
           done[name]=true
@@ -8577,7 +8577,7 @@ end
 local function reset(t)
   local data=t.data
   if not data.frozen then
-    for name,functions in next,data do
+    for name,functions in sortedthash(data) do
       for i=1,#functions do
         functions[i](false)
       end
@@ -20754,8 +20754,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 852425
--- stripped bytes    : 307408
+-- original bytes    : 852551
+-- stripped bytes    : 307477
 
 -- end library merge
 

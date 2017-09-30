@@ -783,11 +783,15 @@
 %D don't want huge switches to the main bodyfont and style, so
 %D here too we use a direct method.
 
-\let\infofont    \relax % satisfy dep checker
-\let\infofontbold\relax % satisfy dep checker
+\let\infofont         \relax
+\let\infofontbold     \relax
+\let\smallinfofont    \relax
+\let\smallinfofontbold\relax
 
-\definefont[infofont]    [file:dejavusansmono      at 6pt] % todo \the\everybodyfont
-\definefont[infofontbold][file:dejavusansmono-bold at 6pt] % todo \the\everybodyfont
+\definefont[infofont]         [file:dejavusansmono*none      at 6pt]
+\definefont[infofontbold]     [file:dejavusansmono-bold*none at 6pt]
+\definefont[smallinfofont]    [file:dejavusansmono*none      at 3pt]
+\definefont[smallinfofontbold][file:dejavusansmono-bold*none at 3pt]
 
 %D Optimization (later we overload in math). Also needed in order to get \type {\ss}
 %D properly defined.

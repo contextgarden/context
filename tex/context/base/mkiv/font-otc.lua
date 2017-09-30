@@ -11,6 +11,7 @@ local type, next = type, next
 local lpegmatch = lpeg.match
 local utfbyte, utflen, utfsplit = utf.byte, utf.len, utf.split
 local match = string.match
+local sortedhash = table.sortedhash
 
 -- we assume that the other otf stuff is loaded already
 
@@ -449,7 +450,7 @@ local function addfeature(data,feature,specifications)
                 local lookups = rule.lookups or false
                 local subtype = nil
                 if lookups and sublookups then
-                    for k, v in next, lookups do
+                    for k, v in sortedhash(lookups) do
                         local t = type(v)
                         if t == "table" then
                             -- already ok
@@ -501,7 +502,8 @@ local function addfeature(data,feature,specifications)
                         replacements, -- 7
                         subtype,      -- 8
                     }
-                    for unic in next, sequence[start] do
+--                     for unic in next, sequence[start] do
+                    for unic in sortedhash(sequence[start]) do
                         local cu = coverage[unic]
                         if not cu then
                             coverage[unic] = rulehash -- can now be done cleaner i think
@@ -551,9 +553,9 @@ local function addfeature(data,feature,specifications)
                 local s = sequences[i]
                 local f = s.features
                 if f then
-                    for k in next, f do
+                    for k in sortedhash(f) do -- next, f do
                         if k == position then
-                                index = i
+                            index = i
                             break
                         end
                     end
@@ -1103,7 +1105,6 @@ local function blockligatures(str)
                     after[i] = { after[i] }
                 end
             end
-
         else
             before  = nil
             current = utfsplit(ti)
@@ -1123,7 +1124,9 @@ local function blockligatures(str)
                 lookups = { 1 }, -- not shared !
             }
             revert[new] = {
+             -- before = before,
                 current = { one, zwj },
+             -- after   = { two, unpack(after) },
                 after   = { two },
                 lookups = { 1 }, -- not shared !
             }

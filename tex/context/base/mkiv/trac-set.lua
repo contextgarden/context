@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 -- maybe this should be util-set.lua
 
 local type, next, tostring, tonumber = type, next, tostring, tonumber
-local concat = table.concat
+local concat, sortedhash = table.concat, table.sortedhash
 local format, find, lower, gsub, topattern = string.format, string.find, string.lower, string.gsub, string.topattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -26,6 +26,8 @@ local data        = { }
 -- We can initialize from the cnf file. This is sort of tricky as
 -- later defined setters also need to be initialized then. If set
 -- this way, we need to ensure that they are not reset later on.
+--
+-- The sorting is needed to get a predictable setters in case of *.
 
 local trace_initialize = false -- only for testing during development
 
@@ -36,7 +38,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
      -- trace_initialize = true
         local data = setter.data
         if data then
-            for key, newvalue in next, values do
+            for key, newvalue in sortedhash(values) do
                 local newvalue = is_boolean(newvalue,newvalue,true) -- strict
                 local functions = data[key]
                 if functions then
@@ -91,7 +93,7 @@ local function set(t,what,newvalue)
             done = { }
             t.done = done
         end
-        for w, value in next, what do
+        for w, value in sortedhash(what) do
             if value == "" then
                 value = newvalue
             elseif not value then
@@ -100,7 +102,7 @@ local function set(t,what,newvalue)
                 value = is_boolean(value,value,true) -- strict
             end
             w = topattern(w,true,true)
-            for name, functions in next, data do
+            for name, functions in sortedhash(data) do
                 if done[name] then
                     -- prevent recursion due to wildcards
                 elseif find(name,w) then
@@ -118,7 +120,7 @@ end
 local function reset(t)
     local data = t.data
     if not data.frozen then
-        for name, functions in next, data do
+        for name, functions in sortedthash(data) do
             for i=1,#functions do
                 functions[i](false)
             end

@@ -54,6 +54,8 @@ local texset       = tex.set
 local texsetdimen  = tex.setdimen
 local texnest      = tex.nest
 
+local buildpage    = tex.triggerbuildpage
+
 local variables    = interfaces.variables
 local implement    = interfaces.implement
 
@@ -737,14 +739,16 @@ storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vsp
 
 do -- todo: interface.variables and properties
 
-    local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
+    local P, C, R, S, Cc, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 
     vspacing.fixed   = false
 
     local map        = vspacingdata.map
     local skip       = vspacingdata.skip
 
-    local multiplier = C(S("+-")^0 * R("09")^1) * P("*")
+    local sign       = S("+-")^0
+    local multiplier = C(sign * R("09")^1) * P("*")
+    local singlefier = Cs(sign * Cc(1))
     local separator  = S(", ")
     local category   = P(":") * C((1-separator)^1)
     local keyword    = C((1-category-separator)^1)
@@ -817,7 +821,7 @@ do -- todo: interface.variables and properties
         end
     end
 
-    local splitter = ((multiplier + Cc(1)) * keyword * (category + Cc(false))) / handler
+    local splitter = ((multiplier + singlefier) * keyword * (category + Cc(false))) / handler
           pattern  = (splitter + separator^1)^0
 
     function vspacing.analyze(str)
@@ -2091,6 +2095,23 @@ do
             if head then
                 local head = remove_node(head,find_node_tail(head),true)
                 texlists.page_head = head
+                buildpage()
+            end
+        end
+    }
+
+    interfaces.implement {
+        name    = "removelastline",
+        actions = function()
+            local head = texlists.page_head
+            if head then
+                local tail = find_node_tail(head)
+                if tail then
+                    -- maybe check for hlist subtype 1
+                    local head = remove_node(head,tail,true)
+                    texlists.page_head = head
+                    buildpage()
+                end
             end
         end
     }

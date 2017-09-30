@@ -114,8 +114,9 @@
      c:\number\mofcolumns,\space
      v:\the\vsize        ,\space
      g:\the\pagegoal     ,\space
-     t:\the\pagetotal    ,\space
+     t:\the\pagetotal
      \ifdim\pagetotal>\pagegoal
+       ,\space
        d:\the\dimexpr\pagetotal-\pagegoal\relax
      \fi}}
 
@@ -188,10 +189,10 @@
 
 \page_otf_set_engine_output_routine\page_otr_triggered_output_routine
 
-\installoutputroutine\synchronizeoutput
+\installoutputroutine\synchronizeoutput % use \triggerpagebuilder instead
   {\ifvoid\normalpagebox\else
      \unvbox\normalpagebox
-     \pagediscards
+     \pagediscards % does more harm than good .. needs thinking
    \fi}
 
 \installoutputroutine\discardpage

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/28/17 10:07:40
+-- merge date  : 09/30/17 21:57:03
 
 do -- begin closure to overcome local limits and interference
 
@@ -22981,7 +22981,7 @@ end
 local gref do
   local f_unicode=formatters["U+%X"]   
   local f_uniname=formatters["U+%X (%s)"] 
-  local f_unilist=formatters["% t (% t)"]
+  local f_unilist=formatters["% t"]
   gref=function(n) 
     if type(n)=="number" then
       local description=descriptions[n]
@@ -22992,16 +22992,20 @@ local gref do
         return f_unicode(n)
       end
     elseif n then
-      local num,nam={},{}
+      local t={}
       for i=1,#n do
         local ni=n[i]
         if tonumber(ni) then 
           local di=descriptions[ni]
-          num[i]=f_unicode(ni)
-          nam[i]=di and di.name or "-"
+          local nn=di and di.name
+          if nn then
+            t[#t+1]=f_uniname(ni,nn)
+          else
+            t[#t+1]=f_unicode(ni)
+          end
         end
       end
-      return f_unilist(num,nam)
+      return f_unilist(t)
     else
       return "<error in node mode tracing>"
     end
@@ -24580,7 +24584,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
       head=lookaheaddisc
     end
     local pre,post,replace=getdisc(lookaheaddisc)
-    local new=copy_node_list(cf)
+    local new=copy_node_list(cf) 
     local cnew=new
     if pre then
       setlink(find_node_tail(cf),pre)
@@ -24635,10 +24639,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         break
       end
     end
-    if cnext then
-      setprev(cnext,backtrackdisc)
-    end
-    setnext(backtrackdisc,cnext)
+    setlink(backtrackdisc,cnext)
     setprev(cf)
     setnext(cl)
     local pre,post,replace,pretail,posttail,replacetail=getdisc(backtrackdisc,true)
@@ -24692,16 +24693,17 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
   end
   return head,start,done
 end
-local function chaintrac(head,start,dataset,sequence,rlmode,skiphash,ck,match)
+local function chaintrac(head,start,dataset,sequence,rlmode,skiphash,ck,match,discseen,sweepnode)
   local rule=ck[1]
   local lookuptype=ck[8] or ck[2]
   local nofseq=#ck[3]
   local first=ck[4]
   local last=ck[5]
   local char=getchar(start)
-  logwarning("%s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a",
+  logwarning("%s: rule %s %s at char %s for (%s,%s,%s) chars, lookuptype %a, %sdisc seen, %ssweeping",
     cref(dataset,sequence),rule,match and "matches" or "nomatch",
-    gref(char),first-1,last-first+1,nofseq-last,lookuptype)
+    gref(char),first-1,last-first+1,nofseq-last,lookuptype,
+    discseen and "" or "no ",sweepnode and "" or "not ")
 end
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,skiphash)
   local sweepnode=sweepnode
@@ -24709,7 +24711,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
   local postreplace
   local prereplace
   local checkdisc
-  local diskseen 
+  local discseen 
   if sweeptype then
     if sweeptype=="replace" then
       postreplace=true
@@ -24727,7 +24729,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
   local done
   local nofcontexts=contexts.n 
   local startchar=nofcontext==1 or ischar(start,currentfont) 
-  for k=1,nofcontexts do
+  for k=1,nofcontexts do 
     local ck=contexts[k]
     local seq=ck[3]
     local f=ck[4] 
@@ -24783,7 +24785,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
               goto next
             end
           elseif id==disc_code then
-            diskseen=true
+            discseen=true
             discfound=last
             notmatchpre[last]=nil
             notmatchpost[last]=true
@@ -24802,9 +24804,6 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                   notmatchpre[last]=true
                   break
                 end
-              end
-              if n<=l then
-                notmatchpre[last]=true
               end
             else
               notmatchpre[last]=true
@@ -24884,7 +24883,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                 end
                 break
               elseif id==disc_code then
-                diskseen=true
+                discseen=true
                 discfound=prev
                 notmatchpre[prev]=true
                 notmatchpost[prev]=nil
@@ -24930,6 +24929,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                         end
                       end
                     end
+                  else
+                    notmatchreplace[prev]=true 
                   end
                 end
                 prev=getprev(prev)
@@ -25003,7 +25004,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                 goto next
               end
             elseif id==disc_code then
-              diskseen=true
+              discseen=true
               discfound=current
               notmatchpre[current]=nil
               notmatchpost[current]=true
@@ -25049,6 +25050,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                   end
                 end
               else
+                notmatchreplace[current]=true 
               end
               current=getnext(current)
             elseif id==glue_code then
@@ -25074,9 +25076,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
       end
     end
     if trace_contexts then
-      chaintrac(head,start,dataset,sequence,rlmode,skipped and skiphash,ck,true)
+      chaintrac(head,start,dataset,sequence,rlmode,skipped and skiphash,ck,true,discseen,sweepnode)
     end
-    if diskseen or sweepnode then
+    if discseen or sweepnode then
       head,start,done=chaindisk(head,start,dataset,sequence,rlmode,skipped and skiphash,ck)
     else
       head,start,done=chainrun(head,start,last,dataset,sequence,rlmode,skipped and skiphash,ck)
@@ -25086,7 +25088,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
     end
     ::next::
   end
-  if diskseen then
+  if discseen then
     notmatchpre={}
     notmatchpost={}
     notmatchreplace={}
@@ -25340,7 +25342,6 @@ local function testrun(disc,t_run,c_run,...)
     return
   end
   local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
-  local done=false
   if (post or replace) and prev then
     if post then
       setlink(posttail,next)
@@ -25356,7 +25357,7 @@ local function testrun(disc,t_run,c_run,...)
     local d_replace=t_run(replace,next,...)
     if d_post>0 or d_replace>0 then
       local d=d_replace>d_post and d_replace or d_post
-      local head=getnext(disc)
+      local head=getnext(disc) 
       local tail=head
       for i=1,d do
         tail=getnext(tail)
@@ -25378,21 +25379,19 @@ local function testrun(disc,t_run,c_run,...)
       else
         replace=new
       end
-      setlink(disc,next)
     else
       if posttail then
         setnext(posttail)
       else
         post=nil
       end
-      setnext(replacetail)
       if replacetail then
         setnext(replacetail)
       else
         replace=nil
       end
-      setprev(next,disc)
     end
+    setlink(disc,next)
   end
   local renewed=false
   if pre then
@@ -25426,10 +25425,8 @@ local function testrun(disc,t_run,c_run,...)
   sweeptype=nil
   if renewed then
     setdisc(disc,pre,post,replace)
-    return next,true
-  else
-    return next,done
   end
+  return getnext(disc),renewed
 end
 local nesting=0
 local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
@@ -25533,6 +25530,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
           if l and l.ligature then
             lastd=d
           end
+        else
         end
       else
       end
@@ -25762,7 +25760,9 @@ otf.helpers.txtdirstate=txtdirstate
 otf.helpers.pardirstate=pardirstate
 do
   local fastdisc=true
-  directives.register("otf.fastdisc",function(v) fastdisc=v end)
+  local testdics=false
+  directives.register("otf.fastdisc",function(v) fastdisc=v end) 
+  directives.register("otf.testdisc",function(v) testdisc=v end)
   local otfdataset=nil 
   local getfastdisc={ __index=function(t,k)
     local v=usesfont(k,currentfont)
@@ -25815,6 +25815,7 @@ do
       local topstack=0
       local typ=sequence.type
       local gpossing=typ=="gpos_single" or typ=="gpos_pair" 
+      local forcetestrun=testdisc or typ=="gsub_ligature"
       local handler=handlers[typ] 
       local steps=sequence.steps
       local nofsteps=sequence.nofsteps
@@ -25912,7 +25913,7 @@ do
                 local ok
                 if gpossing then
                   start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-                elseif typ=="gsub_ligature" then
+                elseif forcetestrun then
                   start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                 else
                   start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
@@ -25984,7 +25985,7 @@ do
                 local ok
                 if gpossing then
                   start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
-                elseif typ=="gsub_ligature" then
+                elseif forcetestrun then
                   start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                 else
                   start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
@@ -28765,6 +28766,7 @@ local type,next=type,next
 local lpegmatch=lpeg.match
 local utfbyte,utflen,utfsplit=utf.byte,utf.len,utf.split
 local match=string.match
+local sortedhash=table.sortedhash
 local trace_loading=false trackers.register("otf.loading",function(v) trace_loading=v end)
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
@@ -29160,7 +29162,7 @@ local function addfeature(data,feature,specifications)
         local lookups=rule.lookups or false
         local subtype=nil
         if lookups and sublookups then
-          for k,v in next,lookups do
+          for k,v in sortedhash(lookups) do
             local t=type(v)
             if t=="table" then
               for i=1,#v do
@@ -29209,7 +29211,7 @@ local function addfeature(data,feature,specifications)
             replacements,
             subtype,
           }
-          for unic in next,sequence[start] do
+          for unic in sortedhash(sequence[start]) do
             local cu=coverage[unic]
             if not cu then
               coverage[unic]=rulehash 
@@ -29256,9 +29258,9 @@ local function addfeature(data,feature,specifications)
         local s=sequences[i]
         local f=s.features
         if f then
-          for k in next,f do
+          for k in sortedhash(f) do 
             if k==position then
-                index=i
+              index=i
               break
             end
           end

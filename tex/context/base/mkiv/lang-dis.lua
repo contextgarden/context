@@ -251,15 +251,25 @@ interfaces.implement {
     actions = languages.showdiscretionaries
 }
 
-local toutf = nodes.listtoutf
+do
 
-function languages.serializediscretionary(d) -- will move to tracer
-    local pre, post, replace = getdisc(d)
-    return string.formatters["{%s}{%s}{%s}"](
-        pre     and toutf(pre)     or "",
-        post    and toutf(post)    or "",
-        replace and toutf(replace) or ""
-    )
+    local toutf   = nodes.listtoutf
+    local utfchar = utf.char
+    local f_disc  = string.formatters["{%s}{%s}{%s}"]
+    local replace = lpeg.replacer( {
+        [utfchar(0x200C)] = "|",
+        [utfchar(0x200D)] = "|",
+    }, nil, true)
+
+    local function convert(list)
+        return list and replace(toutf(list)) or ""
+    end
+
+    function languages.serializediscretionary(d) -- will move to tracer
+        local pre, post, replace = getdisc(d)
+        return f_disc(convert(pre),convert(post),convert(replace))
+    end
+
 end
 
 -- --
