@@ -297,34 +297,38 @@ nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
 local function listtoutf(h,joiner,textonly,last,nodisc)
     local w = { }
+    local n = 0
     while h do
         local c, id = isglyph(h)
         if c then
-            w[#w+1] = c >= 0 and utfchar(c) or formatters["<%i>"](c)
+            n = n + 1 ; w[n] = c >= 0 and utfchar(c) or formatters["<%i>"](c)
             if joiner then
-                w[#w+1] = joiner
+                n = n + 1 ; w[n] = joiner
             end
         elseif id == disc_code then
             local pre, pos, rep = getdisc(h)
             if not nodisc then
-                w[#w+1] = formatters["[%s|%s|%s]"] (
+                n = n + 1 ; w[n] = formatters["[%s|%s|%s]"] (
                     pre and listtoutf(pre,joiner,textonly) or "",
                     pos and listtoutf(pos,joiner,textonly) or "",
                     rep and listtoutf(rep,joiner,textonly) or ""
                 )
             elseif rep then
-                w[#w+1] = listtoutf(rep,joiner,textonly) or ""
+                n = n + 1 ; w[n] = listtoutf(rep,joiner,textonly) or ""
+            end
+            if joiner then
+                n = n + 1 ; w[n] = joiner
             end
         elseif textonly then
             if id == glue_code then
                 if getwidth(h) > 0 then
-                    w[#w+1] = " "
+                    n = n + 1 ; w[n] = " "
                 end
             elseif id == hlist_code or id == vlist_code then
-                w[#w+1] = "[]"
+                n = n + 1 ; w[n] = "[]"
             end
         else
-            w[#w+1] = "[-]"
+            n = n + 1 ; w[n] = "[-]"
         end
         if h == last then
             break
@@ -332,7 +336,7 @@ local function listtoutf(h,joiner,textonly,last,nodisc)
             h = getnext(h)
         end
     end
-    return concat(w)
+    return concat(w,"",1,(w[n] == joiner) and (n-1) or n)
 end
 
 function nodes.listtoutf(h,joiner,textonly,last,nodisc)

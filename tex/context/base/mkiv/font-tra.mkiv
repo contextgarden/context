@@ -323,6 +323,37 @@
    \stopotfsample
    \endgroup}
 
+%D \startbuffer
+%D \startotfcompositionlist{Serif*default @ 11pt}{l2r}%
+%D     \showotfcompositionsample{effe}
+%D \stopotfcompositionlist
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\unexpanded\def\showotfcompositionlist#1#2#3%
+  {\begingroup
+   \definedfont[#1]%
+   \setbox\scratchbox\hbox\bgroup
+     \setotfcompositiondirection{#2}%
+     #3%
+   \egroup
+   \strut
+   \def|##1|{\kern\onepoint\string|\kern\onepoint##1\kern\onepoint\string|\kern\onepoint}%
+   \cldcontext{nodes.listtoutf(tex.box[\number\scratchbox].list,"{\\kern\\onepoint}",true)}%
+   \endgroup}
+
+\unexpanded\def\startotfcompositionlist#1#2#3\stopotfcompositionlist
+  {\begingroup
+   \unexpanded\def\showotfcompositionsample##1%
+     {\NC\type{##1}\NC\showotfcompositionlist{#1}{#2}{##1}\NC\definedfont[#1]##1\NC\NR}%
+   \starttabulate[|||| ]
+     #3%
+   \stoptabulate
+   \endgroup}
+
+\let\stopotfcompositionlist\relax
+
 % new
 
 \unexpanded\def\savefont[#1]% not yet in i-*.xml

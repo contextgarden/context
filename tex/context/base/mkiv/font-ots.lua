@@ -3158,7 +3158,8 @@ local function testrun(disc,t_run,c_run,...)
                     head, tail = flattendisk(head,tail)
                 end
             end
-            local next = getnext(tail)
+--             local next = getnext(tail)
+            next = getnext(tail)
             setnext(tail)
             setprev(head)
             local new  = copy_node_list(head)
@@ -3172,6 +3173,7 @@ local function testrun(disc,t_run,c_run,...)
             else
                 replace = new
             end
+--             setlink(disc,next)
         else
             -- we stay inside the disc
             if posttail then
@@ -3184,8 +3186,9 @@ local function testrun(disc,t_run,c_run,...)
             else
                 replace = nil
             end
+--             setprev(next,disc) -- setlink(dics,next)
         end
-        setlink(disc,next)
+setlink(disc,next)
      -- pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     end
     --
