@@ -13,9 +13,9 @@ local tostring = tostring
 local insert, remove = table.insert, table.remove
 local find = string.find
 
-local trace_floats = false  trackers.register("graphics.floats", function(v) trace_floats = v end) -- name might change
+local trace_floats = false  trackers.register("floats.caching", function(v) trace_floats = v end) -- name might change
 
-local report_floats = logs.reporter("structure","floats")
+local report_floats = logs.reporter("floats","caching")
 
 local C, S, P, lpegmatch = lpeg.C, lpeg.S, lpeg.P, lpeg.match
 

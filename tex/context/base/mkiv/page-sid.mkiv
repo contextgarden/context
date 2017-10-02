@@ -78,6 +78,15 @@
 
 \newif\iftracesidefloats % public (might change)
 
+\def\page_sides_floats_legend
+  {\writestatus\m!floatblocks{anchor: orange, shift: red, box: green, dummy: blue, depth: magenta}%
+   \glet\page_sides_floats_legenda\relax}
+
+\installtextracker{floats.anchoring}
+  {\page_sides_floats_legend
+   \tracesidefloatstrue}
+  {\tracesidefloatsfalse}
+
 % end of public variables
 
 \def\page_sides_apply_horizontal_shift
@@ -184,8 +193,10 @@
 
 \def\page_sides_flush_floats
   {\par
-   \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+   \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint
      \page_sides_flush_floats_indeed
+   \else
+     % no need as the par just fits next to the previous float
    \fi
    % also here if used at all \global\holdinginserts\zerocount
    \global\d_page_sides_vsize\d_page_sides_vsize_reset
@@ -212,48 +223,69 @@
 
 % we don't officially know what kind of float we flush
 
+\def\page_sides_flush_floats_blank#1% we need to deal with the distance
+  {\ifdim\d_page_sides_bottomskip>\d_page_sides_topskip
+     \blank[%
+        \ifnum#1>\zerocount\v!nowhite,\fi
+        \ifdim\d_page_sides_topskip   >\zeropoint-\rootfloatparameter\c!sidespacebefore,\fi % the next one
+        \ifdim\d_page_sides_bottomskip>\zeropoint \rootfloatparameter\c!sidespaceafter  \fi
+     ]%
+   \else\ifdim\d_page_sides_bottomskip<\d_page_sides_topskip
+     \blank[%
+        \ifnum#1>\zerocount\v!nowhite,\fi
+        \ifdim\d_page_sides_bottomskip>\zeropoint -\rootfloatparameter\c!sidespaceafter ,\fi
+        \ifdim\d_page_sides_topskip   >\zeropoint  \rootfloatparameter\c!sidespacebefore \fi
+     ]%
+   \fi\fi}
+
+\def\page_sides_flush_floats_tracer
+  {\dontleavehmode
+   \ruledhpack\bgroup\backgroundline[trace:b]{%
+     \ifnum\recurselevel=\plusone
+       \llap{{\smallinfofont\the\scratchdimen}\hskip.5\leftmargindistance}%
+     \else\ifodd\recurselevel
+       \llap{{\smallinfofont\recurselevel}\hskip.5\leftmargindistance}%
+     \fi\fi
+     \m_pages_strut
+     \kern\hsize
+   \egroup}}
+
 \def\page_sides_flush_floats_indeed
   {% the \d_page_sides_bottomskip == \rootfloatparameter\c!sidespaceafter is embedded
    % in the progression of the float
-   \global\advance\d_page_sides_vsize-\d_page_sides_bottomskip\relax
-   \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint % new per 2017-09-28
-     \begingroup
-     \let\page_sides_flush_floats\relax
-     \edef\m_pages_strut
-       {\ifcsname\??sidefloatsteps\rootfloatparameter\c!step\endcsname
-          \lastnamedcs
-        \else
-          \strut
-       \fi}%
-     \forgetall
-     \doloop
-       {\iftracesidefloats
-          \dontleavehmode
-          \ruledhpack{\m_pages_strut\kern\d_page_sides_width}%
-        \else
-          \m_pages_strut
-        \fi
-        \par
-        \nointerlineskip
-        \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
-          \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
-           %\writestatus{sidefloats}{\recurselevel\space empty lines forced, quitting}%
-            \exitloop
-          \fi
-        \else
-         %\writestatus{sidefloats}{\recurselevel\space empty lines forced}%
+   \begingroup
+   \let\page_sides_flush_floats\relax
+   \edef\m_pages_strut
+     {\ifcsname\??sidefloatsteps\rootfloatparameter\c!step\endcsname
+        \lastnamedcs
+      \else
+        \strut
+     \fi}%
+   \forgetall
+   \doloop
+     {\scratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax
+      \iftracesidefloats
+        \page_sides_flush_floats_tracer
+      \else
+        \m_pages_strut
+      \fi
+      \par
+      \nointerlineskip
+      \ifdim\scratchdimen>\zeropoint
+        \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
           \exitloop
-        \fi}%
-     \endgroup
-   \else
-     % no need as the par just fits next to the previous float
-   \fi
+        \fi
+      \else
+        \exitloop
+      \fi}%
+   \endgroup
+   % we're going to add top space anyway so ....
    \ifdim\parskip>\zeropoint % why this test ?
      \ifdim\d_page_sides_bottomskip>\parskip
-       \blank[\v!nowhite,\rootfloatparameter\c!sidespaceafter]%
+       \page_sides_flush_floats_blank\plusone
      \fi
    \else
-      \blank[\rootfloatparameter\c!sidespaceafter]%
+     \page_sides_flush_floats_blank\zerocount
    \fi}
 
 \def\page_sides_check_floats_after_par
@@ -362,6 +394,35 @@
         \kern\d_page_sides_rightshift
       \fi\fi}}
 
+\def\page_sides_apply_vertical_shift_normal
+  {\global\setbox\floatbox\hpack % why extra box
+     {\vpack
+        {\vskip\privatescratchdimen
+         \nointerlineskip
+         \box\floatbox
+         \ifnum\c_page_sides_align=\plusfive \vskip-\lineheight \fi}}}
+
+\def\page_sides_apply_vertical_shift_traced
+  {\global\setbox\floatbox\hpack % why extra box
+     {\backgroundline[trace:r]{\ruledhpack{\vpack
+        {\hsize\wd\floatbox
+         \vskip\privatescratchdimen
+         \nointerlineskip
+         \backgroundline[trace:g]{\ruledhpack{\box\floatbox}}%
+         \ifnum\c_page_sides_align=\plusfive \vskip-\lineheight \fi}}}}}
+
+\def\page_sides_apply_depth_normal
+  {\global\setbox\floatbox\hpack
+     {\lower\strutdepth\box\floatbox}}
+
+\def\page_sides_apply_depth_traced
+  {\global\setbox\floatbox\hpack
+     {\scratchdimen\wd\floatbox
+      \lower\strutdp\box\floatbox
+      \hskip-\scratchdimen
+      \color[trace:m]
+        {\vrule\s!height\zeropoint\s!depth\strutdp\s!width\scratchdimen}}}
+
 \def\page_sides_apply_vertical_shift
   {\ifnum\c_page_sides_align=\plusfour
      \getnoflines{\ht\floatbox}%
@@ -370,7 +431,11 @@
      \advance\privatescratchdimen\noflines\lineheight
      % todo: maybe rounding problem here
      % \global\setbox\floatbox\hbox{\lower\lineheight\box\floatbox}%
-     \global\setbox\floatbox\hpack{\lower\strutdepth\box\floatbox}%
+     \iftracesidefloats
+       \page_sides_apply_depth_traced
+     \else
+       \page_sides_apply_depth_normal
+     \fi
      \ht\floatbox\privatescratchdimen
      \dp\floatbox\zeropoint
    \fi
@@ -405,12 +470,11 @@
    \ifnum\c_page_sides_n_of_lines>\zerocount
      \advance\privatescratchdimen\c_page_sides_n_of_lines\lineheight
    \fi
-   \global\setbox\floatbox\hpack % why extra box
-     {\vbox
-        {\vskip\privatescratchdimen
-         \nointerlineskip
-         \box\floatbox
-         \ifnum\c_page_sides_align=\plusfive \vskip-\lineheight \fi}}%
+   \iftracesidefloats
+     \page_sides_apply_vertical_shift_traced % uses \privatescratchdimen
+   \else
+     \page_sides_apply_vertical_shift_normal % uses \privatescratchdimen
+   \fi
    \ifnum\c_page_sides_float_type<\plusfour
      \global\d_page_sides_topskip\zeropoint
    \else\ifnum\c_page_sides_float_type>\plusfive
@@ -537,9 +601,22 @@
      \global\settrue\c_page_floats_room
    \fi}
 
+% \unexpanded\def\fakenextstrutline
+%   {\par
+%    \begingroup
+%    % overkill, done in \page_sides_inject_dummy_lines
+%    \triggerpagebuilder
+%    \reseteverypar
+%    \forgetall
+%    \dontleavehmode\hpack to \hsize{\strut\hss}\par
+%    \clf_removelastline
+%    % \pagetotal is still one line too much but pagedepth is ok
+%    % but it seems to work
+%    \endgroup}
+
 \def\page_sides_prepare_space
-  {\fakenextstrutline
-   \inhibitblank}
+  {%\fakenextstrutline % does more bad than good at page crossing
+   \inhibitblank} % hm, why here .. gets obscured anyway
 
 \def\page_sides_handle_float#1% grid (4) is rather experimental
   {\page_sides_prepare_space
@@ -569,6 +646,14 @@
 
 \let\page_sides_check_floats\page_sides_check_floats_indeed
 
+\unexpanded\def\page_sides_check_floats_tracer
+  {\begingroup
+   \hskip-\d_page_sides_width % kern
+   \color[trace:o]%
+     {\vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width
+      \llap{\showstruts\strut\kern.25\bodyfontsize}}%
+   \endgroup}
+
 \unexpanded\def\page_sides_check_floats_set
   {\privatescratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
    \c_page_sides_n_of_hang\privatescratchdimen
@@ -591,15 +676,18 @@
        \privatescratchcounter\c_page_sides_n_of_lines
        \privatescratchdimen\dimexpr\hsize-\d_page_sides_width\relax
        \dorecurse\c_page_sides_n_of_lines
-         {\appendtoks \zeropoint \hsize \to \privatescratchtoks}%
+        %{\appendtoks \zeropoint \hsize \to \privatescratchtoks}%
+         {\toksapp\privatescratchtoks{\zeropoint\hsize}}%
        \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
          \advance\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
          \advance\privatescratchcounter\c_page_sides_n_of_hang
          \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
            {\ifnum\c_page_sides_float_type>\plusfour
-              \appendtoks \zeropoint         \privatescratchdimen \to \privatescratchtoks
+             %\appendtoks \zeropoint         \privatescratchdimen \to \privatescratchtoks
+              \toksapp\privatescratchtoks{\zeropoint\privatescratchdimen}%
             \else
-              \appendtoks \d_page_sides_width\privatescratchdimen \to \privatescratchtoks
+             %\appendtoks \d_page_sides_width\privatescratchdimen \to \privatescratchtoks
+              \toksapp\privatescratchtoks{\d_page_sides_width\privatescratchdimen}%
             \fi}%
        \fi
        \parshape
@@ -615,10 +703,7 @@
    \fi
    \global\advance\c_page_sides_checks_done \plusone
    \iftracesidefloats
-     \hskip-\d_page_sides_width % kern
-     \color[darkgray]%
-       {\vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width
-        \llap{\showstruts\strut\kern.25\bodyfontsize}}%
+     \page_sides_check_floats_tracer
    \fi}
 
 \unexpanded\def\page_sides_check_floats_reset
@@ -640,15 +725,26 @@
      \fi
    \fi}
 
-\def\page_sides_inject_dummy_lines
+\def\page_sides_inject_dummy_lines_normal
+  {\dorecurse\privatescratchcounter{\hpack to \hsize{\strut\hss}}}
+
+\def\page_sides_inject_dummy_lines_traced
+  {\dorecurse\privatescratchcounter{\ruledhpack{\backgroundline[trace:b]{\hpack to \hsize{\strut\hss}}}}}
+
+\def\page_sides_inject_dummy_lines % so always one
   {\begingroup
    \privatescratchcounter\pageshrink
    \divide\privatescratchcounter \baselineskip
    \advance\privatescratchcounter \plusone
    \parskip\zeropoint
-   \dorecurse\privatescratchcounter{\hpack to \hsize{}}%
+   \iftracesidefloats
+     \page_sides_inject_dummy_lines_traced
+   \else
+     \page_sides_inject_dummy_lines_normal
+   \fi
    \kern-\privatescratchcounter\baselineskip
    \penalty\zerocount
+   \triggerpagebuilder
    \endgroup}
 
 \def\adjustsidefloatdisplaylines % public, will change

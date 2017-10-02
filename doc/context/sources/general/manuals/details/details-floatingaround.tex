@@ -1295,6 +1295,80 @@ First we show some keyword variant, next some parameter driven versions.
 \stopcombination
 \stoplinecorrection
 
+There is some tracing built in but as this mechanism is rather complex it only
+gives an idea about what is going on. Here is an example:
+
+\startbuffer[one]
+\enabletrackers[floats.anchoring]
+
+\showframe
+
+\setupfloat
+  [sidespacebefore=big,
+   sidespaceafter=big]
+
+\starttext
+    \dorecurse{10}{
+        \placefigure[left]{#1.1}{}
+        a small sentence \par
+        \placefigure[left]{#1.2}{}
+        a small sentence \par
+        \input klein \par
+    }
+\stoptext
+\stopbuffer
+
+\typebuffer[one]
+
+In \in {figure} [fig:side:one:1] and \in {figure} [fig:side:one:2] you see the
+first two pages of the typeset result.
+
+The anchor to the text is showed in orange and an optional shift in red. The content
+is in green and a depth compensation in magenta. Dummy lines added for proper
+spacing as well as progressing beyond a previous float are in blue.
+
+\startplacefigure[title={Side float tracing example 1, page 1.},reference=fig:side:one:1]
+    \scale[width=\textwidth]{\typesetbuffer[one][page=1]}
+\stopplacefigure
+
+\startplacefigure[title={Side float tracing example 1, page 2.},reference=fig:side:one:2]
+    \scale[width=\textwidth]{\typesetbuffer[one][page=2]}
+\stopplacefigure
+
+A second example that uses different settings is shown in \in {figure}
+[fig:side:two:1] and \in {figure} [fig:side:two:2].
+
+\startbuffer[two]
+\enabletrackers[floats.anchoring]
+
+\setupfloat
+  [sidespacebefore=,
+   sidespaceafter=big,
+   step=small]
+
+\showframe
+
+\starttext
+    \dorecurse{10}{
+        \placefigure[left]{#1.1}{}
+        a small sentence \par
+        \placefigure[left]{#1.2}{}
+        a small sentence \par
+        \input klein \par
+    }
+\stoptext
+\stopbuffer
+
+\typebuffer[two]
+
+\startplacefigure[title={Side float tracing example 2, page 1.},reference=fig:side:two:1]
+    \scale[width=\textwidth]{\typesetbuffer[two][page=1]}
+\stopplacefigure
+
+\startplacefigure[title={Side float tracing example 2, page 2.},reference=fig:side:two:2]
+    \scale[width=\textwidth]{\typesetbuffer[two][page=2]}
+\stopplacefigure
+
 \stopchapter
 
 \stopcomponent
