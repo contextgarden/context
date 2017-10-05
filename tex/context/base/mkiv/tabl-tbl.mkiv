@@ -168,6 +168,7 @@
 \newcount        \c_tabl_tabulate_plines_min
 \newcount        \c_tabl_tabulate_plines_max
 \newcount        \c_tabl_tabulate_max_colorcolumn
+\newcount        \c_tabl_tabulate_max_vrulecolumn
 \newcount        \c_tabl_tabulate_repeathead
 \newcount        \c_tabl_tabulate_noflines
 \newcount        \c_tabl_tabulate_totalnoflines
@@ -244,6 +245,7 @@
 \installcorenamespace{tabulateheader}
 \installcorenamespace{tabulatealigning}
 \installcorenamespace{tabulatepreamble}
+\installcorenamespace{tabulatevrule}
 
 \installcorenamespace{tabulatehead}
 \installcorenamespace{tabulatefoot}
@@ -1428,10 +1430,22 @@
 
 % normal columns:
 
+% \def\tabl_tabulate_column_normal#1#2%
+%   {\unskip
+%    \aligntab
+%    \ifconditional\c_tabl_tabulate_equal\tabulateequalpos\else\tabulatenormalpos\fi
+%    \aligntab
+%    \global\c_tabl_tabulate_kind#1%
+%    \global\c_tabl_tabulate_type#2%
+%    \aligntab}
+
 \def\tabl_tabulate_column_normal#1#2%
   {\unskip
    \aligntab
    \ifconditional\c_tabl_tabulate_equal\tabulateequalpos\else\tabulatenormalpos\fi
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_vrulecolumn\else
+     \tabl_tabulate_column_vrule_setup
+   \fi
    \aligntab
    \global\c_tabl_tabulate_kind#1%
    \global\c_tabl_tabulate_type#2%
@@ -1450,6 +1464,10 @@
 
 % ruled columns
 
+\def\tabl_tabulate_column_vruled_preset
+  {\global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
+   \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default}
+
 \def\tabl_tabulate_column_vruled#1#2%
   {\unskip % 0-n
   %\ifnum\c_tabl_tabulate_column=\plusone
@@ -1457,12 +1475,17 @@
   %\else\ifnum\c_tabl_tabulate_column=\c_tabl_tabulate_nofcolumns
   %  \global\c_tabl_tabulate_has_rule_spec_last\plusone
   %\fi\fi
-   \global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
-   \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_vrulecolumn
+     \global\c_tabl_tabulate_max_vrulecolumn\c_tabl_tabulate_column
+   \fi
    \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1#2}{\tabl_tabulate_column_vruled_nop#1#2}}
 
+\def\tabl_tabulate_column_vrule_setup
+  {\begincsname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname}
+
 \def\tabl_tabulate_column_vruled_nop
-  {\tabl_tabulate_column_normal}
+  {\expandafter\glet\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname\tabl_tabulate_column_vruled_preset
+   \tabl_tabulate_column_normal}
 
 \def\tabl_tabulate_column_vruled_step#1%
   {\doifelsenumber{#1}
@@ -1470,8 +1493,35 @@
      {\xdef\m_tabl_tabulate_vrule_color_local{#1}}}
 
 \def\tabl_tabulate_column_vruled_yes#1#2[#3]%
-  {\rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step
+  {\expandafter\gdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
+     {\tabl_tabulate_column_vruled_preset
+      \rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step}%
    \tabl_tabulate_column_normal#1#2}
+
+\def\tabl_tabulate_vrule_reset
+  {\ifcase\c_tabl_tabulate_max_vrulecolumn\else
+     \tabl_tabulate_vrule_reset_indeed
+   \fi}
+
+\def\tabl_tabulate_vrule_reset_indeed
+  {\dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
+   \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
+
+\def\tabl_tabulate_vrule_reset_step % undefined or relax
+  {\global\expandafter\let\csname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
+
+\appendtoks
+    \tabl_tabulate_vrule_reset
+\to \t_tabl_tabulate_every_after_row
+
+% sometimes more efficient:
+%
+% \def\tabl_tabulate_column_vruled_yes#1#2[#3]%
+%   {\rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step
+%    \expandafter\xdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
+%      {\global\d_tabl_tabulate_vrulethickness_local\the\d_tabl_tabulate_vrulethickness_default
+%       \noexpand\xdef\noexpand\m_tabl_tabulate_vrule_color_local{\m_tabl_tabulate_vrule_color_local}}%
+%    \tabl_tabulate_column_normal#1#2}
 
 \def\tabl_tabulate_column_vruled_normal
   {\vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
@@ -1636,7 +1686,7 @@
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
      \global\c_tabl_tabulate_max_colorcolumn\c_tabl_tabulate_column
    \fi
-   \setxvalue{\??tabulatecolor\the\c_tabl_tabulate_column}{#1}%
+   \global\expandafter\xdef\csname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname{#1}%
    \hbox \thealignbackgroundcolorattr{#1}{}% pack ?
    \endgroup}
 

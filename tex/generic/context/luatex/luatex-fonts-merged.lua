@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/01/17 14:32:33
+-- merge date  : 10/05/17 22:40:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -20803,7 +20803,7 @@ local function preparepositionings(tfmdata,feature,value,validlookups,lookuplist
 end
 local function initializehashes(tfmdata)
 end
-local function checkmathreplacements(tfmdata,fullname)
+local function checkmathreplacements(tfmdata,fullname,fixitalics)
   if tfmdata.mathparameters then
     local characters=tfmdata.characters
     local changed=tfmdata.changed
@@ -20817,6 +20817,15 @@ local function checkmathreplacements(tfmdata,fullname)
         local n=u.next
         local v=u.vert_variants
         local h=u.horiz_variants
+        if fixitalics then
+          local ui=u.italic
+          if ui and not r.italic then
+            if trace_preparing then
+              report_prepare("using %i units of italic correction from %C for %U",ui,unicode,replacement)
+            end
+            r.italic=ui 
+          end
+        end
         if n and not r.next then
           if trace_preparing then
             report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
@@ -20893,7 +20902,7 @@ local function featuresinitializer(tfmdata,value)
         end
       end
       if substitutionsdone then
-        checkmathreplacements(tfmdata,fullname)
+        checkmathreplacements(tfmdata,fullname,features.fixitalics)
       end
       registerbasehash(tfmdata)
     end

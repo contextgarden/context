@@ -466,9 +466,16 @@
   {%(#1)(#2)(#3)\par
    \edef\m_cmd_instance{\secondoftwoarguments#3}%
    \c_cmd_kind\plustwo
-   \xmlsetup{\firstoftwoarguments#3}{xml:setups:typeset}
+   \xmlsetup{\firstoftwoarguments#3}{xml:setups:typeset}%
    \let\m_cmd_instance\empty
    \par}
+
+\unexpanded\def\showsetupnameonly#1#2#3%
+  {\edef\m_cmd_instance{\secondoftwoarguments#3}%
+   \c_cmd_kind\plustwo
+   \xmlsetup{\firstoftwoarguments#3}{xml:setups:assemblename}%
+   \let\m_cmd_instance\empty
+   \texescape\currentSETUPfullname}
 
 \installtextracker
   {cmd.showsetup}
@@ -1078,7 +1085,7 @@
         }
     }
     \blank[\v!big,\v!samepage]
-    \starttabulate[|l|p|]
+    \starttabulate[|l|pl|]
         % no /interface here
         \xmlall
             {#1}

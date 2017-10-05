@@ -410,8 +410,14 @@
      \settrue\c_strc_itemgroups_pack
    \fi}
 
+\def\strc_itemgroups_process_set_option_unpack
+  {\ifcase\c_strc_itemgroups_nesting\else
+     \setfalse\c_strc_itemgroups_pack
+   \fi}
+
 \setvalue{\??itemgroupkeyword\!!zerocount  }{} % ignore 0
 \setvalue{\??itemgroupkeyword\v!packed     }{\strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!unpacked   }{\strc_itemgroups_process_set_option_unpack}
 \setvalue{\??itemgroupkeyword\v!intro      }{\settrue\c_strc_itemgroups_intro} % here? not set to false
 \setvalue{\??itemgroupkeyword\v!autointro  }{\settrue\c_strc_itemgroups_auto_intro}
 \setvalue{\??itemgroupkeyword\v!broad      }{\ifx\itemgroupfirst\empty

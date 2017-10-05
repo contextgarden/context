@@ -179,6 +179,9 @@ can choose whatever fits you best.
 \cindex   {nocitation}
 \showsetup[nocitation]
 
+\cindex   {usecitation}
+\showsetup[usecitation]
+
 The purpose and utility of these commands (and their synonyms) is not only to
 draw a citation from the dataset for inclusion in the bibliography, but also to
 mark the place in the text where the citation is relevant. Normally, one might
@@ -325,9 +328,6 @@ best illustrated though an example:
 
 \getbuffer
 
-% To Hans: We need to suppress the closing period before the combining semi-colon.
-% To Alan: Can't we use \removepunctuation ?
-
 Combined entries are joined using a separator that can be specified, as in:
 
 \startbuffer
@@ -403,6 +403,14 @@ The following examples further illustrate the syntax:
 \typeTEXbuffer \getbuffer
 
 \startbuffer
+\cite[alternative=authoryears,righttext={ p.\nbsp xx}][article]
+
+\cite[alternative=authornum,righttext={ p.\nbsp xx}][article]
+\stopbuffer
+
+\typeTEXbuffer \getbuffer
+
+\startbuffer
 \cite[alternative=num,righttext={{ p.\nbsp xx},{ p.\nbsp yy}}]
      [article,book,booklet]
 \stopbuffer
@@ -428,12 +436,6 @@ The following examples further illustrate the syntax:
 
 \typeTEXbuffer \getbuffer
 
-% To Hans: the text should probably NOT get the title's style (italics).
-% To Alan: is this still an issue? I fixed the 'and'.
-
-Notice that the text is typeset using the \TEXcode {style} of the \TEXcode
-{title}.
-
 \startbuffer
 \cite[righttext={{ p.\nbsp xx},}][article,book]
 \stopbuffer
@@ -443,6 +445,9 @@ Notice that the text is typeset using the \TEXcode {style} of the \TEXcode
 Because \CONTEXT\ does not allow mixing key|-|value pair lists with single value
 keys, the keyword \TEXcode {alternative=} must be used, if needed, as shown in
 the examples above.
+
+Note that a double curly|-|bracket (\TEXcode {{{}}}) also needs to be used when
+the text is to contain a comma.
 
 \stopsubsubject
 
@@ -697,7 +702,7 @@ String lookups are partial and case insensitive.
 
 \typeTEXbuffer
 
-so one must take care in formulating cite queries as both lookups above  will
+so one must take care in formulating cite queries as both lookups above will
 get all five entries: \inlinebuffer, whereas
 
 \startbuffer
@@ -710,10 +715,19 @@ get all five entries: \inlinebuffer, whereas
 
 \typeTEXbuffer
 
-only finds \inlinebuffer.
+finds \inlinebuffer. As the match compares the entire author string, and not
+just each author, it also finds [Hag]en & Br[aslau] as well as [Ho]ekwater[ &
+Hagen].
 
 % To Hans: It is curious that match(author:e*r) finds [Hag]en and Br[aslau].
 % To Alan: We match the whole (original) string.
+%
+% Response: Yes, but this is not what one might naively expect.
+% It would be useful to match author by author, rather than the entire author
+% string, at least that is how one might want to use it. Oh well...
+% the mechanism is predictable and the above example explicitly explains this
+% point. Would it be easy to add match(lastname:h*), for example? I suppose that
+% this would have to yield hits in ALL author-type fields (author, editor, ...).
 
 Note also that the order of the match criteria is not significant.
 
@@ -757,7 +771,7 @@ select several different matching works when that is the desired result.
 
 \stopsection
 
-\startsection[title=Page index and interaction,reference=sec:index]
+\startsection[title={Page index, interaction, and registers},reference=sec:index]
 
 Each citation in the text not only marks the dataset entry for inclusion in the
 bibliography list but also records the page number on which the citation occurs.
@@ -781,9 +795,6 @@ If interaction is active (\cindex {setupinteraction}\TEXcode
 numbered bibliography entries will also contain \Index {hyperlink}s back to the
 first occurrence in the text where the entry is cited (which is the same as the
 first page indexed).
-
-% to Hans: Hyperlinks on the list num or APA authoryear is no longer working!
-% to Alan: Still?
 
 Some styles, such as \index {style+APA}\TEXcode {apa}, will have other \Index
 {hyperlink}s. The author list including the year will be active just like the

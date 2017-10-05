@@ -1,3 +1,32 @@
+-- Bah, I really hate these patches especially because one needs to make
+-- sure that they are still valid when the font gets updated. So, let's
+-- do it runtime (not in the cached copy) and issue a warning every run.
+-- As we cannot rely on version numbers (if we have more patches) we
+-- check for values instead.
+--
+-- This font also has inconsistent italics in smalelr sizes which we can
+-- fix in a more general way but I'm not sure if we want that.
+
+local function fix_italic(target,original,name,value,factor)
+    local m = target.parameters.mathsize
+    local u = original.resources.unicodes[name]
+    if m and u then
+        local c = target.characters[u]
+        if c then
+            local i = c.italic
+            if i then
+                local d = original.descriptions[u]
+                if d and d.math.italic == value then
+                    if m then
+                        logs.report("patching font","fixing italic correction of %U at math size %i by %0.3f",u,m,factor)
+                        c.italic = factor * i
+                    end
+                end
+            end
+        end
+    end
+end
+
 return {
     name = "stix-two-math",
     version = "1.00",
@@ -20,6 +49,13 @@ return {
             negatedset   = { feature = 'ss09', value = 1, comment = "Mathematical Alternative Negated Set Symbols" },
          -- todo         = { feature = 'ss14', value = 1, comment = "" },
             circled      = { feature = 'ss16', value = 1, comment = "Mathematical Alternative Circled Operators" },
+        },
+        tweaks = {
+            aftercopying = {
+                function(target,original)
+                    fix_italic(target,original,"uni222B.updsp",80,3)
+                end,
+            },
         },
     },
 }

@@ -1720,7 +1720,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="limtatefirstline">
+  <cd:command file="supp-box.mkiv" name="limitatefirstline">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:text"/>

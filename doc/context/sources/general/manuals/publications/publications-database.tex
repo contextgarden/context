@@ -36,14 +36,14 @@ reference can be used for linking purposes. The list can be processed and sorted
 using the \Tindex {bibtex} program that converts the database into something more
 \TEX\ friendly (a \Tindex {.bbl} file).
 
-In \CONTEXT\ we no longer use the (external) \goto {\Tindex{bibtex} program}
+In \CONTEXT\ we no longer use the (external) \goto {\Tindex {bibtex} program}
 [url(https://www.ctan.org/pkg/bibtex)] at all: we simply parse the database files
-and deal with the necessary manipulations directly in \CONTEXT. One or more such
-databases can be used and combined with additional entries defined within the
-document. We can have several such datasets active at the same time.
+in \LUA\ and deal with the necessary manipulations directly in \CONTEXT. One or
+more such databases can be used and combined with additional entries defined
+within the document. We can have several such datasets active at the same time.
 
 \startaside
-\emphasis {On the name \Tindex{btx}:} many of the \CONTEXT\ commands that will be
+\emphasis {On the name \Tindex {btx}:} many of the \CONTEXT\ commands that will be
 used in the following contain the label \TEXcode {btx} in their name. This
 identifier was retained despite the fact that \CONTEXT\ \MKIV\ is now completely
 independent of \BIBTEX; it reflects the role still played by \BIBTEX\ data as a
@@ -113,7 +113,7 @@ which is quite robust. The use of commands in the database file will be describe
 in \in {section} [sec:Commands].
 
 The \Tindex {author} (and \Tindex {editor}) fields are parsed separating multiple
-authors identified by the conjunction \quote{and}. Each name is assumed to be in
+authors identified by the conjunction \quote {and}. Each name is assumed to be in
 the form:
 
 \definetyping
@@ -131,7 +131,7 @@ where \type {Lastname} is a single word but may include an optional (nobility)
 {de}, \quotation {de la}, etc.) \emphasis {unless} specifically in the two- or
 three|-|token form:
 
-\index{suffix}
+\index {suffix}
 
 \startNameSyntax
 Lastname(s), Firstname(s)
@@ -149,8 +149,8 @@ cases.
 
 \BIBTEX\ also (obscurely) supports the syntax:
 
-\seeindex{juniors}{suffix}
-\index{suffix}
+\seeindex {juniors}{suffix}
+\index {suffix}
 
 \startNameSyntax
 Firstname(s) \{Lastname(s), Suffix(es)\}
@@ -161,7 +161,7 @@ we may (or may not) support this in the future, so don't use this!
 We extend \BIBTEX\ by optionally parsing each name in terms of four or five
 tokens:
 
-\index{particle} \index{suffix} \index{initial}
+\index {particle} \index {suffix} \index {initial}
 
 \startNameSyntax
 Particule(s), Lastname(s), Suffix(es), Firstname(s)
@@ -174,7 +174,7 @@ thus avoiding the need to resort to any sort of \TEX\ trickery \cite [num]
 whose meaning is presently reserved for future directives describing how the name
 is to be interpreted:
 
-\index{particle} \index{suffix} \index{initial}
+\index {particle} \index {suffix} \index {initial}
 
 \startNameSyntax
 Particule(s), Lastname(s), Suffix(es), Firstname(s), Initial(s), directives
@@ -201,7 +201,7 @@ combinations, endash, quotations, etc.). Note that the bibliography rendering
 style (see below) might specify a capitalization of the title (using the
 \CONTEXT\ commands \TEXcode {\Word} or \TEXcode {\Words}, for example).
 Capitalized Names and acronyms are respected removing a need for the \BIBTEX\
-practice of \quote{protecting} such words or letters with surrounding curly
+practice of \quote {protecting} such words or letters with surrounding curly
 brackets (which here are simply stripped off). (Furthermore, since \CONTEXT\ uses
 \UTF, it does not suffer from all of the complicated \Index {sorting} issues that
 plague \BIBTEX|/|\LATEX.) As some styles might not specify the capitalization of
@@ -218,7 +218,7 @@ through enclosing curly brackets that would have been a necessary consequence.
 Thus, some cleaning of these database files might be needed. Furthermore, we
 attempt to use all the power of \CONTEXT\ and \LUA, thus making unnecessary much
 (most?) of the \TEX-like encoding of the data. We encourage users to clean|-|up
-their \Tindex{.bib} database files as much as possible so that they contain only
+their \Tindex {.bib} database files as much as possible so that they contain only
 the necessary data, with a minimum of explicit formatting directives.
 \stopaside
 
@@ -242,7 +242,7 @@ that some \BIBTEX\ practice allows for the concatenation of duplicate name \inde
 \BTXcode {and}, but (silently) ignores duplicate other fields. We choose to have
 a consistant behavior and disallow duplicate field occurrences. \stopfootnote
 though duplicate \index {duplicate+entries}\emphasis {entries} (having the same
-\index{duplicate+tags}tag) are retained, but the subsequent identical \Index
+\index {duplicate+tags}tag) are retained, but the subsequent identical \Index
 {tag}s will be modified by adding a suffix $-n$ for the $n$\high {th} duplicate.
 The presence of duplicate \index {duplicate+fields}fields or \index
 {duplicate+tags}tags will be flagged as such with warnings in the log file.
@@ -275,7 +275,7 @@ particular, one might need to redefine those that are too \LATEX|-|centric.)
 However, in most cases, they are just abbreviations or font switches and these
 are often well known. Therefore, \CONTEXT\ will try to resolve them before
 reporting an issue. The log file will announce the commands that have been seen
-in the loaded databases. For instance, loading \Tindex{tugboat.bib} (distributed
+in the loaded databases. For instance, loading \Tindex {tugboat.bib} (distributed
 with \TEXLIVE) gives a long list of commands of which we show a small set of the
 five most frequently encountered ones here:
 
@@ -295,11 +295,11 @@ publications > tugboat  TeX    856 known
 \stoptyping
 
 Some are flagged as known and others as unknown. You can define unknown commands,
-or overload existing definitions in the standard way (\emphasis{e.g.} \TEXcode
+or overload existing definitions in the standard way (\emphasis {e.g.} \TEXcode
 {\def\Dash{—}}), the \CONTEXT\ way (\TEXcode {\define\Dash{—}}) or,
 alternatively, in the following way:
 
-\cindex{definebtxcommand}
+\cindex {definebtxcommand}
 
 \startTEX
 \definebtxcommand\TUB {TUGboat}
@@ -323,13 +323,13 @@ out for proofreading. You can access the commands using \index
 commands like \btxcommand{MySpecialCommand} are handled in an indirect way
 \stopbuffer
 
-\cindex{btxcommand}
+\cindex {btxcommand}
 
 \typeTEXbuffer
 
 As this is an undefined command we get: \quotation {\inlinebuffer}.
 
-Often, these embedded \TEX\ commands are present in \Tindex{.bib} files in order
+Often, these embedded \TEX\ commands are present in \Tindex {.bib} files in order
 to trick \BIBTEX\ into certain behavior. Since this will generally not be
 necessary here, we strongly encourage users to clean|-|up such unnecessary
 extras. Indeed, the idea is to keep the data clean, using styles and parameter
@@ -341,7 +341,7 @@ setup, consistent databases.
 Finally, the \BIBTEX\ entry \tindex {@string}\BTXcode {@String{}} is preprocessed
 as expected.
 
-\tindex{@string}
+\tindex {@string}
 
 \startTEX
 @String{j-TUGboat = "TUGboat"}
@@ -368,8 +368,8 @@ prepared in a way that suits the processing of the \BIBTEX\ generated entries;
 The next variant reflects the \CONTEXT\ recoding of the old \BIBTEX\ output. For
 this reason, some users refer to this as \Tindex {.bbl} format.
 
-\cindex{startpublication}
-\cindex{stoppublication}
+\cindex {startpublication}
+\cindex {stoppublication}
 
 \startTEX
 \startpublication[k=Hagen:Second,t=article,a={Hans Hagen},y=2013,s=HH01]
@@ -392,8 +392,8 @@ the previous use of \BIBTEX.
 
 In the new setup we support these variants:
 
-\cindex{startpublication}
-\cindex{stoppublication}
+\cindex {startpublication}
+\cindex {stoppublication}
 
 \startTEX
 \startpublication[k=Hagen:Third,t=article]
@@ -405,8 +405,8 @@ In the new setup we support these variants:
 
 as well as
 
-\cindex{startpublication}
-\cindex{stoppublication}
+\cindex {startpublication}
+\cindex {stoppublication}
 
 \startTEX
 \startpublication[tag=Hagen:Third,category=article]
@@ -418,8 +418,8 @@ as well as
 
 and
 
-\cindex{startpublication}
-\cindex{stoppublication}
+\cindex {startpublication}
+\cindex {stoppublication}
 
 \startTEX
 \startpublication
@@ -517,8 +517,8 @@ just to name a few (amongst many more). Filters can be easily written in \LUA\ t
 read these and other bibliography data formats, although no such filters are
 provided. This is because the user has a choice of a certain number of
 bibliography database management programs that can easily convert from these to
-the \BIBTEX\ format. (Notable, open source examples are \index{jabref} \goto
-{jabref} [url(http://jabref.sourceforge.net)] and \index{zotero} \goto {zotero}
+the \BIBTEX\ format. (Notable, open source examples are \index {jabref} \goto
+{jabref} [url(http://jabref.sourceforge.net)] and \index {zotero} \goto {zotero}
 [url(http://www.zotero.org)].) Indeed, it is not the vocation of the present
 \CONTEXT\ bibliography subsystem to fully manage the bibliography data sources,
 only to be able to use such data in the production of documents.
@@ -530,38 +530,6 @@ for the manipulation of bibliography database information, which is why the
 that these programs are not standards and many of them may introduce invalid
 extensions that might not even be handled correctly by \BIBTEX\ itself.
 \stopaside
-
-Here is an example of a loader. Each loader takes two arguments, a dataset
-identifier and a filename. The \LUA\ loader takes an extra optional argument: a
-function that returns a \LUA\ table. Here we use one of the loaders present in
-\CONTEXT:
-
-\starttyping
-\startluacode
-    function publications.loaders.json(dataset,filename)
-        publications.loaders.lua(dataset,filename,utilities.json.load)
-    end
-\stopluacode
-\stoptyping
-
-Here is an easy way to debug your own functions:
-
-\starttyping
-\startluacode
-    local function myloader(filename)
-        inspect(filename) -- shows the full filename used
-        local result = {
-            -- loaded entries
-        }
-        inspect(result) -- shows the loaded data
-        return result
-    end
-
-    function publications.loaders.json(dataset,filename)
-        return publications.loaders.lua(dataset,filename,myloader)
-    end
-\stopluacode
-\stoptyping
 
 \stopsection
 

@@ -404,7 +404,7 @@ local function initializehashes(tfmdata)
     -- already done
 end
 
-local function checkmathreplacements(tfmdata,fullname)
+local function checkmathreplacements(tfmdata,fullname,fixitalics)
     if tfmdata.mathparameters then
         local characters = tfmdata.characters
         local changed    = tfmdata.changed
@@ -418,6 +418,16 @@ local function checkmathreplacements(tfmdata,fullname)
                 local n = u.next
                 local v = u.vert_variants
                 local h = u.horiz_variants
+                if fixitalics then
+                    -- quite some warnings on stix ...
+                    local ui = u.italic
+                    if ui and not r.italic then
+                        if trace_preparing then
+                            report_prepare("using %i units of italic correction from %C for %U",ui,unicode,replacement)
+                        end
+                        r.italic = ui -- print(ui,ri)
+                    end
+                end
                 if n and not r.next then
                     if trace_preparing then
                         report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
@@ -498,7 +508,7 @@ local function featuresinitializer(tfmdata,value)
             end
             --
             if substitutionsdone then
-                checkmathreplacements(tfmdata,fullname)
+                checkmathreplacements(tfmdata,fullname,features.fixitalics)
             end
             --
             registerbasehash(tfmdata)

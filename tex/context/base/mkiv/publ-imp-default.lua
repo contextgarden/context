@@ -101,6 +101,7 @@ return {
                 "title",
                 "keywords",
                 "journal", "volume", "number", "pages",
+                "note",
             },
         },
         book = {
@@ -118,6 +119,7 @@ return {
                 "keywords",
                 "publisher", "address",
                 "editionset",
+                "note",
             },
         },
     },

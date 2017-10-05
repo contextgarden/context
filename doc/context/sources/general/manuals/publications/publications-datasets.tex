@@ -17,7 +17,7 @@ non|-|bibliographic information.
 
 A dataset is initiated with the \Cindex {definebtxdataset} command.
 
-\cindex{definebtxdataset}
+\cindex {definebtxdataset}
 
 \startTEX
 \definebtxdataset[default]
@@ -31,10 +31,10 @@ it explicitly because in the future we may provide more options.
 Like other commands in \CONTEXT, the dataset options can be setup using the
 command \Cindex {setupbtxdataset}.
 
-\cindex{definebtxdataset}
+\cindex {definebtxdataset}
 \showsetup[definebtxdataset]
 
-\cindex{setupbtxdataset}
+\cindex {setupbtxdataset}
 \showsetup[setupbtxdataset]
 
 A dataset is loaded from some source through the use of the
@@ -42,11 +42,11 @@ A dataset is loaded from some source through the use of the
 
 Here are some examples:
 
-\cindex{usebtxdataset}
-\tindex{.bib}
-\tindex{.xml}
-\tindex{.lua}
-\tindex{.bbl}
+\cindex {usebtxdataset}
+\tindex {.bib}
+\tindex {.xml}
+\tindex {.lua}
+\tindex {.bbl}
 
 \startTEX
 \usebtxdataset[tugboat][tugboat.bib]
@@ -56,7 +56,7 @@ Here are some examples:
 \usebtxdataset[default][named.buffer]
 \stopTEX
 
-\cindex{usebtxdataset}
+\cindex {usebtxdataset}
 \showsetup[usebtxdataset]
 
 The four suffixes illustrated in the example above are understood by the loader.
@@ -85,8 +85,8 @@ be discouraged as being potentially error|-|prone. \stopfootnote
 \usebtxdataset[example][mkiv-publications.bib]
 \stopbuffer
 
-\cindex{definebtxdataset}
-\cindex{usebtxdataset}
+\cindex {definebtxdataset}
+\cindex {usebtxdataset}
 
 \typeTEXbuffer
 
@@ -97,17 +97,6 @@ The beginning of the file \type {mkiv-publications.bib} is shown below in \in
 contains one entry of each standard type or category, with the \Index {tag} set
 to the entry type name. This entry shown here illustrates many features that will
 be explained elsewhere in the text.
-
-\startplacetable
-  [reference=tab:mkiv-publications.bib,
-   title={mkiv-publications.bib\\
-          This test file was constructed to illustrate various features of the
-          \BIBTEX\ format and contains some fields that might at first glance
-          appear somewhat curious.}]
-  \typeBTXfile
-    [range={@Comment{Start example},@Comment{Stop example}},before=,after=]
-    {mkiv-publications.bib}
-\stopplacetable
 
 \startsection[title=Dataset coverage]
 
@@ -131,7 +120,7 @@ The current active dataset to be used by default can be set with
 \setupbtx[dataset=example]
 \stopbuffer
 
-\cindex{setupbtx}
+\cindex {setupbtx}
 
 \typeTEXbuffer
 
@@ -173,9 +162,9 @@ An alternative set of specifications can be selected using, for example
 \usebtxdefinitions[apa]
 \stopbuffer
 
-\cindex{usebtxdefinitions}
-\index{style+APA}
-\seeindex{specification}{style}
+\cindex {usebtxdefinitions}
+\index {style+APA}
+\seeindex {specification}{style}
 
 \typeTEXbuffer
 
@@ -183,9 +172,9 @@ An alternative set of specifications can be selected using, for example
 
 Alternately, the set of specifications can be loaded and (later) activated using
 
-\cindex{loadbtxdefinitionfile}
-\cindex{setupbtx}
-\index{style+APA}
+\cindex {loadbtxdefinitionfile}
+\cindex {setupbtx}
+\index {style+APA}
 
 \startTEX
 \loadbtxdefinitionfile[apa]
@@ -239,7 +228,7 @@ You can ask for an overview of entries present in a dataset with:
 \showbtxdatasetfields[example]
 \stopbuffer
 
-\cindex{showbtxdatasetfields}
+\cindex {showbtxdatasetfields}
 
 \typeTEXbuffer
 
@@ -259,7 +248,7 @@ detail is the following:
 \showbtxdatasetcompleteness[example]
 \stopbuffer
 
-\cindex{showbtxdatasetcompleteness}
+\cindex {showbtxdatasetcompleteness}
 
 \typeTEXbuffer
 
@@ -293,26 +282,13 @@ handling bibliographic data of all sorts.
 You can see all (currently known) \index {category}categories and \index
 {field}fields with:
 
-\cindex{showbtxfields}
+\cindex {showbtxfields}
 
 \startTEX
 \showbtxfields[rotation=...]
 \stopTEX
 
 The result is shown \in {table} [tab:fields], below.
-
-\startplacetable
-  [reference=tab:fields,
-   list={\TEXcode {\showbtxfields[rotation=90]}},
-   title={\cindex {showbtxfields}\TEXcode {\showbtxfields[rotation=90]} The entry
-          \Index {category} and \Index {field} names (and how they are used) are
-          defined by both the rendering style as well as by the contents of the
-          dataset. \index {field+required}\quote {Required} fields are indicated
-          in green. All unmarked fields are normally \index
-          {field+ignored}ignored in the rendering.}]
-    \small
-    \showbtxfields[rotation=90]
-\stopplacetable
 
 \cindex   {showbtxfields}
 \showsetup[showbtxfields]
@@ -329,5 +305,33 @@ necessarily used. This idea will be developed in the next section describing the
 rendering of bibliography lists.
 
 \stopsection
+
+\startplacetable
+  [reference=tab:mkiv-publications.bib,
+   title={mkiv-publications.bib\\
+          This test file was constructed to illustrate various features of the
+          \BIBTEX\ format and contains some fields that might at first glance
+          appear somewhat curious.}].
+  \typeBTXfile
+    [range={@Comment{Start example},@Comment{Stop example}}]
+    {mkiv-publications.bib}
+\stopplacetable
+
+\startplacetable
+  [reference=tab:fields,
+   list={\TEXcode {\showbtxfields[rotation=90]}},
+   title={\cindex {showbtxfields}\TEXcode {\showbtxfields[rotation=90]} The entry
+          \Index {category} and \Index {field} names (and how they are used) are
+          defined by both the rendering style as well as by the contents of the
+          dataset. \index {field+required}\quote {Required} fields are indicated
+          in green. All unmarked fields are normally \index
+          {field+ignored}ignored in the rendering.}]
+    \small
+    \showbtxfields[rotation=90]
+\stopplacetable
+
+\placefloats
+
+\stopchapter
 
 \stopcomponent

@@ -177,9 +177,9 @@ local function applytweaks(when,target,original)
             local goodie = goodies[i]
             local mathematics = goodie.mathematics
             local tweaks = mathematics and mathematics.tweaks
-            if tweaks then
+            if type(tweaks) == "table" then
                 tweaks = tweaks[when]
-                if tweaks then
+                if type(tweaks) == "table" then
                     if trace_defining then
                         report_math("tweaking math of %a @ %p (%s)",target.properties.fullname,target.parameters.size,when)
                     end

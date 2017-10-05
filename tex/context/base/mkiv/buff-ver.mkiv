@@ -342,7 +342,7 @@
      method  {\p_buff_option}%
      compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)
      escape  {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
-   % nature  {\v!inline}% is default
+   % nature  {inline}% is default
    \relax
    \dostoptagged
    \buff_verbatim_right_of_type
@@ -356,7 +356,7 @@
      tab    {\typeparameter\c!tab}%
      method {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
      escape {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
-   % nature {\v!inline}% is default
+   % nature {inline}% is default
      method {nested}%
    \relax
    \dostoptagged
@@ -844,7 +844,7 @@
      tab    {\typingparameter\c!tab}%
      method {\p_buff_option}%
      escape {\typingparameter\c!escape}%
-   % nature {display}%
+     nature {display}%
    \relax
    \dostoptagged
    \endofverbatimlines
@@ -869,7 +869,7 @@
      strip  {\v!yes}%
      regime {\currentregime}%
      method {\p_buff_option}%
-     nature {\v!inline}%
+     nature {inline}% is default anyway
    \relax
    \dostoptagged}
 

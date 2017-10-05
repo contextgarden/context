@@ -7,8 +7,13 @@
     title=Other use of datasets]
 
 Because a bibliography is just a kind of database, you can use the publications
-mechanism for other purposes as well. During the re|-|implementation \name
-{Miklavec}{M.}Mojca came up with the following definitions:
+mechanism for other purposes as well.
+
+\startsection
+    [title=Images]
+
+During the re|-|implementation \name {Miklavec}{M.}Mojca came up with the
+following definitions:
 
 \startbuffer
 \startbuffer[duane]
@@ -71,6 +76,7 @@ the buffer and sets up a rendering.
 \definebtxrendering
   [duane]
   [specification=duane,
+   group=duane, % so not: group=default,
    dataset=duane,
    method=dataset,
    numbering=no,
@@ -162,6 +168,160 @@ An alternative rendering is:
 We only get the second rendering because we specified \TEXcode {criterium} as
 \TEXcode {all}. Future version of \CONTEXT\ will probably provide \Index{sorting}
 options and ways to plug in additional functionality.
+
+\stopsection
+
+\startsection
+    [title=Chemistry]
+
+To give further ideas on how the \quote {publications} database system can be
+effectively used in a document, consider any object such as an image (as seen
+above), an equation, a chemical compound, or other entity having various
+properties and that might be used repeatedly. Here we will give an almost
+realistic example of a dataset containing various chemical compounds.
+
+Like above, we shall define a named dataset and load it with definitions having
+nothing to do with publications, rather a number of chemical compounds of
+formula \chemical {C_6H_6O} (there are some 57 such molecules).
+
+\startbuffer
+\definebtxdataset
+  [chemistry]
+
+\usebtxdataset
+  [chemistry]
+  [C6H6O.bib]
+\stopbuffer
+
+\cindex{definebtxdataset}
+\cindex{usebtxdataset}
+\typebuffer [option=TEX]
+\getbuffer
+
+We can visualize the contents of the dataset using, for example:
+
+\startbuffer
+\showbtxdatasetcompleteness
+  [dataset=chemistry,
+   specification=chemistry]
+\stopbuffer
+
+\cindex{showbtxdatasetcompleteness}
+\typebuffer [option=TEX]
+
+Note that the specification \quote {chemistry} is undefined (as yet) so the log file shows:
+
+\starttyping
+publications    > no data definition file 'publ-imp-chemistry.lua' for 'chemistry'
+\stoptyping
+
+This is harmless as a missing (lua) definition file makes \emphasis {all} data categories and fields
+\quote {optional}, allowing their access and use.
+
+The dataset (containing just 4 of the 57 entries) is:
+
+\startparagraph [style=small]
+\getbuffer
+\stopparagraph
+
+The next step is to activate the specification and dataset and to define a list rendering, as
+follows:
+
+\startbuffer
+\setupbtx
+  [specification=chemistry,
+   dataset=chemistry]
+
+\definebtxrendering
+  [chemistry]
+  [specification=chemistry,
+   group=chemistry,
+   dataset=chemistry]
+\stopbuffer
+
+\cindex{setupbtx}
+\cindex{definebtxrendering}
+\typebuffer [option=TEX]
+\getbuffer
+
+This list rendering can then be placed, but first one needs to create a setup
+describing how to handle the entry (or category) \type {@chemical{}} contained
+in the file \type {C6H6O.bib}. As in the earlier example, we shall use a table
+structure for the list text:
+
+\startbuffer
+\startsetups btx:chemistry:list:chemical
+  \startframed [frame=off,location=middle]
+  \bTABLE [frame=off]
+    \bTR
+      \bTD [width=.2\textwidth,ny=2]
+        \goto
+        {\startchemical [scale=small]
+           \chemical [\btxflush{chemical}]
+         \stopchemical} [program(\btxflush{rendered})]
+      \eTD
+      \bTD [width=.2\textwidth] \chemical{\btxflush{formula}} \eTD
+      \bTD [width=.4\textwidth] \btxflush{iupac} \eTD
+    \eTR
+    \bTR
+      \bTD \btxflush{mw}~g/mole \eTD
+      \bTD \btxflush{cas} \eTD
+    \eTR
+  \eTABLE
+  \stopframed
+\stopsetups
+
+\placebtxrendering [method=dataset]
+\stopbuffer
+
+\cindex{startsetups}
+\cindex{stopsetups}
+\typebuffer [option=TEX]
+
+Note that not all fields of the dataset are used.
+
+\getbuffer
+
+The real usefulness of the dataset is the possibility of referring to entries
+and the ability to extract data fields. Setups can be defined for those fields
+requiring any formatting beyond a simple flushing, for example those requiring
+the \Cindex {chemical} command.
+
+\startbuffer
+\startsetups btx:chemistry:cite:formula
+  \chemical {\currentbtxfirst}
+\stopsetups
+
+\startsetups btx:chemistry:cite:chemical
+  \startchemical [scale=600]
+    \chemical [\currentbtxfirst]
+  \stopchemical
+\stopsetups
+
+\cite [name]        [108-95-2] |<|or|>|
+\cite [formula]     [108-95-2] |<|or|>|
+\cite [chemical]    [108-95-2] |<|or|>|
+\cite [molarvolume] [108-95-2]
+\stopbuffer
+
+\cindex{startsetups}
+\cindex{stopsetups}
+\cindex{cite}
+\typebuffer [option=TEX]
+\getbuffer
+
+\startbuffer
+\cite [name]        [566-33-5] |<|or|>|
+\cite [formula]     [566-33-5] |<|or|>|
+\cite [chemical]    [566-33-5] |<|or|>|
+\cite [molarvolume] [566-33-5]
+\stopbuffer
+
+\cindex{cite}
+\typebuffer [option=TEX]
+\getbuffer
+
+\stopsection
 
 \stopchapter
 

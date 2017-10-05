@@ -46,8 +46,8 @@ local v_yes                = variables.yes
 local v_last               = variables.last
 local v_all                = variables.all
 local v_absolute           = variables.absolute
-local v_inline             = variables.inline
-local v_display            = variables.display
+----- v_inline             = variables.inline  -- not !
+----- v_display            = variables.display -- not !
 
 -- beware, all macros have an argument:
 
@@ -70,7 +70,7 @@ local ctx_verbatimspace             = context.doverbatimspace
 local CargOne = Carg(1)
 
 local function f_emptyline(s,settings)
-    if settings and settings.nature == v_inline then
+    if settings and settings.nature == "inline" then
         ctx_inlineverbatimemptyline()
     else
         ctx_displayverbatimemptyline()
@@ -78,7 +78,7 @@ local function f_emptyline(s,settings)
 end
 
 local function f_beginline(s,settings)
-    if settings and settings.nature == v_inline then
+    if settings and settings.nature == "inline" then
         ctx_inlineverbatimbeginline()
     else
         ctx_displayverbatimbeginline()
@@ -86,7 +86,7 @@ local function f_beginline(s,settings)
 end
 
 local function f_newline(s,settings)
-    if settings and settings.nature == v_inline then
+    if settings and settings.nature == "inline" then
         ctx_inlineverbatimnewline()
     else
         ctx_displayverbatimnewline()
@@ -94,7 +94,7 @@ local function f_newline(s,settings)
 end
 
 local function f_start(s,settings)
-    if settings and settings.nature == v_inline then
+    if settings and settings.nature == "inline" then
         ctx_inlineverbatimstart()
     else
         ctx_displayverbatimstart()
@@ -102,7 +102,7 @@ local function f_start(s,settings)
 end
 
 local function f_stop(s,settings)
-    if settings and settings.nature == v_inline then
+    if settings and settings.nature == "inline" then
         ctx_inlineverbatimstop()
     else
         ctx_displayverbatimstop()
@@ -507,7 +507,7 @@ local function visualize(content,settings) -- maybe also method in settings
         else
             m = specifications[method] or specifications.default
         end
-        local nature = settings.nature or v_display
+        local nature = settings.nature or "display"
         local n = m and m[nature]
         if n then
             if trace_visualize then
@@ -541,15 +541,15 @@ local function checkedsettings(settings,nature)
 end
 
 function visualizers.visualizestring(content,settings)
-    visualize(content,checkedsettings(settings,v_inline))
+    visualize(content,checkedsettings(settings,"inline"))
 end
 
 function visualizers.visualizefile(name,settings)
-    visualize(resolvers.loadtexfile(name),checkedsettings(settings,v_display))
+    visualize(resolvers.loadtexfile(name),checkedsettings(settings,"display"))
 end
 
 function visualizers.visualizebuffer(name,settings)
-    visualize(buffers.getcontent(name),checkedsettings(settings,v_display))
+    visualize(buffers.getcontent(name),checkedsettings(settings,"display"))
 end
 
 -- --
@@ -746,7 +746,7 @@ local function filter(lines,settings) -- todo: inline or display in settings
         first, last = getstrip(lines,first,last)
     end
     -- \r is \endlinechar but \n would is more generic so this choice is debatable
-    local content = concat(lines,(settings.nature == v_inline and " ") or "\n",first,last)
+    local content = concat(lines,(settings.nature == "inline" and " ") or "\n",first,last)
     return content, m
 end
 
@@ -762,7 +762,7 @@ local function typebuffer(settings)
         if content and content ~= "" then
          -- content = decodecomment(content)
             content = dotabs(content,settings)
-            visualize(content,checkedsettings(settings,v_display))
+            visualize(content,checkedsettings(settings,"display"))
         end
     end
 end
@@ -811,7 +811,7 @@ local function typestring(settings)
         end
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)
-        visualize(content,checkedsettings(settings,v_inline))
+        visualize(content,checkedsettings(settings,"inline"))
     end
 end
 
@@ -831,7 +831,7 @@ local function typefile(settings)
                 local content, m = filter(lines,settings)
                 if content and content ~= "" then
                     content = dotabs(content,settings)
-                    visualize(content,checkedsettings(settings,v_display))
+                    visualize(content,checkedsettings(settings,"display"))
                 end
             end
         end

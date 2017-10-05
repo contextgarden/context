@@ -73,15 +73,6 @@ defined and setup using the commands:
 
 \showsetup{setupbtxrendering}
 
-\startbuffer
-    \showrootvalues[btxrendering]
-    \showinstancevalues[btxrendering][default]
-    \usebtxdefinitions[apa] % needed for:
-    \showinstancevalues[btxrendering][apa]
-\stopbuffer
-
-\typebuffer \getbuffer
-
 A rendering is then placed using \Cindex {placebtxrendering}, a \CONTEXT\ command
 that accepts the same arguments as for its setup. Using \TEXcode
 {method=dataset}, as above, one renders the entire contents of the dataset.
@@ -201,13 +192,13 @@ the rendering that we named \TEXcode {example} above.
 Let's try a new example (using a file taken from the \index {TUG bibliography
 archive}\goto {TUG bibliography archive}
 [url(http://ftp.math.utah.edu/pub/tex/bib/index.html)]): \startfootnote \index
-{template.bib} The file \TEXcode {template2.bib} is simply a copy of \TEXcode
+{template.bib} The file \TEXcode {template-clean.bib} is simply a copy of \TEXcode
 {template.bib} that has been cleaned|-|up to remove the empty entries.
 \stopfootnote
 
 \startbuffer
 \definebtxdataset[template]
-\usebtxdataset   [template][template2.bib]
+\usebtxdataset   [template][template-clean.bib]
 
 \loadbtxdefinitionfile[aps]
 \definebtxrendering
@@ -254,9 +245,8 @@ manual uses:
 \stopTEX
 
 thus setting the numbering of the group \TEXcode {examples} apart from the
-numbering of the dataset \TEXcode {default} and its named rendering that contains
-this manual's own bibliography (that will be placed later, on \at {page}
-[ch:biblio]).
+numbering of the dataset \TEXcode {default} and its named rendering (which contains
+this manual's own bibliography, to be placed later, on \at {page} [ch:biblio]).
 
 \stopsection
 
@@ -268,10 +258,12 @@ The default rendering style implemented in the \MKII\ module was loosely based o
 the \index {style+APA}APA standard. In contrast, we made a design choice in the
 present \MKIV\ system to provide a very minimal \TEXcode {default} style, and one
 should not expect much from this default: in fact, it only recognizes \type
-{article} and \type {book} entries. A user requiring a more complete rendering
-will want to explicitly load another style file. One such complete specification,
+{article} and \type {book} entries (see the bibliography on \at {page}
+[ch:biblio]). A user requiring a more complete rendering will want to explicitly
+load and activate another style file. One such complete specification,
 illustrated above and appropriately named \index {style+APA}\TEXcode {apa}, is
-described in the \cite [title] [default::APA2010] \cite [num] [default::APA2010].
+described in the \cite [title] [default::APA2010]. \cite [num]
+[default::APA2010]
 
 \startaside
 \emphasis {A note on the \index {style+APA}APA style:} We get the strong
@@ -429,6 +421,9 @@ within a unique section, as in:
 The language setting also influences the sorting of \UTF\ strings, in particular
 authors and titles.
 
+\cindex   {setupdelimitedtext}
+\showsetup[setupdelimitedtext]
+
 \startplacetable [title={\cindex{setupdelimitedtext}\TEXcode{\setupdelimitedtext[language=…]}}]
     \starttabulate [|Tl|p(.7\textwidth)|]
         \NC language= \NC \NC \NR
@@ -443,9 +438,6 @@ authors and titles.
         \HL
     \stoptabulate
 \stopplacetable
-
-\cindex   {setupdelimitedtext}
-\showsetup[setupdelimitedtext]
 
 \startsubsubject[title=Translated titles]
 
@@ -495,8 +487,8 @@ complicated situation such as this is not very common.
 
 \startbuffer
 \usebtxdataset     [leibniz][leibniz.buffer]
-\definebtxrendering[leibniz][apa][dataset=leibniz]
-\placebtxrendering [leibniz][group=examples,method=dataset]
+\definebtxrendering[leibniz][apa][group=examples,dataset=leibniz]
+\placebtxrendering [leibniz][method=dataset]
 \stopbuffer
 
 with

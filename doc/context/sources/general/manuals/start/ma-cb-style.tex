@@ -11,7 +11,9 @@
 
 % Setups are kind of special.
 
-\loadsetups[cont-\currentmainlanguage.xml]
+% \loadsetups[cont-\currentmainlanguage.xml]
+
+\loadsetups[i-context]
 
 \setupsetup
   [\c!criterium=\v!used]
@@ -254,59 +256,26 @@
 
 \newbox\CoverBackgroundBox % reuse saves .8 sec, could be an object!
 
+\definebodyfontenvironment[1.9pt]
+
+\defineframed
+  [CoverFramed]
+  [%\c!foregroundstyle=\CoverFont,
+   \c!background=basic-shape-dark,
+   \c!backgroundoffset=1pt,
+   \c!rulethickness=2pt,
+   \c!frame=\v!off]
+
 \starttexdefinition unexpanded ShowSetupOnCover #n #tag #xmlroot
     \dontleavehmode
-    \framed [
-        \c!background=basic-shape-light,
-        \c!backgroundoffset=5pt,
-        \c!rulethickness=2pt,
-        \c!frame=\v!off
-    ] {
-        \xmlsetup{#xmlroot}{xml:setups:assemblename}
-        \tttf
-        \texescape\currentSETUPfullname
+    \CoverFramed {
+        \tttf\showsetupnameonly{#1}{#2}{#3}
     }
-   \hskip1.25em plus 1em minus 1em\relax
+    \kern\zeropoint
+    \hskip1em plus 1em minus .25em\relax
 \stoptexdefinition
 
-% \startsetups coverbackground
-%
-%     \ifvoid\CoverBackgroundBox
-%
-%         \global\setbox\CoverBackgroundBox=\vbox to \paperheight \bgroup
-%             \hsize\paperwidth
-%             \emergencystretch3em
-%             \parfillskip0pt
-%             \switchtobodyfont
-%               [6pt]
-%             \baselineskip 0pt plus 1pt minus 1pt
-%             \setupsorting
-%               [texcommand]
-%               [\c!command=\ShowSetupOnCover,
-%                \c!criterium=\v!all]
-%             \beginofshapebox
-%                 \leftskip3pt
-%                 \rightskip3pt
-%                 \placelistofsorts
-%                     [texcommand]
-%             \endofshapebox
-%             \doreshapebox
-%                 {\box\shapebox}
-%                 {\penalty\shapepenalty}
-%                 {\kern\shapekern}
-%                 {\vfil}
-%             \kern3pt
-%             \vfilneg
-%             \flushshapebox
-%             \vfilneg
-%             \kern3pt
-%         \egroup
-%
-%    \fi
-%
-%    \copy\CoverBackgroundBox
-%
-% \stopsetups
+\definecolor[CoverTransparency][a=1,t=.5]
 
 \startsetups coverbackground
 
@@ -316,14 +285,18 @@
             \startnicelyfilledbox
                 [\c!width=\paperwidth,
                  \c!height=\paperheight,
-                 \c!offset=\exheight,
+%                  \c!offset=\exheight,
+%                  \c!offset=\emwidth,
+                 \c!offset=\zeropoint,
                  \c!strut=\v!no]
                 \switchtobodyfont
-                    [6pt]
+                    [1.9pt]
+                \starttransparent[CoverTransparency]
                 \placelistofsorts
                     [texcommand]
                     [\c!command=\ShowSetupOnCover,
-                     \c!criterium=\v!all]
+                     \c!criterium=\v!all]% used
+                \stoptransparent
             \stopnicelyfilledbox
 
    \fi
@@ -362,14 +335,16 @@
 
         \hbox to \hsize \bgroup
             \hss
-            \definedfont[SansBold*default at 40pt]
+           %\definedfont[SansBold*default at 40pt]
+            \definedfont[Bold*default at 40pt]
             \framed
                 [\c!background=basic-shape-dark,
                  \c!frame=\v!off,
-                 \c!rulethickness=15pt,
+                 \c!rulethickness=30pt,
                  \c!align=\v!middle,
                  \c!offset=40pt]
-                {\documentvariable{title}}
+                {\dontleavehmode\hbox{\documentvariable{title}}\par
+                 \dontleavehmode\hbox{\documentvariable{subtitle}}}
         \egroup
 
         \vfill
@@ -377,14 +352,15 @@
         \doifsomething {\documentvariable{subtitle}} {
 
             \hbox to \hsize \bgroup
-                \definedfont[SansBold*default at 14pt]
+               %\definedfont[SansBold*default at 20pt]
+                \definedfont[Bold*default at 20pt]
                 \framed
                     [\c!background=basic-shape-dark,
                      \c!frame=\v!off,
-                     \c!rulethickness=10pt,
+                     \c!rulethickness=15pt,
                      \c!align=\v!middle,
                      \c!offset=20pt]
-                    {\documentvariable{subtitle}}
+                    {\documentvariable{version}}
                 \hss
             \egroup
 
@@ -392,11 +368,12 @@
 
         \hbox to \hsize \bgroup
             \hss
-            \definedfont[SansBold*default at 20pt]
+           %\definedfont[SansBold*default at 24pt]
+            \definedfont[Bold*default at 24pt]
             \framed
                 [\c!background=basic-shape-dark,
                  \c!frame=\v!off,
-                 \c!rulethickness=12.5pt,
+                 \c!rulethickness=18pt,
                  \c!align=\v!middle,
                  \c!offset=35pt]
                 {\documentvariable{author}}
@@ -547,9 +524,16 @@
 
             \switchtobodyfont[8pt]
 
-            \startmixedcolumns[documentcolumns]
+            % somehow \blank doesn't work here
+
+            \setupframedtexts
+              [setuptext]
+              [\c!before={\vskip6pt},
+               \c!after={\vskip6pt}]
+
+          % \startmixedcolumns[documentcolumns]
                 \placelistofsorts[texcommand]
-            \stopmixedcolumns
+          % \stopmixedcolumns
 
         \stop
 
@@ -671,7 +655,7 @@
 \setupregister
   [Command]
   [\c!indicator=\v!off,
-   c!before={\blank[\v!line]}]
+   \c!before={\blank[\v!line]}]
 
 \protect
 
