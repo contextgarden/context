@@ -166,8 +166,10 @@ end
 implement {
     name      = "showhyphenatedinlist",
     arguments = "integer",
-    actions   = function(box)
-        report_hyphenation("show: %s",listtoutf(checkedlist(n),false,true))
+    actions   = function(n)
+        -- we just hyphenate (as we pass a hpack) .. a bit too much casting but ...
+        local l = languages.hyphenators.handler(tonode(checkedlist(n)))
+        report_hyphenation("show: %s",listtoutf(l,false,true))
     end
 }
 

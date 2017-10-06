@@ -124,8 +124,8 @@ update.base = {
 -- binaries and font-related files
 -- for pdftex we don't need OpenType fonts, for LuaTeX/XeTeX we don't need TFM files
 
-local update.defaultengine = "luatex"
-local update.rsyncvariant  = "cygwin" -- will be come mingw
+update.defaultengine = "luatex"
+update.rsyncvariant  = "cygwin" -- will be come mingw
 
 update.engines = {
     ["luatex"] = {

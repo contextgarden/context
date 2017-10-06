@@ -13,10 +13,11 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Runtime Macros}
 
+\registerctxluafile{page-run}{1.001}
+
 \unprotect
 
-\gdef\showprint
-  {\dotripleempty\page_layouts_show_print}
+\unexpanded\gdef\showprint{\dotripleempty\page_layouts_show_print}
 
 \gdef\page_layouts_show_print[#1][#2][#3]% only english
   {\setbuffer[crap]%
@@ -70,189 +71,9 @@
 %   {\showprint[mirrored] [mirrored] [location=middle]} {\type{mirrored}\break\type{mirrored}}
 % \stopcombination
 
-% maybe we will have page-run.lua
-
-\startluacode
-local format, concat = string.format, table.concat
-local todimen = number.todimen
-local texdimen = tex.dimen
-
-local function asdimen(name,unit)
-    return todimen(texdimen[name],unit,"%0.4f") -- 4 is more than enough, even 3 would be okay
-end
-
-local function checkedoptions(options)
-    if type(options) == "table" then
-        return options
-    elseif not options or options == "" then
-        options = "pt,cm"
-    end
-    options = utilities.parsers.settings_to_hash(options)
-    local n = 4
-    for k, v in table.sortedhash(options) do
-        local m = tonumber(k)
-        if m then
-            n = m
-        end
-    end
-    options.n = n
-    return options
-end
-
-function commands.showlayoutvariables(options)
-
-    options = checkedoptions(options)
-
-    local dimensions = { "pt", "bp", "cm", "mm", "dd", "cc", "pc", "nd", "nc", "sp", "in" }
-
-    local n = 0
-    for i=1,#dimensions do
-        if options[dimensions[i]] then
-            n = n + 1
-        end
-    end
-
-    if n == 0 then
-        options.pt = true
-        n = 1
-    end
-
-    local function showdimension(name)
-        context.NC()
-        context.tex(interfaces.interfacedcommand(name))
-        context.NC()
-        for i=1,#dimensions do
-            local d = dimensions[i]
-            if options[d] then
-                context("%s%s",asdimen(name,d),d)
-                context.NC()
-            end
-        end
-        context.NR()
-    end
-
-    local function showmacro(name)
-        context.NC()
-        context.tex(interfaces.interfacedcommand(name))
-        context.NC()
-        context.getvalue(name)
-        context.NC()
-        context.NR()
-    end
-
-    local function reportdimension(name)
-        local result = { }
-        for i=1,#dimensions do
-            local d = dimensions[i]
-            if options[d] then
-                result[#result+1] = format("%12s%s",asdimen(name,d),d)
-            end
-        end
-        commands.writestatus("layout",format("%-24s %s",interfaces.interfacedcommand(name),concat(result," ")))
-    end
-
-    if tex.count.textlevel == 0 then
-
-        -- especially for Luigi:
-
-        reportdimension("paperheight")
-        reportdimension("paperwidth")
-        reportdimension("printpaperheight")
-        reportdimension("printpaperwidth")
-        reportdimension("topspace")
-        reportdimension("backspace")
-        reportdimension("makeupheight")
-        reportdimension("makeupwidth")
-        reportdimension("topheight")
-        reportdimension("topdistance")
-        reportdimension("headerheight")
-        reportdimension("headerdistance")
-        reportdimension("textheight")
-        reportdimension("footerdistance")
-        reportdimension("footerheight")
-        reportdimension("bottomdistance")
-        reportdimension("bottomheight")
-        reportdimension("leftedgewidth")
-        reportdimension("leftedgedistance")
-        reportdimension("leftmarginwidth")
-        reportdimension("leftmargindistance")
-        reportdimension("textwidth")
-        reportdimension("rightmargindistance")
-        reportdimension("rightmarginwidth")
-        reportdimension("rightedgedistance")
-        reportdimension("rightedgewidth")
-        reportdimension("bodyfontsize")
-        reportdimension("lineheight")
-
-    else
-
-        context.starttabulate { "|l|" .. string.rep("Tr|",n) }
-
-            showdimension("paperheight")
-            showdimension("paperwidth")
-            showdimension("printpaperheight")
-            showdimension("printpaperwidth")
-            showdimension("topspace")
-            showdimension("backspace")
-            showdimension("makeupheight")
-            showdimension("makeupwidth")
-            showdimension("topheight")
-            showdimension("topdistance")
-            showdimension("headerheight")
-            showdimension("headerdistance")
-            showdimension("textheight")
-            showdimension("footerdistance")
-            showdimension("footerheight")
-            showdimension("bottomdistance")
-            showdimension("bottomheight")
-            showdimension("leftedgewidth")
-            showdimension("leftedgedistance")
-            showdimension("leftmarginwidth")
-            showdimension("leftmargindistance")
-            showdimension("textwidth")
-            showdimension("rightmargindistance")
-            showdimension("rightmarginwidth")
-            showdimension("rightedgedistance")
-            showdimension("rightedgewidth")
-            context.NR()
-            showdimension("bodyfontsize")
-            showdimension("lineheight")
-            context.NR()
-            showmacro("strutheightfactor")
-            showmacro("strutdepthfactor")
-            showmacro("topskipfactor")
-            showmacro("maxdepthfactor")
-
-        context.stoptabulate()
-
-    end
-
-end
-
-function commands.showlayout(options)
-
-    options = checkedoptions(options)
-
-    if tex.count.textlevel == 0 then
-
-        commands.showlayoutvariables(options)
-
-    else
-
-        context.page()
-        context.bgroup()
-        context.showframe()
-        context.setuplayout { marking = interfaces.variables.on }
-        for i=1,(options.n or 4) do
-            commands.showlayoutvariables(options)
-            context.page()
-        end
-        context.egroup()
-
-    end
-
-end
-\stopluacode
+\unexpanded\gdef\showframe {\dodoubleempty\page_layouts_show_frame}
+\unexpanded\gdef\showsetups{\dosingleempty\page_layouts_show_setups}
+\unexpanded\gdef\showlayout{\dosingleempty\page_layouts_show_layout}
 
 \gdef\page_layouts_show_frame[#1][#2]%
   {\ifsecondargument
@@ -293,10 +114,6 @@ end
 \gdef\page_layouts_show_layout[#1]%
   {\ctxcommand{showlayout("#1")}}
 
-\unexpanded\gdef\showframe {\dodoubleempty\page_layouts_show_frame }
-\unexpanded\gdef\showsetups{\dosingleempty\page_layouts_show_setups}
-\unexpanded\gdef\showlayout{\dosingleempty\page_layouts_show_layout}
-
 \unexpanded\gdef\showmargins
   {\starttabulate
    \NC asynchrone   \NC \doifelseoddpage     {odd}   {even} \NC \NR
@@ -306,5 +123,95 @@ end
    \NC outer margin \NC \the\outermarginwidth               \NC \NR
    \NC inner margin \NC \the\innermarginwidth               \NC \NR
    \stoptabulate}
+
+%D Page grids:
+
+\newconstant\c_page_grids_location
+\newconstant\c_page_grids_line_mode
+\newconstant\c_page_grids_lineno_mode
+\newconstant\c_page_grids_columns_mode
+
+\unexpanded\gdef\showgrid
+  {\dosingleempty\page_grids_show}
+
+\gdef\page_grids_show[#1]%
+  {\c_page_grids_location    \plusone % downward compatible default
+   \c_page_grids_line_mode   \plusone
+   \c_page_grids_lineno_mode \plusone
+   \c_page_grids_columns_mode\plusone
+   \processallactionsinset
+     [#1]%
+     [   \v!reset=>\c_page_grids_location    \zerocount
+                   \c_page_grids_columns_mode\zerocount,
+        \v!bottom=>\c_page_grids_location    \plusone,
+           \v!top=>\c_page_grids_location    \plustwo,
+          \v!none=>\c_page_grids_line_mode   \zerocount,
+           \v!all=>\c_page_grids_line_mode   \plusone,
+         \v!lines=>\c_page_grids_line_mode   \plustwo,
+         \v!frame=>\c_page_grids_line_mode   \plusthree,
+      \v!nonumber=>\c_page_grids_lineno_mode \zerocount,
+         \v!right=>\c_page_grids_lineno_mode \plusone,
+          \v!left=>\c_page_grids_lineno_mode \plustwo,
+         \v!outer=>\c_page_grids_lineno_mode \plusthree,
+       \v!columns=>\c_page_grids_columns_mode\plusone]% new option
+   \ifcase\c_page_grids_location
+     \let\page_grids_add_to_box\gobbleoneargument
+   \else % 1=bottom 2=top
+     \let\page_grids_add_to_box\page_grids_add_to_box_indeed
+   \fi
+   \ifcase\c_page_grids_columns_mode
+     \let\page_grids_add_to_one\gobbleoneargument
+     \let\page_grids_add_to_mix\gobbleoneargument
+   \else
+     \let\page_grids_add_to_one\page_grids_add_to_one_indeed
+     \let\page_grids_add_to_mix\page_grids_add_to_mix_indeed
+   \fi}
+
+% if really needed for speed we can cache the grid
+
+\glet\page_grids_add_to_box\gobbleoneargument
+\glet\page_grids_add_to_one\gobbleoneargument
+\glet\page_grids_add_to_mix\gobbleoneargument
+
+\gdef\page_grids_add_to_box_indeed#1% to be checked for color and layer ..... use mp
+  {\startcolor[layout:grid]%
+   \resetvisualizers
+   \gridboxlinemode  \c_page_grids_line_mode
+   \gridboxlinenomode\c_page_grids_lineno_mode
+   \setgridbox\scratchbox\makeupwidth\textheight % todo: check color
+   \global\setbox#1\hbox % global ?
+     {\ifcase\c_page_grids_location\or\or\box#1\hskip-\makeupwidth\fi
+      \begingroup % color
+      \ifcase\layoutcolumns\else
+        \gray
+        \setlayoutcomponentattribute{\v!grid:\v!columns}%
+        \hbox \layoutcomponentboxattribute to \makeupwidth
+          {\dorecurse\layoutcolumns
+             {\hskip\layoutcolumnwidth
+              \ifnum\recurselevel<\layoutcolumns
+                \vrule
+                  \s!height\ht\scratchbox
+                  \s!depth \dp\scratchbox
+                  \s!width \layoutcolumndistance
+              \fi}}%
+        \hskip-\makeupwidth
+      \fi
+      \setlayoutcomponentattribute{\v!grid:\v!lines}%
+      \hbox \layoutcomponentboxattribute{\box\scratchbox}%
+      \endgroup
+      \ifcase\c_page_grids_location\or\hskip-\makeupwidth\box#1\fi}%
+   \stopcolor}
+
+\gdef\page_grids_add_to_one_indeed#1%
+  {\begingroup
+   \resetvisualizers
+   \global\setbox#1\vpack{\backgroundline[layout:one]{\box#1}}%
+   \endgroup}
+
+\gdef\page_grids_add_to_mix_indeed#1%
+  {\begingroup
+   \resetvisualizers
+   \global\setbox#1\vpack{\backgroundline[layout:mix]{\box#1}}%
+   \endgroup}
 
 \protect \endinput

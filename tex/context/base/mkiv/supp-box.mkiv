@@ -1071,8 +1071,8 @@
 \unexpanded\def\doshowhyphenatednextbox
   {\clf_showhyphenatedinlist\nextbox}
 
-\unexpanded\def\showhyphens
-  {\dowithnextboxcs\doshowhyphenatednextbox\hbox}
+\unexpanded\def\showhyphens % hpack: so no processing (we hyphenate in lua)
+  {\dowithnextboxcs\doshowhyphenatednextbox\hpack}
 
 %D The following macros are seldom used but handy for tracing.
 %D

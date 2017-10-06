@@ -33,22 +33,6 @@
 
 \unprotect
 
-%D This module is a (partial) rewrite of core-ref.tex for \MKIV. As
-%D such it will be a moving target for a while.
-
-%D Later we will do a further cleanup and move much of the code to
-%D \LUA\ (i.e.\ better backend integration).
-
-\let\mainreference\gobblefivearguments
-
-% this will go when we got rid of the tuo file
-
-\let\currentfolioreference \!!zerocount % only used in xml-fo
-\let\resetreferences       \relax
-\let\setreferences         \relax
-\let\showcurrentreference  \relax
-\let\setexecutecommandcheck\gobbletwoarguments
-
 % todo : unknown/illegal reference no arg
 % todo : +n pages check on 'samepage' (contrastcolor)
 % todo : multiple text in reference

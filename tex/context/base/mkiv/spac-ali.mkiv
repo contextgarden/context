@@ -963,13 +963,14 @@
    \dontleavehmode
    \begingroup
    \inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{\thepardata}}}%
-   \endgroup}
+   \endgroup
+   \let\showpardata\relax}
 
 \unexpanded\def\startshowpardata
   {\begingroup
    \showstruts
    \tracingparagraphs\maxdimen
-   \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
+   \appendtoksonce\showpardata\to\everypar}
 
 \unexpanded\def\stopshowpardata
   {\endgraf

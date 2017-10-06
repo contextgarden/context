@@ -20,14 +20,14 @@
 
 \unprotect
 
-\unexpanded\def\showbtxdatasetfields      {\dosingleempty\publ_show_dataset_fields}
-\unexpanded\def\showbtxdatasetcompleteness{\dosingleempty\publ_show_dataset_completeness}
-\unexpanded\def\showbtxdatasetauthors     {\dosingleempty\publ_show_dataset_authors}
-\unexpanded\def\showbtxhashedauthors      {\dosingleempty\publ_show_hashed_authors}
-\unexpanded\def\showbtxfields             {\dosingleempty\publ_show_fields}
-\unexpanded\def\showbtxtables             {\dosingleempty\publ_show_tables}
+\unexpanded\gdef\showbtxdatasetfields      {\dosingleempty\publ_show_dataset_fields}
+\unexpanded\gdef\showbtxdatasetcompleteness{\dosingleempty\publ_show_dataset_completeness}
+\unexpanded\gdef\showbtxdatasetauthors     {\dosingleempty\publ_show_dataset_authors}
+\unexpanded\gdef\showbtxhashedauthors      {\dosingleempty\publ_show_hashed_authors}
+\unexpanded\gdef\showbtxfields             {\dosingleempty\publ_show_fields}
+\unexpanded\gdef\showbtxtables             {\dosingleempty\publ_show_tables}
 
-\def\publ_show_dataset_whatever#1[#2]%
+\gdef\publ_show_dataset_whatever#1[#2]%
   {\begingroup
    \letdummyparameter\c!specification\currentbtxspecification
    \setdummyparameter\c!dataset      {\currentbtxdataset}%
@@ -46,11 +46,11 @@
    }}%
    \endgroup}
 
-\def\publ_show_dataset_fields      {\publ_show_dataset_whatever{showbtxdatasetfields}}
-\def\publ_show_dataset_completeness{\publ_show_dataset_whatever{showbtxdatasetcompleteness}}
-\def\publ_show_dataset_authors     {\publ_show_dataset_whatever{showbtxdatasetauthors}}
+\gdef\publ_show_dataset_fields      {\publ_show_dataset_whatever{showbtxdatasetfields}}
+\gdef\publ_show_dataset_completeness{\publ_show_dataset_whatever{showbtxdatasetcompleteness}}
+\gdef\publ_show_dataset_authors     {\publ_show_dataset_whatever{showbtxdatasetauthors}}
 
-\def\publ_show_fields[#1]%
+\gdef\publ_show_fields[#1]%
   {\begingroup
    \setdummyparameter\c!rotation{90}%
    \doifelseassignment{#1}%
@@ -65,12 +65,12 @@
    }}%
    \endgroup}
 
-\def\publ_show_tables[#1]%
+\gdef\publ_show_tables[#1]%
   {\begingroup
    \ctxcommand{showbtxtables{}}%
    \endgroup}
 
-\def\publ_show_hashed_authors[#1]%
+\gdef\publ_show_hashed_authors[#1]%
   {\ctxcommand{showbtxhashedauthors{}}}
 
 \protect

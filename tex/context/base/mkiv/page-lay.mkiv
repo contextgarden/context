@@ -1343,12 +1343,18 @@
 %D \showsetup{showlayout}
 %D \showsetup{showsetups}
 %D %showsetup{showmargins}
+%D %showsetup{showgrid}
 
-\fetchruntimecommand \showprint   {page-run}
-\fetchruntimecommand \showframe   {page-run}
-\fetchruntimecommand \showlayout  {page-run}
-\fetchruntimecommand \showsetups  {page-run}
-\fetchruntimecommand \showmargins {page-run}
+\fetchruntimecommand \showprint   \f!page_run
+\fetchruntimecommand \showframe   \f!page_run
+\fetchruntimecommand \showlayout  \f!page_run
+\fetchruntimecommand \showsetups  \f!page_run
+\fetchruntimecommand \showmargins \f!page_run
+\fetchruntimecommand \showgrid    \f!page_run
+
+\glet\page_grids_add_to_box\gobbleoneargument
+\glet\page_grids_add_to_one\gobbleoneargument
+\glet\page_grids_add_to_mix\gobbleoneargument
 
 %D The default dimensions are quite old and will not change.
 %D The funny fractions were introduced when we went from fixed
