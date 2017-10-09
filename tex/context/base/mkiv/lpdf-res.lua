@@ -21,8 +21,8 @@ local saveboxresource = tex.saveboxresource
 local useboxresource  = tex.useboxresource
 local getboxresource  = tex.getboxresourcedimensions
 
-function codeinjections.registerboxresource(n)
-    local r = saveboxresource(n,nil,lpdf.collectedresources(),true) -- direct, todo: accept functions as attr/resources
+function codeinjections.registerboxresource(n,offset)
+    local r = saveboxresource(n,nil,lpdf.collectedresources(),true,0,offset or 0) -- direct, todo: accept functions as attr/resources
     return r
 end
 

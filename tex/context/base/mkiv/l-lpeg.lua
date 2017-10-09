@@ -105,11 +105,14 @@ patterns.alwaysmatched = alwaysmatched
 local sign             = S('+-')
 local zero             = P('0')
 local digit            = R('09')
+local digits           = digit^1
 local octdigit         = R("07")
+local octdigits        = octdigit^1
 local lowercase        = R("az")
 local uppercase        = R("AZ")
 local underscore       = P("_")
 local hexdigit         = digit + lowercase + uppercase
+local hexdigits        = hexdigit^1
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
 ----- newline          = crlf + S("\r\n") -- cr + lf
 local newline          = P("\r") * (P("\n") + P(true)) + P("\n")  -- P("\r")^-1 * P("\n")^-1
@@ -242,33 +245,36 @@ patterns.doublequoted  = dquote * patterns.nodquote * dquote
 patterns.quoted        = patterns.doublequoted + patterns.singlequoted
 
 patterns.digit         = digit
+patterns.digits        = digits
 patterns.octdigit      = octdigit
+patterns.octdigits     = octdigits
 patterns.hexdigit      = hexdigit
+patterns.hexdigits     = hexdigits
 patterns.sign          = sign
-patterns.cardinal      = digit^1
-patterns.integer       = sign^-1 * digit^1
-patterns.unsigned      = digit^0 * period * digit^1
+patterns.cardinal      = digits
+patterns.integer       = sign^-1 * digits
+patterns.unsigned      = digit^0 * period * digits
 patterns.float         = sign^-1 * patterns.unsigned
-patterns.cunsigned     = digit^0 * comma * digit^1
-patterns.cpunsigned    = digit^0 * (period + comma) * digit^1
+patterns.cunsigned     = digit^0 * comma * digits
+patterns.cpunsigned    = digit^0 * (period + comma) * digits
 patterns.cfloat        = sign^-1 * patterns.cunsigned
 patterns.cpfloat       = sign^-1 * patterns.cpunsigned
 patterns.number        = patterns.float + patterns.integer
 patterns.cnumber       = patterns.cfloat + patterns.integer
 patterns.cpnumber      = patterns.cpfloat + patterns.integer
-patterns.oct           = zero * octdigit^1
+patterns.oct           = zero * octdigits
 patterns.octal         = patterns.oct
 patterns.HEX           = zero * P("X") * (digit+uppercase)^1
 patterns.hex           = zero * P("x") * (digit+lowercase)^1
-patterns.hexadecimal   = zero * S("xX") * hexdigit^1
+patterns.hexadecimal   = zero * S("xX") * hexdigits
 
 patterns.hexafloat     = sign^-1
                        * zero * S("xX")
-                       * (hexdigit^0 * period * hexdigit^1 + hexdigit^1 * period * hexdigit^0 + hexdigit^1)
-                       * (S("pP") * sign^-1 * hexdigit^1)^-1
+                       * (hexdigit^0 * period * hexdigits + hexdigits * period * hexdigit^0 + hexdigits)
+                       * (S("pP") * sign^-1 * hexdigits)^-1
 patterns.decafloat     = sign^-1
-                       * (digit^0 * period * digit^1 + digit^1 * period * digit^0 + digit^1)
-                       *  S("eE") * sign^-1 * digit^1
+                       * (digit^0 * period * digits + digits * period * digit^0 + digits)
+                       *  S("eE") * sign^-1 * digits
 
 patterns.propername    = (uppercase + lowercase + underscore) * (uppercase + lowercase + underscore + digit)^0 * endofstring
 
@@ -599,19 +605,27 @@ end
 -- print(7,lpegmatch(lpeg.secondofsplit(":"),"bc"))
 -- print(9,lpegmatch(lpeg.secondofsplit(":","123"),"bc"))
 
--- -- slower:
+-- this was slower but lpeg has been sped up in the meantime, so we no longer
+-- use this (still seems somewhat faster on long strings)
+--
+-- local nany = utf8char/""
 --
 -- function lpeg.counter(pattern)
---     local n, pattern = 0, (lpeg.P(pattern)/function() n = n + 1 end  + lpeg.anything)^0
---     return function(str) n = 0 ; lpegmatch(pattern,str) ; return n end
+--     pattern = Cs((P(pattern)/" " + nany)^0)
+--     return function(str)
+--         return #lpegmatch(pattern,str)
+--     end
 -- end
 
-local nany = utf8char/""
-
-function lpeg.counter(pattern)
-    pattern = Cs((P(pattern)/" " + nany)^0)
-    return function(str)
-        return #lpegmatch(pattern,str)
+function lpeg.counter(pattern,action)
+    local n       = 0
+    local pattern = (P(pattern) / function() n = n + 1 end + anything)^0
+    ----- pattern = (P(pattern) * (P(true) / function() n = n + 1 end) + anything)^0
+    ----- pattern = (P(pattern) * P(function() n = n + 1 end) + anything)^0
+    if action then
+        return function(str) n = 0 ; lpegmatch(pattern,str) ; action(n) end
+    else
+        return function(str) n = 0 ; lpegmatch(pattern,str) ; return n end
     end
 end
 
@@ -1103,7 +1117,7 @@ end
 local trailingzeros = zero^0 * -digit -- suggested by Roberto R
 local case_1        = period * trailingzeros / ""
 local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
-local number        = digit^1 * (case_1 + case_2)
+local number        = digits * (case_1 + case_2)
 local stripper      = Cs((number + 1)^0)
 
 lpeg.patterns.stripzeros = stripper

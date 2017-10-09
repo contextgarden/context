@@ -13,9 +13,10 @@ if not modules then modules = { } end modules ['mlib-lua'] = {
 local type, tostring, select, loadstring = type, tostring, select, loadstring
 local find, match, gsub, gmatch = string.find, string.match, string.gsub, string.gmatch
 
-local formatters = string.formatters
-local concat     = table.concat
-local lpegmatch  = lpeg.match
+local formatters   = string.formatters
+local concat       = table.concat
+local lpegmatch    = lpeg.match
+local lpegpatterns = lpeg.patterns
 
 local P, S, Ct = lpeg.P, lpeg.S, lpeg.Ct
 
@@ -230,8 +231,8 @@ function mp.n(t)
     return type(t) == "table" and #t or 0
 end
 
-local whitespace = lpeg.patterns.whitespace
-local newline    = lpeg.patterns.newline
+local whitespace = lpegpatterns.whitespace
+local newline    = lpegpatterns.newline
 local setsep     = newline^2
 local comment    = (S("#%") + P("--")) * (1-newline)^0 * (whitespace - setsep)^0
 local value      = (1-whitespace)^1 / tonumber
@@ -479,13 +480,15 @@ function mp.prefix(str)
      mpquoted(match(str,"^(.-)[%d%[]") or str)
 end
 
-function mp.dimensions(str)
-    local n = 0
-    for s in gmatch(str,"%[?%-?%d+%]?") do --todo: lpeg
-        n = n + 1
-    end
-    mpprint(n)
-end
+-- function mp.dimension(str)
+--     local n = 0
+--     for s in gmatch(str,"%[?%-?%d+%]?") do --todo: lpeg
+--         n = n + 1
+--     end
+--     mpprint(n)
+-- end
+
+mp.dimension = lpeg.counter(P("[") * lpegpatterns.integer * P("]") + lpegpatterns.integer,mpprint)
 
 -- faster and okay as we don't have many variables but probably only
 -- basename makes sense and even then it's not called that often

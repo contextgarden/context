@@ -73,13 +73,16 @@
 \let\currentmoduleparameters\empty
 \let\currentmodule          \s!unknown
 
+\newcount \c_syst_modules_nesting
+
 \newtoks\everysetupmodule
 
 \unexpanded\def\startmodule
   {\doifelsenextoptionalcs\syst_modules_start_yes\syst_modules_start_nop}
 
 \def\syst_modules_start_yes[#name]%
-  {\pushmacro\currentmodule
+  {\global\advance\c_syst_modules_nesting\plusone
+   \pushmacro\currentmodule
    \pushmacro\currentmoduleparameters
    \def\currentmodule{#name}}
 
@@ -87,8 +90,13 @@
   {\syst_modules_start_yes[#name]}
 
 \unexpanded\def\stopmodule
-  {\popmacro\currentmoduleparameters
-   \popmacro\currentmodule}
+  {\ifcase\c_syst_modules_nesting
+     \writestatus\m!system{module wrapping error in '\currentmodule'}%
+   \else
+     \popmacro\currentmoduleparameters
+     \popmacro\currentmodule
+     \global\advance\c_syst_modules_nesting\minusone
+   \fi}
 
 \unexpanded\def\setupmodule
   {\dodoubleempty\syst_modules_setup}

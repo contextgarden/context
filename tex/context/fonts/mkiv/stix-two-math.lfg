@@ -9,17 +9,20 @@
 
 local function fix_italic(target,original,name,value,factor)
     local m = target.parameters.mathsize
-    local u = original.resources.unicodes[name]
-    if m and u then
-        local c = target.characters[u]
-        if c then
-            local i = c.italic
-            if i then
-                local d = original.descriptions[u]
-                if d and d.math.italic == value then
-                    if m then
-                        logs.report("patching font","fixing italic correction of %U at math size %i by %0.3f",u,m,factor)
-                        c.italic = factor * i
+    if m then
+        local u = type(name) == "number" and name or original.resources.unicodes[name]
+        if u then
+            local c = target.characters[u]
+            if c then
+                local i = c.italic
+                if i then
+                    local d = original.descriptions[u]
+                    inspect(d)
+                    if d and d.math.italic == value then
+                        if m then
+                            logs.report("patching font","fixing italic correction of %U at math size %i by %0.3f",u,m,factor)
+                            c.italic = factor * i
+                        end
                     end
                 end
             end
@@ -53,7 +56,8 @@ return {
         tweaks = {
             aftercopying = {
                 function(target,original)
-                    fix_italic(target,original,"uni222B.updsp",80,3)
+                    fix_italic(target,original,"uni222B.updsp",80,3.5)
+                    fix_italic(target,original,"uni222B.up",   80,2.5)
                 end,
             },
         },

@@ -39,6 +39,7 @@ local utfchartabletopattern = lpeg.utfchartabletopattern
 local formatters            = string.formatters
 
 local allocate              = utilities.storage.allocate or function() return { } end
+local mark                  = utilities.storage.mark     or allocate
 
 local charfromnumber        = characters.fromnumber
 
@@ -86,7 +87,13 @@ local graphemes = characters.graphemes
 local collapsed = characters.collapsed
 local mathlists = characters.mathlists
 
-if not graphemes then
+if graphemes then
+
+    mark(graphemes)
+    mark(collapsed)
+    mark(mathlists)
+
+else
 
     graphemes = allocate()
     collapsed = allocate()
@@ -167,9 +174,9 @@ if not graphemes then
     mlists = nil
 
     if storage then
-        storage.register("characters/graphemes", characters.graphemes, "characters.graphemes")
-        storage.register("characters/collapsed", characters.collapsed, "characters.collapsed")
-        storage.register("characters/mathlists", characters.mathlists, "characters.mathlists")
+        storage.register("characters/graphemes", graphemes, "characters.graphemes")
+        storage.register("characters/collapsed", collapsed, "characters.collapsed")
+        storage.register("characters/mathlists", mathlists, "characters.mathlists")
     end
 
 end

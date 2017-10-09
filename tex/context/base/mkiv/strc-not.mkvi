@@ -1555,6 +1555,12 @@
      \begingroup
      \let\flushnotes   \relax
      \let\postponenotes\relax
+     \ifconditional\postponednote
+       \ifhmode
+         % needed for tagging ... otherwise we get some weird node free error
+         \signalcharacter
+       \fi
+     \fi
      \clf_flushpostponednotes% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes

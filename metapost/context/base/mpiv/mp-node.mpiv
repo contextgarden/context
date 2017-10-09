@@ -11,31 +11,92 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Ths crossing macros were written as part of this module but as they
+%D The crossing macros were written as part of this module but as they
 %D can be of use elsewhere they are defined in mp-tool.
 
 if known context_node : endinput ; fi ;
 
 boolean context_node ; context_node := true ;
 
+% Build a path from the node positions.
+% Must be integer and continuous in index starting at 0.
+
+vardef makenodepath(suffix p) =
+    if unknown p :
+        if not path p :
+            d := dimension p ;
+            if d>0 :
+                scantokens("path " & prefix p & for i=1 upto d : "[]" & endfor " ;") ;
+            else :
+                path p ;
+            fi
+        fi
+        save i ; i = -1 ;
+        p = forever : exitif unknown p.pos[incr i] ;
+                 p.pos[i] --
+             endfor cycle ;
+    fi
+enddef ;
+
+def clearnodepath suffix p =
+    save p ; path p ;
+enddef ;
+
+clearnodepath nodepath ;
+
+vardef makenode@#(text t) =
+    for a = t :
+        if (known a) and (numeric a) :
+            _makenode(nodepath, t)
+        else :
+            _makenode(t)
+        fi
+        exitif true ;
+    endfor
+enddef ;
+
+vardef node@#(text t) =
+    for a = t :
+        if (known a) and (numeric a) :
+            _node(nodepath, t)
+        else :
+            _node(t)
+        fi
+        exitif true ;
+    endfor
+enddef ;
+
+vardef nodeboundingpoint@#(text t) =
+    for a = t :
+        if (known a) and (numeric a) :
+            _nodeboundingpoint@#(nodepath,a)
+        else :
+            _nodeboundingpoint@#(t)
+        fi
+        exitif true ;
+    endfor
+enddef ;
+
+vardef fromto@#(expr d,f)(text t) =
+    fromtopaths(d,nodepath,f,nodepath,t)
+enddef ;
+
 % returns a pair suffix if the path is unknown
 
-vardef makenode@#(suffix p)(text t) =
-    save i, b ; numeric i ; string b ;
+vardef _makenode@#(suffix p)(text t) =
+    save i, d, b ; numeric i, d ; string b ;
     for a = t :
         if unknown i : % first argument is the index
             i = a ;
-            if isarray p :
-                %
-                % note that one needs to declare "path p[] ; picture p[]pic[] ;"
-                % before calling node() if one is to use a pseudo-array for p
-                % because "picture p1.pic[] ;" is not a valid syntax!
-                %
-                % The following works, but is a bit awkward...
-                %
+            d = dimension p ;
+            if d > 0 :
                 b := prefix p ;
-                if not picture p.pic[i] : scantokens("picture " & b & "[]pic[] ;") ; fi
-                if not pair    p.pos[i] : scantokens("pair    " & b & "[]pos[] ;") ; fi
+                if not picture p.pic[i] : scantokens("picture " & b &
+                                              for j=1 upto d : "[]" & endfor
+                                              "pic[] ;") ; fi
+                if not pair    p.pos[i] : scantokens("pair "    & b &
+                                              for j=1 upto d : "[]" & endfor
+                                              "pos[] ;") ; fi
             else :
                 if not picture p.pic[i] : picture p.pic[] ; fi
                 if not pair    p.pos[i] : pair    p.pos[] ; fi
@@ -44,12 +105,12 @@ vardef makenode@#(suffix p)(text t) =
             if known p.pic[i] :
                 addto p.pic[i] also
             else :
-                p.pic[i] :=
+                p.pic[i] =
             fi
             if     picture a           : a
             elseif string  a           : textext@#(a)
             elseif numeric a           : textext@#(decimal a)
-            elseif ((boolean a) and a) : image(draw origin)
+            elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
             else                       : nullpicture
             fi ;
         fi
@@ -59,10 +120,11 @@ enddef ;
 
 % returns a picture
 
-vardef node@#(suffix p)(text t) =
-    if pair makenode@#(p)(t) :
-        % nop: gobble the function return.
+vardef _node@#(suffix p)(text t) =
+    if pair _makenode@#(p,t) :
+        % nop: enclose in "if ... fi" to gobble the function return.
     fi
+    % now pick-off only the index:
     for a = t :
         if (unknown p) and (known p.pos[a]) :
             makenodepath(p) ;
@@ -78,7 +140,7 @@ enddef ;
 
 % returns a path
 
-vardef fromto@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
+vardef fromtopaths@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
     save r, t, l ;
     path r[] ; numeric t ; picture l ;
     for a = s :
@@ -140,7 +202,7 @@ enddef ;
 
 % returns pair: bounding point of the node picture
 
-vardef nodeboundingpoint@#(suffix p)(expr i) =
+vardef _nodeboundingpoint@#(suffix p)(expr i) =
     if known p.pic[i] :
         boundingpoint@#(p.pic[i])
     else :
@@ -167,16 +229,3 @@ vardef betweennodes@#(suffix p)(expr f)(suffix q)(text s) =
         fi
     endfor
 enddef ;
-
-% build a path from the node positions.
-% Must be continuous in index starting at 0.
-
-vardef makenodepath(suffix p) =
-    if unknown p :
-        save i ; i = -1 ;
-        p = forever : exitif unknown p.pos[incr i] ;
-                 p.pos[i] --
-             endfor cycle ;
-    fi
-enddef ;
-

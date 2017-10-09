@@ -1,0 +1,242 @@
+\usemodule[present-slanted]
+
+\usemodule[abr-01]
+
+\definefontfeature
+  [default]
+  [method=node,
+   script=latn,
+   onum=yes]
+
+\definefont[TitleFont]   [palatinosanscom-bold*default    at 48pt] % is used when defined
+\definefont[MainTextFont][palatinosanscom-regular*default at 12pt]
+
+\setupinterlinespace
+  [line=15pt]
+
+\def\XETEX    {\dontleavehmode{\morecolor xetex}}
+\def\PDFTEX   {\dontleavehmode{\morecolor pdftex}}
+\def\LUATEX   {\dontleavehmode{\morecolor luatex}}
+\def\LUA      {\dontleavehmode{\morecolor lua}}
+\def\FONTFORGE{\dontleavehmode{\morecolor fontforge}}
+\def\OPENTYPE {\dontleavehmode{\morecolor opentype}}
+\def\TFM      {\dontleavehmode{\morecolor tfm}}
+\def\TEX      {\dontleavehmode{\morecolor tex}}
+\def\MKIV     {\dontleavehmode{\morecolor mkiv}}
+
+\def|#1|{-}
+
+\startdocument
+  [location={tug 2007 san diego},
+   author={hans hagen},
+   title={{zapfino, a},{torture test},{for luatex}}]
+
+\StartTopic{loading fonts}
+
+\StartSteps
+
+\StartItem the \OPENTYPE\ font reader is borrowed from \FONTFORGE\  \FlushStep \StopItem
+\StartItem once it was ready, we could look into such a font  \FlushStep \StopItem
+\StartItem it tooks while to figure out the format due to rather fuzzy specs  \FlushStep \StopItem
+\StartItem it took us even more time to find out that the loader was flawed  \FlushStep \StopItem
+\StartItem one reason was that fonts themselves may have bugs or be incomplete \FlushStep \StopItem
+\StartItem then we changed to \FONTFORGE\ version 2 \FlushStep \StopItem
+\StartItem this made the missing pieces surface in more complex feature handling \FlushStep \StopItem
+\StartItem while implementing features the new table format was cleaned up \FlushStep \StopItem
+
+\StopSteps
+
+\StopTopic
+
+\StartTopic{making it work}
+
+\StartSteps
+
+\StartItem the \FONTFORGE\ library loads the fonts into memory \FlushStep \StopItem
+\StartItem the internal data structures are mapped into a \LUA\ table  \FlushStep \StopItem
+\StartItem we enhance this table a bit (extra hashes as well as rearranging glyphs)  \FlushStep \StopItem
+\StartItem we save the table in a cache and compile it to bytecode \FlushStep \StopItem
+\StartItem after that reloading is fast and efficient \FlushStep \StopItem
+\StartItem when defining a font instance we share data as much as possible \FlushStep \StopItem
+\StartItem the open type specific table is translated into a \TFM\ one \FlushStep \StopItem
+\StartItem but for handling features we keep the original table available \FlushStep \StopItem
+
+\StopSteps
+
+\StopTopic
+
+\StartTopic{user control}
+
+\StartSteps
+
+\StartItem in context \MKIV\ currently we provide several interfaces \FlushStep \StopItem
+\StartItem the \XETEX\ syntax is (more or less) supported \FlushStep \StopItem
+\StartItem there is a higher level interface to associating features with fonts  \FlushStep \StopItem
+\StartItem there will be a font instance independent feature switch mechanism \FlushStep \StopItem
+\StartItem there can be generic treatments unrelated to the specific font \FlushStep \StopItem
+\StartItem fonts can be accessed by various names \FlushStep \StopItem
+\StartItem but \unknown\ using features demands that users know what they're doing \FlushStep \StopItem
+
+\StopSteps
+
+\StopTopic
+
+\StartTopic{zapfino}
+
+\StartSteps
+
+\StartItem we needed this exercise as a prelude to handling arab (which we cannot really read) \FlushStep \StopItem
+\StartItem this font provides a good testbed because has many features defined \FlushStep \StopItem
+\StartItem the associated \LUATEX\ tables are rather large \FlushStep \StopItem
+\StartItem there can be hundreds of lookups per character with lookahead and backtracking \FlushStep \StopItem
+\StartItem when writing support for such features, bugs in such fonts complicate matters \FlushStep \StopItem
+\StartItem visually checking the output is complicated by the fact that wrong alternatives may look good \FlushStep \StopItem
+\StartItem we must make sure that \TEX's other mechanisms don't spoil the game \FlushStep \StopItem
+\StartItem special care is needed for lookups that involve spaces \FlushStep \StopItem
+
+\StopSteps
+
+\page \start
+
+\definefontfeature[zapfino-a][mode=node,script=latn,language=dflt,liga=no]
+\definefontfeature[zapfino-b][mode=node,script=latn,language=dflt,liga=yes]
+\definefontfeature[zapfino-c][mode=node,script=latn,language=dflt,liga=no,clig=yes]
+\definefontfeature[zapfino-d][mode=node,script=latn,language=dflt,liga=no,calt=yes]
+\definefontfeature[zapfino-e][mode=node,script=latn,language=dflt,liga=yes,clig=yes,calt=yes]
+
+\font\testa=ZapfinoExtraLTPro*zapfino-a at 24pt
+\font\testb=ZapfinoExtraLTPro*zapfino-b at 24pt
+\font\testc=ZapfinoExtraLTPro*zapfino-c at 24pt
+\font\testd=ZapfinoExtraLTPro*zapfino-d at 24pt
+\font\teste=ZapfinoExtraLTPro*zapfino-e at 24pt
+
+\unexpanded\def\ShowSample #1 #2 %
+  {\StartTopic{examples : #2}
+   \start
+   \noligs1\nokerns1\language0
+   \setupinterlinespace[line=35pt]
+   \StartItem
+   \getvalue{test#1}%
+   \input tufte \wordright{\morecolor Mr. E.R.~Tufte}
+   \StopItem
+   \stop
+   \StopTopic}
+
+\ShowSample a nothing
+\ShowSample b ligatures
+\ShowSample c {cont ligs}
+\ShowSample d {cont alts}
+\ShowSample e all of these
+
+\page \stop
+
+\StartTopic{arabtype}
+
+\StartSteps
+
+\StartItem this font has many advanced arab related features \FlushStep \StopItem
+\StartItem there is quite some kerning and positioning going on \FlushStep \StopItem
+\StartItem vowels travel with the base characters (glyphs) and ligatures \FlushStep \StopItem
+\StartItem vowels need to be positioned relative to each other as well \FlushStep \StopItem
+
+\StopSteps
+
+\page
+
+\definefontfeature
+  [arab-none]
+  [mode=node,language=dflt,script=arab,kern=no,liga=no,dlig=no,rlig=no]
+
+\definefontfeature
+  [arab-replace]
+  [mode=node,language=dflt,script=arab,kern=no,liga=no,dlig=no,rlig=no,
+   init=yes,medi=yes,fina=yes,isol=yes]
+
+\definefontfeature
+  [arab-mark]
+  [mode=node,language=dflt,script=arab,kern=no,liga=no,dlig=no,rlig=no,
+   init=yes,medi=yes,fina=yes,isol=yes,mark=yes]
+
+\definefontfeature
+  [arab-mkmk]
+  [mode=node,language=dflt,script=arab,kern=no,liga=no,dlig=no,rlig=no,
+   init=yes,medi=yes,fina=yes,isol=yes,mkmk=yes,mark=yes]
+
+\definefontfeature
+  [arab-curs]
+  [mode=node,language=dflt,script=arab,kern=no,liga=no,dlig=no,rlig=no,
+   init=yes,medi=yes,fina=yes,isol=yes,mkmk=yes,mark=yes,curs=yes]
+
+\definefontfeature
+  [arab-kern]
+  [mode=node,language=dflt,script=arab,kern=no,liga=no,dlig=no,rlig=no,
+   init=yes,medi=yes,fina=yes,isol=yes,mkmk=yes,mark=yes,kern=yes]
+
+\definefontfeature
+  [arab-context]
+  [mode=node,language=dflt,script=arab,kern=no,liga=no,dlig=no,rlig=no,
+   init=yes,medi=yes,fina=yes,isol=yes,mkmk=yes,mark=yes,kern=yes,calt=yes]
+
+\definefontfeature
+  [arab-ligs]
+  [mode=node,language=dflt,script=arab,kern=no,liga=yes,dlig=yes,rlig=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,mkmk=yes,mark=yes,curs=yes]
+
+\definefontfeature
+  [arab-ligkern]
+  [mode=node,language=dflt,script=arab,kern=no,liga=yes,dlig=yes,rlig=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,mkmk=yes,mark=yes,kern=yes,curs=yes]
+
+\startbuffer
+اَلْحَمْدُ لِلّٰهِ حَمْدَ مُعْتَرِفٍ بِحَمْدِهٖ، مُغْتَرِفٌ مِنْ بِحَارِ مَجْدِهٖ، بِلِسَانِ
+الثَّنَاۤءِ شَاكِرًا، وَلِحُسْنِ اٰلاۤئِهٖ نَاشِرًا؛ اَلَّذِيْ خَلَقَ الْمَوْتَ وَالْحَيٰوةَ، وَالْخَيْرَ
+وَالشَّرَّ، وَالنَّفْعَ وَالضَّرَّ، وَالسُّكُوْنَ وَالْحَرَكَةَ، وَالْأَرْوَاحَ
+وَالْأَجْسَامَ، وَالذِّكْرَ وَالنِّسْيَانَ.
+\stopbuffer
+
+\unexpanded\def\ShowSample #1 #2 #3 %
+  {\StartTopic{arab : #1}
+   \start \setuptolerance[verytolerant,stretch]
+   \noligs1\nokerns1\language0
+   \setupinterlinespace[line=35pt]
+   \font\Test=arabtype*#3 at 35pt \Test
+   \setupinterlinespace
+   \textdir TRT
+   \pardir TRT
+   \ifnum#2=1
+     \enabletrackers[otf.analyzing]
+   \fi
+   \slantedshapedelta5cm
+   \StartItem \getbuffer \par \StopItem
+   \slantedshapedelta\zeropoint
+   \ifnum#2=1
+     \disabletrackers[otf.analyzing]
+   \fi
+   \stop
+   \StopTopic}
+
+\ShowSample analyze 1 arab-none
+\ShowSample replace 0 arab-replace
+\ShowSample mark    0 arab-mark
+\ShowSample mkmk    0 arab-mkmk
+\ShowSample curs    0 arab-curs
+\ShowSample kern    0 arab-kern
+\ShowSample context 0 arab-context
+\ShowSample ligs    0 arab-ligs
+\ShowSample ligkern 0 arab-ligkern
+
+\StartTopic{Remark}
+
+\StartItem
+    the samples on the previous pages were generated with an experimental version
+    of \LUATEX\ and \MKIV\ code and therefore may contain errors
+\StopItem
+
+\StartItem
+    when this document is generated with a post-beta version of \LUATEX\ and \CONTEXT\ the results
+    can be different
+\StopItem
+
+\StopTopic
+
+\stopdocument

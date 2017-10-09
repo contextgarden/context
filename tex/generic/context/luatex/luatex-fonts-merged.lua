@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/06/17 23:21:48
+-- merge date  : 10/09/17 21:57:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -153,11 +153,14 @@ patterns.alwaysmatched=alwaysmatched
 local sign=S('+-')
 local zero=P('0')
 local digit=R('09')
+local digits=digit^1
 local octdigit=R("07")
+local octdigits=octdigit^1
 local lowercase=R("az")
 local uppercase=R("AZ")
 local underscore=P("_")
 local hexdigit=digit+lowercase+uppercase
+local hexdigits=hexdigit^1
 local cr,lf,crlf=P("\r"),P("\n"),P("\r\n")
 local newline=P("\r")*(P("\n")+P(true))+P("\n") 
 local escaped=P("\\")*anything
@@ -259,27 +262,30 @@ patterns.singlequoted=squote*patterns.nosquote*squote
 patterns.doublequoted=dquote*patterns.nodquote*dquote
 patterns.quoted=patterns.doublequoted+patterns.singlequoted
 patterns.digit=digit
+patterns.digits=digits
 patterns.octdigit=octdigit
+patterns.octdigits=octdigits
 patterns.hexdigit=hexdigit
+patterns.hexdigits=hexdigits
 patterns.sign=sign
-patterns.cardinal=digit^1
-patterns.integer=sign^-1*digit^1
-patterns.unsigned=digit^0*period*digit^1
+patterns.cardinal=digits
+patterns.integer=sign^-1*digits
+patterns.unsigned=digit^0*period*digits
 patterns.float=sign^-1*patterns.unsigned
-patterns.cunsigned=digit^0*comma*digit^1
-patterns.cpunsigned=digit^0*(period+comma)*digit^1
+patterns.cunsigned=digit^0*comma*digits
+patterns.cpunsigned=digit^0*(period+comma)*digits
 patterns.cfloat=sign^-1*patterns.cunsigned
 patterns.cpfloat=sign^-1*patterns.cpunsigned
 patterns.number=patterns.float+patterns.integer
 patterns.cnumber=patterns.cfloat+patterns.integer
 patterns.cpnumber=patterns.cpfloat+patterns.integer
-patterns.oct=zero*octdigit^1
+patterns.oct=zero*octdigits
 patterns.octal=patterns.oct
 patterns.HEX=zero*P("X")*(digit+uppercase)^1
 patterns.hex=zero*P("x")*(digit+lowercase)^1
-patterns.hexadecimal=zero*S("xX")*hexdigit^1
-patterns.hexafloat=sign^-1*zero*S("xX")*(hexdigit^0*period*hexdigit^1+hexdigit^1*period*hexdigit^0+hexdigit^1)*(S("pP")*sign^-1*hexdigit^1)^-1
-patterns.decafloat=sign^-1*(digit^0*period*digit^1+digit^1*period*digit^0+digit^1)*S("eE")*sign^-1*digit^1
+patterns.hexadecimal=zero*S("xX")*hexdigits
+patterns.hexafloat=sign^-1*zero*S("xX")*(hexdigit^0*period*hexdigits+hexdigits*period*hexdigit^0+hexdigits)*(S("pP")*sign^-1*hexdigits)^-1
+patterns.decafloat=sign^-1*(digit^0*period*digits+digits*period*digit^0+digits)*S("eE")*sign^-1*digits
 patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+underscore+digit)^0*endofstring
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
@@ -526,11 +532,13 @@ function lpeg.balancer(left,right)
   left,right=P(left),P(right)
   return P { left*((1-left-right)+V(1))^0*right }
 end
-local nany=utf8char/""
-function lpeg.counter(pattern)
-  pattern=Cs((P(pattern)/" "+nany)^0)
-  return function(str)
-    return #lpegmatch(pattern,str)
+function lpeg.counter(pattern,action)
+  local n=0
+  local pattern=(P(pattern)/function() n=n+1 end+anything)^0
+  if action then
+    return function(str) n=0;lpegmatch(pattern,str);action(n) end
+  else
+    return function(str) n=0;lpegmatch(pattern,str);return n end
   end
 end
 utf=utf or (unicode and unicode.utf8) or {}
@@ -842,7 +850,7 @@ end
 local trailingzeros=zero^0*-digit 
 local case_1=period*trailingzeros/""
 local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
-local number=digit^1*(case_1+case_2)
+local number=digits*(case_1+case_2)
 local stripper=Cs((number+1)^0)
 lpeg.patterns.stripzeros=stripper
 local byte_to_HEX={}
@@ -9170,7 +9178,7 @@ local ligseparator=P("_")
 local varseparator=P(".")
 local namesplitter=Ct(C((1-ligseparator-varseparator)^1)*(ligseparator*C((1-ligseparator-varseparator)^1))^0)
 do
-  local overloads=allocate {
+  local overloads={
     IJ={ name="I_J",unicode={ 0x49,0x4A },mess=0x0132 },
     ij={ name="i_j",unicode={ 0x69,0x6A },mess=0x0133 },
     ff={ name="f_f",unicode={ 0x66,0x66 },mess=0xFB00 },
@@ -9181,7 +9189,7 @@ do
     fj={ name="f_j",unicode={ 0x66,0x6A } },
     fk={ name="f_k",unicode={ 0x66,0x6B } },
   }
-  local o={}
+  local o=allocate {}
   for k,v in next,overloads do
     local name=v.name
     local mess=v.mess
@@ -22484,7 +22492,7 @@ local s_fina=3  local s_pref=9
 local s_isol=4  local s_blwf=10
 local s_mark=5  local s_pstf=11
 local s_rest=6
-local states={
+local states=allocate {
   init=s_init,
   medi=s_medi,
   med2=s_medi,
@@ -22500,7 +22508,7 @@ local states={
   blwf=s_blwf,
   pstf=s_pstf,
 }
-local features={
+local features=allocate {
   init=s_init,
   medi=s_medi,
   med2=s_medi,
@@ -22632,7 +22640,7 @@ local function warning(current,what)
     arab_warned[char]=true
   end
 end
-local mappers={
+local mappers=allocate {
   l=s_init,
   d=s_medi,
   c=s_medi,

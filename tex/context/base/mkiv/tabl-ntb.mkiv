@@ -1485,18 +1485,20 @@
 
 \let\tabl_ntb_preroll\relax
 
-\def\tabl_ntb_table_get_max_width#1#2%
-  {#1\wd#2\relax}
+\def\tabl_ntb_table_get_max_width
+  {\scratchdimen\wd\scratchbox\relax}
 
-% first needs testing (in projects):
+% first needs testing (in projects), see cont-loc for final version:
 %
-% \def\tabl_ntb_table_get_max_width#1#2%
-%   {#1\zeropoint
-%    \dorecurse\c_tabl_ntb_maximum_col
-%      {\advance#1\tabl_ntb_get_wid\recurselevel
-%       \advance#1\tabl_ntb_get_dis\recurselevel}%
-%    \ifdim#1<\wd#2\relax
-%      #1\wd#2\relax
+% \def\tabl_ntb_table_get_max_width_step
+%   {\advance\scratchdimen\tabl_ntb_get_wid\fastloopindex
+%    \advance\scratchdimen\tabl_ntb_get_dis\fastloopindex}
+%
+% \def\tabl_ntb_table_get_max_width
+%   {\scratchdimen\zeropoint
+%    \dofastloopcs\c_tabl_ntb_maximum_col\tabl_ntb_table_get_max_width_step
+%    \ifdim\scratchdimen<\wd\scratchbox\relax
+%      \scratchdimen\wd\scratchbox\relax
 %    \fi}
 
 \def\tabl_ntb_table_stop
@@ -1534,7 +1536,7 @@
    \fi
    \tabl_ntb_let_dis\c_tabl_ntb_maximum_col\zeropoint
    %
-   \tabl_ntb_table_get_max_width\scratchdimen\scratchbox
+   \tabl_ntb_table_get_max_width % \scratchdimen\scratchbox
    %
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize

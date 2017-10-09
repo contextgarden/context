@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-agl'] = {
 }
 
 local allocate      = utilities.storage.allocate
+local mark          = utilities.storage.mark
 
 fonts               = fonts or { }
 local encodings     = fonts.encodings or { }
@@ -16,7 +17,7 @@ fonts.encodings.agl = agl
 
 table.setmetatableindex(agl,nil) -- prevent recursive lookups otherwise when autoloaded
 
-local synonyms = {
+local synonyms = allocate {
     Acyrillic                      = 0x0410,
     Becyrillic                     = 0x0411,
     Cdot                           = 0x010A,
@@ -644,7 +645,13 @@ local names    = agl.names
 local unicodes = agl.unicodes
 local ctxcodes = agl.ctxcodes
 
-if not names then
+if names then
+
+    mark(names)
+    mark(unicodes)
+    mark(ctxcodes)
+
+else
 
     names    = allocate { } -- filled from char-def.lua
     unicodes = allocate { }
@@ -678,9 +685,9 @@ if not names then
     end
 
     if storage then
-        storage.register("encodings/names",    names,    "fonts.encodings.names")
-        storage.register("encodings/unicodes", unicodes, "fonts.encodings.unicodes")
-        storage.register("encodings/ctxcodes", ctxcodes, "fonts.encodings.ctxcodes")
+        storage.register("encodings/names",    names,    "fonts.encodings.agl.names")
+        storage.register("encodings/unicodes", unicodes, "fonts.encodings.agl.unicodes")
+        storage.register("encodings/ctxcodes", ctxcodes, "fonts.encodings.agl.ctxcodes")
     end
 
 end

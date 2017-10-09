@@ -313,7 +313,7 @@ return {
         "gobbleoneargument", "gobbletwoarguments", "gobblethreearguments", "gobblefourarguments", "gobblefivearguments", "gobblesixarguments", "gobblesevenarguments", "gobbleeightarguments", "gobbleninearguments", "gobbletenarguments",
         "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",
         --
-        "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "dowith",
+        "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs", "fastloopindex", "fastloopfinal", "dowith",
         --
         "newconstant", "setnewconstant", "setconstant", "setconstantvalue",
         "newconditional", "settrue", "setfalse", "settruevalue", "setfalsevalue",

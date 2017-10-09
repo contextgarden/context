@@ -247,6 +247,16 @@ local function processjob()
     --     context.input(filename)
     --     context.stoptext()
 
+    elseif suffix == "mps" or arguments.forcemps then
+
+        report("processing metapost output: %s",filename)
+
+        context.starttext()
+            context.startTEXpage()
+                context.externalfigure { filename }
+            context.stopTEXpage()
+        context.stoptext()
+
     else
 
      -- \writestatus{system}{processing as tex}

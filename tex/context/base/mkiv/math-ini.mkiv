@@ -784,29 +784,21 @@
    \c!functionstyle=, % rm ss etc i.e. known alternatives, otherwise math
    \c!functioncolor=]
 
-% \unexpanded\def\math_mfunction_styled
-%   {\edef\m_math_text_choice_face{\textstyleface\normalmathstyle}%
-%    \dowithnextbox
-%      {\mathop{\box\nextbox}}%
-%      \hbox\bgroup
-%      \usemathematicsstyleandcolor\c!functionstyle\c!functioncolor
-%      \m_math_text_choice_face
-%      \let\next}
-
 \unexpanded\def\math_mfunction_styled
   {\begingroup
    \usemathematicscolorparameter\c!functioncolor
    \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
    \ifx\p_functionstyle\empty
      \expandafter\math_mfunction_styled_none
-   \else\ifcsname\??alternativestyles\p_functionstyle\endcsname
+   \else\ifcsname\??alternativestyle\p_functionstyle\endcsname
      \doubleexpandafter\math_mfunction_styled_text
    \else
      \doubleexpandafter\math_mfunction_styled_math
    \fi\fi}
 
 \unexpanded\def\math_mfunction_styled_text#1%
-  {\mathoptext{\csname\??alternativestyles\p_functionstyle\endcsname#1}%
+ %{\mathoptext{\csname\??alternativestyle\p_functionstyle\endcsname#1}%
+  {\expandafter\mathoptext\expandafter{\lastnamedcs#1}%
    \endgroup}
 
 \unexpanded\def\math_mfunction_styled_math#1%

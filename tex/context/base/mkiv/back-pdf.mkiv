@@ -108,7 +108,7 @@
 
 \let\pdfcreationdate           \relax \newtoks \pdfcreationdate
 \let\pdfdecimaldigits          \relax \newcount\pdfdecimaldigits
-\let\pdfdestmargin             \relax \newcount\pdfdestmargin
+\let\pdfdestmargin             \relax \newdimen\pdfdestmargin
 \let\pdffontname               \relax \newcount\pdffontname
 \let\pdffontobjnum             \relax \newcount\pdffontobjnum
 \let\pdffontsize               \relax \newcount\pdffontsize
@@ -127,7 +127,8 @@
 \let\pdfinfoomitdate           \relax \newcount\pdfinfoomitdate
 \let\pdflastannot              \relax \newcount\pdflastannot
 \let\pdflastlink               \relax \newcount\pdflastlink
-\let\pdflinkmargin             \relax \newcount\pdflinkmargin
+\let\pdflinkmargin             \relax \newdimen\pdflinkmargin
+\let\pdfmajorversion           \relax \newcount\pdfmajorversion
 \let\pdfminorversion           \relax \newcount\pdfminorversion
 \let\pdfpagebox                \relax \newcount\pdfpagebox
 \let\pdfpageref                \relax \newcount\pdfpageref
@@ -139,11 +140,11 @@
 \let\pdfsuppressptexinfo       \relax \newcount\pdfsuppressptexinfo
 \let\pdftexrevision            \relax \newcount\pdftexrevision
 \let\pdftexversion             \relax \newcount\pdftexversion
-\let\pdfthreadmargin           \relax \newcount\pdfthreadmargin
+\let\pdfthreadmargin           \relax \newdimen\pdfthreadmargin
 \let\pdftrailerid              \relax \newtoks \pdftrailerid
 \let\pdfuniqueresname          \relax \newcount\pdfuniqueresname
 \let\pdfvorigin                \relax \newcount\pdfvorigin
-\let\pdfxformmargin            \relax \newcount\pdfxformmargin
+\let\pdfxformmargin            \relax \newdimen\pdfxformmargin
 \let\pdfxformname              \relax \newcount\pdfxformname
 
 %D These are still accepted but are normally not needed.

@@ -71,7 +71,7 @@ local s_isol = 4    local s_blwf = 10
 local s_mark = 5    local s_pstf = 11
 local s_rest = 6
 
-local states = {
+local states = allocate {
     init = s_init,
     medi = s_medi,
     med2 = s_medi,
@@ -88,7 +88,7 @@ local states = {
     pstf = s_pstf,
 }
 
-local features = {
+local features = allocate {
     init = s_init,
     medi = s_medi,
     med2 = s_medi,
@@ -247,7 +247,7 @@ local function warning(current,what)
     end
 end
 
-local mappers = {
+local mappers = allocate {
     l = s_init,  -- left
     d = s_medi,  -- double
     c = s_medi,  -- joiner

@@ -319,7 +319,7 @@ local interfacescanners = setmetatablenewindex(function(t,k,v)
     rawset(t,k,v)
 end)
 
-interfaces.scanners = interfacescanners
+interfaces.scanners = storage.mark(interfacescanners)
 
 context.functions = {
     register   = registerfunction,

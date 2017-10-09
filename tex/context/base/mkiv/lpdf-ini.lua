@@ -68,15 +68,12 @@ local context           = context
 local pdf    = pdf
 local factor = number.dimenfactors.bp
 
-do
+if not pdf.setmajorversion then do
 
-    local texget = tex.get
-    local texset = tex.set
+    function pdf.setmajorversion () end
+    function pdf.getmajorversion () end
 
-    function pdf.setmajorversion (n) texset("global","pdfmajorversion", n) end
-    function pdf.getmajorversion ( ) return texget("pdfmajorversion") end
-
-end
+end end
 
 local pdfsetinfo            = pdf.setinfo
 local pdfsetcatalog         = pdf.setcatalog

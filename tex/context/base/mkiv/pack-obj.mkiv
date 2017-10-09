@@ -51,9 +51,7 @@
 \newdimen\objectht   \def\objectheight{\the\objectht}
 \newdimen\objectdp   \def\objectdepth {\the\objectdp}
 
-% If I have time I will use the unreferenced variant for e.g. mp reuse.
-
-% todo formmargin per obj
+%D If I have time I will use the unreferenced variant for e.g. mp reuse.
 
 \unexpanded\def\setreferencedobject       #1#2{\begingroup\synctexpause\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
 \unexpanded\def\settightreferencedobject  #1#2{\begingroup\synctexpause\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
@@ -63,44 +61,55 @@
 \let\setobject     \setreferencedobject
 \let\settightobject\settightreferencedobject
 
+%D We can get subtle differences in boundingboxes but both methods work ok.
+
+\newconstant\c_pack_objects_offset_mode % 0=tex 1=box
+
+\unexpanded\def\pack_objects_temp_check % this will go away
+  {\ifnum\texenginefunctionality<6401\relax
+     \c_pack_objects_offset_mode\zerocount
+   \fi}
+
 \unexpanded\def\pack_objects_set_yes#1#2%
-  {\ifdim\objectoff>\zeropoint\relax
-     \pack_objects_package
+  {\pack_objects_temp_check % this will go away
+   \ifcase\c_pack_objects_offset_mode
+     \ifzeropt\objectoff
+       \pack_objects_package_nop\nextbox
+     \else
+       \pack_objects_package_yes\nextbox
+     \fi
    \else
-     \setbox\objectbox\box\nextbox
+     \pack_objects_package_nop\nextbox
    \fi
-   \clf_registerreferencedobject{#1}{#2}\objectbox
+   \clf_registerreferencedobject{#1}{#2}\objectbox\objectoff\c_pack_objects_offset_mode
    \synctexresume
    \endgroup}
 
 \unexpanded\def\pack_objects_set_nop#1#2%
-  {\ifdim\objectoff>\zeropoint\relax
-     \pack_objects_package
+  {\pack_objects_temp_check % this will go away
+   \ifcase\c_pack_objects_offset_mode
+     \ifzeropt\objectoff
+       \pack_objects_package_nop\nextbox
+     \else
+       \pack_objects_package_yes\nextbox
+     \fi
    \else
-     \setbox\objectbox\box\nextbox
+     \pack_objects_package_nop\nextbox
    \fi
-   \clf_registerobject{#1}{#2}\objectbox
+   \clf_registerobject{#1}{#2}\objectbox\objectoff\c_pack_objects_offset_mode
    \synctexresume
    \endgroup}
 
-\def\pack_objects_package
-  {\objectwd\dimexpr\wd\nextbox+2\objectoff\relax
-   \objectht\dimexpr\ht\nextbox+ \objectoff\relax
-   \objectdp\dimexpr\dp\nextbox+ \objectoff\relax
+\def\pack_objects_package_nop#1% we pack because otherwise \ruledhbox is still tight
+  {\setbox\objectbox\hpack{\box#1}}
+
+\def\pack_objects_package_yes#1%
+  {\objectwd\dimexpr\wd#1+2\objectoff\relax
+   \objectht\dimexpr\ht#1+ \objectoff\relax
+   \objectdp\dimexpr\dp#1+ \objectoff\relax
    \setbox\objectbox\hpack
      {\hskip\objectoff
-      \box\nextbox}%
-   \wd\objectbox\objectwd
-   \ht\objectbox\objectht
-   \dp\objectbox\objectdp}
-
-\def\pack_objects_repackage
-  {\objectwd\dimexpr\wd\objectbox-2\objectoff\relax
-   \objectht\dimexpr\ht\objectbox- \objectoff\relax
-   \objectdp\dimexpr\dp\objectbox- \objectoff\relax
-   \setbox\objectbox\hpack
-     {\hskip-\objectoff
-      \box\objectbox}%
+      \box#1}%
    \wd\objectbox\objectwd
    \ht\objectbox\objectht
    \dp\objectbox\objectdp}
@@ -109,8 +118,9 @@
   {\begingroup
    \synctexpause
    \clf_restoreobject{#1}{#2}%
-   \ifdim\objectoff>\zeropoint
-     \pack_objects_repackage
+   \ifzeropt\objectoff\else
+     \objectoff-\objectoff
+     \pack_objects_package_yes\objectbox
    \fi
    \box\objectbox
    \synctexresume
@@ -122,8 +132,8 @@
 %D \getobjectdimensions{class}{name}
 %D \stoptyping
 %D
-%D The results are reported in \type {\objectwidth}, \type
-%D {\objectheight} and \type {\objectdepth}.
+%D The results are reported in \type {\objectwidth}, \type {\objectheight} and \type
+%D {\objectdepth} as well as \type {\objectoffset}.
 
 \unexpanded\def\getobjectdimensions#1#2%
   {\clf_getobjectdimensions{#1}{#2}}
@@ -131,8 +141,7 @@
 %D \macros
 %D   {doifobjectfoundelse,doifobjectreferencefoundelse}
 %D
-%D To prevent redundant definition of objects, one can use
-%D the next tests:
+%D To prevent redundant definition of objects, one can use the next tests:
 %D
 %D \starttyping
 %D \doifobjectfoundelse{class}{object}{do then}{do else}

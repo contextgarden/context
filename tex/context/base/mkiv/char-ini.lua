@@ -725,7 +725,7 @@ setmetatableindex(characters.is_punctuation,mti)
 --
 -- comments taken from standard:
 
-characters.linebreaks = {
+characters.linebreaks = allocate {
 
     -- non-tailorable line breaking classes
 
@@ -820,7 +820,7 @@ table we derive a few more.</p>
 
 if not characters.fallbacks then
 
-    characters.fallbacks = {
+    characters.fallbacks = allocate {
         [0x0308] = 0x00A8, [0x00A8] = 0x0308, -- dieresiscmb      dieresis
         [0x0304] = 0x00AF, [0x00AF] = 0x0304, -- macroncmb        macron
         [0x0301] = 0x00B4, [0x00B4] = 0x0301, -- acutecomb        acute

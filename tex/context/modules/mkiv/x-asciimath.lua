@@ -1796,6 +1796,14 @@ local p = (
   + p_utf_base
 )^0
 
+-- faster:
+--
+-- local p = (
+--     (S("{[(") + P("\\left" )) * Cc(function() n = n + 1 end)
+--   + (S("}])") + P("\\right")) * Cc(function() n = n - 1 end)
+--   + p_utf_base
+-- )^0
+
 local function invalidtex(str)
     n = 0
     lpegmatch(p,str)

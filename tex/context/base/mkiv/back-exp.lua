@@ -818,16 +818,20 @@ do
     function structurestags.setfigure(name,used,page,width,height,label)
         local fulltag = locatedtag("image")
         local spec    = specifications[fulltag]
-        local page    = tonumber(page)
-        image[fulltag] = {
-            id     = f_id(spec.tagname,spec.tagindex),
-            name   = name,
-            used   = used,
-            page   = page and page > 1 and page or nil,
-            width  = todimen(width, "cm","%0.3F%s"),
-            height = todimen(height,"cm","%0.3F%s"),
-            label  = label,
-        }
+        if spec then
+            local page = tonumber(page)
+            image[fulltag] = {
+                id     = f_id(spec.tagname,spec.tagindex),
+                name   = name,
+                used   = used,
+                page   = page and page > 1 and page or nil,
+                width  = todimen(width, "cm","%0.3F%s"),
+                height = todimen(height,"cm","%0.3F%s"),
+                label  = label,
+            }
+        else
+            -- we ignore images in layers in the background / pagebody
+        end
     end
 
     function extras.image(di,element,n,fulltag)

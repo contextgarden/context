@@ -766,7 +766,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 37621, stripped down to: 20262
+-- original size: 38236, stripped down to: 20518
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -798,11 +798,14 @@ patterns.alwaysmatched=alwaysmatched
 local sign=S('+-')
 local zero=P('0')
 local digit=R('09')
+local digits=digit^1
 local octdigit=R("07")
+local octdigits=octdigit^1
 local lowercase=R("az")
 local uppercase=R("AZ")
 local underscore=P("_")
 local hexdigit=digit+lowercase+uppercase
+local hexdigits=hexdigit^1
 local cr,lf,crlf=P("\r"),P("\n"),P("\r\n")
 local newline=P("\r")*(P("\n")+P(true))+P("\n") 
 local escaped=P("\\")*anything
@@ -904,27 +907,30 @@ patterns.singlequoted=squote*patterns.nosquote*squote
 patterns.doublequoted=dquote*patterns.nodquote*dquote
 patterns.quoted=patterns.doublequoted+patterns.singlequoted
 patterns.digit=digit
+patterns.digits=digits
 patterns.octdigit=octdigit
+patterns.octdigits=octdigits
 patterns.hexdigit=hexdigit
+patterns.hexdigits=hexdigits
 patterns.sign=sign
-patterns.cardinal=digit^1
-patterns.integer=sign^-1*digit^1
-patterns.unsigned=digit^0*period*digit^1
+patterns.cardinal=digits
+patterns.integer=sign^-1*digits
+patterns.unsigned=digit^0*period*digits
 patterns.float=sign^-1*patterns.unsigned
-patterns.cunsigned=digit^0*comma*digit^1
-patterns.cpunsigned=digit^0*(period+comma)*digit^1
+patterns.cunsigned=digit^0*comma*digits
+patterns.cpunsigned=digit^0*(period+comma)*digits
 patterns.cfloat=sign^-1*patterns.cunsigned
 patterns.cpfloat=sign^-1*patterns.cpunsigned
 patterns.number=patterns.float+patterns.integer
 patterns.cnumber=patterns.cfloat+patterns.integer
 patterns.cpnumber=patterns.cpfloat+patterns.integer
-patterns.oct=zero*octdigit^1
+patterns.oct=zero*octdigits
 patterns.octal=patterns.oct
 patterns.HEX=zero*P("X")*(digit+uppercase)^1
 patterns.hex=zero*P("x")*(digit+lowercase)^1
-patterns.hexadecimal=zero*S("xX")*hexdigit^1
-patterns.hexafloat=sign^-1*zero*S("xX")*(hexdigit^0*period*hexdigit^1+hexdigit^1*period*hexdigit^0+hexdigit^1)*(S("pP")*sign^-1*hexdigit^1)^-1
-patterns.decafloat=sign^-1*(digit^0*period*digit^1+digit^1*period*digit^0+digit^1)*S("eE")*sign^-1*digit^1
+patterns.hexadecimal=zero*S("xX")*hexdigits
+patterns.hexafloat=sign^-1*zero*S("xX")*(hexdigit^0*period*hexdigits+hexdigits*period*hexdigit^0+hexdigits)*(S("pP")*sign^-1*hexdigits)^-1
+patterns.decafloat=sign^-1*(digit^0*period*digits+digits*period*digit^0+digits)*S("eE")*sign^-1*digits
 patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+underscore+digit)^0*endofstring
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
@@ -1171,11 +1177,13 @@ function lpeg.balancer(left,right)
   left,right=P(left),P(right)
   return P { left*((1-left-right)+V(1))^0*right }
 end
-local nany=utf8char/""
-function lpeg.counter(pattern)
-  pattern=Cs((P(pattern)/" "+nany)^0)
-  return function(str)
-    return #lpegmatch(pattern,str)
+function lpeg.counter(pattern,action)
+  local n=0
+  local pattern=(P(pattern)/function() n=n+1 end+anything)^0
+  if action then
+    return function(str) n=0;lpegmatch(pattern,str);action(n) end
+  else
+    return function(str) n=0;lpegmatch(pattern,str);return n end
   end
 end
 utf=utf or (unicode and unicode.utf8) or {}
@@ -1487,7 +1495,7 @@ end
 local trailingzeros=zero^0*-digit 
 local case_1=period*trailingzeros/""
 local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
-local number=digit^1*(case_1+case_2)
+local number=digits*(case_1+case_2)
 local stripper=Cs((number+1)^0)
 lpeg.patterns.stripzeros=stripper
 local byte_to_HEX={}
@@ -20754,8 +20762,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 852551
--- stripped bytes    : 307477
+-- original bytes    : 853166
+-- stripped bytes    : 307836
 
 -- end library merge
 

@@ -269,7 +269,7 @@ local namesplitter = Ct(C((1 - ligseparator - varseparator)^1) * (ligseparator *
 
 do
 
-    local overloads = allocate {
+    local overloads = {
         IJ  = { name = "I_J",   unicode = { 0x49, 0x4A },       mess = 0x0132 },
         ij  = { name = "i_j",   unicode = { 0x69, 0x6A },       mess = 0x0133 },
         ff  = { name = "f_f",   unicode = { 0x66, 0x66 },       mess = 0xFB00 },
@@ -284,7 +284,7 @@ do
      -- emdash = { name = "emdash", unicode = 0x2014, mess = 0x2014 },
     }
 
-    local o = { }
+    local o = allocate { }
 
     for k, v in next, overloads do
         local name = v.name

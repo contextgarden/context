@@ -972,8 +972,8 @@ local function freemultipar(pagedata,frees) -- ,k
                             if trace_free then
                                 report_free("case 4, inside, right")
                             end
-                            n = n + 1  temp[n] = { xmin, lly }
                             n = n + 1  temp[n] = { xmin, uly }
+                            n = n + 1  temp[n] = { xmin, lly }
                             done = true
                         else
                             -- case 0

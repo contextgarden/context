@@ -124,6 +124,8 @@ return {
             FONTCONFIG_FILE = "fonts.conf",
             FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
 
+         -- EXTRAFONTS      = ".;e:/tmp//",
+
             -- we now have a different subsystem for this,
 
         },
