@@ -26,7 +26,7 @@ local format, gmatch, match, find = string.format, string.gmatch, string.match, 
 local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
 local report            = logs.reporter("positions")
 

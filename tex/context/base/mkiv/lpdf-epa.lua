@@ -13,6 +13,8 @@ local type, tonumber = type, tonumber
 local format, gsub, lower = string.format, string.gsub, string.lower
 local formatters = string.formatters
 local abs = math.abs
+local expandname = file.expandname
+local allocate = utilities.storage.allocate
 
 ----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -44,6 +46,23 @@ local maxdimen       = 2^30-1
 local layerspec = { -- predefining saves time
     "epdflinks"
 }
+
+local collected = allocate()
+local tobesaved = allocate()
+
+local jobembedded = {
+    collected = collected,
+    tobesaved = tobesaved,
+}
+
+job.embedded = jobembedded
+
+local function initializer()
+    tobesaved = jobembedded.tobesaved
+    collected = jobembedded.collected
+end
+
+job.register('job.embedded.collected',tobesaved,initializer)
 
 local f_namespace = formatters["lpdf-epa-%s-"]
 
@@ -114,6 +133,16 @@ end
 -- (see section 3.10 in the 1.7 reference) so we need to test for string as well
 -- as a table. TH/20140916
 
+-- When embedded is set then files need to have page references which is seldom the
+-- case but you can generate them with context:
+--
+-- \setupinteraction[state=start,page={page,page}]
+--
+-- see tests/mkiv/interaction/cross[1|2|3].tex for an example
+
+local embedded = false directives.register("figures.embedded", function(v) embedded = v end)
+local reported = { }
+
 local function link_file(x,y,w,h,document,annotation)
     local a = annotation.A
     if a then
@@ -129,9 +158,20 @@ local function link_file(x,y,w,h,document,annotation)
             elseif type(destination) == "string" then
                 add_link(x,y,w,h,formatters["%s::%s"](filename,destination),"file (named)")
             else
-                destination = destination[1] -- array
-                if tonumber(destination) then
-                    add_link(x,y,w,h,formatters["%s::page(%s)"](filename,destination),"file (page)")
+                -- hm, zero offset so maybe: destination + 1
+                destination = tonumber(destination[1]) -- array
+                if destination then
+                    destination = destination + 1
+                    local loaded = collected[lower(expandname(filename))]
+                    if embedded and loaded then
+                        add_link(x,y,w,h,makenamespace(filename) .. destination,what)
+                    else
+                        if loaded and not reported[filename] then
+                            report_link("reference to an also loaded file %a, consider using directive: figures.embedded",filename)
+                            reported[filename] = true
+                        end
+                        add_link(x,y,w,h,formatters["%s::page(%s)"](filename,destination),"file (page)")
+                    end
                 else
                     add_link(x,y,w,h,formatters["file(%s)"](filename),"file")
                 end
@@ -145,77 +185,82 @@ function codeinjections.mergereferences(specification)
         specification = figures and figures.current()
         specification = specification and specification.status
     end
-    if specification then
-        local fullname = specification.fullname
-        local document = loadpdffile(fullname) -- costs time
-        if document then
-            local pagenumber  = specification.page    or 1
-            local xscale      = specification.yscale  or 1
-            local yscale      = specification.yscale  or 1
-            local size        = specification.size    or "crop" -- todo
-            local pagedata    = document.pages[pagenumber]
-            local annotations = pagedata and pagedata.Annots
-            local namespace   = makenamespace(fullname)
-            local reference   = namespace .. pagenumber
-            if annotations and annotations.n > 0 then
-                local mediabox  = pagedata.MediaBox
-                local llx       = mediabox[1]
-                local lly       = mediabox[2]
-                local urx       = mediabox[3]
-                local ury       = mediabox[4]
-                local width     = xscale * (urx - llx) -- \\overlaywidth, \\overlayheight
-                local height    = yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
-                context.definelayer( { "epdflinks" }, { height = height.."bp" , width = width.."bp" })
-                for i=1,annotations.n do
-                    local annotation = annotations[i]
-                    if annotation then
-                        local subtype   = annotation.Subtype
-                        local rectangle = annotation.Rect
-                        local a_llx     = rectangle[1]
-                        local a_lly     = rectangle[2]
-                        local a_urx     = rectangle[3]
-                        local a_ury     = rectangle[4]
-                        local x         = xscale * (a_llx -   llx)
-                        local y         = yscale * (a_lly -   lly)
-                        local w         = xscale * (a_urx - a_llx)
-                        local h         = yscale * (a_ury - a_lly)
-                        if subtype == "Link" then
-                            local a = annotation.A
-                            if not a then
-                                report_link("missing link annotation")
-                            elseif w > width or h > height or w < 0 or h < 0 or abs(x) > (maxdimen/2) or abs(y) > (maxdimen/2) then
-                                report_link("broken link rectangle [%f %f %f %f] (max: %f)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
-                            else
-                                local linktype = a.S
-                                if linktype == "GoTo" then
-                                    link_goto(x,y,w,h,document,annotation,pagedata,namespace)
-                                elseif linktype == "GoToR" then
-                                    link_file(x,y,w,h,document,annotation)
-                                elseif linktype == "URI" then
-                                    link_uri(x,y,w,h,document,annotation)
-                                elseif trace_links then
-                                    report_link("unsupported link annotation %a",linktype)
-                                end
-                            end
-                        elseif trace_links then
-                            report_link("unsupported annotation %a",subtype)
-                        end
-                    elseif trace_links then
-                        report_link("broken annotation, index %a",i)
-                    end
-                end
-                context.flushlayer { "epdflinks" }
-            end
-            -- moved outside previous test
-            context.setgvalue("figurereference",reference) -- global
-            if trace_links then
-                report_link("setting figure reference to %a",reference)
-            end
-            specification.reference = reference
-            return namespace
-        end
+    if not specification then
+        return ""
     end
-    return ""-- no namespace, empty, not nil
+    local fullname = specification.fullname
+    local expanded = lower(expandname(fullname))
+    -- we could add a check for duplicate page insertion
+    tobesaved[expanded] = true
+    --- but that is messy anyway so we forget about it
+    local document = loadpdffile(fullname) -- costs time
+    if not document then
+        return ""
+    end
+    local pagenumber  = specification.page    or 1
+    local xscale      = specification.yscale  or 1
+    local yscale      = specification.yscale  or 1
+    local size        = specification.size    or "crop" -- todo
+    local pagedata    = document.pages[pagenumber]
+    local annotations = pagedata and pagedata.Annots
+    local namespace   = makenamespace(fullname)
+    local reference   = namespace .. pagenumber
+    if annotations and annotations.n > 0 then
+        local mediabox  = pagedata.MediaBox
+        local llx       = mediabox[1]
+        local lly       = mediabox[2]
+        local urx       = mediabox[3]
+        local ury       = mediabox[4]
+        local width     = xscale * (urx - llx) -- \\overlaywidth, \\overlayheight
+        local height    = yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
+        context.definelayer( { "epdflinks" }, { height = height.."bp" , width = width.."bp" })
+        for i=1,annotations.n do
+            local annotation = annotations[i]
+            if annotation then
+                local subtype   = annotation.Subtype
+                local rectangle = annotation.Rect
+                local a_llx     = rectangle[1]
+                local a_lly     = rectangle[2]
+                local a_urx     = rectangle[3]
+                local a_ury     = rectangle[4]
+                local x         = xscale * (a_llx -   llx)
+                local y         = yscale * (a_lly -   lly)
+                local w         = xscale * (a_urx - a_llx)
+                local h         = yscale * (a_ury - a_lly)
+                if subtype == "Link" then
+                    local a = annotation.A
+                    if not a then
+                        report_link("missing link annotation")
+                    elseif w > width or h > height or w < 0 or h < 0 or abs(x) > (maxdimen/2) or abs(y) > (maxdimen/2) then
+                        report_link("broken link rectangle [%f %f %f %f] (max: %f)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
+                    else
+                        local linktype = a.S
+                        if linktype == "GoTo" then
+                            link_goto(x,y,w,h,document,annotation,pagedata,namespace)
+                        elseif linktype == "GoToR" then
+                            link_file(x,y,w,h,document,annotation)
+                        elseif linktype == "URI" then
+                            link_uri(x,y,w,h,document,annotation)
+                        elseif trace_links then
+                            report_link("unsupported link annotation %a",linktype)
+                        end
+                    end
+                elseif trace_links then
+                    report_link("unsupported annotation %a",subtype)
+                end
+            elseif trace_links then
+                report_link("broken annotation, index %a",i)
+            end
+        end
+        context.flushlayer { "epdflinks" }
+    end
+    -- moved outside previous test
+    context.setgvalue("figurereference",reference) -- global
+    if trace_links then
+        report_link("setting figure reference to %a",reference)
+    end
+    specification.reference = reference
+    return namespace
 end
 
 function codeinjections.mergeviewerlayers(specification)

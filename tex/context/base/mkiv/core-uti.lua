@@ -297,14 +297,16 @@ function job.load(filename)
             local target      = list[1]
             local initializer = list[3]
             local result      = accesstable(target,utilitydata)
-            local done        = packers.unpack(result,jobpacker,true)
-            if done then
-                migratetable(target,mark(result))
-                if type(initializer) == "function" then
-                    handlers[#handlers+1] = { initializer, result }
+            if result then
+                local done        = packers.unpack(result,jobpacker,true)
+                if done then
+                    migratetable(target,mark(result))
+                    if type(initializer) == "function" then
+                        handlers[#handlers+1] = { initializer, result }
+                    end
+                else
+                    report_passes("pack version mismatch")
                 end
-            else
-                report_passes("pack version mismatch")
             end
         end
         -- so we have all tables available (unpacked)

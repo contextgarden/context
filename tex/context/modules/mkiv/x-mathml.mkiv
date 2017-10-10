@@ -66,6 +66,9 @@
 \xmlmapvalue {mml:math:dir}     {ltr}     {\setfalse\c_math_right_to_left\math_basics_synchronize_direction}
 \xmlmapvalue {mml:math:dir}     {rtl}     {\settrue \c_math_right_to_left\math_basics_synchronize_direction}
 
+\edef\mmlconstantone  {1}
+\edef\mmlconstantfalse{false}
+
 \startxmlsetups mml:math
     \begingroup
         \enableautofences
@@ -110,8 +113,9 @@
 %D First we define some general formula elements.
 
 \startxmlsetups mml:formula
-    \edef\mmlformulalabel   {\xmlatt{#1}{label}\xmlatt{#1}{id}}
-    \edef\mmlformulasublabel{\xmlatt{#1}{sublabel}\xmlatt{#1}{id}}
+    \edef\mmlformulaid      {\xmlatt{#1}{id}}
+    \edef\mmlformulalabel   {\xmlatt{#1}{label}\mmlformulaid}
+    \edef\mmlformulasublabel{\xmlatt{#1}{sublabel}\mmlformulaid}
     \doifsomething\mmlformulalabel{\placeformula[\mmlformulalabel]{\mmlformulasublabel}}
     \startformula
        %\MMLhack
@@ -1937,11 +1941,27 @@
 % spacing between - and 2 is taken care of by tex itself
 
 \startxmlsetups mml:mo
-    \doif {\xmlatt{#1}{maxsize}}  {1}     {\settrue\mmlignoredelimiter}
-    \doif {\xmlatt{#1}{stretchy}} {false} {\settrue\mmlignoredelimiter}
+    \edef\mmlattvalue{\xmlatt{#1}{maxsize}}
+    \ifx\mmlattvalue\mmlconstantone
+        \settrue\mmlignoredelimiter
+    \else
+        \edef\mmlattvalue{\xmlatt{#1}{stretchy}}
+        \ifx\mmlattvalue\mmlconstantfalse
+            \settrue\mmlignoredelimiter
+        \fi
+    \fi
+    \edef\mmlattvalue{\xmlatt{#1}{lspace}}
+    \ifx\mmlattvalue\empty\else
+        \hskip\mmlattvalue\relax % todo: check for dimension
+    \fi
     \ctxmodulemathml{mo("#1")}
+    \edef\mmlattvalue{\xmlatt{#1}{rspace}}
+    \ifx\mmlattvalue\empty\else
+        \hskip\mmlattvalue\relax % todo: check for dimension
+    \fi
     \setfalse\mmlignoredelimiter
 \stopxmlsetups
+
 
 % \startxmlsetups mml:mfenced % {} around separator is needed for spacing
 %     \def\MMLleft  {\left }% weird

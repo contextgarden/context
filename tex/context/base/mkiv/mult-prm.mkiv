@@ -84,7 +84,6 @@
         },
         omega = {
             "Omegaminorversion", "Omegarevision", "Omegaversion",
-            "odelcode", "odelimiter", "omathaccent", "omathchar", "omathchardef", "omathcode", "oradical",
         },
         xetex = {
             "XeTeXversion", -- probably some more
@@ -106,10 +105,11 @@
     }
 
     local primitives = {
-        tex    = table.sorted( table.merged( missing.tex   , tex.primitives() ) ),
-        etex   = table.sorted( table.merged( missing.etex  , tex.extraprimitives('etex') ) ),
+     -- tex    = table.sorted( table.merged( missing.tex   , tex.primitives() ) ),
+        tex    = table.sorted( table.merged( missing.tex   , tex.extraprimitives("core","tex") ) ),
+        etex   = table.sorted( table.merged( missing.etex  , tex.extraprimitives("etex") ) ),
         pdftex = table.sorted( table.merged( missing.pdftex, { } ) ),
-        luatex = table.sorted( table.merged( missing.luatex, tex.extraprimitives('luatex') ) ),
+        luatex = table.sorted( table.merged( missing.luatex, tex.extraprimitives("luatex") ) ),
         aleph  = table.sorted( table.merged( missing.aleph , { } ) ),
         omega  = table.sorted( table.merged( missing.omega , { } ) ),
         xetex  = table.sorted( table.merged( missing.xetex , { } ) ),

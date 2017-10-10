@@ -558,13 +558,13 @@ local function pdffilelink(filename,destination,page,actions)
         return false
     end
     filename = file.addsuffix(filename,"pdf")
-    if not destination or destination == "" then
+    if (not destination or destination == "") or (references.outermethod == v_page) then
         destination = pdfarray { (page or 0) - 1, pdf_fit }
     end
     return pdfdictionary {
         S = pdf_gotor, -- can also be pdf_launch
         F = filename,
-        D = destination or defaultdestination, -- D is mandate
+        D = destination or defaultdestination,
         NewWindow = actions.newwindow and true or nil,
     }
 end
