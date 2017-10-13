@@ -1050,6 +1050,24 @@
    \box\scratchbox
    \endgroup}
 
+\unexpanded\def\halflinestrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\dimexpr\strutht-.5\strutht-.5\strutdp\relax
+   \box\scratchbox
+   \endgroup}
+
+\unexpanded\def\noheightstrut
+  {\relax
+   \dontleavehmode
+   \begingroup
+   \setbox\scratchbox\copy\strutbox
+   \ht\scratchbox\zeropoint
+   \box\scratchbox
+   \endgroup}
+
 %D Sometimes a capstrut comes in handy
 %D
 %D \starttabulate[|Tl|l|l|]

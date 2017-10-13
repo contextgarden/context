@@ -36402,6 +36402,11 @@
    </cd:arguments>
   </cd:command>
   <cd:command file="spac-ver.mkiv" name="strut"/>
+  <cd:command file="spac-ver.mkiv" name="halfstrut"/>
+  <cd:command file="spac-ver.mkiv" name="quarterstrut"/>
+  <cd:command file="spac-ver.mkiv" name="halflinestrut"/>
+  <cd:command file="spac-ver.mkiv" name="noheightstrut"/>
+  <cd:command file="spac-ver.mkiv" name="depthstrut"/>
   <cd:command file="spac-ver.mkiv" level="system" name="setstrut"/>
   <cd:command file="spac-ver.mkiv" level="system" name="setcharstrut">
    <cd:arguments>

@@ -35,7 +35,7 @@ input "mp-func.mpiv" ; % under construction
 %     "mp-char.mpiv" ; % loaded on demand
 %     "mp-step.mpiv" ; % loaded on demand
 %     "mp-chem.mpiv" ; % loaded on demand
-%     "mp-node.mpiv" ; % loaded on demand
+input "mp-node.mpiv" ; % relatively small so preloaded
 input "mp-apos.mpiv" ;
 input "mp-abck.mpiv" ;
 

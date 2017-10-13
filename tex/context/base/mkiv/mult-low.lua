@@ -340,7 +340,7 @@ return {
         --
         "offinterlineskip", "oninterlineskip", "nointerlineskip",
         --
-        "strut", "halfstrut", "quarterstrut", "depthstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
+        "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "begstrut", "endstrut", "lineheight",
         "leftboundary", "rightboundary", "signalcharacter",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",

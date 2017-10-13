@@ -106,10 +106,11 @@
 
 \installcorenamespace{paragraphs}
 
-\installcommandhandler \??paragraphs {paragraphs} \??paragraphs
+\installframedcommandhandler \??paragraphs {paragraphs} \??paragraphs
 
 \setupparagraphs
   [\c!n=3,
+   \c!offset=\zeropoint,
    \c!before=\blank,
    \c!after=\blank,
    \c!distance=\emwidth,
@@ -123,6 +124,7 @@
    \c!rulecolor=,
    \c!style=,
    \c!color=,
+   \c!frame=\v!off,
    \c!top=\vss,
    \c!bottom=\vfill]
 
@@ -170,6 +172,7 @@
    \else
      \d_typo_paragraphs_width\p_width\relax
    \fi
+   \advance\d_typo_paragraphs_width-2\dimexpr\paragraphsparameter\c!offset\relax
    \c_typo_paragraphs_max\paragraphsparameter\c!n\relax
    \d_typo_paragraphs_auto\d_typo_paragraphs_width\relax
    \scratchcounter\zerocount
@@ -191,9 +194,10 @@
    \parindent\zeropoint
    \c_typo_paragraphs_n\zerocount
    \let\\=\typo_paragraphs_next % downward compatible
-   \dontleavehmode\hbox
+   \dontleavehmode\inheritedparagraphsframed
    \bgroup % (2)
    \forgetall
+   \advance\hsize-2\dimexpr\paragraphsparameter\c!offset\relax
    \let\typo_paragraphs_start_cell\typo_paragraphs_start_cell_indeed
    \let\typo_paragraphs_stop_cell \typo_paragraphs_stop_cell_indeed
    \typo_paragraphs_start_cell_indeed}

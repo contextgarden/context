@@ -31,22 +31,14 @@
 
     context.starttext()
 
-    function table.sorted(t)
-        table.sort(t)
-        return t
-    end
-
     local missing = {
         tex = {
-            "def", "catcode", "futurelet", "chardef",
-            "voffset", "hoffset",
-            "numexpr", "dimexpr",
-            "write", "dump", "skipdef,"
         },
         etex = {
-            "savingvdiscards",
         },
-        pdftex = {
+        luatex = {
+        },
+        pdftex = { -- maybe not complete
             "ifpdfabsdim", "ifpdfabsnum", "ifpdfprimitive", "pdfadjustspacing",
             "pdfannot", "pdfcatalog", "pdfcolorstack", "pdfcolorstackinit",
             "pdfcompresslevel", "pdfcopyfont", "pdfcreationdate",
@@ -77,35 +69,32 @@
             "pdfuniqueresname", "pdfvorigin", "pdfxform", "pdfxformattr",
             "pdfxformmargin", "pdfxformname", "pdfxformresources", "pdfximage",
         },
-        luatex = {
+        aleph = { -- we don't bother
+            "Alephminorversion", "Alephrevision", "Alephversion",
         },
-        aleph = {
-            "AlephVersion", "Alephminorversion", "Alephrevision", "Alephversion",
-        },
-        omega = {
+        omega = { -- we don't bother
             "Omegaminorversion", "Omegarevision", "Omegaversion",
         },
-        xetex = {
-            "XeTeXversion", -- probably some more
+        xetex = { -- we don't bother
+            "XeTeXversion",
         },
-        plain = {
-            "TeX",
-            "bgroup", "egroup", "endgraf", "space", "empty", "null",
-            "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newhelp", "newread", "newwrite", "newfam", "newlanguage", "newinsert", "newif",
-            "maxdimen", "magstephalf", "magstep",
-            "frenchspacing", "nonfrenchspacing", "normalbaselines", "obeylines", "obeyspaces", "raggedright", "ttraggedright",
-            "thinspace", "negthinspace", "enspace", "enskip", "quad", "qquad",
-            "smallskip", "medskip", "bigskip", "removelastskip", "topglue", "vglue", "hglue",
-            "break", "nobreak", "allowbreak", "filbreak", "goodbreak", "smallbreak", "medbreak", "bigbreak",
-            "line", "leftline", "rightline", "centerline", "rlap", "llap", "underbar", "strutbox", "strut",
-            "cases", "matrix", "pmatrix", "bordermatrix", "eqalign", "displaylines", "eqalignno", "leqalignno",
-            "pageno", "folio", "tracingall", "showhyphens", "fmtname", "fmtversion",
-            "hphantom", "vphantom", "phantom", "smash",
-        },
+     -- plain = {
+     --     "TeX",
+     --     "bgroup", "egroup", "endgraf", "space", "empty", "null",
+     --     "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newhelp", "newread", "newwrite", "newfam", "newlanguage", "newinsert", "newif",
+     --     "maxdimen", "magstephalf", "magstep",
+     --     "frenchspacing", "nonfrenchspacing", "normalbaselines", "obeylines", "obeyspaces", "raggedright", "ttraggedright",
+     --     "thinspace", "negthinspace", "enspace", "enskip", "quad", "qquad",
+     --     "smallskip", "medskip", "bigskip", "removelastskip", "topglue", "vglue", "hglue",
+     --     "break", "nobreak", "allowbreak", "filbreak", "goodbreak", "smallbreak", "medbreak", "bigbreak",
+     --     "line", "leftline", "rightline", "centerline", "rlap", "llap", "underbar", "strutbox", "strut",
+     --     "cases", "matrix", "pmatrix", "bordermatrix", "eqalign", "displaylines", "eqalignno", "leqalignno",
+     --     "pageno", "folio", "tracingall", "showhyphens", "fmtname", "fmtversion",
+     --     "hphantom", "vphantom", "phantom", "smash",
+     -- },
     }
 
     local primitives = {
-     -- tex    = table.sorted( table.merged( missing.tex   , tex.primitives() ) ),
         tex    = table.sorted( table.merged( missing.tex   , tex.extraprimitives("core","tex") ) ),
         etex   = table.sorted( table.merged( missing.etex  , tex.extraprimitives("etex") ) ),
         pdftex = table.sorted( table.merged( missing.pdftex, { } ) ),

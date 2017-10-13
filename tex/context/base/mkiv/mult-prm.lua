@@ -1,6 +1,5 @@
 return {
  ["aleph"]={
-  "AlephVersion",
   "Alephminorversion",
   "Alephrevision",
   "Alephversion",

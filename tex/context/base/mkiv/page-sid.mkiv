@@ -193,19 +193,29 @@
 
 \def\page_sides_flush_floats
   {\par
-   \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint
-     \page_sides_flush_floats_indeed
-   \else
-     % no need as the par just fits next to the previous float
+   \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint % -\pagedepth
+     \page_sides_flush_floats_progress
+     \page_sides_flush_floats_after_next
    \fi
+   \page_sides_flush_floats_reset}
+
+\def\page_sides_flush_floats_text
+  {\par
+   \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint % -\pagedepth
+     \page_sides_flush_floats_progress
+     \page_sides_flush_floats_after_none
+   \fi
+   \page_sides_flush_floats_reset}
+
+\def\page_sides_flush_floats_reset
+  {\global\d_page_sides_vsize\d_page_sides_vsize_reset
    % also here if used at all \global\holdinginserts\zerocount
-   \global\d_page_sides_vsize\d_page_sides_vsize_reset
    \global\setfalse\c_page_sides_short
    \global\setfalse\c_page_sides_flag}
 
 \unexpanded\def\doifelsesidefloat
   {\par
-   \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+   \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint % -\pagedepth
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -217,11 +227,68 @@
 
 \setvalue{\??sidefloatsteps\v!line  }{\strut}
 \setvalue{\??sidefloatsteps\v!big   }{\strut}
-\setvalue{\??sidefloatsteps\v!medium}{\halfstrut}
-\setvalue{\??sidefloatsteps\v!small }{\quarterstrut}
-\setvalue{\??sidefloatsteps\v!depth }{\depthstrut}
+\setvalue{\??sidefloatsteps\v!medium}{\halflinestrut} % was \halfstrut
+\setvalue{\??sidefloatsteps\v!small }{\noheightstrut} % was \quarterstrut
 
 % we don't officially know what kind of float we flush
+
+\def\page_sides_flush_floats_tracer
+  {\dontleavehmode
+   \ruledhpack\bgroup\backgroundline[trace:b]{%
+     \llap{\smash{\vrule\s!width4\points\s!height.4\points\s!depth.4\points}}%
+     \ifnum\recurselevel=\plusone
+       \llap{\smash{\smallinfofont\the\scratchdimen}\hskip.5\leftmargindistance}%
+     \else\ifodd\recurselevel
+       \llap{\smash{\smallinfofont\recurselevel}\hskip.5\leftmargindistance}%
+     \fi\fi
+     \page_sides_flush_floats_normal
+     \kern\hsize
+   \egroup}}
+
+\def\page_sides_flush_floats_normal
+  {\ifdim\scratchdimen>\htdp\strutbox
+     \strut
+   \else
+     \m_pages_strut
+   \fi}
+
+% the \d_page_sides_bottomskip == \rootfloatparameter\c!sidespaceafter is embedded
+% in the progression of the float
+
+\def\page_sides_flush_floats_progress
+  {\begingroup
+   \let\page_sides_flush_floats\relax
+   \edef\m_pages_strut
+     {\ifcsname\??sidefloatsteps\rootfloatparameter\c!step\endcsname
+        \lastnamedcs
+      \else
+        \strut
+      \fi}%
+   \forgetall
+   \offinterlineskip
+   \doloop
+     {\scratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal-\pagedepth\relax
+      \ifdim\scratchdimen>\onepoint % good enough, if we change it it will become a threshold
+        \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
+          \exitloop
+        \else\iftracesidefloats
+          \page_sides_flush_floats_tracer\par
+        \else
+          \page_sides_flush_floats_normal\par
+        \fi\fi
+      \else
+        \exitloop
+      \fi}%
+   \endgroup}
+
+\def\page_sides_flush_floats_after_none
+  {\ifdim\parskip>\zeropoint % why this test ?
+     \ifdim\d_page_sides_bottomskip>\parskip
+       \blank[\v!nowhite,\rootfloatparameter\c!sidespaceafter]%
+     \fi
+   \else
+       \blank[\rootfloatparameter\c!sidespaceafter]%
+   \fi}
 
 \def\page_sides_flush_floats_blank#1% we need to deal with the distance
   {\ifdim\d_page_sides_bottomskip>\d_page_sides_topskip
@@ -238,49 +305,8 @@
      ]%
    \fi\fi}
 
-\def\page_sides_flush_floats_tracer
-  {\dontleavehmode
-   \ruledhpack\bgroup\backgroundline[trace:b]{%
-     \ifnum\recurselevel=\plusone
-       \llap{{\smallinfofont\the\scratchdimen}\hskip.5\leftmargindistance}%
-     \else\ifodd\recurselevel
-       \llap{{\smallinfofont\recurselevel}\hskip.5\leftmargindistance}%
-     \fi\fi
-     \m_pages_strut
-     \kern\hsize
-   \egroup}}
-
-\def\page_sides_flush_floats_indeed
-  {% the \d_page_sides_bottomskip == \rootfloatparameter\c!sidespaceafter is embedded
-   % in the progression of the float
-   \begingroup
-   \let\page_sides_flush_floats\relax
-   \edef\m_pages_strut
-     {\ifcsname\??sidefloatsteps\rootfloatparameter\c!step\endcsname
-        \lastnamedcs
-      \else
-        \strut
-     \fi}%
-   \forgetall
-   \doloop
-     {\scratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax
-      \iftracesidefloats
-        \page_sides_flush_floats_tracer
-      \else
-        \m_pages_strut
-      \fi
-      \par
-      \nointerlineskip
-      \ifdim\scratchdimen>\zeropoint
-        \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
-          \exitloop
-        \fi
-      \else
-        \exitloop
-      \fi}%
-   \endgroup
-   % we're going to add top space anyway so ....
-   \ifdim\parskip>\zeropoint % why this test ?
+\def\page_sides_flush_floats_after_next
+  {\ifdim\parskip>\zeropoint % why this test ?
      \ifdim\d_page_sides_bottomskip>\parskip
        \page_sides_flush_floats_blank\plusone
      \fi
@@ -407,13 +433,16 @@
      {\backgroundline[trace:r]{\ruledhpack{\vpack
         {\hsize\wd\floatbox
          \vskip\privatescratchdimen
-         \nointerlineskip
+         \offinterlineskip
+         \scratchwidth\wd\floatbox
          \backgroundline[trace:g]{\ruledhpack{\box\floatbox}}%
+         \blackrule[\c!color=trace:s,\c!height=\d_page_sides_bottomskip,\c!depth=\zeropoint,\c!width=\scratchwidth]%
+         \vskip-\d_page_sides_bottomskip
          \ifnum\c_page_sides_align=\plusfive \vskip-\lineheight \fi}}}}}
 
 \def\page_sides_apply_depth_normal
   {\global\setbox\floatbox\hpack
-     {\lower\strutdepth\box\floatbox}}
+     {\lower\strutdp\box\floatbox}}
 
 \def\page_sides_apply_depth_traced
   {\global\setbox\floatbox\hpack
@@ -426,7 +455,7 @@
 \def\page_sides_apply_vertical_shift
   {\ifnum\c_page_sides_align=\plusfour
      \getnoflines{\ht\floatbox}%
-     \privatescratchdimen\dimexpr\noflines\lineheight-\strutdepth\relax
+     \privatescratchdimen\dimexpr\noflines\lineheight-\strutdp\relax
      \getrawnoflines\d_page_sides_topskip
      \advance\privatescratchdimen\noflines\lineheight
      % todo: maybe rounding problem here
@@ -453,17 +482,17 @@
    % the top of the box is at the previous baseline
    \ifcase\c_page_sides_align
        % 0 normal
-     \advance\privatescratchdimen\strutdepth  % or \openstrutdepth
+     \advance\privatescratchdimen\strutdp % or \openstrutdepth
    \or % 1 height
-     \advance\privatescratchdimen\strutdepth  % or \openstrutdepth
+     \advance\privatescratchdimen\strutdp % or \openstrutdepth
    \or % 2 line
    \or % 3 depth
-     \advance\privatescratchdimen\lineheight  % or \openlineheight
-     \advance\privatescratchdimen\strutdepth  % or \openstrutdepth
+     \advance\privatescratchdimen\lineheight % or \openlineheight
+     \advance\privatescratchdimen\strutdp    % or \openstrutdepth
    \or % 4 grid
      \privatescratchdimen\zeropoint
    \or
-     \advance\privatescratchdimen\strutheight % or \openstrutheight
+     \advance\privatescratchdimen\strutht % or \openstrutheight
    \fi
    % new
    \global\c_page_sides_lines_done\zerocount
@@ -555,6 +584,7 @@
      \global\setfalse\c_page_sides_flag
    \else
      \advance\d_page_sides_progress-\pagetotal
+     \advance\d_page_sides_progress-\pagedepth % new 2017-10-10
    \fi}
 
 \def\page_sides_analyse_space
@@ -596,6 +626,7 @@
        % why was this \global\holdinginserts\plusone
      \else
        \global\advance\d_page_sides_vsize \d_page_sides_bottomskip
+       \global\advance\d_page_sides_vsize -\parskip % new 2017-10-10
        \global\setfalse\c_page_sides_short
      \fi
      \global\settrue\c_page_floats_room
@@ -759,7 +790,7 @@
 %D the callers. We use \type {\def} as they can be redefined! Some will become obsolete
 
 \def\checksidefloat         {\page_sides_check_floats}
-\def\flushsidefloats        {\page_sides_flush_floats}
+\def\flushsidefloats        {\page_sides_flush_floats_text}
 \def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
 \def\forgetsidefloats       {\page_sides_forget_floats}
 %def\synchronizesidefloats  {\page_sides_synchronize_floats}

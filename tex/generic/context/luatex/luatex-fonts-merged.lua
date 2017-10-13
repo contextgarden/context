@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/10/17 12:00:59
+-- merge date  : 10/13/17 16:58:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -25308,6 +25308,9 @@ local function kernrun(disc,k_run,font,attr,...)
     end
     setlink(prev,disc,next)
   end
+  if done and trace_testruns then
+    report_disc("done",disc)
+  end
   return nextstart,done
 end
 local function comprun(disc,c_run,...) 
@@ -25346,6 +25349,9 @@ local function comprun(disc,c_run,...)
   sweepnode=nil
   sweeptype=nil
   if renewed then
+    if trace_testruns then
+      report_disc("done",disc)
+    end
     setdisc(disc,pre,post,replace)
   end
   return getnext(disc),renewed
@@ -25359,6 +25365,7 @@ local function testrun(disc,t_run,c_run,...)
     return
   end
   local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
+  local renewed=false
   if (post or replace) and prev then
     if post then
       setlink(posttail,next)
@@ -25377,9 +25384,14 @@ local function testrun(disc,t_run,c_run,...)
       local head=getnext(disc) 
       local tail=head
       for i=1,d do
-        tail=getnext(tail)
-        if getid(tail)==disc_code then
-          head,tail=flattendisk(head,tail)
+        local nx=getnext(tail)
+        local id=getid(nx)
+        if id==disc_code then
+          head,tail=flattendisk(head,nx)
+        elseif id==glyph_code then
+          tail=nx
+        else
+          break
         end
       end
       next=getnext(tail)
@@ -25408,9 +25420,11 @@ local function testrun(disc,t_run,c_run,...)
         replace=nil
       end
     end
-setlink(disc,next)
+    setlink(disc,next)
   end
-  local renewed=false
+  if trace_testruns then
+    report_disc("more",disc)
+  end
   if pre then
     sweepnode=disc
     sweeptype="pre"
@@ -25442,6 +25456,9 @@ setlink(disc,next)
   sweeptype=nil
   if renewed then
     setdisc(disc,pre,post,replace)
+    if trace_testruns then
+      report_disc("done",disc)
+    end
   end
   return getnext(disc),renewed
 end
@@ -25456,7 +25473,7 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
     start=head
   end
   while start do
-    local char=ischar(start,font)
+    local char,id=ischar(start,font)
     if char then
       local a 
       if attr then
@@ -25518,33 +25535,38 @@ local function t_run_single(start,stop,font,attr,lookupcache)
           local l=nil
           local d=0
           while s do
-            local lg=lookupmatch[getchar(s)]
-            if lg then
-              if sstop then
-                d=1
-              elseif d>0 then
-                d=d+1
-              end
-              l=lg
-              s=getnext(s)
-              sstop=s==stop
-              if not s then
-                s=ss
-                ss=nil
-              end
-              while getid(s)==disc_code do
-                ss=getnext(s)
-                s=getfield(s,"replace")
+            local char=ischar(s,font)
+            if char then
+              local lg=lookupmatch[char]
+              if lg then
+                if sstop then
+                  d=1
+                elseif d>0 then
+                  d=d+1
+                end
+                l=lg
+                s=getnext(s)
+                sstop=s==stop
                 if not s then
                   s=ss
                   ss=nil
                 end
+                while getid(s)==disc_code do
+                  ss=getnext(s)
+                  s=getfield(s,"replace")
+                  if not s then
+                    s=ss
+                    ss=nil
+                  end
+                end
+              else
+                break
               end
             else
               break
             end
           end
-          if l and l.ligature then
+          if l and l.ligature then 
             lastd=d
           end
         else
@@ -25666,27 +25688,32 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
             local l=nil
             local d=0
             while s do
-              local lg=lookupmatch[getchar(s)]
-              if lg then
-                if sstop then
-                  d=1
-                elseif d>0 then
-                  d=d+1
-                end
-                l=lg
-                s=getnext(s)
-                sstop=s==stop
-                if not s then
-                  s=ss
-                  ss=nil
-                end
-                while getid(s)==disc_code do
-                  ss=getnext(s)
-                  s=getfield(s,"replace")
+              local char=ischar(s)
+              if char then
+                local lg=lookupmatch[char]
+                if lg then
+                  if sstop then
+                    d=1
+                  elseif d>0 then
+                    d=d+1
+                  end
+                  l=lg
+                  s=getnext(s)
+                  sstop=s==stop
                   if not s then
                     s=ss
                     ss=nil
                   end
+                  while getid(s)==disc_code do
+                    ss=getnext(s)
+                    s=getfield(s,"replace")
+                    if not s then
+                      s=ss
+                      ss=nil
+                    end
+                  end
+                else
+                  break
                 end
               else
                 break
@@ -25778,8 +25805,7 @@ otf.helpers.pardirstate=pardirstate
 do
   local fastdisc=true
   local testdics=false
-  directives.register("otf.fastdisc",function(v) fastdisc=v end) 
-  directives.register("otf.testdisc",function(v) testdisc=v end)
+  directives.register("otf.fastdisc",function(v) fastdisc=v end)
   local otfdataset=nil 
   local getfastdisc={ __index=function(t,k)
     local v=usesfont(k,currentfont)
@@ -25832,7 +25858,7 @@ do
       local topstack=0
       local typ=sequence.type
       local gpossing=typ=="gpos_single" or typ=="gpos_pair" 
-      local forcetestrun=testdisc or typ=="gsub_ligature"
+      local forcetestrun=typ=="gsub_ligature" 
       local handler=handlers[typ] 
       local steps=sequence.steps
       local nofsteps=sequence.nofsteps

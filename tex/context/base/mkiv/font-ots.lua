@@ -2080,7 +2080,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         if current then
             -- go on
         elseif sweepoverflow then
-            -- we already are folling up on sweepnode
+            -- we already are following up on sweepnode
             break
         elseif sweeptype == "post" or sweeptype == "replace" then
             current = getnext(sweepnode)
@@ -3069,6 +3069,9 @@ local function kernrun(disc,k_run,font,attr,...)
         end
         setlink(prev,disc,next)
     end
+    if done and trace_testruns then
+        report_disc("done",disc)
+    end
     return nextstart, done
 end
 
@@ -3116,6 +3119,9 @@ local function comprun(disc,c_run,...) -- vararg faster than the whole list
     sweepnode = nil
     sweeptype = nil
     if renewed then
+        if trace_testruns then
+            report_disc("done",disc)
+        end
         setdisc(disc,pre,post,replace)
     end
     --
@@ -3135,6 +3141,7 @@ local function testrun(disc,t_run,c_run,...)
         return
     end
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
+    local renewed = false
     if (post or replace) and prev then
         if post then
             setlink(posttail,next)
@@ -3153,12 +3160,17 @@ local function testrun(disc,t_run,c_run,...)
             local head = getnext(disc) -- is: next
             local tail = head
             for i=1,d do
-                tail = getnext(tail)
-                if getid(tail) == disc_code then
-                    head, tail = flattendisk(head,tail)
+                local nx = getnext(tail)
+                local id = getid(nx)
+                if id == disc_code then
+                    head, tail = flattendisk(head,nx)
+                elseif id == glyph_code then
+                    tail = nx
+                else
+                    -- we can have overrun into a glue
+                    break
                 end
             end
---             local next = getnext(tail)
             next = getnext(tail)
             setnext(tail)
             setprev(head)
@@ -3173,7 +3185,6 @@ local function testrun(disc,t_run,c_run,...)
             else
                 replace = new
             end
---             setlink(disc,next)
         else
             -- we stay inside the disc
             if posttail then
@@ -3186,15 +3197,16 @@ local function testrun(disc,t_run,c_run,...)
             else
                 replace = nil
             end
---             setprev(next,disc) -- setlink(dics,next)
         end
-setlink(disc,next)
+        setlink(disc,next)
      -- pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     end
     --
     -- like comprun
     --
-    local renewed = false
+    if trace_testruns then
+        report_disc("more",disc)
+    end
     --
     if pre then
         sweepnode = disc
@@ -3230,6 +3242,9 @@ setlink(disc,next)
     sweeptype = nil
     if renewed then
         setdisc(disc,pre,post,replace)
+        if trace_testruns then
+            report_disc("done",disc)
+        end
     end
     -- next can have changed (copied list)
     return getnext(disc), renewed
@@ -3273,7 +3288,7 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
         start = head
     end
     while start do
-        local char = ischar(start,font)
+        local char, id = ischar(start,font)
         if char then
             local a -- happens often so no assignment is faster
             if attr then
@@ -3332,7 +3347,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
                         ss = nil
                     end
                     -- a bit weird: why multiple ... anyway we can't have a disc in a disc
-                    -- how about post ...
+                    -- how about post ... we can probably merge this into the while
                     while getid(s) == disc_code do
                         ss = getnext(s)
                         s  = getfield(s,"replace")
@@ -3344,40 +3359,48 @@ local function t_run_single(start,stop,font,attr,lookupcache)
                     local l = nil
                     local d = 0
                     while s do
-                        local lg = lookupmatch[getchar(s)]
-                        if lg then
-                            if sstop then
-                                d = 1
-                            elseif d > 0 then
-                                d = d + 1
-                            end
-                            l = lg
-                            s = getnext(s)
-                            sstop = s == stop
-                            if not s then
-                                s  = ss
-                                ss = nil
-                            end
-                            while getid(s) == disc_code do
-                                ss = getnext(s)
-                                s  = getfield(s,"replace")
+                        local char = ischar(s,font)
+                        if char then
+                            local lg = lookupmatch[char]
+                            if lg then
+                                if sstop then
+                                    d = 1
+                                elseif d > 0 then
+                                    d = d + 1
+                                end
+                                l = lg
+                                s = getnext(s)
+                                sstop = s == stop
                                 if not s then
                                     s  = ss
                                     ss = nil
                                 end
+                                while getid(s) == disc_code do
+                                    ss = getnext(s)
+                                    s  = getfield(s,"replace")
+                                    if not s then
+                                        s  = ss
+                                        ss = nil
+                                    end
+                                end
+                            else
+                                break
                             end
                         else
                             break
                         end
                     end
-                    if l and l.ligature then
+                    if l and l.ligature then -- so we test for ligature
                         lastd = d
                     end
+-- why not: if not l then break elseif l.ligature then return d end
                 else
+-- why not: break
                     -- no match (yet)
                 end
             else
                 -- go on can be a mixed one
+-- why not: break
             end
             if lastd then
                 return lastd
@@ -3505,27 +3528,32 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
                         local l = nil
                         local d = 0
                         while s do
-                            local lg = lookupmatch[getchar(s)]
-                            if lg then
-                                if sstop then
-                                    d = 1
-                                elseif d > 0 then
-                                    d = d + 1
-                                end
-                                l = lg
-                                s = getnext(s)
-                                sstop = s == stop
-                                if not s then
-                                    s  = ss
-                                    ss = nil
-                                end
-                                while getid(s) == disc_code do
-                                    ss = getnext(s)
-                                    s  = getfield(s,"replace")
+                            local char = ischar(s)
+                            if char then
+                                local lg = lookupmatch[char]
+                                if lg then
+                                    if sstop then
+                                        d = 1
+                                    elseif d > 0 then
+                                        d = d + 1
+                                    end
+                                    l = lg
+                                    s = getnext(s)
+                                    sstop = s == stop
                                     if not s then
                                         s  = ss
                                         ss = nil
                                     end
+                                    while getid(s) == disc_code do
+                                        ss = getnext(s)
+                                        s  = getfield(s,"replace")
+                                        if not s then
+                                            s  = ss
+                                            ss = nil
+                                        end
+                                    end
+                                else
+                                    break
                                 end
                             else
                                 break
@@ -3660,7 +3688,6 @@ do
     local testdics = false
 
     directives.register("otf.fastdisc",function(v) fastdisc = v end) -- normally enabled
-    directives.register("otf.testdisc",function(v) testdisc = v end) -- only for myself
 
     -- using a merged combined hash as first test saves some 30% on ebgaramond and
     -- about 15% on arabtype .. then moving the a test also saves a bit (even when
@@ -3750,7 +3777,7 @@ do
             local topstack     = 0
             local typ          = sequence.type
             local gpossing     = typ == "gpos_single" or typ == "gpos_pair" -- store in dataset
-            local forcetestrun = testdisc or typ == "gsub_ligature"
+            local forcetestrun = typ == "gsub_ligature" -- testrun is only for ligatures
             local handler      = handlers[typ] -- store in dataset
             local steps        = sequence.steps
             local nofsteps     = sequence.nofsteps
