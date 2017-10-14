@@ -11036,6 +11036,9 @@ return {
   ["threshold"]={
    ["en"]="threshold",
   },
+  ["sidethreshold"]={
+   ["en"]="sidethreshold",
+  },
   ["displaythreshold"]={
    ["en"]="displaythreshold",
   },

@@ -431,12 +431,12 @@
 \def\page_sides_apply_vertical_shift_traced
   {\global\setbox\floatbox\hpack % why extra box
      {\backgroundline[trace:r]{\ruledhpack{\vpack
-        {\hsize\wd\floatbox
+        {\forgetall
+         \hsize\wd\floatbox
          \vskip\privatescratchdimen
          \offinterlineskip
-         \scratchwidth\wd\floatbox
-         \backgroundline[trace:g]{\ruledhpack{\box\floatbox}}%
-         \blackrule[\c!color=trace:s,\c!height=\d_page_sides_bottomskip,\c!depth=\zeropoint,\c!width=\scratchwidth]%
+         \backgroundline[trace:g]{\ruledhpack{\box\floatbox}}\par
+         \blackrule[\c!color=trace:s,\c!height=\d_page_sides_bottomskip,\c!depth=\zeropoint,\c!width=\hsize]%
          \vskip-\d_page_sides_bottomskip
          \ifnum\c_page_sides_align=\plusfive \vskip-\lineheight \fi}}}}}
 
@@ -609,7 +609,7 @@
    \ifcase\c_page_sides_method
      % method 0 : raw
    \or
-     % method 1 : safe
+     % method 1 : safe (default)
      \scratchdimentwo .99\pagegoal
    \or
      % method 2 : tight
@@ -680,15 +680,58 @@
 \unexpanded\def\page_sides_check_floats_tracer
   {\begingroup
    \hskip-\d_page_sides_width % kern
+  %\llap{\smallinfofont\the\d_page_sides_progression\space=>\space\the\c_page_sides_n_of_hang\hskip.5\leftmargindistance}%
    \color[trace:o]%
      {\vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width
       \llap{\showstruts\strut\kern.25\bodyfontsize}}%
    \endgroup}
 
+% \usemodule[art-01]
+% \starttext
+%     \definemeasure[MyHeight][3cm] \definemeasure[MyWidth][3cm]
+%     \startbuffer
+%         \input klein \par
+%         \placefigure[left]{oeps}{\framed[width=\measure{MyWidth},height=\measure{MyHeight}]{}}
+%         \dorecurse{4}{test\par} \dorecurse{3}{\input klein }\par
+%         \placefigure[left]{oeps}{\framed[width=\measure{MyWidth},height=\measure{MyHeight}]{}}
+%         \dorecurse{3}{\input klein }\par
+%     \stopbuffer
+%     \enabletrackers[floats.anchoring]
+%     \setupfloats[step=small]
+%     \setupheadertexts[width=\measure{MyWidth},height=\measure{MyHeight}]
+%     \dostepwiserecurse {100} {120} {1} {
+%         \definemeasure[MyWidth][#1pt]
+%         \dostepwiserecurse {50} {300} {1} {
+%             \definemeasure[MyHeight][##1pt]
+%             \setupwhitespace[none]%
+%             \getbuffer \page
+%             \setupwhitespace[big]
+%             \getbuffer \page
+%         }
+%     }
+% \stoptext
+
+% \setupfloats
+%   [\c!sidethreshold=.5\strutdp] % set to "old" to check with old method
+
+\newdimen\d_page_sides_progression
+
 \unexpanded\def\page_sides_check_floats_set
-  {\privatescratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
-   \c_page_sides_n_of_hang\privatescratchdimen
-   \divide\c_page_sides_n_of_hang \baselineskip\relax
+  {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
+   \ifx\p_sidethreshold\v!old
+     \d_page_sides_progression\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
+     \c_page_sides_n_of_hang\d_page_sides_progression
+     \divide\c_page_sides_n_of_hang \baselineskip\relax
+   \else
+     \d_page_sides_progression
+       \ifx\p_sidethreshold\empty
+         \d_page_sides_progress
+       \else
+         \dimexpr\d_page_sides_progress-\p_sidethreshold\relax
+       \fi
+     \getnoflines\d_page_sides_progression
+     \c_page_sides_n_of_hang\noflines
+   \fi
    \ifnum\c_page_sides_n_of_hang>\zerocount
      % new from here (needs test case, old code)
      \ifcase\c_page_sides_n_of_lines
