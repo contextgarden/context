@@ -170,6 +170,11 @@
                     <cd:constant type="none"/>
                     <cd:inherit name="blank"/>
                 </cd:parameter>
+                </cd:parameter>
+                <cd:parameter name="sidethreshold">
+                    <cd:constant type="old"/>
+                    <cd:constant type="dimension" default="yes"/> <!--  value=".5\strutdp" -->
+                </cd:parameter>
                 <cd:parameter name="margin">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>

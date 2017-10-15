@@ -1,0 +1,1265 @@
+% interface=english modes=screen
+
+% author    : Alan Braslau
+% copyright : ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : A prototype of the nodes module was presented at the ConTeXt 2016 user meeting
+%             and the first release was presented at the 2017 meeting. The module is part of
+%             the MetaFun code modules.
+%
+% comment   : This manual orginates in an article by Alan so anything wrong in here is Hans
+%             fault as he converted it.
+%
+% comment   : The conver images are form the NASA website.
+
+\definemeasure [layout:margin] [\paperheight/20]
+
+\setuplayout
+  [topspace=\measure{layout:margin},
+   bottomspace=\measure{layout:margin},
+   backspace=\measure{layout:margin},
+   header=0pt,
+   footer=\measure{layout:margin},
+   width=middle,
+   height=middle]
+
+\setupbodyfont
+  [dejavu,11pt]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   interaction=all]
+
+\setuppagenumbering
+  [alternative=doublesided,
+   location=]
+
+\setupfootertexts
+  [\documentvariable{title}][\pagenumber]
+  [\pagenumber][\documentvariable{title}]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bfa]
+
+\setuphead
+  [subsubsection]
+  [style=\bf,
+   after=]
+
+\setuplist
+  [interaction=all]
+
+\setupalign
+  [verytolerant,stretch]
+
+\setupnote
+  [footnote]
+  [next={ },
+   split=verystrict,
+   scope=page]
+
+\setupinteraction
+  [state=start,
+   option=bookmark,
+   color=darkmagenta,
+   contrastcolor=darkmagenta]
+
+\setupinteractionscreen
+  [option=bookmark]
+
+\placebookmarks
+  [title,subject]
+  [title,subject]
+
+\enabledirectives
+  [references.bookmarks.preroll]
+
+\kindofpagetextareas\plusone % partial page. HH: low level, no high level switch (yet)
+
+\definetextbackground
+  [fiction]
+  [location=paragraph,
+   frame=off,
+   leftoffset=1ex,
+   rightoffset=1ex,
+   topoffset=1ex,
+   bottomoffset=1ex,
+   background=color,
+   backgroundcolor=lightgray]
+
+\defineparagraphs
+  [two]
+  [n=2,
+   offset=1ex,
+   background=color,
+   backgroundcolor=gray]
+
+\setupframed
+  [node]
+  [offset=1pt,
+   foregroundstyle=\tfa]
+
+\defineframed
+  [nodeGreen]
+  [node]
+  [foregroundcolor=darkgreen,
+   foregroundstyle=italic]
+
+\defineframed
+  [nodeSmall]
+  [node]
+  [foregroundstyle=\tfx]
+
+\startbuffer [bib]
+    @ARTICLE{Krebs1946,
+        author  = {Krebs, H. A.},
+        title   = {Cyclic processes in living matter},
+        journal = {Enzymologia},
+        year    = {1946},
+        volume  = {12},
+        pages   = {88--100}
+    }
+
+    @ARTICLE{Bethe1939a,
+        author    = {Bethe, H. A.},
+        title     = {Energy Production in Stars},
+        journal   = {Phys. Rev.},
+        year      = {1939},
+        volume    = {55},
+        pages     = {103–103},
+        month     = {Jan},
+        doi       = {10.1103/PhysRev.55.103},
+        issue     = {1},
+        publisher = {American Physical Society},
+        XXurl     = {http://link.aps.org/doi/10.1103/PhysRev.55.103}
+    }
+
+    @ARTICLE{Bethe1939b,
+        author    = {Bethe, H. A.},
+        title     = {Energy Production in Stars},
+        journal   = {Phys. Rev.},
+        year      = {1939},
+        volume    = {55},
+        pages     = {434–456},
+        month     = {Mar},
+        doi       = {10.1103/PhysRev.55.434},
+        issue     = {5},
+        publisher = {American Physical Society},
+        XXurl     = {http://link.aps.org/doi/10.1103/PhysRev.55.434}
+    }
+\stopbuffer
+
+\usebtxdefinitions [apa]
+\setupbtxrendering [apa] [pagestate=start] % index cite pages in bibliography
+
+\usebtxdataset  [bib.buffer]
+
+\defineframed
+  [mynode]
+  [node]
+  [offset=1pt,
+   foregroundcolor=white]
+
+\startreusableMPgraphic{nodes::krebs}
+
+   % The Bethe cycle for energy production in stars (1939), following
+   % Krebs (1946)
+
+   save p ; path p[] ;
+   p1 := (for i=0 step 60 until 300: dir(90-i) .. endfor cycle) scaled 2.75cm ;
+   p0 := p1 scaled  .5 ;
+   p2 := p1 scaled 1.5 ;
+
+   draw node(p1,0,"\mynode{\chemical{^{12}C}}") ;
+   draw node(p1,1,"\mynode{\chemical{^{13}N}}") ;
+   draw node(p1,2,"\mynode{\chemical{^{13}C}}") ;
+   draw node(p1,3,"\mynode{\chemical{^{14}N}}") ;
+   draw node(p1,4,"\mynode{\chemical{^{15}O}}") ;
+   draw node(p1,5,"\mynode{\chemical{^{15}N}}") ;
+
+   drawarrow fromtopaths.urt (true,p1,0,p1,1,"\mynode{a}") withcolor white ;
+   drawarrow fromtopaths.rt  (true,p1,1,p1,2,"\mynode{b}") withcolor white ;
+   drawarrow fromtopaths.lrt (true,p1,2,p1,3,"\mynode{c}") withcolor white ;
+   drawarrow fromtopaths.llft(true,p1,3,p1,4,"\mynode{d}") withcolor white ;
+   drawarrow fromtopaths.lft (true,p1,4,p1,5,"\mynode{e}") withcolor white ;
+   drawarrow fromtopaths.ulft(true,p1,5,p1,6,"\mynode{f}") withcolor white ;
+
+   draw node(p0,0,"\mynode{\chemical{^1H}}") ;
+   draw node(p0,2,"\mynode{\chemical{^1H}}") ;
+   draw node(p0,3,"\mynode{\chemical{^1H}}") ;
+   draw node(p0,5,"\mynode{\chemical{^1H}}") ;
+
+   drawarrow fromtopaths(3/10,p0,0,p1,0.5) withcolor white ;
+   drawarrow fromtopaths(3/10,p0,2,p1,2.5) withcolor white ;
+   drawarrow fromtopaths(3/10,p0,3,p1,3.5) withcolor white ;
+   drawarrow fromtopaths(3/10,p0,5,p1,5.5) withcolor white ;
+
+   draw node     (p2,0,"\mynode{\chemical{^4He}}")                ;
+   draw node     (p2,1,"\mynode{$γ$}")                            ;
+   draw node.lrt (p2,2,"\mynode{$\mathrm{e}^+ + ν_\mathrm{e}$}")  ;
+   draw node     (p2,3,"\mynode{$γ$}")                            ;
+   draw node     (p2,4,"\mynode{$γ$}")                            ;
+   draw node.ulft(p2,5,"\mynode{$\mathrm{e}^+ + ν_\mathrm{e}$}")  ;
+
+   drawarrow fromtopaths(-1/10,p1,0.5,p2,1) withcolor white ;
+   drawarrow fromtopaths(-1/10,p1,1.5,p2,2) withcolor white ;
+   drawarrow fromtopaths(-1/10,p1,2.5,p2,3) withcolor white ;
+   drawarrow fromtopaths(-1/10,p1,3.5,p2,4) withcolor white ;
+   drawarrow fromtopaths(-1/10,p1,4.5,p2,5) withcolor white ;
+   drawarrow fromtopaths(-1/10,p1,5.5,p2,0) withcolor white ;
+
+\stopreusableMPgraphic
+
+\startuseMPgraphic{CoverPage}
+
+    StartPage ;
+
+        % Alan wanted a sun in the background combined somehow with the energy
+        % harvesting molecule so here we go. The images that are used come from
+        % the NASA website and I used them as screen saver for a while. The
+        % version that I generate use another variant than the one on the users
+        % machine.
+
+        draw textext("\externalfigure[\framedparameter{imagename}]")
+            xsized PaperWidth ysized (PaperHeight+4cm)
+            shifted center Page shifted (0,2cm);
+
+        for i=1 upto 512 :
+            draw (textext("\reuseMPgraphic{nodes::krebs}") scaled (1/5 randomized 1/5))
+            shifted (center Page randomized (PaperWidth,PaperHeight)) ;
+        endfor ;
+
+        draw (textext.ulft("\word{\documentvariable{title}}") xsized (PaperWidth/2))
+            shifted (lrcorner Page)
+            shifted (-PaperWidth/10,2PaperWidth/10)
+            withcolor white;
+
+        draw (textext.ulft("\word{\documentvariable{author}}") xsized (PaperWidth/2))
+            shifted (lrcorner Page)
+            shifted (-PaperWidth/10,PaperWidth/10)
+            withcolor white;
+
+    StopPage ;
+
+\stopuseMPgraphic
+
+\startsetups document:start
+
+    \doifmodeelse {atpragma} {
+        \startMPpage[imagename=nodes-sun-pia-03150]
+            \includeMPgraphic{CoverPage}
+        \stopMPpage
+    } {
+        \startMPpage[imagename=nodes-sun-pia-03149]
+            \includeMPgraphic{CoverPage}
+        \stopMPpage
+    }
+\stopsetups
+
+\startdocument
+  [title=Nodes,
+   author=Alan Braslau,
+   copyright=\ConTeXt\ development team,
+   version=1.0]
+
+\startsubject [title=Introduction]
+
+The graphical representation of textual diagrams is an extremely useful tool in
+the communication of idea. These are composed of graphical objects and blocks of
+text or the combination of both, i.e. a decorated label or text block, in some
+spatial relation to one another. \footnote {The spatial relation may be a
+representation of a temporal relationship.} A simple example is shown \in {in
+figure} [fig:AB].
+
+\startplacefigure [reference=fig:AB]
+    \startMPcode
+        ahlength  := 12pt ;
+        ahangle   := 30 ;
+        ahvariant := 1 ; % dimpled
+
+        u := 1cm ;
+        save nodepath ; path nodepath ;
+        nodepath := (left -- right) scaled u ;
+
+        draw node(0,"\node{A}") ;
+        draw node(1,"\node{B}") ;
+        drawarrow fromto(0,0,1) ;
+    \stopMPcode
+\stopplacefigure
+
+One often speaks of placing text with their accompanying decorations on \emph
+{nodes}, points of intersection or branching or else points on a regular lattice.
+The nodes of the above diagram are the two endpoints of a straight segment.
+
+\startbuffer
+\startMPcode
+  save nodepath ; path nodepath ;
+  nodepath := (left -- right) scaled .75u ;
+  draw node(0,"A") ;
+  draw node(1,"B") ;
+  drawarrow fromto(0,0,1) ;
+\stopMPcode
+\stopbuffer
+
+The code producing \inlinebuffer\ \emph {could} be:
+
+\starttwo
+    \METAPOST
+    \startTEX
+        \startMPcode
+          draw node(0,"A") ;
+          draw node(1,"B") ;
+          drawarrow fromto(0,1) ;
+        \stopMPcode
+    \stopTEX
+\two
+    \CONTEXT
+    \startTEX
+       \startnodes
+         \node[0]{A}
+         \node[1]{B}
+         \fromto [0,1] [option=arrow]
+       \stopnodes
+    \stopTEX
+\stoptwo
+
+drawing an arrow from A to B (or from node 0 to node 1).
+
+\startitemize[packed]
+    \startitem
+        The \METAPOST\ code shown above has been simplified, as will be seen
+        later.
+    \stopitem
+    \startitem
+        The \CONTEXT\ module has yet to be coded (and may not be useful).
+    \stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject [title=\METAPOST]
+
+\METAPOST\ is an inherently vectorial graphical language using \TEX\ to typeset
+text; the \METAPOST\ language is integrated natively as MPlib in \CONTEXT. This
+presents advantages over the use of an external graphical objects in providing a
+great coherence of style along with great flexibility without bloat. \METAPOST\
+has further advantages over many other graphical subsystems, namely high
+precision, high quality and the possibility to solve equations. This last point
+is little used but should not be overlooked.
+
+It is quite natural in \METAPOST\ to locate these text nodes along a path or on
+differing paths. This is a much more powerful concept than locating nodes at some
+pair of coordinates, on a square or rectangular lattice, for example, as in a
+table. These paths may be in three dimensions (or more); of course the printed
+page will only be some projection onto two dimensions. Nor must the nodes be
+located on the points defining a path: they may have as index any \emph {time}
+along the path \type {p} ranging from the first defining point ($t = 0$) up to
+the last point of a path ($t ≤ \mathtt{length(p)}$). \footnote {The time of a
+cyclic path is taken modulo the length of the path.}
+
+For a given path \type {p}, nodes are defined (implicitly) as \type {picture}
+elements: \typ {picture p.pic[] ;} This is a pseudo|-|array where the square
+brackets indicates a set of numerical tokens, as in \type {p.pic[0]} but also
+\type {p.pic0}. This number need not be an integer, and \type {p.pic[.5]} or
+\type {p.pic.5} (not to be confused with \type {p.pic5}) are also valid. These
+picture elements are taken to be located relative to the path \type {p}, with the
+index \type {t} corresponding to a time along the path, as in \typ {draw p.pic[t]
+shifted point t of p ;} (although one would not necessarily draw them in this
+way). This convention allows the \quote {nodes} to be oriented and offset with
+respect to the path in an arbitrary fashion.
+
+Note that a path can be defined and then nodes placed relative to this path, or
+else the path may be simply declared yet remain undefined, to be determined
+later, after the nodes are declared. Yet another possibility allows for the path
+to be adjusted as needed, as a function of whatever nodes are to be occupied.
+This will be illustrated through examples later.
+
+\stopsubject
+
+\startsubject [title=A few simple examples]
+
+\startplacefigure [location=left,reference=fig:square]
+    \startMPcode
+        path p ; p := fullsquare scaled 3cm ;
+        draw p ;
+        for i=0 upto length p:
+            draw point i of p
+            withcolor red
+            withpen pencircle scaled 5pt ;
+        endfor ;
+        % this looks better in the figure placement:
+        setbounds currentpicture to boundingbox currentpicture
+            rightenlarged 2mm ;
+    \stopMPcode
+\stopplacefigure
+
+This might sound a bit arbitrary, so let's begin with the illustration of a
+typical natural transformation of mathematics. A simple path and the points
+defining this path are drawn in red here. Although it is trivial, this example
+helps to introduce the \METAPOST\ syntax. (Of course, one should be able to use
+this system without having to learn much \METAPOST.)
+
+\flushsidefloats
+
+\startTEX
+\startMPcode
+  path p ; p := fullsquare scaled 3cm ; draw p ;
+  for i=0 upto length p:
+    draw point i of p
+    withcolor red
+    withpen pencircle scaled 5pt ;
+  endfor ;
+\stopMPcode
+\stopTEX
+
+\startbuffer
+\startMPcode
+  save nodepath ;
+  path nodepath ; nodepath = p ;
+  draw node(0,"\node{$G(X)$}") ;
+  draw node(1,"\node{$G(Y)$}") ;
+  draw node(2,"\node{$F(Y)$}") ;
+  draw node(3,"\node{$F(X)$}") ;
+  drawarrow fromto.bot(0,0,1, "\nodeSmall{$G(f)$}") ;
+  drawarrow fromto.top(0,3,2, "\nodeSmall{$F(f)$}") ;
+  drawarrow fromto.rt (0,2,1, "\nodeSmall{$η_Y$}") ;
+  drawarrow fromto.lft(0,3,0, "\nodeSmall{$η_X$}") ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure [location=left,reference=fig:natural]
+    \getbuffer
+\stopplacefigure
+
+Given the named path \type {nodepath}, we can define and draw nodes as well as
+connections between them.
+
+\flushsidefloats
+
+\typebuffer [option=TEX]
+
+\startfiction
+It is an important good practice with \METAPOST\ to reset or clear a variable
+using the directive \type {save} as above for the suffix \type {nodepath}. The
+macros used here rely on the creation of certain internal variables and may not
+function correctly if the variable structure is not cleared. Indeed, any node may
+contain a combination of picture elements, added successively, so it is very
+important to \type {save} the variable, making its use local, rather than global.
+This point is particularly true under \CONTEXT, where a single MPlib instance is
+used and maintained over multiple runs.
+
+The \CONTEXT\ directives \type {\startMPcode} \unknown\ \type {\stopMPcode}
+include grouping (\METAPOST\ \type {begingroup ;} \unknown\ \type {endgroup ;})
+and the use of \type {save} will make the suffix local to this code block. In the
+examples above of \in{Figures} [fig:square] and \in [fig:natural], the path \type
+{p} is not declared local (through the use of a \type {save}) therefore remains
+available for other \METAPOST\ code blocks. We cannot do this with the default
+suffix name \type {nodepath} without getting other unwanted consequences.
+\stopfiction
+
+Note that one should not confuse the \METAPOST\ function \type {node()} with the
+\CONTEXT\ command \type {\node{}}, defined as:
+
+\starttwo
+  \startTEX
+  \setupframed
+    [frame=off,
+     offset=1pt]
+  \stopTEX
+\two
+  \startTEX
+  \defineframed
+    [nodeSmall]
+    [node]
+    [foregroundstyle=small]
+  \stopTEX
+\stoptwo
+
+placing the text within a \CONTEXT\ frame (with the frame border turned|-|off).
+The \METAPOST\ function \type {node(i,"...")} sets and returns a picture element
+associated with a point on path \type {nodepath} indexed by its first argument.
+The second argument here is a string that gets typeset by \TEX.
+
+The \METAPOST\ function \type {fromto()} returns a path segment going from two
+points of the path \type {nodepath}, by default. The first argument (\type {0} in
+the example above) can be used as a displacement to skew the path away from a
+straight line. The last argument is a string to be typeset and placed midpoint of
+the segment. The \emph {suffix} appended to the function name gives an offset
+around this halfway point. This follows standard \METAPOST\ convention.
+
+\startfiction
+  The \CONTEXT\ syntax might be:
+  \startTEX
+    \startuseMPgraphic{node:square}
+        save nodepath ; path nodepath ;
+        nodepath := fullsquare scaled 6cm ;
+    \stopuseMPgraphic
+
+    \setupfromto [option=arrow,position=auto]
+
+    \startnodes [mp=node:square]
+      \node [0] {$G(X)$}
+      \node [1] {$G(Y)$}
+      \node [2] {$F(Y)$}
+      \node [3] {$F(X)$}
+      \fromto [0,1] [label={\tfxx $G(f)$}]
+      \fromto [3,2] [label={\tfxx $F(f)$}]
+      \fromto [2,1] [label={\tfxx $η_Y$}}
+      \fromto [3,0] [label={\tfxx $η_X$}]
+    \stopnodes
+  \stopTEX
+\stopfiction
+
+Actually, as will be seen later, one can specify the use of any defined path, not
+restricted to the built||in name \type {nodepath} that is used by default.
+Furthermore, a function \type {fromtopaths()} can be used to draw segments
+connecting any two paths which may be distinct. This, too, will be illustrated
+later.
+
+\startbuffer
+\startMPcode
+save nodepath ; path nodepath ;
+nodepath := fullsquare scaled 2cm ;
+save A ; A = 3 ; draw node(A,"\node{A}") ;
+save B ; B = 2 ; draw node(B,"\node{B}") ;
+save C ; C = 0 ; draw node(C,"\node{C}") ;
+save D ; D = 1 ; draw node(D,"\node{D}") ;
+
+drawarrow fromto(0,B,C) ;
+drawarrow fromto(0,A,D) crossingunder fromto(0,B,C) ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure [location=left,reference=fig:crossingunder]
+  \getbuffer
+\stopplacefigure
+
+Consider now the following code illustrating the \METAFUN\ operator \type
+{crossingunder} that draws a path with segments cut|-|out surrounding the
+intersection(s) with a second path segment. This operator is of such general use
+that it has been added to the \METAFUN\ base.
+
+\flushsidefloats
+
+\typebuffer [option=TEX]
+
+\startplacefigure [reference=fig:sincos,location=left,title={\type{crossingunder}}]
+    \startMPcode
+        save u ; u := 2cm ;
+        save p ; path p[] ;
+        n := 64 ;
+        p2 := for i=0 upto n : if i>0 : .. fi (3u*(i/n), u*sind(720*(i/n))) endfor ;
+        p3 := for i=0 upto n : if i>0 : .. fi (3u*(i/n), u*cosd(720*(i/n))) endfor ;
+        p4 := point 0 of p2 -- point (length p2) of p2 shifted (left*.01u) ;
+
+        draw p2 withcolor red ;
+        crossingscale := 20 ;
+        draw (p3 crossingunder p2) crossingunder p4 withcolor blue ;
+        crossingscale := 10 ;
+        drawarrow (p4 crossingunder p2) ;
+    \stopMPcode
+\stopplacefigure
+
+Another illustration of the \type {crossingunder} operator in use is shown in \in
+{figure} [fig:sincos]. Because the diagrams are all defined and drawn in
+\METAPOST, one can easily extend the simple mode drawing with any sort of
+graphical decoration using all the power of the \METAPOST\ language.
+
+This brings up a delicate point that has inhibited the development of a \CONTEXT\
+module up to now: \METAPOST\ is such a powerful language that it is difficult to
+design a set of commands having equivalent flexibility. Perhaps, as is done
+presently with the Chemistry package, one need only allow for the injection of
+arbitrary \METAPOST\ code when needed for such special cases.
+
+Should it be done like this?
+
+\startfiction
+\startTEX
+\startnodes [mp=node:square]
+  \node [3] {A}
+  \node [2] {B}
+  \node [0] {C}
+  \node [1] {D}
+  \fromto [2,0]
+  \fromto [3,1] [option={under[2,0]}] % ?
+\stopnodes
+\stopTEX
+\stopfiction
+
+Such a simple example illustrates why we favor a pure \METAPOST\ interface and
+why a \CONTEXT\ interface will not be developed, at least for now.
+
+\stopsubject
+
+\startsubject [title=Cyclic diagrams]
+
+In a slightly more complicated example, that of a catalytic process given in the
+\cite[authoryears] [Krebs1946] representation, where the input is indicated
+coming into the cycle from the center of a circle and the products of the cycle
+are spun|-|off from the outside of the circle, we start by defining a circular
+path where each point corresponds to a step in the cyclic process. Our example
+will use six steps.
+
+We will want to define a second circular path with the same number of points at
+the interior of this first circle for the input and a third circular path at the
+exterior for the output. Thus,
+
+\startTEX
+\startMPcode
+  save p ; path p[] ;
+  % define a fullcircle path with nodes at 60° (rather than 45°)
+  p1 := (for i=0 step 60 until 300: dir(90-i) .. endfor cycle) scaled 2.75cm ;
+  p0 := p1 scaled  .5 ;
+  p2 := p1 scaled 1.5 ;
+\stopMPcode
+\stopTEX
+
+\startplacefigure [location=left,title={The paths that we will use for anchoring for nodes.}]
+\startMPcode
+    save p ; path p[] ;
+    p1 := (for i=0 step 60 until 300: dir(90-i) .. endfor cycle) scaled 2.75cm ;
+    p0 := p1 scaled  .5 ;
+    p2 := p1 scaled 1.5 ;
+    for i=0 upto 2:
+        draw p[i] ;
+        for j=0 upto length p[i]:
+            draw point j of p[i] withpen currentpen scaled 5 withcolor red ;
+        endfor
+        label.bot("p" & decimal i, point 0 of p[i]) ;
+    endfor
+\stopMPcode
+\stopplacefigure
+
+Nodes will then be drawn on each of these three circles and arrows will be used
+to connect these various nodes, either on the same path or else between paths.
+
+The \METAPOST\ function \type {fromto()} is used to give a segment pointing
+between nodes. It \emph {assumes} the path \type {nodepath}, and in fact calls
+the function \type {fromtopaths} that explicitly takes path names as arguments,
+i.e. \type {fromto (d, i, j, ...)} is equivalent to \type {fromtopaths (d,
+nodepath, i, nodepath, j, ...)}.
+
+As stated above, this segment can be a straight line or else a path that can be
+bowed|-|away from this straight line by a transverse displacement given by the
+function's first argument (given in units of the straight segment length). When
+both nodes are located on a single, defined path, this segment can be made to lie
+on or follow this path, such as one of the circular paths defined above. This
+behavior is obtained by using any non|-|numeric value (such as \type {true}) in
+place of the first argument. Of course, this cannot work if the two nodes are not
+located on the same path.
+
+\startplacefigure [reference=fig:Bethe,
+  title={The \cite[author] [Bethe1939a] cycle for the energy production in stars
+         \cite[alternative=year,left=(,right=)] [Bethe1939a+Bethe1939b] in a
+         \cite[authoryears] [Krebs1946] representation of a catalytic process.}]
+\startMPcode
+
+  % The Bethe cycle for energy production in stars (1939), following Krebs (1946)
+
+  save p ; path p[] ;
+  p1 := (for i=0 step 60 until 300: dir(90-i).. endfor cycle) scaled 2.75cm ;
+  p0 := p1 scaled  .5 ;
+  p2 := p1 scaled 1.5 ;
+
+  bboxmargin := 0pt ;
+
+  draw node(p1,0,"\node{\chemical{^{12}C}}") ;
+  draw node(p1,1,"\node{\chemical{^{13}N}}") ;
+  draw node(p1,2,"\node{\chemical{^{13}C}}") ;
+  draw node(p1,3,"\node{\chemical{^{14}N}}") ;
+  draw node(p1,4,"\node{\chemical{^{15}O}}") ;
+  draw node(p1,5,"\node{\chemical{^{15}N}}") ;
+
+  drawarrow fromtopaths.urt (true,p1,0,p1,1,"\nodeGreen{a}") ;
+  drawarrow fromtopaths.rt  (true,p1,1,p1,2,"\nodeGreen{b}") ;
+  drawarrow fromtopaths.lrt (true,p1,2,p1,3,"\nodeGreen{c}") ;
+  drawarrow fromtopaths.llft(true,p1,3,p1,4,"\nodeGreen{d}") ;
+  drawarrow fromtopaths.lft (true,p1,4,p1,5,"\nodeGreen{e}") ;
+  drawarrow fromtopaths.ulft(true,p1,5,p1,6,"\nodeGreen{f}") ;
+
+  draw node(p0,0,"\node{\chemical{^1H}}") ;
+  draw node(p0,2,"\node{\chemical{^1H}}") ;
+  draw node(p0,3,"\node{\chemical{^1H}}") ;
+  draw node(p0,5,"\node{\chemical{^1H}}") ;
+
+  drawarrow fromtopaths(3/10,p0,0,p1,0.5) withcolor .6white ;
+  drawarrow fromtopaths(3/10,p0,2,p1,2.5) withcolor .6white ;
+  drawarrow fromtopaths(3/10,p0,3,p1,3.5) withcolor .6white ;
+  drawarrow fromtopaths(3/10,p0,5,p1,5.5) withcolor .6white ;
+
+  draw node     (p2,0,"\node{\chemical{^4He}}") ;
+  draw node     (p2,1,"\node{$γ$}") ;
+  draw node.lrt (p2,2,"\node{$\mathrm{e}^+ + ν_\mathrm{e}$}") ;
+  draw node     (p2,3,"\node{$γ$}") ;
+  draw node     (p2,4,"\node{$γ$}") ;
+  draw node.ulft(p2,5,"\node{$\mathrm{e}^+ + ν_\mathrm{e}$}") ;
+
+  drawarrow fromtopaths(-1/10,p1,0.5,p2,1) withcolor .6white ;
+  drawarrow fromtopaths(-1/10,p1,1.5,p2,2) withcolor .6white ;
+  drawarrow fromtopaths(-1/10,p1,2.5,p2,3) withcolor .6white ;
+  drawarrow fromtopaths(-1/10,p1,3.5,p2,4) withcolor .6white ;
+  drawarrow fromtopaths(-1/10,p1,4.5,p2,5) withcolor .6white ;
+  drawarrow fromtopaths(-1/10,p1,5.5,p2,0) withcolor .6white ;
+
+\stopMPcode
+\stopplacefigure
+
+The circular arc segments labeled \emph {\darkgreen a–f} are drawn on \in
+{figure} [fig:Bethe] using
+
+\startTEX
+drawarrow fromtopaths.urt (true,p1,0,p1,1,"\nodeGreen{a}") ;
+\stopTEX
+
+for example, where \type {\nodeGreen} is a frame that inherits from \type
+{\node}, changing style and color:
+
+\startTEX
+\defineframed
+  [nodeGreen]
+  [node]
+  [foregroundcolor=darkgreen,
+   foregroundstyle=italic]
+\stopTEX
+\stopfootnote
+
+The bowed|-|arrows feeding into the cyclic process and leading out to the
+products, thus between different paths, from the path \type {p0} to the path
+\type {p1} and from the path \type {p1} to the path \type {p2}, respectively, are
+drawn using the deviations \type {+3/10} and \type {-1/10} (to and from
+half|-|integer indices, thus mid|-|step, on path \type {p1}):
+
+\startTEX
+drawarrow fromtopaths( 3/10,p0,0,p1,0.5) withcolor .6white ;
+drawarrow fromtopaths(-1/10,p1,0.5,p2,1) withcolor .6white ;
+\stopTEX
+
+\startsubsubject [title={A lesson in \METAPOST}]
+
+An \quote {array} of paths is declared through \typ {path p[] ;} it is not a
+formal array, rather a syntactic definition of a collection of path variables
+\type {p0}, \type {p1}, \unknown\ named beginning with the tag \quote {p}
+followed by any number, not necessarily an integer (i.e. \type {p3.14} is a valid
+path name). The syntax allows enclosing this \quote {index} within square
+brackets, as in \type {p[0]} or, more typically, \type {p[i]}, where \type {i}
+would be a numeric variable or the index of a loop. Note that the use of brackets
+is required when using a negative index, as in \type {p[-1]} (for \type {p-1} is
+interpreted as three tokens, representing a subtraction). Furthermore, the
+variable \type {p} itself, would here be a numeric (by default), so \type {p[p]}
+would be a valid syntactic construction! One could, additionally, declare a set
+of variables \typ {path p[][] ;} and so forth, defining also \type {p[0][0]}
+(equivalently, \type {p0 0}) for example as a valid path, coexisting with yet
+different from the path \type {p0}.
+
+\METAPOST\ also admits variable names reminiscent of a structure: \typ {picture
+p.pic[] ;} for example is used internally in the \type {node} macros, but this
+becomes \typ {picture p[]pic[] ;} when using a path \quote {array} syntax. These
+variable names are associated with the suffix \type {p} and become all undefined
+by \typ {save p ;}.
+
+The \type {node} macros use the default name \type {nodepath} when no path is
+explicitly specified. It is the user's responsibility to ensure the local or
+global validity of this path if used.
+
+\stopsubsubject
+
+\stopsubject
+
+\startsubject [title=Tree diagrams]
+
+The tree diagram shown below is drawn using four paths, each one defining a row
+or generation in the branching. The definition of the spacing of nodes was
+crafted by hand and is somewhat arbitrary: 3.8, 1.7, and 1 for the first, second
+and third generations.
+
+\startplacefigure [location=force,reference=fig:DNA]
+\startMPcode
+  % third example: A tree diagram
+
+  save u ; u := 2.25cm ;
+  save n ; n := 2 ; % n children per generation
+
+  save p ; path p[] ;
+  p0 := origin ;
+  numeric d[] ; d1 := 3.8 ; d2 := 1.7 ; d3 := 1 ;
+  for g=1 upto 3:
+    p[g] :=
+      for i=0 upto length(p[g-1]):
+        for c=0 upto n-1:
+          if (i+c)>0: -- fi
+          ((point i of p[g-1]) shifted (d[g]*(c/(n-1)-.5)*u,-u))
+        endfor
+      endfor ;
+  endfor
+
+  draw node(p0,0,  "\node{DNA interactions with surfaces}") ;
+  draw node(p1,0,  "\node{repulsive:}") ;
+  draw node(p1,1,  "\node{attractive: adsorption}") ;
+  draw node(p2,0,  "\node{confinement}") ;
+  draw node(p2,1,  "\node[align=middle,location=high]{depletion,\\macromolecular\\crowding}") ;
+  draw node(p2,2,  "\node{chemisorption}") ;
+  draw node(p2,3,  "\node{physisorption}") ;
+  draw node(p3,5.5,"\node{immobilized}") ;
+  draw node(p3,7,  "\node{mobile}") ;
+
+  drawarrow fromtopaths(0,p0,0,p1,0) ;
+  drawarrow fromtopaths(0,p0,0,p1,1) ;
+
+  drawarrow fromtopaths(0,p1,0,p2,0) ;
+  drawarrow fromtopaths(0,p1,0,p2,1) ;
+  drawarrow fromtopaths(0,p1,1,p2,2) ;
+  drawarrow fromtopaths(0,p1,1,p2,3) ;
+
+  drawarrow fromtopaths(0,p2,2,p3,5.5) ;
+  drawarrow fromtopaths(0,p2,3,p3,5.5) ;
+  drawarrow fromtopaths(0,p2,3,p3,7) ;
+
+\stopMPcode
+\stopplacefigure
+
+One can do better by allowing \METAPOST\ to solve equations and to determine this
+spacing automatically. This will be illustrated by a very simple example where
+nodes are first placed on a declared but undefined path.
+
+\startTEX
+save p ; % path p ;
+\stopTEX
+
+The \type {save p ;} assures that the path is undefined. This path will later get
+defined based on the contents of the nodes and a desired relative placement. In
+fact, it is not even necessary to declare that the suffix will be a path, as the
+path will be declared and automatically built once the positions of all the nodes
+are determined, which is why the \type {path} declaration is commented|-|out
+above.
+
+The user is to be warned that solving equations in \METAPOST\ can be
+non|-|trivial for those who are less mathematically inclined. One needs to
+establish a coupled set of equations that is solvable: that is, fully but not
+over|-|determined.
+
+A few helper functions have been defined: \type {makenode()} returns a suffix
+(variable name) corresponding to the node's position. The first such node can be
+placed at any finite point, for example the drawing's origin. The following nodes
+can be placed in relation to this first node:
+
+% \startframed [frame=off,align=text,offset=overlay] % keep this together on one page.
+\startTEX [style=small]
+save nodepath ;
+save first, second, third, fourth ;
+pair first, second, third, fourth ;
+first.i  = 0 ; first  = makenode(first.i, "\node{first}") ;
+second.i = 1 ; second = makenode(second.i,"\node{second}") ;
+third.i  = 2 ; third  = makenode(third.i, "\node{third}") ;
+fourth.i = 3 ; fourth = makenode(fourth.i,"\node{fourth}") ;
+
+first  = origin ;
+second = first
+       + betweennodes.urt(nodepath,first.i, nodepath,second.i,whatever) ;
+third  = second
+       + betweennodes.lft(nodepath,second.i,nodepath,third.i, whatever) ;
+fourth = third
+       + betweennodes.bot(nodepath,fourth.i,nodepath,first.i,3ahlength) ;
+\stopTEX
+% \stopframed
+
+The helper function \type {betweennodes()} returns a vector pointing in a certain
+direction, here following the standard \METAPOST\ suffixes: \type {urt}, \type
+{lft}, and \type {bot}, that takes into account the bounding boxes of the
+contents of each node, plus an (optional) additional distance (here given in
+units of the arrow||head length, \type {ahlength}). Using the keyword \type
+{whatever} tells \METAPOST\ to adjust this distance as necessary. The above set
+of equations is incomplete as written, so a fifth and final relation needs to be
+added; the fourth node is also to be located directly to the left of the very
+first node: \footnote {Equivalently, we could declare that the first node located
+to the right of the fourth node: \typ {first = fourth + betweennodes.rt
+(nodepath, first.i, nodepath, fourth.i, 3ahlength) ;}}
+
+\startTEX [style=small]
+fourth = first
+       + betweennodes.lft(nodepath,fourth.i,nodepath,first.i,3ahlength) ;
+\stopTEX
+
+Note that the helper function \type {makenode()} can be used as many times as
+needed; if given no content, only returning the node's position. Additional nodes
+can be added to this diagram along with appropriate relational equations, keeping
+in mind that the equations must be solvable, of course. This last point is the
+one challenge that most users might face.
+
+The function \type {node()} that was used previously and returning a picture
+element to be drawn itself calls the function \type {makenode()}, used here. The
+nodes have not been drawn as yet:
+
+\startTEX
+for i = first.i, second.i, third.i, fourth.i :
+  draw node(i) ;
+  drawarrow fromto(0,i,i+1) ;
+endfor
+\stopTEX
+
+resulting in \in{figure} [fig:relative]. The path is now defined as one running
+through the position of all of the defined nodes, and is cyclic.
+
+\startplacefigure [location=here,reference=fig:relative]
+\startMPcode
+  save nodepath ;
+  save first, second, third, fourth ;
+  pair first, second, third, fourth ;
+  first.i  = 0 ; first  = makenode(first.i, "\node{first}") ;
+  second.i = 1 ; second = makenode(second.i,"\node{second}") ;
+  third.i  = 2 ; third  = makenode(third.i, "\node{third}") ;
+  fourth.i = 3 ; fourth = makenode(fourth.i,"\node{fourth}") ;
+
+  first  = origin ;
+  second = first  + betweennodes.urt(nodepath,first.i, nodepath,second.i,whatever) ;
+  third  = second + betweennodes.lft(nodepath,second.i,nodepath,third.i, whatever) ;
+  fourth = third  + betweennodes.bot(nodepath,fourth.i,nodepath,first.i,3ahlength) ;
+  fourth = first  + betweennodes.lft(nodepath,fourth.i,nodepath,first.i,3ahlength) ;
+
+  for i = first.i, second.i, third.i, fourth.i :
+    draw node(i) ;
+    drawarrow fromto(0,i,i+1) ;
+  endfor
+\stopMPcode
+\stopplacefigure
+
+Using this approach, that of defining but not drawing the nodes until a complete
+set of equations defining their relative positions has been constructed, imposes
+several limitations: firstly, the nodes are expected to be numbered from $0$ up
+to $n$, continuously, without any gaps for each defined path. This is just an
+implicit convention of the path construction heuristic. Secondly, when finally
+defining all the nodes and their positions, the path needs to be constructed. A
+function, \type {makenodepath(p) ;} accomplishing this gets implicitly called
+(once) upon the drawing of any \type {node()} or connecting \type {fromto}. Of
+course, \type {makenodepath()} can always be explicitly called once the set of
+equations determining the node positions is completely defined.
+
+\startparagraph [style=bold]
+We again stress that the writing of a solvable yet not over|-|determined set of
+equations can be a common source of error for many \METAPOST\ users.
+\stopparagraph
+
+Another such example is the construction of a simple tree of descendance or
+family tree. There are many ways to draw such a tree; in \in{figure}
+[fig:descendance] we will show only three generations.
+
+\startplacefigure [location=here,reference=fig:descendance,
+  title={A tree of descendance}]
+\startMPcode
+  save p ; % path p[], p[][] ; get automagically defined
+  save spacing ; spacing = 5pt ;
+  save d ; d = 4ahlength ;
+
+  save mother, father ; pair mother, father ;
+
+  mother = makenode(p,0,"\node{mother}") ;
+  father = makenode(p,1,"\node{father}") ;
+
+  mother = origin ;
+  father = mother + betweennodes.rt(p,0,p,1,spacing) ;
+
+  % first generation
+  save child, spouse ; pair child[], spouse[] ;
+  child = 0 ; spouse = 1 ;
+
+  child1  = makenode(p0,child, "\node{child1}") ;
+  spouse1 = makenode(p0,spouse,"\node{spouse}") ;
+  child2  = makenode(p1,child, "\node{child2}") ;
+  spouse2 = makenode(p1,spouse,"\node{spouse}") ;
+
+  .5[child1,child2] = mother + d*down ;
+  spouse1 = child1  + betweennodes.rt(p0,child, p0,spouse,spacing) ;
+  child2  = spouse1 + betweennodes.rt(p0,spouse,p1,child, whatever) ;
+  spouse2 = child2  + betweennodes.rt(p1,child, p1,spouse,spacing) ;
+
+  % second generation
+  save grandchild, grandspouse ; pair grandchild[], grandspouse[] ;
+  grandchild1  = makenode(p0 0,child, "\node{grandchild1}") ;
+  grandspouse1 = makenode(p0 0,spouse,"\node{spouse}") ;
+  grandchild2  = makenode(p0 1,child, "\node{grandchild2}") ;
+  grandspouse2 = makenode(p0 1,spouse,"\node{spouse}") ;
+  grandchild3  = makenode(p1 0,child, "\node{grandchild3}") ;
+  grandspouse3 = makenode(p1 0,spouse,"\node{spouse}") ;
+  grandchild4  = makenode(p1 1,child, "\node{grandchild4}") ;
+  grandspouse4 = makenode(p1 1,spouse,"\node{spouse}") ;
+
+  .5[grandchild1,grandchild2]  = child1 + d*down ;
+  .5[grandchild3,grandchild4]  = child2 + d*down ;
+  grandchild2  = grandchild1 + betweennodes.rt(p0 0,child,p0 1,child,spacing) ;
+  grandchild3  = grandchild2 + betweennodes.rt(p0 1,child,p1 0,child,spacing) ;
+  grandchild4  = grandchild3 + betweennodes.rt(p1 0,child,p1 1,child,spacing) ;
+  grandspouse1 = grandchild1 + nodeboundingpoint.bot(p0 0,child)
+                             + nodeboundingpoint.lrt(p0 0,spouse) ;
+  grandspouse2 = grandchild2 + nodeboundingpoint.bot(p0 1,child)
+                             + nodeboundingpoint.lrt(p0 1,spouse) ;
+  grandspouse3 = grandchild3 + nodeboundingpoint.bot(p1 0,child)
+                             + nodeboundingpoint.lrt(p1 0,spouse) ;
+  grandspouse4 = grandchild4 + nodeboundingpoint.bot(p1 1,child)
+                             + nodeboundingpoint.lrt(p1 1,spouse) ;
+
+  draw node(p,0) ;
+  draw node(p,1) withcolor blue ;
+
+  for i=0,1 :
+    draw node(p[i],child) ;
+    drawarrow fromtopaths(0,p,0,p[i],child) ;
+    draw node(p[i],spouse) withcolor blue ;
+    for j=0,1 :
+      draw node(p[i][j],child) ;
+      draw node(p[i][j],spouse) withcolor blue ;
+    endfor
+    drawarrow fromtopaths(0,p[i],child,p[i][0],child) ;
+    drawarrow fromtopaths(0,p[i],child,p[i][1],child) ;
+  endfor
+\stopMPcode
+\stopplacefigure
+
+We leave it as an exercise to the reader to come|-|up with the equations used to
+determine this tree (one can look at source of this document, if necessary).
+
+The set of equations could be hidden from the user wishing to construct simple,
+pre|-|defined types of diagrams. However, such cases would imply a loss of
+generality and flexibility. Nevertheless, the \emph {node} module will probably
+be extended in the future to provide a few simple models. One might be a
+branching tree structure, yet even the above example as drawn does not fit into a
+simple, general model.
+
+A user on the mailing list asked if it is possible to make structure trees for
+English sentences with categorical grammar, an example of which is shown in \in
+{Figure} [fig:grammar].
+
+\startbuffer
+\startMPcode
+  save p ; path p[] ; % we work first with unit paths.
+  save n ; n = 0 ;
+  forsuffixes $=People,from,the,country,can,become,quite,lonely :
+    p [n] = makenode(p[n],0,"\node{\it" & (str $) & "}") = (n,0) ;
+    n := n + 1 ;
+  endfor
+  save u ; u := TextWidth/n ;
+
+  % build upward tree
+
+  vardef makeparentnode(text t) =
+    save i, xsum, xaverage, ymax ;
+    i = xsum = 0 ;
+    forsuffixes $ = t :
+      clearxy ; z = point infinity of $ ;
+      xsum := xsum + x ;
+      if unknown ymax : ymax = y ; elseif y > ymax : ymax := y ; fi
+      i := i + 1 ;
+    endfor
+    xaverage = xsum / i ;
+    ymax := ymax + 1 ;
+    forsuffixes $ = t :
+      clearxy ;
+      z = point infinity of $ ;
+      $ := $ & z -- (x,ymax) if i>1 : -- (xaverage,ymax) fi ;
+    endfor
+  enddef ;
+
+  makeparentnode(p2,p3) ;
+  makeparentnode(p4,p5) ;
+  makeparentnode(p6,p7) ;
+  makeparentnode(p1,p2) ;
+  makeparentnode(p0,p1) ;
+  makeparentnode(p4,p6) ;
+  makeparentnode(p0,p4) ;
+  makeparentnode(p0) ;
+
+  % the paths are all defined but need to be scaled.
+
+  for i=0 upto n-1 :
+    p[i] := p[i] xyscaled (u,.8u) ;
+    draw node(p[i],0) ;
+  endfor
+
+  save followpath ; boolean followpath ; followpath = true ;
+
+  draw fromtopaths(followpath,p0,0,p0,1,"\node{H:N}") ;
+  draw fromtopaths(followpath,p1,0,p1,1,"\node{Rel:Prep}") ;
+  draw fromtopaths(followpath,p2,0,p2,1,"\node{Dr:Dv}") ;
+  draw fromtopaths(followpath,p3,0,p3,1,"\node{H:N}") ;
+  draw fromtopaths(followpath,p4,0,p4,1,"\node{M:Aux}") ;
+  draw fromtopaths(followpath,p5,0,p5,1,"\node{H:Mv}") ;
+  draw fromtopaths(followpath,p6,0,p6,1,"\node{M:Adv}") ;
+  draw fromtopaths(followpath,p7,0,p7,1,"\node{H:Adj}") ;
+
+  draw fromtopaths(followpath,p1,1,p1,2) ;
+  draw fromtopaths(followpath,p2,3,p2,4) ;
+  draw fromtopaths(followpath,p1,2,p1,3,"\node{M:PP}") ;
+  draw fromtopaths(followpath,p2,1,p2,2) ;
+  draw fromtopaths(followpath,p3,1,p3,2) ;
+  draw fromtopaths(followpath,p2,2,p2,3,"\node{Ax:NP}") ;
+  draw fromtopaths(followpath,p4,1,p4,2) ;
+  draw fromtopaths(followpath,p5,1,p5,2) ;
+  draw fromtopaths(followpath,p4,2,p4,3,"\node{P:VP}") ;
+  draw fromtopaths(followpath,p6,1,p6,2) ;
+  draw fromtopaths(followpath,p7,1,p7,2) ;
+  draw fromtopaths(followpath,p6,2,p6,3,"\node{PCs:AdjP}") ;
+  draw fromtopaths(followpath,p0,1,p0,2) ;
+  draw fromtopaths(followpath,p1,3,p1,4) ;
+  draw fromtopaths(followpath,p0,2,p0,3,"\node{S:NP}") ;
+  draw fromtopaths(followpath,p4,3,p4,4) ;
+  draw fromtopaths(followpath,p6,3,p6,4) ;
+  draw fromtopaths(followpath,p4,4,p4,5,"\node{Pred:PredP}") ;
+  draw node(p0,4.5,"\node{Cl}") ;
+  draw fromtopaths(followpath,p0,3,p0,4.5) ;
+  draw fromtopaths(followpath,p4,5,p4,6) ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure [reference=fig:grammar,
+    title=A categorical grammer structure tree]
+    \getbuffer
+\stopplacefigure
+
+I chose to define a series of parallel paths, one per word, with one path
+terminating whenever it joins another path (or paths) at a common parent.
+Labeling each branch of the tree structure requires, of course, a knowledge of
+the tree structure.
+
+\typebuffer [option=TEX]
+
+\stopsubject
+
+\startsubject [title=Two final examples]
+
+\defineframed
+  [smallnode]
+  [node]
+  [foregroundstyle=\tfxx,
+   background=color,
+   backgroundcolor=white]
+
+\startbuffer[mp:tikz-cd]
+\startMPcode
+  save nodepath ; save l ; l = 5ahlength ;
+  save X, Y, Z, XxY, T ;
+  pair X, Y, Z, XxY, T ;
+  XxY.i = 0 ; XxY = makenode(XxY.i,"\node{$X\times_Z Y$}") ;
+  X.i   = 1 ; X   = makenode(X.i,  "\node{$X$}") ;
+  Z.i   = 2 ; Z   = makenode(Z.i,  "\node{$Z$}") ;
+  Y.i   = 3 ; Y   = makenode(Y.i,  "\node{$Y$}") ;
+  T.i   = 4 ; T   = makenode(T.i,  "\node{$T$}") ;
+  XxY = origin ;
+  X   = XxY + betweennodes.rt (nodepath,XxY.i,nodepath,X.i) + (l,0) ;
+  Z   = X   + betweennodes.bot(nodepath,X.i,  nodepath,Z.i) + (0,-.8l);
+  Y   = XxY + betweennodes.bot(nodepath,XxY.i,nodepath,Y.i) + (0,-.8l) ;
+  T   = XxY + nodeboundingpoint.ulft(XxY.i)
+            + nodeboundingpoint.lft (T.i) + l*dir(135) ;
+  for i = XxY.i, X.i, Z.i, Y.i, T.i:
+    draw node(i) ;
+  endfor
+  drawarrow fromto.top(0, XxY.i,X.i,"\smallnode{$p$}") ;
+  drawarrow fromto.rt (0,   X.i,Z.i,"\smallnode{$f$}") ;
+  drawarrow fromto.top(0,   Y.i,Z.i,"\smallnode{$g$}") ;
+  drawarrow fromto.rt (0, XxY.i,Y.i,"\smallnode{$q$}") ;
+  drawarrow fromto.top( .13,T.i,X.i,"\smallnode{$x$}") ;
+  drawarrow fromto.urt(-.13,T.i,Y.i,"\smallnode{$y$}") ;
+  drawarrow fromto    (0,   T.i,XxY.i,"\smallnode{$(x,y)$}")
+      dashed withdots scaled .5
+      withpen currentpen scaled 2 ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure [location=left,reference=fig:tikz-cd]
+    \getbuffer[mp:tikz-cd]
+\stopplacefigure
+
+The following example, shown in \in{figure} [fig:tikz-cd] and drawn here using
+the present \METAPOST\ \type {node} macros, is inspired from the TikZ CD
+(commutative diagrams) package. \footnote {The TikZ-CD package uses a totally
+different approach: the diagram is defined and laid|-|out as a table with
+decorations (arrows) running between cells.} The nodes are again given relative
+positions rather than being placed on a predefined path. The arrow labeled \quote
+{$(x,y)$} is drawn \typ {dashed withdots} and illustrates how the line gets
+broken, here \type {crossingunder} its centered label.
+
+\startparagraph [style=small]
+    \typebuffer[mp:tikz-cd] [option=TEX]
+\stopparagraph
+
+% \doifmode {screen} {\page [yes]}
+
+\in {Figure} [fig:tikz-cd2] is another \quotation{real|-|life} example, also
+inspired by TikZ-CD.
+
+\startbuffer[mp:tikz-cd2]
+\startMPcode
+  save nodepath ; save l ; l = 5ahlength ;
+  save A, B, C, D, E ;
+  pair A, B, C, D, E ;
+  A.i = 0 ; A = makenode(A.i,"\node{$\pi_1(U_1\cap U_2)$}") ;
+  B.i = 1 ; B = makenode(B.i,"\node{$\pi_1(U_1)\ast_{\pi_1(U_1\cap U_2)}\pi_1(U_2)$}") ;
+  C.i = 2 ; C = makenode(C.i,"\node{$\pi_1(X)$}") ;
+  D.i = 3 ; D = makenode(D.i,"\node{$\pi_1(U_2)$}") ;
+  E.i = 4 ; E = makenode(E.i,"\node{$\pi_1(U_1)$}") ;
+  A = origin ;
+  B = A + betweennodes.rt(nodepath,A.i,nodepath,B.i) + (  l,0) ;
+  C = B + betweennodes.rt(nodepath,B.i,nodepath,C.i) + (.7l,0) ;
+  D = .5[A,B] + (0,-.9l) ;
+  E = .5[A,B] + (0, .9l) ;
+
+  for i = A.i, B.i, C.i, D.i, E.i :
+      draw node(i) ;
+  endfor
+  drawarrow fromto.llft( 0,A.i,D.i,"\smallnode{$i_2$}") ;
+  drawarrow fromto.ulft( 0,A.i,E.i,"\smallnode{$i_1$}") ;
+  drawarrow fromto     ( 0,D.i,B.i) ;
+  drawarrow fromto     ( 0,E.i,B.i) ;
+  drawarrow fromto.urt( .1,E.i,C.i,"\smallnode{$j_1$}") ;
+  drawarrow fromto.lrt(-.1,D.i,C.i,"\smallnode{$j_2$}") ;
+  drawarrow fromto.top(  0,B.i,C.i) dashed evenly ;
+  draw textext.top("{\tfxx\strut$\simeq$}")
+      shifted point .4 of fromto(0,B.i,C.i) ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure [location=here,reference=fig:tikz-cd2]
+    \getbuffer[mp:tikz-cd2]
+\stopplacefigure
+
+\startparagraph [style=small]
+    \typebuffer[mp:tikz-cd2] [option=TEX]
+\stopparagraph
+
+\placefloats
+
+\stopsubject
+
+\startsubject [title=Conclusions]
+
+It was decided at the 2017 \CONTEXT\ Meeting in Maibach, Germany where this
+package was presented that there was little use of developing a purely \CONTEXT\
+interface. Rather, the \METAPOST\ package should be sufficiently accessible.
+
+\stopsubject
+
+\startsubject [title=References]
+
+    \placelistofpublications
+
+\stopsubject
+
+\stoptitle
+
+\stoptext

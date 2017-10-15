@@ -10,7 +10,7 @@
 
 Graphics, tables and alike are often treated as floating bodies. This means that
 when such a body does not fit on the current page, it will be moved to the next
-one. In the examples we will use figures, but everything we demonstrate here
+one. In the examples we will use figures, but much of what we demonstrate here
 applies to all floats.
 
 A side float is a float which placement one way or another depends on the text
@@ -1132,6 +1132,11 @@ The black rules are set up with:
 \setupbackgrounds [text] [leftmargin]  [background=]
 \setupbackgrounds [text] [rightmargin] [background=]
 
+At \CONTEXT\ and Bacho\TEX meetings it is now a tradition that Harald König and I
+spend some time on figuring out what happens with border cases and interfences
+with user intervention. As it's hard to nail down I decided to add some more
+tracing and control. So, the remainder of this chapter is dedicated to Harald.
+
 We will now demonstrate some features in a way that makes it possible to
 compare to the simple default case. Options can be passed as keywords:
 
@@ -1188,7 +1193,7 @@ First we show some keyword variant, next some parameter driven versions.
      \placefigure[#1]  {}{\externalfigure[dummy]} \samplefile{sapolsky} \samplefile{sapolsky}
    \endbuffer
    \framed
-     [background=color,backgroundcolor=white]
+     [background=color,backgroundcolor=white,offset=overlay]
      {\scale
         [width=.45\textwidth]
         {\typesetbuffer[foo]}}}
@@ -1206,7 +1211,7 @@ First we show some keyword variant, next some parameter driven versions.
      \startplacefloat[#2] \externalfigure[dummy] \stopplacefloat \samplefile{sapolsky} \samplefile{sapolsky}
    \endbuffer
    \framed
-     [background=color,backgroundcolor=white]
+     [background=color,backgroundcolor=white,offset=overlay]
      {\scale
         [width=.45\textwidth]
         {\typesetbuffer[foo]}}}
@@ -1362,11 +1367,117 @@ A second example that uses different settings is shown in \in {figure}
 \typebuffer[two]
 
 \startplacefigure[title={Side float tracing example 2, page 1.},reference=fig:side:two:1]
-    \scale[width=\textwidth]{\typesetbuffer[two][page=1]}
+   \framed
+      [background=color,backgroundcolor=white,offset=overlay]
+      {\scale[width=\textwidth]{\typesetbuffer[two][page=1]}}
 \stopplacefigure
 
 \startplacefigure[title={Side float tracing example 2, page 2.},reference=fig:side:two:2]
-    \scale[width=\textwidth]{\typesetbuffer[two][page=2]}
+   \framed
+      [background=color,backgroundcolor=white,offset=overlay]
+      {\scale[width=\textwidth]{\typesetbuffer[two][page=2]}}
+\stopplacefigure
+
+\startbuffer[three]
+\usemodule[simulate]
+
+\setuplayout
+  [tight]
+
+\setupbodyfont
+  [dejavu]
+
+\enabletrackers
+  [floats.anchoring]
+
+\setupfloats
+  [sidethreshold=.5\strutdp, % default, use "old" for previous implementation
+   step=small]
+
+\definemeasure[MyHeight][3cm]
+\definemeasure[MyWidth] [3cm]
+
+% \setupheadertexts
+%   [width=\measure{MyWidth}\quad height=\measure{MyHeight}]
+
+\unexpanded\def\FakeWords#1%
+  {\simulatewords
+     [n=#1,m=#1,min=1,max=5,hyphen=no,color=text,line=yes,random=1234]}
+
+\starttext
+
+\startbuffer
+    \FakeWords{100}\par
+    \placefigure
+        [left] {oeps}
+        {\framed[width=\measure{MyWidth},height=\measure{MyHeight}]{}}
+    \FakeWords  {2}\par
+    \FakeWords  {3}\par
+    \FakeWords  {5}\par
+    \FakeWords  {4}\par
+    \FakeWords{200}\par
+    \placefigure
+        [left] {oeps}
+        {\framed[width=\measure{MyWidth},height=\measure{MyHeight}]{}}
+    \FakeWords{200}\par
+\stopbuffer
+
+\dostepwiserecurse {\number\dimexpr3cm} {\number\dimexpr4cm} {\number\dimexpr0.25cm} {
+    \definemeasure[MyWidth][#1sp]
+    \dostepwiserecurse {\number\dimexpr3cm} {\number\dimexpr4cm} {\number\dimexpr0.25cm} {
+        \definemeasure[MyHeight][##1sp]
+        \start
+            \setupwhitespace[none]
+            \getbuffer \page
+        \stop
+        \start
+            \setupwhitespace[big]
+            \getbuffer \page
+        \stop
+    }
+}
+\stoptext
+\stopbuffer
+
+Progressing next to a side float and determining how many lines to indent is a
+somewhat complex mechamism because many factors play a role and spacing can
+interfere badly. The decision about the number of lines to hang is to some extend
+controllable but there are cases when you need to steer it (for instance by
+scaling an image). In the next overviews we see the result of the following
+somewhat complex setup:
+
+\typebuffer[three]
+
+The \type {step} parameter controls how we fill up the space when we need to
+progress beyond it for instance because another float shows up or because we
+issue a \type {\flushsidefloats}. Its value can be \type {big}, \type {medium} or
+\type {small} and defaults to \type {small} which gives of enough precision. The
+\type {sidethreshold} parameter controls the number of lines that we hang around
+the float. Here we only show the consequence of the the threshold. A larger
+threshold result in mode whitespace below the side float. You can zoom in to see
+what happens at the bottom of the float (or run the examples yourself).
+
+\def\ShowSample#1%
+  {\framed
+     [background=color,backgroundcolor=white,offset=overlay]
+     {\scale
+        [width=\dimexpr(\textwidth-2\emwidth)/3\relax]
+        {\typesetbuffer[three][page=#1]}}}
+
+\startplacefigure[title={The working of default step and side threshold (no whitespace.},reference=fig:side:three:1]
+    \startcombination[3*3]
+        {\ShowSample {1}} {} {\ShowSample {3}} {} {\ShowSample {5}} {}
+        {\ShowSample {7}} {} {\ShowSample {9}} {} {\ShowSample {9}} {}
+        {\ShowSample{11}} {} {\ShowSample{13}} {} {\ShowSample{15}} {}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[title={The working of default step and side threshold (whitespace).},reference=fig:side:three:2]
+    \startcombination[3*3]
+        {\ShowSample {2}} {} {\ShowSample {4}} {} {\ShowSample {6}} {}
+        {\ShowSample {8}} {} {\ShowSample{10}} {} {\ShowSample{12}} {}
+        {\ShowSample{12}} {} {\ShowSample{14}} {} {\ShowSample{15}} {}
+    \stopcombination
 \stopplacefigure
 
 \stopchapter

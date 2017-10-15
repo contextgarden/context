@@ -1156,6 +1156,7 @@
 		<cd:constant name='sidemethod' value='sidemethod'/>
 		<cd:constant name='sidespaceafter' value='nebennachspatium'/>
 		<cd:constant name='sidespacebefore' value='nebenvorspatium'/>
+		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='zeichen'/>
 		<cd:constant name='size' value='groesse'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
