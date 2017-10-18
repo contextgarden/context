@@ -16,10 +16,10 @@ userdata      = userdata      or { } -- for users (e.g. functions etc)
 thirddata     = thirddata     or { } -- only for third party modules
 moduledata    = moduledata    or { } -- only for development team
 documentdata  = documentdata  or { } -- for users (e.g. raw data)
-parametersets = parametersets or { } -- experimental for team
+parametersets = parametersets or { } -- for special purposes
 
-table.setmetatableindex(moduledata,table.autokey)
-table.setmetatableindex(thirddata, table.autokey)
+table.setmetatableindex(moduledata,"table")
+table.setmetatableindex(thirddata, "table")
 
 if not global then
     global  = _G

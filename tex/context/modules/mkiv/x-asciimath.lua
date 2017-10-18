@@ -103,13 +103,17 @@ local reserved = {
     ["max"]       = { false, "\\max" },
     ["ln"]        = { false, "\\ln" },
 
-    ["atan"]      = { false, "\\atan" }, -- extra
-    ["acos"]      = { false, "\\acos" }, -- extra
-    ["asin"]      = { false, "\\asin" }, -- extra
+ -- ["atan"]      = { false, "\\atan" }, -- extra
+ -- ["acos"]      = { false, "\\acos" }, -- extra
+ -- ["asin"]      = { false, "\\asin" }, -- extra
 
     ["arctan"]    = { false, "\\arctan" }, -- extra
     ["arccos"]    = { false, "\\arccos" }, -- extra
     ["arcsin"]    = { false, "\\arcsin" }, -- extra
+
+    ["arctanh"]   = { false, "\\arctanh" }, -- extra
+    ["arccosh"]   = { false, "\\arccosh" }, -- extra
+    ["arcsinh"]   = { false, "\\arcsinh" }, -- extra
 
     ["and"]       = { false, "\\text{and}" },
     ["or"]        = { false, "\\text{or}" },
@@ -797,13 +801,17 @@ local isstupid = {
     ["\\max"]       = true,
     ["\\ln"]        = true,
 
-    ["\\atan"]      = true,
-    ["\\acos"]      = true,
-    ["\\asin"]      = true,
-                      true,
+ -- ["\\atan"]      = true,
+ -- ["\\acos"]      = true,
+ -- ["\\asin"]      = true,
+
     ["\\arctan"]    = true,
     ["\\arccos"]    = true,
     ["\\arcsin"]    = true,
+
+    ["\\arctanh"]   = true,
+    ["\\arccosh"]   = true,
+    ["\\arcsinh"]   = true,
 
     ["f"]           = true,
     ["g"]           = true,

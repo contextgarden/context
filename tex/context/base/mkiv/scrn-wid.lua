@@ -6,6 +6,21 @@ if not modules then modules = { } end modules ['scrn-wid'] = {
     license   = "see context related readme files"
 }
 
+-- Support for interactive features is handled elsewhere. Now that is some mess! In
+-- the early days one had media features like sound and movies that were easy to set
+-- up. Then at some point renditions came around which were more work and somewhat
+-- unreliable. Now, both mechanism are obsolete and replaced by rich media which is
+-- a huge mess and has no real concept of what media are supported. There's flash
+-- cq. shockwave (basically obsolete too), and for instance mp4 needs to be handled
+-- by a swf player, and there's u3d which somehow has its own specification. One
+-- would expect native support for video and audio to be en-par with browsers but
+-- alas ... pdf has lost the battle with html here due to a few decades of
+-- unstability and changing support. So far we could catch on and even were ahead
+-- but I wonder if we should keep doing that. As we can't trust support for media we
+-- can better not embed anything and just use a hyperlink to an external resource. No
+-- sane person will create media rich pdf's as long as it's that unpredictable. Just
+-- look at the specification and viewer preferences and decide.
+
 interactions             = interactions or { }
 local interactions       = interactions
 
@@ -223,7 +238,7 @@ function soundclips.insert(tag)
 end
 
 implement {
-    name      = registersoundclip,
+    name      = "registersoundclip",
     actions   = soundclips.register,
     arguments = {
         {
@@ -234,7 +249,7 @@ implement {
 }
 
 implement {
-    name      = insertsoundclip,
+    name      = "insertsoundclip",
     actions   = soundclips.insert,
     arguments = {
         {

@@ -1892,7 +1892,6 @@ function figures.getinfo(name,page)
         local data = figures.push(name)
         figures.identify()
         figures.check()
-        inspect(data)
         figures.pop()
         return data
     end
@@ -1909,6 +1908,7 @@ implement {
             { "name" },
             { "label" },
             { "page" },
+            { "file" },
             { "size" },
             { "object" },
             { "prefix" },
@@ -1977,7 +1977,7 @@ local registered = { }
 
 local ctx_doexternalfigurerepeat = context.doexternalfigurerepeat
 
-interfaces.implement {
+implement {
     name      = "figure_register_page",
     arguments = { "string", "string", "string" },
     actions   = function(a,b,c)
@@ -1986,14 +1986,14 @@ interfaces.implement {
     end
 }
 
-interfaces.implement {
+implement {
     name    = "figure_nof_registered_pages",
     actions = function()
         context(#registered)
     end
 }
 
-interfaces.implement {
+implement {
     name      = "figure_flush_registered_pages",
     arguments = "string",
     actions   = function(n)

@@ -6,54 +6,50 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
     license   = "see context related readme files"
 }
 
--- The problem with widgets is that so far each version of acrobat
--- has some rendering problem. I tried to keep up with this but
--- it makes no sense to do so as one cannot rely on the viewer
--- not changing. Especially Btn fields are tricky as their appearences
--- need to be synchronized in the case of children but e.g. acrobat
--- 10 does not retain the state and forces a check symbol. If you
--- make a file in acrobat then it has MK entries that seem to overload
--- the already present appearance streams (they're probably only meant for
--- printing) as it looks like the viewer has some fallback on (auto
--- generated) MK behaviour built in. So ... hard to test. Unfortunately
--- not even the default appearance is generated. This will probably be
--- solved at some point.
+-- The problem with widgets is that so far each version of acrobat has some
+-- rendering problem. I tried to keep up with this but it makes no sense to do so as
+-- one cannot rely on the viewer not changing. Especially Btn fields are tricky as
+-- their appearences need to be synchronized in the case of children but e.g.
+-- acrobat 10 does not retain the state and forces a check symbol. If you make a
+-- file in acrobat then it has MK entries that seem to overload the already present
+-- appearance streams (they're probably only meant for printing) as it looks like
+-- the viewer has some fallback on (auto generated) MK behaviour built in. So ...
+-- hard to test. Unfortunately not even the default appearance is generated. This
+-- will probably be solved at some point.
 --
--- Also, for some reason the viewer does not always show custom appearances
--- when fields are being rolled over or clicked upon, and circles or checks
--- pop up when you don't expect them. I fear that this kind of instability
--- eventually will kill pdf forms. After all, the manual says: "individual
--- annotation handlers may ignore this entry and provide their own appearances"
--- and one might wonder what 'individual' means here, but effectively this
--- renders the whole concept of appearances useless.
+-- Also, for some reason the viewer does not always show custom appearances when
+-- fields are being rolled over or clicked upon, and circles or checks pop up when
+-- you don't expect them. I fear that this kind of instability eventually will kill
+-- pdf forms. After all, the manual says: "individual annotation handlers may ignore
+-- this entry and provide their own appearances" and one might wonder what
+-- 'individual' means here, but effectively this renders the whole concept of
+-- appearances useless.
 --
--- Okay, here is one observation. A pdf file contains objects and one might
--- consider each one to be a static entity when read in. However, acrobat
--- starts rendering and seems to manipulate (appearance streams) of objects
--- in place (this is visible when the file is saved again). And, combined
--- with some other caching and hashing, this might give side effects for
--- shared objects. So, it seems that for some cases one can best be not too
--- clever and not share but duplicate information. Of course this defeats the
--- whole purpose of these objects. Of course I can be wrong.
+-- Okay, here is one observation. A pdf file contains objects and one might consider
+-- each one to be a static entity when read in. However, acrobat starts rendering
+-- and seems to manipulate (appearance streams) of objects in place (this is visible
+-- when the file is saved again). And, combined with some other caching and hashing,
+-- this might give side effects for shared objects. So, it seems that for some cases
+-- one can best be not too clever and not share but duplicate information. Of course
+-- this defeats the whole purpose of these objects. Of course I can be wrong.
 --
 -- A rarther weird side effect of the viewer is that the highlighting of fields
--- obscures values, unless you uses one of the BS variants, and this makes
--- custum appearances rather useless as there is no way to control this apart
--- from changing the viewer preferences. It could of course be a bug but it would
--- be nice if the highlighting was at least transparent. I have no clue why the
--- built in shapes work ok (some xform based appearances are generated) while
--- equally valid other xforms fail. It looks like acrobat appearances come on
--- top (being refered to in the MK) while custom ones are behind the highlight
--- rectangle. One can disable the "Show border hover color for fields" option
--- in the preferences. If you load java-imp-rhh this side effect gets disabled
--- and you get what you expect (it took me a while to figure out this hack).
+-- obscures values, unless you uses one of the BS variants, and this makes custum
+-- appearances rather useless as there is no way to control this apart from changing
+-- the viewer preferences. It could of course be a bug but it would be nice if the
+-- highlighting was at least transparent. I have no clue why the built in shapes
+-- work ok (some xform based appearances are generated) while equally valid other
+-- xforms fail. It looks like acrobat appearances come on top (being refered to in
+-- the MK) while custom ones are behind the highlight rectangle. One can disable the
+-- "Show border hover color for fields" option in the preferences. If you load
+-- java-imp-rhh this side effect gets disabled and you get what you expect (it took
+-- me a while to figure out this hack).
 --
--- When highlighting is enabled, those default symbols flash up, so it looks
--- like we have some inteference between this setting and custom appearances.
+-- When highlighting is enabled, those default symbols flash up, so it looks like we
+-- have some inteference between this setting and custom appearances.
 --
--- Anyhow, the NeedAppearances is really needed in order to get a rendering
--- for printing especially when highlighting (those colorfull foregrounds) is
--- on.
+-- Anyhow, the NeedAppearances is really needed in order to get a rendering for
+-- printing especially when highlighting (those colorfull foregrounds) is on.
 
 local tostring, tonumber, next = tostring, tonumber, next
 local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
@@ -92,6 +88,7 @@ local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfshareobject          = lpdf.shareobject
 local pdfreserveobject        = lpdf.reserveobject
 local pdfaction               = lpdf.action
+local pdfmajorversion         = lpdf.majorversion
 
 local pdfcolor                = lpdf.color
 local pdfcolorvalues          = lpdf.colorvalues
@@ -905,7 +902,7 @@ local function finishfields()
     end
     if #collected > 0 then
         local acroform = pdfdictionary {
-            NeedAppearances = true,
+            NeedAppearances = pdfmajorversion() == 1 or nil,
             Fields          = pdfreference(pdfflushobject(collected)),
             CO              = fieldsetlist(calculationset),
         }

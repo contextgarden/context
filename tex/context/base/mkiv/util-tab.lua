@@ -478,11 +478,11 @@ end
 -- inspect(table.drop({ { a=2 }, {a=3} }))
 -- inspect(table.drop({ { a=2 }, {a=3} },true))
 
-function table.autokey(t,k)
-    local v = { }
-    t[k] = v
-    return v
-end
+-- function table.autokey(t,k) -- replaced
+--     local v = { }
+--     t[k] = v
+--     return v
+-- end
 
 local selfmapper = { __index = function(t,k) t[k] = k return k end }
 

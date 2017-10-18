@@ -413,6 +413,7 @@ return {
   "pdfliteral",
   "pdfmapfile",
   "pdfmapline",
+  "pdfmajorversion",
   "pdfminorversion",
   "pdfnames",
   "pdfnoligatures",

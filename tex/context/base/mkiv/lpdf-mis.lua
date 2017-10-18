@@ -42,6 +42,7 @@ local pdfstring            = lpdf.string
 local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
 local pdfaction            = lpdf.action
+local pdfminorversion      = lpdf.minorversion
 
 local formattedtimestamp   = lpdf.pdftimestamp
 local adddocumentextgstate = lpdf.adddocumentextgstate
@@ -448,7 +449,7 @@ local function documentspecification()
         })
     end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
-    addtocatalog("Version", pdfconstant(format("1.%s",pdf.getminorversion())))
+    addtocatalog("Version", pdfconstant(format("1.%s",pdfminorversion())))
 end
 
 -- temp hack: the mediabox is not under our control and has a precision of 5 digits

@@ -551,7 +551,9 @@ end
     local flushstreamobject = lpdf and lpdf.flushstreamobject
     local setfontattributes = pdf.setfontattributes
 
-    if not flushstreamobject then
+    if flushstreamobject then
+        -- we're in context
+    else
         flushstreamobject = function(data)
             return pdf.obj {
                 immediate = true,

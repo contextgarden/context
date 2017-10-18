@@ -150,9 +150,9 @@ local function finishstructure()
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
         --
         local markinfo = pdfdictionary {
-            Marked         = pdfboolean(true),
-         -- UserProperties = pdfboolean(true),
-         -- Suspects       = pdfboolean(true),
+            Marked         = lpdf.majorversion == 1 and pdfboolean(true) or nil,
+         -- UserProperties = pdfboolean(true), -- maybe some day
+         -- Suspects       = lpdf.majorversion == 1 and pdfboolean(true) or nil,
          -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
         }
         addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))

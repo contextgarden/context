@@ -41,7 +41,145 @@
 %D \stopTEXpage
 %D \stoptyping
 
-\endinput
+%D Embedding (and using) movies used to be a breeze in acrobat but depended
+%D on a plugin. Then we got renditions that depended on the built-in flash
+%D player. And now we have rich media, depending on whatever and being able
+%D to use the flash player as well ... but it's an erratic and soon obsolete
+%D adventure. So \unknown\ we do provide the user the means but stay away
+%D from it ourselves: it's a dead end. The following tricks use the already
+%D present shockwave (flash) trickery.
+%D
+%D At some point we will no longer provide this in the core but load it at
+%D runtime.
+%D
+%D \starttyping
+%D \externalfigure
+%D   [shockwave]
+%D   [file=test.mp4,
+%D    label=foo]
+%D
+%D \goto{START} [JS(StartShockwave{foo})]
+%D \goto{REWIND}[JS(RewindShockwave{foo})]
+%D \goto{PAUSE} [JS(PauseShockwave{foo})]
+%D \goto{STOP}  [JS(StopShockwave{foo})]
+%D
+%D \useexternalrendering[foo][application/x-shockwave-flash][test.swf][embed=yes,width=100pt,height=100pt]
+%D \definerenderingwindow[foo][width=100pt,height=100pt]
+%D
+%D \placerenderingwindow[foo][foo]
+%D
+%D \goto{START}[StartRendering{foo}]
+%D \goto{STOP} [StopRendering{foo}]
+%D \goto{PAUSE}[PauseRendering{foo}]
+%D
+%D %     \useexternalrendering[foo][audio/mpeg][t:/sources/akkerman.mp3][embed=yes]
+%D %     \definerenderingwindow[foo][width=0pt,height=0pt]
+%D %   % \placerenderingwindow[foo][foo]
+%D %     \setupbackgrounds[page][background=resources]
+%D %     \setlayer[resources]{\placerenderingwindow[foo][foo]}
+%D %     \goto{START}[StartRendering{foo}]
+%D %     \goto{STOP} [StopRendering{foo}]
+%D %     \goto{PAUSE}[PauseRendering{foo}]
+%D \stoptyping
+
+\unprotect
+
+\startluaparameterset[shockwave:display]
+    toolbar  = true,
+ -- preview  = "somefile",
+    open     = "click",
+    close    = "focus",
+\stopluaparameterset
+
+% using vplayer9.swf from ctan:
+
+\useexternalfigure
+  [shockwave]
+  [vplayer9.swf]
+% [arguments=\luaparameterset{shockwave:arguments}{src="\externalfigureparameter\v!file",source="\externalfigureparameter\v!file"},
+  [\c!arguments=\luaparameterset{shockwave:arguments}{source="\externalfigureparameter\v!file",autoPlay=true},
+   \c!resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
+   \c!display=shockwave:display]
+
+\startJSpreamble shockwave used now
+    function StartShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            // ok
+        } else {
+            rm.activated = true ;
+        }
+        rm.callAS("rewind") ;
+        rm.callAS("playPause") ;
+    }
+    function StopShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("pause") ;
+            rm.callAS("rewind") ;
+        }
+    }
+    function RewindShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("rewind") ;
+        }
+    }
+    function PauseShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("playPause") ;
+        }
+    }
+\stopJSpreamble
+
+% using videoplayer.swf from adobe or strobemediaplayback.swf from sourceforge:
+
+%\useexternalfigure
+%  [shockwave]
+%  [videoplayer.swf]
+%  [\c!arguments=\luaparameterset{shockwave:arguments}{source="\externalfigureparameter\v!file"},
+%   \c!resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
+%   \c!display=shockwave:display]
+
+\startJSpreamble shockwave used now
+    function StartShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_play") ;
+        } else {
+            rm.activated = true ;
+        }
+    }
+    function StopShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_pause") ;
+            rm.callAS("multimedia_rewind") ;
+        }
+    }
+    function RewindShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_rewind") ;
+        }
+    }
+    function PauseShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_pause") ;
+        }
+    }
+\stopJSpreamble
+
+% \useexternalfigure
+%   [shockwave]
+%   [strobemediaplayback.swf]
+%   [arguments=\luaparameterset{shockwave:arguments}{src="\externalfigureparameter\v!file"},
+%    resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
+%    display=shockwave:display]
+
+\protect \endinput
 
 \starttext
 

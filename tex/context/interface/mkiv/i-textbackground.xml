@@ -25,7 +25,11 @@
                 <cd:parameter name="location">
                     <cd:constant type="text" default="yes"/>
                     <cd:constant type="paragraph"/>
+                    <cd:constant type="always"/>
                     <cd:constant type="none"/>
+                </cd:parameter>
+                <cd:parameter name="criterium">
+                    <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="alternative">
                     <cd:constant type="cd:number"/>

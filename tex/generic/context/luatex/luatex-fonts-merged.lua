@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/15/17 12:29:01
+-- merge date  : 10/18/17 21:16:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -31320,7 +31320,8 @@ end
 ]]
   local flushstreamobject=lpdf and lpdf.flushstreamobject
   local setfontattributes=pdf.setfontattributes
-  if not flushstreamobject then
+  if flushstreamobject then
+  else
     flushstreamobject=function(data)
       return pdf.obj {
         immediate=true,

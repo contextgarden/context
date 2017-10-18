@@ -6,8 +6,7 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
     license   = "see context related readme files"
 }
 
--- This is a rather experimental feature and the code will probably
--- change.
+-- This is a rather experimental feature and the code will probably change.
 
 local type, tonumber = type, tonumber
 local format, gsub, lower = string.format, string.gsub, string.lower

@@ -713,11 +713,12 @@
 %    \removeunwantedspaces
 %    \endgroup}
 
-\unexpanded\def\completebtxrendering{\dodoubleempty\publ_place_list_complete}
 \unexpanded\def\placebtxrendering   {\dodoubleempty\publ_place_list_standard}
+\unexpanded\def\completebtxrendering{\dodoubleempty\publ_place_list_complete}
+\unexpanded\def\flushbtxrendering   {\dodoubleempty\publ_place_list_special }
 
-\let\completelistofpublications\completebtxrendering
-\let\placelistofpublications   \placebtxrendering
+\let\completelistofpublications\completebtxrendering % for old times sake
+\let\placelistofpublications   \placebtxrendering    % for old times sake
 
 \newtoks\everybtxlistrendering
 
@@ -766,27 +767,27 @@
 \let\btxdoifsameaspreviouselse       \btxdoifelsesameasprevious
 \let\btxdoifcombiinlistelse          \btxdoifelsecombiinlist
 
-\def\publ_place_list_indeed#1[#2][#3]%
+\def\publ_place_list_indeed#1#2[#3][#4]%
   {\begingroup
    \ifsecondargument
      % [rendering] [settings]
-     \edef\currentbtxrendering{#2}%
-     \setupcurrentbtxrendering[#3]%
+     \edef\currentbtxrendering{#3}%
+     \setupcurrentbtxrendering[#4]%
      \edef\p_specification{\btxrenderingparameter\c!specification}%
      \ifx\p_specification\empty\else
        \let\currentbtxspecification\p_specification
      \fi
    \else\iffirstargument
-     \doifelseassignment{#2}
+     \doifelseassignment{#3}
        {% [settings]
         \let\currentbtxrendering\currentbtxspecification
-        \setupcurrentbtxrendering[#2]%
+        \setupcurrentbtxrendering[#3]%
         \edef\p_specification{\btxrenderingparameter\c!specification}%
         \ifx\p_specification\empty\else
            \let\currentbtxspecification\p_specification
            \let\currentbtxrendering\currentbtxspecification % tricky
         \fi}
-       {\edef\currentbtxrendering{#2}%
+       {\edef\currentbtxrendering{#3}%
         \edef\p_specification{\btxrenderingparameter\c!specification}%
         \ifx\p_specification\empty\else
           \let\currentbtxspecification\p_specification
@@ -807,13 +808,11 @@
    \ifx\currentbtxrendering\empty
      \setbtxrendering % hm
    \fi
-   \btxrenderingparameter\c!before
    \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
    \uselanguageparameter\btxdatasetparameter % new
    \setbtxlist
    \the\everystructurelist
    \the\everysetupbtxlistplacement
-   \forgetall
    % why not pass this with collect .. todo
    % here we just collect items
    \clf_btxcollectlistentries
@@ -829,38 +828,132 @@
        group     {\btxrenderingparameter\c!group}%
    \relax
    \ifnum\nofbtxlistentries>\zerocount
-     \startpacked[\v!blank]%
-     % sorting and so
-     \clf_btxpreparelistentries{\currentbtxdataset}% could be put in collect
-     % next we analyze the width
-     \ifx\currentbtxnumbering\empty \else
-       \edef\p_width{\listparameter\c!width}%
-       \ifx\p_width\v!auto
-         \setbox\scratchbox\vbox \bgroup
-           \settrialtypesetting
-           \clf_btxfetchlistentries{\currentbtxdataset}%
-         \egroup
-         \d_publ_number_width\wd\scratchbox
-         \letlistparameter\c!width\d_publ_number_width
+     \forgetall
+     \btxrenderingparameter\c!before
+     \ifconditional#2\relax
+       \edef\p_command{\btxrenderingparameter\c!command}%
+       \ifx\p_command\empty
+         \edef\p_setups{\btxrenderingparameter\c!setups}%
+         \ifx\p_setups\empty
+         \else
+           \directsetup{\p_setups}%
+         \fi
+       \else
+         \expandafter\p_command\expandafter{\number\nofbtxlistentries}\relax
        \fi
+     \else
+       \startpacked[\v!blank]%
+       % sorting and so
+       \clf_btxpreparelistentries{\currentbtxdataset}% could be put in collect
+       % next we analyze the width
+       \ifx\currentbtxnumbering\empty \else
+         \edef\p_width{\listparameter\c!width}%
+         \ifx\p_width\v!auto
+           \setbox\scratchbox\vbox \bgroup
+             \settrialtypesetting
+             \clf_btxfetchlistentries{\currentbtxdataset}%
+           \egroup
+           \d_publ_number_width\wd\scratchbox
+           \letlistparameter\c!width\d_publ_number_width
+         \fi
+       \fi
+       \doifelse{\listparameter\c!prefix}\v!yes\settrue\setfalse\c_publ_prefixed
+       % this actually typesets them, we loop here as otherwise the whole
+       % bunch gets flushed at once
+       \dorecurse\nofbtxlistentries
+          {\let\currentbtxlistentry\recurselevel
+           \clf_btxflushlistentry{\currentbtxdataset}\currentbtxlistentry\relax}%
+       \stoppacked
      \fi
-     \doifelse{\listparameter\c!prefix}\v!yes\settrue\setfalse\c_publ_prefixed
-     % this actually typesets them, we loop here as otherwise the whole
-     % bunch gets flushed at once
-     \dorecurse\nofbtxlistentries
-        {\let\currentbtxlistentry\recurselevel
-         \clf_btxflushlistentry{\currentbtxdataset}\currentbtxlistentry\relax}%
-     \stoppacked
+     \btxrenderingparameter\c!after
    \fi
-   \btxrenderingparameter\c!after
-   \global\advance\btxblock\plusone
    \ifconditional#1\relax
      \stopnamedsection
    \fi
+   \global\advance\btxblock\plusone
    \endgroup}
 
-\def\publ_place_list_complete{\publ_place_list_indeed\conditionaltrue}
-\def\publ_place_list_standard{\publ_place_list_indeed\conditionalfalse}
+\def\publ_place_list_standard{\publ_place_list_indeed\conditionalfalse\conditionalfalse}
+\def\publ_place_list_complete{\publ_place_list_indeed\conditionaltrue \conditionalfalse}
+\def\publ_place_list_special {\publ_place_list_indeed\conditionalfalse\conditionaltrue}
+
+%D This is somewhat special (for Alan of course):
+%D
+%D \starttyping
+%D % #1 is number of entries
+%D
+%D \starttexdefinition unexpanded btx:for:alan:wrapper #1
+%D     \bTABLE
+%D         % we can have a command or setups
+%D         \flushbtxentries[command=\texdefinition{btx:for:alan:content}]
+%D     \eTABLE
+%D \stoptexdefinition
+%D
+%D % #1 is tag
+%D
+%D \starttexdefinition unexpanded btx:for:alan:content #1
+%D     \bTR
+%D         \bTD
+%D             \btxsettag{#1}
+%D             \btxfield{name}
+%D         \eTD
+%D     \eTR
+%D \stoptexdefinition
+%D
+%D % we can have a command or setups
+%D
+%D \flushbtxrendering [method=dataset,command=\texdefinition{btx:for:alan:wrapper}]
+%D \stoptyping
+%D
+%D Because we want to be ungrouped we use a special loop construct.
+
+\unexpanded\def\btxsetlisttag#1%
+  {\clf_btxflushlisttag{\currentbtxdataset}#1\relax}
+
+\newcount\c_btx_list_index
+\let\m_btx_list_action\empty
+
+\def\publ_flush_list_step_command
+  {\btxsetlisttag{\c_btx_list_index}
+   \expandafter\m_btx_list_action\expandafter{\currentbtxtag}%
+   \ifnum\c_btx_list_index<\nofbtxlistentries
+     \advance\c_btx_list_index\plusone
+     \expandafter\publ_flush_list_step_command
+   \else
+     \glet\m_btx_list_action\relax
+   \fi}
+
+\def\publ_flush_list_step_setup
+  {\btxsetlisttag{\c_btx_list_index}
+   \directsetup{\m_btx_list_action}%
+   \ifnum\c_btx_list_index<\nofbtxlistentries
+     \advance\c_btx_list_index\plusone
+     \expandafter\publ_flush_list_step_setup
+   \else
+     \glet\m_btx_list_action\relax
+   \fi}
+
+\unexpanded\def\flushbtxentries[#1]%
+  {\begingroup
+   \getdummyparameters[\c!command=,\c!setups=,#1]%
+   \xdef\m_btx_list_action{\dummyparameter\c!command}%
+   \ifx\m_btx_list_action\empty
+     \xdef\m_btx_list_action{\dummyparameter\c!setups}%
+     \ifx\m_btx_list_action\empty
+       \endgroup
+       \c_btx_list_index\zerocount
+     \else
+       \endgroup
+       \c_btx_list_index\plusone
+       \doubleexpandafter\publ_flush_list_step_command
+     \fi
+   \else
+     \endgroup
+     \c_btx_list_index\plusone
+     \expandafter\publ_flush_list_step_command
+   \fi}
+
+%D So far.
 
 \def\currentbtxblock{\number\btxblock}
 

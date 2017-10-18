@@ -6,6 +6,24 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
     license   = "see context related readme files"
 }
 
+-- It's about time to give up on media in pdf and admit that pdf lost it to html.
+-- First we had movies and sound, quite easy to deal with, but obsolete now. Then we
+-- had renditions but they turned out to be unreliable from the start and look
+-- obsolete too or at least they are bound to the (obsolete) flash technology for
+-- rendering. They were already complex constructs. Now we have rich media which
+-- instead of providing a robust future proof framework fo rgeneral media types
+-- again seems to depend on viewers built in (yes, also kind of obsolete) flash
+-- technology, and we cannot expect this non-open technology to show up in open
+-- browsers. So, in the end we can best just use links to external resources to be
+-- future proof. Just look at the viewer prferences pane to see how fragile support
+-- is. Interestingly u3d support is kind of built in, while e.g. mp4 support relies
+-- on wrapping in swf. We used to stay ahead of the pack with support of the fancy
+-- pdf features but it backfires and is not worth the trouble. And yes, for control
+-- (even simple like starting and stopping videos) one has to revert to JavaScript,
+-- the other fragile bit. And, now that adobe quits flash in 2020 we're without any
+-- video anyway. Also, it won't play on all platforms and devices so let's wait for
+-- html5 media in pdf then.
+
 local tonumber = tonumber
 local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
 local stripstring = string.strip
@@ -290,7 +308,8 @@ function codeinjections.embedfile(specification)
     local d = pdfdictionary {
         Type = pdfconstant("Filespec"),
         F    = pdfstring(savename),
-        UF   = pdfstring(savename),
+     -- UF   = pdfstring(savename),
+        UF   = pdfunicode(savename),
         EF   = pdfdictionary { F = pdfreference(f) },
         Desc = title ~= "" and pdfunicode(title) or nil,
      -- AFRelationship = pdfconstant("Source"), -- some day maybe, not mandate

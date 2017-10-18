@@ -24,8 +24,8 @@
 \registerctxluafile{grph-con}{1.001}
 \registerctxluafile{grph-fil}{1.001}
 \registerctxluafile{grph-mem}{1.001}
-\registerctxluafile{grph-u3d}{1.001} % this will change
-\registerctxluafile{grph-swf}{1.001} % this will change
+\registerctxluafile{grph-u3d}{1.001} % this will become a module
+\registerctxluafile{grph-swf}{1.001} % this will become a module
 
 \unprotect
 
@@ -56,6 +56,7 @@
    \c!prefix         =,
    \c!cache          =,
    \c!page           =\zerocount,
+   \c!file           =,
    \c!display        =,
    \c!mask           =,
    \c!preset         =\v!yes,
@@ -319,6 +320,7 @@
         name       {\p_grph_include_name}%
         label      {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
         page       {\externalfigureparameter\c!page}%
+        file       {\externalfigureparameter\c!file}%
         size       {\externalfigureparameter\c!size}%
         object     {\externalfigureparameter\c!object}%
         prefix     {\externalfigureparameter\c!prefix}%

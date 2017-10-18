@@ -68,15 +68,9 @@ local context           = context
 local pdf    = pdf
 local factor = number.dimenfactors.bp
 
-if not pdf.setmajorversion then do
-
-    function pdf.setmajorversion () end
-    function pdf.getmajorversion () end
-
-end end
-
 local pdfsetinfo            = pdf.setinfo
 local pdfsetcatalog         = pdf.setcatalog
+----- pdfsettrailerid       = pdf.settrailerid
 ----- pdfsetnames           = pdf.setnames
 ----- pdfsettrailer         = pdf.settrailer
 
@@ -108,6 +102,8 @@ pdfdisablecommand("setpageattributes")
 pdfdisablecommand("setpagesattributes")
 pdfdisablecommand("registerannot")
 
+pdf.disablecommand = pdfdisablecommand
+
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
@@ -124,6 +120,63 @@ local pdfbackend = {
 backends.pdf     = pdfbackend
 lpdf             = lpdf or { }
 local lpdf       = lpdf
+
+do
+
+    local setmajorversion = pdf.setmajorversion
+    local setminorversion = pdf.setminorversion
+    local getmajorversion = pdf.getmajorversion
+    local getminorversion = pdf.getminorversion
+
+    if not setmajorversion then
+
+        setmajorversion = function() end
+        getmajorversion = function() return 1 end
+
+        pdf.setmajorversion = setmajorversion
+        pdf.getmajorversion = getmajorversion
+
+    end
+
+    function lpdf.setversion(major,minor)
+        setmajorversion(major or 1)
+        setminorversion(minor or 7)
+    end
+
+    function lpdf.getversion(major,minor)
+        return getmajorversion(), getminorversion()
+    end
+
+    lpdf.majorversion = getmajorversion
+    lpdf.minorversion = getminorversion
+
+end
+
+do
+
+    local setcompresslevel       = pdf.setcompresslevel
+    local setobjectcompresslevel = pdf.setobjcompresslevel
+    local getcompresslevel       = pdf.getcompresslevel
+    local getobjectcompresslevel = pdf.getobjcompresslevel
+
+    local frozen = false
+
+    function lpdf.setcompression(level,objectlevel,freeze)
+        if not frozen then
+            setcompresslevel(level or 3)
+            setobjectcompresslevel(objectlevel or level or 3)
+            frozen = freeze
+        end
+    end
+
+    function lpdf.getcompression()
+        return getcompresslevel(), getobjectcompresslevel()
+    end
+
+    lpdf.compresslevel       = getcompresslevel
+    lpdf.objectcompresslevel = getobjectcompresslevel
+
+end
 
 local codeinjections = pdfbackend.codeinjections
 local nodeinjections = pdfbackend.nodeinjections
@@ -619,9 +672,9 @@ function lpdf.reserveobject(name)
     return r
 end
 
+-- lpdf.reserveobject   = pdfreserveobject
 -- lpdf.immediateobject = pdfimmediateobject
 -- lpdf.deferredobject  = pdfdeferredobject
--- lpdf.object          = pdfdeferredobject
 -- lpdf.referenceobject = pdfreferenceobject
 
 local pagereference = pdf.pageref -- tex.pdfpageref is obsolete
@@ -892,6 +945,15 @@ do
         if not environment.initex then
             trace_flush("info")
             info.Type = nil
+            if lpdf.majorversion() > 1 then
+                for k, v in next, info do
+                    if k == "CreationDate" or k == "ModDate" then
+                        -- mandate >= 2.0
+                    else
+                        info[k] = nil
+                    end
+                end
+            end
             pdfsetinfo(info())
         end
     end

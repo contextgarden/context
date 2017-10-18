@@ -759,6 +759,7 @@
 		<cd:constant name='direction' value='direction'/>
 		<cd:constant name='directory' value='repertoire'/>
 		<cd:constant name='display' value='affichage'/>
+		<cd:constant name='displaythreshold' value='displaythreshold'/>
 		<cd:constant name='distance' value='distance'/>
 		<cd:constant name='domain' value='domain'/>
 		<cd:constant name='dot' value='point'/>
@@ -868,6 +869,7 @@
 		<cd:constant name='index' value='index'/>
 		<cd:constant name='indicator' value='indicateur'/>
 		<cd:constant name='initialsep' value='initialsep'/>
+		<cd:constant name='inlinethreshold' value='inlinethreshold'/>
 		<cd:constant name='inner' value='interieur'/>
 		<cd:constant name='innermargin' value='margeinterieure'/>
 		<cd:constant name='inputfile' value='fichierentree'/>
@@ -1154,6 +1156,7 @@
 		<cd:constant name='sidemethod' value='sidemethod'/>
 		<cd:constant name='sidespaceafter' value='espacelateralapres'/>
 		<cd:constant name='sidespacebefore' value='espacelateralavant'/>
+		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='signe'/>
 		<cd:constant name='size' value='dimension'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>

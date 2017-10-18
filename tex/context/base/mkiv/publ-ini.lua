@@ -107,7 +107,6 @@ local ctx_doifnot                 = commands.doifnot
 local ctx_gobbletwoarguments      = context.gobbletwoarguments
 
 local ctx_btxhandlelistentry      = context.btxhandlelistentry
-local ctx_btxhandlelisttextentry  = context.btxhandlelisttextentry
 local ctx_btxhandlecombientry     = context.btxhandlecombientry
 local ctx_btxchecklistentry       = context.btxchecklistentry
 
@@ -2134,7 +2133,12 @@ do
         end
     end
 
-    function lists.flushentry(dataset,i,textmode)
+    function lists.flushtag(dataset,i)
+        local li = renderings[dataset].list[i]
+        ctx_btxsettag(li and li[1] or "")
+    end
+
+    function lists.flushentry(dataset,i)
         local rendering = renderings[dataset]
         local list      = rendering.list
         local li        = list[i]
@@ -2194,11 +2198,7 @@ do
                 ctx_btxsetsuffix(authorsuffix)
             end
             rendering.userdata = userdata
-            if textmode then
-                ctx_btxhandlelisttextentry()
-            else
-                ctx_btxhandlelistentry()
-            end
+            ctx_btxhandlelistentry()
             ctx_btxstoplistentry()
             --
          -- context(function()
@@ -2284,6 +2284,12 @@ do
     implement {
         name      = "btxflushlistentry",
         actions   = lists.flushentry,
+        arguments = { "string", "integer" }
+    }
+
+    implement {
+        name      = "btxflushlisttag",
+        actions   = lists.flushtag,
         arguments = { "string", "integer" }
     }
 

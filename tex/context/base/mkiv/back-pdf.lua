@@ -148,12 +148,7 @@ scanners.pdfstartmirroring = function()
 end
 
 if environment.arguments.nocompression then
-    pdf.setcompresslevel(0)
-    pdf.setobjcompresslevel(0)
-    function pdf.setcompresslevel()
-        -- blocked from now on
-    end
-    pdf.setobjcompresslevel = pdf.setcompresslevel
+    lpdf.setcompression(0,0,true)
 end
 
 scanners.pdfstopmirroring = scanners.pdfstartmirroring
@@ -175,10 +170,7 @@ implement {
 implement {
     name      = "setpdfcompression",
     arguments = { "integer", "integer" },
-    actions   = function(c,o)
-        pdf.setcompresslevel(c)
-        pdf.setobjcompresslevel(o)
-    end
+    actions   = lpdf.setcompression,
 }
 
 local report = logs.reporter("backend","pdftex primitives")

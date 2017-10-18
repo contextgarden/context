@@ -197,10 +197,6 @@ local synctex_runfiles = {
     "synctex", "synctex.gz", "syncctx" -- synctex
 }
 
--- local synctex_runfiles = {
---     "synctex", "synctex.gz",
--- }
-
 local persistent_runfiles = {
     "tuo", -- mkii two pass file
     "tub", -- mkii buffer file
@@ -663,8 +659,7 @@ function scripts.context.run(ctxdata,filename)
     local a_nonstopmode   = getargument("nonstopmode")
     local a_scollmode     = getargument("scrollmode")
     local a_once          = getargument("once")
---     local a_synctex       = getargument("syncctx") and "context" or getargument("synctex")
-    local a_synctex       = getargument("synctex")
+ -- local a_synctex       = getargument("synctex")
     local a_backend       = getargument("backend")
     local a_arrange       = getargument("arrange")
     local a_noarrange     = getargument("noarrange")
@@ -716,7 +711,7 @@ function scripts.context.run(ctxdata,filename)
         --
         local analysis = preamble_analyze(filename)
         --
-        a_synctex = a_synctex or analysis.synctex
+     -- a_synctex = a_synctex or analysis.synctex
         --
         if a_mkii or analysis.engine == 'pdftex' or analysis.engine == 'xetex' then
             run_texexec(filename,a_purge,a_purgeall)
@@ -864,9 +859,9 @@ function scripts.context.run(ctxdata,filename)
                 for i=1,#synctex_runfiles do
                     removefile(fileaddsuffix(jobname,synctex_runfiles[i]))
                 end
-                if a_synctex then
-                    directives[#directives+1] = format("system.synctex")
-                end
+             -- if a_synctex then
+             --     directives[#directives+1] = format("system.synctex")
+             -- end
                 --
                 if #directives > 0 then
                     c_flags.directives = concat(directives,",")
@@ -925,7 +920,8 @@ function scripts.context.run(ctxdata,filename)
                 --  this will go away after we update luatex
                 --
                 local syncctx = fileaddsuffix(jobname,"syncctx")
-                if a_synctex == "context" or validfile(syncctx) then
+             -- if a_synctex == "context" or validfile(syncctx) then
+                if validfile(syncctx) then
                     renamefile(syncctx,fileaddsuffix(jobname,"synctex"))
                 end
                 --

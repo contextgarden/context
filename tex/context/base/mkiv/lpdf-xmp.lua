@@ -98,6 +98,10 @@ pdf.setsuppressoptionalinfo(
 
 local included = backends.included
 
+local pdfsettrailerid = pdf.settrailerid
+
+pdf.disablecommand("settrailerid")
+
 function lpdf.settrailerid(v)
     if v then
         local b = toboolean(v) or v == ""
@@ -112,7 +116,7 @@ function lpdf.settrailerid(v)
         else
             report_info("using hashed trailer id %a (%a)",v,h)
         end
-        pdf.settrailerid(format("[<%s> <%s>]",h,h))
+        pdfsettrailerid(format("[<%s> <%s>]",h,h))
     end
 end
 
@@ -296,7 +300,7 @@ local function flushxmpinfo()
             logs.poptarget()
         end
         blob = format(xpacket,blob)
-        if not verbose and pdf.getcompresslevel() > 0 then
+        if not verbose and lpdf.compresslevel() > 0 then
             blob = gsub(blob,">%s+<","><")
         end
         local r = pdfflushstreamobject(blob,md,false) -- uncompressed

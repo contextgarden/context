@@ -45,7 +45,7 @@ function nodeinjections.insertmovie(specification)
 end
 
 function nodeinjections.insertsound(specification)
-    -- rmanaged in interaction: repeat, label, foundname
+    -- managed in interaction: repeat, label, foundname
     local soundclip = interactions.soundclips.soundclip(specification.label)
     if soundclip then
         local controldict = pdfdictionary {
