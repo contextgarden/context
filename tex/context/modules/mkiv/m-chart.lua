@@ -18,14 +18,20 @@ local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
 
 local context           = context
 
+local ctx_startgraphic  = metapost.startgraphic
+local ctx_stopgraphic   = metapost.stopgraphic
+local ctx_tographic     = metapost.tographic
+
 local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
+local settings_to_hash  = utilities.parsers.settings_to_hash
 
 moduledata.charts       = moduledata.charts or { }
 
 local report_chart      = logs.reporter("chart")
 
 local variables         = interfaces.variables
+local implement         = interfaces.implement
 
 local v_yes             = variables.yes
 local v_no              = variables.no
@@ -173,22 +179,29 @@ local charts = { }
 
 local data, hash, temp, last_x, last_y, name
 
-function commands.flow_start_chart(chartname)
-    data = { }
-    hash = { }
-    last_x, last_y = 0, 0
-    name = chartname
-end
+implement {
+    name      = "flow_start_chart",
+    arguments = "string",
+    actions   = function(chartname)
+        data = { }
+        hash = { }
+        last_x, last_y = 0, 0
+        name = chartname
+    end
+}
 
-function commands.flow_stop_chart()
-    charts[name] = {
-        data = data,
-        hash = hash,
-        last_x = last_x,
-        last_y = last_y,
-    }
-    data, hash, temp = nil, nil, nil
-end
+implement {
+    name      = "flow_stop_chart",
+    actions   = function()
+        charts[name] = {
+            data = data,
+            hash = hash,
+            last_x = last_x,
+            last_y = last_y,
+        }
+        data, hash, temp = nil, nil, nil
+    end
+}
 
 -- function commands.flow_set(chartname,chartdata)
 --     local hash = { }
@@ -216,103 +229,187 @@ end
 --      end
 -- end
 
-function commands.flow_reset(chartname)
-    charts[name] = nil
-end
+implement {
+    name    = "flow_reset",
+    actions = function()
+        charts[name] = nil
+    end
+}
 
-function commands.flow_set_current_cell(n)
-    temp = data[tonumber(n)] or { }
-end
+implement {
+    name      = "flow_set_current_cell",
+    arguments = "integer",
+    actions   = function(n)
+        temp = data[n] or { }
+    end
+}
 
-function commands.flow_start_cell(settings)
-    temp = {
-        texts       = { },
-        labels      = { },
-        exits       = { },
-        connections = { },
-        settings    = settings,
-        x           = 1,
-        y           = 1,
-        realx       = 1,
-        realy       = 1,
-        name        = "",
-    }
-end
+implement {
+    name      = "flow_start_cell",
+    arguments = {
+        {
+            { "shape", {
+                    { "rulethickness", "dimension" },
+                    { "default" },
+                    { "framecolor" },
+                    { "backgroundcolor" },
+                },
+            },
+            { "focus", {
+                    { "rulethickness", "dimension" },
+                    { "framecolor" },
+                    { "backgroundcolor" },
+                },
+            },
+            { "line", {
+                    { "rulethickness", "dimension" },
+                    { "radius", "dimension" },
+                    { "color" },
+                    { "corner" },
+                    { "dash" },
+                    { "arrow" },
+                    { "offset", "dimension" },
+                },
+            },
+        },
+    },
+    actions   = function(settings)
+        temp = {
+            texts       = { },
+            labels      = { },
+            exits       = { },
+            connections = { },
+            settings    = settings,
+            x           = 1,
+            y           = 1,
+            realx       = 1,
+            realy       = 1,
+            name        = "",
+        }
+    end
+}
 
-function commands.flow_stop_cell()
-    data[#data+1] = temp
-    hash[temp.name or #data] = temp
-end
+implement {
+    name    = "flow_stop_cell",
+    actions = function()
+        data[#data+1] = temp
+        hash[temp.name or #data] = temp
+    end
+}
 
-function commands.flow_set_name(str)
-    temp.name = str
-end
+implement {
+    name      = "flow_set_name",
+    arguments = "string",
+    actions   = function(str)
+        temp.name = str
+    end
+}
 
-function commands.flow_set_shape(str)
-    temp.shape = str
-end
+implement {
+    name      = "flow_set_shape",
+    arguments = "string",
+    actions   = function(str)
+        temp.shape = str
+    end
+}
 
-function commands.flow_set_destination(str)
-    temp.destination = str
-end
+implement {
+    name      = "flow_set_destination",
+    arguments = "string",
+    actions   = function(str)
+        temp.destination = str
+    end
+}
 
-function commands.flow_set_text(align,str)
-    temp.texts[#temp.texts+1] = {
-        align = align,
-        text  = str,
-    }
-end
+implement {
+    name      = "flow_set_text",
+    arguments = { "string", "string" },
+    actions   = function(align,str)
+        temp.texts[#temp.texts+1] = {
+            align = align,
+            text  = str,
+        }
+    end
+}
 
-function commands.flow_set_overlay(str)
-    temp.overlay = str
-end
+implement {
+    name      = "flow_set_overlay",
+    arguments = "string",
+    actions   = function(str)
+        temp.overlay = str
+    end
+}
 
-function commands.flow_set_focus(str)
-    temp.focus = str
-end
+implement {
+    name      = "flow_set_focus",
+    arguments = "string",
+    actions   = function(str)
+        temp.focus = str
+    end
+}
 
-function commands.flow_set_figure(str)
-    temp.figure = str
-end
+implement {
+    name      = "flow_set_figure",
+    arguments = "string",
+    actions   = function(str)
+        temp.figure = str
+    end
+}
 
-function commands.flow_set_label(location,text)
-    temp.labels[#temp.labels+1] = {
-        location = location,
-        text = text,
-    }
-end
+implement {
+    name      = "flow_set_label",
+    arguments = { "string", "string" },
+    actions   = function(location,text)
+        temp.labels[#temp.labels+1] = {
+            location = location,
+            text = text,
+        }
+    end
+}
 
-function commands.flow_set_comment(location,text)
-    local connections = temp.connections
-    if connections then
-        local connection = connections[#connections]
-        if connection then
-            local comments = connection.comments
-            if comments then
-                comments[#comments+1] = {
-                    location = location,
-                    text = text,
-                }
+implement {
+    name      = "flow_set_comment",
+    arguments = { "string", "string" },
+    actions   = function(location,text)
+        local connections = temp.connections
+        if connections then
+            local connection = connections[#connections]
+            if connection then
+                local comments = connection.comments
+                if comments then
+                    comments[#comments+1] = {
+                        location = location,
+                        text = text,
+                    }
+                end
             end
         end
     end
-end
+}
 
-function commands.flow_set_exit(location,text)
-    temp.exits[#temp.exits+1] = {
-        location = location,
-        text = text,
-    }
-end
+implement {
+    name      = "flow_set_exit",
+    arguments = { "string", "string" },
+    actions   = function(location,text)
+        temp.exits[#temp.exits+1] = {
+            location = location,
+            text = text,
+        }
+    end
+}
 
-function commands.flow_set_include(name,x,y,settings)
-    data[#data+1] = {
-        include  = name,
-        x        = x,
-        y        = y,
-     -- settings = settings,
-    }
-end
+implement {
+    name      = "flow_set_include",
+    arguments = { "string", "dimension", "dimension", "string" },
+    actions   = function(name,x,y,settings)
+        data[#data+1] = {
+            include  = name,
+            x        = x,
+            y        = y,
+         -- settings = settings,
+        }
+    end
+}
 
 local function inject(includedata,data,hash)
     local subchart = charts[includedata.include]
@@ -431,66 +528,74 @@ end
 
 local splitter = lpeg.splitat(",")
 
-function commands.flow_set_location(x,y)
-    if type(x) == "string" and not y then
-        x, y = lpegmatch(splitter,x)
-    end
-    local oldx, oldy = x, y
-    if not x or x == "" then
-        x = last_x
-    elseif type(x) == "number" then
-        -- ok
-    elseif x == "+" then
-        x = last_x + 1
-    elseif x == "-" then
-        x = last_x - 1
-    elseif find(x,"^[%+%-]") then
-        x = last_x + (tonumber(x) or 0)
-    else
-        x = tonumber(x)
-    end
-    if not y or y == "" then
-        y = last_y
-    elseif type(y) == "number" then
-        -- ok
-    elseif y == "+" then
-        y = last_y + 1
-    elseif x == "-" then
-        y = last_y - 1
-    elseif find(y,"^[%+%-]") then
-        y = last_y + (tonumber(y) or 0)
-    else
-        y = tonumber(y)
-    end
-    if x < 1 or y < 1 then
-        report_chart("the cell (%s,%s) ends up at (%s,%s) and gets relocated to (1,1)",oldx or"?", oldy or "?", x,y)
-        if x < 1 then
-            x = 1
+implement {
+    name      = "flow_set_location",
+    arguments = "string",
+    actions   = function(x,y)
+        if type(x) == "string" and not y then
+            x, y = lpegmatch(splitter,x)
         end
-        if y < 1 then
-            y = 1
+        local oldx, oldy = x, y
+        if not x or x == "" then
+            x = last_x
+        elseif type(x) == "number" then
+            -- ok
+        elseif x == "+" then
+            x = last_x + 1
+        elseif x == "-" then
+            x = last_x - 1
+        elseif find(x,"^[%+%-]") then
+            x = last_x + (tonumber(x) or 0)
+        else
+            x = tonumber(x)
         end
+        if not y or y == "" then
+            y = last_y
+        elseif type(y) == "number" then
+            -- ok
+        elseif y == "+" then
+            y = last_y + 1
+        elseif x == "-" then
+            y = last_y - 1
+        elseif find(y,"^[%+%-]") then
+            y = last_y + (tonumber(y) or 0)
+        else
+            y = tonumber(y)
+        end
+        if x < 1 or y < 1 then
+            report_chart("the cell (%s,%s) ends up at (%s,%s) and gets relocated to (1,1)",oldx or"?", oldy or "?", x,y)
+            if x < 1 then
+                x = 1
+            end
+            if y < 1 then
+                y = 1
+            end
+        end
+        temp.x     = x or 1
+        temp.y     = y or 1
+        temp.realx = x or 1
+        temp.realy = y or 1
+        last_x     = x or last_x
+        last_y     = y or last_y
     end
-    temp.x     = x or 1
-    temp.y     = y or 1
-    temp.realx = x or 1
-    temp.realy = y or 1
-    last_x     = x or last_x
-    last_y     = y or last_y
-end
+}
 
-function commands.flow_set_connection(location,displacement,name)
-    local dx, dy = lpegmatch(splitter,displacement)
-    dx = tonumber(dx)
-    dy = tonumber(dy)
-    temp.connections[#temp.connections+1] = {
-        location = location,
-        dx       = dx or 0,
-        dy       = dy or 0,
-        name     = name,
-        comments = { },
-    }
-end
+implement {
+    name      = "flow_set_connection",
+    arguments = { "string", "string", "string" },
+    actions   = function(location,displacement,name)
+        local dx, dy = lpegmatch(splitter,displacement)
+        dx = tonumber(dx)
+        dy = tonumber(dy)
+        temp.connections[#temp.connections+1] = {
+            location = location,
+            dx       = dx or 0,
+            dy       = dy or 0,
+            name     = name,
+            comments = { },
+        }
+    end
+}
 
 local function visible(chart,cell)
     local x, y = cell.x, cell.y
@@ -499,12 +604,12 @@ local function visible(chart,cell)
         y >= chart.from_y and y <= chart.to_y and cell
 end
 
-local function process_cells(chart,xoffset,yoffset)
+local function process_cells(g,chart,xoffset,yoffset)
     local data = chart.data
     if not data then
         return
     end
-    local focus = utilities.parsers.settings_to_hash(chart.settings.chart.focus or "")
+    local focus = settings_to_hash(chart.settings.chart.focus or "")
     for i=1,#data do
         local cell = visible(chart,data[i])
         if cell then
@@ -516,26 +621,26 @@ local function process_cells(chart,xoffset,yoffset)
             end
             if shape ~= v_none then
                 local shapedata = validshapes[shape]
-                context("flow_begin_sub_chart ;") -- when is this needed
+                ctx_tographic(g,"flow_begin_sub_chart ;") -- when is this needed
                 if shapedata.kind == "line" then
                     local linesettings = settings.line
-                    context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
-                    context("flow_shape_fill_color := black ;")
-                    context("flow_shape_line_width := %p ; ",           linesettings.rulethickness)
+                    ctx_tographic(g,"flow_shape_line_color := %q ;", linesettings.color)
+                    ctx_tographic(g,"flow_shape_fill_color := %q ;","black")
+                    ctx_tographic(g,"flow_shape_line_width := %p ; ",linesettings.rulethickness)
                 elseif focus[cell.focus] or focus[cell.name] then
                     local focussettings = settings.focus
-                    context("flow_shape_line_color := \\MPcolor{%s} ;", focussettings.framecolor)
-                    context("flow_shape_fill_color := \\MPcolor{%s} ;", focussettings.backgroundcolor)
-                    context("flow_shape_line_width := %p ; ",           focussettings.rulethickness)
+                    ctx_tographic(g,"flow_shape_line_color := %q ;", focussettings.framecolor)
+                    ctx_tographic(g,"flow_shape_fill_color := %q ;", focussettings.backgroundcolor)
+                    ctx_tographic(g,"flow_shape_line_width := %p ; ",focussettings.rulethickness)
                 else
                     local shapesettings = settings.shape
-                    context("flow_shape_line_color := \\MPcolor{%s} ;", shapesettings.framecolor)
-                    context("flow_shape_fill_color := \\MPcolor{%s} ;", shapesettings.backgroundcolor)
-                    context("flow_shape_line_width := %p ; " ,          shapesettings.rulethickness)
+                    ctx_tographic(g,"flow_shape_line_color := %q ;", shapesettings.framecolor)
+                    ctx_tographic(g,"flow_shape_fill_color := %q ;", shapesettings.backgroundcolor)
+                    ctx_tographic(g,"flow_shape_line_width := %p ; ",shapesettings.rulethickness)
                 end
-                context("flow_peepshape := false ;")   -- todo
-                context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
-                context("flow_end_sub_chart ;")
+                ctx_tographic(g,"flow_peepshape := false ;")   -- todo
+                ctx_tographic(g,"flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
+                ctx_tographic(g,"flow_end_sub_chart ;")
             end
         end
     end
@@ -574,7 +679,7 @@ local what  = space
 -- print(lpegmatch(what,"+l"))
 -- print(lpegmatch(what,"+ left+r     "))
 
-local function process_connections(chart,xoffset,yoffset)
+local function process_connections(g,chart,xoffset,yoffset)
     local data = chart.data
     local hash = chart.hash
     if not data then
@@ -583,7 +688,6 @@ local function process_connections(chart,xoffset,yoffset)
     local settings = chart.settings
     for i=1,#data do
         local cell = visible(chart,data[i])
--- local cell = data[i]
         if cell then
             local connections = cell.connections
             for j=1,#connections do
@@ -597,15 +701,15 @@ local function process_connections(chart,xoffset,yoffset)
                         local what_cell, where_cell, what_other, where_other = lpegmatch(what,location)
                         if what_cell and where_cell and what_other and where_other then
                             local linesettings = settings.line
-                            context("flow_smooth := %s ;", linesettings.corner == v_round and "true" or "false")
-                            context("flow_dashline := %s ;", linesettings.dash == v_yes and "true" or "false")
-                            context("flow_arrowtip := %s ;", linesettings.arrow == v_yes and "true" or "false")
-                            context("flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
-                            context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
-                            context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
-                            context("flow_connection_line_width := %p ;",linesettings.rulethickness)
-                            context("flow_connect_%s_%s (%s) (%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,j,cellx,celly,what_cell,otherx,othery,what_other)
-                            context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
+                            ctx_tographic(g,"flow_smooth := %s ;", linesettings.corner == v_round and "true" or "false")
+                            ctx_tographic(g,"flow_dashline := %s ;", linesettings.dash == v_yes and "true" or "false")
+                            ctx_tographic(g,"flow_arrowtip := %s ;", linesettings.arrow == v_yes and "true" or "false")
+                            ctx_tographic(g,"flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
+                            ctx_tographic(g,"flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
+                            ctx_tographic(g,"flow_connection_line_color := %q ;",linesettings.color)
+                            ctx_tographic(g,"flow_connection_line_width := %p ;",linesettings.rulethickness)
+                            ctx_tographic(g,"flow_connect_%s_%s (%s) (%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,j,cellx,celly,what_cell,otherx,othery,what_other)
+                            ctx_tographic(g,"flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
                         end
                     end
                 end
@@ -620,13 +724,17 @@ local f_texttemplate_l = formatters["\\doFLOWlabel{%i}{%i}{%i}"]
 local splitter   = lpeg.splitat(":")
 local charttexts = { } -- permits " etc in mp
 
-function commands.flow_get_text(n)
-    if n > 0 then
-        context(charttexts[n])
+implement {
+    name      = "flow_get_text",
+    arguments = "integer",
+    actions   = function(n)
+        if n > 0 then
+            context(charttexts[n])
+        end
     end
-end
+}
 
-local function process_texts(chart,xoffset,yoffset)
+local function process_texts(g,chart,xoffset,yoffset)
     local data = chart.data
     local hash = chart.hash
     if not data then
@@ -650,7 +758,7 @@ local function process_texts(chart,xoffset,yoffset)
                     local align = text.align or ""
                     local align = validlabellocations[align] or align
                     charttexts[#charttexts+1] = data
-                    context('flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,f_texttemplate_t(x,y,#charttexts,align,figure,overlay,destination))
+                    ctx_tographic(g,'flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,f_texttemplate_t(x,y,#charttexts,align,figure,overlay,destination))
                     if i == 1 then
                         figure      = ""
                         overlay     = ""
@@ -658,7 +766,7 @@ local function process_texts(chart,xoffset,yoffset)
                     end
                 end
             elseif figure ~= "" or overlay ~= "" or destination ~= "" then
-                context('flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,f_texttemplate_t(x,y,0,"",figure,overlay,destination))
+                ctx_tographic(g,'flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,f_texttemplate_t(x,y,0,"",figure,overlay,destination))
             end
             local labels = cell.labels
             for i=1,#labels do
@@ -668,7 +776,7 @@ local function process_texts(chart,xoffset,yoffset)
                 local location = validlabellocations[location] or location
                 if text and text ~= "" then
                     charttexts[#charttexts+1] = text
-                    context('flow_chart_draw_label(%s,%s,"%s",textext("%s")) ;',x,y,location,f_texttemplate_l(x,y,#charttexts))
+                    ctx_tographic(g,'flow_chart_draw_label(%s,%s,"%s",textext("%s")) ;',x,y,location,f_texttemplate_l(x,y,#charttexts))
                 end
             end
             local exits = cell.exits
@@ -684,7 +792,7 @@ local function process_texts(chart,xoffset,yoffset)
                        location == "t" and y == chart.to_y   - 1 or
                        location == "b" and y == chart.from_y + 1 then
                         charttexts[#charttexts+1] = text
-                        context('flow_chart_draw_exit(%s,%s,"%s",textext("%s")) ;',x,y,location,f_texttemplate_l(x,y,#charttexts))
+                        ctx_tographic(g,'flow_chart_draw_exit(%s,%s,"%s",textext("%s")) ;',x,y,location,f_texttemplate_l(x,y,#charttexts))
                     end
                 end
             end
@@ -713,7 +821,7 @@ local function process_texts(chart,xoffset,yoffset)
                     end
                     if text and text ~= "" then
                         charttexts[#charttexts+1] = text
-                        context('flow_chart_draw_comment(%s,%s,%s,"%s",%s,textext("%s")) ;',x,y,i,location,length,f_texttemplate_l(x,y,#charttexts))
+                        ctx_tographic(g,'flow_chart_draw_comment(%s,%s,%s,"%s",%s,textext("%s")) ;',x,y,i,location,length,f_texttemplate_l(x,y,#charttexts))
                     end
                 end
             end
@@ -740,7 +848,7 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
     local chartsettings = chart.settings.chart
     local autofocus = chart.settings.chart.autofocus
     if autofocus then
-        autofocus = utilities.parsers.settings_to_hash(autofocus)
+        autofocus = settings_to_hash(autofocus)
         if not next(autofocus) then
             autofocus = false
         end
@@ -764,17 +872,15 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
             if miny == 0 or y > maxy then maxy = y end
         end
     end
--- optional:
-if x + nx > maxx then
-    nx = maxx - x + 1
-end
-if y + ny > maxy then
-    ny = maxy - y + 1
-end
+    -- optional:
+    if x + nx > maxx then
+        nx = maxx - x + 1
+    end
+    if y + ny > maxy then
+        ny = maxy - y + 1
+    end
     --
- -- print("1>",x,y,nx,ny)
- -- print("2>",minx, miny, maxx, maxy)
-    -- check of window should be larger (maybe autofocus + nx/ny?)
+    -- check if window should be larger (maybe autofocus + nx/ny?)
     if autofocus then
         -- x and y are ignored
         if nx and nx > 0 then
@@ -827,21 +933,27 @@ local function makechart(chart)
     context.begingroup()
     context.forgetall()
     --
-    context.startMPcode()
-    context("if unknown context_flow : input mp-char.mpiv ; fi ;")
-    context("flow_begin_chart(0,%s,%s);",chart.nx,chart.ny)
+    local g = ctx_startgraphic {
+        instance    = "metafun",
+        format      = "metafun",
+        method      = "scaled",
+        definitions = "",
+    }
+    --
+    ctx_tographic(g,"if unknown context_flow : input mp-char.mpiv ; fi ;")
+    ctx_tographic(g,"flow_begin_chart(0,%s,%s);",chart.nx,chart.ny)
     --
     if chartsettings.option == v_test or chartsettings.dot == v_yes then
-        context("flow_show_con_points := true ;")
-        context("flow_show_mid_points := true ;")
-        context("flow_show_all_points := true ;")
+        ctx_tographic(g,"flow_show_con_points := true ;")
+        ctx_tographic(g,"flow_show_mid_points := true ;")
+        ctx_tographic(g,"flow_show_all_points := true ;")
     elseif chartsettings.dot ~= "" then -- no checking done, private option
-        context("flow_show_%s_points := true ;",chartsettings.dot)
+        ctx_tographic(g,"flow_show_%s_points := true ;",chartsettings.dot)
     end
     --
     local backgroundcolor = chartsettings.backgroundcolor
     if backgroundcolor and backgroundcolor ~= "" then
-        context("flow_chart_background_color := \\MPcolor{%s} ;",backgroundcolor)
+        ctx_tographic(g,"flow_chart_background_color := %q ;",backgroundcolor)
     end
     --
     local shapewidth    = chartsettings.width
@@ -852,14 +964,14 @@ local function makechart(chart)
     local labeloffset   = chartsettings.labeloffset
     local exitoffset    = chartsettings.exitoffset
     local commentoffset = chartsettings.commentoffset
-    context("flow_grid_width     := %p ;", gridwidth)
-    context("flow_grid_height    := %p ;", gridheight)
-    context("flow_shape_width    := %p ;", shapewidth)
-    context("flow_shape_height   := %p ;", shapeheight)
-    context("flow_chart_offset   := %p ;", chartoffset)
-    context("flow_label_offset   := %p ;", labeloffset)
-    context("flow_exit_offset    := %p ;", exitoffset)
-    context("flow_comment_offset := %p ;", commentoffset)
+    ctx_tographic(g,"flow_grid_width     := %p ;", gridwidth)
+    ctx_tographic(g,"flow_grid_height    := %p ;", gridheight)
+    ctx_tographic(g,"flow_shape_width    := %p ;", shapewidth)
+    ctx_tographic(g,"flow_shape_height   := %p ;", shapeheight)
+    ctx_tographic(g,"flow_chart_offset   := %p ;", chartoffset)
+    ctx_tographic(g,"flow_label_offset   := %p ;", labeloffset)
+    ctx_tographic(g,"flow_exit_offset    := %p ;", exitoffset)
+    ctx_tographic(g,"flow_comment_offset := %p ;", commentoffset)
     --
     local radius = settings.line.radius
     local rulethickness = settings.line.rulethickness
@@ -874,10 +986,10 @@ local function makechart(chart)
             radius = dy
         end
     end
-    context("flow_connection_line_width  := %p ;", rulethickness)
-    context("flow_connection_smooth_size := %p ;", radius)
-    context("flow_connection_arrow_size  := %p ;", radius)
-    context("flow_connection_dash_size   := %p ;", radius)
+    ctx_tographic(g,"flow_connection_line_width  := %p ;", rulethickness)
+    ctx_tographic(g,"flow_connection_smooth_size := %p ;", radius)
+    ctx_tographic(g,"flow_connection_arrow_size  := %p ;", radius)
+    ctx_tographic(g,"flow_connection_dash_size   := %p ;", radius)
     --
     local offset = chartsettings.offset -- todo: pass string
     if offset == v_none or offset == v_overlay or offset == "" then
@@ -885,18 +997,21 @@ local function makechart(chart)
     elseif offset == v_standard then
         offset = radius -- or rulethickness?
     end
-    context("flow_chart_offset := %p ;",offset)
+    ctx_tographic(g,"flow_chart_offset := %p ;",offset)
     --
-    context("flow_reverse_y := true ;")
+    ctx_tographic(g,"flow_reverse_y := true ;")
     if chartsettings.option == v_test then
-        context("flow_draw_test_shapes ;")
+        ctx_tographic(g,"flow_draw_test_shapes ;")
     end
-    process_cells(chart,0,0)
-    process_connections(chart,0,0)
-    process_texts(chart,0,0)
- -- context("clip_chart(%s,%s,%s,%s) ;",x,y,nx,ny) -- todo: draw lines but not shapes
-    context("flow_end_chart ;")
-    context.stopMPcode()
+    --
+    process_cells(g,chart,0,0)
+    process_connections(g,chart,0,0)
+    process_texts(g,chart,0,0)
+    --
+ -- ctx_tographic(g,"clip_chart(%s,%s,%s,%s) ;",x,y,nx,ny) -- todo: draw lines but not shapes
+    ctx_tographic(g,"flow_end_chart ;")
+    ctx_stopgraphic(g)
+    --
     context.endgroup()
 end
 
@@ -981,19 +1096,86 @@ local function splitchart(chart)
     end
 end
 
-function commands.flow_make_chart(settings)
-    local chart = getchart(settings)
-    if chart then
-        local settings = chart.settings
-        if settings then
-            local chartsettings = settings.chart
-            if chartsettings and chartsettings.split == v_yes then
-                splitchart(chart)
+implement {
+    name      = "flow_make_chart",
+    arguments = {
+        {
+            { "chart", {
+                    { "name" },
+                    { "option" },
+                    { "backgroundcolor" },
+                    { "width", "dimension" },
+                    { "height", "dimension" },
+                    { "dx", "dimension" },
+                    { "dy", "dimension" },
+                    { "offset", "dimension" },
+                 -- { "bodyfont" },
+                    { "dot" },
+                    { "hcompact" },
+                    { "vcompact" },
+                    { "focus" },
+                    { "autofocus" },
+                    { "nx", "integer" },
+                    { "ny", "integer" },
+                    { "x", "integer" },
+                    { "y", "integer" },
+                    { "labeloffset", "dimension" },
+                    { "commentoffset", "dimension" },
+                    { "exitoffset", "dimension" },
+                    { "split" },
+                },
+            },
+            { "shape", {
+                    { "rulethickness", "dimension" },
+                    { "default" },
+                    { "framecolor" },
+                    { "backgroundcolor" },
+                },
+            },
+            { "focus", {
+                    { "rulethickness", "dimension" },
+                    { "framecolor" },
+                    { "backgroundcolor" },
+                },
+            },
+            { "line", {
+                    { "rulethickness", "dimension" },
+                    { "radius", "dimension" },
+                    { "color" },
+                    { "corner" },
+                    { "dash" },
+                    { "arrow" },
+                    { "offset" },
+                },
+            },
+            { "split", {
+                    { "nx", "integer" },
+                    { "ny", "integer" },
+                    { "dx", "integer" },
+                    { "dy", "integer" },
+                    { "command" },
+                    { "marking" },
+                    { "before" },
+                    { "after" },
+                },
+            },
+         -- { "set" },
+        }
+    },
+    actions   = function(settings)
+        local chart = getchart(settings)
+        if chart then
+            local settings = chart.settings
+            if settings then
+                local chartsettings = settings.chart
+                if chartsettings and chartsettings.split == v_yes then
+                    splitchart(chart)
+                else
+                    makechart(chart)
+                end
             else
                 makechart(chart)
             end
-        else
-            makechart(chart)
         end
     end
-end
+}

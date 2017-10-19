@@ -802,6 +802,7 @@
 		<cd:constant name='fieldoffset' value='offsetcampo'/>
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filler' value='filler'/>
+		<cd:constant name='filter' value='filter'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>

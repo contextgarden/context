@@ -12,6 +12,7 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 local type, tostring = type, tostring
 local format, concat = string.format, table.concat
 local settings_to_hash = utilities.parsers.settings_to_hash
+local formatters = string.formatters
 
 local report_metapost = logs.reporter("metapost")
 
@@ -199,6 +200,39 @@ implement {
 
 function metapost.graphic(specification)
     metapost.graphic_base_pass(setmpsformat(specification))
+end
+
+function metapost.startgraphic(t)
+    if not t then
+        t = { }
+    end
+    if not t.instance then
+        t.instance = metapost.defaultinstance
+    end
+    if not t.format then
+        t.format = metapost.defaultformat
+    end
+    if not t.method then
+        t.method = metapost.defaultmethod
+    end
+    if not t.definitions then
+        t.definitions = ""
+    end
+    t.data = { }
+    return t
+end
+
+function metapost.stopgraphic(t)
+    if t then
+        t.data = concat(t.data or { },"\n")
+        metapost.graphic(t)
+        t.data = ""
+    end
+end
+
+function metapost.tographic(t,f,s,...)
+    local d = t.data
+    d[#d+1] = s and formatters[f](s,...) or f
 end
 
 implement {

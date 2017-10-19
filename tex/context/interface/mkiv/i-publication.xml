@@ -229,6 +229,9 @@
                     <cd:constant type="all"/>
                     <cd:constant type="none"/>
                 </cd:parameter>
+                <cd:parameter name="filter">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
                 <cd:parameter name="specification">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>

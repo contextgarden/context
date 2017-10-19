@@ -7871,6 +7871,9 @@ return {
   ["filler"]={
    ["en"]="filler",
   },
+  ["filter"]={
+   ["en"]="filter",
+  },
   ["filtercommand"]={
    ["en"]="filtercommand",
   },

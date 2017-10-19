@@ -489,7 +489,7 @@ end
 local findallused do
 
     local reported = { }
-    local finder   = publications.finder
+    ----- finder   = publications.finder
 
     findallused = function(dataset,reference,internal,forcethem)
         local current  = datasets[dataset]
@@ -641,6 +641,29 @@ local findallused do
         end
         return okay, todo, tags
     end
+
+    local firstoftwoarguments  = context.firstoftwoarguments
+    local secondoftwoarguments = context.secondoftwoarguments
+
+    implement {
+        name      = "btxdoifelsematches",
+        arguments = { "string", "string", "string" },
+        actions   = function(dataset,tag,expression)
+            local find = publications.finder(dataset,expression)
+            local okay = false
+            if find then
+                local d = datasets[dataset]
+                if d then
+                    local e = d.luadata[tag]
+                    if e and find(e) then
+                        firstoftwoarguments()
+                        return
+                    end
+                end
+            end
+            secondoftwoarguments()
+        end
+    }
 
 end
 
@@ -1813,6 +1836,7 @@ do
         end
         local method             = specification.method or v_none
         local ignored            = specification.ignored or ""
+        local filter             = specification.filter or ""
         rendering.method         = method
         rendering.ignored        = ignored ~= "" and settings_to_set(ignored) or nil
         rendering.list           = { }
@@ -1837,6 +1861,24 @@ do
         end
         filtermethod(dataset,rendering,keyword)
         local list = rendering.list
+        if list and filter ~= "" then
+            local find = publications.finder(dataset,filter)
+            if find then
+                local luadata = datasets[dataset].luadata
+                local matched = 0
+                for i=1,#list do
+                    local found = list[i]
+                    local entry = luadata[found[1]]
+                    if find(entry) then
+                        matched = matched + 1
+                        list[matched] = found
+                    end
+                end
+                for i=#list,matched + 1,-1 do
+                    list[i] = nil
+                end
+            end
+        end
         ctx_btxsetnoflistentries(list and #list or 0)
     end
 
@@ -2265,6 +2307,7 @@ do
                 { "repeated" },
                 { "ignored" },
                 { "group" },
+                { "filter" },
             }
         }
     }
@@ -3343,7 +3386,7 @@ do
  -- local lpegmatch = lpeg.match
     local splitter  = lpeg.tsplitat(":")
 
-    interfaces.implement {
+    implement {
         name      = "checkinterfacechain",
         arguments = { "string", "string" },
         actions   = function(str,command)

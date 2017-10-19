@@ -826,6 +826,7 @@
        repeated  {\btxrenderingparameter\c!repeat}%
        ignored   {\btxrenderingparameter\c!ignore}%
        group     {\btxrenderingparameter\c!group}%
+       filter    {\btxrenderingparameter\c!filter}%
    \relax
    \ifnum\nofbtxlistentries>\zerocount
      \forgetall
@@ -1892,6 +1893,11 @@
 
 \unexpanded\def\stopbtxrunningstyleandcolor
   {\endgroup}
+
+%D Maybe handy:
+
+\unexpanded\def\btxdoifelsematches#1#2#3%
+  {\clf_btxdoifelsematches{#1}{#2}{#3}}
 
 %D Defaults:
 

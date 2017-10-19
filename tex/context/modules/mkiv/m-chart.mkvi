@@ -29,12 +29,12 @@
 % todo: figure out a nice way to define the lot: share current and
 % support current as name (nb: we need to set parent then)
 
-\installcorenamespace {flowchart} % \def\??flch{@@flch} % chart
-\installcorenamespace {flowline}  % \def\??flln{@@flln} % line
-\installcorenamespace {flowshape} % \def\??flsh{@@flsh} % shape
-\installcorenamespace {flowfocus} % \def\??flfc{@@flfc} % focus
-\installcorenamespace {flowsets}  % \def\??flst{@@flst} % sets
-\installcorenamespace {flowsplit} % \def\??flsp{@@flsp} % split
+\installcorenamespace {flowchart} % chart
+\installcorenamespace {flowline}  % line
+\installcorenamespace {flowshape} % shape
+\installcorenamespace {flowfocus} % focus
+\installcorenamespace {flowsets}  % sets
+\installcorenamespace {flowsplit} % split
 
 \installsimplecommandhandler \??flowchart {FLOWchart} \??flowchart % maybe just a setuphandler
 \installsimplecommandhandler \??flowline  {FLOWline}  \??flowline  % maybe just a setuphandler
@@ -118,7 +118,7 @@
 \newtoks\everyFLOWchart
 
 \unexpanded\def\module_charts_process[#name]%
-  {\ctxcommand{flow_start_chart("#name")}}
+  {\clf_flow_start_chart{#name}}
 
 \unexpanded\def\startFLOWchart
   {\startnointerference
@@ -126,10 +126,10 @@
    \dosingleempty\module_charts_start_chart}
 
 \unexpanded\def\module_charts_start_chart[#name]%
-  {\ctxcommand{flow_start_chart("#name")}}
+  {\clf_flow_start_chart{#name}}
 
 \unexpanded\def\stopFLOWchart
-  {\ctxcommand{flow_stop_chart()}%
+  {\clf_flow_stop_chart
    \stopnointerference}
 
 \unexpanded\def\defineFLOWchart % for old times sake
@@ -138,9 +138,9 @@
 \unexpanded\def\module_charts_FLOW_define[#name][#settings]#cells% todo: save settings
   {\startnointerference
    \the\everyFLOWchart
-   \ctxcommand{flow_start_chart("#name")}%
+   \clf_flow_start_chart{#name}%
    #cells%
-   \ctxcommand{flow_stop_chart()}%
+   \clf_flow_stop_chart
    \stopnointerference}
 
 \unexpanded\def\startFLOWcell
@@ -154,32 +154,32 @@
    \ifsecondargument
      \setupFLOWline[#2]%
    \fi
-   \ctxcommand{flow_start_cell {
-        shape = {
-            rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,
-            default         = "\FLOWshapeparameter\c!default",
-            framecolor      = "\FLOWshapeparameter\c!framecolor",
-            backgroundcolor = "\FLOWshapeparameter\c!backgroundcolor",
-        },
-        focus = {
-            rulethickness   = \number\dimexpr\FLOWfocusparameter\c!rulethickness,
-            framecolor      = "\FLOWfocusparameter\c!framecolor",
-            backgroundcolor = "\FLOWfocusparameter\c!backgroundcolor",
-        },
-        line = {
-            rulethickness   = \number\dimexpr\FLOWlineparameter\c!rulethickness,
-            radius          = \number\dimexpr\FLOWlineparameter\c!radius,
-            color           = "\FLOWlineparameter\c!color",
-            corner          = "\FLOWlineparameter\c!corner",
-            dash            = "\FLOWlineparameter\c!dash",
-            arrow           = "\FLOWlineparameter\c!arrow",
-            offset          = \number\dimexpr\FLOWlineparameter\c!offset,
-        },
-  } }%
+   \clf_flow_start_cell
+        shape {
+            rulethickness   \dimexpr\FLOWshapeparameter\c!rulethickness\relax
+            default         {\FLOWshapeparameter\c!default}
+            framecolor      {\FLOWshapeparameter\c!framecolor}
+            backgroundcolor {\FLOWshapeparameter\c!backgroundcolor}
+        }
+        focus {
+            rulethickness   \dimexpr\FLOWfocusparameter\c!rulethickness\relax
+            framecolor      {\FLOWfocusparameter\c!framecolor}
+            backgroundcolor {\FLOWfocusparameter\c!backgroundcolor}
+        }
+        line {
+            rulethickness   \dimexpr\FLOWlineparameter\c!rulethickness\relax
+            radius          \dimexpr\FLOWlineparameter\c!radius\relax
+            color           {\FLOWlineparameter\c!color}
+            corner          {\FLOWlineparameter\c!corner}
+            dash            {\FLOWlineparameter\c!dash}
+            arrow           {\FLOWlineparameter\c!arrow}
+            offset          \dimexpr\FLOWlineparameter\c!offset\relax
+        }
+  \relax
   \endgroup}
 
 \unexpanded\def\stopFLOWcell
-  {\ctxcommand{flow_stop_cell()}}
+  {\clf_flow_stop_cell}
 
 \unexpanded\def\FLOWchart
   {\dodoubleempty\module_charts_process}
@@ -190,64 +190,64 @@
      \dontcomplain
      \setupFLOWchart[#settings]%
      \usebodyfontparameter\FLOWchartparameter
-     \ctxcommand{flow_make_chart {
-        chart = {
-            name            = "#name",
-            option          = "\FLOWchartparameter\c!option",
-            backgroundcolor = "\FLOWchartparameter\c!backgroundcolor",
-            width           = \number\dimexpr\FLOWchartparameter\c!width,
-            height          = \number\dimexpr\FLOWchartparameter\c!height,
-            dx              = \number\dimexpr\FLOWchartparameter\c!dx,
-            dy              = \number\dimexpr\FLOWchartparameter\c!dy,
-            offset          = \number\dimexpr\FLOWchartparameter\c!offset,
-          % bodyfont        = "\FLOWchartparameter\c!bodyfont",
-            dot             = "\FLOWchartparameter\c!dot", % private option
-            hcompact        = "\FLOWchartparameter\c!hcompact", % undocumented option
-            vcompact        = "\FLOWchartparameter\c!vcompact", % undocumented option
-            focus           = "\FLOWchartparameter\c!focus",
-            autofocus       = "\FLOWchartparameter\c!autofocus",
-            nx              = "\FLOWchartparameter\c!nx",
-            ny              = "\FLOWchartparameter\c!ny",
-            x               = "\FLOWchartparameter\c!x",
-            y               = "\FLOWchartparameter\c!y",
-            labeloffset     = \number\dimexpr\FLOWchartparameter\c!labeloffset,
-            commentoffset   = \number\dimexpr\FLOWchartparameter\c!commentoffset,
-            exitoffset      = \number\dimexpr\FLOWchartparameter\c!exitoffset,
-            split           = "\FLOWchartparameter\c!split",
-        },
-        shape = {
-            rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,
-            default         = "\FLOWshapeparameter\c!default",
-            framecolor      = "\FLOWshapeparameter\c!framecolor",
-            backgroundcolor = "\FLOWshapeparameter\c!backgroundcolor",
-        },
-        focus = {
-            rulethickness   = \number\dimexpr\FLOWfocusparameter\c!rulethickness,
-            framecolor      = "\FLOWfocusparameter\c!framecolor",
-            backgroundcolor = "\FLOWfocusparameter\c!backgroundcolor",
-        },
-        line = {
-            rulethickness   = \number\dimexpr\FLOWlineparameter\c!rulethickness,
-            radius          = \number\dimexpr\FLOWlineparameter\c!radius,
-            color           = "\FLOWlineparameter\c!color",
-            corner          = "\FLOWlineparameter\c!corner",
-            dash            = "\FLOWlineparameter\c!dash",
-            arrow           = "\FLOWlineparameter\c!arrow",
-            offset          = "\FLOWlineparameter\c!offset",
-        },
-        set = {
-        },
-        split = {
-            nx              = \number\FLOWsplitparameter\c!nx,
-            ny              = \number\FLOWsplitparameter\c!ny,
-            dx              = \number\FLOWsplitparameter\c!dx,
-            dy              = \number\FLOWsplitparameter\c!dy,
-            command         = "",
-            marking         = "\FLOWsplitparameter\c!marking",
-            before          = "",
-            after           = "",
+     \clf_flow_make_chart
+        chart {
+            name            {#name}
+            option          {\FLOWchartparameter\c!option}
+            backgroundcolor {\FLOWchartparameter\c!backgroundcolor}
+            width           \dimexpr\FLOWchartparameter\c!width\relax
+            height          \dimexpr\FLOWchartparameter\c!height\relax
+            dx              \dimexpr\FLOWchartparameter\c!dx\relax
+            dy              \dimexpr\FLOWchartparameter\c!dy\relax
+            offset          \dimexpr\FLOWchartparameter\c!offset\relax
+          % bodyfont        {\FLOWchartparameter\c!bodyfont}
+            dot             {\FLOWchartparameter\c!dot}      % private option
+            hcompact        {\FLOWchartparameter\c!hcompact} % undocumented option
+            vcompact        {\FLOWchartparameter\c!vcompact} % undocumented option
+            focus           {\FLOWchartparameter\c!focus}
+            autofocus       {\FLOWchartparameter\c!autofocus}
+            nx              \numexpr\FLOWchartparameter\c!nx\relax
+            ny              \numexpr\FLOWchartparameter\c!ny\relax
+            x               \numexpr\FLOWchartparameter\c!x\relax
+            y               \numexpr\FLOWchartparameter\c!y\relax
+            labeloffset     \dimexpr\FLOWchartparameter\c!labeloffset\relax
+            commentoffset   \dimexpr\FLOWchartparameter\c!commentoffset\relax
+            exitoffset      \dimexpr\FLOWchartparameter\c!exitoffset\relax
+            split           {\FLOWchartparameter\c!split}
         }
-     } }%
+        shape {
+            rulethickness   \dimexpr\FLOWshapeparameter\c!rulethickness\relax
+            default         {\FLOWshapeparameter\c!default}
+            framecolor      {\FLOWshapeparameter\c!framecolor}
+            backgroundcolor {\FLOWshapeparameter\c!backgroundcolor}
+        }
+        focus {
+            rulethickness   \dimexpr\FLOWfocusparameter\c!rulethickness\relax
+            framecolor      {\FLOWfocusparameter\c!framecolor}
+            backgroundcolor {\FLOWfocusparameter\c!backgroundcolor}
+        }
+        line {
+            rulethickness   \dimexpr\FLOWlineparameter\c!rulethickness\relax
+            radius          \dimexpr\FLOWlineparameter\c!radius\relax
+            color           {\FLOWlineparameter\c!color}
+            corner          {\FLOWlineparameter\c!corner}
+            dash            {\FLOWlineparameter\c!dash}
+            arrow           {\FLOWlineparameter\c!arrow}
+            offset          {\FLOWlineparameter\c!offset}
+        }
+      % set {
+      % }
+        split {
+            nx              \numexpr\FLOWsplitparameter\c!nx\relax
+            ny              \numexpr\FLOWsplitparameter\c!ny\relax
+            dx              \numexpr\FLOWsplitparameter\c!dx\relax
+            dy              \numexpr\FLOWsplitparameter\c!dy\relax
+            command         {}
+            marking         {\FLOWsplitparameter\c!marking}
+            before          {}
+            after           {}
+        }
+     \relax
   \egroup}
 
 \unexpanded\def\FLOWcharts
@@ -281,13 +281,13 @@
    \let\includeFLOWchart\include
 \to \everyFLOWchart
 
-\unexpanded\def\FLOW_name              #name{\ctxcommand{flow_set_name("#name")}\ignorespaces}
-\unexpanded\def\FLOW_shape            #shape{\ctxcommand{flow_set_shape("#shape")}\ignorespaces}
-\unexpanded\def\FLOW_destination#destination{\ctxcommand{flow_set_destination("#destination")}\ignorespaces}
-\unexpanded\def\FLOW_focus            #focus{\ctxcommand{flow_set_focus("#focus")}\ignorespaces}
-\unexpanded\def\FLOW_overlay        #overlay{\ctxcommand{flow_set_overlay("#overlay")}\ignorespaces}
-\unexpanded\def\FLOW_location      #location{\ctxcommand{flow_set_location("#location")}\ignorespaces}
-\unexpanded\def\FLOW_figure          #figure{\ctxcommand{flow_set_figure("#figure")}\ignorespaces}
+\unexpanded\def\FLOW_name              #name{\clf_flow_set_name{#name}\ignorespaces}
+\unexpanded\def\FLOW_shape            #shape{\clf_flow_set_shape{#shape}\ignorespaces}
+\unexpanded\def\FLOW_destination#destination{\clf_flow_set_destination{#destination}\ignorespaces}
+\unexpanded\def\FLOW_focus            #focus{\clf_flow_set_focus{#focus}\ignorespaces}
+\unexpanded\def\FLOW_overlay        #overlay{\clf_flow_set_overlay{#overlay}\ignorespaces}
+\unexpanded\def\FLOW_location      #location{\clf_flow_set_location{#location}\ignorespaces}
+\unexpanded\def\FLOW_figure          #figure{\clf_flow_set_figure{#figure}\ignorespaces}
 
 \unexpanded\def\FLOW_text      {\dosingleempty\module_charts_FLOW_text}
 \unexpanded\def\FLOW_label     {\dosingleempty\module_charts_FLOW_label}
@@ -296,16 +296,16 @@
 \unexpanded\def\FLOW_connection{\dodoubleempty\module_charts_FLOW_connection}
 \unexpanded\def\FLOW_include   {\dodoubleempty\module_charts_FLOW_include}
 
-\unexpanded\def\module_charts_FLOW_text                  [#align]#text{\ctxcommand{flow_set_text("#align",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\module_charts_FLOW_label              [#location]#text{\ctxcommand{flow_set_label("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\module_charts_FLOW_comment            [#location]#text{\ctxcommand{flow_set_comment("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\module_charts_FLOW_exit               [#location]#text{\ctxcommand{flow_set_exit("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\module_charts_FLOW_connection[#location][#offset]#name{\ctxcommand{flow_set_connection("#location","#offset","#name")}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_text                  [#align]#text{\clf_flow_set_text{#align}{\detokenize{#text}}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_label              [#location]#text{\clf_flow_set_label{#location}{\detokenize{#text}}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_comment            [#location]#text{\clf_flow_set_comment{#location}{\detokenize{#text}}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_exit               [#location]#text{\clf_flow_set_exit{#location}{\detokenize{#text}}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_connection[#location][#offset]#name{\clf_flow_set_connection{#location}{#offset}{#name}\ignorespaces}
 
 \unexpanded\def\module_charts_FLOW_include          [#name][#settings]{%
     \begingroup
         \getparameters[FLOWi][\c!x=1,\c!y=1,#settings]%
-        \ctxcommand{flow_set_include("#name",\number\FLOWix,\number\FLOWiy,\!!bs\detokenize{#settings}\!!es)}%
+        \clf_flow_set_include{#name}\numexpr\FLOWix\relax\numexpr\FLOWiy\relax{\detokenize{#settings}}%
     \endgroup
     \ignorespaces
 }
@@ -382,7 +382,7 @@
    \endgroup}
 
 \unexpanded\def\getFLOWtext#1%
-  {\ifcase#1\else\ctxcommand{flow_get_text(#1)}\fi}
+  {\ifcase#1\else\clf_flow_get_text\numexpr#1\relax\fi}
 
 \defineframed % to be discussed: shape or global
   [flowcell:base]

@@ -31,14 +31,14 @@ numeric flow_shape_width            ; flow_shape_width            := 45pt ;
 numeric flow_grid_height            ; flow_grid_height            := 40pt ;
 numeric flow_shape_height           ; flow_shape_height           := 30pt ;
 numeric flow_chart_offset           ; flow_chart_offset           :=  2pt ;
-color   flow_chart_background_color ; flow_chart_background_color := white ;
+string  flow_chart_background_color ; flow_chart_background_color := "white" ;
 boolean flow_show_mid_points        ; flow_show_mid_points        := false ;
 boolean flow_show_con_points        ; flow_show_con_points        := false ;
 boolean flow_show_all_points        ; flow_show_all_points        := false ;
 numeric flow_shape_line_width       ; flow_shape_line_width       := 2pt ;
-color   flow_shape_line_color       ; flow_shape_line_color       := .5white ;
-color   flow_shape_fill_color       ; flow_shape_fill_color       := .9white ;
-color   flow_connection_line_color  ; flow_connection_line_color  := .2white ;
+string  flow_shape_line_color       ; flow_shape_line_color       := "gray-5" ;
+string  flow_shape_fill_color       ; flow_shape_fill_color       := "gray-9";
+string  flow_connection_line_color  ; flow_connection_line_color  := "gray-2" ;
 
 numeric flow_connection_line_width  ; flow_connection_line_width  := flow_shape_line_width ;
 
@@ -102,14 +102,14 @@ def flow_new_chart =
     flow_grid_height            := 40pt ;
     flow_shape_height           := 30pt ;
     flow_chart_offset           :=  2pt ;
-    flow_chart_background_color := white ;
+    flow_chart_background_color := "white" ;
     flow_show_mid_points        := false ;
     flow_show_con_points        := false ;
     flow_show_all_points        := false ;
     flow_shape_line_width       := 2pt ;
-    flow_shape_line_color       := .5white ;
-    flow_shape_fill_color       := .9white ;
-    flow_connection_line_color  := .2white ;
+    flow_shape_line_color       := "gray-5" ;
+    flow_shape_fill_color       := "gray-9" ;
+    flow_connection_line_color  := "gray-2" ;
     flow_connection_line_width  := flow_shape_line_width ;
     flow_connection_smooth_size := 5pt ;
     flow_connection_arrow_size  := 4pt ;
@@ -140,8 +140,8 @@ def flow_new_chart =
     path    flow_xypath     [][] ;
     numeric flow_xysx       [][] ;
     numeric flow_xysy       [][] ;
-    color   flow_xyfill     [][] ;
-    color   flow_xydraw     [][] ;
+    string  flow_xyfill     [][] ;
+    string  flow_xydraw     [][] ;
     numeric flow_xyline     [][] ;
     boolean flow_xypeep     [][] ;
     picture flow_xytext     [][] ;
@@ -150,7 +150,7 @@ def flow_new_chart =
     picture flow_xycomment  [][] ;
     path    flow_cpaths     [] ;
     numeric flow_cline      [] ;
-    color   flow_ccolor     [] ;
+    string  flow_ccolor     [] ;
     boolean flow_carrow     [] ;
     boolean flow_cdash      [] ;
     boolean flow_ccross     [] ;
@@ -1112,7 +1112,7 @@ def flow_begin_sub_chart =
     begingroup ;
     save    flow_shape_line_width, flow_connection_line_width ;
     save    flow_shape_line_color, flow_shape_fill_color, flow_connection_line_color ;
-    color   flow_shape_line_color, flow_shape_fill_color, flow_connection_line_color ;
+    string  flow_shape_line_color, flow_shape_fill_color, flow_connection_line_color ;
     save    flow_smooth, flow_arrowtip, flow_dashline, flow_peepshape ;
     boolean flow_smooth, flow_arrowtip, flow_dashline, flow_peepshape ;
 enddef ;
