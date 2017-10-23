@@ -65,7 +65,6 @@ enddef ;
 
 numeric currentgraphictext ; currentgraphictext := 0 ;
 
-def data_mpo_file = job_name & "-mpgraph.mpo" enddef ;
 def data_mpy_file = job_name & "-mpgraph.mpy" enddef ;
 
 def begingraphictextfig (expr n) =
@@ -82,10 +81,10 @@ def endgraphictextfig =
 enddef ;
 
 def loadfigure primary filename =
-    doloadfigure (filename)
+    mfun_load_figure(filename)
 enddef ;
 
-def doloadfigure (expr filename) text figureattributes =
+def mfun_load_figure (expr filename) text figureattributes =
     begingroup ;
     save figurenumber, figurepicture, number, fixedplace ;
     numeric figurenumber  ; figurenumber := 0 ;

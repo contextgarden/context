@@ -18,7 +18,7 @@ local concat       = table.concat
 local lpegmatch    = lpeg.match
 local lpegpatterns = lpeg.patterns
 
-local P, S, Ct = lpeg.P, lpeg.S, lpeg.Ct
+local P, S, Ct, Cs, Cc, C = lpeg.P, lpeg.S, lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.C
 
 local report_luarun  = logs.reporter("metapost","lua")
 local report_message = logs.reporter("metapost")
@@ -87,7 +87,44 @@ local function mpprint(...)
     end
 end
 
-mp.print = mpprint
+local r = P('%')  / "percent"
+        + P('"')  / "dquote"
+        + P('\n') / "crlf"
+     -- + P(' ')  / "space"
+local a = Cc("&")
+local q = Cc('"')
+local p = Cs(q * (r * a)^-1 * (a * r * (P(-1) + a) + P(1))^0 * q)
+
+local function mpvprint(...) -- variable print
+    for i=1,select("#",...) do
+        local value = select(i,...)
+        if value ~= nil then
+            n = n + 1
+            local t = type(value)
+            if t == "number" then
+                buffer[n] = f_numeric(value)
+            elseif t == "string" then
+                buffer[n] = lpegmatch(p,value)
+            elseif t == "table" then
+                local m = #t
+                if m == 2 then
+                    buffer[n] = f_pair(unpack(t))
+                elseif m == 3 then
+                    buffer[n] = f_triplet(unpack(t))
+                elseif m == 4 then
+                    buffer[n] = f_quadruple(unpack(t))
+                else -- error
+                    buffer[n] = ""
+                end
+            else -- boolean or whatever
+                buffer[n] = tostring(value)
+            end
+        end
+    end
+end
+
+mp.print  = mpprint
+mp.vprint = mpvprint
 
 -- We had this:
 --
@@ -217,9 +254,11 @@ local function mpquoted(fmt,s,...)
         if not find(fmt,"%%") then
             fmt = lpegmatch(replacer,fmt)
         end
-        buffer[n] = '"' .. formatters[fmt](s,...) .. '"'
+     -- buffer[n] = '"' .. formatters[fmt](s,...) .. '"'
+        buffer[n] = lpegmatch(p,formatters[fmt](s,...))
     elseif fmt then
-        buffer[n] = '"' .. fmt .. '"'
+     -- buffer[n] = '"' .. fmt .. '"'
+        buffer[n] = '"' .. lpegmatch(p,fmt) .. '"'
     else
         -- something is wrong
     end
@@ -275,24 +314,6 @@ end
 --     endfor ;
 -- \stopMPpage
 
--- function metapost.runscript(code)
---     local f = loadstring(f_code(code))
---     if f then
---         local result = f()
---         if result then
---             local t = type(result)
---             if t == "number" then
---                 return f_numeric(result)
---             elseif t == "string" then
---                 return result
---             else
---                 return tostring(result)
---             end
---         end
---     end
---     return ""
--- end
-
 local cache, n = { }, 0 -- todo: when > n then reset cache or make weak
 
 function metapost.runscript(code)
@@ -340,7 +361,7 @@ function metapost.runscript(code)
             report_luarun("no result")
         end
     else
-        report_luarun("no result, invalid code")
+        report_luarun("no result, invalid code: %s",code)
     end
     return ""
 end
@@ -648,5 +669,34 @@ do
     function mp.texstr(name)
         qprint(getmacro(metapost.namespace .. name))
     end
+
+end
+
+do
+local stores = { }
+
+    function mp.newstore(name)
+        stores[name] = { }
+    end
+
+    function mp.disposestore(name)
+        stores[name] = nil
+    end
+
+    function mp.tostore(name,key,value)
+        stores[name][key] = value
+    end
+
+    function mp.fromstore(name,key)
+        mp.vprint(stores[name][key]) -- type specific
+    end
+
+    interfaces.implement {
+        name      = "getMPstored",
+        arguments = { "string", "string" },
+        actions   = function(name,key)
+            context(stores[name][key])
+        end
+    }
 
 end

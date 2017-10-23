@@ -35,7 +35,6 @@ local getlist            = nuts.getlist
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getattr            = nuts.getattr
-local getfield           = nuts.getfield
 local getboth            = nuts.getboth
 local getcomponents      = nuts.getcomponents
 local getwidth           = nuts.getwidth

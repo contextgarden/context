@@ -234,50 +234,27 @@ def job_name =
     jobname
 enddef ;
 
-def data_mpd_file =
-    job_name & "-mp.mpd"
-enddef ;
-
 %D Because \METAPOST\ has a hard coded limit of 4~datafiles,
 %D we need some trickery when we have multiple files. This will
 %D be redone (via \LUA).
-
-if unknown collapse_data :
-    boolean collapse_data ;
-    collapse_data := false ;
-fi ;
 
 boolean savingdata     ; savingdata     := false ;
 boolean savingdatadone ; savingdatadone := false ;
 
 def savedata expr txt =
-    write if collapse_data :
-        txt
-    else :
-        if savingdata : txt else : "\MPdata{" & decimal charcode & "}{" & txt & "}" fi & "%"
-    fi to data_mpd_file ;
+    lua.mp.save_data(txt);
 enddef ;
 
 def startsavingdata =
-    savingdata := true ;
-    savingdatadone := true ;
-    if collapse_data :
-        write "\MPdata{" & decimal charcode & "}{%" to data_mpd_file ;
-    fi ;
+    lua.mp.start_saving_data();
 enddef ;
 
 def stopsavingdata =
-    if collapse_data :
-        write "}%" to data_mpd_file ;
-    fi ;
-    savingdata := false ;
+    lua.mp.stop_saving_data() ;
 enddef ;
 
 def finishsavingdata =
-    if savingdatadone :
-        write EOF to data_mpd_file ;
-        savingdatadone := false ;
-    fi ;
+    lua.mp.finish_saving_data() ;
 enddef ;
 
 %D Instead of a keystroke eating save and allocation
@@ -3221,6 +3198,9 @@ def loadmodule expr name = % no vardef
         expandafter scantokens expandafter s
     fi ;
 enddef ;
+
+def loadfile  (expr filename) =       scantokens("input " & filename)   enddef ;
+def loadimage (expr filename) = image(scantokens("input " & filename);) enddef ;
 
 %D Handy for backgrounds:
 

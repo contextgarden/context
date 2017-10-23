@@ -59,10 +59,10 @@ def build_parshape (expr p, offset_or_path, dx, dy, baselineskip, strutheight, s
 
     startsavingdata ;
 
-    savedata "\global\parvoffset " & decimal voffset&"bp " ;
-    savedata "\global\parhoffset " & decimal hoffset&"bp " ;
-    savedata "\global\parwidth   " & decimal   hsize&"bp " ;
-    savedata "\global\parheight  " & decimal   vsize&"bp " ;
+    savedata "\global\parvoffset " & decimal voffset & "bp " ;
+    savedata "\global\parhoffset " & decimal hoffset & "bp " ;
+    savedata "\global\parwidth   " & decimal   hsize & "bp " ;
+    savedata "\global\parheight  " & decimal   vsize & "bp " ;
 
     if not path offset_or_path :
         q := q xscaled ((hsize-2hoffset)/hsize) yscaled ((vsize-2voffset)/vsize) ;
@@ -144,13 +144,13 @@ def build_parshape (expr p, offset_or_path, dx, dy, baselineskip, strutheight, s
 
         if (i=strutheight) and (width[n]<baselineskip) :
             n := n - 1 ;
-            savedata "\global\chardef\parfirst=1 " ;
+            savedata "\global\parfirst\plusone " ;
         fi ;
 
     endfor ;
 
-    savedata "\global\parlines  " & decimal n ;
-    savedata "\global\partoks{  " ;
+    savedata "\global\parlines " & decimal n ;
+    savedata "\global\partoks{ " ;
     for i=1 upto n:
         savedata decimal indent[i]&"bp " & decimal width[i]&"bp " ;
     endfor ;

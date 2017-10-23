@@ -97,6 +97,7 @@ local setlist              = nuts.setlist
 local setnext              = nuts.setnext
 local setprev              = nuts.setprev
 local setchar              = nuts.setchar
+local setfam               = nuts.setfam
 local setsubtype           = nuts.setsubtype
 local setattr              = nuts.setattr
 
@@ -108,6 +109,7 @@ local getid                = nuts.getid
 local getsubtype           = nuts.getsubtype
 local getchar              = nuts.getchar
 local getfont              = nuts.getfont
+local getfam               = nuts.getfam
 local getattr              = nuts.getattr
 local getlist              = nuts.getlist
 
@@ -226,7 +228,7 @@ local function process(start,what,n,parent)
             elseif id == math_char then
                 local char = getchar(start)
                 local font = getfont(start)
-                local fam  = getfield(start,"fam")
+                local fam  = getfam(start)
                 report_processing("%w%S, family %a, font %a, char %a, shape %c",n*2,nutstring(start),fam,font,char,char)
             else
                 report_processing("%w%S",n*2,nutstring(start))
@@ -454,7 +456,7 @@ do
     }
 
     families[math_char] = function(pointer)
-        if getfield(pointer,"fam") == 0 then
+        if getfam(pointer) == 0 then
             local a = getattr(pointer,a_mathfamily)
             if a and a > 0 then
                 setattr(pointer,a_mathfamily,0)
@@ -466,13 +468,13 @@ do
                         if trace_families then
                             report_families("no bold replacement for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
                         end
-                        setfield(pointer,"fam",newa)
+                        setfam(pointer,newa)
                     elseif not fontcharacters[font_of_family(newa)][bold] then
                         if trace_families then
                             report_families("no bold character for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
                         end
                         if newa > 3 then
-                            setfield(pointer,"fam",newa-3)
+                            setfam(pointer,newa-3)
                         end
                     else
                         setattr(pointer,a_exportstatus,char)
@@ -480,7 +482,7 @@ do
                         if trace_families then
                             report_families("replacing %C by bold %C, family %s with remap %s becomes %s with remap %s",char,bold,a,familymap[a],newa,familymap[newa])
                         end
-                        setfield(pointer,"fam",newa)
+                        setfam(pointer,newa)
                     end
                 else
                     local char = getchar(pointer)
@@ -492,7 +494,7 @@ do
                         if trace_families then
                             report_families("family of %C becomes %s with remap %s",char,a,familymap[a])
                         end
-                        setfield(pointer,"fam",a)
+                        setfam(pointer,a)
                     end
                 end
             end
@@ -528,6 +530,30 @@ do
             end
         end
     end
+
+    -- will become:
+
+    -- families[math_delim] = function(pointer)
+    --     if getfam(pointer) == 0 then
+    --         local a = getattr(pointer,a_mathfamily)
+    --         if a and a > 0 then
+    --             setattr(pointer,a_mathfamily,0)
+    --             if a > 5 then
+    --                 -- no bold delimiters in unicode
+    --                 a = a - 3
+    --             end
+    --             local char = getchar(pointer)
+    --             local okay = fontcharacters[font_of_family(a)][char]
+    --             if okay then
+    --                 setfam(pointer,a)
+    --             elseif a > 2 then
+    --                 setfam(pointer,a-3)
+    --             end
+    --         else
+    --             setfam(pointer,0)
+    --         end
+    --     end
+    -- end
 
     families[math_textchar] = families[math_char]
 
@@ -732,6 +758,28 @@ do
         end
     end
 
+    -- will become:
+
+    -- resize[math_fence] = function(pointer)
+    --     local subtype = getsubtype(pointer)
+    --     if subtype == left_fence_code or subtype == right_fence_code then
+    --         local a = getattr(pointer,a_mathsize)
+    --         if a and a > 0 then
+    --             local method, size = div(a,100), a % 100
+    --             setattr(pointer,a_mathsize,0)
+    --             local delimiter = getfield(pointer,"delim")
+    --             local chr = getchar(delimiter)
+    --             if chr > 0 then
+    --                 local fam = getfam(delimiter)
+    --                 local id = font_of_family(fam)
+    --                 if id > 0 then
+    --                     setchar(delimiter,mathematics.big(fontdata[id],chr,size,method))
+    --                 end
+    --             end
+    --         end
+    --     end
+    -- end
+
     function handlers.resize(head,style,penalties)
         processnoads(head,resize,"resize")
         return true
@@ -753,12 +801,12 @@ do
         if char then
             local sym = getnucleus(char)
             local chr = getchar(sym)
-            local fam = getfield(sym,"fam")
+            local fam = getfam(sym)
             if chr == dummyfencechar then
                 chr = 0
             end
             setfield(d,"small_char",chr)
-            setfield(d,"small_fam", fam)
+            setfield(d,"small_fam",fam)
             flush_node(sym)
         end
         setsubtype(f,what)
@@ -766,6 +814,28 @@ do
         setfield(f,"class",-1) -- tex itself does this, so not fenceclasses[what]
         return f
     end
+
+    -- will become
+
+    -- local function makefence(what,char)
+    --     local d = new_delimiter()
+    --     local f = new_fence()
+    --     if char then
+    --         local sym = getnucleus(char)
+    --         local chr = getchar(sym)
+    --         local fam = getfam(sym)
+    --         if chr == dummyfencechar then
+    --             chr = 0
+    --         end
+    --         setchar(d,chr)
+    --         setfam(d,fam)
+    --         flush_node(sym)
+    --     end
+    --     setsubtype(f,what)
+    --     setfield(f,"delim",d)
+    --     setfield(f,"class",-1) -- tex itself does this, so not fenceclasses[what]
+    --     return f
+    -- end
 
     local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
         local list = new_submlist()

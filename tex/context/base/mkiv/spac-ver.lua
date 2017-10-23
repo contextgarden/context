@@ -118,7 +118,6 @@ local nuts                = nodes.nuts
 local tonode              = nuts.tonode
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local setlink             = nuts.setlink
 local getprev             = nuts.getprev

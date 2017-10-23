@@ -11,15 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D In this library some handy text manipulations are
-%D defined. Some can and will be improved as soon as the
-%D \TEX||\METAPOST\ interface is stable. Some of the
-%D solutions may look weird, which is entirely my fault,
-%D since I implemented them in the process of getting grip
-%D on this kind of manipulations. Undoubtly better
-%D \METAPOST\ code is possible, but my way of learning
-%D this kind of trickery happens to be by \quote {trial
-%D and error} and \quote {look and feel} (as well as
+%D In this library some handy text manipulations are defined. Some can and will be
+%D improved as soon as the \TEX||\METAPOST\ interface is stable. Some of the
+%D solutions may look weird, which is entirely my fault, since I implemented them in
+%D the process of getting grip on this kind of manipulations. Undoubtly better
+%D \METAPOST\ code is possible, but my way of learning this kind of trickery happens
+%D to be by \quote {trial and error} and \quote {look and feel} (as well as
 %D identifying tricks in Hobby's code).
 
 % textext ipv btex ... etex
@@ -30,112 +27,102 @@
 
 \definesystemvariable {sh}  % ShapedText .. todo: commandhandler
 
+\unexpanded\def\setupshapetexts
+  {\dodoubleempty\getparameters[\??sh]}
+
+\setupshapetexts
+  [\c!bodyfont=]
+
 \startMPextensions
     loadmodule "text" ;
 \stopMPextensions
 
-%%%%%%%
-
-% \def\newchar#1{\chardef#1=0 }
-
-\ifdefined\MPtoks       \else \newtoks\MPtoks        \fi
-\ifdefined\MPbox        \else \newbox \MPbox         \fi
-
-\ifdefined\parwidth     \else \newdimen\parwidth     \fi
-\ifdefined\parheight    \else \newdimen\parheight    \fi
-\ifdefined\parvoffset   \else \newdimen\parvoffset   \fi
-\ifdefined\parhoffset   \else \newdimen\parhoffset   \fi
-\ifdefined\parlines     \else \newcount\parlines     \fi
-\ifdefined\partoks      \else \newtoks \partoks      \fi
-\ifdefined\shapetextbox \else \newbox  \shapetextbox \fi
-                              \newif   \ifparseries
-\ifdefined\parfirst     \else \chardef \parfirst=0   \fi
+\ifdefined\parwidth \else
+    \newdimen\parwidth
+    \newdimen\parheight
+    \newdimen\parvoffset
+    \newdimen\parhoffset
+    \newcount\parlines
+    \newtoks \partoks
+    \newbox  \shapetextbox
+    \newcount\parfirst
+\fi
 
 \unexpanded\def\startshapetext[#1]%
   {\global\newcounter\currentshapetext
    \global\setbox\shapetextbox\vbox\bgroup
-     \expanded{\switchtobodyfont[\@@shbodyfont]}%
+     \switchtobodyfont[\@@shbodyfont]%
      \dontcomplain
      \hsize\parwidth
      \setuptolerance[\v!verytolerant,\v!stretch]%
-     \!!counta\zerocount
-     \!!toksa\emptytoks
+     \scratchcounter\zerocount
+     \scratchtoks\emptytoks
      \def\docommand##1%
        {\setbox\scratchbox\hbox{\useMPgraphic{##1}}%
-        \global\chardef\parfirst\zerocount
-        \getMPdata % \readlocfile{\MPdatafile}{}{}%
+        \global\parfirst\zerocount
+        \getMPdata
         \setshapecharacteristics
-        \advance\!!counta by \parlines
-        \expandafter\appendtoks\the\partoks\to\!!toksa}%
+        \advance\scratchcounter by \parlines
+        \expandafter\appendtoks\the\partoks\to\scratchtoks}%
      \processcommalist[#1]\docommand
-     \global\parseriestrue
-     \xdef\totalparlines{\the\!!counta}%
-     \global\partoks\!!toksa
-    %\ifx\partoks\emptytoks\else % safeguard
-       \expanded{\parshape \the\!!counta \the\!!toksa}%
-    %\fi
+     \xdef\totalparlines{\the\scratchcounter}%
+     \global\partoks\scratchtoks
+     \parshape \the\scratchcounter \the\scratchtoks\relax
      \setshapecharacteristics % extra dummy
-     \ifparseries\def\par{\endgraf\adaptparshape}\fi
-     \EveryPar{\begstrut}}
+     \def\par{\endgraf\adaptparshape}%
+     \everypar{\begstrut}}
 
 \unexpanded\def\stopshapetext
   {\endstrut
-  %\removebottomthings
    \egroup
    \global\newcounter\currentshapetext
    \getshapecharacteristics}
 
 \unexpanded\def\adaptparshape
   {\def\docommand##1%
-     {\ifcase\!!counta
-        \expandafter\appendtoks\space##1 \to\!!toksa
+     {\ifcase\scratchcounter
+        \expandafter\appendtoks\space##1 \to\scratchtoks
       \else
-        \advance\!!counta \minusone
+        \advance\scratchcounter\minusone
       \fi}%
-   \!!counta\prevgraf
-   \doglobal\decrement(\totalparlines,\!!counta)%
-   \multiply\!!counta \plustwo
-   \!!toksa\emptytoks
+   \scratchcounter\prevgraf
+   \doglobal\decrement(\totalparlines,\scratchcounter)%
+   \multiply\scratchcounter\plustwo
+   \scratchtoks\emptytoks
    \expanded{\processseparatedlist[\the\partoks][\space]}\docommand
-   \global\partoks\!!toksa
-  %\ifx\partoks\emptytoks\else % safeguard
-     \expanded{\parshape\totalparlines\the\partoks}%
- }%\fi}
+   \global\partoks\scratchtoks
+   \parshape\totalparlines\the\partoks\relax}
 
 \unexpanded\def\getshapecharacteristics
   {\doglobal\increment\currentshapetext
    \doifelsedefined{parlines:\currentshapetext}
-     {\global\parlines         \getvalue{parlines:\currentshapetext}%
-      \global\chardef\parfirst \getvalue{parfirst:\currentshapetext}%
-      \global\parvoffset       \getvalue{parvoffset:\currentshapetext}%
-      \global\parhoffset       \getvalue{parhoffset:\currentshapetext}%
-      \global\parwidth         \getvalue{parwidth:\currentshapetext}%
-      \global\parheight        \getvalue{parheight:\currentshapetext}}
-     {\global\parlines         \plusone
-      \global\chardef\parfirst \zerocount
-      \global\parvoffset       \zeropoint
-      \global\parhoffset       \zeropoint
-      \global\parwidth         \hsize
-      \global\parheight        \vsize}}
+     {\getvalue{parlines:\currentshapetext}}
+     {\global\parlines  \plusone
+      \global\parfirst  \zerocount
+      \global\parvoffset\zeropoint
+      \global\parhoffset\zeropoint
+      \global\parwidth  \hsize
+      \global\parheight \vsize}}
 
 \unexpanded\def\setshapecharacteristics
   {\doglobal\increment\currentshapetext
-   \setxvalue{parlines:\currentshapetext  }{\the\parlines}%
-   \setxvalue{parfirst:\currentshapetext  }{\the\parfirst}%
-   \setxvalue{parvoffset:\currentshapetext}{\the\parvoffset}%
-   \setxvalue{parhoffset:\currentshapetext}{\the\parhoffset}%
-   \setxvalue{parwidth:\currentshapetext  }{\the\parwidth}%
-   \setxvalue{parheight:\currentshapetext }{\the\parheight}}
+   \setxvalue{parlines:\currentshapetext}%
+     {\global\parlines  \the\parlines
+      \global\parfirst  \the\parfirst
+      \global\parvoffset\the\parvoffset
+      \global\parhoffset\the\parhoffset
+      \global\parwidth  \the\parwidth
+      \global\parheight \the\parheight}}
 
 \unexpanded\def\getshapetext % option: unvbox
   {\vbox\bgroup
    \forgetall
    \dontcomplain
    \setbox\scratchbox\vbox to \parheight
-     {\expanded{\switchtobodyfont[\@@shbodyfont]}% evt strutheight en
-      \splittopskip\strutheight               % lineheight opslaan
-      \vskip\parvoffset                       % scheelt switch en
-      \ifcase\parfirst\or\vskip\lineheight\fi % is ook veiliger
+     {\switchtobodyfont[\@@shbodyfont]%
+      \splittopskip\strutheight
+      \vskip\parvoffset
+      \ifcase\parfirst\else\vskip\lineheight\fi
       \hskip\parhoffset
       \hbox{\vsplit\shapetextbox to \parlines\lineheight}}%
    \wd\scratchbox\parwidth
@@ -145,88 +132,7 @@
    \getshapecharacteristics
    \egroup}
 
-\unexpanded\def\setupshapetexts
-  {\dodoubleempty\getparameters[\??sh]}
-
-\setupshapetexts
-  [\c!bodyfont=]
-
 \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}
-
-% \startuseMPgraphic{followtokens}
-%   % we default to nothing
-% \stopuseMPgraphic
-
-% \unexpanded\def\processfollowingtoken#1% strut toegevoegd
-%   {\appendtoks#1\to\MPtoks
-%    \setbox\MPbox=\hbox{\RotFont\setstrut\strut\the\MPtoks}%
-%    \startMPdrawing
-%      n := n + 1 ; len[n] := \the\wd\MPbox ;
-%    \stopMPdrawing
-%    \startMPdrawing[-]
-%    % pic[n] := textext{\RotFont\setstrut\strut#1} ; % btex \RotFont\setstrut\strut#1 etex ;
-%      pic[n] := btex \RotFont\setstrut\strut#1 etex ;
-%      pic[n] := pic[n] shifted - llcorner pic[n] ;
-%    \stopMPdrawing}
-%
-% \unexpanded\def\dofollowtokens#1#2%
-%   {\vbox\bgroup
-%    \forgetall
-%    \dontcomplain
-%    \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}%
-%    \MPtoks\emptytoks
-%    \resetMPdrawing
-%    \startMPdrawing
-%      \includeMPgraphic{followtokens} ;
-%      picture pic[] ; numeric len[], n ; n := 0 ;
-%    \stopMPdrawing
-%    \handletokens#2\with\processfollowingtoken
-%    \startMPdrawing
-%      if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
-%      if unknown RotColor : color   RotColor ; RotColor := black  ; fi ;
-%      if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
-%      if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
-%      numeric al, at, pl, pc, wid, pos ; pair ap, ad ;
-%      al := arclength RotPath ;
-%      if al=0 :
-%        al := len[n] + ExtraRot ;
-%        RotPath := origin -- (al,0) ;
-%      fi ;
-%      if al<len[n]:
-%        RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ;
-%        al := arclength RotPath ;
-%      fi ;
-%      if \number#1 = 1 :
-%        pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
-%        pc := 0 ;
-%      else : % centered / MP
-%        pl := 0 ;
-%        pc := arclength RotPath/2 - len[n]/2 ;
-%      fi ;
-%      if TraceRot :
-%        draw RotPath withpen pencircle scaled 1pt withcolor blue ;
-%      fi ;
-%      for i=1 upto n :
-%        wid := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
-%        pos := len[i]-wid/2 + (i-1)*pl + pc ;
-%        at := arctime   pos of RotPath ;
-%        ap := point     at  of RotPath ;
-%        ad := direction at  of RotPath ;
-%        draw pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
-%          withcolor RotColor ;
-%        if TraceRot :
-%          draw boundingbox
-%             pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
-%             withpen pencircle scaled .25pt withcolor red ;
-%          draw ap
-%             withpen pencircle scaled .50pt withcolor green ;
-%        fi ;
-%      endfor ;
-%    \stopMPdrawing
-%    \MPdrawingdonetrue
-%    \getMPdrawing
-%    \resetMPdrawing
-%    \egroup}
 
 \unexpanded\def\getfollowtoken#1%
  {\hbox\bgroup
@@ -479,8 +385,7 @@
    \setlocalhsize \noindent \reuseMPgraphic{EnglishRule}
    \stoplinecorrection}
 
-%D The following macro returns a tight bound character
-%D sequence.
+%D The following macro returns a tight bound character sequence.
 %D
 %D \useMPlibrary[txt]
 %D

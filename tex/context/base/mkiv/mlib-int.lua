@@ -17,6 +17,8 @@ local mpcolor   = attributes.colors.mpcolor
 local emwidths  = fonts.hashes.emwidths
 local exheights = fonts.hashes.exheights
 
+local mpgetdimen = mp.getdimen
+
 function mp.PaperHeight         () mpprint(getdimen("paperheight")         *factor) end
 function mp.PaperWidth          () mpprint(getdimen("paperwidth")          *factor) end
 function mp.PrintPaperHeight    () mpprint(getdimen("printpaperheight")    *factor) end

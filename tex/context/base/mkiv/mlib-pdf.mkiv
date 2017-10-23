@@ -31,7 +31,7 @@
 
 \ifdefined\MPbox    \else \newbox  \MPbox    \fi
 
-\def\setMPboundingbox#1#2#3#4% at some point we might pass them as base or scaled points
+\unexpanded\def\setMPboundingbox#1#2#3#4% at some point we might pass them as base or scaled points
   {\global\MPllx   #1\onebasepoint
    \global\MPlly   #2\onebasepoint
    \global\MPurx   #3\onebasepoint
@@ -39,7 +39,7 @@
    \global\MPwidth \dimexpr\MPurx-\MPllx\relax
    \global\MPheight\dimexpr\MPury-\MPlly\relax}
 
-\def\resetMPboundingbox
+\unexpanded\def\resetMPboundingbox
   {\global\MPwidth \zeropoint
    \global\MPheight\zeropoint
    \global\MPllx   \zeropoint
@@ -47,14 +47,14 @@
    \global\MPurx   \zeropoint
    \global\MPury   \zeropoint}
 
-\def\repositionMPboxindeed
+\unexpanded\def\repositionMPboxindeed
   {\setbox\MPbox\hpack\bgroup
      \kern-\MPllx
      \raise-\MPlly
      \box\MPbox
    \egroup}
 
-\def\repositionMPbox
+\unexpanded\def\repositionMPbox
   {\ifzeropt\MPllx
      \ifzeropt\MPlly
        % okay
@@ -65,7 +65,7 @@
      \repositionMPboxindeed
    \fi}
 
-\def\finalizeMPbox
+\unexpanded\def\finalizeMPbox
   {\repositionMPbox
    \setbox\MPbox\vpack to \MPheight\bgroup
      \vfill
@@ -76,7 +76,7 @@
    \wd\MPbox\MPwidth
    \ht\MPbox\MPheight}
 
-\def\MPtextext#1#2#3#4#5% beware: we use a different method now (see mlib-pps)
+\unexpanded\def\MPtextext#1#2#3#4#5% beware: we use a different method now (see mlib-pps)
   {\begingroup
    \setbox\MPbox\hbox{\font\temp=#1\space at #2\onebasepoint \let\c\char \temp #3}% text
    \MPllx-#4\onebasepoint
@@ -88,9 +88,9 @@
 
 % MPLIB specific:
 
-\def\MPLIBtoPDF{\clf_mpflushliteral}
+\def\MPLIBtoPDF{\clf_mpflushliteral} % expanded
 
-\def\startMPLIBtoPDF#1#2#3#4%
+\unexpanded\def\startMPLIBtoPDF#1#2#3#4%
   {\meta_process_graphic_figure_start
    \dostarttagged\t!mpgraphic\empty
    \naturalhpack attr \imageattribute \plusone \bgroup
@@ -100,7 +100,7 @@
  % \forgetall % already done elsewhere
    \noindent} % forces the proper cm in the backend
 
-\def\stopMPLIBtoPDF
+\unexpanded\def\stopMPLIBtoPDF
   {\egroup
    \finalizeMPbox
    \box\MPbox
@@ -128,8 +128,8 @@
 \let\normalstartMPLIBtoPDF\startMPLIBtoPDF
 \let\normalstopMPLIBtoPDF \stopMPLIBtoPDF
 
-\def\directstartMPLIBtoPDF{\startTEXpage\normalstartMPLIBtoPDF}
-\def\directstopMPLIBtoPDF {\normalstopMPLIBtoPDF\stopTEXpage}
+\unexpanded\def\directstartMPLIBtoPDF{\startTEXpage\normalstartMPLIBtoPDF}
+\unexpanded\def\directstopMPLIBtoPDF {\normalstopMPLIBtoPDF\stopTEXpage}
 
 \unexpanded\def\directMPgraphic
   {\dodoublegroupempty\mlib_direct_graphic}

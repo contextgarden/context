@@ -802,6 +802,7 @@
 		<cd:constant name='fieldoffset' value='veldoffset'/>
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filler' value='filler'/>
+		<cd:constant name='filter' value='filter'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>
@@ -1156,6 +1157,7 @@
 		<cd:constant name='sidemethod' value='zijmethode'/>
 		<cd:constant name='sidespaceafter' value='zijnawit'/>
 		<cd:constant name='sidespacebefore' value='zijvoorwit'/>
+		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='teken'/>
 		<cd:constant name='size' value='formaat'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>

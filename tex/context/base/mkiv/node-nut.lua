@@ -224,6 +224,14 @@ nodes.tonut               = tonut
 
 -- helpers
 
+if not direct.getfam then
+    local getfield = direct.getfield
+    local setfield = direct.setfield
+
+    direct.getfam = function(n,f) getfield(n,"small_fam",f) end
+    direct.setfam = function(n,f) setfield(n,"small_fam",f) end
+end
+
 nuts.tostring              = direct.tostring
 nuts.copy                  = direct.copy
 nuts.copy_node             = direct.copy
@@ -336,6 +344,8 @@ nuts.getchar               = direct.getchar
 nuts.setchar               = direct.setchar
 nuts.getfont               = direct.getfont
 nuts.setfont               = direct.setfont
+nuts.getfam                = direct.getfam
+nuts.setfam                = direct.setfam
 
 nuts.getboth               = direct.getboth
 nuts.setboth               = direct.setboth
@@ -956,13 +966,13 @@ if LUATEXFUNCTIONALITY < 6384 then
         return
             getfield(n,"glue_set"),
             getfield(n,"glue_order"),
-            getfield(h,"glue_sign")
+            getfield(n,"glue_sign")
     end
 
     function nuts.setboxglue(n,glue_set,glue_order,glue_sign)
         setfield(n,"glue_set",  glue_set   or 0)
         setfield(n,"glue_order",glue_order or 0)
-        setfield(h,"glue_sign", glue_sign  or 0)
+        setfield(n,"glue_sign", glue_sign  or 0)
     end
 
 end

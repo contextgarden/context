@@ -84,9 +84,9 @@
 \def     \t_meta_inclusions     {\csname\??mpinclusions \currentMPinstance\endcsname} % token register
 \def     \t_meta_definitions    {\csname\??mpdefinitions\currentMPinstance\endcsname} % token register
 
-% The next command is, of course, dedicated to Mojca, who
-% needs it for gnuplot. Anyway, the whole multiple engine
-% mechanism is to keep her gnuplot from interfering.
+%D The next command is, of course, dedicated to Mojca, who needs it for gnuplot.
+%D Anyway, the whole multiple engine mechanism is to keep her gnuplot from
+%D interfering.
 
 \unexpanded\def\startMPdefinitions
   {\dosinglegroupempty\meta_start_definitions}
@@ -154,13 +154,6 @@
    \fi
    \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
    \let\currentMPinstance\m_meta_saved_instance}
-
-% \def\meta_preset_definitions
-%   {\edef\overlaywidth    {\overlaywidth    \space}%
-%    \edef\overlayheight   {\overlayheight   \space}%
-%    \edef\overlaylinewidth{\overlaylinewidth\space}}
-
-\let\meta_preset_definitions\relax
 
 \installcommandhandler \??mpinstance {MPinstance} \??mpinstance
 
@@ -261,7 +254,6 @@
   {\begingroup
    \meta_enable_include
    \the\everyMPgraphic
-   \meta_preset_definitions
   %\setMPrandomseed % this has to change
    \edef\p_initializations{\MPinstanceparameter\s!initializations}%
    \ifx\p_initializations\v!yes
@@ -365,12 +357,11 @@
 %
 % \useMPgraphic{x}
 %
-% so we cannot overload unless we let back to the original meanings
-% each graphic ... a better solution is:
+% so we cannot overload unless we let back to the original meanings each graphic
+% ... a better solution is:
 
 \def\includeMPgraphic#1% gets expanded !
   {\ifcsname\??mpgraphic#1\endcsname
-    %\doubleexpandafter\fourthoffourarguments\csname\??mpgraphic#1\endcsname ; % ; is safeguard
      \doubleexpandafter\fourthoffourarguments\lastnamedcs ; % ; is safeguard
    \fi}
 
@@ -408,7 +399,6 @@
   {\relax
    \bgroup
    \meta_enable_include
-   \meta_preset_definitions % in case #2 has measures
    \doifelse{#1}{-}{\convertargument#2\to\asciia}{\def\asciia{#2}}%
    \xdef\MPdrawingdata{\MPdrawingdata\asciia}%
    \egroup}
@@ -419,7 +409,6 @@
   {\relax
    \bgroup
    \meta_enable_include
-   \meta_preset_definitions
    \xdef\MPdrawingdata{\MPdrawingdata#1}%
    \egroup}
 
@@ -458,8 +447,8 @@
      \relax}%
    \meta_stop_current_graphic}
 
-%D Since we want lables to follow the document settings, we
-%D also set the font related variables.
+%D Since we want lables to follow the document settings, we also set the font
+%D related variables.
 
 \unexpanded\def\MPfontsizehskip#1%
   {\dontleavehmode
@@ -476,12 +465,6 @@
   % defaultscale:=1;
 \stopMPinitializations
 
-% watch out, this is a type1 font because mp can only handle 8 bit fonts
-
-% \startMPinitializations % scale is not yet ok
-%     defaultfont:="rm-lmtt10";
-% \stopMPinitializations
-
 %D A signal that we're in combined \CONTEXT||\METAFUN mode:
 
 \startMPextensions
@@ -496,12 +479,11 @@
 %D \macros
 %D   {setupMPvariables}
 %D
-%D When we build collections of \METAPOST\ graphics, like
-%D background and buttons, the need for passing settings
-%D arises. By (mis|)|using the local prefix that belongs to
-%D \type {\framed}, we get a rather natural interface to
-%D backgrounds. To prevent conflicts, we will use the \type
-%D {-} in \METAPOST\ specific variables, like:
+%D When we build collections of \METAPOST\ graphics, like background and buttons,
+%D the need for passing settings arises. By (mis|)|using the local prefix that
+%D belongs to \type {\framed}, we get a rather natural interface to backgrounds. To
+%D prevent conflicts, we will use the \type {-} in \METAPOST\ specific variables,
+%D like:
 %D
 %D \starttyping
 %D \setupMPvariables[meta:button][size=20pt]
@@ -510,9 +492,9 @@
 % \lineheight  2pt  2  \scratchcounter  red  0.4  .5\bodyfontsize
 %
 % see cont-loc for test code
-%
-% currently the inheritance of backgrounds does not work and
-% we might drop it anyway (too messy)
+
+%D Currently the inheritance of backgrounds does not work and we might drop it
+%D anyway (too messy)
 
 \newbox\b_meta_variable_box
 
@@ -623,9 +605,9 @@
 %D \macros
 %D   {startuniqueMPgraphic, uniqueMPgraphic}
 %D
-%D This macros is probably of most use to myself, since I like
-%D to use graphics that adapt themselves. The next \METAPOST\
-%D kind of graphic is both unique and reused when possible.
+%D This macros is probably of most use to myself, since I like to use graphics that
+%D adapt themselves. The next \METAPOST\ kind of graphic is both unique and reused
+%D when possible.
 %D
 %D \starttyping
 %D \defineoverlay[example][\uniqueMPgraphic{test}]
@@ -644,19 +626,17 @@
    \MPcolor\overlaycolor   :%  % todo, expand once \m_overlaycolor
    \MPcolor\overlaylinecolor}  % todo, expand once \m_overlaylinecolor
 
-%D A better approach is to let additional variables play a role
-%D in determining the uniqueness. In the next macro, the
-%D second, optional, argument is used to guarantee the
-%D uniqueness, as well as prepare variables for passing them to
+%D A better approach is to let additional variables play a role in determining the
+%D uniqueness. In the next macro, the second, optional, argument is used to
+%D guarantee the uniqueness, as well as prepare variables for passing them to
 %D \METAPOST.
 %D
 %D \starttyping
 %D \startuniqueMPgraphic{meta:hash}{gap,angle,...}
 %D \stoptyping
 %D
-%D The calling macro also accepts a second argument. For
-%D convenient use in overlay definitions, we use \type {{}}
-%D instead of \type {[]}.
+%D The calling macro also accepts a second argument. For convenient use in overlay
+%D definitions, we use \type {{}} instead of \type {[]}.
 %D
 %D \starttyping
 %D \uniqueMPgraphic{meta:hash}{gap=10pt,angle=30}
@@ -699,9 +679,6 @@
   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
    \hpack{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
-% \unexpanded\def\meta_use_box
-%   {\setobject{MP}}
-
 \unexpanded\def\meta_use_box
   {\setunreferencedobject{MP}}
 
@@ -722,9 +699,6 @@
 
 \unexpanded\def\startuniqueMPgraphic
   {\dodoublegroupempty\meta_start_unique_graphic}
-
-% \def\meta_start_unique_graphic#1#2#3\stopuniqueMPgraphic
-%   {\setgvalue{\??mpgraphic#1}{\meta_handle_unique_graphic{#1}{#2}{#3}}}
 
 \def\meta_start_unique_graphic#1%
   {\normalexpanded{\meta_start_unique_graphic_indeed{#1}}}
@@ -888,12 +862,9 @@
 %D      {\edef\overlaystamp{\overlaystamp:\MPvariable{##1}}}%
 %D    \processcommalist[#1]\docommand}
 %D \stoptyping
-
-%D Since we need to feed \METAPOST\ with expanded dimensions,
-%D we introduce a dedicated expansion engine.
-
-%D We redefine \type {\extendMPoverlaystamp} to preprocess
-%D variables using \type {\meta_prepare_variable}.
+%D
+%D Since we need to feed \METAPOST\ with expanded dimensions, we introduce a
+%D dedicated expansion engine. We redefine \type {\extendMPoverlaystamp} to
 
 \unexpanded\def\extendMPoverlaystamp#1%
   {\processcommalist[#1]\meta_extend_overlay_stamp}
@@ -909,40 +880,22 @@
 
 % This will change ...
 
-\def\MPdataMPDfile{\jobname-mpgraph.mpd} % this one will become obsolete
-\def\MPdataMPOfile{\jobname-mpgraph.mpo}
 \def\MPdataMPYfile{\jobname-mpgraph.mpy}
 
-% makempy.registerfile(filename)
-
-% % hm. extensions get expanded so the wrong names then end up in format
-%
-% \startMPinitializations
-%     boolean collapse_data; collapse_data:=true ;  % will be obsolete
-%     def data_mpd_file = "\MPdataMPDfile" enddef ; % will go via lua
-%     def data_mpo_file = "\MPdataMPOfile" enddef ;
-%     def data_mpy_file = "\MPdataMPYfile" enddef ;
-% \stopMPinitializations
-
 \startMPextensions
-    boolean collapse_data; collapse_data:=true ;  % will be obsolete
-    def data_mpd_file = "\noexpand\MPdataMPDfile" enddef ; % will go via lua
-    def data_mpo_file = "\noexpand\MPdataMPOfile" enddef ;
     def data_mpy_file = "\noexpand\MPdataMPYfile" enddef ;
 \stopMPextensions
 
-\unexpanded\def\getMPdata
-  {\let\MPdata\secondoftwoarguments
-   \startreadingfile
-   % \startnointerference % no, else we need to do all data global
-   \readlocfile\MPdataMPDfile\donothing\donothing
-   % \stopnointerference
-   \stopreadingfile}
+\unexpanded\def\getMPdata  {\clf_getMPdata}
+           \let\rawMPdata   \clf_getMPdata
 
-% We need this trick because we need to make sure that the tex scanner
-% sees newlines and does not quit. Also, we do need to flush the buffer
-% under a normal catcode regime in order to expand embedded tex macros.
-% As usual with buffers, \type {#1} can be a list.
+\unexpanded\def\getMPstored{\clf_getMPstored}
+           \let\rawMPstored \clf_getMPstored
+
+%D We need this trick because we need to make sure that the tex scanner sees
+%D newlines and does not quit. Also, we do need to flush the buffer under a normal
+%D catcode regime in order to expand embedded tex macros. As usual with buffers,
+%D \type {#1} can be a list.
 
 \unexpanded\def\processMPbuffer
   {\dosingleempty\meta_process_buffer}
@@ -961,22 +914,8 @@
 %D \macros
 %D   {startMPenvironment, resetMPenvironment}
 %D
-%D In order to synchronize the main \TEX\ run and the runs
-%D local to \METAPOST, environments can be passed.
-
-% \unexpanded\def\startMPenvironment % second arg gobbles spaces, so that reset gives \emptytoks
-%   {\dodoubleempty\dostartMPenvironment}
-
-% \def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
-%   {\edef\m_meta_option{#1}
-%    \ifx\m_meta_option\s!reset
-%      \resetMPenvironment % reset mp toks
-%    \else\ifx\m_meta_option\v!global
-%      #3%                 % use in main doc too
-%    \else\ifx\m_meta_option\!!plustoken
-%      #3%                 % use in main doc too
-%    \fi\fi\fi
-%    \ctxlua{metapost.tex.set(\!!bs\detokenize{#3}\!!es)}}
+%D In order to synchronize the main \TEX\ run and the runs local to \METAPOST,
+%D environments can be passed.
 
 \unexpanded\def\startMPenvironment
   {\begingroup
@@ -1003,8 +942,7 @@
 \unexpanded\def\useMPenvironmentbuffer[#1]%
   {\clf_mptexsetfrombuffer{#1}}
 
-%D This command takes \type {[reset]} as optional
-%D argument.
+%D This command takes \type {[reset]} as optional argument.
 %D
 %D \starttyping
 %D \startMPenvironment
@@ -1148,8 +1086,8 @@
 \def\MPstring#1{"\begincsname\??mptext#1\endcsname\empty"}
 \def\MPbetex #1{btex \begincsname\??mptext#1\endcsname\space etex}
 
-%D In order to communicate conveniently with the \TEX\
-%D engine, we introduce some typesetting variables.
+%D In order to communicate conveniently with the \TEX\ engine, we introduce some
+%D typesetting variables.
 
 % \setupcolors[state=stop,conversion=never] % quite tricky ... type mismatch
 
@@ -1169,8 +1107,8 @@
 %     OverlayOffset:=\overlayoffset;
 % \stopMPinitializations
 
-% A dirty trick, ** in colo-ini.lua (mpcolor). We cannot use a vardef, because
-% that fails with spot colors.
+%D A dirty trick, ** in colo-ini.lua (mpcolor). We cannot use a vardef, because
+%D that fails with spot colors.
 
 \startMPinitializations
     def OverlayLineColor=\ifx\overlaylinecolor\empty black \else\MPcolor{\overlaylinecolor} \fi enddef;
@@ -1241,20 +1179,10 @@
 %D \macros
 %D   {PDFMPformoffset}
 %D
-%D In \PDF, forms are clipped and therefore we have to take
-%D precautions to get this right. Since this is related to
-%D objects, we use the same offset as used there.
+%D In \PDF, forms are clipped and therefore we have to take precautions to get this
+%D right. Since this is related to objects, we use the same offset as used there.
 
 \def\PDFMPformoffset{\objectoffset}
-
-% %D \macros
-% %D   {insertMPfile}
-% %D
-% %D Bypassing the special driver and figure mechanism is not
-% %D that nice but saves upto 5\% time in embedding \METAPOST\
-% %D graphics by using the low level \PDF\ converter directly,
-% %D given of course that we use \PDFTEX. As a result we need to
-% %D fool around with the object trigger.
 
 \newtoks\everyinsertMPfile
 
@@ -1295,19 +1223,17 @@
 %     if unknown context_bare : input mp-bare.mpiv ; fi ;
 % \stopMPdefinitions
 
-%D And some more. These are not really needed since we
-%D don't use the normal figure inclusion macros any longer.
+%D And some more. These are not really needed since we don't use the normal figure
+%D inclusion macros any longer.
 
 \appendtoks
     \externalfigurepostprocessors\emptytoks % safeguard
 \to \everyinsertMPfile
 
-%D We also take care of disabling fancy figure features, that
-%D can terribly interfere when dealing with symbols,
-%D background graphics and running (postponed) graphics.
-%D You won't believe me if I tell you what funny side effects
-%D can occur. One took me over a day to uncover when
-%D processing the screen version of the \METAFUN\ manual.
+%D We also take care of disabling fancy figure features, that can terribly interfere
+%D when dealing with symbols, background graphics and running (postponed) graphics.
+%D You won't believe me if I tell you what funny side effects can occur. One took me
+%D over a day to uncover when processing the screen version of the \METAFUN\ manual.
 
 \def\doifelseMPgraphic#1%
   {\ifcsname\??mpgraphic   #1\endcsname \expandafter      \firstoftwoarguments  \else
@@ -1372,8 +1298,8 @@
 %D \macros
 %D   {startstaticMPfigure,useMPstaticfigure}
 %D
-%D Static figures are processed only when there has been
-%D something changed. Here is Aditya Mahajan's testcase:
+%D Static figures are processed only when there has been something changed. Here is
+%D Aditya Mahajan's testcase:
 %D
 %D \startbuffer
 %D \startstaticMPfigure{circle}
@@ -1415,19 +1341,17 @@
 
 \def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
 
-%D There is no way to distinguish the black color that you get when
-%D you issue a \type {draw} without color specification from a color
-%D that has an explicit black specification unless you set the
-%D variable \type {defaultcolormodel} to 1. Hoewever, in that case
-%D you cannot distinguish that draw from one with a \type
-%D {withoutcolor} specification. This means that we have to provide
-%D multiple variants of inheritance.
+%D There is no way to distinguish the black color that you get when you issue a
+%D \type {draw} without color specification from a color that has an explicit black
+%D specification unless you set the variable \type {defaultcolormodel} to 1.
+%D Hoewever, in that case you cannot distinguish that draw from one with a \type
+%D {withoutcolor} specification. This means that we have to provide multiple
+%D variants of inheritance.
 %D
-%D In any case we need to tell the converter what the inherited color
-%D is to start with. Case~3 is kind of unpredictable as it closely
-%D relates to the order in which paths are flushed. If you want to
-%D inherit automatically from the surrounding, you can best stick to
-%D variant 1. Variant 0 (an isolated graphic) is the default.
+%D In any case we need to tell the converter what the inherited color is to start
+%D with. Case~3 is kind of unpredictable as it closely relates to the order in which
+%D paths are flushed. If you want to inherit automatically from the surrounding, you
+%D can best stick to variant 1. Variant 0 (an isolated graphic) is the default.
 %D
 %D \startbuffer
 %D \startuseMPgraphic{test}
@@ -1541,10 +1465,9 @@
 
 \installsetuponlycommandhandler \??MPgraphics {MPgraphics}
 
-%D Here we hook in the outer color. When \type {color} is set to \type
-%D {global} we get the outer color automatically. If you change this
-%D setting, you should do it grouped in order not to make other graphics
-%D behave in unexpected ways.
+%D Here we hook in the outer color. When \type {color} is set to \type {global} we
+%D get the outer color automatically. If you change this setting, you should do it
+%D grouped in order not to make other graphics behave in unexpected ways.
 
 \appendtoks
     \doifelse{\directMPgraphicsparameter\c!color}\v!global{\MPcolormethod\plusone}{\MPcolormethod\zerocount}%

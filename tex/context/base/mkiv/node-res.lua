@@ -69,7 +69,6 @@ local tonut      = nuts.tonut
 local tonode     = nuts.tonode
 
 local getbox     = nuts.getbox
-local getfield   = nuts.getfield
 local getid      = nuts.getid
 local getlist    = nuts.getlist
 local getglue    = nuts.getglue

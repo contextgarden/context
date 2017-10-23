@@ -802,6 +802,7 @@
 		<cd:constant name='fieldoffset' value='fieldoffset'/>
 		<cd:constant name='file' value='file'/>
 		<cd:constant name='filler' value='filler'/>
+		<cd:constant name='filter' value='filter'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>
@@ -1156,6 +1157,7 @@
 		<cd:constant name='sidemethod' value='sidemethod'/>
 		<cd:constant name='sidespaceafter' value='sidespaceafter'/>
 		<cd:constant name='sidespacebefore' value='sidespacebefore'/>
+		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='sign'/>
 		<cd:constant name='size' value='size'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>

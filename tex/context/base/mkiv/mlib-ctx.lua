@@ -6,9 +6,6 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
     license   = "see context related readme files",
 }
 
--- for the moment we have the scanners here but they migh tbe moved to
--- the other modules
-
 local type, tostring = type, tostring
 local format, concat = string.format, table.concat
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -87,10 +84,6 @@ function metapost.getextensions(instance,state)
     end
 end
 
--- function commands.getmpextensions(instance,state)
---     context(metapost.getextensions(instance,state))
--- end
-
 implement {
     name      = "setmpextensions",
     actions   = metapost.setextensions,
@@ -139,7 +132,7 @@ implement {
     end
 }
 
--- metapost.variables  = { } -- to be stacked
+-- metapost.variables = { } -- to be stacked
 
 implement {
     name      = "mprunvar",

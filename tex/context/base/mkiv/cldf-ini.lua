@@ -603,6 +603,32 @@ function context.printlines(str,raw)     -- todo: see if via file is useable
     end
 end
 
+-- function context.printtable(t,separator)     -- todo: see if via file is useable
+--     if separator == nil or separator == true then
+--         separator = "\r"
+--     elseif separator == "" then
+--         separator = false
+--     end
+--     for i=1,#t do
+--         context(t[i]) -- we need to go through catcode handling
+--         if separator then
+--             context(separator)
+--         end
+--     end
+-- end
+
+function context.printtable(t,separator)     -- todo: see if via file is useable
+    if separator == nil or separator == true then
+        separator = "\r"
+    elseif separator == "" or separator == false then
+        separator = ""
+    end
+    local s = concat(t,separator)
+    if s ~= "" then
+        context(s)
+    end
+end
+
 -- -- -- "{" .. ti .. "}" is somewhat slower in a cld-mkiv run than "{",ti,"}"
 
 local containseol = patterns.containseol
@@ -905,22 +931,22 @@ local defaultcaller = caller
 setmetatableindex(context,indexer)
 setmetatablecall (context,caller)
 
-function context.sprint(...) -- takes catcodes as first argument
+function  context.sprint(...) -- takes catcodes as first argument
     flush(...)
 end
 
-function context.fprint(fmt,first,...)
-    if type(catcodes) == "number" then
-        if first then
-            flush(currentcatcodes,formatters[fmt](first,...))
+function context.fprint(first,second,third,...)
+    if type(first) == "number" then
+        if third then
+            flush(first,formatters[second](third,...))
         else
-            flush(currentcatcodes,fmt)
+            flush(first,second)
         end
     else
-        if fmt then
-            flush(formatters[catcodes](fmt,first,...))
+        if second then
+            flush(formatters[first](second,third,...))
         else
-            flush(catcodes)
+            flush(first)
         end
     end
 end
