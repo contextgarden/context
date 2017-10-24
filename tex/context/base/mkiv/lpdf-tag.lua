@@ -149,13 +149,15 @@ local function finishstructure()
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
         --
-        local markinfo = pdfdictionary {
-            Marked         = lpdf.majorversion == 1 and pdfboolean(true) or nil,
-         -- UserProperties = pdfboolean(true), -- maybe some day
-         -- Suspects       = lpdf.majorversion == 1 and pdfboolean(true) or nil,
-         -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
-        }
-        addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
+        if lpdf.majorversion() == 1 then
+            local markinfo = pdfdictionary {
+                Marked         = pdfboolean(true) or nil,
+             -- UserProperties = pdfboolean(true), -- maybe some day
+             -- Suspects       = pdfboolean(true) or nil,
+             -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
+            }
+            addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
+        end
         --
         for fulltag, element in sortedhash(elements) do -- sorting is easier on comparing pdf
             pdfflushobject(element.knum,element.kids)
