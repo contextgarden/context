@@ -901,39 +901,39 @@ converters.verbose = verbose
 -- verbose english
 
 local words = {
-        [0] = "zero",
-        [1] = "one",
-        [2] = "two",
-        [3] = "three",
-        [4] = "four",
-        [5] = "five",
-        [6] = "six",
-        [7] = "seven",
-        [8] = "eight",
-        [9] = "nine",
-       [10] = "ten",
-       [11] = "eleven",
-       [12] = "twelve",
-       [13] = "thirteen",
-       [14] = "fourteen",
-       [15] = "fifteen",
-       [16] = "sixteen",
-       [17] = "seventeen",
-       [18] = "eighteen",
-       [19] = "nineteen",
-       [20] = "twenty",
-       [30] = "thirty",
-       [40] = "forty",
-       [50] = "fifty",
-       [60] = "sixty",
-       [70] = "seventy",
-       [80] = "eighty",
-       [90] = "ninety",
-      [100] = "hundred",
-     [1000] = "thousand",
-   [1000^2] = "million",
-   [1000^3] = "billion",
-   [1000^4] = "trillion",
+               [0] = "zero",
+               [1] = "one",
+               [2] = "two",
+               [3] = "three",
+               [4] = "four",
+               [5] = "five",
+               [6] = "six",
+               [7] = "seven",
+               [8] = "eight",
+               [9] = "nine",
+              [10] = "ten",
+              [11] = "eleven",
+              [12] = "twelve",
+              [13] = "thirteen",
+              [14] = "fourteen",
+              [15] = "fifteen",
+              [16] = "sixteen",
+              [17] = "seventeen",
+              [18] = "eighteen",
+              [19] = "nineteen",
+              [20] = "twenty",
+              [30] = "thirty",
+              [40] = "forty",
+              [50] = "fifty",
+              [60] = "sixty",
+              [70] = "seventy",
+              [80] = "eighty",
+              [90] = "ninety",
+             [100] = "hundred",
+            [1000] = "thousand",
+         [1000000] = "million",
+      [1000000000] = "billion",
+   [1000000000000] = "trillion",
 }
 
 local function translate(n)
@@ -979,10 +979,10 @@ local function translate(n)
         end
         return n
     end
-    n = compose_two(n,1000^4)
-    n = compose_two(n,1000^3)
-    n = compose_two(n,1000^2)
-    n = compose_two(n,1000^1)
+    n = compose_two(n,1000000000000)
+    n = compose_two(n,1000000000)
+    n = compose_two(n,1000000)
+    n = compose_two(n,1000)
     if n > 0 then
         compose_one(n)
     end
@@ -1007,55 +1007,55 @@ data.en = data.english
 -- verbose spanish (unchecked)
 
 local words = {
-        [1] = "uno",
-        [2] = "dos",
-        [3] = "tres",
-        [4] = "cuatro",
-        [5] = "cinco",
-        [6] = "seis",
-        [7] = "siete",
-        [8] = "ocho",
-        [9] = "nueve",
-       [10] = "diez",
-       [11] = "once",
-       [12] = "doce",
-       [13] = "trece",
-       [14] = "catorce",
-       [15] = "quince",
-       [16] = "dieciséis",
-       [17] = "diecisiete",
-       [18] = "dieciocho",
-       [19] = "diecinueve",
-       [20] = "veinte",
-       [21] = "veintiuno",
-       [22] = "veintidós",
-       [23] = "veintitrés",
-       [24] = "veinticuatro",
-       [25] = "veinticinco",
-       [26] = "veintiséis",
-       [27] = "veintisiete",
-       [28] = "veintiocho",
-       [29] = "veintinueve",
-       [30] = "treinta",
-       [40] = "cuarenta",
-       [50] = "cincuenta",
-       [60] = "sesenta",
-       [70] = "setenta",
-       [80] = "ochenta",
-       [90] = "noventa",
-      [100] = "ciento",
-      [200] = "doscientos",
-      [300] = "trescientos",
-      [400] = "cuatrocientos",
-      [500] = "quinientos",
-      [600] = "seiscientos",
-      [700] = "setecientos",
-      [800] = "ochocientos",
-      [900] = "novecientos",
-     [1000] = "mil",
-   [1000^2] = "millón",
-   [1000^3] = "mil millones",
-   [1000^4] = "billón",
+               [1] = "uno",
+               [2] = "dos",
+               [3] = "tres",
+               [4] = "cuatro",
+               [5] = "cinco",
+               [6] = "seis",
+               [7] = "siete",
+               [8] = "ocho",
+               [9] = "nueve",
+              [10] = "diez",
+              [11] = "once",
+              [12] = "doce",
+              [13] = "trece",
+              [14] = "catorce",
+              [15] = "quince",
+              [16] = "dieciséis",
+              [17] = "diecisiete",
+              [18] = "dieciocho",
+              [19] = "diecinueve",
+              [20] = "veinte",
+              [21] = "veintiuno",
+              [22] = "veintidós",
+              [23] = "veintitrés",
+              [24] = "veinticuatro",
+              [25] = "veinticinco",
+              [26] = "veintiséis",
+              [27] = "veintisiete",
+              [28] = "veintiocho",
+              [29] = "veintinueve",
+              [30] = "treinta",
+              [40] = "cuarenta",
+              [50] = "cincuenta",
+              [60] = "sesenta",
+              [70] = "setenta",
+              [80] = "ochenta",
+              [90] = "noventa",
+             [100] = "ciento",
+             [200] = "doscientos",
+             [300] = "trescientos",
+             [400] = "cuatrocientos",
+             [500] = "quinientos",
+             [600] = "seiscientos",
+             [700] = "setecientos",
+             [800] = "ochocientos",
+             [900] = "novecientos",
+            [1000] = "mil",
+         [1000000] = "millón",
+      [1000000000] = "mil millones",
+   [1000000000000] = "billón",
 }
 
 local function translate(n)
@@ -1078,7 +1078,7 @@ local function translate(n)
             t[#t+1] = words[1000]
         -- x hundred (n.b. this will not give thirteen hundred because
         -- compose_one(n) is only called after
-        -- `n = compose(two(n, 1000^1))`.
+        -- n = compose(two(n, 1000))
         elseif a > 0 then
             t[#t+1] = words[a*100]
         end
@@ -1106,10 +1106,10 @@ local function translate(n)
         end
         return n
     end
-    n = compose_two(n,1000^4)
-    n = compose_two(n,1000^3)
-    n = compose_two(n,1000^2)
-    n = compose_two(n,1000^1)
+    n = compose_two(n,1000000000000)
+    n = compose_two(n,1000000000)
+    n = compose_two(n,1000000)
+    n = compose_two(n,1000)
     if n > 0 then
         compose_one(n)
     end

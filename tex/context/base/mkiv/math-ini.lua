@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 
 local formatters, find = string.formatters, string.find
 local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
-local floor = math.floor
+----- floor = math.floor
 local toboolean = toboolean
 
 local context               = context

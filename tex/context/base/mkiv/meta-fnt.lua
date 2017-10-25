@@ -190,7 +190,7 @@ statistics.register("metapost font generation", function()
     if total > 0 then
         local time = statistics.elapsedtime(flusher)
         if total > 0 then
-            return format("%i glyphs, %.3f seconds runtime, %i glyphs/second", total, time, total/time)
+            return format("%i glyphs, %.3f seconds runtime, %.1f glyphs/second", total, time, total/time)
         else
             return format("%i glyphs, %.3f seconds runtime", total, time)
         end
@@ -201,7 +201,7 @@ statistics.register("metapost font loading",function()
     if variants > 0 then
         local time = statistics.elapsedtime(metapost.fonts)
         if variants > 0 then
-            return format("%.3f seconds, %i instances, %0.3f instances/second", time, variants, variants/time)
+            return format("%.3f seconds, %i instances, %.3f instances/second", time, variants, variants/time)
         else
             return format("%.3f seconds, %i instances", time, variants)
         end

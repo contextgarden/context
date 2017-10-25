@@ -14,6 +14,7 @@ local sort, insert, concat = table.sort, table.insert, table.concat
 local sortedkeys, sortedhash, serialize, fastcopy = table.sortedkeys, table.sortedhash, table.serialize, table.fastcopy
 local derivetable = table.derive
 local ioflush = io.flush
+local round = math.round
 
 local trace_defining  = false  trackers.register("fonts.defining",  function(v) trace_defining = v end)
 local trace_scaling   = false  trackers.register("fonts.scaling",   function(v) trace_scaling  = v end)
@@ -1037,13 +1038,15 @@ function constructors.hashinstance(specification,force)
         specification.hash = hash
     end
     if size < 1000 and designsizes[hash] then
-        size = math.round(constructors.scaled(size,designsizes[hash]))
-        specification.size = size
-    end
-    if fallbacks then
-        return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
+        size = round(constructors.scaled(size,designsizes[hash]))
     else
-        return hash .. ' @ ' .. tostring(size)
+        size = round(size)
+    end
+    specification.size = size
+    if fallbacks then
+        return hash .. ' @ ' .. size .. ' @ ' .. fallbacks
+    else
+        return hash .. ' @ ' .. size
     end
 end
 

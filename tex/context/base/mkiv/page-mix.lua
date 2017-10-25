@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ["page-mix"] = {
 
 local next, type = next, type
 local concat = table.concat
-local ceil, floor = math.ceil, math.floor
+local ceil = math.ceil
 
 local trace_state  = false  trackers.register("mixedcolumns.trace",  function(v) trace_state  = v end)
 local trace_detail = false  trackers.register("mixedcolumns.detail", function(v) trace_detail = v end)

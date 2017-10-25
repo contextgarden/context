@@ -1056,7 +1056,6 @@ do  -- else too many locals
     local scanboolean            = scanners.boolean
 
     local setmacro               = tokens.setters.macro
-
     local scanners               = interfaces.scanners
 
  -- function commands.definefont_one(str)
@@ -1456,7 +1455,7 @@ do  -- else too many locals
                             name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,2)
                     end
                     -- resolved (when designsize is used):
-                    local size = tfmdata.parameters.size or 655360
+                    local size = round(tfmdata.parameters.size or 655360)
                     setmacro("somefontsize",size.."sp")
                  -- ctx_setsomefontsize(size .. "sp")
                     texsetcount("scaledfontsize",size)
@@ -1493,7 +1492,7 @@ do  -- else too many locals
                         name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,"-")
                 end
                 -- resolved (when designsize is used):
-                local size = tfmdata.parameters.size or 655360
+                local size = round(tfmdata.parameters.size or 655360)
                 setmacro("somefontsize",size.."sp")
              -- ctx_setsomefontsize(size .. "sp")
                 texsetcount("scaledfontsize",size)
@@ -1507,7 +1506,7 @@ do  -- else too many locals
             csnames[tfmdata] = specification.cs
             texdefinefont(global,cs,tfmdata)
             -- resolved (when designsize is used):
-            local size = fontdata[tfmdata].parameters.size or 0
+            local size = round(fontdata[tfmdata].parameters.size or 0)
          -- ctx_setsomefontsize(size .. "sp")
             setmacro("somefontsize",size.."sp")
             texsetcount("scaledfontsize",size)
@@ -1668,7 +1667,7 @@ do  -- else too many locals
 
     function fonts.infofont()
         if infofont == 0 then
-            infofont = definers.define { name = "dejavusansmono", size = tex.sp("6pt") }
+            infofont = definers.define { name = "dejavusansmono", size = texsp("6pt") }
         end
         return infofont
     end
@@ -1726,7 +1725,7 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
  --         scaledpoints = rscale * scaledpoints
  --     end
  -- end
-    return scaledpoints, delta
+    return round(scaledpoints), round(delta)
 end
 
 local designsizes = constructors.designsizes
@@ -1744,17 +1743,19 @@ function constructors.hashinstance(specification,force)
     end
     if size < 1000 and designsizes[hash] then
         size = round(constructors.scaled(size,designsizes[hash]))
-        specification.size = size
+    else
+        size = round(size)
     end
+    specification.size = size
     if fallbacks then
-        return hash .. ' @ ' .. tostring(size) .. ' @ ' .. fallbacks
+        return hash .. ' @ ' .. size .. ' @ ' .. fallbacks
     else
         local scalemode = specification.scalemode
         local special   = scalemode and specialscale[scalemode]
         if special then
-            return hash .. ' @ ' .. tostring(size) .. ' @ ' .. special
+            return hash .. ' @ ' .. size .. ' @ ' .. special
         else
-            return hash .. ' @ ' .. tostring(size)
+            return hash .. ' @ ' .. size
         end
     end
 end
@@ -2116,14 +2117,14 @@ function loggers.reportdefinedfonts()
             local parameters = data.parameters or { }
             tn = tn + 1
             t[tn] = {
-  format("%03i",id                    or 0),
-  format("%09i",parameters.size       or 0),
-                properties.type       or "real",
-                properties.format     or "unknown",
-                properties.name       or "",
-                properties.psname     or "",
-                properties.fullname   or "",
-                properties.sharedwith or "",
+  formatters["%03i"](id                    or 0),
+  formatters["%p"  ](parameters.size       or 0),
+                     properties.type       or "real",
+                     properties.format     or "unknown",
+                     properties.name       or "",
+                     properties.psname     or "",
+                     properties.fullname   or "",
+                     properties.sharedwith or "",
             }
         end
         formatcolumns(t,"  ")

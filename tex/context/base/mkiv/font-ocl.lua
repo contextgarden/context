@@ -18,8 +18,8 @@ local tounicode  = fonts.mappings.tounicode
 
 local otf        = fonts.handlers.otf
 
-local f_color    = formatters["%f %f %f rg"]
-local f_gray     = formatters["%f g"]
+local f_color    = formatters["%.3f %.3f %.3f rg"]
+local f_gray     = formatters["%.3f g"]
 
 if context then
 

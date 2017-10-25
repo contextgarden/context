@@ -33,7 +33,6 @@ if not modules then modules = { } end modules ['math-map'] = {
 -- plus add them to the regular vectors below so that they honor \it etc
 
 local type, next = type, next
-local floor, div = math.floor, math.div
 local merged, sortedhash = table.merged, table.sortedhash
 local extract = bit32.extract
 

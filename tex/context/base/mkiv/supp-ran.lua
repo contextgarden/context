@@ -24,7 +24,7 @@ local randomseed = math.randomseed
 local round      = math.round
 local stack      = { }
 local last       = 1
-local maxcount   = 2^30-1 -- 1073741823
+local maxcount   = 0x3FFFFFFF -- 2^30-1
 
 math.random = function(...)
     local n = random(...)

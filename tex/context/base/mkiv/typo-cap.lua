@@ -82,7 +82,7 @@ local run             = 0 -- a trick to make neighbouring ranges work
 local blocked         = { }
 
 local function set(tag,font)
-    if run == 2^6 then
+    if run == 0x40 then -- 2^6
         run = 1
     else
         run = run + 1

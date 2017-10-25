@@ -40,7 +40,7 @@ local escapetex      = characters.filters.utf.private.escape
 
 local bookmarks      = structures.bookmarks
 
-local maxdimen       = 2^30-1
+local maxdimen       = 0x3FFFFFFF -- 2^30-1
 
 local layerspec = { -- predefining saves time
     "epdflinks"
@@ -231,7 +231,7 @@ function codeinjections.mergereferences(specification)
                     if not a then
                         report_link("missing link annotation")
                     elseif w > width or h > height or w < 0 or h < 0 or abs(x) > (maxdimen/2) or abs(y) > (maxdimen/2) then
-                        report_link("broken link rectangle [%f %f %f %f] (max: %f)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
+                        report_link("broken link rectangle [%.6F %.6F %.6F %.6F] (max: %.6F)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
                     else
                         local linktype = a.S
                         if linktype == "GoTo" then

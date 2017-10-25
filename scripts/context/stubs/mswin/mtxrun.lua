@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 5125, stripped down to: 2881
+-- original size: 5827, stripped down to: 3577
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -171,6 +171,34 @@ if not FFISUPPORTED then
   ffi=nil
 elseif not ffi.number then
   ffi.number=tonumber
+end
+if not bit32 then
+  bit32=load ([[ return {
+        band = function(a,b)
+            return (a & b)
+        end,
+        bnot = function(a)
+            return ~a & 0xFFFFFFFF
+        end,
+        bor = function(a,b)
+            return (a | b) & 0xFFFFFFFF
+        end,
+        btest = function(a,b)
+            return (a & b) ~= 0
+        end,
+        bxor = function(a,b)
+            return (a ~ b) & 0xFFFFFFFF
+        end,
+        extract = function(a,b,c)
+            return (a >> b) & ~(-1 << (c or 1))
+        end,
+        lshift = function(a,b)
+            return (a << b) & 0xFFFFFFFF
+        end,
+        rshift = function(a,b)
+            return (a >> b)
+        end,
+    } ]] ) ()
 end
 
 
@@ -1709,7 +1737,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 39674, stripped down to: 23227
+-- original size: 40086, stripped down to: 23513
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2757,6 +2785,24 @@ function table.filtered(t,pattern,sort,cmp)
     return nothing
   end
 end
+if not table.move then
+  function table.move(a1,f,e,t,a2)
+    if a2 and a1~=a2 then
+      for i=f,e do
+        a2[t]=a1[i]
+        t=t+1
+      end
+      return a2
+    else
+      t=t+e-f
+      for i=e,f,-1 do
+        a1[t]=a1[i]
+        t=t-1
+      end
+      return a1
+    end
+  end
+end
 
 
 end -- of closure
@@ -2765,7 +2811,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 11790, stripped down to: 6961
+-- original size: 11823, stripped down to: 6945
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2778,16 +2824,15 @@ local io=io
 local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
-local floor=math.floor
 local type=type
 if string.find(os.getenv("PATH"),";",1,true) then
   io.fileseparator,io.pathseparator="\\",";"
 else
   io.fileseparator,io.pathseparator="/",":"
 end
-local large=2^24    
-local medium=large/16 
-local small=medium/8
+local large=0x01000000 
+local medium=0x00100000 
+local small=0x00020000
 local function readall(f)
   local size=f:seek("end")
   if size>0 then
@@ -7705,7 +7750,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 5918, stripped down to: 2756
+-- original size: 6449, stripped down to: 3069
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -7821,6 +7866,25 @@ function table.setmetatablecall(t,f)
     m.__call=f
   else
     setmetatable(t,{ __call=f })
+  end
+  return t
+end
+function table.setmetatableindices(t,f,n,c)
+  if type(t)~="table" then
+    f,t=t,{}
+  end
+  local m=getmetatable(t)
+  local i=f_index[f] or f
+  if m then
+    m.__index=i
+    m.__newindex=n
+    m.__call=c
+  else
+    setmetatable(t,{
+      __index=i,
+      __newindex=n,
+      __call=c,
+    })
   end
   return t
 end
@@ -9830,7 +9894,7 @@ function statistics.show()
       local hashchar=tonumber(status.luatex_hashchars)
       local hashtype=status.luatex_hashtype
       local mask=lua.mask or "ascii"
-      return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%s,40), symbol mask: %s (%s)",
+      return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
         jit and "luajit" or "lua",
         statistics.memused(),
         hashtype or "default",
@@ -10034,7 +10098,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 6406, stripped down to: 4574
+-- original size: 6333, stripped down to: 4543
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -10053,7 +10117,6 @@ local report_lua=logs.reporter("system","lua")
 local report_mem=logs.reporter("system","lua memory")
 local tracestripping=false
 local tracememory=false
-local forcestupidcompile=true 
 luautilities.stripcode=true 
 luautilities.alwaysstripcode=false 
 luautilities.nofstrippedchunks=0
@@ -20757,8 +20820,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 855185
--- stripped bytes    : 309906
+-- original bytes    : 856790
+-- stripped bytes    : 310263
 
 -- end library merge
 

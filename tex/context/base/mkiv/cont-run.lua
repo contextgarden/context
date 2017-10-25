@@ -34,9 +34,9 @@ local logfilename   = "sandbox.log"
 local function registerstats()
     statistics.register("sandboxing", function()
         if trace_files then
-            return string.format("%s calls, %s rejected, logdata in '%s'",nofcalls,nofrejected,logfilename)
+            return string.format("%i calls, %i rejected, logdata in '%s'",nofcalls,nofrejected,logfilename)
         else
-            return string.format("%s calls, %s rejected",nofcalls,nofrejected)
+            return string.format("%i calls, %i rejected",nofcalls,nofrejected)
         end
     end)
     registerstats = false

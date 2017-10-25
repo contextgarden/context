@@ -772,7 +772,7 @@ local pop   = { "pop" }
 --     local h = h * bp
 --     local v = setmetatableindex(function(t,w)
 --      -- local v = { "rule", h, w }
---         local v = { "pdf", "origin", formatters["0 0 %0.6F %0.6F re F"](w*bp,h) }
+--         local v = { "pdf", "origin", formatters["0 0 %.6F %.6F re F"](w*bp,h) }
 --         t[w] = v
 --         return v
 --     end)
@@ -783,7 +783,7 @@ local pop   = { "pop" }
 -- local forecache = setmetatableindex(function(t,h)
 --     local h = h * bp
 --     local v = setmetatableindex(function(t,w)
---         local v = { "pdf", "origin", formatters["%0.6F w 0 0 %0.6F %0.6F re S"](0.25*65536*bp,w*bp,h) }
+--         local v = { "pdf", "origin", formatters["%.6F w 0 0 %.6F %.6F re S"](0.25*65536*bp,w*bp,h) }
 --         t[w] = v
 --         return v
 --     end)
@@ -799,7 +799,7 @@ local backcache = setmetatableindex(function(t,h)
     local v = setmetatableindex(function(t,d)
         local d = d * bp
         local v = setmetatableindex(function(t,w)
-            local v = { "pdf", "origin", formatters["%0.6F w 0 %0.6F %0.6F %0.6F re f"](r,-d,w*bp,h+d) }
+            local v = { "pdf", "origin", formatters["%.6F w 0 %.6F %.6F %.6F re f"](r,-d,w*bp,h+d) }
             t[w] = v
             return v
         end)
@@ -816,8 +816,8 @@ local forecache = setmetatableindex(function(t,h)
         local d = d * bp
         local v = setmetatableindex(function(t,w)
             -- the frame goes through the boundingbox
-         -- local v = { "pdf", "origin", formatters["[] 0 d 0 J %0.6F w 0 %0.6F %0.6F %0.6F re S"](r,-d,w*bp,h+d) }
-            local v = { "pdf", "origin", formatters["[] 0 d 0 J %0.6F w %0.6F %0.6F %0.6F %0.6F re S"](r,r/2,-d+r/2,w*bp-r,h+d-r) }
+         -- local v = { "pdf", "origin", formatters["[] 0 d 0 J %.6F w %.6F %.6F %.6F re S"](r,-d,w*bp,h+d) }
+            local v = { "pdf", "origin", formatters["[] 0 d 0 J %.6F w %.6F %.6F %.6F %.6F re S"](r,r/2,-d+r/2,w*bp-r,h+d-r) }
             t[w] = v
             return v
         end)

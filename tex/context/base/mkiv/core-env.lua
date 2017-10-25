@@ -57,7 +57,7 @@ setmetatableindex(texmodes, function(t,k)
     local m = modes[k]
     if m then
         return m()
-    else
+    elseif k then
         local n = "mode>" .. k
         if cache[n].mode == 0 then
             return false
@@ -65,6 +65,8 @@ setmetatableindex(texmodes, function(t,k)
             rawset(modes,k, function() return texgetcount(n) == 1 end)
             return texgetcount(n) == 1 -- 2 is prevented
         end
+    else
+        return false
     end
 end)
 setmetatablenewindex(texmodes, function(t,k)

@@ -138,7 +138,6 @@ local tonumber = tonumber
 local utfchar = utf.char
 local write, write_nl = texio.write, texio.write_nl
 local sub, formatters = string.sub, string.formatters
-local round, floor = math.round, math.floor
 local insert, remove = table.insert, table.remove
 
 -- local fonts, nodes, node = fonts, nodes, node -- too many locals

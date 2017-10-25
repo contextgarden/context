@@ -85,7 +85,6 @@ local parfillskip_code   = skipcodes.parfillskip
 local new_textdir        = nodepool.textdir
 
 local hasbit             = number.hasbit
-local formatters         = string.formatters
 local insert             = table.insert
 
 local fonthashes         = fonts.hashes

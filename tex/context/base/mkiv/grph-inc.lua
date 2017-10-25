@@ -103,7 +103,7 @@ local v_local           = variables["local"]
 local v_default         = variables.default
 local v_auto            = variables.auto
 
-local maxdimen          = 2^30-1
+local maxdimen          = 0x3FFFFFFF -- 2^30-1
 
 local ctx_doscalefigure            = context.doscalefigure
 local ctx_relocateexternalfigure   = context.relocateexternalfigure

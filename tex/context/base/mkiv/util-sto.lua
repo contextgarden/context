@@ -158,6 +158,29 @@ function table.setmetatablecall(t,f)
     return t
 end
 
+-- the manual is somewhat fuzzy about this but suggests that one can best
+-- set all fields before assigning a metatable
+
+function table.setmetatableindices(t,f,n,c)
+    if type(t) ~= "table" then
+        f, t = t, { }
+    end
+    local m = getmetatable(t)
+    local i = f_index[f] or f
+    if m then
+        m.__index    = i
+        m.__newindex = n
+        m.__call     = c
+    else
+        setmetatable(t,{
+            __index    = i,
+            __newindex = n,
+            __call     = c,
+        })
+    end
+    return t
+end
+
 function table.setmetatablekey(t,key,value)
     local m = getmetatable(t)
     if not m then

@@ -28,7 +28,6 @@ if not modules then modules = { } end modules ['typo-dir'] = {
 
 local next, type = next, type
 local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
-local formatters = string.formatters
 
 local nodes, node = nodes, node
 
@@ -67,9 +66,9 @@ local v_local               = variables["local"]
 local v_on                  = variables.on
 local v_yes                 = variables.yes
 
-local m_enabled             = 2^6 -- 64
-local m_global              = 2^7
-local m_fences              = 2^8
+local m_enabled             = 0x00000040 -- 2^6 64
+local m_global              = 0x00000080 -- 2^7
+local m_fences              = 0x00000100 -- 2^8
 
 local handlers              = { }
 local methods               = { }

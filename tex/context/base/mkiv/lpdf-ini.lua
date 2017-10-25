@@ -1074,7 +1074,7 @@ end
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
-    return format("%0.6F %0.6F %0.6F %0.6F 0 0 cm",c,s,-s,c)
+    return format("%.6F %.6F %.6F %.6F 0 0 cm",c,s,-s,c)
 end
 
 -- ! -> universaltime

@@ -68,7 +68,7 @@ local f_pair      = formatters["(%.16f,%.16f)"]
 local f_triplet   = formatters["(%.16f,%.16f,%.16f)"]
 local f_quadruple = formatters["(%.16f,%.16f,%.16f,%.16f)"]
 
-local function mpprint(...)
+local function mpprint(...) -- we can optimize for n=1
     for i=1,select("#",...) do
         local value = select(i,...)
         if value ~= nil then
@@ -258,7 +258,7 @@ local function mpquoted(fmt,s,...)
         buffer[n] = lpegmatch(p,formatters[fmt](s,...))
     elseif fmt then
      -- buffer[n] = '"' .. fmt .. '"'
-        buffer[n] = '"' .. lpegmatch(p,fmt) .. '"'
+        buffer[n] = lpegmatch(p,fmt)
     else
         -- something is wrong
     end

@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['font-chk'] = {
 -- move to the nodes namespace
 
 local next = next
+local floor = math.floor
 
 local context              = context
 
@@ -190,7 +191,7 @@ local variants = allocate {
     { tag = "yellow",  r = .6, g = .6, b =  0 },
 }
 
-local pdf_blob = "pdf: q %0.6F 0 0 %0.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
+local pdf_blob = "pdf: q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
 
 local cache = { } -- saves some tables but not that impressive
 
@@ -217,7 +218,7 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
             local name = fake.name
             local privatename = formatters["placeholder %s %s"](name,tag)
             if not hasprivate(tfmdata,privatename) then
-                local hash = formatters["%s_%s_%s_%s_%s_%s"](name,tag,r,g,b,size)
+                local hash = formatters["%s_%s_%1.3f_%1.3f_%1.3f_%i"](name,tag,r,g,b,floor(size))
                 local char = cache[hash]
                 if not char then
                     char = {

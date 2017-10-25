@@ -101,28 +101,28 @@ end
 -- end
 
 local bits = {
-    escape      = 2^ 0,
-    begingroup  = 2^ 1,
-    endgroup    = 2^ 2,
-    mathshift   = 2^ 3,
-    alignment   = 2^ 4,
-    endofline   = 2^ 5,
-    parameter   = 2^ 6,
-    superscript = 2^ 7,
-    subscript   = 2^ 8,
-    ignore      = 2^ 9,
-    space       = 2^10, -- 1024
-    letter      = 2^11,
-    other       = 2^12,
-    active      = 2^13,
-    comment     = 2^14,
-    invalid     = 2^15,
+    escape      = 0x00000001, -- 2^00
+    begingroup  = 0x00000002, -- 2^01
+    endgroup    = 0x00000004, -- 2^02
+    mathshift   = 0x00000008, -- 2^03
+    alignment   = 0x00000010, -- 2^04
+    endofline   = 0x00000020, -- 2^05
+    parameter   = 0x00000040, -- 2^06
+    superscript = 0x00000080, -- 2^07
+    subscript   = 0x00000100, -- 2^08
+    ignore      = 0x00000200, -- 2^09
+    space       = 0x00000400, -- 2^10 -- 1024
+    letter      = 0x00000800, -- 2^11
+    other       = 0x00001000, -- 2^12
+    active      = 0x00002000, -- 2^13
+    comment     = 0x00004000, -- 2^14
+    invalid     = 0x00008000, -- 2^15
     --
-    character   = 2^11 + 2^12,
-    whitespace  = 2^13 + 2^10, --    / needs more checking
+    character   = 0x00001800, -- 2^11 + 2^12
+    whitespace  = 0x00002400, -- 2^13 + 2^10 --    / needs more checking
     --
-    open        = 2^10 + 2^1, -- space + begingroup
-    close       = 2^10 + 2^2, -- space + endgroup
+    open        = 0x00000402, -- 2^10 + 2^01 -- space + begingroup
+    close       = 0x00000404, -- 2^10 + 2^02 -- space + endgroup
 }
 
 -- for k, v in next, bits do bits[v] = k end

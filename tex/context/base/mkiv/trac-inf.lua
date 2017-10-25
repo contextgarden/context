@@ -196,7 +196,7 @@ function statistics.show()
             local hashchar = tonumber(status.luatex_hashchars)
             local hashtype = status.luatex_hashtype
             local mask = lua.mask or "ascii"
-            return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%s,40), symbol mask: %s (%s)",
+            return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
                 jit and "luajit" or "lua",
                 statistics.memused(),
                 hashtype or "default",

@@ -16,7 +16,6 @@ local formatters = string.formatters
 local backends, lpdf, nodes = backends, lpdf, nodes
 
 local allocate                = utilities.storage.allocate
-local formatters              = string.formatters
 
 local nodeinjections          = backends.pdf.nodeinjections
 local codeinjections          = backends.pdf.codeinjections
@@ -64,7 +63,7 @@ local f_rgb    = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
 local f_cmyk   = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
 local f_spot   = formatters["/%s cs /%s CS %s SCN %s scn"]
 local f_tr     = formatters["Tr%s"]
-local f_cm     = formatters["q %F %F %F %F %F %F cm"]
+local f_cm     = formatters["q %.6F %.6F %.6F %.6F %.6F %.6F cm"]
 local f_effect = formatters["%s Tc %s w %s Tr"]
 local f_tr_gs  = formatters["/Tr%s gs"]
 local f_num_1  = tostring
@@ -716,7 +715,7 @@ do
     local pdfcolor        = lpdf.color
     local pdftransparency = lpdf.transparency
 
-    local f_slant = formatters["q 1 0 %F 1 0 0 cm"]
+    local f_slant = formatters["q 1 0 %.6F 1 0 0 cm"]
 
  -- local fillcolors = {
  --     red        = { "pdf", "origin", "1 0 0 rg" },

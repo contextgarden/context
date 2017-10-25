@@ -21,7 +21,6 @@ local report_mem = logs.reporter("system","lua memory")
 
 local tracestripping           = false
 local tracememory              = false
-local forcestupidcompile       = true  -- use internal bytecode compiler
 luautilities.stripcode         = true  -- support stripping when asked for
 luautilities.alwaysstripcode   = false -- saves 1 meg on 7 meg compressed format file (2012.08.12)
 luautilities.nofstrippedchunks = 0

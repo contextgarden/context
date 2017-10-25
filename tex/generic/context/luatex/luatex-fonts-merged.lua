@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/23/17 14:06:48
+-- merge date  : 10/26/17 01:26:30
 
 do -- begin closure to overcome local limits and interference
 
@@ -117,6 +117,34 @@ if not FFISUPPORTED then
   ffi=nil
 elseif not ffi.number then
   ffi.number=tonumber
+end
+if not bit32 then
+  bit32=load ([[ return {
+        band = function(a,b)
+            return (a & b)
+        end,
+        bnot = function(a)
+            return ~a & 0xFFFFFFFF
+        end,
+        bor = function(a,b)
+            return (a | b) & 0xFFFFFFFF
+        end,
+        btest = function(a,b)
+            return (a & b) ~= 0
+        end,
+        bxor = function(a,b)
+            return (a ~ b) & 0xFFFFFFFF
+        end,
+        extract = function(a,b,c)
+            return (a >> b) & ~(-1 << (c or 1))
+        end,
+        lshift = function(a,b)
+            return (a << b) & 0xFFFFFFFF
+        end,
+        rshift = function(a,b)
+            return (a >> b)
+        end,
+    } ]] ) ()
 end
 
 end -- closure
@@ -2097,6 +2125,24 @@ function table.filtered(t,pattern,sort,cmp)
     return nothing
   end
 end
+if not table.move then
+  function table.move(a1,f,e,t,a2)
+    if a2 and a1~=a2 then
+      for i=f,e do
+        a2[t]=a1[i]
+        t=t+1
+      end
+      return a2
+    else
+      t=t+e-f
+      for i=e,f,-1 do
+        a1[t]=a1[i]
+        t=t-1
+      end
+      return a1
+    end
+  end
+end
 
 end -- closure
 
@@ -2113,16 +2159,15 @@ local io=io
 local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
-local floor=math.floor
 local type=type
 if string.find(os.getenv("PATH"),";",1,true) then
   io.fileseparator,io.pathseparator="\\",";"
 else
   io.fileseparator,io.pathseparator="/",":"
 end
-local large=2^24    
-local medium=large/16 
-local small=medium/8
+local large=0x01000000 
+local medium=0x00100000 
+local small=0x00020000
 local function readall(f)
   local size=f:seek("end")
   if size>0 then
@@ -7621,6 +7666,7 @@ local sort,insert,concat=table.sort,table.insert,table.concat
 local sortedkeys,sortedhash,serialize,fastcopy=table.sortedkeys,table.sortedhash,table.serialize,table.fastcopy
 local derivetable=table.derive
 local ioflush=io.flush
+local round=math.round
 local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
 local trace_scaling=false trackers.register("fonts.scaling",function(v) trace_scaling=v end)
 local report_defining=logs.reporter("fonts","defining")
@@ -8419,13 +8465,15 @@ function constructors.hashinstance(specification,force)
     specification.hash=hash
   end
   if size<1000 and designsizes[hash] then
-    size=math.round(constructors.scaled(size,designsizes[hash]))
-    specification.size=size
-  end
-  if fallbacks then
-    return hash..' @ '..tostring(size)..' @ '..fallbacks
+    size=round(constructors.scaled(size,designsizes[hash]))
   else
-    return hash..' @ '..tostring(size)
+    size=round(size)
+  end
+  specification.size=size
+  if fallbacks then
+    return hash..' @ '..size..' @ '..fallbacks
+  else
+    return hash..' @ '..size
   end
 end
 function constructors.setname(tfmdata,specification) 
@@ -28363,8 +28411,8 @@ local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
 local otf=fonts.handlers.otf
-local f_color=formatters["%f %f %f rg"]
-local f_gray=formatters["%f g"]
+local f_color=formatters["%.3f %.3f %.3f rg"]
+local f_gray=formatters["%.3f g"]
 if context then
   local startactualtext=nil
   local stopactualtext=nil
@@ -31898,7 +31946,7 @@ function definers.read(specification,size,id)
     local properties=tfmdata.properties or {}
     local parameters=tfmdata.parameters or {}
     report_defining("using %a font with id %a, name %a, size %a, bytes %a, encoding %a, fullname %a, filename %a",
-      properties.format or "unknown",id,properties.name,parameters.size,properties.encodingbytes,
+      properties.format or "unknown",id or "-",properties.name,parameters.size,properties.encodingbytes,
       properties.encodingname,properties.fullname,basename(properties.filename))
   end
   statistics.stoptiming(fonts)

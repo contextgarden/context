@@ -49,13 +49,13 @@ boolean context_luas ; context_luas := true ;
 %
 % Fourth variant:
 
-string mfun_lua_bs ; mfun_lua_bs = "[[" ;
-string mfun_lua_es ; mfun_lua_es = "]]" ;
+string mfun_lua_bs ; mfun_lua_bs := "[[" ;
+string mfun_lua_es ; mfun_lua_es := "]]" ;
 
 vardef mlib_luas_luacall(text t) =
     runscript("" for s = t :
         if string s :
-            & mfun_lua_bs & s & mfun_lua_es
+            & s
         elseif numeric s :
             & decimal s
         elseif boolean s :
@@ -75,6 +75,7 @@ vardef mlib_luas_lualist(expr c)(text t) =
             hide(b := true)
         fi
         if string s :
+          % & ditto & s & ditto
             & mfun_lua_bs & s & mfun_lua_es
         elseif numeric s :
             & decimal s

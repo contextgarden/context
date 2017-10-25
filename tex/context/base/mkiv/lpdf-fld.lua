@@ -121,39 +121,39 @@ function codeinjections.setformsmethod(name)
 end
 
 local flag = { -- /Ff
-    ReadOnly          = 2^ 0, --  1
-    Required          = 2^ 1, --  2
-    NoExport          = 2^ 2, --  3
-    MultiLine         = 2^12, -- 13
-    Password          = 2^13, -- 14
-    NoToggleToOff     = 2^14, -- 15
-    Radio             = 2^15, -- 16
-    PushButton        = 2^16, -- 17
-    PopUp             = 2^17, -- 18
-    Edit              = 2^18, -- 19
-    Sort              = 2^19, -- 20
-    FileSelect        = 2^20, -- 21
-    DoNotSpellCheck   = 2^22, -- 23
-    DoNotScroll       = 2^23, -- 24
-    Comb              = 2^24, -- 25
-    RichText          = 2^25, -- 26
-    RadiosInUnison    = 2^25, -- 26
-    CommitOnSelChange = 2^26, -- 27
+    ReadOnly          = 0x00000001, -- 2^ 0
+    Required          = 0x00000002, -- 2^ 1
+    NoExport          = 0x00000004, -- 2^ 2
+    MultiLine         = 0x00001000, -- 2^12
+    Password          = 0x00002000, -- 2^13
+    NoToggleToOff     = 0x00004000, -- 2^14
+    Radio             = 0x00008000, -- 2^15
+    PushButton        = 0x00010000, -- 2^16
+    PopUp             = 0x00020000, -- 2^17
+    Edit              = 0x00040000, -- 2^18
+    Sort              = 0x00080000, -- 2^19
+    FileSelect        = 0x00100000, -- 2^20
+    DoNotSpellCheck   = 0x00400000, -- 2^22
+    DoNotScroll       = 0x00800000, -- 2^23
+    Comb              = 0x01000000, -- 2^24
+    RichText          = 0x02000000, -- 2^25
+    RadiosInUnison    = 0x02000000, -- 2^25
+    CommitOnSelChange = 0x04000000, -- 2^26
 }
 
 local plus = { -- /F
-    Invisible         = 2^0, --   1
-    Hidden            = 2^1, --   2
-    Printable         = 2^2, --   3
-    Print             = 2^2, --   3
-    NoZoom            = 2^3, --   4
-    NoRotate          = 2^4, --   5
-    NoView            = 2^5, --   6
-    ReadOnly          = 2^6, --   7
-    Locked            = 2^7, --   8
-    ToggleNoView      = 2^8, --   9
-    LockedContents    = 2^9, --  10,
-    AutoView          = 2^8, --   6 + 9 ?
+    Invisible         = 0x00000001, -- 2^0
+    Hidden            = 0x00000002, -- 2^1
+    Printable         = 0x00000004, -- 2^2
+    Print             = 0x00000004, -- 2^2
+    NoZoom            = 0x00000008, -- 2^3
+    NoRotate          = 0x00000010, -- 2^4
+    NoView            = 0x00000020, -- 2^5
+    ReadOnly          = 0x00000040, -- 2^6
+    Locked            = 0x00000080, -- 2^7
+    ToggleNoView      = 0x00000100, -- 2^8
+    LockedContents    = 0x00000200, -- 2^9
+    AutoView          = 0x00000100, -- 2^8
 }
 
 -- todo: check what is interfaced

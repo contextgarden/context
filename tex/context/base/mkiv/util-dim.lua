@@ -429,7 +429,7 @@ end
 stringtodimen = string.todimen -- local variable defined earlier
 
 function number.toscaled(d)
-    return format("%0.5f",d/2^16)
+    return format("%0.5f",d/0x10000) -- 2^16
 end
 
 --[[ldx--

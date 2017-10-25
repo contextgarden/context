@@ -1392,3 +1392,26 @@ function table.filtered(t,pattern,sort,cmp)
         return nothing
     end
 end
+
+-- lua 5.3:
+
+if not table.move then
+
+    function table.move(a1,f,e,t,a2)
+        if a2 and a1 ~= a2 then
+            for i=f,e do
+                a2[t] = a1[i]
+                t = t + 1
+            end
+            return a2
+        else
+            t = t + e - f
+            for i=e,f,-1 do
+                a1[t] = a1[i]
+                t = t - 1
+            end
+            return a1
+        end
+    end
+
+end

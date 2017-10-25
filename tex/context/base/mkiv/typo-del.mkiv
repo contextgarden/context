@@ -790,7 +790,8 @@
    \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
-   \typo_delimited_attributed_e
+   \bgroup
+   \aftergroup\typo_delimited_attributed_e
    \let\next=}
 
 \def\typo_delimited_attributed_e
@@ -806,6 +807,7 @@
    \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
+   \bgroup
    \aftergroup\typo_delimited_fontdriven_e
    \let\next=}
 

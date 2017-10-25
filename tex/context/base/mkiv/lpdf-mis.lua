@@ -455,7 +455,7 @@ end
 -- temp hack: the mediabox is not under our control and has a precision of 5 digits
 
 local factor  = number.dimenfactors.bp
-local f_value = formatters["%0.5F"]
+local f_value = formatters["%0.6F"]
 
 local function boxvalue(n) -- we could share them
     return pdfverbose(f_value(factor * n))

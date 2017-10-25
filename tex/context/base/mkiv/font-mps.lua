@@ -21,9 +21,9 @@ fonts               = fonts or { }
 local metapost      = fonts.metapost or { }
 fonts.metapost      = metapost
 
-local f_moveto      = formatters["(%F,%F)"]
-local f_lineto      = formatters["--(%F,%F)"]
-local f_curveto     = formatters["..controls(%F,%F)and(%F,%F)..(%F,%F)"]
+local f_moveto      = formatters["(%.6F,%.6F)"]
+local f_lineto      = formatters["--(%.6F,%.6F)"]
+local f_curveto     = formatters["..controls(%.6F,%.6F)and(%.6F,%.6F)..(%.6F,%.6F)"]
 local s_cycle       = "--cycle"
 
 local f_nofill      = formatters["nofill %s;"]
@@ -32,8 +32,8 @@ local f_dofill      = formatters["fill %s;"]
 local f_draw_trace  = formatters["drawpathonly %s;"]
 local f_draw        = formatters["draw %s;"]
 
-local f_boundingbox = formatters["((%F,%F)--(%F,%F)--(%F,%F)--(%F,%F)--cycle)"]
-local f_vertical    = formatters["((%F,%F)--(%F,%F))"]
+local f_boundingbox = formatters["((%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--cycle)"]
+local f_vertical    = formatters["((%.6F,%.6F)--(%.6F,%.6F))"]
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -275,9 +275,9 @@ local parameters     = fonts.hashes.parameters
 local shapes         = fonts.hashes.shapes
 local topaths        = metapost.paths
 
-local f_code         = formatters["mfun_do_outline_text_flush(%q,%i,%F,%F)(%,t);"]
-local f_rule         = formatters["mfun_do_outline_rule_flush(%q,%F,%F,%F,%F);"]
-local f_bounds       = formatters["checkbounds(%F,%F,%F,%F);"]
+local f_code         = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F)(%,t);"]
+local f_rule         = formatters["mfun_do_outline_rule_flush(%q,%.6F,%.6F,%.6F,%.6F);"]
+local f_bounds       = formatters["checkbounds(%.6F,%.6F,%.6F,%.6F);"]
 local s_nothing      = "(origin scaled 10)"
 
 local sc             = 10

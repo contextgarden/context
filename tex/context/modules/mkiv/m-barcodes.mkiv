@@ -13,6 +13,15 @@
 
 \writestatus{barcodes}{the 'zint' module is a better choice}
 
+\usemodule[zint]
+
+\let\normalbarcode\barcode
+
+\unexpanded\def\barcode[#1]%
+  {\normalbarcode[\c!text=\dummyparameter\c!code,\c!alternative=\dummyparameter\c!type,#1]}
+
+\iffalse
+
 % \startTEXpage
 %     \startPSTRICKS
 %         \pspicture(-4mm,-1mm)(38mm,26mm)
@@ -111,6 +120,8 @@ end
    \setvariables[barcode][type=isbn,#1]%
    \directsetup{barcode:\getvariable{barcode}{type}}%
    \egroup}
+
+\fi
 
 \continueifinputfile{m-barcodes.mkiv}
 

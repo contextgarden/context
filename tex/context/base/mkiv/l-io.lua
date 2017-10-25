@@ -10,7 +10,7 @@ local io = io
 local open, flush, write, read = io.open, io.flush, io.write, io.read
 local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
 local concat = table.concat
-local floor = math.floor
+----- floor = math.floor
 local type = type
 
 if string.find(os.getenv("PATH"),";",1,true) then
@@ -27,9 +27,9 @@ end
 -- to less intermediate large allocations. This phenomena was discussed on the
 -- luatex dev list.
 
-local large  = 2^24        -- 16 MB
-local medium = large  / 16 --  1 MB
-local small  = medium /  8
+local large  = 0x01000000 -- 2^24 16.777.216
+local medium = 0x00100000 -- 2^20  1.048.576
+local small  = 0x00020000 -- 2^17    131.072
 
 -- local function readall(f)
 --     local size = f:seek("end")
@@ -54,7 +54,7 @@ local small  = medium /  8
 -- end
 
 local function readall(f)
---     return f:read("*all")
+ -- return f:read("*all")
     local size = f:seek("end")
     if size > 0 then
         f:seek("set",0)
