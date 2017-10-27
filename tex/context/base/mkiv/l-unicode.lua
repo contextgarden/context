@@ -29,6 +29,9 @@ utf.values     = utf.values     or string.utfvalues
 -- string.characterpairs
 -- string.bytes
 -- string.bytepairs
+-- string.utflength
+-- string.utfvalues
+-- string.utfcharacters
 
 local type = type
 local char, byte, format, sub, gmatch = string.char, string.byte, string.format, string.sub, string.gmatch
@@ -64,53 +67,67 @@ end
 
 if not utf.char then
 
-    local floor, char = math.floor, string.char
+    utf.char = string.utfcharacter or (utf8 and utf8.char)
 
-    function utf.char(n)
-        if n < 0x80 then
-            -- 0aaaaaaa : 0x80
-            return char(n)
-        elseif n < 0x800 then
-            -- 110bbbaa : 0xC0 : n >> 6
-            -- 10aaaaaa : 0x80 : n & 0x3F
-            return char(
-                0xC0 + floor(n/0x40),
-                0x80 + (n % 0x40)
-            )
-        elseif n < 0x10000 then
-            -- 1110bbbb : 0xE0 :  n >> 12
-            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
-            -- 10aaaaaa : 0x80 :  n        & 0x3F
-            return char(
-                0xE0 + floor(n/0x1000),
-                0x80 + (floor(n/0x40) % 0x40),
-                0x80 + (n % 0x40)
-            )
-        elseif n < 0x200000 then
-            -- 11110ccc : 0xF0 :  n >> 18
-            -- 10ccbbbb : 0x80 : (n >> 12) & 0x3F
-            -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
-            -- 10aaaaaa : 0x80 :  n        & 0x3F
-            -- dddd     : ccccc - 1
-            return char(
-                0xF0 +  floor(n/0x40000),
-                0x80 + (floor(n/0x1000) % 0x40),
-                0x80 + (floor(n/0x40) % 0x40),
-                0x80 + (n % 0x40)
-            )
-        else
-            return ""
+    if not utf.char then
+
+        -- no multiples
+
+        local floor, char = math.floor, string.char
+
+        function utf.char(n)
+            if n < 0x80 then
+                -- 0aaaaaaa : 0x80
+                return char(n)
+            elseif n < 0x800 then
+                -- 110bbbaa : 0xC0 : n >> 6
+                -- 10aaaaaa : 0x80 : n & 0x3F
+                return char(
+                    0xC0 + floor(n/0x40),
+                    0x80 + (n % 0x40)
+                )
+            elseif n < 0x10000 then
+                -- 1110bbbb : 0xE0 :  n >> 12
+                -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+                -- 10aaaaaa : 0x80 :  n        & 0x3F
+                return char(
+                    0xE0 + floor(n/0x1000),
+                    0x80 + (floor(n/0x40) % 0x40),
+                    0x80 + (n % 0x40)
+                )
+            elseif n < 0x200000 then
+                -- 11110ccc : 0xF0 :  n >> 18
+                -- 10ccbbbb : 0x80 : (n >> 12) & 0x3F
+                -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+                -- 10aaaaaa : 0x80 :  n        & 0x3F
+                -- dddd     : ccccc - 1
+                return char(
+                    0xF0 +  floor(n/0x40000),
+                    0x80 + (floor(n/0x1000) % 0x40),
+                    0x80 + (floor(n/0x40) % 0x40),
+                    0x80 + (n % 0x40)
+                )
+            else
+                return ""
+            end
         end
+
     end
 
 end
 
 if not utf.byte then
 
-    local utf8byte = patterns.utf8byte
+    utf.byte = string.utfvalue or (utf8 and utf8.codepoint)
 
-    function utf.byte(c)
-        return lpegmatch(utf8byte,c)
+    if not utf.byte then
+
+        local utf8byte = patterns.utf8byte
+
+        function utf.byte(c)
+            return lpegmatch(utf8byte,c)
+        end
+
     end
 
 end
@@ -253,83 +270,89 @@ end
 
 if not utf.len then
 
-    -- -- alternative 1: 0.77
-    --
-    -- local utfcharcounter = utfbom^-1 * Cs((p_utf8char/'!')^0)
-    --
-    -- function utf.len(str)
-    --     return #lpegmatch(utfcharcounter,str or "")
-    -- end
-    --
-    -- -- alternative 2: 1.70
-    --
-    -- local n = 0
-    --
-    -- local utfcharcounter = utfbom^-1 * (p_utf8char/function() n = n + 1 end)^0 -- slow
-    --
-    -- function utf.length(str)
-    --     n = 0
-    --     lpegmatch(utfcharcounter,str or "")
-    --     return n
-    -- end
-    --
-    -- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
+    utf.len = string.utflength or (utf8 and utf8.len)
 
-    -- local n = 0
-    --
-    -- -- local utfcharcounter = lpeg.patterns.utfbom^-1 * P ( ( Cp() * (
-    -- --     patterns.utf8one  ^1 * Cc(1)
-    -- --   + patterns.utf8two  ^1 * Cc(2)
-    -- --   + patterns.utf8three^1 * Cc(3)
-    -- --   + patterns.utf8four ^1 * Cc(4) ) * Cp() / function(f,d,t) n = n + (t - f)/d end
-    -- --  )^0 ) -- just as many captures as below
-    --
-    -- -- local utfcharcounter = lpeg.patterns.utfbom^-1 * P ( (
-    -- --     (Cmt(patterns.utf8one  ^1,function(_,_,s) n = n + #s   return true end))
-    -- --   + (Cmt(patterns.utf8two  ^1,function(_,_,s) n = n + #s/2 return true end))
-    -- --   + (Cmt(patterns.utf8three^1,function(_,_,s) n = n + #s/3 return true end))
-    -- --   + (Cmt(patterns.utf8four ^1,function(_,_,s) n = n + #s/4 return true end))
-    -- -- )^0 ) -- not interesting as it creates strings but sometimes faster
-    --
-    -- -- The best so far:
-    --
-    -- local utfcharcounter = utfbom^-1 * P ( (
-    --     Cp() * (patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
-    --   + Cp() * (patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
-    --   + Cp() * (patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
-    --   + Cp() * (patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
-    -- )^0 )
+    if not utf.len then
 
-    -- function utf.len(str)
-    --     n = 0
-    --     lpegmatch(utfcharcounter,str or "")
-    --     return n
-    -- end
+        -- -- alternative 1: 0.77
+        --
+        -- local utfcharcounter = utfbom^-1 * Cs((p_utf8char/'!')^0)
+        --
+        -- function utf.len(str)
+        --     return #lpegmatch(utfcharcounter,str or "")
+        -- end
+        --
+        -- -- alternative 2: 1.70
+        --
+        -- local n = 0
+        --
+        -- local utfcharcounter = utfbom^-1 * (p_utf8char/function() n = n + 1 end)^0 -- slow
+        --
+        -- function utf.length(str)
+        --     n = 0
+        --     lpegmatch(utfcharcounter,str or "")
+        --     return n
+        -- end
+        --
+        -- -- alternative 3: 0.24 (native unicode.utf8.len: 0.047)
 
-    local n, f = 0, 1
+        -- local n = 0
+        --
+        -- -- local utfcharcounter = lpeg.patterns.utfbom^-1 * P ( ( Cp() * (
+        -- --     patterns.utf8one  ^1 * Cc(1)
+        -- --   + patterns.utf8two  ^1 * Cc(2)
+        -- --   + patterns.utf8three^1 * Cc(3)
+        -- --   + patterns.utf8four ^1 * Cc(4) ) * Cp() / function(f,d,t) n = n + (t - f)/d end
+        -- --  )^0 ) -- just as many captures as below
+        --
+        -- -- local utfcharcounter = lpeg.patterns.utfbom^-1 * P ( (
+        -- --     (Cmt(patterns.utf8one  ^1,function(_,_,s) n = n + #s   return true end))
+        -- --   + (Cmt(patterns.utf8two  ^1,function(_,_,s) n = n + #s/2 return true end))
+        -- --   + (Cmt(patterns.utf8three^1,function(_,_,s) n = n + #s/3 return true end))
+        -- --   + (Cmt(patterns.utf8four ^1,function(_,_,s) n = n + #s/4 return true end))
+        -- -- )^0 ) -- not interesting as it creates strings but sometimes faster
+        --
+        -- -- The best so far:
+        --
+        -- local utfcharcounter = utfbom^-1 * P ( (
+        --     Cp() * (patterns.utf8one  )^1 * Cp() / function(f,t) n = n +  t - f    end
+        --   + Cp() * (patterns.utf8two  )^1 * Cp() / function(f,t) n = n + (t - f)/2 end
+        --   + Cp() * (patterns.utf8three)^1 * Cp() / function(f,t) n = n + (t - f)/3 end
+        --   + Cp() * (patterns.utf8four )^1 * Cp() / function(f,t) n = n + (t - f)/4 end
+        -- )^0 )
 
-    local utfcharcounter = patterns.utfbom^-1 * Cmt (
-        Cc(1) * patterns.utf8one  ^1
-      + Cc(2) * patterns.utf8two  ^1
-      + Cc(3) * patterns.utf8three^1
-      + Cc(4) * patterns.utf8four ^1,
-        function(_,t,d) -- due to Cc no string captures, so faster
-            n = n + (t - f)/d
-            f = t
-            return true
+        -- function utf.len(str)
+        --     n = 0
+        --     lpegmatch(utfcharcounter,str or "")
+        --     return n
+        -- end
+
+        local n, f = 0, 1
+
+        local utfcharcounter = patterns.utfbom^-1 * Cmt (
+            Cc(1) * patterns.utf8one  ^1
+          + Cc(2) * patterns.utf8two  ^1
+          + Cc(3) * patterns.utf8three^1
+          + Cc(4) * patterns.utf8four ^1,
+            function(_,t,d) -- due to Cc no string captures, so faster
+                n = n + (t - f)/d
+                f = t
+                return true
+            end
+        )^0
+
+        function utf.len(str)
+            n, f = 0, 1
+            lpegmatch(utfcharcounter,str or "")
+            return n
         end
-    )^0
 
-    function utf.len(str)
-        n, f = 0, 1
-        lpegmatch(utfcharcounter,str or "")
-        return n
+        -- -- these are quite a bit slower:
+
+        -- utfcharcounter = utfbom^-1 * (Cmt(P(1) * R("\128\191")^0, function() n = n + 1 return true end))^0 -- 50+ times slower
+        -- utfcharcounter = utfbom^-1 * (Cmt(P(1), function() n = n + 1 return true end) * R("\128\191")^0)^0 -- 50- times slower
+
     end
-
-    -- -- these are quite a bit slower:
-
-    -- utfcharcounter = utfbom^-1 * (Cmt(P(1) * R("\128\191")^0, function() n = n + 1 return true end))^0 -- 50+ times slower
-    -- utfcharcounter = utfbom^-1 * (Cmt(P(1), function() n = n + 1 return true end) * R("\128\191")^0)^0 -- 50- times slower
 
 end
 

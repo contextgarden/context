@@ -2343,6 +2343,13 @@
 % \ruledhbox{$\mathtext{abc ffi}$}
 % \ruledhbox{$\mathword{abc ffi}$}
 
+% I need to decide:
+%
+%mathscriptboxmode\zerocount % no kerning
+%mathscriptboxmode\plusone   % lists
+\mathscriptboxmode\plustwo   % lists and boxes
+%mathscriptboxmode\plusthree % lists and boxes with \boundary=1 (also for testing and demo)
+
 \unexpanded\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}
 \unexpanded\def\mathword  {\mathortext{\math_text_choice_word\relax}\hbox}
 

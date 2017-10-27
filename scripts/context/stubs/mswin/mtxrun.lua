@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 5827, stripped down to: 3577
+-- original size: 6056, stripped down to: 2916
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -65,14 +65,15 @@ if not modules then modules={} end modules ['l-lua']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-_MAJORVERSION,_MINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
-_MAJORVERSION=tonumber(_MAJORVERSION) or 5
-_MINORVERSION=tonumber(_MINORVERSION) or 1
-_LUAVERSION=_MAJORVERSION+_MINORVERSION/10
-if _LUAVERSION<5.2 and jit then
-  _MINORVERSION=2
-  _LUAVERSION=5.2
+LUAMAJORVERSION,LUAMINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
+LUAMAJORVERSION=tonumber(LUAMAJORVERSION) or 5
+LUAMINORVERSION=tonumber(LUAMINORVERSION) or 1
+LUAVERSION=LUAMAJORVERSION+LUAMINORVERSION/10
+if LUAVERSION<5.2 and jit then
+  MINORVERSION=2
+  LUAVERSION=5.2
 end
+_LUAVERSION=LUAVERSION
 if not lpeg then
   lpeg=require("lpeg")
 end
@@ -171,34 +172,6 @@ if not FFISUPPORTED then
   ffi=nil
 elseif not ffi.number then
   ffi.number=tonumber
-end
-if not bit32 then
-  bit32=load ([[ return {
-        band = function(a,b)
-            return (a & b)
-        end,
-        bnot = function(a)
-            return ~a & 0xFFFFFFFF
-        end,
-        bor = function(a,b)
-            return (a | b) & 0xFFFFFFFF
-        end,
-        btest = function(a,b)
-            return (a & b) ~= 0
-        end,
-        bxor = function(a,b)
-            return (a ~ b) & 0xFFFFFFFF
-        end,
-        extract = function(a,b,c)
-            return (a >> b) & ~(-1 << (c or 1))
-        end,
-        lshift = function(a,b)
-            return (a << b) & 0xFFFFFFFF
-        end,
-        rshift = function(a,b)
-            return (a >> b)
-        end,
-    } ]] ) ()
 end
 
 
@@ -5086,7 +5059,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 38263, stripped down to: 16330
+-- original size: 39076, stripped down to: 16665
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -5122,37 +5095,43 @@ if not unicode then
   unicode={ utf=utf } 
 end
 if not utf.char then
-  local floor,char=math.floor,string.char
-  function utf.char(n)
-    if n<0x80 then
-      return char(n)
-    elseif n<0x800 then
-      return char(
-        0xC0+floor(n/0x40),
-        0x80+(n%0x40)
-      )
-    elseif n<0x10000 then
-      return char(
-        0xE0+floor(n/0x1000),
-        0x80+(floor(n/0x40)%0x40),
-        0x80+(n%0x40)
-      )
-    elseif n<0x200000 then
-      return char(
-        0xF0+floor(n/0x40000),
-        0x80+(floor(n/0x1000)%0x40),
-        0x80+(floor(n/0x40)%0x40),
-        0x80+(n%0x40)
-      )
-    else
-      return ""
+  utf.char=string.utfcharacter or (utf8 and utf8.char)
+  if not utf.char then
+    local floor,char=math.floor,string.char
+    function utf.char(n)
+      if n<0x80 then
+        return char(n)
+      elseif n<0x800 then
+        return char(
+          0xC0+floor(n/0x40),
+          0x80+(n%0x40)
+        )
+      elseif n<0x10000 then
+        return char(
+          0xE0+floor(n/0x1000),
+          0x80+(floor(n/0x40)%0x40),
+          0x80+(n%0x40)
+        )
+      elseif n<0x200000 then
+        return char(
+          0xF0+floor(n/0x40000),
+          0x80+(floor(n/0x1000)%0x40),
+          0x80+(floor(n/0x40)%0x40),
+          0x80+(n%0x40)
+        )
+      else
+        return ""
+      end
     end
   end
 end
 if not utf.byte then
-  local utf8byte=patterns.utf8byte
-  function utf.byte(c)
-    return lpegmatch(utf8byte,c)
+  utf.byte=string.utfvalue or (utf8 and utf8.codepoint)
+  if not utf.byte then
+    local utf8byte=patterns.utf8byte
+    function utf.byte(c)
+      return lpegmatch(utf8byte,c)
+    end
   end
 end
 local utfchar,utfbyte=utf.char,utf.byte
@@ -5203,19 +5182,22 @@ function utf.is_valid(str)
   return type(str)=="string" and lpegmatch(validatedutf,str) or false
 end
 if not utf.len then
-  local n,f=0,1
-  local utfcharcounter=patterns.utfbom^-1*Cmt (
-    Cc(1)*patterns.utf8one^1+Cc(2)*patterns.utf8two^1+Cc(3)*patterns.utf8three^1+Cc(4)*patterns.utf8four^1,
-    function(_,t,d) 
-      n=n+(t-f)/d
-      f=t
-      return true
+  utf.len=string.utflength or (utf8 and utf8.len)
+  if not utf.len then
+    local n,f=0,1
+    local utfcharcounter=patterns.utfbom^-1*Cmt (
+      Cc(1)*patterns.utf8one^1+Cc(2)*patterns.utf8two^1+Cc(3)*patterns.utf8three^1+Cc(4)*patterns.utf8four^1,
+      function(_,t,d) 
+        n=n+(t-f)/d
+        f=t
+        return true
+      end
+    )^0
+    function utf.len(str)
+      n,f=0,1
+      lpegmatch(utfcharcounter,str or "")
+      return n
     end
-  )^0
-  function utf.len(str)
-    n,f=0,1
-    lpegmatch(utfcharcounter,str or "")
-    return n
   end
 end
 utf.length=utf.len
@@ -5762,7 +5744,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 37003, stripped down to: 20839
+-- original size: 36995, stripped down to: 20835
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5782,7 +5764,7 @@ local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local utfchar,utfbyte=utf.char,utf.byte
 local loadstripped=nil
-if _LUAVERSION<5.2 then
+if LUAVERSION<5.2 then
   loadstripped=function(str,shortcuts)
     return load(str)
   end
@@ -6043,7 +6025,7 @@ local template=[[
 return function(%s) return %s end
 ]]
 local preamble,environment="",{}
-if _LUAVERSION<5.2 then
+if LUAVERSION<5.2 then
   preamble=[[
 local lpeg=lpeg
 local type=type
@@ -6444,7 +6426,7 @@ local function use(t,fmt,...)
   return t[fmt](...)
 end
 strings.formatters={}
-if _LUAVERSION<5.2 then
+if LUAVERSION<5.2 then
   function strings.formatters.new(noconcat)
     local t={ _type_="formatter",_connector_=noconcat and "," or "..",_extensions_={},_preamble_=preamble,_environment_={} }
     setmetatable(t,{ __index=make,__call=use })
@@ -6481,7 +6463,7 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-if _LUAVERSION<5.2 then
+if LUAVERSION<5.2 then
   add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
   add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
   add(formatters,"lua",[[lpegmatch(luaescape,%s)]],"local luaescape = lpeg.patterns.luaescape")
@@ -9763,7 +9745,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8253, stripped down to: 5675
+-- original size: 8284, stripped down to: 5698
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -9894,8 +9876,9 @@ function statistics.show()
       local hashchar=tonumber(status.luatex_hashchars)
       local hashtype=status.luatex_hashtype
       local mask=lua.mask or "ascii"
-      return format("engine: %s, used memory: %s, hash type: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
+      return format("engine: %s %s, used memory: %s, hash type: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
         jit and "luajit" or "lua",
+        LUAVERSION,
         statistics.memused(),
         hashtype or "default",
         hashchar and 2^hashchar or "unknown",
@@ -20820,8 +20803,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 856790
--- stripped bytes    : 310263
+-- original bytes    : 857855
+-- stripped bytes    : 311635
 
 -- end library merge
 

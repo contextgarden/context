@@ -292,6 +292,7 @@ return {
   "mathrulesfam",
   "mathrulesmode",
   "mathscriptsmode",
+  "mathscriptboxmode",
   "mathstyle",
   "mathsurroundmode",
   "mathsurroundskip",

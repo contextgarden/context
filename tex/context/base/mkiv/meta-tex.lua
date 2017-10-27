@@ -126,7 +126,7 @@ do
         arguments = { "string", "string" }
     }
 
-    if _LUAVERSION < 5.2  then
+    if LUAVERSION < 5.2  then
         utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]], "local texexp = metapost.texexp")
     else
         utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]],      { texexp = metapost.texexp })

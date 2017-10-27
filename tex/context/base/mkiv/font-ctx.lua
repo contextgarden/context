@@ -158,7 +158,7 @@ helpers.name = getfontname
 
 local addformatter = utilities.strings.formatters.add
 
-if _LUAVERSION < 5.2  then
+if LUAVERSION < 5.2  then
 
     addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          "local fontname  = fonts.helpers.name")
     addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")

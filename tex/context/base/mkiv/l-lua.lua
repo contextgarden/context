@@ -17,27 +17,34 @@ if not modules then modules = { } end modules ['l-lua'] = {
 -- utf.*
 -- bit32
 
--- compatibility hacksand helpers
+-- compatibility hacks and helpers
 
-_MAJORVERSION, _MINORVERSION = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
+LUAMAJORVERSION, LUAMINORVERSION = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 
-_MAJORVERSION = tonumber(_MAJORVERSION) or 5
-_MINORVERSION = tonumber(_MINORVERSION) or 1
-_LUAVERSION   = _MAJORVERSION + _MINORVERSION/10
+LUAMAJORVERSION = tonumber(LUAMAJORVERSION) or 5
+LUAMINORVERSION = tonumber(LUAMINORVERSION) or 1
+LUAVERSION      = LUAMAJORVERSION + LUAMINORVERSION/10
 
-if _LUAVERSION < 5.2 and jit then
+if LUAVERSION < 5.2 and jit then
     --
     -- we want loadstring cum suis to behave like 5.2
     --
-    _MINORVERSION = 2
-    _LUAVERSION   = 5.2
+    MINORVERSION = 2
+    LUAVERSION   = 5.2
 end
+
+_LUAVERSION = LUAVERSION -- for old times sake, will go away
 
 -- lpeg
 
 if not lpeg then
     lpeg = require("lpeg")
 end
+
+-- if utf8 then
+--     utf8lua = utf8
+--     utf8    = nil
+-- end
 
 -- basics:
 
@@ -221,31 +228,31 @@ elseif not ffi.number then
     ffi.number = tonumber
 end
 
-if not bit32 then
-    bit32 = load ( [[ return {
-        band = function(a,b)
-            return (a & b)
-        end,
-        bnot = function(a)
-            return ~a & 0xFFFFFFFF
-        end,
-        bor = function(a,b)
-            return (a | b) & 0xFFFFFFFF
-        end,
-        btest = function(a,b)
-            return (a & b) ~= 0
-        end,
-        bxor = function(a,b)
-            return (a ~ b) & 0xFFFFFFFF
-        end,
-        extract = function(a,b,c)
-            return (a >> b) & ~(-1 << (c or 1))
-        end,
-        lshift = function(a,b)
-            return (a << b) & 0xFFFFFFFF
-        end,
-        rshift = function(a,b)
-            return (a >> b)
-        end,
-    } ]] ) ()
-end
+-- if not bit32 then
+--     bit32 = load ( [[ return {
+--         band = function(a,b)
+--             return (a & b)
+--         end,
+--         bnot = function(a)
+--             return ~a & 0xFFFFFFFF
+--         end,
+--         bor = function(a,b)
+--             return (a | b) & 0xFFFFFFFF
+--         end,
+--         btest = function(a,b)
+--             return (a & b) ~= 0
+--         end,
+--         bxor = function(a,b)
+--             return (a ~ b) & 0xFFFFFFFF
+--         end,
+--         extract = function(a,b,c)
+--             return (a >> b) & ~(-1 << (c or 1))
+--         end,
+--         lshift = function(a,b)
+--             return (a << b) & 0xFFFFFFFF
+--         end,
+--         rshift = function(a,b)
+--             return (a >> b)
+--         end,
+--     } ]] ) ()
+-- end
