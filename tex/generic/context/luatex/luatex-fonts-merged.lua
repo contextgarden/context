@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/27/17 20:01:53
+-- merge date  : 10/28/17 15:49:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -9169,7 +9169,7 @@ local function tounicode16sequence(unicodes)
   end
   return concat(t)
 end
-local function tounicode(unicode,name)
+local function tounicode(unicode)
   if type(unicode)=="table" then
     local t={}
     for l=1,#unicode do

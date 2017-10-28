@@ -18,6 +18,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 local formatters, find = string.formatters, string.find
 local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
 ----- floor = math.floor
+local sortedhash = table.sortedhash
 local toboolean = toboolean
 
 local context               = context
@@ -285,7 +286,7 @@ function mathematics.define(family)
     family = family or 0
     family = families[family] or family
     local data = characters.data
-    for unicode, character in next, data do
+    for unicode, character in sortedhash(data) do
         local symbol = character.mathsymbol
         local mset, dset = true, true
         if symbol then
@@ -300,7 +301,8 @@ function mathematics.define(family)
             end
             local spec = other.mathspec
             if spec then
-                for i, m in next, spec do
+                for i=1,#spec do
+                    local m = spec[i]
                     local class = m.class
                     if class then
                         class = classes[class] or class -- no real checks needed
@@ -312,7 +314,8 @@ function mathematics.define(family)
         local mathclass = character.mathclass
         local mathspec = character.mathspec
         if mathspec then
-            for i, m in next, mathspec do
+            for i=1,#mathspec do
+                local m = mathspec[i]
                 local name = m.name
                 local class = m.class
                 if not class then

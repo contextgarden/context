@@ -400,7 +400,7 @@ implement {
 
 implement {
     name      = "flow_set_include",
-    arguments = { "string", "dimension", "dimension", "string" },
+    arguments = { "string", "integer", "integer", "string" },
     actions   = function(name,x,y,settings)
         data[#data+1] = {
             include  = name,

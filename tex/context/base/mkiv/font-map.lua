@@ -165,7 +165,7 @@ local function tounicode16sequence(unicodes)
     return concat(t)
 end
 
-local function tounicode(unicode,name)
+local function tounicode(unicode)
     if type(unicode) == "table" then
         local t = { }
         for l=1,#unicode do

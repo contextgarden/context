@@ -1007,6 +1007,14 @@ local direct = Cs (
   * P(-1) / [[local format = string.format return function(str) return format("%0",str) end]]
 )
 
+-- local direct = Cs (
+--     P("%")
+--   * (S("+- .") + R("09"))^0
+--   * S("sqidfgGeExXo")
+--   * (1-P("%"))^0
+--   * P(-1) / [[local format = string.format return function(str) return format([==[%0]==],str) end]]
+-- )
+
 local function make(t,str)
     local f
     local p

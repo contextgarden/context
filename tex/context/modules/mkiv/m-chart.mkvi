@@ -304,8 +304,8 @@
 
 \unexpanded\def\module_charts_FLOW_include          [#name][#settings]{%
     \begingroup
-        \getparameters[FLOWi][\c!x=1,\c!y=1,#settings]%
-        \clf_flow_set_include{#name}\numexpr\FLOWix\relax\numexpr\FLOWiy\relax{\detokenize{#settings}}%
+        \getdummyparameters[\c!x=1,\c!y=1,#settings]%
+        \clf_flow_set_include{#name}\numexpr\dummyparameter\c!x\relax\numexpr\dummyparameter\c!y\relax{\detokenize{#settings}}%
     \endgroup
     \ignorespaces
 }
