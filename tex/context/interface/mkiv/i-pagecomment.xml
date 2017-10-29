@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuppagecomment" level="style" file="page-com.mkiv">
+    <cd:command name="setuppagecomment" level="style" category="pdf" file="page-com.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="location">
@@ -35,6 +35,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagecomment" type="environment" file="page-com.mkiv"/>
+    <cd:command name="pagecomment" type="environment" level="document" category="pdf" file="page-com.mkiv"/>
 
 </cd:interface>

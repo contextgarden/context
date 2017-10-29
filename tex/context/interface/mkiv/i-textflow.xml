@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definetextflow" level="style" file="page-flw.mkiv">
+    <cd:command name="definetextflow" level="style" category="structure" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptextflow" level="style" file="page-flw.mkiv">
+    <cd:command name="setuptextflow" level="style" category="structure" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -31,13 +31,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textflowcollector" file="page-flw.mkiv">
+    <cd:command name="textflowcollector" level="system" category="structure" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetextflowcollector" level="system" file="page-flw.mkiv">
+    <cd:command name="doifelsetextflowcollector" level="system" category="structure conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -45,7 +45,7 @@
         </cd:arguments>
     </cd:command>
     
-    <cd:command name="doiftextflowcollectorelse" level="system" file="page-flw.mkiv">
+    <cd:command name="doiftextflowcollectorelse" level="system" category="structure conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -53,7 +53,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetextflow" level="system" file="page-flw.mkiv">
+    <cd:command name="doifelsetextflow" level="system" category="structure conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -61,7 +61,7 @@
         </cd:arguments>
     </cd:command>
     
-    <cd:command name="doiftextflowelse" level="system" file="page-flw.mkiv">
+    <cd:command name="doiftextflowelse" level="system" category="structure conditional" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -69,13 +69,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textflow" type="environment" file="page-flw.mkiv">
+    <cd:command name="textflow" type="environment" level="document" category="structure" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushtextflow" file="page-flw.mkiv">
+    <cd:command name="flushtextflow" level="document" category="structure" file="page-flw.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

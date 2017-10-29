@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemargindata" level="style" file="typo-mar.mkiv">
+    <cd:command name="definemargindata" level="style" category="structure" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmargindata" level="style" file="typo-mar.mkiv">
+    <cd:command name="setupmargindata" level="style" category="structure" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -107,7 +107,7 @@
 
     <!--
 
-        <cd:command name="definemarginframed" file="typo-mar.mkiv">
+        <cd:command name="definemarginframed" level="system" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -119,7 +119,7 @@
 
     -->
 
-    <cd:command name="setupmarginframed" level="style" file="typo-mar.mkiv">
+    <cd:command name="setupmarginframed" level="style" category="structure" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -128,7 +128,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="margindata" generated="yes" variant="instance" level="document" file="typo-mar.mkiv">
+    <cd:command name="margindata" generated="yes" variant="instance" level="document" category="structure" file="typo-mar.mkiv">
         <cd:sequence>
             <cd:instance value="margindata"/>
         </cd:sequence>
@@ -149,7 +149,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="margindata" level="document" file="typo-mar.mkiv">
+    <cd:command name="margindata" level="document" level="document" category="structure" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -167,7 +167,7 @@
 
     <!--
 
-        <cd:command name="inleftmargin" file="typo-mar.mkiv">
+        <cd:command name="inleftmargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -179,7 +179,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inrightmargin" file="typo-mar.mkiv">
+        <cd:command name="inrightmargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -191,7 +191,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inoutermargin" file="typo-mar.mkiv">
+        <cd:command name="inoutermargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -203,7 +203,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="ininnermargin" file="typo-mar.mkiv">
+        <cd:command name="ininnermargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -215,7 +215,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inleftedge" file="typo-mar.mkiv">
+        <cd:command name="inleftedge" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -227,7 +227,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inrightedge" file="typo-mar.mkiv">
+        <cd:command name="inrightedge" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -239,7 +239,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="ininneredge" file="typo-mar.mkiv">
+        <cd:command name="ininneredge" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -251,7 +251,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inouteredge" file="typo-mar.mkiv">
+        <cd:command name="inouteredge" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -263,7 +263,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="atleftmargin" file="typo-mar.mkiv">
+        <cd:command name="atleftmargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -275,7 +275,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="atrightmargin" file="typo-mar.mkiv">
+        <cd:command name="atrightmargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -287,22 +287,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inleft" file="typo-mar.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:parameter name="reference">
-                        <cd:constant type="cd:reference"/>
-                    </cd:parameter>
-                    <cd:inherit name="setupmargindata"/>
-                </cd:assignments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-                <cd:content/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="inright" file="typo-mar.mkiv">
+        <cd:command name="inleft" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -317,7 +302,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="ininner" file="typo-mar.mkiv">
+        <cd:command name="inright" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -332,7 +317,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inouter" file="typo-mar.mkiv">
+        <cd:command name="ininner" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -347,7 +332,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inmargin" file="typo-mar.mkiv">
+        <cd:command name="inouter" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -362,7 +347,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inother" file="typo-mar.mkiv">
+        <cd:command name="inmargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -377,7 +362,22 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="margintext" file="typo-mar.mkiv">
+        <cd:command name="inother" level="document" category="structure" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="margintext" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -389,7 +389,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="marginword" file="typo-mar.mkiv">
+        <cd:command name="marginword" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -401,7 +401,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="margintitle" file="typo-mar.mkiv">
+        <cd:command name="margintitle" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">
@@ -413,7 +413,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="inothermargin" file="typo-mar.mkiv">
+        <cd:command name="inothermargin" level="document" category="structure" file="typo-mar.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="reference">

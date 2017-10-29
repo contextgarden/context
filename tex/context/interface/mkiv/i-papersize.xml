@@ -6,7 +6,7 @@
 
     <!--
 
-        <cd:command name="definelayouttarget" file="page-lay.mkiv">
+        <cd:command name="definelayouttarget" level="system" category="layout" file="page-lay.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -16,7 +16,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setuplayouttarget" file="page-lay.mkiv">
+        <cd:command name="setuplayouttarget" level="system" category="layout" file="page-lay.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -102,7 +102,7 @@
 
     -->
 
-    <cd:command name="definepapersize" level="style" file="page-lay.mkiv">
+    <cd:command name="definepapersize" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -137,7 +137,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepapersize" variant="name" level="style" file="page-lay.mkiv">
+    <cd:command name="definepapersize" variant="name" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes">
@@ -149,7 +149,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppapersize" variant="name" level="style" file="page-lay.mkiv">
+    <cd:command name="setuppapersize" variant="name" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="reset"/>
@@ -178,7 +178,7 @@
 
     <!--
 
-        <cd:command name="setuppapersize" file="page-lay.mkiv">
+        <cd:command name="setuppapersize" level="style" category="layout" file="page-lay.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:assignments list="yes">
@@ -187,7 +187,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setuppaper" file="page-lay.mkiv">
+        <cd:command name="setuppaper" level="style" category="layout" file="page-lay.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes">
                     <cd:inherit name="setuplayouttarget"/>
@@ -197,7 +197,7 @@
 
     -->
 
-    <cd:command name="setuppapersize" level="style" file="page-lay.mkiv">
+    <cd:command name="setuppapersize" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
@@ -281,7 +281,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppaper" level="style" file="page-lay.mkiv">
+    <cd:command name="setuppaper" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setuppapersize"/>
@@ -289,7 +289,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="adaptpapersize" level="style" file="page-lay.mkiv">
+    <cd:command name="adaptpapersize" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="setuppapersize"/>

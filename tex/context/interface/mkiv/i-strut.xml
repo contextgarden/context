@@ -4,15 +4,15 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="strutdp" file="supp-box.mkiv"/>
+    <cd:command name="strutdp" level="system" file="supp-box.mkiv"/>
 
-    <cd:command name="strutht" file="supp-box.mkiv"/>
+    <cd:command name="strutht" level="system" file="supp-box.mkiv"/>
 
-    <cd:command name="strutwd" file="supp-box.mkiv"/>
+    <cd:command name="strutwd" level="system" file="supp-box.mkiv"/>
 
-    <cd:command name="struthtdp" file="supp-box.mkiv"/>
+    <cd:command name="struthtdp" level="system" file="supp-box.mkiv"/>
 
-    <cd:command name="setupstruts" file="spac-ver.mkiv">
+    <cd:command name="setupstruts" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-strut"/>
@@ -28,12 +28,17 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strut" file="spac-ver.mkiv"/>
-    <cd:command name="halfstrut" file="spac-ver.mkiv"/>
-    <cd:command name="quarterstrut" file="spac-ver.mkiv"/>
-    <cd:command name="halflinestrut" file="spac-ver.mkiv"/>
-    <cd:command name="noheightstrut" file="spac-ver.mkiv"/>
-    <cd:command name="depthstrut" file="spac-ver.mkiv"/>
+    <cd:command name="strut" level="style" file="spac-ver.mkiv"/>
+
+    <cd:command name="halfstrut" level="system" file="spac-ver.mkiv"/>
+
+    <cd:command name="quarterstrut" level="system" file="spac-ver.mkiv"/>
+
+    <cd:command name="halflinestrut" level="system" file="spac-ver.mkiv"/>
+
+    <cd:command name="noheightstrut" level="system" file="spac-ver.mkiv"/>
+
+    <cd:command name="depthstrut" level="system" file="spac-ver.mkiv"/>
 
     <cd:command name="setstrut" level="system" file="spac-ver.mkiv"/>
 
@@ -49,9 +54,9 @@
 
     <cd:command name="setnostrut" level="system" file="spac-ver.mkiv"/>
 
-    <cd:command name="showstruts" file="spac-ver.mkiv"/>
+    <cd:command name="showstruts" level="document" file="spac-ver.mkiv"/>
 
-    <cd:command name="showcolorstruts" file="spac-ver.mkiv"/>
+    <cd:command name="showcolorstruts" level="document" file="spac-ver.mkiv"/>
 
     <cd:command name="strut" type="environment" begin="beg" end="end" level="system" file="spac-ver.mkiv"/>
 

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definextable" category="tables" level="style" file="tabl-xtb.mkvi">
+    <cd:command name="definextable" level="style" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupxtable" category="tables" level="style" file="tabl-xtb.mkvi">
+    <cd:command name="setupxtable" level="style" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -82,7 +82,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtable" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtable" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupxtable"/>
@@ -90,13 +90,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtable" type="environment" variant="name" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtable" type="environment" variant="name" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="embeddedxtable" type="environment" category="tables" file="tabl-xtb.mkvi">
+    <cd:command name="embeddedxtable" type="environment" level="style" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupxtable"/>
@@ -104,13 +104,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="embeddedxtable" type="environment" variant="name" category="tables" file="tabl-xtb.mkvi">
+    <cd:command name="embeddedxtable" type="environment" variant="name" level="style" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtable" type="environment" generated="yes" variant="example" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtable" type="environment" generated="yes" variant="example" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:sequence>
             <cd:variable value="xtable"/>
         </cd:sequence>
@@ -121,13 +121,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processxtablebuffer" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="processxtablebuffer" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrow" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xrow" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -136,7 +136,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xcell" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xcell" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -157,7 +157,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablehead" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablehead" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupxtable"/>
@@ -165,13 +165,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablehead" type="environment" variant="name" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablehead" type="environment" variant="name" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablefoot" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablefoot" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupxtable"/>
@@ -179,13 +179,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablefoot" type="environment" variant="name" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablefoot" type="environment" variant="name" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablenext" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablenext" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupxtable"/>
@@ -193,13 +193,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablenext" type="environment" variant="name" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablenext" type="environment" variant="name" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablebody" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablebody" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupxtable"/>
@@ -207,22 +207,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xtablebody" type="environment" variant="name" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xtablebody" type="environment" variant="name" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xgroup" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupxtable"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xrowgroup" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xgroup" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -231,7 +222,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xcellgroup" type="environment" category="tables" level="document" file="tabl-xtb.mkvi">
+    <cd:command name="xrowgroup" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -240,8 +231,17 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentxtablerow" category="tables" file="tabl-xtb.mkvi"/>
+    <cd:command name="xcellgroup" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupxtable"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="currentxtablecolumn" category="tables" file="tabl-xtb.mkvi"/>
+    <cd:command name="currentxtablerow" level="system" category="tables" file="tabl-xtb.mkvi"/>
+
+    <cd:command name="currentxtablecolumn" level="system" category="tables" file="tabl-xtb.mkvi"/>
 
 </cd:interface>

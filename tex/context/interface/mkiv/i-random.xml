@@ -36,7 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setrandomseed" file="supp-ran.mkiv">
+    <cd:command name="setrandomseed" level="system" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
@@ -52,13 +52,13 @@
 
     <cd:command name="reuserandomseed" level="system" file="supp-ran.mkiv"/>
 
-    <cd:command name="randomnumber" file="supp-ran.mkiv">
+    <cd:command name="randomnumber" level="system" file="supp-ran.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mprandomnumber" file="supp-ran.mkiv"/>
+    <cd:command name="mprandomnumber" level="system" file="supp-ran.mkiv"/>
 
 </cd:interface>

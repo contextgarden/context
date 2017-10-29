@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineregister" level="style" file="strc-reg.mkiv">
+    <cd:command name="defineregister" level="style" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregister" variant="argument" level="style" file="strc-reg.mkiv">
+    <cd:command name="setupregister" variant="argument" level="style" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-number-list-optional"/>
@@ -179,7 +179,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregister" level="style" file="strc-reg.mkiv">
+    <cd:command name="setupregister" level="style" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:name"/>
@@ -345,7 +345,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregisters" variant="argument" level="style" file="strc-reg.mkiv">
+    <cd:command name="setupregisters" variant="argument" level="style" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-number-list-optional"/>
@@ -355,7 +355,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregisters" level="style" file="strc-reg.mkiv">
+    <cd:command name="setupregisters" level="style" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:name"/>
@@ -367,7 +367,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="register" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
+    <cd:command name="register" generated="yes" variant="instance" level="document" category="structure" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:instance value="register"/>
         </cd:sequence>
@@ -383,7 +383,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="register" generated="yes" variant="instance:ownnumber" level="document" file="strc-reg.mkiv">
+    <cd:command name="register" generated="yes" variant="instance:ownnumber" level="document" category="structure" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:instance value="register"/>
         </cd:sequence>
@@ -400,7 +400,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="seeregister" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
+    <cd:command name="seeregister" generated="yes" variant="instance" level="document" category="structure" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="see"/>
             <cd:instance value="register"/>
@@ -421,7 +421,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placeregister" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
+    <cd:command name="placeregister" generated="yes" variant="instance" level="document" category="structure" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:instance value="register"/>
@@ -436,7 +436,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="completeregister" generated="yes" variant="instance" level="document" file="strc-reg.mkiv">
+    <cd:command name="completeregister" generated="yes" variant="instance" level="document" category="structure" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="complete"/>
             <cd:instance value="register"/>
@@ -451,7 +451,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="setupregister" generated="yes" variant="instance" level="style" file="strc-reg.mkiv">
+    <cd:command name="setupregister" generated="yes" variant="instance" level="style" category="structure" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="register"/>
@@ -469,7 +469,7 @@
 
     <!--
 
-        <cd:command name="index" file="strc-reg.mkiv">
+        <cd:command name="index" level="document" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:keywords optional="yes">
                     <cd:constant type="cd:text"/>
@@ -479,7 +479,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="index" variant="ownnumber" file="strc-reg.mkiv">
+        <cd:command name="index" variant="ownnumber" level="document" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:keywords optional="yes">
                     <cd:constant type="cd:text"/>
@@ -490,7 +490,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="seeindex" file="strc-reg.mkiv">
+        <cd:command name="seeindex" level="document" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:keywords optional="yes">
                     <cd:constant type="cd:text"/>
@@ -504,7 +504,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="placeindex" file="strc-reg.mkiv">
+        <cd:command name="placeindex" level="document" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupregister"/>
@@ -512,7 +512,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="completeindex" file="strc-reg.mkiv">
+        <cd:command name="completeindex" level="document" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupregister"/>
@@ -520,7 +520,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupindex" file="strc-reg.mkiv">
+        <cd:command name="setupindex" level="style" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-number-list-optional"/>
                 <cd:assignments list="yes">
@@ -531,7 +531,7 @@
 
     -->
 
-    <cd:command name="startregister" file="strc-reg.mkiv">
+    <cd:command name="startregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -546,14 +546,14 @@
         </cd:arguments>
     </cd:command>        
 
-    <cd:command name="stopregister" file="strc-reg.mkiv">
+    <cd:command name="stopregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setregisterentry" file="strc-reg.mkiv">
+    <cd:command name="setregisterentry" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="assignment-registerdata-list"/>
@@ -561,7 +561,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="finishregisterentry" file="strc-reg.mkiv">
+    <cd:command name="finishregisterentry" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -584,7 +584,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setstructurepageregister" file="strc-reg.mkiv">
+    <cd:command name="setstructurepageregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="assignment-registerdata-list"/>
@@ -592,7 +592,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="startstructurepageregister" file="strc-reg.mkiv">
+    <cd:command name="startstructurepageregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -601,14 +601,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="stopstructurepageregister" file="strc-reg.mkiv">
+    <cd:command name="stopstructurepageregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="determineregistercharacteristics" file="strc-reg.mkiv">
+    <cd:command name="determineregistercharacteristics" level="system" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -638,9 +638,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="utilityregisterlength" file="strc-reg.mkiv"/>
+    <cd:command name="utilityregisterlength" level="system" category="structure" file="strc-reg.mkiv"/>
 
-    <cd:command name="placeregister" file="strc-reg.mkiv">
+    <cd:command name="placeregister" level="document" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -649,7 +649,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="completeregister" file="strc-reg.mkiv">
+    <cd:command name="completeregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -658,7 +658,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentregisterpageuserdata" level="system" file="strc-reg.mkiv">
+    <cd:command name="currentregisterpageuserdata" level="system" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>

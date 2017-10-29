@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definelinenumbering" level="style" file="page-lin.mkvi">
+    <cd:command name="definelinenumbering" level="style" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplinenumbering" level="style" file="page-lin.mkvi">
+    <cd:command name="setuplinenumbering" level="style" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -89,7 +89,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenumbering" type="environment" level="document" file="page-lin.mkvi">
+    <cd:command name="linenumbering" type="environment" level="document" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -112,7 +112,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenumbering" type="environment" variant="argument" level="document" file="page-lin.mkvi">
+    <cd:command name="linenumbering" type="environment" variant="argument" level="document" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords optional="yes">
@@ -122,25 +122,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="someline" level="document" file="page-lin.mkvi">
+    <cd:command name="someline" level="document" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="startline" level="document" file="page-lin.mkvi">
+    <cd:command name="startline" level="document" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="stopline" level="document" file="page-lin.mkvi">
+    <cd:command name="stopline" level="document" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesamelinereference" level="system" file="page-lin.mkvi">
+    <cd:command name="doifelsesamelinereference" level="system" category="structure conditional" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>
@@ -148,7 +148,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsamelinereferenceelse" level="system" file="page-lin.mkvi">
+    <cd:command name="doifsamelinereferenceelse" level="system" category="structure conditional" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>
@@ -156,14 +156,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inline" level="document" file="page-lin.mkvi">
+    <cd:command name="inline" level="document" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text-optional"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inlinerange" level="document" file="page-lin.mkvi">
+    <cd:command name="inlinerange" level="document" category="structure" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>

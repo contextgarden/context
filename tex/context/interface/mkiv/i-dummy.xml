@@ -36,20 +36,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usedummystyleandcolor" level="system" file="mult-aux.mkiv">
+    <cd:command name="usedummystyleandcolor" level="system" category="fonts colors" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usedummystyleparameter" level="system" file="mult-aux.mkiv">
+    <cd:command name="usedummystyleparameter" level="system" category="fonts" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usedummycolorparameter" level="system" file="mult-aux.mkiv">
+    <cd:command name="usedummycolorparameter" level="system" category="colors" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>

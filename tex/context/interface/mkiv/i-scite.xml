@@ -4,19 +4,26 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="scite" type="environment" file="m-scite.mkiv">
+    <cd:command name="scite" type="environment" level="document" category="verbatim" file="m-scite.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-scite-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="scitefile" file="m-scite.mkiv">
+    <cd:command name="scitefile" level="document" category="verbatim" file="m-scite.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="scitebuffer" file="m-scite.mkiv">
+    <cd:command name="scitebuffer" level="document" category="verbatim" file="m-scite.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-scite-optional"/>
+            <cd:resolve name="keyword-buffer"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sciteinlinebuffer" level="document" category="verbatim" file="m-scite.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-scite-optional"/>
             <cd:resolve name="keyword-buffer"/>

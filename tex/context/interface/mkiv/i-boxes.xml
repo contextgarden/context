@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="doiftext" file="supp-box.mkiv">
+    <cd:command name="doiftext" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetext" file="supp-box.mkiv">
+    <cd:command name="doifelsetext" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftextelse" file="supp-box.mkiv">
+    <cd:command name="doiftextelse" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-true"/>
@@ -601,6 +601,13 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="flushbox" level="system" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="restorebox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
@@ -615,7 +622,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsebox" level="system" file="supp-box.mkiv">
+    <cd:command name="doifelsebox" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -624,7 +631,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifboxelse" level="system" file="supp-box.mkiv">
+    <cd:command name="doifboxelse" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -850,7 +857,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelserighttoleftinbox" level="system" file="supp-box.mkiv">
+    <cd:command name="doifelserighttoleftinbox" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-true"/>
@@ -858,7 +865,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifrighttoleftinboxelse" level="system" file="supp-box.mkiv">
+    <cd:command name="doifrighttoleftinboxelse" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
             <cd:resolve name="argument-true"/>
@@ -923,84 +930,84 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttolefthbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="righttolefthbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorighthbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="lefttorighthbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttoleftvbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="righttoleftvbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorightvbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="lefttorightvbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttoleftvtop" level="system" file="spac-ali.mkiv">
+    <cd:command name="righttoleftvtop" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorightvtop" level="system" file="spac-ali.mkiv">
+    <cd:command name="lefttorightvtop" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirhbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="autodirhbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirvbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="autodirvbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirvtop" level="system" file="spac-ali.mkiv">
+    <cd:command name="autodirvtop" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrighthbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="leftorrighthbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrightvbox" level="system" file="spac-ali.mkiv">
+    <cd:command name="leftorrightvbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrightvtop" level="system" file="spac-ali.mkiv">
+    <cd:command name="leftorrightvtop" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
@@ -1060,7 +1067,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseboxincache" level="system" file="supp-box.mkiv">
+    <cd:command name="doifelseboxincache" level="system" category="conditional" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">

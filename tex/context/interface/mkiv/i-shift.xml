@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineshift" level="style" file="node.rul.mkiv">
+    <cd:command name="defineshift" level="style" category="layout" file="node.rul.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupshift" level="style" file="node-rul.mkiv">
+    <cd:command name="setupshift" level="style" category="layout" file="node-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shift" generated="yes" variant="instance" level="document" file="node-rul.mkiv">
+    <cd:command name="shift" generated="yes" variant="instance" level="document" category="layout" file="node-rul.mkiv">
         <cd:sequence>
             <cd:instance value="shift"/>
         </cd:sequence>
@@ -67,7 +67,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="shift" type="environment" level="document" file="node-rul.mkiv">
+    <cd:command name="shift" type="environment" level="document" category="layout" file="node-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -75,13 +75,13 @@
 
     <!--
 
-        <cd:command name="shiftup" file="node-rul.mkiv">
+        <cd:command name="shiftup" level="document" category="layout" file="node-rul.mkiv">
             <cd:arguments>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="shiftdown" file="node-rul.mkiv">
+        <cd:command name="shiftdown" level="document" category="layout" file="node-rul.mkiv">
             <cd:arguments>
                 <cd:content/>
             </cd:arguments>

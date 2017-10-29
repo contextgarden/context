@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="replaceword" level="style" file="lang-rep.mkiv">
+    <cd:command name="replaceword" level="style" category="language" file="lang-rep.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setreplacement" level="style" file="lang-rep.mkiv">
+    <cd:command name="setreplacement" level="style" category="language" file="lang-rep.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -21,6 +21,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetreplacement" file="lang-rep.mkiv"/>
+    <cd:command name="resetreplacement" level="style" category="language" file="lang-rep.mkiv"/>
 
 </cd:interface>

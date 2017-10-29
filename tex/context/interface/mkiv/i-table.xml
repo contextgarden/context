@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="table" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
+    <cd:command name="table" type="environment" level="document" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:template/>
             <cd:assignments list="yes" optional="yes">
@@ -13,7 +13,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="table" type="environment" variant="name" category="tables" level="document" file="tabl-tab.mkiv">
+    <cd:command name="table" type="environment" variant="name" level="document" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -22,7 +22,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetabletemplate" category="tables" level="style" file="tabl-tab.mkiv">
+    <cd:command name="definetabletemplate" level="style" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:template/>
@@ -31,31 +31,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tables" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
+    <cd:command name="tables" type="environment" level="document" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:template/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tables" type="environment" variant="name" category="tables" level="document" file="tabl-tab.mkiv">
+    <cd:command name="tables" type="environment" variant="name" level="document" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tablehead" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
+    <cd:command name="tablehead" type="environment" level="document" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabletail" type="environment" category="tables" level="document" file="tabl-tab.mkiv">
+    <cd:command name="tabletail" type="environment" level="document" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptables" category="tables" file="tabl-tab.mkiv">
+    <cd:command name="setuptables" level="style" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="text">
@@ -126,34 +126,34 @@
 
     <!--
 
-        <cd:command name="ReFormat" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="ReFormat" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-template"/>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="enlarge" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="enlarge" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-number"/>
                 <cd:resolve name="argument-number"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Enlarge" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Enlarge" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-dimension"/>
                 <cd:resolve name="argument-dimension"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="use" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="use" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-number"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Use" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Use" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-number"/>
                 <cd:resolve name="keyword-template"/>
@@ -161,19 +161,19 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="JustLeft" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="JustLeft" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="JustCenter" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="JustCenter" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="JustRight" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="JustRight" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="Smash" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Smash" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Raise" variant="argument" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Raise" variant="argument" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -182,14 +182,14 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Raise" variant="string" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Raise" variant="string" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Lower" variant="argument" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Lower" variant="argument" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -198,14 +198,14 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Lower" variant="string" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Lower" variant="string" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="BackSpace" variant="argument" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="BackSpace" variant="argument" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -213,13 +213,13 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="BackSpace" variant="string" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="BackSpace" variant="string" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Vspace" variant="argument" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Vspace" variant="argument" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -227,48 +227,48 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Vspace" variant="string" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Vspace" variant="string" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="OpenUp" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="OpenUp" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-number"/>
                 <cd:resolve name="argument-number"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="TableLeft" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="TableLeft" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="TableCenter" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="TableCenter" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="TableRight" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="TableRight" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="SR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="SR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="FR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="FR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="MR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="MR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="LR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="LR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="AR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="AR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="VL" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="VL" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -277,7 +277,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="VC" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="VC" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -286,7 +286,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="HL" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="HL" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -295,7 +295,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="HC" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="HC" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -304,7 +304,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="VS" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="VS" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -313,7 +313,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="VD" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="VD" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -322,7 +322,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="VT" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="VT" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -331,7 +331,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="VN" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="VN" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-number"/>
                 <cd:keywords list="yes" optional="yes">
@@ -341,7 +341,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="TB" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="TB" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:inherit name="blank"/>
@@ -349,7 +349,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="NL" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="NL" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:inherit name="blank"/>
@@ -357,17 +357,17 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="NR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="NR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="NC" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="NC" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="FC" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="FC" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="MC" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="MC" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="LC" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="LC" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="DL" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="DL" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -376,29 +376,29 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="DC" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="DC" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="DV" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="DV" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="DR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="DR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="TWO" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="TWO" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="THREE" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="THREE" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="FOUR" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="FOUR" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="FIVE" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="FIVE" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="SIX" scope="table" file="tabl-tab.mkiv"/>
+        <cd:command name="SIX" scope="table" level="document" category="tables" file="tabl-tab.mkiv"/>
 
-        <cd:command name="SPAN" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="SPAN" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-number"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="REF" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="REF" scope="table" level="document" category="tables" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-template"/>
                 <cd:content/>

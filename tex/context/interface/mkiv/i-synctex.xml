@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="synctexsetfilename" level="system" category="pdf" file="cont-run.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="synctexresetfilename" level="system" category="pdf" file="cont-run.mkiv"/>
+
+    <cd:command name="synctexblockfilename" level="system" category="pdf" file="cont-run.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupsynctex" level="style" category="pdf" file="cont-run.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="min"/>
+                    <cd:constant type="max" default="yes"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="blocksynctexfile" level="style" category="pdf" file="cont-run.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file-list"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

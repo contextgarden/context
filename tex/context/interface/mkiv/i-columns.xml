@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupcolumns" level="style" file="page-mul.mkiv">
+    <cd:command name="setupcolumns" level="style" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="n">
@@ -54,7 +54,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columns" type="environment" level="document" file="page-mul.mkiv">
+    <cd:command name="columns" type="environment" level="document" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcolumns"/>
@@ -62,7 +62,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolumnspan" level="style" file="page-mul.mkiv">
+    <cd:command name="setupcolumnspan" level="style" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="n">
@@ -73,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnspan" type="environment" file="page-mul.mkiv">
+    <cd:command name="columnspan" type="environment" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcolumnspan"/>
@@ -81,7 +81,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsimplecolumnhsize" file="page-mul.mkiv">
+    <cd:command name="setsimplecolumnhsize" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="n">
@@ -100,7 +100,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="simplecolumns" type="environment" file="page-mul.mkiv">
+    <cd:command name="simplecolumns" type="environment" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setsimplecolumnhsize"/>

@@ -757,6 +757,7 @@
 
     <cd:define name="keyword-scite-optional">
         <cd:keywords optional="yes">
+            <cd:constant type="none"/>
             <cd:constant type="tex"/>
             <cd:constant type="mkiv"/>
             <cd:constant type="mkvi"/>

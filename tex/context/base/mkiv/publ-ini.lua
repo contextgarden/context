@@ -2361,10 +2361,26 @@ do
     local citevariants        = { }
     publications.citevariants = citevariants
 
+    local function btxvalidcitevariant(dataset,variant)
+        local citevariant = rawget(citevariants,variant)
+        if citevariant then
+            return variant, citevariant
+        end
+        local variant = specifications[dataset].types[variant]
+        if variant then
+            citevariant = rawget(citevariants,variant)
+        end
+        if citevariant then
+            return variant, citevariant
+        end
+        return "default", citevariants.default
+    end
+
     local function btxhandlecite(specification)
         local dataset   = specification.dataset or v_default
         local reference = specification.reference
         local variant   = specification.variant
+        --
         if not variant or variant == "" then
             variant = "default"
         end
@@ -2403,7 +2419,10 @@ do
         --
         ctx_btxsetdataset(dataset)
         --
-        citevariants[variant](specification) -- we always fall back on default
+        local variant, citevariant = btxvalidcitevariant(dataset,variant)
+        specification.variant = variant -- the used one
+        --
+        citevariant(specification) -- we always fall back on default
     end
 
     local function btxhandlenocite(specification)
@@ -2745,11 +2764,15 @@ do
     local function simplegetter(first,last,field,specification)
         local value = first[field]
         if value then
-            ctx_btxsetfirst(value)
-            if last then
-                ctx_btxsetsecond(last[field])
+            if type(value) == "string" then
+                ctx_btxsetfirst(value)
+                if last then
+                    ctx_btxsetsecond(last[field])
+                end
+                return true
+            else
+                report("missing data type definition for %a",field)
             end
-            return true
         end
     end
 

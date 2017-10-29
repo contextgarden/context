@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupbleeding" level="style" file="pack-box.mkiv">
+    <cd:command name="setupbleeding" level="style" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
@@ -48,7 +48,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bleed" level="document" file="pack-box.mkiv">
+    <cd:command name="bleed" level="document" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupbleeding"/>
@@ -57,8 +57,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bleedwidth" file="pack-box.mkiv"/>
+    <cd:command name="bleedwidth" level="style" category="graphics" file="pack-box.mkiv"/>
 
-    <cd:command name="bleedheight" file="pack-box.mkiv"/>
+    <cd:command name="bleedheight" level="style" category="graphics" file="pack-box.mkiv"/>
 
 </cd:interface>

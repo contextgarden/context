@@ -282,4 +282,152 @@
         <cd:constant value="XML"/>
     </cd:define>
 
+    <cd:define name="instance-mathextensible">
+        <!-- reverse -->
+        <cd:constant value="xrel"/>
+        <cd:constant value="xequal"/>
+        <cd:constant value="xleftarrow"/>
+        <cd:constant value="xrightarrow"/>
+        <cd:constant value="xleftrightarrow"/>
+        <cd:constant value="xLeftarrow"/>
+        <cd:constant value="xRightarrow"/>
+        <cd:constant value="xLeftrightarrow"/>
+        <cd:constant value="xtwoheadleftarrow"/>
+        <cd:constant value="xtwoheadrightarrow"/>
+        <cd:constant value="xmapsto"/>
+        <cd:constant value="xhookleftarrow"/>
+        <cd:constant value="xhookrightarrow"/>
+        <cd:constant value="xleftharpoondown"/>
+        <cd:constant value="xleftharpoonup"/>
+        <cd:constant value="xrightharpoondown"/>
+        <cd:constant value="xrightharpoonup"/>
+        <cd:constant value="xrightoverleftarrow"/>
+        <cd:constant value="xleftrightharpoons"/>
+        <cd:constant value="xrightleftharpoons"/>
+        <cd:constant value="xtriplerel"/>
+        <!-- mathematics -->
+        <cd:constant value="mrel"/>
+        <cd:constant value="mequal"/>
+        <cd:constant value="mleftarrow"/>
+        <cd:constant value="mrightarrow"/>
+        <cd:constant value="mleftrightarrow"/>
+        <cd:constant value="mLeftarrow"/>
+        <cd:constant value="mRightarrow"/>
+        <cd:constant value="mLeftrightarrow"/>
+        <cd:constant value="mtwoheadleftarrow"/>
+        <cd:constant value="mtwoheadrightarrow"/>
+        <cd:constant value="mmapsto"/>
+        <cd:constant value="mhookleftarrow"/>
+        <cd:constant value="mhookrightarrow"/>
+        <cd:constant value="mleftharpoondown"/>
+        <cd:constant value="mleftharpoonup"/>
+        <cd:constant value="mrightharpoondown"/>
+        <cd:constant value="mrightharpoonup"/>
+        <cd:constant value="mrightoverleftarrow"/>
+        <cd:constant value="mleftrightharpoons"/>
+        <cd:constant value="mrightleftharpoons"/>
+        <cd:constant value="mtriplerel"/>
+        <cd:constant value="eleftarrowfill"/>
+        <cd:constant value="erightarrowfill"/>
+        <cd:constant value="eleftrightarrowfill"/>
+        <cd:constant value="etwoheadrightarrowfill"/>
+        <cd:constant value="eleftharpoondownfill"/>
+        <cd:constant value="eleftharpoonupfill"/>
+        <cd:constant value="erightharpoondownfill"/>
+        <cd:constant value="erightharpoonupfill"/>
+        <cd:constant value="eoverbarfill"/>
+        <cd:constant value="eunderbarfill"/>
+        <cd:constant value="eoverbracefill"/>
+        <cd:constant value="eunderbracefill"/>
+        <cd:constant value="eoverparentfill"/>
+        <cd:constant value="eunderparentfill"/>
+        <cd:constant value="eoverbracketfill"/>
+        <cd:constant value="eunderbracketfill"/>
+        <!-- text -->
+        <cd:constant value="trel"/>
+        <cd:constant value="tequal"/>
+        <cd:constant value="tmapsto"/>
+        <cd:constant value="tleftarrow"/>
+        <cd:constant value="trightarrow"/>
+        <cd:constant value="tleftrightarrow"/>
+        <cd:constant value="tLeftarrow"/>
+        <cd:constant value="tRightarrow"/>
+        <cd:constant value="tLeftrightarrow"/>
+        <cd:constant value="ttwoheadleftarrow"/>
+        <cd:constant value="ttwoheadrightarrow"/>
+        <cd:constant value="thookleftarrow"/>
+        <cd:constant value="thookrightarrow"/>
+        <cd:constant value="tleftharpoondown"/>
+        <cd:constant value="tleftharpoonup"/>
+        <cd:constant value="trightharpoondown"/>
+        <cd:constant value="trightharpoonup"/>
+        <cd:constant value="trightoverleftarrow"/>
+        <cd:constant value="tleftrightharpoons"/>
+        <cd:constant value="trightleftharpoons"/>
+        <cd:constant value="ttriplerel"/>
+        <!-- chemistry -->
+        <cd:constant value="cleftarrow"/>
+        <cd:constant value="crightarrow"/>
+        <cd:constant value="crightoverleftarrow"/>
+    </cd:define>
+
+    <cd:define name="instance-mathdoubleextensible">
+        <!-- vfenced -->
+        <cd:constant value="doublebar"/>
+        <cd:constant value="doublebrace"/>
+        <cd:constant value="doubleparent"/>
+        <cd:constant value="doublebracket"/>
+        <!-- both -->
+        <cd:constant value="overbarunderbar"/>
+        <cd:constant value="overbraceunderbrace"/>
+        <cd:constant value="overparentunderparent"/>
+        <cd:constant value="overbracketunderbracket"/>
+    </cd:define>
+
+    <cd:define name="instance-mathoverextensible">
+        <!-- top -->
+        <cd:constant value="overleftarrow"/>
+        <cd:constant value="overrightarrow"/>
+        <cd:constant value="overleftrightarrow"/>
+        <cd:constant value="overtwoheadleftarrow"/>
+        <cd:constant value="overtwoheadrightarrow"/>
+        <cd:constant value="overleftharpoondown"/>
+        <cd:constant value="overleftharpoonup"/>
+        <cd:constant value="overrightharpoondown"/>
+        <cd:constant value="overrightharpoonup"/>
+        <!-- vfenced -->
+        <cd:constant value="overbar"/>
+        <cd:constant value="overbrace"/>
+        <cd:constant value="overparent"/>
+        <cd:constant value="overbracket"/>
+        <!-- bothtext -->
+        <cd:constant value="overbartext"/>
+        <cd:constant value="overbracetext"/>
+        <cd:constant value="overparenttext"/>
+        <cd:constant value="overbrackettext"/>
+    </cd:define>
+
+    <cd:define name="instance-mathunderextensible">
+        <!-- bottom -->
+        <cd:constant value="underleftarrow"/>
+        <cd:constant value="underrightarrow"/>
+        <cd:constant value="underleftrightarrow"/>
+        <cd:constant value="undertwoheadleftarrow"/>
+        <cd:constant value="undertwoheadrightarrow"/>
+        <cd:constant value="underleftharpoondown"/>
+        <cd:constant value="underleftharpoonup"/>
+        <cd:constant value="underrightharpoondown"/>
+        <cd:constant value="underrightharpoonup"/>
+        <!-- vfenced -->
+        <cd:constant value="underbar"/>
+        <cd:constant value="underbrace"/>
+        <cd:constant value="underparent"/>
+        <cd:constant value="underbracket"/>
+        <!-- bothtext -->
+        <cd:constant value="underbartext"/>
+        <cd:constant value="underbracetext"/>
+        <cd:constant value="underparenttext"/>
+        <cd:constant value="underbrackettext"/>
+    </cd:define>
+
 </cd:interface>

@@ -64,14 +64,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processdatabasebuffer" file="m-database.mkiv">
+    <cd:command name="processdatabasebuffer" level="document" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-buffer"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processdatabasefile" file="m-database.mkiv">
+    <cd:command name="processdatabasefile" level="document" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
@@ -87,20 +87,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processseparatedlist" file="m-database.mkiv">
+    <cd:command name="processseparatedlist" level="document" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="separatedlist" type="environment" generated="yes" variant="instance" file="m-database.mkiv">
+    <cd:command name="separatedlist" type="environment" generated="yes" variant="instance" level="document" file="m-database.mkiv">
         <cd:sequence>
             <cd:instance value="separatedlist"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="separatedlist" type="environment" file="m-database.mkiv">
+    <cd:command name="separatedlist" type="environment" level="document" file="m-database.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>

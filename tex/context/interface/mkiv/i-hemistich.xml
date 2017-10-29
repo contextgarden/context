@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definehemistich" level="style" file="m-hemistich.mkiv">
+    <cd:command name="definehemistich" level="style" category="whitespace fonts" file="m-hemistich.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphemistich" level="style" file="m-hemistich.mkiv">
+    <cd:command name="setuphemistich" level="style" category="whitespace fonts" file="m-hemistich.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hemistiches" level="document" file="m-hemistich.mkiv">
+    <cd:command name="hemistiches" level="document" category="whitespace fonts" file="m-hemistich.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
@@ -58,7 +58,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hemistiches" variant="assignment" level="document" file="m-hemistich.mkiv">
+    <cd:command name="hemistiches" variant="assignment" level="document" category="whitespace fonts" file="m-hemistich.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuphemistich"/>
@@ -68,7 +68,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hemistich" generated="yes" variant="instance" level="document" file="m-hemistich.mkiv">
+    <cd:command name="hemistich" generated="yes" variant="instance" level="document" category="whitespace fonts" file="m-hemistich.mkiv">
         <cd:sequence>
             <cd:instance value="hemistich"/>
         </cd:sequence>
@@ -78,7 +78,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hemistichescaesura" level="document" file="m-hemistich.mkiv">
+    <cd:command name="hemistichescaesura" level="document" category="whitespace fonts" file="m-hemistich.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:keywords delimiters="braces">

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineviewerlayer" level="style" file="attr-lay.mkiv">
+    <cd:command name="defineviewerlayer" level="style" category="pdf" file="attr-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupviewerlayer" level="style" file="attr-lay.mkiv">
+    <cd:command name="setupviewerlayer" level="style" category="pdf" file="attr-lay.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="title">
@@ -44,25 +44,25 @@
         </cd:arguments>
     </cd:command>
     
-    <cd:command name="viewerlayer" type="environment" level="document" file="attr-lay.mkiv">
+    <cd:command name="viewerlayer" type="environment" level="document" category="pdf" file="attr-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="viewerlayer" type="environment" generated="yes" variant="example" level="document" file="attr-lay.mkiv">
+    <cd:command name="viewerlayer" type="environment" generated="yes" variant="example" level="document" category="pdf" file="attr-lay.mkiv">
         <cd:sequence>
             <cd:variable value="viewerlayer"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="viewerlayer" level="document" file="attr-lay.mkiv">
+    <cd:command name="viewerlayer" level="document" category="pdf" file="attr-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showlayoutcomponents" file="attr-lay.mkiv"/>
+    <cd:command name="showlayoutcomponents" level="document" category="pdf" file="attr-lay.mkiv"/>
 
 </cd:interface>

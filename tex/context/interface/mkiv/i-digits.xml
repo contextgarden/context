@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setdigitsmanipulation" file="typo-dig.mkiv">
+    <cd:command name="setdigitsmanipulation" level="system" file="typo-dig.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -13,14 +13,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetdigitsmanipulation" file="typo-dig.mkiv"/>
+    <cd:command name="resetdigitsmanipulation" level="system" file="typo-dig.mkiv"/>
 
-    <cd:command name="equaldigits" file="typo-dig.mkiv">
+    <cd:command name="equaldigits" level="document" file="typo-dig.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dummydigit" file="typo-dig.mkiv"/>
+    <cd:command name="dummydigit" level="document" file="typo-dig.mkiv"/>
 
 </cd:interface>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definebackground" level="style" file="pack-bck.mkvi">
+    <cd:command name="definebackground" level="style" category="background" file="pack-bck.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbackground" level="style" file="pack-bck.mkvi">
+    <cd:command name="setupbackground" level="style" category="background" file="pack-bck.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -45,7 +45,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="background" type="environment" generated="yes" variant="example" level="document" file="pack-bck.mkvi">
+    <cd:command name="background" type="environment" generated="yes" variant="example" level="document" category="background" file="pack-bck.mkvi">
         <cd:sequence>
             <cd:variable value="background"/>
         </cd:sequence>
@@ -59,7 +59,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="background" type="environment" level="document" file="pack-bck.mkvi">
+    <cd:command name="background" type="environment" level="document" category="background" file="pack-bck.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupbackground"/>
@@ -67,7 +67,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="background" generated="yes" variant="example" level="document" file="pack-bck.mkvi">
+    <cd:command name="background" generated="yes" variant="example" level="document" category="background" file="pack-bck.mkvi">
         <cd:sequence>
             <cd:variable value="background"/>
         </cd:sequence>
@@ -79,20 +79,20 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="background" level="document" file="pack-bck.mkvi">
+    <cd:command name="background" level="document" category="background" file="pack-bck.mkvi">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="backgroundline" level="document" file="pack-bck.mkvi">
+    <cd:command name="backgroundline" level="document" category="background colors" file="pack-bck.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbackgrounds" level="style" file="page-bck.mkiv">
+    <cd:command name="setupbackgrounds" level="style" category="background" file="page-bck.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="top"/>
@@ -114,7 +114,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbackgrounds" variant="page" level="style" file="page-bck.mkiv">
+    <cd:command name="setupbackgrounds" variant="page" level="style" category="background" file="page-bck.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="paper"/>
@@ -134,13 +134,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="background" type="environment" begin="push" end="pop" file="page-bck.mkiv">
+    <cd:command name="background" type="environment" begin="push" end="pop" level="system" category="background" file="page-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsesomebackground" level="system" file="page-bck.mkiv">
+    <cd:command name="doifelsesomebackground" level="system" category="background conditional" file="page-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -148,7 +148,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsomebackgroundelse" level="system" file="page-bck.mkiv">
+    <cd:command name="doifsomebackgroundelse" level="system" category="background conditional" file="page-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -156,7 +156,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifsomebackground" level="system" file="page-bck.mkiv">
+    <cd:command name="doifsomebackground" level="system" category="background conditional" file="page-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

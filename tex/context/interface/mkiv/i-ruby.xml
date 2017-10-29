@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineruby" level="style" file="typo-rub.mkiv">
+    <cd:command name="defineruby" level="style" category="fonts" file="typo-rub.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupruby" level="style" file="typo-rub.mkiv">
+    <cd:command name="setupruby" level="style" category="fonts" file="typo-rub.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -59,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruby" level="document" file="typo-rub.mkiv">
+    <cd:command name="ruby" level="document" category="fonts" file="typo-rub.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
@@ -67,7 +67,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ruby" type="environment" level="document" file="typo-rub.mkiv">
+    <cd:command name="ruby" type="environment" level="document" category="fonts" file="typo-rub.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>

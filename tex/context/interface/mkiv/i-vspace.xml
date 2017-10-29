@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definevspacingamount" file="spac-ver.mkiv">
+    <cd:command name="definevspacingamount" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-dimension-optional"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definevspacing" file="spac-ver.mkiv">
+    <cd:command name="definevspacing" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -21,7 +21,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vspacing" file="spac-ver.mkiv">
+    <cd:command name="vspacing" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="preference"/>
@@ -73,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directvspacing" file="spac-ver.mkiv">
+    <cd:command name="directvspacing" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces" list="yes">
                 <cd:inherit name="vspacing"/>
@@ -81,7 +81,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupvspacing" file="spac-ver.mkiv">
+    <cd:command name="setupvspacing" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="vspacing"/>
@@ -89,33 +89,97 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupblank" level="style" file="spac-ver.mkiv">
+    <!--
+
+        <cd:command name="setupblank" level="style" category="whitespace" file="spac-ver.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:inherit name="vspacing"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="blank" level="document" category="whitespace" file="spac-ver.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:inherit name="vspacing"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupblank" level="style" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="vspacing"/>
+                <cd:inherit name="blank"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blank" level="document" file="spac-ver.mkiv">
+    <cd:command name="blank" level="document" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="vspacing"/>
+                <cd:constant type="preference"/>
+                <cd:constant type="samepage"/>
+                <cd:constant type="max"/>
+                <cd:constant type="force"/>
+                <cd:constant type="enable"/>
+                <cd:constant type="disable"/>
+                <cd:constant type="nowhite"/>
+                <cd:constant type="back"/>
+                <cd:constant type="overlay"/>
+                <cd:constant type="always"/>
+                <cd:constant type="weak"/>
+                <cd:constant type="strong"/>
+                <cd:constant type="default"/>
+                <cd:constant type="before"/>
+                <cd:constant type="inbetween"/>
+                <cd:constant type="after"/>
+                <cd:constant type="fixed"/>
+                <cd:constant type="flexible"/>
+                <cd:constant type="none"/>
+                <cd:constant type="small"/>
+                <cd:constant type="medium"/>
+                <cd:constant type="big"/>
+                <cd:constant type="line"/>
+                <cd:constant type="halfline"/>
+                <cd:constant type="quarterline"/>
+                <cd:constant type="formula"/>
+                <cd:constant type="white"/>
+                <cd:constant type="height"/>
+                <cd:constant type="depth"/>
+                <cd:constant type="standard"/>
+                <cd:constant type="small" prefix="cd:number" method="factor"/>
+                <cd:constant type="medium" prefix="cd:number" method="factor"/>
+                <cd:constant type="big" prefix="cd:number" method="factor"/>
+                <cd:constant type="line" prefix="cd:number" method="factor"/>
+                <cd:constant type="halfline" prefix="cd:number" method="factor"/>
+                <cd:constant type="quarterline" prefix="cd:number" method="factor"/>
+                <cd:constant type="formula" prefix="cd:number" method="factor"/>
+                <cd:constant type="white" prefix="cd:number" method="factor"/>
+                <cd:constant type="height" prefix="cd:number" method="factor"/>
+                <cd:constant type="depth" prefix="cd:number" method="factor"/>
+                <cd:constant type="cd:number" prefix="category" method="range"/>
+                <cd:constant type="cd:number" prefix="order" method="range"/>
+                <cd:constant type="cd:number" prefix="penalty" method="range"/>
+                <cd:constant type="cd:dimension"/>
+                <cd:constant type="cd:name"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useblankparameter" level="system" file="spac-ver.mkiv">
+    <cd:command name="useblankparameter" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inhibitblank" file="spac-ver.mkiv"/>
+    <cd:command name="inhibitblank" level="system" category="whitespace" file="spac-ver.mkiv"/>
 
-    <cd:command name="synchronizeblank" level="system" file="spac-ver.mkiv"/>
+    <cd:command name="synchronizeblank" level="system" category="whitespace" file="spac-ver.mkiv"/>
 
-    <cd:command name="definevspace" level="style" file="spac-ver.mkiv">
+    <cd:command name="definevspace" level="style" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -123,29 +187,29 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vspace" level="document" file="spac-ver.mkiv">
+    <cd:command name="vspace" level="document" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="godown" level="document" file="spac-ver.mkiv">
+    <cd:command name="godown" level="document" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vglue" file="spac-ver.mkiv">
+    <cd:command name="vglue" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="string-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smallskip" file="spac-ver.mkiv"/>
+    <cd:command name="smallskip" level="system" category="whitespace" file="spac-ver.mkiv"/>
 
-    <cd:command name="medskip" file="spac-ver.mkiv"/>
+    <cd:command name="medskip" level="system" category="whitespace" file="spac-ver.mkiv"/>
 
-    <cd:command name="bigskip" file="spac-ver.mkiv"/>
+    <cd:command name="bigskip" level="system" category="whitespace" file="spac-ver.mkiv"/>
 
 </cd:interface>

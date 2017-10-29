@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="ornamenttext" variant="collector" file="pack-box.mkiv">
+    <cd:command name="ornamenttext" variant="collector" level="document" category="background fonts colors" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="alternative">
@@ -27,7 +27,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ornamenttext" variant="layer" file="pack-box.mkiv">
+    <cd:command name="ornamenttext" variant="layer" level="document" category="background fonts colors" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="alternative">
@@ -44,7 +44,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ornamenttext" variant="direct" file="pack-box.mkiv">
+    <cd:command name="ornamenttext" variant="direct" level="document" category="background fonts colors" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="argument-text"/>
@@ -52,7 +52,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineornament" variant="collector" level="style" file="pack-box.mkiv">
+    <cd:command name="defineornament" variant="collector" level="style" category="background fonts colors" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineornament" variant="layer" level="style" file="pack-box.mkiv">
+    <cd:command name="defineornament" variant="layer" level="style" category="background fonts colors" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -90,7 +90,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ornament" generated="yes" variant="example" file="pack-box.mkiv">
+    <cd:command name="ornament" generated="yes" variant="example" level="document" category="background fonts colors" file="pack-box.mkiv">
         <cd:sequence>
             <cd:variable value="ornament"/>
         </cd:sequence>

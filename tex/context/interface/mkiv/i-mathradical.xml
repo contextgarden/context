@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathradical" category="mathematics" level="style" file="math-rad.mkvi">
+    <cd:command name="definemathradical" level="style" category="mathematics" file="math-rad.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathradical" category="mathematics" level="style" file="math-rad.mkvi">
+    <cd:command name="setupmathradical" level="style" category="mathematics" file="math-rad.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -36,7 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathradical" generated="yes" variant="example" category="mathematics" level="document" file="math-rad.mkvi">
+    <cd:command name="mathradical" generated="yes" variant="example" level="document" category="mathematics" file="math-rad.mkvi">
         <cd:sequence>
             <cd:variable value="mathradical"/>
         </cd:sequence>
@@ -46,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sqrt" category="mathematics" level="document" file="math-rad.mkvi">
+    <cd:command name="sqrt" level="document" category="mathematics" file="math-rad.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-text-optional"/>
             <cd:content/>

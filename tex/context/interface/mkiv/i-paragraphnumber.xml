@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupparagraphnumbering" level="style" file="page-par.mkiv">
+    <cd:command name="setupparagraphnumbering" level="style" category="structure counter" file="page-par.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="state">

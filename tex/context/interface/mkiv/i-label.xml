@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definelabel" level="style" file="strc-lab.mkiv">
+    <cd:command name="definelabel" level="style" category="structure" file="strc-lab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplabel" level="style" file="strc-lab.mkiv">
+    <cd:command name="setuplabel" level="style" category="structure" file="strc-lab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -131,6 +131,12 @@
                     <cd:constant type="none"/>
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="stretch">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="shrink">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
                 <cd:parameter name="hang">
                     <cd:constant type="fit"/>
                     <cd:constant type="broad"/>
@@ -178,7 +184,7 @@
 
     <!--
 
-        <cd:command name="setuplabels" file="strc-lab.mkiv">
+        <cd:command name="setuplabels" level="style" category="structure" file="strc-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -189,7 +195,7 @@
 
     -->
 
-    <cd:command name="label" generated="yes" variant="example" level="document" file="strc-lab.mkiv">
+    <cd:command name="label" generated="yes" variant="example" level="document" category="structure" file="strc-lab.mkiv">
         <cd:sequence>
             <cd:variable value="label"/>
         </cd:sequence>
@@ -199,7 +205,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentlabel" generated="yes" variant="example" level="document" file="strc-lab.mkiv">
+    <cd:command name="currentlabel" generated="yes" variant="example" level="document" category="structure" file="strc-lab.mkiv">
         <cd:sequence>
             <cd:string value="current"/>
             <cd:variable value="label"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinteractionmenu" level="style" file="scrn-but.mkvi">
+    <cd:command name="defineinteractionmenu" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteractionmenu" level="style" file="scrn-but.mkvi">
+    <cd:command name="setupinteractionmenu" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -125,7 +125,7 @@
 
     <!--
 
-        <cd:command name="setupinteractionmenus" file="scrn-but.mkvi">
+        <cd:command name="setupinteractionmenus" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -136,13 +136,13 @@
 
     -->
 
-    <cd:command name="interactionmenu" type="environment" file="scrn-but.mkvi">
+    <cd:command name="interactionmenu" type="environment" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetinteractionmenu" file="scrn-but.mkvi">
+    <cd:command name="resetinteractionmenu" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -150,7 +150,7 @@
 
     <!--
 
-        <cd:command name="raw" scope="interactionmenu" file="scrn-but.mkvi">
+        <cd:command name="raw" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
                 <cd:resolve name="string-text"/>
@@ -158,27 +158,13 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="raw" type="environment" scope="interactionmenu" file="scrn-but.mkvi">
+        <cd:command name="raw" type="environment" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="but" scope="interactionmenu" file="scrn-but.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference"/>
-                <cd:resolve name="string-text"/>
-                <cd:delimiter name="\"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="but" type="environment" scope="interactionmenu" file="scrn-but.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-reference"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="got" scope="interactionmenu" file="scrn-but.mkvi">
+        <cd:command name="but" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
                 <cd:resolve name="string-text"/>
@@ -186,38 +172,52 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="got" type="environment" scope="interactionmenu" file="scrn-but.mkvi">
+        <cd:command name="but" type="environment" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="nop" scope="interactionmenu" file="scrn-but.mkvi">
+        <cd:command name="got" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="got" type="environment" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="nop" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="string-text"/>
                 <cd:delimiter name="\"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="nop" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="nop" type="environment" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi"/>
 
-        <cd:command name="txt" scope="interactionmenu" file="scrn-but.mkvi">
+        <cd:command name="txt" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="string-text"/>
                 <cd:delimiter name="\"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="txt" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="txt" type="environment" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi"/>
 
-        <cd:command name="rul" scope="interactionmenu" file="scrn-but.mkvi">
+        <cd:command name="rul" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="string-text"/>
                 <cd:delimiter name="\"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="rul" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="rul" type="environment" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi"/>
 
         <cd:command name="com" scope="interactionmenu" file="scrn-but.mkvi">
             <cd:arguments>
@@ -226,17 +226,17 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="com" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="com" type="environment" scope="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi"/>
 
     -->
 
-    <cd:command name="includemenu" file="scrn-but.mkvi">
+    <cd:command name="includemenu" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="interactionmenu" file="scrn-but.mkvi">
+    <cd:command name="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -245,7 +245,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="menubutton" variant="interactionmenu" file="scrn-but.mkvi">
+    <cd:command name="menubutton" variant="interactionmenu" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -258,7 +258,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="menubutton" variant="button" file="scrn-but.mkvi">
+    <cd:command name="menubutton" variant="button" level="style" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupbutton"/>
@@ -270,7 +270,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registermenubuttons" file="scrn-but.mkvi">
+    <cd:command name="registermenubuttons" level="system" category="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>

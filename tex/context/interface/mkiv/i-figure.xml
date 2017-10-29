@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="figure" type="environment" category="graphics" file="grph-fig.mkiv">
+    <cd:command name="figure" type="environment" level="document" category="graphics" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="referring" file="grph-fig.mkiv">
+    <cd:command name="referring" level="document" category="graphics" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:position list="yes"/>
             <cd:position list="yes"/>
@@ -22,7 +22,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="marking" file="grph-fig.mkiv">
+    <cd:command name="marking" level="document" category="graphics" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:position list="yes"/>
             <cd:position list="yes"/>
@@ -30,7 +30,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="remark" file="grph-fig.mkiv">
+    <cd:command name="remark" level="document" category="graphics" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:position list="yes"/>
             <cd:position list="yes"/>
@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colorbar" file="grph-fig.mkiv">
+    <cd:command name="colorbar" level="document" category="colors" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color-list"/>
         </cd:arguments>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definefontfamily" category="fonts" level="style" file="font-sel.mkvi">
+    <cd:command name="definefontfamily" level="style" category="fonts" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -68,7 +68,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontfamily" variant="preset" category="fonts" level="style" file="font-sel.mkvi">
+    <cd:command name="definefontfamily" variant="preset" level="style" category="fonts" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -97,7 +97,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefallbackfamily" category="fonts" level="style" file="font-sel.mkvi">
+    <cd:command name="definefallbackfamily" level="style" category="fonts" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -177,7 +177,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefallbackfamily" variant="preset" category="fonts" level="style" file="font-sel.mkvi">
+    <cd:command name="definefallbackfamily" variant="preset" level="style" category="fonts" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -206,7 +206,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontfamilypreset" category="fonts" file="font-sel.mkvi">
+    <cd:command name="definefontfamilypreset" level="system" category="fonts" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -215,7 +215,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontfamilypreset" variant="name" category="fonts" file="font-sel.mkvi">
+    <cd:command name="definefontfamilypreset" variant="name" level="system" category="fonts" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>

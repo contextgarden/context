@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuppositionbar" level="style" file="pack-bar.mkiv">
+    <cd:command name="setuppositionbar" level="style" category="graphics" file="pack-bar.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="style">
@@ -38,7 +38,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="horizontalpositionbar" file="pack-bar.mkiv">
+    <cd:command name="horizontalpositionbar" level="style" category="graphics" file="pack-bar.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setuppositionbar"/>
@@ -46,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="verticalpositionbar" file="pack-bar.mkiv">
+    <cd:command name="verticalpositionbar" level="style" category="graphics" file="pack-bar.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setuppositionbar"/>
@@ -54,7 +54,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="horizontalgrowingbar" file="pack-bar.mkiv">
+    <cd:command name="horizontalgrowingbar" level="style" category="graphics" file="pack-bar.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setuppositionbar"/>
@@ -62,7 +62,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="verticalgrowingbar" file="pack-bar.mkiv">
+    <cd:command name="verticalgrowingbar" level="style" category="graphics" file="pack-bar.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setuppositionbar"/>

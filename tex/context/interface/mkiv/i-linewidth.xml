@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuplinewidth" level="style" file="pack-rul.mkiv">
+    <cd:command name="setuplinewidth" level="style" category="layout" file="pack-rul.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="small"/>
@@ -15,6 +15,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linewidth" file="pack-rul.mkiv"/>
+    <cd:command name="linewidth" level="style" category="layout" file="pack-rul.mkiv"/>
 
 </cd:interface>

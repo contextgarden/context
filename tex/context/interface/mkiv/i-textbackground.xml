@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definetextbackground" level="style" file="anch-bck.mkiv">
+    <cd:command name="definetextbackground" level="style" category="background" file="anch-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptextbackground" level="style" file="anch-bck.mkiv">
+    <cd:command name="setuptextbackground" level="style" category="background" file="anch-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -117,7 +117,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textbackground" type="environment" level="document" file="anch-bck.mkiv">
+    <cd:command name="textbackground" type="environment" level="document" category="background" file="anch-bck.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -126,7 +126,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textbackground" type="environment" generated="yes" variant="example" level="document" file="anch-bck.mkiv">
+    <cd:command name="textbackground" type="environment" generated="yes" variant="example" level="document" category="background" file="anch-bck.mkiv">
         <cd:sequence>
             <cd:variable value="textbackground"/>
         </cd:sequence>
@@ -137,7 +137,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textbackground" generated="yes" variant="example" level="document" file="anch-bck.mkiv">
+    <cd:command name="textbackground" generated="yes" variant="example" level="document" category="background" file="anch-bck.mkiv">
         <cd:sequence>
             <cd:variable value="textbackground"/>
         </cd:sequence>
@@ -146,6 +146,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textbackgroundmanual" type="environment" level="system" file="anch-bck.mkiv"/>
+    <cd:command name="textbackgroundmanual" type="environment" level="system" category="background" file="anch-bck.mkiv"/>
 
 </cd:interface>

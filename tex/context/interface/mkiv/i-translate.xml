@@ -4,20 +4,20 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="translateinput" category="language" level="style" file="m-translate.mkiv">
+    <cd:command name="translateinput" level="style" category="language" file="m-translate.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-text"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetinputtranslation" category="language" file="m-translate.mkiv"/>
+    <cd:command name="resetinputtranslation" level="system" category="language" file="m-translate.mkiv"/>
 
-    <cd:command name="enableinputtranslation" category="language" level="style" file="m-translate.mkiv"/>
+    <cd:command name="enableinputtranslation" level="style" category="language" level="style" file="m-translate.mkiv"/>
 
-    <cd:command name="disableinputtranslation" category="language" level="style" file="m-translate.mkiv"/>
+    <cd:command name="disableinputtranslation" level="style" category="language" level="style" file="m-translate.mkiv"/>
 
-    <cd:command name="readtranslatedfile" category="language" file="m-translate.mkiv">
+    <cd:command name="readtranslatedfile" level="document" category="language" file="m-translate.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>

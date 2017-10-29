@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definelow" level="style" file="typo-scr.mkiv">
+    <cd:command name="definelow" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplow" level="style" file="typo-scr.mkiv">
+    <cd:command name="setuplow" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="low" generated="yes" variant="instance" level="document" file="typo-scr.mkiv">
+    <cd:command name="low" generated="yes" variant="instance" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:instance value="low"/>
         </cd:sequence>
@@ -46,13 +46,13 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="low" level="document" file="typo-scr.mkiv">
+    <cd:command name="low" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definehigh" level="style" file="typo-scr.mkiv">
+    <cd:command name="definehigh" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -62,7 +62,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphigh" level="style" file="typo-scr.mkiv">
+    <cd:command name="setuphigh" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -82,7 +82,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="high" generated="yes" variant="instance" level="document" file="typo-scr.mkiv">
+    <cd:command name="high" generated="yes" variant="instance" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:instance value="high"/>
         </cd:sequence>
@@ -94,13 +94,13 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="high" level="document" file="typo-scr.mkiv">
+    <cd:command name="high" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelowhigh" level="style" file="typo-scr.mkiv">
+    <cd:command name="definelowhigh" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -110,7 +110,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplowhigh" level="style" file="typo-scr.mkiv">
+    <cd:command name="setuplowhigh" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -133,7 +133,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowhigh" generated="yes" variant="instance" level="document" file="typo-scr.mkiv">
+    <cd:command name="lowhigh" generated="yes" variant="instance" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:instance value="lowhigh"/>
         </cd:sequence>
@@ -147,7 +147,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lohi" level="document" file="typo-scr.mkiv">
+    <cd:command name="lohi" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="left"/>
@@ -158,7 +158,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hilo" level="document" file="typo-scr.mkiv">
+    <cd:command name="hilo" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="left"/>
@@ -169,7 +169,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelowmidhigh" level="style" file="typo-scr.mkiv">
+    <cd:command name="definelowmidhigh" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -179,7 +179,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplowmidhigh" level="style" file="typo-scr.mkiv">
+    <cd:command name="setuplowmidhigh" level="style" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -199,7 +199,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowmidhigh" generated="yes" variant="instance" level="document" file="typo-scr.mkiv">
+    <cd:command name="lowmidhigh" generated="yes" variant="instance" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:instance value="lowmidhigh"/>
         </cd:sequence>
@@ -210,7 +210,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lomihi" level="document" file="typo-scr.mkiv">
+    <cd:command name="lomihi" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -218,7 +218,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="himilo" level="document" file="typo-scr.mkiv">
+    <cd:command name="himilo" level="document" category="fonts" file="typo-scr.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>

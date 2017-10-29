@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="normalizetextwidth" file="typo-txt.mkvi">
+    <cd:command name="normalizetextwidth" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-dimension"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="normalizetextheight" file="typo-txt.mkvi">
+    <cd:command name="normalizetextheight" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-dimension"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="normalizetextdepth" file="typo-txt.mkvi">
+    <cd:command name="normalizetextdepth" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-dimension"/>
@@ -28,7 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="normalizetextline" file="typo-txt.mkvi">
+    <cd:command name="normalizetextline" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-dimension"/>
@@ -36,16 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="normalizefontwidth" file="typo-txt.mkvi">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-dimension"/>
-            <cd:resolve name="argument-font"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="normalizefontheight" file="typo-txt.mkvi">
+    <cd:command name="normalizefontwidth" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
@@ -54,7 +45,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="normalizefontdepth" file="typo-txt.mkvi">
+    <cd:command name="normalizefontheight" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
@@ -63,7 +54,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="normalizefontline" file="typo-txt.mkvi">
+    <cd:command name="normalizefontdepth" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
@@ -72,57 +63,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="widthspanningtext" file="typo-txt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-dimension"/>
-            <cd:resolve name="argument-font"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="heightspanningtext" file="typo-txt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-dimension"/>
-            <cd:resolve name="argument-font"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="depthspanningtext" file="typo-txt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-dimension"/>
-            <cd:resolve name="argument-font"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="linespanningtext" file="typo-txt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-dimension"/>
-            <cd:resolve name="argument-font"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="normalizedfontsize" file="typo-txt.mkvi"/>
-
-    <cd:command name="NormalizeTextWidth" file="typo-txt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-font"/>
-            <cd:resolve name="argument-dimension"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="NormalizeTextHeight" file="typo-txt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-font"/>
-            <cd:resolve name="argument-dimension"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="NormalizeFontWidth" file="typo-txt.mkvi">
+    <cd:command name="normalizefontline" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
@@ -131,7 +72,57 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="NormalizeFontHeight" file="typo-txt.mkvi">
+    <cd:command name="widthspanningtext" level="system" category="fonts" file="typo-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-font"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="heightspanningtext" level="system" category="fonts" file="typo-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-font"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="depthspanningtext" level="system" category="fonts" file="typo-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-font"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="linespanningtext" level="system" category="fonts" file="typo-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-font"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="normalizedfontsize" level="system" category="fonts" file="typo-txt.mkvi"/>
+
+    <cd:command name="NormalizeTextWidth" level="system" category="fonts" file="typo-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-font"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="NormalizeTextHeight" level="system" category="fonts" file="typo-txt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-font"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="NormalizeFontWidth" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-text"/>
@@ -140,7 +131,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="WidthSpanningText" file="typo-txt.mkvi">
+    <cd:command name="NormalizeFontHeight" level="system" category="fonts" file="typo-txt.mkvi">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-font"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="WidthSpanningText" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-dimension"/>
@@ -148,9 +148,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TheNormalizedFontSize" file="typo-txt.mkvi"/>
+    <cd:command name="TheNormalizedFontSize" level="system" category="fonts" file="typo-txt.mkvi"/>
 
-    <cd:command name="nicelyfilledbox" type="environment" file="typo-txt.mkvi">
+    <cd:command name="nicelyfilledbox" type="environment" level="system" category="fonts" file="typo-txt.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="width">

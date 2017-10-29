@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupbookmark" level="style" file="strc-bkm.mkiv">
+    <cd:command name="setupbookmark" level="style" category="pdf" file="strc-bkm.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="force">
@@ -40,7 +40,7 @@
 
     <!--
 
-        <cd:command name="setupbookmarks" file="strc-bkm.mkiv">
+        <cd:command name="setupbookmarks" level="style" category="pdf" file="strc-bkm.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes">
                     <cd:inherit name="setupbookmark"/>
@@ -50,7 +50,7 @@
 
     -->
 
-    <cd:command name="bookmark" level="document" file="strc-bkm.mkiv">
+    <cd:command name="bookmark" level="document" category="pdf" file="strc-bkm.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:section"/>
@@ -60,7 +60,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placebookmarks" file="src-bkm.mkiv">
+    <cd:command name="placebookmarks" level="style" category="pdf" file="src-bkm.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:section"/>

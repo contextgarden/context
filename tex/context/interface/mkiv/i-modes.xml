@@ -4,79 +4,79 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="newmode" level="system" file="core-env.mkiv">
+    <cd:command name="newmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmode" level="system" file="core-env.mkiv">
+    <cd:command name="setmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetmode" level="system" file="core-env.mkiv">
+    <cd:command name="resetmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="newsystemmode" level="system" file="core-env.mkiv">
+    <cd:command name="newsystemmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsystemmode" level="system" file="core-env.mkiv">
+    <cd:command name="setsystemmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetsystemmode" level="system" file="core-env.mkiv">
+    <cd:command name="resetsystemmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="preventmode" file="core-env.mkiv">
+    <cd:command name="preventmode" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="enablemode" file="core-env.mkiv">
+    <cd:command name="enablemode" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="disablemode" file="core-env.mkiv">
+    <cd:command name="disablemode" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalpreventmode" level="system" file="core-env.mkiv">
+    <cd:command name="globalpreventmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globalenablemode" level="system" file="core-env.mkiv">
+    <cd:command name="globalenablemode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="globaldisablemode" level="system" file="core-env.mkiv">
+    <cd:command name="globaldisablemode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemode" file="core-env.mkiv">
+    <cd:command name="definemode" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:keywords optional="yes">
@@ -87,13 +87,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="booleanmodevalue" level="system" file="core-env.mkiv">
+    <cd:command name="booleanmodevalue" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemode" file="core-env.mkiv">
+    <cd:command name="doifelsemode" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -101,7 +101,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmodeelse" file="core-env.mkiv">
+    <cd:command name="doifmodeelse" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -109,33 +109,33 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmode" file="core-env.mkiv">
+    <cd:command name="doifmode" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotmode" file="core-env.mkiv">
+    <cd:command name="doifnotmode" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mode" type="environment" file="core-env.mkiv">
+    <cd:command name="mode" type="environment" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
                 
-    <cd:command name="notmode" type="environment" file="core-env.mkiv">
+    <cd:command name="notmode" type="environment" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseallmodes" file="core-env.mkiv">
+    <cd:command name="doifelseallmodes" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -143,7 +143,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifallmodeselse" file="core-env.mkiv">
+    <cd:command name="doifallmodeselse" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -151,7 +151,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifallmodes" file="core-env.mkiv">
+    <cd:command name="doifallmodes" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -159,7 +159,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotallmodes" file="core-env.mkiv">
+    <cd:command name="doifnotallmodes" level="style" category="structure conditional" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
             <cd:resolve name="argument-true"/>
@@ -167,19 +167,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="allmodes" type="environment" file="core-env.mkiv">
+    <cd:command name="allmodes" type="environment" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="notallmodes" type="environment" file="core-env.mkiv">
+    <cd:command name="notallmodes" type="environment" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="modeset" type="environment" file="core-env.mkiv">
+    <cd:command name="modeset" type="environment" level="style" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="cd:name"/>
@@ -189,25 +189,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pushmode" level="system" file="core-env.mkiv">
+    <cd:command name="pushmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="popmode" level="system" file="core-env.mkiv">
+    <cd:command name="popmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pushsystemmode" level="system" file="core-env.mkiv">
+    <cd:command name="pushsystemmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="popsystemmode" level="system" file="core-env.mkiv">
+    <cd:command name="popsystemmode" level="system" category="structure" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

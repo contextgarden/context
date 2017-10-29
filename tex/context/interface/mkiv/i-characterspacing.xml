@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecharacterspacing" level="style" file="typo-spa.mkiv">
+    <cd:command name="definecharacterspacing" level="style" category="fonts" file="typo-spa.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcharacterspacing" level="style" file="typo-spa.mkiv">
+    <cd:command name="setupcharacterspacing" level="style" category="fonts" file="typo-spa.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
@@ -29,7 +29,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcharacterspacing" file="typo-spa.mkiv">
+    <cd:command name="setcharacterspacing" level="style" category="fonts" file="typo-spa.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -38,6 +38,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcharacterspacing" file="typo-spa.mkiv"/>
+    <cd:command name="resetcharacterspacing" level="style" category="fonts" file="typo-spa.mkiv"/>
 
 </cd:interface>

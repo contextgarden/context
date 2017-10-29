@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definepageinjection" level="style" file="page-inj.mkvi">
+    <cd:command name="definepageinjection" level="style" category="structure" file="page-inj.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppageinjection" level="style" file="page-inj.mkvi">
+    <cd:command name="setuppageinjection" level="style" category="structure" file="page-inj.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -49,14 +49,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pageinjection" level="document" file="page-inj.mkvi">
+    <cd:command name="pageinjection" level="document" category="structure" file="page-inj.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pageinjection" variant="assignment" level="document" file="page-inj.mkvi">
+    <cd:command name="pageinjection" variant="assignment" level="document" category="structure" file="page-inj.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuppageinjection"/>
@@ -65,7 +65,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepageinjectionalternative" level="style" file="page-inj.mkvi">
+    <cd:command name="definepageinjectionalternative" level="style" category="structure" file="page-inj.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -75,7 +75,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppageinjectionalternative" level="style" file="page-inj.mkvi">
+    <cd:command name="setuppageinjectionalternative" level="style" category="structure" file="page-inj.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">

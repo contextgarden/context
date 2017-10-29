@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineblock" level="style" file="strc-blk.mkiv">
+    <cd:command name="defineblock" level="style" category="structure" file="strc-blk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupblock" level="style" file="strc-blk.mkiv">
+    <cd:command name="setupblock" level="style" category="structure" file="strc-blk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="block" type="environment" generated="yes" variant="example" begin="begin" end="end" level="document" file="strc-blk.mkiv">
+    <cd:command name="block" type="environment" generated="yes" variant="example" begin="begin" end="end" level="document" category="structure" file="strc-blk.mkiv">
         <cd:sequence>
             <cd:variable value="block"/>
         </cd:sequence>
@@ -50,34 +50,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hideblocks" file="strc-blk.mkiv">
+    <cd:command name="hideblocks" level="style" category="structure" file="strc-blk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:resolve name="keyword-name-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="keepblocks" file="strc-blk.mkiv">
+    <cd:command name="keepblocks" level="style" category="structure" file="strc-blk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:resolve name="keyword-name-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useblocks" level="document" file="strc-blk.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-list"/>
-            <cd:resolve name="keyword-name-list-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="criterium">
-                    <cd:constant type="text" default="yes"/>
-                    <cd:constant type="cd:section"/>
-                </cd:parameter>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="processblocks" level="document" file="strc-blk.mkiv">
+    <cd:command name="useblocks" level="document" category="structure" file="strc-blk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:resolve name="keyword-name-list-optional"/>
@@ -90,7 +77,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="selectblocks" level="document" file="strc-blk.mkiv">
+    <cd:command name="processblocks" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="criterium">
+                    <cd:constant type="text" default="yes"/>
+                    <cd:constant type="cd:section"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="selectblocks" level="document" category="structure" file="strc-blk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:resolve name="keyword-name-list-optional"/>

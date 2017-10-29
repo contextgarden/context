@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemixedcolumns" level="style" file="page-mix.mkiv">
+    <cd:command name="definemixedcolumns" level="style" category="structure layout" file="page-mix.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmixedcolumns" level="style" file="page-mix.mkiv">
+    <cd:command name="setupmixedcolumns" level="style" category="structure layout" file="page-mix.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -96,7 +96,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mixedcolumns" type="environment" level="document" file="page-mix.mkiv">
+    <cd:command name="mixedcolumns" type="environment" level="document" category="structure layout" file="page-mix.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -105,7 +105,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="instance" level="document" file="page-mix.mkiv">
+    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="instance" level="document" category="structure layout" file="page-mix.mkiv">
         <cd:sequence>
             <cd:instance value="mixedcolumns"/>
         </cd:sequence>
@@ -121,7 +121,7 @@
 
     <!--
 
-        <cd:command name="boxedcolumns" type="environment" file="page-mix.mkiv">
+        <cd:command name="boxedcolumns" type="environment" level="document" category="structure layout" file="page-mix.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupmixedcolumns"/>

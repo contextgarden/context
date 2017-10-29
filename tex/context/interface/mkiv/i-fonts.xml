@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definefontfallback" category="fonts" level="style" file="font-col.mkvi">
+    <cd:command name="definefontfallback" level="style" category="fonts" file="font-col.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -38,70 +38,72 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetfontfallback" category="fonts" file="font-col.mkvi">
+    <cd:command name="resetfontfallback" level="style" category="fonts" file="font-col.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="emphasistypeface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="emphasistypeface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="emphasisboldface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="emphasisboldface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="normalitalicface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="normalboldface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="normalslantedface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="normalitalicface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="normalboldface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="normalslantedface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="normaltypeface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="normaltypeface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="swaptypeface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="swaptypeface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="typeface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="typeface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="boldface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="boldface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="italicface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="italicface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="slantedface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="slantedface" level="document" category="fonts" file="font-emp.mkvi"/>
 
-    <cd:command name="swapface" category="fonts" file="font-emp.mkvi"/>
+    <cd:command name="swapface" level="document" category="fonts" file="font-emp.mkvi"/>
+
+    <cd:command name="em" level="document" category="fonts" file="font-emp.mkvi"/>
 
     <!--
 
-        <cd:command name="emphbf" file="font-emp.mkvi">
+        <cd:command name="emphbf" level="document" category="fonts" file="font-emp.mkvi">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="emphit" file="font-emp.mkvi">
+        <cd:command name="emphit" level="document" category="fonts" file="font-emp.mkvi">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="emphsl" file="font-emp.mkvi">
+        <cd:command name="emphsl" level="document" category="fonts" file="font-emp.mkvi">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="emphtf" file="font-emp.mkvi">
+        <cd:command name="emphtf" level="document" category="fonts" file="font-emp.mkvi">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="emph" file="font-emp.mkvi">
+        <cd:command name="emph" level="document" category="fonts" file="font-emp.mkvi">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="emphasized" file="font-emp.mkvi">
+        <cd:command name="emphasized" level="document" category="fonts" file="font-emp.mkvi">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
@@ -109,7 +111,7 @@
 
     -->
 
-    <cd:command name="definefontfeature" category="fonts" level="style" file="font-fea.mkvi">
+    <cd:command name="definefontfeature" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -201,6 +203,10 @@
                 <cd:parameter name="boundingbox">
                     <cd:constant type="yes"/>
                     <cd:constant type="no"/>
+                    <cd:constant type="background"/>
+                    <cd:constant type="frame"/>
+                    <cd:constant type="empty"/>
+                    <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="compose">
                     <cd:constant type="yes"/>
@@ -289,7 +295,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="adaptfontfeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="adaptfontfeature" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/> <!-- pattern -->
             <cd:assignments list="yes">
@@ -298,72 +304,72 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fontfeaturelist" category="fonts" file="font-fea.mkvi">
+    <cd:command name="fontfeaturelist" level="document" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addfeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="addfeature" category="fonts" level="style" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addfeature" variant="direct" category="fonts" file="font-fea.mkvi">
+    <cd:command name="addfeature" variant="direct" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subtractfeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="subtractfeature" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subtractfeature" variant="direct" category="fonts" file="font-fea.mkvi">
+    <cd:command name="subtractfeature" variant="direct" clevel="style" ategory="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="replacefeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="replacefeature" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="replacefeature" variant="direct" category="fonts" file="font-fea.mkvi">
+    <cd:command name="replacefeature" variant="direct" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetandaddfeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="resetandaddfeature" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetandaddfeature" variant="direct" category="fonts" file="font-fea.mkvi">
+    <cd:command name="resetandaddfeature" variant="direct" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetfeature" category="fonts" file="font-fea.mkvi"/>
+    <cd:command name="resetfeature" level="style" category="fonts" file="font-fea.mkvi"/>
 
-    <cd:command name="revivefeature" category="fonts" file="font-fea.mkvi"/>
+    <cd:command name="revivefeature" level="style" category="fonts" file="font-fea.mkvi"/>
 
-    <cd:command name="setfontfeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="setfontfeature" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="feature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="feature" level="document" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="+"/>
@@ -380,11 +386,11 @@
                 <cd:constant type="old"/>
                 <cd:constant type="local"/>
             </cd:keywords>
-            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="feature" variant="direct" category="fonts" file="font-fea.mkvi">
+    <cd:command name="feature" variant="direct" level="document" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="+"/>
@@ -401,11 +407,11 @@
                 <cd:constant type="old"/>
                 <cd:constant type="local"/>
             </cd:keywords>
-            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecurrentfonthasfeature" category="fonts" level="system" file="font-fea.mkvi">
+    <cd:command name="doifelsecurrentfonthasfeature" level="system" category="fonts conditional" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -413,7 +419,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcurrentfonthasfeatureelse" category="fonts" level="system" file="font-fea.mkvi">
+    <cd:command name="doifcurrentfonthasfeatureelse" level="system" category="fonts conditional" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -421,31 +427,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doaddfeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="doaddfeature" level="system" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosubtractfeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="dosubtractfeature" level="system" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doreplacefeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="doreplacefeature" level="system" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doresetandafffeature" category="fonts" file="font-fea.mkvi">
+    <cd:command name="doresetandafffeature" level="system" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fontclass" type="environment" category="fonts" file="font-fil.mkvi">
+    <cd:command name="fontclass" type="environment" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="each"/>
@@ -454,14 +460,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="classfont" category="fonts" file="font-fil.mkvi">
+    <cd:command name="classfont" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontsynonym" category="fonts" level="style" file="font-fil.mkvi">
+    <cd:command name="definefontsynonym" level="style" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font"/>
@@ -483,7 +489,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontfile" category="fonts" file="font-fil.mkvi">
+    <cd:command name="definefontfile" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
@@ -505,20 +511,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="truefontname" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="truefontname" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expandfontsynonym" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="expandfontsynonym" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefontsynonym" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="doifelsefontsynonym" level="system" category="fonts conditional" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -526,7 +532,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffontsynonymelse" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="doiffontsynonymelse" level="system" category="fonts conditional" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -534,87 +540,87 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tracedfontname" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="tracedfontname" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fontclassname" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="fontclassname" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadfontgoodies" category="fonts" file="font-gds.mkvi">
+    <cd:command name="loadfontgoodies" level="style" category="fonts" file="font-gds.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setfontcolorsheme" category="fonts" file="font-gds.mkvi">
+    <cd:command name="setfontcolorsheme" level="style" category="fonts" file="font-gds.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetfontcolorsheme" category="fonts" file="font-gds.mkvi"/>
+    <cd:command name="resetfontcolorsheme" level="style" category="fonts" file="font-gds.mkvi"/>
 
-    <cd:command name="definedfont" category="fonts" level="document" file="font-ini.mkvi">
+    <cd:command name="definedfont" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-font-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="font" type="environment" category="fonts" level="document" file="font-ini.mkvi">
+    <cd:command name="font" type="environment" level="document" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-font-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bodyfontsize" category="fonts" file="font-ini.mkvi"/>
+    <cd:command name="bodyfontsize" clevel="system" ategory="fonts" file="font-ini.mkvi"/>
 
-    <cd:command name="normalizebodyfontsize" category="fonts" level="system" file="font-ini.mkvi">
+    <cd:command name="normalizebodyfontsize" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thenormalizedbodyfontsize" category="fonts" level="system" file="font-ini.mkvi">
+    <cd:command name="thenormalizedbodyfontsize" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mapfontsize" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="mapfontsize" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-dimension"/>
             <cd:resolve name="keyword-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontstyle" category="fonts" file="font-ini.mkvi">
+    <cd:command name="definefontstyle" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontsize" category="fonts" file="font-ini.mkvi">
+    <cd:command name="definefontsize" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontalternative" category="fonts" file="font-ini.mkvi">
+    <cd:command name="definefontalternative" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefont" category="fonts" level="style" file="font-ini.mkvi">
+    <cd:command name="definefont" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font"/>
@@ -624,7 +630,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefont" variant="argument" category="fonts" level="style" file="font-ini.mkvi">
+    <cd:command name="definefont" variant="argument" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font"/>
@@ -632,14 +638,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefrozenfont" category="fonts" file="font-ini.mkvi">
+    <cd:command name="definefrozenfont" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebodyfontenvironment" category="fonts" file="font-ini.mkvi">
+    <cd:command name="definebodyfontenvironment" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords>
@@ -708,7 +714,7 @@
 
     <!--
 
-        <cd:command name="setupbodyfontenvironment" file="font-ini.mkvi">
+        <cd:command name="setupbodyfontenvironment" level="style" category="fonts" file="font-ini.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:keywords>
@@ -723,31 +729,31 @@
 
     -->
 
-    <cd:command name="processbodyfontenvironmentlist" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="processbodyfontenvironmentlist" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bodyfontenvironmentlist" category="fonts" level="system" file="font-fil.mkvi"/>
+    <cd:command name="bodyfontenvironmentlist" level="system" category="fonts" file="font-fil.mkvi"/>
 
-    <cd:command name="registerfontclass" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="registerfontclass" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcurrentfontclass" category="fonts" level="system" file="font-fil.mkvi">
+    <cd:command name="setcurrentfontclass" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tx" category="fonts" level="document" file="font-ini.mkvi"/>
+    <cd:command name="tx" level="document" category="fonts" file="font-ini.mkvi"/>
 
-    <cd:command name="txx" category="fonts" level="document" file="font-ini.mkvi"/>
+    <cd:command name="txx" level="document" category="fonts" file="font-ini.mkvi"/>
 
-    <cd:command name="definebodyfont" category="fonts" level="style" file="font-fil.mkvi">
+    <cd:command name="definebodyfont" level="style" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -808,7 +814,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebodyfont" variant="argument" category="fonts" level="style" file="font-fil.mkvi">
+    <cd:command name="definebodyfont" variant="argument" level="style" category="fonts" file="font-fil.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -829,7 +835,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfonts" category="fonts" level="style" file="font-ini.mkiv">
+    <cd:command name="setupfonts" level="style" category="fonts" file="font-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="language">
@@ -840,7 +846,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbodyfont" category="fonts" level="style" file="font-ini.mkiv">
+    <cd:command name="setupbodyfont" level="style" category="fonts" file="font-ini.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:dimension"/>
@@ -873,7 +879,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchtobodyfont" category="fonts" level="style" file="font-ini.mkvi">
+    <cd:command name="switchtobodyfont" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="setupbodyfont"/>
@@ -881,7 +887,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fastswitchtobodyfont" category="fonts" file="font-ini.mkiv">
+    <cd:command name="fastswitchtobodyfont" level="system" category="fonts" file="font-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="x"/>
@@ -894,7 +900,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usebodyfont" category="fonts" file="font-ini.mkvi">
+    <cd:command name="usebodyfont" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="setupbodyfont"/>
@@ -902,31 +908,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usebodyfontparameter" category="fonts" file="font-ini.mkvi">
+    <cd:command name="usebodyfontparameter" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fontchar" category="fonts" file="font-ini.mkvi">
+    <cd:command name="fontchar" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fontcharbyindex" category="fonts" file="font-ini.mkvi">
+    <cd:command name="fontcharbyindex" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tochar" category="fonts" file="font-ini.mkvi">
+    <cd:command name="tochar" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-tochar"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchstyleonly" category="fonts" file="font-ini.mkiv">
+    <cd:command name="switchstyleonly" clevel="style" ategory="fonts" file="font-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="rm"/>
@@ -949,13 +955,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchstyleonly" variant="command" category="fonts" file="font-ini.mkiv">
+    <cd:command name="switchstyleonly" variant="command" level="style" category="fonts" file="font-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebodyfontswitch" category="fonts" file="font-ini.mkvi">
+    <cd:command name="definebodyfontswitch" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes">
@@ -964,28 +970,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsmallbodyfont" category="fonts" file="font-ini.mkvi"/>
+    <cd:command name="setsmallbodyfont" level="style" category="fonts" file="font-ini.mkvi"/>
 
-    <cd:command name="setbigbodyfont" category="fonts" file="font-ini.mkvi"/>
+    <cd:command name="setbigbodyfont" level="style" category="fonts" file="font-ini.mkvi"/>
 
-    <cd:command name="setmainbodyfont" category="fonts" file="font-ini.mkvi"/>
+    <cd:command name="setmainbodyfont" level="style" category="fonts" file="font-ini.mkvi"/>
 
-    <cd:command name="restoreglobalbodyfont" category="fonts" file="font-ini.mkvi"/>
+    <cd:command name="restoreglobalbodyfont" level="style" category="fonts" file="font-ini.mkvi"/>
 
-    <cd:command name="predefinefont" category="fonts" file="font-ini.mkvi">
+    <cd:command name="predefinefont" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="predefinedfont" category="fonts" file="font-ini.mkvi">
+    <cd:command name="predefinedfont" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbodyfont" category="fonts" file="font-run.mkiv">
+    <cd:command name="showbodyfont" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="setupbodyfont"/>
@@ -993,7 +999,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbodyfontenvironment" category="fonts" file="font-run.mkiv">
+    <cd:command name="showbodyfontenvironment" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="setupbodyfont"/>
@@ -1001,14 +1007,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showfont" category="fonts" file="font-run.mkiv">
+    <cd:command name="showfont" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-font"/>
             <cd:resolve name="keyword-number-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showfontstyle" category="fonts" file="font-run.mkiv">
+    <cd:command name="showfontstyle" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="setupbodyfont"/>
@@ -1036,19 +1042,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showligature" category="fonts" file="font-run.mkiv">
+    <cd:command name="showligature" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showligatures" category="fonts" file="font-run.mkiv">
+    <cd:command name="showligatures" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showfontstrip" category="fonts" file="font-run.mkiv">
+    <cd:command name="showfontstrip" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="setupbodyfont"/>
@@ -1056,109 +1062,109 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showminimalbaseline" category="fonts" file="font-run.mkiv"/>
+    <cd:command name="showminimalbaseline" level="document" category="fonts" file="font-run.mkiv"/>
 
-    <cd:command name="showkerning" category="fonts" file="font-run.mkiv">
+    <cd:command name="showkerning" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showcharratio" category="fonts" file="font-run.mkiv">
+    <cd:command name="showcharratio" level="document" category="fonts" file="font-run.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showfontparameters" category="fonts" file="font-run.mkiv"/>
+    <cd:command name="showfontparameters" level="document" category="fonts" file="font-run.mkiv"/>
 
-    <cd:command name="setsmallcaps" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="setsmallcaps" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="setoldstyle" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="setoldstyle" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="settabular" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="settabular" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="setsuperiors" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="setsuperiors" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="tinyfont" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="tinyfont" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="infofont" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="infofont" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="infofontbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="infofontbold" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallbodyfont" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallbodyfont" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="bigbodyfont" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="bigbodyfont" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smaller" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smaller" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="bigger" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="bigger" level="style" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="normal" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="normal" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="bold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="bold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="mono" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="mono" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="monobold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="monobold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="slanted" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="slanted" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="italic" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="italic" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="boldslanted" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="boldslanted" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="slantedbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="slantedbold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="bolditalic" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="bolditalic" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="italicbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="italicbold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="small" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="small" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallnormal" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallnormal" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallbold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smalltype" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smalltype" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallslanted" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallslanted" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallboldslanted" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallboldslanted" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallslantedbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallslantedbold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallbolditalic" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallbolditalic" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="smallitalicbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="smallitalicbold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="sans" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="sans" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="sansserif" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="sansserif" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="roman" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="roman" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="serif" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="serif" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="regular" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="regular" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="handwritten" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="handwritten" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="calligraphic" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="calligraphic" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="sansnormal" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="sansnormal" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="sansbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="sansbold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="serifnormal" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="serifnormal" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="serifbold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="serifbold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="mononormal" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="mononormal" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="monobold" category="fonts" file="font-pre.mkiv"/>
+    <cd:command name="monobold" level="document" category="fonts" file="font-pre.mkiv"/>
 
-    <cd:command name="definefontsolution" category="fonts" level="style" file="font-sol.mkvi">
+    <cd:command name="definefontsolution" level="style" category="fonts" file="font-sol.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -1168,7 +1174,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfontsolution" category="fonts" level="style" file="font-sol.mkvi">
+    <cd:command name="setupfontsolution" level="style" category="fonts" file="font-sol.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -1200,7 +1206,7 @@
 
    <!--
 
-        <cd:command name="setupfontsolutions" file="font-sol.mkvi">
+        <cd:command name="setupfontsolutions" level="style" category="fonts" file="font-sol.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -1211,21 +1217,21 @@
 
     -->
 
-    <cd:command name="setfontsolution" category="fonts" file="font-sol.mkvi">
+    <cd:command name="setfontsolution" level="style" category="fonts" file="font-sol.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetfontsolution" category="fonts" file="font-sol.mkvi"/>
+    <cd:command name="resetfontsolution" level="style" category="fonts" file="font-sol.mkvi"/>
 
-    <cd:command name="fontsolution" type="environment" category="fonts" file="font-sol.mkvi">
+    <cd:command name="fontsolution" type="environment" level="style" category="fonts" file="font-sol.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definealternativestyle" category="fonts" level="style" file="font-sty.mkvi">
+    <cd:command name="definealternativestyle" level="style" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:resolve name="keyword-command"/>
@@ -1233,17 +1239,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applyalternativestyle" category="fonts" file="font-sty.mkvi">
+    <cd:command name="applyalternativestyle" level="system" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dontconvertfont" category="fonts" file="font-sty.mkvi"/>
+    <cd:command name="setupalternativestyles" level="style" category="fonts" file="font-sty.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="method">
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="auto"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="redoconvertfont" category="fonts" file="font-sty.mkvi"/>
+    <cd:command name="dontconvertfont" level="system" category="fonts" file="font-sty.mkvi"/>
 
-    <cd:command name="definestyle" category="fonts" level="style" file="font-sty.mkvi">
+    <cd:command name="redoconvertfont" level="system" category="fonts" file="font-sty.mkvi"/>
+
+    <cd:command name="definestyle" level="style" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -1253,7 +1270,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupstyle" category="fonts" level="style" file="font-sty.mkvi">
+    <cd:command name="setupstyle" level="style" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -1270,13 +1287,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" type="environment" generated="yes" variant="instance" category="fonts" file="font-sty.mkvi">
+    <cd:command name="style" type="environment" generated="yes" variant="instance" level="document" category="fonts" file="font-sty.mkvi">
         <cd:sequence>
             <cd:instance value="style"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="style" generated="yes" variant="instance" category="fonts" file="font-sty.mkvi">
+    <cd:command name="style" generated="yes" variant="instance" level="document" category="fonts" file="font-sty.mkvi">
         <cd:sequence>
             <cd:instance value="style"/>
         </cd:sequence>
@@ -1285,7 +1302,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" type="environment" variant="argument" category="fonts" file="font-sty.mkvi">
+    <cd:command name="style" type="environment" variant="argument" level="document" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -1294,7 +1311,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" type="environment" category="fonts" file="font-sty.mkvi">
+    <cd:command name="style" type="environment" level="document" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupstyle"/>
@@ -1302,7 +1319,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" variant="argument" category="fonts" file="font-sty.mkvi">
+    <cd:command name="style" variant="argument" level="document" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -1312,7 +1329,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" category="fonts" file="font-sty.mkvi">
+    <cd:command name="style" level="document" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupstyle"/>
@@ -1321,7 +1338,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definestyleinstance" category="fonts" level="style" file="font-sty.mkvi">
+    <cd:command name="definestyleinstance" level="style" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -1347,59 +1364,59 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="styleinstance" category="fonts" file="font-sty.mkvi">
+    <cd:command name="styleinstance" level="style" category="fonts" file="font-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseitalic" category="fonts" file="font-sym.mkvi">
+    <cd:command name="doifelseitalic" level="system" category="fonts conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifitalicelse" category="fonts" file="font-sym.mkvi">
+    <cd:command name="doifitalicelse" level="system" category="fonts conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getprivateslot" category="fonts" file="font-ini.mkvi">
+    <cd:command name="getprivateslot" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getprivatechar" category="fonts" file="font-ini.mkvi">
+    <cd:command name="getprivatechar" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="glyphfontfile" category="fonts" file="font-sym.mkvi">
+    <cd:command name="glyphfontfile" level="style" category="fonts" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getnamedglyphstyled" category="fonts" file="font-sym.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-font"/>
-            <cd:resolve name="argument-name"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="getnamedglyphdirect" category="fonts" file="font-sym.mkvi">
+    <cd:command name="getnamedglyphstyled" level="style" category="fonts" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getglyphstyled" category="fonts" file="font-sym.mkvi">
+    <cd:command name="getnamedglyphdirect" level="style" category="fonts" file="font-sym.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-font"/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getglyphstyled" level="style" category="fonts" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:keywords delimiters="braces">
@@ -1409,7 +1426,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getglyphdirect" category="fonts" file="font-sym.mkvi">
+    <cd:command name="getglyphdirect" level="style" category="fonts" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:keywords delimiters="braces">
@@ -1419,27 +1436,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resolvedglyphstyled" category="fonts" file="font-sym.mkvi">
+    <cd:command name="resolvedglyphstyled" level="style" category="fonts" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-tochar"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resolvedglyphdirect" category="fonts" file="font-sym.mkvi">
+    <cd:command name="resolvedglyphdirect" level="style" category="fonts" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-tochar"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setfont" category="fonts" file="font-sym.mkvi">
+    <cd:command name="setfont" level="system" category="fonts" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="string-font"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefontchar" category="fonts" file="font-sym.mkvi">
+    <cd:command name="doifelsefontchar" level="system" category="fonts conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-number"/>
@@ -1448,7 +1465,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffontcharelse" category="fonts" file="font-sym.mkvi">
+    <cd:command name="doiffontcharelse" level="system" category="fonts conditional" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-number"/>
@@ -1457,15 +1474,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showchardata" category="fonts" file="font-tra.mkiv">
+    <cd:command name="showchardata" level="document" category="fonts" file="font-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showfontdata" category="fonts" file="font-tra.mkiv"/>
+    <cd:command name="showfontdata" level="document" category="fonts" file="font-tra.mkiv"/>
 
-    <cd:command name="doifelsefontpresent" category="fonts" file="font-tra.mkiv">
+    <cd:command name="doifelsefontpresent" level="system" category="fonts conditional" file="font-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-true"/>
@@ -1473,7 +1490,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffontpresentelse" category="fonts" file="font-tra.mkiv">
+    <cd:command name="doiffontpresentelse" level="system" category="fonts conditional" file="font-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:resolve name="argument-true"/>
@@ -1481,7 +1498,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showotfcomposition" category="fonts" file="font-tra.mkiv">
+    <cd:command name="showotfcomposition" level="document" category="fonts" file="font-tra.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-font"/>
             <cd:keywords delimiters="braces">
@@ -1495,31 +1512,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fontclass" category="fonts" file="font-var.mkvi"/>
+    <cd:command name="fontclass" level="system" category="fonts" file="font-var.mkvi"/>
 
-    <cd:command name="fontbody" category="fonts" file="font-var.mkvi"/>
+    <cd:command name="fontbody" level="system" category="fonts" file="font-var.mkvi"/>
 
-    <cd:command name="fontstyle" category="fonts" file="font-var.mkvi"/>
+    <cd:command name="fontstyle" level="system" category="fonts" file="font-var.mkvi"/>
 
-    <cd:command name="fontalternative" category="fonts" file="font-var.mkvi"/>
+    <cd:command name="fontalternative" level="system" category="fonts" file="font-var.mkvi"/>
 
-    <cd:command name="fontsize" category="fonts" file="font-var.mkvi"/>
+    <cd:command name="fontsize" level="system" category="fonts" file="font-var.mkvi"/>
 
-    <cd:command name="fontface" category="fonts" file="font-var.mkvi"/>
+    <cd:command name="fontface" level="system" category="fonts" file="font-var.mkvi"/>
 
-    <cd:command name="typescriptone" category="fonts" file="type-ini.mkvi"/>
+    <cd:command name="typescriptone" level="system" category="fonts" file="type-ini.mkvi"/>
 
-    <cd:command name="typescripttwo" category="fonts" file="type-ini.mkvi"/>
+    <cd:command name="typescripttwo" level="system" category="fonts" file="type-ini.mkvi"/>
 
-    <cd:command name="typescriptthree" category="fonts" file="type-ini.mkvi"/>
+    <cd:command name="typescriptthree" level="system" category="fonts" file="type-ini.mkvi"/>
 
-    <cd:command name="typescriptcollection" type="environment" category="fonts" file="type-ini.mkvi">
+    <cd:command name="typescriptcollection" type="environment" level="style" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usetypescriptfile" category="fonts" level="style" file="type-ini.mkvi">
+    <cd:command name="usetypescriptfile" level="style" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -1528,7 +1545,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usetypescript" category="fonts" level="style" file="type-ini.mkvi">
+    <cd:command name="usetypescript" level="style" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="serif"/>
@@ -1554,22 +1571,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadtypescriptfile" category="fonts" level="style" file="type-ini.mkvi">
+    <cd:command name="loadtypescriptfile" level="style" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="quittypescriptscanning" category="fonts" file="type-ini.mkvi"/>
+    <cd:command name="quittypescriptscanning" level="style" category="fonts" file="type-ini.mkvi"/>
 
-    <cd:command name="definetypescriptsynonym" category="fonts" file="type-ini.mkvi">
+    <cd:command name="definetypescriptsynonym" level="system" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typescript" type="environment" category="fonts" level="style" file="type-ini.mkvi">
+    <cd:command name="typescript" type="environment" level="style" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="serif"/>
@@ -1587,20 +1604,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetypescriptprefix" category="fonts" file="type-ini.mkvi">
+    <cd:command name="definetypescriptprefix" level="system" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typescriptprefix" category="fonts" file="type-ini.mkvi">
+    <cd:command name="typescriptprefix" level="system" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetypeface" category="fonts" level="style" file="type-ini.mkvi">
+    <cd:command name="definetypeface" level="style" category="fonts" file="type-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -1649,7 +1666,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfontexpansion" category="fonts" level="style" file="hand-ini.mkiv">
+    <cd:command name="setupfontexpansion" level="style" category="fonts" file="hand-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -1672,7 +1689,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfontprotrusion" category="fonts" level="style" file="hand-ini.mkiv">
+    <cd:command name="setupfontprotrusion" level="style" category="fonts" file="hand-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -1692,7 +1709,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blockligatures" category="fonts" level="style" file="font-fea.mkvi">
+    <cd:command name="blockligatures" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-text-list"/>
         </cd:arguments>

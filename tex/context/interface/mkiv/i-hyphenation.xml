@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuphyphenation" level="style" file="lang-hyp.mkiv">
+    <cd:command name="setuphyphenation" level="style" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="method">
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenation" type="environment" file="lang-hyp.mkiv">
+    <cd:command name="hyphenation" type="environment" level="style" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="original"/>
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definehypenationfeatures" level="style" file="lang-hyp.mkiv">
+    <cd:command name="definehypenationfeatures" level="style" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sethyphenationfeatures" level="style" file="lang-hyp.mkiv">
+    <cd:command name="sethyphenationfeatures" level="style" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -97,37 +97,37 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resethyphenationfeatures" file="lang-hyp.mkiv"/>
+    <cd:command name="resethyphenationfeatures" level="style" category="language" file="lang-hyp.mkiv"/>
 
-    <cd:command name="registerhyphenationpattern" file="lang-hyp.mkiv">
+    <cd:command name="registerhyphenationpattern" level="style" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unregisterhyphenationpattern" file="lang-hyp.mkiv">
+    <cd:command name="unregisterhyphenationpattern" level="style" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showhyphenationtrace" file="lang-hyp.mkiv">
+    <cd:command name="showhyphenationtrace" level="document" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registerhyphenationexception" file="lang-hyp.mkiv">
+    <cd:command name="registerhyphenationexception" level="style" category="language" file="lang-hyp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphyphenmark" level="style" file="typo-del.mkiv">
+    <cd:command name="setuphyphenmark" level="style" category="language" file="typo-del.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="sign">
@@ -138,13 +138,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebreakpoints" level="style" file="typo-brk.mkiv">
+    <cd:command name="definebreakpoints" level="style" category="language" file="typo-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebreakpoint" level="style" file="typo-brk.mkiv">
+    <cd:command name="definebreakpoint" level="style" category="language" file="typo-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -184,7 +184,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setbreakpoints" level="style" file="typo-brk.mkiv">
+    <cd:command name="setbreakpoints" level="style" category="language" file="typo-brk.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -193,69 +193,69 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetbreakpoints" file="typo-brk.mkiv"/>
+    <cd:command name="resetbreakpoints" level="style" category="language" file="typo-brk.mkiv"/>
 
-    <cd:command name="showhyphens" file="supp-box.mkiv">
+    <cd:command name="showhyphens" level="document" category="language" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenatedword" file="supp-box.mkiv">
+    <cd:command name="hyphenatedword" level="document" category="language" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenatedpar" file="supp-box.mkiv">
+    <cd:command name="hyphenatedpar" level="document" category="language" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenatedfile" file="supp-box.mkiv">
+    <cd:command name="hyphenatedfile" level="document" category="language" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenatedcoloredword" file="supp-box.mkiv">
+    <cd:command name="hyphenatedcoloredword" level="document" category="language" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenatedhbox" file="supp-box.mkiv">
+    <cd:command name="hyphenatedhbox" level="document" category="language" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sethyphenatedurlbefore" file="lang-url.mkiv">
+    <cd:command name="sethyphenatedurlbefore" level="style" category="language" file="lang-url.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sethyphenatedurlafter" file="lang-url.mkiv">
+    <cd:command name="sethyphenatedurlafter" level="style" category="language" file="lang-url.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sethyphenatedurlnormal" file="lang-url.mkiv">
+    <cd:command name="sethyphenatedurlnormal" level="style" category="language" file="lang-url.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenatedurl" file="lang-url.mkiv">
+    <cd:command name="hyphenatedurl" level="document" category="language" file="lang-url.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hyphenatedfilename" file="lang-url.mkiv">
+    <cd:command name="hyphenatedfilename" level="document" category="language" file="lang-url.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>

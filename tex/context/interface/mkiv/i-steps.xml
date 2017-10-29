@@ -6,7 +6,7 @@
 
     <!--
 
-        <cd:command name="setupSTEPchart" file="m-steps.mkvi">
+        <cd:command name="setupSTEPchart" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -29,7 +29,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupSTEPcharts" file="m-steps.mkvi">
+        <cd:command name="setupSTEPcharts" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -41,7 +41,7 @@
 
     -->
 
-    <cd:command name="setupSTEPcharts" level="style" file="m-steps.mkvi">
+    <cd:command name="setupSTEPcharts" level="style" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -66,7 +66,7 @@
 
     <!--
 
-        <cd:command name="setupSTEPcell" file="m-steps.mkvi">
+        <cd:command name="setupSTEPcell" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -102,7 +102,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupSTEPcells" file="m-steps.mkvi">
+        <cd:command name="setupSTEPcells" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -114,7 +114,7 @@
 
     -->
 
-    <cd:command name="setupSTEPcells" level="style" file="m-steps.mkvi">
+    <cd:command name="setupSTEPcells" level="style" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -152,7 +152,7 @@
 
     <!--
 
-        <cd:command name="setupSTEPtext" file="m-steps.mkvi">
+        <cd:command name="setupSTEPtext" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -185,7 +185,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupSTEPtexts" file="m-steps.mkvi">
+        <cd:command name="setupSTEPtexts" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -197,7 +197,7 @@
 
     -->
 
-    <cd:command name="setupSTEPtexts" level="style" file="m-steps.mkvi">
+    <cd:command name="setupSTEPtexts" level="style" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -232,7 +232,7 @@
 
     <!--
 
-        <cd:command name="setupSTEPline" file="m-steps.mkvi">
+        <cd:command name="setupSTEPline" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -259,7 +259,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupSTEPlines" file="m-steps.mkvi">
+        <cd:command name="setupSTEPlines" level="style" category="graphics" file="m-steps.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -271,7 +271,7 @@
 
     -->
 
-    <cd:command name="setupSTEPlines" level="style" file="m-steps.mkvi">
+    <cd:command name="setupSTEPlines" level="style" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -298,7 +298,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="STEPchart" type="environment" file="m-steps.mkvi">
+    <cd:command name="STEPchart" type="environment" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -307,7 +307,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="STEPtable" type="environment" file="m-steps.mkvi">
+    <cd:command name="STEPtable" type="environment" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -316,7 +316,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="STEPaligntable" type="environment" file="m-steps.mkvi">
+    <cd:command name="STEPaligntable" type="environment" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -325,7 +325,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="STEPchart" file="m-steps.mkvi">
+    <cd:command name="STEPchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -334,15 +334,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeSTEPchart" file="m-steps.mkvi">
+    <cd:command name="makeSTEPchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="STEPcell" type="environment" file="m-steps.mkvi"/>
+    <cd:command name="STEPcell" type="environment" level="document" category="graphics" file="m-steps.mkvi"/>
 
-    <cd:command name="cells" file="m-steps.mkvi">
+    <cd:command name="cells" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
@@ -350,7 +350,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cells" variant="aligntable" file="m-steps.mkvi">
+    <cd:command name="cells" variant="aligntable" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
@@ -359,7 +359,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="texts" file="m-steps.mkvi">
+    <cd:command name="texts" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
@@ -367,42 +367,42 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cell" file="m-steps.mkvi">
+    <cd:command name="cell" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="text" file="m-steps.mkvi">
+    <cd:command name="text" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="toptext" file="m-steps.mkvi">
+    <cd:command name="toptext" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bottext" file="m-steps.mkvi">
+    <cd:command name="bottext" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="topcell" file="m-steps.mkvi">
+    <cd:command name="topcell" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="botcell" file="m-steps.mkvi">
+    <cd:command name="botcell" scope="stepchart" level="document" category="graphics" file="m-steps.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text"/>

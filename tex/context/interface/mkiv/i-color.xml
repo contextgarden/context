@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="negatecolorbox" category="colors" file="colo-ext.mkiv">
+    <cd:command name="negatecolorbox" level="system" category="colors" file="colo-ext.mkiv">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colorintent" type="environment" category="colors" file="colo-ext.mkiv">
+    <cd:command name="colorintent" type="environment" level="document" category="colors" file="colo-ext.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="knockout"/>
@@ -20,13 +20,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overprint" type="environment" category="colors" file="colo-ext.mkiv"/>
+    <cd:command name="overprint" type="environment" level="document" category="colors" file="colo-ext.mkiv"/>
 
-    <cd:command name="knockout" type="environment" category="colors" file="colo-ext.mkiv"/>
+    <cd:command name="knockout" type="environment" level="document" category="colors" file="colo-ext.mkiv"/>
 
-    <cd:command name="textcolorintent" type="environment" category="colors" file="colo-ext.mkiv"/>
+    <cd:command name="textcolorintent" type="environment" level="document" category="colors" file="colo-ext.mkiv"/>
 
-    <cd:command name="definecolorgroup" category="colors" file="colo-grp.mkiv">
+    <cd:command name="definecolorgroup" level="style" category="colors" file="colo-grp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -39,7 +39,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definecolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -86,14 +86,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecolor" variant="name" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definecolor" variant="name" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineglobalcolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="defineglobalcolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -102,14 +102,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineglobalcolor" variant="name" category="colors" file="colo-ini.mkiv">
+    <cd:command name="defineglobalcolor" variant="name" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definenamedcolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definenamedcolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -118,14 +118,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definenamedcolor" variant="name" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definenamedcolor" variant="name" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineprocesscolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="defineprocesscolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color-optional"/>
@@ -135,7 +135,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definespotcolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definespotcolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color"/>
@@ -156,7 +156,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemultitonecolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definemultitonecolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -173,14 +173,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetransparency" variant="1" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definetransparency" variant="1" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetransparency" variant="2" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definetransparency" variant="2" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -194,55 +194,55 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetransparency" variant="3" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definetransparency" variant="3" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchtocolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="switchtocolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="color" category="colors" level="document" file="colo-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-color"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="coloronly" category="colors" file="colo-ini.mkiv">
+    <cd:command name="color" level="document"category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="transparent" category="colors" file="colo-ini.mkiv">
+    <cd:command name="coloronly" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="graycolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="transparent" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colored" variant="name" category="colors" level="document" file="colo-ini.mkiv">
+    <cd:command name="graycolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colored" category="colors" level="document" file="colo-ini.mkiv">
+    <cd:command name="colored" variant="name" level="document" category="colors" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-color"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="colored" level="document" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="definecolor"/>
@@ -251,13 +251,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="color" type="environment" category="colors" level="document" file="colo-ini.mkiv">
+    <cd:command name="color" type="environment" level="document" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="coloronly" type="environment" category="colors" file="colo-ini.mkiv">
+    <cd:command name="coloronly" type="environment" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
@@ -269,19 +269,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directcolor" category="colors" level="document" file="colo-ini.mkiv">
+    <cd:command name="directcolor" level="document" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directcolored" variant="name" category="colors" level="document" file="colo-ini.mkiv">
+    <cd:command name="directcolored" variant="name" level="document" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directcolored" category="colors" level="document" file="colo-ini.mkiv">
+    <cd:command name="directcolored" level="document" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="definecolor"/>
@@ -289,27 +289,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentcolor" type="environment" category="colors" file="colo-ini.mkiv"/>
+    <cd:command name="currentcolor" type="environment" level="system" category="colors" file="colo-ini.mkiv"/>
 
-    <cd:command name="colorset" type="environment" category="colors" file="colo-ini.mkiv">
+    <cd:command name="colorset" type="environment" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usecolors" category="colors" file="colo-ini.mkiv">
+    <cd:command name="usecolors" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="setupcolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolors" category="colors" file="colo-ini.mkiv">
+    <cd:command name="setupcolors" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="state">
@@ -358,13 +358,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="color" type="environment" begin="push" end="pop" category="colors" level="system" file="colo-ini.mkiv">
+    <cd:command name="color" type="environment" begin="push" end="pop" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="color" type="environment" begin="save" end="restore" category="colors" level="system" file="colo-ini.mkiv"/>
+    <cd:command name="color" type="environment" begin="save" end="restore" level="system" category="colors" file="colo-ini.mkiv"/>
 
     <cd:command name="definepalet" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
@@ -377,28 +377,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepalet" variant="name" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definepalet" variant="name" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getpaletsize" category="colors" file="colo-ini.mkiv">
+    <cd:command name="getpaletsize" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="paletsize" category="colors" file="colo-ini.mkiv"/>
+    <cd:command name="paletsize" level="system" category="colors" file="colo-ini.mkiv"/>
 
-    <cd:command name="setuppalet" category="colors" file="colo-ini.mkiv">
+    <cd:command name="setuppalet" clevel="style" ategory="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcolormodell" category="colors" file="colo-ini.mkiv">
+    <cd:command name="setcolormodell" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="black"/>
@@ -412,9 +412,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="protectedcolors" type="environment" category="colors" file="colo-ini.mkiv"/>
+    <cd:command name="protectedcolors" type="environment" level="system" category="colors" file="colo-ini.mkiv"/>
 
-    <cd:command name="defineintermediatecolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="defineintermediatecolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes">
@@ -432,7 +432,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecolor" category="colors" level="system" file="color-ini.mkiv">
+    <cd:command name="doifelsecolor" level="system" category="colors conditional" file="color-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -440,7 +440,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcolorelse" category="colors" level="system" file="color-ini.mkiv">
+    <cd:command name="doifcolorelse" level="system" category="colors conditional" file="color-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -448,82 +448,74 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcolor" category="colors" level="system" file="color-ini.mkiv">
+    <cd:command name="doifcolor" level="system" category="colors conditional" file="color-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textcolor" type="environment" category="colors" file="colo-ini.mkiv">
+    <cd:command name="textcolor" type="environment" level="document" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPcolor" category="colors" file="colo-ini.mkiv">
+    <cd:command name="MPcolor" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPcoloronly" category="colors" file="colo-ini.mkiv">
+    <cd:command name="MPcoloronly" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPtransparency" category="colors" file="colo-ini.mkiv">
+    <cd:command name="MPtransparency" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPoptions" file="colo-ini.mkiv">
+    <cd:command name="MPoptions" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colorvalue" category="colors" file="colo-ini.mkiv">
+    <cd:command name="colorvalue" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="grayvalue" category="colors" file="colo-ini.mkiv">
+    <cd:command name="grayvalue" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colorcomponents" category="colors" file="colo-ini.mkiv">
+    <cd:command name="colorcomponents" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="transparencycomponents" category="colors" file="colo-ini.mkiv">
+    <cd:command name="transparencycomponents" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processcolorcomponents" category="colors" file="colo-ini.mkiv">
+    <cd:command name="processcolorcomponents" level="system" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseblack" category="colors" level="system" file="colo-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-color"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifblackelse" category="colors" level="system" file="colo-ini.mkiv">
+    <cd:command name="doifelseblack" level="system"  category="colors conditional" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -531,45 +523,53 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsedrawingblack" category="colors" level="system" file="colo-ini.mkiv">
+    <cd:command name="doifblackelse" level="system" category="colors conditional" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-color"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsedrawingblack" level="system" category="colors conditional" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifdrawingblackelse" category="colors" level="system" file="colo-ini.mkiv">
+    <cd:command name="doifdrawingblackelse" level="system" category="colors conditional" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showcolorbar" category="colors" file="colo-run.mkiv">
+    <cd:command name="showcolorbar" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showcolor" category="colors" file="colo-run.mkiv">
+    <cd:command name="showcolor" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showcolorset" category="colors" file="colo-run.mkiv">
+    <cd:command name="showcolorset" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showcolorcomponents" category="colors" file="colo-run.mkiv">
+    <cd:command name="showcolorcomponents" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showpalet" category="colors" file="colo-run.mkiv">
+    <cd:command name="showpalet" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -582,13 +582,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="comparepalet" category="colors" file="colo-run.mkiv">
+    <cd:command name="comparepalet" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showcolorgroup" category="colors" file="colo-run.mkiv">
+    <cd:command name="showcolorgroup" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -601,7 +601,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="comparecolorgroup" category="colors" file="colo-run.mkiv">
+    <cd:command name="comparecolorgroup" level="document" category="colors" file="colo-run.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>

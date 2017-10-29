@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="resetpenalties" file="spac-ver.mkiv">
+    <cd:command name="resetpenalties" level="system" category="layout" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpenalties" file="spac-ver.mkiv">
+    <cd:command name="setpenalties" level="system" category="layout" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-number"/>
@@ -18,12 +18,12 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="keeplinestogether" file="spac-ver.mkiv">
+    <cd:command name="keeplinestogether" level="system" category="layout" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdefaultpenalties" file="spac-ver.mkiv"/>
+    <cd:command name="setdefaultpenalties" level="system" category="layout" file="spac-ver.mkiv"/>
 
 </cd:interface>

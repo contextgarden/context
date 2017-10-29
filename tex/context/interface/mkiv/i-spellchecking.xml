@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupspellchecking" category="language" level="style" file="lang-wrd.mkiv">
+    <cd:command name="setupspellchecking" level="style" category="language" file="lang-wrd.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="state">
@@ -23,7 +23,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadspellchecklist" category="language" level="style" file="lang-wrd.mkiv">
+    <cd:command name="loadspellchecklist" level="style" category="language" file="lang-wrd.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>

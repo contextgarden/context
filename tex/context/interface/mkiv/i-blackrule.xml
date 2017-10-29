@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupblackrules" level="style" file="pack-mrl.mkiv">
+    <cd:command name="setupblackrules" level="style" category="rules colors" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
@@ -47,7 +47,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blackrule" level="document" file="pack-mrl.mkiv">
+    <cd:command name="blackrule" level="document" category="rules colors" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupblackrules"/>
@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blackrules" level="document" file="pack-mrl.mkiv">
+    <cd:command name="blackrules" level="document" category="rules colors" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupblackrules"/>
@@ -63,7 +63,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vl" level="document" file="pack-mrl.mkiv">
+    <cd:command name="vl" level="document" category="rules" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
@@ -75,7 +75,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="somekindoftab" file="tabl-mis.mkiv">
+    <cd:command name="somekindoftab" level="style" category="rules" file="tabl-mis.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="alternative">
@@ -95,6 +95,23 @@
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
             </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="frule" level="style" category="rules" file="grph-rul.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="none" list="yes">
+                <cd:constant type="cd:dimension" prefix="width␣" method="none"/>
+                <cd:constant type="cd:dimension" prefix="height␣" method="none"/>
+                <cd:constant type="cd:dimension" prefix="depth␣" method="none"/>
+                <cd:constant type="cd:dimension" prefix="radius␣" method="none"/>
+                <cd:constant type="cd:dimension" prefix="line␣" method="none"/>
+                <!-- the type option accepts 'mp' or 'fill' as arguments -->
+                <cd:constant type="cd:text" prefix="type␣" method="none"/>
+                <cd:constant type="cd:text" prefix="data␣" method="none"/>
+                <cd:constant type="cd:text" prefix="name␣" method="none"/>
+            </cd:keywords>
+            <cd:delimiter name="relax"/>
         </cd:arguments>
     </cd:command>
 

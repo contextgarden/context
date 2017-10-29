@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definetooltip" level="style" file="scrn-fld.mkvi">
+    <cd:command name="definetooltip" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptooltip" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setuptooltip" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -28,7 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tooltip" generated="yes" variant="instance" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" generated="yes" variant="instance" level="document" category="pdf" file="scrn-fld.mkvi">
         <cd:sequence>
             <cd:instance value="tooltip"/>
         </cd:sequence>
@@ -44,7 +44,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="tooltip" generated="yes" variant="instance:argument" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" generated="yes" variant="instance:argument" level="document" category="pdf" file="scrn-fld.mkvi">
         <cd:sequence>
             <cd:instance value="tooltip"/>
         </cd:sequence>
@@ -64,7 +64,7 @@
 
     <!--
 
-        <cd:command name="tooltip" file="scrn-fld.mkvi">
+        <cd:command name="tooltip" level="document" category="pdf" file="scrn-fld.mkvi">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setuptooltip"/>
@@ -74,7 +74,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="tooltip" variant="argument" file="scrn-fld.mkvi">
+        <cd:command name="tooltip" variant="argument" level="document" category="pdf" file="scrn-fld.mkvi">
             <cd:arguments>
                 <cd:keywords optional="yes">
                     <cd:constant type="left"/>

@@ -4,37 +4,37 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="resetinjector" file="typo-inj.mkiv">
+    <cd:command name="resetinjector" level="system" file="typo-inj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="markinjector" file="typo-inj.mkiv">
+    <cd:command name="markinjector" level="system" file="typo-inj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkinjector" file="typo-inj.mkiv">
+    <cd:command name="checkinjector" level="system" file="typo-inj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkpreviousinjector" file="typo-inj.mkiv">
+    <cd:command name="checkpreviousinjector" level="system" file="typo-inj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checknextinjector" file="typo-inj.mkiv">
+    <cd:command name="checknextinjector" level="system" file="typo-inj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setinjector" file="typo-inj.mkiv">
+    <cd:command name="setinjector" level="document" file="typo-inj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-list"/>
@@ -42,7 +42,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showinjector" file="typo-inj.mkiv">
+    <cd:command name="showinjector" level="document" file="typo-inj.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
         </cd:arguments>
@@ -50,19 +50,19 @@
 
     <!--
 
-        <cd:command name="doinstallinjector" file="typo-inj.mkiv">
+        <cd:command name="doinstallinjector" level="system" file="typo-inj.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-name"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="doactivateinjector" file="typo-inj.mkiv">
+        <cd:command name="doactivateinjector" level="system" file="typo-inj.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-name"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="dotestinjector" file="typo-inj.mkiv">
+        <cd:command name="dotestinjector" level="system" file="typo-inj.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-name"/>
             </cd:arguments>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definepositioning" level="style" file="pack-pos.mkiv">
+    <cd:command name="definepositioning" level="style" category="graphics" file="pack-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppositioning" level="style" file="pack-pos.mkiv">
+    <cd:command name="setuppositioning" level="style" category="graphics" file="pack-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -76,7 +76,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="positioning" type="environment" level="document" file="pack-pos.mkiv">
+    <cd:command name="positioning" type="environment" level="document" category="graphics" file="pack-pos.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -85,7 +85,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="position" level="document" file="pack-pos.mkiv">
+    <cd:command name="position" level="document" category="graphics" file="pack-pos.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuppositioning"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathematics" category="mathematics" level="style" file="math-ini.mkiv">
+    <cd:command name="definemathematics" level="style" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathematics" category="mathematics" level="style" file="math-ini.mkiv">
+    <cd:command name="setupmathematics" level="style" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -106,35 +106,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inlineordisplaymath" level="system" file="math-ini.mkiv">
+    <cd:command name="inlineordisplaymath" level="system" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathematics" category="mathematics" level="document" file="math-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="math" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathematics" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="m" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="math" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathcommand" category="mathematics" level="style" file="math-ini.mkiv">
+    <cd:command name="m" level="document" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definemathcommand" level="style" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -164,7 +164,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathcommand" generated="yes" variant="example" category="mathematics" file="math-ini.mkiv">
+    <cd:command name="mathcommand" generated="yes" variant="example" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:sequence>
             <cd:variable value="mathcommand"/>
         </cd:sequence>
@@ -174,63 +174,67 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathcommand" category="mathematics" file="math-ini.mkiv">
+    <!--
+
+        <cd:command name="mathcommand" level="document" category="mathematics" file="math-ini.mkiv">
+            <cd:arguments>
+                <cd:resolve name="argument-name"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="mathop" level="style" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mbox" level="document" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mtext" level="document" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathfunction" level="style" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mfunction" level="style" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mfunctionlabeltext" level="system" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathop" file="math-ini.mkiv">
-        <cd:arguments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mbox" file="math-ini.mkiv">
-        <cd:arguments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mtext" file="math-ini.mkiv">
-        <cd:arguments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mathfunction" file="math-ini.mkiv">
-        <cd:arguments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mfunction" file="math-ini.mkiv">
-        <cd:arguments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mfunctionlabeltext" level="system" file="math-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-name"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="stackrel" file="math-ini.mkiv">
+    <cd:command name="stackrel" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="apply" file="math-ini.mkiv">
+    <cd:command name="apply" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathstyle" file="math-ini.mkiv">
+    <cd:command name="definemathstyle" level="system" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes">
@@ -239,7 +243,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathstyle" file="math-ini.mkiv">
+    <cd:command name="setupmathstyle" level="style" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:resolve name="value-mathstyle"/>
@@ -248,7 +252,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmathstyle" file="math-ini.mkiv">
+    <cd:command name="setmathstyle" level="system" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces" list="yes">
                 <cd:resolve name="value-mathstyle"/>
@@ -257,7 +261,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathstyle" type="environment" file="math-ini.mkiv">
+    <cd:command name="mathstyle" type="environment" level="system" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:resolve name="value-mathstyle"/>
@@ -266,221 +270,221 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathstyle" type="environment" begin="push" end="pop" level="system" file="math-ini.mkiv"/>
+    <cd:command name="mathstyle" type="environment" begin="push" end="pop" level="system" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="usemathstyleparameter" level="system" file="math-ini.mkiv">
+    <cd:command name="usemathstyleparameter" level="system" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usemathstyleparameter" type="environment" level="system" file="math-ini.mkiv">
+    <cd:command name="usemathstyleparameter" type="environment" level="system" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtext" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathtext" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtexttf" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathtexttf" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtextit" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathtextit" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtextsl" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathtextsl" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtextbf" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathtextbf" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtextbi" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathtextbi" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtextbs" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathtextbs" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathword" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathword" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathwordtf" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathwordtf" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathwordit" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathwordit" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathwordsl" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathwordsl" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathwordbf" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathwordbf" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathwordbi" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathwordbi" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathwordbs" category="mathematics" level="document" file="math-ini.mkiv">
+    <cd:command name="mathwordbs" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathrm" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathrm" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathss" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathss" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathtt" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathtt" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathtf" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathtf" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathsl" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathsl" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathit" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathit" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathbf" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathbf" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathbi" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathbi" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathbs" category="mathematics" level="document" file="math-ini.mkiv"/>
+    <cd:command name="mathbs" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathitalic" category="mathematics" file="math-ini.mkiv"/>
+    <cd:command name="mathitalic" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathupright" category="mathematics" file="math-ini.mkiv"/>
+    <cd:command name="mathupright" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathdefault" category="mathematics" file="math-ini.mkiv"/>
+    <cd:command name="mathdefault" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathscript" category="mathematics" file="math-ini.mkiv"/>
+    <cd:command name="mathscript" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathfraktur" category="mathematics" file="math-ini.mkiv"/>
+    <cd:command name="mathfraktur" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="mathblackboard" category="mathematics" file="math-ini.mkiv"/>
+    <cd:command name="mathblackboard" level="document" category="mathematics" file="math-ini.mkiv"/>
 
-    <cd:command name="displaymath" file="supp-mat.mkiv">
+    <cd:command name="displaymath" level="style" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inlinemath" file="supp-mat.mkiv">
+    <cd:command name="inlinemath" level="style" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textmath" file="supp-mat.mkiv">
+    <cd:command name="textmath" level="style" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="imath" type="environment" file="supp-mat.mkiv"/>
+    <cd:command name="imath" type="environment" level="system" category="mathematics" file="supp-mat.mkiv"/>
 
-    <cd:command name="dmath" type="environment" file="supp-mat.mkiv"/>
+    <cd:command name="dmath" type="environment" level="system" category="mathematics" file="supp-mat.mkiv"/>
 
-    <cd:command name="mathmode" type="environment" file="supp-mat.mkiv"/>
+    <cd:command name="mathmode" type="environment" level="system" category="mathematics" file="supp-mat.mkiv"/>
 
-    <cd:command name="nonmathematics" file="supp-mat.mkiv">
+    <cd:command name="nonmathematics" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="displaymathematics" file="supp-mat.mkiv">
+    <cd:command name="displaymathematics" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inlinemathematics" file="supp-mat.mkiv">
+    <cd:command name="inlinemathematics" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="automathematics" file="supp-mat.mkiv">
+    <cd:command name="automathematics" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cramped" file="supp-mat.mkiv">
+    <cd:command name="cramped" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="crampedllap" file="supp-mat.mkiv">
+    <cd:command name="crampedllap" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="crampedrlap" file="supp-mat.mkiv">
+    <cd:command name="crampedrlap" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="crampedclap" file="supp-mat.mkiv">
+    <cd:command name="crampedclap" level="system" category="mathematics" file="supp-mat.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autointegral" file="math-del.mkiv">
+    <cd:command name="autointegral" level="system" category="mathematics" file="math-del.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>

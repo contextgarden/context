@@ -6,7 +6,7 @@
 
     <!--
 
-        <cd:command name="definelayoutelement" file="page-txt.mkvi">
+        <cd:command name="definelayoutelement" level="system" category="layout" file="page-txt.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -16,7 +16,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setuplayoutelement" file="page-txt.mkvi">
+        <cd:command name="setuplayoutelement" level="system" category="layout" file="page-txt.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -74,7 +74,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setuplayouttext" file="page-txt.mkvi">
+        <cd:command name="setuplayouttext" level="system" category="layout" file="page-txt.mkvi">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="top"/>
@@ -96,7 +96,7 @@
 
     -->
 
-    <cd:command name="setuplayouttext" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setuplayouttext" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="top"/>
@@ -165,7 +165,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptop" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setuptop" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text"/>
@@ -178,7 +178,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupheader" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setupheader" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text"/>
@@ -191,7 +191,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptext" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setuptext" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text"/>
@@ -204,7 +204,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfooter" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setupfooter" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text"/>
@@ -217,7 +217,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbottom" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setupbottom" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text"/>
@@ -230,7 +230,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayouttextline" category="layout" level="system" file="page-txt.mkvi">
+    <cd:command name="doifelselayouttextline" level="system" category="layout conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -238,7 +238,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayouttextlineelse" category="layout" level="system" file="page-txt.mkvi">
+    <cd:command name="doiflayouttextlineelse" level="system" category="layout conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -246,7 +246,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayoutsomeline" category="layout" level="system" file="page-txt.mkvi">
+    <cd:command name="doifelselayoutsomeline" level="system" category="layout conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -254,7 +254,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayoutsomelineelse" category="layout" level="system" file="page-txt.mkvi">
+    <cd:command name="doiflayoutsomelineelse" level="system" category="layout conditional" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -262,11 +262,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="noheaderandfooterlines" category="layout" file="page-txt.mkvi"/>
+    <cd:command name="noheaderandfooterlines" level="style" category="layout" file="page-txt.mkvi"/>
 
-    <cd:command name="notopandbottomlines" category="layout" file="page-txt.mkvi"/>
+    <cd:command name="notopandbottomlines" level="style" category="layout" file="page-txt.mkvi"/>
 
-    <cd:command name="setuptoptexts" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setuptoptexts" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text" default="yes"/>
@@ -280,7 +280,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupheadertexts" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setupheadertexts" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text" default="yes"/>
@@ -294,7 +294,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptexttexts" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setuptexttexts" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text" default="yes"/>
@@ -308,7 +308,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfootertexts" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setupfootertexts" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text" default="yes"/>
@@ -322,7 +322,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbottomtexts" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="setupbottomtexts" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="text" default="yes"/>
@@ -336,7 +336,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="settextcontent" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="settextcontent" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="top"/>
@@ -360,7 +360,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetext" category="layout" level="style" file="page-txt.mkvi">
+    <cd:command name="definetext" level="style" category="layout" file="page-txt.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>

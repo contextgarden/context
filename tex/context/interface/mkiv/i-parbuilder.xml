@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineparbuilder" level="system" file="typo-bld.mkiv">
+    <cd:command name="defineparbuilder" level="system" category="layout" file="typo-bld.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="parbuilder" type="environment" level="system" file="typo-bld.mkiv">
+    <cd:command name="parbuilder" type="environment" level="system" category="layout" file="typo-bld.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="default"/>
@@ -21,7 +21,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmainparbuilder" level="system" file="typo-bld.mkiv">
+    <cd:command name="setmainparbuilder" level="system" category="layout" file="typo-bld.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="default"/>

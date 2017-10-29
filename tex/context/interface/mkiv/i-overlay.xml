@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineoverlay" level="style" file="pack-lyr.mkiv">
+    <cd:command name="defineoverlay" level="style" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -12,21 +12,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlaycolor" file="pack-rul.mkiv"/>
+    <cd:command name="overlaycolor" level="system" category="background colors" file="pack-rul.mkiv"/>
 
-    <cd:command name="overlaylinecolor" file="pack-rul.mkiv"/>
+    <cd:command name="overlaylinecolor" level="system" category="background colors" file="pack-rul.mkiv"/>
 
-    <cd:command name="overlaywidth" file="pack-rul.mkiv"/>
+    <cd:command name="overlaywidth" level="system" category="background" file="pack-rul.mkiv"/>
 
-    <cd:command name="overlayheight" file="pack-rul.mkiv"/>
+    <cd:command name="overlayheight" level="system" category="background" file="pack-rul.mkiv"/>
 
-    <cd:command name="overlaydepth" file="pack-rul.mkiv"/>
+    <cd:command name="overlaydepth" level="system" category="background" file="pack-rul.mkiv"/>
 
-    <cd:command name="overlayoffset" file="pack-rul.mkiv"/>
+    <cd:command name="overlayoffset" level="system" category="background" file="pack-rul.mkiv"/>
 
-    <cd:command name="overlaylinewidth" file="pack-rul.mkiv"/>
+    <cd:command name="overlaylinewidth" level="system" category="background" file="pack-rul.mkiv"/>
 
-    <cd:command name="doifelseoverlay" level="system" file="pack-rul.mkiv">
+    <cd:command name="doifelseoverlay" level="system" category="background conditional" file="pack-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoverlayelse" level="system" file="pack-rul.mkiv">
+    <cd:command name="doifoverlayelse" level="system" category="background conditional" file="pack-rul.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

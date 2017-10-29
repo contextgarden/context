@@ -4,14 +4,14 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definelabelclass" category="language" level="system" file="lang-lab.mkiv">
+    <cd:command name="definelabelclass" level="system" category="language" file="lang-lab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplabeltext" generated="yes" variant="instance" category="language" level="style" file="lang-lab.mkiv">
+    <cd:command name="setuplabeltext" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="label"/>
@@ -26,7 +26,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="presetlabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="presetlabeltext" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="preset"/>
             <cd:instance value="label"/>
@@ -41,7 +41,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="copylabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="copylabeltext" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="copy"/>
             <cd:instance value="label"/>
@@ -56,7 +56,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltext" type="environment" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="labeltext" type="environment" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="text"/>
@@ -70,7 +70,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labellanguage" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="labellanguage" generated="yes" variant="instance" level="system" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="language"/>
@@ -80,7 +80,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="labeltext" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="text"/>
@@ -93,7 +93,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltexts" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="labeltexts" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:instance value="label"/>
             <cd:string value="texts"/>
@@ -107,7 +107,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="leftlabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="leftlabeltext" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="left"/>
             <cd:instance value="label"/>
@@ -121,7 +121,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="rightlabeltext" generated="yes" variant="instance" category="language" file="lang-lab.mkiv">
+    <cd:command name="rightlabeltext" generated="yes" variant="instance" level="style" category="language" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="right"/>
             <cd:instance value="label"/>
@@ -137,382 +137,382 @@
 
     <!--
 
-        <cd:command name="setuplabeltext" file="lang-lab.mkiv">
+        <cd:command name="setuplabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetlabeltext" file="lang-lab.mkiv">
+        <cd:command name="presetlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copylabeltext" file="lang-lab.mkiv">
+        <cd:command name="copylabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="labeltext" type="environment" file="lang-lab.mkiv">
+        <cd:command name="labeltext" type="environment" flevel="style" category="language" ile="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="labellanguage" file="lang-lab.mkiv"/>
+        <cd:command name="labellanguage" level="system" category="language" file="lang-lab.mkiv"/>
 
-        <cd:command name="labeltext" file="lang-lab.mkiv">
+        <cd:command name="labeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="labeltexts" file="lang-lab.mkiv">
+        <cd:command name="labeltexts" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="leftlabeltext" file="lang-lab.mkiv">
+        <cd:command name="leftlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="rightlabeltext" file="lang-lab.mkiv">
+        <cd:command name="rightlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupheadtext" file="lang-lab.mkiv">
+        <cd:command name="setupheadtext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetheadtext" file="lang-lab.mkiv">
+        <cd:command name="presetheadtext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copyheadtext" file="lang-lab.mkiv">
+        <cd:command name="copyheadtext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="headtext" type="environment" file="lang-lab.mkiv">
+        <cd:command name="headtext" type="environment" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="headlanguage" file="lang-lab.mkiv"/>
+        <cd:command name="headlanguage" level="system" category="language" file="lang-lab.mkiv"/>
 
-        <cd:command name="headtext" file="lang-lab.mkiv">
+        <cd:command name="headtext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="headtexts" file="lang-lab.mkiv">
+        <cd:command name="headtexts" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="leftheadtext" file="lang-lab.mkiv">
+        <cd:command name="leftheadtext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="rightheadtext" file="lang-lab.mkiv">
+        <cd:command name="rightheadtext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupmathlabeltext" file="lang-lab.mkiv">
+        <cd:command name="setupmathlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetmathlabeltext" file="lang-lab.mkiv">
+        <cd:command name="presetmathlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copymathlabeltext" file="lang-lab.mkiv">
+        <cd:command name="copymathlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="mathlabeltext" type="environment" file="lang-lab.mkiv">
+        <cd:command name="mathlabeltext" type="environment" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="mathlabellanguage" file="lang-lab.mkiv"/>
+        <cd:command name="mathlabellanguage" level="system" category="language" file="lang-lab.mkiv"/>
 
-        <cd:command name="mathlabeltext" file="lang-lab.mkiv">
+        <cd:command name="mathlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="mathlabeltexts" file="lang-lab.mkiv">
+        <cd:command name="mathlabeltexts" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="leftmathlabeltext" file="lang-lab.mkiv">
+        <cd:command name="leftmathlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="rightmathlabeltext" file="lang-lab.mkiv">
+        <cd:command name="rightmathlabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setuptaglabeltext" file="lang-lab.mkiv">
+        <cd:command name="setuptaglabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presettaglabeltext" file="lang-lab.mkiv">
+        <cd:command name="presettaglabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copytaglabeltext" file="lang-lab.mkiv">
+        <cd:command name="copytaglabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="taglabeltext" type="environment" file="lang-lab.mkiv">
+        <cd:command name="taglabeltext" type="environment" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="taglabellanguage" file="lang-lab.mkiv"/>
+        <cd:command name="taglabellanguage" level="system" category="language" file="lang-lab.mkiv"/>
 
-        <cd:command name="taglabeltext" file="lang-lab.mkiv">
+        <cd:command name="taglabeltext" level="style" category="language" file="lang-lab.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupunittext" file="phys-dim.mkiv">
+        <cd:command name="setupunittext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetunittext" file="phys-dim.mkiv">
+        <cd:command name="presetunittext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copyunittext" file="phys-dim.mkiv">
+        <cd:command name="copyunittext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="unittext" type="environment" file="phys-dim.mkiv">
+        <cd:command name="unittext" type="environment" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="unitlanguage" file="phys-dim.mkiv"/>
+        <cd:command name="unitlanguage" level="system" category="language" file="phys-dim.mkiv"/>
 
-        <cd:command name="unittext" file="phys-dim.mkiv">
+        <cd:command name="unittext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupoperatortext" file="phys-dim.mkiv">
+        <cd:command name="setupoperatortext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetoperatortext" file="phys-dim.mkiv">
+        <cd:command name="presetoperatortext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copyoperatortext" file="phys-dim.mkiv">
+        <cd:command name="copyoperatortext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="operatortext" type="environment" file="phys-dim.mkiv">
+        <cd:command name="operatortext" type="environment" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="operatorlanguage" file="phys-dim.mkiv"/>
+        <cd:command name="operatorlanguage" level="system" category="language" file="phys-dim.mkiv"/>
 
-        <cd:command name="operatortext" file="phys-dim.mkiv">
+        <cd:command name="operatortext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupprefixtext" file="phys-dim.mkiv">
+        <cd:command name="setupprefixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetprefixtext" file="phys-dim.mkiv">
+        <cd:command name="presetprefixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copyprefixtext" file="phys-dim.mkiv">
+        <cd:command name="copyprefixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="prefixtext" type="environment" file="phys-dim.mkiv">
+        <cd:command name="prefixtext" type="environment" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="prefixlanguage" file="phys-dim.mkiv"/>
+        <cd:command name="prefixlanguage" level="system" category="language" file="phys-dim.mkiv"/>
 
-        <cd:command name="prefixtext" file="phys-dim.mkiv">
+        <cd:command name="prefixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupsuffixtext" file="phys-dim.mkiv">
+        <cd:command name="setupsuffixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetsuffixtext" file="phys-dim.mkiv">
+        <cd:command name="presetsuffixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copysuffixtext" file="phys-dim.mkiv">
+        <cd:command name="copysuffixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="suffixtext" type="environment" file="phys-dim.mkiv">
+        <cd:command name="suffixtext" type="environment" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="suffixlanguage" file="phys-dim.mkiv"/>
+        <cd:command name="suffixlanguage" level="system" category="language" file="phys-dim.mkiv"/>
 
-        <cd:command name="suffixtext" file="phys-dim.mkiv">
+        <cd:command name="suffixtext" level="style" category="language" file="phys-dim.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupbtxlabeltext" file="publ-ini.mkiv">
+        <cd:command name="setupbtxlabeltext" level="style" category="language" file="publ-ini.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="presetbtxlabeltext" file="publ-ini.mkiv">
+        <cd:command name="presetbtxlabeltext" level="style" category="language" file="publ-ini.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-userdata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="copybtxlabeltext" file="publ-ini.mkiv">
+        <cd:command name="copybtxlabeltext" level="style" category="language" file="publ-ini.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="assignment-labeldata-list"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="btxlabeltext" type="environment" file="publ-ini.mkiv">
+        <cd:command name="btxlabeltext" type="environment" level="style" category="language" file="publ-ini.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-language-optional"/>
                 <cd:resolve name="keyword-key"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="btxlabellanguage" file="publ-ini.mkiv"/>
+        <cd:command name="btxlabellanguage" level="system" category="language" file="publ-ini.mkiv"/>
 
-        <cd:command name="btxlabeltext" file="publ-ini.mkiv">
+        <cd:command name="btxlabeltext" level="style" category="language" file="publ-ini.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-key"/>
             </cd:arguments>

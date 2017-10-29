@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupbackend" level="style" file="back-ini.mkiv">
+    <cd:command name="setupbackend" level="style" catehory="pdf" file="back-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="export">
@@ -18,7 +18,31 @@
                     <cd:constant type="cd:file"/>
                 </cd:parameter>
                 <cd:parameter name="intent">
-                    <cd:constant type="cd:name"/>
+                    <cd:constant type="Coated FOGRA39 (ISO 12647-2:2004)"/>
+                    <cd:constant type="GRACoL2006_Coated1v2.icc"/>
+                    <cd:constant type="ISO Coated v2 300% (ECI)"/>
+                    <cd:constant type="ISO Coated v2 (ECI)"/>
+                    <cd:constant type="ISOnewspaper26v4"/>
+                    <cd:constant type="ISOnewspaper26v4_gr"/>
+                    <cd:constant type="ISO Uncoated"/>
+                    <cd:constant type="ISO Uncoated Yellowish"/>
+                    <cd:constant type="ISO Web Coated"/>
+                    <cd:constant type="Japan Color 2001 Coated"/>
+                    <cd:constant type="Japan Color 2002 Newspaper"/>
+                    <cd:constant type="Japan Web Coated (Ad)"/>
+                    <cd:constant type="SNAP 2007"/>
+                    <cd:constant type="SWOP2006_Coated3v2.icc"/>
+                    <cd:constant type="SWOP2006_Coated5v2.icc"/>
+                    <cd:constant type="Uncoated FOGRA29 (ISO 12647-2:2004)"/>
+                    <cd:constant type="Web Coated FOGRA28 (ISO 12647-2:2004)"/>
+                    <cd:constant type="PSR_LWC_PLUS_V2_PT"/>
+                    <cd:constant type="PSR_LWC_STD_V2_PT"/>
+                    <cd:constant type="PSR_SC_PLUS_V2_PT"/>
+                    <cd:constant type="PSR_SC_STD_V2_PT"/>
+                    <cd:constant type="PSRgravureMF"/>
+                    <!--
+                        <cd:constant type="cd:name"/>
+                    -->
                 </cd:parameter>
                 <cd:parameter name="space">
                     <cd:constant type="yes"/>
@@ -30,7 +54,23 @@
                 <cd:parameter name="format">
                     <cd:constant type="version"/>
                     <cd:constant type="default"/>
-                    <cd:constant type="cd:name"/>
+                    <cd:constant type="PDF/X-1a:2001"/>
+                    <cd:constant type="PDF/X-1a:2003"/>
+                    <cd:constant type="PDF/X-3:2002"/>
+                    <cd:constant type="PDF/X-3:2003"/>
+                    <cd:constant type="PDF/X-4"/>
+                    <cd:constant type="PDF/X-4p"/>
+                    <cd:constant type="PDF/X-5g"/>
+                    <cd:constant type="PDF/X-5pg"/>
+                    <cd:constant type="PDF/X-5n"/>
+                    <cd:constant type="PDF/A-1a:2005"/>
+                    <cd:constant type="PDF/A-1b:2005"/>
+                    <cd:constant type="PDF/A-2a"/>
+                    <cd:constant type="PDF/A-3a"/>
+                    <cd:constant type="PDF/UA-1"/>
+                    <!--
+                        <cd:constant type="cd:name"/>
+                    -->
                 </cd:parameter>
                 <cd:parameter name="level">
                     <cd:constant type="cd:number"/>

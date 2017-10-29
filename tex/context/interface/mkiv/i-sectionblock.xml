@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definesectionblock" level="style" file="strc-sbe.mkiv">
+    <cd:command name="definesectionblock" level="style" category="structure" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsectionblock" level="style" file="strc-sbe.mkiv">
+    <cd:command name="setupsectionblock" level="style" category="structure" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -35,7 +35,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsectionblock" file="strc-sbe.mkiv">
+    <cd:command name="setsectionblock" level="system" category="structure" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -46,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sectionblock" type="environment" level="document" file="strc-sbe.mkiv">
+    <cd:command name="sectionblock" type="environment" level="document" category="structure" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -58,7 +58,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sectionblock" type="environment" generated="yes" variant="instance" level="document" file="strc-sbe.mkiv">
+    <cd:command name="sectionblock" type="environment" generated="yes" variant="instance" level="document" category="structure" file="strc-sbe.mkiv">
         <cd:sequence>
             <cd:instance value="sectionblock"/>
         </cd:sequence>
@@ -75,7 +75,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="sectionblockenvironment" type="environment" level="style" file="strc-sbe.mkiv">
+    <cd:command name="sectionblockenvironment" type="environment" level="style" category="structure" file="strc-sbe.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -83,7 +83,7 @@
 
     <!--
 
-        <cd:command name="frontmatter" type="environment" file="strc-sbe.mkiv">
+        <cd:command name="frontmatter" type="environment" level="document" category="structure" file="strc-sbe.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="bookmark">
@@ -94,7 +94,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="bodymatter" type="environment" file="strc-sbe.mkiv">
+        <cd:command name="bodymatter" type="environment" level="document" category="structure" file="strc-sbe.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="bookmark">
@@ -105,7 +105,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="appendices" type="environment" file="strc-sbe.mkiv">
+        <cd:command name="appendices" type="environment" level="document" category="structure" file="strc-sbe.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="bookmark">
@@ -116,7 +116,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="backmatter" type="environment" file="strc-sbe.mkiv">
+        <cd:command name="backmatter" type="environment" level="document" category="structure" file="strc-sbe.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="bookmark">

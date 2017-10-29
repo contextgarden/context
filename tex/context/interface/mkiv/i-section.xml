@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definehead" level="style" file="strc-sec.mkiv">
+    <cd:command name="definehead" level="style" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-section-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphead" level="style" file="strc-sec.mkiv">
+    <cd:command name="setuphead" level="style" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section-list-optional"/>
             <cd:assignments list="yes">
@@ -236,15 +236,20 @@
                 <cd:parameter name="deepnumbercommand">
                     <cd:constant type="cd:oneargument"/>
                 </cd:parameter>
-		<cd:parameter name="location">
+                <cd:parameter name="location">
                     <!-- optional margin location -->
                     <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="criterium">
+                    <cd:constant type="strict"/>
+                    <cd:constant type="positive"/>
+                    <cd:constant type="all"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupheads" level="style" file="strc-sec.mkiv">
+    <cd:command name="setupheads" level="style" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section-list-optional"/>
             <cd:assignments list="yes">
@@ -253,7 +258,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="section" generated="yes" variant="instance" level="document" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="instance" level="document" category="structure" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:instance value="section"/>
         </cd:sequence>
@@ -266,7 +271,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="section" generated="yes" variant="instance:ownnumber" level="document" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="instance:ownnumber" level="document" category="structure" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:instance value="section"/>
         </cd:sequence>
@@ -280,7 +285,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="section" generated="yes" variant="instance:assignment" level="document" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="instance:assignment" level="document" category="structure" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:instance value="section"/>
         </cd:sequence>
@@ -292,7 +297,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="section" type="environment" generated="yes" variant="instance" level="document" file="strc-sec.mkiv">
+    <cd:command name="section" type="environment" generated="yes" variant="instance" level="document" category="structure" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:instance value="section"/>
         </cd:sequence>
@@ -307,182 +312,182 @@
 
     <!--
 
-        <cd:command name="part" file="strc-sec.mkiv">
+        <cd:command name="part" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="chapter" file="strc-sec.mkiv">
+        <cd:command name="chapter" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="section" file="strc-sec.mkiv">
+        <cd:command name="section" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsection" file="strc-sec.mkiv">
+        <cd:command name="subsection" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsection" file="strc-sec.mkiv">
+        <cd:command name="subsubsection" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsection" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsection" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsubsection" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsubsection" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="title" file="strc-sec.mkiv">
+        <cd:command name="title" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subject" file="strc-sec.mkiv">
+        <cd:command name="subject" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubject" file="strc-sec.mkiv">
+        <cd:command name="subsubject" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubject" file="strc-sec.mkiv">
+        <cd:command name="subsubsubject" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsubject" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsubject" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsubsubject" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsubsubject" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-reference-list-optional"/>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="part" type="environment" file="strc-sec.mkiv">
+        <cd:command name="part" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="chapter" type="environment" file="strc-sec.mkiv">
+        <cd:command name="chapter" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="section" type="environment" file="strc-sec.mkiv">
+        <cd:command name="section" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsection" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsection" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsection" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsubsection" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsection" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsection" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsubsection" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsubsection" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="title" type="environment" file="strc-sec.mkiv">
+        <cd:command name="title" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subject" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subject" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubject" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsubject" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubject" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsubsubject" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsubject" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsubject" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="subsubsubsubsubject" type="environment" file="strc-sec.mkiv">
+        <cd:command name="subsubsubsubsubject" type="environment" level="document" category="structure" file="strc-sec.mkiv">
             <cd:arguments>
                 <cd:resolve name="assignment-sectiondata-list-optional"/>
                 <cd:resolve name="assignment-userdata-list-optional"/>
@@ -491,7 +496,7 @@
 
     -->
 
-    <cd:command name="namedsection" type="environment" level="document" file="strc-sec.mkiv">
+    <cd:command name="namedsection" type="environment" level="document" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section"/>
             <cd:resolve name="assignment-sectiondata-list-optional"/>
@@ -499,25 +504,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesection" file="strc-sec.mkiv">
+    <cd:command name="definesection" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeheadtext" file="strc-sec.mkiv">
+    <cd:command name="placeheadtext" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeheadnumber" file="strc-sec.mkiv">
+    <cd:command name="placeheadnumber" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupheadnumber" file="strc-sec.mkiv">
+    <cd:command name="setupheadnumber" level="style" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section"/>
             <cd:keywords>
@@ -526,21 +531,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="determineheadnumber" file="strc-sec.mkiv">
+    <cd:command name="determineheadnumber" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentheadnumber" file="strc-sec.mkiv"/>
+    <cd:command name="currentheadnumber" level="system" category="structure" file="strc-sec.mkiv"/>
 
-    <cd:command name="namedheadnumber" file="strc-sec.mkiv">
+    <cd:command name="namedheadnumber" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-section"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="somenamedheadnumber" file="strc-sec.mkiv">
+    <cd:command name="somenamedheadnumber" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-section"/>
             <cd:keywords delimiters="braces">
@@ -553,7 +558,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="headnumber" file="strc-sec.mkiv">
+    <cd:command name="headnumber" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section"/>
             <cd:keywords optional="yes">
@@ -566,7 +571,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="someheadnumber" file="strc-sec.mkiv">
+    <cd:command name="someheadnumber" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-section"/>
             <cd:keywords>
@@ -579,50 +584,50 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedstructureheadlocation" level="system" file="strc-sec.mkiv">
+    <cd:command name="namedstructureheadlocation" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-section"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="structurenumber" file="strc-sec.mkiv"/>
+    <cd:command name="structurenumber" level="system" category="structure" file="strc-sec.mkiv"/>
 
-    <cd:command name="structuretitle" file="strc-sec.mkiv"/>
+    <cd:command name="structuretitle" level="system" category="structure" file="strc-sec.mkiv"/>
 
-    <cd:command name="structurevariable" file="strc-sec.mkiv">
+    <cd:command name="structurevariable" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="structureuservariable" file="strc-sec.mkiv">
+    <cd:command name="structureuservariable" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedstructurevariable" level="system" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-section"/>
-            <cd:resolve name="argument-key"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="namedstructureuservariable" level="system" file="strc-sec.mkiv">
+    <cd:command name="namedstructurevariable" level="system" category="structure" file="strc-sec.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-section"/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesectionlevels" file="strc-lev.mkvi">
+    <cd:command name="namedstructureuservariable" level="system" category="structure" file="strc-sec.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-section"/>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definesectionlevels" level="style" category="structure" file="strc-lev.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-section-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sectionlevel" type="environment" level="document" file="strc-lev.mkvi">
+    <cd:command name="sectionlevel" type="environment" level="document" category="structure" file="strc-lev.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-sectiondata-list-optional"/>
@@ -630,7 +635,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subjectlevel" type="environment" level="document" file="strc-lev.mkvi">
+    <cd:command name="subjectlevel" type="environment" level="document" category="structure" file="strc-lev.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-sectiondata-list-optional"/>
@@ -638,7 +643,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineheadalternative" level="style" file="strc-ren.mkiv">
+    <cd:command name="defineheadalternative" level="style" category="structure" file="strc-ren.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -648,7 +653,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupheadalternative" level="style" file="strc-ren.mkiv">
+    <cd:command name="setupheadalternative" level="style" category="structure" file="strc-ren.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -664,38 +669,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localheadsetup" type="environment" file="strc-ren.mkiv"/>
+    <cd:command name="localheadsetup" type="environment" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headhbox" level="system" file="strc-ren.mkiv">
+    <cd:command name="headhbox" level="system" category="structure" file="strc-ren.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="headvbox" level="system" file="strc-ren.mkiv">
+    <cd:command name="headvbox" level="system" category="structure" file="strc-ren.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="headreferenceattributes" level="system" file="strc-ren.mkiv"/>
+    <cd:command name="headreferenceattributes" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headnumbercontent" file="strc-ren.mkiv"/>
+    <cd:command name="headnumbercontent" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headtextcontent" file="strc-ren.mkiv"/>
+    <cd:command name="headtextcontent" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headwidth" file="strc-ren.mkiv"/>
+    <cd:command name="headwidth" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headtextwidth" file="strc-ren.mkiv"/>
+    <cd:command name="headtextwidth" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headnumberwidth" file="strc-ren.mkiv"/>
+    <cd:command name="headnumberwidth" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headnumberdistance" file="strc-ren.mkiv"/>
+    <cd:command name="headnumberdistance" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headtextdistance" file="strc-ren.mkiv"/>
+    <cd:command name="headtextdistance" level="system" category="structure" file="strc-ren.mkiv"/>
 
-    <cd:command name="headsetupspacing" file="strc-ren.mkiv"/>
+    <cd:command name="headsetupspacing" level="system" category="structure" file="strc-ren.mkiv"/>
 
 </cd:interface>

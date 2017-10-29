@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="molecule" file="chem-ini.mkiv">
+    <cd:command name="molecule" level="document" file="chem-ini.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chem" file="chem-ini.mkiv">
+    <cd:command name="chem" level="document" file="chem-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -18,7 +18,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupchemical" level="style" file="chem-str.mkiv">
+    <cd:command name="setupchemical" level="style" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -114,7 +114,7 @@
 
     <!--
 
-        <cd:command name="setupchemicals" file="chem-str.mkiv">
+        <cd:command name="setupchemicals" level="style" category="graphics" file="chem-str.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -125,7 +125,7 @@
 
     -->
 
-    <cd:command name="setupchemicalframed" level="style" file="chem-str.mkiv">
+    <cd:command name="setupchemicalframed" level="style" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -134,33 +134,33 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definechemical" file="chem-str.mkiv">
+    <cd:command name="definechemical" level="style" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definechemicalsymbol" file="chem-str.mkiv">
+    <cd:command name="definechemicalsymbol" level="style" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chemicalsymbol" file="chem-str.mkiv">
+    <cd:command name="chemicalsymbol" level="document" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chemicaltext" file="chem-str.mkiv">
+    <cd:command name="chemicaltext" level="document" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chemical" type="environment" file="chem-str.mkiv">
+    <cd:command name="chemical" type="environment" level="document" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -171,7 +171,7 @@
 
     <!--
 
-        <cd:command name="structurechemical" type="environment" file="chem-str.mkiv">
+        <cd:command name="structurechemical" type="environment" level="document" category="graphics" file="chem-str.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:assignments list="yes" optional="yes">
@@ -182,7 +182,7 @@
 
     -->
 
-    <cd:command name="chemical" file="chem-str.mkiv">
+    <cd:command name="chemical" level="document" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-text-list"/>
@@ -192,7 +192,7 @@
 
     <!--
 
-        <cd:command name="structurechemical" file="chem-str.mkiv">
+        <cd:command name="structurechemical" level="document" category="graphics" file="chem-str.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:resolve name="keyword-text-list"/>
@@ -202,19 +202,19 @@
 
     -->
 
-    <cd:command name="chemicaltoptext" file="chem-str.mkiv">
+    <cd:command name="chemicaltoptext" level="document" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chemicalbottext" file="chem-str.mkiv">
+    <cd:command name="chemicalbottext" level="document" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chemicalmidtext" file="chem-str.mkiv">
+    <cd:command name="chemicalmidtext" level="document" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
@@ -222,19 +222,19 @@
 
     <!--
 
-        <cd:command name="toptext" file="chem-str.mkiv">
+        <cd:command name="toptext" level="document" category="graphics" file="chem-str.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="bottext" file="chem-str.mkiv">
+        <cd:command name="bottext" level="document" category="graphics" file="chem-str.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="midtext" file="chem-str.mkiv">
+        <cd:command name="midtext" level="document" category="graphics" file="chem-str.mkiv">
             <cd:arguments>
                 <cd:resolve name="argument-text"/>
             </cd:arguments>
@@ -242,7 +242,7 @@
 
     -->
 
-    <cd:command name="definechemicals" level="style" file="chem-str.mkiv">
+    <cd:command name="definechemicals" level="style" category="graphics" file="chem-str.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="ifinobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="ifinobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="string-true"/>
             <cd:delimiter name="else"/>
@@ -13,15 +13,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="objectmargin" level="system" file="pack-obj.mkiv"/>
+    <cd:command name="objectmargin" level="system" category="pdf" file="pack-obj.mkiv"/>
 
-    <cd:command name="objectwidth" level="system" file="pack-obj.mkiv"/>
+    <cd:command name="objectwidth" level="system" category="pdf" file="pack-obj.mkiv"/>
 
-    <cd:command name="objectheight" level="system" file="pack-obj.mkiv"/>
+    <cd:command name="objectheight" level="system" category="pdf" file="pack-obj.mkiv"/>
 
-    <cd:command name="objectdepth" level="system" file="pack-obj.mkiv"/>
+    <cd:command name="objectdepth" level="system" category="pdf" file="pack-obj.mkiv"/>
 
-    <cd:command name="setreferencedobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="setreferencedobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -30,7 +30,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="settightreferencedobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="settightreferencedobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -39,7 +39,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setunreferencedobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="setunreferencedobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -48,7 +48,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="settightunreferencedobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="settightunreferencedobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -57,7 +57,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="setobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="settightobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="settightobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -75,25 +75,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getobject" level="system" file="pack-obj.mkiv">
+    <cd:command name="getobject" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getobjectdimensions" level="system" file="pack-obj.mkiv">
+    <cd:command name="getobjectdimensions" level="system" category="pdf" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defaultobjectreference" level="system" file="pack-obj.mkiv"/>
+    <cd:command name="defaultobjectreference" level="system" category="pdf" file="pack-obj.mkiv"/>
 
-    <cd:command name="defaultobjectpage" level="system" file="pack-obj.mkiv"/>
+    <cd:command name="defaultobjectpage" level="system" category="pdf" file="pack-obj.mkiv"/>
 
-    <cd:command name="doifelseobjectfound" level="system" file="pack-obj.mkiv">
+    <cd:command name="doifelseobjectfound" level="system" category="pdf conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -102,7 +102,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifobjectfoundelse" level="system" file="pack-obj.mkiv">
+    <cd:command name="doifobjectfoundelse" level="system" category="pdf conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -111,7 +111,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseobjectreferencefound" level="system" file="pack-obj.mkiv">
+    <cd:command name="doifelseobjectreferencefound" level="system" category="pdf conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifobjectreferencefoundelse" level="system" file="pack-obj.mkiv">
+    <cd:command name="doifobjectreferencefoundelse" level="system" category="pdf conditional" file="pack-obj.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>

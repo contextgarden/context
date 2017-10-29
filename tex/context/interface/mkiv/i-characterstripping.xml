@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setcharacterstripping" file="typo-rep.mkiv">
+    <cd:command name="setcharacterstripping" level="style" category="language" file="typo-rep.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -13,8 +13,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcharacterstripping" file="typo-rep.mkiv"/>
+    <cd:command name="resetcharacterstripping" level="style" category="language" file="typo-rep.mkiv"/>
 
-    <cd:command name="forcecharacterstripping" file="typo-rep.mkiv"/>
+    <cd:command name="forcecharacterstripping" level="style" category="language" file="typo-rep.mkiv"/>
 
 </cd:interface>

@@ -111,14 +111,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testpageonly" file="page-brk.mkiv">
+    <cd:command name="testpageonly" level="system" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number"/>
             <cd:resolve name="keyword-dimension-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="testpagesync" file="page-brk.mkiv">
+    <cd:command name="testpagesync" level="system" file="page-brk.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number"/>
             <cd:resolve name="keyword-dimension-optional"/>

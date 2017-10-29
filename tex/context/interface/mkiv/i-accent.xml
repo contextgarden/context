@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineaccent" file="enco-ini.mkiv">
+    <cd:command name="defineaccent" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:resolve name="string-character"/>
@@ -12,138 +12,150 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecharacter" file="enco-ini.mkiv">
+    <cd:command name="definecharacter" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:resolve name="string-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecommand" file="enco-ini.mkiv">
+    <cd:command name="definecommand" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:resolve name="string-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathaccent" file="enco-ini.mkiv">
+    <cd:command name="definemathaccent" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildmathaccent" file="enco-ini.mkiv">
+    <cd:command name="buildmathaccent" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextaccent" file="enco-ini.mkiv">
+    <cd:command name="buildtextaccent" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextmacron" file="enco-ini.mkiv">
+    <cd:command name="buildtextmacron" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextbottomdot" file="enco-ini.mkiv">
+    <cd:command name="buildtextbottomdot" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextcedilla" file="enco-ini.mkiv">
+    <cd:command name="buildtextcedilla" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextognek" file="enco-ini.mkiv">
+    <cd:command name="buildtextognek" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextbottomcomma" file="enco-ini.mkiv">
+    <cd:command name="buildtextbottomcomma" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="d" file="enco-ini.mkiv">
+    <cd:command name="d" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextgrave" file="enco-ini.mkiv">
+    <cd:command name="buildtextgrave" level="style" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="acute" file="enco-ini.mkiv">
+    <cd:command name="acute" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="grave" file="enco-ini.mkiv">
+    <cd:command name="grave" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ddot" file="enco-ini.mkiv">
+    <cd:command name="ddot" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tilde" file="enco-ini.mkiv">
+    <cd:command name="tilde" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bar" file="enco-ini.mkiv">
+    <cd:command name="bar" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="breve" file="enco-ini.mkiv">
+    <cd:command name="breve" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="check" file="enco-ini.mkiv">
+    <cd:command name="check" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hat" file="enco-ini.mkiv">
+    <cd:command name="hat" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vec" file="enco-ini.mkiv">
+    <cd:command name="vec" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dot" file="enco-ini.mkiv">
+    <cd:command name="dot" category="mathematics" level="document" file="math-acc.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ring" category="mathematics" level="document" file="math-acc.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dddot" category="mathematics" level="document" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>

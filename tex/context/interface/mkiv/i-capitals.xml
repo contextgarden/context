@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecapitals" level="style" file="typo-cap.mkiv">
+    <cd:command name="definecapitals" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcapitals" level="style" file="typo-cap.mkiv">
+    <cd:command name="setupcapitals" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -33,7 +33,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcharactercasing" file="typo-cap.mkiv">
+    <cd:command name="setcharactercasing" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -53,156 +53,156 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="WORD" level="document" file="typo-cap.mkiv">
+    <cd:command name="WORD" level="document" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="word" level="document" file="typo-cap.mkiv">
+    <cd:command name="word" level="document" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Word" level="document" file="typo-cap.mkiv">
+    <cd:command name="Word" level="document" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Words" level="document" file="typo-cap.mkiv">
+    <cd:command name="Words" level="document" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="camel" level="document" file="typo-cap.mkiv">
+    <cd:command name="camel" level="document" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="WORDS" level="document" file="typo-cap.mkiv">
+    <cd:command name="WORDS" level="document" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="words" level="document" file="typo-cap.mkiv">
+    <cd:command name="words" level="document" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pseudosmallcapped" file="typo-cap.mkiv">
+    <cd:command name="pseudosmallcapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pseudoSmallcapped" file="typo-cap.mkiv">
+    <cd:command name="pseudoSmallcapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pseudoSmallCapped" file="typo-cap.mkiv">
+    <cd:command name="pseudoSmallCapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pseudoMixedCapped" file="typo-cap.mkiv">
+    <cd:command name="pseudoMixedCapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="realsmallcapped" file="typo-cap.mkiv">
+    <cd:command name="realsmallcapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="realSmallcapped" file="typo-cap.mkiv">
+    <cd:command name="realSmallcapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="realSmallCapped" file="typo-cap.mkiv">
+    <cd:command name="realSmallCapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="notsmallcapped" file="typo-cap.mkiv">
+    <cd:command name="notsmallcapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smallcapped" file="typo-cap.mkiv">
+    <cd:command name="smallcapped" levle="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Smallcapped" file="typo-cap.mkiv">
+    <cd:command name="Smallcapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="SmallCapped" file="typo-cap.mkiv">
+    <cd:command name="SmallCapped" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autocap" file="typo-cap.mkiv">
+    <cd:command name="autocap" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mixedcaps" file="typo-cap.mkiv">
+    <cd:command name="mixedcaps" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="kap" file="typo-cap.mkiv">
+    <cd:command name="kap" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Caps" file="typo-cap.mkiv">
+    <cd:command name="Caps" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uppercased" file="typo-cap.mkiv">
+    <cd:command name="uppercased" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowercased" file="typo-cap.mkiv">
+    <cd:command name="lowercased" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="randomizetext" file="typo-cap.mkiv">
+    <cd:command name="randomizetext" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="randomized" type="environment" file="typo-cap.mkiv"/>
+    <cd:command name="randomized" type="environment" level="document" category="fonts" file="typo-cap.mkiv"/>
 
 </cd:interface>

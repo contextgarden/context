@@ -24,7 +24,7 @@
 
     <!--
 
-        <cd:command name="usemodules" file="file-mod.mkvi">
+        <cd:command name="usemodules" level="style" file="file-mod.mkvi">
             <cd:arguments>
                 <cd:keywords optional="yes">
                     <cd:constant type="m"/>
@@ -44,7 +44,7 @@
 
     -->
 
-    <cd:command name="usetexmodule" file="file-mod.mkvi">
+    <cd:command name="usetexmodule" level="style" file="file-mod.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="m"/>

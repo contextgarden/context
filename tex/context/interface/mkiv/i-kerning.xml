@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecharacterkerning" level="style" file="typo-krn.mkiv">
+    <cd:command name="definecharacterkerning" level="style" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcharacterkerning" level="style" file="typo-krn.mkiv">
+    <cd:command name="setupcharacterkerning" level="style" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -38,7 +38,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcharacterkerning" file="typo-krn.mkiv">
+    <cd:command name="setcharacterkerning" level="style" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -47,9 +47,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcharacterkerning" file="typo-krn.mkiv"/>
+    <cd:command name="resetcharacterkerning" level="style" category="fonts whitespace" file="typo-krn.mkiv"/>
 
-    <cd:command name="characterkerning" generated="yes" variant="example" level="document" file="typo-krn.mkiv">
+    <cd:command name="characterkerning" generated="yes" variant="example" level="document" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:sequence>
             <cd:variable value="characterkerning"/>
         </cd:sequence>
@@ -59,21 +59,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="kerncharacters" level="document" file="typo-krn.mkiv">
+    <cd:command name="kerncharacters" level="document" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letterspacing" level="document" file="typo-krn.mkiv">
+    <cd:command name="letterspacing" level="document" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="stretched" level="document" file="typo-krn.mkiv">
+    <cd:command name="stretched" level="document" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupstretched"/>
@@ -82,7 +82,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupstretched" level="style" file="typo-krn.mkiv">
+    <cd:command name="setupstretched" level="style" category="fonts whitespace" file="typo-krn.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupcharacterkerning"/>

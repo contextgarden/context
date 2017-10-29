@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecollector" level="style" file="pack-box.mkiv">
+    <cd:command name="definecollector" level="style" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcollector" level="style" file="pack-box.mkiv">
+    <cd:command name="setupcollector" level="style" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcollector" level="document" file="pack-box.mkiv">
+    <cd:command name="setcollector" level="document" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -65,25 +65,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcollector" file="pack-box.mkiv">
+    <cd:command name="resetcollector" level="style" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushcollector" level="document" file="pack-box.mkiv">
+    <cd:command name="flushcollector" level="document" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="composedcollector" level="document" file="pack-box.mkiv">
+    <cd:command name="composedcollector" level="document" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="adaptcollector" file="pack-box.mkiv">
+    <cd:command name="adaptcollector" level="style" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -92,7 +92,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="collectedtext" level="document" file="pack-box.mkiv">
+    <cd:command name="collectedtext" level="document" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcollector"/>

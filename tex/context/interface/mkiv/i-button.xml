@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definebutton" level="style" file="scrn-but.mkvi">
+    <cd:command name="definebutton" level="style" catehory="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbutton" level="style" file="scrn-but.mkvi">
+    <cd:command name="setupbutton" level="style" catehory="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -49,7 +49,7 @@
 
     <!--
 
-        <cd:command name="setupbuttons" file="scrn-but.mkvi">
+        <cd:command name="setupbuttons" level="style" catehory="pdf" file="scrn-but.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -60,7 +60,7 @@
 
     -->
 
-    <cd:command name="button" generated="yes" variant="example" file="scrn-but.mkvi">
+    <cd:command name="button" generated="yes" variant="example" level="document" catehory="pdf" file="scrn-but.mkvi">
         <cd:sequence>
             <cd:variable value="button"/>
         </cd:sequence>
@@ -76,7 +76,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="button" file="scrn-but.mkvi">
+    <cd:command name="button" level="document" catehory="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupbutton"/>
@@ -86,32 +86,32 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlaybutton" file="scrn-but.mkvi">
+    <cd:command name="overlaybutton" level="style" catehory="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlaybutton" variant="direct" file="scrn-but.mkvi">
+    <cd:command name="overlaybutton" variant="direct" level="style" catehory="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPmenubuttons" file="scrn-but.mkvi">
+    <cd:command name="MPmenubuttons" level="style" catehory="pdf" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlayrollbutton" file="scrn-fld.mkvi">
+    <cd:command name="overlayrollbutton" level="style" catehory="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepushbutton" file="scrn-fld.mkvi">
+    <cd:command name="definepushbutton" level="style" catehory="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -120,14 +120,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pushbutton" file="scrn-fld.mkvi">
+    <cd:command name="pushbutton" level="style" catehory="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepushsymbol" file="scrn-fld.mkvi">
+    <cd:command name="definepushsymbol" level="style" catehory="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -140,7 +140,7 @@
 
     <!--
 
-        <cd:command name="psh" scope="interactionmenu" file="scrn-fld.mkvi">
+        <cd:command name="psh" scope="interactionmenu" level="style" catehory="pdf" file="scrn-fld.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
                 <cd:resolve name="string-text"/>
@@ -148,7 +148,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="psh" type="environment" scope="interactionmenu" file="scrn-fld.mkvi">
+        <cd:command name="psh" type="environment" scope="interactionmenu" level="style" catehory="pdf" file="scrn-fld.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
             </cd:arguments>
@@ -156,7 +156,7 @@
 
     -->
 
-    <cd:command name="rollbutton" variant="interactionmenu" file="scrn-fld.mkvi">
+    <cd:command name="rollbutton" variant="interactionmenu" level="style" catehory="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -167,7 +167,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rollbutton" variant="button" file="scrn-fld.mkvi">
+    <cd:command name="rollbutton" variant="button" level="style" catehory="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupbutton"/>
@@ -179,7 +179,7 @@
 
     <!--
 
-        <cd:command name="rob" scope="interactionmenu" file="scrn-fld.mkvi">
+        <cd:command name="rob" scope="interactionmenu" level="style" catehory="pdf" file="scrn-fld.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
                 <cd:resolve name="string-text"/>
@@ -187,7 +187,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="rob" type="environment" scope="interactionmenu" file="scrn-fld.mkvi">
+        <cd:command name="rob" type="environment" scope="interactionmenu" level="style" catehory="pdf" file="scrn-fld.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-reference"/>
             </cd:arguments>

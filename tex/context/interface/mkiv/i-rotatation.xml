@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="mirror" level="document" file="grph-trf.mkiv">
+    <cd:command name="mirror" level="document" category="graphics" file="grph-trf.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuprotate" level="style" file="grph-trf.mkiv">
+    <cd:command name="setuprotate" level="style" category="graphics" file="grph-trf.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="location">
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rotate" level="document" file="grph-trf.mkiv">
+    <cd:command name="rotate" level="document" category="graphics" file="grph-trf.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuprotate"/>
@@ -43,7 +43,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dorotatebox" level="system" file="grph-trf.mkiv">
+    <cd:command name="dorotatebox" level="system" category="graphics" file="grph-trf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:csname/>

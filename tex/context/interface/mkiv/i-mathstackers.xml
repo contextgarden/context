@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathstackers" category="mathematics" level="style" file="math-stc.mkvi">
+    <cd:command name="definemathstackers" level="style" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathstackers" category="mathematics" level="style" file="math-stc.mkvi">
+    <cd:command name="setupmathstackers" level="style" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -107,7 +107,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathextensible" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathextensible" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reverse"/>
@@ -120,23 +120,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathextensible" generated="yes" variant="instance" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
-            <cd:variable value="mathextensible"/>
+            <cd:instance value="mathextensible"/>
         </cd:sequence>
         <cd:arguments>
-            <cd:keywords optional="yes">
-                <cd:constant type="reverse"/>
-                <cd:constant type="mathematics"/>
-                <cd:constant type="text"/>
-                <cd:constant type="chemistry"/>
-            </cd:keywords>
+            <!--
+                <cd:keywords optional="yes">
+                    <cd:constant type="reverse"/>
+                    <cd:constant type="mathematics"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="chemistry"/>
+                </cd:keywords>
+            -->
             <cd:resolve name="argument-text-optional"/>
             <cd:resolve name="argument-text-optional"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathextensible"/>
+        </cd:instances>
     </cd:command>
         
-    <cd:command name="definemathoverextensible" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathoverextensible" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="top"/>
@@ -147,7 +152,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathoverextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathoverextensible" generated="yes" variant="example" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathoverextensible"/>
         </cd:sequence>
@@ -156,7 +161,30 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathunderextensible" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathover" level="style" category="mathematics" file="math-stc.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="top"/>
+                <cd:constant type="vfenced"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathover" level="document" category="mathematics" file="math-stc.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="top"/>
+                <cd:constant type="vfenced"/>
+            </cd:keywords>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definemathunderextensible" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bottom"/>
@@ -167,7 +195,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathunderextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathunderextensible" generated="yes" variant="example" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathunderextensible"/>
         </cd:sequence>
@@ -176,7 +204,30 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathdoubleextensible" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathunder" level="style" category="mathematics" file="math-stc.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="bottom"/>
+                <cd:constant type="vfenced"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathunder" level="document" category="mathematics" file="math-stc.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="bottom"/>
+                <cd:constant type="vfenced"/>
+            </cd:keywords>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definemathdoubleextensible" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="both"/>
@@ -188,16 +239,45 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathdoubleextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathdoubleextensible" generated="yes" variant="instance" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
-            <cd:variable value="mathdoubleextensible"/>
+            <cd:instance value="mathdoubleextensible"/>
         </cd:sequence>
         <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathdoubleextensible"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="definemathdouble" level="style" category="mathematics" file="math-stc.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="both"/>
+                <cd:constant type="vfenced"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-number"/>
+            <cd:resolve name="keyword-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathdouble" level="document" category="mathematics" file="math-stc.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="both"/>
+                <cd:constant type="vfenced"/>
+            </cd:keywords>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathovertextextensible" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathovertextextensible" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bothtext"/>
@@ -207,17 +287,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathovertextextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathovertextextensible" generated="yes" variant="instance" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
-            <cd:variable value="mathovertextextensible"/>
+            <cd:instance value="mathovertextextensible"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathovertextextensible"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="definemathundertextextensible" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathundertextextensible" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bothtext"/>
@@ -227,17 +310,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathundertextextensible" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathundertextextensible" generated="yes" variant="instance" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
-            <cd:variable value="mathundertextextensible"/>
+            <cd:instance value="mathundertextextensible"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathundertextextensible"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="definemathtriplet" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathtriplet" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -245,7 +331,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtriplet" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathtriplet" generated="yes" variant="example" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathtriplet"/>
         </cd:sequence>
@@ -257,7 +343,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathtriplet" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathtriplet" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-text-optional"/>
@@ -266,1503 +352,851 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xrel" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xequal" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xleftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xLeftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xRightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xLeftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xtwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xtwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xmapsto" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xhookleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xhookrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xleftharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xleftharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xrightharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xrightharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xrightoverleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xleftrightharpoons" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xrightleftharpoons" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="xtriplerel" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mrel" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mequal" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mleftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mLeftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mRightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mLeftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mtwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mtwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mmapsto" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mhookleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mhookrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mleftharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mleftharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mrightharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mrightharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mrightoverleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mleftrightharpoons" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mrightleftharpoons" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="mtriplerel" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eleftarrowfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="erightarrowfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eleftrightarrowfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="etwoheadrightarrowfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eleftharpoondownfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eleftharpoonupfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="erightharpoondownfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="erightharpoonupfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eoverbarfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eunderbarfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eoverbracefill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eunderbracefill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eoverparentfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eunderparentfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eoverbracketfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="eunderbracketfill" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="trel" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tequal" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tmapsto" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="trightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tleftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tLeftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tRightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tLeftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ttwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ttwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="thookleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="thookrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tleftharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tleftharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="trightharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="trightharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="trightoverleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tleftrightharpoons" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="trightleftharpoons" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ttriplerel" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="cleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="crightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="crightoverleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <!--
-                <cd:keywords optional="yes">
-                    <cd:constant type="reverse"/>
-                    <cd:constant type="mathematics"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="chemistry"/>
-                </cd:keywords>
-            -->
-            <cd:resolve name="argument-text-optional"/>
-            <cd:resolve name="argument-text-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underleftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="undertwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="undertwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underleftharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underleftharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underrightharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underrightharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underbar" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underbrace" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underparent" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underbracket" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overleftrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overtwoheadleftarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overtwoheadrightarrow" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overleftharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overleftharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overrightharpoondown" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overrightharpoonup" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbar" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbrace" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overparent" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbracket" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doublebar" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doublebrace" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doubleparent" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doublebracket" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbarunderbar" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbraceunderbrace" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overparentunderparent" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbracketunderbracket" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbartext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbracetext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overparenttext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="overbrackettext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underbartext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underbracetext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underparenttext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="underbrackettext" category="mathematics" file="math-stc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="singlebond" file="math-stc.mkvi"/>
-
-    <cd:command name="doublebond" file="math-stc.mkvi"/>
-
-    <cd:command name="triplebond" file="math-stc.mkvi"/>
-
-    <cd:command name="definemathunstacked" category="mathematics" file="math-stc.mkvi">
+    <!--
+
+        <cd:command name="xrel" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xequal" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xleftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xLeftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xRightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xLeftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xtwoheadleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xtwoheadrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xmapsto" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xhookleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xhookrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xleftharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xleftharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xrightharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xrightharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xrightoverleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xleftrightharpoons" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xrightleftharpoons" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="xtriplerel" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mrel" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mequal" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mleftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mLeftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mRightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mLeftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mtwoheadleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mtwoheadrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mmapsto" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mhookleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mhookrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mleftharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mleftharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mrightharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mrightharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mrightoverleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mleftrightharpoons" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mrightleftharpoons" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="mtriplerel" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eleftarrowfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="erightarrowfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eleftrightarrowfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="etwoheadrightarrowfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eleftharpoondownfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eleftharpoonupfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="erightharpoondownfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="erightharpoonupfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eoverbarfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eunderbarfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eoverbracefill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eunderbracefill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eoverparentfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eunderparentfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eoverbracketfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="eunderbracketfill" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="trel" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tequal" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tmapsto" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="trightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tleftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tLeftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tRightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tLeftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="ttwoheadleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="ttwoheadrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="thookleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="thookrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tleftharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tleftharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="trightharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="trightharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="trightoverleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tleftrightharpoons" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="trightleftharpoons" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="ttriplerel" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="cleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="crightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="crightoverleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text-optional"/>
+                <cd:resolve name="argument-text-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underleftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="undertwoheadleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="undertwoheadrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underleftharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underleftharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underrightharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underrightharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbar" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbrace" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underparent" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbracket" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overleftrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overtwoheadleftarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overtwoheadrightarrow" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overleftharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overleftharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overrightharpoondown" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overrightharpoonup" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbar" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbrace" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overparent" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbracket" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="doublebar" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="doublebrace" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="doubleparent" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="doublebracket" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbarunderbar" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbraceunderbrace" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overparentunderparent" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbracketunderbracket" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbartext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbracetext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overparenttext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="overbrackettext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbartext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbracetext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underparenttext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="underbrackettext" level="document" category="mathematics" file="math-stc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="singlebond" level="document" category="mathematics" file="math-stc.mkvi"/>
+
+    <cd:command name="doublebond" level="document" category="mathematics" file="math-stc.mkvi"/>
+
+    <cd:command name="triplebond" level="document" category="mathematics" file="math-stc.mkvi"/>
+
+    <cd:command name="definemathunstacked" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="wide"/>
@@ -1772,18 +1206,18 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathunstacked" generated="yes" variant="example" category="mathematics" file="math-stc.mkvi">
+    <cd:command name="mathunstacked" generated="yes" variant="example" level="document" category="mathematics" file="math-stc.mkvi">
         <cd:sequence>
             <cd:variable value="mathunstacked"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="And" file="math-stc.mkvi"/>
+    <cd:command name="And" level="document" category="mathematics" file="math-stc.mkvi"/>
 
-    <cd:command name="impliedby" file="math-stc.mkvi"/>
+    <cd:command name="impliedby" level="document" category="mathematics" file="math-stc.mkvi"/>
 
-    <cd:command name="implies" file="math-stc.mkvi"/>
+    <cd:command name="implies" level="document" category="mathematics" file="math-stc.mkvi"/>
 
-    <cd:command name="iff" file="math-stc.mkvi"/>
+    <cd:command name="iff" level="document" category="mathematics" file="math-stc.mkvi"/>
 
 </cd:interface>

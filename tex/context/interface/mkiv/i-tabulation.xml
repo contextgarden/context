@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definetabulation" category="tables" level="style" file="tabl-tbl.mkiv">
+    <cd:command name="definetabulation" level="style" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptabulation" category="tables" level="style" file="tabl-tbl.mkiv">
+    <cd:command name="setuptabulation" level="style" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -99,7 +99,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulation" type="environment" generated="yes" variant="example" category="tables" level="document" file="tabl-tbl.mkiv">
+    <cd:command name="tabulation" type="environment" generated="yes" variant="example" level="document" category="tables" file="tabl-tbl.mkiv">
         <cd:sequence>
             <cd:variable value="tabulation"/>
         </cd:sequence>
@@ -111,7 +111,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetabulate" category="tables" level="style" file="tabl-tbl.mkiv">
+    <cd:command name="definetabulate" level="style" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -119,7 +119,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptabulate" category="tables" level="style" file="tabl-tbl.mkiv">
+    <cd:command name="setuptabulate" level="style" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -129,7 +129,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulate" type="environment" category="tables" level="document" file="tabl-tbl.mkiv">
+    <cd:command name="tabulate" type="environment" level="document" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:template optional="yes"/>
             <cd:assignments list="yes" optional="yes">
@@ -138,7 +138,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulate" type="environment" generated="yes" variant="instance" category="tables" level="document" file="tabl-tbl.mkiv">
+    <cd:command name="tabulate" type="environment" generated="yes" variant="instance" level="document" category="tables" file="tabl-tbl.mkiv">
         <cd:sequence>
             <cd:instance value="tabulate"/>
         </cd:sequence>
@@ -153,29 +153,29 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="tabulatehead" type="environment" category="tables" level="document" file="tabl-tbl.mkiv">
+    <cd:command name="tabulatehead" type="environment" level="document" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulatetail" type="environment" category="tables" level="document" file="tabl-tbl.mkiv">
+    <cd:command name="tabulatetail" type="environment" level="document" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulaterule" category="tables" level="document" file="tabl-tbl.mkiv"/>
+    <cd:command name="tabulaterule" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-    <cd:command name="tabulateline" category="tables" level="document" file="tabl-tbl.mkiv"/>
+    <cd:command name="tabulateline" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-    <cd:command name="tabulateautorule" category="tables" file="tabl-tbl.mkiv"/>
+    <cd:command name="tabulateautorule" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-    <cd:command name="tabulateautoline" category="tables" file="tabl-tbl.mkiv"/>
+    <cd:command name="tabulateautoline" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
     <!--
 
-        <cd:command name="legend" type="environment" file="tabl-tbl.mkiv">
+        <cd:command name="legend" type="environment" level="document" category="tables" file="tabl-tbl.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:assignments list="yes" optional="yes">
@@ -184,7 +184,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="fact" type="environment" file="tabl-tbl.mkiv">
+        <cd:command name="fact" type="environment" level="document" category="tables" file="tabl-tbl.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:assignments list="yes" optional="yes">
@@ -193,7 +193,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="VL" scope="tabulate" file="tabl-tbl.mkiv">
+        <cd:command name="VL" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:constant type="cd:number"/>
@@ -202,77 +202,77 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="NC" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="NC" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="NI" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="NI" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="RC" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="RC" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="HC" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="HC" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="EQ" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="EQ" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="RQ" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="RQ" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="HQ" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="HQ" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="NG" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="NG" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="NN" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="NN" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="ND" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="ND" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="NR" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="NR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="NB" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="NB" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="CC" scope="tabulate" file="tabl-tbl.mkiv">
+        <cd:command name="CC" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-color-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="CL" scope="tabulate" file="tabl-tbl.mkiv">
+        <cd:command name="CL" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-color-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="CM" scope="tabulate" file="tabl-tbl.mkiv">
+        <cd:command name="CM" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-color-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="CR" scope="tabulate" file="tabl-tbl.mkiv">
+        <cd:command name="CR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-color-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="SR" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="SR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="FR" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="FR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="MR" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="MR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="LR" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="LR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="AR" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="AR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="FL" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="FL" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="ML" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="ML" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="LL" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="LL" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="TL" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="TL" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="BL" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="BL" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="HL" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="HL" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
-        <cd:command name="HR" scope="tabulate" file="tabl-tbl.mkiv"/>
+        <cd:command name="HR" scope="tabulate" level="document" category="tables" file="tabl-tbl.mkiv"/>
 
     -->
 

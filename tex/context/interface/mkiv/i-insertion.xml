@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinsertion" level="system" file="page-ins.mkiv">
+    <cd:command name="defineinsertion" level="system" category="structure" file="page-ins.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinsertion" level="system" file="page-ins.mkiv">
+    <cd:command name="setupinsertion" level="system" category="structure" file="page-ins.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -29,7 +29,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseinsertion" level="system" file="page-ins.mkiv">
+    <cd:command name="doifelseinsertion" level="system" category="structure conditional" file="page-ins.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifinsertionelse" level="system" file="page-ins.mkiv">
+    <cd:command name="doifinsertionelse" level="system" category="structure conditional" file="page-ins.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

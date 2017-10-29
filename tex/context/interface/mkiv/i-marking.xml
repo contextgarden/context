@@ -43,14 +43,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmarking" file="strc-mar.mkiv">
+    <cd:command name="setmarking" level="style" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetmarking" file="strc-mar.mkiv">
+    <cd:command name="resetmarking" level="system" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-mark"/>
         </cd:arguments>
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemarking" level="system" file="strc-mar.mkiv">
+    <cd:command name="doifelsemarking" level="system" category="conditional" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-mark"/>
             <cd:resolve name="argument-true"/>
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifmarkingelse" level="system" file="strc-mar.mkiv">
+    <cd:command name="doifmarkingelse" level="system" category="conditional" file="strc-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-mark"/>
             <cd:resolve name="argument-true"/>

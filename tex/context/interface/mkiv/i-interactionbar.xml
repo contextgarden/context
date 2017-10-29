@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinteractionbar" level="style" file="scrn-bar.mkvi">
+    <cd:command name="defineinteractionbar" level="style" category="pdf" file="scrn-bar.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteractionbar" level="style" file="scrn-bar.mkvi">
+    <cd:command name="setupinteractionbar" level="style" category="pdf" file="scrn-bar.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -75,7 +75,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="interactionbar" file="scrn-bar.mkvi">
+    <cd:command name="interactionbar" level="style" category="pdf" file="scrn-bar.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -84,7 +84,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="interactionbuttons" file="scrn-bar.mkvi">
+    <cd:command name="interactionbuttons" level="style" category="pdf" file="scrn-bar.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupinteractionbar"/>

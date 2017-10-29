@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definespreadsheet" level="style" file="m-spreadsheet.mkiv">
+    <cd:command name="definespreadsheet" level="style" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupspreadsheet" level="style" file="m-spreadsheet.mkiv">
+    <cd:command name="setupspreadsheet" level="style" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -32,31 +32,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="resetspreadsheet" level="system" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="spreadsheet" type="environment" file="m-spreadsheet.mkiv">
+    <cd:command name="spreadsheet" type="environment" level="document" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="showspreadsheet" level="document" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inspectspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="inspectspreadsheet" level="document" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="setspreadsheet" level="system" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>
@@ -65,7 +65,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="getspreadsheet" level="system" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsespreadsheetcell" level="system" file="m-spreadsheet.mkiv">
+    <cd:command name="doifelsespreadsheetcell" level="system" category="tables conditional" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>
@@ -84,7 +84,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifspreadsheetcellelse" level="system" file="m-spreadsheet.mkiv">
+    <cd:command name="doifspreadsheetcellelse" level="system" category="tables conditional" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="argument-number"/>
@@ -94,31 +94,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEsetspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="TABLEsetspreadsheet" level="system" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEgetspreadsheet" file="m-spreadsheet.mkiv">
+    <cd:command name="TABLEgetspreadsheet" level="system" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setspr" file="m-spreadsheet.mkiv">
+    <cd:command name="setspr" level="document" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getspr" file="m-spreadsheet.mkiv">
+    <cd:command name="getspr" level="document" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="spreadsheettable" type="environment" level="document" file="m-spreadsheet.mkiv">
+    <cd:command name="spreadsheettable" type="environment" level="document" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -127,9 +127,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="row" type="environment" level="document" file="m-spreadsheet.mkiv"/>
+    <cd:command name="row" type="environment" scope="spreadsheettable" level="document" category="tables" file="m-spreadsheet.mkiv"/>
 
-    <cd:command name="cell" type="environment" level="document" file="m-spreadsheet.mkiv">
+    <cd:command name="cell" type="environment" scope="spreadsheettable" level="document" category="tables" file="m-spreadsheet.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="bTD"/>

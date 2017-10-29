@@ -6,7 +6,7 @@
 
     <!--
 
-        <cd:command name="setupFLOWchart" file="m-chart.mkvi">
+        <cd:command name="setupFLOWchart" level="style" category="graphics metapost" file="m-chart.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -96,7 +96,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupFLOWcharts" file="m-chart.mkvi">
+        <cd:command name="setupFLOWcharts" level="style" category="graphics metapost" file="m-chart.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -107,7 +107,7 @@
 
     -->
 
-    <cd:command name="setupFLOWcharts" level="style" file="m-chart.mkvi">
+    <cd:command name="setupFLOWcharts" level="style" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
@@ -199,7 +199,7 @@
     </cd:command>
 
     <!--
-       <cd:command name="setupFLOWline" file="m-chart.mkvi">
+       <cd:command name="setupFLOWline" level="style" category="graphics metapost" file="m-chart.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -231,7 +231,7 @@
             </cd:arguments>
         </cd:command>
 
-       <cd:command name="setupFLOWlines" file="m-chart.mkvi">
+       <cd:command name="setupFLOWlines" level="style" category="graphics metapost" file="m-chart.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -242,7 +242,7 @@
 
     -->
 
-   <cd:command name="setupFLOWlines" level="style" file="m-chart.mkvi">
+   <cd:command name="setupFLOWlines" level="style" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="corner">
@@ -275,7 +275,7 @@
 
     <!--
 
-       <cd:command name="setupFLOWshape" file="m-chart.mkvi">
+       <cd:command name="setupFLOWshape" level="style" category="graphics metapost" file="m-chart.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -295,7 +295,7 @@
             </cd:arguments>
         </cd:command>
 
-       <cd:command name="setupFLOWshapes" file="m-chart.mkvi">
+       <cd:command name="setupFLOWshapes" level="style" category="graphics metapost" file="m-chart.mkvi">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -306,7 +306,7 @@
 
     -->
 
-   <cd:command name="setupFLOWshapes" level="style" file="m-chart.mkvi">
+   <cd:command name="setupFLOWshapes" level="style" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="default">
@@ -325,7 +325,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="setupFLOWfocus" level="style" file="m-chart.mkvi">
+   <cd:command name="setupFLOWfocus" level="style" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -342,7 +342,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="setupFLOWsplit" level="style" file="m-chart.mkvi">
+   <cd:command name="setupFLOWsplit" level="style" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -371,20 +371,20 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="FLOWchart" type="environment" file="m-chart.mkvi">
+   <cd:command name="FLOWchart" type="environment" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="defineFLOWchart" file="m-chart.mkvi">
+   <cd:command name="defineFLOWchart" level="style" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="FLOWcell" type="environment" file="m-chart.mkvi">
+   <cd:command name="FLOWcell" type="environment" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupFLOWshape"/>
@@ -395,7 +395,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="FLOWchart" file="m-chart.mkvi">
+   <cd:command name="FLOWchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -404,7 +404,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="FLOWcharts" file="m-chart.mkvi">
+   <cd:command name="FLOWcharts" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -413,13 +413,13 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="name" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="name" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="shape" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="shape" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-flowshape"/>
@@ -427,25 +427,25 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="destination" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="destination" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="focus" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="focus" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="overlay" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="overlay" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="location" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="location" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="-"/>
@@ -455,7 +455,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="figure" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="figure" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:file"/>
@@ -464,7 +464,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="text" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="text" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-chartlabel"/>
@@ -473,7 +473,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="label" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="label" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-chartlabel"/>
@@ -482,7 +482,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="comment" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="comment" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-chartlabel"/>
@@ -491,7 +491,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="exit" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="exit" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-chartlabel"/>
@@ -500,7 +500,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="connection" scope="flowchart" file="m-chart.mkvi">
+   <cd:command name="connection" scope="flowchart" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="+"/>
@@ -524,7 +524,7 @@
         </cd:arguments>
     </cd:command>
 
-   <cd:command name="include" file="m-chart.mkvi">
+   <cd:command name="include" level="document" category="graphics metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

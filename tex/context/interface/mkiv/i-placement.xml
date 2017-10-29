@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineplacement" file="pack-mis.mkiv">
+    <cd:command name="defineplacement" level="style" category="layout" file="pack-mis.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupplacement" file="pack-mis.mkiv">
+    <cd:command name="setupplacement" level="style" category="layout" file="pack-mis.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placement" file="pack-mis.mkiv">
+    <cd:command name="placement" level="style" category="layout" file="pack-mis.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -60,7 +60,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placement" generated="yes" variant="example" file="pack-mis.mkiv">
+    <cd:command name="placement" generated="yes" variant="example" level="style" category="layout" file="pack-mis.mkiv">
         <cd:sequence>
             <cd:variable value="placement"/>
         </cd:sequence>

@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="presetfieldsymbols" level="system" file="scrn-fld.mkvi">
+    <cd:command name="presetfieldsymbols" level="system" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefieldcategory" level="style" file="scrn-fld.mkvi">
+    <cd:command name="definefieldcategory" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -20,7 +20,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfieldcategory" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setupfieldcategory" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -133,7 +133,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefieldcategory" level="system" file="scrn-fld.mkvi">
+    <cd:command name="doifelsefieldcategory" level="system" category="pdf conditional" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -141,7 +141,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffieldcategoryelse" level="system" file="scrn-fld.mkvi">
+    <cd:command name="doiffieldcategoryelse" level="system" category="pdf conditional" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -149,7 +149,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefieldbody" level="style" file="scrn-fld.mkvi">
+    <cd:command name="definefieldbody" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -159,7 +159,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfieldbody" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setupfieldbody" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -171,7 +171,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fieldbody" file="scrn-fld.mkvi">
+    <cd:command name="fieldbody" level="document" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -180,14 +180,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefieldbodyset" file="scrn-fld.mkvi">
+    <cd:command name="definefieldbodyset" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefieldbody" file="scrn-fld.mkvi">
+    <cd:command name="doifelsefieldbody" level="system" category="pdf conditional" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -195,7 +195,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffieldbodyelse" file="scrn-fld.mkvi">
+    <cd:command name="doiffieldbodyelse" level="system" category="pdf conditional" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -203,7 +203,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefield" file="scrn-fld.mkvi">
+    <cd:command name="definefield" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -221,7 +221,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesubfield" file="scrn-fld.mkvi">
+    <cd:command name="definesubfield" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -229,7 +229,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="clonefield" file="scrn-fld.mkvi">
+    <cd:command name="clonefield" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -238,14 +238,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="copyfield" file="scrn-fld.mkvi">
+    <cd:command name="copyfield" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fitfieldframed" file="scrn-fld.mkvi">
+    <cd:command name="fitfieldframed" level="document" category="pdf background rules" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupframed"/>
@@ -254,7 +254,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fitfield" file="scrn-fld.mkvi">
+    <cd:command name="fitfield" level="document" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -263,7 +263,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfieldlabelframed" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setupfieldlabelframed" level="style" category="pdf background" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -272,7 +272,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfieldcontentframed" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setupfieldcontentframed" level="style" category="pdf background" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -282,7 +282,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfieldtotalframed" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setupfieldtotalframed" level="style" category="pdf background" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -310,7 +310,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfield" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setupfield" level="style" category="pdf background" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -332,7 +332,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupfields" level="style" file="scrn-fld.mkvi">
+    <cd:command name="setupfields" level="style" category="pdf background" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="reset"/>
@@ -353,14 +353,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="field" file="scrn-fld.mkvi">
+    <cd:command name="field" level="document" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefieldstack" level="style" file="scrn-fld.mkvi">
+    <cd:command name="definefieldstack" level="style" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list"/>
@@ -370,7 +370,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fieldstack" file="scrn-fld.mkvi">
+    <cd:command name="fieldstack" level="document" category="pdf" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-list-optional"/>

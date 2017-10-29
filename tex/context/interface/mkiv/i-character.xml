@@ -4,133 +4,141 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="letteropenbrace" file="catc-sym.mkiv"/>
+    <cd:command name="letteropenbrace" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterclosebrace" file="catc-sym.mkiv"/>
+    <cd:command name="letterclosebrace" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterampersand" file="catc-sym.mkiv"/>
+    <cd:command name="letterampersand" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterless" file="catc-sym.mkiv"/>
+    <cd:command name="letterless" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="lettermore" file="catc-sym.mkiv"/>
+    <cd:command name="lettermore" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterhash" file="catc-sym.mkiv"/>
+    <cd:command name="letterhash" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterdoublequote" file="catc-sym.mkiv"/>
+    <cd:command name="letterdoublequote" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="lettersinglequote" file="catc-sym.mkiv"/>
+    <cd:command name="lettersinglequote" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterdollar" file="catc-sym.mkiv"/>
+    <cd:command name="letterdollar" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterpercent" file="catc-sym.mkiv"/>
+    <cd:command name="letterpercent" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterhat" file="catc-sym.mkiv"/>
+    <cd:command name="letterhat" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterunderscore" file="catc-sym.mkiv"/>
+    <cd:command name="letterunderscore" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterbar" file="catc-sym.mkiv"/>
+    <cd:command name="letterbar" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="lettertilde" file="catc-sym.mkiv"/>
+    <cd:command name="lettertilde" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterbackslash" file="catc-sym.mkiv"/>
+    <cd:command name="letterbackslash" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterslash" file="catc-sym.mkiv"/>
+    <cd:command name="letterslash" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterquestionmark" file="catc-sym.mkiv"/>
+    <cd:command name="letterquestionmark" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterat" file="catc-sym.mkiv"/>
+    <cd:command name="letterat" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="lettercolon" file="catc-sym.mkiv"/>
+    <cd:command name="lettercolon" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterescape" file="catc-sym.mkiv"/>
+    <cd:command name="letterleftparenthesis" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterbgroup" file="catc-sym.mkiv"/>
+    <cd:command name="letterrightparenthesis" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letteregroup" file="catc-sym.mkiv"/>
+    <cd:command name="letterleftbracket" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterleftbrace" file="catc-sym.mkiv"/>
+    <cd:command name="letterrightbracket" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterrightbrace" file="catc-sym.mkiv"/>
+    <cd:command name="letterescape" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="letterexclamationmark" file="catc-sym.mkiv"/>
+    <cd:command name="letterbgroup" level="document" category="characters" file="catc-sym.mkiv"/>
 
-    <cd:command name="utfchar" file="char-ini.mkiv">
+    <cd:command name="letteregroup" level="document" category="characters" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterleftbrace" level="document" category="characters" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterrightbrace" level="document" category="characters" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterexclamationmark" level="document" category="characters" file="catc-sym.mkiv"/>
+
+    <cd:command name="utfchar" level="document" category="characters fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="safechar" file="char-ini.mkiv">
+    <cd:command name="safechar" level="style" category="characters fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedchar" file="char-ini.mkiv">
+    <cd:command name="checkedchar" level="style" category="characters fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textormathchar" file="char-ini.mkiv">
+    <cd:command name="textormathchar" level="style" category="characters fonts" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chardescription" file="char-ini.mkiv">
+    <cd:command name="chardescription" level="style" category="characters" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="percent" file="enco-ini.mkiv"/>
+    <cd:command name="percent" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="procent" file="enco-ini.mkiv"/>
+    <cd:command name="procent" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="ampersand" file="enco-ini.mkiv"/>
+    <cd:command name="ampersand" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="dollar" file="enco-ini.mkiv"/>
+    <cd:command name="dollar" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="hash" file="enco-ini.mkiv"/>
+    <cd:command name="hash" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="hyphen" file="enco-ini.mkiv"/>
+    <cd:command name="hyphen" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="lowerleftsingleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="lowerleftsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="lowerleftdoubleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="lowerleftdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="lowerrightsingleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="lowerrightsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="lowerrightdoubleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="lowerrightdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperleftsingleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperleftdoubleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperrightsingleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperrightdoubleninequote" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperleftsinglesixquote" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftsinglesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperleftdoublesixquote" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftdoublesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperrightsinglesixquote" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightsinglesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="upperrightdoublesixquote" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightdoublesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="leftsubguillemot" file="enco-ini.mkiv"/>
+    <cd:command name="leftsubguillemot" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="rightsubguillemot" file="enco-ini.mkiv"/>
+    <cd:command name="rightsubguillemot" level="style" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="textcontrolspace" file="enco-ini.mkiv"/>
+    <cd:command name="textcontrolspace" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="textvisiblespace" file="enco-ini.mkiv"/>
+    <cd:command name="textvisiblespace" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="textminus" file="enco-ini.mkiv"/>
+    <cd:command name="textminus" level="document" category="characters" file="enco-ini.mkiv"/>
 
-    <cd:command name="textplus" file="enco-ini.mkiv"/>
+    <cd:command name="textplus" level="document" category="characters" file="enco-ini.mkiv"/>
 
 </cd:interface>

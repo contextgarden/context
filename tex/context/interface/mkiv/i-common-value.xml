@@ -413,6 +413,11 @@
         <cd:constant type="min"/>
         <cd:constant type="max"/>
         <cd:constant type="middle"/>
+        <cd:constant type="math"/>
+        <cd:constant type="line" prefix="math" method="range"/>
+        <cd:constant type="halfline" prefix="math" method="range"/>
+        <cd:constant type="-line" prefix="math" method="range"/>
+        <cd:constant type="-halfline" prefix="math" method="range"/>
         <cd:constant type="cd:name"/>
     </cd:define>
 
@@ -582,6 +587,10 @@
         <cd:constant type="tight"/>
         <cd:constant type="middle"/>
         <cd:constant type="frame"/>
+        <cd:constant type="line"/>
+        <cd:constant type="halfline"/>
+        <cd:constant type="line" prefix="-" method="none"/>
+        <cd:constant type="halfline" prefix="-" method="none"/>
         <cd:inherit name="setupbodyfont"/>
     </cd:define>
 
@@ -657,6 +666,20 @@
         <cd:constant prefix="c" type="cd:name" method="range"/>
         <cd:constant prefix="u" type="cd:name" method="range"/>
         <cd:constant prefix="a" type="cd:name" method="range"/>
+    </cd:define>
+
+    <!-- option = ... -->
+
+    <cd:define name="value-verbatim">
+        <cd:constant type="mp"/>
+        <cd:constant type="lua"/>
+        <cd:constant type="xml"/>
+        <cd:constant type="parsed-xml"/>
+        <cd:constant type="nested"/>
+        <cd:constant type="tex"/>
+        <cd:constant type="context"/>
+        <cd:constant type="none"/>
+        <cd:constant type="cd:name"/>
     </cd:define>
 
 </cd:interface>

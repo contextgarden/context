@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupinteractionscreen" level="style" file="scrn-pag.mkvi">
+    <cd:command name="setupinteractionscreen" level="style" category="pdf" file="scrn-pag.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
@@ -45,6 +45,8 @@
                     <cd:constant type="portrait"/>
                     <cd:constant type="page"/>
                     <cd:constant type="paper"/>
+                    <cd:constant type="attachment"/>
+                    <cd:constant type="layer"/>
                 </cd:parameter>
                 <cd:parameter name="copies">
                     <cd:constant type="cd:number"/>
@@ -57,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="screen" file="scrn-pag.mkvi">
+    <cd:command name="screen" level="document" category="pdf" file="scrn-pag.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="page"/>

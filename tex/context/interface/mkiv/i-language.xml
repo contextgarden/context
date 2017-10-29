@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="installlanguage" category="language" level="system" file="lang-ini.mkiv">
+    <cd:command name="installlanguage" level="system" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -13,14 +13,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installlanguage" variant="name" category="language" level="system" file="lang-ini.mkiv">
+    <cd:command name="installlanguage" variant="name" level="system" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-language"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplanguage" category="language" level="style" file="lang-ini.mkiv">
+    <cd:command name="setuplanguage" level="style" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:language"/>
@@ -124,7 +124,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselanguage" category="language" level="system" file="lang-ini.mkiv">
+    <cd:command name="doifelselanguage" level="system" category="language conditional" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
             <cd:resolve name="argument-true"/>
@@ -132,7 +132,7 @@
         </cd:arguments>
     </cd:command>
             
-    <cd:command name="doiflanguageelse" category="language" level="system" file="lang-ini.mkiv">
+    <cd:command name="doiflanguageelse" level="system" category="language conditional" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
             <cd:resolve name="argument-true"/>
@@ -140,7 +140,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepatterns" category="language" level="system" file="lang-ini.mkiv">
+    <cd:command name="doifelsepatterns" level="system" category="language conditional" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
             <cd:resolve name="argument-true"/>
@@ -148,7 +148,7 @@
         </cd:arguments>
     </cd:command>
             
-    <cd:command name="doifpatternselse" category="language" level="system" file="lang-ini.mkiv">
+    <cd:command name="doifpatternselse" level="system" category="language conditional" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
             <cd:resolve name="argument-true"/>
@@ -156,41 +156,41 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="language" generated="yes" variant="example" category="language" level="document" file="lang-ini.mkiv">
+    <cd:command name="language" generated="yes" variant="example" level="document" category="language" file="lang-ini.mkiv">
         <cd:sequence>
             <cd:variable value="language"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="language" category="language" level="document" file="lang-ini.mkiv">
+    <cd:command name="language" level="document" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mainlanguage" category="language" level="style" file="lang-ini.mkiv">
+    <cd:command name="mainlanguage" level="style" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="uselanguageparameter" category="language" level="system" file="lang-ini.mkiv">
+    <cd:command name="uselanguageparameter" level="system" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="exceptions" type="environment" category="language" level="style" file="lang-ini.mkiv">
+    <cd:command name="exceptions" type="environment" level="style" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentlanguage" category="language" file="lang-ini.mkiv"/>
+    <cd:command name="currentlanguage" level="system" category="language" file="lang-ini.mkiv"/>
 
-    <cd:command name="currentmainlanguage" category="language" file="lang-ini.mkiv"/>
+    <cd:command name="currentmainlanguage" level="system" category="language" file="lang-ini.mkiv"/>
 
-    <cd:command name="commalistsentence" category="language" level="document" file="lang-lab.mkiv">
+    <cd:command name="commalistsentence" level="document" category="language" file="lang-lab.mkiv">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="cd:text"/>

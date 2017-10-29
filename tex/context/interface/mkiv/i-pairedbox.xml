@@ -139,7 +139,7 @@
 
     <!--
 
-        <cd:command name="setuplegend" file="pack-com.mkiv">
+        <cd:command name="setuplegend" level="document" file="pack-com.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes">
                     <cd:inherit name="setuppairedbox"/>
@@ -147,7 +147,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="placelegend" file="pack-com.mkiv">
+        <cd:command name="placelegend" level="document" file="pack-com.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setuppairedbox"/>
@@ -157,7 +157,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="placelegend" type="environment" file="pack-com.mkiv">
+        <cd:command name="placelegend" type="environment" level="document" file="pack-com.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setuppairedbox"/>
@@ -167,14 +167,14 @@
 
     -->
 
-    <cd:command name="placeontopofeachother" file="pack-com.mkiv">
+    <cd:command name="placeontopofeachother" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placesidebyside" file="pack-com.mkiv">
+    <cd:command name="placesidebyside" level="document" file="pack-com.mkiv">
         <cd:arguments>
             <cd:content/>
             <cd:content/>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineformula" category="mathematics" file="math-for.mkiv">
+    <cd:command name="defineformula" level="style" category="mathematics" file="math-for.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupformula" category="mathematics" level="style" file="math-for.mkiv">
+    <cd:command name="setupformula" level="style" category="mathematics" file="math-for.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -30,6 +30,11 @@
                     <cd:constant type="center"/>
                     <cd:constant type="flushright"/>
                     <cd:constant type="normal"/>
+                </cd:parameter>
+                <cd:parameter name="split">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="page"/>
                 </cd:parameter>
                 <cd:parameter name="strut">
                     <cd:constant type="yes"/>
@@ -86,6 +91,10 @@
                 <cd:parameter name="frame">
                     <cd:constant type="number"/>
                 </cd:parameter>
+                <cd:parameter name="hang">
+                    <cd:constant type="none" default="yes"/>
+                    <cd:constant type="auto"/>
+                </cd:parameter>
                 <cd:parameter name="expansion">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
@@ -100,16 +109,12 @@
                 <cd:parameter name="catcodes">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
-                <cd:parameter name="split">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                </cd:parameter>
                 <cd:inherit name="setupcounter"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupformulas" category="mathematics" level="style" file="math-for.mkiv">
+    <cd:command name="setupformulas" level="style" category="mathematics" file="math-for.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -118,7 +123,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesubformula" file="math-for.mkiv">
+    <cd:command name="definesubformula" level="style" category="mathematics" file="math-for.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -128,7 +133,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsubformula" category="mathematics" level="style" file="math-for.mkiv">
+    <cd:command name="setupsubformula" level="style" category="mathematics" file="math-for.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -139,7 +144,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsubformulas" category="mathematics" level="style" file="math-for.mkiv">
+    <cd:command name="setupsubformulas" level="style" category="mathematics" file="math-for.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -148,7 +153,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="formula" type="environment" generated="yes" variant="instance" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="formula" type="environment" generated="yes" variant="instance" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:sequence>
             <cd:instance value="formula"/>
             <cd:string value="formula"/>
@@ -161,33 +166,68 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="formula" type="environment" category="mathematics" level="document" file="strc-mat.mkiv">
+    <!--
+
+        <cd:command name="formula" type="environment" generated="yes" variant="instance:assignment" level="document" category="mathematics" file="strc-mat.mkiv">
+            <cd:sequence>
+                <cd:instance value="formula"/>
+                <cd:string value="formula"/>
+            </cd:sequence>
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupformula"/>
+                </cd:assignments>
+            </cd:arguments>
+            <cd:instances>
+                <cd:resolve name="instance-formula"/>
+            </cd:instances>
+        </cd:command>
+
+    -->
+
+    <cd:command name="formula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formula-list-optional"/>
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="formula" type="environment" variant="assignment" level="document" category="mathematics" file="strc-mat.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="option">
+                    <cd:resolve name="value-formula"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:resolve name="value-leftskip"/>
+                </cd:parameter>
+                <cd:parameter name="grid">
+                    <cd:inherit name="snaptogrid"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
     <!--
 
-        <cd:command name="spformula" type="environment" file="strc-mat.mkiv">
+        <cd:command name="spformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-formula-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="sdformula" type="environment" file="strc-mat.mkiv">
+        <cd:command name="sdformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-formula-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="mpformula" type="environment" file="strc-mat.mkiv">
+        <cd:command name="mpformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-formula-list-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="mdformula" type="environment" file="strc-mat.mkiv">
+        <cd:command name="mdformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-formula-list-optional"/>
             </cd:arguments>
@@ -195,7 +235,7 @@
 
     -->
 
-    <cd:command name="defineformulaalternative" category="mathematics" level="system" file="strc-mat.mkiv">
+    <cd:command name="defineformulaalternative" level="system" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-csname"/>
@@ -203,41 +243,41 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="formula" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="formula" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formula-list-optional"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="displaymath" type="environment" category="mathematics" level="system" file="strc-mat.mkiv"/>
+    <cd:command name="displaymath" type="environment" level="system" category="mathematics" file="strc-mat.mkiv"/>
 
-    <cd:command name="formulas" type="environment" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="formulas" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subformulas" type="environment" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="subformulas" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedsubformulas" type="environment" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="namedsubformulas" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeformula" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="placeformula" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeformula" type="environment" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="placeformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="title">
@@ -253,31 +293,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeformula" type="environment" variant="argument" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="placeformula" type="environment" variant="argument" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placenamedformula" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="placenamedformula" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placesubformula" category="mathematics" level="document" file="strc-mat.mkiv">
+    <cd:command name="placesubformula" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="formulanumber" category="mathematics" file="strc-mat">
+    <cd:command name="formulanumber" level="document" category="mathematics" file="strc-mat">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placecurrentformulanumber" category="mathematics" file="strc-mat"/>
+    <cd:command name="placecurrentformulanumber" level="system" category="mathematics" file="strc-mat"/>
+
+    <cd:command name="alignhere" scope="formula" level="document" category="mathematics" file="strc-mat"/>
+
+    <cd:command name="breakhere" scope="formula" level="document" category="mathematics" file="strc-mat"/>
 
 </cd:interface>

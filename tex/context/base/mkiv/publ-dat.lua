@@ -138,14 +138,15 @@ local virtuals = allocate {
 }
 
 local defaulttypes = allocate {
-    author    = "author",
-    editor    = "author",
- -- publisher = "author",
-    page      = "pagenumber",
-    pages     = "pagenumber",
-    keywords  = "keyword",
-    doi       = "url",
-    url       = "url",
+    author     = "author",
+    editor     = "author",
+    translator = "author",
+ -- publisher  = "author",
+    page       = "pagenumber",
+    pages      = "pagenumber",
+    keywords   = "keyword",
+    doi        = "url",
+    url        = "url",
 }
 
 local defaultsets = allocate {
@@ -265,11 +266,13 @@ local specifications = setmetatableindex(function(t,name)
     local fullname = resolvers.findfile(filename) or ""
     if fullname == "" then
         report("no data definition file %a for %a",filename,name)
+        t[name] = default
         return default
     end
     local specification = table.load(fullname)
     if not specification then
         report("invalid data definition file %a for %a",fullname,name)
+        t[name] = default
         return default
     end
     --

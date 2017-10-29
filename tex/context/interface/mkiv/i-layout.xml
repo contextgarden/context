@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definelayout" category="layout" level="style" file="page-lay.mkiv">
+    <cd:command name="definelayout" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplayout" category="layout" level="style" file="page-lay.mkiv">
+    <cd:command name="setuplayout" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
@@ -211,7 +211,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplayout" variant="name" category="layout" level="style" file="page-lay.mkiv">
+    <cd:command name="setuplayout" variant="name" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -220,7 +220,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayoutdefined" category="layout" level="system" file="page-lay.mkiv">
+    <cd:command name="doifelselayoutdefined" level="system" category="layout conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -228,7 +228,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayoutdefinedelse" category="layout" level="system" file="page-lay.mkiv">
+    <cd:command name="doiflayoutdefinedelse" level="system" category="layout conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -236,7 +236,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="adaptlayout" category="layout" level="style" file="page-lay.mkiv">
+    <cd:command name="adaptlayout" level="style" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-list-optional"/>
             <cd:assignments list="yes">
@@ -251,35 +251,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="layout" type="environment" category="layout" file="page-lay.mkiv">
+    <cd:command name="layout" type="environment" level="document" category="layout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseoddpage" category="layout" level="system" file="page-lay.mkiv">
+    <cd:command name="doifelseoddpage" level="system" category="layout conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoddpageelse" category="layout" level="system" file="page-lay.mkiv">
+    <cd:command name="doifoddpageelse" level="system" category="layout conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifbothsidesoverruled" category="layout" level="system" file="page-lay.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-command"/>
-            <cd:resolve name="argument-command"/>
-            <cd:resolve name="argument-command"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifbothsides" category="layout" level="system" file="page-lay.mkiv">
+    <cd:command name="doifbothsidesoverruled" level="system" category="layout conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
@@ -287,14 +279,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rightorleftpageaction" category="layout" level="system" file="page-lay.mkiv">
+    <cd:command name="doifbothsides" level="system" category="layout conditional" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rightorleftpageaction" level="system" category="layout conditional" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showprint" category="layout" file="page-run.mkiv">
+    <cd:command name="showprint" level="document" category="layout" file="page-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="setuppapersize"/>
@@ -308,7 +308,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showframe" category="layout" file="page-run.mkiv">
+    <cd:command name="showframe" level="document" category="layout" file="page-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="top"/>
@@ -327,7 +327,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showsetups" category="layout" file="page-run.mkiv">
+    <cd:command name="showsetups" level="document" category="layout" file="page-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="pt" default="yes"/>
@@ -345,7 +345,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showlayout" category="layout" file="page-run.mkiv">
+    <cd:command name="showlayout" level="document" category="layout" file="page-run.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="pt" default="yes"/>
@@ -363,8 +363,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showmargins" category="layout" file="page-run.mkiv"/>
+    <cd:command name="showmargins" level="document" category="layout" file="page-run.mkiv"/>
 
-    <cd:command name="spread" type="environment" category="layout" file="page-spr.mkiv"/>
+    <cd:command name="spread" type="environment" level="document" category="layout" file="page-spr.mkiv"/>
+
+    <cd:command name="doifelsetopofpage" level="system" category="layout conditional" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiftopofpageelse" level="system" category="layout conditional" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
 
 </cd:interface>

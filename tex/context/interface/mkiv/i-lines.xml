@@ -104,7 +104,7 @@
 
     <!--
 
-        <cd:command name="lines" type="environment" file="spac-lin.mkiv">
+        <cd:command name="lines" type="environment" level="document" file="spac-lin.mkiv">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setuplines"/>

@@ -86,6 +86,7 @@
     <cd:interfacefile filename="i-formula.xml"/>
     <cd:interfacefile filename="i-fraction.xml"/>
     <cd:interfacefile filename="i-framed.xml"/>
+    <cd:interfacefile filename="i-framedtable.xml"/>
     <cd:interfacefile filename="i-graphics.xml"/>
     <cd:interfacefile filename="i-grid.xml"/>
     <cd:interfacefile filename="i-help.xml"/>
@@ -203,6 +204,7 @@
     <cd:interfacefile filename="i-string.xml"/>
     <cd:interfacefile filename="i-strut.xml"/>
     <cd:interfacefile filename="i-symbol.xml"/>
+    <cd:interfacefile filename="i-synctex.xml"/>
     <cd:interfacefile filename="i-synonym.xml"/>
     <cd:interfacefile filename="i-system.xml"/>
     <cd:interfacefile filename="i-systemlog.xml"/>

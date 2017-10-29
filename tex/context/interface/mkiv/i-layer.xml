@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuplayeredtext" level="style" file="pack-box.mkiv">
+    <cd:command name="setuplayeredtext" level="style" category="background" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -19,7 +19,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="layeredtext" file="pack-box.mkiv">
+    <cd:command name="layeredtext" level="document" category="background" file="pack-box.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuplayer"/>
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelayeredtext" file="pack-box.mkiv">
+    <cd:command name="placelayeredtext" level="document" category="background" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -46,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlayerframed" file="pack-box.mkiv">
+    <cd:command name="setlayerframed" level="document" category="background" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -59,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlayerframed" variant="combination" file="pack-box.mkiv">
+    <cd:command name="setlayerframed" variant="combination" level="document" category="background" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -70,7 +70,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlayertext" file="pack-box.mkiv">
+    <cd:command name="setlayertext" level="document" category="background" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -94,7 +94,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelayer" level="style" file="pack-lyr.mkiv">
+    <cd:command name="definelayer" level="style" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -104,7 +104,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplayer" level="style" file="pack-lyr.mkiv">
+    <cd:command name="setuplayer" level="style" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -221,37 +221,37 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetlayer" file="pack-lyr.mkiv">
+    <cd:command name="resetlayer" level="style" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushlayer" file="pack-lyr.mkiv">
+    <cd:command name="flushlayer" level="document" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tightlayer" file="pack-lyr.mkiv">
+    <cd:command name="tightlayer" level="document" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelayer" file="pack-lyr.mkiv">
+    <cd:command name="placelayer" level="document" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="composedlayer" file="pack-lyr.mkiv">
+    <cd:command name="composedlayer" level="document" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlayer" file="pack-lyr.mkiv">
+    <cd:command name="setlayer" level="document" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -267,7 +267,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelayerpreset" level="system" file="pack-lyr.mkiv">
+    <cd:command name="definelayerpreset" level="system" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -276,14 +276,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelayerpreset" variant="name" level="system" file="pack-lyr.mkiv">
+    <cd:command name="definelayerpreset" variant="name" level="system" category="background" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselayerdata" level="system" file="pack-lyr.mkiv">
+    <cd:command name="doifelselayerdata" level="system" category="background conditional" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -291,7 +291,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflayerdataelse" level="system" file="pack-lyr.mkiv">
+    <cd:command name="doiflayerdataelse" level="system" category="background conditional" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -299,11 +299,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="layerwidth" file="pack-lyr.mkiv"/>
+    <cd:command name="layerwidth" level="system" category="background" file="pack-lyr.mkiv"/>
 
-    <cd:command name="layerheight" file="pack-lyr.mkiv"/>
+    <cd:command name="layerheight" level="system" category="background" file="pack-lyr.mkiv"/>
 
-    <cd:command name="setMPlayer" file="pack-lyr.mkiv">
+    <cd:command name="setMPlayer" level="document" category="background metapost" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -314,7 +314,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getMPlayer" file="pack-lyr.mkiv">
+    <cd:command name="getMPlayer" level="document" category="background metapost" file="pack-lyr.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

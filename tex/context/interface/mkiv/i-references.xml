@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupreferencing" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="setupreferencing" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="state">
@@ -53,40 +53,40 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textreference" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="textreference" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagereference" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="pagereference" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reference" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="reference" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setreference" category="references" file="strc-ref.mkvi">
+    <cd:command name="setreference" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usereferenceparameter" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="usereferenceparameter" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxreference" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="boxreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
             <cd:csname/>
@@ -94,21 +94,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hboxreference" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="hboxreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vboxreference" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="vboxreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="contentreference" category="references" file="strc-ref.mkvi">
+    <cd:command name="contentreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -118,27 +118,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definereference" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="definereference" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-reference-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetreference" category="references" file="strc-ref.mkvi">
+    <cd:command name="resetreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpagereference" category="references" file="strc-ref.mkvi">
+    <cd:command name="setpagereference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-reference-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsereferencefound" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="doifelsereferencefound" level="system" category="references conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>
@@ -146,7 +146,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifreferencefoundelse" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="doifreferencefoundelse" level="system" category="references conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-true"/>
@@ -154,7 +154,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupreferenceprefix" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="setupreferenceprefix" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:resolve name="value-referenceprefix"/>
@@ -162,7 +162,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupglobalreferenceprefix" category="references" file="strc-ref.mkvi">
+    <cd:command name="setupglobalreferenceprefix" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:resolve name="value-referenceprefix"/>
@@ -170,7 +170,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="referenceprefix" type="environment" begin="push" end="pop" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="referenceprefix" type="environment" begin="push" end="pop" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-referenceprefix"/>
@@ -178,7 +178,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="referenceprefix" type="environment" begin="globalpush" end="globalpop" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="referenceprefix" type="environment" begin="globalpush" end="globalpop" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-referenceprefix"/>
@@ -186,9 +186,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="referenceprefix" category="references" file="strc-ref.mkvi"/>
+    <cd:command name="referenceprefix" level="system" category="references" file="strc-ref.mkvi"/>
 
-    <cd:command name="in" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="in" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text-optional"/>
             <cd:resolve name="argument-text-optional"/>
@@ -196,7 +196,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="at" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="at" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text-optional"/>
             <cd:resolve name="argument-text-optional"/>
@@ -204,25 +204,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="about" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="about" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="from" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="from" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="over" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="over" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filterreference" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="filterreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-referencetype"/>
@@ -230,7 +230,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getreferenceentry" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="getreferenceentry" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-referencetype"/>
@@ -238,16 +238,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getreference" category="references" level="system" file="strc-ref.mkvi">
-        <cd:arguments>
-            <cd:keywords>
-                <cd:resolve name="value-referencetype"/>
-            </cd:keywords>
-            <cd:resolve name="keyword-reference"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ref" category="references" file="strc-ref.mkvi">
+    <cd:command name="getreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:resolve name="value-referencetype"/>
@@ -256,7 +247,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="somewhere" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="ref" level="document" category="references" file="strc-ref.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:resolve name="value-referencetype"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="somewhere" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -264,7 +264,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="docheckedpagestate" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="docheckedpagestate" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-command"/>
@@ -276,7 +276,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="someplace" category="references" file="strc-ref.mkvi">
+    <cd:command name="someplace" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
@@ -287,19 +287,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="atpage" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="atpage" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="symbolreference" category="references" file="strc-ref.mkvi">
+    <cd:command name="symbolreference" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definereferenceformat" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="definereferenceformat" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -309,7 +309,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupreferenceformat" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="setupreferenceformat" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -346,7 +346,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="referenceformat" generated="yes" variant="example" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="referenceformat" generated="yes" variant="example" level="document" category="references" file="strc-ref.mkvi">
         <cd:sequence>
             <cd:variable value="referenceformat"/>
         </cd:sequence>
@@ -357,27 +357,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="goto" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="goto" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="goto" type="environment" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="goto" type="environment" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gotobox" category="references" file="strc-ref.mkvi">
+    <cd:command name="gotobox" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:content/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useurl" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="useurl" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-url"/>
@@ -386,7 +386,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useURL" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="useURL" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-url"/>
@@ -395,7 +395,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usefile" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="usefile" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
@@ -403,7 +403,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useexternaldocument" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="useexternaldocument" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-file"/>
@@ -411,7 +411,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseurldefined" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="doifelseurldefined" level="system" category="references conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -419,7 +419,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifurldefinedelse" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="doifurldefinedelse" level="system" category="references conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -427,7 +427,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefiledefined" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="doifelsefiledefined" level="system" category="references conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -435,7 +435,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffiledefinedelse" category="references" level="system" file="strc-ref.mkvi">
+    <cd:command name="doiffiledefinedelse" level="system" category="references conditional" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -443,7 +443,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupurl" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="setupurl" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="style">
@@ -456,13 +456,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="url" category="references" level="document" file="strc-ref.mkvi">
+    <cd:command name="url" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineprogram" category="references" file="strc-ref.mkvi">
+    <cd:command name="defineprogram" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
@@ -470,7 +470,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupprograms" category="references" file="strc-ref.mkvi">
+    <cd:command name="setupprograms" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="style">
@@ -483,27 +483,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="program" category="references" file="strc-ref.mkvi">
+    <cd:command name="program" level="document" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepage" category="references" file="strc-ref.mkvi">
+    <cd:command name="definepage" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gotopage" category="references" file="strc-ref.mkvi">
+    <cd:command name="gotopage" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupreferencestructureprefix" category="references" level="style" file="strc-ref.mkvi">
+    <cd:command name="setupreferencestructureprefix" level="style" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:name"/>

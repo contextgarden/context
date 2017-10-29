@@ -4,11 +4,11 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="currentregime" file="regi-ini.mkiv"/>
+    <cd:command name="currentregime" level="system" category="language" file="regi-ini.mkiv"/>
 
-    <cd:command name="disableregime" file="regi-ini.mkiv"/>
+    <cd:command name="disableregime" level="system" category="language" file="regi-ini.mkiv"/>
 
-    <cd:command name="enableregime" level="style" file="regi-ini.mkiv">
+    <cd:command name="enableregime" level="style" category="language" file="regi-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cp1250"/>
@@ -77,7 +77,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="regime" type="environment" file="regi-ini.mkiv">
+    <cd:command name="regime" type="environment" level="system" category="language" file="regi-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:inherit name="enableregime"/>

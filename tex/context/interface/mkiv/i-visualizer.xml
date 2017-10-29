@@ -108,12 +108,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showmakeup" file="trc-vis.mkiv">
+    <cd:command name="showmakeup" level="document" file="trc-vis.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="makeup" default="yes"/>
                 <cd:constant type="all"/>
                 <cd:constant type="boxes"/>
+                <cd:constant type="line"/>
                 <cd:constant type="glyph"/>
                 <cd:constant type="fontkern"/>
                 <cd:constant type="hbox"/>
@@ -137,22 +138,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showallmakeup" file="trc-vis.mkiv"/>
+    <cd:command name="showallmakeup" level="document" file="trc-vis.mkiv"/>
 
-    <cd:command name="showboxes" file="trc-vis.mkiv"/>
+    <cd:command name="showboxes" level="document" file="trc-vis.mkiv"/>
 
-    <cd:command name="showglyphs" file="trc-vis.mkiv"/>
+    <cd:command name="showglyphs" level="document" file="trc-vis.mkiv"/>
 
-    <cd:command name="showfontkerns" file="trc-vis.mkiv"/>
+    <cd:command name="showfontkerns" level="document" file="trc-vis.mkiv"/>
 
-    <cd:command name="showfontitalics" file="trc-vis.mkiv"/>
+    <cd:command name="showfontitalics" level="document" file="trc-vis.mkiv"/>
 
-    <cd:command name="setvisualizerfont" file="trc-vis.mkiv">
+    <cd:command name="setvisualizerfont" level="system" file="trc-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-font-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetvisualizers" file="trc-vis.mkiv"/>
+    <cd:command name="resetvisualizers" level="system" file="trc-vis.mkiv"/>
 
 </cd:interface>

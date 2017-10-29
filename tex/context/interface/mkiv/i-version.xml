@@ -28,20 +28,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installversioninfo" file="page-inf.mkiv">
+    <cd:command name="installversioninfo" level="system" file="page-inf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="includeversioninfo" file="page-inf.mkiv">
+    <cd:command name="includeversioninfo" level="system" file="page-inf.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseolderversion" level="system" file="file-mod.mkvi">
+    <cd:command name="doifelseolderversion" level="system" category="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifolderversionelse" level="system" file="file-mod.mkvi">
+    <cd:command name="doifolderversionelse" level="system" category="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
@@ -59,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseoldercontext" level="system" file="file-mod.mkvi">
+    <cd:command name="doifelseoldercontext" level="system" category="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>
@@ -67,7 +67,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifoldercontextelse" level="system" file="file-mod.mkvi">
+    <cd:command name="doifoldercontextelse" level="system" category="conditional" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-true"/>

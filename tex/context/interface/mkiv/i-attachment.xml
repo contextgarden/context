@@ -94,7 +94,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registerattachment" file="scrn-wid.mkvi">
+    <cd:command name="registerattachment" level="document" file="scrn-wid.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">

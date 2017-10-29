@@ -32,9 +32,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resettrackers" file="trac-deb.mkiv"/>
+    <cd:command name="resettrackers" level="system" file="trac-deb.mkiv"/>
 
-    <cd:command name="showtrackers" file="trac-deb.mkiv"/>
+    <cd:command name="showtrackers" level="document" file="trac-deb.mkiv"/>
 
     <cd:command name="enabledirectives" level="style" file="trac-deb.mkiv">
         <cd:arguments>
@@ -48,7 +48,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showdirectives" file="trac-deb.mkiv"/>
+    <cd:command name="showdirectives" level="document" file="trac-deb.mkiv"/>
 
     <cd:command name="enableexperiments" level="style" file="trac-deb.mkiv">
         <cd:arguments>
@@ -62,14 +62,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showexperiments" file="trac-deb.mkiv"/>
+    <cd:command name="showexperiments" level="document" file="trac-deb.mkiv"/>
 
-    <cd:command name="showedebuginfo" file="trac-deb.mkiv"/>
+    <cd:command name="showedebuginfo" level="system" file="trac-deb.mkiv"/>
 
-    <cd:command name="overloaderror" file="trac-deb.mkiv"/>
+    <cd:command name="overloaderror" level="system" file="trac-deb.mkiv"/>
 
-    <cd:command name="showlogcategories" file="trac-deb.mkiv"/>
+    <cd:command name="showlogcategories" level="system" file="trac-deb.mkiv"/>
 
-    <cd:command name="showjustification" file="trac-jus.mkiv"/>
+    <cd:command name="showjustification" level="system" file="trac-jus.mkiv"/>
 
 </cd:interface>

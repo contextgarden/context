@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineindentedtext" level="style" file="strc-ind.mkiv">
+    <cd:command name="defineindentedtext" level="style" category="structure" file="strc-ind.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupindentedtext" level="style" file="strc-ind.mkiv">
+    <cd:command name="setupindentedtext" level="style" category="structure" file="strc-ind.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -57,13 +57,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="indentedtext" type="environment" generated="yes" variant="example" level="document" file="strc-ind.mkiv">
+    <cd:command name="indentedtext" type="environment" generated="yes" variant="example" level="document" category="structure" file="strc-ind.mkiv">
         <cd:sequence>
             <cd:variable value="indentedtext"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="indentedtext" type="environment" level="document" file="strc-ind.mkiv">
+    <cd:command name="indentedtext" type="environment" level="document" category="structure" file="strc-ind.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setuptextrules" level="style" file="pack-mrl.mkiv">
+    <cd:command name="setuptextrules" level="style" category="rules" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="before">
@@ -52,7 +52,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textrule" level="document" file="pack-mrl.mkiv">
+    <cd:command name="textrule" level="document" category="rules" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="top"/>
@@ -63,7 +63,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textrule" type="environment" level="document" file="pack-mrl.mkiv">
+    <cd:command name="textrule" type="environment" level="document" category="rules" file="pack-mrl.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>

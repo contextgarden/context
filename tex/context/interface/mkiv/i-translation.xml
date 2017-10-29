@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="translate" category="language" file="lang-lab.mkiv">
+    <cd:command name="translate" level="document" category="language" file="lang-lab.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="cd:language">
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="assigntranslation" category="language" file="lang-lab.mkiv">
+    <cd:command name="assigntranslation" level="style" category="language" file="lang-lab.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="cd:language">

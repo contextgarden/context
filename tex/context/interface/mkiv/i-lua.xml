@@ -4,187 +4,187 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="taggedctxcommand" level="system" file="back-exp.mkiv">
+    <cd:command name="taggedctxcommand" level="system" category="lua" file="back-exp.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luafunction" level="system" file="cldf-ini.mkiv">
+    <cd:command name="luafunction" level="system" category="lua" file="cldf-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cldprocessfile" level="system" file="cldf-ini.mkiv">
+    <cd:command name="cldprocessfile" level="system" category="lua" file="cldf-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cldloadfile" level="system" file="cldf-ini.mkiv">
+    <cd:command name="cldloadfile" level="system" category="lua" file="cldf-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cldcontext" level="system" file="cldf-ini.mkiv">
+    <cd:command name="cldcontext" level="system" category="lua" file="cldf-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="cldcommand" level="system" file="cldf-ini.mkiv">
+    <cd:command name="cldcommand" level="system" category="lua" file="cldf-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxdirectlua" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxdirectlua" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxlatelua" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxlatelua" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxsprint" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxsprint" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxcommand" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxcommand" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxdirectcommand" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxdirectcommand" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxlatecommand" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxlatecommand" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxreport" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxreport" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxlua" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxlua" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luacode" level="system" file="luat-cod.mkiv">
+    <cd:command name="luacode" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lateluacode" level="system" file="luat-cod.mkiv">
+    <cd:command name="lateluacode" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directluacode" level="system" file="luat-cod.mkiv">
+    <cd:command name="directluacode" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luaversion" level="system" file="luat-cod.mkiv"/>
+    <cd:command name="luaversion" level="system" category="lua" file="luat-cod.mkiv"/>
 
-    <cd:command name="registerctxluafile" level="system" file="luat-cod.mkiv">
+    <cd:command name="registerctxluafile" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxloadluafile" level="system" file="luat-cod.mkiv">
+    <cd:command name="ctxloadluafile" level="system" category="lua" file="luat-cod.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lua" type="environment" level="system" file="luat-ini.mkiv"/>
+    <cd:command name="lua" type="environment" level="system" category="lua" file="luat-ini.mkiv"/>
 
-    <cd:command name="luacode" type="environment" level="system" file="luat-ini.mkiv"/>
+    <cd:command name="luacode" type="environment" level="system" category="lua" file="luat-ini.mkiv"/>
 
-    <cd:command name="luamajorversion" level="system" file="luat-ini.mkiv"/>
+    <cd:command name="luamajorversion" level="system" category="lua" file="luat-ini.mkiv"/>
 
-    <cd:command name="luaminorversion" level="system" file="luat-ini.mkiv"/>
+    <cd:command name="luaminorversion" level="system" category="lua" file="luat-ini.mkiv"/>
 
-    <cd:command name="luaexpanded" level="system" file="luat-ini.mkiv">
+    <cd:command name="luaexpanded" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luaparameterset" type="environment" level="system" file="luat-ini.mkiv">
+    <cd:command name="luaparameterset" type="environment" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luaparameterset" level="system" file="luat-ini.mkiv">
+    <cd:command name="luaparameterset" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luaconditional" level="system" file="luat-ini.mkiv">
+    <cd:command name="luaconditional" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxluacode" level="system" file="luat-ini.mkiv">
+    <cd:command name="ctxluacode" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxfunctiondefinition" type="environment" level="system" file="luat-ini.mkiv">
+    <cd:command name="ctxfunctiondefinition" type="environment" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxfunctiondefinition" generated="yes" variant="example" level="system" file="luat-ini.mkiv">
+    <cd:command name="ctxfunctiondefinition" generated="yes" variant="example" level="system" category="lua" file="luat-ini.mkiv">
         <cd:sequence>
             <cd:variable value="ctxfunctiondefinition"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="ctxfunction" type="environment" level="system" file="luat-ini.mkiv">
+    <cd:command name="ctxfunction" type="environment" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="string-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxfunction" level="system" file="luat-ini.mkiv">
+    <cd:command name="ctxfunction" level="system" category="lua" file="luat-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxfunction" generated="yes" variant="example" level="system" file="luat-ini.mkiv">
+    <cd:command name="ctxfunction" generated="yes" variant="example" level="system" category="lua" file="luat-ini.mkiv">
         <cd:sequence>
             <cd:variable value="ctxfunction"/>
         </cd:sequence>
