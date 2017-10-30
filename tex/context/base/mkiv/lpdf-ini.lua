@@ -11,11 +11,12 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
-local sind, cosd, floor, max, min = math.sind, math.cosd, math.floor, math.max, math.min
+local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
 local sort = table.sort
 local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 local formatters = string.formatters
 local isboolean = string.is_boolean
+local rshift = bit32.rshift
 
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
@@ -253,8 +254,7 @@ end
 --             if b < 0x10000 then
 --                 r[n] = format("%04x",b)
 --             else
---              -- r[n] = format("%04x%04x",b/1024+0xD800,b%1024+0xDC00)
---                 r[n] = format("%04x%04x",floor(b/1024),b%1024+0xDC00) --bit32.rshift(b,10)
+--                 r[n] = format("%04x%04x",rshift(b,10),b%1024+0xDC00)
 --             end
 --         end
 --         n = n + 1
@@ -268,8 +268,7 @@ local cache = table.setmetatableindex(function(t,k) -- can be made weak
     if v < 0x10000 then
         v = format("%04x",v)
     else
-     -- v = format("%04x%04x",v/1024+0xD800,v%1024+0xDC00)
-        v = format("%04x%04x",floor(v/1024),v%1024+0xDC00)
+        v = format("%04x%04x",rshift(v,10),v%1024+0xDC00)
     end
     t[k] = v
     return v
@@ -1268,11 +1267,13 @@ do
 
     -- todo: use tounicode from the font mapper
 
+    -- floor(unicode/1024) => rshift(unicode,10) -- better for 5.3
+
     function codeinjections.unicodetoactualtext(unicode,pdfcode)
         if unicode < 0x10000 then
             return f_actual_text_one(unicode,pdfcode)
         else
-            return f_actual_text_two(unicode/1024+0xD800,unicode%1024+0xDC00,pdfcode)
+            return f_actual_text_two(rshift(unicode,10)+0xD800,unicode%1024+0xDC00,pdfcode)
         end
     end
 
@@ -1282,7 +1283,7 @@ do
         elseif unicode < 0x10000 then
             return f_actual_text_one_b(unicode)
         else
-            return f_actual_text_two_b(unicode/1024+0xD800,unicode%1024+0xDC00)
+            return f_actual_text_two_b(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
         end
     end
 
@@ -1296,7 +1297,7 @@ do
         elseif unicode < 0x10000 then
             return f_actual_text_one_b_not(unicode)
         else
-            return f_actual_text_two_b_not(unicode/1024+0xD800,unicode%1024+0xDC00)
+            return f_actual_text_two_b_not(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
         end
     end
 

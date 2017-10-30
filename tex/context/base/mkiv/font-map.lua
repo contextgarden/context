@@ -10,9 +10,9 @@ local tonumber, next, type = tonumber, next, type
 
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
-local floor = math.floor
 local formatters = string.formatters
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
+local rshift = bit32.rshift
 
 local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_mapping = v end)
@@ -78,6 +78,9 @@ end
 local f_single = formatters["%04X"]
 local f_double = formatters["%04X%04X"]
 
+-- floor(x/256)  => rshift(x, 8)
+-- floor(x/1024) => rshift(x,10)
+
 -- 0.684 0.661 0,672 0.650 : cache at lua end (more mem)
 -- 0.682 0,672 0.698 0.657 : no cache (moderate mem i.e. lua strings)
 -- 0.644 0.647 0.655 0.645 : convert in c (less mem in theory)
@@ -88,7 +91,7 @@ local f_double = formatters["%04X%04X"]
 --         s = f_single(unicode)
 --     else
 --         unicode = unicode - 0x10000
---         s = f_double(floor(unicode/1024)+0xD800,unicode%1024+0xDC00)
+--         s = f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
 --     end
 --     t[unicode] = s
 --     return s
@@ -147,7 +150,7 @@ local function tounicode16(unicode)
         return f_single(unicode)
     else
         unicode = unicode - 0x10000
-        return f_double(floor(unicode/1024)+0xD800,unicode%1024+0xDC00)
+        return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
     end
 end
 
@@ -159,7 +162,7 @@ local function tounicode16sequence(unicodes)
             t[l] = f_single(u)
         else
             u = u - 0x10000
-            t[l] = f_double(floor(u/1024)+0xD800,u%1024+0xDC00)
+            t[l] = f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
         end
     end
     return concat(t)
@@ -174,7 +177,7 @@ local function tounicode(unicode)
                 t[l] = f_single(u)
             else
                 u = u - 0x10000
-                t[l] = f_double(floor(u/1024)+0xD800,u%1024+0xDC00)
+                t[l] = f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
             end
         end
         return concat(t)
@@ -183,7 +186,7 @@ local function tounicode(unicode)
             return f_single(unicode)
         else
             unicode = unicode - 0x10000
-            return f_double(floor(unicode/1024)+0xD800,unicode%1024+0xDC00)
+            return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
         end
     end
 end
@@ -196,7 +199,7 @@ end
 --         v = f_single(u)
 --     else
 --         u = u - 0x10000
---         v = f_double(floor(u/1024)+0xD800,u%1024+0xDC00)
+--         v = f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
 --     end
 --     t[u] = v
 --     return v

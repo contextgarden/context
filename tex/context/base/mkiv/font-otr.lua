@@ -70,6 +70,7 @@ local byte, lower, char, gsub = string.byte, string.lower, string.char, string.g
 local floor, round = math.floor, math.round
 local P, R, S, C, Cs, Cc, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg, lpeg.Cmt
 local lpegmatch = lpeg.match
+local rshift = bit32.rshift
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -1809,7 +1810,7 @@ function readers.kern(f,fontdata,specification)
             local length   = readushort(f)
             local coverage = readushort(f)
             -- bit 8-15 of coverage: format 0 or 2
-            local format   = bit32.rshift(coverage,8) -- is this ok?
+            local format   = rshift(coverage,8) -- is this ok?
             if format == 0 then
                 local nofpairs      = readushort(f)
                 local searchrange   = readushort(f)

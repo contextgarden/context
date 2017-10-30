@@ -72,12 +72,21 @@ end
 
 -- quite subtle ... doing this wrong incidentally can give more bytes
 
-function luautilities.loadedluacode(fullname,forcestrip,name)
+function luautilities.loadedluacode(fullname,forcestrip,name,macros)
     -- quite subtle ... doing this wrong incidentally can give more bytes
     name = name or fullname
     local code, message
-    if environment.loadpreprocessedfile then
-        code, message = environment.loadpreprocessedfile(fullname)
+    if macros then
+        macros = lua.macros
+    end
+    if macros and macros.enabled then
+     -- local c = io.loaddata(fullname) -- not yet available
+        local f = io.open(fullname,"rb") local c = f:read("*a") f:close()
+        local n = c and macros.resolvestring(c)
+        if n and #n ~= #c then
+            report_lua("preprocessed file %a: %i => %i bytes",fullname,#c,#n)
+        end
+        code, message = load(n or c)
     else
         code, message = loadfile(fullname)
     end

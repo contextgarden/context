@@ -740,17 +740,17 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
         if not isgreek[char] then
             -- nothing needed
         elseif islcgreek[char] then
-            local lc = extract(mathgreek,4,4)
+            local lc = extract(mathgreek,4,4) --  (mathgreek >> 4) & ~(-1 << 4)
             if lc > 1 then
                 mathalphabet = remapgreek(mathalphabet,lc,"lowercase",char)
             end
         elseif isucgreek[char] then
-            local uc = extract(mathgreek,0,4)
+            local uc = extract(mathgreek,0,4) --  (mathgreek >> 0) & ~(-1 << 4)
             if uc > 1 then
                 mathalphabet = remapgreek(mathalphabet,uc,"uppercase",char)
             end
         elseif issygreek[char] then
-            local sy = extract(mathgreek,8,4)
+            local sy = extract(mathgreek,8,4) --  (mathgreek >> 8) & ~(-1 << 4)
             if sy > 1 then
                 mathalphabet = remapgreek(mathalphabet,sy,"symbol",char)
             end

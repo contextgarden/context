@@ -1,0 +1,188 @@
+if not modules then modules = { } end modules ['l-macros'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This is actually rather old code that I made as a demo for Luigi but that
+-- now comes in handy when we switch to Lua 5.3. The reason for using it (in
+-- in transition) is that we cannot mix 5.3 bit operators in files that get
+-- loaded in 5.2 (parsing happens before conditional testing).
+
+local S, P, R, V, C, Cs, Cc, Ct, Carg = lpeg.S, lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg
+local lpegmatch = lpeg.match
+local concat = table.concat
+local next = next
+
+local newline       = S("\n\r")^1
+local continue      = P("\\") * newline
+local spaces        = S(" \t") + continue
+local name          = R("az","AZ","__","09")^1
+local body          = ((1+continue/"")-newline)^1
+local lparent       = P("(")
+local rparent       = P(")")
+local noparent      = 1 - (lparent  + rparent)
+local nested        = P { lparent  * (noparent  + V(1))^0 * rparent }
+local escaped       = P("\\") * P(1)
+local squote        = P("'")
+local dquote        = P('"')
+local quoted        = dquote * (escaped + (1-dquote))^0 * dquote
+                    + squote * (escaped + (1-squote))^0 * squote
+
+local arguments     = lparent * Ct((Cs((nested+(quoted + 1 - S("),")))^1) + S(", "))^0) * rparent
+
+local macros        = lua.macros or { }
+lua.macros          = macros
+
+local patterns      = { }
+local definitions   = { }
+local resolve
+local subparser
+
+resolve = C(C(name) * arguments) / function(raw,s,a)
+    local d = definitions[s]
+    if d then
+        if a then
+            for i=1,#a do
+                a[i] = lpegmatch(subparser,a[i]) or a[i]
+            end
+            local p = patterns[s]
+            if p then
+                d = lpegmatch(p,d,1,a) or d
+            else
+                -- error
+            end
+        end
+        return lpegmatch(subparser,d) or d
+    elseif a then
+        for i=1,#a do
+            a[i] = lpegmatch(subparser,a[i]) or a[i]
+        end
+        return s .. "(" .. concat(a,",") .. ")"
+    else
+        return raw
+    end
+end
+
+subparser = Cs((resolve + P(1))^1)
+
+local enddefine   = P("#enddefine") / ""
+
+local beginregister = (C(name) * spaces^0 * (arguments + Cc(false)) * C((1-enddefine)^1) * enddefine) / function(k,a,v)
+    if a then
+        local p = P(false)
+        for i=1,#a do
+            p = p + (P(a[i]) * Carg(1)) / function(t) return t[i] end
+        end
+        p = Cs((p + P(1))^1)
+        patterns[k] = p
+    end
+    definitions[k] = lpegmatch(subparser,v) or v
+    return ""
+end
+
+local register = (C(name) * spaces^0 * (arguments + Cc(false)) * spaces^0 * C(body)) / function(k,a,v)
+    if a then
+        local p = P(false)
+        for i=1,#a do
+            p = p + (P(a[i]) * Carg(1)) / function(t) return t[i] end
+        end
+        p = Cs((p + P(1))^1)
+        patterns[k] = p
+    end
+    definitions[k] = lpegmatch(subparser,v) or v
+    return ""
+end
+
+local unregister = (C(name) * spaces^0 * (arguments + Cc(false))) / function(k,a)
+    if a then
+        patterns[k] = nil
+    end
+    definitions[k] = nil
+    return ""
+end
+
+local begindefine = (P("begindefine") * spaces^0 / "") * beginregister
+local define      = (P("define"     ) * spaces^0 / "") * register
+local undefine    = (P("undefine"   ) * spaces^0 / "") * unregister
+
+local parser = Cs( ( ( (P("#")/"") * (define + begindefine + undefine) * (newline^0/"") ) + resolve + P(1) )^0 )
+
+function macros.reset()
+    definitions = { }
+    patterns    = { }
+end
+
+function macros.resolvestring(str)
+    return lpegmatch(parser,str) or str
+end
+
+function macros.resolving()
+    return next(patterns)
+end
+
+-- local str = [[
+-- #define check(p,q) (p ~= 0) and (p > q)
+--
+-- #define oeps a > 10
+--
+-- #define whatever oeps
+--
+-- if whatever and check(1,2) then print("!") end
+-- if whatever and check(1,3) then print("!") end
+-- if whatever and check(1,4) then print("!") end
+-- if whatever and check(1,5) then print("!") end
+-- if whatever and check(1,6) then print("!") end
+-- if whatever and check(1,7) then print("!") end
+-- ]]
+--
+-- print(macros.resolvestring(str))
+--
+-- macros.resolvestring(io.loaddata("mymacros.lua"))
+-- loadstring(macros.resolvestring(io.loaddata("mytestcode.lua")))
+
+-- local luamacros = [[
+-- #begindefine setnodecodes
+-- local nodecodes  = nodes.codes
+-- local hlist_code = nodecodes.hlist
+-- local vlist_code = nodecodes.vlist
+-- local glyph_code = nodecodes.glyph
+-- #enddefine
+--
+-- #define hlist(id) id == hlist_code
+-- #define vlist(id) id == vlist_code
+-- #define glyph(id) id == glyph_code
+-- ]]
+--
+-- local luacode = [[
+-- setnodecodes
+--
+-- if hlist(id) or vlist(id) then
+--     print("we have a list")
+-- elseif glyph(id) then
+--     print("we have a glyph")
+-- else
+--     print("i'm stymied")
+-- end
+--
+-- local z = band(0x23,x)
+-- local z = btest(0x23,x)
+-- local z = rshift(0x23,x)
+-- local z = lshift(0x23,x)
+-- ]]
+--
+-- require("l-macros-test-001")
+--
+-- macros.resolvestring(luamacros)
+--
+-- local newcode = macros.resolvestring(luacode)
+--
+-- print(newcode)
+--
+-- macros.reset()
+
+-- local d = io.loaddata("t:/sources/font-otr.lua")
+-- local n = macros.resolvestring(d)
+-- io.savedata("r:/tmp/o.lua",n)

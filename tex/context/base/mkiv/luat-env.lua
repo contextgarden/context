@@ -97,24 +97,16 @@ local function strippable(filename)
     end
 end
 
-function environment.luafilechunk(filename,silent) -- used for loading lua bytecode in the format
+function environment.luafilechunk(filename,silent,macros) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
-        local data = luautilities.loadedluacode(fullname,strippable,filename) -- can be overloaded
---         if trace_locating then
---             report_lua("loading file %a %s",fullname,not data and "failed" or "succeeded")
---         elseif not silent then
---             texio.write("<",data and "+ " or "- ",fullname,">")
---         end
+        local data = luautilities.loadedluacode(fullname,strippable,filename,macros)
         if not silent then
             report_lua("loading file %a %s",fullname,not data and "failed" or "succeeded")
         end
         return data
     else
---         if trace_locating then
---             report_lua("unknown file %a",filename)
---         end
         if not silent then
             report_lua("unknown file %a",filename)
         end

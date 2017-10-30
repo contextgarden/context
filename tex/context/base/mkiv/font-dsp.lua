@@ -2464,7 +2464,7 @@ do
                 local length   = readushort(f)
                 local coverage = readushort(f)
                 -- bit 8-15 of coverage: format 0 or 2
-                local format   = bit32.rshift(coverage,8) -- is this ok
+                local format   = rshift(coverage,8) -- is this ok
                 if format == 0 then
                     local nofpairs      = readushort(f)
                     local searchrange   = readushort(f)

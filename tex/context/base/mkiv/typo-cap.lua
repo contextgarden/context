@@ -78,7 +78,6 @@ local a_cases         = attributes.private("case")
 
 local extract         = bit32.extract
 local run             = 0 -- a trick to make neighbouring ranges work
-
 local blocked         = { }
 
 local function set(tag,font)
@@ -93,12 +92,18 @@ local function set(tag,font)
 end
 
 local function get(a)
-    local font = extract(a,16,12) -- 4000
-    local tag  = extract(a, 8, 8) --  250
-    local run  = extract(a, 0, 8) --   50
-    return tag, font, run
+    return
+        extract(a, 8, 8), -- tag
+        extract(a,16,12), -- font
+        extract(a, 0, 8)  -- run
 end
 
+-- local function get(a)
+--     return
+--         (a >>  8) & ~(-1 <<  8), -- & 0x0FF -- tag
+--         (a >> 16) & ~(-1 << 12), -- & 0xFFF -- font
+--         (a >>  0) & ~(-1 <<  8)  -- & 0x0FF -- run
+-- end
 
 -- print(get(set(  1,   0)))
 -- print(get(set(  1,  99)))

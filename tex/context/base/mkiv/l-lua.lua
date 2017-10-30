@@ -228,31 +228,31 @@ elseif not ffi.number then
     ffi.number = tonumber
 end
 
--- if not bit32 then
---     bit32 = load ( [[ return {
---         band = function(a,b)
---             return (a & b)
---         end,
---         bnot = function(a)
---             return ~a & 0xFFFFFFFF
---         end,
---         bor = function(a,b)
---             return (a | b) & 0xFFFFFFFF
---         end,
---         btest = function(a,b)
---             return (a & b) ~= 0
---         end,
---         bxor = function(a,b)
---             return (a ~ b) & 0xFFFFFFFF
---         end,
---         extract = function(a,b,c)
---             return (a >> b) & ~(-1 << (c or 1))
---         end,
---         lshift = function(a,b)
---             return (a << b) & 0xFFFFFFFF
---         end,
---         rshift = function(a,b)
---             return (a >> b)
---         end,
---     } ]] ) ()
--- end
+if not bit32 and utf8 then
+    bit32 = load ( [[ return {
+band = function(a,b)
+    return (a & b)
+end,
+bnot = function(a)
+    return ~a & 0xFFFFFFFF
+end,
+bor = function(a,b)
+    return (a | b) & 0xFFFFFFFF
+end,
+btest = function(a,b)
+    return (a & b) ~= 0
+end,
+bxor = function(a,b)
+    return (a ~ b) & 0xFFFFFFFF
+end,
+extract = function(a,b,c)
+    return (a >> b) & ~(-1 << (c or 1))
+end,
+lshift = function(a,b)
+    return (a << b) & 0xFFFFFFFF
+end,
+rshift = function(a,b)
+    return (a >> b)
+end,
+    } ]] ) ()
+end

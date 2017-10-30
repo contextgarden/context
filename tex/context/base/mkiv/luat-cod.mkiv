@@ -67,12 +67,12 @@
 
 %D Reporting the version of \LUA\ that we use is done as follows:
 
-\edef\luaversion{\ctxwrite{_VERSION}}
+\def\luaversion{\ctxwrite{LUAVERSION}}
 
 \def\registerctxluafile#1#2{\ctxlua{lua.registercode("#1","#2")}}
 \def\ctxloadluafile      #1{\ctxlua{lua.registercode("#1")}}
 
-\registerctxluafile{luat-cod}{1.001}
+\registerctxluafile{luat-cod}{}
 
 % \everydump\expandafter{\the\everydump\ctxlua{lua.finalize()}}
 

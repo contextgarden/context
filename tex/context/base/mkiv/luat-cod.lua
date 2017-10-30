@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['luat-cod'] = {
 }
 
 local type, loadfile, tonumber = type, loadfile, tonumber
-local match, gsub, find, format = string.match, string.gsub, string.find, string.format
+local match, gsub, find, format, gmatch = string.match, string.gsub, string.find, string.format, string.gmatch
 
 local texconfig, lua = texconfig, lua
 
@@ -37,22 +37,28 @@ end
 
 -- no file.* functions yet
 
-function lua.registercode(filename,version)
+function lua.registercode(filename,options)
     local barename = gsub(filename,"%.[%a%d]+$","")
     if barename == filename then filename = filename .. ".lua" end
     local basename = match(barename,"^.+[/\\](.-)$") or barename
     if not bytedone[basename] then
-        local code = environment.luafilechunk(filename)
+        local opts = { }
+        if options ~= "" then
+            for s in gmatch(options,"([a-z]+)") do
+                opts[s] = true
+            end
+        end
+        local code = environment.luafilechunk(filename,false,opts.optimize)
         if code then
             bytedone[basename] = true
             if environment.initex then
                 local n = lua.lastbytecode + 1
-                bytedata[n] = { barename, version or "0.000" }
+                bytedata[n] = { name = barename, options = opts }
                 bytecode[n] = code
                 lua.lastbytecode = n
             end
         elseif environment.initex then
-            texio.write_nl("\nerror loading file: " .. filename .. " (aborting)")
+            texio.write_nl(format("\nerror loading file: %s (aborting)",filename))
             os.exit()
         end
     end

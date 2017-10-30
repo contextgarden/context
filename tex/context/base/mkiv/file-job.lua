@@ -1175,7 +1175,7 @@ if environment.initex then
         stopfilelogging()
         startfilelogging(report,"stored modules")
         for k,v in sortedhash(lua.bytedata) do
-            report("%03i %s %s",k,v[2],v[1])
+            report("%03i %s %s",k,v.name)
         end
         stopfilelogging()
         startfilelogging(report,"stored attributes")

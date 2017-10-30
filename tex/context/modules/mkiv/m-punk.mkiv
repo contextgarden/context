@@ -13,6 +13,7 @@
 
 \startluacode
 local concat   = table.concat
+local round    = math.round
 local chardata = characters.data
 local fontdata = fonts.hashes.identifiers
 
@@ -85,7 +86,7 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
     scalefactor = scalefactor or 1
     instances = instances or metapost.characters.instances or 10
     local fontname = file.removesuffix(file.basename(name))
-    local hash  = file.robustname(string.format("%s %05i %03i", fontname, scalefactor*1000, instances))
+    local hash  = file.robustname(string.format("%s %05i %03i", fontname, round(scalefactor*1000), instances))
     local lists = containers.read(fonts.mp.cache, hash)
     if not lists then
         statistics.starttiming(flusher)
@@ -203,7 +204,7 @@ metapost.characters.flusher = flusher
 statistics.register("metapost font generation", function()
     local time = statistics.elapsedtime(flusher)
     if total > 0 then
-        return string.format("%i glyphs, %.3f seconds runtime, %i glyphs/second", total, time, total/time)
+        return string.format("%i glyphs, %.3f seconds runtime, %0.3f glyphs/second", total, time, total/time)
     else
         return string.format("%i glyphs, %.3f seconds runtime", total, time)
     end

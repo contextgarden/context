@@ -22,10 +22,8 @@ add features.</p>
 local fonts, logs, trackers, containers, resolvers = fonts, logs, trackers, containers, resolvers
 
 local next, type, tonumber, rawget = next, type, tonumber, rawget
-local match, gmatch, lower, gsub, strip, find = string.match, string.gmatch, string.lower, string.gsub, string.strip, string.find
-local char, byte, sub = string.char, string.byte, string.sub
+local match, gsub = string.match, string.gsub
 local abs = math.abs
-local bxor, rshift = bit32.bxor, bit32.rshift
 local P, S, R, Cmt, C, Ct, Cs, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local sortedhash = table.sortedhash

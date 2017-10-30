@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/28/17 15:49:00
+-- merge date  : 10/30/17 22:31:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -118,6 +118,34 @@ if not FFISUPPORTED then
   ffi=nil
 elseif not ffi.number then
   ffi.number=tonumber
+end
+if not bit32 and utf8 then
+  bit32=load ([[ return {
+band = function(a,b)
+    return (a & b)
+end,
+bnot = function(a)
+    return ~a & 0xFFFFFFFF
+end,
+bor = function(a,b)
+    return (a | b) & 0xFFFFFFFF
+end,
+btest = function(a,b)
+    return (a & b) ~= 0
+end,
+bxor = function(a,b)
+    return (a ~ b) & 0xFFFFFFFF
+end,
+extract = function(a,b,c)
+    return (a >> b) & ~(-1 << (c or 1))
+end,
+lshift = function(a,b)
+    return (a << b) & 0xFFFFFFFF
+end,
+rshift = function(a,b)
+    return (a >> b)
+end,
+    } ]] ) ()
 end
 
 end -- closure
@@ -2961,6 +2989,8 @@ local type=type
 local char,byte,format,sub,gmatch=string.char,string.byte,string.format,string.sub,string.gmatch
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
+local floor=math.floor
+local rshift=bit32.rshift
 local lpegmatch=lpeg.match
 local patterns=lpeg.patterns
 local tabletopattern=lpeg.utfchartabletopattern
@@ -2983,26 +3013,26 @@ end
 if not utf.char then
   utf.char=string.utfcharacter or (utf8 and utf8.char)
   if not utf.char then
-    local floor,char=math.floor,string.char
+    local char=string.char
     function utf.char(n)
       if n<0x80 then
         return char(n)
       elseif n<0x800 then
         return char(
-          0xC0+floor(n/0x40),
+          0xC0+rshift(n,6),
           0x80+(n%0x40)
         )
       elseif n<0x10000 then
         return char(
-          0xE0+floor(n/0x1000),
-          0x80+(floor(n/0x40)%0x40),
+          0xE0+rshift(n,12),
+          0x80+(rshift(n,6)%0x40),
           0x80+(n%0x40)
         )
       elseif n<0x200000 then
         return char(
-          0xF0+floor(n/0x40000),
-          0x80+(floor(n/0x1000)%0x40),
-          0x80+(floor(n/0x40)%0x40),
+          0xF0+rshift(n,18),
+          0x80+(rshift(n,12)%0x40),
+          0x80+(rshift(n,6)%0x40),
           0x80+(n%0x40)
         )
       else
@@ -3431,20 +3461,22 @@ function utf.utf32_to_utf8_t(t,endian)
 end
 local function little(b)
   if b<0x10000 then
-    return char(b%256,b/256)
+    return char(b%256,rshift(b,8))
   else
     b=b-0x10000
-    local b1,b2=b/1024+0xD800,b%1024+0xDC00
-    return char(b1%256,b1/256,b2%256,b2/256)
+    local b1=rshift(b,10)+0xD800
+    local b2=b%1024+0xDC00
+    return char(b1%256,rshift(b1,8),b2%256,rshift(b2,8))
   end
 end
 local function big(b)
   if b<0x10000 then
-    return char(b/256,b%256)
+    return char(rshift(b,8),b%256)
   else
     b=b-0x10000
-    local b1,b2=b/1024+0xD800,b%1024+0xDC00
-    return char(b1/256,b1%256,b2/256,b2%256)
+    local b1=rshift(b,10)+0xD800
+    local b2=b%1024+0xDC00
+    return char(rshift(b1,8),b1%256,rshift(b2,8),b2%256)
   end
 end
 local l_remap=Cs((p_utf8byte/little+P(1)/"")^0)
@@ -4355,8 +4387,9 @@ if not modules then modules={} end modules ['util-fil']={
 }
 local byte=string.byte
 local char=string.char
-local extract=bit32 and bit32.extract
-local floor=math.floor
+local extract=bit32.extract
+local rshift=bit32.rshift
+local band=bit32.band
 utilities=utilities or {}
 local files={}
 utilities.files=files
@@ -4518,26 +4551,14 @@ function files.readfixed2(f)
     return (a    )+b/0x100
   end
 end
-function files.readfixed4(f)
-  local a,b,c,d=byte(f:read(4),1,4)
+function files.read2dot14(f)
+  local a,b=byte(f:read(2),1,2)
   if a>=0x80 then
-    return (0x100*a+b-0x10000)+(0x100*c+d)/0x10000
+    local n=-(0x100*a+b)
+    return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
   else
-    return (0x100*a+b     )+(0x100*c+d)/0x10000
-  end
-end
-if extract then
-  local extract=bit32.extract
-  local band=bit32.band
-  function files.read2dot14(f)
-    local a,b=byte(f:read(2),1,2)
-    if a>=0x80 then
-      local n=-(0x100*a+b)
-      return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
-    else
-      local n=0x100*a+b
-      return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
-    end
+    local n=0x100*a+b
+    return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
   end
 end
 function files.skipshort(f,n)
@@ -4548,17 +4569,17 @@ function files.skiplong(f,n)
 end
 function files.writecardinal2(f,n)
   local a=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local b=char(n%256)
   f:write(b,a)
 end
 function files.writecardinal4(f,n)
   local a=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local b=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local c=char(n%256)
-  n=floor(n/256)
+  n=rshift(n,8)
   local d=char(n%256)
   f:write(d,c,b,a)
 end
@@ -9113,9 +9134,9 @@ if not modules then modules={} end modules ['font-map']={
 local tonumber,next,type=tonumber,next,type
 local match,format,find,concat,gsub,lower=string.match,string.format,string.find,table.concat,string.gsub,string.lower
 local P,R,S,C,Ct,Cc,lpegmatch=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.match
-local floor=math.floor
 local formatters=string.formatters
 local sortedhash,sortedkeys=table.sortedhash,table.sortedkeys
+local rshift=bit32.rshift
 local trace_loading=false trackers.register("fonts.loading",function(v) trace_loading=v end)
 local trace_mapping=false trackers.register("fonts.mapping",function(v) trace_mapping=v end)
 local report_fonts=logs.reporter("fonts","loading")
@@ -9153,7 +9174,7 @@ local function tounicode16(unicode)
     return f_single(unicode)
   else
     unicode=unicode-0x10000
-    return f_double(floor(unicode/1024)+0xD800,unicode%1024+0xDC00)
+    return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
   end
 end
 local function tounicode16sequence(unicodes)
@@ -9164,7 +9185,7 @@ local function tounicode16sequence(unicodes)
       t[l]=f_single(u)
     else
       u=u-0x10000
-      t[l]=f_double(floor(u/1024)+0xD800,u%1024+0xDC00)
+      t[l]=f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
     end
   end
   return concat(t)
@@ -9178,7 +9199,7 @@ local function tounicode(unicode)
         t[l]=f_single(u)
       else
         u=u-0x10000
-        t[l]=f_double(floor(u/1024)+0xD800,u%1024+0xDC00)
+        t[l]=f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
       end
     end
     return concat(t)
@@ -9187,7 +9208,7 @@ local function tounicode(unicode)
       return f_single(unicode)
     else
       unicode=unicode-0x10000
-      return f_double(floor(unicode/1024)+0xD800,unicode%1024+0xDC00)
+      return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
     end
   end
 end
@@ -9714,6 +9735,7 @@ local byte,lower,char,gsub=string.byte,string.lower,string.char,string.gsub
 local floor,round=math.floor,math.round
 local P,R,S,C,Cs,Cc,Ct,Carg,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Carg,lpeg.Cmt
 local lpegmatch=lpeg.match
+local rshift=bit32.rshift
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local sortedkeys=table.sortedkeys
@@ -10876,7 +10898,7 @@ function readers.kern(f,fontdata,specification)
       local version=readushort(f)
       local length=readushort(f)
       local coverage=readushort(f)
-      local format=bit32.rshift(coverage,8) 
+      local format=rshift(coverage,8) 
       if format==0 then
         local nofpairs=readushort(f)
         local searchrange=readushort(f)
@@ -16469,7 +16491,7 @@ do
         local version=readushort(f)
         local length=readushort(f)
         local coverage=readushort(f)
-        local format=bit32.rshift(coverage,8) 
+        local format=rshift(coverage,8) 
         if format==0 then
           local nofpairs=readushort(f)
           local searchrange=readushort(f)
@@ -30124,10 +30146,8 @@ if not modules then modules={} end modules ['font-one']={
 }
 local fonts,logs,trackers,containers,resolvers=fonts,logs,trackers,containers,resolvers
 local next,type,tonumber,rawget=next,type,tonumber,rawget
-local match,gmatch,lower,gsub,strip,find=string.match,string.gmatch,string.lower,string.gsub,string.strip,string.find
-local char,byte,sub=string.char,string.byte,string.sub
+local match,gsub=string.match,string.gsub
 local abs=math.abs
-local bxor,rshift=bit32.bxor,bit32.rshift
 local P,S,R,Cmt,C,Ct,Cs,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.Cmt,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local sortedhash=table.sortedhash

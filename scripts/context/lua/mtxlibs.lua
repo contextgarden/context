@@ -68,6 +68,7 @@ local owntree = ownpath
 local ownlibs = {
 
     "l-lua.lua",
+    "l-macros.lua",
     "l-sandbox.lua",
     "l-package.lua",
     "l-lpeg.lua",

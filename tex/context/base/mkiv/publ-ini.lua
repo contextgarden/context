@@ -2364,16 +2364,34 @@ do
     local function btxvalidcitevariant(dataset,variant)
         local citevariant = rawget(citevariants,variant)
         if citevariant then
-            return variant, citevariant
+            return citevariant
         end
-        local variant = specifications[dataset].types[variant]
-        if variant then
-            citevariant = rawget(citevariants,variant)
+        local s = datasets[dataset]
+        if s then
+            s = s.specifications
         end
-        if citevariant then
-            return variant, citevariant
+        if s then
+            for k, v in sortedhash(s) do
+                s = k
+                break
+            end
         end
-        return "default", citevariants.default
+        if s then
+            s = specifications[s]
+        end
+        if s then
+            s = s.types
+        end
+        if s then
+            variant = s[variant]
+            if variant then
+                citevariant = rawget(citevariants,variant)
+            end
+            if citevariant then
+                return citevariant
+            end
+        end
+        return citevariants.default
     end
 
     local function btxhandlecite(specification)
@@ -2419,8 +2437,7 @@ do
         --
         ctx_btxsetdataset(dataset)
         --
-        local variant, citevariant = btxvalidcitevariant(dataset,variant)
-        specification.variant = variant -- the used one
+        local citevariant = btxvalidcitevariant(dataset,variant)
         --
         citevariant(specification) -- we always fall back on default
     end
@@ -2676,6 +2693,11 @@ do
                 ctx_btxstartcite()
                 ctx_btxsettag(tag)
                 ctx_btxsetcategory(entry.category or "unknown")
+                --
+                local language = entry.language
+                if language then
+                    ctx_btxsetlanguage(language)
+                end
                 --
                 if lefttext  then local text = lefttext [i] ; if text and text ~= "" then ctx_btxsetlefttext (text) end end
                 if righttext then local text = righttext[i] ; if text and text ~= "" then ctx_btxsetrighttext(text) end end

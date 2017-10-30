@@ -37,6 +37,8 @@ local type = type
 local char, byte, format, sub, gmatch = string.char, string.byte, string.format, string.sub, string.gmatch
 local concat = table.concat
 local P, C, R, Cs, Ct, Cmt, Cc, Carg, Cp = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg, lpeg.Cp
+local floor = math.floor
+local rshift = bit32.rshift
 
 local lpegmatch       = lpeg.match
 local patterns        = lpeg.patterns
@@ -73,7 +75,7 @@ if not utf.char then
 
         -- no multiples
 
-        local floor, char = math.floor, string.char
+        local char = string.char
 
         function utf.char(n)
             if n < 0x80 then
@@ -82,17 +84,26 @@ if not utf.char then
             elseif n < 0x800 then
                 -- 110bbbaa : 0xC0 : n >> 6
                 -- 10aaaaaa : 0x80 : n & 0x3F
+--                 return char(
+--                     0xC0 + floor(n/0x40),
+--                     0x80 + (n % 0x40)
+--                 )
                 return char(
-                    0xC0 + floor(n/0x40),
+                    0xC0 + rshift(n,6),
                     0x80 + (n % 0x40)
                 )
             elseif n < 0x10000 then
                 -- 1110bbbb : 0xE0 :  n >> 12
                 -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
                 -- 10aaaaaa : 0x80 :  n        & 0x3F
+--                 return char(
+--                     0xE0 + floor(n/0x1000),
+--                     0x80 + (floor(n/0x40) % 0x40),
+--                     0x80 + (n % 0x40)
+--                 )
                 return char(
-                    0xE0 + floor(n/0x1000),
-                    0x80 + (floor(n/0x40) % 0x40),
+                    0xE0 + rshift(n,12),
+                    0x80 + (rshift(n,6) % 0x40),
                     0x80 + (n % 0x40)
                 )
             elseif n < 0x200000 then
@@ -101,10 +112,16 @@ if not utf.char then
                 -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
                 -- 10aaaaaa : 0x80 :  n        & 0x3F
                 -- dddd     : ccccc - 1
+--                 return char(
+--                     0xF0 +  floor(n/0x40000),
+--                     0x80 + (floor(n/0x1000) % 0x40),
+--                     0x80 + (floor(n/0x40) % 0x40),
+--                     0x80 + (n % 0x40)
+--                 )
                 return char(
-                    0xF0 +  floor(n/0x40000),
-                    0x80 + (floor(n/0x1000) % 0x40),
-                    0x80 + (floor(n/0x40) % 0x40),
+                    0xF0 +  rshift(n,18),
+                    0x80 + (rshift(n,12) % 0x40),
+                    0x80 + (rshift(n,6) % 0x40),
                     0x80 + (n % 0x40)
                 )
             else
@@ -187,43 +204,6 @@ end
 local one  = P(1)
 local two  = C(1) * C(1)
 local four = C(R(utfchar(0xD8),utfchar(0xFF))) * C(1) * C(1) * C(1)
-
--- actually one of them is already utf ... sort of useless this one
-
--- function utf.char(n)
---     if n < 0x80 then
---         return char(n)
---     elseif n < 0x800 then
---         return char(
---             0xC0 + floor(n/0x40),
---             0x80 + (n % 0x40)
---         )
---     elseif n < 0x10000 then
---         return char(
---             0xE0 + floor(n/0x1000),
---             0x80 + (floor(n/0x40) % 0x40),
---             0x80 + (n % 0x40)
---         )
---     elseif n < 0x40000 then
---         return char(
---             0xF0 + floor(n/0x40000),
---             0x80 + floor(n/0x1000),
---             0x80 + (floor(n/0x40) % 0x40),
---             0x80 + (n % 0x40)
---         )
---     else
---      -- return char(
---      --     0xF1 + floor(n/0x1000000),
---      --     0x80 + floor(n/0x40000),
---      --     0x80 + floor(n/0x1000),
---      --     0x80 + (floor(n/0x40) % 0x40),
---      --     0x80 + (n % 0x40)
---      -- )
---         return "?"
---     end
--- end
---
--- merge into:
 
 local pattern = P("\254\255") * Cs( (
                     four  / function(a,b,c,d)
@@ -1062,23 +1042,28 @@ function utf.utf32_to_utf8_t(t,endian)
     return endian and utf32_to_utf8_be_t(t) or utf32_to_utf8_le_t(t) or t
 end
 
+-- floor(b/256)  => rshift(b, 8)
+-- floor(b/1024) => rshift(b,10)
+
 local function little(b)
     if b < 0x10000 then
-        return char(b%256,b/256)
+        return char(b%256,rshift(b,8))
     else
         b = b - 0x10000
-        local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
-        return char(b1%256,b1/256,b2%256,b2/256)
+        local b1 = rshift(b,10) + 0xD800
+        local b2 = b%1024 + 0xDC00
+        return char(b1%256,rshift(b1,8),b2%256,rshift(b2,8))
     end
 end
 
 local function big(b)
     if b < 0x10000 then
-        return char(b/256,b%256)
+        return char(rshift(b,8),b%256)
     else
         b = b - 0x10000
-        local b1, b2 = b/1024 + 0xD800, b%1024 + 0xDC00
-        return char(b1/256,b1%256,b2/256,b2%256)
+        local b1 = rshift(b,10) + 0xD800
+        local b2 = b%1024 + 0xDC00
+        return char(rshift(b1,8),b1%256,rshift(b2,8),b2%256)
     end
 end
 

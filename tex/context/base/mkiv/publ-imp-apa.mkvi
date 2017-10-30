@@ -346,6 +346,14 @@
   [apa:\s!cite]
 
 \definebtx
+  [apa:\s!cite:editor]
+  [apa:\s!cite:author]
+
+\definebtx
+  [apa:\s!cite:translator]
+  [apa:\s!cite:author]
+
+\definebtx
   [apa:\s!cite:organization]
   [apa:\s!cite]
 
@@ -856,7 +864,11 @@
 
 \starttexdefinition unexpanded btx:apa:author-or-editor #author
     \btxdoifelse {#author} {
-        \btxflush{#author}
+        \btxstartstyleandcolor[apa:\s!list:#author]
+            \btxusecommand[apa:\s!list:#author]{
+                \btxflush{#author}
+            }
+        \btxstopstyleandcolor
         % use \processaction [] [] here?
         \doifelse {\btxfoundname{#author}} {editor} {
             \btxleftparenthesis
@@ -902,7 +914,11 @@
                     \btxrightparenthesis
                     \removeunwantedspaces
                     \btxparameter{\c!separator:names:3}
-                    \btxflush{director}
+                    \btxstartstyleandcolor[apa:\s!list:director]
+                        \btxusecommand[apa:\s!list:director]{
+                            \btxflush{director}
+                        }
+                    \btxstopstyleandcolor
                     \btxleftparenthesis
                     \btxsingularorplural {director} {
                         \btxlabeltext{apa:Director}
@@ -917,7 +933,11 @@
             \btxleftparenthesis
             \btxlabeltext{with}
             \btxspace
-            \btxflush{withauthor}
+            \btxstartstyleandcolor[apa:\s!list:withauthor]
+                \btxusecommand[apa:\s!list:withauthor]{
+                    \btxflush{withauthor}
+                }
+            \btxstopstyleandcolor
             \btxrightparenthesis
         }
     } {
