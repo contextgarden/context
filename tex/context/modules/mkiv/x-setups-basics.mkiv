@@ -183,7 +183,8 @@
         \def\docommand##1{
             \xmlsetup{#1}{xml:setups:assemblename:instance}
             \ifconditional\c_cmd_show_registered
-                \writestatus{known setup}{\currentSETUPinclusion stp:x:\currentSETUPfullname:##1}%
+               %\writestatus{known setup}{\currentSETUPinclusion stp:x:\currentSETUPfullname:##1}%
+                \writestatus{known setup}{\currentSETUPinclusion \currentSETUPfullname:##1}%
             \fi
             \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
         \processcommacommand[\clf_getinstances{#1}]\docommand
@@ -503,6 +504,9 @@
        \ifx\cmd_id\empty
           missing: stp:x:#1
        \else
+         \ifx\m_cmd_instance\empty
+           \edef\m_cmd_instance{\expandafter\secondoftwoarguments\cmd_id}%
+         \fi
          \xmlsetup{\expandafter\firstoftwoarguments\cmd_id}{xml:setups:typeset}
        \fi
      \stopelement

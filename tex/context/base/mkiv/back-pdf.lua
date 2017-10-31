@@ -263,7 +263,7 @@ scanners.pdfdest = function()
         view = "xyz"
         if scankeyword("zoom") then
             report("\\pdfdest zoom is ignored")
-            zoom = scancount()
+            zoom = scancount() -- will be divided by 1000 in the backend
         end
     elseif scankeyword("fitbh") then
         view = "fitbh"

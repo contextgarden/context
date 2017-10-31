@@ -228,14 +228,14 @@ end
 --     end
 -- end
 
--- function files.readfixed4(f)
---     local a, b, c, d = byte(f:read(4),1,4)
---     if a >= 0x80 then
---         return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
---     else
---         return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
---     end
--- end
+function files.readfixed4(f)
+    local a, b, c, d = byte(f:read(4),1,4)
+    if a >= 0x80 then
+        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
+    else
+        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
+    end
+end
 
 -- (real) ((n<<16)>>(16+14)) + ((n&0x3fff)/16384.0))
 
@@ -296,8 +296,8 @@ if fio and fio.readcardinal1 then
     files.readinteger2   = fio.readinteger2
     files.readinteger3   = fio.readinteger3
     files.readinteger4   = fio.readinteger4
- -- files.readfixed2     = fio.readfixed2 -- needs recent luatex
- -- files.readfixed4     = fio.readfixed4 -- needs recent luatex
+    files.readfixed2     = fio.readfixed2
+    files.readfixed4     = fio.readfixed4
     files.read2dot14     = fio.read2dot14
     files.setposition    = fio.setposition
     files.getposition    = fio.getposition

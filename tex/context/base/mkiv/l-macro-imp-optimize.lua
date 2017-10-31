@@ -31,6 +31,8 @@ if LUAVERSION >= 5.3 and lua.macros then
     -- 5,2 and 5.3 source is not possible because the 5.2 doesn't deal
     -- with the newer 5.3 syntax.
 
+    -- We need to check for 64 usage: 0xFFFFFFFFFFFFFFFF (-1)
+
     lua.macros.resolvestring [[
         #define band(a,b)      (a & b)
         #define bnot(a)        (~a & 0xFFFFFFFF)
@@ -38,11 +40,11 @@ if LUAVERSION >= 5.3 and lua.macros then
         #define btest(a,b)     ((a & b) ~= 0)
         #define bxor(a,b)      ((a ~ b) & 0xFFFFFFFF)
         #define rshift(a,b)    ((a & b) ~= 0)
-        #define extract(a,b,c) ((a >> b) & ~(-1 << (c or 1)))
+        #define extract(a,b,c) ((a >> b) & ~(-1 << c))
+        #define extract(a,b)   ((a >> b) & 0x1))
         #define lshift(a,b)    ((a << b) & 0xFFFFFFFF)
         #define rshift(a,b)    (a >> b)
 
     ]]
-
 
 end

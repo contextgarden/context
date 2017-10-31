@@ -41,23 +41,28 @@ local definitions   = { }
 local resolve
 local subparser
 
-resolve = C(C(name) * arguments) / function(raw,s,a)
+-- todo: zero case
+
+resolve = C(C(name) * arguments^-1) / function(raw,s,a)
     local d = definitions[s]
     if d then
         if a then
-            for i=1,#a do
+            local n = #a
+            for i=1,n do
                 a[i] = lpegmatch(subparser,a[i]) or a[i]
             end
-            local p = patterns[s]
+            local p = patterns[s][n]
+            local d = d[n]
             if p then
-                d = lpegmatch(p,d,1,a) or d
+                return lpegmatch(p,d,1,a) or d
             else
-                -- error
+                return d
             end
         end
-        return lpegmatch(subparser,d) or d
+        return d[0] or raw
     elseif a then
-        for i=1,#a do
+        local n = #a
+        for i=1,n do
             a[i] = lpegmatch(subparser,a[i]) or a[i]
         end
         return s .. "(" .. concat(a,",") .. ")"
@@ -71,36 +76,68 @@ subparser = Cs((resolve + P(1))^1)
 local enddefine   = P("#enddefine") / ""
 
 local beginregister = (C(name) * spaces^0 * (arguments + Cc(false)) * C((1-enddefine)^1) * enddefine) / function(k,a,v)
+    local n = 0
     if a then
-        local p = P(false)
-        for i=1,#a do
-            p = p + (P(a[i]) * Carg(1)) / function(t) return t[i] end
+        n = #a
+        local pattern = P(false)
+        for i=1,n do
+            pattern = pattern + (P(a[i]) * Carg(1)) / function(t) return t[i] end
         end
-        p = Cs((p + P(1))^1)
-        patterns[k] = p
+        pattern = Cs((pattern + P(1))^1)
+        local p = patterns[k]
+        if not p then
+            p = { [0] = false, false, false, false, false, false, false, false, false }
+            patterns[k] = p
+        end
+        p[n] = pattern
     end
-    definitions[k] = lpegmatch(subparser,v) or v
+    local d = definitions[k]
+    if not d then
+        d = { [0] = false, false, false, false, false, false, false, false, false }
+        definitions[k] = d
+    end
+    d[n] = lpegmatch(subparser,v) or v
     return ""
 end
 
 local register = (C(name) * spaces^0 * (arguments + Cc(false)) * spaces^0 * C(body)) / function(k,a,v)
+    local n = 0
     if a then
-        local p = P(false)
-        for i=1,#a do
-            p = p + (P(a[i]) * Carg(1)) / function(t) return t[i] end
+        n = #a
+        local pattern = P(false)
+        for i=1,n do
+            pattern = pattern + (P(a[i]) * Carg(1)) / function(t) return t[i] end
         end
-        p = Cs((p + P(1))^1)
-        patterns[k] = p
+        pattern = Cs((pattern + P(1))^1)
+        local p = patterns[k]
+        if not p then
+            p = { [0] = false, false, false, false, false, false, false, false, false }
+            patterns[k] = p
+        end
+        p[n] = pattern
     end
-    definitions[k] = lpegmatch(subparser,v) or v
+    local d = definitions[k]
+    if not d then
+        d = { [0] = false, false, false, false, false, false, false, false, false }
+        definitions[k] = d
+    end
+    d[n] = lpegmatch(subparser,v) or v
     return ""
 end
 
 local unregister = (C(name) * spaces^0 * (arguments + Cc(false))) / function(k,a)
+    local n = 0
     if a then
-        patterns[k] = nil
+        n = #a
+        local p = patterns[k]
+        if p then
+            p[n] = false
+        end
     end
-    definitions[k] = nil
+    local d = definitions[k]
+    if d then
+        d[n] = false
+    end
     return ""
 end
 

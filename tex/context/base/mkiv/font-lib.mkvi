@@ -20,44 +20,27 @@
 \registerctxluafile{font-con}{}
 \registerctxluafile{font-cft}{}
 \registerctxluafile{font-enc}{}
-\registerctxluafile{font-agl}{} % if needed we can comment this and delay loading
-\registerctxluafile{font-cid}{} % cid maps
+\registerctxluafile{font-agl}{}         % if needed we can comment this and delay loading
+\registerctxluafile{font-cid}{}         % cid maps
 \registerctxluafile{font-map}{optimize}
 
 % the otf font loader:
 
 \registerctxluafile{font-otr}{optimize} % opentype fontloader
-\registerctxluafile{font-web}{} % opentype fontloader
+\registerctxluafile{font-web}{}         % opentype fontloader
 \registerctxluafile{font-cff}{optimize} % quadratic outlines
-\registerctxluafile{font-ttf}{xoptimize} % cubic outlines
-%registerctxluafile{font-tmp}{} % temporary placeholder
+\registerctxluafile{font-ttf}{optimize} % cubic outlines
 \registerctxluafile{font-dsp}{optimize} % ... for this one
-%registerctxluafile{font-off}{} % the old loader
-
-\registerctxluafile{font-hsh}{} % hashes used by context
+\registerctxluafile{font-hsh}{}         % hashes used by context
 \registerctxluafile{font-nod}{}
-
-\registerctxluafile{font-oti}{} % otf initialization
-\registerctxluafile{font-ott}{} % otf tables (first)
-
+\registerctxluafile{font-oti}{}         % otf initialization
+\registerctxluafile{font-ott}{}         % otf tables (first)
 \registerctxluafile{font-otl}{}
 \registerctxluafile{font-oto}{}
 \registerctxluafile{font-otj}{}
-
-% \doifelsefile{font-oup-new.lua} {
-%     \registerctxluafile{font-oup-new}{}
-% } {
-    \registerctxluafile{font-oup}{}
-% }
-
+\registerctxluafile{font-oup}{}
 \registerctxluafile{font-ota}{}
-
-% \doifelsefile{font-ots-new.lua} {
-%     \registerctxluafile{font-ots-new}{}
-% } {
-    \registerctxluafile{font-ots}{}
-% }
-
+\registerctxluafile{font-ots}{}
 \registerctxluafile{font-otd}{}
 \registerctxluafile{font-otc}{}
 \registerctxluafile{font-oth}{}

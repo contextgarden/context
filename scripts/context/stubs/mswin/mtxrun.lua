@@ -209,7 +209,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-macro"] = package.loaded["l-macro"] or true
 
--- original size: 5367, stripped down to: 2860
+-- original size: 6378, stripped down to: 3652
 
 if not modules then modules={} end modules ['l-macros']={
   version=1.001,
@@ -242,22 +242,26 @@ local patterns={}
 local definitions={}
 local resolve
 local subparser
-resolve=C(C(name)*arguments)/function(raw,s,a)
+resolve=C(C(name)*arguments^-1)/function(raw,s,a)
   local d=definitions[s]
   if d then
     if a then
-      for i=1,#a do
+      local n=#a
+      for i=1,n do
         a[i]=lpegmatch(subparser,a[i]) or a[i]
       end
-      local p=patterns[s]
+      local p=patterns[s][n]
+      local d=d[n]
       if p then
-        d=lpegmatch(p,d,1,a) or d
+        return lpegmatch(p,d,1,a) or d
       else
+        return d
       end
     end
-    return lpegmatch(subparser,d) or d
+    return d[0] or raw
   elseif a then
-    for i=1,#a do
+    local n=#a
+    for i=1,n do
       a[i]=lpegmatch(subparser,a[i]) or a[i]
     end
     return s.."("..concat(a,",")..")"
@@ -268,34 +272,66 @@ end
 subparser=Cs((resolve+P(1))^1)
 local enddefine=P("#enddefine")/""
 local beginregister=(C(name)*spaces^0*(arguments+Cc(false))*C((1-enddefine)^1)*enddefine)/function(k,a,v)
+  local n=0
   if a then
-    local p=P(false)
-    for i=1,#a do
-      p=p+(P(a[i])*Carg(1))/function(t) return t[i] end
+    n=#a
+    local pattern=P(false)
+    for i=1,n do
+      pattern=pattern+(P(a[i])*Carg(1))/function(t) return t[i] end
     end
-    p=Cs((p+P(1))^1)
-    patterns[k]=p
+    pattern=Cs((pattern+P(1))^1)
+    local p=patterns[k]
+    if not p then
+      p={ [0]=false,false,false,false,false,false,false,false,false }
+      patterns[k]=p
+    end
+    p[n]=pattern
   end
-  definitions[k]=lpegmatch(subparser,v) or v
+  local d=definitions[k]
+  if not d then
+    d={ [0]=false,false,false,false,false,false,false,false,false }
+    definitions[k]=d
+  end
+  d[n]=lpegmatch(subparser,v) or v
   return ""
 end
 local register=(C(name)*spaces^0*(arguments+Cc(false))*spaces^0*C(body))/function(k,a,v)
+  local n=0
   if a then
-    local p=P(false)
-    for i=1,#a do
-      p=p+(P(a[i])*Carg(1))/function(t) return t[i] end
+    n=#a
+    local pattern=P(false)
+    for i=1,n do
+      pattern=pattern+(P(a[i])*Carg(1))/function(t) return t[i] end
     end
-    p=Cs((p+P(1))^1)
-    patterns[k]=p
+    pattern=Cs((pattern+P(1))^1)
+    local p=patterns[k]
+    if not p then
+      p={ [0]=false,false,false,false,false,false,false,false,false }
+      patterns[k]=p
+    end
+    p[n]=pattern
   end
-  definitions[k]=lpegmatch(subparser,v) or v
+  local d=definitions[k]
+  if not d then
+    d={ [0]=false,false,false,false,false,false,false,false,false }
+    definitions[k]=d
+  end
+  d[n]=lpegmatch(subparser,v) or v
   return ""
 end
 local unregister=(C(name)*spaces^0*(arguments+Cc(false)))/function(k,a)
+  local n=0
   if a then
-    patterns[k]=nil
+    n=#a
+    local p=patterns[k]
+    if p then
+      p[n]=false
+    end
   end
-  definitions[k]=nil
+  local d=definitions[k]
+  if d then
+    d[n]=false
+  end
   return ""
 end
 local begindefine=(P("begindefine")*spaces^0/"")*beginregister
@@ -7275,7 +7311,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7551, stripped down to: 5360
+-- original size: 7481, stripped down to: 5627
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7450,6 +7486,14 @@ function files.readfixed2(f)
     return (a    )+b/0x100
   end
 end
+function files.readfixed4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  if a>=0x80 then
+    return (0x100*a+b-0x10000)+(0x100*c+d)/0x10000
+  else
+    return (0x100*a+b     )+(0x100*c+d)/0x10000
+  end
+end
 function files.read2dot14(f)
   local a,b=byte(f:read(2),1,2)
   if a>=0x80 then
@@ -7497,6 +7541,8 @@ if fio and fio.readcardinal1 then
   files.readinteger2=fio.readinteger2
   files.readinteger3=fio.readinteger3
   files.readinteger4=fio.readinteger4
+  files.readfixed2=fio.readfixed2
+  files.readfixed4=fio.readfixed4
   files.read2dot14=fio.read2dot14
   files.setposition=fio.setposition
   files.getposition=fio.getposition
@@ -20943,8 +20989,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 862808
--- stripped bytes    : 313171
+-- original bytes    : 863749
+-- stripped bytes    : 313053
 
 -- end library merge
 

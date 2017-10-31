@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/30/17 22:31:38
+-- merge date  : 10/31/17 15:07:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -4551,6 +4551,14 @@ function files.readfixed2(f)
     return (a    )+b/0x100
   end
 end
+function files.readfixed4(f)
+  local a,b,c,d=byte(f:read(4),1,4)
+  if a>=0x80 then
+    return (0x100*a+b-0x10000)+(0x100*c+d)/0x10000
+  else
+    return (0x100*a+b     )+(0x100*c+d)/0x10000
+  end
+end
 function files.read2dot14(f)
   local a,b=byte(f:read(2),1,2)
   if a>=0x80 then
@@ -4598,6 +4606,8 @@ if fio and fio.readcardinal1 then
   files.readinteger2=fio.readinteger2
   files.readinteger3=fio.readinteger3
   files.readinteger4=fio.readinteger4
+  files.readfixed2=fio.readfixed2
+  files.readfixed4=fio.readfixed4
   files.read2dot14=fio.read2dot14
   files.setposition=fio.setposition
   files.getposition=fio.getposition
