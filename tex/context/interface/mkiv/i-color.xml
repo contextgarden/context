@@ -207,7 +207,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="color" level="document"category="colors" file="colo-ini.mkiv">
+    <cd:command name="color" level="document" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
@@ -392,7 +392,7 @@
 
     <cd:command name="paletsize" level="system" category="colors" file="colo-ini.mkiv"/>
 
-    <cd:command name="setuppalet" clevel="style" ategory="colors" file="colo-ini.mkiv">
+    <cd:command name="setuppalet" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>

@@ -1685,27 +1685,27 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="rlap">
+  <cd:command file="supp-box.mkiv" level="system" name="rlap">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="llap">
+  <cd:command file="supp-box.mkiv" level="system" name="llap">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="clap">
+  <cd:command file="supp-box.mkiv" level="system" name="clap">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="tlap">
+  <cd:command file="supp-box.mkiv" level="system" name="tlap">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="blap">
+  <cd:command file="supp-box.mkiv" level="system" name="blap">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
@@ -1757,7 +1757,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="limitatetext">
+  <cd:command file="supp-box.mkiv" level="system" name="limitatetext">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:text"/>
@@ -1770,7 +1770,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="limitatetext" variant="list">
+  <cd:command file="supp-box.mkiv" level="system" name="limitatetext" variant="list">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:text"/>
@@ -1783,7 +1783,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="limitatefirstline">
+  <cd:command file="supp-box.mkiv" level="system" name="limitatefirstline">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:text"/>
@@ -1876,35 +1876,27 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="sbox">
+  <cd:command file="supp-box.mkiv" level="system" name="sbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="inlinedbox">
+  <cd:command file="supp-box.mkiv" level="system" name="inlinedbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="struttedbox">
+  <cd:command file="supp-box.mkiv" level="system" name="struttedbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="topskippedbox">
+  <cd:command file="supp-box.mkiv" level="system" name="topskippedbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="centeredbox">
-   <cd:arguments>
-    <cd:keywords delimiters="none" optional="yes">
-     <cd:constant type="cd:text"/>
-    </cd:keywords>
-    <cd:content/>
-   </cd:arguments>
-  </cd:command>
-  <cd:command file="supp-box.mkiv" name="centerednextbox">
+  <cd:command file="supp-box.mkiv" level="system" name="centeredbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -1912,7 +1904,15 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="centerbox">
+  <cd:command file="supp-box.mkiv" level="system" name="centerednextbox">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-box.mkiv" level="system" name="centerbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -1965,7 +1965,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="doifcontent">
+  <cd:command file="supp-box.mkiv" level="system" name="doifcontent">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:command"/>
@@ -1980,8 +1980,8 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="overlay" type="environment"/>
-  <cd:command file="supp-box.mkiv" name="fakebox">
+  <cd:command file="supp-box.mkiv" level="system" name="overlay" type="environment"/>
+  <cd:command file="supp-box.mkiv" level="system" name="fakebox">
    <cd:arguments>
     <cd:keywords delimiters="none">
      <cd:constant type="cd:csname"/>
@@ -1989,7 +1989,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="lbox">
+  <cd:command file="supp-box.mkiv" level="system" name="lbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -1997,7 +1997,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="cbox">
+  <cd:command file="supp-box.mkiv" level="system" name="cbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2005,7 +2005,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="rbox">
+  <cd:command file="supp-box.mkiv" level="system" name="rbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2013,7 +2013,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="ltop">
+  <cd:command file="supp-box.mkiv" level="system" name="ltop">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2021,7 +2021,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="ctop">
+  <cd:command file="supp-box.mkiv" level="system" name="ctop">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2029,7 +2029,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="rtop">
+  <cd:command file="supp-box.mkiv" level="system" name="rtop">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2037,47 +2037,47 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="tbox">
+  <cd:command file="supp-box.mkiv" level="system" name="tbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="bbox">
+  <cd:command file="supp-box.mkiv" level="system" name="bbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="lhbox">
+  <cd:command file="supp-box.mkiv" level="system" name="lhbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="mhbox">
+  <cd:command file="supp-box.mkiv" level="system" name="mhbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="rhbox">
+  <cd:command file="supp-box.mkiv" level="system" name="rhbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="lefthbox">
+  <cd:command file="supp-box.mkiv" level="system" name="lefthbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="midhbox">
+  <cd:command file="supp-box.mkiv" level="system" name="midhbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="righthbox">
+  <cd:command file="supp-box.mkiv" level="system" name="righthbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="boxofsize">
+  <cd:command file="supp-box.mkiv" level="system" name="boxofsize">
    <cd:arguments>
     <cd:csname/>
     <cd:keywords delimiters="none" list="yes" optional="yes">
@@ -2086,7 +2086,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="limitatelines">
+  <cd:command file="supp-box.mkiv" level="system" name="limitatelines">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:number"/>
@@ -2099,98 +2099,98 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="fittopbaselinegrid">
+  <cd:command file="supp-box.mkiv" level="system" name="fittopbaselinegrid">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="boxcursor"/>
-  <cd:command file="supp-box.mkiv" name="placedbox">
+  <cd:command file="supp-box.mkiv" level="system" name="boxcursor"/>
+  <cd:command file="supp-box.mkiv" level="system" name="placedbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="rightbox">
+  <cd:command file="supp-box.mkiv" level="system" name="rightbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="leftbox">
+  <cd:command file="supp-box.mkiv" level="system" name="leftbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="topbox">
+  <cd:command file="supp-box.mkiv" level="system" name="topbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="bottombox">
+  <cd:command file="supp-box.mkiv" level="system" name="bottombox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="lefttopbox">
+  <cd:command file="supp-box.mkiv" level="system" name="lefttopbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="righttopbox">
+  <cd:command file="supp-box.mkiv" level="system" name="righttopbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="leftbottombox">
+  <cd:command file="supp-box.mkiv" level="system" name="leftbottombox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="rightbottombox">
+  <cd:command file="supp-box.mkiv" level="system" name="rightbottombox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="topleftbox">
+  <cd:command file="supp-box.mkiv" level="system" name="topleftbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="toprightbox">
+  <cd:command file="supp-box.mkiv" level="system" name="toprightbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="bottomleftbox">
+  <cd:command file="supp-box.mkiv" level="system" name="bottomleftbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="bottomrightbox">
+  <cd:command file="supp-box.mkiv" level="system" name="bottomrightbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="middlebox">
+  <cd:command file="supp-box.mkiv" level="system" name="middlebox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="baselinemiddlebox">
+  <cd:command file="supp-box.mkiv" level="system" name="baselinemiddlebox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="baselineleftbox">
+  <cd:command file="supp-box.mkiv" level="system" name="baselineleftbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="baselinerightbox">
+  <cd:command file="supp-box.mkiv" level="system" name="baselinerightbox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="lrtbbox">
+  <cd:command file="supp-box.mkiv" level="system" name="lrtbbox">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:dimension"/>
@@ -2207,7 +2207,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="toplinebox">
+  <cd:command file="supp-box.mkiv" level="system" name="toplinebox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
@@ -2335,9 +2335,9 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="removedepth"/>
-  <cd:command file="supp-box.mkiv" name="obeydepth"/>
-  <cd:command file="supp-box.mkiv" name="undepthed">
+  <cd:command file="supp-box.mkiv" level="system" name="removedepth"/>
+  <cd:command file="supp-box.mkiv" level="system" name="obeydepth"/>
+  <cd:command file="supp-box.mkiv" level="system" name="undepthed">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
@@ -2352,7 +2352,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="raisebox">
+  <cd:command file="supp-box.mkiv" level="system" name="raisebox">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:dimension"/>
@@ -2361,7 +2361,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="lowerbox">
+  <cd:command file="supp-box.mkiv" level="system" name="lowerbox">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:dimension"/>
@@ -2370,12 +2370,12 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="halfwaybox">
+  <cd:command file="supp-box.mkiv" level="system" name="halfwaybox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="depthonlybox">
+  <cd:command file="supp-box.mkiv" level="system" name="depthonlybox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
@@ -2747,17 +2747,17 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="spac-ali.mkiv" name="ibox">
+  <cd:command file="spac-ali.mkiv" level="system" name="ibox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="spac-ali.mkiv" name="obox">
+  <cd:command file="spac-ali.mkiv" level="system" name="obox">
    <cd:arguments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="spac-ali.mkiv" name="definehbox">
+  <cd:command file="spac-ali.mkiv" level="system" name="definehbox">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -2767,7 +2767,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="spac-ali.mkiv" generated="yes" name="hbox" variant="example">
+  <cd:command file="spac-ali.mkiv" generated="yes" level="system" name="hbox" variant="example">
    <cd:sequence>
     <cd:string value="hbox"/>
     <cd:variable value="box"/>
@@ -2776,7 +2776,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" name="lastlinewidth"/>
+  <cd:command file="supp-box.mkiv" level="system" name="lastlinewidth"/>
   <cd:command file="supp-box.mkiv" level="system" name="putboxincache">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -3490,7 +3490,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="fonts" file="typo-cap.mkiv" levle="style" name="smallcapped">
+  <cd:command category="fonts" file="typo-cap.mkiv" level="style" name="smallcapped">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:text"/>
@@ -4615,7 +4615,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command _error_="category=&quot;colors&quot; file=&quot;colo-ini.mkiv&quot;" level="document" name="color">
+  <cd:command category="colors" file="colo-ini.mkiv" level="document" name="color">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:color"/>
@@ -4813,7 +4813,7 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="colors" file="colo-ini.mkiv" level="system" name="paletsize"/>
-  <cd:command ategory="colors" clevel="style" file="colo-ini.mkiv" name="setuppalet">
+  <cd:command category="colors" file="colo-ini.mkiv" level="style" name="setuppalet">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -5150,7 +5150,7 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="columns" file="page-mul.mkiv" name="setsimplecolumnhsize">
+  <cd:command category="columns" file="page-mul.mkiv" level="system" name="setsimplecolumnhsize">
    <cd:arguments>
     <cd:assignments list="yes">
      <cd:parameter name="n">
@@ -5168,7 +5168,7 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="columns" file="page-mul.mkiv" name="simplecolumns" type="environment">
+  <cd:command category="columns" file="page-mul.mkiv" level="system" name="simplecolumns" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setsimplecolumnhsize"/>
@@ -7064,7 +7064,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="counter" file="strc-ini.mkvi" name="defineseparatorset">
+  <cd:command category="counter" file="strc-ini.mkvi" level="style" name="defineseparatorset">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -9965,7 +9965,7 @@
       <cd:constant default="yes" type="normal"/>
      </cd:parameter>
      <cd:parameter name="grid">
-      <cd:constant type="cd:string"/>
+      <cd:inherit name="snaptogrid"/>
      </cd:parameter>
      <cd:parameter name="local">
       <cd:constant type="yes"/>
@@ -11737,7 +11737,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command ategory="fonts" clevel="system" file="font-ini.mkvi" name="bodyfontsize"/>
+  <cd:command category="fonts" file="font-ini.mkvi" level="system" name="bodyfontsize"/>
   <cd:command category="fonts" file="font-ini.mkvi" level="system" name="normalizebodyfontsize">
    <cd:arguments>
     <cd:csname/>
@@ -15122,7 +15122,7 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="hairspace"/>
-  <cd:command category="whitespace" file="spac-hor.mkiv" level="document" name="thinspace"/>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="thinspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="medspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="thickspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="autoinsertnextspace"/>
@@ -21601,10 +21601,14 @@
       <cd:constant type="none"/>
       <cd:constant type="reset"/>
      </cd:parameter>
-     <cd:parameter name="autopunctuation">
+     <cd:parameter list="yes" name="autopunctuation">
       <cd:constant type="yes"/>
       <cd:constant default="yes" type="no"/>
       <cd:constant type="all"/>
+      <cd:constant type="comma"/>
+      <cd:constant type="yes,semicolon"/>
+      <cd:constant type="comma,semicolon"/>
+      <cd:constant type="all,semicolon"/>
      </cd:parameter>
      <cd:parameter name="setups">
       <cd:constant type="cd:name"/>
@@ -23296,7 +23300,7 @@
   </cd:command>
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="document" name="resetMPdrawing"/>
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="document" name="getMPdrawing"/>
-  <cd:command _error_="level=&quot;system&quot;  type=&quot;environment&quot; begin=&quot;push&quot; end=&quot;pop&quot; category=&quot;graphics metapost&quot; file=&quot;meta-ini.mkiv&quot;" name="MPdrawing"/>
+  <cd:command begin="push" category="graphics metapost" end="pop" file="meta-ini.mkiv" level="system" name="MPdrawing" type="environment"/>
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="document" name="MPdrawing">
    <cd:arguments>
     <cd:content/>
@@ -23519,7 +23523,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command ategory="graphics" clevel="style" file="meta-ini.mkiv" name="resetMPenvironment"/>
+  <cd:command category="graphics" file="meta-ini.mkiv" level="style" name="resetMPenvironment"/>
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="style" name="useMPenvironmentbuffer">
    <cd:arguments>
     <cd:keywords>
@@ -39611,16 +39615,16 @@
     <cd:csname/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="localhsize"/>
-  <cd:command file="syst-aux.mkiv" name="setlocalhsize">
+  <cd:command file="syst-aux.mkiv" level="system" name="localhsize"/>
+  <cd:command file="syst-aux.mkiv" level="system" name="setlocalhsize">
    <cd:arguments>
     <cd:keywords optional="yes">
      <cd:constant method="none" prefix="cd:sign" type="cd:dimension"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="availablehsize"/>
-  <cd:command file="syst-aux.mkiv" name="distributedhsize">
+  <cd:command file="syst-aux.mkiv" level="system" name="availablehsize"/>
+  <cd:command file="syst-aux.mkiv" level="system" name="distributedhsize">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:dimension"/>
@@ -40135,7 +40139,7 @@
     <cd:csname/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="dontleavehmode"/>
+  <cd:command file="syst-aux.mkiv" level="style" name="dontleavehmode"/>
   <cd:command file="syst-aux.mkiv" level="system" name="utfupper">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -40418,7 +40422,7 @@
     <cd:content optional="yes"/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="definemeasure">
+  <cd:command file="syst-aux.mkiv" level="style" name="definemeasure">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -40428,7 +40432,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="freezemeasure">
+  <cd:command file="syst-aux.mkiv" level="system" name="freezemeasure">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -40438,7 +40442,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="setmeasure">
+  <cd:command file="syst-aux.mkiv" level="system" name="setmeasure">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
@@ -40448,7 +40452,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="setgmeasure">
+  <cd:command file="syst-aux.mkiv" level="system" name="setgmeasure">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
@@ -40458,7 +40462,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="setemeasure">
+  <cd:command file="syst-aux.mkiv" level="system" name="setemeasure">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
@@ -40468,7 +40472,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="setxmeasure">
+  <cd:command file="syst-aux.mkiv" level="system" name="setxmeasure">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
@@ -40478,21 +40482,21 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="measure">
+  <cd:command file="syst-aux.mkiv" level="style" name="measure">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="measured">
+  <cd:command file="syst-aux.mkiv" level="style" name="measured">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="dividedsize">
+  <cd:command file="syst-aux.mkiv" level="system" name="dividedsize">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:dimension"/>
@@ -40836,7 +40840,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="syst-aux.mkiv" name="showtimer">
+  <cd:command file="syst-aux.mkiv" level="system" name="showtimer">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:text"/>

@@ -579,7 +579,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bodyfontsize" clevel="system" ategory="fonts" file="font-ini.mkvi"/>
+    <cd:command name="bodyfontsize" level="system" category="fonts" file="font-ini.mkvi"/>
 
     <cd:command name="normalizebodyfontsize" level="system" category="fonts" file="font-ini.mkvi">
         <cd:arguments>

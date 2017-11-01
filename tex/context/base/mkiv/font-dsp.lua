@@ -52,7 +52,6 @@ if not modules then modules = { } end modules ['font-dsp'] = {
 -- multi-gig videos pass through our networks and storage and memory is abundant.
 
 local next, type = next, type
-local bittest = bit32.btest
 local band = bit32.band
 local extract = bit32.extract
 local bor = bit32.bor
@@ -273,7 +272,7 @@ local lookupnames = {
 -- local lookupstate = setmetatableindex(function(t,k)
 --     local v = { }
 --     for kk, vv in next, lookupbits do
---         if bittest(k,kk) then
+--         if band(k,kk) ~= 0 then
 --             v[vv] = true
 --         end
 --     end
@@ -283,10 +282,10 @@ local lookupnames = {
 
 local lookupflags = setmetatableindex(function(t,k)
     local v = {
-        bittest(k,0x0008) and true or false, -- ignoremarks
-        bittest(k,0x0004) and true or false, -- ignoreligatures
-        bittest(k,0x0002) and true or false, -- ignorebaseglyphs
-        bittest(k,0x0001) and true or false, -- r2l
+        band(k,0x0008) ~= 0 and true or false, -- ignoremarks
+        band(k,0x0004) ~= 0 and true or false, -- ignoreligatures
+        band(k,0x0002) ~= 0 and true or false, -- ignorebaseglyphs
+        band(k,0x0001) ~= 0 and true or false, -- r2l
     }
     t[k] = v
     return v
@@ -738,15 +737,15 @@ local function readposition(f,format,mainoffset,getdelta)
     --     ....
     -- end
     --
-    local x = bittest(format,0x01) and readshort(f) or 0 -- x placement
-    local y = bittest(format,0x02) and readshort(f) or 0 -- y placement
-    local h = bittest(format,0x04) and readshort(f) or 0 -- h advance
-    local v = bittest(format,0x08) and readshort(f) or 0 -- v advance
+    local x = band(format,0x1) ~= 0 and readshort(f) or 0 -- x placement
+    local y = band(format,0x2) ~= 0 and readshort(f) or 0 -- y placement
+    local h = band(format,0x4) ~= 0 and readshort(f) or 0 -- h advance
+    local v = band(format,0x8) ~= 0 and readshort(f) or 0 -- v advance
     if format >= 0x10 then
-        local X = bittest(format,0x10) and skipshort(f) or 0
-        local Y = bittest(format,0x20) and skipshort(f) or 0
-        local H = bittest(format,0x40) and skipshort(f) or 0
-        local V = bittest(format,0x80) and skipshort(f) or 0
+        local X = band(format,0x10) ~= 0 and skipshort(f) or 0
+        local Y = band(format,0x20) ~= 0 and skipshort(f) or 0
+        local H = band(format,0x40) ~= 0 and skipshort(f) or 0
+        local V = band(format,0x80) ~= 0 and skipshort(f) or 0
         local s = skips[extract(format,4,4)]
         if s > 0 then
             skipshort(f,s)
@@ -2020,7 +2019,7 @@ do
                 subtables[j] = offset + readushort(f) -- we can probably put lookupoffset here
             end
             -- which one wins?
-            local markclass = bittest(flagbits,0x0010) -- usemarkfilteringset
+            local markclass = band(flagbits,0x0010) ~= 0 -- usemarkfilteringset
             if markclass then
                 markclass = readushort(f) -- + 1
             end
@@ -2917,7 +2916,7 @@ local function readmathvariants(f,fontdata,offset)
                                 advance = readushort(f),
                             }
                             local flags = readushort(f)
-                            if bittest(flags,0x0001) then
+                            if band(flags,0x0001) ~= 0 then
                                 p.extender = 1 -- true
                             end
                             parts[i] = p

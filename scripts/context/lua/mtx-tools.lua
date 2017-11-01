@@ -34,6 +34,10 @@ local helpinfo = [[
     <flag name="downcase"><short>lowercase names</short></flag>
    </subcategory>
    <subcategory>
+    <flag name="showstring"><short>show unicode characters in given string</short></flag>
+    <flag name="showfile"><short>show unicode characters in given file</short></flag>
+   </subcategory>
+   <subcategory>
     <flag name="pattern"><short>glob pattern (default: *)</short></flag>
     <flag name="recurse"><short>recurse into subdirecories</short></flag>
     <flag name="force"><short>downcase indeed</short></flag>
@@ -115,7 +119,6 @@ function scripts.tools.downcase()
     end
 end
 
-
 function scripts.tools.dirtoxml()
 
     local join, removesuffix, suffixonly, date = file.join, file.removesuffix, file.suffixonly, os.date
@@ -187,6 +190,32 @@ function scripts.tools.dirtoxml()
 
 end
 
+local function showstring(s)
+    if not characters or not characters.data then
+        require("char-def")
+    end
+    local d = characters.data
+    local f = string.formatters["%U  %s  %-30s  %c"]
+    for c in string.utfvalues(s) do
+        local cs = d[c]
+        print(f(c,cs.category or "",cs.description or "",c))
+    end
+end
+
+function scripts.tools.showstring()
+    local files = environment.files
+    for i=1,#files do
+        showstring(files[i])
+    end
+end
+
+function scripts.tools.showfile()
+    local files = environment.files
+    for i=1,#files do
+        showstring(io.loaddata(files[i]) or "")
+    end
+end
+
 if environment.argument("disarmutfbomb") then
     scripts.tools.disarmutfbomb()
 elseif environment.argument("dirtoxml") then
@@ -195,6 +224,10 @@ elseif environment.argument("downcase") then
     scripts.tools.downcase()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
+elseif environment.argument("showstring") then
+    scripts.tools.showstring()
+elseif environment.argument("showfile") then
+    scripts.tools.showfile()
 else
     application.help()
 end

@@ -44,6 +44,12 @@ set name attributes to full path name
 .B --downcase
 lowercase names
 .TP
+.B --showstring
+show unicode characters in given string
+.TP
+.B --showfile
+show unicode characters in given file
+.TP
 .B --pattern
 glob pattern (default: *)
 .TP

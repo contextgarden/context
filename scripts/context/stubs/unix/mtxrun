@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 5789, stripped down to: 3429
+-- original size: 5427, stripped down to: 2974
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -174,32 +174,7 @@ elseif not ffi.number then
   ffi.number=tonumber
 end
 if not bit32 and utf8 then
-  bit32=load ([[ return {
-band = function(a,b)
-    return (a & b)
-end,
-bnot = function(a)
-    return ~a & 0xFFFFFFFF
-end,
-bor = function(a,b)
-    return (a | b) & 0xFFFFFFFF
-end,
-btest = function(a,b)
-    return (a & b) ~= 0
-end,
-bxor = function(a,b)
-    return (a ~ b) & 0xFFFFFFFF
-end,
-extract = function(a,b,c)
-    return (a >> b) & ~(-1 << (c or 1))
-end,
-lshift = function(a,b)
-    return (a << b) & 0xFFFFFFFF
-end,
-rshift = function(a,b)
-    return (a >> b)
-end,
-    } ]] ) ()
+  bit32=require("l-bit32")
 end
 
 
@@ -209,7 +184,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-macro"] = package.loaded["l-macro"] or true
 
--- original size: 6378, stripped down to: 3652
+-- original size: 6393, stripped down to: 3659
 
 if not modules then modules={} end modules ['l-macros']={
   version=1.001,
@@ -247,21 +222,21 @@ resolve=C(C(name)*arguments^-1)/function(raw,s,a)
   if d then
     if a then
       local n=#a
-      for i=1,n do
-        a[i]=lpegmatch(subparser,a[i]) or a[i]
-      end
       local p=patterns[s][n]
-      local d=d[n]
       if p then
+        local d=d[n]
+        for i=1,n do
+          a[i]=lpegmatch(subparser,a[i]) or a[i]
+        end
         return lpegmatch(p,d,1,a) or d
       else
-        return d
+        return raw
       end
+    else
+      return d[0] or raw
     end
-    return d[0] or raw
   elseif a then
-    local n=#a
-    for i=1,n do
+    for i=1,#a do
       a[i]=lpegmatch(subparser,a[i]) or a[i]
     end
     return s.."("..concat(a,",")..")"
@@ -623,7 +598,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 11455, stripped down to: 8625
+-- original size: 11545, stripped down to: 8606
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -636,7 +611,7 @@ local type=type
 local gsub,format,find=string.gsub,string.format,string.find
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
-local searchers=package.searchers or package.loaders
+local searchers=package.searchers
 local insert,remove=table.insert,table.remove
 local filejoin=file and file.join    or function(path,name)  return path.."/"..name end
 local isreadable=file and file.is_readable or function(name)    local f=io.open(name) if f then f:close() return true end end
@@ -3311,7 +3286,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 5358, stripped down to: 3177
+-- original size: 5645, stripped down to: 2253
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -3327,33 +3302,6 @@ local lpegmatch=lpeg.match
 local floor=math.floor
 number=number or {}
 local number=number
-if bit32 then 
-  local btest,bor=bit32.btest,bit32.bor
-  function number.bit(p)
-    return 2^(p-1) 
-  end
-  number.hasbit=btest
-  number.setbit=bor
-  function number.setbit(x,p) 
-    return btest(x,p) and x or x+p
-  end
-  function number.clearbit(x,p)
-    return btest(x,p) and x-p or x
-  end
-else
-  function number.bit(p)
-    return 2^(p-1) 
-  end
-  function number.hasbit(x,p) 
-    return x%(p+p)>=p
-  end
-  function number.setbit(x,p)
-    return (x%(p+p)>=p) and x or x+p
-  end
-  function number.clearbit(x,p)
-    return (x%(p+p)>=p) and x-p or x
-  end
-end
 if bit32 then
   local bextract=bit32.extract
   local t={
@@ -3428,26 +3376,6 @@ function number.toevenhex(n)
   else
     return "0"..s
   end
-end
-local one=lpeg.C(1-lpeg.S('')/tonumber)^1
-function number.toset(n)
-  return lpegmatch(one,tostring(n))
-end
-local function bits(n,i,...)
-  if n>0 then
-    local m=n%2
-    local n=floor(n/2)
-    if m>0 then
-      return bits(n,i+1,i,...)
-    else
-      return bits(n,i+1,...)
-    end
-  else
-    return...
-  end
-end
-function number.bits(n)
-  return { bits(n,1) }
 end
 function number.bytetodecimal(b)
   local d=floor(b*100/255+0.5)
@@ -5883,7 +5811,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 974, stripped down to: 890
+-- original size: 2555, stripped down to: 1900
 
 if not modules then modules={} end modules ['l-math']={
   version=1.001,
@@ -5892,21 +5820,23 @@ if not modules then modules={} end modules ['l-math']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local floor,sin,cos,tan=math.floor,math.sin,math.cos,math.tan
 if not math.ceiling then
   math.ceiling=math.ceil
 end
 if not math.round then
+  local floor=math.floor
   function math.round(x) return floor(x+0.5) end
 end
 if not math.div then
+  local floor=math.floor
   function math.div(n,m) return floor(n/m) end
 end
 if not math.mod then
   function math.mod(n,m) return n%m end
 end
-local pipi=2*math.pi/360
 if not math.sind then
+  local sin,cos,tan=math.sin,math.cos,math.tan
+  local pipi=2*math.pi/360
   function math.sind(d) return sin(d*pipi) end
   function math.cosd(d) return cos(d*pipi) end
   function math.tand(d) return tan(d*pipi) end
@@ -5914,6 +5844,60 @@ end
 if not math.odd then
   function math.odd (n) return n%2~=0 end
   function math.even(n) return n%2==0 end
+end
+if not math.cosh then
+  local exp=math.exp
+  function math.cosh(x)
+    local xx=exp(x)
+    return (xx+1/xx)/2
+  end
+  function math.sinh(x)
+    local xx=exp(x)
+    return (xx-1/xx)/2
+  end
+  function math.tanh(x)
+    local xx=exp(x)
+    return (xx-1/xx)/(xx+1/xx)
+  end
+end
+if not math.pow then
+  function math.pow(x,y)
+    return x^y
+  end
+end
+if not math.atan2 then
+  math.atan2=math.atan
+end
+if not math.ldexp then
+  function math.ldexp(x,e)
+    return x*2.0^e
+  end
+end
+if not math.log10 then
+  local log=math.log
+  function math.log10(x)
+    return log(x,10)
+  end
+end
+if not math.type then
+  function math.type()
+    return "float"
+  end
+end
+if not math.tointeger then
+  math.mininteger=-0x4FFFFFFFFFFF
+  math.maxinteger=0x4FFFFFFFFFFF
+  local floor=math.floor
+  function math.tointeger(n)
+    local f=floor(n)
+    return f==n and f or nil
+  end
+end
+if not math.ult then
+  local floor=math.floor
+  function math.tointeger(m,n)
+    return floor(m)<floor(n) 
+  end
 end
 
 
@@ -19378,7 +19362,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 4007, stripped down to: 3072
+-- original size: 4272, stripped down to: 3289
 
 if not modules then modules={} end modules ['data-use']={
   version=1.001,
@@ -19432,6 +19416,7 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner)
       formatbanner=formatbanner,
       sourcehash=md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
       sourcefile=sourcefile,
+      luaversion=LUAVERSION,
     }
     io.savedata(luvname,table.serialize(luvdata,true))
     lua.registerfinalizer(function()
@@ -19455,6 +19440,10 @@ function statistics.checkfmtstatus(texname)
         local luvhash=luv.sourcehash or "?"
         if luvhash~=sourcehash then
           return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
+        end
+        local luvluaversion=luv.luaversion or 0
+        if luvluaversion~=LUAVERSION then
+          return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,LUAVERSION)
         end
       else
         return "invalid status file"
@@ -20989,8 +20978,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 863749
--- stripped bytes    : 313053
+-- original bytes    : 865625
+-- stripped bytes    : 315093
 
 -- end library merge
 

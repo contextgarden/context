@@ -2515,9 +2515,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localhsize" file="syst-aux.mkiv"/>
+    <cd:command name="localhsize" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="setlocalhsize" file="syst-aux.mkiv">
+    <cd:command name="setlocalhsize" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:dimension" prefix="cd:sign" method="none"/>
@@ -2525,9 +2525,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="availablehsize" file="syst-aux.mkiv"/>
+    <cd:command name="availablehsize" level="system" file="syst-aux.mkiv"/>
 
-    <cd:command name="distributedhsize" file="syst-aux.mkiv">
+    <cd:command name="distributedhsize" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
@@ -2878,7 +2878,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dontleavehmode" file="syst-aux.mkiv"/>
+    <cd:command name="dontleavehmode" level="style" file="syst-aux.mkiv"/>
 
     <cd:command name="utfupper" level="system" file="syst-aux.mkiv">
         <cd:arguments>
@@ -3114,61 +3114,61 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemeasure" file="syst-aux.mkiv">
+    <cd:command name="definemeasure" level="style" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="freezemeasure" file="syst-aux.mkiv">
+    <cd:command name="freezemeasure" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmeasure" file="syst-aux.mkiv">
+    <cd:command name="setmeasure" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setgmeasure" file="syst-aux.mkiv">
+    <cd:command name="setgmeasure" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setemeasure" file="syst-aux.mkiv">
+    <cd:command name="setemeasure" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setxmeasure" file="syst-aux.mkiv">
+    <cd:command name="setxmeasure" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="measure" file="syst-aux.mkiv">
+    <cd:command name="measure" level="style" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="measured" file="syst-aux.mkiv">
+    <cd:command name="measured" level="style" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dividedsize" file="syst-aux.mkiv">
+    <cd:command name="dividedsize" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
@@ -3412,7 +3412,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showtimer" file="syst-aux.mkiv">
+    <cd:command name="showtimer" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>

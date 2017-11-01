@@ -18,46 +18,50 @@ local floor = math.floor
 number       = number or { }
 local number = number
 
-if bit32 then -- I wonder if this is faster
+-- begin obsolete code --
 
-    local btest, bor = bit32.btest, bit32.bor
+-- if bit32 then
+--
+--     local btest, bor = bit32.btest, bit32.bor
+--
+--     function number.bit(p)
+--         return 2 ^ (p - 1) -- 1-based indexing
+--     end
+--
+--     number.hasbit = btest
+--     number.setbit = bor
+--
+--     function number.setbit(x,p) -- why not bor?
+--         return btest(x,p) and x or x + p
+--     end
+--
+--     function number.clearbit(x,p)
+--         return btest(x,p) and x - p or x
+--     end
+--
+-- else
+--
+--     -- http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html
+--
+--     function number.bit(p)
+--         return 2 ^ (p - 1) -- 1-based indexing
+--     end
+--
+--     function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
+--         return x % (p + p) >= p
+--     end
+--
+--     function number.setbit(x, p)
+--         return (x % (p + p) >= p) and x or x + p
+--     end
+--
+--     function number.clearbit(x, p)
+--         return (x % (p + p) >= p) and x - p or x
+--     end
+--
+-- end
 
-    function number.bit(p)
-        return 2 ^ (p - 1) -- 1-based indexing
-    end
-
-    number.hasbit = btest
-    number.setbit = bor
-
-    function number.setbit(x,p) -- why not bor?
-        return btest(x,p) and x or x + p
-    end
-
-    function number.clearbit(x,p)
-        return btest(x,p) and x - p or x
-    end
-
-else
-
-    -- http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html
-
-    function number.bit(p)
-        return 2 ^ (p - 1) -- 1-based indexing
-    end
-
-    function number.hasbit(x, p) -- typical call: if hasbit(x, bit(3)) then ...
-        return x % (p + p) >= p
-    end
-
-    function number.setbit(x, p)
-        return (x % (p + p) >= p) and x or x + p
-    end
-
-    function number.clearbit(x, p)
-        return (x % (p + p) >= p) and x - p or x
-    end
-
-end
+-- end obsolete code --
 
 -- print(number.tobitstring(8))
 -- print(number.tobitstring(14))
@@ -152,60 +156,60 @@ function number.toevenhex(n)
     end
 end
 
--- a,b,c,d,e,f = number.toset(100101)
+-- -- a,b,c,d,e,f = number.toset(100101)
+-- --
+-- -- function number.toset(n)
+-- --     return match(tostring(n),"(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
+-- -- end
+-- --
+-- -- -- the lpeg way is slower on 8 digits, but faster on 4 digits, some 7.5%
+-- -- -- on
+-- --
+-- -- for i=1,1000000 do
+-- --     local a,b,c,d,e,f,g,h = number.toset(12345678)
+-- --     local a,b,c,d         = number.toset(1234)
+-- --     local a,b,c           = number.toset(123)
+-- --     local a,b,c           = number.toset("123")
+-- -- end
+--
+-- local one = lpeg.C(1-lpeg.S('')/tonumber)^1
 --
 -- function number.toset(n)
---     return match(tostring(n),"(.?)(.?)(.?)(.?)(.?)(.?)(.?)(.?)")
+--     return lpegmatch(one,tostring(n))
 -- end
 --
--- -- the lpeg way is slower on 8 digits, but faster on 4 digits, some 7.5%
--- -- on
+-- -- function number.bits(n,zero)
+-- --     local t, i = { }, (zero and 0) or 1
+-- --     while n > 0 do
+-- --         local m = n % 2
+-- --         if m > 0 then
+-- --             insert(t,1,i)
+-- --         end
+-- --         n = floor(n/2)
+-- --         i = i + 1
+-- --     end
+-- --     return t
+-- -- end
+-- --
+-- -- -- a bit faster
 --
--- for i=1,1000000 do
---     local a,b,c,d,e,f,g,h = number.toset(12345678)
---     local a,b,c,d         = number.toset(1234)
---     local a,b,c           = number.toset(123)
---     local a,b,c           = number.toset("123")
--- end
-
-local one = lpeg.C(1-lpeg.S('')/tonumber)^1
-
-function number.toset(n)
-    return lpegmatch(one,tostring(n))
-end
-
--- function number.bits(n,zero)
---     local t, i = { }, (zero and 0) or 1
---     while n > 0 do
+-- local function bits(n,i,...)
+--     if n > 0 then
 --         local m = n % 2
+--         local n = floor(n/2)
 --         if m > 0 then
---             insert(t,1,i)
+--             return bits(n, i+1, i, ...)
+--         else
+--             return bits(n, i+1,    ...)
 --         end
---         n = floor(n/2)
---         i = i + 1
+--     else
+--         return ...
 --     end
---     return t
 -- end
 --
--- -- a bit faster
-
-local function bits(n,i,...)
-    if n > 0 then
-        local m = n % 2
-        local n = floor(n/2)
-        if m > 0 then
-            return bits(n, i+1, i, ...)
-        else
-            return bits(n, i+1,    ...)
-        end
-    else
-        return ...
-    end
-end
-
-function number.bits(n)
-    return { bits(n,1) }
-end
+-- function number.bits(n)
+--     return { bits(n,1) }
+-- end
 
 function number.bytetodecimal(b)
     local d = floor(b * 100 / 255 + 0.5)

@@ -29,7 +29,7 @@ local formatters, gmatch = string.formatters, string.gmatch
 local sortedhash = table.sortedhash
 local insert, remove = table.insert, table.remove
 local div = math.div
-local setbit, hasbit = number.setbit, number.hasbit
+local bor, band = bit32.bor, bit32.band
 
 local fonts                = fonts
 local nodes                = nodes
@@ -1145,7 +1145,7 @@ do
     local last = 0
 
     local known = setmetatableindex(function(t,k)
-        local v = setbit(0,2^last)
+        local v = bor(0,2^last)
         t[k] = v
         last = last + 1
         return v
@@ -1307,7 +1307,7 @@ do
                     local hashes     = mathalternates.hashes
                     for i=1,#registered do
                         local r = registered[i]
-                        if hasbit(a,r) then
+                        if band(a,r) ~= 0 then
                             local char = getchar(pointer)
                             local alt  = hashes[i][char]
                             if alt == nil then

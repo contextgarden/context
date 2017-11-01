@@ -63,10 +63,14 @@
                     <cd:constant type="none"/>
                     <cd:constant type="reset"/>
                 </cd:parameter>
-                <cd:parameter name="autopunctuation">
+                <cd:parameter name="autopunctuation" list="yes">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="all"/>
+                    <cd:constant type="comma"/>
+                    <cd:constant type="yes,semicolon"/>
+                    <cd:constant type="comma,semicolon"/>
+                    <cd:constant type="all,semicolon"/>
                 </cd:parameter>
                 <cd:parameter name="setups">
                     <cd:constant type="cd:name"/>

@@ -81,7 +81,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsimplecolumnhsize" category="columns" file="page-mul.mkiv">
+    <cd:command name="setsimplecolumnhsize" level="system" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="n">
@@ -100,7 +100,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="simplecolumns" type="environment" category="columns" file="page-mul.mkiv">
+    <cd:command name="simplecolumns" type="environment" level="system" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setsimplecolumnhsize"/>

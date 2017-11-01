@@ -40,7 +40,7 @@ local one_too               = false  directives.register("typesetters.directions
 local report_textdirections = logs.reporter("typesetting","text directions")
 ----- report_mathdirections = logs.reporter("typesetting","math directions")
 
-local hasbit                = number.hasbit
+local band                  = bit32.band
 
 local texsetattribute       = tex.setattribute
 local unsetvalue            = attributes.unsetvalue
@@ -111,11 +111,11 @@ local function tomode(specification)
 end
 
 local function getglobal(a)
-    return a and a > 0 and hasbit(a,m_global)
+    return a and a > 0 and band(a,m_global) ~= 0
 end
 
 local function getfences(a)
-    return a and a > 0 and hasbit(a,m_fences)
+    return a and a > 0 and band(a,m_fences) ~= 0
 end
 
 local function getmethod(a)

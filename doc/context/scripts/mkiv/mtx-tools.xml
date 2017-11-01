@@ -23,6 +23,10 @@
     <flag name="downcase"><short>lowercase names</short></flag>
    </subcategory>
    <subcategory>
+    <flag name="showstring"><short>show unicode characters in given string</short></flag>
+    <flag name="showfile"><short>show unicode characters in given file</short></flag>
+   </subcategory>
+   <subcategory>
     <flag name="pattern"><short>glob pattern (default: *)</short></flag>
     <flag name="recurse"><short>recurse into subdirecories</short></flag>
     <flag name="force"><short>downcase indeed</short></flag>

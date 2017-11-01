@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="␣" level="primitive"/>
+
+    <cd:command name="-" level="primitive"/>
+
+    <cd:command name="/" level="primitive"/>
+
+    <cd:command name="above" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="abovedisplayshortskip" level="primitive">
+
+    -->
+
+    <cd:command name="abovedisplayshortskip" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-assignment-optional"/>
+            <cd:resolve name="string-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="abovedisplayskip" level="primitive"/>
+
+    -->
+
+    <cd:command name="abovedisplayskip" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-assignment-optional"/>
+            <cd:resolve name="string-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="abovewithdelims" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:resolve name="string-text"/>
+            <cd:resolve name="string-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+<cd:command name="accent" level="primitive"/>
+<cd:command name="adjdemerits" level="primitive"/>
+<cd:command name="advance" level="primitive"/>
+<cd:command name="afterassignment" level="primitive"/>
+<cd:command name="aftergroup" level="primitive"/>
+<cd:command name="atop" level="primitive"/>
+<cd:command name="atopwithdelims" level="primitive"/>
+<cd:command name="badness" level="primitive"/>
+<cd:command name="baselineskip" level="primitive"/>
+<cd:command name="batchmode" level="primitive"/>
+<cd:command name="begingroup" level="primitive"/>
+<cd:command name="belowdisplayshortskip" level="primitive"/>
+<cd:command name="belowdisplayskip" level="primitive"/>
+<cd:command name="binoppenalty" level="primitive"/>
+<cd:command name="botmark" level="primitive"/>
+<cd:command name="box" level="primitive"/>
+<cd:command name="boxmaxdepth" level="primitive"/>
+<cd:command name="brokenpenalty" level="primitive"/>
+<cd:command name="catcode" level="primitive"/>
+<cd:command name="char" level="primitive"/>
+<cd:command name="chardef" level="primitive"/>
+<cd:command name="cleaders" level="primitive"/>
+<cd:command name="closein" level="primitive"/>
+<cd:command name="closeout" level="primitive"/>
+<cd:command name="clubpenalty" level="primitive"/>
+<cd:command name="copy" level="primitive"/>
+<cd:command name="count" level="primitive"/>
+<cd:command name="countdef" level="primitive"/>
+<cd:command name="cr" level="primitive"/>
+<cd:command name="crcr" level="primitive"/>
+<cd:command name="csname" level="primitive"/>
+<cd:command name="day" level="primitive"/>
+<cd:command name="deadcycles" level="primitive"/>
+<cd:command name="def" level="primitive"/>
+<cd:command name="defaulthyphenchar" level="primitive"/>
+<cd:command name="defaultskewchar" level="primitive"/>
+<cd:command name="delcode" level="primitive"/>
+<cd:command name="delimiter" level="primitive"/>
+<cd:command name="delimiterfactor" level="primitive"/>
+<cd:command name="delimitershortfall" level="primitive"/>
+<cd:command name="dimen" level="primitive"/>
+<cd:command name="dimendef" level="primitive"/>
+<cd:command name="discretionary" level="primitive"/>
+<cd:command name="displayindent" level="primitive"/>
+<cd:command name="displaylimits" level="primitive"/>
+<cd:command name="displaystyle" level="primitive"/>
+<cd:command name="displaywidowpenalty" level="primitive"/>
+<cd:command name="displaywidth" level="primitive"/>
+<cd:command name="divide" level="primitive"/>
+<cd:command name="doublehyphendemerits" level="primitive"/>
+<cd:command name="dp" level="primitive"/>
+<cd:command name="dump" level="primitive"/>
+<cd:command name="edef" level="primitive"/>
+<cd:command name="else" level="primitive"/>
+<cd:command name="emergencystretch" level="primitive"/>
+<cd:command name="end" level="primitive"/>
+<cd:command name="endcsname" level="primitive"/>
+<cd:command name="endgroup" level="primitive"/>
+<cd:command name="endinput" level="primitive"/>
+<cd:command name="endlinechar" level="primitive"/>
+<cd:command name="eqno" level="primitive"/>
+<cd:command name="errhelp" level="primitive"/>
+<cd:command name="errmessage" level="primitive"/>
+<cd:command name="errorcontextlines" level="primitive"/>
+<cd:command name="errorstopmode" level="primitive"/>
+<cd:command name="escapechar" level="primitive"/>
+<cd:command name="everycr" level="primitive"/>
+<cd:command name="everydisplay" level="primitive"/>
+<cd:command name="everyhbox" level="primitive"/>
+<cd:command name="everyjob" level="primitive"/>
+<cd:command name="everymath" level="primitive"/>
+<cd:command name="everypar" level="primitive"/>
+<cd:command name="everyvbox" level="primitive"/>
+<cd:command name="exhyphenpenalty" level="primitive"/>
+<cd:command name="expandafter" level="primitive"/>
+<cd:command name="fam" level="primitive"/>
+<cd:command name="fi" level="primitive"/>
+<cd:command name="finalhyphendemerits" level="primitive"/>
+<cd:command name="firstmark" level="primitive"/>
+<cd:command name="floatingpenalty" level="primitive"/>
+<cd:command name="font" level="primitive"/>
+<cd:command name="fontdimen" level="primitive"/>
+<cd:command name="fontname" level="primitive"/>
+<cd:command name="futurelet" level="primitive"/>
+<cd:command name="gdef" level="primitive"/>
+<cd:command name="global" level="primitive"/>
+<cd:command name="globaldefs" level="primitive"/>
+<cd:command name="halign" level="primitive"/>
+<cd:command name="hangafter" level="primitive"/>
+<cd:command name="hangindent" level="primitive"/>
+<cd:command name="hbadness" level="primitive"/>
+<cd:command name="hbox" level="primitive"/>
+<cd:command name="hfil" level="primitive"/>
+<cd:command name="hfill" level="primitive"/>
+<cd:command name="hfilneg" level="primitive"/>
+<cd:command name="hfuzz" level="primitive"/>
+<cd:command name="hoffset" level="primitive"/>
+<cd:command name="holdinginserts" level="primitive"/>
+<cd:command name="hrule" level="primitive"/>
+<cd:command name="hsize" level="primitive"/>
+<cd:command name="hskip" level="primitive"/>
+<cd:command name="hss" level="primitive"/>
+<cd:command name="ht" level="primitive"/>
+<cd:command name="hyphenation" level="primitive"/>
+<cd:command name="hyphenchar" level="primitive"/>
+<cd:command name="hyphenpenalty" level="primitive"/>
+
+    <!--
+
+        <cd:command name="if" level="primitive"/>
+
+    -->
+
+    <cd:command name="if" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:resolve name="string-text"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="else"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="fi"/>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="ifcase" level="primitive"/>
+
+    -->
+
+    <cd:command name="ifcase" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-number"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="or"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="else"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="fi"/>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="ifcat" level="primitive"/>
+
+    -->
+
+    <cd:command name="ifcat" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:resolve name="string-text"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="else"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="fi"/>
+        </cd:arguments>
+    </cd:command>
+
+<cd:command name="ifdim" level="primitive"/>
+<cd:command name="ifeof" level="primitive"/>
+
+    <!--
+
+        <cd:command name="iffalse" level="primitive"/>
+
+    -->
+
+    <cd:command name="iffalse" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="else"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="fi"/>
+        </cd:arguments>
+    </cd:command>
+
+<cd:command name="ifhbox" level="primitive"/>
+<cd:command name="ifhmode" level="primitive"/>
+<cd:command name="ifinner" level="primitive"/>
+<cd:command name="ifmmode" level="primitive"/>
+<cd:command name="ifnum" level="primitive"/>
+<cd:command name="ifodd" level="primitive"/>
+
+    <!--
+
+        <cd:command name="iftrue" level="primitive"/>
+
+    -->
+
+    <cd:command name="iftrue" level="primitive">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="else"/>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="fi"/>
+        </cd:arguments>
+    </cd:command>
+
+<cd:command name="ifvbox" level="primitive"/>
+<cd:command name="ifvmode" level="primitive"/>
+<cd:command name="ifvoid" level="primitive"/>
+<cd:command name="ifx" level="primitive"/>
+<cd:command name="ignorespaces" level="primitive"/>
+<cd:command name="immediate" level="primitive"/>
+<cd:command name="indent" level="primitive"/>
+<cd:command name="input" level="primitive"/>
+<cd:command name="inputlineno" level="primitive"/>
+<cd:command name="insert" level="primitive"/>
+<cd:command name="insertpenalties" level="primitive"/>
+<cd:command name="interlinepenalty" level="primitive"/>
+<cd:command name="jobname" level="primitive"/>
+<cd:command name="kern" level="primitive"/>
+<cd:command name="language" level="primitive"/>
+<cd:command name="lastbox" level="primitive"/>
+<cd:command name="lastkern" level="primitive"/>
+<cd:command name="lastpenalty" level="primitive"/>
+<cd:command name="lastskip" level="primitive"/>
+<cd:command name="lccode" level="primitive"/>
+<cd:command name="leaders" level="primitive"/>
+<cd:command name="left" level="primitive"/>
+<cd:command name="lefthyphenmin" level="primitive"/>
+<cd:command name="leftskip" level="primitive"/>
+<cd:command name="leqno" level="primitive"/>
+<cd:command name="let" level="primitive"/>
+<cd:command name="limits" level="primitive"/>
+<cd:command name="linepenalty" level="primitive"/>
+<cd:command name="lineskip" level="primitive"/>
+<cd:command name="lineskiplimit" level="primitive"/>
+<cd:command name="long" level="primitive"/>
+<cd:command name="looseness" level="primitive"/>
+<cd:command name="lower" level="primitive"/>
+<cd:command name="lowercase" level="primitive"/>
+<cd:command name="mag" level="primitive"/>
+<cd:command name="mark" level="primitive"/>
+<cd:command name="mathaccent" level="primitive"/>
+<cd:command name="mathbin" level="primitive"/>
+<cd:command name="mathchar" level="primitive"/>
+<cd:command name="mathchardef" level="primitive"/>
+<cd:command name="mathchoice" level="primitive"/>
+<cd:command name="mathclose" level="primitive"/>
+<cd:command name="mathcode" level="primitive"/>
+<cd:command name="mathinner" level="primitive"/>
+<cd:command name="mathop" level="primitive"/>
+<cd:command name="mathopen" level="primitive"/>
+<cd:command name="mathord" level="primitive"/>
+<cd:command name="mathpunct" level="primitive"/>
+<cd:command name="mathrel" level="primitive"/>
+<cd:command name="mathsurround" level="primitive"/>
+<cd:command name="maxdeadcycles" level="primitive"/>
+<cd:command name="maxdepth" level="primitive"/>
+<cd:command name="meaning" level="primitive"/>
+<cd:command name="medmuskip" level="primitive"/>
+<cd:command name="message" level="primitive"/>
+<cd:command name="mkern" level="primitive"/>
+<cd:command name="month" level="primitive"/>
+<cd:command name="moveleft" level="primitive"/>
+<cd:command name="moveright" level="primitive"/>
+<cd:command name="mskip" level="primitive"/>
+<cd:command name="multiply" level="primitive"/>
+<cd:command name="muskip" level="primitive"/>
+<cd:command name="muskipdef" level="primitive"/>
+<cd:command name="newlinechar" level="primitive"/>
+<cd:command name="noalign" level="primitive"/>
+<cd:command name="noboundary" level="primitive"/>
+<cd:command name="noexpand" level="primitive"/>
+<cd:command name="noindent" level="primitive"/>
+<cd:command name="nolimits" level="primitive"/>
+<cd:command name="nonscript" level="primitive"/>
+<cd:command name="nonstopmode" level="primitive"/>
+<cd:command name="nulldelimiterspace" level="primitive"/>
+<cd:command name="nullfont" level="primitive"/>
+<cd:command name="number" level="primitive"/>
+<cd:command name="omit" level="primitive"/>
+<cd:command name="openin" level="primitive"/>
+<cd:command name="openout" level="primitive"/>
+<cd:command name="or" level="primitive"/>
+<cd:command name="outer" level="primitive"/>
+<cd:command name="output" level="primitive"/>
+<cd:command name="outputpenalty" level="primitive"/>
+<cd:command name="over" level="primitive"/>
+<cd:command name="overfullrule" level="primitive"/>
+<cd:command name="overline" level="primitive"/>
+<cd:command name="overwithdelims" level="primitive"/>
+<cd:command name="pagedepth" level="primitive"/>
+<cd:command name="pagefilllstretch" level="primitive"/>
+<cd:command name="pagefillstretch" level="primitive"/>
+<cd:command name="pagefilstretch" level="primitive"/>
+<cd:command name="pagegoal" level="primitive"/>
+<cd:command name="pageshrink" level="primitive"/>
+<cd:command name="pagestretch" level="primitive"/>
+<cd:command name="pagetotal" level="primitive"/>
+<cd:command name="par" level="primitive"/>
+<cd:command name="parfillskip" level="primitive"/>
+<cd:command name="parindent" level="primitive"/>
+<cd:command name="parshape" level="primitive"/>
+<cd:command name="parskip" level="primitive"/>
+<cd:command name="patterns" level="primitive"/>
+<cd:command name="pausing" level="primitive"/>
+<cd:command name="penalty" level="primitive"/>
+<cd:command name="postdisplaypenalty" level="primitive"/>
+<cd:command name="predisplaypenalty" level="primitive"/>
+<cd:command name="predisplaysize" level="primitive"/>
+<cd:command name="pretolerance" level="primitive"/>
+<cd:command name="prevdepth" level="primitive"/>
+<cd:command name="prevgraf" level="primitive"/>
+<cd:command name="radical" level="primitive"/>
+<cd:command name="raise" level="primitive"/>
+<cd:command name="read" level="primitive"/>
+
+    <cd:command name="relax" level="primitive"/>
+
+<cd:command name="relpenalty" level="primitive"/>
+<cd:command name="right" level="primitive"/>
+<cd:command name="righthyphenmin" level="primitive"/>
+<cd:command name="rightskip" level="primitive"/>
+<cd:command name="romannumeral" level="primitive"/>
+<cd:command name="scriptfont" level="primitive"/>
+<cd:command name="scriptscriptfont" level="primitive"/>
+<cd:command name="scriptscriptstyle" level="primitive"/>
+<cd:command name="scriptspace" level="primitive"/>
+<cd:command name="scriptstyle" level="primitive"/>
+<cd:command name="scrollmode" level="primitive"/>
+<cd:command name="setbox" level="primitive"/>
+<cd:command name="setlanguage" level="primitive"/>
+<cd:command name="sfcode" level="primitive"/>
+<cd:command name="shipout" level="primitive"/>
+<cd:command name="show" level="primitive"/>
+<cd:command name="showbox" level="primitive"/>
+<cd:command name="showboxbreadth" level="primitive"/>
+<cd:command name="showboxdepth" level="primitive"/>
+<cd:command name="showlists" level="primitive"/>
+<cd:command name="showthe" level="primitive"/>
+<cd:command name="skewchar" level="primitive"/>
+<cd:command name="skip" level="primitive"/>
+<cd:command name="skipdef" level="primitive"/>
+<cd:command name="spacefactor" level="primitive"/>
+<cd:command name="spaceskip" level="primitive"/>
+<cd:command name="span" level="primitive"/>
+<cd:command name="special" level="primitive"/>
+<cd:command name="splitbotmark" level="primitive"/>
+<cd:command name="splitfirstmark" level="primitive"/>
+<cd:command name="splitmaxdepth" level="primitive"/>
+<cd:command name="splittopskip" level="primitive"/>
+<cd:command name="string" level="primitive"/>
+<cd:command name="tabskip" level="primitive"/>
+<cd:command name="textfont" level="primitive"/>
+<cd:command name="textstyle" level="primitive"/>
+<cd:command name="the" level="primitive"/>
+<cd:command name="thickmuskip" level="primitive"/>
+<cd:command name="thinmuskip" level="primitive"/>
+<cd:command name="time" level="primitive"/>
+<cd:command name="toks" level="primitive"/>
+<cd:command name="toksdef" level="primitive"/>
+<cd:command name="tolerance" level="primitive"/>
+<cd:command name="topmark" level="primitive"/>
+<cd:command name="topskip" level="primitive"/>
+<cd:command name="tracingcommands" level="primitive"/>
+<cd:command name="tracinglostchars" level="primitive"/>
+<cd:command name="tracingmacros" level="primitive"/>
+<cd:command name="tracingonline" level="primitive"/>
+<cd:command name="tracingoutput" level="primitive"/>
+<cd:command name="tracingpages" level="primitive"/>
+<cd:command name="tracingparagraphs" level="primitive"/>
+<cd:command name="tracingrestores" level="primitive"/>
+<cd:command name="tracingstats" level="primitive"/>
+<cd:command name="uccode" level="primitive"/>
+<cd:command name="uchyph" level="primitive"/>
+<cd:command name="underline" level="primitive"/>
+<cd:command name="unhbox" level="primitive"/>
+<cd:command name="unhcopy" level="primitive"/>
+<cd:command name="unkern" level="primitive"/>
+<cd:command name="unpenalty" level="primitive"/>
+<cd:command name="unskip" level="primitive"/>
+<cd:command name="unvbox" level="primitive"/>
+<cd:command name="unvcopy" level="primitive"/>
+<cd:command name="uppercase" level="primitive"/>
+<cd:command name="vadjust" level="primitive"/>
+<cd:command name="valign" level="primitive"/>
+<cd:command name="vbadness" level="primitive"/>
+<cd:command name="vbox" level="primitive"/>
+<cd:command name="vcenter" level="primitive"/>
+
+    <cd:command name="vfil" level="primitive"/>
+
+    <cd:command name="vfill" level="primitive"/>
+
+<cd:command name="vfilneg" level="primitive"/>
+<cd:command name="vfuzz" level="primitive"/>
+<cd:command name="voffset" level="primitive"/>
+<cd:command name="vrule" level="primitive"/>
+<cd:command name="vsize" level="primitive"/>
+<cd:command name="vskip" level="primitive"/>
+<cd:command name="vsplit" level="primitive"/>
+<cd:command name="vss" level="primitive"/>
+<cd:command name="vtop" level="primitive"/>
+<cd:command name="wd" level="primitive"/>
+<cd:command name="widowpenalty" level="primitive"/>
+<cd:command name="write" level="primitive"/>
+<cd:command name="xdef" level="primitive"/>
+<cd:command name="xleaders" level="primitive"/>
+<cd:command name="xspaceskip" level="primitive"/>
+<cd:command name="year" level="primitive"/>
+
+</cd:interface>

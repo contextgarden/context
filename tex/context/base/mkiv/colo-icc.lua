@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['colo-icc'] = {
 
 local char, byte, gsub, match, format, strip = string.char, string.byte, string.gsub, string.match, string.format, string.strip
 local readstring, readnumber = io.readstring, io.readnumber
+local band = bit32.band
 
 local colors = attributes and attributes.colors or { } -- when used in mtxrun
 
@@ -78,10 +79,10 @@ function colors.iccprofile(filename,verbose)
         o == 1 and "dependent" or "unknown"
     local d = header.deviceattributes
     header.deviceattributes = {
-        [number.hasbit(d,1) and "transparency" or "reflective"] = true,
-        [number.hasbit(d,2) and "mate"         or "glossy"    ] = true,
-        [number.hasbit(d,3) and "negative"     or "positive"  ] = true,
-        [number.hasbit(d,4) and "bw"           or "color"     ] = true,
+        [band(d,1) ~= 0 and "transparency" or "reflective"] = true,
+        [band(d,2) ~= 0 and "mate"         or "glossy"    ] = true,
+        [band(d,3) ~= 0 and "negative"     or "positive"  ] = true,
+        [band(d,4) ~= 0 and "bw"           or "color"     ] = true,
     }
     local r = header.renderingintent
     header.renderingintent =

@@ -13,11 +13,11 @@ if not modules then modules = { } end modules ['l-macro-imp-optimize'] = {
 -- There is no real gain as we hardly use these:
 --
 -- lua.macros.resolvestring [[
---     #define round(a)       floor(a + 0.5)
---     #define div(a,b)       floor(a / b)
---     #define mod(a,b)       floor(a % b)
---     #define odd(a)         (a % 2 ~= 0)
---     #define even(a)        (a % 2 == 0)
+--     #define div(a,b) floor(a/b)
+--     #define mod(a,b) (a % b)
+--     #define odd(a)   (a % 2 ~= 0)
+--     #define even(a)  (a % 2 == 0)
+--     #define pow(x,y) (x^y)
 -- ]]
 
 if LUAVERSION >= 5.3 and lua.macros then
@@ -33,18 +33,30 @@ if LUAVERSION >= 5.3 and lua.macros then
 
     -- We need to check for 64 usage: 0xFFFFFFFFFFFFFFFF (-1)
 
-    lua.macros.resolvestring [[
-        #define band(a,b)      (a & b)
-        #define bnot(a)        (~a & 0xFFFFFFFF)
-        #define bor(a)         ((a | b) & 0xFFFFFFFF)
-        #define btest(a,b)     ((a & b) ~= 0)
-        #define bxor(a,b)      ((a ~ b) & 0xFFFFFFFF)
-        #define rshift(a,b)    ((a & b) ~= 0)
-        #define extract(a,b,c) ((a >> b) & ~(-1 << c))
-        #define extract(a,b)   ((a >> b) & 0x1))
-        #define lshift(a,b)    ((a << b) & 0xFFFFFFFF)
-        #define rshift(a,b)    (a >> b)
+ -- lua.macros.resolvestring [[
+ --     #define band(a,b)      (a & b)
+ --     #define bnot(a)        (~a & 0xFFFFFFFF)
+ --     #define bor(a,b)       ((a | b) & 0xFFFFFFFF)
+ --     #define btest(a,b)     ((a & b) ~= 0)
+ --     #define bxor(a,b)      ((a ~ b) & 0xFFFFFFFF)
+ --     #define rshift(a,b)    ((a & b) ~= 0)
+ --     #define extract(a,b,c) ((a >> b) & ~(-1 << c))
+ --     #define extract(a,b)   ((a >> b) & 0x1))
+ --     #define lshift(a,b)    ((a << b) & 0xFFFFFFFF)
+ --     #define rshift(a,b)    ((a >> b) & 0xFFFFFFFF)
+ -- ]]
 
+    lua.macros.resolvestring [[
+        #define band(a,b)      (a&b)
+        #define bnot(a)        (~a&0xFFFFFFFF)
+        #define bor(a,b)       ((a|b)&0xFFFFFFFF)
+        #define btest(a,b)     ((a&b)~=0)
+        #define bxor(a,b)      ((a~b)&0xFFFFFFFF)
+        #define rshift(a,b)    ((a&b)~=0)
+        #define extract(a,b,c) ((a>>b)&~(-1<<c))
+        #define extract(a,b)   ((a>>b)&0x1))
+        #define lshift(a,b)    ((a<<b)&0xFFFFFFFF)
+        #define rshift(a,b)    ((a>>b)&0xFFFFFFFF)
     ]]
 
 end

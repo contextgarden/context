@@ -48,21 +48,21 @@ resolve = C(C(name) * arguments^-1) / function(raw,s,a)
     if d then
         if a then
             local n = #a
-            for i=1,n do
-                a[i] = lpegmatch(subparser,a[i]) or a[i]
-            end
             local p = patterns[s][n]
-            local d = d[n]
             if p then
+                local d = d[n]
+                for i=1,n do
+                    a[i] = lpegmatch(subparser,a[i]) or a[i]
+                end
                 return lpegmatch(p,d,1,a) or d
             else
-                return d
+                return raw
             end
+        else
+            return d[0] or raw
         end
-        return d[0] or raw
     elseif a then
-        local n = #a
-        for i=1,n do
+        for i=1,#a do
             a[i] = lpegmatch(subparser,a[i]) or a[i]
         end
         return s .. "(" .. concat(a,",") .. ")"

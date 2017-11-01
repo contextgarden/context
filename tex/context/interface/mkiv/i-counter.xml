@@ -416,7 +416,7 @@
 
     -->
 
-    <cd:command name="defineseparatorset" category="counter" file="strc-ini.mkvi">
+    <cd:command name="defineseparatorset" level="style" category="counter" file="strc-ini.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>

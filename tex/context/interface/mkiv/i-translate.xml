@@ -13,9 +13,9 @@
 
     <cd:command name="resetinputtranslation" level="system" category="language" file="m-translate.mkiv"/>
 
-    <cd:command name="enableinputtranslation" level="style" category="language" level="style" file="m-translate.mkiv"/>
+    <cd:command name="enableinputtranslation" level="style" category="language" file="m-translate.mkiv"/>
 
-    <cd:command name="disableinputtranslation" level="style" category="language" level="style" file="m-translate.mkiv"/>
+    <cd:command name="disableinputtranslation" level="style" category="language" file="m-translate.mkiv"/>
 
     <cd:command name="readtranslatedfile" level="document" category="language" file="m-translate.mkiv">
         <cd:arguments>

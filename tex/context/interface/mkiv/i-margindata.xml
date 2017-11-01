@@ -149,7 +149,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="margindata" level="document" level="document" category="structure" file="typo-mar.mkiv">
+    <cd:command name="margindata" level="document" category="structure" file="typo-mar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

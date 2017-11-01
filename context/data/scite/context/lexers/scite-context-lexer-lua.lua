@@ -46,7 +46,7 @@ local functions = {
     "pcall", "print", "rawequal", "rawget", "rawset", "require",
     "setmetatable", "tonumber", "tostring", "type", "unpack", "xpcall", "select",
 
-    "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32",
+    "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32", "utf8",
 }
 
 local constants = {

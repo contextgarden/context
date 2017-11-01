@@ -42,7 +42,7 @@
 
     <cd:command name="hairspace" level="style" category="whitespace" file="spac-hor.mkiv"/>
 
-    <cd:command name="thinspace" level="style" level="document" category="whitespace" file="spac-hor.mkiv"/>
+    <cd:command name="thinspace" level="style" category="whitespace" file="spac-hor.mkiv"/>
 
     <cd:command name="medspace" level="style" category="whitespace" file="spac-hor.mkiv"/>
 

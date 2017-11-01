@@ -65,6 +65,7 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner) -
             formatbanner = formatbanner,
             sourcehash   = md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
             sourcefile   = sourcefile,
+            luaversion   = LUAVERSION,
         }
         io.savedata(luvname,table.serialize(luvdata,true))
         lua.registerfinalizer(function()
@@ -93,6 +94,10 @@ function statistics.checkfmtstatus(texname)
                 local luvhash = luv.sourcehash or "?"
                 if luvhash ~= sourcehash then
                     return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
+                end
+                local luvluaversion = luv.luaversion or 0
+                if luvluaversion ~= LUAVERSION then
+                    return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,LUAVERSION)
                 end
             else
                 return "invalid status file"

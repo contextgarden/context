@@ -116,10 +116,8 @@ local stoptiming          = statistics.stoptiming
 local a_visual            = attributes.private("visual")
 local a_layer             = attributes.private("viewerlayer")
 
-local hasbit              = number.hasbit
-local bit                 = number.bit
-local setbit              = number.setbit
-local clearbit            = number.clearbit
+local band  = bit32.band
+local bor   = bit32.bor
 
 local enableaction        = nodes.tasks.enableaction
 
@@ -238,13 +236,13 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
         if not a or a == 0 or a == unsetvalue then
             a = preset_makeup
         else
-            a = setbit(a,preset_makeup)
+            a = bor(a,preset_makeup)
         end
     elseif n == "boxes" then
         if not a or a == 0 or a == unsetvalue then
             a = preset_boxes
         else
-            a = setbit(a,preset_boxes)
+            a = bor(a,preset_boxes)
         end
     elseif n == "all" then
         if what == false then
@@ -252,7 +250,7 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
         elseif not a or a == 0 or a == unsetvalue then
             a = preset_all
         else
-            a = setbit(a,preset_all)
+            a = bor(a,preset_all)
         end
     else
         for s in gmatch(n,"[a-z]+") do
@@ -262,7 +260,7 @@ local function setvisual(n,a,what,list) -- this will become more efficient when 
             elseif not a or a == 0 or a == unsetvalue then
                 a = m
             else
-                a = setbit(a,m)
+                a = bor(a,m)
             end
         end
     end
@@ -1153,24 +1151,24 @@ do
                     trace_expansion     = false
                     trace_line          = false
                 else -- dead slow:
-                    trace_hbox          = hasbit(a,     1)
-                    trace_vbox          = hasbit(a,     2)
-                    trace_vtop          = hasbit(a,     4)
-                    trace_kern          = hasbit(a,     8)
-                    trace_glue          = hasbit(a,    16)
-                    trace_penalty       = hasbit(a,    32)
-                    trace_fontkern      = hasbit(a,    64)
-                    trace_strut         = hasbit(a,   128)
-                    trace_whatsit       = hasbit(a,   256)
-                    trace_glyph         = hasbit(a,   512)
-                    trace_simple        = hasbit(a,  1024)
-                    trace_user          = hasbit(a,  2048)
-                    trace_math          = hasbit(a,  4096)
-                    trace_italic        = hasbit(a,  8192)
-                    trace_origin        = hasbit(a, 16384)
-                    trace_discretionary = hasbit(a, 32768)
-                    trace_expansion     = hasbit(a, 65536)
-                    trace_line          = hasbit(a,131072)
+                    trace_hbox          = band(a,     1) ~= 0
+                    trace_vbox          = band(a,     2) ~= 0
+                    trace_vtop          = band(a,     4) ~= 0
+                    trace_kern          = band(a,     8) ~= 0
+                    trace_glue          = band(a,    16) ~= 0
+                    trace_penalty       = band(a,    32) ~= 0
+                    trace_fontkern      = band(a,    64) ~= 0
+                    trace_strut         = band(a,   128) ~= 0
+                    trace_whatsit       = band(a,   256) ~= 0
+                    trace_glyph         = band(a,   512) ~= 0
+                    trace_simple        = band(a,  1024) ~= 0
+                    trace_user          = band(a,  2048) ~= 0
+                    trace_math          = band(a,  4096) ~= 0
+                    trace_italic        = band(a,  8192) ~= 0
+                    trace_origin        = band(a, 16384) ~= 0
+                    trace_discretionary = band(a, 32768) ~= 0
+                    trace_expansion     = band(a, 65536) ~= 0
+                    trace_line          = band(a,131072) ~= 0
                 end
                 attr = a
             end

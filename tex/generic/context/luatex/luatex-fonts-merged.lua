@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/31/17 15:07:26
+-- merge date  : 11/01/17 15:59:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -120,32 +120,7 @@ elseif not ffi.number then
   ffi.number=tonumber
 end
 if not bit32 and utf8 then
-  bit32=load ([[ return {
-band = function(a,b)
-    return (a & b)
-end,
-bnot = function(a)
-    return ~a & 0xFFFFFFFF
-end,
-bor = function(a,b)
-    return (a | b) & 0xFFFFFFFF
-end,
-btest = function(a,b)
-    return (a & b) ~= 0
-end,
-bxor = function(a,b)
-    return (a ~ b) & 0xFFFFFFFF
-end,
-extract = function(a,b,c)
-    return (a >> b) & ~(-1 << (c or 1))
-end,
-lshift = function(a,b)
-    return (a << b) & 0xFFFFFFFF
-end,
-rshift = function(a,b)
-    return (a >> b)
-end,
-    } ]] ) ()
+  bit32=require("l-bit32")
 end
 
 end -- closure
@@ -2947,21 +2922,23 @@ if not modules then modules={} end modules ['l-math']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local floor,sin,cos,tan=math.floor,math.sin,math.cos,math.tan
 if not math.ceiling then
   math.ceiling=math.ceil
 end
 if not math.round then
+  local floor=math.floor
   function math.round(x) return floor(x+0.5) end
 end
 if not math.div then
+  local floor=math.floor
   function math.div(n,m) return floor(n/m) end
 end
 if not math.mod then
   function math.mod(n,m) return n%m end
 end
-local pipi=2*math.pi/360
 if not math.sind then
+  local sin,cos,tan=math.sin,math.cos,math.tan
+  local pipi=2*math.pi/360
   function math.sind(d) return sin(d*pipi) end
   function math.cosd(d) return cos(d*pipi) end
   function math.tand(d) return tan(d*pipi) end
@@ -2969,6 +2946,60 @@ end
 if not math.odd then
   function math.odd (n) return n%2~=0 end
   function math.even(n) return n%2==0 end
+end
+if not math.cosh then
+  local exp=math.exp
+  function math.cosh(x)
+    local xx=exp(x)
+    return (xx+1/xx)/2
+  end
+  function math.sinh(x)
+    local xx=exp(x)
+    return (xx-1/xx)/2
+  end
+  function math.tanh(x)
+    local xx=exp(x)
+    return (xx-1/xx)/(xx+1/xx)
+  end
+end
+if not math.pow then
+  function math.pow(x,y)
+    return x^y
+  end
+end
+if not math.atan2 then
+  math.atan2=math.atan
+end
+if not math.ldexp then
+  function math.ldexp(x,e)
+    return x*2.0^e
+  end
+end
+if not math.log10 then
+  local log=math.log
+  function math.log10(x)
+    return log(x,10)
+  end
+end
+if not math.type then
+  function math.type()
+    return "float"
+  end
+end
+if not math.tointeger then
+  math.mininteger=-0x4FFFFFFFFFFF
+  math.maxinteger=0x4FFFFFFFFFFF
+  local floor=math.floor
+  function math.tointeger(n)
+    local f=floor(n)
+    return f==n and f or nil
+  end
+end
+if not math.ult then
+  local floor=math.floor
+  function math.tointeger(m,n)
+    return floor(m)<floor(n) 
+  end
 end
 
 end -- closure
@@ -13363,7 +13394,7 @@ if not modules then modules={} end modules ['font-ttf']={
   license="see context related readme files"
 }
 local next,type,unpack=next,type,unpack
-local bittest,band,rshift=bit32.btest,bit32.band,bit32.rshift
+local band,rshift=bit32.band,bit32.rshift
 local sqrt,round=math.sqrt,math.round
 local char=string.char
 local concat=table.concat
@@ -13955,7 +13986,7 @@ local function readglyph(f,nofcontours)
   while i<=nofpoints do
     local flag=readbyte(f)
     flags[i]=flag
-    if bittest(flag,0x08) then
+    if band(flag,0x08)~=0 then
       for j=1,readbyte(f) do
         i=i+1
         flags[i]=flag
@@ -13966,8 +13997,8 @@ local function readglyph(f,nofcontours)
   local x=0
   for i=1,nofpoints do
     local flag=flags[i]
-    local short=bittest(flag,0x02)
-    local same=bittest(flag,0x10)
+    local short=band(flag,0x02)~=0
+    local same=band(flag,0x10)~=0
     if short then
       if same then
         x=x+readbyte(f)
@@ -13978,13 +14009,13 @@ local function readglyph(f,nofcontours)
     else
       x=x+readshort(f)
     end
-    points[i]={ x,0,bittest(flag,0x01) }
+    points[i]={ x,0,band(flag,0x01)~=0 }
   end
   local y=0
   for i=1,nofpoints do
     local flag=flags[i]
-    local short=bittest(flag,0x04)
-    local same=bittest(flag,0x20)
+    local short=band(flag,0x04)~=0
+    local same=band(flag,0x20)~=0
     if short then
       if same then
         y=y+readbyte(f)
@@ -14011,8 +14042,8 @@ local function readcomposite(f)
   while true do
     local flags=readushort(f)
     local index=readushort(f)
-    local f_xyarg=bittest(flags,0x0002)
-    local f_offset=bittest(flags,0x0800)
+    local f_xyarg=band(flags,0x0002)~=0
+    local f_offset=band(flags,0x0800)~=0
     local xscale=1
     local xrotate=0
     local yrotate=0
@@ -14022,7 +14053,7 @@ local function readcomposite(f)
     local base=false
     local reference=false
     if f_xyarg then
-      if bittest(flags,0x0001) then 
+      if band(flags,0x0001)~=0 then 
         xoffset=readshort(f)
         yoffset=readshort(f)
       else
@@ -14030,7 +14061,7 @@ local function readcomposite(f)
         yoffset=readchar(f) 
       end
     else
-      if bittest(flags,0x0001) then 
+      if band(flags,0x0001)~=0 then 
         base=readshort(f)
         reference=readshort(f)
       else
@@ -14038,21 +14069,21 @@ local function readcomposite(f)
         reference=readchar(f) 
       end
     end
-    if bittest(flags,0x0008) then 
+    if band(flags,0x0008)~=0 then 
       xscale=read2dot14(f)
       yscale=xscale
       if f_xyarg and f_offset then
         xoffset=xoffset*xscale
         yoffset=yoffset*yscale
       end
-    elseif bittest(flags,0x0040) then 
+    elseif band(flags,0x0040)~=0 then 
       xscale=read2dot14(f)
       yscale=read2dot14(f)
       if f_xyarg and f_offset then
         xoffset=xoffset*xscale
         yoffset=yoffset*yscale
       end
-    elseif bittest(flags,0x0080) then 
+    elseif band(flags,0x0080)~=0 then 
       xscale=read2dot14(f)
       xrotate=read2dot14(f)
       yrotate=read2dot14(f)
@@ -14065,16 +14096,16 @@ local function readcomposite(f)
     nofcomponents=nofcomponents+1
     components[nofcomponents]={
       index=index,
-      usemine=bittest(flags,0x0200),
-      round=bittest(flags,0x0006),
+      usemine=band(flags,0x0200)~=0,
+      round=band(flags,0x0006)~=0,
       base=base,
       reference=reference,
       matrix={ xscale,xrotate,yrotate,yscale,xoffset,yoffset },
     }
-    if bittest(flags,0x0100) then
+    if band(flags,0x0100)~=0 then
       instructions=true
     end
-    if not bittest(flags,0x0020) then 
+    if not band(flags,0x0020)~=0 then 
       break
     end
   end
@@ -14181,7 +14212,7 @@ local function readpoints(f)
     return nil,0 
   else
     if count<128 then
-    elseif bittest(count,0x80) then
+    elseif band(count,0x80)~=0 then
       count=band(count,0x7F)*256+readbyte(f)
     else
     end
@@ -14190,7 +14221,7 @@ local function readpoints(f)
     local n=1 
     while p<count do
       local control=readbyte(f)
-      local runreader=bittest(control,0x80) and readushort or readbyte
+      local runreader=band(control,0x80)~=0 and readushort or readbyte
       local runlength=band(control,0x7F)
       for i=1,runlength+1 do
         n=n+runreader(f)
@@ -14210,12 +14241,12 @@ local function readdeltas(f,nofpoints)
 if not control then
   break
 end
-    local allzero=bittest(control,0x80)
+    local allzero=band(control,0x80)~=0
     local runlength=band(control,0x3F)+1
     if allzero then
       z=z+runlength
     else
-      local runreader=bittest(control,0x40) and readshort or readinteger
+      local runreader=band(control,0x40)~=0 and readshort or readinteger
       if z>0 then
         for i=1,z do
           p=p+1
@@ -14241,7 +14272,7 @@ local function readdeltas(f,nofpoints)
   while nofpoints>0 do
     local control=readbyte(f)
     if control then
-      local allzero=bittest(control,0x80)
+      local allzero=band(control,0x80)~=0
       local runlength=band(control,0x3F)+1
       if allzero then
         for i=1,runlength do
@@ -14249,7 +14280,7 @@ local function readdeltas(f,nofpoints)
           deltas[p]=0
         end
       else
-        local runreader=bittest(control,0x40) and readshort or readinteger
+        local runreader=band(control,0x40)~=0 and readshort or readinteger
         for i=1,runlength do
           p=p+1
           deltas[p]=runreader(f)
@@ -14287,7 +14318,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
     local tuples={}
     local glyphdata=fontdata.glyphs
     local dowidth=not fontdata.variabledata.hvarwidths
-    if bittest(flags,0x0001) then
+    if band(flags,0x0001)~=0 then
       for i=1,nofglyphs+1 do
         data[i]=dataoffset+readulong(f)
       end
@@ -14328,7 +14359,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
           local allpoints=(shape.nofpoints or 0) 
           local shared=false
           local nofshared=0
-          if bittest(flags,0x8000) then
+          if band(flags,0x8000)~=0 then
             local current=getposition(f)
             setposition(f,offset)
             shared,nofshared=readpoints(f)
@@ -14339,9 +14370,9 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
             local size=readushort(f) 
             local flags=readushort(f)
             local index=band(flags,0x0FFF)
-            local haspeak=bittest(flags,0x8000)
-            local intermediate=bittest(flags,0x4000)
-            local private=bittest(flags,0x2000)
+            local haspeak=band(flags,0x8000)~=0
+            local intermediate=band(flags,0x4000)~=0
+            local private=band(flags,0x2000)~=0
             local peak=nil
             local start=nil
             local stop=nil
@@ -14436,7 +14467,6 @@ if not modules then modules={} end modules ['font-dsp']={
   license="see context related readme files"
 }
 local next,type=next,type
-local bittest=bit32.btest
 local band=bit32.band
 local extract=bit32.extract
 local bor=bit32.bor
@@ -14585,10 +14615,10 @@ local lookupnames={
 }
 local lookupflags=setmetatableindex(function(t,k)
   local v={
-    bittest(k,0x0008) and true or false,
-    bittest(k,0x0004) and true or false,
-    bittest(k,0x0002) and true or false,
-    bittest(k,0x0001) and true or false,
+    band(k,0x0008)~=0 and true or false,
+    band(k,0x0004)~=0 and true or false,
+    band(k,0x0002)~=0 and true or false,
+    band(k,0x0001)~=0 and true or false,
   }
   t[k]=v
   return v
@@ -14959,15 +14989,15 @@ local function readposition(f,format,mainoffset,getdelta)
       return { 0,0,h,0 }
     end
   end
-  local x=bittest(format,0x01) and readshort(f) or 0 
-  local y=bittest(format,0x02) and readshort(f) or 0 
-  local h=bittest(format,0x04) and readshort(f) or 0 
-  local v=bittest(format,0x08) and readshort(f) or 0 
+  local x=band(format,0x1)~=0 and readshort(f) or 0 
+  local y=band(format,0x2)~=0 and readshort(f) or 0 
+  local h=band(format,0x4)~=0 and readshort(f) or 0 
+  local v=band(format,0x8)~=0 and readshort(f) or 0 
   if format>=0x10 then
-    local X=bittest(format,0x10) and skipshort(f) or 0
-    local Y=bittest(format,0x20) and skipshort(f) or 0
-    local H=bittest(format,0x40) and skipshort(f) or 0
-    local V=bittest(format,0x80) and skipshort(f) or 0
+    local X=band(format,0x10)~=0 and skipshort(f) or 0
+    local Y=band(format,0x20)~=0 and skipshort(f) or 0
+    local H=band(format,0x40)~=0 and skipshort(f) or 0
+    local V=band(format,0x80)~=0 and skipshort(f) or 0
     local s=skips[extract(format,4,4)]
     if s>0 then
       skipshort(f,s)
@@ -16107,7 +16137,7 @@ do
       for j=1,nofsubtables do
         subtables[j]=offset+readushort(f) 
       end
-      local markclass=bittest(flagbits,0x0010) 
+      local markclass=band(flagbits,0x0010)~=0 
       if markclass then
         markclass=readushort(f) 
       end
@@ -16921,7 +16951,7 @@ local function readmathvariants(f,fontdata,offset)
                 advance=readushort(f),
               }
               local flags=readushort(f)
-              if bittest(flags,0x0001) then
+              if band(flags,0x0001)~=0 then
                 p.extender=1 
               end
               parts[i]=p

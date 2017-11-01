@@ -107,7 +107,7 @@
 
     <cd:command name="getMPdrawing" level="document" category="graphics metapost" file="meta-ini.mkiv"/>
 
-    <cd:command name="MPdrawing"level="system"  type="environment" begin="push" end="pop" category="graphics metapost" file="meta-ini.mkiv"/>
+    <cd:command name="MPdrawing" level="system" type="environment" begin="push" end="pop" category="graphics metapost" file="meta-ini.mkiv"/>
 
     <cd:command name="MPdrawing" level="document" category="graphics metapost" file="meta-ini.mkiv">
         <cd:arguments>
@@ -286,7 +286,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetMPenvironment" clevel="style" ategory="graphics" file="meta-ini.mkiv"/>
+    <cd:command name="resetMPenvironment" level="style" category="graphics" file="meta-ini.mkiv"/>
 
     <cd:command name="useMPenvironmentbuffer" level="style" category="graphics metapost" file="meta-ini.mkiv">
         <cd:arguments>

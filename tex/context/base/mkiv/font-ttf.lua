@@ -33,7 +33,7 @@ if not modules then modules = { } end modules ['font-ttf'] = {
 --    delta  = (1-factor)*left + factor * right
 
 local next, type, unpack = next, type, unpack
-local bittest, band, rshift = bit32.btest, bit32.band, bit32.rshift
+local band, rshift = bit32.band, bit32.rshift
 local sqrt, round = math.sqrt, math.round
 local char = string.char
 local concat = table.concat
@@ -698,7 +698,7 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     while i <= nofpoints do
         local flag = readbyte(f)
         flags[i] = flag
-        if bittest(flag,0x08) then
+        if band(flag,0x08) ~= 0 then
             for j=1,readbyte(f) do
                 i = i + 1
                 flags[i] = flag
@@ -711,8 +711,8 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     local x = 0
     for i=1,nofpoints do
         local flag  = flags[i]
-        local short = bittest(flag,0x02)
-        local same  = bittest(flag,0x10)
+        local short = band(flag,0x02) ~= 0
+        local same  = band(flag,0x10) ~= 0
         if short then
             if same then
                 x = x + readbyte(f)
@@ -724,13 +724,13 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
         else
             x = x + readshort(f)
         end
-        points[i] = { x, 0, bittest(flag,0x01) }
+        points[i] = { x, 0, band(flag,0x01) ~= 0 }
     end
     local y = 0
     for i=1,nofpoints do
         local flag  = flags[i]
-        local short = bittest(flag,0x04)
-        local same  = bittest(flag,0x20)
+        local short = band(flag,0x04) ~= 0
+        local same  = band(flag,0x20) ~= 0
         if short then
             if same then
                 y = y + readbyte(f)
@@ -759,19 +759,19 @@ local function readcomposite(f)
     while true do
         local flags      = readushort(f)
         local index      = readushort(f)
-        ----- f_words    = bittest(flags,0x0001)
-        local f_xyarg    = bittest(flags,0x0002)
-        ----- f_round    = bittest(flags,0x0004+0x0002)
-        ----- f_scale    = bittest(flags,0x0008)
-        ----- f_reserved = bittest(flags,0x0010)
-        ----- f_more     = bittest(flags,0x0020)
-        ----- f_xyscale  = bittest(flags,0x0040)
-        ----- f_matrix   = bittest(flags,0x0080)
-        ----- f_instruct = bittest(flags,0x0100)
-        ----- f_usemine  = bittest(flags,0x0200)
-        ----- f_overlap  = bittest(flags,0x0400)
-        local f_offset   = bittest(flags,0x0800)
-        ----- f_uoffset  = bittest(flags,0x1000)
+        ----- f_words    = band(flags,0x0001) ~= 0
+        local f_xyarg    = band(flags,0x0002) ~= 0
+        ----- f_round    = band(flags,0x0006) ~= 0 -- 2 + 4
+        ----- f_scale    = band(flags,0x0008) ~= 0
+        ----- f_reserved = band(flags,0x0010) ~= 0
+        ----- f_more     = band(flags,0x0020) ~= 0
+        ----- f_xyscale  = band(flags,0x0040) ~= 0
+        ----- f_matrix   = band(flags,0x0080) ~= 0
+        ----- f_instruct = band(flags,0x0100) ~= 0
+        ----- f_usemine  = band(flags,0x0200) ~= 0
+        ----- f_overlap  = band(flags,0x0400) ~= 0
+        local f_offset   = band(flags,0x0800) ~= 0
+        ----- f_uoffset  = band(flags,0x1000) ~= 0
         local xscale     = 1
         local xrotate    = 0
         local yrotate    = 0
@@ -781,7 +781,7 @@ local function readcomposite(f)
         local base       = false
         local reference  = false
         if f_xyarg then
-            if bittest(flags,0x0001) then -- f_words
+            if band(flags,0x0001) ~= 0 then -- f_words
                 xoffset = readshort(f)
                 yoffset = readshort(f)
             else
@@ -789,7 +789,7 @@ local function readcomposite(f)
                 yoffset = readchar(f) -- signed byte, stupid name
             end
         else
-            if bittest(flags,0x0001) then -- f_words
+            if band(flags,0x0001) ~= 0 then -- f_words
                 base      = readshort(f)
                 reference = readshort(f)
             else
@@ -797,21 +797,21 @@ local function readcomposite(f)
                 reference = readchar(f) -- signed byte, stupid name
             end
         end
-        if bittest(flags,0x0008) then -- f_scale
+        if band(flags,0x0008) ~= 0 then -- f_scale
             xscale = read2dot14(f)
             yscale = xscale
             if f_xyarg and f_offset then
                 xoffset = xoffset * xscale
                 yoffset = yoffset * yscale
             end
-        elseif bittest(flags,0x0040) then -- f_xyscale
+        elseif band(flags,0x0040) ~= 0 then -- f_xyscale
             xscale = read2dot14(f)
             yscale = read2dot14(f)
             if f_xyarg and f_offset then
                 xoffset = xoffset * xscale
                 yoffset = yoffset * yscale
             end
-        elseif bittest(flags,0x0080) then -- f_matrix
+        elseif band(flags,0x0080) ~= 0 then -- f_matrix
             xscale  = read2dot14(f)
             xrotate = read2dot14(f)
             yrotate = read2dot14(f)
@@ -824,16 +824,16 @@ local function readcomposite(f)
         nofcomponents = nofcomponents + 1
         components[nofcomponents] = {
             index      = index,
-            usemine    = bittest(flags,0x0200), -- f_usemine
-            round      = bittest(flags,0x0006), -- f_round,
+            usemine    = band(flags,0x0200) ~= 0, -- f_usemine
+            round      = band(flags,0x0006) ~= 0, -- f_round,
             base       = base,
             reference  = reference,
             matrix     = { xscale, xrotate, yrotate, yscale, xoffset, yoffset },
         }
-        if bittest(flags,0x0100) then
+        if band(flags,0x0100) ~= 0 then
             instructions = true
         end
-        if not bittest(flags,0x0020) then -- f_more
+        if not band(flags,0x0020) ~= 0 then -- f_more
             break
         end
     end
@@ -963,7 +963,7 @@ local function readpoints(f)
     else
         if count < 128 then
             -- no second byte, use count
-        elseif bittest(count,0x80) then
+        elseif band(count,0x80) ~= 0 then
             count = band(count,0x7F) * 256 + readbyte(f)
         else
             -- bad news
@@ -973,7 +973,7 @@ local function readpoints(f)
         local n = 1 -- indices
         while p < count do
             local control   = readbyte(f)
-            local runreader = bittest(control,0x80) and readushort or readbyte
+            local runreader = band(control,0x80) ~= 0 and readushort or readbyte
             local runlength = band(control,0x7F)
             for i=1,runlength+1 do
                 n = n + runreader(f)
@@ -994,12 +994,12 @@ local function readdeltas(f,nofpoints)
 if not control then
     break
 end
-        local allzero   = bittest(control,0x80)
+        local allzero   = band(control,0x80) ~= 0
         local runlength = band(control,0x3F) + 1
         if allzero then
             z = z + runlength
         else
-            local runreader = bittest(control,0x40) and readshort or readinteger
+            local runreader = band(control,0x40) ~= 0 and readshort or readinteger
             if z > 0 then
                 for i=1,z do
                     p = p + 1
@@ -1035,7 +1035,7 @@ local function readdeltas(f,nofpoints)
     while nofpoints > 0 do
         local control = readbyte(f)
         if control then
-            local allzero   = bittest(control,0x80)
+            local allzero   = band(control,0x80) ~= 0
             local runlength = band(control,0x3F) + 1
             if allzero then
                 for i=1,runlength do
@@ -1043,7 +1043,7 @@ local function readdeltas(f,nofpoints)
                     deltas[p] = 0
                 end
             else
-                local runreader = bittest(control,0x40) and readshort or readinteger
+                local runreader = band(control,0x40) ~= 0 and readshort or readinteger
                 for i=1,runlength do
                     p = p + 1
                     deltas[p] = runreader(f)
@@ -1088,7 +1088,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
         local dowidth     = not fontdata.variabledata.hvarwidths
         -- there is one more offset (so that one can calculate the size i suppose)
         -- so we could test for overflows but we simply assume sane font files
-        if bittest(flags,0x0001) then
+        if band(flags,0x0001) ~= 0  then
             for i=1,nofglyphs+1 do
                 data[i] = dataoffset + readulong(f)
             end
@@ -1130,7 +1130,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                     local allpoints = (shape.nofpoints or 0) -- + 1
                     local shared    = false
                     local nofshared = 0
-                    if bittest(flags,0x8000) then -- has shared points
+                    if band(flags,0x8000) ~= 0  then -- has shared points
                         -- go to the packed stream (get them once)
                         local current = getposition(f)
                         setposition(f,offset)
@@ -1143,9 +1143,9 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                         local size         = readushort(f) -- check
                         local flags        = readushort(f)
                         local index        = band(flags,0x0FFF)
-                        local haspeak      = bittest(flags,0x8000)
-                        local intermediate = bittest(flags,0x4000)
-                        local private      = bittest(flags,0x2000)
+                        local haspeak      = band(flags,0x8000) ~= 0
+                        local intermediate = band(flags,0x4000) ~= 0
+                        local private      = band(flags,0x2000) ~= 0
                         local peak         = nil
                         local start        = nil
                         local stop         = nil
