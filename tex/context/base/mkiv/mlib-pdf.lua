@@ -216,13 +216,14 @@ end
 
 local function flushnormalpath(path, t, open)
     local pth, ith, nt
+    local length = #path
     if t then
         nt = #t
     else
         t = { }
         nt = 0
     end
-    for i=1,#path do
+    for i=1,length do
         nt = nt + 1
         pth = path[i]
         if not ith then
@@ -242,7 +243,7 @@ local function flushnormalpath(path, t, open)
         else
             t[nt] = f_l(one.x_coord,one.y_coord)
         end
-    elseif #path == 1 then
+    elseif length == 1 then
         -- special case .. draw point
         local one = path[1]
         nt = nt + 1
@@ -253,6 +254,7 @@ end
 
 local function flushconcatpath(path, t, open)
     local pth, ith, nt
+    local length = #path
     if t then
         nt = #t
     else
@@ -261,7 +263,7 @@ local function flushconcatpath(path, t, open)
     end
     nt = nt + 1
     t[nt] = f_cm(sx,rx,ry,sy,tx,ty)
-    for i=1,#path do
+    for i=1,length do
         nt = nt + 1
         pth = path[i]
         if not ith then
@@ -285,7 +287,7 @@ local function flushconcatpath(path, t, open)
         else
             t[nt] = f_l(mpconcat(one.x_coord,one.y_coord))
         end
-    elseif #path == 1 then
+    elseif length == 1 then
         -- special case .. draw point
         nt = nt + 1
         local one = path[1]

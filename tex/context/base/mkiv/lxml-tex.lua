@@ -1265,7 +1265,7 @@ function lxml.setsetup(id,pattern,setup)
             report_lxml("%s lpath matches for pattern: %s","no",pattern)
         end
     else
-        local a, b = match(setup,"^(.+:)([%*%-])$")
+        local a, b = match(setup,"^(.+:)([%*%-%+])$")
         if a and b then
             local collected = xmlapplylpath(getid(id),pattern)
             if collected then

@@ -1182,7 +1182,11 @@
 \unexpanded\def\btxflushauthorinverted     {\btx_flush_author{inverted}}      % #1
 \unexpanded\def\btxflushauthorinvertedshort{\btx_flush_author{invertedshort}} % #1
 
-\unexpanded\def\currentbtxciteauthor % always author
+\let\currentbtxauthorfield\s!author
+
+\unexpanded\def\btxsetauthorfield#1{\edef\currentbtxauthorfield{#1}}
+
+\unexpanded\def\currentbtxciteauthorbyfield
   {\begingroup
    %\setbtxparameterset\s!cite\s!author
    % the alternatives inherit from cite:author
@@ -1191,7 +1195,7 @@
    \clf_btxauthor
         {\currentbtxdataset}%
         {\currentbtxtag}%
-        {\s!author}%
+        {\currentbtxauthorfield}%
         {%
             combiner    {\btxparameter\c!authorconversion}%
             kind        {cite}%
@@ -1202,6 +1206,10 @@
         }%
    \relax
    \endgroup}
+
+\unexpanded\def\currentbtxciteauthor
+  {\let\currentbtxauthorfield\s!author
+   \currentbtxciteauthorbyfield} % always author
 
 \unexpanded\def\btxstartauthor#1#2#3% a state > 0 signals that some authors can clash
   {\begingroup
@@ -1226,12 +1234,6 @@
 
 % \btxflushauthor{author}
 % \btxflushauthor{editor}
-%
-% \btxflushauthor[name]{author}
-% \btxflushauthor[normal]{author}
-% \btxflushauthor[normalshort]{author}
-% \btxflushauthor[inverted]{author}
-% \btxflushauthor[invertedshort]{author}
 
 % Interaction
 %

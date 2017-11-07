@@ -108,6 +108,9 @@ mechanisms. Both put some constraints on the code here.</p>
 -- Remark: We can provide a fast loop when there are no disc nodes (tests show a 1%
 -- gain). Smaller functions might perform better cache-wise. But ... memory becomes
 -- faster anyway, so ...
+--
+-- Remark: Some optimizations made sense for 5.2 but seem less important for 5.3 but
+-- anyway served their purpose.
 
 local type, next, tonumber = type, next, tonumber
 local random = math.random

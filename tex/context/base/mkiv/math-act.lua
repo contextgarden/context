@@ -231,12 +231,13 @@ function mathematics.overloaddimensions(target,original,set)
                 if trace_defining then
                     report_math("overloading dimensions in %a @ %p",target.properties.fullname,target.parameters.size)
                 end
-                local characters = target.characters
-                local parameters = target.parameters
-                local factor     = parameters.factor
-                local hfactor    = parameters.hfactor
-                local vfactor    = parameters.vfactor
-                local addprivate = fonts.helpers.addprivate
+                local characters   = target.characters
+                local descriptions = target.descriptions
+                local parameters   = target.parameters
+                local factor       = parameters.factor
+                local hfactor      = parameters.hfactor
+                local vfactor      = parameters.vfactor
+                local addprivate   = fonts.helpers.addprivate
                 -- to be sure
                 target.type = "virtual"
                 target.properties.virtualized = true
@@ -264,7 +265,14 @@ function mathematics.overloaddimensions(target,original,set)
                             --
                             local xoffset = data.xoffset
                             local yoffset = data.yoffset
-                            if xoffset then
+                            if xoffset == "llx" then
+                                local d = descriptions[unicode]
+                                if d then
+                                    xoffset         = - d.boundingbox[1] * hfactor
+                                    character.width = character.width + xoffset
+                                    xoffset = { "right", xoffset }
+                                end
+                            elseif xoffset then
                                 xoffset = { "right", xoffset * hfactor }
                             end
                             if yoffset then

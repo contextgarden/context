@@ -1181,8 +1181,53 @@ enddef ;
 
 %D Interesting too:
 
+% primarydef p paralleled d = (
+%     p shifted if d < 0 : - fi ((point abs(d) on (p rotatedaround(point 0 of p,90))) - point 0 of p)
+% ) enddef ;
+%
+% primarydef p paralleled d = (
+%     p shifted ((d*unitvector(direction 0 of p) - point 0 of p) rotated 90)
+% ) enddef ;
+%
+% Alan came up with an improved version and stepwise we ended up with (or
+% might up with a variant of):
+
+vardef perpendicular expr t of p =
+    unitvector((direction t of p) rotated 90)
+enddef ;
+
+def istextext(expr p) =
+    (path p and ((substring(0,3) of prescriptpart p) = "tx_"))
+enddef ;
+
 primarydef p paralleled d = (
-    p shifted if d < 0 : - fi ((point abs(d) on (p rotatedaround(point 0 of p,90))) - point 0 of p)
+    if path p :
+        begingroup ;
+        save dp ; pair dp ;
+        for i=0 upto length p if cycle p : -1 fi :
+            hide(dp := d * perpendicular i of p)
+            if i > 0 : .. fi
+            (point i of p + dp)
+            if i < length p :
+                .. controls (postcontrol i    of p + dp) and
+                            (precontrol (i+1) of p + dp)
+            fi
+        endfor
+        if cycle p : .. cycle fi
+        endgroup
+    elseif picture p :
+        image(
+            for i within p :
+                draw (pathpart i)
+                if not istextext(i) : % dirty trick
+                    paralleled d
+                fi
+                mfun_decoration_i i ;
+            endfor ;
+        )
+    elseif pair p :
+        p
+    fi
 ) enddef ;
 
 vardef punked primary p =
@@ -1268,6 +1313,7 @@ enddef ;
 
 newinternal ahvariant ; ahvariant := 0 ;
 newinternal ahdimple  ; ahdimple  := 1/5 ;
+newinternal ahscale   ; ahscale   := 3/4 ;
 
 vardef arrowhead expr p =
      save q, e, r ;
@@ -1310,7 +1356,8 @@ def resetarrows =
         ahangle   := 45 ;
         ahvariant := 0 ;
         ahdimple  := 1/5 ;
-    )
+        ahscale   := 3/4 ;
+)
 enddef ;
 
 %D Points.
@@ -1708,6 +1755,65 @@ def mfun_draw_arrow_picture_double text t =
         fi
         if mfun_arrow_count = mfun_arrow_snippets :
             fillup arrowhead mfun_arrow_path mfun_decoration_i i t ;
+        fi
+    )
+    endgroup ;
+enddef ;
+
+%D Some more arrow magic, by Alan:
+
+def drawdoublearrows expr p =
+    begingroup ;
+    save mfun_arrow_path ;
+    path mfun_arrow_path ;
+    save mfun_arrow_path_parallel ;
+    path mfun_arrow_path_parallel ;
+    if path p :
+        mfun_arrow_path := p ;
+        expandafter mfun_draw_arrow_paths
+    elseif picture p :
+        save mfun_arrow_picture ;
+        picture mfun_arrow_picture ;
+        mfun_arrow_picture := p ;
+        expandafter mfun_draw_arrow_pictures
+    else :
+        expandafter mfun_draw_arrow_nothing
+    fi
+enddef ;
+
+def mfun_draw_arrow_paths text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
+    save d ; d := ahscale*ahlength*sind(ahangle/2) ;
+    mfun_arrow_path_parallel := mfun_arrow_path paralleled d ;
+    draw   arrowpath mfun_arrow_path_parallel t ;
+    fillup arrowhead mfun_arrow_path_parallel t ;
+    mfun_arrow_path_parallel := (reverse mfun_arrow_path) paralleled d ;
+    draw   arrowpath mfun_arrow_path_parallel t ;
+    fillup arrowhead mfun_arrow_path_parallel t ;
+    endgroup ;
+enddef ;
+
+def mfun_draw_arrow_pictures text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
+    save d ; d := ahscale*ahlength*sind(ahangle/2) ;
+    mfun_with_arrow_picture(
+        if mfun_arrow_count = 1 :
+            draw (mfun_arrow_path  paralleled d)          mfun_decoration_i i t ;
+            mfun_arrow_path_parallel := (reverse mfun_arrow_path) paralleled d ;
+            draw   arrowpath mfun_arrow_path_parallel     mfun_decoration_i i t ;
+            fillup arrowhead mfun_arrow_path_parallel     mfun_decoration_i i t ;
+        elseif mfun_arrow_count = mfun_arrow_snippets :
+            draw ((reverse mfun_arrow_path) paralleled d) mfun_decoration_i i t ;
+            mfun_arrow_path_parallel := mfun_arrow_path paralleled d ;
+            draw   arrowpath mfun_arrow_path_parallel     mfun_decoration_i i t ;
+            fillup arrowhead mfun_arrow_path_parallel     mfun_decoration_i i t ;
+        else :
+            draw (         mfun_arrow_path  paralleled d) mfun_decoration_i i t ;
+            draw ((reverse mfun_arrow_path) paralleled d) mfun_decoration_i i t ;
         fi
     )
     endgroup ;

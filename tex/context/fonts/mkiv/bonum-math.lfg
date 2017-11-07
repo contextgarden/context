@@ -8,8 +8,13 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        dimensions = {
+            default = {
+                [0x1D453] = { xoffset = "llx" },-- 𝑓
+            },
+        },
         kerns = {
-            [0x1D449] = kern_200, --
+            [0x1D449] = kern_200, -- 𝑉
             [0x1D44A] = kern_100, -- 𝑊
         },
         alternates = {

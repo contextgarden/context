@@ -20,13 +20,16 @@ texconfig.max_in_open    = 1000
 
 -- registering bytecode chunks
 
-local bytecode    = lua.bytecode or { }
+----- bytecode    = lua.bytecode or { } -- we use functions
 local bytedata    = lua.bytedata or { }
 local bytedone    = lua.bytedone or { }
 
-lua.bytecode      = bytecode -- built in anyway
+---.bytecode      = bytecode
 lua.bytedata      = bytedata
 lua.bytedone      = bytedone
+
+local setbytecode = lua.setbytecode
+local getbytecode = lua.getbytecode
 
 lua.firstbytecode = 501
 lua.lastbytecode  = lua.lastbytecode or (lua.firstbytecode - 1) -- as we load ourselves again ... maybe return earlier
@@ -54,7 +57,7 @@ function lua.registercode(filename,options)
             if environment.initex then
                 local n = lua.lastbytecode + 1
                 bytedata[n] = { name = barename, options = opts }
-                bytecode[n] = code
+                setbytecode(n,code)
                 lua.lastbytecode = n
             end
         elseif environment.initex then

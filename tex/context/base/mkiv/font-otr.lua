@@ -1345,7 +1345,7 @@ formatreaders[4] = function(f,fontdata,offset)
         offsets[i] = readushort(f)
     end
     -- format length language nofsegments searchrange entryselector rangeshift 4-tables
-    local size = (length - 2 * 2 - 5 * 2 - 4 * nofsegments * 2) / 2
+    local size = (length - 2 * 2 - 5 * 2 - 4 * 2 * nofsegments) / 2
     for i=1,size-1 do
         indices[i] = readushort(f)
     end

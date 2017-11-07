@@ -186,10 +186,11 @@ local function locate(required,version,trace,report,action)
                 report("checking lib paths")
             end
             package.extralibpath(environment.ownpath)
-            local paths = package.libpaths()
+            local paths   = package.libpaths()
+            local pattern = "/[^/]+%." .. os.libsuffix .. "$"
             for i=1,#paths do
-                required_path = paths[i]
-                local found = check(lfs.isfile)
+                required_path = gsub(paths[i],pattern,"")
+                local found = check(lfs.isfound)
                 if type(found) == "string" and (not checkpattern or find(found,checkpattern)) then
                     return found
                 end

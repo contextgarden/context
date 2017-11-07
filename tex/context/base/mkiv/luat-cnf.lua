@@ -119,16 +119,21 @@ function texconfig.init()
 
     -- shortcut and helper
 
-    local bytecode = lua.bytecode
+    local setbytecode = lua.setbytecode
+    local getbytecode = lua.getbytecode
 
     local function init(start)
         local i = start
         local t = os.clock()
-        while bytecode[i] do
-            bytecode[i]() ;
-            bytecode[i] = nil ;
-            i = i + 1
-         -- collectgarbage('step')
+        while true do
+            local b = getbytecode(i)
+            if b then
+                b() ;
+                setbytecode(i,nil) ;
+                i = i + 1
+            else
+                break
+            end
         end
         return i - start, os.clock() - t
     end

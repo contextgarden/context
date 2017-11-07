@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
 local utfchar, utfbyte, utfvalues, ustring, utotable = utf.char, utf.byte, utf.values, utf.ustring, utf.totable
 local concat, unpack, tohash, insert = table.concat, table.unpack, table.tohash, table.insert
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
-local format, lower, gsub, find, match = string.format, string.lower, string.gsub, string.find, string.match
+local format, lower, gsub, find = string.format, string.lower, string.gsub, string.find
 local P, R, S, C, Cs, Ct, Cc, V = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.V
 local formatters = string.formatters
 

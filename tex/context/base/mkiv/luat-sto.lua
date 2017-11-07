@@ -11,8 +11,9 @@ if not modules then modules = { } end modules ['luat-sto'] = {
 local type, next, setmetatable, getmetatable, collectgarbage = type, next, setmetatable, getmetatable, collectgarbage
 local gmatch, format = string.gmatch, string.format
 local serialize, concat, sortedhash = table.serialize, table.concat, table.sortedhash
-local bytecode = lua.bytecode
+local setbytecode = lua.setbytecode
 local strippedloadstring = utilities.lua.strippedloadstring
+local loadstring = utilities.lua.loadstring
 local formatters = string.formatters
 
 local trace_storage  = false
@@ -53,36 +54,6 @@ local n = 0 -- is that one used ?
 
 if environment.initex then
 
- -- local function dump()
- --     local max = storage.max
- --     for i=1,#data do
- --         local d = data[i]
- --         local message, original, target = d[1], d[2] ,d[3]
- --         local c, code, name = 0, { }, nil
- --         -- we have a nice definer for this
- --         for str in gmatch(target,"([^%.]+)") do
- --             if name then
- --                 name = name .. "." .. str
- --             else
- --                 name = str
- --             end
- --             c = c + 1 ; code[c] = formatters["%s = %s or { }"](name,name)
- --         end
- --         max = max + 1
- --         if trace_storage then
- --             c = c + 1 ; code[c] = formatters["print('restoring %s from slot %s')"](message,max)
- --         end
- --         c = c + 1 ; code[c] = serialize(original,name)
- --         if trace_storage then
- --             report_storage('saving %a in slot %a, size %s',message,max,#code[c])
- --         end
- --         -- we don't need tracing in such tables
- --         bytecode[max] = strippedloadstring(concat(code,"\n"),storage.strip,format("slot %s (%s)",max,name))
- --         collectgarbage("step")
- --     end
- --     storage.max = max
- -- end
-
     local function dump()
         local max   = storage.max
         local strip = storage.strip
@@ -105,7 +76,15 @@ if environment.initex then
             end
             -- we don't need tracing in such tables
             dumped = concat({ definition, comment, dumped },"\n")
-            bytecode[max] = strippedloadstring(dumped,strip,formatters["slot %s (%s)"](max,name))
+            local code = nil
+            local name = formatters["slot %s (%s)"](max,name)
+            if LUAVERSION >= 5.3 and LUATEXFUNCTIONALITY >= 6454 then
+                local code = loadstring(dumped,name)
+                setbytecode(max,code,strip)
+            else
+                local code = strippedloadstring(dumped,name,strip)
+                setbytecode(max,code)
+            end
             collectgarbage("step")
         end
         storage.max = max
@@ -130,18 +109,6 @@ function lua.collectgarbage(threshold)
         end
     end
 end
-
--- -- we also need to count at generation time (nicer for message)
---
--- if lua.bytecode then -- from 0 upwards
---     local i, b = storage.min, lua.bytecode
---     while b[i] do
---         storage.noftables = i
---         b[i]()
---         b[i] = nil
---         i = i + 1
---     end
--- end
 
 statistics.register("stored bytecode data", function()
     local nofmodules = (storage.nofmodules > 0 and storage.nofmodules) or (status.luabytecodes - lua.firstbytecode - 1)

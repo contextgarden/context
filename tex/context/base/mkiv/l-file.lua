@@ -96,6 +96,10 @@ function lfs.isfile(name)
     return attributes(name,"mode") == "file"
 end
 
+function lfs.isfound(name)
+    return attributes(name,"mode") == "file" and name or nil
+end
+
 local colon     = P(":")
 local period    = P(".")
 local periods   = P("..")

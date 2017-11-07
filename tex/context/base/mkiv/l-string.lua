@@ -220,11 +220,11 @@ string.unquote = string.unquoted
 
 -- new
 
-if not string.bytetable then
+if not string.bytetable then -- used in font-cff.lua
 
     local limit = 5000 -- we can go to 8000 in luajit and much higher in lua if needed
 
-    function string.bytetable(str)
+    function string.bytetable(str) -- from a string
         local n = #str
         if n > limit then
             local t = { byte(str,1,limit) }

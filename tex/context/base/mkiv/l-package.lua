@@ -22,7 +22,7 @@ local gsub, format, find = string.gsub, string.format, string.find
 local P, S, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.Cs, lpeg.match
 
 local package    = package
-local searchers  = package.searchers
+local searchers  = package.searchers or package.loaders
 local insert, remove = table.insert, table.remove
 
 -------.loaders = nil -- old stuff that we don't want

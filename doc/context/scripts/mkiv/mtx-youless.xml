@@ -14,6 +14,7 @@
     <flag name="kwh"><short>summative kwh data</short></flag>
     <flag name="watt"><short>collected watt data</short></flag>
     <flag name="host"><short>ip address of device</short></flag>
+    <flag name="auto"><short>fetch kwh and watt data every hour</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -23,6 +24,7 @@
    <subcategory>
     <example><command>mtxrun --script youless --collect --host=192.168.2.50 --kwh</command></example>
     <example><command>mtxrun --script youless --collect --host=192.168.2.50 --watt somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --auto file-prefix</command></example>
    </subcategory>
   </category>
  </examples>

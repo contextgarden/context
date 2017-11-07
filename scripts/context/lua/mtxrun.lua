@@ -598,7 +598,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 11545, stripped down to: 8606
+-- original size: 11564, stripped down to: 8625
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -611,7 +611,7 @@ local type=type
 local gsub,format,find=string.gsub,string.format,string.find
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
-local searchers=package.searchers
+local searchers=package.searchers or package.loaders
 local insert,remove=table.insert,table.remove
 local filejoin=file and file.join    or function(path,name)  return path.."/"..name end
 local isreadable=file and file.is_readable or function(name)    local f=io.open(name) if f then f:close() return true end end
@@ -1735,7 +1735,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 6420, stripped down to: 3339
+-- original size: 6461, stripped down to: 3341
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1837,9 +1837,9 @@ function string.tformat(fmt,...)
 end
 string.quote=string.quoted
 string.unquote=string.unquoted
-if not string.bytetable then
+if not string.bytetable then 
   local limit=5000 
-  function string.bytetable(str)
+  function string.bytetable(str) 
     local n=#str
     if n>limit then
       local t={ byte(str,1,limit) }
@@ -3853,7 +3853,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 20997, stripped down to: 9986
+-- original size: 21090, stripped down to: 10074
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3888,6 +3888,9 @@ function lfs.isdir(name)
 end
 function lfs.isfile(name)
   return attributes(name,"mode")=="file"
+end
+function lfs.isfound(name)
+  return attributes(name,"mode")=="file" and name or nil
 end
 local colon=P(":")
 local period=P(".")
@@ -10243,7 +10246,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 6662, stripped down to: 4771
+-- original size: 6921, stripped down to: 4998
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -10313,7 +10316,7 @@ function luautilities.loadedluacode(fullname,forcestrip,name,macros)
   end
   if macros and macros.enabled then
     local f=io.open(fullname,"rb") local c=f:read("*a") f:close()
-    local n=c and macros.resolvestring(c)
+    local n=c and macros.resolvestring("--[["..fullname.."]] "..c)
     if n and #n~=#c then
       report_lua("preprocessed file %a: %i => %i bytes",fullname,#c,#n)
     end
@@ -10343,7 +10346,7 @@ function luautilities.loadedluacode(fullname,forcestrip,name,macros)
     return code,0
   end
 end
-function luautilities.strippedloadstring(code,forcestrip,name) 
+function luautilities.strippedloadstring(code,name,forcestrip) 
   local code,message=load(code)
   if not code then
     report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
@@ -10354,6 +10357,13 @@ function luautilities.strippedloadstring(code,forcestrip,name)
   else
     return code,0
   end
+end
+function luautilities.loadstring(code,name) 
+  local code,message=load(code)
+  if not code then
+    report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
+  end
+  return code,0
 end
 function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) 
   report_lua("compiling %a into %a",luafile,lucfile)
@@ -20370,7 +20380,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 14333, stripped down to: 7859
+-- original size: 14415, stripped down to: 7927
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -20481,9 +20491,10 @@ local function locate(required,version,trace,report,action)
       end
       package.extralibpath(environment.ownpath)
       local paths=package.libpaths()
+      local pattern="/[^/]+%."..os.libsuffix.."$"
       for i=1,#paths do
-        required_path=paths[i]
-        local found=check(lfs.isfile)
+        required_path=gsub(paths[i],pattern,"")
+        local found=check(lfs.isfound)
         if type(found)=="string" and (not checkpattern or find(found,checkpattern)) then
           return found
         end
@@ -20978,8 +20989,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 865625
--- stripped bytes    : 315093
+-- original bytes    : 866119
+-- stripped bytes    : 315183
 
 -- end library merge
 

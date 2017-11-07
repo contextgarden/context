@@ -22,53 +22,59 @@ system=`uname -s`
 cpu=`uname -m`
 
 case "$system" in
-	# linux
-	Linux)
-		case "$cpu" in
-			i*86) platform="linux" ;;
-			x86_64|ia64) platform="linux-64" ;;
-			# a little bit of cheating with ppc64 (won't work on Gentoo)
-			ppc|ppc64) platform="linux-ppc" ;;
-			*) platform="unknown" ;;
-		esac ;;
-	# Mac OS X
-	Darwin)
-		case "$cpu" in
-			i*86) platform="osx-intel" ;;
-			x86_64) platform="osx-64" ;;
-			ppc*|powerpc|power*|Power*) platform="osx-ppc" ;;
-			*) platform="unknown" ;;
-		esac ;;
-	# FreeBSD
-	FreeBSD|freebsd)
-		case "$cpu" in
-			i*86) platform="freebsd" ;;
-			x86_64) platform="freebsd" ;;
-			amd64) platform="freebsd-amd64" ;;
-			*) platform="unknown" ;;
-		esac ;;
-	# kFreeBSD (Debian)
-	GNU/kFreeBSD)
-		case "$cpu" in
-			i*86) platform="kfreebsd-i386" ;;
-			x86_64|amd64) platform="kfreebsd-amd64" ;;
-			*) platform="unknown" ;;
-		esac ;;
-	# cygwin
-	CYGWIN)
-		case "$cpu" in
-			i*86) platform="cygwin" ;;
-			x86_64|ia64) platform="cygwin-64" ;;
-			*) platform="unknown" ;;
-		esac ;;
-	# SunOS/Solaris
-	SunOS)
-		case "$cpu" in
-			sparc) platform="solaris-sparc" ;;
-			i86pc) platform="solaris-intel" ;;
-			*) platform="unknown" ;;
-		esac ;;
-	*) platform="unknown"
+    # linux
+    Linux)
+        case "$cpu" in
+            i*86) platform="linux" ;;
+            x86_64|ia64) platform="linux-64" ;;
+            # a little bit of cheating with ppc64 (won't work on Gentoo)
+            ppc|ppc64) platform="linux-ppc" ;;
+            *) platform="unknown" ;;
+        esac ;;
+    # Mac OS X
+    Darwin)
+        case "$cpu" in
+            i*86) platform="osx-intel" ;;
+            x86_64) platform="osx-64" ;;
+            ppc*|powerpc|power*|Power*) platform="osx-ppc" ;;
+            *) platform="unknown" ;;
+        esac ;;
+    # FreeBSD
+    FreeBSD|freebsd)
+        case "$cpu" in
+            i*86) platform="freebsd" ;;
+            x86_64) platform="freebsd" ;;
+            amd64) platform="freebsd-amd64" ;;
+            *) platform="unknown" ;;
+        esac ;;
+    # kFreeBSD (Debian)
+    GNU/kFreeBSD)
+        case "$cpu" in
+            i*86) platform="kfreebsd-i386" ;;
+            x86_64|amd64) platform="kfreebsd-amd64" ;;
+            *) platform="unknown" ;;
+        esac ;;
+    # MSYS2|MSYS_NT-10.0)
+        case "$cpu" in
+            i*86) platform="win32" ;;
+            x86_64) platform="win64" ;;
+            *) platform="unknown" ;;
+        esac ;;
+    # cygwin
+    CYGWIN)
+        case "$cpu" in
+            i*86) platform="cygwin" ;;
+            x86_64|ia64) platform="cygwin-64" ;;
+            *) platform="unknown" ;;
+        esac ;;
+    # SunOS/Solaris
+    SunOS)
+        case "$cpu" in
+            sparc) platform="solaris-sparc" ;;
+            i86pc) platform="solaris-intel" ;;
+            *) platform="unknown" ;;
+        esac ;;
+    *) platform="unknown"
 esac
 
 # temporary fix for Snow Leopard

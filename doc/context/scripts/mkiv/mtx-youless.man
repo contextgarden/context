@@ -28,6 +28,9 @@ collected watt data
 .TP
 .B --host
 ip address of device
+.TP
+.B --auto
+fetch kwh and watt data every hour
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

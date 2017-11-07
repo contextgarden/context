@@ -82,7 +82,7 @@ function luautilities.loadedluacode(fullname,forcestrip,name,macros)
     if macros and macros.enabled then
      -- local c = io.loaddata(fullname) -- not yet available
         local f = io.open(fullname,"rb") local c = f:read("*a") f:close()
-        local n = c and macros.resolvestring(c)
+        local n = c and macros.resolvestring("--[["..fullname.."]] "..c)
         if n and #n ~= #c then
             report_lua("preprocessed file %a: %i => %i bytes",fullname,#c,#n)
         end
@@ -113,7 +113,7 @@ function luautilities.loadedluacode(fullname,forcestrip,name,macros)
     end
 end
 
-function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
+function luautilities.strippedloadstring(code,name,forcestrip) -- not executed
     local code, message = load(code)
     if not code then
         report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
@@ -124,6 +124,14 @@ function luautilities.strippedloadstring(code,forcestrip,name) -- not executed
     else
         return code, 0
     end
+end
+
+function luautilities.loadstring(code,name) -- not executed
+    local code, message = load(code)
+    if not code then
+        report_lua("loading of file %a failed:\n\t%s",name,message or "no message")
+    end
+    return code, 0
 end
 
 function luautilities.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true

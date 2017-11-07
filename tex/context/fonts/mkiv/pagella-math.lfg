@@ -1,6 +1,8 @@
 local kern_200 = { bottomright = { { kern = -200 } } }
 local kern_100 = { bottomright = { { kern = -100 } } }
 
+-- Beware of updates !
+
 return {
     name = "pagella-math",
     version = "1.00",
@@ -8,6 +10,12 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        dimensions = {
+            default = {
+             -- [0x1D453] = { xoffset = 162, width = 278 + 162 },-- 𝑓
+                [0x1D453] = { xoffset = "llx" },-- 𝑓
+            },
+        },
         kerns = {
             [0x1D449] = kern_200, -- 𝑉
             [0x1D44A] = kern_100, -- 𝑊

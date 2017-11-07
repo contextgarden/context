@@ -127,6 +127,7 @@ local ctx_btxsetafter             = context.btxsetafter
 local ctx_btxsetbacklink          = context.btxsetbacklink
 local ctx_btxsetfirstinternal     = context.btxsetfirstinternal
 local ctx_btxsetlastinternal      = context.btxsetlastinternal
+local ctx_btxsetauthorfield       = context.btxsetauthorfield
 
 -- local ctx_btxsetdataset           = function(s) setmacro("currentbtxdataset",       s) end -- context.btxsetdataset
 -- local ctx_btxsettag               = function(s) setmacro("currentbtxtag",           s) end -- context.btxsettag
@@ -2637,6 +2638,7 @@ do
         local setter     = specification.setter
         local compressor = specification.compressor
         local method     = specification.method
+        local varfield   = specification.varfield
         --
         local reference  = publications.parenttag(dataset,reference)
         --
@@ -2664,6 +2666,7 @@ do
                         language  = ldata.language,
                         dataset   = dataset,
                         tag       = tag,
+                        varfield  = varfield,
                      -- combis    = entry.userdata.btxcom,
                      -- luadata   = ldata,
                     }
@@ -3107,11 +3110,6 @@ do
             return keysorter(b,a)
         end
 
-        local currentbtxciteauthor = function()
-            context.currentbtxciteauthor()
-            return true -- needed?
-        end
-
         local function authorcompressor(found,specification)
             -- HERE
             if specification.sorttype == v_normal then
@@ -3219,7 +3217,13 @@ do
 
         local partialinteractive = false
 
+        local currentbtxciteauthor = function()
+            context.currentbtxciteauthorbyfield()
+            return true -- needed?
+        end
+
         local function authorgetter(first,last,key,specification) -- only first
+            ctx_btxsetauthorfield(first.varfield or "author")
             if first.type == "author" then
                 ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             else
@@ -3246,15 +3250,16 @@ do
             return true
         end
 
-        -- author
+        -- author (the varfield hack is for editor and translator i.e author type)
 
         local function setter(data,dataset,tag,entry)
-            data.author, data.field, data.type = getcasted(dataset,tag,"author")
+            data.author, data.field, data.type = getcasted(dataset,tag,data.varfield or "author")
             data.sortkey = text and lpegmatch(numberonly,text)
             data.authorhash = getdetail(dataset,tag,"authorhash") -- todo let getcasted return
         end
 
         local function getter(first,last,_,specification)
+            ctx_btxsetauthorfield(specification.varfield or "author")
             if first.type == "author" then
                 ctx_btxsetfirst(currentbtxciteauthor) -- formatter (much slower)
             else
@@ -3269,6 +3274,7 @@ do
                 setup      = "author",
                 setter     = setter,
                 getter     = getter,
+                varfield   = presets.variant or "author",
                 compressor = authorcompressor,
             })
         end

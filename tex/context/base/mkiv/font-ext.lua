@@ -792,7 +792,7 @@ local pop   = { "pop" }
 -- end)
 
 local bp = number.dimenfactors.bp
-local r  = 0.25*65536*bp
+local r  = 16384 * bp -- 65536 // 4
 
 local backcache = setmetatableindex(function(t,h)
     local h = h * bp

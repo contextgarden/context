@@ -22,7 +22,7 @@ more efficient.</p>
 
 local tostring, next, rawget, rawset, setmetatable, tonumber = tostring, next, rawget, rawset, setmetatable, tonumber
 local sort, sortedhash, sortedkeys = table.sort, table.sortedhash, table.sortedkeys
-local format, gmatch, match, find = string.format, string.gmatch, string.match, string.find
+local format, gmatch = string.format, string.gmatch
 local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove

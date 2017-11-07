@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/01/17 15:59:00
+-- merge date  : 11/07/17 11:37:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -1035,9 +1035,9 @@ function string.tformat(fmt,...)
 end
 string.quote=string.quoted
 string.unquote=string.unquoted
-if not string.bytetable then
+if not string.bytetable then 
   local limit=5000 
-  function string.bytetable(str)
+  function string.bytetable(str) 
     local n=#str
     if n>limit then
       local t={ byte(str,1,limit) }
@@ -2504,6 +2504,9 @@ function lfs.isdir(name)
 end
 function lfs.isfile(name)
   return attributes(name,"mode")=="file"
+end
+function lfs.isfound(name)
+  return attributes(name,"mode")=="file" and name or nil
 end
 local colon=P(":")
 local period=P(".")
@@ -10537,7 +10540,7 @@ formatreaders[4]=function(f,fontdata,offset)
   for i=1,nofsegments do
     offsets[i]=readushort(f)
   end
-  local size=(length-2*2-5*2-4*nofsegments*2)/2
+  local size=(length-2*2-5*2-4*2*nofsegments)/2
   for i=1,size-1 do
     indices[i]=readushort(f)
   end
