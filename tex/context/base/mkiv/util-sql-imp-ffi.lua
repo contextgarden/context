@@ -270,7 +270,7 @@ local function execute(t,query)
         local result = mysql_execute_query(connection,query,#query)
         if result == 0 then
             local result = mysql_store_result(connection)
-            if result then
+            if result ~= NULL then
                 mysql_field_seek(result,0)
                 local nofrows   = tonumber(mysql_num_rows(result) or 0)
                 local noffields = tonumber(mysql_num_fields(result))

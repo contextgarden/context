@@ -576,9 +576,10 @@ that it has been added to the \METAFUN\ base.
         p4 := point 0 of p2 -- point (length p2) of p2 shifted (left*.01u) ;
 
         draw p2 withcolor red ;
-        crossingscale := 20 ;
-        draw (p3 crossingunder p2) crossingunder p4 withcolor blue ;
-        crossingscale := 10 ;
+        begingroup ;
+            interim crossingscale := 20 ;
+            draw (p3 crossingunder p2) crossingunder p4 withcolor blue ;
+        endgroup ;
         drawarrow (p4 crossingunder p2) ;
     \stopMPcode
 \stopplacefigure
@@ -676,7 +677,7 @@ located on the same path.
          \cite[alternative=year,left=(,right=)] [Bethe1939a+Bethe1939b] in a
          \cite[authoryears] [Krebs1946] representation of a catalytic process.}]
 \startMPcode
-
+ 
   % differs slightly from \reuseMPgraphic{nodes::krebs}
 
   % The Bethe cycle for energy production in stars (1939), following Krebs (1946)
@@ -1151,157 +1152,61 @@ the tree structure.
 
 % This special instance could become part of the base distribution...
 
-\defineMPinstance [three] [format=metafun,extensions=yes,initializations=yes,method=double]
+\usemodule [three]
 
-\startMPdefinitions{three}
-% Simple 3D->2D projection
-% Adapted from Urs Oswald, Dr.sc.math. ETH
-% http://www.ursoswald.ch/metapost/tutorial.html
-% and extended!
+%\defineMPinstance [three] [format=metafun,extensions=yes,initializations=yes,method=double]
 
-transform t, Txy, Pxy ;
-pair P[] ;
-path p[] ;
-
-P0=origin ;                             % origin in MetaPost coordinates (bp)
-P1=(left rotated 60) scaled (cosd 60) ; % x axis (in mathematical coordinates)
-
-% t: maps mathematical 2D coordinates onto MetaPost coordinates.
-
-t:=identity shifted P0 ;
-
-% Pxy is the projection of the 3D plane z=0 onto the mathematical 2D coordinates.
-% Pxy is determined by  3  e q u a t i o n s  describing
-% how (1,0), (0,1), and (0,0) are mapped
-
-   P1=(1,0)transformed Pxy ;   % Pxy: (1,0) --> P1
-(1,0)=(0,1)transformed Pxy ;   %      (0,1) --> (1,0)
-(0,0)=(0,0)transformed Pxy ;   %      (0,0) --> (0,0)
-
-% mathematical 2D coordinates --> MetaPost coordinates
-
-Txy:=Pxy transformed t ;
-
-let triplet=color ;
-let Xpart=redpart ;
-let Ypart=greenpart ;
-let Zpart=bluepart ;
-triplet Origin, Xunitvector, Yunitvector, Zunitvector ;
-Origin      = (0,0,0) ;
-Xunitvector = (1,0,0) ;
-Yunitvector = (0,1,0) ;
-Zunitvector = (0,0,1) ;
-
-% overloads let abs=length ; from plain.mp
-
-vardef abs primary p =
-  if triplet p : sqrt((Xpart p)**2+(Ypart p)**2+(Zpart p)**2) else : length p fi
-enddef ;
-
-vardef projection expr t  =      % returns MetaPost coordinates (bp)
-   if triplet t :
-     (Xpart t, Ypart t) transformed Txy shifted (0,Zpart t)
-   elseif pair t :
-     t transformed Txy
-   else :
-     origin transformed Txy
-   fi
-enddef ;
-
-primarydef p dotproduct q =
-  ((Xpart p)*(Xpart q) + (Ypart p)*(Ypart q) + (Zpart p)*(Zpart q))
-enddef ;
-
-primarydef p crossproduct q =
-  ((Ypart p)*(Zpart q) - (Zpart p)*(Ypart q),
-   (Zpart p)*(Xpart q) - (Xpart p)*(Zpart q),
-   (Xpart p)*(Ypart q) - (Ypart p)*(Xpart q))
-enddef ;
-
-primarydef p rotatedaboutX q =
-  hide(
-    pair yz ;
-    yz:=(Ypart p, Zpart p) ;
-    yz:=yz rotated q ;)
-  (Xpart p, xpart yz, ypart yz)
-enddef ;
-
-primarydef p rotatedaboutY q =
-  hide(
-    pair zx ;
-    zx:=(Zpart p, Xpart p) ;
-    zx:=zx rotated q ;)
-  (ypart zx, Ypart p, xpart zx)
-enddef ;
-
-primarydef p rotatedaboutZ q =
-  hide(
-    pair xy ;
-    xy:=(Xpart p, Ypart p) ;
-    xy:=xy rotated q ;)
-  (xpart xy, ypart xy, Zpart p)
-enddef ;
-
-vardef draw_vector@# (expr v, s) text t =
-    if triplet v :
-      drawarrow projection(Origin)--projection(v) t ;
-      if string s :
-        label@#(s, projection(v)) t ;
-      fi
-    fi
-enddef ;
-
-\stopMPdefinitions
+%\startMPdefinitions{three}
+%input mp-p-3d.mpiv ;
+%\stopMPdefinitions
 
 \startMPcalculation{three}
-    ahlength  := 12pt ;
-    ahangle   := 30 ;
-    ahvariant := 1 ; % dimpled
+  ahlength  := 12pt ;
+  ahangle   := 30 ;
+  ahvariant := 1 ; % dimpled
 \stopMPcalculation
 
 \startplacefigure [location=left]
-    \startMPcode{three}
 
-        nodepath := (
-            projection Origin --
-            projection (1,0,0) --
-            projection (1,1,0) --
-            projection (0,1,0) --
-            projection (0,1,1) --
-            projection (1,1,1) --
-            projection (1,0,1) --
-            projection (0,0,1) --
-            cycle
-        ) scaled 5cm ;
+\startMPcode{three}
+  nodepath :=
+    (projection Origin --
+     projection (1,0,0) --
+     projection (1,1,0) --
+     projection (0,1,0) --
+     projection (0,1,1) --
+     projection (1,1,1) --
+     projection (1,0,1) --
+     projection (0,0,1) --
+     cycle) scaled 5cm ;
 
-        draw node(0,"\node{${\cal C}_{i\cal P}^{\mathrm{nt}}$}") ;
-        draw node(1,"\node{${\cal C}_{i\cal G}^{\mathrm{nt}}$}") ;
-        draw node(2,"\node{${\cal C}_{j\cal P}^{\mathrm{nt}}$}") ;
-        draw node(3,"\node{${\cal C}_{j\cal G}^{\mathrm{nt}}$}") ;
-        draw node(4,"\node{${\cal C}_{j\cal G}$}") ;
-        draw node(5,"\node{${\cal C}_{j\cal P}$}") ;
-        draw node(6,"\node{${\cal C}_{i\cal G}$}") ;
-        draw node(7,"\node{${\cal C}_{i\cal P}$}") ;
+  draw node(0,"\node{${\cal C}_{i\cal P}^{\mathrm{nt}}$}") ;
+  draw node(1,"\node{${\cal C}_{i\cal G}^{\mathrm{nt}}$}") ;
+  draw node(2,"\node{${\cal C}_{j\cal P}^{\mathrm{nt}}$}") ;
+  draw node(3,"\node{${\cal C}_{j\cal G}^{\mathrm{nt}}$}") ;
+  draw node(4,"\node{${\cal C}_{j\cal G}$}") ;
+  draw node(5,"\node{${\cal C}_{j\cal P}$}") ;
+  draw node(6,"\node{${\cal C}_{i\cal G}$}") ;
+  draw node(7,"\node{${\cal C}_{i\cal P}$}") ;
 
-        interim crossingscale := 30 ;
+  interim crossingscale := 30 ;
+  drawdoublearrows fromto(0,0,1) ;
+  drawdoublearrows fromto(0,1,2) ;
+  drawdoublearrows fromto(0,2,3) ;
+  drawdoublearrows fromto(0,3,0) crossingunder fromto(0,2,5) ;
 
-        drawdoublearrows fromto(0,0,1) ;
-        drawdoublearrows fromto(0,1,2) ;
-        drawdoublearrows fromto(0,2,3) ;
-        drawdoublearrows fromto(0,3,0) crossingunder fromto(0,2,5) ;
+  drawdoublearrows fromto(0,7,6) ;
+  drawdoublearrows fromto(0,6,5) ;
+  drawdoublearrows fromto.lft(0,5,4,"\node{$τ_j$~}") ;
+  drawdoublearrows fromto.top(0,7,4,"\node{$σ$}") ;
 
-        drawdoublearrows fromto(0,7,6) ;
-        drawdoublearrows fromto(0,6,5) ;
-        drawdoublearrows fromto(0,5,4) ; label.lft("\node{$τ_j$~}", center fromto(0,5,4)) ;
-        drawdoublearrows fromto(0,7,4) ; label.top("\node{$σ$}",    center fromto(0,7,4)) ;
+  drawdoublearrows fromto.lrt(0,0,7,"\node{$Ψ^{\mathrm{nt}}$}")
+                                 crossingunder fromto(0,6,5) ;
+  drawdoublearrows fromto(0,1,6) ;
+  drawdoublearrows fromto(0,2,5) ;
+  drawdoublearrows fromto(0,3,4) ;
+\stopMPcode
 
-        drawdoublearrows fromto(0,0,7) crossingunder fromto(0,6,5) ;
-                            label.lrt("\node{$Ψ^{\mathrm{nt}}$}", center fromto(0,0,7)) ;
-        drawdoublearrows fromto(0,1,6) ;
-        drawdoublearrows fromto(0,2,5) ;
-        drawdoublearrows fromto(0,3,4) ;
-
-    \stopMPcode
 \stopplacefigure
 
 \stopsubject

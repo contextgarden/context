@@ -78,7 +78,7 @@ vardef nodeboundingpoint@#(text t) =
 enddef ;
 
 vardef fromto@#(expr d,f)(text t) =
-    fromtopaths(d,nodepath,f,nodepath,t)
+    fromtopaths@#(d,nodepath,f,nodepath,t)
 enddef ;
 
 % returns a pair suffix if the path is unknown

@@ -1197,7 +1197,7 @@ vardef perpendicular expr t of p =
 enddef ;
 
 def istextext(expr p) =
-    (path p and ((substring(0,3) of prescriptpart p) = "tx_"))
+    (picture p and ((substring(0,3) of prescriptpart p) = "tx_"))
 enddef ;
 
 primarydef p paralleled d = (
@@ -1714,7 +1714,9 @@ def mfun_with_arrow_picture (text t) =
     mfun_arrow_count := 0 ;
     mfun_arrow_snippets := stroked_paths(mfun_arrow_picture) ;
     for i within mfun_arrow_picture :
-        if stroked i :
+        if istextext(i) :
+            draw i
+        else : 
             mfun_arrow_count := mfun_arrow_count + 1 ;
             mfun_arrow_path := pathpart i ;
             t
@@ -1743,13 +1745,12 @@ def mfun_draw_arrow_picture_double text t =
     fi
     mfun_with_arrow_picture (
         draw
-            if mfun_arrow_count = 1 :
-                arrowpath reverse
-            fi
-            if mfun_arrow_count = mfun_arrow_snippets :
-                arrowpath
-            fi
-            mfun_arrow_path mfun_decoration_i i t ;
+        if mfun_arrow_count = 1 :
+            arrowpath reverse
+        elseif mfun_arrow_count = mfun_arrow_snippets :
+            arrowpath
+        fi
+        mfun_arrow_path mfun_decoration_i i t ;
         if mfun_arrow_count = 1 :
             fillup arrowhead reverse mfun_arrow_path mfun_decoration_i i t ;
         fi

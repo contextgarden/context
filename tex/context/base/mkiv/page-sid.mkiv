@@ -29,7 +29,8 @@
 % associate it with the local par node instead. This is something to discuss with
 % Taco as it could be a new luatex/mkiv feature: explicitly set par properties.
 
-% Maybe I should just rewrite the lot.
+% Maybe I should just rewrite the lot, if only because we're now too far from
+% the original. For instance we do this 'after' spacing differently.
 
 \newdimen       \d_page_sides_height       % includes the topskip
 \newdimen       \d_page_sides_width
@@ -610,7 +611,8 @@
      % method 0 : raw
    \or
      % method 1 : safe (default)
-     \scratchdimentwo .99\pagegoal
+     % too fuzzy as it can change and for a high page it's a lot : \scratchdimentwo .99\pagegoal
+     \advance\scratchdimentwo -\strutdp
    \or
      % method 2 : tight
      \advance\scratchdimenone -\onepoint

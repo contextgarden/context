@@ -1,0 +1,170 @@
+%D \module
+%D   [       file=mp-tres.mpiv,
+%D        version=2017.11.08,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=Pseudo 3D,
+%D         author=Alan Braslau,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See licen-en.pdf for
+%C details.
+
+%D This module provides simple 3D->2D projections. The code is an adaption of code
+%D by Urs Oswald, Dr.sc.math.\ ETH as presented in:
+%D
+%D \starttyping
+%D http://www.ursoswald.ch/metapost/tutorial.html.
+%D \stoptyping
+%D
+%D We need a bit more so it got extended.
+
+if known context_three : endinput ; fi ;
+
+boolean context_three ; context_three := true ;
+
+pair mfun_three_xy ; % this avoids the costly save and allocate
+pair mfun_three_yz ;
+pair mfun_three_zx ;
+
+transform Txy ;
+
+def setTxy(expr ori, ang) =
+    begingroup
+        save P, t ;
+        pair P[] ;
+        transform t ;
+
+        P0 = ori ;                                  % origin in MetaPost coordinates (bp)
+        P1 = (left rotated ang) scaled (cosd ang) ; % x axis (in mathematical coordinates)
+
+        % A sort of "cavalier projection".
+
+        % t: maps mathematical 2D coordinates onto MetaPost coordinates.
+
+        t := identity shifted P0 ; % Note: no shift when P0 = origin!
+
+        % Txy: maps the x-y plane of 3D space onto MetaPost coordinates,
+        % z is the vertical (MetaPost y).
+
+        % Txy:=identity
+        %   reflectedabout((0,0), (1,1))
+        %     yscaled ypart P1
+        %       slanted (xpart P1/ypart P1)
+        %         transformed t ;
+
+        % Alternatively, defined via Pxy:
+
+        % Pxy is the projection of the 3D plane z=0 onto the mathematical 2D coordinates.
+        % Pxy is determined by  3  e q u a t i o n s  describing
+        % how (1,0), (0,1), and (0,0) are mapped
+
+        save      Pxy ;
+        transform Pxy ;
+           P1 = (1,0) transformed Pxy ;   % Pxy: (1,0) --> P1
+        (1,0) = (0,1) transformed Pxy ;   %      (0,1) --> (1,0)
+        (0,0) = (0,0) transformed Pxy ;   %      (0,0) --> (0,0)
+
+        % mathematical 2D coordinates --> MetaPost coordinates
+
+        Txy := Pxy transformed t ;
+    endgroup
+enddef ;
+
+setTxy(origin,60) ;
+
+%D We already define triplet (as rgbcolor synonym) in in \type {mp-tool.mpiv}:
+
+let Xpart = redpart ;
+let Ypart = greenpart ;
+let Zpart = bluepart ;
+
+vardef projection expr t =
+    if triplet t :
+        (Xpart t, Ypart t) transformed Txy shifted (0,Zpart t)
+    elseif pair t :
+        t transformed Txy
+    else :
+        origin transformed Txy
+    fi
+enddef ;
+
+%D This overloads the plain macro \type {abs} (being \type {length}):
+
+vardef abs primary p =
+    if triplet p :
+        sqrt((Xpart p)**2+(Ypart p)**2+(Zpart p)**2)
+    else :
+        length p
+    fi
+enddef ;
+
+primarydef p dotproduct q =
+    ((Xpart p)*(Xpart q) + (Ypart p)*(Ypart q) + (Zpart p)*(Zpart q))
+enddef ;
+
+primarydef p crossproduct q =
+    (
+        (Ypart p)*(Zpart q) - (Zpart p)*(Ypart q),
+        (Zpart p)*(Xpart q) - (Xpart p)*(Zpart q),
+        (Xpart p)*(Ypart q) - (Ypart p)*(Xpart q)
+    )
+enddef ;
+
+primarydef p rotatedaboutX q =
+    hide (
+        mfun_three_yz := (Ypart p, Zpart p) ;
+        mfun_three_yz := mfun_three_yz rotated q ;
+    )
+    (Xpart p, xpart yz, ypart yz)
+enddef ;
+
+primarydef p rotatedaboutY q =
+    hide(
+        mfun_three_zx := (Zpart p, Xpart p) ;
+        mfun_three_zx := mfun_three_zx rotated q ;
+    )
+    (ypart zx, Ypart p, xpart zx)
+enddef ;
+
+primarydef p rotatedaboutZ q =
+    hide (
+        mfun_three_xy := (Xpart p, Ypart p) ;
+        mfun_three_xy := mfun_three_xy rotated q ;
+    )
+    (xpart xy, ypart xy, Zpart p)
+enddef ;
+
+%D We can use a rotation about an arbitrary direction t ... (easy)
+
+% primarydef p rotatedabout(expr t, a) =
+% enddef ;
+
+vardef draw_vector@# (expr v, s) text t =
+    if triplet v :
+        drawarrow projection(Origin) -- projection(v) t ;
+        if string s :
+            label@#(s, projection(v)) t ;
+        fi
+    fi
+enddef ;
+
+%D Some constants...
+
+triplet Origin, Xunitvector, Yunitvector, Zunitvector ;
+
+Origin      := (0,0,0) ;
+Xunitvector := (1,0,0) ;
+Yunitvector := (0,1,0) ;
+Zunitvector := (0,0,1) ;
+
+%D We could do but don't:
+
+% let normalxpart = xpart ;
+% let normalypart = ypart ;
+
+% vardef xpart expr p = if triplet p : redpart   else : normalxpart fi p enddef ;
+% vardef ypart expr p = if triplet p : greenpart else : normalypart fi p enddef ;
+% vardef zpart expr p =                bluepart                        p enddef ;
+

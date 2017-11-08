@@ -295,8 +295,14 @@
    \endgroup}
 
 \unexpanded\def\strc_formulas_place_current_number
-  {\strc_formulas_handle_current_references
-   \labeltexts\currentformula{\convertedcounter[\v!formula][]}}
+  {\ifx\namedformulaentry\empty
+     \strc_formulas_handle_current_references
+     \labeltexts\currentformula{\convertedcounter[\v!formula][]}%
+   \else
+     \expandafter % hm, the next one reset \namedformulaentry
+     \strc_formulas_handle_current_references
+     \namedformulaentry
+   \fi}
 
 \def\theformuladestinationattribute#1%
   {\iflocation\ifx#1\relax\else\ifx#1\empty\else
@@ -395,8 +401,10 @@
 % needs checking ... too many:
 
 \def\strc_formulas_handle_numbering_indeed
-  {\strc_counters_increment\v!formula
-   \doiftext\currentplaceformulasuffix{\strc_counters_setown_sub\v!formula\plustwo\currentplaceformulasuffix}%
+  {\ifx\namedformulaentry\empty
+     \strc_counters_increment\v!formula
+     \doiftext\currentplaceformulasuffix{\strc_counters_setown_sub\v!formula\plustwo\currentplaceformulasuffix}%
+   \fi
    \placecurrentformulanumber}
 
 \def\strc_formulas_handle_numbering

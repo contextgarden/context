@@ -261,6 +261,7 @@ return {
         "doifelsecommon", "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
         "doifelseassignment", "doifassignmentelse", "docheckassignment",
+        "doiftext", "doifelsetext", "doiftextelse", "doifnottext",
         --
         "tracingall", "tracingnone", "loggingall",
         --
