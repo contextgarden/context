@@ -6,13 +6,12 @@ local info = {
     license   = "see context related readme files",
 }
 
--- local lexer           = require("lexer")
-local lexer          = require("scite-context-lexer")
-local context         = lexer.context
-local patterns        = context.patterns
+local lexer    = require("scite-context-lexer")
+local context  = lexer.context
+local patterns = context.patterns
 
-local cldlexer        = lexer.new("cld","scite-context-lexer-cld")
-local lualexer        = lexer.load("scite-context-lexer-lua")
+local cldlexer = lexer.new("cld","scite-context-lexer-cld")
+local lualexer = lexer.load("scite-context-lexer-lua")
 
 -- can probably be done nicer now, a bit of a hack
 

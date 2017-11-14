@@ -8,11 +8,6 @@ local info = {
 
 }
 
--- todo: hook into context resolver etc
--- todo: only old api in lexers, rest in context subnamespace
--- todo: make sure we can run in one state .. copies or shared?
--- todo: auto-nesting
-
 if lpeg.setmaxstack then lpeg.setmaxstack(1000) end
 
 local log      = false
@@ -27,169 +22,252 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 
 -- GET GOING
 --
--- You need to copy this file over lexer.lua. In principle other lexers could work too but
--- not now. Maybe some day. All patterns will move into the patterns name space. I might do
--- the same with styles. If you run an older version of SciTE you can take one of the
--- archives. Pre 3.41 versions can just be copied to the right path, as there we still use
--- part of the normal lexer.
+-- You need to copy this file over lexer.lua. In principle other lexers could work
+-- too but not now. Maybe some day. All patterns will move into the patterns name
+-- space. I might do the same with styles. If you run an older version of SciTE you
+-- can take one of the archives. Pre 3.41 versions can just be copied to the right
+-- path, as there we still use part of the normal lexer. Below we mention some
+-- issues with different versions of SciTE. We try to keep up with changes but best
+-- check careful if the version that yuou install works as expected because SciTE
+-- and the scintillua dll need to be in sync.
 --
 -- REMARK
 --
--- We started using lpeg lexing as soon as it came available. Because we had rather demanding
--- files and also wanted to use nested lexers, we ended up with our own variant. At least at
--- that time this was more robust and also faster (as we have some pretty large lua data files
--- and also work with large xml files). As a consequence successive versions had to be adapted
--- to changes in the (at that time still unstable) api. In addition to lexing we also have
--- spell checking and such. Around version 3.60 things became more stable so I don't expect to
--- change much.
+-- We started using lpeg lexing as soon as it came available. Because we had rather
+-- demanding files and also wanted to use nested lexers, we ended up with our own
+-- variant. At least at that time this was more robust and also much faster (as we
+-- have some pretty large Lua data files and also work with large xml files). As a
+-- consequence successive versions had to be adapted to changes in the (at that time
+-- still unstable) api. In addition to lexing we also have spell checking and such.
+-- Around version 3.60 things became more stable so I don't expect to change much.
 --
--- STATUS
+-- LEXING
 --
--- todo: maybe use a special stripped version of the dll (stable api) and add a bit more
---       interfacing to scintilla
--- todo: investigate if we can use the already built in lua instance so that we can combine the
---       power of lexign with extensions
--- todo: play with hotspot and other properties (but no real need now)
--- todo: maybe come up with an extension to the api subsystem
--- todo: add proper tracing and so .. not too hard as we can run on mtxrun, but we lack a console
---       for debugging (ok, chicken-egg as lexers probably need to be loaded before a console can
---       kick in)
--- todo: get rid of these lexers.STYLE_XX and lexers.XX (hide such details)
+-- When pc's showed up we wrote our own editor (texedit) in MODULA 2. It was fast,
+-- had multiple overlapping (text) windows, could run in the at most 1M memory at
+-- that time, etc. The realtime file browsing with lexing that we had at that time
+-- is still on my current wish list. The color scheme and logic that we used related
+-- to the logic behind the ConTeXt user interface that evolved.
 --
--- wish: access to all scite properties and in fact integrate in scite
+-- Later I rewrote the editor in perl/tk. I don't like the perl syntax but tk
+-- widgets are very powerful and hard to beat. In fact, TextAdept reminds me of
+-- that: wrap your own interface around a framework (tk had an edit control that one
+-- could control completely not that different from scintilla). Last time I checked
+-- it still ran fine so I might try to implement something like its file handling in
+-- TextAdept.
 --
+-- In the end I settled for SciTE for which I wrote TeX and MetaPost lexers that
+-- could handle keyword sets. With respect to lexing (syntax highlighting) ConTeXt
+-- has a long history, if only because we need it for manuals. Anyway, in the end we
+-- arrived at lpeg based lexing (which is quite natural as we have lots of lpeg
+-- usage in ConTeXt). The basic color schemes haven't changed much. The most
+-- prominent differences are the nested lexers.
 --
--- In the meantime I made the lexer suitable for typesetting sources which was no big deal as we
--- already had that in place (ConTeXt used lpeg from the day it showed up so we have several lexing
--- options there too).
+-- In the meantime I made the lexer suitable for typesetting sources which was no
+-- big deal as we already had that in place (ConTeXt used lpeg from the day it
+-- showed up so we have several lexing options there too).
+--
+-- Keep in mind that in ConTeXt (typesetting) lexing can follow several approached:
+-- line based (which is handy for verbatim mode), syntax mode (which is nice for
+-- tutorials), and tolerant mode (so that one can also show bad examples or errors).
+-- These demands can clash.
 --
 -- HISTORY
 --
--- The fold and lex functions are copied and patched from original code by Mitchell (see lexer.lua).
--- All errors are mine. The ability to use lpeg in scintilla is a real nice addition and a brilliant
--- move. The code is a byproduct of the (mainly Lua based) textadept (at the time I ran into it was
--- a rapidly moving target so I decided to stick ot SciTE). When I played with it, it had no realtime
--- output pane but that seems to be dealt with now (2017). I need to have a look at it in more detail
--- but a first test again mad the output hang and it was a bit slow too (and I also want the log pane
--- as scite has it, on the right, in view). So, for now I stick to SciTE even when it's somewhat
--- crippled by the fact that we cannot hook our own (language dependent) lexer into the output pane
--- (somehow the errorlist lexer is hard coded into the editor). Hopefully that will change some day.
--- So, how did we arrive where we're now.
+-- The remarks below are more for myself so that I keep track of changes in the
+-- way we adapt to the changes in the scintillua and scite.
 --
--- Starting with SciTE version 3.20 there is an issue with coloring. As we still lack a connection
--- with SciTE itself (properties as well as printing to the log pane) and we cannot trace this (on
--- windows). As far as I can see, there are no fundamental changes in lexer.lua or LexLPeg.cxx so it
--- must be in Scintilla itself. So for the moment I stick to 3.10. Indicators are: no lexing of 'next'
--- and 'goto <label>' in the Lua lexer and no brace highlighting either. Interesting is that it does
--- work ok in the cld lexer (so the Lua code is okay). All seems to be ok again in later versions,
--- so, when you update best check first and just switch back to an older version as normally a SciTE
--- update is not critital. When char-def.lua lexes real fast this is a signal that the lexer quits
--- somewhere halfway. Maybe there are some hard coded limitations on the amount of styles and/or
--- length of names.
+-- The fold and lex functions are copied and patched from original code by Mitchell
+-- (see lexer.lua) in the scintillua distribution. So whatever I say below, assume
+-- that all errors are mine. The ability to use lpeg in scintilla is a real nice
+-- addition and a brilliant move. The code is a byproduct of the (mainly Lua based)
+-- TextAdept which at the time I ran into it was a rapidly moving target so I
+-- decided to stick ot SciTE. When I played with it, it had no realtime output pane
+-- although that seems to be dealt with now (2017). I need to have a look at it in
+-- more detail but a first test again made the output hang and it was a bit slow too
+-- (and I also want the log pane as SciTE has it, on the right, in view). So, for
+-- now I stick to SciTE even when it's somewhat crippled by the fact that we cannot
+-- hook our own (language dependent) lexer into the output pane (somehow the
+-- errorlist lexer is hard coded into the editor). Hopefully that will change some
+-- day. The ConTeXt distribution has cmd runner for textdept that will plug in the
+-- lexers discussed here as well as a dedicated runner. Considere it an experiment.
 --
--- Anyway, after checking 3.24 and adapting to the new lexer tables things are okay again. So, this
--- version assumes 3.24 or higher. In 3.24 we have a different token result, i.e. no longer a { tag,
--- pattern } but just two return values. I didn't check other changes but will do that when I run into
--- issues. I had optimized these small tables by hashing which was more efficient but this is no longer
--- needed. For the moment we keep some of that code around as I don't know what happens in future
--- versions. I'm anyway still happy with this kind of lexing.
+-- The basic code hasn't changed much but we had to adapt a few times to changes in
+-- the api and/or work around bugs. Starting with SciTE version 3.20 there was an
+-- issue with coloring. We still lacked a connection with SciTE itself (properties
+-- as well as printing to the log pane) and we could not trace this (on windows).
+-- However on unix we can see messages! As far as I can see, there are no
+-- fundamental changes in lexer.lua or LexLPeg.cxx so it must be/have been in
+-- Scintilla itself. So we went back to 3.10. Indicators of issues are: no lexing of
+-- 'next' and 'goto <label>' in the Lua lexer and no brace highlighting either.
+-- Interesting is that it does work ok in the cld lexer (so the Lua code is okay).
+-- All seems to be ok again in later versions, so, when you update best check first
+-- and just switch back to an older version as normally a SciTE update is not
+-- critital. When char-def.lua lexes real fast this is a signal that the lexer quits
+-- somewhere halfway. Maybe there are some hard coded limitations on the amount of
+-- styles and/or length of names.
 --
--- In 3.31 another major change took place: some helper constants (maybe they're no longer constants)
--- and functions were moved into the lexer modules namespace but the functions are assigned to the Lua
--- module afterward so we cannot alias them beforehand. We're probably getting close to a stable
--- interface now. I've considered making a whole copy and patch the other functions too as we need an
--- extra nesting model. However, I don't want to maintain too much. An unfortunate change in 3.03 is
--- that no longer a script can be specified. This means that instead of loading the extensions via the
--- properties file, we now need to load them in our own lexers, unless of course we replace lexer.lua
+-- Anyway, after checking 3.24 and adapting to the new lexer tables things are okay
+-- again. So, this version assumes 3.24 or higher. In 3.24 we have a different token
+-- result, i.e. no longer a { tag, pattern } but just two return values. I didn't
+-- check other changes but will do that when I run into issues. I had already
+-- optimized these small tables by hashing which was much more efficient (and maybe
+-- even more efficient than the current approach) but this is no longer needed. For
+-- the moment we keep some of that code around as I don't know what happens in
+-- future versions. I'm anyway still happy with this kind of lexing.
+--
+-- In 3.31 another major change took place: some helper constants (maybe they're no
+-- longer constants) and functions were moved into the lexer modules namespace but
+-- the functions are assigned to the Lua module afterward so we cannot alias them
+-- beforehand. We're probably getting close to a stable interface now. At that time
+-- for the first time I considered making a whole copy and patch the other functions
+-- too as we need an extra nesting model. However, I don't want to maintain too
+-- much. An unfortunate change in 3.03 is that no longer a script can be specified.
+-- This means that instead of loading the extensions via the properties file, we now
+-- need to load them in our own lexers, unless of course we replace lexer.lua
 -- completely (which adds another installation issue).
 --
--- Another change has been that _LEXERHOME is no longer available. It looks like more and more
--- functionality gets dropped so maybe at some point we need to ship our own dll/so files. For instance,
--- I'd like to have access to the current filename and other scite properties. We could then cache some
--- info with each file, if only we had knowledge of what file we're dealing with.
+-- Another change has been that _LEXERHOME is no longer available. It looks like
+-- more and more functionality gets dropped so maybe at some point we need to ship
+-- our own dll/so files. For instance, I'd like to have access to the current
+-- filename and other SciTE properties. We could then cache some info with each
+-- file, if only we had knowledge of what file we're dealing with. This all makes a
+-- nice installation more complex and (worse) makes it hard to share files between
+-- different editors usign s similar directory structure.
 --
--- For huge files folding can be pretty slow and I do have some large ones that I keep open all the time.
--- Loading is normally no ussue, unless one has remembered the status and the cursor is at the last line
--- of a 200K line file. Optimizing the fold function brought down loading of char-def.lua from 14 sec
--- => 8 sec. Replacing the word_match function and optimizing the lex function gained another 2+ seconds.
--- A 6 second load is quite ok for me. The changed lexer table structure (no subtables) brings loading
--- down to a few seconds.
+-- For huge files folding can be pretty slow and I do have some large ones that I
+-- keep open all the time. Loading is normally no ussue, unless one has remembered
+-- the status and the cursor is at the last line of a 200K line file. Optimizing the
+-- fold function brought down loading of char-def.lua from 14 sec => 8 sec.
+-- Replacing the word_match function and optimizing the lex function gained another
+-- 2+ seconds. A 6 second load is quite ok for me. The changed lexer table structure
+-- (no subtables) brings loading down to a few seconds.
 --
--- When the lexer path is copied to the textadept lexer path, and the theme definition to theme path
--- (as lexer.lua), the lexer works there as well. Although ... when I decided to check the state of
--- textadept i had to adapt some loader code. It's not pretty but works and also permits overloading.
--- When I have time and motive I will make a proper setup file to tune the look and feel a bit and
--- associate suffixes with the context lexer. The textadept editor has a nice style tracing option but
--- lacks the tabs for selecting files that scite has. It also has no integrated run that pipes to the
--- log pane. Interesting is that the jit version of textadept crashes on lexing large files (and does
--- not feel faster either; maybe a side effect of known limitations as we know that luajit is more
--- limited than stock lua). Btw, in the meantime on unix one can test easier as there we can enable
--- the loggers in this module.
+-- When the lexer path is copied to the TextAdept lexer path, and the theme
+-- definition to theme path (as lexer.lua), the lexer works there as well. Although
+-- ... when I decided to check the state of TextAdept I had to adapt some loader
+-- code. The solution is not pretty but works and also permits overloading. When I
+-- have time and motive I will make a proper setup file to tune the look and feel a
+-- bit more than we do now. The TextAdept editor nwo has tabs and a console so it
+-- has become more useable for me (it's still somewhat slower than SciTE).
+-- Interesting is that the jit version of TextAdept crashes on lexing large files
+-- (and does not feel faster either; maybe a side effect of known limitations as we
+-- know that Luajit is more limited than stock Lua).
 --
--- Function load(lexer_name) starts with _lexers.WHITESPACE = lexer_name .. '_whitespace' which means
--- that we need to have it frozen at the moment we load another lexer. Because spacing is used to revert
--- to a parent lexer we need to make sure that we load children as late as possible in order not to get
--- the wrong whitespace trigger. This took me quite a while to figure out (not being that familiar with
--- the internals). The lex and fold functions have been optimized. It is a pitty that there is no proper
--- print available. Another thing needed is a default style in our own theme style definition, as otherwise
--- we get wrong nested lexers, especially if they are larger than a view. This is the hardest part of
+-- Function load(lexer_name) starts with _lexers.WHITESPACE = lexer_name ..
+-- '_whitespace' which means that we need to have it frozen at the moment we load
+-- another lexer. Because spacing is used to revert to a parent lexer we need to
+-- make sure that we load children as late as possible in order not to get the wrong
+-- whitespace trigger. This took me quite a while to figure out (not being that
+-- familiar with the internals). The lex and fold functions have been optimized. It
+-- is a pitty that there is no proper print available. Another thing needed is a
+-- default style in our own theme style definition, as otherwise we get wrong nested
+-- lexers, especially if they are larger than a view. This is the hardest part of
 -- getting things right.
 --
--- It's a pitty that there is no scintillua library for the OSX version of scite. Even better would be
--- to have the scintillua library as integral part of scite as that way I could use OSX alongside
--- windows and linux (depending on needs). Also nice would be to have a proper interface to scite then
--- because currently the lexer is rather isolated and the lua version does not provide all standard
--- libraries. It would also be good to have lpeg support in the regular scite lua extension (currently
--- you need to pick it up from someplace else).
+-- It's a pitty that there is no scintillua library for the OSX version of SciTE.
+-- Even better would be to have the scintillua library as integral part of SciTE as
+-- that way I could use OSX alongside windows and linux (depending on needs). Also
+-- nice would be to have a proper interface to SciTE then because currently the
+-- lexer is rather isolated and the Lua version does not provide all standard
+-- libraries. It would also be good to have lpeg support in the regular SciTE Lua
+-- extension (currently you need to pick it up from someplace else). I keep hoping.
 --
--- With 3.41 the interface changed again so it gets time to look into the C++ code and consider compiling
--- and patching myself. Loading is more complicated now as the lexer gets loaded automatically so we have
--- little control over extending the code now. After a few days trying all kind of solutions I decided to
--- follow a different approach: drop in a complete replacement. This of course means that I need to keep
--- track of even more changes (which for sure will happen) but at least I get rid of interferences. The
--- api (lexing and configuration) is simply too unstable across versions. Maybe in a few years things have
--- stabelized again. (Or maybe it's not really expected that one writes lexers at all.) A side effect is
--- that I now no longer will use shipped lexers but just the built-in ones in addition to the context
--- lpeg lexers. Not that it matters much as the context lexers cover what I need (and I can always write
--- more).
+-- With 3.41 the interface changed again so it became time to look into the C++ code
+-- and consider compiling and patching myself, something that I like to avoid.
+-- Loading is more complicated now as the lexer gets loaded automatically so we have
+-- little control over extending the code now. After a few days trying all kind of
+-- solutions I decided to follow a different approach: drop in a complete
+-- replacement. This of course means that I need to keep track of even more changes
+-- (which for sure will happen) but at least I get rid of interferences. Till 3.60
+-- the api (lexing and configuration) was simply too unstable across versions which
+-- is a pitty because we expect authors to install SciTE without hassle. Maybe in a
+-- few years things will have stabelized. Maybe it's also not really expected that
+-- one writes lexers at all. A side effect is that I now no longer will use shipped
+-- lexers for languages that I made no lexer for, but just the built-in ones in
+-- addition to the ConTeXt lpeg lexers. Not that it matters much as the ConTeXt
+-- lexers cover what I need (and I can always write more). For editing TeX files one
+-- only needs a limited set of lexers (TeX, MetaPost, Lua, BibTeX, C/W, PDF, SQL,
+-- etc). I can add more when I want.
 --
--- In fact, the transition to 3.41 was triggered by an unfateful update of Ubuntu which left me with an
--- incompatible SciTE and lexer library and updating was not possible due to the lack of 64 bit libraries.
--- We'll see what the future brings.
+-- In fact, the transition to 3.41 was triggered by an unfateful update of Ubuntu
+-- which left me with an incompatible SciTE and lexer library and updating was not
+-- possible due to the lack of 64 bit libraries. We'll see what the future brings.
+-- For now I can use SciTE under wine on linux. The fact that scintillua ships
+-- independently is a showstopper.
 --
--- Promissing is that the library now can use another Lua instance so maybe some day it will get properly
--- in SciTE and we can use more clever scripting.
+-- Promissing is that the library now can use another Lua instance so maybe some day
+-- it will get properly in SciTE and we can use more clever scripting.
 --
--- In some lexers we use embedded ones even if we could do it directly, The reason is that when the end
--- token is edited (e.g. -->), backtracking to the space before the begin token (e.g. <!--) results in
--- applying the surrounding whitespace which in turn means that when the end token is edited right,
--- backtracking doesn't go back. One solution (in the dll) would be to backtrack several space categories.
+-- In some lexers we use embedded ones even if we could do it directly, The reason
+-- is that when the end token is edited (e.g. -->), backtracking to the space before
+-- the begin token (e.g. <!--) results in applying the surrounding whitespace which
+-- in turn means that when the end token is edited right, backtracking doesn't go
+-- back. One solution (in the dll) would be to backtrack several space categories.
 -- After all, lexing is quite fast (applying the result is much slower).
 --
--- For some reason the first blob of text tends to go wrong (pdf and web). It would be nice to have 'whole
--- doc' initial lexing. Quite fishy as it makes it impossible to lex the first part well (for already opened
--- documents) because only a partial text is passed.
+-- For some reason the first blob of text tends to go wrong (pdf and web). It would
+-- be nice to have 'whole doc' initial lexing. Quite fishy as it makes it impossible
+-- to lex the first part well (for already opened documents) because only a partial
+-- text is passed.
 --
--- So, maybe I should just write this from scratch (assuming more generic usage) because after all, the dll
--- expects just tables, based on a string. I can then also do some more aggressive resource sharing (needed
--- when used generic).
+-- So, maybe I should just write this from scratch (assuming more generic usage)
+-- because after all, the dll expects just tables, based on a string. I can then
+-- also do some more aggressive resource sharing (needed when used generic).
 --
--- I think that nested lexers are still bugged (esp over longer ranges). It never was robust or maybe it's
--- simply not meant for too complex cases (well, it probably *is* tricky material). The 3.24 version was
--- probably the best so far. The fact that styles bleed between lexers even if their states are isolated is
--- an issue. Another issus is that zero characters in the text passed to the lexer can mess things up (pdf
--- files have them in streams).
+-- I think that nested lexers are still bugged (esp over longer ranges). It never
+-- was robust or maybe it's simply not meant for too complex cases (well, it
+-- probably *is* tricky material). The 3.24 version was probably the best so far.
+-- The fact that styles bleed between lexers even if their states are isolated is an
+-- issue. Another issus is that zero characters in the text passed to the lexer can
+-- mess things up (pdf files have them in streams).
 --
--- For more complex 'languages', like web or xml, we need to make sure that we use e.g. 'default' for
--- spacing that makes up some construct. Ok, we then still have a backtracking issue but less.
+-- For more complex 'languages', like web or xml, we need to make sure that we use
+-- e.g. 'default' for spacing that makes up some construct. Ok, we then still have a
+-- backtracking issue but less.
 --
--- Good news for some ConTeXt users: there is now a scintillua plugin for notepad++ and we ship an ini
--- file for that editor with some installation instructions embedded.
+-- Good news for some ConTeXt users: there is now a scintillua plugin for notepad++
+-- and we ship an ini file for that editor with some installation instructions
+-- embedded. Also, TextAdept has a console so that we can run realtime. The spawner
+-- is still not perfect (sometimes hangs) but it was enough reason to spend time on
+-- making our lexer work with TextAdept and create a setup.
+--
+-- TRACING
+--
+-- The advantage is that we now can check more easily with regular Lua(TeX). We can
+-- also use wine and print to the console (somehow stdout is intercepted there.) So,
+-- I've added a bit of tracing. Interesting is to notice that each document gets its
+-- own instance which has advantages but also means that when we are spellchecking
+-- we reload the word lists each time. (In the past I assumed a shared instance and
+-- took some precautions. But I can fix this.)
 --
 -- TODO
 --
--- I can make an export to context, but first I'll redo the code that makes the grammar,
--- as we only seem to need
+-- It would be nice if we could lods some ConTeXt Lua modules (the basic set) and
+-- then use resolvers and such.
+--
+-- The current lexer basics are still a mix between old and new. Maybe I should redo
+-- some more. This is probably easier in TextAdept than in SciTE.
+--
+-- We have to make sure we don't overload ConTeXt definitions when this code is used
+-- in ConTeXt. I still have to add some of the goodies that we have there in lexers
+-- into these.
+--
+-- Maybe I should use a special stripped on the one hand and extended version of the
+-- dll (stable api) and at least add a bit more interfacing to scintilla.
+--
+-- I need to investigate if we can use the already built in Lua instance so that we
+-- can combine the power of lexing with extensions.
+--
+-- I need to play with hotspot and other properties like indicators (whatever they
+-- are).
+--
+-- I want to get rid of these lexers.STYLE_XX and lexers.XX things. This is possible
+-- when we give up compatibility. Generalize the helpers that I wrote for SciTE so
+-- that they also can be used TextAdept.
+--
+-- I can make an export to ConTeXt, but first I'll redo the code that makes the
+-- grammar, as we only seem to need
 --
 --   lexer._TOKENSTYLES : table
 --   lexer._CHILDREN    : flag
@@ -199,38 +277,30 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 --   lexers.load        : function
 --   lexers.lex         : function
 --
--- So, if we drop compatibility with other lex definitions, we can make things simpler. Howeverm in the
--- meantime one can just do this:
+-- So, if we drop compatibility with other lex definitions, we can make things
+-- simpler. However, in the meantime one can just do this:
 --
 --    context --extra=listing --scite [--compact --verycompact] somefile.tex
 --
--- and get a printable document. So, this todo is obsolete.
-
--- TRACING
+-- and get a printable document. So, this todo is a bit obsolete.
 --
--- The advantage is that we now can check more easily with regular Lua(TeX). We can also use wine and print
--- to the console (somehow stdout is intercepted there.) So, I've added a bit of tracing. Interesting is to
--- notice that each document gets its own instance which has advantages but also means that when we are
--- spellchecking we reload the word lists each time. (In the past I assumed a shared instance and took
--- some precautions.)
+-- Properties is an ugly mess ... due to chages in the interface we're now left
+-- with some hybrid that sort of works ok
 
--- todo: make sure we don't overload context definitions when used in context
-
--- properties is an ugly mess ... due to chages in the interface we're now left with some hybrid
--- that sort of works ok
+-- textadept: buffer:colourise(0,-1)
 
 local lpeg  = require("lpeg")
 
 local global = _G
-local find, gmatch, match, lower, upper, gsub, sub, format = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub, string.sub, string.format
+local find, gmatch, match, lower, upper, gsub, sub, format, byte = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub, string.sub, string.format, string.byte
 local concat, sort = table.concat, table.sort
 local type, next, setmetatable, rawset, tonumber, tostring = type, next, setmetatable, rawset, tonumber, tostring
 local R, P, S, V, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg, Carg = lpeg.R, lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Carg
 local lpegmatch = lpeg.match
 
+local usage   = (textadept and "textadept") or (resolvers and "context") or "scite"
 local nesting = 0
-
-local print = (textadept and ui and ui.print) or print
+local print   = textadept and ui and ui.print or print
 
 local function report(fmt,str,...)
     if log then
@@ -679,21 +749,34 @@ local locations = {
 --     end
 -- end
 
-local function collect(name)
-    local rootlist = lexers.LEXERPATH or "."
-    for root in gmatch(rootlist,"[^;]+") do
-        local root = gsub(root,"/[^/]-lua$","")
-        for i=1,#locations do
-            local fullname =  root .. "/" .. locations[i] .. "/" .. name .. ".lua" -- so we can also check for .luc
-            if trace then
-                report("attempt to locate '%s'",fullname)
-            end
-            local okay, result = pcall(function () return dofile(fullname) end)
-            if okay then
-                return result, fullname
+local collect
+
+if usage == "context" then
+
+    collect = function(name)
+        return require(name), name
+    end
+
+else
+
+    collect = function(name)
+        local rootlist = lexers.LEXERPATH or "."
+        for root in gmatch(rootlist,"[^;]+") do
+            local root = gsub(root,"/[^/]-lua$","")
+            for i=1,#locations do
+                local fullname =  root .. "/" .. locations[i] .. "/" .. name .. ".lua" -- so we can also check for .luc
+                if trace then
+                    report("attempt to locate '%s'",fullname)
+                end
+                local okay, result = pcall(function () return dofile(fullname) end)
+                if okay then
+                    return result, fullname
+                end
             end
         end
+    --     return require(name), name
     end
+
 end
 
 function context.loadluafile(name)
@@ -1371,25 +1454,33 @@ local function add_lexer(grammar, lexer) -- mostly the same as the original
 end
 
 local function build_grammar(lexer,initial_rule) -- same as the original
-    local children = lexer._CHILDREN
+    local children   = lexer._CHILDREN
     local lexer_name = lexer._NAME
-    if children then
+    local preamble   = lexer._preamble
+    local grammar    = lexer._grammar
+    if grammar then
+        -- experiment
+    elseif children then
         if not initial_rule then
             initial_rule = lexer_name
         end
-        local grammar = { initial_rule }
+        grammar = { initial_rule }
         add_lexer(grammar, lexer)
         lexer._INITIALRULE = initial_rule
-        lexer._GRAMMAR = Ct(P(grammar))
+        grammar = Ct(P(grammar))
         if trace then
             report("building grammar for '%s' with whitespace '%s'and %s children",lexer_name,lexer.whitespace or "?",#children)
         end
     else
-        lexer._GRAMMAR = Ct(join_tokens(lexer)^0)
+        grammar = Ct(join_tokens(lexer)^0)
         if trace then
             report("building grammar for '%s' with whitespace '%s'",lexer_name,lexer.whitespace or "?")
         end
     end
+    if preamble then
+        grammar = preamble^-1 * grammar
+    end
+    lexer._GRAMMAR = grammar
 end
 
 -- So far. We need these local functions in the next one.
@@ -1733,7 +1824,7 @@ function context.loadlexer(filename,namespace)
     lexer = load_lexer(filename,namespace) or nolexer(filename,namespace)
     usedlexers[filename] = lexer
     --
-    if not lexer._rules and not lexer._lexer then
+    if not lexer._rules and not lexer._lexer and not lexer_grammar then
         lexer._lexer = parent_lexer
     end
     --
@@ -1765,16 +1856,19 @@ function context.loadlexer(filename,namespace)
     end
     --
     local _r = lexer._rules
-    if _r then
+    local _g = lexer._grammar
+    if _r or _g then
         local _s = lexer._tokenstyles
         if _s then
             for token, style in next, _s do
                 add_style(lexer, token, style)
             end
         end
-        for i=1,#_r do
-            local rule = _r[i]
-            add_rule(lexer, rule[1], rule[2])
+        if _r then
+            for i=1,#_r do
+                local rule = _r[i]
+                add_rule(lexer, rule[1], rule[2])
+            end
         end
         build_grammar(lexer)
     end
@@ -2001,10 +2095,20 @@ do
  --     return make(tree)
  -- end
 
-    helpers.utfcharpattern = P(1) * R("\128\191")^0 -- unchecked but fast
+    local utf8next         = R("\128\191")
+    local utf8one          = R("\000\127")
+    local utf8two          = R("\194\223") * utf8next
+    local utf8three        = R("\224\239") * utf8next * utf8next
+    local utf8four         = R("\240\244") * utf8next * utf8next * utf8next
 
-    local p_false = P(false)
-    local p_true  = P(true)
+    helpers.utfcharpattern = P(1) * utf8next^0 -- unchecked but fast
+    helpers.utfbytepattern = utf8one   / byte
+                           + utf8two   / function(s) local c1, c2         = byte(s,1,2) return   c1 * 64 + c2                       -    12416 end
+                           + utf8three / function(s) local c1, c2, c3     = byte(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
+                           + utf8four  / function(s) local c1, c2, c3, c4 = byte(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
+
+    local p_false          = P(false)
+    local p_true           = P(true)
 
     local function make(t)
         local function making(t)

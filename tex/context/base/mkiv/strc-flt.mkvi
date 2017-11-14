@@ -97,17 +97,17 @@
    \c!textcolor=,
    \c!align=,
    \c!number=\v!yes,
- % \c!expansion=\v!no
- % \c!prefix=\v!no,
- % \c!prefixconnector=.,
- % \c!way=\v!by\v!chapter,
- % \c!prefixsegments=2:2,
- % \c!way=\@@nrway,
- % \c!blockway=\@@nrblockway,
- % \c!sectionnumber=\@@nrsectionnumber,
- % \c!separator=\@@koseparator,
- % \c!starter=\@@kostarter,
- % \c!stopper=\@@kostopper,
+ % \c!expansion=,
+ % \c!prefix=,
+ % \c!prefixconnector=,
+ % \c!way=,
+ % \c!prefixsegments=,
+ % \c!way=,
+ % \c!blockway=,
+ % \c!sectionnumber=,
+ % \c!separator=,
+ % \c!starter=,
+ % \c!stopper=,
    \c!suffixseparator=, % currently rather hard coded
    \c!suffix=\floatcaptionsuffix,
    \c!distance=\emwidth,
@@ -409,30 +409,6 @@
        \setbox\b_strc_floats_caption\hpack{\hskip\leftskip\box\b_strc_floats_caption}%
      \fi
    \fi}
-
-% The tricky part of getting float related two pass data is
-% that we should fetch is early but can only save it with
-% the composed float box; this determines the order: get it
-% before saving it.
-
-% We had this:
-%
-% \definetwopasslist{\s!float\s!data} \newcounter\noffloatdata
-%
-% \let\strc_float_realpage\realpageno % used for odd/even determination, can be combined with nodelocation
-%
-% \def\strc_float_save_data % \expanded ... will change in mkiv
-%   {\doglobal\increment\noffloatdata
-%    \lazysavetaggedtwopassdata{\s!float\s!data}{\noffloatdata}{\noffloatpages}{\noexpand\realfolio}}% later {}{}{}{} and \getfirst...
-%
-% \def\strc_float_load_data % precedes save !
-%   {\doglobal\increment\noffloatpages
-%    \findtwopassdata{\s!float\s!data}{\noffloatpages}%
-%    \ifconditional\twopassdatafound
-%      \globallet\strc_float_realpage\twopassdata
-%    \else
-%      \globallet\strc_float_realpage\realpageno % \realfolio
-%    \fi}
 
 %D We can do this ...
 %D

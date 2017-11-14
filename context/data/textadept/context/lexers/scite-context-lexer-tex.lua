@@ -31,8 +31,7 @@ local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, l
 local type, next = type, next
 local find, match, lower, upper = string.find, string.match, string.lower, string.upper
 
--- local lexer        = require("lexer")
-local lexer          = require("scite-context-lexer")
+local lexer        = require("scite-context-lexer")
 local context      = lexer.context
 local patterns     = context.patterns
 local inform       = context.inform
@@ -145,6 +144,9 @@ local validminimum = 3
 
 -- fails (empty loop message) ... latest lpeg issue?
 
+-- todo: Make sure we only do this at the beginning .. a pitty that we
+-- can't store a state .. now is done too often.
+
 local knownpreamble = Cmt(P("% "), function(input,i,_) -- todo : utfbomb, was #P("% ")
     if i < 10 then
         validwords, validminimum = false, 3
@@ -220,10 +222,12 @@ local p_comment              = commentline
 ----- p_helper               = backslash * exact_match(helpers)
 ----- p_primitive            = backslash * exact_match(primitives)
 
-local p_command              = backslash * lexer.helpers.utfchartabletopattern(currentcommands) * #(1-cstoken)
-local p_constant             = backslash * lexer.helpers.utfchartabletopattern(constants)       * #(1-cstoken)
-local p_helper               = backslash * lexer.helpers.utfchartabletopattern(helpers)         * #(1-cstoken)
-local p_primitive            = backslash * lexer.helpers.utfchartabletopattern(primitives)      * #(1-cstoken)
+local p_csdone               = #(1-cstoken) + P(-1)
+
+local p_command              = backslash * lexer.helpers.utfchartabletopattern(currentcommands) * p_csdone
+local p_constant             = backslash * lexer.helpers.utfchartabletopattern(constants)       * p_csdone
+local p_helper               = backslash * lexer.helpers.utfchartabletopattern(helpers)         * p_csdone
+local p_primitive            = backslash * lexer.helpers.utfchartabletopattern(primitives)      * p_csdone
 
 local p_ifprimitive          = P("\\if") * cstoken^1
 local p_csname               = backslash * (cstoken^1 + P(1))
@@ -446,12 +450,17 @@ local stopmetafuncode        = token("embedded", stopmetafun)
 local callers                = token("embedded", P("\\") * metafuncall) * metafunarguments
                              + token("embedded", P("\\") * luacall)
 
-lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
+lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
+
+-- preamble is inefficient as it probably gets called each time (so some day I really need to
+-- patch the plugin)
+
+contextlexer._preamble = preamble
 
 contextlexer._rules = {
     { "whitespace",  spacing     },
-    { "preamble",    preamble    },
+ -- { "preamble",    preamble    },
     { "word",        word        },
     { "text",        text        }, -- non words
     { "comment",     comment     },
@@ -459,10 +468,10 @@ contextlexer._rules = {
  -- { "subsystem",   subsystem   },
     { "callers",     callers     },
     { "subsystem",   subsystem   },
+    { "ifprimitive", ifprimitive },
     { "helper",      helper      },
     { "command",     command     },
     { "primitive",   primitive   },
-    { "ifprimitive", ifprimitive },
  -- { "subsystem",   subsystem   },
     { "reserved",    reserved    },
     { "csname",      csname      },
@@ -490,10 +499,10 @@ if web then
         { "comment",     comment     },
         { "constant",    constant    },
         { "callers",     callers     },
+        { "ifprimitive", ifprimitive },
         { "helper",      helper      },
         { "command",     command     },
         { "primitive",   primitive   },
-        { "ifprimitive", ifprimitive },
         { "reserved",    reserved    },
         { "csname",      csname      },
         { "grouping",    grouping    },
@@ -514,10 +523,10 @@ else
         { "comment",     comment     },
         { "constant",    constant    },
         { "callers",     callers     },
+        { "ifprimitive", ifprimitive },
         { "helper",      helper      },
         { "command",     command     },
         { "primitive",   primitive   },
-        { "ifprimitive", ifprimitive },
         { "reserved",    reserved    },
         { "csname",      csname      },
         { "grouping",    grouping    },

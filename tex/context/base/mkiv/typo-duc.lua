@@ -4,16 +4,16 @@ if not modules then modules = { } end modules ['typo-duc'] = {
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files",
-    comment   = "Unicode bidi (sort of) variant b",
+    comment   = "Unicode bidi (sort of) variant c",
 }
 
--- This is a follow up on typo-uba which itself is a follow up on t-bidi by Khaled Hosny which
+-- This is a follow up on typo-uda which itself is a follow up on t-bidi by Khaled Hosny which
 -- in turn is based on minibidi.c from Arabeyes. This is a further optimizations, as well as
 -- an update on some recent unicode bidi developments. There is (and will) also be more control
 -- added. As a consequence this module is somewhat slower than its precursor which itself is
 -- slower than the one-pass bidi handler. This is also a playground and I might add some plugin
 -- support. However, in the meantime performance got a bit better and this third variant is again
--- some 10% faster than the two variant.
+-- some 10% faster than the second variant.
 
 -- todo (cf html):
 --

@@ -86,9 +86,31 @@ end
 
 function flushers.scite(collected)
     local data = { }
-    for interface, whatever in next, collected do
-        data[interface] = whatever.commands
+--     for interface, whatever in next, collected do
+--         data[interface] = whatever.commands
+--     end
+    local function add(target,origin,field)
+        if origin then
+            local list = origin[field]
+            if list then
+                for i=1,#list do
+                    target[list[i]] = true
+                end
+            end
+        end
     end
+    --
+    for interface, whatever in next, collected do
+        local combined = { }
+        add(combined,whatever,"commands")
+        add(combined,whatever,"environments")
+        if interface == "common" then
+            add(combined,whatever,"textnames")
+            add(combined,whatever,"mathnames")
+        end
+        data[interface] = sortedkeys(combined)
+    end
+    --
     collect("scite-context-data-interfaces", "context",  data)
     collect("scite-context-data-metapost",   "metapost", dofile(resolvers.findfile("mult-mps.lua")))
     collect("scite-context-data-metafun",    "metafun",  dofile(resolvers.findfile("mult-fun.lua")))
@@ -227,9 +249,9 @@ function flushers.textpad(collected)
     end
 end
 
--- we could instead load context-en.xml
-
 function scripts.interface.editor(editor,split,forcedinterfaces)
+    require("char-def")
+
     local interfaces = forcedinterfaces or environment.files
     if #interfaces == 0 then
         interfaces= userinterfaces
@@ -264,32 +286,33 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
     report("generating files for %a",editor)
     report("loading %a",xmlfile)
     local xmlroot = xml.load(xmlfile)
---     xml.include(xmlroot,"cd:interfacefile","filename",true,function(s)
---         local fullname = resolvers.findfile(s)
---         if fullname and fullname ~= "" then
---             report("including %a",fullname)
---             return io.loaddata(fullname)
---         end
---     end)
---     local definitions = { }
---     for e in xml.collected(xmlroot,"cd:interface/cd:define") do
---         definitions[e.at.name] = e.dt
---     end
---     local function resolve(root)
---         for e in xml.collected(root,"*") do
---             if e.tg == "resolve" then
---                 local resolved = definitions[e.at.name or ""]
---                 if resolved then
---                     -- use proper replace helper
---                     e.__p__.dt[e.ni] = resolved
---                     resolved.__p__ = e.__p__
---                     resolve(resolved)
---                 end
---             end
---         end
---     end
---     resolve(xmlroot)
-    --
+ -- xml.include(xmlroot,"cd:interfacefile","filename",true,function(s)
+ --     local fullname = resolvers.findfile(s)
+ --     if fullname and fullname ~= "" then
+ --         report("including %a",fullname)
+ --         return io.loaddata(fullname)
+ --     end
+ -- end)
+ -- local definitions = { }
+ -- for e in xml.collected(xmlroot,"cd:interface/cd:define") do
+ --     definitions[e.at.name] = e.dt
+ -- end
+ -- local function resolve(root)
+ --     for e in xml.collected(root,"*") do
+ --         if e.tg == "resolve" then
+ --             local resolved = definitions[e.at.name or ""]
+ --             if resolved then
+ --                 -- use proper replace helper
+ --                 e.__p__.dt[e.ni] = resolved
+ --                 resolved.__p__ = e.__p__
+ --                 resolve(resolved)
+ --             end
+ --         end
+ --     end
+ -- end
+ -- resolve(xmlroot)
+
+    -- todo: use sequence
 
     for i=1,#interfaces do
         local interface      = interfaces[i]
@@ -304,12 +327,36 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
             if name ~= "" then
                 local c = commands[name]
                 local n = c and (c[interface] or c.en) or name
+                local sequence = xml.all(e,"/cd:sequence/*")
                 if at.generated == "yes" then
                     for e in xml.collected(e,"/cd:instances/cd:constant") do
                         local name = e.at.value
                         if name then
                             local c = variables[name]
                             local n = c and (c[interface] or c.en) or name
+                            if sequence then
+                                local done = { }
+                                for i=1,#sequence do
+                                    local e = sequence[i]
+                                    if e.tg == "string" then
+                                        local value = e.at.value
+                                        if value then
+                                            done[i] = value
+                                        else
+                                            done = false
+                                            break
+                                        end
+                                    elseif e.tg == "instance" then
+                                        done[i] = name
+                                    else
+                                        done = false
+                                        break
+                                    end
+                                end
+                                if done then
+                                    n = concat(done)
+                                end
+                            end
                             if type ~= "environment" then
                                 i_commands[n] = true
                             elseif split then
@@ -334,11 +381,79 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
         end
         if next(i_commands) then
             collected[interface] = {
-                commands     = sortedkeys(i_commands),
-                environments = sortedkeys(i_environments),
+                commands     = i_commands,
+                environments = i_environments,
             }
         end
     end
+    --
+    local commoncommands     = { }
+    local commonenvironments = { }
+    for k, v in next, collected do
+        local c = v.commands
+        local e = v.environments
+        if k == "en" then
+            for k, v in next, c do
+                commoncommands[k] = true
+            end
+            for k, v in next, e do
+                commonenvironments[k] = true
+            end
+        else
+            for k, v in next, c do
+                if not commoncommands[k] then
+                    commoncommands[k] = nil
+                end
+            end
+            for k, v in next, e do
+                if not commonenvironments[k] then
+                    commonenvironments[k] = nil
+                end
+            end
+        end
+    end
+    for k, v in next, collected do
+        local c = v.commands
+        local e = v.environments
+        for k, v in next, commoncommands do
+            c[k] = nil
+        end
+        for k, v in next, commonenvironments do
+            e[k] = nil
+        end
+        v.commands     = sortedkeys(c)
+        v.environments = sortedkeys(e)
+    end
+    --
+    local mathnames = { }
+    local textnames = { }
+    for k, v in next, characters.data do
+        local name = v.contextname
+        if name then
+            textnames[name] = true
+        end
+        local name = v.mathname
+        if name then
+            mathnames[name] = true
+        end
+        local spec = v.mathspec
+        if spec then
+            for i=1,#spec do
+                local s = spec[i]
+                local name = s.name
+                if name then
+                    mathnames[name] = true
+                end
+            end
+        end
+    end
+    --
+    collected.common = {
+        textnames    = sortedkeys(textnames),
+        mathnames    = sortedkeys(mathnames),
+        commands     = sortedkeys(commoncommands),
+        environments = sortedkeys(commonenvironments),
+    }
     --
     flushers[editor](collected)
 end
@@ -452,8 +567,8 @@ function scripts.interface.mkii()
 end
 
 function scripts.interface.preprocess()
-    dofile(resolvers.findfile("luat-mac.lua"))
- -- require("luat-mac.lua")
+    require("luat-mac")
+
     local newsuffix = environment.argument("suffix") or "log"
     local force = environment.argument("force")
     for i=1,#environment.files do
@@ -470,10 +585,45 @@ function scripts.interface.preprocess()
     end
 end
 
+function scripts.interface.bidi()
+    require("char-def")
+
+    local directiondata  = { }
+    local mirrordata     = { }
+    local textclassdata  = { }
+
+    local data = {
+        comment    = "generated by: mtxrun -- script interface.lua --bidi",
+        direction  = directions,
+        mirror     = mirrors,
+        textclass  = textclasses,
+    }
+
+    for k, d in next, characters.data do
+        local direction = d.direction
+        local mirror    = d.mirror
+        local textclass = d.textclass
+        if direction and direction ~= "l" then
+            directiondata[k] = direction
+        end
+        if mirror then
+            mirrordata[k] = mirror
+        end
+        if textclass then
+            textclassdata[k] = textclass
+        end
+    end
+
+    local filename = "scite-context-data-bidi.lua"
+
+    report("saving %a",filename)
+    table.save(filename,data)
+end
+
 function scripts.interface.toutf()
     local filename = environment.files[1]
     if filename then
-        require("char-def.lua")
+        require("char-def")
         local contextnames = { }
         for unicode, data in next, characters.data do
             local contextname = data.contextname
@@ -487,7 +637,7 @@ function scripts.interface.toutf()
             contextnames.aumlaut = contextnames.adiaeresis
             contextnames.Aumlaut = contextnames.Adiaeresis
         end
-        report("loading '%s'",filename)
+        report("loading %a",filename)
         local str = io.loaddata(filename) or ""
         local done = { }
         str = gsub(str,"(\\)([a-zA-Z][a-zA-Z][a-zA-Z]+)(%s*)", function(b,s,a)
@@ -508,7 +658,7 @@ function scripts.interface.toutf()
             end
         end
         filename = filename .. ".toutf"
-        report("saving '%s'",filename)
+        report("saving %a",filename)
         io.savedata(filename,str)
     end
 end
@@ -521,6 +671,8 @@ elseif ea("preprocess") then
     scripts.interface.preprocess()
 elseif ea("toutf") then
     scripts.interface.toutf()
+elseif ea("bidi") then
+    scripts.interface.bidi()
 elseif ea("check") then
     scripts.interface.check()
 elseif ea("scite") or ea("bbedit") or ea("jedit") or ea("textpad") or ea("text") or ea("raw") then

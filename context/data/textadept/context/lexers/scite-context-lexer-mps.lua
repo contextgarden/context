@@ -10,8 +10,7 @@ local global, string, table, lpeg = _G, string, table, lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local type = type
 
--- local lexer              = require("lexer")
-local lexer          = require("scite-context-lexer")
+local lexer              = require("scite-context-lexer")
 local context            = lexer.context
 local patterns           = context.patterns
 

@@ -59,20 +59,31 @@ do -- todo: only once, store in global
     if definitions then
         local list = { }
         for interface, list in next, definitions do
-            list[#list+1] = interface
-            local c = { }
-            for i=1,#list do
-                c[list[i]] = true
-            end
-            if interface ~= "en" then
+            if interface ~= "common" then
+                list[#list+1] = interface
+                local c = { }
+                -- these are shared
+                list = definitions.common
+                if list then
+                    for i=1,#list do
+                        c[list[i]] = true
+                    end
+                end
+                -- normally this one is empty
                 list = definitions.en
                 if list then
                     for i=1,#list do
                         c[list[i]] = true
                     end
                 end
+                -- these are interface specific
+                if interface ~= "en" then
+                    for i=1,#list do
+                        c[list[i]] = true
+                    end
+                end
+                commands[interface] = c
             end
-            commands[interface] = c
         end
         inform("context user interfaces '%s' supported",table.concat(list," "))
     end
@@ -453,9 +464,14 @@ local callers                = token("embedded", P("\\") * metafuncall) * metafu
 lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
 lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 
+-- preamble is inefficient as it probably gets called each time (so some day I really need to
+-- patch the plugin)
+
+contextlexer._preamble = preamble
+
 contextlexer._rules = {
     { "whitespace",  spacing     },
-    { "preamble",    preamble    },
+ -- { "preamble",    preamble    },
     { "word",        word        },
     { "text",        text        }, -- non words
     { "comment",     comment     },

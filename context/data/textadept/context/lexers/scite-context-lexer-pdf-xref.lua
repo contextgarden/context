@@ -10,7 +10,6 @@ local info = {
 
 local P, R = lpeg.P, lpeg.R
 
--- local lexer          = require("lexer")
 local lexer          = require("scite-context-lexer")
 local context        = lexer.context
 local patterns       = context.patterns

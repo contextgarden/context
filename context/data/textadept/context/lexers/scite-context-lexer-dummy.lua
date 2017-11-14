@@ -1,4 +1,4 @@
--- local info = {
+local info = {
     version   = 1.002,
     comment   = "scintilla lpeg lexer that triggers whitespace backtracking",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -10,8 +10,7 @@
 -- we need to trigger that, for instance in the bibtex lexer, but still
 -- we get failed lexing
 
--- local lexer        = require("lexer")
-local lexer          = require("scite-context-lexer")
+local lexer        = require("scite-context-lexer")
 local context      = lexer.context
 local patterns     = context.patterns
 

@@ -8,8 +8,7 @@ local info = {
 
 local P, R, S = lpeg.P, lpeg.R, lpeg.S
 
--- local lexer       = require("lexer")
-local lexer          = require("scite-context-lexer")
+local lexer       = require("scite-context-lexer")
 local context     = lexer.context
 local patterns    = context.patterns
 

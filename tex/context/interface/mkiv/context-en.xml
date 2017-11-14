@@ -9836,7 +9836,7 @@
      </cd:parameter>
      <cd:parameter name="paper">
       <cd:constant type="auto"/>
-      <cd:constant default="yes" type="defaut"/>
+      <cd:constant default="yes" type="default"/>
       <cd:constant type="cd:name"/>
      </cd:parameter>
      <cd:inherit name="setupframed"/>

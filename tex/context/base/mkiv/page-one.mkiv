@@ -423,20 +423,21 @@
      \fi
      % should be an option
      \endgroup
-     \dimen0\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
-     \dimen2\pagegoal
+     \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
+     \scratchdimentwo\pagegoal
      \relax % needed
      \ifcase\c_page_one_float_method
        % method 0 : raw
      \or
        % method 1 : safe
-       \dimen2 .99\pagegoal
+       % too fuzzy as it can change and for a high page it's a lot : \scratchdimentwo .99\pagegoal
+       \advance\scratchdimentwo -\strutdp
      \or
        % method 2 : tight
-       \advance\dimen0 -\onepoint
+       \advance\scratchdimenone -\onepoint
      \fi
      \relax % really needed ! ! ! !
-     \ifdim\dimen0>\dimen2
+     \ifdim\scratchdimenone>\scratchdimentwo
        \global\setfalse\c_page_floats_room
      \else
        \global\settrue\c_page_floats_room

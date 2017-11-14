@@ -1,0 +1,606 @@
+%D \module
+%D   [       file=page-pcl,
+%D        version=2017.11.08,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Page Columns,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Page Columns}
+
+%D This is very experimental code! We took a bit from the mixed columns and single
+%D column page code. This one works acceptable with floats and is for whole double
+%D column documents. We don't balance (yet). Footnotes are per column. One can have
+%D side floats too. No balancing and other fancy features.
+%D
+%D Don't use this in production! Although the main approach will stay there might be
+%D changes in th ewya floats are dealt with. Not much testing has been done but as
+%D we stay close to the single column mode we expect most to just work. Only floats
+%D are the (usual) pain. Backgrounds, line numbering, etc.\ not tested either.
+
+\unprotect
+
+\def\s!pagecolumn{pagecolumn}
+
+\newcount\c_page_column_n_of_columns \c_page_column_n_of_columns\plusone
+\newcount\c_page_column_current      \c_page_column_current     \plusone
+\newdimen\d_page_column_distance
+\newdimen\d_page_column_max_height
+\newdimen\d_page_column_max_width
+%newdimen\d_page_column_balance_step
+\newdimen\d_page_column_column_width
+
+\newdimen\d_page_column_top_height
+\newdimen\d_page_column_top_width
+
+\newdimen\d_page_column_available
+\newdimen\d_page_column_sofar
+
+%D We need to step over empty columns.
+
+\unexpanded\def\page_column_command_next_page
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \page_otr_eject_page
+   \else
+     \page_otr_eject_page_column
+   \fi}
+
+\unexpanded\def\page_column_column
+  {\page_otr_eject_page}
+
+\unexpanded\def\page_otr_eject_page_column
+  {\begingroup
+   \scratchcountertwo\realpageno
+   \page_otr_eject_page
+%    \page_otr_flush_all_floats
+   \scratchcounterone\zerocount
+   \scratchcounterthree\zerocount
+   \doloop{%
+     \ifnum\scratchcounterthree>\plushundred
+       \exitloop
+     \else
+       \advance\scratchcounterthree\plusone
+       \ifnum\scratchcountertwo=\realpageno
+         \ifnum\c_page_column_current=\plusone
+           \exitloop
+         \else
+           \ifnum\scratchcounterone=\c_page_column_current
+              \dontleavehmode\null
+           \fi
+           \page_otr_eject_page
+%    \page_otr_flush_all_floats
+           \scratchcounterone\c_page_column_current
+         \fi
+       \else
+         \exitloop
+       \fi
+     \fi
+   }%
+   \endgroup}
+
+%D \unknown
+
+\unexpanded\def\page_column_command_next_page_and_inserts
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \page_otr_eject_page_and_flush_inserts
+   \else
+     \page_otr_eject_page_and_flush_inserts
+   \fi}
+
+%D \unknown
+
+\unexpanded\def\page_column_command_set_hsize
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \page_one_command_set_hsize
+   \else
+     \page_column_command_set_hsize_indeed
+   \fi}
+
+\unexpanded\def\page_column_command_set_hsize_indeed
+  {\global\hsize\d_page_column_column_width\relax
+   \global\d_page_column_available\dimexpr
+      \numexpr\c_page_column_n_of_columns-\c_page_column_current+\plusone\relax\d_page_column_column_width
+    + \numexpr\c_page_column_n_of_columns-\c_page_column_current         \relax\d_page_column_distance
+   \relax
+     \global\d_page_column_sofar
+   \ifnum\c_page_column_n_of_columns=\plusone
+     \zerocount
+   \else
+     \numexpr\c_page_column_n_of_columns-\plusone\relax
+     \dimexpr\d_page_column_column_width+\d_page_column_distance\relax
+   \fi}
+
+%D \unknown
+
+\unexpanded\def\page_column_command_set_vsize
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \page_one_command_set_vsize
+   \else
+     \page_column_command_set_vsize_indeed
+   \fi}
+
+\unexpanded\def\page_column_command_set_vsize_indeed % \page_one_command_set_vsize minus the pagegoal setting
+  {\ifgridsnapping
+     \ifcase\layoutlines
+       \getrawnoflines\textheight
+     \else
+       \noflines\layoutlines
+     \fi
+     \global\vsize\noflines\openlineheight
+   \else
+     \global\vsize\textheight
+   \fi}
+
+%D \unknown
+
+\unexpanded\def\page_column_command_package_contents % \box<n> \unvbox<n> % this one will be redone (checked)
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \expandafter\page_one_command_package_contents
+   \else
+     \expandafter\page_column_command_package_contents_all
+   \fi}
+
+\unexpanded\def\page_column_command_package_contents_one#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+  {\bgroup
+     \forgetall
+     % see one for comments as it is similar
+     \strc_notes_check_if_bottom_present
+     \d_page_one_natural_depth\dp#2\relax
+     \setbox\b_page_one_contents\vbox to \textheight
+       {\page_otr_command_flush_top_insertions
+        \page_one_registered_text_area_a#1#2%
+        \hsize\d_page_column_column_width
+        \ifgridsnapping
+          \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+          \prevdepth\openstrutdepth
+          \page_otr_command_flush_bottom_insertions
+          \vfil
+        \else\ifcase\bottomraggednessmode
+          % ragged (default)
+          \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+          \prevdepth\openstrutdepth
+          \page_otr_command_flush_bottom_insertions
+          \vfil
+        \or
+          % align (normal)
+          \page_otr_command_flush_bottom_insertions
+        \or
+          % baseline
+          \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+          \page_otr_command_flush_bottom_insertions
+        \fi\fi
+        \fakepagenotes}%
+     \page_one_command_package_show_state
+     \ifconditional\c_notes_bottom_present
+       \ifgridsnapping
+         \ifcase\layoutlines
+           \getrawnoflines\textheight
+         \else
+           \noflines\layoutlines
+         \fi
+         \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
+       \else
+         \scratchoffset\ht\b_page_one_contents
+       \fi
+       \setbox\b_page_one_bottom_notes\hpack
+         {\checksinglecolumnfootnotes % ?
+          \hsize\d_page_column_column_width
+          \setupnotes[\c!width=\textwidth]%
+          \lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}%
+      \ht\b_page_one_contents    \zeropoint
+      \wd\b_page_one_contents    \zeropoint
+      \ht\b_page_one_bottom_notes\zeropoint
+      \wd\b_page_one_bottom_notes\zeropoint
+      \wd\b_page_one_bottom_notes\d_page_column_column_width
+       \page_one_registered_text_area_b
+         {\vpack to \textheight
+            {\hbox{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
+     \else
+       \ht\b_page_one_contents\textheight
+       \wd\b_page_one_contents\d_page_column_column_width
+       \page_one_registered_text_area_b
+         {\box\b_page_one_contents}%
+     \fi
+   \egroup}
+
+\unexpanded\def\page_column_command_package_contents_all#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+  {\bgroup
+   \setbox\b_page_one_contents\vbox to \textheight
+     {\page_one_registered_text_area_a#1#2}%
+   \page_one_command_package_show_state
+   \ht\b_page_one_contents\textheight
+   \page_one_registered_text_area_b
+     {\box\b_page_one_contents}%
+   \egroup}
+
+%D \unknown
+
+\unexpanded\def\page_column_command_side_float_output
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \page_one_command_side_float_output
+   \else
+     \page_column_command_side_float_output_indeed
+   \fi}
+
+\unexpanded\def\page_column_command_side_float_output_indeed
+  {% % %
+   \ifvoid\namedinsertionnumber\s!topfloat\else
+     \scratchwidth\wd\namedinsertionnumber\s!topfloat
+     \ifdim\scratchwidth>\d_page_column_top_width
+       \global\d_page_column_top_width \scratchwidth
+     \fi
+     \global\d_page_column_top_height\ht\namedinsertionnumber\s!topfloat
+   \fi
+   % % %
+   \setbox\scratchbox\vbox\bgroup
+      \page_column_command_package_contents_one\unvbox\normalpagebox
+   \egroup
+   \putboxincache\s!pagecolumn{\number\c_page_column_current}\scratchbox
+   \ifnum\c_page_column_current=\c_page_column_n_of_columns
+     \page_column_routine_package
+     \page_otr_construct_and_shipout\box\normalpagebox\plusone
+     \global\c_page_column_current\plusone
+     \global\d_page_column_top_height\zeropoint
+     \global\d_page_column_top_width\zeropoint
+   \else
+     \ifdim\d_page_column_top_width>\zeropoint
+     % % %
+% \writestatus{!!!!!}{
+%     width : \the\d_page_column_top_width,
+%     sofar : \the\d_page_column_sofar}
+       \ifdim\dimexpr\d_page_column_top_width>\d_page_column_sofar\relax
+         \begingroup
+         \floatingpenalty\zerocount
+         \insert\namedinsertionnumber\s!topfloat\bgroup
+           \vbox to \d_page_column_top_height{\vss\the\c_page_column_current\vss}
+% \page_one_command_flush_top_insertions
+% \page_one_command_flush_floats
+           \egroup
+         \endgroup
+       \fi
+     \fi
+     % % %
+     \global\advance\c_page_column_current\plusone
+   \fi
+   %
+   \page_column_command_set_vsize
+   \page_column_command_set_hsize}
+
+% use \currentmixedcolumns instead of \recurselevel
+
+\def\page_column_routine_package_step
+  {% needs packaging anyway
+   \getboxfromcache{\s!pagecolumn}{\number\recurselevel}\scratchbox
+   \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_column_n_of_columns\plusone % new
+   \page_marks_synchronize_column\plusone\c_page_column_n_of_columns\recurselevel\scratchbox
+   % backgrounds
+   \anch_mark_column_box\scratchbox
+   \mixedcolumnseparatorheight\ht\scratchbox
+   \mixedcolumnseparatordepth \dp\scratchbox
+   \inheritedpagecolumnsframedbox\recurselevel\scratchbox}
+
+\def\page_column_routine_package
+  {\global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
+     \edef\p_separator{\pagecolumnsparameter\c!separator}%
+     \pagecolumnseparatorwidth\d_page_column_distance
+     \edef\p_direction{\pagecolumnsparameter\c!direction}%
+     \ifx\p_direction\v!reverse
+       \dostepwiserecurse\c_page_column_n_of_columns\plusone\minusone
+         {\page_column_routine_package_step
+          \ifnum\recurselevel>\plusone
+            \page_column_routine_package_separate
+          \fi}%
+     \else
+       \dorecurse\c_page_column_n_of_columns
+         {\page_column_routine_package_step
+          \ifnum\recurselevel<\c_page_column_n_of_columns
+            \page_column_routine_package_separate
+          \fi}%
+     \fi
+   \egroup
+   \resetboxesincache{\s!pagecolumn}}
+
+%D \unknown
+
+\unexpanded\def\page_column_command_check_if_float_fits
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \page_one_command_check_if_float_fits
+   \else
+     \page_column_command_check_if_float_fits_indeed
+   \fi}
+
+\unexpanded\def\page_column_command_check_if_float_fits_indeed
+  {\ifconditional\c_page_floats_not_permitted
+    %\writestatus{CHECK}{\the\wd\floatbox,\the\d_page_column_available,NOT PERMITTED}
+     \global\setfalse\c_page_floats_room
+   \else\ifdim\naturalfloatwidth>\d_page_column_column_width
+    %\writestatus{CHECK}{\the\wd\floatbox,\the\d_page_column_available,TOO WIDE}
+     \global\setfalse\c_page_floats_room
+   \else
+    %\writestatus{CHECK}{\the\wd\floatbox,\the\d_page_column_available,SEEMS TO FIT}
+    % same as one
+     \begingroup
+     \scratchdimen\dimexpr\pagetotal+\lineheight\relax
+     \ifdim\scratchdimen>\pagegoal
+       \goodbreak
+     \fi
+     \endgroup
+     \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
+     \scratchdimentwo\pagegoal
+     \relax % needed
+     \ifcase\c_page_one_float_method
+       % method 0 : raw
+     \or
+       % method 1 : safe
+       \advance\scratchdimentwo -\strutdp
+     \or
+       % method 2 : tight
+       \advance\scratchdimenone -\onepoint
+     \fi
+     \relax % really needed ! ! ! !
+     \ifdim\scratchdimenone>\scratchdimentwo
+       \global\setfalse\c_page_floats_room
+     \else
+       \global\settrue\c_page_floats_room
+     \fi
+   \fi\fi}
+
+%D The separator code is more or less the same as mixed columns but we need
+%D to compensate for the top floats so we comment a bit for now.
+
+\newdimen\pagecolumnseparatorheight
+\newdimen\pagecolumnseparatordepth
+\newdimen\pagecolumnseparatorwidth
+
+% \installcorenamespace{pagecolumnsseparator}
+%
+% \unexpanded\def\installpagecolumnseparator#1#2%
+%   {\setvalue{\??pagecolumnsseparator#1}{#2}}
+%
+% \installpagecolumnseparator\v!rule
+%   {\vrule
+%      \s!width \pagecolumnsparameter\c!rulethickness
+%      \s!height\pagecolumnseparatorheight
+%      \s!depth \pagecolumnseparatordepth
+%    \relax}
+%
+% \def\page_column_routine_package_separate
+%   {\ifcsname\??pagecolumnsseparator\p_separator\endcsname
+%      \page_column_command_inject_separator
+%    \else
+%      \hss
+%    \fi}
+%
+% \unexpanded\def\page_column_command_inject_separator
+%   {\begingroup
+%    \setbox\scratchbox\hbox to \zeropoint \bgroup
+%      \hss
+%      \starttextproperties
+%      \usepagecolumnscolorparameter\c!rulecolor
+%      \begincsname\??pagecolumnsseparator\p_separator\endcsname % was \c!rule
+%      \stoptextproperties
+%      \hss
+%    \egroup
+%    \ht\scratchbox\zeropoint
+%    \dp\scratchbox\zeropoint
+%    \hss
+%    \box\scratchbox
+%    \hss
+%    \endgroup}
+
+\def\page_column_routine_package_separate
+  {\hss}
+
+%D \unknown
+
+\unexpanded\def\page_column_command_routine % yet the same
+  {\ifnum\c_page_column_n_of_columns=\plusone
+     \page_sides_output_routine
+   \else
+     \page_sides_output_routine_column
+   \fi}
+
+\def\page_sides_output_routine_column
+  {\ifconditional\c_page_sides_short
+     \page_sides_output_routine_yes_column
+   \else
+     \page_sides_output_routine_nop_column
+   \fi}
+
+\let\page_sides_output_routine_nop_column\page_sides_output_routine_nop
+
+\def\page_sides_output_routine_yes_column % this might become the main one too
+  {\unvbox\normalpagebox % bah, and the discards?
+  %\page_column_column
+   \column % \page
+ %
+ % % do we really need the next code
+ %
+ % \setbox\b_page_sides_bottom\lastbox
+ % \ifdim\wd\b_page_sides_bottom>\d_page_sides_hsize
+ %   \penalty-201 % hm, i really need to write this from scatch
+ %   \box\b_page_sides_bottom
+ % \else\ifvoid\b_page_sides_bottom
+ % \else
+ %   \page_sides_restore_left_indent
+ %   \ifdim\wd\b_page_sides_bottom<\d_page_sides_hsize
+ %     \parskip\zeropoint
+ %     %\noindent
+ %     \ifinner\else
+ %       \vadjust{\penalty\minusone}%
+ %     \fi
+ %     \global\advance\d_page_sides_hsize -\wd\b_page_sides_bottom
+ %     \global\divide\d_page_sides_hsize \plustwo
+ %     \hskip\d_page_sides_hsize % \kern
+ %   \fi
+ %   \box\b_page_sides_bottom
+ %   \page_sides_restore_output_penalty
+ % \fi\fi
+   % why was this \global\holdinginserts\zerocount
+   \global\setfalse\c_page_sides_short}
+
+%D \unknown
+
+\defineoutputroutine
+  [\s!pagecolumn]
+  [\s!page_otr_command_routine                =\page_column_command_routine,
+   \s!page_otr_command_package_contents       =\page_column_command_package_contents,
+   \s!page_otr_command_set_vsize              =\page_column_command_set_vsize,
+   \s!page_otr_command_set_hsize              =\page_column_command_set_hsize,
+   \s!page_otr_command_next_page              =\page_column_command_next_page,
+   \s!page_otr_command_next_page_and_inserts  =\page_column_command_next_page_and_inserts,
+ % \s!page_otr_command_synchronize_hsize      =\page_one_command_synchronize_hsize,        % one
+   \s!page_otr_command_set_top_insertions     =\page_one_command_set_top_insertions,       % one
+   \s!page_otr_command_set_bottom_insertions  =\page_one_command_set_bottom_insertions,    % one
+   \s!page_otr_command_flush_top_insertions   =\page_one_command_flush_top_insertions,     % one
+   \s!page_otr_command_flush_bottom_insertions=\page_one_command_flush_bottom_insertions,  % one
+ % \s!page_otr_command_set_float_hsize        =\page_one_command_set_float_hsize,          % one
+   \s!page_otr_command_check_if_float_fits    =\page_column_command_check_if_float_fits,
+   \s!page_otr_command_flush_float_box        =\page_one_command_flush_float_box,          % one
+   \s!page_otr_command_synchronize_side_floats=\page_one_command_synchronize_side_floats,  % one
+   \s!page_otr_command_side_float_output      =\page_column_command_side_float_output,
+   \s!page_otr_command_flush_floats           =\page_one_command_flush_floats,             % one
+   \s!page_otr_command_flush_side_floats      =\page_one_command_flush_side_floats,        % one
+   \s!page_otr_command_flush_saved_floats     =\page_one_command_flush_saved_floats,       % one
+   \s!page_otr_command_flush_margin_blocks    =\page_one_command_flush_margin_blocks,      % one
+   \s!page_otr_command_test_column            =\page_one_command_test_page                 % one
+  ]
+
+%D \unknown
+
+\installfloatmethod \s!pagecolumn \v!here        \page_one_place_float_here
+\installfloatmethod \s!pagecolumn \v!force       \page_one_place_float_force
+\installfloatmethod \s!pagecolumn \v!left        \page_one_place_float_left
+\installfloatmethod \s!pagecolumn \v!right       \page_one_place_float_right
+\installfloatmethod \s!pagecolumn \v!text        \page_one_place_float_text
+\installfloatmethod \s!pagecolumn \v!top         \page_one_place_float_top
+\installfloatmethod \s!pagecolumn \v!bottom      \page_one_place_float_bottom
+\installfloatmethod \s!pagecolumn \v!auto        \page_one_place_float_auto
+\installfloatmethod \s!pagecolumn \v!margin      \page_one_place_float_margin
+\installfloatmethod \s!pagecolumn \v!opposite    \page_one_place_float_face
+\installfloatmethod \s!pagecolumn \v!page        \page_one_place_float_page
+\installfloatmethod \s!pagecolumn \v!leftpage    \page_one_place_float_leftpage
+\installfloatmethod \s!pagecolumn \v!rightpage   \page_one_place_float_rightpage
+\installfloatmethod \s!pagecolumn \v!inmargin    \page_one_place_float_inmargin
+\installfloatmethod \s!pagecolumn \v!inleft      \page_one_place_float_leftmargin
+\installfloatmethod \s!pagecolumn \v!inright     \page_one_place_float_rightmargin
+\installfloatmethod \s!pagecolumn \v!leftmargin  \page_one_place_float_leftmargin
+\installfloatmethod \s!pagecolumn \v!rightmargin \page_one_place_float_rightmargin
+\installfloatmethod \s!pagecolumn \v!leftedge    \page_one_place_float_leftedge
+\installfloatmethod \s!pagecolumn \v!rightedge   \page_one_place_float_rightedge
+\installfloatmethod \s!pagecolumn \v!somewhere   \page_one_place_float_somewhere
+\installfloatmethod \s!pagecolumn \v!backspace   \page_one_place_float_backspace
+\installfloatmethod \s!pagecolumn \v!cutspace    \page_one_place_float_cutspace
+%installfloatmethod \s!pagecolumn \s!tblr        \page_one_place_float_top
+%installfloatmethod \s!pagecolumn \s!lrtb        \page_one_place_float_top
+%installfloatmethod \s!pagecolumn \s!tbrl        \page_one_place_float_top
+%installfloatmethod \s!pagecolumn \s!fxtb        \page_one_place_float_top
+%installfloatmethod \s!pagecolumn \s!rltb        \page_one_place_float_top
+%installfloatmethod \s!pagecolumn \s!btlr        \page_one_place_float_bottom
+%installfloatmethod \s!pagecolumn \s!lrbt        \page_one_place_float_bottom
+%installfloatmethod \s!pagecolumn \s!btrl        \page_one_place_float_bottom
+%installfloatmethod \s!pagecolumn \s!rlbt        \page_one_place_float_bottom
+%installfloatmethod \s!pagecolumn \s!fxbt        \page_one_place_float_bottom
+%installfloatmethod \s!pagecolumn \s!fixd        \page_one_place_float_force
+
+\installfloatmethod \s!pagecolumn \v!local       \somelocalfloat
+
+%D The main interface:
+
+\setupoutputroutine
+  [\s!pagecolumn]
+
+\installcorenamespace{pagecolumns}
+
+\installframedcommandhandler \??pagecolumns {pagecolumns} \??pagecolumns
+
+\setuppagecolumns
+  [\c!distance=1.5\bodyfontsize,
+   \c!n=\plustwo,
+  %\c!align=, % inherit (also replaces tolerance)
+  %\c!before=,
+  %\c!after=,
+  %\c!separator=\v!none,
+  %\c!setups=,
+  %\c!balance=\v!no,
+  %\c!blank={\v!line,\v!fixed}, yes or no
+   \c!frame=\v!off,
+   \c!strut=\v!no,
+   \c!offset=\v!overlay,
+  %\c!maxheight=\textheight,
+   \c!maxwidth=\makeupwidth,
+  %\c!grid=\v!tolerant,
+  %\c!internalgrid=\v!line,
+   \c!direction=\v!normal]
+
+\let\startpagecolumns\relax % defined later
+\let\stop % automatic as suggested by WScolumns \relax % defined later
+
+\appendtoks % could become an option
+    \setuevalue{\e!start\currentpagecolumns}{\startpagecolumns[\currentpagecolumns]}%
+    \setuevalue{\e!stop \currentpagecolumns}{\stoppagecolumns}%
+\to \everydefinepagecolumns
+
+\ifdefined \columnwidth    \else \newdimen\columnwidth    \fi
+\ifdefined \columndistance \else \newdimen\columndistance \fi
+
+\unexpanded\def\startpagecolumns
+  {\page
+   \begingroup
+   \dosingleempty\page_column_start}
+
+\unexpanded\def\page_column_start[#1]%
+  {\doifelseassignment{#1}%
+     {\let\currentpagecolumns\empty
+      \setuppagecolumns[#1]}%
+     {\edef\currentpagecolumns{#1}}%
+   %
+ % \page_column_enable_grid_snapping
+   %
+   \d_page_column_distance     \pagecolumnsparameter\c!distance\relax
+   \c_page_column_n_of_columns \pagecolumnsparameter\c!n\relax
+ % \d_page_column_max_height   \pagecolumnsparameter\c!maxheight
+   \d_page_column_max_width    \pagecolumnsparameter\c!maxwidth
+ % \d_page_column_balance_step \pagecolumnsparameter\c!step
+   \c_page_column_current  \plusone
+   %
+   \d_page_column_column_width\dimexpr(\d_page_column_max_width-\d_page_column_distance*\numexpr(\c_page_column_n_of_columns-\plusone)\relax)/\c_page_column_n_of_columns\relax
+   %
+   \columnwidth    \d_page_column_column_width
+   \columndistance \d_page_column_distance
+   %
+   \nopenalties
+   %
+   % \insidecolumnstrue % NO!
+   %
+   \let\column\page_column_column
+   %
+   \def\page_floats_get_used_hsize{\makeupwidth} % a bit of a hack
+   %
+   \usealignparameter  \pagecolumnsparameter
+   \useblankparameter  \pagecolumnsparameter
+ % \useprofileparameter\pagecolumnsparameter
+   %
+   \usemixedcolumnscolorparameter\c!color
+   %
+   \setupnotes[\c!width=\textwidth]%
+   %
+   \usesetupsparameter\pagecolumnsparameter
+   %
+   \setupoutputroutine[\s!pagecolumn]%
+   %
+   \page_column_command_set_vsize
+   \page_column_command_set_hsize
+   %
+   \nofcolumns\c_page_mix_n_of_columns} % public
+
+\unexpanded\def\stoppagecolumns
+  {\page
+   \endgroup}
+
+\protect \endinput

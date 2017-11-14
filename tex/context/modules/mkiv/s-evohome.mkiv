@@ -1,0 +1,290 @@
+%D \module
+%D   [      file=s-evohome,
+%D        version=2017.11.12,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Evohome Graphics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% in cronjob on one of the servers:
+%
+% mtxrun --script youless --collect --host=192.168.2.50 --watt youless-watt.lua
+% mtxrun --script youless --collect --host=192.168.2.50 --kwk  youless-kwh.lua
+
+\setupbodyfont[dejavu]
+
+\starttext
+
+\startluacode
+
+require("util-evo")
+
+moduledata.evohome = { }
+
+function moduledata.evohome.status(specification)
+
+    local presets = utilities.evohome.loadpresets(specification.presets)
+    local zones   = utilities.evohome.loadtemperatures(presets)
+
+    -- todo : time
+
+    if not zones then
+        context("no zones")
+        context.blank()
+        return
+    end
+
+    local t = zones.time
+
+    t = t and os.date("%Y-%m-%d %H:%M:%S",t) or "unknown time"
+
+    context.starttitle { title = t }
+
+    context.starttabulate { "|l|c|c|c|c|" }
+        context.BC() context("name")
+        context.BC() context("current")
+        context.BC() context("min")
+        context.BC() context("max")
+        context.BC() context("target")
+        context.NC() context.NR()
+        for i=1,#zones do
+            local zone = zones[i]
+            context.NC() context.word(zone.name)
+            context.NC() context("%0.1f",zone.current)
+            context.NC() context("%0.1f",zone.min)
+            context.NC() context("%0.1f",zone.max)
+            context.NC() context("%0.1f",zone.target)
+            context.NC() context.NR()
+        end
+    context.stoptabulate()
+
+    for i=1,#zones do
+        local zone     = zones[i]
+        local data     = utilities.evohome.getroomstate(presets,zone.name)
+        local schedule = data.schedule or { }
+        context.startsubject { title = zone.name }
+        context.starttabulate { "|l|c|c|" }
+        context.BC() context("day")
+        context.BC() context("time")
+        context.BC() context("temperature")
+        context.NR()
+        local daily = schedule.dailySchedules
+        if daily then
+            for i=1,#daily do
+                local d = daily[i]
+                local s = d.switchpoints
+                if s then
+                    for i=1,#s do
+                        context.NC()
+                        if i == 1 then
+                            context.word(d.dayOfWeek)
+                        end
+                        context.NC() context(s[i].timeOfDay)
+                        context.NC() context(s[i].temperature)
+                        context.NC() context.NR()
+                    end
+                end
+            end
+        end
+        context.stoptabulate()
+        context.stopsubject()
+    end
+
+    context.stoptitle()
+
+end
+
+function moduledata.evohome.history(specification)
+
+    local presets = utilities.evohome.loadpresets(specification.presets)
+    local zones   = utilities.evohome.loadtemperatures(presets)
+
+    if not zones then
+        context("no zones")
+        context.blank()
+        return
+    end
+
+    local data = utilities.evohome.loadhistory(presets)
+
+    if not zones then
+        context("no history")
+        return
+    end
+
+    local years = data.years
+
+    if not years then
+        context("no years")
+        return
+    end
+
+    local minyear  = specification.year or 2017
+    local maxyear  = minyear
+    local minmonth = specification.month or 1
+    local maxmonth = specification.month or 12
+
+    local scale   = 1/8 -- 20
+    local mark    = 3
+    local abstemp = 25
+
+    for y=minyear,maxyear do
+
+        local year = years[y]
+
+        for m=minmonth,maxmonth do
+
+            local month = year.months[m]
+
+            if month then
+
+                context.starttitle { title = "\\month{" .. m .. "}\\enspace" .. y } -- todo: function context.Month(m) end
+
+                for i=1,#zones do
+
+                    local zone    = zones[i]
+                    local where   = zone.name
+                    local mintemp = zone.min
+                    local maxtemp = zone.max
+
+                 -- context.startMPpage { offset = "10pt" }
+                    context.startlinecorrection()
+                    context.startMPcode()
+                    context("linecap := butt; pickup pencircle scaled .5")
+
+                    context("fill (%s,%s) -- (%s,%s) -- (%s,%s) -- (%s,%s) -- cycle withcolor .8white ;",
+                              0, mintemp/scale,
+                        31 * 24, mintemp/scale,
+                        31 * 24, maxtemp/scale,
+                              0, maxtemp/scale
+                    )
+
+                    for i=0,abstemp do
+                        context("draw (%s,%s) -- (%s,%s) withcolor .6white ;",
+                                  0, i/scale,
+                            31 * 24, i/scale
+                        )
+                    end
+
+                    local days = month.days
+                    if days then
+                        local nd = os.nofdays(y,m)
+                        for d=1,nd do
+                            local day = days[d]
+                            local xoffset = (d-1) * 24
+                            local wd = os.weekday(d,m,y)
+                            local weekend = wd == 1 or wd == 7
+                            if not weekend then
+                                -- okay
+                            elseif mark == 1 then
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset,   -32.5)
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset+24,-17.5,xoffset+24,-32.5)
+                            elseif mark == 2 then
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset+24,-17.5)
+                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -32.5,xoffset+24,-32.5)
+                            elseif mark == 3 then
+                                context("draw unitsquare xysized (%s,%s) shifted (%s,%s) ; ",24,15,xoffset,-32.5)
+                            end
+                            context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-25)
+                            if day then
+                                for h=0,23 do
+                                    local hours = day.hours
+                                    if hours then
+                                        local hour = hours[h]
+                                        if hour then
+                                            local a = 0
+                                            local n = 0
+                                            local m = 0
+                                            for minute, d in next, hour do
+                                                local v = d[where]
+                                                a = a + v
+                                                n = n + 1
+                                                if v > m then
+                                                    m = v
+                                                end
+                                            end
+                                            a = a / n
+                                            local dx = xoffset + h
+                                            local dy = a/scale
+                                            local dm = m/scale
+                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",
+                                                dx, 0,dx,dy,weekend and "darkmagenta" or "darkblue")
+                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",
+                                                dx,dy,dx,dm,"darkred")
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        for d=0,30 do
+                            local xoffset = d * 24
+                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 0,0,xoffset+ 0,-10)
+                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 6,0,xoffset+ 6,-2.5)
+                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+12,0,xoffset+12,-5)
+                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+18,0,xoffset+18,-2.5)
+                        end
+                        local xoffset = 31 * 24
+                        context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset,0,xoffset,-10)
+                    end
+
+                    for i=0,abstemp,5 do
+                        context([[draw textext.lft("%s") shifted (%s,%s) ; ]],i,-10,i/scale)
+                        context("draw (%s,%s) -- (%s,%s) withcolor .2white  ;",0,i/scale,31 * 24,i/scale)
+                    end
+
+                    context([[draw textext("\strut\month{%s}\enspace%s\enspace:\enspace%s") shifted (%s,%s) ; ]], m, y, where, 31 * 24 / 2, -50)
+                    context([[draw textext.lft("\textdegree{}C") shifted (%s,%s) ; ]],-10,-25)
+
+                    context("currentpicture := currentpicture xsized TextWidth") ;
+
+                    context.stopMPcode()
+                    context.stoplinecorrection()
+                    -- context.stopMPpage()
+                end
+
+                context.stoptitle()
+
+            end
+
+        end
+
+    end
+
+end
+
+\stopluacode
+
+\continueifinputfile{s-evohome.mkiv}
+
+\usemodule[art-01]
+
+\setuplayout
+  [article]
+  [footer=0cm,
+   header=1cm,
+   topspace=5mm,
+   bottomspace=5mm]
+
+\starttext
+
+    \startluacode
+
+     -- os.execute([[mtxrun --script evohome --collect --presets=c:/data/develop/domotica/code/evohome-presets.lua]])
+
+        local specification = {
+            year    = 2017,
+         -- month   = 11,
+            presets = "c:/data/develop/domotica/code/evohome-presets.lua",
+        }
+
+        moduledata.evohome.status (specification)
+        moduledata.evohome.history(specification)
+
+    \stopluacode
+
+\stoptext

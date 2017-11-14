@@ -10,23 +10,22 @@ local global, string, table, lpeg = _G, string, table, lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local type = type
 
--- local lexer            = require("lexer")
-local lexer          = require("scite-context-lexer")
-local context          = lexer.context
-local patterns         = context.patterns
+local lexer       = require("scite-context-lexer")
+local context     = lexer.context
+local patterns    = context.patterns
 
-local token            = lexer.token
-local exact_match      = lexer.exact_match
+local token       = lexer.token
+local exact_match = lexer.exact_match
 
-local bibtexlexer      = lexer.new("bib","scite-context-lexer-bibtex")
-local whitespace       = bibtexlexer.whitespace
+local bibtexlexer = lexer.new("bib","scite-context-lexer-bibtex")
+local whitespace  = bibtexlexer.whitespace
 
-    local escape, left, right = P("\\"), P('{'), P('}')
+local escape, left, right = P("\\"), P('{'), P('}')
 
-    patterns.balanced = P {
-        [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
-        [2] = left * V(1) * right
-    }
+patterns.balanced = P {
+    [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
+    [2] = left * V(1) * right
+}
 
 -- taken from bibl-bib.lua
 

@@ -1,0 +1,33 @@
+.TH "mtx-evohome" "1" "01-01-2017" "version 1.00" "Evohome Fetcher"
+.SH NAME
+.B mtx-evohome
+.SH SYNOPSIS
+.B mtxrun --script evohome [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B Evohome Fetcher
+.SH OPTIONS
+.TP
+.B --collect
+collect data from device
+.TP
+.B --presets
+file with authenciation data
+.TP
+.B --auto
+fetch temperature data every hour
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

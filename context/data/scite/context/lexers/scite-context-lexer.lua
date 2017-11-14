@@ -292,7 +292,7 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 local lpeg  = require("lpeg")
 
 local global = _G
-local find, gmatch, match, lower, upper, gsub, sub, format = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub, string.sub, string.format
+local find, gmatch, match, lower, upper, gsub, sub, format, byte = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub, string.sub, string.format, string.byte
 local concat, sort = table.concat, table.sort
 local type, next, setmetatable, rawset, tonumber, tostring = type, next, setmetatable, rawset, tonumber, tostring
 local R, P, S, V, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg, Carg = lpeg.R, lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Carg
@@ -1454,25 +1454,30 @@ local function add_lexer(grammar, lexer) -- mostly the same as the original
 end
 
 local function build_grammar(lexer,initial_rule) -- same as the original
-    local children = lexer._CHILDREN
+    local children   = lexer._CHILDREN
     local lexer_name = lexer._NAME
+    local preamble   = lexer._preamble
     if children then
         if not initial_rule then
             initial_rule = lexer_name
         end
-        local grammar = { initial_rule }
+        grammar = { initial_rule }
         add_lexer(grammar, lexer)
         lexer._INITIALRULE = initial_rule
-        lexer._GRAMMAR = Ct(P(grammar))
+        grammar = Ct(P(grammar))
         if trace then
             report("building grammar for '%s' with whitespace '%s'and %s children",lexer_name,lexer.whitespace or "?",#children)
         end
     else
-        lexer._GRAMMAR = Ct(join_tokens(lexer)^0)
+        grammar = Ct(join_tokens(lexer)^0)
         if trace then
             report("building grammar for '%s' with whitespace '%s'",lexer_name,lexer.whitespace or "?")
         end
     end
+    if preamble then
+        grammar = preamble^-1 * grammar
+    end
+    lexer._GRAMMAR = grammar
 end
 
 -- So far. We need these local functions in the next one.
@@ -1855,9 +1860,11 @@ function context.loadlexer(filename,namespace)
                 add_style(lexer, token, style)
             end
         end
-        for i=1,#_r do
-            local rule = _r[i]
-            add_rule(lexer, rule[1], rule[2])
+        if _r then
+            for i=1,#_r do
+                local rule = _r[i]
+                add_rule(lexer, rule[1], rule[2])
+            end
         end
         build_grammar(lexer)
     end
@@ -2084,10 +2091,20 @@ do
  --     return make(tree)
  -- end
 
-    helpers.utfcharpattern = P(1) * R("\128\191")^0 -- unchecked but fast
+    local utf8next         = R("\128\191")
+    local utf8one          = R("\000\127")
+    local utf8two          = R("\194\223") * utf8next
+    local utf8three        = R("\224\239") * utf8next * utf8next
+    local utf8four         = R("\240\244") * utf8next * utf8next * utf8next
 
-    local p_false = P(false)
-    local p_true  = P(true)
+    helpers.utfcharpattern = P(1) * utf8next^0 -- unchecked but fast
+    helpers.utfbytepattern = utf8one   / byte
+                           + utf8two   / function(s) local c1, c2         = byte(s,1,2) return   c1 * 64 + c2                       -    12416 end
+                           + utf8three / function(s) local c1, c2, c3     = byte(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
+                           + utf8four  / function(s) local c1, c2, c3, c4 = byte(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
+
+    local p_false          = P(false)
+    local p_true           = P(true)
 
     local function make(t)
         local function making(t)

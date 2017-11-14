@@ -1375,15 +1375,21 @@
 
 \newif\ifgridsnapping % to be sure
 
-\def\defaultwidowpenalty         {2000} % was: 1000
-\def\defaultclubpenalty          {2000} % was:  800
-\def\defaultdisplaywidowpenalty    {50}
-\def\defaultbrokenpenalty         {100}
+\def\defaultdisplaywidowpenalty        {50}
+\def\defaultwidowpenalty             {2000} % was: 1000
+\def\defaultclubpenalty              {2000} % was:  800
+\def\defaultbrokenpenalty             {100}
+\def\defaultdoublehyphendemerits    {10000}
+\def\defaultfinalhyphendemerits      {5000}
+\def\defaultadjdemerits             {10000}
 
-\def\defaultgridwidowpenalty        {0}
-\def\defaultgridclubpenalty         {0}
-\def\defaultgriddisplaywidowpenalty {0}
-\def\defaultgridbrokenpenalty       {0}
+\def\defaultgriddisplaywidowpenalty     {0}
+\def\defaultgridwidowpenalty            {0}
+\def\defaultgridclubpenalty             {0}
+\def\defaultgridbrokenpenalty           {0}
+\def\defaultgriddoublehyphendemerits{10000} % always was so
+\def\defaultgridfinalhyphendemerits  {5000} % always was so
+\def\defaultgridadjdemerits         {10000} % always was so
 
 \unexpanded\def\nopenalties
   {\widowpenalty        \zerocount
@@ -1408,10 +1414,13 @@
 
     \directsetup{\systemsetupsprefix\s!reset}
 
-    \widowpenalty       \defaultwidowpenalty
-    \clubpenalty        \defaultclubpenalty
-    \displaywidowpenalty\defaultdisplaywidowpenalty
-    \brokenpenalty      \defaultbrokenpenalty
+    \widowpenalty        \defaultwidowpenalty
+    \clubpenalty         \defaultclubpenalty
+    \displaywidowpenalty \defaultdisplaywidowpenalty
+    \brokenpenalty       \defaultbrokenpenalty
+    \doublehyphendemerits\defaultdoublehyphendemerits
+    \finalhyphendemerits \defaultfinalhyphendemerits
+    \adjdemerits         \defaultadjdemerits
 
 \stopsetups
 
@@ -1419,10 +1428,13 @@
 
     \directsetup{\systemsetupsprefix\s!reset}
 
-    \widowpenalty       \defaultgridwidowpenalty
-    \clubpenalty        \defaultgridclubpenalty
-    \displaywidowpenalty\defaultgriddisplaywidowpenalty
-    \brokenpenalty      \defaultgridbrokenpenalty
+    \widowpenalty        \defaultgridwidowpenalty
+    \clubpenalty         \defaultgridclubpenalty
+    \displaywidowpenalty \defaultgriddisplaywidowpenalty
+    \brokenpenalty       \defaultgridbrokenpenalty
+    \doublehyphendemerits\defaultgriddoublehyphendemerits
+    \finalhyphendemerits \defaultgridfinalhyphendemerits
+    \adjdemerits         \defaultgridadjdemerits
 
 \stopsetups
 
@@ -1432,9 +1444,12 @@
 
     \directsetup{\systemsetupsprefix\s!reset}
 
-    \setpenalties\widowpenalties\plustwo\maxdimen
-    \setpenalties\clubpenalties \plustwo\maxdimen
-                 \brokenpenalty         \maxdimen
+    \setpenalties \widowpenalties      \plustwo \maxdimen
+    \setpenalties \clubpenalties       \plustwo \maxdimen
+                  \brokenpenalty                \maxdimen
+                  \doublehyphendemerits         \defaultdoublehyphendemerits
+                  \finalhyphendemerits          \defaultfinalhyphendemerits
+                  \adjdemerits                  \defaultadjdemerits
 
 \stopsetups
 

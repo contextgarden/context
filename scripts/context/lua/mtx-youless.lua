@@ -61,13 +61,16 @@ local report = application.report
 scripts         = scripts         or { }
 scripts.youless = scripts.youless or { }
 
+local arguments = environment.arguments
+local files     = environment.files
+
 function scripts.youless.collect()
-    local host     = environment.arguments.host
-    local nobackup = environment.arguments.nobackup
-    local nofile   = environment.arguments.nofile
-    local password = environment.arguments.password
-    local filename = environment.files[1]
-    local delay    = tonumber(environment.delay) or 12*60*60
+    local host     = arguments.host
+    local nobackup = arguments.nobackup
+    local nofile   = arguments.nofile
+    local password = arguments.password
+    local filename = files[1]
+    local delay    = tonumber(arguments.delay) or 12*60*60
 
     local function fetch(filename,variant)
         local data = utilities.youless.collect {
@@ -99,7 +102,7 @@ function scripts.youless.collect()
         report("not backing up data file")
     end
 
-    if environment.arguments.auto then
+    if arguments.auto then
         local filename_kwh  = formatters["%s-kwh.lua" ](filename ~= "" and filename or "youless")
         local filename_watt = formatters["%s-watt.lua"](filename ~= "" and filename or "youless")
         while true do

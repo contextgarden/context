@@ -6,13 +6,12 @@ local info = {
     license   = "see context related readme files",
 }
 
--- local lexer           = require("lexer")
-local lexer          = require("scite-context-lexer")
-local context         = lexer.context
-local patterns        = context.patterns
+local lexer       = require("scite-context-lexer")
+local context     = lexer.context
+local patterns    = context.patterns
 
-local cppweblexer     = lexer.new("cpp-web","scite-context-lexer-cpp")
-local cpplexer        = lexer.load("scite-context-lexer-cpp")
+local cppweblexer = lexer.new("cpp-web","scite-context-lexer-cpp")
+local cpplexer    = lexer.load("scite-context-lexer-cpp")
 
 -- can probably be done nicer now, a bit of a hack
 

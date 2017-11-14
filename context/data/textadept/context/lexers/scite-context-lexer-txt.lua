@@ -9,8 +9,7 @@ local info = {
 local P, S, Cmt, Cp = lpeg.P, lpeg.S, lpeg.Cmt, lpeg.Cp
 local find, match = string.find, string.match
 
--- local lexer        = require("lexer")
-local lexer          = require("scite-context-lexer")
+local lexer        = require("scite-context-lexer")
 local context      = lexer.context
 local patterns     = context.patterns
 

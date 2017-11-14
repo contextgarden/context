@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-evohome</entry>
+  <entry name="detail">Evohome Fetcher</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="collect"><short>collect data from device</short></flag>
+    <flag name="presets"><short>file with authenciation data</short></flag>
+    <flag name="auto"><short>fetch temperature data every hour</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script evohome --collect --presets=c:/data/develop/domotica/code/evohome-presets.lua</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

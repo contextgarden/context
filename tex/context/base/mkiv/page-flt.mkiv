@@ -22,14 +22,18 @@
 
 \ifdefined\s!topfloat    \else \def\s!topfloat   {topfloat}    \fi
 \ifdefined\s!bottomfloat \else \def\s!bottomfloat{bottomfloat} \fi
+\ifdefined\s!pagefloat   \else \def\s!pagefloat  {pagefloat}   \fi
 
 \defineinsertion[\s!topfloat]
 \defineinsertion[\s!bottomfloat]
+\defineinsertion[\s!pagefloat]
 
 \newdimen   \d_page_floats_inserted_bottom
 \newdimen   \d_page_floats_inserted_top
+\newdimen   \d_page_floats_inserted_page
 \newcount   \c_page_floats_n_of_top         \c_page_floats_n_of_top   \plustwo
 \newcount   \c_page_floats_n_of_bottom      \c_page_floats_n_of_bottom\zerocount
+\newcount   \c_page_floats_n_of_page        \c_page_floats_n_of_page  \plustwo
 
 \newconstant\c_page_floats_insertions_topskip_mode  % 1 = no topskip
 
@@ -189,12 +193,14 @@
 %D
 %D First we reimplement some helpers.
 
+\def\page_floats_get_used_hsize{\hsize}
+
 \unexpanded\def\page_floats_get
   {\ifconditional\c_page_floats_some_waiting
      \page_floats_flush\s!text\plusone
      \ifconditional\c_page_floats_center_box
-       \ifdim\wd\globalscratchbox<\hsize
-         \global\setbox\floatbox\hpack to \hsize{\hss\box\floatbox\hss}%
+       \ifdim\wd\globalscratchbox<\page_floats_get_used_hsize
+         \global\setbox\floatbox\hpack to \page_floats_get_used_hsize{\hss\box\floatbox\hss}%
        \else
          % retain special alignments
          \ifinsidecolumns
