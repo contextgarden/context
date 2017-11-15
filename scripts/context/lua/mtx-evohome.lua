@@ -56,8 +56,7 @@ local files     = environment.files
 
 function scripts.evohome.collect()
     local presets = arguments.presets
-    local delay   = tonumber(arguments.delay) or 12*60*60
-
+    local delay   = tonumber(arguments.delay) or 15*60*60
     if presets then
         presets = utilities.evohome.loadpresets(presets)
     end
@@ -81,8 +80,23 @@ function scripts.evohome.collect()
     end
 end
 
+
+function scripts.evohome.update()
+    local presets = arguments.presets
+    if presets then
+        presets = utilities.evohome.loadpresets(presets)
+    end
+    if presets then
+        utilities.evohome.geteverything(presets)
+    else
+        report("invalid preset file")
+    end
+end
+
 if environment.argument("collect") then
     scripts.evohome.collect()
+elseif environment.argument("update") then
+    scripts.evohome.update()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

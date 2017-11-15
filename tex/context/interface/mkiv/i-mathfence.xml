@@ -48,6 +48,9 @@
                     <cd:constant type="auto"/>
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="mathclass">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

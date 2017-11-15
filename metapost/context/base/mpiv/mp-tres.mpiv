@@ -80,6 +80,22 @@ let Xpart = redpart ;
 let Ypart = greenpart ;
 let Zpart = bluepart ;
 
+primarydef p Xscaled q =
+  (q*Xpart p, Ypart p, Zpart p)
+enddef ;
+
+primarydef p Yscaled q =
+  (Xpart p, q*Ypart p, Zpart p)
+enddef ;
+
+primarydef p Zscaled q =
+  (Xpart p, Ypart p, q*Zpart p)
+enddef ;
+
+primarydef p XYZscaled q =
+  (q*Xpart p,q*Ypart p,q*Zpart p)
+enddef ;
+
 vardef projection expr t =
     if triplet t :
         (Xpart t, Ypart t) transformed Txy shifted (0,Zpart t)
@@ -117,7 +133,7 @@ primarydef p rotatedaboutX q =
         mfun_three_yz := (Ypart p, Zpart p) ;
         mfun_three_yz := mfun_three_yz rotated q ;
     )
-    (Xpart p, xpart yz, ypart yz)
+    (Xpart p, xpart mfun_three_yz, ypart mfun_three_yz)
 enddef ;
 
 primarydef p rotatedaboutY q =
@@ -125,7 +141,7 @@ primarydef p rotatedaboutY q =
         mfun_three_zx := (Zpart p, Xpart p) ;
         mfun_three_zx := mfun_three_zx rotated q ;
     )
-    (ypart zx, Ypart p, xpart zx)
+    (ypart mfun_three_zx, Ypart p, xpart mfun_three_zx)
 enddef ;
 
 primarydef p rotatedaboutZ q =
@@ -133,7 +149,7 @@ primarydef p rotatedaboutZ q =
         mfun_three_xy := (Xpart p, Ypart p) ;
         mfun_three_xy := mfun_three_xy rotated q ;
     )
-    (xpart xy, ypart xy, Zpart p)
+    (xpart mfun_three_xy, ypart mfun_three_xy, Zpart p)
 enddef ;
 
 %D We can use a rotation about an arbitrary direction t ... (easy)

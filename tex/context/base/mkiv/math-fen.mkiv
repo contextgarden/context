@@ -45,6 +45,7 @@
    \c!mathstyle=,
    \c!color=,
    \c!command=,
+   \c!mathclass=,
    \c!factor=\v!auto]
 
 \appendtoks
@@ -62,17 +63,40 @@
   {\ifx#1\empty
      #2.%
    \else
+     \edef\p_mathclass{\mathfenceparameter\c!mathclass}%
      \edef\p_factor{\mathfenceparameter\c!factor}%
      \ifx\p_factor\empty
-       #2%
+       \ifx\p_mathclass\empty
+         #2%
+       \else
+         #3%
+         \s!class\p_mathclass
+       \fi
      \else\ifx\p_factor\v!auto
-       #2%
+       \ifx\p_mathclass\empty
+         #2%
+       \else
+         #3%
+         \s!class\p_mathclass
+       \fi
      \else\ifx\p_factor\v!none
-       #3\s!height\zeropoint\s!depth\zeropoint\s!axis
-       #2%
+       #3%
+       \s!height\zeropoint
+       \s!depth\zeropoint
+       \ifx\p_mathclass\empty\else
+         \s!class\p_mathclass
+       \fi
+       \s!axis
+     % #2%
      \else
        \scratchdimen\dimexpr\p_factor\bodyfontsize/2\relax
-       #3\s!height\scratchdimen\s!depth\scratchdimen\s!axis
+       #3%
+       \s!height\scratchdimen
+       \s!depth\scratchdimen
+       \ifx\p_mathclass\empty\else
+         \s!class\p_mathclass
+       \fi
+       \s!axis
      \fi\fi\fi
      \Udelimiter#4\fam#1\relax
    \fi}
@@ -95,7 +119,7 @@
 
 \def\math_fenced_middle
   {\edef\p_middle
-     {\mathfenceparameter\c!middle}%
+    {\mathfenceparameter\c!middle}%
    \mskip\thinmuskip
    \math_fenced_color_push
  % \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi

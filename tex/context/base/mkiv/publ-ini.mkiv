@@ -1364,6 +1364,11 @@
       \let\currentbtxcitetag\p_reference
       \edef\currentbtxciteuservariables{#2}%
    \fi
+   \edef\p_specification{\dummyparameter\c!specification}%
+   \ifx\p_specification\empty
+   \else
+     \let\currentbtxspecification\p_specification
+   \fi
    \edef\p_alternative{\dummyparameter\c!alternative}%
    \ifx\p_alternative\empty
      \setbtxparametersetroot\s!cite

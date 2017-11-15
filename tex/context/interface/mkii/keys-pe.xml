@@ -802,6 +802,7 @@
 		<cd:constant name='fieldoffset' value='آفست‌میدان'/>
 		<cd:constant name='file' value='پرونده'/>
 		<cd:constant name='filler' value='filler'/>
+		<cd:constant name='filter' value='filter'/>
 		<cd:constant name='filtercommand' value='filtercommand'/>
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>
@@ -1156,6 +1157,7 @@
 		<cd:constant name='sidemethod' value='روش‌کنار'/>
 		<cd:constant name='sidespaceafter' value='فضای‌کناری‌بعد'/>
 		<cd:constant name='sidespacebefore' value='فضای‌کناری‌قبل'/>
+		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='علامت'/>
 		<cd:constant name='size' value='اندازه'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
