@@ -65,7 +65,7 @@ function moduledata.evohome.status(specification)
 
     for i=1,#zones do
         local zone     = zones[i]
-        local data     = utilities.evohome.getroomstate(presets,zone.name)
+        local data     = utilities.evohome.getzonestate(presets,zone.name)
         local schedule = data.schedule or { }
         context.startsubject { title = zone.name }
         context.starttabulate { "|l|c|c|" }

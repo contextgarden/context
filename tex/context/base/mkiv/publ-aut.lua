@@ -314,11 +314,11 @@ local function the_initials(initials,symbol,connector)
                 end
                 s = s + 1 ; set[s] = initial[i]
             end
-            r = r + 1 ; result[r] = concat(set)
+            r = r + 1 ; result[r] = concat(set) .. symbol
         else
-            r = r + 1 ; result[r] = initial
+            r = r + 1 ; result[r] = initial .. symbol
         end
-        r = r + 1 ; result[r] = symbol
+     -- r = r + 1 ; result[r] = symbol
     end
     return result
 end

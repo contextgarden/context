@@ -365,29 +365,33 @@
 \def\page_one_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
      \ifconditional\c_page_floats_pack_flushed
-       \setfalse\c_page_floats_center_box % not needed as we do call directly
        \page_floats_collect\s!text\hsize\emwidth
-       %% no longer (interferes with footnotes):
-       %%
-       %% \page_one_command_set_vsize % test 2011.06.24.001
-       %%
-       \global\setbox\floatbox\hbox to \hsize
-         {\hfil
-          \dorecurse\nofcollectedfloats
-            {\ifcase\columndirection % nog document wide
-               \page_floats_flush\s!text\plusone
-             \else
-               \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
-             \fi
-             \ifdim\wd\floatbox>\makeupwidth % \hsize
-               \hpack to \makeupwidth{\hss\box\floatbox\hss}%
-             \else
-               \box\floatbox
-             \fi
-             \ifnum\recurselevel<\nofcollectedfloats
-               \hfil
-             \fi}%
-          \hfil}%
+       \ifcase\nofcollectedfloats
+         \page_floats_get
+       \else
+         \setfalse\c_page_floats_center_box % not needed as we do call directly
+         %% no longer (interferes with footnotes):
+         %%
+         %% \page_one_command_set_vsize % test 2011.06.24.001
+         %%
+         \global\setbox\floatbox\hbox to \hsize
+           {\hfil
+            \dorecurse\nofcollectedfloats
+              {\ifcase\columndirection % nog document wide
+                 \page_floats_flush\s!text\plusone
+               \else
+                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+               \fi
+               \ifdim\wd\floatbox>\makeupwidth % \hsize
+                 \hpack to \makeupwidth{\hss\box\floatbox\hss}%
+               \else
+                 \box\floatbox
+               \fi
+               \ifnum\recurselevel<\nofcollectedfloats
+                 \hfil
+               \fi}%
+            \hfil}%
+       \fi
      \else
        \page_floats_get
      \fi

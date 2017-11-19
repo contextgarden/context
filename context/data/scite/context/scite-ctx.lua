@@ -75,16 +75,88 @@ props = props or { } -- setmetatable(props,{ __index = function(k,v) props[k] = 
 local byte, lower, upper, gsub, sub, find, rep, match, gmatch, format, char = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch, string.format, string.char
 local sort, concat = table.sort, table.concat
 
-local crlf = "\n"
+-- helpers : utf
 
-if not trace then
-    trace = print
+local magicstring = rep("<ctx-crlf/>", 2)
+
+local l2 = char(0xC0)
+local l3 = char(0xE0)
+local l4 = char(0xF0)
+
+local function utflen(str)
+    local n = 0
+    local l = 0
+    for s in gmatch(str,".") do
+        if l > 0 then
+            l = l - 1
+        else
+            n = n + 1
+            if s >= l4 then
+                l = 3
+            elseif s >= l3 then
+                l = 2
+            elseif s >= l2 then
+                l = 1
+            end
+        end
+    end
+    return n
 end
 
-function traceln(str)
-    trace(str .. crlf)
-    io.flush()
+-- helpers: system
+
+function io.exists(filename)
+    local ok, result, message = pcall(io.open,filename)
+    if result then
+        io.close(result)
+        return true
+    else
+        return false
+    end
 end
+
+function os.envvar(str)
+    local s = os.getenv(str)
+    if s ~= '' then
+        return s
+    end
+    s = os.getenv(upper(str))
+    if s ~= '' then
+        return s
+    end
+    s = os.getenv(lower(str))
+    if s ~= '' then
+        return s
+    end
+end
+
+-- helpers: reporting
+
+local crlf   = "\n"
+local report = nil
+local trace  = trace
+
+if trace then
+    report = function(fmt,...)
+        if fmt then
+            trace(format(fmt,...))
+        end
+        trace(crlf)
+        io.flush()
+    end
+else
+    trace  = print
+    report = function(fmt,...)
+        if fmt then
+            trace(format(fmt,...))
+        else
+            trace("")
+        end
+        io.flush()
+    end
+end
+
+-- helpers: whatever (old code, we should use our libs)
 
 local function grab(str,delimiter)
     local list = { }
@@ -116,32 +188,7 @@ local function alphasort(list,i)
     end
 end
 
-function io.exists(filename)
-    local ok, result, message = pcall(io.open,filename)
-    if result then
-        io.close(result)
-        return true
-    else
-        return false
-    end
-end
-
-function os.envvar(str)
-    local s = os.getenv(str)
-    if s ~= '' then
-        return s
-    end
-    s = os.getenv(upper(str))
-    if s ~= '' then
-        return s
-    end
-    s = os.getenv(lower(str))
-    if s ~= '' then
-        return s
-    end
-end
-
--- support functions, maybe editor namespace
+-- helpers: editor
 
 -- function column_of_position(position)
 --     local line = editor:LineFromPosition(position)
@@ -234,6 +281,53 @@ function get_dir_list(mask)
     return files
 end
 
+--helpers : utf from editor
+
+local cat -- has to be set to editor.CharAt
+
+local function toutfcode(pos) -- if needed we can cache
+    local c1 = cat[pos]
+    if c1 < 0 then
+        c1 = 256 + c1
+    end
+    if c1 < 128 then
+        return c1, 1
+    end
+    if c1 < 224 then
+        local c2 = cat[pos+1]
+        if c2 < 0 then
+            c2 = 256 + c2
+        end
+        return c1 * 64 + c2 - 12416, 2
+    end
+    if c1 < 240 then
+        local c2 = cat[pos+1]
+        local c3 = cat[pos+2]
+        if c2 < 0 then
+            c2 = 256 + c2
+        end
+        if c3 < 0 then
+            c3 = 256 + c3
+        end
+        return (c1 * 64 + c2) * 64 + c3 - 925824, 3
+    end
+    if c1 < 245 then
+        local c2 = cat[pos+1]
+        local c3 = cat[pos+2]
+        local c4 = cat[pos+3]
+        if c2 < 0 then
+            c2 = 256 + c2
+        end
+        if c3 < 0 then
+            c3 = 256 + c3
+        end
+        if c4 < 0 then
+            c4 = 256 + c4
+        end
+        return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168, 4
+    end
+end
+
 -- banner
 
 do
@@ -276,40 +370,14 @@ do
     end
 
     print("\n-  recognized first lines:\n")
-    print("xml   <?xml version='1.0' language='nl'")
-    print("tex   % language=nl")
+    print("xml   <?xml version='1.0' language='..'")
+    print("tex   % language=..")
 
 end
 
 -- text functions
 
 -- written while listening to Talk Talk
-
-local magicstring = rep("<ctx-crlf/>", 2)
-
-local l2 = char(0xC0)
-local l3 = char(0xE0)
-local l4 = char(0xF0)
-
-local function utflen(str)
-    local n = 0
-    local l = 0
-    for s in gmatch(str,".") do
-        if l > 0 then
-            l = l - 1
-        else
-            n = n + 1
-            if s >= l4 then
-                l = 3
-            elseif s >= l3 then
-                l = 2
-            elseif s >= l2 then
-                l = 1
-            end
-        end
-    end
-    return n
-end
 
 function wrap_text()
 
@@ -589,7 +657,7 @@ end
 --             for key, val in gmatch(firstline,"(%w+)=(%w+)") do
 --                 if key == "language" then
 --                     language = val
---                     traceln("auto document language "  .. "'" .. language .. "' (tex)")
+--                     report("auto document language '%s' (%s)",language,"tex")
 --                 end
 --             end
 --             skipfirst = true
@@ -600,7 +668,7 @@ end
 --             for key, val in gmatch(firstline,"(%w+)=[\"\'](.-)[\"\']") do
 --                 if key == "language" then
 --                     language = val
---                     traceln("auto document language "  .. "'" .. language .. "' (xml)")
+--                     report("auto document language '%s' (%s)",language."xml")
 --                 end
 --             end
 --             skipfirst = true
@@ -619,7 +687,7 @@ end
 --                 filename = expand(wordpath) .. '/' .. filename
 --             end
 --             if io.exists(filename) then
---                 traceln("loading " .. filename)
+--                 report("loading " .. filename)
 --                 for line in io.lines(filename) do
 --                     if not find(line,"^[%#-]") then
 --                         str = gsub(line,"%s*$", '')
@@ -628,20 +696,20 @@ end
 --                     end
 --                 end
 --             else
---                 traceln("unknown file '" .. filename .."'")
+--                 report("unknown file '%s'",filename)
 --             end
 --         end
---         traceln(worddone .. " words loaded")
+--         report("%i words loaded",worddone)
 --     end
 --
 --     reset_text()
 --
 --     if worddone == 0 then
---         traceln("no (valid) language or wordfile specified")
+--         report("no (valid) language or wordfile specified")
 --     else
---         traceln("start checking")
+--         report("start checking")
 --         if wordskip ~= '' then
---             traceln("ignoring " .. wordskip .. "..." .. wordgood)
+--             report("ignoring %s ... %s",wordskip,wordgood)
 --         end
 --         local i, j, lastpos, startpos, endpos, snippet, len, first = 0, 0, -1, 0, 0, '', 0, 0
 --         local ok, skip, ch = false, false, ''
@@ -680,7 +748,7 @@ end
 --                 skip = (ch == wordskip)
 --             end
 --         end
---         traceln(i .. " words checked, " .. (i-j) .. " errors")
+--         report("%i words checked, %i errors found",i,i-j)
 --     end
 --
 -- end
@@ -706,69 +774,22 @@ function add_text()
         if m then
             n = n + 1
             sum = sum + m
-            traceln(format("%4i : %s",n,m))
+            report("%4i : %s",n,m)
         end
     end
     if n > 0 then
-        traceln("")
-        traceln(format("sum  : %s",sum))
+        report()
+        report("sum  : %s",sum)
     else
-        traceln("no numbers selected")
+        report("no numbers selected")
     end
 
 end
 
 -- test
 
-local bidi
-local cat
-
+local bidi  = nil
 local dirty = { }
-
--- if needed we can cache
-
-local function toutfcode(pos)
-    local c1 = cat[pos]
-    if c1 < 0 then
-        c1 = 256 + c1
-    end
-    if c1 < 128 then
-        return c1, 1
-    end
-    if c1 < 224 then
-        local c2 = cat[pos+1]
-        if c2 < 0 then
-            c2 = 256 + c2
-        end
-        return c1 * 64 + c2 - 12416, 2
-    end
-    if c1 < 240 then
-        local c2 = cat[pos+1]
-        local c3 = cat[pos+2]
-        if c2 < 0 then
-            c2 = 256 + c2
-        end
-        if c3 < 0 then
-            c3 = 256 + c3
-        end
-        return (c1 * 64 + c2) * 64 + c3 - 925824, 3
-    end
-    if c1 < 245 then
-        local c2 = cat[pos+1]
-        local c3 = cat[pos+2]
-        local c4 = cat[pos+3]
-        if c2 < 0 then
-            c2 = 256 + c2
-        end
-        if c3 < 0 then
-            c3 = 256 + c3
-        end
-        if c4 < 0 then
-            c4 = 256 + c4
-        end
-        return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168, 4
-    end
-end
 
 local mapping = {
     l   = 0, -- "Left-to-Right",
@@ -902,7 +923,7 @@ function UserListShow(menutrigger, menulist)
     end
     local menustring = concat(menuentries,'|')
     if menustring == "" then
-        traceln("There are no templates defined for this file type.")
+        report("there are no templates defined for this file type")
     else
         editor.AutoCSeparator = byte('|')
         editor:UserListShow(menutrigger,menustring)
@@ -1548,8 +1569,8 @@ local usedlists = {
 }
 
 local function make_strip()
-    local used = usedlists[enabled]
-    local lists = used.lists
+    local used     = usedlists[enabled]
+    local lists    = used.lists
     local alphabet = lists[used.current]
     local selector = "(hide)(" .. concat(used.selector,")(") .. ")"
     local alphabet = "(" .. used.current .. ":)(" .. concat(alphabet,")(") .. ")"
@@ -1596,7 +1617,7 @@ end
 -- parsing
 
 function OnOpen(filename)
- -- print("opening: " .. filename .. " (size: " .. editor.TextLength .. ")")
+ -- report("opening '%s' of %i bytes",filename,editor.TextLength)
     editor:Colourise(0,editor.TextLength)
 end
 

@@ -25,6 +25,8 @@ local enableaction    = tasks.enableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
+appendaction("processors",   "normalizers", "languages.replacements.handler")                    -- disabled
+
 appendaction("processors",   "normalizers", "typesetters.wrappers.handler")                      -- disabled
 appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
@@ -38,7 +40,7 @@ appendaction("processors",   "characters",  "typesetters.cases.handler")        
 appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
 appendaction("processors",   "characters",  "scripts.injectors.handler")                         -- disabled
 
-appendaction("processors",   "words",       "languages.replacements.handler")                    -- disabled
+------------("processors",   "words",       "languages.replacements.handler")                    -- disabled
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
 appendaction("processors",   "words",       "languages.hyphenators.handler")                     -- always on
 appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled  -- might move up

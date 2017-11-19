@@ -810,14 +810,18 @@
      {\setfalse\c_page_floats_center_box_global
       \setfalse\c_page_floats_center_box_local}}
 
-\let\naturalfloatheight\!!zeropoint
-\let\naturalfloatwidth \!!zeropoint
-\let\naturalfloatdepth \!!zeropoint
+\def\naturalfloatheight{\the\naturalfloatwd}
+\def\naturalfloatwidth {\the\naturalfloatht}
+\def\naturalfloatdepth {\the\naturalfloatdp}
+
+\newdimen\naturalfloatwd
+\newdimen\naturalfloatht
+\newdimen\naturalfloatdp
 
 \def\strc_floats_set_natural_dimensions#box%
-  {\xdef\naturalfloatheight{\the\ht#box}%
-   \xdef\naturalfloatwidth {\the\wd#box}%
-   \xdef\naturalfloatdepth {\the\dp#box}}
+  {\global\naturalfloatwd\wd#box\relax
+   \global\naturalfloatht\ht#box\relax
+   \global\naturalfloatdp\dp#box\relax}
 
 \def\doifelsemainfloatbody
   {\ifinsidesplitfloat

@@ -236,7 +236,7 @@ function columnsets.define(t)
         end
     end
     --
-    texsetdimen("d_page_grid_column_width",dataset.width)
+    texsetdimen("d_page_grd_column_width",dataset.width)
     --
     setstate(dataset,true)
     --
@@ -342,15 +342,15 @@ function columnsets.prepareflush(name)
         columns[c] = new_vlist(column[1],widths[c],height,0) -- linedepth
     end
     --
-    texsetcount("c_page_grid_first_column",firstcolumn)
-    texsetcount("c_page_grid_last_column",lastcolumn)
+    texsetcount("c_page_grd_first_column",firstcolumn)
+    texsetcount("c_page_grd_last_column",lastcolumn)
 end
 
 function columnsets.flushcolumn(name,column)
     local dataset = data[name]
     local columns = dataset.columns
     local packed  = columns[column]
-    setbox("b_page_grid_column",packed)
+    setbox("b_page_grd_column",packed)
     columns[column] = nil
 end
 
@@ -637,7 +637,7 @@ function columnsets.check(t)
         r = dataset.currentrow
     end
     if c == 0 or r == 0 or c > nofcolumns or r > nofrows then
-        texsetcount("c_page_grid_reserved_state",5)
+        texsetcount("c_page_grd_reserved_state",5)
         return
     end
 -- report("checking width %p, height %p, depth %p, slot (%i,%i)",boxwidth,boxheight,boxdepth,c,r)
@@ -666,9 +666,9 @@ function columnsets.check(t)
         dataset.reserved_r  = rfound
         dataset.reserved_nc = nc
         dataset.reserved_nr = nr
-        texsetcount("c_page_grid_reserved_state",0)
-        texsetdimen("d_page_grid_reserved_height",ht)
-        texsetdimen("d_page_grid_reserved_width",wd)
+        texsetcount("c_page_grd_reserved_state",0)
+        texsetdimen("d_page_grd_reserved_height",ht)
+        texsetdimen("d_page_grd_reserved_width",wd)
      -- report("using (%i,%i) x (%i,%i) @ (%p,%p)",cfound,rfound,nc,nr,wd,ht)
     else
         dataset.reserved_ht = false
@@ -677,9 +677,9 @@ function columnsets.check(t)
         dataset.reserved_r  = false
         dataset.reserved_nc = false
         dataset.reserved_nr = false
-        texsetcount("c_page_grid_reserved_state",4)
-     -- texsetdimen("d_page_grid_reserved_height",0)
-     -- texsetdimen("d_page_grid_reserved_width",0)
+        texsetcount("c_page_grd_reserved_state",4)
+     -- texsetdimen("d_page_grd_reserved_height",0)
+     -- texsetdimen("d_page_grd_reserved_width",0)
      -- report("no slot found")
     end
 end
@@ -1130,14 +1130,14 @@ function columnsets.setvsize(name)
         n = 0
     end
     local gap = n*(dataset.lineheight+dataset.linedepth)
-    texsetdimen("d_page_grid_gap_height",gap)
+    texsetdimen("d_page_grd_gap_height",gap)
     -- can be integrated
  -- report("state %a, n %a, column %a, row %a",dataset.state,n,dataset.currentcolumn,dataset.currentrow)
 end
 
 function columnsets.sethsize(name)
     local dataset = data[name]
-    texsetdimen("d_page_grid_column_width",dataset.widths[dataset.currentcolumn])
+    texsetdimen("d_page_grd_column_width",dataset.widths[dataset.currentcolumn])
 end
 
 function columnsets.sethspan(name,span)
@@ -1150,7 +1150,7 @@ function columnsets.sethspan(name,span)
         span = available
     end
     local width = dataset.spans[column][span]
-    texsetdimen("d_page_grid_span_width",width)
+    texsetdimen("d_page_grd_span_width",width)
 end
 
 function columnsets.setlines(t)
@@ -1179,7 +1179,7 @@ end
 
 -- state : repeat | start
 
-local ctx_page_grid_set_area = context.protected.page_grid_set_area
+local ctx_page_grd_set_area = context.protected.page_grd_set_area
 
 function columnsets.flushareas(name)
     local nofareas = #areas
@@ -1218,7 +1218,7 @@ function columnsets.flushareas(name)
                 local used = nofcolumns - overflow
                 left  = dataset.spreads[column][used] + getdimen("backspace")
             end
-            ctx_page_grid_set_area(name,area.name,column,row,width,height,start,left) -- or via counters / dimens
+            ctx_page_grd_set_area(name,area.name,column,row,width,height,start,left) -- or via counters / dimens
             if area.state ~= v_repeat then
                 area = nil
             end

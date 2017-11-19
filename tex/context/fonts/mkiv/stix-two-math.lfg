@@ -4,7 +4,7 @@
 -- As we cannot rely on version numbers (if we have more patches) we
 -- check for values instead.
 --
--- This font also has inconsistent italics in smalelr sizes which we can
+-- This font also has inconsistent italics in smaller sizes which we can
 -- fix in a more general way but I'm not sure if we want that.
 
 local function fix_italic(target,original,name,value,factor)
@@ -17,7 +17,6 @@ local function fix_italic(target,original,name,value,factor)
                 local i = c.italic
                 if i then
                     local d = original.descriptions[u]
-                    inspect(d)
                     if d and d.math.italic == value then
                         if m then
                             logs.report("patching font","fixing italic correction of %U at math size %i by %0.3f",u,m,factor)

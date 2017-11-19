@@ -71,41 +71,41 @@
     }%
 \to \everydefinepagegrid
 
-\newdimen \d_page_grid_column_width
-\newdimen \d_page_grid_max_height
-\newdimen \d_page_grid_max_width
-\newdimen \d_page_grid_distance
+\newdimen \d_page_grd_column_width
+\newdimen \d_page_grd_max_height
+\newdimen \d_page_grd_max_width
+\newdimen \d_page_grd_distance
 
-\newdimen \d_page_grid_reserved_height
-\newdimen \d_page_grid_reserved_width
-\newcount \c_page_grid_reserved_state
+\newdimen \d_page_grd_reserved_height
+\newdimen \d_page_grd_reserved_width
+\newcount \c_page_grd_reserved_state
 
-\newdimen \d_page_grid_gap_height
+\newdimen \d_page_grd_gap_height
 
-\newcount \c_page_grid_n_of_left
-\newcount \c_page_grid_n_of_right
-\newcount \c_page_grid_n_of_rows
-\newcount \c_page_grid_first_column
-\newcount \c_page_grid_last_column
+\newcount \c_page_grd_n_of_left
+\newcount \c_page_grd_n_of_right
+\newcount \c_page_grd_n_of_rows
+\newcount \c_page_grd_first_column
+\newcount \c_page_grd_last_column
 
-\newbox   \b_page_grid_collected
-\newbox   \b_page_grid_column_rest
-\newbox   \b_page_grid_column
+\newbox   \b_page_grd_collected
+\newbox   \b_page_grd_column_rest
+\newbox   \b_page_grd_column
 
-\unexpanded\def\setuppagegridlines{\doquadrupleempty\page_grid_setup_lines}
-\unexpanded\def\setuppagegridstart{\doquadrupleempty\page_grid_setup_start}
+\unexpanded\def\setuppagegridlines{\doquadrupleempty\page_grd_setup_lines}
+\unexpanded\def\setuppagegridstart{\doquadrupleempty\page_grd_setup_start}
 
-\def\page_grid_setup_lines[#1][#2][#3][#4]% id page col value
+\def\page_grd_setup_lines[#1][#2][#3][#4]% id page col value
   {\clf_setcolumnsetlines{name {#1} page #2 column #3 value #4}}
 
-\def\page_grid_setup_start[#1][#2][#3][#4]% id page col value
+\def\page_grd_setup_start[#1][#2][#3][#4]% id page col value
   {\clf_setcolumnsetstart{name {#1} page #2 column #3 value #4}}
 
-\unexpanded\def\page_grid_check
+\unexpanded\def\page_grd_check
   {\dorecurse{\numexpr\pagegridparameter\c!nleft+\pagegridparameter\c!nright}
-     {\page_grid_check_column{##1}}}
+     {\page_grd_check_column{##1}}}
 
-\unexpanded\def\page_grid_check_column#1%
+\unexpanded\def\page_grd_check_column#1%
   {\chaintocurrentpagegrid{\currentpagegrid:#1}%
    \edef\p_distance{\namedpagegridparameter{\currentpagegrid:#1}\c!distance}%
    \edef\p_width   {\namedpagegridparameter{\currentpagegrid:#1}\c!width}%
@@ -127,13 +127,13 @@
 
 \unexpanded\def\startpagegrid
   {\bgroup
-   \dodoubleempty\page_grid_start}
+   \dodoubleempty\page_grd_start}
 
-\def\page_grid_start_dummy[#1][#2]%
-  {\let\page_grid_stop\egroup}
+\def\page_grd_start_dummy[#1][#2]%
+  {\let\page_grd_stop\egroup}
 
-\def\page_grid_start[#1][#2]%
-  {\let\page_grid_start\page_grid_start_dummy
+\def\page_grd_start[#1][#2]%
+  {\let\page_grd_start\page_grd_start_dummy
    \ifsecondargument
      \edef\currentpagegrid{#1}%
      \setupcurrentpagegrid[#2]%
@@ -146,52 +146,52 @@
      \let\currentpagegrid\empty
    \fi\fi
    \usepageparameter\pagegridparameter
-   \c_page_grid_n_of_left \pagegridparameter\c!nleft\relax
-   \c_page_grid_n_of_right\pagegridparameter\c!nright\relax
-   \c_page_grid_n_of_rows \pagegridparameter\c!lines\relax
-   \d_page_grid_max_width \pagegridparameter\c!maxwidth\relax
-   \d_page_grid_max_height\pagegridparameter\c!maxheight\relax
-   \d_page_grid_distance  \pagegridparameter\c!distance\relax
+   \c_page_grd_n_of_left \pagegridparameter\c!nleft\relax
+   \c_page_grd_n_of_right\pagegridparameter\c!nright\relax
+   \c_page_grd_n_of_rows \pagegridparameter\c!lines\relax
+   \d_page_grd_max_width \pagegridparameter\c!maxwidth\relax
+   \d_page_grd_max_height\pagegridparameter\c!maxheight\relax
+   \d_page_grd_distance  \pagegridparameter\c!distance\relax
    %
-   \ifcase\c_page_grid_n_of_rows
-      \getrawnoflines{\dimexpr\d_page_grid_max_height-\strutheight+\topskip\relax}%
-      \c_page_grid_n_of_rows\noflines
+   \ifcase\c_page_grd_n_of_rows
+      \getrawnoflines{\dimexpr\d_page_grd_max_height-\strutheight+\topskip\relax}%
+      \c_page_grd_n_of_rows\noflines
    \fi
    \edef\p_width{\pagegridparameter\c!width}%
    \insidecolumnstrue % will be different flag in addition
    \clf_resetcolumnset {
         name       {\currentpagegrid}
-        nofrows    \c_page_grid_n_of_rows
-        nofleft    \c_page_grid_n_of_left
-        nofright   \c_page_grid_n_of_right
+        nofrows    \c_page_grd_n_of_rows
+        nofleft    \c_page_grd_n_of_left
+        nofright   \c_page_grd_n_of_right
         lineheight \strutht
         linedepth  \strutdp
       \ifx\p_width\v!auto
-        % sets \d_page_grid_column_width
+        % sets \d_page_grd_column_width
       \else
         width      \p_width
       \fi
-        distance   \d_page_grid_distance
-        maxwidth   \d_page_grid_max_width
+        distance   \d_page_grd_distance
+        maxwidth   \d_page_grd_max_width
    }%
    %
-   \page_grid_check
+   \page_grd_check
    %
    \clf_flushcolumnsetareas{\currentpagegrid}\relax
    \setupoutputroutine[\s!pagegrid]%
-   \page_grid_command_set_hsize
-   \page_grid_command_set_vsize
+   \page_grd_command_set_hsize
+   \page_grd_command_set_vsize
    }%\begingroup}
 
 \unexpanded\def\stoppagegrid
-  {\page_grid_stop}
+  {\page_grd_stop}
 
-\def\page_grid_stop
+\def\page_grd_stop
   {\endgraf % needed, else wrong vsize in one par case
    \vfill % otherwise weird \placenotes[endnotes]
    \page_otr_command_set_vsize % needed
    \penalty\c_page_otr_eject_penalty
-   \page_grid_command_flush_page
+   \page_grd_command_flush_page
    \page_otr_fill_and_eject_page
    \page_otr_command_set_vsize % needed
    \egroup
@@ -215,17 +215,17 @@
    \endgroup}
 
 \unexpanded\def\setpagegrid
-  {\dosingleempty\page_grid_set}
+  {\dosingleempty\page_grd_set}
 
-\unexpanded\def\page_grid_set[#1]%
+\unexpanded\def\page_grd_set[#1]%
   {\begingroup
    \letdummyparameter\c!c\zerocount
    \letdummyparameter\c!r\zerocount
    \letdummyparameter\c!option\v!none
    \getdummyparameters[#1]%
-   \dowithnextboxcs\page_grid_set_indeed\hbox}
+   \dowithnextboxcs\page_grd_set_indeed\hbox}
 
-\def\page_grid_set_indeed
+\def\page_grd_set_indeed
   {\clf_checkcolumnset {
      name   {\currentpagegrid}
      c      \dummyparameter\c!c
@@ -233,16 +233,16 @@
      box    \nextbox
      option {\dummyparameter\c!option}
    }%
-   \ifcase\c_page_grid_reserved_state
-     \setbox\nextbox\vpack to \d_page_grid_reserved_height \bgroup
+   \ifcase\c_page_grd_reserved_state
+     \setbox\nextbox\vpack to \d_page_grd_reserved_height \bgroup
        \vss
-       \hpack to \d_page_grid_reserved_width \bgroup
+       \hpack to \d_page_grd_reserved_width \bgroup
          \box\nextbox
          \hss
        \egroup
        \vss
      \egroup
-     \wd\nextbox\d_page_grid_reserved_width
+     \wd\nextbox\d_page_grd_reserved_width
      \clf_putincolumnset {
        name {\currentpagegrid}
        box \nextbox
@@ -250,31 +250,31 @@
    \fi
    \endgroup}
 
-\unexpanded\def\page_grid_command_set_vsize
+\unexpanded\def\page_grd_command_set_vsize
   {\clf_setvsizecolumnset{\currentpagegrid}%
-   \ifdim\d_page_grid_gap_height<\lineheight
-     \page_grid_command_flush_page
+   \ifdim\d_page_grd_gap_height<\lineheight
+     \page_grd_command_flush_page
      \page_otr_fill_and_eject_page
    \fi
-   \global\vsize\d_page_grid_gap_height
+   \global\vsize\d_page_grd_gap_height
    \pagegoal\vsize}
 
-\unexpanded\def\page_grid_command_set_hsize
+\unexpanded\def\page_grd_command_set_hsize
   {\clf_sethsizecolumnset{\currentpagegrid}%
-   \hsize\d_page_grid_column_width
-   \textwidth\d_page_grid_column_width}
+   \hsize\d_page_grd_column_width
+   \textwidth\d_page_grd_column_width}
 
-\unexpanded\def\page_grid_command_routine
+\unexpanded\def\page_grd_command_routine
   {\ifvoid\normalpagebox \else
      \clf_addtocolumnset{\currentpagegrid}\normalpagebox
    \fi
-   \page_grid_command_set_vsize
-   \page_grid_command_flush_saved_floats
-   \page_grid_command_set_vsize
-   \ifdim\d_page_grid_gap_height<\lineheight
-     \page_grid_command_flush_page
+   \page_grd_command_set_vsize
+   \page_grd_command_flush_saved_floats
+   \page_grd_command_set_vsize
+   \ifdim\d_page_grd_gap_height<\lineheight
+     \page_grd_command_flush_page
    \fi
-   \page_grid_command_set_vsize
+   \page_grd_command_set_vsize
    \clf_flushcolumnsetrest {\currentpagegrid}\normalpagebox
    \ifvoid\normalpagebox \else
      \unvbox\normalpagebox
@@ -283,7 +283,7 @@
 \installoutputroutine\synchronizepagegrid
   {\ifvoid\normalpagebox\else
      \clf_addtocolumnset{\currentpagegrid}\normalpagebox
-     \page_grid_command_set_vsize
+     \page_grd_command_set_vsize
      \clf_flushcolumnsetrest{\currentpagegrid}\normalpagebox
      \ifvoid\normalpagebox \else
        \unvbox\normalpagebox
@@ -292,82 +292,82 @@
 
 % todo line numbers and marks
 
-\unexpanded\def\page_grid_command_flush_page_column#1%
+\unexpanded\def\page_grd_command_flush_page_column#1%
   {\privatescratchcounter#1\relax
    \clf_flushcolumnsetcolumn{\currentpagegrid}\privatescratchcounter
-   \anch_mark_column_box\b_page_grid_column
-   \page_marks_synchronize_column\c_page_grid_first_column\c_page_grid_last_column\privatescratchcounter\b_page_grid_column
-   \ifnum\privatescratchcounter>\c_page_grid_n_of_left
-     \advance\privatescratchcounter-\c_page_grid_n_of_left
-     \page_lines_add_numbers_to_box\b_page_grid_column\privatescratchcounter\c_page_grid_n_of_right\plustwo
+   \anch_mark_column_box\b_page_grd_column
+   \page_marks_synchronize_column\c_page_grd_first_column\c_page_grd_last_column\privatescratchcounter\b_page_grd_column
+   \ifnum\privatescratchcounter>\c_page_grd_n_of_left
+     \advance\privatescratchcounter-\c_page_grd_n_of_left
+     \page_lines_add_numbers_to_box\b_page_grd_column\privatescratchcounter\c_page_grd_n_of_right\plustwo
    \else
-     \page_lines_add_numbers_to_box\b_page_grid_column\privatescratchcounter\c_page_grid_n_of_left\plustwo
+     \page_lines_add_numbers_to_box\b_page_grd_column\privatescratchcounter\c_page_grd_n_of_left\plustwo
    \fi
    \begingroup
    \edef\currentpagegrid{\currentpagegrid:#1}%
-   \inheritedpagegridframedbox\box\b_page_grid_column
+   \inheritedpagegridframedbox\box\b_page_grd_column
    \endgroup}
 
-\unexpanded\def\page_grid_command_flush_page
+\unexpanded\def\page_grd_command_flush_page
   {\deactivatecolor % puzzling, try ungrouped color \red or so
-   \setbox\b_page_grid_collected\hpack\bgroup
+   \setbox\b_page_grd_collected\hpack\bgroup
      \clf_preparecolumnsetflush{\currentpagegrid}%
      \letpagegridparameter\c!region\currentpagegrid
      \doifelse{\pagegridparameter\c!direction}\v!reverse
-       {\dostepwiserecurse\c_page_grid_last_column\c_page_grid_first_column\minusone
-          {\page_grid_command_flush_page_column{##1}%
+       {\dostepwiserecurse\c_page_grd_last_column\c_page_grd_first_column\minusone
+          {\page_grd_command_flush_page_column{##1}%
            \ifnum##1>\plusone
              \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
            \fi}}%
-       {\dostepwiserecurse\c_page_grid_first_column\c_page_grid_last_column\plusone
-          {\page_grid_command_flush_page_column{##1}%
-           \ifnum##1<\c_page_grid_last_column
+       {\dostepwiserecurse\c_page_grd_first_column\c_page_grd_last_column\plusone
+          {\page_grd_command_flush_page_column{##1}%
+           \ifnum##1<\c_page_grd_last_column
              \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
            \fi}}%
      \clf_finishcolumnsetflush{\currentpagegrid}%
    \egroup
-   \page_otr_construct_and_shipout\box\b_page_grid_collected\zerocount % three arguments
+   \page_otr_construct_and_shipout\box\b_page_grd_collected\zerocount % three arguments
    \clf_flushcolumnsetareas{\currentpagegrid}\relax
-   \page_grid_command_flush_saved_floats}
+   \page_grd_command_flush_saved_floats}
 
 % slow but robust
 
-\unexpanded\def\page_grid_command_next_progress
+\unexpanded\def\page_grd_command_next_progress
   {\strut
    \page_otr_flush_all_floats
    \page_otr_eject_page
    \ifcase\clf_columnsetnoto\else
-     \expandafter\page_grid_command_next_progress
+     \expandafter\page_grd_command_next_progress
    \fi}
 
-\unexpanded\def\page_grid_command_handle_column
+\unexpanded\def\page_grd_command_handle_column
   {\ifcase\clf_columnsetgoto{\currentpagegrid}{\page_breaks_columns_current_option}\relax\else
-     \expandafter\page_grid_command_next_progress
+     \expandafter\page_grd_command_next_progress
    \fi}
 
-\installcolumnbreakmethod\s!pagegrid\s!unknown {\page_grid_command_handle_column}
-\installcolumnbreakmethod\s!pagegrid\v!yes     {\page_grid_command_handle_column}
+\installcolumnbreakmethod\s!pagegrid\s!unknown {\page_grd_command_handle_column}
+\installcolumnbreakmethod\s!pagegrid\v!yes     {\page_grd_command_handle_column}
 
-\unexpanded\def\page_grid_command_next_page
+\unexpanded\def\page_grd_command_next_page
   {\ifcase\clf_columnsetgoto{\currentpagegrid}{\v!page}\relax\else
-     \page_grid_command_flush_page
+     \page_grd_command_flush_page
    \fi}
 
-\unexpanded\def\page_grid_command_next_page_and_inserts
+\unexpanded\def\page_grd_command_next_page_and_inserts
 % {\page_otr_eject_page_and_flush_inserts}
   {\page_otr_flush_all_floats
-   \page_grid_command_next_page}
+   \page_grd_command_next_page}
 
-\let\page_grid_command_package_contents\page_one_command_package_contents
+\let\page_grd_command_package_contents\page_one_command_package_contents
 
-\unexpanded\def\page_grid_command_flush_saved_floats
+\unexpanded\def\page_grd_command_flush_saved_floats
   {\ifconditional\c_page_floats_flushing \else
      \ifconditional\c_page_floats_some_waiting
-       \page_grid_command_flush_saved_floats_indeed
+       \page_grd_command_flush_saved_floats_indeed
      \fi
    \fi}
 
-\unexpanded\def\page_grid_command_flush_saved_floats_indeed
+\unexpanded\def\page_grd_command_flush_saved_floats_indeed
   {\page_floats_flush\s!text\plusone
    \clf_checkcolumnset {
      name   {\currentpagegrid}
@@ -375,11 +375,11 @@
      width  \wd\floatbox
      height \ht\floatbox
    }%
-   \ifcase\c_page_grid_reserved_state
-     \page_grid_place_float_here_indeed
-     \page_grid_command_set_vsize % needed
+   \ifcase\c_page_grd_reserved_state
+     \page_grd_place_float_here_indeed
+     \page_grd_command_set_vsize % needed
      \ifconditional\c_page_floats_some_waiting
-       \doubleexpandafter\page_grid_command_flush_saved_floats_indeed
+       \doubleexpandafter\page_grd_command_flush_saved_floats_indeed
      \fi
    \else
      \page_floats_resave\s!text
@@ -387,48 +387,52 @@
 
 % needs checking
 
-\unexpanded\def\page_grid_command_flush_floats
+\unexpanded\def\page_grd_command_flush_floats
   {\wait\global\settrue\c_page_floats_flushing
    \ifconditional\c_page_floats_some_waiting
      \par
-     \page_grid_command_flush_floats_indeed
+     \page_grd_command_flush_floats_indeed
    \fi
    \global\savednoffloats\zerocount
    \global\setfalse\c_page_floats_some_waiting
    \global\setfalse\c_page_floats_flushing}
 
-\def\page_grid_command_flush_floats_indeed % much in common with OTRSET
+\def\page_grd_command_flush_floats_indeed % much in common with OTRSET
   {\wait\ifconditional\c_page_floats_some_waiting
      \ifconditional\c_page_floats_pack_flushed
-       \setfalse\c_page_floats_center_box % not needed as we do call directly
        \page_floats_collect\s!text\hsize\emwidth
-       \global\setbox\floatbox\hbox to \hsize
-         {\hfil
-          \dorecurse\nofcollectedfloats
-            {\ifcase\columndirection % nog document wide
-               \page_floats_flush\s!text\plusone
-             \else
-               \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
-             \fi
-             \ifdim\wd\floatbox>\makeupwidth % \hsize
-               \hbox to \makeupwidth{\hss\box\floatbox\hss}%
-             \else
-               \box\floatbox
-             \fi
-             \ifnum\recurselevel<\nofcollectedfloats
-               \hfil
-             \fi}%
-          \hfil}%
+       \ifcase\nofcollectedfloats
+         \page_floats_get
+       \else
+         \setfalse\c_page_floats_center_box % not needed as we do call directly
+         \global\setbox\floatbox\hbox to \hsize
+           {\hfil
+            \dorecurse\nofcollectedfloats
+              {\ifcase\columndirection % nog document wide
+                 \page_floats_flush\s!text\plusone
+               \else
+                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+               \fi
+               \ifdim\wd\floatbox>\makeupwidth % \hsize
+                 \hbox to \makeupwidth{\hss\box\floatbox\hss}%
+               \else
+                 \box\floatbox
+               \fi
+               \ifnum\recurselevel<\nofcollectedfloats
+                 \hfil
+               \fi}%
+            \hfil}%
+         \fi
      \else
        \page_floats_get
      \fi
      \doplacefloatbox
-     \expandafter\page_grid_command_flush_floats_indeed
+     \expandafter\page_grd_command_flush_floats_indeed
    \fi}
 
 % so far
 
-\unexpanded\def\page_grid_command_check_if_float_fits
+\unexpanded\def\page_grd_command_check_if_float_fits
   {\clf_checkcolumnset {
      name   {\currentpagegrid}
      method {\floatmethod}
@@ -436,16 +440,16 @@
    % r      \zerocount
      box    \floatbox
    }%
-   \ifcase\c_page_grid_reserved_state
+   \ifcase\c_page_grd_reserved_state
      \global\settrue\c_page_floats_room
    \else
      \global\setfalse\c_page_floats_room
    \fi}
 
-\unexpanded\def\page_grid_place_float_here_indeed
-  {\setbox\floatbox\vpack to \d_page_grid_reserved_height \bgroup
+\unexpanded\def\page_grd_place_float_here_indeed
+  {\setbox\floatbox\vpack to \d_page_grd_reserved_height \bgroup
      \vss
-     \hpack to \d_page_grid_reserved_width \bgroup
+     \hpack to \d_page_grd_reserved_width \bgroup
      % \hss % no
        \box\floatbox
        \hss
@@ -457,7 +461,7 @@
      box  \floatbox
    }}
 
-\def\page_grid_place_float_slot
+\def\page_grd_place_float_slot
   {% safeguard
    \ifx\floatmethod\empty
      \let\floatmethod\v!here
@@ -466,7 +470,7 @@
    \penalty\c_page_otr_eject_penalty
    % push
    \setbox\savedfloatbox\box\floatbox
-   \page_grid_command_flush_saved_floats
+   \page_grd_command_flush_saved_floats
    \setbox\floatbox\box\savedfloatbox
    % pop
    \ifconditional\c_page_floats_some_waiting
@@ -484,15 +488,15 @@
      \fi
        box    \floatbox
      }%
-     \ifcase\c_page_grid_reserved_state
-       \page_grid_place_float_here_indeed
+     \ifcase\c_page_grd_reserved_state
+       \page_grd_place_float_here_indeed
      \else
        \page_floats_save\s!text
        \nonoindentation
      \fi
    \fi}
 
-\def\page_grid_place_float_fixed % todo: fallback on here
+\def\page_grd_place_float_fixed % todo: fallback on here
   {\ifx\floatcolumn\empty
      \let\floatmethod\v!here
    \else\ifx\floatrow\empty
@@ -500,9 +504,9 @@
    \else
      \let\floatmethod\v!fixed
    \fi\fi
-   \page_grid_place_float_slot}
+   \page_grd_place_float_slot}
 
-\def\page_grid_place_float_force
+\def\page_grd_place_float_force
   {% synchronize
    \penalty\c_page_otr_eject_penalty
    \clf_checkcolumnset {
@@ -510,30 +514,30 @@
      method {\floatmethod}
      box    \floatbox
    }%
-   \ifcase\c_page_grid_reserved_state
-     \page_grid_place_float_here_indeed
+   \ifcase\c_page_grd_reserved_state
+     \page_grd_place_float_here_indeed
    \else
      \page_floats_save\s!text
      \nonoindentation
    \fi}
 
-\def\page_grid_place_float_page  {\page_grid_place_float_slot} % todo: fallback on here
+\def\page_grd_place_float_page  {\page_grd_place_float_slot} % todo: fallback on here
 
-\def\page_grid_place_float_here  {\let\floatmethod\v!here\page_grid_place_float_slot}
-\def\page_grid_place_float_top   {\page_grid_place_float_slot}
-\def\page_grid_place_float_bottom{\page_grid_place_float_slot}
+\def\page_grd_place_float_here  {\let\floatmethod\v!here\page_grd_place_float_slot}
+\def\page_grd_place_float_top   {\page_grd_place_float_slot}
+\def\page_grd_place_float_bottom{\page_grd_place_float_slot}
 
-\installfloatmethod \s!pagegrid \v!here        \page_grid_place_float_here
-\installfloatmethod \s!pagegrid \v!force       \page_grid_place_float_force % todo
+\installfloatmethod \s!pagegrid \v!here        \page_grd_place_float_here
+\installfloatmethod \s!pagegrid \v!force       \page_grd_place_float_force % todo
 %installfloatmethod \s!pagegrid \v!left
 %installfloatmethod \s!pagegrid \v!right
 %installfloatmethod \s!pagegrid \v!text
-\installfloatmethod \s!pagegrid \v!top         \page_grid_place_float_top
-\installfloatmethod \s!pagegrid \v!bottom      \page_grid_place_float_bottom
+\installfloatmethod \s!pagegrid \v!top         \page_grd_place_float_top
+\installfloatmethod \s!pagegrid \v!bottom      \page_grd_place_float_bottom
 %installfloatmethod \s!pagegrid \v!auto
 %installfloatmethod \s!pagegrid \v!margin
 %installfloatmethod \s!pagegrid \v!opposite
-\installfloatmethod \s!pagegrid \v!page        \page_grid_place_float_page
+\installfloatmethod \s!pagegrid \v!page        \page_grd_place_float_page
 %installfloatmethod \s!pagegrid \v!leftpage
 %installfloatmethod \s!pagegrid \v!rightpage
 %installfloatmethod \s!pagegrid \v!inmargin
@@ -546,54 +550,54 @@
 %installfloatmethod \s!pagegrid \v!somewhere
 %installfloatmethod \s!pagegrid \v!backspace
 %installfloatmethod \s!pagegrid \v!cutspace
-\installfloatmethod \s!pagegrid \s!tblr        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!lrtb        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!tbrl        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!rltb        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!fxtb        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!btlr        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!lrbt        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!btrl        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!rlbt        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!fxbt        \page_grid_place_float_slot
-\installfloatmethod \s!pagegrid \s!fixd        \page_grid_place_float_fixed
+\installfloatmethod \s!pagegrid \s!tblr        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!lrtb        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!tbrl        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!rltb        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!fxtb        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!btlr        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!lrbt        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!btrl        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!rlbt        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!fxbt        \page_grd_place_float_slot
+\installfloatmethod \s!pagegrid \s!fixd        \page_grd_place_float_fixed
 
 %
 
-\unexpanded\def\page_grid_command_side_float_output
+\unexpanded\def\page_grd_command_side_float_output
   {} % nothing, reset anyway
 
-\unexpanded\def\page_grid_command_flush_side_floats
+\unexpanded\def\page_grd_command_flush_side_floats
   {\page_sides_forget_floats}
 
-\unexpanded\def\page_grid_command_synchronize_side_floats
+\unexpanded\def\page_grd_command_synchronize_side_floats
   {\page_sides_forget_floats}
 
-\unexpanded\def\page_grid_command_synchronize_hsize
-  {\page_grid_command_set_hsize}
+\unexpanded\def\page_grd_command_synchronize_hsize
+  {\page_grd_command_set_hsize}
 
 \defineoutputroutine
   [\s!pagegrid]
-  [\s!page_otr_command_routine                  =\page_grid_command_routine,
-   \s!page_otr_command_package_contents         =\page_grid_command_package_contents,
-   \s!page_otr_command_set_vsize                =\page_grid_command_set_vsize,
-   \s!page_otr_command_set_hsize                =\page_grid_command_set_hsize, % tricky, goes wrong
-   \s!page_otr_command_next_page                =\page_grid_command_next_page,
-   \s!page_otr_command_next_page_and_inserts    =\page_grid_command_next_page_and_inserts,
-   \s!page_otr_command_synchronize_hsize        =\page_grid_command_synchronize_hsize,
- % \s!page_otr_command_set_top_insertions       =\page_grid_command_set_top_insertions,
- % \s!page_otr_command_set_bottom_insertions    =\page_grid_command_set_bottom_insertions,
- % \s!page_otr_command_flush_top_insertions     =\page_grid_command_flush_top_insertions,
- % \s!page_otr_command_flush_bottom_insertions  =\page_grid_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize          =\page_grid_command_set_float_hsize,
-   \s!page_otr_command_check_if_float_fits      =\page_grid_command_check_if_float_fits,
- % \s!page_otr_command_flush_float_box          =\page_grid_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats  =\page_grid_command_synchronize_side_floats,
-   \s!page_otr_command_side_float_output        =\page_grid_command_side_float_output,
-   \s!page_otr_command_flush_floats             =\page_grid_command_flush_floats,
-   \s!page_otr_command_flush_side_floats        =\page_grid_command_flush_side_floats,
-   \s!page_otr_command_flush_saved_floats       =\page_grid_command_flush_saved_floats
- % \s!page_otr_command_flush_margin_blocks      =\page_grid_command_flush_margin_blocks, % not used
+  [\s!page_otr_command_routine                  =\page_grd_command_routine,
+   \s!page_otr_command_package_contents         =\page_grd_command_package_contents,
+   \s!page_otr_command_set_vsize                =\page_grd_command_set_vsize,
+   \s!page_otr_command_set_hsize                =\page_grd_command_set_hsize, % tricky, goes wrong
+   \s!page_otr_command_next_page                =\page_grd_command_next_page,
+   \s!page_otr_command_next_page_and_inserts    =\page_grd_command_next_page_and_inserts,
+   \s!page_otr_command_synchronize_hsize        =\page_grd_command_synchronize_hsize,
+ % \s!page_otr_command_set_top_insertions       =\page_grd_command_set_top_insertions,
+ % \s!page_otr_command_set_bottom_insertions    =\page_grd_command_set_bottom_insertions,
+ % \s!page_otr_command_flush_top_insertions     =\page_grd_command_flush_top_insertions,
+ % \s!page_otr_command_flush_bottom_insertions  =\page_grd_command_flush_bottom_insertions,
+ % \s!page_otr_command_set_float_hsize          =\page_grd_command_set_float_hsize,
+   \s!page_otr_command_check_if_float_fits      =\page_grd_command_check_if_float_fits,
+ % \s!page_otr_command_flush_float_box          =\page_grd_command_flush_float_box,
+   \s!page_otr_command_synchronize_side_floats  =\page_grd_command_synchronize_side_floats,
+   \s!page_otr_command_side_float_output        =\page_grd_command_side_float_output,
+   \s!page_otr_command_flush_floats             =\page_grd_command_flush_floats,
+   \s!page_otr_command_flush_side_floats        =\page_grd_command_flush_side_floats,
+   \s!page_otr_command_flush_saved_floats       =\page_grd_command_flush_saved_floats
+ % \s!page_otr_command_flush_margin_blocks      =\page_grd_command_flush_margin_blocks, % not used
   ]
 
 % spans
@@ -613,18 +617,18 @@
    \c!n=\plustwo,
    \c!nlines=\zerocount,
    \c!align=\v!normal,
-   \c!width=\d_page_grid_span_width,
+   \c!width=\d_page_grd_span_width,
    \c!indenting=,
    \c!indentnext=\v!yes,
    \c!default=\v!here,
    \c!alternative=\v!a]
 
-\newdimen\d_page_grid_span_width
+\newdimen\d_page_grd_span_width
 
 \unexpanded\def\startpagegridspan
-  {\dotripleempty\page_grid_span_start}
+  {\dotripleempty\page_grd_span_start}
 
-\def\page_grid_span_start[#1][#2][#3]% [#3] gobbles space
+\def\page_grd_span_start[#1][#2][#3]% [#3] gobbles space
   {\endgraf % else rubish output if forgotten
    \synchronizepagegrid
    \bgroup
@@ -652,9 +656,9 @@
 
 \def\pagegridspanwidth#1% assumes equal distances
   {\the\dimexpr
-     #1\d_page_grid_column_width
-    +#1\d_page_grid_distance
-    -  \d_page_grid_distance
+     #1\d_page_grd_column_width
+    +#1\d_page_grd_distance
+    -  \d_page_grd_distance
    \relax}
 
 % areas
@@ -702,15 +706,15 @@
 \to \everydefinepagegridarea
 
 \unexpanded\def\setuppagegridareatext
-  {\dodoubleargument\page_grid_set_area_text}
+  {\dodoubleargument\page_grd_set_area_text}
 
-\def\page_grid_set_area_text[#1][#2]%
+\def\page_grd_set_area_text[#1][#2]%
   {\edef\currentpagegridarea{#1}%
    \setpagegridareaparameter\c!text{#2}}
 
 % maybe move the left/right correction to the tex end or the offset to lua
 
-\unexpanded\def\page_grid_set_area#1#2#3#4#5#6#7#8% can be optimized
+\unexpanded\def\page_grd_set_area#1#2#3#4#5#6#7#8% can be optimized
   {\begingroup
    \edef\currentpagegridarea{#2}%
    \setpagegridareaparameter\c!width {#5\scaledpoint}%
@@ -753,7 +757,7 @@
    \fi
    \endgroup}
 
-\let\setpagegridarea\page_grid_set_area
+\let\setpagegridarea\page_grd_set_area
 
 % state start | repeat
 

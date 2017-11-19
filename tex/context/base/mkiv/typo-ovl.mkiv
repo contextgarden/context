@@ -1,0 +1,115 @@
+%D \module
+%D   [       file=lang-ovl,
+%D        version=2016.02.03, % about that time (maybe earlier)
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Overloads,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Overloads}
+
+\unprotect
+
+%D See \LUA\ file for comments. I'll probably never use this code outside the
+%D project where it had some experimental use. (Occasionally we do some spell
+%D checking and suspicious word usage marking.) So there is not much documentation
+%D here. Keep in mind that overloading only makes sense for content that gets
+%D replaced as otherwise normal attributes make more sense. Using this otherwise
+%D is weird but one never knows what users come up with.
+
+\registerctxluafile{typo-ovl}{}
+
+\definesystemattribute[overloads][public,global]
+
+\installcorenamespace{overloads}
+
+%D Watch how we abuse highlights.
+
+\newcount\c_typo_overload_font_id
+
+\unexpanded\def\typo_overloads_define#1%
+  {\begingroup
+   % we pack so we avoid interference (and for sure don't process!)
+   \setbox\scratchbox\hpack\bgroup
+      \global\c_typo_overload_font_id\fontid\font
+      \resetallattributes % so we only change what gets set
+      \highlight[#1]%
+      \signalcharacter
+      \global\c_typo_overload_font_id
+        \ifnum\c_typo_overload_font_id=\fontid\font
+          \zerocount
+        \else
+          \fontid\font
+        \fi
+   \egroup
+   \global\expandafter\chardef\csname\??overloads#1\endcsname
+     \clf_overloadsattribute{#1}\c_typo_overload_font_id\scratchbox
+   \endgroup}
+
+\unexpanded\def\setoverloads[#1]%
+  {\ifcsname\??overloads#1\endcsname\else
+      \typo_overloads_define{#1}%
+   \fi
+   \attribute\overloadsattribute\csname\??overloads#1\endcsname}
+
+\unexpanded\def\registeroverloads[#1]%
+  {\ifcsname\??overloads#1\endcsname\else
+      \typo_overloads_define{#1}%
+   \fi}
+
+\unexpanded\def\resetoverloads
+  {\overloadsattribute\attributeunsetvalue}
+
+%D We hook this into the replacement module, probably the only place where it makes
+%D sense. Here is an adapted version of an example:
+%D
+%D \starttyping
+%D \replaceword[basics][new]  [old]
+%D \replaceword[basics][now]  [hl3->never]
+%D \replaceword[basics][never][now]
+%D \replaceword[basics][heck] []
+%D
+%D \definehighlight[hl1][style={\setbar[underbar]\red\setcharactercasing[WORD]\bf}]
+%D \definehighlight[hl2][style={\setbar[overbar]\blue\setcharactercasing[Words]}]
+%D \definehighlight[hl3][style={\setbar[overstrike]\green\bs}]
+%D
+%D \registeroverloads[hl1]
+%D \registeroverloads[hl2]
+%D \registeroverloads[hl3]
+%D
+%D \start \setreplacements[basics][hl1] What the heck, it's now or never, isn't it new? \stop \par
+%D \start \setreplacements[basics][hl2] What the heck, it's now or never, isn't it new? \stop \par
+%D \start \setreplacements[basics][hl1] What the heck, it's now or never, isn't it new? \stop \par
+%D \start \setreplacements[basics]      What the heck, it's now or never, isn't it new? \stop \par
+%D \stoptyping
+%D
+%D We used it to mark synonyms that should not be corrected by the editor. Sort of the
+%D reverse of not having a word in a vetted wordlist. A bit out of place in a typesetting
+%D system. If really needed we can support multiple words seperataed by spaces but I didn't
+%D need it. And \unknown\ fonts are supported but at fixed size!
+
+\ifdefined\setreplacements
+
+    \unexpanded\def\setreplacements
+       {\dodoubleempty\languages_replacements_set}
+
+    \unexpanded\def\languages_replacements_set[#1][#2]%
+      {\clf_setreplacements{#1}%
+       \ifsecondargument
+         \setoverloads[#2]%
+       \else
+         \resetoverloads
+       \fi}
+
+\else
+
+    % something weird
+
+\fi
+
+\protect

@@ -50,6 +50,7 @@ local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
 local formatcolumns = utilities.formatters.formatcolumns
+local max, odd = math.max, math.odd
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -112,7 +113,9 @@ local ctx_stopfoundexternalfigure  = context.stopfoundexternalfigure
 local ctx_dosetfigureobject        = context.dosetfigureobject
 local ctx_doboxfigureobject        = context.doboxfigureobject
 
-function images.check(figure)
+-- extensions
+
+function checkimage(figure)
     if figure then
         local width  = figure.width
         local height = figure.height
@@ -160,8 +163,6 @@ local function imagetotable(imgtable)
     return result
 end
 
-images.totable = imagetotable
-
 function images.serialize(i,...)
     return table.serialize(imagetotable(i),...)
 end
@@ -180,7 +181,7 @@ end
 local validsizes = table.tohash(images.boxes())
 local validtypes = table.tohash(images.types())
 
-function images.checksize(size)
+local function checkimagesize(size)
     if size then
         size = gsub(size,"box","")
         return validsizes[size] and size or "crop"
@@ -188,6 +189,17 @@ function images.checksize(size)
         return "crop"
     end
 end
+
+local newimage       = images.new
+local scanimage      = images.scan
+local copyimage      = images.copy
+local cloneimage     = images.clone
+local imagetonode    = images.node
+
+images.check         = checkimage
+images.checksize     = checkimagesize
+images.tonode        = imagetonode
+images.totable       = imagetotable
 
 local indexed = { }
 
@@ -549,8 +561,8 @@ function figures.initialize(request)
         request.width  = w > 0 and w or nil
         request.height = h > 0 and h or nil
         --
-        request.page      = math.max(tonumber(request.page) or 1,1)
-        request.size      = images.checksize(request.size)
+        request.page      = max(tonumber(request.page) or 1,1)
+        request.size      = checkimagesize(request.size)
         request.object    = request.object == v_yes
         request["repeat"] = request["repeat"] == v_yes
         request.preview   = request.preview == v_yes
@@ -1338,13 +1350,15 @@ local function checktransform(figure,forced)
         local orientation = (forced ~= "" and forced ~= v_auto and forced) or figure.orientation or 0
         local transform   = transforms["orientation-"..orientation]
         figure.transform = transform
-        if math.odd(transform) then
+        if odd(transform) then
             return figure.height, figure.width
         else
             return figure.width, figure.height
         end
     end
 end
+
+local pagecount = { }
 
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
@@ -1377,7 +1391,7 @@ function checkers.generic(data)
     )
     local figure = figures_loaded[hash]
     if figure == nil then
-        figure = images.new {
+        figure = newimage {
             filename        = name,
             page            = page,
             pagebox         = dr.size,
@@ -1386,7 +1400,15 @@ function checkers.generic(data)
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         if figure then
-            local f, comment = images.check(images.scan(figure))
+if page and page > 1 then
+    local f = scanimage{ filename = name }
+    if f.page and f.pages < page then
+        report_inclusion("no page %i in %a, using page 1",page,name)
+        page        = 1
+        figure.page = page
+    end
+end
+            local f, comment = checkimage(scanimage(figure))
             if not f then
                 ds.comment = comment
                 ds.found   = false
@@ -1448,8 +1470,8 @@ function includers.generic(data)
     if figure == nil then
         figure = ds.private
         if figure then
-            figure = images.copy(figure)
-            figure = figure and images.clone(figure,data.request) or false
+            figure = copyimage(figure)
+            figure = figure and cloneimage(figure,data.request) or false
         end
         figures_used[hash] = figure
     end
@@ -1457,13 +1479,13 @@ function includers.generic(data)
         local nr     = figures.boxnumber
         nofimages    = nofimages + 1
         ds.pageindex = nofimages
-        local image  = images.node(figure)
+        local image  = imagetonode(figure)
         local pager  = new_latelua(function()
             pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
         end)
         image.next = pager
         pager.prev = image
-        local box  = hpack(image) -- images.node(figure) not longer valid
+        local box  = hpack(image) -- imagetonode(figure) not longer valid
 
         indexed[figure.index] = figure
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
