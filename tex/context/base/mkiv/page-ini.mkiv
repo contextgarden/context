@@ -67,17 +67,7 @@
 \def\page_otr_flush_all_floats
   {%\flushnotes already done
    \ifconditional\c_page_floats_some_waiting
-     \begingroup
-     \c_page_floats_n_of_top\plusthousand
-     \c_page_floats_n_of_bottom\zerocount
-     % this is needed in case a float that has been stored
-     % ends up at the current page; this border case occurs when
-     % the calculated room is 'eps' smaller that the room available
-     % when just flushing; so now we have (maybe optional):
-     \pagebaselinecorrection % hm, needs checking, not needed when no floats
-     % alas, this is tricky but needed (first surfaced in prikkels)
-     \page_otr_command_flush_floats
-     \endgroup
+     \page_otr_command_flush_all_floats
    \fi}
 
 \def\page_otr_insert_dummy_page

@@ -128,7 +128,7 @@
       \aligntab
       \math_first_in_eqalign
       \hfil
-      \math_left_of_equalign
+      \math_left_of_eqalign
       \span
       \math_math_in_eqalign{\alignmark\alignmark}%
       \math_right_of_eqalign
@@ -136,7 +136,7 @@
    \t_math_align_b
      {\aligntab
       \math_next_in_eqalign
-      \math_left_of_equalign
+      \math_left_of_eqalign
       \span
       \math_math_in_eqalign{\alignmark\alignmark}%
       \math_right_of_eqalign
@@ -177,7 +177,7 @@
       \aligntab
       \math_first_in_eqalign
       \hfil
-      \math_left_of_equalign
+      \math_left_of_eqalign
       \span
       \math_math_in_eqalign{\alignmark\alignmark}%
       \math_right_of_eqalign
@@ -185,7 +185,7 @@
    \t_math_align_b
      {\aligntab
       \math_next_in_eqalign
-      \math_left_of_equalign
+      \math_left_of_eqalign
       \span
       \math_math_in_eqalign{\alignmark\alignmark}%
       \math_right_of_eqalign
@@ -467,7 +467,7 @@
    \dostoptagged % finish cell
    \dostarttagged\t!mathtablecell\empty}
 
-\def\math_left_of_equalign
+\def\math_left_of_eqalign
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
    \fi}
@@ -832,7 +832,7 @@
 \unexpanded\def\math_matrix_start_cell
   {\dostarttagged\t!mathtablecell\empty
    \hss
-  %\math_left_of_equalign
+   \math_left_of_eqalign
    \startimath
    \math_matrix_set_style
    \tabskip\zeropoint
@@ -840,7 +840,7 @@
 
 \unexpanded\def\math_matrix_stop_cell
   {\stopimath
-  %\math_right_of_eqalign
+   \math_right_of_eqalign
    \hss
    \dostoptagged}
 

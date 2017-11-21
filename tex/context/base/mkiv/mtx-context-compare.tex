@@ -1,0 +1,113 @@
+%D \module
+%D   [       file=mtx-context-compare,
+%D        version=2015.07.14,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Compare Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin help
+%
+% usage: context --extra=compare [options] file-1 file-2
+%
+% example: context --extra=compare file1.pdf file-2.pdf
+%
+% end help
+
+\input mtx-context-common.tex
+
+\starttext
+
+\starttexdefinition unexpanded ShowBoth #1#2#3
+    \startTEXpage
+        \startoverlay
+            {\externalfigure[#1][page=#3]}
+            {\externalfigure[#2][page=#3]}
+        \stopoverlay
+    \stopTEXpage
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowPage #1#2
+    \startTEXpage
+        \externalfigure[#1][page=#2]
+    \stopTEXpage
+\stoptexdefinition
+
+
+\startluacode
+
+local report = logs.reporter("compare")
+
+local fileone = document.files[1] or ""
+local filetwo = document.files[2] or ""
+
+if fileone == "" or filetwo == "" then
+    report("provide two filenames")
+    os.exit()
+end
+
+if not lfs.isfile(fileone) then
+    report("unknown file %a",fileone)
+    os.exit()
+end
+
+if not lfs.isfile(filetwo) then
+    report("unknown file %a",filetwo)
+    os.exit()
+end
+
+local function check(name)
+    local fig = figures.push { name = name }
+    figures.identify()
+    figures.check()
+    local used = fig.used
+    figures.pop()
+    return used
+end
+
+local one = check(fileone)
+local two = check(filetwo)
+
+if not one then
+    report("invalid file %a",fileone)
+    os.exit()
+end
+
+if not two then
+    report("invalid file %a",filetwo)
+    os.exit()
+end
+
+local n_one = tonumber(one.pages)
+local n_two = tonumber(two.pages)
+
+if not n_one or n_one ~= n_two then
+    report("files have different nofpages (%s vs %s)",n_one or "?",n_two or "?")
+end
+
+if n_one > n_two then
+    for i=1,n_two do
+        context.ShowBoth(fileone,filetwo,i)
+    end
+    for i=n_two+1,n_one do
+        context.ShowPage(fileone,i)
+    end
+else
+    for i=1,n_one do
+        context.ShowBoth(fileone,filetwo,i)
+    end
+    for i=n_one+1,n_two do
+        context.ShowPage(filetwo,i)
+    end
+end
+
+\stopluacode
+
+\stoptext
+
+\endinput

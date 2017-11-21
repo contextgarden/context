@@ -1,0 +1,395 @@
+% macros=mkvi language=uk
+
+\definemeasure[onecolumn]   [\columnwidth]
+\definemeasure[twocolumns]  [\dimexpr\plustwo  \columnwidth+          \columndistance\relax]
+\definemeasure[threecolumns][\dimexpr\plusthree\columnwidth+\plustwo  \columndistance\relax]
+\definemeasure[fourcolumns] [\dimexpr\plusfour \columnwidth+\plusthree\columndistance\relax]
+
+\usemodule[abr-04]
+
+\setupbodyfont
+  [dejavu,11pt]
+
+\definefont[QuiteLarge][SansBold sa 2.50]
+\definefont[NotSoLarge][SansBold sa 1.25]
+
+\setuplayout
+  [backspace=.1\paperwidth,
+   topspace=.025\paperheight,
+   header=0.025\paperheight,
+   footer=0.025\paperheight,
+   headerdistance=0.025\paperheight,
+   footerdistance=0.025\paperheight,
+   width=middle,
+   height=middle]
+
+\setuppagenumbering
+  [alternative=doublesided,
+   location=]
+
+\setupwhitespace
+  [line]
+
+\setupblank
+  [line]
+
+\setuptyping
+  [blank=halfline]
+
+\startsetups [pagenumber]
+    \hbox to .2\paperwidth {
+        \hss
+        Page \pagenumber
+        \hss
+    }
+\stopsetups
+
+\setupfooter [before=\vfill,after=\vfill,style=\bf,color=color-4]
+\setupheader [before=\vfill,after=\vfill,style=\bf,color=color-4]
+
+\setupfootertexts [] [\setups{pagenumber}]
+\setupheadertexts [] [\setups{chapterhead}]
+
+\startsetups [chapterhead]
+    \hbox to .2\paperwidth {
+        \hss
+        \getmarking[chapter]
+        \hss
+    }
+\stopsetups
+
+\setuphead
+  [chapter]
+  [header=empty]
+
+\definecolor[color-3][.5(red,black)]
+\definecolor[color-2][.5(green,black)]
+\definecolor[color-1][.5(blue,black)]
+\definecolor[color-4][.5(white,black)]
+\definecolor[color-5][.5(white,color-4)]
+\definecolor[color-6][.2(white,color-4)]
+
+\definecolor[fakerulecolor][white]
+
+\usemodule[typesetting]
+
+\setupcombination
+  [style=mono]
+
+\startuseMPgraphic{page}
+StartPage ;
+    path p ;
+    numeric n; n := PageNumber ;
+    numeric w; w := bbwidth(Page) ;
+    numeric h; h := bbheight(Page) ;
+    def DrawBit (expr bit, dx, dy) =
+        path p ; p := unitsquare xyscaled(w/5,h/40) shifted (dx*w/10,dy*(h-h/40)) ;
+        if n div bit > 0 :
+            n := n - (n div bit)*bit ;
+            fill p withcolor \MPcolor{color-1} ;
+        else :
+            fill p withcolor \MPcolor{color-2} ;
+        fi ;
+    enddef ;
+    DrawBit(32,7,1) ;
+    DrawBit(16,4,1) ;
+    DrawBit( 8,1,1) ;
+    DrawBit( 4,7,0) ;
+    DrawBit( 2,4,0) ;
+    DrawBit( 1,1,0) ;
+StopPage ;
+\stopuseMPgraphic
+
+\startuniqueMPgraphic{frame}
+    fill OverlayBox withcolor \MPcolor{color-5} ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{contrast}
+    fill OverlayBox withcolor \MPcolor{color-4} ;
+\stopuniqueMPgraphic
+
+\defineoverlay[page]    [\useMPgraphic{page}]
+\defineoverlay[frame]   [\useMPgraphic{frame}]
+\defineoverlay[contrast][\useMPgraphic{contrast}]
+
+\setuphead
+  [chapter]
+  [style=\QuiteLarge,
+   color=color-3,
+   number=no]
+
+\setuplist
+  [chapter]
+  [command=\MyListCommand,
+   alternative=command]
+
+\starttexdefinition unexpanded MyListCommand #1#2#3
+    \snaptogrid
+        [line,-line]\vbox {
+            \tfb
+            \setstrut
+            \strut#2
+            \quad#3
+        }
+\stoptexdefinition
+
+\setupmargindata
+  [style=\tttf,
+   color=color-3]
+
+\starttexdefinition unexpanded ShowFile #1
+    \margintext
+        {\cldcontext{string.match("#1","\letterpercent d+")}}
+    \typefile
+        [range={environment}]
+        {#1}
+\stoptexdefinition
+
+% \typefile[range=4]  {...}
+% \typefile[range={=}]{...} % start after comment lines
+
+\starttexdefinition unexpanded ShowEnvironmentFile #1
+    \margintext
+        {\cldcontext{string.match("#1","\letterpercent d+")}}
+    \typefile
+        [range={=startenvironment}]
+        {#1}
+\stoptexdefinition
+
+\startdocument
+
+\startMPpage
+StartPage ;
+    path p ; numeric w, h, d ; picture q ;
+    if true :
+        q := image(draw textext.urt("\ssbf PAGES") withcolor \MPcolor{color-6}) ;
+    else :
+        q := image(draw textext.urt("\ssbf PAGECOLUMNS") withcolor \MPcolor{color-6}) ;
+    fi ;
+    w := bbwidth(Page) ;
+    h := bbheight(Page) ;
+    d := h/100 ;
+    fill Page withcolor \MPcolor{color-1} ;
+    p := Page xysized (w,d) ;
+    for i := 5d step 2d until h-5d :
+        fill p shifted (0,i) withcolor \MPcolor{color-2} ;
+    endfor
+    p := Page xysized(w/10,h) ;
+    for i = 0, .3, .6, .9 :
+        fill p shifted (i*w,0) withcolor \MPcolor{color-1} withtransparency(1,.75) ;
+    endfor ;
+    def do_it(expr sz, sh) =
+        p := Page xysized sz ;
+        fill p shifted sh withcolor \MPcolor{color-3} withtransparency(1,.5) ;
+        draw q xysized (bbwidth(p),bbheight(p)) shifted sh ;
+    enddef ;
+    do_it ((8w/10,13d),(.1w,81d)) ;
+    do_it ((5w/10,13d),(.4w,67d)) ;
+    do_it ((2w/10,17d),(.1w,20d)) ;
+    do_it ((2w/10,15d),(.1w,56d)) ;
+    do_it ((1w/10,10d),(.4w,40d)) ;
+    do_it ((2w/10,13d),(.7w,27d)) ;
+    draw textext.urt("\ssbf Hans Hagen")
+        xysized (5w/10,5d)
+        shifted (.4w,6d)
+        withcolor \MPcolor{color-5} ;
+StopPage ;
+\stopMPpage
+
+\page[empty] \setuppagenumber[number=1]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\starttitle[title=Contents]
+
+    \placelist[chapter]
+
+\stoptitle
+
+\startchapter[title=Introduction]
+
+{\em This manual as well as the mechanism it describes is under construction. Don't
+use page columns in production. Experimenting is of course fine.}
+
+The \TEX\ engine is a progressive typesetter: it takes input and does something
+with it and can do that for quite a while. It can process massive input and
+produce massive output. In that process it never looks back. Now, it is of course
+possible to collect content and delay some aspects of the rendering but to what
+extent that content can be manipulated is limited. In \LUATEX\ one can do a bit
+more but even then the basic typesetting process is mostly linear.
+
+When a text gets typeset there are several properties that play a role:
+
+\startitemize
+\startitem
+    the width of the lines in a paragraph which is the main unit of processing
+\stopitem
+\startitem
+    the target height of what gets output, normally this is the height of the
+    text area, excluding headers and footers
+\stopitem
+\startitem
+    the parameters that determine when the so called output routine gets called,
+    for instance successive broken lines, widow and club penalties
+\stopitem
+\startitem
+    the presence of so called inserts, for instance footnotes or floating bodies
+\stopitem
+\startitem
+    the space between lines and paragraphs
+\stopitem
+\startitem
+    explicitly entered elements or spacing or injected by macros hooked into for
+    instance \type {\everypar}
+\stopitem
+\stopitemize
+
+It is important to realize that \TEX\ has no concept of what a page is. It takes
+input and occasionally hand over the intermediate result to the output routine.
+There decisions are made to flush out a page, either of not with ornaments like
+headers, footers, content left over from previous encounters, footnotes as well
+as maybe specific trickery liked by the backend that targets at some viewer.
+
+That said, so called multi|-|column layouts are {\em not} part of the concepts
+present in \TEX. As far as the engine is concerned there is only one column.
+Among the reasons for not having a native mechanism for columns is that it is
+very hard to come up with a mechanism for splitting them in ways that suits
+everybody. In fact, the amount of control needed would make such a mechanism very
+complex and still limited. You can compare this to math typesetting. That
+subspace has some fixed characteristics if only because otherwise mathematicians
+could not communicate. However, there is some control over spacing and one can to
+some extend intervene. In \LUATEX\ some of the hard coded properties are made
+configureable but still one gets pretty much what the engine considers right.
+Such an approach would not work with columns. In fact, it doesn't even work well
+with tables, for which \TEX\ provides the alignment mechanism: different kind of
+tables demand different solutions, which is why in \CONTEXT\ we have old
+fashioned tables, tabulated tables (that span pages and can contain paragraphs),
+natural as well as extreme tables that resemble \HTML\ tables, line tables and
+framed tables.
+
+So, when we want to support columns we need to write something in \TEX\ lingua
+and for that the \type {\vsplit} operation can be of help. So far we have in
+\CONTEXT\ four mechanisms:
+
+\startitemize[n]
+\startitem
+    the original \MKII\ mechanism that permits mixed single and multi|-|column
+    text flows, with limited support for floating bodies
+\stopitem
+\startitem
+    a reimplementation of mixed columns in a mix of \TEX\ and \LUA, a bit better
+    with balancing and penalties for keeping section heads with the text, but
+    with very limited support for floating bodies; it works ok with grids
+\stopitem
+\startitem
+    a reimplementation of \MKII\ columnsets, a mechanism that is meant for
+    magazine like layouts where floats can span columns and positioned at will:
+    this one assumes relative simple text flows but as a bonus provides spreads;
+    this one is strongly grid based
+\stopitem
+\startitem
+    page based columns, where we use the normal (single column) page builder to
+    collect columns that then get combined into a page: this one is quite robust
+    but one has to keep an eye on floats as we don't span across columns
+    otherwise than in top or bottom floats but, on the other hand, one can use so
+    called side floats; this one is still experimental
+\stopitem
+\stopitemize
+
+Given specific demands one can come up with alternatives but it's very hard to
+combine all demands into one mechanismn simply because anything can be part of
+the text flow. Because it is not much fun to write such mechanisms and because
+no project ever pays for fundamental development, one just has to accept what
+\CONTEXT\ provides, be it with limitations.
+
+The first mechanism is more or less obsolete and replaced by the second. For
+instance, we now use the second one when we have an itemize that demands columns.
+I must admit that I don't like columns and never use them. I was involved in
+projects where the designer wanted columns but in the end the complexity of the
+content didn't work well with that that decision: inconsistent whitespace (due to
+many small sections, lots of images, many tables, math formulas, etc) as well as
+the result having more pages that the single column variant with side and margin
+floats. Occasionally I use columned itemize or columned tables of contents and of
+course registers are often in columns.
+
+One can wonder why columns are supported anyway. It's mostly useful for
+newspapers that have wide pages or journals that have small print. For magazines
+and special layout it's fine too although it can look bad when columns are narrow
+and fancy layout tricks are used. I guess that at some point their use will
+disappear. A document on a phone or tablet is one narrow columns. An internet
+page is one long column. A printed book, given that there will be such items in
+the future is normally typeset in one column. And journals as well as newspapers
+more and more get replaced by media that better serve their purpose. So, apart
+from an intellectual challenge, implementing extensive multi|-|column support is
+a waste of energy. Which is why we can accept limitations.
+
+\stopchapter
+
+\startchapter[title=Just text]
+
+As with the other mechanism you can define a column instance and use that later.
+You can also directly pass the settings with the \type {\startpagecolumns} command
+but best is to define an instance.
+
+\FourPages{pagecolumns-001}
+
+\ShowFile{pagecolumns-001}
+
+We always start at a new page and end on a new one. Footnotes and such don't span
+columns and we don't balance. When the number of columns equals one you get the
+normal routine but with the requested settings.
+
+\stopchapter
+
+\startchapter[title=Floats]
+
+You can have floating bodies in columns. When a float doesn't fit it will be
+flushed at the top of the next page.
+
+\FourPages{pagecolumns-002}
+
+\ShowFile{pagecolumns-002}
+
+\SixPages{pagecolumns-007}
+
+\ShowFile{pagecolumns-007}
+
+Side floats are also supported but we don't treat them special so you get the
+same behaviour as with single column layouts.
+
+\FourPages{pagecolumns-005}
+
+\ShowFile{pagecolumns-005}
+
+\FourPages{pagecolumns-003}
+
+\ShowFile{pagecolumns-003}
+
+
+\stopchapter
+
+\startchapter[title=Footnotes]
+
+Footnotes are supported but we assume sane usage. You can always revert to
+endnotes if needed.
+
+\FourPages{pagecolumns-004}
+
+\ShowFile{pagecolumns-004}
+
+\stopchapter
+
+\startchapter[title=Pages]
+
+Going to a new page happens with \type {\page} and progressing to the next column
+with \type {\column}.
+
+\FourSpread{pagecolumns-006}
+
+\ShowFile{pagecolumns-006}
+
+\stopchapter
+
+\stopdocument

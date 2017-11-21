@@ -661,7 +661,7 @@
 
 \installcolumnbreakmethod \s!columnset \v!local
   {\OTRSETcolumnhbreak
-   \page_otr_flush_all_floats
+   \page_set_command_flush_all_floats
    \page_otr_eject_page
    % no \page_set_command_set_hsize, can be mid smaller (like tabulate)
    % also, this one should be executed at the outer level
@@ -2598,27 +2598,31 @@
      \fi
    \fi}
 
+\unexpanded\def\page_set_command_flush_all_floats
+  {\page_one_command_flush_all_floats}
+
 \defineoutputroutine
   [\s!columnset]
   [\s!page_otr_command_routine                  =\page_set_command_routine,
    \s!page_otr_command_package_contents         =\page_set_command_package_contents,
    \s!page_otr_command_set_vsize                =\page_set_command_set_vsize,
  % \s!page_otr_command_set_hsize                =\page_one_command_set_hsize, % tricky, goes wrong
+   \s!page_otr_command_synchronize_hsize        =\page_set_command_synchronize_hsize,
    \s!page_otr_command_next_page                =\page_set_command_next_page,
    \s!page_otr_command_next_page_and_inserts    =\page_set_command_next_page_and_inserts,
-   \s!page_otr_command_synchronize_hsize        =\page_set_command_synchronize_hsize,
    \s!page_otr_command_set_top_insertions       =\page_set_command_set_top_insertions,
    \s!page_otr_command_set_bottom_insertions    =\page_set_command_set_bottom_insertions,
    \s!page_otr_command_flush_top_insertions     =\page_set_command_flush_top_insertions,
    \s!page_otr_command_flush_bottom_insertions  =\page_set_command_flush_bottom_insertions,
-   \s!page_otr_command_set_float_hsize          =\page_set_command_set_float_hsize,
    \s!page_otr_command_check_if_float_fits      =\page_set_command_check_if_float_fits,
+   \s!page_otr_command_set_float_hsize          =\page_set_command_set_float_hsize,
    \s!page_otr_command_flush_float_box          =\page_set_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats  =\page_set_command_synchronize_side_floats,
    \s!page_otr_command_side_float_output        =\page_set_command_side_float_output,
+   \s!page_otr_command_synchronize_side_floats  =\page_set_command_synchronize_side_floats,
    \s!page_otr_command_flush_floats             =\page_set_command_flush_floats,
    \s!page_otr_command_flush_side_floats        =\page_set_command_flush_side_floats,
-   \s!page_otr_command_flush_saved_floats       =\page_set_command_flush_saved_floats
+   \s!page_otr_command_flush_saved_floats       =\page_set_command_flush_saved_floats,
+   \s!page_otr_command_flush_all_floats         =\page_set_command_flush_all_floats,
  % \s!page_otr_command_flush_margin_blocks      =\page_set_command_flush_margin_blocks, % not used
   ]
 

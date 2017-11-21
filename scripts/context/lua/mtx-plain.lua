@@ -49,7 +49,8 @@ scripts       = scripts       or { }
 scripts.plain = scripts.plain or { }
 
 local passed_options = table.tohash {
-    "utc"
+    "utc",
+    "synctex",
 }
 
 local function execute(...)

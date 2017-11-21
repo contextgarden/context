@@ -355,22 +355,39 @@ We use the same lookup logic for ffi loading.
  -- local message, library = pcall(savedffiload,nameonly(name))
  -- poplibpath()
 
+    local loaded = { }
+
     local function locateindeed(name)
-        local message, library = pcall(savedffiload,removesuffix(name))
-        if type(message) == "userdata" then
-            return message
-        elseif type(library) == "userdata" then
-            return library
-        else
-            return false
+        name = removesuffix(name)
+        local l = loaded[name]
+        if l == nil then
+            local message, library = pcall(savedffiload,name)
+            if type(message) == "userdata" then
+                l = message
+            elseif type(library) == "userdata" then
+                l = library
+            else
+                l = false
+            end
+            loaded[name] = l
+        elseif trace_ffilib then
+            report_ffilib("reusing already loaded %a",name)
         end
+        return l
     end
 
-    function ffilib(required,version)
-        if version == "system" then
+    function ffilib(name,version)
+        name = removesuffix(name)
+        local l = loaded[name]
+        if l ~= nil then
+            if trace_ffilib then
+                report_ffilib("reusing already loaded %a",name)
+            end
+            return l
+        elseif version == "system" then
             return locateindeed(name)
         else
-            return locate(required,version,trace_ffilib,report_ffilib,locateindeed)
+            return locate(name,version,trace_ffilib,report_ffilib,locateindeed)
         end
     end
 
@@ -382,6 +399,7 @@ We use the same lookup logic for ffi loading.
         if trace_ffilib then
             report_ffilib("trying to load %a using normal loader",name)
         end
+        -- so here we don't store
         return savedffiload(name)
     end
 

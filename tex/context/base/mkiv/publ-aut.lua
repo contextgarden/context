@@ -307,18 +307,20 @@ local function the_initials(initials,symbol,connector)
     for i=1,#initials do
         local initial = initials[i]
         if type(initial) == "table" then
+            -- J.-J.
             local set, s = { }, 0
             for i=1,#initial do
                 if i > 1 then
                     s = s + 1 ; set[s] = connector
                 end
                 s = s + 1 ; set[s] = initial[i]
+                s = s + 1 ; set[s] = symbol
             end
-            r = r + 1 ; result[r] = concat(set) .. symbol
+            r = r + 1 ; result[r] = concat(set)
         else
+            -- J.
             r = r + 1 ; result[r] = initial .. symbol
         end
-     -- r = r + 1 ; result[r] = symbol
     end
     return result
 end

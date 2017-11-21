@@ -62,7 +62,7 @@ local f_fore_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s\\bf#1}}%%"]
 local f_none_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\bf#1}}%%"]
 local f_none_none = formatters["\\unexpanded\\def\\slx%s#1{{#1}}%%"]
 local f_texstyled = formatters["\\slx%s{%s}"]
-local f_hanging   = formatters["\\slxb{%s}%s\\slxe"]
+local f_hanging   = formatters["\\slxb{%r}%s\\slxe"] -- we need to round: lua 5.3
 
 local v_none      = interfaces.variables.none
 

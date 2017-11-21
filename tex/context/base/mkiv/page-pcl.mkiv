@@ -30,8 +30,6 @@
 \definemeasure[threecolumns][\dimexpr\plusthree\columnwidth+\plustwo  \columndistance\relax]
 \definemeasure[fourcolumns] [\dimexpr\plusfour \columnwidth+\plusthree\columndistance\relax]
 
-\def\s!pagecolumn{pagecolumn}
-
 \newcount\c_page_col_n_of_columns \c_page_col_n_of_columns\plusone
 \newcount\c_page_col_current      \c_page_col_current     \plusone
 \newdimen\d_page_col_distance
@@ -49,70 +47,51 @@
 %D We need to step over empty columns.
 
 \unexpanded\def\page_col_command_next_page
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_otr_eject_page
-   \else
-     \page_otr_eject_page_column
-   \fi}
+  {\page_col_eject_page}
 
 \unexpanded\def\page_col_column
   {\page_otr_eject_page}
 
-\unexpanded\def\page_otr_eject_page_column
+\unexpanded\def\page_col_eject_page
   {\begingroup
-   \scratchcountertwo\realpageno
+   \scratchcountertwo  \realpageno
    \page_otr_eject_page
-   \scratchcounterone\zerocount
+   \scratchcounterone  \c_page_col_current
    \scratchcounterthree\zerocount
    \doloop{%
      \ifnum\scratchcounterthree>\plushundred
+       % too many attempts
+       \exitloop
+     \else\ifnum\realpageno>\scratchcountertwo
+       % we advanced at least one page so we're done
        \exitloop
      \else
-       \advance\scratchcounterthree\plusone
-       \ifnum\scratchcountertwo=\realpageno
-         \ifnum\c_page_col_current=\plusone
-           \exitloop
-         \else
-           \ifnum\scratchcounterone=\c_page_col_current
-              \dontleavehmode\null
-           \fi
-           \page_otr_eject_page
-           \scratchcounterone\c_page_col_current
-         \fi
-       \else
-         \exitloop
+       \ifnum\scratchcounterone=\c_page_col_current
+          \dontleavehmode\null
        \fi
-     \fi
+       \page_otr_eject_page
+       \scratchcounterone\c_page_col_current
+       \advance\scratchcounterthree\plusone
+     \fi\fi
    }%
    \endgroup}
 
 %D \unknown
 
 \unexpanded\def\page_col_command_next_page_and_inserts
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_otr_eject_page_and_flush_inserts
-   \else
-     \page_otr_eject_page_and_flush_inserts
-   \fi}
+  {\page_otr_eject_page_and_flush_inserts}
 
 %D \unknown
 
 \unexpanded\def\page_col_command_set_hsize
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_set_hsize
-   \else
-     \page_col_command_set_hsize_indeed
-   \fi}
-
-\unexpanded\def\page_col_command_set_hsize_indeed
   {\global\hsize\d_page_col_column_width\relax
    \global\d_page_col_available\dimexpr
       \numexpr\c_page_col_n_of_columns-\c_page_col_current+\plusone\relax\d_page_col_column_width
     + \numexpr\c_page_col_n_of_columns-\c_page_col_current         \relax\d_page_col_distance
    \relax
-     \global\d_page_col_sofar
+   \global\d_page_col_sofar
    \ifnum\c_page_col_n_of_columns=\plusone
-     \zerocount
+     \zeropoint
    \else
      \numexpr\c_page_col_n_of_columns-\plusone\relax
      \dimexpr\d_page_col_column_width+\d_page_col_distance\relax
@@ -120,14 +99,7 @@
 
 %D \unknown
 
-\unexpanded\def\page_col_command_set_vsize
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_set_vsize
-   \else
-     \page_col_command_set_vsize_indeed
-   \fi}
-
-\unexpanded\def\page_col_command_set_vsize_indeed % \page_one_command_set_vsize minus the pagegoal setting
+\unexpanded\def\page_col_command_set_vsize % \page_one_command_set_vsize minus the pagegoal setting
   {\ifgridsnapping
      \ifcase\layoutlines
        \getrawnoflines\textheight
@@ -141,12 +113,15 @@
 
 %D \unknown
 
-\unexpanded\def\page_col_command_package_contents % \box<n> \unvbox<n> % this one will be redone (checked)
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \expandafter\page_one_command_package_contents
-   \else
-     \expandafter\page_col_command_package_contents_all
-   \fi}
+\unexpanded\def\page_col_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+  {\bgroup
+   \setbox\b_page_one_contents\vbox to \textheight
+     {\page_one_registered_text_area_a#1#2}%
+   \page_one_command_package_show_state
+   \ht\b_page_one_contents\textheight
+   \page_one_registered_text_area_b
+     {\box\b_page_one_contents}%
+   \egroup}
 
 \unexpanded\def\page_col_command_package_contents_one#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
@@ -155,27 +130,27 @@
      \strc_notes_check_if_bottom_present
      \d_page_one_natural_depth\dp#2\relax
      \setbox\b_page_one_contents\vbox to \textheight
-       {\page_otr_command_flush_top_insertions
+       {\page_col_command_flush_top_insertions
         \page_one_registered_text_area_a#1#2%
         \hsize\d_page_col_column_width
         \ifgridsnapping
           \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
           \prevdepth\openstrutdepth
-          \page_otr_command_flush_bottom_insertions
+          \page_col_command_flush_bottom_insertions
           \vfil
         \else\ifcase\bottomraggednessmode
           % ragged (default)
           \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
           \prevdepth\openstrutdepth
-          \page_otr_command_flush_bottom_insertions
+          \page_col_command_flush_bottom_insertions
           \vfil
         \or
           % align (normal)
-          \page_otr_command_flush_bottom_insertions
+          \page_col_command_flush_bottom_insertions
         \or
           % baseline
           \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
-          \page_otr_command_flush_bottom_insertions
+          \page_col_command_flush_bottom_insertions
         \fi\fi
         \fakepagenotes}%
      \page_one_command_package_show_state
@@ -211,26 +186,9 @@
      \fi
    \egroup}
 
-\unexpanded\def\page_col_command_package_contents_all#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
-  {\bgroup
-   \setbox\b_page_one_contents\vbox to \textheight
-     {\page_one_registered_text_area_a#1#2}%
-   \page_one_command_package_show_state
-   \ht\b_page_one_contents\textheight
-   \page_one_registered_text_area_b
-     {\box\b_page_one_contents}%
-   \egroup}
-
 %D \unknown
 
 \unexpanded\def\page_col_command_side_float_output
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_side_float_output
-   \else
-     \page_col_command_side_float_output_indeed
-   \fi}
-
-\unexpanded\def\page_col_command_side_float_output_indeed
   {% % %
    \ifvoid\namedinsertionnumber\s!topfloat\else
      \scratchwidth\wd\namedinsertionnumber\s!topfloat
@@ -309,66 +267,99 @@
 
 %D \unknown
 
-\unexpanded\def\page_col_command_check_if_float_fits
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_check_if_float_fits
-   \else
-     \page_col_command_check_if_float_fits_indeed
-   \fi}
+% \unexpanded\def\page_col_command_check_if_float_fits
+%   {\ifconditional\c_page_floats_not_permitted
+%      \global\setfalse\c_page_floats_room
+%   %\else\ifabsdim\dimexpr\d_page_col_available-\naturalfloatwd\relax<\onepoint
+%    \else\ifdim\dimexpr\d_page_col_available-\naturalfloatwd\relax>-\onepoint
+%      \global\settrue\c_page_floats_room
+%    \else
+%      \global\setfalse\c_page_floats_room
+%    \fi\fi
+%    \ifconditional\c_page_floats_room
+%      \begingroup
+%      \scratchdimen\dimexpr\pagetotal+\lineheight\relax
+%      \ifdim\scratchdimen>\pagegoal
+%        \goodbreak
+%        \ifdim\dimexpr\d_page_col_available-\naturalfloatwd\relax>\onepoint
+%          \global\setfalse\c_page_floats_room
+%        \else
+%          \global\settrue\c_page_floats_room
+%        \fi
+%      \fi
+%      \endgroup
+%    \fi
+%    \ifconditional\c_page_floats_room
+%      \ifdim\pagetotal>\zeropoint
+%        \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
+%        \scratchdimentwo\pagegoal
+%        \relax % needed
+%        \ifcase\c_page_one_float_method
+%          % method 0 : raw
+%        \or
+%          % method 1 : safe
+%          \advance\scratchdimentwo -\strutdp
+%        \or
+%          % method 2 : tight
+%          \advance\scratchdimenone -\onepoint
+%        \fi
+%        \relax % really needed ! ! ! !
+%        \ifdim\scratchdimenone>\scratchdimentwo
+%          \global\setfalse\c_page_floats_room
+%        \fi
+%      \fi
+%      \ifconditional\c_page_floats_room
+%        \global\setbox\floatbox\hpack to \d_page_col_available{\hss\box\floatbox\hss}%
+%      \fi
+%    \fi}
 
-\unexpanded\def\page_col_command_check_if_float_fits_indeed
+\unexpanded\def\page_col_command_check_if_float_fits
   {\ifconditional\c_page_floats_not_permitted
+     % forget about it anyway
      \global\setfalse\c_page_floats_room
-   \else\ifabsdim\dimexpr\d_page_col_available-\naturalfloatwd\relax<\onepoint
-     \global\settrue\c_page_floats_room
    \else
-     \global\setfalse\c_page_floats_room
-   \fi\fi
-   \ifconditional\c_page_floats_room
-     \begingroup
-     \scratchdimen\dimexpr\pagetotal+\lineheight\relax
-     \ifdim\scratchdimen>\pagegoal
-       \goodbreak
-       \ifdim\dimexpr\d_page_col_available-\naturalfloatwd\relax>\onepoint
-         \global\setfalse\c_page_floats_room
-       \else
-         \global\settrue\c_page_floats_room
-       \fi
-     \fi
-     \endgroup
-   \fi
-   \ifconditional\c_page_floats_room
-     \ifdim\pagetotal>\zeropoint
-       \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
-       \scratchdimentwo\pagegoal
-       \relax % needed
-       \ifcase\c_page_one_float_method
-         % method 0 : raw
-       \or
-         % method 1 : safe
-         \advance\scratchdimentwo -\strutdp
-       \or
-         % method 2 : tight
-         \advance\scratchdimenone -\onepoint
-       \fi
-       \relax % really needed ! ! ! !
-       \ifdim\scratchdimenone>\scratchdimentwo
-         \global\setfalse\c_page_floats_room
-       \fi
+     % first we check the current column
+%      \ifdim\dimexpr\d_page_col_width-\naturalfloatwd\relax>-\onepoint
+     \ifdim\dimexpr\hsize-\naturalfloatwd\relax>-\onepoint
+       \global\settrue\c_page_floats_room
+     \else
+       \global\setfalse\c_page_floats_room
      \fi
      \ifconditional\c_page_floats_room
-       \global\setbox\floatbox\hpack to \d_page_col_available{\hss\box\floatbox\hss}%
+       % we fit in the column but do we have room
+       \ifdim\dimexpr\pagetotal+\lineheight\relax>\pagegoal
+         % try again later
+         \goodbreak
+       \fi
+       \ifdim\pagetotal>\zeropoint
+         \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
+         \scratchdimentwo\pagegoal
+         \relax % needed
+         \ifcase\c_page_one_float_method
+           % method 0 : raw
+         \or
+           % method 1 : safe
+           \advance\scratchdimentwo -\strutdp
+         \or
+           % method 2 : tight
+           \advance\scratchdimenone -\onepoint
+         \fi
+         \relax % really needed ! ! ! !
+         \ifdim\scratchdimenone>\scratchdimentwo
+           % there is no room, give up
+           \global\setfalse\c_page_floats_room
+           % now we can decide on a top float
+%          \fi
+         \else
+%            \ifconditional\c_page_floats_room
+%              \global\setbox\floatbox\hpack to \d_page_col_float_available{\hss\box\floatbox\hss}%
+%            \fi
+         \fi
+       \fi
      \fi
    \fi}
 
 %D \unknown
-
-\unexpanded\def\page_col_command_flush_floats
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_flush_floats
-   \else
-     \page_col_command_flush_floats_indeed
-   \fi}
 
 \def\page_col_set_float_pack_hsize
   {\ifnum\c_page_col_current=\c_page_col_n_of_columns
@@ -376,15 +367,15 @@
    \else
      \advance\c_page_col_current\plusone
    \fi
-   \page_col_command_set_hsize_indeed
+   \page_col_command_set_hsize
    \hsize\d_page_col_available}
 
-\unexpanded\def\page_col_command_flush_floats_indeed
+\unexpanded\def\page_col_command_flush_floats
   {\global\settrue\c_page_floats_flushing
    \ifconditional\c_page_floats_some_waiting
      \par
      \page_col_set_float_pack_hsize
-     \page_col_command_flush_floats_indeed_indeed
+     \page_col_command_flush_floats_indeed
    \fi
    \global\savednoffloats\zerocount
    \global\setfalse\c_page_floats_some_waiting
@@ -400,7 +391,7 @@
 
 \let\page_floats_show_pack_state\gobbleoneargument
 
-\def\page_col_command_flush_floats_indeed_indeed % much in common with OTRSET
+\def\page_col_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
      \ifconditional\c_page_floats_pack_flushed
        \setfalse\c_page_floats_center_box % not needed as we do call directly
@@ -439,7 +430,7 @@
             \hfil}%
            \doplacefloatbox
          % \page_one_insert_top_float
-           \doubleexpandafter\page_col_command_flush_floats_indeed_indeed
+           \doubleexpandafter\page_col_command_flush_floats_indeed
        \else
          % todo
        \fi
@@ -447,7 +438,7 @@
        \page_floats_get
      % \page_one_insert_top_float
        \doplacefloatbox
-       \doubleexpandafter\page_col_command_flush_floats_indeed_indeed
+       \doubleexpandafter\page_col_command_flush_floats_indeed
      \fi
    \fi}
 
@@ -462,20 +453,6 @@
      \else\ifconditional\c_page_margin_blocks_present
        \page_col_command_flush_floats
      \fi\fi
-   \fi}
-
-\unexpanded\def\page_col_command_flush_top_insertions
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_flush_top_insertions
-   \else
-     \page_col_command_flush_top_insertions_indeed
-   \fi}
-
-\unexpanded\def\page_col_command_flush_bottom_insertions
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_flush_bottom_insertions
-   \else
-     \page_col_command_flush_bottom_insertions_indeed
    \fi}
 
 \unexpanded\def\page_col_command_set_top_insertions
@@ -561,15 +538,8 @@
    \fi
    \page_col_command_set_top_insertions_indeed}
 
-\unexpanded\def\page_col_command_set_bottom_insertions
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_one_command_set_bottom_insertions
-   \else
-     \page_col_command_set_bottom_insertions_indeed
-   \fi}
-
-\let\page_col_command_flush_top_insertions_indeed   \page_one_command_flush_top_insertions
-\let\page_col_command_flush_bottom_insertions_indeed\page_one_command_flush_bottom_insertions
+\let\page_col_command_flush_top_insertions   \page_one_command_flush_top_insertions
+\let\page_col_command_flush_bottom_insertions\page_one_command_flush_bottom_insertions
 
 %let\page_col_command_set_top_insertions            \page_one_command_set_top_insertions
 \let\page_col_command_set_bottom_insertions         \page_one_command_set_bottom_insertions
@@ -631,14 +601,7 @@
 
 %D \unknown
 
-\unexpanded\def\page_col_command_routine % yet the same
-  {\ifnum\c_page_col_n_of_columns=\plusone
-     \page_sides_output_routine
-   \else
-     \page_sides_output_routine_column
-   \fi}
-
-\def\page_sides_output_routine_column
+\unexpanded\def\page_col_command_routine
   {\ifconditional\c_page_sides_short
      \page_sides_output_routine_yes_column
    \else
@@ -677,6 +640,8 @@
    % why was this \global\holdinginserts\zerocount
    \global\setfalse\c_page_sides_short}
 
+\let\page_col_command_flush_all_floats\relax
+
 %D \unknown
 
 \defineoutputroutine
@@ -685,21 +650,22 @@
    \s!page_otr_command_package_contents       =\page_col_command_package_contents,
    \s!page_otr_command_set_vsize              =\page_col_command_set_vsize,
    \s!page_otr_command_set_hsize              =\page_col_command_set_hsize,
+ % \s!page_otr_command_synchronize_hsize      =\page_col_command_synchronize_hsize, % not done
    \s!page_otr_command_next_page              =\page_col_command_next_page,
    \s!page_otr_command_next_page_and_inserts  =\page_col_command_next_page_and_inserts,
- % \s!page_otr_command_synchronize_hsize      =\page_col_command_synchronize_hsize, % not done
    \s!page_otr_command_set_top_insertions     =\page_col_command_set_top_insertions,
    \s!page_otr_command_set_bottom_insertions  =\page_col_command_set_bottom_insertions,
    \s!page_otr_command_flush_top_insertions   =\page_col_command_flush_top_insertions,
    \s!page_otr_command_flush_bottom_insertions=\page_col_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize        =\page_col_command_set_float_hsize,   % not done
    \s!page_otr_command_check_if_float_fits    =\page_col_command_check_if_float_fits,
+ % \s!page_otr_command_set_float_hsize        =\page_col_command_set_float_hsize,   % not done
    \s!page_otr_command_flush_float_box        =\page_col_command_flush_float_box,
-   \s!page_otr_command_synchronize_side_floats=\page_col_command_synchronize_side_floats,
    \s!page_otr_command_side_float_output      =\page_col_command_side_float_output,
+   \s!page_otr_command_synchronize_side_floats=\page_col_command_synchronize_side_floats,
    \s!page_otr_command_flush_floats           =\page_col_command_flush_floats,
    \s!page_otr_command_flush_side_floats      =\page_col_command_flush_side_floats,
    \s!page_otr_command_flush_saved_floats     =\page_col_command_flush_saved_floats,
+   \s!page_otr_command_flush_all_floats       =\page_col_command_flush_all_floats,
    \s!page_otr_command_flush_margin_blocks    =\page_col_command_flush_margin_blocks,
    \s!page_otr_command_test_column            =\page_col_command_test_page
   ]
@@ -744,9 +710,6 @@
 \installfloatmethod \s!pagecolumn \v!local       \somelocalfloat
 
 %D The main interface:
-
-\setupoutputroutine
-  [\s!pagecolumn]
 
 \installcorenamespace{pagecolumns}
 
@@ -793,11 +756,15 @@
      {\let\currentpagecolumns\empty
       \setuppagecolumns[#1]}%
      {\edef\currentpagecolumns{#1}}%
-   %
- % \page_col_enable_grid_snapping
-   %
-   \d_page_col_distance     \pagecolumnsparameter\c!distance\relax
-   \c_page_col_n_of_columns \pagecolumnsparameter\c!n\relax
+   \c_page_col_n_of_columns\pagecolumnsparameter\c!n\relax
+   \ifnum\c_page_col_n_of_columns>\plusone
+     \expandafter\page_col_start_yes
+   \else
+     \expandafter\page_col_start_nop
+   \fi} % public
+
+\unexpanded\def\page_col_start_yes
+  {\d_page_col_distance     \pagecolumnsparameter\c!distance\relax
  % \d_page_col_max_height   \pagecolumnsparameter\c!maxheight
    \d_page_col_max_width    \pagecolumnsparameter\c!maxwidth
  % \d_page_col_balance_step \pagecolumnsparameter\c!step
@@ -829,20 +796,35 @@
    \setupoutputroutine[\s!pagecolumn]%
    %
    \setupfloats[\c!ntop=\plusthousand]%
+ % \setupfloats[\c!nbottom=\plusthousand]%
    %
    \page_col_command_set_vsize
    \page_col_command_set_hsize
    %
-   \nofcolumns\c_page_mix_n_of_columns} % public
+   \nofcolumns\c_page_mix_n_of_columns
+   %
+   \unexpanded\def\page_col_start[##1]%
+     {\page_col_start_nop}%
+   %
+   \let\stoppagecolumns\page_col_stop_yes}
 
-\unexpanded\def\stoppagecolumns
+\unexpanded\def\page_col_start_nop
+  {\nofcolumns\c_page_mix_n_of_columns
+   \let\stoppagecolumns\page_col_stop_nop}
+
+\unexpanded\def\page_col_stop_yes
   {\column % \page_otr_eject_page
    \page
    \endgroup
-   \setupoutputroutine[\s!singlecolumn]%
-   \page_col_command_set_vsize
-   \page_col_command_set_hsize
+ % \setupoutputroutine[\s!singlecolumn]%
+   \page_otr_command_set_vsize
+   \page_otr_command_set_hsize
    \page
+   \endgroup}
+
+\unexpanded\def\page_col_stop_nop
+  {\page
+   \endgroup
    \endgroup}
 
 \protect \endinput

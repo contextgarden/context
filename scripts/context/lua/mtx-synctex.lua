@@ -28,6 +28,7 @@ local helpinfo = [[
     <flag name="edit"><short>open file at line: --line=.. --editor=.. sourcefile</short></flag>
     <flag name="list"><short>show blob: synctexfile</short></flag>
     <flag name="goto"><short>open file at position: --page=.. --x=.. --y=.. --editor=.. synctexfile</short></flag>
+    <flag name="report"><short>show file and line: --page=.. --x=.. --y=.. --console synctexfile</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -43,6 +44,9 @@ local application = logs.application {
 local report = application.report
 
 local editors = {
+    console = function(specification)
+        print(string.formatters["%q %i"](specification.filename,specification.linenumber or 1))
+    end,
     scite = sandbox.registerrunner {
         name     = "scite",
         program  = {
@@ -203,7 +207,7 @@ local function showlocation(filename)
                     local ury = factor * ( y + tonumber(h) )
                     f = files[f]
                     if f then
-                        report("  [% 4i % 4i % 4i % 4i] : % 5i : %s",llx,lly,urx,ury,l,f)
+                        report("  [% 4r % 4r % 4r % 4r] : % 5i : %s",llx,lly,urx,ury,l,f)
                     end
                 end
             end
@@ -245,6 +249,8 @@ if argument("edit") then
     editfile(filename,argument("line"),argument("editor"))
 elseif argument("goto") then
     gotolocation(filename,argument("page"),argument("x"),argument("y"),argument("editor"))
+elseif argument("report") then
+    gotolocation(filename,argument("page"),argument("x"),argument("y"),"console")
 elseif argument("list") then
     showlocation(filename)
 elseif argument("exporthelp") then

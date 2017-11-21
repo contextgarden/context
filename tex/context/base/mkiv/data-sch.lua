@@ -72,7 +72,7 @@ local runner     = sandbox.registerrunner {
     name     = "curl resolver",
     method   = "execute",
     program  = "curl",
-    template = "--silent -- insecure --create-dirs --output %cachename% %original%",
+    template = "--silent --insecure --create-dirs --output %cachename% %original%",
     checkers = {
         cachename = "cache",
         original  = "url",
@@ -151,7 +151,7 @@ local function http_handler(specification,cachename)
     local tempname = cachename .. ".tmp"
     local f = io.open(tempname,"wb")
     local status, message = http.request {
-        url = specification.original,
+        url  = specification.original,
         sink = ltn12.sink.file(f)
     }
     if not status then

@@ -259,7 +259,9 @@
   {\writestatus\m!system{Sorry, you're not done yet, so no goodbye!}}
 
 %D We define a few constants because that (1) provides some checking
-%D and (2) is handier when aligning definitions (checks nicer).
+%D and (2) is handier when aligning definitions (checks nicer). Most
+%D routines will use ard codes names but sometimes we want to adapt,
+%D which is why we have these:
 
 \definesystemconstant{page_otr_command_routine}
 \definesystemconstant{page_otr_command_package_contents}
@@ -280,12 +282,14 @@
 \definesystemconstant{page_otr_command_flush_floats}
 \definesystemconstant{page_otr_command_flush_side_floats}
 \definesystemconstant{page_otr_command_flush_saved_floats}
+\definesystemconstant{page_otr_command_flush_all_floats}
 \definesystemconstant{page_otr_command_flush_margin_blocks}
 \definesystemconstant{page_otr_command_test_column}
 
 \definesystemconstant{singlecolumn}
 \definesystemconstant{multicolumn}   % will move
 \definesystemconstant{columnset}     % will move
+\definesystemconstant{pagecolumn}    % will move
 
 \defineoutputroutinecommand
   [\s!page_otr_command_routine,
@@ -307,6 +311,7 @@
    \s!page_otr_command_flush_floats,
    \s!page_otr_command_flush_side_floats,
    \s!page_otr_command_flush_saved_floats,
+   \s!page_otr_command_flush_all_floats,
    \s!page_otr_command_flush_margin_blocks,
    \s!page_otr_command_test_column]
 

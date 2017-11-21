@@ -137,7 +137,7 @@
   {\def\page_breaks_process[##1]{}}
 
 \installpagebreakmethod \s!dummy
-  {\page_otr_flush_all_floats
+  {\page_otr_command_flush_all_floats
    \page_otr_command_next_page
    \page_otr_insert_dummy_page}
 
@@ -150,11 +150,11 @@
 
 \unexpanded\def\page_breaks_unknown % how often called ?
   {\doifelseinstring{+}\page_breaks_current_option
-     {\page_otr_flush_all_floats
+     {\page_otr_command_flush_all_floats
       \page_otr_command_next_page
       \dorecurse\page_breaks_current_option\page_otr_insert_dummy_page}
      {\doifelsenumber\page_breaks_current_option
-        {\page_otr_flush_all_floats
+        {\page_otr_command_flush_all_floats
          \page_otr_command_next_page
          \doloop
            {\ifnum\userpageno<\page_breaks_current_option\relax
@@ -179,7 +179,7 @@
 
 \installpagebreakmethod \v!yes
   {\ifconditional\c_page_breaks_enabled
-     \page_otr_flush_all_floats
+     \page_otr_command_flush_all_floats
      \page_otr_command_next_page
      \ifinsidecolumns       % this will move to MUL
        \page_otr_eject_page % otherwise sometimes no change
@@ -229,12 +229,12 @@
   {\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}
 
 \installpagebreakmethod \v!left
-  {\page_otr_flush_all_floats
+  {\page_otr_command_flush_all_floats
    \page_otr_command_next_page_and_inserts
    \doifbothsidesoverruled\donothing\page_reset_marks_and_insert_dummy\donothing}
 
 \installpagebreakmethod \v!right
-  {\page_otr_flush_all_floats
+  {\page_otr_command_flush_all_floats
    \page_otr_command_next_page_and_inserts
    \doifbothsidesoverruled\donothing\donothing\page_reset_marks_and_insert_dummy}
 
@@ -269,7 +269,7 @@
    \fi}
 
 \installpagebreakmethod \v!last
-  {\page_otr_flush_all_floats
+  {\page_otr_command_flush_all_floats
    \page_otr_command_next_page_and_inserts
    \relax
    \doifbothsidesoverruled

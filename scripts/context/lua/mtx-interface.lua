@@ -346,11 +346,14 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
                                             done = false
                                             break
                                         end
-                                    elseif e.tg == "instance" then
-                                        done[i] = name
                                     else
-                                        done = false
-                                        break
+                                        local tg = e.tg
+                                        if tg == "instance" or tg == "instance:assignment" or tg == "instance:ownnumber" then
+                                            done[i] = name
+                                        else
+                                            done = false
+                                            break
+                                        end
                                     end
                                 end
                                 if done then

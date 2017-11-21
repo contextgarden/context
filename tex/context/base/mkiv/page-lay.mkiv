@@ -1114,7 +1114,7 @@
      \setsystemmode\v!footer
    \fi}
 
-\def\calculatevsizes % name will change
+\unexpanded\def\calculatevsizes % name will change
   {\textheight\makeupheight
    \doifelselayoutsomeline\v!header\compensatevsizeheader\donothing
    \doifelselayoutsomeline\v!footer\compensatevsizefooter\donothing
@@ -1122,14 +1122,14 @@
    \resetglobal
    \page_otr_command_set_vsize}
 
-\def\calculateglobalvsizes % name will change
+\unexpanded\def\calculateglobalvsizes % name will change
   {\global\textheight\makeupheight
    \doifelselayoutsomeline\v!header\globalcompensatevsizeheader\donothing
    \doifelselayoutsomeline\v!footer\globalcompensatevsizefooter\donothing
    \page_layouts_set_modes
    \page_otr_command_set_vsize}
 
-\def\calculatereducedvsizes % name will change
+\unexpanded\def\calculatereducedvsizes % name will change
   {\textheight\makeupheight
    \doifelselayoutsomeline\v!header\compensatevsizeheader\compensatevsizeheaderzero
    \doifelselayoutsomeline\v!footer\compensatevsizefooter\compensatevsizefooterzero}
@@ -1142,7 +1142,7 @@
 \def\compensatedinnermakeupmargin
   {\dimexpr\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi\relax}
 
-\def\freezetextwidth % name will change      % \makeupwidth may be set to \textwidth
+\unexpanded\def\freezetextwidth % name will change      % \makeupwidth may be set to \textwidth
   {\textwidth\makeupwidth                    % which is a tricky but valid value
    \edef\m_currentlayout_text_width {\layoutparameter\c!textwidth }%
    \edef\m_currentlayout_text_margin{\layoutparameter\c!textmargin}%
@@ -1159,7 +1159,7 @@
    \global\advance\innermakeupwidth-\scratchdimen
    \advance\textwidth-\scratchdimen}   % local
 
-\def\calculatehsizes % name will change
+\unexpanded\def\calculatehsizes % name will change
   {\freezetextwidth
    \page_otr_command_set_hsize}
 

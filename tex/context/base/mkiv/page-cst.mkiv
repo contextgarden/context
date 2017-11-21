@@ -189,11 +189,11 @@
 \def\page_grd_stop
   {\endgraf % needed, else wrong vsize in one par case
    \vfill % otherwise weird \placenotes[endnotes]
-   \page_otr_command_set_vsize % needed
+   \page_grd_command_set_vsize % needed
    \penalty\c_page_otr_eject_penalty
    \page_grd_command_flush_page
    \page_otr_fill_and_eject_page
-   \page_otr_command_set_vsize % needed
+   \page_grd_command_set_vsize % why here
    \egroup
    \page_otr_command_set_vsize
    \page_otr_command_set_hsize}
@@ -334,7 +334,7 @@
 
 \unexpanded\def\page_grd_command_next_progress
   {\strut
-   \page_otr_flush_all_floats
+   \page_grd_command_flush_all_floats
    \page_otr_eject_page
    \ifcase\clf_columnsetnoto\else
      \expandafter\page_grd_command_next_progress
@@ -354,10 +354,10 @@
    \fi}
 
 \unexpanded\def\page_grd_command_next_page_and_inserts
-% {\page_otr_eject_page_and_flush_inserts}
-  {\page_otr_flush_all_floats
+  {\page_grd_command_flush_all_floats
    \page_grd_command_next_page}
 
+\let\page_grd_command_flush_all_floats\page_one_command_flush_all_floats
 \let\page_grd_command_package_contents\page_one_command_package_contents
 
 \unexpanded\def\page_grd_command_flush_saved_floats
@@ -576,27 +576,31 @@
 \unexpanded\def\page_grd_command_synchronize_hsize
   {\page_grd_command_set_hsize}
 
+\unexpanded\def\page_grd_command_flush_all_floats
+  {\page_one_command_flush_all_floats}
+
 \defineoutputroutine
   [\s!pagegrid]
   [\s!page_otr_command_routine                  =\page_grd_command_routine,
    \s!page_otr_command_package_contents         =\page_grd_command_package_contents,
    \s!page_otr_command_set_vsize                =\page_grd_command_set_vsize,
    \s!page_otr_command_set_hsize                =\page_grd_command_set_hsize, % tricky, goes wrong
+   \s!page_otr_command_synchronize_hsize        =\page_grd_command_synchronize_hsize,
    \s!page_otr_command_next_page                =\page_grd_command_next_page,
    \s!page_otr_command_next_page_and_inserts    =\page_grd_command_next_page_and_inserts,
-   \s!page_otr_command_synchronize_hsize        =\page_grd_command_synchronize_hsize,
  % \s!page_otr_command_set_top_insertions       =\page_grd_command_set_top_insertions,
  % \s!page_otr_command_set_bottom_insertions    =\page_grd_command_set_bottom_insertions,
  % \s!page_otr_command_flush_top_insertions     =\page_grd_command_flush_top_insertions,
  % \s!page_otr_command_flush_bottom_insertions  =\page_grd_command_flush_bottom_insertions,
- % \s!page_otr_command_set_float_hsize          =\page_grd_command_set_float_hsize,
    \s!page_otr_command_check_if_float_fits      =\page_grd_command_check_if_float_fits,
+ % \s!page_otr_command_set_float_hsize          =\page_grd_command_set_float_hsize,
  % \s!page_otr_command_flush_float_box          =\page_grd_command_flush_float_box,
    \s!page_otr_command_synchronize_side_floats  =\page_grd_command_synchronize_side_floats,
    \s!page_otr_command_side_float_output        =\page_grd_command_side_float_output,
    \s!page_otr_command_flush_floats             =\page_grd_command_flush_floats,
    \s!page_otr_command_flush_side_floats        =\page_grd_command_flush_side_floats,
-   \s!page_otr_command_flush_saved_floats       =\page_grd_command_flush_saved_floats
+   \s!page_otr_command_flush_saved_floats       =\page_grd_command_flush_saved_floats,
+   \s!page_otr_command_flush_all_floats         =\page_grd_command_flush_all_floats,
  % \s!page_otr_command_flush_margin_blocks      =\page_grd_command_flush_margin_blocks, % not used
   ]
 

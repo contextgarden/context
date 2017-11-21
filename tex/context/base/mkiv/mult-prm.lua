@@ -343,6 +343,7 @@ return {
   "suppresslongerror",
   "suppressmathparerror",
   "suppressoutererror",
+  "suppressprimitiveerror",
   "synctex",
   "tagcode",
   "textdir",

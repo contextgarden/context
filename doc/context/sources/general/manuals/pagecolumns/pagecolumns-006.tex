@@ -1,0 +1,45 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment pagecolumns-000
+
+\definepagecolumns
+  [example]
+  [n=3,
+   distance=\emwidth]
+
+\setupbackgrounds
+  [text]
+  [background=color,
+   backgroundcolor=color-1]
+
+\starttext
+
+\startpagecolumns[example]
+
+\dorecurse {20} {
+  HERE #1.1
+  \samplefile{klein}\column
+  \samplefile{klein}\page
+}
+
+\page[right]
+
+RIGHT PAGE
+
+\page[left]
+
+LEFT PAGE
+
+\dorecurse {20} {
+  HERE #1.2
+  \samplefile{klein}\column
+  \samplefile{klein}\page
+}
+
+\stoppagecolumns
+
+\stoptext
+
+

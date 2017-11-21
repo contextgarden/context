@@ -19897,7 +19897,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6753, stripped down to: 5512
+-- original size: 6753, stripped down to: 5511
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -19953,7 +19953,7 @@ local runner=sandbox.registerrunner {
   name="curl resolver",
   method="execute",
   program="curl",
-  template="--silent -- insecure --create-dirs --output %cachename% %original%",
+  template="--silent --insecure --create-dirs --output %cachename% %original%",
   checkers={
     cachename="cache",
     original="url",
@@ -20380,7 +20380,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 14415, stripped down to: 7927
+-- original size: 14943, stripped down to: 8305
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -20614,21 +20614,37 @@ if FFISUPPORTED and ffi and ffi.load then
   local trace_ffilib=false
   local savedffiload=ffi.load
   trackers.register("resolvers.ffilib",function(v) trace_ffilib=v end)
+  local loaded={}
   local function locateindeed(name)
-    local message,library=pcall(savedffiload,removesuffix(name))
-    if type(message)=="userdata" then
-      return message
-    elseif type(library)=="userdata" then
-      return library
-    else
-      return false
+    name=removesuffix(name)
+    local l=loaded[name]
+    if l==nil then
+      local message,library=pcall(savedffiload,name)
+      if type(message)=="userdata" then
+        l=message
+      elseif type(library)=="userdata" then
+        l=library
+      else
+        l=false
+      end
+      loaded[name]=l
+    elseif trace_ffilib then
+      report_ffilib("reusing already loaded %a",name)
     end
+    return l
   end
-  function ffilib(required,version)
-    if version=="system" then
+  function ffilib(name,version)
+    name=removesuffix(name)
+    local l=loaded[name]
+    if l~=nil then
+      if trace_ffilib then
+        report_ffilib("reusing already loaded %a",name)
+      end
+      return l
+    elseif version=="system" then
       return locateindeed(name)
     else
-      return locate(required,version,trace_ffilib,report_ffilib,locateindeed)
+      return locate(name,version,trace_ffilib,report_ffilib,locateindeed)
     end
   end
   function ffi.load(name)
@@ -20989,8 +21005,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 866119
--- stripped bytes    : 315183
+-- original bytes    : 866647
+-- stripped bytes    : 315334
 
 -- end library merge
 

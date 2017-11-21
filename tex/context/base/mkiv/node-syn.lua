@@ -205,6 +205,12 @@ local enabled = false
 local paused  = 0
 local used    = false
 
+-- get rid of overhead
+
+if tex.set_synctex_no_files then
+    tex.set_synctex_no_files(1)
+end
+
 -- the file name stuff
 
 local noftags            = 0

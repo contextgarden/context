@@ -32,8 +32,14 @@
 \defineregister
   [texmacro]
 
+\unexpanded\def\texcommandmeaning#1{}
+\unexpanded\def\texcommandusage  #1{}
+
 \definesorting
   [texcommand]
+  [texcommands]
+  [\texcommandmeaning]
+  [\texcommandusage]
 
 \setupsorting
   [texcommand]
@@ -108,7 +114,6 @@
         \let\currentSETUPprefix\empty
     }
     \edef\currentSETUPname{\xmlatt{#1}{name}}
-    \let\currentSETUPgenerated\empty
     \doifelsenothing {\xmlatt{#1}{variant}} {
         \let\currentSETUPvariant\empty
     } {
@@ -118,7 +123,6 @@
         \currentSETUPprefix
         \currentSETUPname
         \currentSETUPvariant
-        \currentSETUPgenerated
     }
 \stopxmlsetups
 
@@ -132,8 +136,7 @@
     } {
         \let\currentSETUPprefix\empty
     }
-%     \edef\currentSETUPname{\xmlatt{#1}{name}}
-    \let\currentSETUPgenerated\empty
+    \edef\currentSETUPname{\xmlatt{#1}{name}}
     \doifelsenothing {\xmlatt{#1}{variant}} {
         \let\currentSETUPvariant\empty
     } {
@@ -143,58 +146,21 @@
         \currentSETUPprefix
         \currentSETUPname
         \currentSETUPvariant
-        \currentSETUPgenerated
     }
 \stopxmlsetups
 
-% \startxmlsetups xml:setups:register
-%     \doifelse {\xmlatt{#1}{variant}} {instance} {
-%         \def\docommand##1%
-%           {\def\currentSETUPname{##1}%
-%            \xmlsetup{#1}{xml:setups:assemblename:instance}
-%            \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{##1}}}}%
-%         \processcommacommand[\clf_getinstances{#1}]\docommand
-%     } {
-%         \xmlsetup{#1}{xml:setups:assemblename}
-%         % not really needed if we just use setups
-%         \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
-%     }
-% \stopxmlsetups
-
-\settrue\c_cmd_show_registered
-
-\let\currentSETUPinclusion\empty
-
-\installtextracker
-  {cmd.showregistered}
-  {\settrue\c_cmd_show_registered}
-  {\setfalse\c_cmd_show_registered}
-
 \startxmlsetups xml:setups:register
-    \ifconditional\c_cmd_show_registered
-        \edef\currentSETUPinclusion{\xmlinclusionbase{#1}}%
-        \ifx\currentSETUPinclusion\empty\else
-            \edef\currentSETUPinclusion{\currentSETUPinclusion: }
-        \fi
-    \else
-        \let\currentSETUPinclusion\empty
-    \fi
-    \doif {\xmlatt{#1}{variant}} {instance} {
+%     \doif {\xmlatt{#1}{variant}} {instance} {
+    \doifcommon {\xmlatt{#1}{variant}} {instance,instance:assignment,instance:ownnumber} {
         \def\docommand##1{
             \xmlsetup{#1}{xml:setups:assemblename:instance}
-            \ifconditional\c_cmd_show_registered
-               %\writestatus{known setup}{\currentSETUPinclusion stp:x:\currentSETUPfullname:##1}%
-                \writestatus{known setup}{\currentSETUPinclusion \currentSETUPfullname:##1}%
-            \fi
-            \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
+%             \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
+            \expanded{\texcommand[\currentSETUPfullname:##1]{{#1}{##1}}}}%
         \processcommacommand[\clf_getinstances{#1}]\docommand
     }
     \xmlsetup{#1}{xml:setups:assemblename}
-    % not really needed if we just use setups
-    \ifconditional\c_cmd_show_registered
-        \writestatus{known setup}{\currentSETUPinclusion stp:x:\currentSETUPfullname}%
-    \fi
-    \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
+%     \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
+    \expanded{\texcommand[\currentSETUPfullname]{{#1}{}}}
 \stopxmlsetups
 
 \startluacode
@@ -223,6 +189,9 @@
     moduledata.setups  = setups
     local definitions  = { }
     setups.definitions = definitions
+
+    local report       = logs.reporter("command setup")
+    local report_known = logs.reporter("command setup","known")
 
     function xml.functions.setups_define(id)
         local x = lxmlgetid(id)
@@ -295,9 +264,9 @@
                         if resolved then
                             e.__p__.dt[e.ni] = resolved
                             resolve(resolved)
-                        -- logs.report("setups","resolved: %a",name)
+                         -- report("resolved: %a",name)
                         else
-                            logs.report("setups","unable to resolve: %a",name)
+                            report("unable to resolve: %a",name)
                         end
                     end
                 end
@@ -404,6 +373,31 @@
         overload  = true,
         arguments = { "string" },
     }
+
+    if structures then
+        local synonyms = structures.synonyms
+        if synonyms then
+            local collected = synonyms.collected
+            if collected then
+                local texcommand = collected.texcommand
+                if texcommand then
+                    local entries = texcommand.entries
+                    if entries then
+                        local t = { }
+                        local n = #entries
+                        for i=1,n do
+--                            t[i] = gsub(entries[i].definition.tag,"^stp:x:","")
+                            t[i] = entries[i].definition.tag
+                        end
+                        table.sort(t)
+                        for i=1,n do
+                            report_known(t[i])
+                        end
+                    end
+                end
+            end
+        end
+    end
 \stopluacode
 
 % <?xml version="1.0" encoding="UTF-8"?>
@@ -494,15 +488,18 @@
    \fi}
 
 \def\cmd_show_setup_nop#1% this will trigger 'used'
-  {\registersort[texcommand][stp:x:#1]%
+%   {\registersort[texcommand][stp:x:#1]%
+  {\registersort[texcommand][#1]%
    \ifconditional\c_cmd_show_setup
-     \writestatus{setup}{#1 / \rawsynonymname{texcommand}{stp:x:#1}}%
+%      \writestatus{setup}{#1 / \rawsynonymname{texcommand}{stp:x:#1}}%
+     \writestatus{setup}{#1 / \rawsynonymname{texcommand}{#1}}%
    \fi
    \startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]%
-       \edef\cmd_id{\rawsynonymname{texcommand}{stp:x:#1}}%
+%        \edef\cmd_id{\rawsynonymname{texcommand}{stp:x:#1}}%
+       \edef\cmd_id{\rawsynonymname{texcommand}{#1}}%
        \ifx\cmd_id\empty
-          missing: stp:x:#1
+          missing: #1
        \else
          \ifx\m_cmd_instance\empty
            \edef\m_cmd_instance{\expandafter\secondoftwoarguments\cmd_id}%

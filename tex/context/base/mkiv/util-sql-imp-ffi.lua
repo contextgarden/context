@@ -143,7 +143,8 @@ ffi.cdef [[
 ]]
 
 local sql                    = utilities.sql
-local mysql                  = ffi.load(os.name == "windows" and "libmysql" or "libmysqlclient")
+----- mysql                  = ffi.load(os.name == "windows" and "libmysql" or "libmysqlclient")
+local mysql                  = ffilib(os.name == "windows" and "libmysql" or "libmysqlclient")
 
 local nofretries             = 5
 local retrydelay             = 1

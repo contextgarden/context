@@ -70,7 +70,8 @@ ffi.cdef [[
 
 local ffi_tostring = ffi.string
 
-local sqlite = ffi.load("sqlite3")
+----- sqlite = ffi.load("sqlite3")
+local sqlite = ffilib("sqlite3")
 
 sqlite.sqlite3_initialize();
 

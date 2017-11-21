@@ -298,7 +298,7 @@ function job.load(filename)
             local initializer = list[3]
             local result      = accesstable(target,utilitydata)
             if result then
-                local done        = packers.unpack(result,jobpacker,true)
+                local done = packers.unpack(result,jobpacker,true)
                 if done then
                     migratetable(target,mark(result))
                     if type(initializer) == "function" then

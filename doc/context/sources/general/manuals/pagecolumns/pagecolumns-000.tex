@@ -1,0 +1,72 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startenvironment pagecolumns-000
+
+\usemodule[visual,simulate]
+
+\dontcomplain
+
+\useMPlibrary[dum]
+
+\setupbodyfont
+  [palatino]
+
+\setuplayout
+  [grid=yes]
+
+\setuplayout
+  [backspace=20mm,
+   cutspace=15mm,
+   width=middle,
+   height=middle]
+
+\setupsystem
+  [random=1234]
+
+\setuppagenumbering
+  [alternative=doublesided,
+   location=]
+
+\setupheadertexts
+  [pagenumber][right]
+  [left][pagenumber]
+
+\setupfootertexts
+  [\inputfilename]
+
+\setupfooter
+  [color=black,
+   style=\tttf]
+
+\setupheader
+  [color=black,
+   style=\tttf]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\definecolor[color-3][.5(red,black)]
+\definecolor[color-2][.5(green,black)]
+\definecolor[color-1][.5(blue,black)]
+\definecolor[color-4][.5(white,black)]
+\definecolor[color-5][.5(white,color-4)]
+
+\definecolor[fakerulecolor][white]
+
+\setupcolors
+  [textcolor=white]
+
+\startuniqueMPgraphic{frame}
+  fill OverlayBox withcolor \MPcolor{color-1} ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{contrast}
+  fill OverlayBox withcolor \MPcolor{color-3} ;
+\stopuniqueMPgraphic
+
+\defineoverlay[frame]   [\uniqueMPgraphic{frame}]
+\defineoverlay[contrast][\uniqueMPgraphic{contrast}]
+
+\stopenvironment

@@ -1,0 +1,70 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment pagecolumns-000
+
+\definepagecolumns[example][n=2,distance=\emwidth]
+
+\setupbackgrounds[text][background=color,backgroundcolor=color-1]
+
+\useMPlibrary[dum]
+
+\starttext
+
+\startbuffer[small]
+    \framed
+      [width=3cm,
+       height=2cm,
+       frame=off,
+       background=color,
+       backgroundcolor=color-2]
+      {Small}
+\stopbuffer
+
+\startbuffer[large]
+    \framed
+      [width=12cm,
+       height=6cm,
+       frame=off,
+       background=color,
+       backgroundcolor=color-2]
+      {Large}
+\stopbuffer
+
+\startpagecolumns[example]
+    \samplefile{tufte}\par
+    \startplacefigure[location=here,title=Test]
+        \getbuffer[small]
+    \stopplacefigure
+    \startplacefigure[location=here,title=Test]
+        \getbuffer[small]
+    \stopplacefigure
+    \samplefile{tufte}\par
+\stoppagecolumns
+
+\startpagecolumns[example]
+    \samplefile{tufte}\par
+    \startplacefigure[location=here,title=Test]
+        \getbuffer[small]
+    \stopplacefigure
+    \startplacefigure[location=here,title=Test]
+        \getbuffer[large]
+    \stopplacefigure
+    \samplefile{tufte}\par
+\stoppagecolumns
+
+\startpagecolumns[example]
+    \samplefile{tufte}\par
+    \startplacefigure[location=here,title=Test]
+        \getbuffer[large]
+    \stopplacefigure
+    \startplacefigure[location=here,title=Test]
+        \getbuffer[large]
+    \stopplacefigure
+    \samplefile{tufte}\par
+\stoppagecolumns
+
+\stoptext
+
+
