@@ -673,7 +673,10 @@ do
 end
 
 do
-local stores = { }
+
+    local mpvprint = mp.vprint
+
+    local stores = { }
 
     function mp.newstore(name)
         stores[name] = { }
@@ -688,7 +691,7 @@ local stores = { }
     end
 
     function mp.fromstore(name,key)
-        mp.vprint(stores[name][key]) -- type specific
+        mpvprint(stores[name][key]) -- type specific
     end
 
     interfaces.implement {
@@ -698,5 +701,16 @@ local stores = { }
             context(stores[name][key])
         end
     }
+
+end
+
+do
+
+    local mpprint  = mp.print
+    local texmodes = tex.modes
+
+    function mp.processingmode(s)
+        mpprint(tostring(texmodes[s]))
+    end
 
 end

@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=setups-basics, % x-set-12,
+%D   [       file=setups-overview, % x-set-12,
 %D        version=2016.04.05, % 2004.10.31,
 %D         remark=setupx.tex: 1998.07.20 and later,
 %D          title=\CONTEXT\ Setup Definitions,
@@ -12,9 +12,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% context --interface=en --global --result=setup-en x-setups-overview.mkiv
+% context --interface=en --global --result=setup-en         x-setups-overview.mkiv --mode=setups:save
+% context --interface=en --global --result=setup-mapping-en x-setups-overview.mkiv --mode=setups:mapping
 
 % \enablemode[setups:save]
+
+% \enablemode[setups:mapping]
 
 \usemodule[setups-basics]
 
@@ -80,7 +83,12 @@
 \definecolor [darkgray]  [s=.1]
 
 \usetypescript[palatino]
-\setupbodyfont[palatino,9pt]
+
+\doifelsemode {setups:mapping} {
+    \setupbodyfont[palatino,8pt]
+} {
+    \setupbodyfont[palatino,9pt]
+}
 
 \defineoverlay
   [cover]
@@ -91,28 +99,42 @@
   [\hbox to \paperwidth{\reuseMPgraphic{cover+back}\hss}]
 
 \startreusableMPgraphic{cover+back}
-    numeric h, w ; path p, q, r ; color f, d ; pair s ;
+    numeric h, w; boolean mapping ; path p, q, r ; color f, d ; pair s ;
     h := OverlayHeight ; w := 2*OverlayWidth ;
     r := unitsquare xyscaled (w,h) ;
     fill r withcolor \MPcolor{lightgray} ;
-    set_grid(w,h,w/8,w/16) ;
+    mapping := lua.mp.processingmode("setups:mapping") ;
+    if mapping :
+        set_grid(w,h,w/8,w/160) ;
+        pickup pensquare yscaled (w/80) ;
+    else :
+        set_grid(w,h,w/8,w/16) ;
+        pickup pencircle scaled (w/100) ;
+    fi ;
     forever :
         s := center r randomized (w,h) ;
         if new_on_grid(xpart s, ypart s) :
-            s := (dx,dy) ;
-            p := fullsquare xyscaled(w/4,w/8) ;
-            q := (-4w,ypart ulcorner p) -- .5[ulcorner p, urcorner p] -- (4w,ypart urcorner p) ;
-            q := q shifted (0,-w/24) ;
-            p := p randomized (w/40,w/40) ;
-            q := q randomized (0,w/100) ;
-            q := q cutafter  (p cutafter  point 3 of p) ;
-            q := q cutbefore (p cutbefore point 3 of p) ;
             d := .5[\MPcolor{LocalColor},\MPcolor{lightgray}] randomized (.5,.9) ;
             f := \MPcolor{lightgray} randomized (.5,.9) ;
-            pickup pencircle scaled (w/100) ;
-            fill p shifted s withcolor f ;
-            draw p shifted s withcolor d ;
-            draw q shifted s withcolor d ;
+            s := (dx,dy) ;
+            if mapping :
+                p := (-w/4,0) -- (w/4,0) ;
+                p := (-w/4,0) -- origin ;
+                q := origin -- ( w/4,0) ;
+                draw p shifted s withcolor d ;
+                draw q shifted s withcolor f ;
+            else :
+                p := fullsquare xyscaled(w/4,w/8) ;
+                q := (-4w,ypart ulcorner p) -- .5[ulcorner p, urcorner p] -- (4w,ypart urcorner p) ;
+                q := q shifted (0,-w/24) ;
+                p := p randomized (w/40,w/40) ;
+                q := q randomized (0,w/100) ;
+                q := q cutafter  (p cutafter  point 3 of p) ;
+                q := q cutbefore (p cutbefore point 3 of p) ;
+                fill p shifted s withcolor f ;
+                draw p shifted s withcolor d ;
+                draw q shifted s withcolor d ;
+            fi ;
         fi ;
         exitif grid_full ;
     endfor ;
@@ -136,6 +158,11 @@
    \c!footer=1cm,
    \c!width=\v!middle,
    \c!height=\v!middle]
+
+\doifmode {setups:mapping} {
+    \setuplayout
+      [\c!backspace=1cm]
+}
 
 \setuppagenumbering
   [\c!location=\v!footer,
@@ -234,7 +261,11 @@
 
 \protect
 
-\placeeverysetup
+\doifelsemode {setups:mapping} {
+    \placeeverysetupname
+} {
+    \placeeverysetup
+}
 
 \unprotect
 

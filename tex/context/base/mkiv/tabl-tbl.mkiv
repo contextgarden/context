@@ -1033,6 +1033,7 @@
 
 \appendtoks
      \setuevalue{\e!start\currenttabulation}{\tabl_start_defined[\currenttabulation]}%
+     \letvalue{\e!stop\currenttabulation}\relax
      \letvalue{\??tabulatehead\currenttabulation}\empty
      \letvalue{\??tabulatefoot\currenttabulation}\empty
 \to \everydefinetabulation
@@ -1196,7 +1197,7 @@
 
 \unexpanded\def\tabl_tabulate_start_ignore
   {\em Nested tabulate is not (yet) supported.\relax
-   \expandafter\gobbleuntil\csname\e!stop\v!tabulate\endcsname}
+   \expandafter\gobbleuntil\csname\ifconditional\c_tabl_generic stoptabulate\else\e!stop\v!tabulate\fi\endcsname}
 
 \appendtoks
     \letvalue{\e!start\v!tabulate}\tabl_tabulate_start_ignore % only the main one
@@ -1337,7 +1338,7 @@
    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
    \global\c_tabl_tabulate_column\zerocount
    \processcontent
-     {\e!stop\ifx\currenttabulationparent\empty\v!tabulate\else\currenttabulationparent\fi}
+     {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifx\currenttabulationparent\empty\v!tabulate\else\currenttabulationparent\fi\fi}
      \tabl_tabulate_insert_body
      \tabl_tabulate_process}
 
@@ -2678,11 +2679,21 @@
 %D \stopwhatever
 %D \stoptyping
 
-%D This is needed because we soemtimes use the english command in
+%D This is needed because we sometimes use the english command in
 %D tracing macros. In fact, most detailed tracing macros that
 %D are done with \LUA\ only work in the english interface anyway.
 
-\definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
+% \definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
+
+\newconditional\c_tabl_generic
+
+\unexpanded\setuvalue{starttabulate}%
+  {\bgroup % whole thing
+   \settrue\c_tabl_generic
+   \let\currenttabulationparent\empty
+   \dodoubleempty\tabl_start_regular}
+
+\letvalue{stoptabulate}\relax
 
 %D The following helpers are just there because we also have them at the \LUA\ end:
 %D

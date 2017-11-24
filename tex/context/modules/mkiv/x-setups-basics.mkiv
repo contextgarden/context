@@ -32,14 +32,10 @@
 \defineregister
   [texmacro]
 
-\unexpanded\def\texcommandmeaning#1{}
-\unexpanded\def\texcommandusage  #1{}
-
 \definesorting
   [texcommand]
   [texcommands]
-  [\texcommandmeaning]
-  [\texcommandusage]
+  [\v!none]
 
 \setupsorting
   [texcommand]
@@ -150,16 +146,14 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:register
-%     \doif {\xmlatt{#1}{variant}} {instance} {
-    \doifcommon {\xmlatt{#1}{variant}} {instance,instance:assignment,instance:ownnumber} {
+    \doifcommon {\xmlatt{#1}{variant}} {instance,instance:assignment,instance:ownnumber,instance:argument} {
         \def\docommand##1{
             \xmlsetup{#1}{xml:setups:assemblename:instance}
-%             \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
-            \expanded{\texcommand[\currentSETUPfullname:##1]{{#1}{##1}}}}%
+            \expanded{\texcommand[\currentSETUPfullname:##1]{{#1}{##1}}}
+        }%
         \processcommacommand[\clf_getinstances{#1}]\docommand
     }
     \xmlsetup{#1}{xml:setups:assemblename}
-%     \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
     \expanded{\texcommand[\currentSETUPfullname]{{#1}{}}}
 \stopxmlsetups
 
@@ -386,7 +380,6 @@
                         local t = { }
                         local n = #entries
                         for i=1,n do
---                            t[i] = gsub(entries[i].definition.tag,"^stp:x:","")
                             t[i] = entries[i].definition.tag
                         end
                         table.sort(t)
@@ -488,15 +481,12 @@
    \fi}
 
 \def\cmd_show_setup_nop#1% this will trigger 'used'
-%   {\registersort[texcommand][stp:x:#1]%
   {\registersort[texcommand][#1]%
    \ifconditional\c_cmd_show_setup
-%      \writestatus{setup}{#1 / \rawsynonymname{texcommand}{stp:x:#1}}%
      \writestatus{setup}{#1 / \rawsynonymname{texcommand}{#1}}%
    \fi
    \startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]%
-%        \edef\cmd_id{\rawsynonymname{texcommand}{stp:x:#1}}%
        \edef\cmd_id{\rawsynonymname{texcommand}{#1}}%
        \ifx\cmd_id\empty
           missing: #1
@@ -516,6 +506,17 @@
 % todo: grouped
 
 \let\placeeverysetup\placeallsetups
+
+\unexpanded\def\cmd_show_setup_list_basic#1#2#3%
+  {\NC\tttf#2\NC\basicsetup[#2]\NC\NR}
+
+\unexpanded\def\placeeverysetupname
+  {\placelistofsorts
+     [texcommand]
+     [\c!before={\starttabulate[|||]},
+      \c!after=\stoptabulate,
+      \c!criterium=\v!all,
+      \c!command=\cmd_show_setup_list_basic]}
 
 %D Typesetting:
 

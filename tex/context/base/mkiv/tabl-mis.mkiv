@@ -165,7 +165,7 @@
 \unexpanded\def\startparagraphs[#1]% quite slow
   {\bgroup % (1)
    \edef\currentparagraphs{#1}%
-   \paragraphsparameter\c!before
+ % \paragraphsparameter\c!before
    \edef\p_width{\paragraphsparameter\c!width}%
    \ifx\p_width\empty
      \d_typo_paragraphs_width\availablehsize
@@ -194,10 +194,14 @@
    \parindent\zeropoint
    \c_typo_paragraphs_n\zerocount
    \let\\=\typo_paragraphs_next % downward compatible
-   \dontleavehmode\inheritedparagraphsframed
+   \edef\p_offset{\paragraphsparameter\c!offset}%
+   \doifelsedimension\p_offset
+     {\scratchoffset\p_offset}%
+     {\scratchoffset\zeropoint}%
+   \setbox\scratchbox\hpack
    \bgroup % (2)
    \forgetall
-   \advance\hsize-2\dimexpr\paragraphsparameter\c!offset\relax
+   \advance\hsize-2\scratchoffset
    \let\typo_paragraphs_start_cell\typo_paragraphs_start_cell_indeed
    \let\typo_paragraphs_stop_cell \typo_paragraphs_stop_cell_indeed
    \typo_paragraphs_start_cell_indeed}
@@ -205,6 +209,9 @@
 \unexpanded\def\stopparagraphs
   {\stopparagraphscell
    \egroup  % (2)
+   \letparagraphsparameter\c!align\v!flushleft % normal
+   \paragraphsparameter\c!before
+   \dontleavehmode\inheritedparagraphsframed{\box\scratchbox}%
    \paragraphsparameter\c!after
    \egroup} % (1)
 

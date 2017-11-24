@@ -162,9 +162,9 @@
     %c!hang=,
     %c!sample=,
     \c!margin=\v!no,
-    \c!before=\blank,
+    \c!before=\startpacked,
     \c!inbetween=\blank,
-    \c!after=\blank,
+    \c!after=\stoppacked,
     %c!indentnext=,
     %c!indenting=,
     %
@@ -424,8 +424,9 @@
      {\strc_constructions_initialize{#1}%
       \setupcurrentsimplelist[#2]%
       \let\synonymentry\strc_synonym_normal
-      \startpacked
-        \clf_processsynonyms
+      % so we can hook tabulate into before and after
+      \normalexpanded{\simplelistparameter\c!before
+        \noexpand\clf_processsynonyms
            {#1}%
            {%
                criterium {\simplelistparameter\c!criterium}%
@@ -433,7 +434,8 @@
                method    {\simplelistparameter\c!method}%
            }%
         \relax
-      \stoppacked}%
+      \simplelistparameter\c!after}%
+      \relax}%
      {}% todo: message that invalid
    \endgroup}
 
@@ -467,8 +469,8 @@
   %\c!command=, % we test for defined !
   %\c!criterium=,
   %\c!style=,
-  %\c!before=,
-   \c!after=\endgraf,
+   \c!before=\startpacked,
+   \c!after=\stoppacked,
   %\c!expansion=,
    \c!method=]
 
@@ -596,6 +598,7 @@
 \unexpanded\def\placelistofsorts
   {\dodoubleempty\strc_sorting_place_list}
 
+
 \def\strc_sorting_place_list[#1][#2]%
   {\begingroup
    \edef\currentsimplelist{#1}%
@@ -607,8 +610,9 @@
    \else
      \let\synonymentry\strc_sorting_command
    \fi
-   \startpacked
-     \clf_processsynonyms
+   % so we can hook tabulate into before and after
+   \normalexpanded{\simplelistparameter\c!before
+     \noexpand\clf_processsynonyms
         {#1}%
         {%
             criterium {\simplelistparameter\c!criterium}%
@@ -616,7 +620,7 @@
             method    {\simplelistparameter\c!method}%
         }%
      \relax
-   \stoppacked
+   \simplelistparameter\c!after}%
    \endgroup}
 
 \unexpanded\def\completelistofsorts
