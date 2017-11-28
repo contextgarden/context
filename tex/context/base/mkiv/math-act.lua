@@ -570,54 +570,6 @@ interfaces.implement {
 -- check: when true, only set when present in font
 -- force: when false, then not set when already set
 
-local blocks = characters.blocks -- this will move to char-ini
-
--- operators    : 0x02200
--- symbolsa     : 0x02701
--- symbolsb     : 0x02901
--- supplemental : 0x02A00
-
--- from mathematics.gaps:
-
-blocks["lowercaseitalic"].gaps = {
-    [0x1D455] = 0x0210E, -- ℎ h
-}
-
-blocks["uppercasescript"].gaps = {
-    [0x1D49D] = 0x0212C, -- ℬ script B
-    [0x1D4A0] = 0x02130, -- ℰ script E
-    [0x1D4A1] = 0x02131, -- ℱ script F
-    [0x1D4A3] = 0x0210B, -- ℋ script H
-    [0x1D4A4] = 0x02110, -- ℐ script I
-    [0x1D4A7] = 0x02112, -- ℒ script L
-    [0x1D4A8] = 0x02133, -- ℳ script M
-    [0x1D4AD] = 0x0211B, -- ℛ script R
-}
-
-blocks["lowercasescript"].gaps = {
-    [0x1D4BA] = 0x0212F, -- ℯ script e
-    [0x1D4BC] = 0x0210A, -- ℊ script g
-    [0x1D4C4] = 0x02134, -- ℴ script o
-}
-
-blocks["uppercasefraktur"].gaps = {
-    [0x1D506] = 0x0212D, -- ℭ fraktur C
-    [0x1D50B] = 0x0210C, -- ℌ fraktur H
-    [0x1D50C] = 0x02111, -- ℑ fraktur I
-    [0x1D515] = 0x0211C, -- ℜ fraktur R
-    [0x1D51D] = 0x02128, -- ℨ fraktur Z
-}
-
-blocks["uppercasedoublestruck"].gaps = {
-    [0x1D53A] = 0x02102, -- ℂ bb C
-    [0x1D53F] = 0x0210D, -- ℍ bb H
-    [0x1D545] = 0x02115, -- ℕ bb N
-    [0x1D547] = 0x02119, -- ℙ bb P
-    [0x1D548] = 0x0211A, -- ℚ bb Q
-    [0x1D549] = 0x0211D, -- ℝ bb R
-    [0x1D551] = 0x02124, -- ℤ bb Z
-}
-
 -- todo: tounicode
 
 -- function mathematics.injectfallbacks(target,original)
@@ -787,6 +739,7 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
                     if gaps then
                         for unic, unicode in next, gaps do
                             remap(unic,unicode,true)
+                            remap(unicode,unicode,true)
                         end
                     end
                 end

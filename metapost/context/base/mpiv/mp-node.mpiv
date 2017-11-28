@@ -38,18 +38,23 @@ vardef makenodepath(suffix p) =
     fi
 enddef ;
 
-def clearnodepath suffix p =
-    save p ; path p ;
+% can take a list:
+def clearpath text t =
+    save t ; path t ;
 enddef ;
 
-clearnodepath nodepath ;
+def clearnodepath = clearpath nodepath enddef ;
+
+clearnodepath ;
+
+% the trailing "," below handles when number of t<3
 
 vardef makenode@#(text t) =
     for a = t :
-        if (known a) and (numeric a) :
-            _makenode(nodepath, t)
+        if (path a) or (unknown a) :
+            mfun_makenode@#(t,)
         else :
-            _makenode(t)
+            mfun_makenode@#(nodepath, t,)
         fi
         exitif true ;
     endfor
@@ -57,10 +62,10 @@ enddef ;
 
 vardef node@#(text t) =
     for a = t :
-        if (known a) and (numeric a) :
-            _node(nodepath, t)
+        if (path a) or (unknown a) :
+            mfun_node@#(t,)
         else :
-            _node(t)
+            mfun_node@#(nodepath, t,)
         fi
         exitif true ;
     endfor
@@ -68,10 +73,10 @@ enddef ;
 
 vardef nodeboundingpoint@#(text t) =
     for a = t :
-        if (known a) and (numeric a) :
-            _nodeboundingpoint@#(nodepath,a)
+        if (path a) or (unknown a) :
+            mfun_nodeboundingpoint@#(t)
         else :
-            _nodeboundingpoint@#(t)
+            mfun_nodeboundingpoint@#(nodepath,a)
         fi
         exitif true ;
     endfor
@@ -83,66 +88,58 @@ enddef ;
 
 % returns a pair suffix if the path is unknown
 
-vardef _makenode@#(suffix p)(text t) =
-    save i, d, b ; numeric i, d ; string b ;
+vardef mfun_makenode@#(suffix p)(expr i)(text t) =
+    save d, b ; string b ;
+    d = dimension p ;
+    if d > 0 :
+        b := prefix p ;
+        if not picture p.pic[i] : scantokens("picture " & b &
+                                      for j=1 upto d : "[]" & endfor
+                                      "pic[] ;") ; fi
+        if not pair    p.pos[i] : scantokens("pair "    & b &
+                                      for j=1 upto d : "[]" & endfor
+                                      "pos[] ;") ; fi
+    else :
+        if not picture p.pic[i] : picture p.pic[] ; fi
+        if not pair    p.pos[i] : pair    p.pos[] ; fi
+    fi
     for a = t :
-        if unknown i : % first argument is the index
-            i = a ;
-            d = dimension p ;
-            if d > 0 :
-                b := prefix p ;
-                if not picture p.pic[i] : scantokens("picture " & b &
-                                              for j=1 upto d : "[]" & endfor
-                                              "pic[] ;") ; fi
-                if not pair    p.pos[i] : scantokens("pair "    & b &
-                                              for j=1 upto d : "[]" & endfor
-                                              "pos[] ;") ; fi
-            else :
-                if not picture p.pic[i] : picture p.pic[] ; fi
-                if not pair    p.pos[i] : pair    p.pos[] ; fi
-            fi
+        if known p.pic[i] :
+            addto p.pic[i] also
         else :
-            if known p.pic[i] :
-                addto p.pic[i] also
-            else :
-                p.pic[i] =
-            fi
-            if     picture a           : a
-            elseif string  a           : textext@#(a)
-            elseif numeric a           : textext@#(decimal a)
-            elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
-            else                       : nullpicture
-            fi ;
+            p.pic[i] =
         fi
+        if     picture a           : a
+        elseif string  a           : textext@#(a)
+        elseif numeric a           : textext@#(decimal a)
+        elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
+        else                       : nullpicture
+        fi ;
     endfor
     p.pos[i] if known p : := point i of p ; fi
 enddef ;
 
 % returns a picture
 
-vardef _node@#(suffix p)(text t) =
-    if pair _makenode@#(p,t) :
+vardef mfun_node@#(suffix p)(expr i)(text t) =
+    if pair mfun_makenode@#(p,i,t) :
         % nop: enclose in "if ... fi" to gobble the function return.
     fi
-    % now pick-off only the index:
-    for a = t :
-        if (unknown p) and (known p.pos[a]) :
-            makenodepath(p) ;
-        fi
-        if known p.pic[a] :
-            p.pic[a] if known p : shifted point a of p fi
-        else :
-            nullpicture
-        fi
-        exitif true ;
-    endfor
+    if (unknown p) and (known p.pos[i]) :
+        makenodepath(p) ;
+    fi
+    if known p.pic[i] :
+        p.pic[i] if known p : shifted point i of p fi
+    else :
+        nullpicture
+    fi
 enddef ;
 
 % returns a path
 
 vardef fromtopaths@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
     save r, t, l ;
-    path r[] ; numeric t ; picture l ;
+    path r[] ; picture l ;
     for a = s :
         if unknown t :
             t = a ;
@@ -159,7 +156,7 @@ vardef fromtopaths@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
                  else :
                      point f of p -- point t of q
                  fi ;
-            save deviation ; numeric deviation ;
+            save deviation ;
             deviation := if numeric d: d else: 0 fi ;
             r1 = if deviation=0 : r0
                 else :
@@ -202,7 +199,7 @@ enddef ;
 
 % returns pair: bounding point of the node picture
 
-vardef _nodeboundingpoint@#(suffix p)(expr i) =
+vardef mfun_nodeboundingpoint@#(suffix p)(expr i) =
     if known p.pic[i] :
         boundingpoint@#(p.pic[i])
     else :
@@ -219,7 +216,7 @@ enddef ;
 % returns pair: vector between nodes (+ optional scale)
 
 vardef betweennodes@#(suffix p)(expr f)(suffix q)(text s) =
-    save t ; numeric t ;
+    save t ;
     for a = s :
         if unknown t :
             t = a ;
@@ -227,5 +224,26 @@ vardef betweennodes@#(suffix p)(expr f)(suffix q)(text s) =
         else :
             + relative@#(a)
         fi
+    endfor
+enddef ;
+
+% helpers that save passing tokens
+
+def mfun_node_init(expr dx, dy, da) =
+     save nodelattice ; pair nodelattice[] ;
+     nodelattice0 = (dx,0) ;
+     nodelattice1 = dy * dir(da) ;
+     clearnodepath ;
+     save nodecount ; nodecount = -1;
+enddef ;
+
+def mfun_node_make(expr x, y, s) =
+    nodecount := nodecount + 1 ;
+    makenode(nodecount,s) = x * nodelattice0 + y * nodelattice1 ;
+enddef ;
+
+def mfun_node_flush =
+    for i=0 upto nodecount:
+        draw node(i) ;
     endfor
 enddef ;

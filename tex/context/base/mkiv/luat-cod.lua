@@ -38,7 +38,7 @@ function lua.registeredcodes()
     return lua.lastbytecode - lua.firstbytecode + 1
 end
 
--- no file.* functions yet
+-- no file.* and utilities.parsers.* functions yet
 
 function lua.registercode(filename,options)
     local barename = gsub(filename,"%.[%a%d]+$","")
@@ -46,7 +46,7 @@ function lua.registercode(filename,options)
     local basename = match(barename,"^.+[/\\](.-)$") or barename
     if not bytedone[basename] then
         local opts = { }
-        if options ~= "" then
+        if type(options) == "string" and options ~= "" then
             for s in gmatch(options,"([a-z]+)") do
                 opts[s] = true
             end

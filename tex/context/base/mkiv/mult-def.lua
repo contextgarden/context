@@ -6589,6 +6589,18 @@ return {
    ["pe"]="حرف‌تنظیم",
    ["ro"]="aliniazacaracter",
   },
+  ["alignmentleftwidth"]={
+   ["en"]="alignmentleftwidth",
+  },
+  ["alignmentrightwidth"]={
+   ["en"]="alignmentrightwidth",
+  },
+  ["alignmentleftsample"]={
+   ["en"]="alignmentleftsample",
+  },
+  ["alignmentrightsample"]={
+   ["en"]="alignmentrightsample",
+  },
   ["alignmentcharacter"]={
    ["cs"]="alignmentcharacter",
    ["de"]="alignmentcharacter",
@@ -10277,6 +10289,12 @@ return {
    ["nl"]="zelfdepagina",
    ["pe"]="همان‌صفحه",
    ["ro"]="aceeasipagina",
+  },
+  ["leftsample"]={
+   ["en"]="leftsample",
+  },
+  ["rightsample"]={
+   ["en"]="rightsample",
   },
   ["sample"]={
    ["cs"]="vzor",

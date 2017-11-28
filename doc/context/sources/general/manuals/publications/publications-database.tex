@@ -124,10 +124,10 @@ the form:
 Firstname(s) Lastname
 \stopNameSyntax
 
-\seeindex {vons} {particle}
+\seeindex {vons} {particule}
 
 where \type {Lastname} is a single word but may include an optional (nobility)
-\Index {particle}: lower|-|case word(s) such as \quotation {von}, \quotation
+\Index {particule}: lower|-|case word(s) such as \quotation {von}, \quotation
 {de}, \quotation {de la}, etc.) \emphasis {unless} specifically in the two- or
 three|-|token form:
 
@@ -161,7 +161,7 @@ we may (or may not) support this in the future, so don't use this!
 We extend \BIBTEX\ by optionally parsing each name in terms of four or five
 tokens:
 
-\index {particle} \index {suffix} \index {initial}
+\index {particule} \index {suffix} \index {initial}
 
 \startNameSyntax
 Particule(s), Lastname(s), Suffix(es), Firstname(s)
@@ -174,7 +174,7 @@ thus avoiding the need to resort to any sort of \TEX\ trickery \cite [num]
 whose meaning is presently reserved for future directives describing how the name
 is to be interpreted:
 
-\index {particle} \index {suffix} \index {initial}
+\index {particule} \index {suffix} \index {initial}
 
 \startNameSyntax
 Particule(s), Lastname(s), Suffix(es), Firstname(s), Initial(s), directives
@@ -185,6 +185,21 @@ Particule(s), Lastname(s), Suffix(es), Firstname(s), Initial(s), directives
 specifications will handle the truncation of long author lists in a systematic
 fashion. The \index [others] {\tt and others}\BTXcode {and others} construction
 finds its use when the complete author list is not well known or ill|-|defined.
+
+Sometimes, or even often, the database might contain variants of an author's
+name that we would like to identify as a single, unique author. Indeed, certain
+bibliographic styles (as will be seen later) as well as an index of authors, for
+example, will depend on this identification. A command \Cindex {btxremapauthor}
+allows establishing this identity:
+
+\startbuffer
+\btxremapauthor [Donald Knuth] [Donald E. Knuth]
+\btxremapauthor [Don Knuth]    [Donald E. Knuth]
+\stopbuffer
+\getbuffer
+
+\cindex {btxremapauthor}
+\typebuffer [option=TEX]
 
 Fields other than \Tindex {author} and \Tindex {editor}, for example \Tindex
 {artist} or \Tindex {director} if one desires, can be declared to be of type

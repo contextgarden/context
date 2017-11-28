@@ -15,6 +15,14 @@
 %D We can make this module a bit cleaner using more recent features or we go \LUA\
 %D completely but as this style evolved over 15 years it's a waste of time.
 %D
+%D
+%D Thanks to Wolfgang these descriptions have become quite complete! In the process
+%D of covering more commands and expecially different instances of the same command,
+%D either or not generated, the supporting macros became more complex. I must admit
+%D that it's not the nicest code base and whenever I have to add or patch something
+%D I have to suppress the urge to rewrite this file. It needs watching a few
+%D energetic videos (for instance with Simon Phillips drumming) to get going.
+%D
 %D As we also have a help server we can make a common framework for this \unknown\
 %D but even then, this file is also a test for the the \XML\ processor.
 %D
@@ -25,7 +33,36 @@
 %D Currently we load the \XML\ file and when not in the english interface we just
 %D remap the relevant words to their translation.
 
-%D Todo: use lua instead of synonyms
+%D \startbuffer
+%D \usemodule[x-setups-basics]
+%D
+%D \loadsetups[context-en]
+%D
+%D \starttext
+%D
+%D     \showsetup[starttyping:instance:LUA]
+%D
+%D     \showsetup[starttyping:instance:typing]
+%D
+%D     \showsetup[starttyping:instance:argument]
+%D
+%D     \showsetup [completelistoffloats:instance:chemicals] \blank
+%D     \shortsetup[completelistoffloats:instance:chemicals] \blank
+%D     \basicsetup[completelistoffloats:instance:chemicals] \blank
+%D
+%D     \cmdfullsetup [completelistoffloats:instance:chemicals] \blank
+%D     \cmdshortsetup[completelistoffloats:instance:chemicals] \blank
+%D     \cmdbasicsetup[completelistoffloats:instance:chemicals] \blank
+%D
+%D   % \cmdinternal{...}
+%D
+%D     \page \placeeverysetup     \page
+%D     \page \placeeverysetupname \page
+%D
+%D \stoptext
+%D \stopbuffer
+
+% Todo: use lua instead of synonyms
 
 \unprotect
 
@@ -73,7 +110,6 @@
 \unexpanded\def\setupalwcolor{}
 \unexpanded\def\setupoptcolor{darkgray}
 
-% \unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
 \unexpanded\def\setupvarword#1{\detokenize{#1}}
 \unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
 \unexpanded\def\setuptxtword#1{\detokenize{#1}}
@@ -759,24 +795,25 @@
     \ignorespaces
 \stopxmlsetups
 
-\startxmlsetups xml:setups:content     \show_setup_component{#1}{content}    \stopxmlsetups
-\startxmlsetups xml:setups:displaymath \show_setup_component{#1}{displaymath}\stopxmlsetups
-\startxmlsetups xml:setups:index       \show_setup_component{#1}{index}      \stopxmlsetups
-\startxmlsetups xml:setups:math        \show_setup_component{#1}{math}       \stopxmlsetups
-\startxmlsetups xml:setups:nothing     \show_setup_component{#1}{nothing}    \stopxmlsetups
-\startxmlsetups xml:setups:file        \show_setup_component{#1}{file}       \stopxmlsetups
-\startxmlsetups xml:setups:position    \show_setup_component{#1}{position}   \stopxmlsetups
-\startxmlsetups xml:setups:reference   \show_setup_component{#1}{reference}  \stopxmlsetups
 \startxmlsetups xml:setups:csname      \show_setup_component{#1}{csname}     \stopxmlsetups
-\startxmlsetups xml:setups:destination \show_setup_component{#1}{destination}\stopxmlsetups
-\startxmlsetups xml:setups:triplet     \show_setup_component{#1}{triplet}    \stopxmlsetups
-\startxmlsetups xml:setups:word        \show_setup_component{#1}{word}       \stopxmlsetups
-\startxmlsetups xml:setups:template    \show_setup_component{#1}{template}   \stopxmlsetups
-\startxmlsetups xml:setups:angles      \show_setup_component{#1}{angles}     \stopxmlsetups
-\startxmlsetups xml:setups:apply       \show_setup_component{#1}{apply}      \stopxmlsetups
-\startxmlsetups xml:setups:twowords    \show_setup_component{#1}{twowords}   \stopxmlsetups
-\startxmlsetups xml:setups:threewords  \show_setup_component{#1}{threewords} \stopxmlsetups
+\startxmlsetups xml:setups:content     \show_setup_component{#1}{content}    \stopxmlsetups
+\startxmlsetups xml:setups:position    \show_setup_component{#1}{position}   \stopxmlsetups
+\startxmlsetups xml:setups:index       \show_setup_component{#1}{index}      \stopxmlsetups
 \startxmlsetups xml:setups:text        \show_setup_component{#1}{text}       \stopxmlsetups
+\startxmlsetups xml:setups:apply       \show_setup_component{#1}{apply}      \stopxmlsetups
+\startxmlsetups xml:setups:template    \show_setup_component{#1}{template}   \stopxmlsetups
+\startxmlsetups xml:setups:triplet     \show_setup_component{#1}{triplet}    \stopxmlsetups
+\startxmlsetups xml:setups:angles      \show_setup_component{#1}{angles}     \stopxmlsetups
+
+%startxmlsetups xml:setups:displaymath \show_setup_component{#1}{displaymath}\stopxmlsetups
+%startxmlsetups xml:setups:math        \show_setup_component{#1}{math}       \stopxmlsetups
+%startxmlsetups xml:setups:nothing     \show_setup_component{#1}{nothing}    \stopxmlsetups
+%startxmlsetups xml:setups:file        \show_setup_component{#1}{file}       \stopxmlsetups
+%startxmlsetups xml:setups:reference   \show_setup_component{#1}{reference}  \stopxmlsetups
+%startxmlsetups xml:setups:destination \show_setup_component{#1}{destination}\stopxmlsetups
+%startxmlsetups xml:setups:word        \show_setup_component{#1}{word}       \stopxmlsetups
+%startxmlsetups xml:setups:twowords    \show_setup_component{#1}{twowords}   \stopxmlsetups
+%startxmlsetups xml:setups:threewords  \show_setup_component{#1}{threewords} \stopxmlsetups
 
 % todo: cd:par => \par
 % todo: cd:sep => \\
@@ -929,12 +966,12 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:inherit
-%     \cmd_column_two_start{}{}
+  % \cmd_column_two_start{}{}
         \rawsetupstring{cd:inherits}:
         \enspace
         \letterbackslash
         \xmlatt{#1}{name}
-%     \cmd_column_two_stop
+  % \cmd_column_two_stop
     \ignorespaces
 \stopxmlsetups
 
@@ -942,7 +979,7 @@
   {\cmd_column_one_start
       \cmd_internal_value{#1}%
    \cmd_column_one_stop
-%    \godown[.75\lineheight]
+ % \godown[.75\lineheight]
    \blank[\v!samepage,\v!medium]
    \ignorespaces}
 
@@ -1014,26 +1051,25 @@
 
 % arguments
 
-\unexpanded\def\show_setup_displaymath#1{\show_setup_any {#1}{displaymath}}
-\unexpanded\def\show_setup_index      #1{\show_setup_any {#1}{index}}
-\unexpanded\def\show_setup_math       #1{\show_setup_any {#1}{math}}
-\unexpanded\def\show_setup_nothing    #1{\show_setup_any {#1}{nothing}}
-\unexpanded\def\show_setup_file       #1{\show_setup_any {#1}{file}}
-\unexpanded\def\show_setup_position   #1{\show_setup_any {#1}{position}}
-\unexpanded\def\show_setup_template   #1{\show_setup_any {#1}{template}}
-\unexpanded\def\show_setup_angles     #1{\show_setup_any {#1}{angle}}
-\unexpanded\def\show_setup_reference  #1{\show_setup_any {#1}{reference}}
-\unexpanded\def\show_setup_apply      #1{\show_setup_any {#1}{apply}}
-\unexpanded\def\show_setup_twowords   #1{\show_setup_any {#1}{twowords}}
-\unexpanded\def\show_setup_threewords #1{\show_setup_any {#1}{threewords}}
-\unexpanded\def\show_setup_csname     #1{\show_setup_any {#1}{noargument}}
-\unexpanded\def\show_setup_destination#1{\show_setup_any {#1}{destination}}
-\unexpanded\def\show_setup_triplet    #1{\show_setup_any {#1}{triplet}}
-\unexpanded\def\show_setup_word       #1{\show_setup_any {#1}{word}}
-\unexpanded\def\show_setup_content    #1{\show_setup_any {#1}{content}}
-\unexpanded\def\show_setup_text       #1{\show_setup_any {#1}{textual}}
-\unexpanded\def\show_setup_to         #1{\show_setup_line{#1}{to}}
-\unexpanded\def\show_setup_macro      #1{\show_setup_any {#1}{macro}}
+\unexpanded\def\show_setup_csname     #1{\show_setup_any{#1}{noargument}}
+\unexpanded\def\show_setup_content    #1{\show_setup_any{#1}{content}}
+\unexpanded\def\show_setup_position   #1{\show_setup_any{#1}{position}}
+\unexpanded\def\show_setup_index      #1{\show_setup_any{#1}{index}}
+\unexpanded\def\show_setup_text       #1{\show_setup_any{#1}{textual}}
+\unexpanded\def\show_setup_apply      #1{\show_setup_any{#1}{apply}}
+\unexpanded\def\show_setup_template   #1{\show_setup_any{#1}{template}}
+\unexpanded\def\show_setup_triplet    #1{\show_setup_any{#1}{triplet}}
+\unexpanded\def\show_setup_angles     #1{\show_setup_any{#1}{angle}}
+
+%unexpanded\def\show_setup_displaymath#1{\show_setup_any{#1}{displaymath}}
+%unexpanded\def\show_setup_math       #1{\show_setup_any{#1}{math}}
+%unexpanded\def\show_setup_nothing    #1{\show_setup_any{#1}{nothing}}
+%unexpanded\def\show_setup_file       #1{\show_setup_any{#1}{file}}
+%unexpanded\def\show_setup_reference  #1{\show_setup_any{#1}{reference}}
+%unexpanded\def\show_setup_destination#1{\show_setup_any{#1}{destination}}
+%unexpanded\def\show_setup_word       #1{\show_setup_any{#1}{word}}
+%unexpanded\def\show_setup_twowords   #1{\show_setup_any{#1}{twowords}}
+%unexpanded\def\show_setup_threewords #1{\show_setup_any{#1}{threewords}}
 
 % A prelude to a rewrite and some more:
 

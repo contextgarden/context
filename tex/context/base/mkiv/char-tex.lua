@@ -622,11 +622,25 @@ if not csletters then
         -- this slows down format generation by over 10 percent
         for k, v in next, blocks do
             if v.catcode == "letter" then
-                for u=v.first,v.last do
-                    csletters[utfchar(u)] = u
-                    --
-                 -- texsetlccode(u,u,u) -- self self
-                    --
+                local first = v.first
+                local last  = v.last
+                local gaps  = v.gaps
+                if first and last then
+                    for u=first,last do
+                        csletters[utfchar(u)] = u
+                        --
+                     -- texsetlccode(u,u,u) -- self self
+                        --
+                    end
+                end
+                if gaps then
+                    for i=1,#gaps do
+                        local u = gaps[i]
+                        csletters[utfchar(u)] = u
+                        --
+                     -- texsetlccode(u,u,u) -- self self
+                        --
+                    end
                 end
             end
         end

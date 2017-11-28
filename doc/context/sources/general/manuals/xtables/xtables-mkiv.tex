@@ -1013,14 +1013,155 @@ similar.
 
 \stopsection
 
-\startsection[title={Colofon}]
+\startsection[title={Alignment}]
 
-\starttabulate[|B|p|]
-\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
-\NC version   \NC \currentdate \NC \NR
-\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
-\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
-\stoptabulate
+\enabletrackers[typesetters.characteralign]
+
+There is limited support for aligning numbers in columns. When you flush right
+and have a fixed number of digits it's not a problem, but otherwise it might come
+in handy. In any case, you might want to use the following as part of your style:
+
+\starttyping
+\addfeature[tabularnumbers]
+\stoptyping
+
+\start \addfeature[tabularnumbers]
+
+The basic alignment mechanism can be demonstrated with the following examples:
+
+\startbuffer
+\startcharacteralign[,] % or [character={,}]
+    \checkcharacteralign{123.456,78} \par
+    \checkcharacteralign    {456}    \par
+    \checkcharacteralign {23.456}    \par
+    \checkcharacteralign     {78,9}  \par
+    \checkcharacteralign     {78}    \par
+\stopcharacteralign
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startcharacteralign[leftsample=123.456,rightsample=00,character={,}]
+    \checkcharacteralign{123.456,78} \par
+    \checkcharacteralign    {456}    \par
+    \checkcharacteralign {23.456}    \par
+    \checkcharacteralign     {78,9}  \par
+    \checkcharacteralign     {78}    \par
+\stopcharacteralign
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startcharacteralign[leftwidth=100pt,rightwidth=30pt]
+    \checkcharacteralign{123.456,78} \par
+    \checkcharacteralign    {456}    \par
+    \checkcharacteralign {23.456}    \par
+    \checkcharacteralign     {78,9}  \par
+    \checkcharacteralign     {78}    \par
+\stopcharacteralign
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Samples win over width settings. When no sample or width is given a two pass
+analyzer kicks in. This is not the case in the following examples.
+
+\startbuffer
+\startxtable
+    [align={flushright,lohi},
+     aligncharacter=yes,
+     alignmentleftsample=100,
+     alignmentrightsample=00,
+     alignmentcharacter={.}]
+  \startxrow \startxcell 1     \stopxcell \stopxrow
+  \startxrow \startxcell 1.1   \stopxcell \stopxrow
+  \startxrow \startxcell 11.11 \stopxcell \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startxtable
+    [align={flushright,lohi},
+     aligncharacter=yes,
+     alignmentleftsample=000.000,
+     alignmentrightsample=00,
+     alignmentcharacter={,}]
+  \startxrow \startxcell 123.456,78 x \stopxcell \stopxrow
+  \startxrow \startxcell     456    x \stopxcell \stopxrow
+  \startxrow \startxcell 23.456     x \stopxcell \stopxrow
+  \startxrow \startxcell     78,9   x \stopxcell \stopxrow
+  \startxrow \startxcell     78     x \stopxcell \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startxtable[align={flushright,lohi}]
+  \startxrow
+    \startxcell
+        [aligncharacter=yes,
+         alignmentcharacter={,},
+         alignmentleftsample=000.000,
+         alignmentrightsample=00]
+        123.456,78
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell
+        [aligncharacter=yes]
+        456
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell
+        [aligncharacter=yes]
+        23.456
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell
+        [aligncharacter=yes]
+        78,9
+    \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell
+        [aligncharacter=yes]
+        78
+    \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\setupxtable
+  [aligned]
+  [aligncharacter=yes,
+   alignmentleftsample=000.000,
+   alignmentrightsample=00,
+   alignmentcharacter={,}]
+
+\startxtable[align={flushright,lohi}]
+  \startxrow \startxcell[aligned] 123.456,78 \stopxcell \stopxrow
+  \startxrow \startxcell[aligned]     456    \stopxcell \stopxrow
+  \startxrow \startxcell[aligned] 23.456     \stopxcell \stopxrow
+  \startxrow \startxcell[aligned]     78,9   \stopxcell \stopxrow
+  \startxrow \startxcell[aligned]     78     \stopxcell \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stop
+
+\disabletrackers[typesetters.characteralign]
 
 \stopsection
 
@@ -1234,6 +1375,78 @@ in the distribution.
 \typebuffer[tight]  \start \getbuffer[tight,demo]  \stop
 \typebuffer[normal] \start \getbuffer[normal,demo] \stop
 
+\page
+
+\startbuffer
+\startxtable[align={middle,lohi}]
+  \startxrow
+    \startxcell[ny=3] (1,3) \stopxcell
+    \startxcell       (1,1) \stopxcell
+    \startxcell       (1,1) \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell       (1,1) \stopxcell
+    \startxcell       (1,1) \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell[nx=2] (2,1) \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startxtable[align={middle,lohi}]
+  \startxrow
+    \startxcell[ny=2] (1,2) \stopxcell
+    \startxcell       (1,1) \stopxcell
+    \startxcell       (1,1) \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell       (1,1) \stopxcell
+    \startxcell       (1,1) \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell[nx=2] (2,1) \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startxtable[align={middle,lohi}]
+  \startxrow
+    \startxcell[ny=2] (1,2) \stopxcell
+    \startxcell       (1,1) \stopxcell
+    \startxcell       (1,1) \stopxcell
+    \startxcell       (1,1) \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell[nx=3] (3,1) \stopxcell
+  \stopxrow
+  \startxrow
+    \startxcell[nx=4] (4,1) \stopxcell
+  \stopxrow
+\stopxtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\page
+
 % \ruledhbox{\getbuffer[normal,demo]}
+
+\startsection[title={Colofon}]
+
+\starttabulate[|B|p|]
+\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version   \NC \currentdate \NC \NR
+\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
+\stoptabulate
+
+\stopsection
 
 \stopdocument

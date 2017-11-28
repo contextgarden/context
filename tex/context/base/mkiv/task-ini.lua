@@ -71,7 +71,7 @@ appendaction("shipouts",     "normalizers", "typesetters.showsuspects")
 appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
 ------------("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
-appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
+appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")                    -- disabled
 appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
 appendaction("shipouts",     "normalizers", "nodes.destinations.handler")                        -- disabled
 appendaction("shipouts",     "normalizers", "nodes.rules.handler")                               -- disabled

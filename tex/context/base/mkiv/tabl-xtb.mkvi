@@ -140,8 +140,12 @@
     \c!autostrut=\v!no,
     \c!split=\v!auto,                 % a number will take that many lines
     \c!splitoffset=\zeropoint,        % extra space taken
-  % \c!aligncharacter=\v!no,
-  % \c!alignmentcharacter={,},
+    \c!aligncharacter=\v!no,
+    \c!alignmentcharacter={,},
+    \c!alignmentleftsample=,
+    \c!alignmentrightsample=,
+    \c!alignmentleftwidth=\zeropoint,
+    \c!alignmentrightwidth=\zeropoint,
   % \c!option=,                       % \v!stretch {\v!stretch,\v!width}
   % \c!footer=,
   % \c!header=,
@@ -335,6 +339,7 @@
    \clf_x_table_cleanup
    \dostoptagged
    \resetbuffer[\tabl_x_current_buffer]%
+   \resetcharacteralign
    \egroup}
 
 % text flow split modes
@@ -480,8 +485,50 @@
   {\tabl_x_start_cell_nop
    \tabl_x_stop_cell}
 
+% \unexpanded\def\tabl_x_begin_of_cell
+%   {%\inhibitblank % already in framed
+%    \everypar{\delayedbegstrut}}
+
+\def\tabl_x_setup_character_align
+  {\edef\p_left {\directxtableparameter\c!alignmentleftsample}%
+   \edef\p_right{\directxtableparameter\c!alignmentrightsample}%
+   \ifx\p_left\empty
+     \scratchdimenone\dimexpr\directxtableparameter\c!alignmentleftwidth\relax
+   \else
+     \setbox\scratchbox\hbox{\p_left}%
+     \scratchdimenone\wd\scratchbox
+   \fi
+   \ifx\p_right\empty
+     \scratchdimentwo\dimexpr\directxtableparameter\c!alignmentrightwidth\relax
+   \else
+     \setbox\scratchbox\hbox{\p_right}%
+     \scratchdimentwo\wd\scratchbox
+   \fi
+   \clf_setcharacteraligndetail
+     \clf_x_table_c
+     {\directxtableparameter\c!alignmentcharacter}%
+     \scratchdimenone
+     \scratchdimentwo
+   \relax}
+
+\newtoks\t_tabl_x_every_cell
+
+% \appendtoks
+%     \inhibitblank % already in framed
+% \to \t_tabl_x_every_cell
+
+\appendtoks
+    \edef\p_characteralign{\directxtableparameter\c!aligncharacter}%
+    \ifx\p_characteralign\v!yes
+        \ifcase\clf_x_table_r\or
+            \tabl_x_setup_character_align
+        \fi
+        \signalcharacteralign\clf_x_table_c\clf_x_table_r
+    \fi
+\to \t_tabl_x_every_cell
+
 \unexpanded\def\tabl_x_begin_of_cell
-  {%\inhibitblank % already in framed
+  {\the\t_tabl_x_every_cell
    \everypar{\delayedbegstrut}}
 
 \unexpanded\def\tabl_x_end_of_cell

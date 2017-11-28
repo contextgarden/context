@@ -56,10 +56,11 @@
 % D
 % D \typebuffer \blank \getbuffer \blank
 
-\unexpanded\def\signalcharacteralign#1#2{\attribute\characteralignattribute\numexpr#1*\maxcardminusone+#2\relax} % 0xFFFF
-\unexpanded\def\setcharacteralign   #1#2{\clf_setcharacteralign#1{#2}}
-\unexpanded\def\resetcharacteralign     {\clf_resetcharacteralign}
-\unexpanded\def\nocharacteralign        {\attribute\characteralignattribute\attributeunsetvalue}
+\unexpanded\def\signalcharacteralign       #1#2{\attribute\characteralignattribute\numexpr#1*\maxcardminusone+#2\relax} % 0xFFFF
+\unexpanded\def\setcharacteralign          #1#2{\clf_setcharacteralign#1{#2}}
+\unexpanded\def\resetcharacteralign            {\clf_resetcharacteralign}
+\unexpanded\def\nocharacteralign               {\attribute\characteralignattribute\attributeunsetvalue}
+\unexpanded\def\setcharacteraligndetail#1#2#3#4{\clf_setcharacteraligndetail#1{#2}#3#4\relax}
 
 %D Mostly downward compatible:
 %D
@@ -73,17 +74,53 @@
 %D \stopbuffer
 %D
 %D \typebuffer \blank \getbuffer \blank
-
+%D
+%D \startbuffer
+%D \startcharacteralign[leftsample=123.456,rightsample=00,character={,}]
+%D     \checkcharacteralign{123.456,78}\par
+%D     \checkcharacteralign    {456}\par
+%D     \checkcharacteralign {23.456}\par
+%D     \checkcharacteralign     {78,9}\par
+%D     \checkcharacteralign     {78}\par
+%D \stopcharacteralign
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+%D
+%D \startbuffer
+%D \startcharacteralign[leftwidth=123.456,rightwidth=00,character={,}]
+%D     \checkcharacteralign{123.456,78}\par
+%D     \checkcharacteralign    {456}\par
+%D     \checkcharacteralign {23.456}\par
+%D     \checkcharacteralign     {78,9}\par
+%D     \checkcharacteralign     {78}\par
+%D \stopcharacteralign
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+%D
 %D We have (currently) two modes: \type {text} and \type {number}. The handler tries
 %D to determine the mode automatically. When using periods and commas as separators
 %D the \type {number} mode is chosen. If you use for instance a \type {-} as
 %D separator, \type {text} is chosen, but you can enforce \type {number} with \type
-%D {number->-} (as with other mechanisms, the arrow indicates a methot to apply).
+%D {number->-} (as with other mechanisms, the arrow indicates a method to apply).
 %D
 %D One can use \type {\nocharacteralign} to disable this mechanism, for instance in
 %D a table cell.
 
 \def\alignmentcharacter{,}
+
+\installcorenamespace{characteralign}
+
+\installparameterhandler\??characteralign {characteralign}
+\installsetuphandler    \??characteralign {characteralign}
+
+\setupcharacteralign
+  [\c!leftwidth  =\zeropoint,
+   \c!rightwidth =\zeropoint,
+   \c!leftsample =,
+   \c!rightsample=,
+   \c!character  =\alignmentcharacter]
 
 \unexpanded\def\typo_charalign_pass_one
   {\advance\scratchcounter\plusone
@@ -99,13 +136,71 @@
 \unexpanded\def\startcharacteralign
   {\dosingleempty\typo_charalign_start}
 
-\def\typo_charalign_start[#1]#2\stopcharacteralign
+\def\typo_charalign_start[#1]%
+  {\doifelseassignment{#1}\typo_charalign_start_one\typo_charalign_start_two{#1}}
+
+\def\typo_charalign_start_one#1#2\stopcharacteralign
+  {\bgroup
+   % for now no instances
+   \setupcurrentcharacteralign[#1]%
+   \edef\p_left {\characteralignparameter\c!leftsample}%
+   \edef\p_right{\characteralignparameter\c!rightsample}%
+   \ifx\p_left\empty
+     \scratchdimenone\dimexpr\characteralignparameter\c!leftwidth\relax
+   \else
+     \setbox\scratchbox\hbox{\p_left}%
+     \scratchdimenone\wd\scratchbox
+   \fi
+   \ifx\p_right\empty
+     \scratchdimentwo\dimexpr\characteralignparameter\c!rightwidth\relax
+   \else
+     \setbox\scratchbox\hbox{\p_right}%
+     \scratchdimentwo\wd\scratchbox
+   \fi
+   \ifzeropt\scratchdimenone
+      \ifzeropt\scratchdimentwo
+         \donefalse
+      \else
+         \donetrue
+      \fi
+   \else
+     \donetrue
+   \fi
+   \edef\alignmentcharacter{\characteralignparameter\c!character}%
+   \ifdone
+     \clf_setcharacteraligndetail
+       \plusone
+       \alignmentcharacter
+       \scratchdimenone
+       \scratchdimentwo
+   \else
+     \clf_setcharacteralign
+       \plusone
+       \alignmentcharacter
+     \begingroup
+       \scratchcounter\zerocount
+       \let\checkcharacteralign\typo_charalign_pass_one
+       \settrialtypesetting
+       #2\relax
+     \endgroup
+   \fi
+   \begingroup
+     \scratchcounter\zerocount
+     \let\checkcharacteralign\typo_charalign_pass_two
+     #2\relax
+   \endgroup
+   \resetcharacteralign
+   \egroup}
+
+\def\typo_charalign_start_two#1#2\stopcharacteralign
   {\bgroup
    \edef\m_temp{#1}%
    \ifx\m_temp\empty \else
      \let\alignmentcharacter\m_temp
    \fi
-   \setcharacteralign\plusone\alignmentcharacter
+   \clf_setcharacteralign
+     \plusone
+     \alignmentcharacter
    \begingroup
      \scratchcounter\zerocount
      \let\checkcharacteralign\typo_charalign_pass_one
