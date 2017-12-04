@@ -15,7 +15,7 @@ if known context_crop : endinput ; fi ;
 
 boolean context_crop ; context_crop := true ;
 
-vardef crop_marks_lines (expr box, len, offset, nx, ny) =
+vardef crop_marks_lines (expr box, len, offset, nx, ny, boxtoo) =
     save p ; picture p ; save w, h, x, y ; numeric w, h, x, y ;
     p := image (
         x := if nx = 0 : 1 else : nx - 1 fi ;
@@ -30,12 +30,20 @@ vardef crop_marks_lines (expr box, len, offset, nx, ny) =
             draw ((llcorner box) -- (llcorner box) shifted (0,-len)) shifted (i*w,-offset) ;
             draw ((ulcorner box) -- (ulcorner box) shifted (0, len)) shifted (i*w, offset) ;
         endfor ;
+        if boxtoo :
+            for i=0 upto x-1 :
+                for j=0 upto y-1 :
+                    draw box enlarged 1/8 shifted (i*w,j*h) dashed evenly withpen pencircle scaled 1/4 ;
+                endfor ;
+            endfor ;
+        fi ;
     ) ;
     setbounds p to box ;
     p
 enddef ;
 
 vardef crop_marks_cmyk =
+    pickup pencircle scaled 1/2 ;
     save p ; picture p ; p := image (
         fill ulcircle   scaled 12.5 withcolor (1,0,0,0) ;
         fill urcircle   scaled 12.5 withcolor (0,1,0,0) ;
@@ -125,6 +133,8 @@ enddef ;
 
 def page_marks_add_color(expr width, height, length, offset) = % todo: namespace
 
+    pickup pencircle scaled 1/2 ; interim linecap := squared ; interim linejoin := butt ;
+
     path page ; page := fullsquare xscaled width yscaled height ;
     path more ; more := page enlarged (offset+length/2,offset+length/2) ;
 
@@ -159,6 +169,8 @@ enddef ;
 
 def page_marks_add_marking(expr width, height, length, offset) = % todo: namespace
 
+    pickup pencircle scaled 1/2 ; interim linecap := squared ; interim linejoin := butt ;
+
     path page ; page := fullsquare xscaled width yscaled height ;
     path more ; more := page enlarged (offset+length/2,offset+length/2) ;
 
@@ -169,18 +181,22 @@ def page_marks_add_marking(expr width, height, length, offset) = % todo: namespa
 
 enddef ;
 
-def page_marks_add_lines(expr width, height, length, offset, nx, ny) = % todo: namespace
+def page_marks_add_lines(expr width, height, length, offset, nx, ny, boxtoo) = % todo: namespace
+
+    pickup pencircle scaled 1/2 ; interim linecap := squared ; interim linejoin := butt ;
 
     path page ; page := fullsquare xscaled width yscaled height ;
     path more ; more := page enlarged (offset+length/2,offset+length/2) ;
 
-    draw crop_marks_lines(page,length,offset,nx,ny) ;
+    draw crop_marks_lines(page,length,offset,nx,ny,boxtoo) ;
 
     setbounds currentpicture to page ;
 
 enddef ;
 
 def page_marks_add_number(expr width, height, length, offset, n) = % todo: namespace
+
+    pickup pencircle scaled 1/2 ; interim linecap := squared ; interim linejoin := butt ;
 
     path page ; page := fullsquare xscaled width yscaled height ;
     path more ; more := page enlarged (offset+length/2,offset+length/2) ;

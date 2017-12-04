@@ -13,13 +13,19 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Cutmarks and Colorbars}
 
-%D This module depends on \METAPOST.
-
 \unprotect
 
-% \def\pagecutmarksymbol    {\the\realpageno}
-% \let\pagecutmarktoptext    \empty
-% \let\pagecutmarkbottomtext \empty
+%D This module implements curmarks and depends on \METAPOST.
+%D
+%D \starttyping
+%D \setuplayout[marking=on,location=middle]
+%D \setuplayout[marking=page,location=middle]
+%D \setuplayout[marking=empty,location=middle]
+%D \setuplayout[marking={color,page},location=middle]
+%D \setuplayout[marking={one,page},location=middle]
+%D \setuplayout[marking={two,page},location=middle]
+%D \setuplayout[marking={four,page},location=middle]
+%D \stoptyping
 
 \def\pagecutmarklength {5mm}
 \def\pagecutmarkoffset {3mm} % slightly larger than before, and now a fixed size
@@ -49,7 +55,8 @@
 
 \startuniqueMPgraphic{print:lines}{w,h,l,o,x,y}
     loadmodule "crop" ;
-    page_marks_add_lines(\MPvar w,\MPvar h,\MPvar l,\MPvar o,\MPvar x,\MPvar y) ;
+    page_marks_add_lines(\MPvar w,\MPvar h,\MPvar l,\MPvar o,\MPvar x,\MPvar y,
+        \ifconditional\c_page_marks_add_page_lines tru\else fals\fi e) ;
 \stopuniqueMPgraphic
 
 \startuseMPgraphic{print:number}{w,h,l,o,n}
@@ -112,9 +119,7 @@
      \scratchheight\ht#1%
      \scratchdepth \dp#1%
      \box#1\relax
-     \ifconditional\c_page_marks_add_page_lines
-       \page_marks_add_lines
-     \fi
+     \page_marks_add_lines
    \egroup}
 
 \def\page_marks_add_more_indeed#1%
@@ -163,28 +168,29 @@
 %    \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext}
 
 \installpagecutmark\v!on
+  {%settrue\c_page_marks_add_page_lines
+   \settrue\c_page_marks_add_more_lines
+   \settrue\c_page_marks_add_more_number}
+
+\installpagecutmark\v!page
   {\settrue\c_page_marks_add_page_lines
    \settrue\c_page_marks_add_more_lines
    \settrue\c_page_marks_add_more_number}
 
-\installpagecutmark\v!page  % todo
-  {\settrue\c_page_marks_add_more_lines
-   \settrue\c_page_marks_add_more_number}
-
 \installpagecutmark\v!empty
-  {\settrue\c_page_marks_add_page_lines
+  {%settrue\c_page_marks_add_page_lines
    \settrue\c_page_marks_add_more_lines}
 
 \installpagecutmark\v!color
-  {\settrue\c_page_marks_add_page_lines
+  {%settrue\c_page_marks_add_page_lines
    \settrue\c_page_marks_add_more_lines
    \settrue\c_page_marks_add_more_color
    \settrue\c_page_marks_add_more_marking
    \settrue\c_page_marks_add_more_number}
 
-\installpagecutmark\v!one {\global\c_page_marks_max\plusone}
-\installpagecutmark\v!two {\global\c_page_marks_max\plustwo}
-\installpagecutmark\v!four{\global\c_page_marks_max\plusfour}
+\installpagecutmark\v!one {\global\c_page_marks_max\plusone}  % first page
+\installpagecutmark\v!two {\global\c_page_marks_max\plustwo}  % first two pages
+\installpagecutmark\v!four{\global\c_page_marks_max\plusfour} % first four pages
 
 \unexpanded\def\page_marks_set#1%
   {\begincsname\??layoutmarking#1\endcsname}

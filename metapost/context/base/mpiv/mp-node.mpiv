@@ -82,7 +82,7 @@ vardef nodeboundingpoint@#(text t) =
     endfor
 enddef ;
 
-vardef fromto@#(expr d,f)(text t) =
+vardef fromto@#(expr d, f)(text t) =
     fromtopaths@#(d,nodepath,f,nodepath,t)
 enddef ;
 
@@ -109,12 +109,12 @@ vardef mfun_makenode@#(suffix p)(expr i)(text t) =
         else :
             p.pic[i] =
         fi
-        if     picture a           : a
-        elseif string  a           : textext@#(a)
-        elseif numeric a           : textext@#(decimal a)
-        elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
-        else                       : nullpicture
-        fi ;
+            if     picture a           : a
+            elseif string  a           : if (length(a) > 0) : textext@#(a) else : nullpicture fi
+            elseif numeric a           : textext@#(decimal a)
+            elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
+            else                       : nullpicture
+            fi ;
     endfor
     p.pos[i] if known p : := point i of p ; fi
 enddef ;
@@ -172,12 +172,12 @@ vardef fromtopaths@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
             else :
                 l :=
             fi
-                 if     picture a           : a
-                 elseif string a            : textext@#(a)
-                 elseif numeric a           : textext@#(decimal a)
-                 elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
-                 else                       : nullpicture
-                 fi ;
+                if     picture a           : a
+                elseif string  a           : if (length(a) > 0) : textext@#(a) else : nullpicture fi
+                elseif numeric a           : textext@#(decimal a)
+                elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
+                else                       : nullpicture
+                fi ;
         fi
     endfor
     r2 = r1
@@ -246,4 +246,8 @@ def mfun_node_flush =
     for i=0 upto nodecount:
         draw node(i) ;
     endfor
+enddef ;
+
+vardef mfun_nodes_fromto@#(expr d, f)(text t) =
+    fromtopaths@#(d,nodepath,f,nodepath,t)
 enddef ;

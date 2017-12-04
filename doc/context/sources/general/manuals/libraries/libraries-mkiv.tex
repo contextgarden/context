@@ -1,0 +1,199 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+
+\usemodule[art-01,abr-02]
+
+\definecolor
+  [maincolor]
+  [r=.4]
+
+\definecolor
+  [extracolor]
+  [g=.4]
+
+\setupbodyfont
+  [11pt]
+
+\setuptype
+  [color=maincolor]
+
+\setuptyping
+  [color=maincolor]
+
+\definefontsynonym
+  [TitlePageMono]
+  [file:lmmonoproplt10-bold*default]
+
+\setuphead
+  [color=maincolor]
+
+\usesymbols
+  [cc]
+
+\setupinteraction
+  [hidden]
+
+\loadfontgoodies[lm]
+
+\startdocument
+  [metadata:author=Hans Hagen,
+   metadata:title=Libraries in ConTeXt,
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL,
+   title=Libraries in \ConTeXt,
+   support=www.contextgarden.net,
+   website=www.pragma-ade.nl]
+
+\startluasetups[swiglib]
+    context.nohyphens()
+    for i=1,640 do
+        context.definedfont { string.formatters["TitlePageMono at %p"](65536*(10+math.random(5))) }
+        context("Libraries ")
+    end
+    context.removeunwantedspaces()
+\stopluasetups
+
+\startMPpage
+
+StartPage ;
+
+    fill Page enlarged 1cm withcolor \MPcolor{extracolor} ;
+
+    draw textext("\framed[loffset=2pt,roffset=2pt,frame=off,width=\paperwidth,align={normal,paragraph,verytolerant,stretch}]{\luasetup{swiglib}}")
+        xysized (PaperWidth,PaperHeight)
+        shifted center Page
+        withcolor .8white ;
+
+    draw textext.ulft("\definedfont[TitlePageMono]basics")
+        xsized .75PaperWidth
+        shifted lrcorner Page
+        shifted (-1cm,2cm)
+        withcolor \MPcolor{maincolor} ;
+
+  % draw textext.ulft("\definedfont[TitlePageMono]in context mkiv")
+  %     xsized .6PaperWidth
+  %     shifted lrcorner Page
+  %     shifted (-1cm,6cm)
+  %     withcolor \MPcolor{maincolor} ;
+
+StopPage ;
+
+\stopMPpage
+
+\dontcomplain
+
+\startsubject[title=Contents]
+
+\placelist[section][alternative=a]
+
+\stopsubject
+
+\startsection[title=Introduction]
+
+Not long after we released \LUATEX\ 1.0, we started experimenting a bit more with
+so called foreign function interface: \FFI. Originally that interface to external
+libraries was only available in \LUAJITTEX, but a good and compatible alternative
+is now also available in the normal engine too. For users it is not that relevant
+to know how it works, as long as it works. It means that in addition to \SWIGLIB\
+we have a method that doesn't demand compilation as it uses normal (public)
+libraries.
+
+Of course one needs to make sure that the right version of a library is used.
+And, as there is the danger of the \API\ having been changed in an incompatible
+way one can wonder if such a dependency is really what one wants. On the other
+hand one can expect \CONTEXT\ to keep up.
+
+Do you really need libraries? For instance does it really make sense to use curl,
+ghostscript or graphicmagic libraries while the command line version is
+(normally) just as efficient and avoids a dependency. This is even more true if
+you realizes that for instance a fetch or conversion only needs to happen once
+per run or in fact only when there is some change in the resource.
+
+On the other hand, when accessing databases one can avoid the often slower
+command line calls and save the hassle of intermediate files. Here efficiency
+wins. Also, when \CONTEXT\ is used in a high performance database backend
+application a distribution and the used libraries are not updated on a daily
+basis.
+
+\stopsection
+
+\startsection[title=Supported]
+
+Apart from some experiments we currently can use \FFI\ interfaced libraries in:
+
+\starttabulate[|l|l|l|l|l|]
+\FL
+\BC module               \BC library       \BC windows     \BC unix           \NC \NR
+\ML
+\NC util-crl             \NC curl          \NC libcurl     \NC libcurl        \NC \NR % todo: client and ffi
+\NC util-sql-imp-ffi     \NC mysql         \NC libmysql    \NC libmysqlclient \NC \NR
+\NC util-sql-imp-sqlite  \NC sqlite        \NC sqlite3     \NC sqlite3        \NC \NR
+%NC font-phb-imp-library \NC harfbuzz      \NC libharfbuzz \NC libharfbuzz    \NC \NR % for testing uniscribe (idris fonts)
+%NC                      \NC ghostscript   \NC             \NC                \NC \NR % only a few experiments
+%NC                      \NC graphicmagick \NC             \NC                \NC \NR % only a few experiments
+\LL
+\stoptabulate
+
+The profiler that we occasionally use to identify bottlenecks in the engine (for
+instance when we upgrade \LUA) uses \FFI\ to provide access to the high resolution
+timers but this is typically different per platform.
+
+One problem with libraries, especially on \WINDOWS\ is that the library is found on
+some system path and it can happen that multiple programs ship the same library but in
+different versions. You can try to play safe and put libraries in the \TEX\ tree, for
+instance on my system they are in:
+
+\starttyping
+c:/data/tex-context/tex/texmf-win64/bin/lib/luatex/lua/whatever/libwhatever.dll
+\stoptyping
+
+You can trace where libraries are looked for with:
+
+\starttyping
+\enabletrackers[resolvers.ffilib]
+\stoptyping
+
+or in \LUA\ with:
+
+\starttyping
+trackers.enable("resolvers.ffilib")
+\stoptyping
+
+The library is first located on one of the valid \TDS\ paths (these are sort of
+standardized in \TEX\ distributions) and then using the normal \FFI\ loader.
+
+As this is all still experimental in \LUATEX\ there is not much more to say about
+it now. Of course this kind of specialized support to a large degree depends on
+the need to use it.
+
+\stopsection
+
+\startsection[title=Colofon]
+
+\starttabulate[|B|p|]
+\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version   \NC \currentdate \NC \NR
+\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\NC comment   \NC many thanks to Luigi Scarso for taking care of ffi support in the engines \NC \NR
+\stoptabulate
+
+\stopsection
+
+\stopdocument

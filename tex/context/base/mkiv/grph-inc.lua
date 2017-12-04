@@ -558,10 +558,12 @@ function figures.initialize(request)
         -- can be determined; at some point the handlers might set them to numbers instead
         local w = tonumber(request.width) or 0
         local h = tonumber(request.height) or 0
+        local p = tonumber(request.page) or 0
         request.width  = w > 0 and w or nil
         request.height = h > 0 and h or nil
         --
-        request.page      = max(tonumber(request.page) or 1,1)
+        request.page      = p > 0 and p or 1
+        request.keepopen  = p > 0
         request.size      = checkimagesize(request.size)
         request.object    = request.object == v_yes
         request["repeat"] = request["repeat"] == v_yes
@@ -1278,7 +1280,7 @@ function figures.done(data)
         ds.yscale = 1
     end
     -- sort of redundant but can be limited
-    ds.page   = ds.page or du.page or dr.page
+    ds.page = ds.page or du.page or dr.page
     return data
 end
 
@@ -1395,19 +1397,22 @@ function checkers.generic(data)
             filename        = name,
             page            = page,
             pagebox         = dr.size,
+            keepopen        = dr.keepopen or false,
          -- visiblefilename = "", -- this prohibits the full filename ending up in the file
         }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         if figure then
-if page and page > 1 then
-    local f = scanimage{ filename = name }
-    if f.page and f.pages < page then
-        report_inclusion("no page %i in %a, using page 1",page,name)
-        page        = 1
-        figure.page = page
-    end
-end
+            -- new, bonus check
+            if page and page > 1 then
+                local f = scanimage{ filename = name }
+                if f.page and f.pages < page then
+                    report_inclusion("no page %i in %a, using page 1",page,name)
+                    page        = 1
+                    figure.page = page
+                end
+            end
+            -- till here
             local f, comment = checkimage(scanimage(figure))
             if not f then
                 ds.comment = comment

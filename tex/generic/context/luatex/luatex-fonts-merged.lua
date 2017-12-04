@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/24/17 15:57:08
+-- merge date  : 12/04/17 16:37:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -22959,7 +22959,6 @@ local trace_directions=false registertracker("otf.directions",function(v) trace_
 local trace_plugins=false registertracker("otf.plugins",function(v) trace_plugins=v end)
 local trace_chains=false registertracker("otf.chains",function(v) trace_chains=v end)
 local trace_kernruns=false registertracker("otf.kernruns",function(v) trace_kernruns=v end)
-local trace_discruns=false registertracker("otf.discruns",function(v) trace_discruns=v end)
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
 local trace_testruns=false registertracker("otf.testruns",function(v) trace_testruns=v end)
 local forcediscretionaries=false
@@ -25154,7 +25153,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                     end
                   else
                     notmatchreplace[current]=true
-                    if not notmatchpre[current] then
+                    if notmatchpre[current] then
                       goto next
                     else
                       break

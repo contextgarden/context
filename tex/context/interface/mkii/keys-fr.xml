@@ -627,6 +627,10 @@
 		<cd:constant name='align' value='alignement'/>
 		<cd:constant name='aligncharacter' value='caracterealigne'/>
 		<cd:constant name='alignmentcharacter' value='alignementcaractere'/>
+		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
+		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
+		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
+		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='alignementtitre'/>
 		<cd:constant name='alternative' value='alternative'/>
@@ -913,6 +917,7 @@
 		<cd:constant name='leftoffset' value='decalagegauche'/>
 		<cd:constant name='leftquotation' value='citationgauche'/>
 		<cd:constant name='leftquote' value='citergauche'/>
+		<cd:constant name='leftsample' value='leftsample'/>
 		<cd:constant name='leftsentence' value='phrasegauche'/>
 		<cd:constant name='leftspeech' value='leftspeech'/>
 		<cd:constant name='leftstyle' value='leftstyle'/>
@@ -1115,6 +1120,7 @@
 		<cd:constant name='rightoffset' value='rightoffset'/>
 		<cd:constant name='rightquotation' value='citationdroite'/>
 		<cd:constant name='rightquote' value='citerdroite'/>
+		<cd:constant name='rightsample' value='rightsample'/>
 		<cd:constant name='rightsentence' value='phrasedroite'/>
 		<cd:constant name='rightspeech' value='rightspeech'/>
 		<cd:constant name='rightstyle' value='styledroit'/>

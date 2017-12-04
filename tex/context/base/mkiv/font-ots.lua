@@ -146,7 +146,7 @@ local trace_plugins        = false  registertracker("otf.plugins",      function
 local trace_chains         = false  registertracker("otf.chains",       function(v) trace_chains       = v end)
 
 local trace_kernruns       = false  registertracker("otf.kernruns",     function(v) trace_kernruns     = v end)
-local trace_discruns       = false  registertracker("otf.discruns",     function(v) trace_discruns     = v end)
+----- trace_discruns       = false  registertracker("otf.discruns",     function(v) trace_discruns     = v end)
 local trace_compruns       = false  registertracker("otf.compruns",     function(v) trace_compruns     = v end)
 local trace_testruns       = false  registertracker("otf.testruns",     function(v) trace_testruns     = v end)
 
@@ -2748,8 +2748,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                         end
                                     else
                                         notmatchreplace[current] = true
-                                        -- different than others, needs checking if "not" is okay so for Kai to check
-                                        if not notmatchpre[current] then
+                                        if notmatchpre[current] then
                                             goto next
                                         else
                                             break

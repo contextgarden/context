@@ -627,6 +627,10 @@
 		<cd:constant name='align' value='zarovnani'/>
 		<cd:constant name='aligncharacter' value='aligncharacter'/>
 		<cd:constant name='alignmentcharacter' value='alignmentcharacter'/>
+		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
+		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
+		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
+		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='zarovnejtitul'/>
 		<cd:constant name='alternative' value='alternativa'/>
@@ -913,6 +917,7 @@
 		<cd:constant name='leftoffset' value='levyoffset'/>
 		<cd:constant name='leftquotation' value='citacevlevo'/>
 		<cd:constant name='leftquote' value='citovatvlevo'/>
+		<cd:constant name='leftsample' value='leftsample'/>
 		<cd:constant name='leftsentence' value='vetavlevo'/>
 		<cd:constant name='leftspeech' value='leftspeech'/>
 		<cd:constant name='leftstyle' value='stylvlevo'/>
@@ -1115,6 +1120,7 @@
 		<cd:constant name='rightoffset' value='pravyoffset'/>
 		<cd:constant name='rightquotation' value='citacevpravo'/>
 		<cd:constant name='rightquote' value='citovatvpravo'/>
+		<cd:constant name='rightsample' value='rightsample'/>
 		<cd:constant name='rightsentence' value='vetavpravo'/>
 		<cd:constant name='rightspeech' value='rightspeech'/>
 		<cd:constant name='rightstyle' value='stylvpravo'/>
