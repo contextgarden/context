@@ -67,7 +67,6 @@
 \def\grph_buffers_run_indeed[#1][#2]%
   {\xdef\lasttypesetbuffer{\clf_runbuffer{#1}{#2}}}
 
-
 % For manuals and such:
 %
 % \definetypesetting [name] [options]   [settings-a]
@@ -99,11 +98,13 @@
      \grph_typesetting_process_indeed{}{#2}{#1}{}%
    \fi\fi\fi}
 
+\defineexternalfigure[typesetting] % so one can set a frame and such
+
 \def\grph_typesetting_process_indeed#1#2#3#4% options settings-a filename settings-b
   {\begingroup
    \edef\m_typesetting_name{\clf_runcontextjob{#3}{#1}}%
    \ifx\m_typesetting_name\empty \else
-     \expanded{\externalfigure[\m_typesetting_name]}[#2,#4]%
+     \expanded{\externalfigure[\m_typesetting_name][typesetting]}[#2,#4]%
    \fi
    \endgroup}
 

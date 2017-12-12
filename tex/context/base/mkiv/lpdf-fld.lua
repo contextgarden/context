@@ -1291,77 +1291,17 @@ function methods.push(name,specification)
 end
 
 local function makeradioparent(field,specification)
---     specification = enhance(specification,"Radio,RadiosInUnison")
     specification = enhance(specification,"Radio,RadiosInUnison,Print,NoToggleToOff")
---     specification = enhance(specification,"Radio,Print,NoToggleToOff")
     local d = pdfdictionary {
         T  = field.name,
         FT = pdf_btn,
---         F  = fieldplus(specification),
+     -- F  = fieldplus(specification),
         Ff = fieldflag(specification),
---         H  = pdf_n,
+     -- H  = pdf_n,
         V  = fielddefault(field),
     }
     save_parent(field,specification,d,true)
 end
-
--- local function makeradiochild(name,specification)
---     local field, parent = clones[name], nil
---     if field then
---         field = radios[field.parent]
---         parent = fields[field.parent]
---         if not parent.pobj then
---             if trace_fields then
---                 report_fields("forcing parent radio %a",parent.name)
---             end
---             makeradioparent(parent,parent)
---         end
---     else
---         field = radios[name]
---         if not field then
---             report_fields("there is some problem with field %a",name)
---             return nil
---         end
---         parent = fields[field.parent]
---         if not parent.pobj then
---             if trace_fields then
---                 report_fields("using parent radio %a",name)
---             end
---             makeradioparent(parent,parent)
---         end
---     end
---     if trace_fields then
---         report_fields("using child radio %a with values %a and default %a",name,field.values,field.default)
---     end
---     local fontsymbol = specification.fontsymbol
--- fontsymbol="star"
---     local d = pdfdictionary {
---         Subtype = pdf_widget,
---         Parent  = pdfreference(parent.pobj),
---         F       = fieldplus(specification),
---         OC      = fieldlayer(specification),
---         AA      = fieldactions(specification),
---         H       = pdf_n,
---     }
---     if fontsymbol and fontsymbol ~= "" then
--- local appearance, default, value = fieldstates_radio(field,true,false,false,name) -- false is also ok
---         specification.fontsymbol = todingbat(fontsymbol)
---         specification.fontstyle = "symbol"
---         specification.fontalternative = "dingbats"
---         d.DA = fieldsurrounding(specification)
---         d.MK = fieldrendering(specification)
--- d.AS = pdfconstant(value) -- default -- mandate when AP but confuses viewers
--- d.AP = appearance
---         return save_kid(parent,specification,d,value)
---     --         return save_kid(parent,specification,d,name)
---     else
---     --         local appearance, default, value = fieldstates_radio(field,true) -- false is also ok
---         local appearance, default, value = fieldstates_radio(field,true,false,false,name) -- false is also ok
---         d.AS = default -- mandate when AP but confuses viewers
---         d.AP = appearance
---         return save_kid(parent,specification,d,value)
---     end
--- end
 
 local function makeradiochild(name,specification)
     local field, parent = clones[name], nil

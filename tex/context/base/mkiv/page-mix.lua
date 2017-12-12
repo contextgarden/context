@@ -121,7 +121,7 @@ local function collectinserts(result,nxt,nxtid)
         if nxtid == insert_code then
             i = i + 1
             result.i = i
-            inserttotal = inserttotal + getheight(nxt) -- height includes depth
+            inserttotal = inserttotal + getheight(nxt) -- height includes depth (hm, still? needs checking)
             local s = getsubtype(nxt)
             local c = inserts[s]
             if trace_detail then
@@ -265,6 +265,7 @@ local function preparesplit(specification) -- a rather large function
     local height         = 0
     local depth          = 0
     local skip           = 0
+    local handlenotes    = specification.notes or false
     local splitmethod    = specification.splitmethod or false
     if splitmethod == v_none then
         splitmethod = false
@@ -628,7 +629,7 @@ local function preparesplit(specification) -- a rather large function
         if trace_state then
             report_state("%-8s > column %s, content: %s","line (1)",column,listtoutf(getlist(current),true,true))
         end
-        if more then
+        if more and handlenotes then
             nxt, inserts, insertskips, nextskips, inserttotal = collectinserts(result,nxt,nxtid)
         end
         local state, skipped = checked(advance+inserttotal+insertskips,more and "line (2)" or "line only",lastlocked)
@@ -751,7 +752,7 @@ local function preparesplit(specification) -- a rather large function
     specification.overflow       = overflow
     specification.discarded      = discarded
 
-    setlist(getbox(specification.box),nil)
+    setlist(getbox(specification.box))
 
     return specification
 end
@@ -774,9 +775,9 @@ local function finalize(result)
                 end
                 local t = r.tail
                 if t then
-                    setnext(t,nil)
+                    setnext(t)
                 else
-                    setnext(h,nil)
+                    setnext(h)
                     r.tail = h
                 end
                 for c, list in next, r.inserts do
@@ -784,11 +785,13 @@ local function finalize(result)
                     for i=1,#list do
                         local l = list[i]
                         local h = new_hlist()
+                        local g = getlist(l)
                         t[i] = h
-                        setlist(h,getlist(l))
-                        local wd, ht, dp = getwhd(l)
-                        -- here ht is still ht + dp !
-                        setwhd(h,getwidth(h),ht,dp)
+                        setlist(h,g)
+                        local ht = getheight(l)
+                        local dp = getdepth(l)
+                        local wd = getwidth(g)
+                        setwhd(h,wd,ht,dp)
                         setlist(l)
                     end
                     setprev(t[1])  -- needs checking
@@ -960,13 +963,11 @@ local function getsplit(result,n)
     end
 
     for c, list in next, r.inserts do
-
         local l = concatnodes(list)
         for i=1,#list-1 do
             setdepth(list[i],0)
         end
         local b = vpack(l) -- multiple arguments, todo: fastvpack
-
      -- setbox("global",c,b)
         setbox(c,b)
         r.inserts[c] = nil
@@ -1035,6 +1036,7 @@ implement {
            { "alternative" },
            { "internalgrid" },
            { "grid", "boolean" },
+           { "notes", "boolean" },
         }
     }
 }

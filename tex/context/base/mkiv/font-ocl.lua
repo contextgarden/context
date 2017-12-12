@@ -101,12 +101,11 @@ else -- for generic
 
 end
 
--- We need to force page first because otherwise the q's get outside
--- the font switch and as a consequence the next character has no font
--- set (well, it has: the preceding one). As a consequence these fonts
--- are somewhat inefficient as each glyph gets the font set. It's a
--- side effect of the fact that a font is handled when a character gets
--- flushed.
+-- We need to force page first because otherwise the q's get outside the font switch and
+-- as a consequence the next character has no font set (well, it has: the preceding one). As
+-- a consequence these fonts are somewhat inefficient as each glyph gets the font set. It's
+-- a side effect of the fact that a font is handled when a character gets flushed. Okay, from
+-- now on we can use text as literal mode.
 
 local function convert(t,k)
     local v = { }
@@ -123,8 +122,104 @@ local function convert(t,k)
     return v
 end
 
-local start = { "pdf", "page", "q" }
-local stop  = { "pdf", "raw", "Q" }
+local start = { "pdf", "mode", "font" } -- force text mode (so get q Q right)
+----- stop  = { "pdf", "mode", "page" } -- force page mode (else overlap)
+local push  = { "pdf", "page", "q" }
+local pop   = { "pdf", "page", "Q" }
+
+if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY < 6472 then
+    start = { "nop" }
+    ----- = stop
+end
+
+-- -- This one results in color directives inside BT ET but has less q Q pairs. It
+-- -- only shows the first glyph in acrobat and nothing more. No problem with other
+-- -- renderers.
+--
+-- local function initializecolr(tfmdata,kind,value) -- hm, always value
+--     if value then
+--         local resources = tfmdata.resources
+--         local palettes  = resources.colorpalettes
+--         if palettes then
+--             --
+--             local converted = resources.converted
+--             if not converted then
+--                 converted = setmetatableindex(convert)
+--                 resources.converted = converted
+--             end
+--             local colorvalues = sharedpalettes[value] or converted[palettes[tonumber(value) or 1] or palettes[1]] or { }
+--             local classes     = #colorvalues
+--             if classes == 0 then
+--                 return
+--             end
+--             --
+--             local characters   = tfmdata.characters
+--             local descriptions = tfmdata.descriptions
+--             local properties   = tfmdata.properties
+--             --
+--             properties.virtualized = true
+--             tfmdata.fonts = {
+--                 { id = 0 }
+--             }
+--             local widths = setmetatableindex(function(t,k)
+--                 local v = { "right", -k }
+--                 t[k] = v
+--                 return v
+--             end)
+--             --
+--             local getactualtext = otf.getactualtext
+--             local default       = colorvalues[#colorvalues]
+--             local b, e          = getactualtext(tounicode(0xFFFD))
+--             local actualb       = { "pdf", "page", b } -- saves tables
+--             local actuale       = { "pdf", "page", e } -- saves tables
+--             --
+--             local cache = setmetatableindex(function(t,k)
+--                 local v = { "char", k } -- could he a weak shared hash
+--                 t[k] = v
+--                 return v
+--             end)
+--             --
+--             for unicode, character in next, characters do
+--                 local description = descriptions[unicode]
+--                 if description then
+--                     local colorlist = description.colors
+--                     if colorlist then
+--                         local u = description.unicode or characters[unicode].unicode
+--                         local w = character.width or 0
+--                         local s = #colorlist
+--                         local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
+--                         local t = {
+--                             start,
+--                             not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
+--                         }
+--                         local n = 2
+--                         local l = nil
+--                         n = n + 1 t[n] = push
+--                         for i=1,s do
+--                             local entry = colorlist[i]
+--                             local v = colorvalues[entry.class] or default
+--                             if v and l ~= v then
+--                                 n = n + 1 t[n] = v
+--                                 l = v
+--                             end
+--                             n = n + 1 t[n] = cache[entry.slot]
+--                             if s > 1 and i < s and goback then
+--                                 n = n + 1 t[n] = goback
+--                             end
+--                         end
+--                         n = n + 1 t[n] = pop
+--                         n = n + 1 t[n] = actuale
+--                         n = n + 1 t[n] = stop
+--                         character.commands = t
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
+--
+-- -- Here we have no color change in BT .. ET and  more q Q pairs but even then acrobat
+-- -- fails displaying the overlays correctly. Other renderers do it right.
 
 local function initializecolr(tfmdata,kind,value) -- hm, always value
     if value then
@@ -179,15 +274,21 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                         local s = #colorlist
                         local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
                         local t = {
-                            start,
-                            not u and actualb or { "pdf", "raw", getactualtext(tounicode(u)) }
+                            start, -- really needed
+                            not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
                         }
                         local n = 2
                         local l = nil
+                        local f = false
                         for i=1,s do
                             local entry = colorlist[i]
                             local v = colorvalues[entry.class] or default
                             if v and l ~= v then
+                                if f then
+                                    n = n + 1 t[n] = pop
+                                end
+                                n = n + 1 t[n] = push
+                                f = true
                                 n = n + 1 t[n] = v
                                 l = v
                             end
@@ -196,8 +297,11 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                                 n = n + 1 t[n] = goback
                             end
                         end
+                        if f then
+                            n = n + 1 t[n] = pop
+                        end
                         n = n + 1 t[n] = actuale
-                        n = n + 1 t[n] = stop
+                     -- n = n + 1 t[n] = stop -- not needed
                         character.commands = t
                     end
                 end
@@ -302,7 +406,9 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
     local getactualtext = otf.getactualtext
     local storepdfdata  = otf.storepdfdata
     --
- -- local nop = { "nop" }
+    local b, e          = getactualtext(tounicode(0xFFFD))
+    local actualb       = { "pdf", "page", b } -- saves tables
+    local actuale       = { "pdf", "page", e } -- saves tables
     --
     for unicode, character in sortedhash(characters) do  -- sort is nicer for svg
         local index = character.index
@@ -324,18 +430,18 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
             if data then
                 local setcode, name, nilcode = storepdfdata(data)
                 if name then
-                    local bt, et = getactualtext(unicode)
+                    local bt = unicode and getactualtext(unicode)
                     local wd = character.width  or 0
                     local ht = character.height or 0
                     local dp = character.depth  or 0
                     character.commands = {
-                        { "pdf", "direct", bt },
+                        not unicode and actualb or { "pdf", "page", (getactualtext(unicode)) },
                         { "down", dp + dy * hfactor },
                         { "right", dx * hfactor },
                      -- setcode and { "lua", setcode } or nop,
                         { "image", { filename = name, width = wd, height = ht, depth = dp } },
                      -- nilcode and { "lua", nilcode } or nop,
-                        { "pdf", "direct", et },
+                        actuale,
                     }
                     character[kind] = true
                 end

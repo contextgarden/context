@@ -473,11 +473,23 @@
      [\page_paper_the_paper_size{#1}]%
      [\page_paper_the_print_size{#2}]}}
 
-\setvalue{\??layoutpaper\v!reset                  }{\global\setfalse\c_page_target_paper_landscape
-                                                    \global\setfalse\c_page_target_paper_mirror
-                                                    \global\setfalse\c_page_target_paper_negate
-                                                    \global\c_page_target_paper_orientation\uprotationangle
-                                                    \global\c_page_target_paper_reverse    \uprotationangle}
+\unexpanded\def\page_paper_reset_paper
+  {\global\setfalse\c_page_target_paper_landscape
+   \global\setfalse\c_page_target_paper_mirror
+   \global\setfalse\c_page_target_paper_negate
+   \global\c_page_target_paper_orientation\uprotationangle
+   \global\c_page_target_paper_reverse    \uprotationangle}
+
+\unexpanded\def\page_paper_reset_print
+  {\global\setfalse\c_page_target_print_landscape
+   \global\setfalse\c_page_target_print_mirror
+   \global\setfalse\c_page_target_print_negate
+   \global\c_page_target_print_orientation\uprotationangle
+   \global\c_page_target_print_reverse    \uprotationangle}
+
+\letvalue{\??layoutpaper\v!reset}\page_paper_reset_paper
+\letvalue{\??layoutprint\v!reset}\page_paper_reset_print
+
 \setvalue{\??layoutpaper\v!landscape              }{\global\settrue\c_page_target_paper_landscape}
 \setvalue{\??layoutpaper\v!mirrored               }{\global\settrue\c_page_target_paper_mirror}
 \setvalue{\??layoutpaper\v!negative               }{\global\settrue\c_page_target_paper_negate}
@@ -490,11 +502,6 @@
 \setvalue{\??layoutpaper\number\leftrotationangle }{\global\c_page_target_paper_orientation\leftrotationangle
                                                     \global\c_page_target_paper_reverse    \rightrotationangle}
 
-\setvalue{\??layoutprint\v!reset                  }{\global\setfalse\c_page_target_print_landscape
-                                                    \global\setfalse\c_page_target_print_mirror
-                                                    \global\setfalse\c_page_target_print_negate
-                                                    \global\c_page_target_print_orientation\uprotationangle
-                                                    \global\c_page_target_print_reverse    \uprotationangle}
 \setvalue{\??layoutprint\v!landscape              }{\global\settrue\c_page_target_print_landscape}
 \setvalue{\??layoutprint\v!mirrored               }{\global\settrue\c_page_target_print_mirror}
 \setvalue{\??layoutprint\v!negative               }{\global\settrue\c_page_target_print_negate}
@@ -519,18 +526,20 @@
    \fi}
 
 \unexpanded\def\page_paper_set_current_indeed[#1][#2]%
-  {\edef\m_page_asked_paper{\v!reset,#1}% can be the restores
-   \edef\m_page_asked_print{\v!reset,#2}%
+  {\edef\m_page_asked_paper{#1}% can be the restores
+   \edef\m_page_asked_print{#2}%
    %
    \page_paper_set_restore\m_page_asked_paper\m_page_asked_print
    %
    % locate page target
    \let\currentlayouttarget\empty
+   \page_paper_reset_paper
    \processcommacommand[\m_page_asked_paper]\page_paper_identify_target
    \ifx\currentlayouttarget\empty
      \let\currentlayouttarget\currentpage
    \fi
    \global\let\papersize\currentlayouttarget
+   \page_paper_reset_paper
    \processcommacommand[\m_page_asked_paper]\page_paper_handle_page_option
    \global\paperwidth \layouttargetparameter\c!width \relax
    \global\paperheight\layouttargetparameter\c!height\relax
@@ -550,8 +559,10 @@
    %
    \page_paper_set_offsets
    %  locate paper target
+   \page_paper_reset_print
    \processcommacommand[\m_page_asked_print]\page_paper_identify_target
    \global\let\printpapersize\currentlayouttarget
+   \page_paper_reset_print
    \processcommacommand[\m_page_asked_print]\page_paper_handle_print_option
    \global\printpaperwidth \layouttargetparameter\c!width \relax
    \global\printpaperheight\layouttargetparameter\c!height\relax

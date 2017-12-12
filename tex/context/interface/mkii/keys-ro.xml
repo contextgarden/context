@@ -990,6 +990,7 @@
 		<cd:constant name='nlines' value='nlinii'/>
 		<cd:constant name='norm' value='norm'/>
 		<cd:constant name='note' value='note'/>
+		<cd:constant name='notes' value='notes'/>
 		<cd:constant name='nr' value='nr'/>
 		<cd:constant name='nright' value='ndreapta'/>
 		<cd:constant name='ntop' value='nsus'/>

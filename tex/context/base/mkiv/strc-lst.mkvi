@@ -144,7 +144,8 @@
 \def\strc_lists_inject_nop[#dummya][#dummyb]%
   {\endgroup}
 
-\unexpanded\def\strc_lists_inject_enhance#listindex#internal%
+% \unexpanded
+\def\strc_lists_inject_enhance#listindex#internal%
   {\normalexpanded{\ctxlatecommand{enhancelist(\number#listindex)}}}
 
 \unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly

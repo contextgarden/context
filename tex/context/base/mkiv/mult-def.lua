@@ -9283,6 +9283,11 @@ return {
   },
   ["note"]={
    ["en"]="note",
+   ["nl"]="noot",
+  },
+  ["notes"]={
+   ["en"]="notes",
+   ["nl"]="noten",
   },
   ["nr"]={
    ["cs"]="nr",

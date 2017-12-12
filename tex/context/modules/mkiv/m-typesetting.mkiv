@@ -21,23 +21,43 @@
 
 \definecombination
   [fourpages]
+  [twopages]
   [distance=.5\bodyfontsize,
    width=\textwidth]
 
 \definecombination
   [sixpages]
+  [twopages]
   [distance=.5\bodyfontsize,
    width=\textwidth]
 
+\definemeasure[firstpages][\dimexpr\dimexpr\textwidth-1  \bodyfontsize\relax/2\relax]
 \definemeasure[twopages]  [\dimexpr\dimexpr\textwidth-3  \bodyfontsize\relax/4\relax]
 \definemeasure[fourpages] [\dimexpr\dimexpr\textwidth-3  \bodyfontsize\relax/4\relax]
 \definemeasure[sixpages]  [\dimexpr\dimexpr\textwidth-2.5\bodyfontsize\relax/6\relax]
 \definemeasure[eightpages][\dimexpr\dimexpr\textwidth-3  \bodyfontsize\relax/4\relax]
 
+\starttexdefinition unexpanded WhenValidPage#1
+    \ifnum#1>\noffigurepages\relax
+        \expandafter\gobbleoneargument
+    \else
+        \expandafter\firstofoneargument
+    \fi
+\stoptexdefinition
+
 \starttexdefinition unexpanded OnePage #1
     \startlinecorrection[blank]
         \startcombination[twopages][1*1]
             {\typesetfile[#1.tex][page=1,lines=15]} {1}
+        \stopcombination
+    \stoplinecorrection
+\stoptexdefinition
+
+\starttexdefinition unexpanded FirstPages #1
+    \startlinecorrection[blank]
+        \startcombination[twopages][2*1]
+            {\typesetfile[#1.tex][page=1,width=\measure{firstpages}]} {1}
+            {\typesetfile[#1.tex][page=2,width=\measure{firstpages}]} {2}
         \stopcombination
     \stoplinecorrection
 \stoptexdefinition
@@ -71,10 +91,10 @@
 \starttexdefinition unexpanded FourPages #1
     \startlinecorrection[blank]
         \startcombination[fourpages][4*1]
-            {\typesetfile[#1.tex][page=1,width=\measure{fourpages}]} {1}
-            {\typesetfile[#1.tex][page=2,width=\measure{fourpages}]} {2}
-            {\typesetfile[#1.tex][page=3,width=\measure{fourpages}]} {3}
-            {\typesetfile[#1.tex][page=4,width=\measure{fourpages}]} {4}
+                              {\typesetfile[#1.tex][page=1,width=\measure{fourpages}]}                    {1}
+            {\WhenValidPage{2}{\typesetfile[#1.tex][page=2,width=\measure{fourpages}]}} {\WhenValidPage{2}{2}}
+            {\WhenValidPage{3}{\typesetfile[#1.tex][page=3,width=\measure{fourpages}]}} {\WhenValidPage{3}{3}}
+            {\WhenValidPage{4}{\typesetfile[#1.tex][page=4,width=\measure{fourpages}]}} {\WhenValidPage{4}{4}}
         \stopcombination
     \stoplinecorrection
 \stoptexdefinition
@@ -82,10 +102,10 @@
 \starttexdefinition unexpanded FourSpread #1
     \startlinecorrection[blank]
         \startcombination[fourpages][4*1]
-            {\typesetfile[#1.tex][page=2,width=\measure{fourpages}]} {2}
-            {\typesetfile[#1.tex][page=3,width=\measure{fourpages}]} {3}
-            {\typesetfile[#1.tex][page=4,width=\measure{fourpages}]} {4}
-            {\typesetfile[#1.tex][page=5,width=\measure{fourpages}]} {5}
+                              {\typesetfile[#1.tex][page=2,width=\measure{fourpages}]}                    {2}
+            {\WhenValidPage{3}{\typesetfile[#1.tex][page=3,width=\measure{fourpages}]}} {\WhenValidPage{3}{3}}
+            {\WhenValidPage{4}{\typesetfile[#1.tex][page=4,width=\measure{fourpages}]}} {\WhenValidPage{4}{4}}
+            {\WhenValidPage{5}{\typesetfile[#1.tex][page=5,width=\measure{fourpages}]}} {\WhenValidPage{5}{5}}
         \stopcombination
     \stoplinecorrection
 \stoptexdefinition
@@ -93,12 +113,12 @@
 \starttexdefinition unexpanded SixPages #1
     \startlinecorrection[blank]
         \startcombination[sixpages][6*1]
-            {\typesetfile[#1.tex][page=1,width=\measure{sixpages}]} {1}
-            {\typesetfile[#1.tex][page=2,width=\measure{sixpages}]} {2}
-            {\typesetfile[#1.tex][page=3,width=\measure{sixpages}]} {3}
-            {\typesetfile[#1.tex][page=4,width=\measure{sixpages}]} {4}
-            {\typesetfile[#1.tex][page=5,width=\measure{sixpages}]} {5}
-            {\typesetfile[#1.tex][page=6,width=\measure{sixpages}]} {6}
+                              {\typesetfile[#1.tex][page=1,width=\measure{sixpages}]}                    {1}
+            {\WhenValidPage{2}{\typesetfile[#1.tex][page=2,width=\measure{sixpages}]}} {\WhenValidPage{2}{2}}
+            {\WhenValidPage{3}{\typesetfile[#1.tex][page=3,width=\measure{sixpages}]}} {\WhenValidPage{3}{3}}
+            {\WhenValidPage{4}{\typesetfile[#1.tex][page=4,width=\measure{sixpages}]}} {\WhenValidPage{4}{4}}
+            {\WhenValidPage{5}{\typesetfile[#1.tex][page=5,width=\measure{sixpages}]}} {\WhenValidPage{5}{5}}
+            {\WhenValidPage{6}{\typesetfile[#1.tex][page=6,width=\measure{sixpages}]}} {\WhenValidPage{6}{6}}
         \stopcombination
     \stoplinecorrection
 \stoptexdefinition
@@ -106,12 +126,12 @@
 \starttexdefinition unexpanded SixSpread #1
     \startlinecorrection[blank]
         \startcombination[sixpages][6*1]
-            {\typesetfile[#1.tex][page=2,width=\measure{sixpages}]} {2}
-            {\typesetfile[#1.tex][page=3,width=\measure{sixpages}]} {3}
-            {\typesetfile[#1.tex][page=4,width=\measure{sixpages}]} {4}
-            {\typesetfile[#1.tex][page=5,width=\measure{sixpages}]} {5}
-            {\typesetfile[#1.tex][page=6,width=\measure{sixpages}]} {6}
-            {\typesetfile[#1.tex][page=7,width=\measure{sixpages}]} {7}
+                              {\typesetfile[#1.tex][page=2,width=\measure{sixpages}]}                    {2}
+            {\WhenValidPage{3}{\typesetfile[#1.tex][page=3,width=\measure{sixpages}]}} {\WhenValidPage{3}{3}}
+            {\WhenValidPage{4}{\typesetfile[#1.tex][page=4,width=\measure{sixpages}]}} {\WhenValidPage{4}{4}}
+            {\WhenValidPage{5}{\typesetfile[#1.tex][page=5,width=\measure{sixpages}]}} {\WhenValidPage{5}{5}}
+            {\WhenValidPage{6}{\typesetfile[#1.tex][page=6,width=\measure{sixpages}]}} {\WhenValidPage{6}{6}}
+            {\WhenValidPage{7}{\typesetfile[#1.tex][page=7,width=\measure{sixpages}]}} {\WhenValidPage{7}{7}}
         \stopcombination
     \stoplinecorrection
 \stoptexdefinition
@@ -119,14 +139,14 @@
 \starttexdefinition unexpanded EightPages #1
     \startlinecorrection[blank]
         \startcombination[fourpages][4*2]
-            {\typesetfile[#1.tex][page=1,width=\measure{eightpages}]} {#1 / 1}
-            {\typesetfile[#1.tex][page=2,width=\measure{eightpages}]} {#1 / 2}
-            {\typesetfile[#1.tex][page=3,width=\measure{eightpages}]} {#1 / 3}
-            {\typesetfile[#1.tex][page=4,width=\measure{eightpages}]} {#1 / 4}
-            {\typesetfile[#1.tex][page=5,width=\measure{eightpages}]} {#1 / 5}
-            {\typesetfile[#1.tex][page=6,width=\measure{eightpages}]} {#1 / 6}
-            {\typesetfile[#1.tex][page=7,width=\measure{eightpages}]} {#1 / 7}
-            {\typesetfile[#1.tex][page=8,width=\measure{eightpages}]} {#1 / 8}
+                              {\typesetfile[#1.tex][page=1,width=\measure{eightpages}]}                    {#1 / 1}
+            {\WhenValidPage{2}{\typesetfile[#1.tex][page=2,width=\measure{eightpages}]}} {\WhenValidPage{2}{#1 / 2}}
+            {\WhenValidPage{3}{\typesetfile[#1.tex][page=3,width=\measure{eightpages}]}} {\WhenValidPage{3}{#1 / 3}}
+            {\WhenValidPage{4}{\typesetfile[#1.tex][page=4,width=\measure{eightpages}]}} {\WhenValidPage{4}{#1 / 4}}
+            {\WhenValidPage{5}{\typesetfile[#1.tex][page=5,width=\measure{eightpages}]}} {\WhenValidPage{5}{#1 / 5}}
+            {\WhenValidPage{6}{\typesetfile[#1.tex][page=6,width=\measure{eightpages}]}} {\WhenValidPage{6}{#1 / 6}}
+            {\WhenValidPage{7}{\typesetfile[#1.tex][page=7,width=\measure{eightpages}]}} {\WhenValidPage{7}{#1 / 7}}
+            {\WhenValidPage{8}{\typesetfile[#1.tex][page=8,width=\measure{eightpages}]}} {\WhenValidPage{8}{#1 / 8}}
         \stopcombination
     \stoplinecorrection
 \stoptexdefinition
@@ -134,14 +154,14 @@
 \starttexdefinition unexpanded EightSpread #1
     \startlinecorrection[blank]
         \startcombination[fourpages][4*2]
-            {\typesetfile[#1.tex][page=2,width=\measure{eightpages}]} {#1 / 2}
-            {\typesetfile[#1.tex][page=3,width=\measure{eightpages}]} {#1 / 3}
-            {\typesetfile[#1.tex][page=4,width=\measure{eightpages}]} {#1 / 4}
-            {\typesetfile[#1.tex][page=5,width=\measure{eightpages}]} {#1 / 5}
-            {\typesetfile[#1.tex][page=6,width=\measure{eightpages}]} {#1 / 6}
-            {\typesetfile[#1.tex][page=7,width=\measure{eightpages}]} {#1 / 7}
-            {\typesetfile[#1.tex][page=8,width=\measure{eightpages}]} {#1 / 8}
-            {\typesetfile[#1.tex][page=9,width=\measure{eightpages}]} {#1 / 9}
+                              {\typesetfile[#1.tex][page=2,width=\measure{eightpages}]}                    {#1 / 2}
+            {\WhenValidPage{3}{\typesetfile[#1.tex][page=3,width=\measure{eightpages}]}} {\WhenValidPage{3}{#1 / 3}}
+            {\WhenValidPage{4}{\typesetfile[#1.tex][page=4,width=\measure{eightpages}]}} {\WhenValidPage{4}{#1 / 4}}
+            {\WhenValidPage{5}{\typesetfile[#1.tex][page=5,width=\measure{eightpages}]}} {\WhenValidPage{5}{#1 / 5}}
+            {\WhenValidPage{6}{\typesetfile[#1.tex][page=6,width=\measure{eightpages}]}} {\WhenValidPage{6}{#1 / 6}}
+            {\WhenValidPage{7}{\typesetfile[#1.tex][page=7,width=\measure{eightpages}]}} {\WhenValidPage{7}{#1 / 7}}
+            {\WhenValidPage{8}{\typesetfile[#1.tex][page=8,width=\measure{eightpages}]}} {\WhenValidPage{8}{#1 / 8}}
+            {\WhenValidPage{9}{\typesetfile[#1.tex][page=9,width=\measure{eightpages}]}} {\WhenValidPage{9}{#1 / 9}}
         \stopcombination
     \stoplinecorrection
 \stoptexdefinition

@@ -84,6 +84,7 @@
    \c!step=.25\lineheight, % needs some experimenting
   %\c!splitmethod=\v!fixed, % will be default
    \c!direction=\v!normal, % new (also todo in the new columnsets)
+   \c!notes=\v!yes,
    \c!method=\ifinner\s!box\else\s!otr\fi] % automatic as suggested by WS
 
 \let\startmixedcolumns\relax % defined later
@@ -122,6 +123,8 @@
 \setnewconstant\c_page_mix_routine_continue \plustwo
 \setnewconstant\c_page_mix_routine_balance  \plusthree
 \setnewconstant\c_page_mix_routine_error    \plusfour
+
+\newconditional\c_page_mix_process_notes
 
 %D The main environment is called as follows:
 %D
@@ -183,7 +186,8 @@
    \c!splitmethod=\v!none,
    \c!grid=\v!tolerant,
    \c!internalgrid=\v!halfline, % new, we may still revert to \v!line
-   \c!balance=\v!yes]
+   \c!balance=\v!yes,
+   \c!notes=\v!no] % kind of hidden
 
 % better
 
@@ -464,18 +468,29 @@
 
 \let\page_mix_fast_columns_stop\relax
 
+\newtoks\t_page_mix_at_the_end
+
+\def\page_mix_finalize_columns
+  {\ifconditional\c_page_mix_process_notes \else
+     \global\t_page_mix_at_the_end{\stoppostponingnotes}%
+   \fi}
+
 \unexpanded\def\page_mix_columns_stop_yes
-  {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
+  {\begincsname\??mixedcolumnsstop\currentmixedcolumnsmethod\endcsname % no \relax
+   \page_mix_finalize_columns
    \endgroup
    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
    \mixedcolumnsparameter\c!after\relax
    \popmacro\currentmixedcolumnsmethod
-   \popmacro\currentmixedcolumns}
+   \popmacro\currentmixedcolumns
+   \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 \unexpanded\def\page_mix_columns_stop_nop
-  {\endgroup
+  {\page_mix_finalize_columns
+   \endgroup
    \popmacro\currentmixedcolumnsmethod
-   \popmacro\currentmixedcolumns}
+   \popmacro\currentmixedcolumns
+   \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 % \unexpanded\def\page_mix_columns_stop_yes
 %   {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
@@ -527,6 +542,11 @@
    \d_page_mix_rightskip\rightskip
    \leftskip \zeropoint
    \rightskip\zeropoint
+   %
+   \doifelse{\mixedcolumnsparameter\c!notes}\v!yes\settrue\setfalse\c_page_mix_process_notes
+   \ifconditional\c_page_mix_process_notes \else
+     \startpostponingnotes
+   \fi
    %
    \d_page_mix_threshold\zeropoint
    %
@@ -649,7 +669,8 @@
        balance      {#1}%
        alternative  {\mixedcolumnsparameter\c!alternative}%
        internalgrid {\mixedcolumnsparameter\c!internalgrid}%
-       grid         \ifgridsnapping true\else false\fi
+       grid         \ifgridsnapping tru\else fals\fi e %
+       notes        \ifconditional\c_page_mix_process_notes tru\else fals\fi e %
    \relax
    \deadcycles\zerocount}
 
@@ -725,7 +746,9 @@
      \hskip-\d_page_mix_column_width
      \vbox \bgroup
        \hsize\d_page_mix_column_width
-       \placenoteinserts
+       \ifconditional\c_page_mix_process_notes
+         \placenoteinserts
+       \fi
      \egroup
      \hss
    \egroup}

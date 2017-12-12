@@ -387,6 +387,7 @@ local function initializer()
             end
         end
     end
+ -- references.sortedinternals = sortedkeys(internalreferences) -- todo: when we need it more than once
 end
 
 local function finalizer()

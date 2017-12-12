@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/04/17 16:37:50
+-- merge date  : 12/12/17 19:23:57
 
 do -- begin closure to overcome local limits and interference
 
@@ -28538,8 +28538,12 @@ local function convert(t,k)
   t[k]=v
   return v
 end
-local start={ "pdf","page","q" }
-local stop={ "pdf","raw","Q" }
+local start={ "pdf","mode","font" }
+local push={ "pdf","page","q" }
+local pop={ "pdf","page","Q" }
+if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY<6472 then
+  start={ "nop" }
+end
 local function initializecolr(tfmdata,kind,value) 
   if value then
     local resources=tfmdata.resources
@@ -28588,14 +28592,20 @@ local function initializecolr(tfmdata,kind,value)
             local goback=w~=0 and widths[w] or nil 
             local t={
               start,
-              not u and actualb or { "pdf","raw",getactualtext(tounicode(u)) }
+              not u and actualb or { "pdf","page",(getactualtext(tounicode(u))) }
             }
             local n=2
             local l=nil
+            local f=false
             for i=1,s do
               local entry=colorlist[i]
               local v=colorvalues[entry.class] or default
               if v and l~=v then
+                if f then
+                  n=n+1 t[n]=pop
+                end
+                n=n+1 t[n]=push
+                f=true
                 n=n+1 t[n]=v
                 l=v
               end
@@ -28604,8 +28614,10 @@ local function initializecolr(tfmdata,kind,value)
                 n=n+1 t[n]=goback
               end
             end
+            if f then
+              n=n+1 t[n]=pop
+            end
             n=n+1 t[n]=actuale
-            n=n+1 t[n]=stop
             character.commands=t
           end
         end
@@ -28653,6 +28665,9 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
   }
   local getactualtext=otf.getactualtext
   local storepdfdata=otf.storepdfdata
+  local b,e=getactualtext(tounicode(0xFFFD))
+  local actualb={ "pdf","page",b } 
+  local actuale={ "pdf","page",e }
   for unicode,character in sortedhash(characters) do 
     local index=character.index
     if index then
@@ -28673,16 +28688,16 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
       if data then
         local setcode,name,nilcode=storepdfdata(data)
         if name then
-          local bt,et=getactualtext(unicode)
+          local bt=unicode and getactualtext(unicode)
           local wd=character.width or 0
           local ht=character.height or 0
           local dp=character.depth or 0
           character.commands={
-            { "pdf","direct",bt },
+            not unicode and actualb or { "pdf","page",(getactualtext(unicode)) },
             { "down",dp+dy*hfactor },
             { "right",dx*hfactor },
             { "image",{ filename=name,width=wd,height=ht,depth=dp } },
-            { "pdf","direct",et },
+            actuale,
           }
           character[kind]=true
         end

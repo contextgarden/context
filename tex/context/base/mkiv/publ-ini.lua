@@ -362,7 +362,7 @@ local listtolist   = nil
 
 do
 
-    local initialize = nil
+    local initialize = nil -- we delay
 
     initialize = function(t)
         usedentries     = allocate { }
@@ -370,77 +370,75 @@ do
         listtocite      = allocate { }
         listtolist      = allocate { }
         local names     = { }
-        local internals = structures.references.internals
         local p_collect = (C(R("09")^1) * Carg(1) / function(s,entry) listtocite[tonumber(s)] = entry end + P(1))^0
         local nofunique = 0
         local nofreused = 0
-        for i=1,#internals do
-            local entry = internals[i]
-            if entry then
-                local metadata = entry.metadata
-                if metadata then
-                    local kind = metadata.kind
-                    if kind == "full" then
-                        -- reference (in list)
-                        local userdata = entry.userdata
-                        if userdata then
-                            local tag = userdata.btxref
-                            if tag then
-                                local set = userdata.btxset or v_default
-                                local s = usedentries[set]
-                                if s then
-                                    local u = s[tag]
-                                    if u then
-                                        u[#u+1] = entry
-                                    else
-                                        s[tag] = { entry }
-                                    end
-                                    nofreused = nofreused + 1
+     -- local internals = references.sortedinternals -- todo: when we need it more than once
+     -- for i=1,#internals do                        -- but currently we don't do this when not
+     --     local entry = internals[i]               -- needed anyway so ...
+        local internals = structures.references.internals
+        for i, entry in sortedhash(internals) do
+            local metadata = entry.metadata
+            if metadata then
+                local kind = metadata.kind
+                if kind == "full" then
+                    -- reference (in list)
+                    local userdata = entry.userdata
+                    if userdata then
+                        local tag = userdata.btxref
+                        if tag then
+                            local set = userdata.btxset or v_default
+                            local s = usedentries[set]
+                            if s then
+                                local u = s[tag]
+                                if u then
+                                    u[#u+1] = entry
                                 else
-                                    usedentries[set] = { [tag] = { entry } }
-                                    nofunique = nofunique + 1
+                                    s[tag] = { entry }
                                 end
-                                -- alternative: collect prev in group
-                                local int = tonumber(userdata.btxint)
-                                if int then
-                                    listtocite[int] = entry
-                                end
-                                local detail = datasets[set].details[tag]
--- todo: these have to be pluggable
-                                if detail then
-                                    local author = detail.author
-                                    if author then
-                                        for i=1,#author do
-                                            local a = author[i]
-                                            local s = a.surnames
-                                            if s then
-                                                local c = concat(s,"+")
-                                                local n = names[c]
-                                                if n then
-                                                    n[#n+1] = a
-                                                    break
-                                                else
-                                                    names[c] = { a }
-                                                end
+                                nofreused = nofreused + 1
+                            else
+                                usedentries[set] = { [tag] = { entry } }
+                                nofunique = nofunique + 1
+                            end
+                            -- alternative: collect prev in group
+                            local int = tonumber(userdata.btxint)
+                            if int then
+                                listtocite[int] = entry
+                            end
+                            local detail = datasets[set].details[tag]
+                            -- todo: these have to be pluggable
+                            if detail then
+                                local author = detail.author
+                                if author then
+                                    for i=1,#author do
+                                        local a = author[i]
+                                        local s = a.surnames
+                                        if s then
+                                            local c = concat(s,"+")
+                                            local n = names[c]
+                                            if n then
+                                                n[#n+1] = a
+                                                break
+                                            else
+                                                names[c] = { a }
                                             end
                                         end
                                     end
                                 end
                             end
                         end
-                    elseif kind == "btx" or kind == "userdata" then -- will go: kind == "userdata"
-                        -- list entry (each cite)
-                        local userdata = entry.userdata
-                        if userdata then
-                            local int = tonumber(userdata.btxint)
-                            if int then
-                                citetolist[int] = entry
-                            end
+                    end
+                elseif kind == "btx" then
+                    -- list entry (each cite)
+                    local userdata = entry.userdata
+                    if userdata then
+                        local int = tonumber(userdata.btxint)
+                        if int then
+                            citetolist[int] = entry
                         end
                     end
                 end
-            else
-                -- weird
             end
         end
         for k, v in sortedhash(names) do
@@ -459,7 +457,7 @@ do
             end
         end
         if trace_detail then
-            report("%s unique bibentries: %s reused entries",nofunique,nofreused)
+            report("%s unique references, %s reused entries",nofunique,nofreused)
         end
         initialize = nil
     end
@@ -500,6 +498,7 @@ local findallused do
         local todo     = { }
         local okay     = { } -- only if mark
         local allused  = usedentries[dataset] or { }
+     -- local allused  = usedentries[dataset] -- only test
         local luadata  = current.luadata
         local details  = current.details
         local ordered  = current.ordered
@@ -604,39 +603,40 @@ local findallused do
                     end
                 end
             end
-        else
-            if find then
-                tags = { }
-                for i=1,#ordered do
-                    local entry = ordered[i]
-                    if find(entry) then
-                        local tag    = entry.tag
-                        local parent = details[tag].parent
-                        if parent then
-                            tag = parent
-                        end
-                        tags[#tags+1] = tag
-                        todo[tag] = true
-                    end
-                end
-                if #tags == 0 and not reported[reference] then
-                    tags[1] = reference
-                    reported[reference] = true
-                end
-            else
-                for i=1,#tags do
-                    local tag    = tags[i]
+        elseif find then
+            tags = { }
+            for i=1,#ordered do
+                local entry = ordered[i]
+                if find(entry) then
+                    local tag    = entry.tag
                     local parent = details[tag].parent
                     if parent then
                         tag = parent
-                        tags[i] = tag
                     end
-                    if luadata[tag] then
-                        todo[tag] = true
-                    elseif not reported[tag] then
-                        reported[tag] = true
-                        report_cite("non-existent entry %a in %a",tag,dataset)
-                    end
+                    tags[#tags+1] = tag
+                    todo[tag] = true
+                 -- okay[#okay+1] = entry -- only test
+                end
+            end
+            if #tags == 0 and not reported[reference] then
+                tags[1] = reference
+                reported[reference] = true
+            end
+        else
+            for i=1,#tags do
+                local tag    = tags[i]
+                local parent = details[tag].parent
+                if parent then
+                    tag = parent
+                    tags[i] = tag
+                end
+                local entry = luadata[tag]
+                if entry then
+                    todo[tag] = true
+                 -- okay[#okay+1] = entry -- only test
+                elseif not reported[tag] then
+                    reported[tag] = true
+                    report_cite("non-existent entry %a in %a",tag,dataset)
                 end
             end
         end
@@ -2645,6 +2645,7 @@ do
         local found, todo, list = findallused(dataset,reference,internal,method == v_text or method == v_always) -- also when not in list
         --
         if not found or #found == 0 then
+--         if not list or #list == 0 then
             report("no entry %a found in dataset %a",reference,dataset)
         elseif not setup then
             report("invalid reference for %a",reference)

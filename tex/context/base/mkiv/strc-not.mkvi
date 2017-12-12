@@ -1550,6 +1550,16 @@
 
 \let\flushnotes\relax
 
+\unexpanded\def\startpostponingnotes % experimental, page-mix
+  {\ifconditional\postponingnotes\else
+     \global\settrue\postponingnotes
+    %\global\let\flushnotes\doflushnotes
+     \clf_postponenotes
+   \fi}
+
+\unexpanded\def\stoppostponingnotes % experimental, page-mix
+  {\doflushnotes}
+
 \unexpanded\def\doflushnotes
   {\ifconditional\postponingnotes
      \begingroup

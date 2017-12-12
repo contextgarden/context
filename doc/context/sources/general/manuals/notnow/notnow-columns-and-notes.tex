@@ -1,0 +1,26 @@
+\usemodule[art-01]
+
+\starttext
+
+  \samplefile{tufte}
+  \footnote{\samplefile{tufte}}
+
+  \startitemize[packed,columns]
+    \startitem one   \stopitem
+    \startitem two   \stopitem
+    \startitem three \footnote{A note (three).}
+                     \stopitem
+    \startitem four  \stopitem
+    \startitem five  \stopitem
+    \startitem six   \stopitem
+    \startitem seven \stopitem
+    \startitem eight \stopitem
+  \stopitemize
+
+  \dorecurse {10} {
+    \samplefile{ward}
+    \footnote{Another note #1!}
+    \par
+  }
+
+\stoptext

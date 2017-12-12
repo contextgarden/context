@@ -1,0 +1,155 @@
+% language=uk
+
+\usemodule[typesetting]
+
+\defineexternalfigure
+  [typesetting]
+  [frame=on,
+   framecolor=darkblue,
+   rulethickness=1pt]
+
+\setupcombination
+  [twopages]
+  [style=bold,
+   color=darkblue]
+
+\setupbodyfont
+  [ebgaramond,14.4pt]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   header=empty,
+   color=darkblue]
+
+\setuplist
+  [chapter]
+  [alternative=c,
+   width=1.5em]
+
+\setuplayout
+ [width=middle,
+  height=middle,
+  topspace=15mm,
+  backspace=15mm,
+  header=15mm,
+  footer=0mm]
+
+\setupwhitespace
+  [big]
+
+\setuptype
+  [color=darkblue]
+
+\setuptyping
+  [color=darkblue]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+% \showframe
+
+\startdocument[author=Hans Hagen]
+
+\definefont[NotNow][Serif*default @ 18pt]%
+\definefont[NotNot][Serif*default @  2.5pt]%
+
+\startpagemakeup[pagestate=stop]
+    \scale[width=\paperwidth,height=\paperheight] \bgroup
+        \bTABLE[strut=no,height=29.7pt,width=21pt,align={lohi,middle},foregroundcolor=white,framecolor=white,background=color]
+            \bTR
+                \bTD[backgroundcolor=darkblue] \NotNow W \eTD
+                \bTD[backgroundcolor=darkgray] \NotNow H \eTD
+                \bTD[backgroundcolor=darkblue] \NotNow Y \eTD
+            \eTR
+            \bTR
+                \bTD[backgroundcolor=darkgray] \NotNow N \eTD
+                \bTD[backgroundcolor=darkblue] \NotNow O \eTD
+                \bTD[backgroundcolor=darkgray] \NotNow T \eTD
+            \eTR
+            \bTR
+                \bTD[backgroundcolor=darkblue] \NotNow N \eTD
+                \bTD[backgroundcolor=darkgray] \NotNow O \eTD
+                \bTD[backgroundcolor=darkblue] \NotNow W \eTD
+            \eTR
+        \eTABLE
+    \egroup
+\stoppagemakeup
+
+\starttitle[title=Contents]
+
+    \placelist[chapter]
+
+\stoptitle
+
+\startchapter[title=Introduction]
+
+You can do a lot in \CONTEXT\ but for sure there are limitations too. There are
+quite some sub|-|mechanisms and sometimes there are more solutions for one
+problem. For instance, we have several table mechanisms and several
+multi|-|column mechanisms. In this document we will collect information about
+what doesn't work (well) and if possible indicate why. Feel free to submit more
+items. We will also discuss features that do work in most cases but are somewhat
+unreliable.
+
+Does that mean that we cannot make everything work? No, sometimes demands are too
+conflicting. Yes, we can implement more, but it simply doesn't pay off to spend
+time on writing code that is used seldom. Keep in mind that much of \CONTEXT\ is
+written in spare time without any compensation. Publishers have demands but
+seldom are willing to pay for it. Users have demands and no means to pay for it.
+On the other hand, user demands often have challenging properties that trigger
+development. Sometimes a project has as side effect that some mechanism become
+better.
+
+The good news that one can often work around it. Not all typesetting has to be
+fully automatic. And there are always reasonable typographic alternatives. The
+examples shown here can be run on your machine.
+
+\stopchapter
+
+\startchapter[title=Columns and notes]
+
+Because \TEX\ doesn't really support columns we need to cook up some magic to
+achieve them. Especially a mix between single and multi|-|columns is sort of
+tricky. Because notes are inserts and inserts play a role in determining the
+optimal breakpoints they can interfere badly, depending on the mechanism used. In
+\CONTEXT\ we use mixed columns for multi|-|column itemizations and as these can
+have footnotes you can end up in troubles.
+
+\typefile{notnow-columns-and-notes.tex}
+
+In such case the notes are postponed and flushed {\em after} the itemized list so
+they can end up on a next page. If this happens depends on how much room there is
+on the page. Solutions are possible (and the old \MKII\ column handler might
+behave better in some cases) but it's not worth the trouble to complicate the
+already complex code more than needed. Also, it will never be perfect anyway.
+
+\FirstPages{notnow-columns-and-notes}
+
+\stopchapter
+
+\startpagemakeup[pagestate=stop,page=left,doublesided=no]
+    \scale[width=\paperwidth,height=\paperheight] \bgroup
+        \bTABLE[strut=no,height=29.7pt,width=21pt,align={lohi,middle},foregroundcolor=white,framecolor=white,background=color]
+            \bTR
+                \bTD[backgroundcolor=darkblue] \eTD
+                \bTD[backgroundcolor=darkgray] \eTD
+                \bTD[backgroundcolor=darkblue] \eTD
+            \eTR
+            \bTR
+                \bTD[backgroundcolor=darkgray] \eTD
+                \bTD[backgroundcolor=darkblue] \eTD
+                \bTD[backgroundcolor=darkgray] \eTD
+            \eTR
+            \bTR
+                \bTD[backgroundcolor=darkblue] \eTD
+                \bTD[backgroundcolor=darkgray] \eTD
+                \bTD[backgroundcolor=darkblue,foregroundstyle=\NotNot]
+                    Hans Hagen \vfilll PRAGMA ADE \vfilll Hasselt NL
+                \eTD
+            \eTR
+        \eTABLE
+    \egroup
+\stoppagemakeup
+
+\stopdocument
