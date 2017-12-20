@@ -1165,6 +1165,91 @@ analyzer kicks in. This is not the case in the following examples.
 
 \stopsection
 
+\startsection[title={Depth}]
+
+Take the following example. Here we have some text that, when typeset narrow,
+will have a last line with no (or, depending on the font, hardly) depth.
+
+\startbuffer
+\startxtable[frame=on]
+
+    \startxrow
+        \startxcell[width=3cm]
+            here filled with some words to force a rather long line
+        \stopxcell
+    \stopxrow
+
+    \startxrow
+        \startxcell
+            here filled with some words to force a rather long line
+        \stopxcell
+    \stopxrow
+
+    \startxrow
+        \startxcell
+            here filled with some words to force a rather long line
+
+        \stopxcell
+    \stopxrow
+
+\stopxtable
+\stopbuffer
+
+\typebuffer
+
+The problem is that \TEX\ doesn't add depth that that last line and adding it
+automatically can be done in grid mode but one doesn't always want that. Some mechanisms
+add so called struts automatically. As the table cells are framed boxes indeed that
+happens here, unless you add an empty line (as in the last row). When you embed
+
+\startlinecorrection[blank] {\showstruts \showboxes \getbuffer} \stoplinecorrection
+
+\startbuffer
+\startxtable[frame=on]
+
+    \startxrow
+        \startxcell[width=3cm]
+            \startitemize[packed]
+                \startitem
+                    here filled with some words to force a rather long line
+                \stopitem
+            \stopitemize
+        \stopxcell
+    \stopxrow
+
+    \startxrow
+        \startxcell
+            \startitemize[packed]
+                \startitem
+                    here filled with some words to force a rather long line
+                \stopitem
+            \stopitemize
+        \stopxcell
+    \stopxrow
+
+    \startxrow
+        \startxcell
+            \startitemize[packed]
+                \startitem
+                    here filled with some words to force a rather long line
+
+                \stopitem
+            \stopitemize
+        \stopxcell
+    \stopxrow
+
+\stopxtable
+\stopbuffer
+
+\typebuffer
+
+Don't count on all mechanisms used inside a cell to provide this but with itemize
+you're lucky.
+
+\startlinecorrection[blank] {\showstruts \showboxes \getbuffer} \stoplinecorrection
+
+\stopsection
+
 \startsection[title={Examples}]
 
 On the following pages we show some examples of (experimental) features. For this

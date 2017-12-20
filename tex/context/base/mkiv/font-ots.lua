@@ -3622,9 +3622,14 @@ local function txtdirstate(start,stack,top,rlparmode)
         top = top + 1
         stack[top] = dir
     elseif dir == "-TRT" or dir == "-TLT" then
-        top = top - 1
-        if stack[top] == "+TRT" then
-            new = -1
+        if top == 1 then
+            top = 0
+            new = rlparmode
+        else
+            top = top - 1
+            if stack[top] == "+TRT" then
+                new = -1
+            end
         end
     else
         new = rlparmode

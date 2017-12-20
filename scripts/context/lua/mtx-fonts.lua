@@ -109,6 +109,16 @@ end
 
 loadmodule("char-def.lua")
 
+loadmodule("font-ini.lua")
+loadmodule("font-log.lua")
+loadmodule("font-con.lua")
+loadmodule("font-cft.lua")
+loadmodule("font-enc.lua")
+loadmodule("font-agl.lua")
+loadmodule("font-cid.lua")
+loadmodule("font-map.lua")
+loadmodule("font-oti.lua")
+
 loadmodule("font-otr.lua")
 loadmodule("font-cff.lua")
 loadmodule("font-ttf.lua")
@@ -116,6 +126,7 @@ loadmodule("font-tmp.lua")
 loadmodule("font-dsp.lua")
 loadmodule("font-oup.lua")
 
+loadmodule("font-otl.lua")
 loadmodule("font-onr.lua")
 
 -- extra code

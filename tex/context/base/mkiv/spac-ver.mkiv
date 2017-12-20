@@ -1548,6 +1548,17 @@
   {%\gridsnappingtrue
    \begincsname\??gridsnappers#1\endcsname}
 
+% maybe:
+%
+% \def\spac_grids_snap_value_set#1%
+%   {%\gridsnappingtrue
+%    \ifcsname\??gridsnappers#1\endcsname
+%      \lastnamedcs
+%    \else
+%      \definegridsnapping[#1][#1]%
+%      \begincsname\??gridsnappers#1\endcsname
+%    \fi}
+
 \def\spac_grids_snap_value_auto#1%
   {\ifcsname\??gridsnappers#1\endcsname
      \lastnamedcs
@@ -1578,35 +1589,41 @@
 % min              centers a box rounded downwards
 % max              centers a box rounded upwards
 
-%D We're not downward compatible with \MKII !
+%D We're not downward compatible with \MKII ! Not yet in interface file:
 
-\definegridsnapping[\v!normal]   [\v!maxheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!standard] [\v!maxheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!yes]      [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!normal]         [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!standard]       [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!yes]            [\v!maxheight,\v!maxdepth,\v!strut]
 
-\definegridsnapping[\v!strict]   [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
-\definegridsnapping[\v!tolerant] [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
+\definegridsnapping[\v!strict]           [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
+\definegridsnapping[\v!tolerant]         [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
+\definegridsnapping[\v!verytolerant]     [\v!maxdepth:1.4,\v!maxheight:1.4,\v!strut]
 
-\definegridsnapping[\v!top]      [\v!minheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!bottom]   [\v!maxheight,\v!mindepth,\v!strut]
-\definegridsnapping[\v!both]     [\v!minheight,\v!mindepth,\v!strut]
+\definegridsnapping[\v!tolerant:10]      [\v!maxdepth:1.1,\v!maxheight:1.1,\v!strut] % 10 pct tolerance
+\definegridsnapping[\v!tolerant:20]      [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut] % 20 pct tolerance
+\definegridsnapping[\v!tolerant:30]      [\v!maxdepth:1.3,\v!maxheight:1.3,\v!strut] % 30 pct tolerance
+\definegridsnapping[\v!tolerant:40]      [\v!maxdepth:1.4,\v!maxheight:1.4,\v!strut] % 40 pct tolerance
 
-\definegridsnapping[\v!broad]    [\v!maxheight,\v!maxdepth,\v!strut,0.8] % maybe 0.85
-\definegridsnapping[\v!fit]      [\v!maxheight,\v!maxdepth,\v!strut,1.2] % tight 0.15
+\definegridsnapping[\v!top]              [\v!minheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!bottom]           [\v!maxheight,\v!mindepth,\v!strut]
+\definegridsnapping[\v!both]             [\v!minheight,\v!mindepth,\v!strut]
 
-\definegridsnapping[\v!first]    [\v!first]
-\definegridsnapping[\v!last]     [\v!last]
-\definegridsnapping[\v!high]     [\v!minheight,\v!maxdepth,\v!none]
-\definegridsnapping[\v!one]      [\v!minheight,\v!mindepth]
-\definegridsnapping[\v!low]      [\v!maxheight,\v!mindepth,\v!none]
-\definegridsnapping[\v!none]     [\v!none]
-\definegridsnapping[\v!line]     [\v!line]
-\definegridsnapping[\v!strut]    [\v!strut]
-\definegridsnapping[\v!box]      [\v!box]
-\definegridsnapping[\v!min]      [\v!min]
-\definegridsnapping[\v!max]      [\v!max]
+\definegridsnapping[\v!broad]            [\v!maxheight,\v!maxdepth,\v!strut,0.8] % maybe 0.85
+\definegridsnapping[\v!fit]              [\v!maxheight,\v!maxdepth,\v!strut,1.2] % tight 0.15
 
-\definegridsnapping[\v!middle]   [\v!maxheight,\v!maxdepth] % used in placement
+\definegridsnapping[\v!first]            [\v!first]
+\definegridsnapping[\v!last]             [\v!last]
+\definegridsnapping[\v!high]             [\v!minheight,\v!maxdepth,\v!none]
+\definegridsnapping[\v!one]              [\v!minheight,\v!mindepth]
+\definegridsnapping[\v!low]              [\v!maxheight,\v!mindepth,\v!none]
+\definegridsnapping[\v!none]             [\v!none]
+\definegridsnapping[\v!line]             [\v!line]
+\definegridsnapping[\v!strut]            [\v!strut]
+\definegridsnapping[\v!box]              [\v!box]
+\definegridsnapping[\v!min]              [\v!min]
+\definegridsnapping[\v!max]              [\v!max]
+
+\definegridsnapping[\v!middle]           [\v!maxheight,\v!maxdepth] % used in placement
 
 \definegridsnapping[\v!math]             [\v!maxdepth:1.05,\v!maxheight:1.05,\v!strut] % experimental, maybe 1.1
 \definegridsnapping[\v!math:\v!line]     [\v!math,\v!line,\v!split]

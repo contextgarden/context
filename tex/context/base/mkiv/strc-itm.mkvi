@@ -1131,19 +1131,21 @@
    \strc_itemgroups_margin_symbol
    \let\strc_itemgroups_margin_symbol\relax
    \dostarttagged\t!itemcontent\empty
-   \strut
+   \begstrut % \strut
    \nobreak                            % else problems with intext items
    \seteffectivehsize % NEW !
    \hskip\d_strc_itemgroups_signal     % concat
    \itemgroupparameter\c!command}
 
 \unexpanded\def\stopitemgroupitem
-  {\ifconditional\c_strc_itemgroups_text
+  {\ifhmode
+     \endstrut % new per 2017-12-15
+   \fi
+   \ifconditional\c_strc_itemgroups_text
      % nothing
    \else
      \endgraf
    \fi}
-
 \unexpanded\def\startitemgrouphead
   {\dosingleempty\strc_itemgroups_start_head}
 
@@ -1218,7 +1220,9 @@
    \dotagsetitem\s!symbol}
 
 \unexpanded\def\strc_itemgroups_start_dummy
-  {\strc_itemgroups_start_symbol\strut\strut} % two ?
+  {\strc_itemgroups_start_symbol
+  %\strut\strut} % two ?
+   \begstrut}
 
 \unexpanded\def\strc_itemgroups_start_subitem
   {\settrue\c_strc_itemgroups_sub

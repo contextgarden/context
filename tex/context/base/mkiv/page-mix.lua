@@ -911,7 +911,6 @@ local function getsplit(result,n)
             return s
         end
     end
-
     if grid then
         -- print(n,result.maxtotal,r.total,r.extra)
         if isglobal then

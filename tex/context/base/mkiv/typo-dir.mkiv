@@ -137,7 +137,7 @@
     end
 \stopluacode
 
-\def\biditest#1#2#3% font text raw
+\unexpanded\def\biditest#1#2#3% font text raw
   {\dontleavehmode\hbox
     {\framed[offset=overlay]{\tttf#2}\quad
      \enabletrackers[typesetters.directions]%

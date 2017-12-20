@@ -197,6 +197,17 @@
    \c!grid=\v!yes,
    \c!internalgrid=\v!line]
 
+% even better:
+
+\setupitemgroup
+  [\c!grid=\v!tolerant:10] % 10 pct tolerance in columns snapping
+
+\setupmixedcolumns
+  [\s!itemgroupcolumns]
+  [\c!grid=\itemgroupparameter\c!grid]
+
+% the fast hooks:
+
 \unexpanded\def\strc_itemgroups_start_columns
   {\startmixedcolumns[\s!itemgroupcolumns]} % we could have a fast one
 

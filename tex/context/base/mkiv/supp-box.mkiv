@@ -2668,7 +2668,7 @@
 %D A funny (but rather stupid) one, plus a redefinition.
 
 \unexpanded\def\removebottomthings
-  {\dorecurse5{\unskip\unkern\unpenalty}}
+  {\dorecurse\plusfive{\unskip\unkern\unpenalty}}
 
 \unexpanded\def\removelastskip % \ifvmode the plain tex one \fi
   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}

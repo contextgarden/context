@@ -671,6 +671,7 @@
 \newconditional\c_strc_sectioning_place
 \newconditional\c_strc_sectioning_empty
 \newconditional\c_strc_sectioning_hidden
+\newconditional\c_strc_sectioning_section
 
 \newconditional\headshownumber  % public
 \newconditional\headisdisplay   % public
@@ -701,22 +702,32 @@
 \setvalue{\??headplace\v!yes}%
   {\setfalse\c_strc_sectioning_empty
    \settrue \c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden}
+   \setfalse\c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
 
 \setvalue{\??headplace\v!empty}%
   {\settrue \c_strc_sectioning_empty
    \settrue \c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden}
+   \setfalse\c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
 
 \setvalue{\??headplace\v!no}%
   {\settrue \c_strc_sectioning_empty
    \setfalse\c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden}
+   \setfalse\c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
 
 \setvalue{\??headplace\v!hidden}%
   {\settrue \c_strc_sectioning_empty
    \setfalse\c_strc_sectioning_place
-   \settrue \c_strc_sectioning_hidden}
+   \settrue \c_strc_sectioning_hidden
+   \setfalse\c_strc_sectioning_section}
+
+\setvalue{\??headplace\v!section}%
+  {\settrue \c_strc_sectioning_empty
+   \setfalse\c_strc_sectioning_place
+   \settrue \c_strc_sectioning_hidden
+   \settrue \c_strc_sectioning_section}
 
 \unexpanded\def\strc_sectioning_initialize_placement
   {\expandnamespaceparameter\??headplace\headparameter\c!placehead\v!yes}
@@ -758,7 +769,8 @@
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
 
 \unexpanded\def\setheadmarking % li:: so that we can use \marking[section]{Taco needed this}
-  {\normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
+  {\strc_sectioning_delayed_flush
+   \normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
 
 \let\deepstructurenumbercommand\relax
 \let\deepstructuretitlecommand \relax
@@ -879,7 +891,11 @@
        \strc_sectioning_report
        \dostarttagged\t!sectioncaption\empty
        \let\getheadsyncs\theheadsynchonization
-       \strc_rendering_place_head_hidden % only something when tracing
+       \ifconditional\c_strc_sectioning_section
+         \strc_rendering_place_head_section
+       \else
+         \strc_rendering_place_head_hidden % only something when tracing
+       \fi
        \dostoptagged
      \else
        \strc_sectioning_before_nop % toegevoegd ivm subpaginanr / tug sheets
@@ -907,7 +923,11 @@
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchonization
        \dostarttagged\t!sectioncaption\empty
-       \strc_rendering_place_head_hidden % only something when tracing
+       \ifconditional\c_strc_sectioning_section
+         \strc_rendering_place_head_section
+       \else
+         \strc_rendering_place_head_hidden % only something when tracing
+       \fi
        \dostoptagged
      \else
        % do nothing / should be vbox to 0pt
@@ -952,6 +972,20 @@
 
 % todo: when in the page builder we need to resolve the marking immediately
 % because otherwise we have an async
+
+\newbox\b_sectioning_delayed
+
+\def\strc_sectioning_delayed_flush
+  {\ifvoid\b_sectioning_delayed\else
+     \smashboxed\b_sectioning_delayed
+   \fi}
+
+\unexpanded\def\strc_rendering_place_head_section % see hidden below
+  {\global\setbox\b_sectioning_delayed\hpack\bgroup
+     \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
+     \hpack\headreferenceattributes{}%
+     \currentstructuresynchronize
+   \egroup}
 
 \unexpanded\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
   {\setxvalue{\??hiddenheadattr\currenthead}%

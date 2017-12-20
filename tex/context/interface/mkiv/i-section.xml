@@ -112,6 +112,7 @@
                     <cd:constant type="no"/>
                     <cd:constant type="hidden"/>
                     <cd:constant type="empty"/>
+                    <cd:constant type="section"/>
                 </cd:parameter>
                 <cd:parameter name="number">
                     <cd:constant type="yes" default="yes"/>

@@ -305,6 +305,8 @@ function xtables.set_reflow_width()
  --     end
  -- end
     if drc.ny < 2 then
+     -- report_xtable("set width, old: ht=%p, dp=%p",heights[r],depths[r])
+     -- report_xtable("set width, new: ht=%p, dp=%p",height,depth)
         if height > heights[r] then
             heights[r] = height
         end
@@ -447,13 +449,17 @@ function xtables.set_reflow_height()
     --
     if drc.ny < 2 then
         if data.fixedrows[r] == 0 then --  and drc.dimensionstate < 2
-            local heights = data.heights
-            local depths  = data.depths
-            if height > heights[r] then
-                heights[r] = height
-            end
-            if depth > depths[r] then
-                depths[r] = depth
+            if drc.ht + drc.dp <= height + depth then -- new per 2017-12-15
+                local heights = data.heights
+                local depths  = data.depths
+             -- report_xtable("set height, old: ht=%p, dp=%p",heights[r],depths[r])
+             -- report_xtable("set height, new: ht=%p, dp=%p",height,depth)
+                if height > heights[r] then
+                    heights[r] = height
+                end
+                if depth > depths[r] then
+                    depths[r] = depth
+                end
             end
         end
     end
@@ -486,7 +492,7 @@ function xtables.initialize_construct()
     --
     local width  = widths[c]
     local height = heights[r]
-    local depth  = depths[r]
+    local depth  = depths[r] -- problem: can be the depth of a one liner
     --
     for x=1,drc.nx-1 do
         width = width + widths[c+x]

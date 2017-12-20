@@ -566,7 +566,7 @@
 \let\tabl_x_set_hsize\relax
 
 \unexpanded\def\tabl_x_start_cell_reflow_width_yes[#settings]%
-  {\setbox\b_tabl_x\hbox\bgroup
+  {\setbox\b_tabl_x\hpack\bgroup
    \ifnum\c_tabl_x_nesting>\plusone
      \letxtableparameter\c!width \v!fit  % overloads given width
      \letxtableparameter\c!height\v!fit  % overloads given height
@@ -595,7 +595,7 @@
    \tabl_x_set_hsize}
 
 \unexpanded\def\tabl_x_start_cell_reflow_width_nop
-  {\setbox\b_tabl_x\hbox\bgroup
+  {\setbox\b_tabl_x\hpack\bgroup
    \ifnum\c_tabl_x_nesting>\plusone
      \letxtableparameter\c!width \v!fit  % overloads given width
      \letxtableparameter\c!height\v!fit  % overloads given height
@@ -615,7 +615,7 @@
    \clf_x_table_set_reflow_width}
 
 \unexpanded\def\tabl_x_start_cell_reflow_height_yes[#settings]%
-  {\setbox\b_tabl_x\hbox\bgroup
+  {\setbox\b_tabl_x\hpack\bgroup
    \clf_x_table_init_reflow_height
    \ifcase\c_tabl_x_skip_mode % can be sped up
      \ifnum\c_tabl_x_nesting>\plusone
@@ -629,7 +629,7 @@
    \fi}
 
 \unexpanded\def\tabl_x_start_cell_reflow_height_nop
-  {\setbox\b_tabl_x\hbox\bgroup
+  {\setbox\b_tabl_x\hpack\bgroup
    \clf_x_table_init_reflow_height
    \ifcase\c_tabl_x_skip_mode % can be sped up
      \ifnum\c_tabl_x_nesting>\plusone
@@ -651,7 +651,7 @@
 
 \unexpanded\def\tabl_x_start_cell_construct_yes[#settings]%
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
-   \setbox\b_tabl_x\hbox\bgroup
+   \setbox\b_tabl_x\hpack\bgroup
    \setupcurrentxtable[#settings]%
    \letxtableparameter\c!width \d_tabl_x_width  % overloads given width
    \letxtableparameter\c!height\d_tabl_x_height % overloads given height
@@ -662,7 +662,7 @@
 
 \unexpanded\def\tabl_x_start_cell_construct_nop
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
-   \setbox\b_tabl_x\hbox\bgroup
+   \setbox\b_tabl_x\hpack\bgroup
    \letxtableparameter\c!width \d_tabl_x_width  % overloads given width
    \letxtableparameter\c!height\d_tabl_x_height % overloads given height (commenting it ... nice option)
    \clf_x_table_init_construct
