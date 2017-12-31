@@ -13,6 +13,8 @@ if context then
     os.exit()
 end
 
+local next = next
+
 local fonts = fonts
 local nodes = nodes
 

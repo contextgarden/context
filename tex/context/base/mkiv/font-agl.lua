@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-agl'] = {
     original  = "Adobe Glyph List, version 2.0, September 20, 2002",
 }
 
+local next = next
+
 local allocate      = utilities.storage.allocate
 local mark          = utilities.storage.mark
 

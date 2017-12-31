@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
-local tonumber        = tonumber
+local tonumber, next, type = tonumber, next, type
 
 local lpegmatch       = lpeg.match
 

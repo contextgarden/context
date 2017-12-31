@@ -11,6 +11,8 @@
     <flag name="collect"><short>collect data from device</short></flag>
     <flag name="presets"><short>file with authenciation data</short></flag>
     <flag name="auto"><short>fetch temperature data every hour</short></flag>
+    <flag name="port"><short>server port when running the service, default: 8068</short></flag>
+    <flag name="host"><short>server host when running the service, default: localhost</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -19,6 +21,7 @@
    <title>Example</title>
    <subcategory>
     <example><command>mtxrun --script evohome --collect --presets=c:/data/develop/domotica/code/evohome-presets.lua</command></example>
+    <example><command>mtxrun --script evohome --server --presets=c:/data/develop/domotica/code/evohome-presets.lua</command></example>
    </subcategory>
   </category>
  </examples>

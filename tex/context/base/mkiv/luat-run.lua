@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['luat-run'] = {
     license   = "see context related readme files"
 }
 
+local next = next
 local format, find = string.format, string.find
 local insert, remove = table.insert, table.remove
 

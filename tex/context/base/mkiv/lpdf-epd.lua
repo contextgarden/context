@@ -31,7 +31,7 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- a safer bet is foo("Title") which will return a decoded string (or the original if it
 -- already was unicode).
 
-local setmetatable, rawset, rawget, type = setmetatable, rawset, rawget, type
+local setmetatable, rawset, rawget, type, next = setmetatable, rawset, rawget, type, next
 local tostring, tonumber = tostring, tonumber
 local lower, match, char, byte, find = string.lower, string.match, string.char, string.byte, string.find
 local abs = math.abs

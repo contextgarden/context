@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 }
 
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
-local tonumber, type, unpack = tonumber, type, unpack
+local tonumber, type, unpack, next = tonumber, type, unpack, next
 local round, sqrt, min, max = math.round, math.sqrt, math.min, math.max
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg

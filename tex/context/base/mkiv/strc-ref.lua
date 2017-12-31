@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 local format, find, gmatch, match, strip = string.format, string.find, string.gmatch, string.match, string.strip
 local floor = math.floor
-local rawget, tonumber, type = rawget, tonumber, type
+local rawget, tonumber, type, next = rawget, tonumber, type, next
 local lpegmatch = lpeg.match
 local insert, remove, copytable = table.insert, table.remove, table.copy
 local formatters = string.formatters

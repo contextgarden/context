@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mtx-evohome'] = {
     license   = "see context related readme files"
 }
 
-require("util-evo")
+local evohome = require("util-evo")
 
 local formatters = string.formatters
 
@@ -26,6 +26,8 @@ local helpinfo = [[
     <flag name="collect"><short>collect data from device</short></flag>
     <flag name="presets"><short>file with authenciation data</short></flag>
     <flag name="auto"><short>fetch temperature data every hour</short></flag>
+    <flag name="port"><short>server port when running the service, default: 8068</short></flag>
+    <flag name="host"><short>server host when running the service, default: localhost</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -34,6 +36,7 @@ local helpinfo = [[
    <title>Example</title>
    <subcategory>
     <example><command>mtxrun --script evohome --collect --presets=c:/data/develop/domotica/code/evohome-presets.lua</command></example>
+    <example><command>mtxrun --script evohome --server --presets=c:/data/develop/domotica/code/evohome-presets.lua</command></example>
    </subcategory>
   </category>
  </examples>
@@ -58,12 +61,12 @@ function scripts.evohome.collect()
     local presets = arguments.presets
     local delay   = tonumber(arguments.delay) or 15*60*60
     if presets then
-        presets = utilities.evohome.loadpresets(presets)
+        presets = evohome.helpers.loadpresets(presets)
     end
     if presets then
         local function fetch()
             report("current time %a",os.now())
-            utilities.evohome.updatetemperatures(presets)
+            evohome.helpers.updatetemperatures(presets)
         end
         if arguments.auto then
             while true do
@@ -80,14 +83,27 @@ function scripts.evohome.collect()
     end
 end
 
-
 function scripts.evohome.update()
     local presets = arguments.presets
     if presets then
-        presets = utilities.evohome.loadpresets(presets)
+        presets = evohome.helpers.loadpresets(presets)
     end
     if presets then
-        utilities.evohome.geteverything(presets)
+        evohome.helpers.geteverything(presets)
+    else
+        report("invalid preset file")
+    end
+end
+
+function scripts.evohome.server()
+    local presets = arguments.presets
+    if presets then
+        require("util-evo-imp-server")
+        evohome.server {
+            filename = presets, -- e:/domotica/code/evohome-presets.lua
+            host     = arguments.host,
+            port     = tonumber(arguments.port),
+        }
     else
         report("invalid preset file")
     end
@@ -97,6 +113,8 @@ if environment.argument("collect") then
     scripts.evohome.collect()
 elseif environment.argument("update") then
     scripts.evohome.update()
+elseif environment.argument("server") then
+    scripts.evohome.server()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

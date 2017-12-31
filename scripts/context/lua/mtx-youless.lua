@@ -22,7 +22,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-youless</entry>
   <entry name="detail">youless Fetcher</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.100</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -30,10 +30,11 @@ local helpinfo = [[
     <flag name="collect"><short>collect data from device</short></flag>
     <flag name="nobackup"><short>don't backup old datafile</short></flag>
     <flag name="nofile"><short>don't write data to file (for checking)</short></flag>
-    <flag name="kwh"><short>summative kwh data</short></flag>
-    <flag name="watt"><short>collected watt data</short></flag>
+    <flag name="electricity"><short>collected eletricity data (p)</short></flag>
+    <flag name="gas"><short>collected gas data</short></flag>
+    <flag name="pulse"><short>collected eletricity data (s)</short></flag>
     <flag name="host"><short>ip address of device</short></flag>
-    <flag name="auto"><short>fetch kwh and watt data every hour</short></flag>
+    <flag name="auto"><short>fetch (refresh) all data every hour</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -41,9 +42,10 @@ local helpinfo = [[
   <category>
    <title>Example</title>
    <subcategory>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --kwh</command></example>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --watt somefile.lua</command></example>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --auto file-prefix</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --electricity somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --gas         somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --pulse       somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --auto        file-prefix</command></example>
    </subcategory>
   </category>
  </examples>
@@ -52,7 +54,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-youless",
-    banner   = "YouLess Fetcher 1.00",
+    banner   = "YouLess Fetcher 1.100",
     helpinfo = helpinfo,
 }
 
@@ -103,19 +105,24 @@ function scripts.youless.collect()
     end
 
     if arguments.auto then
-        local filename_kwh  = formatters["%s-kwh.lua" ](filename ~= "" and filename or "youless")
-        local filename_watt = formatters["%s-watt.lua"](filename ~= "" and filename or "youless")
+        local filename_electricity = formatters["%s-electricity.lua"](filename ~= "" and filename or "youless")
+        local filename_gas         = formatters["%s-gas.lua"  ]      (filename ~= "" and filename or "youless")
+        local filename_pulse       = formatters["%s-pulse.lua"]      (filename ~= "" and filename or "youless")
         while true do
-            fetch(filename_kwh,"kwh")
-            fetch(filename_watt,"watt")
+            fetch(filename_electricity,"electricity")
+            fetch(filename_gas,        "gas")
+            fetch(filename_pulse,      "pulse")
             report("sleeping for %i seconds",delay)
             io.flush()
             os.sleep(delay)
         end
     else
-        local variant  = environment.arguments.kwh and "kwh" or environment.arguments.watt and "watt"
+        local variant = (environment.arguments.electricity  and "electricity") or
+                        (environment.arguments.watt         and "electricity") or
+                        (environment.arguments.gas          and "gas") or
+                        (environment.arguments.pulse        and "pulse")
         if not variant then
-            report("provide variant --kwh or --watt")
+            report("provide variant --electricity, --gas or --pulse")
             return
         end
         if nofile then

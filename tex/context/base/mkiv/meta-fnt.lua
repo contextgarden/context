@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['meta-fnt'] = {
     license   = "see context related readme files"
 }
 
+local next = next
 local concat     = table.concat
 local format     = string.format
 local formatters = string.formatters

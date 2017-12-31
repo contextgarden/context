@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['node-tra'] = {
 might become a runtime module instead. This module will be cleaned up!</p>
 --ldx]]--
 
+local next = next
 local utfchar = utf.char
 local format, match, gmatch, concat, rep = string.format, string.match, string.gmatch, table.concat, string.rep
 local lpegmatch = lpeg.match

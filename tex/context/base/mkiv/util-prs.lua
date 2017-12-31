@@ -566,14 +566,16 @@ function parsers.rfc4180splitter(specification)
     local field       = escaped + non_escaped + Cc("")
     local record      = Ct(field * (separator * field)^1)
     local headerline  = record * Cp()
-    local wholeblob   = Ct((newline^(specification.strict and -1 or 1) * record)^0)
+    local morerecords = (newline^(specification.strict and -1 or 1) * record)^0
+    local headeryes   = Ct(morerecords)
+    local headernop   = Ct(record * morerecords)
     return function(data,getheader)
         if getheader then
             local header, position = lpegmatch(headerline,data)
-            local data = lpegmatch(wholeblob,data,position)
+            local data = lpegmatch(headeryes,data,position)
             return data, header
         else
-            return lpegmatch(wholeblob,data)
+            return lpegmatch(headernop,data)
         end
     end
 end

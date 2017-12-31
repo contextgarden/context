@@ -9,6 +9,7 @@ tokens = tokens or { }
 
 local tokens     = tokens
 local token      = token -- the built in one
+local next       = next
 local tonumber   = tonumber
 local tostring   = tostring
 local utfchar    = utf.char

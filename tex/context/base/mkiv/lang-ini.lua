@@ -18,7 +18,7 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 -- todo: no foo:bar but foo(bar,...)
 
-local type, tonumber = type, tonumber
+local type, tonumber, next = type, tonumber, next
 local utfbyte = utf.byte
 local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
 local concat, sortedkeys, sortedpairs, keys, insert = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert

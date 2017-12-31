@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['scrp-ini'] = {
 -- We need to rewrite this a bit ... rather old code ... will be done when japanese
 -- is finished.
 
-local tonumber = tonumber
+local tonumber, next = tonumber, next
 
 local trace_analyzing    = false  trackers.register("scripts.analyzing",        function(v) trace_analyzing   = v end)
 local trace_injections   = false  trackers.register("scripts.injections",       function(v) trace_injections  = v end)

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['trac-pro'] = {
     license   = "see context related readme files"
 }
 
-local getmetatable, setmetatable, rawset, type = getmetatable, setmetatable, rawset, type
+local getmetatable, setmetatable, rawset, type, next = getmetatable, setmetatable, rawset, type, next
 
 -- The protection implemented here is probably not that tight but good enough to catch
 -- problems due to naive usage.

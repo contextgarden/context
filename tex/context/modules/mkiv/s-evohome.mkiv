@@ -11,25 +11,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% in cronjob on one of the servers:
-%
-% mtxrun --script youless --collect --host=192.168.2.50 --watt youless-watt.lua
-% mtxrun --script youless --collect --host=192.168.2.50 --kwk  youless-kwh.lua
-
 \setupbodyfont[dejavu]
 
 \starttext
 
 \startluacode
 
-require("util-evo")
+local evohome = require("util-evo")
 
 moduledata.evohome = { }
 
 function moduledata.evohome.status(specification)
 
-    local presets = utilities.evohome.loadpresets(specification.presets)
-    local zones   = utilities.evohome.loadtemperatures(presets)
+    local presets = evohome.helpers.loadpresets(specification.presets)
+    local zones   = evohome.helpers.loadtemperatures(presets)
 
     -- todo : time
 
@@ -65,8 +60,9 @@ function moduledata.evohome.status(specification)
 
     for i=1,#zones do
         local zone     = zones[i]
-        local data     = utilities.evohome.getzonestate(presets,zone.name)
-        local schedule = data.schedule or { }
+-- evohome.helpers.updatezone(presets,zone.name)
+        local data     = evohome.helpers.getzonestate(presets,zone.name)
+        local schedule = data and data.schedule or { }
         context.startsubject { title = zone.name }
         context.starttabulate { "|l|c|c|" }
         context.BC() context("day")
@@ -101,8 +97,8 @@ end
 
 function moduledata.evohome.history(specification)
 
-    local presets = utilities.evohome.loadpresets(specification.presets)
-    local zones   = utilities.evohome.loadtemperatures(presets)
+    local presets = evohome.helpers.loadpresets(specification.presets)
+    local zones   = evohome.helpers.loadtemperatures(presets)
 
     if not zones then
         context("no zones")
@@ -110,7 +106,7 @@ function moduledata.evohome.history(specification)
         return
     end
 
-    local data = utilities.evohome.loadhistory(presets)
+    local data = evohome.helpers.loadhistory(presets)
 
     if not zones then
         context("no history")
@@ -279,7 +275,7 @@ end
         local specification = {
             year    = 2017,
          -- month   = 11,
-            presets = "c:/data/develop/domotica/code/evohome-presets.lua",
+            presets = "c:/data/develop/domotica/evohome/evohome-presets.lua",
         }
 
         moduledata.evohome.status (specification)

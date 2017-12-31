@@ -29,7 +29,7 @@ approach is way faster than an external <l n='metapost'/> and processing time
 nears zero.</p>
 --ldx]]--
 
-local type, tostring, tonumber = type, tostring, tonumber
+local type, tostring, tonumber, next = type, tostring, tonumber, next
 local gsub, match, find = string.gsub, string.match, string.find
 local striplines = utilities.strings.striplines
 local concat, insert, remove = table.concat, table.insert, table.remove

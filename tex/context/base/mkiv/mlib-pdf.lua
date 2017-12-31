@@ -578,7 +578,7 @@ function metapost.flush(result,flusher,askedfig)
                                                     result[#result+1] = open and "S" or "h S"
                                                 end
                                             elseif objecttype == "both" then
-                                                result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
+                                                result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
                                             end
                                         end
                                         if transformed then
@@ -613,7 +613,7 @@ function metapost.flush(result,flusher,askedfig)
                                             elseif objecttype == "outline" then
                                                 result[#result+1] = open and "S" or "h S"
                                             elseif objecttype == "both" then
-                                                result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
+                                                result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
                                             end
                                             if transformed then
                                                 result[#result+1] = "Q"

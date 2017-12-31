@@ -1310,3 +1310,26 @@ function unicode.toutf32string(n)
             char(extract(n,24,8))
     end
 end
+
+-- goodie:
+
+local len = utf.len
+local rep = rep
+
+function string.utfpadd(s,n)
+    if n and n ~= 0 then
+        local l = len(s)
+        if n > 0 then
+            local d = n - l
+            if d > 0 then
+                return rep(c or " ",d) .. s
+            end
+        else
+            local d = - n - l
+            if d > 0 then
+                return s .. rep(c or " ",d)
+            end
+        end
+    end
+    return s
+end

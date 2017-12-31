@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['trac-fil'] = {
     license   = "see context related readme files"
 }
 
-local rawset, tonumber, type, pcall = rawset, tonumber, type, pcall
+local rawset, tonumber, type, pcall, next = rawset, tonumber, type, pcall, next
 local format, concat = string.format, table.concat
 local openfile = io.open
 local date = os.date

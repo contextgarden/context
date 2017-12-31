@@ -3,7 +3,7 @@
  <metadata>
   <entry name="name">mtx-youless</entry>
   <entry name="detail">youless Fetcher</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.100</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -11,10 +11,11 @@
     <flag name="collect"><short>collect data from device</short></flag>
     <flag name="nobackup"><short>don't backup old datafile</short></flag>
     <flag name="nofile"><short>don't write data to file (for checking)</short></flag>
-    <flag name="kwh"><short>summative kwh data</short></flag>
-    <flag name="watt"><short>collected watt data</short></flag>
+    <flag name="electricity"><short>collected eletricity data (p)</short></flag>
+    <flag name="gas"><short>collected gas data</short></flag>
+    <flag name="pulse"><short>collected eletricity data (s)</short></flag>
     <flag name="host"><short>ip address of device</short></flag>
-    <flag name="auto"><short>fetch kwh and watt data every hour</short></flag>
+    <flag name="auto"><short>fetch (refresh) all data every hour</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -22,9 +23,10 @@
   <category>
    <title>Example</title>
    <subcategory>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --kwh</command></example>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --watt somefile.lua</command></example>
-    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --auto file-prefix</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --electricity somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --gas         somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --pulse       somefile.lua</command></example>
+    <example><command>mtxrun --script youless --collect --host=192.168.2.50 --auto        file-prefix</command></example>
    </subcategory>
   </category>
  </examples>

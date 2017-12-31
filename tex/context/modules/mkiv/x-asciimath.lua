@@ -35,7 +35,7 @@ if not characters then
     require("char-ent")
 end
 
-local type, rawget = type, rawget
+local rawget, next, type = rawget, next, type
 local concat, insert, remove = table.concat, table.insert, table.remove
 local rep, gmatch, gsub, find = string.rep, string.gmatch, string.gsub, string.find
 local utfchar, utfbyte = utf.char, utf.byte

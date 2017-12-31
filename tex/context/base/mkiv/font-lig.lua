@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['font-lig'] = {
 -- This module is not loaded but generated a file for plain TeX as a substitute
 -- for collapsing the input: "luatex-fonts-lig.lua" with "collapse=yes".
 
+local next = next
+
 local standalone = not characters
 
 if standalone then

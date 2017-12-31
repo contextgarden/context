@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-shp'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
+local tonumber, next = tonumber, next
 local concat = table.concat
 local formatters = string.formatters
 

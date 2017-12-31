@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-sus'] = {
     license   = "see context related readme files"
 }
 
+local next = next
+
 local punctuation = {
     po = true,
 }

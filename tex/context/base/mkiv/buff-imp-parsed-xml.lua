@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['buff-imp-parsed-xml'] = {
     license   = "see context related readme files"
 }
 
+local next = next
 local format = string.format
 
 local context                     = context

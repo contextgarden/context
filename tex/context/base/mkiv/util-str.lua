@@ -12,11 +12,12 @@ local strings     = utilities.strings
 
 local format, gsub, rep, sub, find = string.format, string.gsub, string.rep, string.sub, string.find
 local load, dump = load, string.dump
-local tonumber, type, tostring = tonumber, type, tostring
+local tonumber, type, tostring, next = tonumber, type, tostring, next
 local unpack, concat = table.unpack, table.concat
 local P, V, C, S, R, Ct, Cs, Cp, Carg, Cc = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cs, lpeg.Cp, lpeg.Carg, lpeg.Cc
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
-local utfchar, utfbyte = utf.char, utf.byte
+local utfchar, utfbyte, utflen = utf.char, utf.byte, utf.len
+
 ----- loadstripped = utilities.lua.loadstripped
 ----- setmetatableindex = table.setmetatableindex
 
@@ -143,6 +144,18 @@ local pattern =
 function strings.tabtospace(str,tab)
     -- no real gain in first checking if a \t is there
     return lpegmatch(pattern,str,1,tab or 7)
+end
+
+function string.utfpadding(s,n)
+    if not n or n == 0 then
+        return ""
+    end
+    local l = utflen(s)
+    if n > 0 then
+        return nspaces[n-l]
+    else
+        return nspaces[-n-l]
+    end
 end
 
 -- local t = {
@@ -281,41 +294,48 @@ end
 --
 -- More info can be found in cld-mkiv.pdf so here I stick to a simple list.
 --
--- integer          %...i   number
--- integer          %...d   number
--- unsigned         %...u   number
--- character        %...c   number
--- hexadecimal      %...x   number
--- HEXADECIMAL      %...X   number
--- octal            %...o   number
--- string           %...s   string number
--- float            %...f   number
--- checked float    %...F   number
--- exponential      %...e   number
--- exponential      %...E   number
--- autofloat        %...g   number
--- autofloat        %...G   number
--- utf character    %...c   number
--- force tostring   %...S   any
--- force tostring   %Q      any
--- force tonumber   %N      number (strip leading zeros)
--- signed number    %I      number
--- rounded number   %r      number
--- 0xhexadecimal    %...h   character number
--- 0xHEXADECIMAL    %...H   character number
--- U+hexadecimal    %...u   character number
--- U+HEXADECIMAL    %...U   character number
--- points           %p      number (scaled points)
--- basepoints       %b      number (scaled points)
--- table concat     %...t   table
--- table concat     %{.}t   table
--- serialize        %...T   sequenced (no nested tables)
--- serialize        %{.}T   sequenced (no nested tables)
--- boolean (logic)  %l      boolean
--- BOOLEAN          %L      boolean
--- whitespace       %...w
--- automatic        %...a   'whatever' (string, table, ...)
--- automatic        %...A   "whatever" (string, table, ...)
+-- integer            %...i   number
+-- integer            %...d   number
+-- unsigned           %...u   number
+-- character          %...c   number
+-- hexadecimal        %...x   number
+-- HEXADECIMAL        %...X   number
+-- octal              %...o   number
+-- string             %...s   string number
+-- float              %...f   number
+-- checked float      %...F   number
+-- exponential        %...e   number
+-- exponential        %...E   number
+-- stripped e         %...j   number
+-- stripped E         %...J   number
+-- autofloat          %...g   number
+-- autofloat          %...G   number
+-- utf character      %...c   number
+-- force tostring     %...S   any
+-- force tostring     %Q      any
+-- force tonumber     %N      number (strip leading zeros)
+-- signed number      %I      number
+-- rounded number     %r      number
+-- 0xhexadecimal      %...h   character number
+-- 0xHEXADECIMAL      %...H   character number
+-- U+hexadecimal      %...u   character number
+-- U+HEXADECIMAL      %...U   character number
+-- points             %p      number (scaled points)
+-- basepoints         %b      number (scaled points)
+-- table concat       %...t   table
+-- table concat       %{.}t   table
+-- serialize          %...T   sequenced (no nested tables)
+-- serialize          %{.}T   sequenced (no nested tables)
+-- boolean (logic)    %l      boolean
+-- BOOLEAN            %L      boolean
+-- whitespace         %...w   number
+-- whitespace         %...W   (fixed)
+-- automatic          %...a   'whatever' (string, table, ...)
+-- automatic          %...A   "whatever" (string, table, ...)
+-- zap                %...z   skip
+-- comma/period real  %...m
+-- period/comma real  %...M
+-- formatted float    %...k   n.m
 
 local n = 0
 
@@ -520,6 +540,7 @@ local utfchar=utf.char
 local utfbyte=utf.byte
 local lpegmatch=lpeg.match
 local nspaces=string.nspaces
+local utfpadding=string.utfpadding
 local tracedchar=string.tracedchar
 local autosingle=string.autosingle
 local autodouble=string.autodouble
@@ -546,6 +567,7 @@ else
         utfbyte         = utf.byte,
         lpegmatch       = lpeg.match,
         nspaces         = string.nspaces,
+        utfpadding      = string.utfpadding,
         tracedchar      = string.tracedchar,
         autosingle      = string.autosingle,
         autodouble      = string.autodouble,
@@ -594,6 +616,31 @@ local format_S = function(f) -- can be optimized
         return format("format('%%%ss',tostring(a%s))",f,n)
     else
         return format("tostring(a%s)",n)
+    end
+end
+
+local format_right = function(f)
+    n = n + 1
+    f = tonumber(f)
+    if not f or f == 0 then
+        return format("(a%s or '')",n)
+    elseif f > 0 then
+        return format("utfpadding(a%s,%i)..a%s",n,f,n)
+    else
+        return format("a%s..utfpadding(a%s,%i)",n,n,f)
+    end
+end
+
+local format_left = function(f)
+    n = n + 1
+    f = tonumber(f)
+    if not f or f == 0 then
+        return format("(a%s or '')",n)
+    end
+    if f < 0 then
+        return format("utfpadding(a%s,%i)..a%s",n,-f,n)
+    else
+        return format("a%s..utfpadding(a%s,%i)",n,n,-f)
     end
 end
 
@@ -928,6 +975,9 @@ local builder = Cs { "start",
               + V("m") + V("M") -- new (formatted number)
               + V("z") -- new
               --
+              + V(">") -- left padding
+              + V("<") -- right padding
+              --
            -- + V("?") -- ignored, probably messed up %
             )
           + V("*")
@@ -978,10 +1028,13 @@ local builder = Cs { "start",
     ["m"] = (prefix_tab * P("m")) / format_m, -- %m => xxx.xxx.xxx,xx (optional prefix instead of .)
     ["M"] = (prefix_tab * P("M")) / format_M, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
     --
-    ["z"] = (prefix_any * P("z")) / format_z, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
+    ["z"] = (prefix_any * P("z")) / format_z, -- %z => skip n arguments
     --
     ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
     ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)
+    --
+    ["<"] = (prefix_any * P("<")) / format_left,
+    [">"] = (prefix_any * P(">")) / format_right,
     --
     ["*"] = Cs(((1-P("%"))^1 + P("%%")/"%%")^1) / format_rest, -- rest (including %%)
     ["?"] = Cs(((1-P("%"))^1               )^1) / format_rest, -- rest (including %%)

@@ -17,6 +17,8 @@ if not modules then modules = { } end modules ['l-lua'] = {
 -- utf.*
 -- bit32
 
+local next, type, tonumber = next, type, tonumber
+
 -- compatibility hacks and helpers
 
 LUAMAJORVERSION, LUAMINORVERSION = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")

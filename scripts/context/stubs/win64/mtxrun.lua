@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 5427, stripped down to: 2974
+-- original size: 5478, stripped down to: 3018
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -65,6 +65,7 @@ if not modules then modules={} end modules ['l-lua']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local next,type,tonumber=next,type,tonumber
 LUAMAJORVERSION,LUAMINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 LUAMAJORVERSION=tonumber(LUAMAJORVERSION) or 5
 LUAMINORVERSION=tonumber(LUAMINORVERSION) or 1
@@ -4382,7 +4383,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-url"] = package.loaded["l-url"] or true
 
--- original size: 12531, stripped down to: 5721
+-- original size: 12543, stripped down to: 5731
 
 if not modules then modules={} end modules ['l-url']={
   version=1.001,
@@ -4393,7 +4394,7 @@ if not modules then modules={} end modules ['l-url']={
 }
 local char,format,byte=string.char,string.format,string.byte
 local concat=table.concat
-local tonumber,type=tonumber,type
+local tonumber,type,next=tonumber,type,next
 local P,C,R,S,Cs,Cc,Ct,Cf,Cg,V=lpeg.P,lpeg.C,lpeg.R,lpeg.S,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Cf,lpeg.Cg,lpeg.V
 local lpegmatch,lpegpatterns,replacer=lpeg.match,lpeg.patterns,lpeg.replacer
 url=url or {}
@@ -5165,7 +5166,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 38825, stripped down to: 16749
+-- original size: 39256, stripped down to: 17066
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -5806,6 +5807,25 @@ function unicode.toutf32string(n)
       char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
   end
 end
+local len=utf.len
+local rep=rep
+function string.utfpadd(s,n)
+  if n and n~=0 then
+    local l=len(s)
+    if n>0 then
+      local d=n-l
+      if d>0 then
+        return rep(c or " ",d)..s
+      end
+    else
+      local d=- n-l
+      if d>0 then
+        return s..rep(c or " ",d)
+      end
+    end
+  end
+  return s
+end
 
 
 end -- of closure
@@ -5910,7 +5930,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 37217, stripped down to: 20835
+-- original size: 38604, stripped down to: 21710
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5924,11 +5944,11 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
 local load,dump=load,string.dump
-local tonumber,type,tostring=tonumber,type,tostring
+local tonumber,type,tostring,next=tonumber,type,tostring,next
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
-local utfchar,utfbyte=utf.char,utf.byte
+local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local loadstripped=nil
 if LUAVERSION<5.2 then
   loadstripped=function(str,shortcuts)
@@ -6017,6 +6037,17 @@ local pattern=Carg(1)/function(t)
  )^1)
 function strings.tabtospace(str,tab)
   return lpegmatch(pattern,str,1,tab or 7)
+end
+function string.utfpadding(s,n)
+  if not n or n==0 then
+    return ""
+  end
+  local l=utflen(s)
+  if n>0 then
+    return nspaces[n-l]
+  else
+    return nspaces[-n-l]
+  end
 end
 local space=spacer^0
 local nospace=space/""
@@ -6206,6 +6237,7 @@ local utfchar=utf.char
 local utfbyte=utf.byte
 local lpegmatch=lpeg.match
 local nspaces=string.nspaces
+local utfpadding=string.utfpadding
 local tracedchar=string.tracedchar
 local autosingle=string.autosingle
 local autodouble=string.autodouble
@@ -6230,6 +6262,7 @@ else
     utfbyte=utf.byte,
     lpegmatch=lpeg.match,
     nspaces=string.nspaces,
+    utfpadding=string.utfpadding,
     tracedchar=string.tracedchar,
     autosingle=string.autosingle,
     autodouble=string.autodouble,
@@ -6263,6 +6296,29 @@ local format_S=function(f)
     return format("format('%%%ss',tostring(a%s))",f,n)
   else
     return format("tostring(a%s)",n)
+  end
+end
+local format_right=function(f)
+  n=n+1
+  f=tonumber(f)
+  if not f or f==0 then
+    return format("(a%s or '')",n)
+  elseif f>0 then
+    return format("utfpadding(a%s,%i)..a%s",n,f,n)
+  else
+    return format("a%s..utfpadding(a%s,%i)",n,n,f)
+  end
+end
+local format_left=function(f)
+  n=n+1
+  f=tonumber(f)
+  if not f or f==0 then
+    return format("(a%s or '')",n)
+  end
+  if f<0 then
+    return format("utfpadding(a%s,%i)..a%s",n,-f,n)
+  else
+    return format("a%s..utfpadding(a%s,%i)",n,n,-f)
   end
 end
 local format_q=function()
@@ -6519,6 +6575,8 @@ local builder=Cs { "start",
 +V("j")+V("J") 
 +V("m")+V("M") 
 +V("z")
++V(">") 
++V("<")
       )+V("*")
     )*(P(-1)+Carg(1))
   )^0,
@@ -6562,6 +6620,8 @@ local builder=Cs { "start",
   ["z"]=(prefix_any*P("z"))/format_z,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
+  ["<"]=(prefix_any*P("<"))/format_left,
+  [">"]=(prefix_any*P(">"))/format_right,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
   ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
@@ -8056,7 +8116,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 22883, stripped down to: 16045
+-- original size: 22968, stripped down to: 16118
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -8474,14 +8534,16 @@ function parsers.rfc4180splitter(specification)
   local field=escaped+non_escaped+Cc("")
   local record=Ct(field*(separator*field)^1)
   local headerline=record*Cp()
-  local wholeblob=Ct((newline^(specification.strict and -1 or 1)*record)^0)
+  local morerecords=(newline^(specification.strict and -1 or 1)*record)^0
+  local headeryes=Ct(morerecords)
+  local headernop=Ct(record*morerecords)
   return function(data,getheader)
     if getheader then
       local header,position=lpegmatch(headerline,data)
-      local data=lpegmatch(wholeblob,data,position)
+      local data=lpegmatch(headeryes,data,position)
       return data,header
     else
-      return lpegmatch(wholeblob,data)
+      return lpegmatch(headernop,data)
     end
   end
 end
@@ -10099,7 +10161,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-pro"] = package.loaded["trac-pro"] or true
 
--- original size: 5829, stripped down to: 3501
+-- original size: 5841, stripped down to: 3511
 
 if not modules then modules={} end modules ['trac-pro']={
   version=1.001,
@@ -10108,7 +10170,7 @@ if not modules then modules={} end modules ['trac-pro']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local getmetatable,setmetatable,rawset,type=getmetatable,setmetatable,rawset,type
+local getmetatable,setmetatable,rawset,type,next=getmetatable,setmetatable,rawset,type,next
 local trace_namespaces=false trackers.register("system.namespaces",function(v) trace_namespaces=v end)
 local report_system=logs.reporter("system","protection")
 namespaces=namespaces or {}
@@ -10683,7 +10745,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 7100, stripped down to: 3978
+-- original size: 7112, stripped down to: 3988
 
 if not modules then modules={} end modules ['util-tpl']={
   version=1.001,
@@ -10696,7 +10758,7 @@ utilities.templates=utilities.templates or {}
 local templates=utilities.templates
 local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
 local report_template=logs.reporter("template")
-local tostring=tostring
+local tostring,next=tostring,next
 local format,sub,byte=string.format,string.sub,string.byte
 local P,C,R,Cs,Cc,Carg,lpegmatch,lpegpatterns=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.match,lpeg.patterns
 local replacer
@@ -15396,7 +15458,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-xml"] = package.loaded["lxml-xml"] or true
 
--- original size: 10400, stripped down to: 7659
+-- original size: 10412, stripped down to: 7669
 
 if not modules then modules={} end modules ['lxml-xml']={
   version=1.001,
@@ -15405,7 +15467,7 @@ if not modules then modules={} end modules ['lxml-xml']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local tonumber=tonumber
+local tonumber,next=tonumber,next
 local concat=table.concat
 local find,lower,upper=string.find,string.lower,string.upper
 local xml=xml
@@ -16584,7 +16646,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 9342, stripped down to: 6887
+-- original size: 9360, stripped down to: 6903
 
 if not modules then modules={} end modules ['data-env']={
   version=1.001,
@@ -16594,6 +16656,7 @@ if not modules then modules={} end modules ['data-env']={
   license="see context related readme files",
 }
 local lower,gsub=string.lower,string.gsub
+local next=next
 local resolvers=resolvers
 local allocate=utilities.storage.allocate
 local setmetatableindex=table.setmetatableindex
@@ -16868,7 +16931,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16086, stripped down to: 11433
+-- original size: 16116, stripped down to: 11459
 
 if not modules then modules={} end modules ['data-tmp']={
   version=1.100,
@@ -16882,6 +16945,7 @@ local concat=table.concat
 local mkdirs,isdir,isfile=dir.mkdirs,lfs.isdir,lfs.isfile
 local addsuffix,is_writable,is_readable=file.addsuffix,file.is_writable,file.is_readable
 local formatters=string.formatters
+local next,type=next,type
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_cache=false trackers.register("resolvers.cache",function(v) trace_cache=v end)
 local report_caches=logs.reporter("resolvers","caches")
@@ -21005,8 +21069,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 866647
--- stripped bytes    : 315334
+-- original bytes    : 868697
+-- stripped bytes    : 315993
 
 -- end library merge
 

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['trac-ctx'] = {
     license   = "see context related readme files"
 }
 
+local next = next
+
 local context       = context
 local implement     = interfaces.implement
 local register      = trackers.register

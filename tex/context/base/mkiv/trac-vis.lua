@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['trac-vis'] = {
 }
 
 local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
-local type, tonumber = type, tonumber
+local type, tonumber, next = type, tonumber, next
 local gmatch = string.gmatch
 local formatters = string.formatters
 local compactfloat = number.compactfloat

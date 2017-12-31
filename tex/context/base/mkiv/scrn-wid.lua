@@ -21,6 +21,8 @@ if not modules then modules = { } end modules ['scrn-wid'] = {
 -- sane person will create media rich pdf's as long as it's that unpredictable. Just
 -- look at the specification and viewer preferences and decide.
 
+local next = next
+
 interactions             = interactions or { }
 local interactions       = interactions
 

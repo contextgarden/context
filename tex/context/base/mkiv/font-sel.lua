@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-sel'] = {
     license   = "GNU General Public License"
 }
 
+local next, type = next, type
+
 local context                    = context
 local cleanname                  = fonts.names.cleanname
 local gsub, splitup, find, lower = string.gsub, string.splitup, string.find, string.lower

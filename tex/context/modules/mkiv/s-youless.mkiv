@@ -23,125 +23,165 @@
 
 % in cronjob on one of the servers:
 %
-% mtxrun --script youless --collect --host=192.168.2.50 --watt youless-watt.lua
-% mtxrun --script youless --collect --host=192.168.2.50 --kwk  youless-kwh.lua
+% mtxrun --script youless --collect --host=192.168.2.50 --nobackup --electricity youless-electricity.lua
 
 \startluacode
 
     require("util-you")
 
+    local round = math.round
+
     moduledata.youless = { }
+
+    local function process(specification)
+
+        local data, message = utilities.youless.analyze(specification.filename or "youless-electricity.lua")
+
+        if not data then
+            context(message)
+            return
+        end
+
+        local year    = tonumber(specification.year) or os.today().year
+        local years   = data.years
+        local variant = data.variant
+        local unit    = specification.unit
+        local maxunit = specification.maxunit
+
+        local max     = specification[maxunit]
+
+        if not max then
+            if unit == "watt" then
+                max = 10000
+            elseif unit == "liters" then
+                max = 1000
+            else
+                max = 5000 -- can't happen
+            end
+        end
+
+        local max   = max
+        local delta = round(max/10)
+        local scale = round(delta/20)
+        local mark  = 3
+
+        for y=year,year do
+            local year  = years[y]
+            if year then
+                local grand = 0
+                for m=1,12 do
+                    local month = year.months[m]
+                    if month then
+                        context.startMPpage { offset = "10pt" }
+                        context("linecap := butt; pickup pencircle scaled .5")
+
+                        for i=0,(math.div(max,delta)+1)*delta,delta/10 do
+                            context("draw (%s,%s) -- (%s,%s) withcolor .6white ;",0,i/scale,31 * 24,i/scale)
+                        end
+
+                        context("draw (0,%s) -- (31 * 24,%s) dashed dashpattern(on 6 off 6) withcolor darkgreen withpen pencircle scaled 1 ;",year [unit]/scale,year [unit]/scale)
+                        context("draw (0,%s) -- (31 * 24,%s) dashed dashpattern(off 6 on 6) withcolor darkred   withpen pencircle scaled 1 ;",month[unit]/scale,month[unit]/scale)
+
+                        local days  = month.days
+                        local total = 0
+                        if days then
+                            local nd = os.nofdays(y,m)
+                            for d=1,nd do
+                                local day     = days[d]
+                                local xoffset = (d-1) * 24
+                                local wd      = os.weekday(d,m,y)
+                                local weekend = wd == 1 or wd == 7
+                                if not weekend then
+                                    -- okay
+                                elseif mark == 1 then
+                                    context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset,   -32.5)
+                                    context("draw (%s,%s) -- (%s,%s) ; ",xoffset+24,-17.5,xoffset+24,-32.5)
+                                elseif mark == 2 then
+                                    context("draw (%s,%s) -- (%s,%s) ;",xoffset,    -17.5,xoffset+24,-17.5)
+                                    context("draw (%s,%s) -- (%s,%s) ;",xoffset,    -32.5,xoffset+24,-32.5)
+                                elseif mark == 3 then
+                                    context("draw unitsquare xysized (%s,%s) shifted (%s,%s) ;",24,15,xoffset,-32.5)
+                                end
+                                context([[draw textext("\strut%s") shifted (%s,%s) ;]],d,xoffset + 12,-25)
+                                if day then
+                                    for h=0,23 do
+                                        local hours = day.hours
+                                        if hours then
+                                            local hour = hours[h]
+                                            if hour then
+                                                local dx = xoffset + h
+                                                local dy = hour[unit]/scale
+                                                local dm = hour[maxunit]/scale
+                                                context("draw (%s,%s) -- (%s,%s) withcolor %s ;",dx, 0,dx,dy,weekend and "darkmagenta" or "darkblue")
+                                                context("draw (%s,%s) -- (%s,%s) withcolor %s ;",dx,dy,dx,dm,"darkgray")
+                                            end
+                                        end
+                                    end
+                                    local use = day.total
+                                    if use then
+                                        context([[draw textext("\strut\small\small\small%0.1f") shifted (%s,%s) ;]],use/1000,xoffset + 12,-7.5)
+                                        total = total + use
+                                    end
+                                end
+                            end
+                            for d=0,30 do
+                                local xoffset = d * 24
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ;",xoffset+ 0,0,xoffset+ 0,-10)
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ;",xoffset+ 6,0,xoffset+ 6,-2.5)
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ;",xoffset+12,0,xoffset+12,-5)
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ;",xoffset+18,0,xoffset+18,-2.5)
+                            end
+                            local xoffset = 31 * 24
+                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ;",xoffset,0,xoffset,-10)
+                        end
+
+                        grand = grand + total
+
+                        local max = (math.div(max,delta))
+
+                        for i=0,max*delta,delta do
+                            if i > 0 then
+                                context([[draw textext.lft("\hbox to 3.5em{\hss\strut%r}") shifted (%s,%s) ; ]],i,-10,i/scale)
+                            end
+                            context("draw (%s,%s) -- (%s,%s) withcolor .2white ;",0,i/scale,31 * 24,i/scale)
+                        end
+
+                        context([[draw textext    ("\strut\Word{%s}\enspace\emdash\enspace\month{%s}\enspace%s") shifted (%s,%s) ; ]],variant, m, y, 31 * 24 / 2, -50)
+                        context([[draw textext.lft("\hbox to 3.5em{\hss\strut%s}") shifted (%s,%s) ; ]],unit,-10,-25)
+                        context([[draw textext.lft("\hbox to 3.5em{\hss\strut\small\small\small%0.1f %s}") shifted (%s,%s) ;]],total/1000,unit == "watt" and "kWh" or [[m\high{3}]],-10, -7.5)
+                        context([[draw textext.lft("\hbox to 3.5em{\hss\strut\small\small\small\Sigma\nbsp%0.1f %s}") shifted (%s,%s) ;]],grand/1000,unit == "watt" and "kWh" or [[m\high{3}]],-10,-50.0)
+
+                        context.stopMPpage()
+                    else
+                        -- maybe placeholder
+                    end
+                end
+            end
+        end
+    end
 
     function moduledata.youless.kwh(specification)
         -- todo
     end
 
-    function moduledata.youless.watt(specification)
+    function moduledata.youless.electricity(specification)
+        specification.unit    = "watt"
+        specification.maxunit = "maxwatt"
+        process(specification)
+    end
 
-        local year = tonumber(specification.year) or os.today().year
-        local data = table.load(specification.filename or "youless-watt.lua")
+    moduledata.youless.watt = moduledata.youless.electricity
 
-        if not data or data.variant ~= "watt" then
-            context("invalid variant")
-            return
-        end
+    function moduledata.youless.gas(specification)
+        specification.unit    = "liters"
+        specification.maxunit = "maxliters"
+        process(specification)
+    end
 
-        utilities.youless.analyze(data)
-
-        -- for the moment no specific font scaling
-
-        local years = data.years
-
-        if not years then
-            context("no years")
-            return
-        end
-
-        for y=year,year do
-
-            local year    = years[y]
-            local scale   = 20
-            local mark    = 3
-            local maxwatt = specification.maxwatt or year.maxwatt
-
-            for m=1,12 do
-                local month = year.months[m]
-                if month then
-                    context.startMPpage { offset = "10pt" }
-                    context("linecap := butt; pickup pencircle scaled .5")
-
-                    for i=0,(math.div(maxwatt,1000)+1)*1000,100 do
-                        context("draw (%s,%s) -- (%s,%s) withcolor .6white ;",0,i/scale,31 * 24,i/scale)
-                    end
-
-                    context("draw (0,%s) -- (31 * 24,%s) dashed dashpattern(on 6 off 6) withcolor darkgreen withpen pencircle scaled 1 ;",year.watt /scale,year.watt /scale)
-                    context("draw (0,%s) -- (31 * 24,%s) dashed dashpattern(off 6 on 6) withcolor darkred   withpen pencircle scaled 1 ;",month.watt/scale,month.watt/scale)
-
-                    local days = month.days
-                    if days then
-                        local nd = os.nofdays(y,m)
-                        for d=1,nd do
-                            local day = days[d]
-                            local xoffset = (d-1) * 24
-                            local wd = os.weekday(d,m,y)
-                            local weekend = wd == 1 or wd == 7
-                            if not weekend then
-                                -- okay
-                            elseif mark == 1 then
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset,   -32.5)
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset+24,-17.5,xoffset+24,-32.5)
-                            elseif mark == 2 then
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset+24,-17.5)
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -32.5,xoffset+24,-32.5)
-                            elseif mark == 3 then
-                                context("draw unitsquare xysized (%s,%s) shifted (%s,%s) ; ",24,15,xoffset,-32.5)
-                            end
-                            context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-25)
-                            if day then
-                                for h=0,23 do
-                                    local hours = day.hours
-                                    if hours then
-                                        local hour = hours[h]
-                                        if hour then
-                                            local dx = xoffset + h
-                                            local dy = hour.watt/scale
-                                            local dm = hour.maxwatt/scale
-                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",dx, 0,dx,dy,weekend and "darkmagenta" or "darkblue")
-                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",dx,dy,dx,dm,"darkgray")
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                        for d=0,30 do
-                            local xoffset = d * 24
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 0,0,xoffset+ 0,-10)
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 6,0,xoffset+ 6,-2.5)
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+12,0,xoffset+12,-5)
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+18,0,xoffset+18,-2.5)
-                        end
-                        local xoffset = 31 * 24
-                        context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset,0,xoffset,-10)
-                    end
-
-                    local max = (math.div(maxwatt,1000)+1)
-
-                    for i=0,max*1000,1000 do
-                        context([[draw textext.lft("%s") shifted (%s,%s) ; ]],i,-10,i/scale)
-                        context("draw (%s,%s) -- (%s,%s) withcolor .2white  ;",0,i/scale,31 * 24,i/scale)
-                    end
-
-                    context([[draw textext("\strut\month{%s}\enspace%s") shifted (%s,%s) ; ]],m, y, 31 * 24 / 2, -50)
-                    context([[draw textext.lft("watt") shifted (%s,%s) ; ]],-10,-25)
-
-                    context.stopMPpage()
-                else
-                    -- maybe placeholder
-                end
-            end
-
-        end
-
+    function moduledata.youless.pulse(specification)
+        specification.unit    = "watt"
+        specification.maxunit = "maxwatt"
+        process(specification)
     end
 
 \stopluacode
@@ -160,11 +200,11 @@
 
     \startluacode
 
-     -- os.execute([[mtxrun --script youless --collect --watt "c:/data/system/youless/data/youless-watt.lua"]])
-     -- os.execute([[mtxrun --script youless --collect --watt --nobackup "c:/data/system/youless/data/youless-watt.lua"]])
-     -- moduledata.youless.watt { year = 2013, filename = "c:/data/system/youless/data/youless-watt.lua" }
+     -- os.execute([[mtxrun --script youless --collect --electricity "c:/data/system/youless/data/youless-electricity.lua"]])
+     -- os.execute([[mtxrun --script youless --collect --electricity --nobackup "c:/data/system/youless/data/youless-electricity.lua"]])
+     -- moduledata.youless.electricity { year = 2017, filename = "c:/data/system/youless/data/youless-electricity.lua" }
 
-        moduledata.youless.watt { year = 2013, filename = "youless-watt.lua" }
+        moduledata.youless.electricity { year = 2017, filename = "youless-electricity.lua" }
 
     \stopluacode
 

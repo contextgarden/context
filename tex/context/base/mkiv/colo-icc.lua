@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['colo-icc'] = {
 local char, byte, gsub, match, format, strip = string.char, string.byte, string.gsub, string.match, string.format, string.strip
 local readstring, readnumber = io.readstring, io.readnumber
 local band = bit32.band
+local next = next
 
 local colors = attributes and attributes.colors or { } -- when used in mtxrun
 

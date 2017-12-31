@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/20/17 10:48:35
+-- merge date  : 12/31/17 18:46:16
 
 do -- begin closure to overcome local limits and interference
 
@@ -11,6 +11,7 @@ if not modules then modules={} end modules ['l-lua']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local next,type,tonumber=next,type,tonumber
 LUAMAJORVERSION,LUAMINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 LUAMAJORVERSION=tonumber(LUAMAJORVERSION) or 5
 LUAMINORVERSION=tonumber(LUAMINORVERSION) or 1
@@ -3648,6 +3649,25 @@ function unicode.toutf32string(n)
       char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
   end
 end
+local len=utf.len
+local rep=rep
+function string.utfpadd(s,n)
+  if n and n~=0 then
+    local l=len(s)
+    if n>0 then
+      local d=n-l
+      if d>0 then
+        return rep(c or " ",d)..s
+      end
+    else
+      local d=- n-l
+      if d>0 then
+        return s..rep(c or " ",d)
+      end
+    end
+  end
+  return s
+end
 
 end -- closure
 
@@ -3665,11 +3685,11 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
 local load,dump=load,string.dump
-local tonumber,type,tostring=tonumber,type,tostring
+local tonumber,type,tostring,next=tonumber,type,tostring,next
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
-local utfchar,utfbyte=utf.char,utf.byte
+local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local loadstripped=nil
 if LUAVERSION<5.2 then
   loadstripped=function(str,shortcuts)
@@ -3758,6 +3778,17 @@ local pattern=Carg(1)/function(t)
  )^1)
 function strings.tabtospace(str,tab)
   return lpegmatch(pattern,str,1,tab or 7)
+end
+function string.utfpadding(s,n)
+  if not n or n==0 then
+    return ""
+  end
+  local l=utflen(s)
+  if n>0 then
+    return nspaces[n-l]
+  else
+    return nspaces[-n-l]
+  end
 end
 local space=spacer^0
 local nospace=space/""
@@ -3947,6 +3978,7 @@ local utfchar=utf.char
 local utfbyte=utf.byte
 local lpegmatch=lpeg.match
 local nspaces=string.nspaces
+local utfpadding=string.utfpadding
 local tracedchar=string.tracedchar
 local autosingle=string.autosingle
 local autodouble=string.autodouble
@@ -3971,6 +4003,7 @@ else
     utfbyte=utf.byte,
     lpegmatch=lpeg.match,
     nspaces=string.nspaces,
+    utfpadding=string.utfpadding,
     tracedchar=string.tracedchar,
     autosingle=string.autosingle,
     autodouble=string.autodouble,
@@ -4004,6 +4037,29 @@ local format_S=function(f)
     return format("format('%%%ss',tostring(a%s))",f,n)
   else
     return format("tostring(a%s)",n)
+  end
+end
+local format_right=function(f)
+  n=n+1
+  f=tonumber(f)
+  if not f or f==0 then
+    return format("(a%s or '')",n)
+  elseif f>0 then
+    return format("utfpadding(a%s,%i)..a%s",n,f,n)
+  else
+    return format("a%s..utfpadding(a%s,%i)",n,n,f)
+  end
+end
+local format_left=function(f)
+  n=n+1
+  f=tonumber(f)
+  if not f or f==0 then
+    return format("(a%s or '')",n)
+  end
+  if f<0 then
+    return format("utfpadding(a%s,%i)..a%s",n,-f,n)
+  else
+    return format("a%s..utfpadding(a%s,%i)",n,n,-f)
   end
 end
 local format_q=function()
@@ -4260,6 +4316,8 @@ local builder=Cs { "start",
 +V("j")+V("J") 
 +V("m")+V("M") 
 +V("z")
++V(">") 
++V("<")
       )+V("*")
     )*(P(-1)+Carg(1))
   )^0,
@@ -4303,6 +4361,8 @@ local builder=Cs { "start",
   ["z"]=(prefix_any*P("z"))/format_z,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
+  ["<"]=(prefix_any*P("<"))/format_left,
+  [">"]=(prefix_any*P(">"))/format_right,
   ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
   ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
@@ -34455,6 +34515,7 @@ if context then
   texio.write_nl("fatal error: this module is not for context")
   os.exit()
 end
+local next=next
 local fonts=fonts
 local nodes=nodes
 local nuts=nodes.nuts 

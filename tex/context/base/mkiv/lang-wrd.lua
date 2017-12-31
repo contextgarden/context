@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['lang-wrd'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
+local next, tonumber = next, tonumber
 local lower = string.lower
 local utfchar = utf.char
 local concat, setmetatableindex = table.concat, table.setmetatableindex

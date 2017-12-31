@@ -16,7 +16,7 @@ local templates     = utilities.templates
 local trace_template  = false  trackers.register("templates.trace",function(v) trace_template = v end)
 local report_template = logs.reporter("template")
 
-local tostring = tostring
+local tostring, next = tostring, next
 local format, sub, byte = string.format, string.sub, string.byte
 local P, C, R, Cs, Cc, Carg, lpegmatch, lpegpatterns = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.match, lpeg.patterns
 

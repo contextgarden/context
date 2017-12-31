@@ -1,0 +1,41 @@
+\environment math-layout
+
+\startcomponent math-subtoptimal
+
+\startchapter[title=Suboptimal]
+
+\startsection[title=Extensibles]
+
+Extensibles are implemented as follows: we start with the default shape, and when
+that doesn't cover the body of text, a next size is chosen. When we run out of
+sizes, a glyph is made from snippets (often a start glyph, overlapping middle
+pieces and an end piece. Of course a font needs to provide these variants and
+snippets.
+
+However, the quality of the coverage can differ per font. Here we show how Latin
+Modern, Pagella, Cambria, Lucida and Dejavu look like:
+
+\showglyphs
+
+\starttexdefinition ShowSample #1#2
+    \start
+        \switchtobodyfont [#1]
+        #2: \dorecurse{50}{$\vec{\blackrule[width=##1pt]}$\space}\unskip
+        \par
+    \stop
+\stoptexdefinition
+
+\ShowSample{modern}  {Latin Modern} \blank
+\ShowSample{pagella} {Pagella}      \blank
+\ShowSample{cambria} {Cambria}      \blank
+\ShowSample{lucidaot}{Lucida}       \blank
+\ShowSample{dejavu}  {Dejavu}
+
+Of course fonts can be improved (or patched) and these samples might come out
+better compared to previous renderings.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

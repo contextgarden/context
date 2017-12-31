@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 --
 -- move more to commands
 
-local tonumber, type = tonumber, type
+local tonumber, type, next = tonumber, type, next
 local concat, insert, remove, sort = table.concat, table.insert, table.remove, table.sort
 local lpegmatch = lpeg.match
 

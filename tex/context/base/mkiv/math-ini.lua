@@ -15,6 +15,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- to the fam when set ... we use other means .. ok, we could use it for spacing but
 -- then we also have to set the other characters (only a subset done now)
 
+local next, type = next, type
 local formatters, find = string.formatters, string.find
 local utfchar, utfbyte, utflength = utf.char, utf.byte, utf.length
 ----- floor = math.floor

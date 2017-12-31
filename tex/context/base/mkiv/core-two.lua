@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['core-two'] = {
     license   = "see context related readme files"
 }
 
+local next = next
 local remove, concat = table.remove, table.concat
 local allocate = utilities.storage.allocate
 

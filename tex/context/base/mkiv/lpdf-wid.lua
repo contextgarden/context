@@ -24,7 +24,7 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 -- video anyway. Also, it won't play on all platforms and devices so let's wait for
 -- html5 media in pdf then.
 
-local tonumber = tonumber
+local tonumber, next = tonumber, next
 local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array

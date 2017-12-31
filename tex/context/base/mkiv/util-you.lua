@@ -30,22 +30,43 @@ utilities.youless = youless
 
 local lpegmatch  = lpeg.match
 local formatters = string.formatters
+local sortedhash = table.sortedhash
+
+local tonumber, type, next = tonumber, type, next
+
+local round, div = math.round, math.div
+local osdate, ostime = os.date, os.time
+
+local report = logs.reporter("youless")
+local trace  = false
 
 -- dofile("http.lua")
 
 local http = socket.http
 
-local f_normal   = formatters["http://%s/V?%s=%i&f=j"]
-local f_password = formatters["http://%s/L?w=%s"]
+-- f=j : json
 
-local function fetch(url,password,what,i)
-    local url     = f_normal(url,what,i)
-    local data, h = http.request(url)
-    local result  = data and utilities.json.tolua(data)
-    return result
+local f_password    = formatters["http://%s/L?w=%s"]
+
+local f_fetchers = {
+    electricity = formatters["http://%s/V?%s=%i&f=j"],
+    gas         = formatters["http://%s/W?%s=%i&f=j"],
+    pulse       = formatters["http://%s/Z?%s=%i&f=j"],
+}
+
+local function fetch(url,password,what,i,category)
+    local fetcher = f_fetchers[category or "electricity"]
+    if not fetcher then
+        report("invalid fetcher %a",category)
+    else
+        local url     = fetcher(url,what,i)
+        local data, h = http.request(url)
+        local result  = data and utilities.json.tolua(data)
+        return result
+    end
 end
 
--- "123"  "  1,234"
+-- "123" " 23" "  1,234"
 
 local tovalue = lpeg.Cs((lpeg.R("09") + lpeg.P(1)/"")^1) / tonumber
 
@@ -58,48 +79,99 @@ local totime = (lpeg.C(4) / tonumber) * lpeg.P("-")
              * (lpeg.C(2) / tonumber) * lpeg.P(":")
              * (lpeg.C(2) / tonumber)
 
-local function get(url,password,what,i,data,average,variant)
+local function collapsed(data,dirty)
+    for list, parent in next, dirty do
+        local t, n = { }, { }
+        for k, v in next, list do
+            local d = div(k,10) * 10
+            t[d] = (t[d] or 0) + v
+            n[d] = (n[d] or 0) + 1
+        end
+        for k, v in next, t do
+            t[k] = round(t[k]/n[k])
+        end
+        parent[1][parent[2]] = t
+    end
+    return data
+end
+
+local function get(url,password,what,step,data,option,category)
     if not data then
         data = { }
     end
+    local dirty = { }
     while true do
-        local d = fetch(url,password,what,i)
-        if d and next(d) then
+        local d = fetch(url,password,what,step,category)
+        local v = d and d.val
+        if v and #v > 0 then
             local c_year, c_month, c_day, c_hour, c_minute, c_seconds = lpegmatch(totime,d.tm)
             if c_year and c_seconds then
                 local delta = tonumber(d.dt)
-                local tnum = os.time { year = c_year, month = c_month, day = c_day, hour = c_hour, minute = c_minute }
-                local v = d.val
+                local tnum = ostime {
+                    year  = c_year,
+                    month = c_month,
+                    day   = c_day,
+                    hour  = c_hour,
+                    min   = c_minute,
+                    sec   = c_seconds,
+                }
                 for i=1,#v do
-                    local newvalue = lpegmatch(tovalue,v[i])
-                    if newvalue then
-                        local t = tnum + (i-1)*delta
-                        local current = os.date("%Y-%m-%dT%H:%M:%S",t)
-                        local c_year, c_month, c_day, c_hour, c_minute, c_seconds = lpegmatch(totime,current)
-                        if c_year and c_seconds then
-                            local years   = data.years      if not years   then years   = { } data.years      = years   end
-                            local d_year  = years[c_year]   if not d_year  then d_year  = { } years[c_year]   = d_year  end
-                            local months  = d_year.months   if not months  then months  = { } d_year.months   = months  end
-                            local d_month = months[c_month] if not d_month then d_month = { } months[c_month] = d_month end
-                            local days    = d_month.days    if not days    then days    = { } d_month.days    = days    end
-                            local d_day   = days[c_day]     if not d_day   then d_day   = { } days[c_day]     = d_day   end
-                            if average then
-                                d_day.average  = newvalue
-                            else
-                                local hours   = d_day.hours     if not hours   then hours   = { } d_day.hours     = hours   end
-                                local d_hour  = hours[c_hour]   if not d_hour  then d_hour  = { } hours[c_hour]   = d_hour  end
-                                d_hour[c_minute] = newvalue
+                    local vi = v[i]
+                    if vi ~= "*" then
+                        local newvalue = lpegmatch(tovalue,vi)
+                        if newvalue then
+                            local t = tnum + (i-1)*delta
+                         -- local current = osdate("%Y-%m-%dT%H:%M:%S",t)
+                         -- local c_year, c_month, c_day, c_hour, c_minute, c_seconds = lpegmatch(totime,current)
+                            local c = osdate("*t",tnum + (i-1)*delta)
+                            local c_year    = c.year
+                            local c_month   = c.month
+                            local c_day     = c.day
+                            local c_hour    = c.hour
+                            local c_minute  = c.min
+                            local c_seconds = c.sec
+                            if c_year and c_seconds then
+                                local years   = data.years      if not years   then years   = { } data.years      = years   end
+                                local d_year  = years[c_year]   if not d_year  then d_year  = { } years[c_year]   = d_year  end
+                                local months  = d_year.months   if not months  then months  = { } d_year.months   = months  end
+                                local d_month = months[c_month] if not d_month then d_month = { } months[c_month] = d_month end
+                                local days    = d_month.days    if not days    then days    = { } d_month.days    = days    end
+                                local d_day   = days[c_day]     if not d_day   then d_day   = { } days[c_day]     = d_day   end
+                                if option == "average" or option == "total" then
+                                    if trace then
+                                        local oldvalue = d_day[option]
+                                        if oldvalue and oldvalue ~= newvalue then
+                                            report("category %s, step %i, time %s: old %s %s updated to %s",category,step,osdate("%Y-%m-%dT%H:%M:%S",t),option,oldvalue,newvalue)
+                                        end
+                                    end
+                                    d_day[option] = newvalue
+                                elseif option == "value" then
+                                    local hours  = d_day.hours   if not hours  then hours  = { } d_day.hours   = hours  end
+                                    local d_hour = hours[c_hour] if not d_hour then d_hour = { } hours[c_hour] = d_hour end
+                                    if trace then
+                                        local oldvalue = d_hour[c_minute]
+                                        if oldvalue and oldvalue ~= newvalue then
+                                            report("category %s, step %i, time %s: old %s %s updated to %s",category,step,osdate("%Y-%m-%dT%H:%M:%S",t),"value",oldvalue,newvalue)
+                                        end
+                                    end
+                                    d_hour[c_minute] = newvalue
+                                    if not dirty[d_hour] then
+                                        dirty[d_hour] = { hours, c_hour }
+                                    end
+                                else
+                                    -- can't happen
+                                end
                             end
                         end
                     end
                 end
             end
         else
-            return data
+            return collapsed(data,dirty)
         end
-        i = i + 1
+        step = step + 1
     end
-    return data
+    return collapsed(data,dirty)
 end
 
 -- day of month (kwh)
@@ -132,6 +204,7 @@ function youless.collect(specification)
     local detail   = specification.detail   or false
     local nobackup = specification.nobackup or false
     local password = specification.password or ""
+    local oldstuff = false
     if host == "" then
         return
     end
@@ -140,13 +213,36 @@ function youless.collect(specification)
     else
         data = table.load(filename) or data
     end
-    if variant == "kwh" then
-        get(host,password,"m",1,data,true)
-    elseif variant == "watt" then
-        get(host,password,"d",0,data,true)
-        get(host,password,"w",1,data)
+    if variant == "electricity" then
+        get(host,password,"m",1,data,"total","electricity")
+        if oldstuff then
+            get(host,password,"d",1,data,"average","electricity")
+        end
+        get(host,password,"w",1,data,"value","electricity")
         if detail then
-            get(host,password,"h",1,data) -- todo: get this for calculating the precise max
+            get(host,password,"h",1,data,"value","electricity") -- todo: get this for calculating the precise max
+        end
+    elseif variant == "pulse" then
+        -- It looks like the 'd' option returns the wrong values or at least not the same sort
+        -- as the other ones, so we calculate the means ourselves. And 'w' is not consistent with
+        -- that too, so ...
+        get(host,password,"m",1,data,"total","pulse")
+        if oldstuff then
+            get(host,password,"d",1,data,"average","pulse")
+        end
+        detail = true
+        get(host,password,"w",1,data,"value","pulse")
+        if detail then
+            get(host,password,"h",1,data,"value","pulse")
+        end
+    elseif variant == "gas" then
+        get(host,password,"m",1,data,"total","gas")
+        if oldstuff then
+            get(host,password,"d",1,data,"average","gas")
+        end
+        get(host,password,"w",1,data,"value","gas")
+        if detail then
+            get(host,password,"h",1,data,"value","gas")
         end
     else
         return
@@ -164,15 +260,21 @@ function youless.collect(specification)
         if type(check) == "table" then
             local keepname = file.replacesuffix(filename,"old")
             os.remove(keepname)
-            if not lfs.isfile(keepname) then
+            if lfs.isfile(keepname) then
+                report("error in removing %a",keepname)
+            else
                 os.rename(filename,keepname)
                 os.rename(tempname,filename)
             end
+        else
+            report("error in saving %a",tempname)
         end
     else
         local keepname = file.join(path,formatters["%s-%s"](os.date("%Y-%m-%d-%H-%M-%S",os.time()),base))
         os.rename(filename,keepname)
-        if not lfs.isfile(filename) then
+        if lfs.isfile(filename) then
+            report("error in renaming %a",filename)
+        else
             table.save(filename,data)
         end
     end
@@ -181,76 +283,111 @@ end
 
 -- local data = youless.collect {
 --     host     = "192.168.2.50",
---     variant  = "watt",
---     filename = "youless-watt.lua"
+--     variant  = "electricity",
+--     category = "electricity",
+--     filename = "youless-electricity.lua"
 -- }
-
+--
 -- inspect(data)
 
 -- local data = youless.collect {
---     host    = "192.168.2.50",
---     variant = "kwh",
---     filename = "youless-kwh.lua"
+--     host     = "192.168.2.50",
+--     variant  = "pulse",
+--     category = "electricity",
+--     filename = "youless-pulse.lua"
 -- }
-
+--
 -- inspect(data)
 
+-- local data = youless.collect {
+--     host     = "192.168.2.50",
+--     variant  = "gas",
+--     category = "gas",
+--     filename = "youless-gas.lua"
+-- }
+--
+-- inspect(data)
+
+-- We remain compatible so we stick to electricity and not unit fields.
+
 function youless.analyze(data)
-    if data and data.variant == "watt" and data.years then
-        for y, year in next, data.years do
-            local a_year, n_year, m_year = 0, 0, 0
-            if year.months then
-                for m, month in next, year.months do
-                    local a_month, n_month = 0, 0
-                    if month.days then
-                        for d, day in next, month.days do
-                            local a_day, n_day = 0, 0
-                            if day.hours then
-                                for h, hour in next, day.hours do
-                                    local a_hour, n_hour, m_hour = 0, 0, 0
-                                    for k, v in next, hour do
-                                        if type(k) == "number" then
-                                            a_hour = a_hour + v
-                                            n_hour = n_hour + 1
-                                            if v > m_hour then
-                                                m_hour = v
-                                            end
+    if type(data) == "string" then
+        data = table.load(data)
+    end
+    if type(data) ~= "table" then
+        return false, "no data"
+    end
+    if not data.years then
+        return false, "no years"
+    end
+    local variant = data.variant
+    local unit, maxunit
+    if variant == "electricity" or variant == "watt" then
+        unit    = "watt"
+        maxunit = "maxwatt"
+    elseif variant == "gas" then
+        unit    = "liters"
+        maxunit = "maxliters"
+    elseif variant == "pulse" then
+        unit    = "watt"
+        maxunit = "maxwatt"
+    else
+        return false, "invalid variant"
+    end
+    for y, year in next, data.years do
+        local a_year, n_year, m_year = 0, 0, 0
+        if year.months then
+            for m, month in next, year.months do
+                local a_month, n_month = 0, 0
+                if month.days then
+                    for d, day in next, month.days do
+                        local a_day, n_day = 0, 0
+                        if day.hours then
+                            for h, hour in next, day.hours do
+                                local a_hour, n_hour, m_hour = 0, 0, 0
+                                for k, v in next, hour do
+                                    if type(k) == "number" then
+                                        a_hour = a_hour + v
+                                        n_hour = n_hour + 1
+                                        if v > m_hour then
+                                            m_hour = v
                                         end
                                     end
-                                    n_day = n_day + n_hour
-                                    a_day = a_day + a_hour
-                                    hour.maxwatt = m_hour
-                                    hour.watt = a_hour / n_hour
-                                    if m_hour > m_year then
-                                        m_year = m_hour
-                                    end
+                                end
+                                n_day = n_day + n_hour
+                                a_day = a_day + a_hour
+                                hour[maxunit] = m_hour
+                                hour[unit]    = a_hour / n_hour
+                                if m_hour > m_year then
+                                    m_year = m_hour
                                 end
                             end
-                            if n_day > 0 then
-                                a_month = a_month + a_day
-                                n_month = n_month + n_day
-                                day.watt = a_day / n_day
-                            else
-                                day.watt = 0
-                            end
+                        end
+                        if n_day > 0 then
+                            a_month = a_month + a_day
+                            n_month = n_month + n_day
+                            day[unit] = a_day / n_day
+                        else
+                            day[unit] = 0
                         end
                     end
-                    if n_month > 0 then
-                        a_year = a_year + a_month
-                        n_year = n_year + n_month
-                        month.watt = a_month / n_month
-                    else
-                        month.watt = 0
-                    end
+                end
+                if n_month > 0 then
+                    a_year = a_year + a_month
+                    n_year = n_year + n_month
+                    month[unit] = a_month / n_month
+                else
+                    month[unit] = 0
                 end
             end
-            if n_year > 0 then
-                year.watt    = a_year / n_year
-                year.maxwatt = m_year
-            else
-                year.watt    = 0
-                year.maxwatt = 0
-            end
+        end
+        if n_year > 0 then
+            year[unit]    = a_year / n_year
+            year[maxunit] = m_year
+        else
+            year[unit]    = 0
+            year[maxunit] = 0
         end
     end
+    return data
 end

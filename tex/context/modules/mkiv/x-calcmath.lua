@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['x-calcmath'] = {
 
 -- this really needs to be redone
 
+local next, type = next, type
 local format, lower, upper, gsub, sub = string.format, string.lower, string.upper, string.gsub, string.sub
 local concat = table.concat
 local lpegmatch = lpeg.match

@@ -347,15 +347,22 @@ function codeinjections.getbookmarks(filename)
             local subtype = action.S
             if subtype == "GoTo" then
                 destination = action.D
-                if type(destination) == "string" then
+                local kind = type(destination)
+                if kind == "string" then
                     entry.destination = destination
                     destination = destinations[destination]
                     local pagedata = destination and destination[1]
                     if pagedata then
                         entry.realpage = pagedata.number
                     end
-                else
-                    -- maybe
+                elseif kind == "table" then
+                    local pageref = destination.n
+                    if pageref then
+                        local pagedata = pages[pageref]
+                        if pagedata then
+                            entry.realpage = pagedata.number
+                        end
+                    end
                 end
             else
                 -- maybe

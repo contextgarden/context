@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['lang-rep'] = {
 -- although (given experiences so far) we don't really need that. After all, each problem
 -- is somewhat unique.
 
-local type, tonumber = type, tonumber
+local type, tonumber, next = type, tonumber, next
 local gmatch, gsub = string.gmatch, string.gsub
 local utfbyte, utfsplit = utf.byte, utf.split
 local P, C, U, Cc, Ct, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.match

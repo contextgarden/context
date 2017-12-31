@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['l-url'] = {
 
 local char, format, byte = string.char, string.format, string.byte
 local concat = table.concat
-local tonumber, type = tonumber, type
+local tonumber, type, next = tonumber, type, next
 local P, C, R, S, Cs, Cc, Ct, Cf, Cg, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cf, lpeg.Cg, lpeg.V
 local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replacer
 

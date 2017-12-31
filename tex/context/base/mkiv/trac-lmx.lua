@@ -695,6 +695,8 @@ if arg then
     if     arg[1] == "--show"    then if arg[2] then lmx.show   (arg[2])                        end
     elseif arg[1] == "--convert" then if arg[2] then lmx.convert(arg[2], arg[3] or "temp.html") end
     end
+else
+    return lmx
 end
 
 -- Test 1:

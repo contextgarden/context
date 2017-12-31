@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-fbk'] = {
     license   = "see context related readme files"
 }
 
+local next, type = next, type
+
 local trace_fallbacks   = false  trackers.register("math.fallbacks", function(v) trace_fallbacks = v end)
 
 local report_fallbacks  = logs.reporter("math","fallbacks")

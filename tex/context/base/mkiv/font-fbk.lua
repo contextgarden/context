@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['font-fbk'] = {
 
 local cos, tan, rad, format = math.cos, math.tan, math.rad, string.format
 local utfbyte, utfchar = utf.byte, utf.char
+local next = next
 
 --[[ldx--
 <p>This is very experimental code!</p>
