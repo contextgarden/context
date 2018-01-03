@@ -1,0 +1,59 @@
+\usemodule[art-01]
+
+\starttext
+
+\definefloat
+  [figure-column]
+
+\setupfloat
+  [figure-column]
+  [default={left,nonumber,none,high}, % high kills sidespacebefore
+   topoffset=\strutgap]
+
+\setupfloat
+  [sidespacebefore=,
+   sidespaceafter=]
+
+\enabletrackers[*float*]
+
+\starttext
+
+\input ward
+
+\placefloat
+  [figure-column][][]{}
+  {\externalfigure[t:/sources/cow.pdf][width=3cm,frame=on]}
+
+\input ward
+
+\placefloat
+  [figure-column][][]{}
+  {\externalfigure[t:/sources/cow.pdf][width=3cm,frame=on]}
+
+\input ward
+
+\placefloat
+  [figure-column][][]{}
+  {\externalfigure[t:/sources/cow.pdf][width=3cm,frame=on]}
+
+\flushsidefloats
+
+\input ward
+
+\page
+
+\setupfloat
+  [spacebeforeside=3*big,
+   spaceafterside=5*big]
+
+\input ward
+
+\placefloat
+  [figure-column][][]{}
+  {\externalfigure[t:/sources/cow.pdf][width=3cm,frame=on]}
+
+\flushsidefloats
+
+\input ward
+
+\stoptext

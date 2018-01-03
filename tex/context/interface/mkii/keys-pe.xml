@@ -990,6 +990,7 @@
 		<cd:constant name='nlines' value='nlines'/>
 		<cd:constant name='norm' value='norm'/>
 		<cd:constant name='note' value='note'/>
+		<cd:constant name='notes' value='notes'/>
 		<cd:constant name='nr' value='nr'/>
 		<cd:constant name='nright' value='nright'/>
 		<cd:constant name='ntop' value='ntop'/>
@@ -1177,7 +1178,9 @@
 		<cd:constant name='source' value='منبع'/>
 		<cd:constant name='space' value='فضا'/>
 		<cd:constant name='spaceafter' value='فضا‌بعداز'/>
+		<cd:constant name='spaceafterside' value='spaceafterside'/>
 		<cd:constant name='spacebefore' value='فضا‌قبل‌از'/>
+		<cd:constant name='spacebeforeside' value='spacebeforeside'/>
 		<cd:constant name='spaceinbetween' value='فضا‌دربین'/>
 		<cd:constant name='spacing' value='فضاگذاری'/>
 		<cd:constant name='specification' value='specification'/>

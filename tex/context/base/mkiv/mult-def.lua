@@ -10480,6 +10480,14 @@ return {
    ["pe"]="فضای‌کناری‌قبل",
    ["ro"]="spatiulateralinainte",
   },
+  ["spaceafterside"]={
+   ["en"]="spaceafterside",
+   ["nl"]="witnazij",
+  },
+  ["spacebeforeside"]={
+   ["en"]="spacebeforeside",
+   ["nl"]="witvoorzij",
+  },
   ["sign"]={
    ["cs"]="znak",
    ["de"]="zeichen",

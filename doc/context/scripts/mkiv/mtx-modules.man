@@ -1,4 +1,4 @@
-.TH "mtx-modules" "1" "01-01-2017" "version 1.00" "ConTeXt Module Documentation Generators"
+.TH "mtx-modules" "1" "01-01-2018" "version 1.00" "ConTeXt Module Documentation Generators"
 .SH NAME
 .B mtx-modules
 .SH SYNOPSIS

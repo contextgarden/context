@@ -12,6 +12,8 @@
 
     <cd:command name="struthtdp" level="system" file="supp-box.mkiv"/>
 
+    <cd:command name="strutgap" level="system" file="supp-box.mkiv"/>
+
     <cd:command name="setupstruts" level="style" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">

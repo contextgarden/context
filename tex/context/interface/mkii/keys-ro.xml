@@ -1178,7 +1178,9 @@
 		<cd:constant name='source' value='sursa'/>
 		<cd:constant name='space' value='spatiu'/>
 		<cd:constant name='spaceafter' value='spatiudupa'/>
+		<cd:constant name='spaceafterside' value='spaceafterside'/>
 		<cd:constant name='spacebefore' value='spatiuinainte'/>
+		<cd:constant name='spacebeforeside' value='spacebeforeside'/>
 		<cd:constant name='spaceinbetween' value='spaceinbetween'/>
 		<cd:constant name='spacing' value='spatiere'/>
 		<cd:constant name='specification' value='specification'/>

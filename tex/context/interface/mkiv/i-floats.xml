@@ -170,6 +170,14 @@
                     <cd:constant type="none"/>
                     <cd:inherit name="blank"/>
                 </cd:parameter>
+                <cd:parameter name="spacebeforeside">
+                    <cd:constant type="none"/>
+                    <cd:inherit name="blank"/>
+                </cd:parameter>
+                <cd:parameter name="spaceafterside">
+                    <cd:constant type="none"/>
+                    <cd:inherit name="blank"/>
+                </cd:parameter>
                 <cd:parameter name="sidethreshold">
                     <cd:constant type="old"/>
                     <cd:constant type="dimension" default="yes"/> <!--  value=".5\strutdp" -->

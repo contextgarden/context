@@ -192,7 +192,7 @@
 \installoutputroutine\synchronizeoutput % use \triggerpagebuilder instead
   {\ifvoid\normalpagebox\else
      \unvbox\normalpagebox
-     \pagediscards % does more harm than good .. needs thinking
+     % not \pagediscards as it does more harm than good
    \fi}
 
 \installoutputroutine\discardpage

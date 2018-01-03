@@ -404,8 +404,8 @@ local function updatezone(presets,name,zone)
             end
         end
         if maxtarget == false then
-            if max > 21 then
-                maxtarget = 21
+            if max > 18.5 then
+                maxtarget = 18.5
              -- report("zone %a, max target limited to %a",name,maxtarget)
             else
                 maxtarget = max
@@ -677,7 +677,7 @@ local function untilmidnight()
 end
 
 local followschedule = {
-    HeatSetpointValue = 0,
+ -- HeatSetpointValue = 0,
     SetpointMode      = "FollowSchedule",
 }
 

@@ -1,4 +1,4 @@
-.TH "pdftools" "1" "01-01-2017" "version 1.2.1" "PDFTools"
+.TH "pdftools" "1" "01-01-2018" "version 1.2.1" "PDFTools"
 .SH NAME
 .B pdftools
 .SH SYNOPSIS

@@ -63,6 +63,8 @@
 \newdimen       \d_page_sides_bottomskip
 \newdimen       \d_page_sides_downshift
 \newdimen       \d_page_sides_pagetotal
+\newdimen       \d_page_sides_topoffset
+\newdimen       \d_page_sides_bottomoffset
 
 \setnewconstant \c_page_sides_method \plusone   % 0=raw 1=safe (.99) 2=tight (-1pt)
 \setnewconstant \c_page_sides_align  \zerocount
@@ -212,7 +214,8 @@
   {\global\d_page_sides_vsize\d_page_sides_vsize_reset
    % also here if used at all \global\holdinginserts\zerocount
    \global\setfalse\c_page_sides_short
-   \global\setfalse\c_page_sides_flag}
+   \global\setfalse\c_page_sides_flag
+   \global\c_page_sides_checks_done\zerocount}
 
 \unexpanded\def\doifelsesidefloat
   {\par
@@ -282,37 +285,50 @@
       \fi}%
    \endgroup}
 
-\def\page_sides_flush_floats_after_none
+\def\page_sides_flush_floats_after_none % we force a flush
+  {\edef\tempstring{%
+     \ifdim\d_page_sides_bottomskip>\zeropoint
+       \ifdim\parskip>\zeropoint % why this test ?
+         \ifdim\d_page_sides_bottomskip>\parskip
+           \v!nowhite,\rootfloatparameter\c!sidespaceafter
+         \fi
+       \else
+         \rootfloatparameter\c!sidespaceafter
+       \fi
+     \fi}%
+   \ifx\tempstring\empty\else\ifx\tempstring\v!none\else
+     \blank[\tempstring]%
+   \fi\fi
+   \page_sides_inject_after}
+
+\def\page_sides_flush_floats_blank#1% we have two successive ones
+  {\edef\tempstring{%
+     \ifx#1\empty\else#1,\fi
+     \ifdim\d_page_sides_bottomskip>\d_page_sides_topskip
+       \ifdim\d_page_sides_topskip   >\zeropoint-\rootfloatparameter\c!sidespacebefore,\fi % the next one
+       \ifdim\d_page_sides_bottomskip>\zeropoint \rootfloatparameter\c!sidespaceafter ,\fi
+     \else\ifdim\d_page_sides_bottomskip<\d_page_sides_topskip
+       \ifdim\d_page_sides_bottomskip>\zeropoint -\rootfloatparameter\c!sidespaceafter ,\fi
+       \ifdim\d_page_sides_topskip   >\zeropoint  \rootfloatparameter\c!sidespacebefore,\fi
+     \else % equal
+       \rootfloatparameter\c!sidespacebefore % inbetween
+     \fi\fi}%
+   \ifx\tempstring\empty\else\ifx\tempstring\v!none\else
+     \blank[\tempstring]%
+   \fi\fi
+   \page_sides_inject_after}
+
+\def\page_sides_flush_floats_after_next % we have two successive ones
   {\ifdim\parskip>\zeropoint % why this test ?
      \ifdim\d_page_sides_bottomskip>\parskip
-       \blank[\v!nowhite,\rootfloatparameter\c!sidespaceafter]%
-     \fi
+       \page_sides_flush_floats_blank\v!nowhite
+     \else\ifdim\d_page_sides_topskip>\parskip
+       \page_sides_flush_floats_blank\v!nowhite
+     \else
+       % use parskip
+     \fi\fi
    \else
-       \blank[\rootfloatparameter\c!sidespaceafter]%
-   \fi}
-
-\def\page_sides_flush_floats_blank#1% we need to deal with the distance
-  {\ifdim\d_page_sides_bottomskip>\d_page_sides_topskip
-     \blank[%
-        \ifnum#1>\zerocount\v!nowhite,\fi
-        \ifdim\d_page_sides_topskip   >\zeropoint-\rootfloatparameter\c!sidespacebefore,\fi % the next one
-        \ifdim\d_page_sides_bottomskip>\zeropoint \rootfloatparameter\c!sidespaceafter  \fi
-     ]%
-   \else\ifdim\d_page_sides_bottomskip<\d_page_sides_topskip
-     \blank[%
-        \ifnum#1>\zerocount\v!nowhite,\fi
-        \ifdim\d_page_sides_bottomskip>\zeropoint -\rootfloatparameter\c!sidespaceafter ,\fi
-        \ifdim\d_page_sides_topskip   >\zeropoint  \rootfloatparameter\c!sidespacebefore \fi
-     ]%
-   \fi\fi}
-
-\def\page_sides_flush_floats_after_next
-  {\ifdim\parskip>\zeropoint % why this test ?
-     \ifdim\d_page_sides_bottomskip>\parskip
-       \page_sides_flush_floats_blank\plusone
-     \fi
-   \else
-     \page_sides_flush_floats_blank\zerocount
+     \page_sides_flush_floats_blank\empty
    \fi}
 
 \def\page_sides_check_floats_after_par
@@ -647,12 +663,25 @@
 %    % but it seems to work
 %    \endgroup}
 
+\def\page_sides_inject_before
+  {\edef\tempstring{\rootfloatparameter\c!spacebeforeside}%
+   \ifx\tempstring\empty\else\ifx\tempstring\v!none\else
+     \blank[\tempstring]%
+   \fi\fi}
+
+\def\page_sides_inject_after
+  {\edef\tempstring{\rootfloatparameter\c!spaceafterside}%
+   \ifx\tempstring\empty\else\ifx\tempstring\v!none\else
+     \blank[\tempstring]%
+   \fi\fi}
+
 \def\page_sides_prepare_space
   {%\fakenextstrutline % does more bad than good at page crossing
    \inhibitblank} % hm, why here .. gets obscured anyway
 
 \def\page_sides_handle_float#1% grid (4) is rather experimental
-  {\page_sides_prepare_space
+  {\page_sides_inject_before
+   \page_sides_prepare_space
    \page_sides_apply_horizontal_shift
    \page_sides_check_previous_float
    \page_sides_inject_dummy_lines
@@ -820,7 +849,7 @@
    \fi
    \kern-\privatescratchcounter\baselineskip
    \penalty\zerocount
-   \triggerpagebuilder
+   \triggerpagebuilder % the penalty already does that
    \endgroup}
 
 \def\adjustsidefloatdisplaylines % public, will change

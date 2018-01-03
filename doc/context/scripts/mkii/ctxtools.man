@@ -1,4 +1,4 @@
-.TH "ctxtools" "1" "01-01-2017" "version 1.3.5" "CtxTools"
+.TH "ctxtools" "1" "01-01-2018" "version 1.3.5" "CtxTools"
 .SH NAME
 .B ctxtools
 .SH SYNOPSIS

@@ -141,6 +141,8 @@
    \c!spaceafter=\v!big,
    \c!sidespacebefore=\rootfloatparameter\c!spacebefore,
    \c!sidespaceafter=\rootfloatparameter\c!spaceafter,
+   \c!spacebeforeside=, % extra, not part of, can be used to add whitespace before text
+   \c!spaceafterside=,  % idem
    \c!sidealign=\v!normal,
    \c!textmethod=\ifgridsnapping2\else0\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
    \c!sidemethod=\ifgridsnapping2\else1\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
@@ -737,6 +739,25 @@
 
 % nicer is a bunch of states and one loop that sets those states
 
+\newdimen\d_strc_floats_margin
+\newdimen\d_strc_floats_top
+\newdimen\d_strc_floats_bottom
+%newdimen\d_strc_floats_top_side
+%newdimen\d_strc_floats_bottom_side
+
+\def\strc_floats_calculate_skip#target#skip%
+  {\begingroup
+   \edef\askedfloatskip{\rootfloatparameter#skip}%
+   \ifx\askedfloatskip\empty
+     \global#target\zeropoint
+   \else\ifx\askedfloatskip\v!none
+     \global#target\zeropoint
+   \else
+     \setbox\scratchbox\vbox{\whitespace\blank[\askedfloatskip]}% todo: move whitespace inside blank
+     \global#target\ht\scratchbox
+   \fi\fi
+   \endgroup}
+
 \def\strc_floats_analyze_variables_two
   {\ifinsidecolumns
      \global\setfalse\c_strc_floats_par_float
@@ -745,13 +766,36 @@
        {\global\settrue \c_strc_floats_par_float}%
        {\global\setfalse\c_strc_floats_par_float}%
    \fi
-   \global\d_page_sides_shift      \zeropoint
-   \global\d_page_sides_maximum    \zeropoint
-   \global\c_page_sides_method     \floatparameter\c!sidemethod
-   \global\c_page_one_float_method \floatparameter\c!textmethod
-   \global\c_page_sides_align      \zerocount
-   \global\c_strc_floats_rotation  \zerocount
-   \strc_floats_calculate_skips
+   % variable initializations
+   \global\d_page_sides_shift       \zeropoint
+   \global\d_page_sides_maximum     \zeropoint
+   \global\c_page_sides_align       \zerocount
+   \global\c_strc_floats_rotation   \zerocount
+   \global\d_strc_floats_margin     \rootfloatparameter\c!margin
+   \global\d_page_sides_leftshift   \floatparameter    \c!leftmargindistance
+   \global\d_page_sides_rightshift  \floatparameter    \c!rightmargindistance
+   \global\d_page_sides_topoffset   \floatparameter    \c!topoffset
+   \global\d_page_sides_bottomoffset\floatparameter    \c!bottomoffset
+   \global\c_page_sides_method      \floatparameter    \c!sidemethod
+   \global\c_page_one_float_method  \floatparameter    \c!textmethod
+   \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
+   \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
+   \ifconditional\c_strc_floats_par_float
+     \global\d_strc_floats_top        \zeropoint
+     \global\d_strc_floats_bottom     \zeropoint
+    %\strc_floats_calculate_skip\d_strc_floats_top_side   \c!spacebeforeside
+    %\strc_floats_calculate_skip\d_strc_floats_bottom_side\c!spaceafterside
+     \strc_floats_calculate_skip\d_page_sides_topskip     \c!sidespacebefore
+     \strc_floats_calculate_skip\d_page_sides_bottomskip  \c!sidespaceafter
+   \else
+     \global\d_page_sides_topskip     \zeropoint
+     \global\d_page_sides_bottomskip  \zeropoint
+    %\global\d_strc_floats_top_side   \zeropoint
+    %\global\d_strc_floats_bottom_side\zeropoint
+     \strc_floats_calculate_skip\d_strc_floats_top   \c!spacebefore
+     \strc_floats_calculate_skip\d_strc_floats_bottom\c!spaceafter
+   \fi
+   % keyword handling
    \ifconditional\c_strc_floats_par_float
      \processaction
        [\floatparameter\c!sidealign]
@@ -769,12 +813,9 @@
      \fi
      \doifinset\v!high\floatlocation{\global\d_page_sides_topskip   \zeropoint}%
      \doifinset\v!low \floatlocation{\global\d_page_sides_bottomskip\zeropoint}%
-     \doifinset\v!fit \floatlocation
-       {\global\d_page_sides_topskip   \zeropoint
-        \global\d_page_sides_bottomskip\zeropoint
-        \global\d_strc_floats_margin   \zeropoint}%
-     \global\advance\d_page_sides_topskip   \floatparameter\c!topoffset
-     \global\advance\d_page_sides_bottomskip\floatparameter\c!bottomoffset
+     \doifinset\v!fit \floatlocation{\global\d_page_sides_topskip   \zeropoint
+                                     \global\d_page_sides_bottomskip\zeropoint
+                                     \global\d_strc_floats_margin   \zeropoint}%
    \else
      \processallactionsinset
        [\floatlocation]%
@@ -799,7 +840,12 @@
       \letfloatcaptionparameter\c!rightmargin\effectiverightskip}%
    \ifemptyfloatcaption \ifnofloatnumber
      \global\nofloatcaptiontrue
-   \fi \fi}
+   \fi \fi
+   % more variable initializations
+   \ifconditional\c_strc_floats_par_float
+     \global\advance\d_page_sides_topskip   \d_page_sides_topoffset
+     \global\advance\d_page_sides_bottomskip\d_page_sides_bottomoffset
+   \fi}
 
 % documenteren in details
 
@@ -1163,34 +1209,6 @@
 
 \unexpanded\def\placefloats
   {\page_otr_command_flush_floats}
-
-\newdimen\d_strc_floats_margin
-\newdimen\d_strc_floats_top
-\newdimen\d_strc_floats_bottom
-
-\def\strc_floats_calculate_skip#target#skip%
-  {\edef\askedfloatskip{#skip}%
-   \ifx\askedfloatskip\empty
-     \global#target\zeropoint
-   \else\ifx\askedfloatskip\v!none
-     \global#target\zeropoint
-   \else
-     \setbox\scratchbox\vbox{\whitespace\blank[\askedfloatskip]}% todo: move whitespace inside blank
-     \global#target\ht\scratchbox
-   \fi\fi}
-
-\def\strc_floats_calculate_skips
-  {\begingroup
-   \strc_floats_calculate_skip\d_strc_floats_top      {\rootfloatparameter\c!spacebefore    }%
-   \strc_floats_calculate_skip\d_strc_floats_bottom   {\rootfloatparameter\c!spaceafter     }%
-   \strc_floats_calculate_skip\d_page_sides_topskip   {\rootfloatparameter\c!sidespacebefore}%
-   \strc_floats_calculate_skip\d_page_sides_bottomskip{\rootfloatparameter\c!sidespaceafter }%
-   \global\d_strc_floats_margin     \rootfloatparameter\c!margin
-   \global\d_page_sides_leftshift   \floatparameter    \c!leftmargindistance
-   \global\d_page_sides_rightshift  \floatparameter    \c!rightmargindistance
-   \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
-   \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
-   \endgroup}
 
 \unexpanded\def\betweenfloatblanko % assumes that spaceafter is present
   {\blank[\rootfloatparameter\c!spacebefore]} % or v!back,....

@@ -10078,6 +10078,14 @@
       <cd:constant type="none"/>
       <cd:inherit name="blank"/>
      </cd:parameter>
+     <cd:parameter name="spacebeforeside">
+      <cd:constant type="none"/>
+      <cd:inherit name="blank"/>
+     </cd:parameter>
+     <cd:parameter name="spaceafterside">
+      <cd:constant type="none"/>
+      <cd:inherit name="blank"/>
+     </cd:parameter>
      <cd:parameter name="sidethreshold">
       <cd:constant type="old"/>
       <cd:constant default="yes" type="dimension"/>
@@ -35809,6 +35817,7 @@
   <cd:command file="supp-box.mkiv" level="system" name="strutht"/>
   <cd:command file="supp-box.mkiv" level="system" name="strutwd"/>
   <cd:command file="supp-box.mkiv" level="system" name="struthtdp"/>
+  <cd:command file="supp-box.mkiv" level="system" name="strutgap"/>
   <cd:command file="spac-ver.mkiv" level="style" name="setupstruts">
    <cd:arguments>
     <cd:keywords optional="yes">

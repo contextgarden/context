@@ -1,4 +1,4 @@
-.TH "mtx-scite" "1" "01-01-2017" "version 1.00" "Scite Helper Script"
+.TH "mtx-scite" "1" "01-01-2018" "version 1.00" "Scite Helper Script"
 .SH NAME
 .B mtx-scite
 .SH SYNOPSIS

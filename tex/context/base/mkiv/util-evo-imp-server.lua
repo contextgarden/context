@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['util-imp-evohome-server'] = {
 
 local P, C, patterns, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns, lpeg.match
 local urlhashed, urlquery, urlunescapeget  = url.hashed, url.query, url.unescapeget
+local ioflush = io.flush
 
 local newline    = patterns.newline
 local spacer     = patterns.spacer
@@ -36,6 +37,7 @@ local evohome  = require("util-evo")
                  require("trac-lmx")
 
 local report   = logs.reporter("evohome","server")
+local convert  = lmx.convert
 
 function evohome.server(specification)
 
@@ -60,7 +62,7 @@ function evohome.server(specification)
         return
     end
 
-    local port = specification.port or (presets.server and presets.server.port) or 8068
+    local port = specification.port or (presets.server and presets.server.port) or 806
     local host = specification.host or (presets.server and presets.server.host) or "*"
 
     package.extraluapath(presets.filepath)
@@ -77,9 +79,10 @@ function evohome.server(specification)
                 local fullurl = urlunescapeget(fullurl)
                 local hashed  = urlhashed(fullurl)
                 process(hashed.queries or { })
+                ioflush()
             end
             -- todo: split off css and use that instead of general one, now too much
-            local content = lmx.convert(presets.results and presets.results.template or template,false,presets)
+            local content = convert(presets.results and presets.results.template or template,false,presets)
             if not content then
                 report("error in converting template")
                 content = "error in template"
@@ -110,11 +113,13 @@ function evohome.server(specification)
 
     if server then
         report("server started at %s:%s",host,port)
+        ioflush()
         copas.addserver(server,copashttp)
         copas.addthread(copaspoll)
         copas.loop()
     else
         report("unable to start server at %s:%s",host,port)
+        os.exit()
     end
 
 end
