@@ -1,0 +1,445 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-styles
+
+\environment metafun-environment
+
+\startchapter[title={Defining styles}]
+
+\index {layout}
+\index {styles}
+
+\startintro
+
+Since the integration of \METAPOST\ into \CONTEXT, a complete new range of layout
+fetaures became available. In this document we have introduced several ways to
+include graphics in your document definition. In this chapter we go one step
+further and make dynamic graphics part of a document style.
+
+\stopintro
+
+\startsection[title={Adaptive buttons}]
+
+So far we have seen a lot of graphic ingredients that you can use to make your
+documents more attractive. In this chapter we will define a simple document
+style. This style was written for the \PDFTEX\ presentations at the TUG 2000
+conference in Oxford (UK).
+
+This style exploits a few tricks, like graphics calculated using positional
+information. It also demonstrates how you can make menu buttons that dynamically
+adapt their shapes to the rest of the page layout.
+
+\startbuffer[screens]
+\startlinecorrection[blank]
+\setupcombinations[distance=.0125\textwidth]
+\startcombination[5*1]
+  {\typesetfile[mfun-77\ScrNum.tex][page=1,width=.19\textwidth]} {page 1}
+  {\typesetfile[mfun-77\ScrNum.tex][page=2,width=.19\textwidth]} {page 2}
+  {\typesetfile[mfun-77\ScrNum.tex][page=3,width=.19\textwidth]} {page 3}
+  {\typesetfile[mfun-77\ScrNum.tex][page=4,width=.19\textwidth]} {page 4}
+  {\typesetfile[mfun-77\ScrNum.tex][page=5,width=.19\textwidth]} {page 5}
+\stopcombination
+\stoplinecorrection
+\stopbuffer
+
+\def\ScrNum{1} \getbuffer[screens]
+
+Later we will see an instance with some more randomness in the graphics. While
+writing this style, the random alternative made me think of those organic
+buildings with non equal windows |<|we have a few of those in The Netherlands|>|,
+so I decided to label this style as \type {pre-organic}. If you use \CONTEXT, you
+can load this style with:
+
+\starttyping
+\usemodule[pre-organic]
+\stoptyping
+
+At the end of this file, there is a small test file, so when you process the file
+\type {s-pre-19.tex} \footnote {This style is the 19\high{th} presentation style.
+Those numbered styles are internally mapped onto more meaningful names like in
+this case \type {pre-organic}.} with the options \type {--mode=demo} and \type
+{--pdf}, you will get a demo document.
+
+We use one of the standard screen \quote {paper} sizes, and map it onto the same
+size, so that we get a nicely cropped page. Other screen sizes are \type {S4} and
+\type {S5}.
+
+\starttyping
+\setuppapersize[S6][S6]
+\stoptyping
+
+Like in this \METAFUN\ manual, we use the Palatino as main bodyfont. This font is
+quite readable on even low resolution screens, although I admit that this style
+is developed using an $1400\times1050$ pixel \kap {lcd} screen, so the author may
+be a little biased.
+
+\starttyping
+\setupbodyfont[ppl]
+\stoptyping
+
+The layout specification sets up a text area and a right edge area where the
+menus will go (see \in {chapter} [sec:page] for a more in depth discussion on the
+layout areas). Watch how we use a rather large edge distance. By setting the
+header and footer dimensions to zero, we automatically get rid of page body
+ornaments, like the page number.
+
+\starttyping
+\setuplayout
+  [topspace=48pt,
+   backspace=48pt,
+   cutspace=12pt,
+   width=400pt,
+   margin=0cm,
+   rightedge=88pt,
+   rightedgedistance=48pt,
+   header=0cm,
+   footer=0cm,
+   height=middle]
+\stoptyping
+
+We use a moderate, about a line height, inter||paragraph white space.
+
+\starttyping
+\setupwhitespace[big]
+\stoptyping
+
+Of course we use colors, since on computer displays they come for free.
+
+\starttyping
+\setupcolors[state=start]
+
+\definecolor [red]    [r=.75]
+\definecolor [yellow] [r=.75,g=.75]
+\definecolor [gray]   [s=.50]
+\definecolor [white]  [s=.85]
+\stoptyping
+
+Because it is an interactive document, we have to enable hyperlinks and alike.
+However, in this style, we disable the viewer's \quote {highlight a hyperlink
+when it's clicked on} feature. We will use a menu, so we enable menus. Later we
+will see the contrast color |<|hyperlinks gets that color when we are already on
+the location|>| in action.
+
+\starttyping
+\setupinteraction
+  [state=start,
+   click=off,
+   color=red,
+   contrastcolor=gray,
+   menu=on]
+\stoptyping
+
+The menu itself is set up as follows. Because we will calculate menu buttons
+based on their position on the page, we have to keep track of the positions.
+Therefore, we set the \type {position} variable to \type {yes}.
+
+\starttyping
+\setupinteractionmenu
+  [right]
+  [frame=off,
+   position=yes,
+   align=middle,
+   topoffset=-.75cm,
+   bottomoffset=-.75cm,
+   color=gray,
+   contrastcolor=gray,
+   style=bold,
+   before=,
+   after=]
+\stoptyping
+
+The menu content is rather sober: just a list of topics and a close button. Later
+we will define the command that generates topic entries. The alternative \type
+{right} lets the topic list inherit its characteristics from the menu.
+
+\starttyping
+\startinteractionmenu[right]
+  \placelist[Topic][alternative=right]
+  \vfill
+  \but [CloseDocument] close \\
+\stopinteractionmenu
+\stoptyping
+
+We have now arrived at the more interesting part of the style definition: the
+graphic that goes in the page background. Because this graphic will change, we
+define a useable \METAPOST\ graphic. Page backgrounds are recalculated each page,
+opposite to the other backgrounds that are calculated when a new background is
+defined, or when repetitive calculation is turned on.
+
+\starttyping
+\setupbackgrounds [page] [background=page]
+\defineoverlay    [page] [\useMPgraphic{page}]
+\setupMPvariables [page] [alternative=3]
+\stoptyping
+
+We will implement three alternative backgrounds. First we demonstrate the
+relatively simple super ellipsed one. The main complication is that we want the
+button shapes to follow the right edge of the curve that surrounds the text. We
+don't know in advance how many lines of text there will be in a button, and we
+also don't know at what height it will end up. Therefore, we need to calculate
+each button shape independently and for that purpose we need to know its position
+(see \in {chapter} [sec:positioning]). In \in {figure} [fig:style] you can see
+what lines we need in order to be calculate the button shapes.
+
+\startpostponing
+
+\startmode[screen]
+  \placefigure
+    [here][fig:style]
+    {The lines used to calculate the button shapes.}
+    {\externalfigure[mfun-774.pdf][page=1,height=.85\textheight]}
+\stopmode
+
+\startnotmode[screen]
+  \placefigure
+    [here][fig:style]
+    {The auxiliary lines used to calculate the button shapes.}
+    {\rotate{\externalfigure[mfun-774.pdf][page=1,height=\textwidth]}}
+\stopnotmode
+
+\page
+
+\stoppostponing
+
+We separate the calculation of the button shape from the rest by embedding it in
+its own usable graphic container. The \type {StartPage}||\type {StopPage} pair
+takes care of proper placement of the whole graphic.
+
+\starttyping
+\startuseMPgraphic{page}
+
+  \includeMPgraphic{rightsuperbutton}
+
+  StartPage ;
+
+    path p, q ; pickup pencircle scaled 3pt ;
+
+    p := Field[Text][Text] enlarged 36pt superellipsed .90 ;
+
+    fill Page withcolor \MPcolor{yellow} ;
+    fill p    withcolor \MPcolor{white} ;
+    draw p    withcolor \MPcolor{red} ;
+
+    p := Field[Text][Text] enlarged 48pt superellipsed .90 ;
+
+    def right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+      if (pp>0) and (rr>0) :
+        q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ;
+        fill q withcolor \MPcolor{white} ;
+        draw q withcolor if rr=2 : \MPcolor{gray}
+                         else    : \MPcolor{red}  fi ;
+      fi ;
+    enddef ;
+
+    \MPmenubuttons{right}
+
+  StopPage ;
+\stopuseMPgraphic
+\stoptyping
+
+The \TEX\ macro \type {\MPmenubuttons} expands into a list of (in this case four)
+calls to the \METAPOST\ macro \type {right_menu_button}. This list is generated
+by \CONTEXT\ when it generates the menu. Because the page background is applied
+last, this list is available at that moment.
+
+\starttyping
+... (expr nn, rr, pp, xx, yy, ww, hh, dd) ...
+\stoptyping
+
+This rather long list of arguments represents the following variables: number,
+referred page, current page, x coordinate, y coordinate, width, height and depth.
+The last six variables originate from the positioning mechanism. Because the
+variables are only available after a second \TEX\ pass, we only draw a button
+shape when the test for the page numbers succeeds.
+
+\starttyping
+\startuseMPgraphic{rightsuperbutton}
+  vardef rightsuperbutton (expr pat, xpos, ypos, wid, hei) =
+
+    save p, ptop, pbot, t, b, edge, shift, width, height ;
+    path p, ptop, pbot ; pair t, b ;
+    numeric edge, shift, width, height ;
+
+    edge  := xpos + wid ; shift := ypos + hei ;
+
+    p := rightpath pat ;
+
+    ptop := ((-infinity,shift)--(edge,shift)) ;
+    pbot := ((-infinity,shift-hei)--(edge,shift-hei)) ;
+
+    t := p intersectionpoint ptop ;
+    b := p intersectionpoint pbot ;
+
+    p := subpath(0,xpart (p intersectiontimes ptop)) of p ;
+    p := subpath(xpart (p intersectiontimes pbot),length(p)) of p ;
+
+    (p --               t -- point 1 of ptop &
+          point 1 of ptop -- point 1 of pbot &
+          point 1 of pbot -- b
+       -- cycle)
+
+  enddef ;
+\stopuseMPgraphic
+\stoptyping
+
+The calculation of the button itself comes down to combining segments of the main
+shape and auxiliary lines. The \type {rightpath} macro returns the right half of
+the path provided. This half is shown as a non dashed line.
+
+Topics are identified with \type {\Topic}, which is an instance of chapter
+headings. The number is made invisible. Since it still is a numbered section
+header, \CONTEXT\ will write the header to the table of contents.
+
+\starttyping
+\definehead [Topic] [chapter]
+\setuphead  [Topic] [number=no]
+\stoptyping
+
+We will use a bold font in the table of contents. We also force a complete list.
+
+\starttyping
+\setuplist
+  [Topic]
+  [criterium=all,
+   style=bold,
+   before=,
+   after=]
+\stoptyping
+
+The \type {\TitlePage} macro looks horrible, because we want to keep the
+interface simple: a list of small sentences, separated by \type {\\}.
+
+\starttyping
+\def\TitlePage#1%
+  {\startstandardmakeup
+     \switchtobodyfont[big]
+     \def\\{\vfill\bfb\let\\=\par}
+     \bfd\setupinterlinespace\gray
+     \vskip.5cm#1\\\vskip.5cm  % \\ is really needed -)
+   \stopstandardmakeup}
+\stoptyping
+
+A presentation that uses this style, may look like the one below. You can choose
+among three alternatives.
+
+\starttyping
+\useenvironment[pre-organic] \setupoutput[pdftex]
+
+\setupMPvariables[page][alternative=1]
+
+\starttext
+
+\TitlePage
+  {A Few Nice Quotes\\
+   A Simple Style Demo\\
+   Hans Hagen, August 2000}
+
+\Topic {Douglas R. Hofstadter} \input douglas \page
+\Topic {Donald E. Knuth}       \input knuth   \page
+\Topic {Edward R. Tufte}       \input tufte   \page
+\Topic {Hermann Zapf}          \input zapf    \page
+
+\stoptext
+\stoptyping
+
+We will not implement the two other alternative shapes: squeezed and randomized.
+
+\def\ScrNum{2} \getbuffer[screens]
+\def\ScrNum{3} \getbuffer[screens]
+
+We combine all alternatives into one page graphic. The alternative is chosen by
+setting the \type {alternative} variable, as we demonstrated in the example.
+
+\starttyping
+\startuseMPgraphic{page}
+
+  \includeMPgraphic{rightsuperbutton}
+
+  StartPage ;
+
+    numeric alternative, seed, superness, squeezeness, randomness ;
+    path p, q ; transform t ;
+\stoptyping
+
+This is one of those cases where a transform variable is useful. We need to store
+the random seed value because we want the larger path that is used in the
+calculations to have the same shape.
+
+\starttyping
+    alternative := \MPvar{alternative} ;
+    seed        := uniformdeviate 100 ;
+
+    if alternative > 10 :
+      superness   := .85  + ((\realfolio-1)/max(\lastpage,1)) * .25 ;
+      squeezeness := 12pt - ((\realfolio-1)/max(\lastpage,1)) * 10pt ;
+    else :
+      superness   := .90 ;
+      squeezeness := 12pt ;
+    fi ;
+
+    randomness := squeezeness ;
+
+    alternative := alternative mod 10 ;
+\stoptyping
+
+If you read closely, you will notice that when we add 10 to the alternative, we
+get a page dependant graphic. So, in fact we have five alternatives. We use
+\CONTEXT\ macros to fetch the (real) page number and the number of the last page.
+In further calculations we use the lower alternative numbers, which is why we
+apply a \type {mod}.
+
+The rest of the code is not so much different from the previous definition. The
+hard coded point sizes match the page dimensions (600pt by 450pt) quite well.
+
+\starttyping
+    t := identity if alternative=3: shifted (9pt,-9pt) fi ;
+
+    randomseed := seed ;
+
+    p := Field[Text][Text] enlarged if
+      alternative = 1 : 36pt superellipsed superness   elseif
+      alternative = 2 : 36pt squeezed      squeezeness elseif
+      alternative = 3 : 36pt randomized    randomness  else
+                      : 36pt                           fi ;
+
+    pickup pencircle scaled 3pt ;
+
+    fill Page withcolor \MPcolor{yellow} ;
+    fill p    withcolor \MPcolor{white} ;
+    draw p    withcolor \MPcolor{red} ;
+
+    randomseed := seed ;
+
+    p := ( Field[Text][Text] enlarged if
+      alternative = 1 : 48pt superellipsed superness   elseif
+      alternative = 2 : 48pt squeezed      squeezeness elseif
+      alternative = 3 : 36pt randomized    randomness  else
+                      : 48pt fi ) transformed t ;
+
+    def right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+      if (pp>0) and (rr>0) :
+        q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ;
+        fill q withcolor \MPcolor{white} ;
+        draw q withcolor if rr=2 : \MPcolor{gray}
+                         else    : \MPcolor{red}  fi ;
+      fi ;
+    enddef ;
+
+    \MPmenubuttons{right}
+
+  StopPage ;
+\stopuseMPgraphic
+\stoptyping
+
+When we choose the alternatives~21 and~22 we get this result:
+
+\def\ScrNum{5} \getbuffer[screens]
+\def\ScrNum{6} \getbuffer[screens]
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

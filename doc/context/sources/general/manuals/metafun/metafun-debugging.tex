@@ -1,0 +1,383 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent mfun-debugging
+
+\environment metafun-environment
+
+\startchapter[reference=sec:debugging,title={Debugging}]
+
+\index{debugging}
+
+\startintro
+
+Those familiar with \CONTEXT\ will know that it has quite some visual debugging
+features build in. So, what can you expect of the \METAPOST\ macros that come
+with \CONTEXT ? In this chapter we will introduce a few commands that show some
+insight in what \METAPOST\ is doing.
+
+\stopintro
+
+\startsection[title=Showing paths]
+
+Since the outcome of \METAPOST\ code is in many respects more predictable than
+that of \TEX\ code, we don't need that advanced visual debugging features.
+Nevertheless we provide a few, that are all based on visualizing paths.
+
+\startbuffer
+path p ; p := fullcircle scaled 4cm ;
+drawpath p ; drawpoints p ; drawpointlabels p ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+This visualization is achieved by using dedicated drawing commands:
+
+\typebuffer
+
+Since control points play an important role in defining the shape, visualizing
+them may shed some insight in what \METAPOST\ is doing.
+
+\startbuffer
+path p ; p := fullcircle xscaled 4cm yscaled 3cm ;
+drawpath p ; drawcontrollines p ;
+drawpoints p ; drawcontrolpoints p ; drawpointlabels p ;
+\stopbuffer
+
+\typebuffer
+
+The pre and post control points show up as small dots and are connected to their
+parent point with thin lines.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+You can deduce the direction of a path from the way the
+points are numbered, but using an arrow to indicate the
+direction is more clear.
+
+\startbuffer
+path p ; p := fullcircle xscaled 4cm yscaled 3cm ;
+drawarrowpath p ; drawcontrollines p ;
+drawpoints p ; drawcontrolpoints p ; drawpointlabels p ;
+\stopbuffer
+
+\typebuffer
+
+The \type {drawarrowpath} is responsible for the arrow. Especially when you are
+in the process of defining macros that have to calculate intersections or take
+subpaths, knowing the direction may be of help.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The next table summarizes the special drawing commands:
+
+\starttabulate[|lT|l|]
+\HL
+\NC drawpath           \NC the path                         \NC \NR
+\NC drawarrowpath      \NC the direction of the path        \NC \NR
+\NC drawcontrollines   \NC the lines to the control points  \NC \NR
+\NC drawpoints         \NC the points that make up the path \NC \NR
+\NC drawcontrolpoints  \NC the control points of the points \NC \NR
+\NC drawpointlabels    \NC the numbers of the points        \NC \NR
+\HL
+\stoptabulate
+
+You can set the characteristics of these like you set \type {drawoptions}. The
+default settings are as follows:
+
+\starttyping
+drawpathoptions   (withpen pencircle scaled 5   withcolor .8white) ;
+drawpointoptions  (withpen pencircle scaled 4   withcolor   black) ;
+drawcontroloptions(withpen pencircle scaled 2.5 withcolor   black) ;
+drawlineoptions   (withpen pencircle scaled 1   withcolor .5white) ;
+drawlabeloptions  () ;
+\stoptyping
+
+Two more options are \type {draworiginoptions} and \type {drawboundoptions} which
+are used when visualizing the bounding box and origin.
+
+\startbuffer
+swappointlabels  := true ;
+path p ; p := fullcircle xscaled 4cm yscaled 3cm ;
+drawarrowpath p ; drawcontrollines p ;
+drawpoints p ; drawcontrolpoints p ; drawpointlabels p ;
+drawboundingbox p ; draworigin ;
+\stopbuffer
+
+\typebuffer
+
+In this example we have set \type {swappointlabels} to change the place of the
+labels. You can set the variable \type {originlength} to tune the appearance of
+the origin.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+You can pass options directly, like you do with \type {draw} and \type {fill}.
+Those options override the defaults.
+
+\startbuffer
+path p ; p := fullcircle xscaled 6cm yscaled 3cm rotated 15 ;
+drawarrowpath     p ;
+drawcontrollines  p withcolor .625red ;
+drawpoints        p withcolor .625yellow ;
+drawcontrolpoints p withcolor .625yellow ;
+drawpointlabels   p withcolor .625yellow ;
+drawboundingbox   p ;
+draworigin          withcolor .625red ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Here we used the options:
+
+\typebuffer
+
+Sometimes it makes sense to draw a simple coordinate system, and for that purpose
+we have three more macros. They draw axis and tickmarks.
+
+\startbuffer
+drawticks unitsquare xscaled 4cm yscaled 3cm shifted (-1cm,-1cm) ;
+\stopbuffer
+
+\typebuffer
+
+The system drawn is based on the bounding box specification of the path passed to
+the macro. You can also draw one axis, using \type {drawxticks} or \type
+{drawyticks}. Here we show the previous command.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+By default, the ticks are placed at .5cm distance, but you can change this by
+setting \type {tickstep} to a different value.
+
+\startbuffer
+tickstep := 1cm ; ticklength := 2mm ;
+drawticks fullsquare xscaled 4cm yscaled 3cm ;
+tickstep := tickstep/2 ; ticklength := ticklength/2 ;
+drawticks fullsquare xscaled 4cm yscaled 3cm ;
+\stopbuffer
+
+\typebuffer
+
+The \type {ticklength} variable specifies the length of a tick. Here we
+manipulated both the variables to get a more advanced system.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+If visualizing a path would mean that we would have to key in al those
+draw||commands, you could hardly call it a comfortable tool. Therefore, we can
+say:
+
+\startbuffer
+drawwholepath fullsquare scaled 3cm rotated 30 randomized 5mm ;
+\stopbuffer
+
+\typebuffer
+
+The \type {drawwholepath} command shows everything except the axis.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+If even this is too much labour, you may say:
+
+\starttyping
+visualizepaths ;
+\stoptyping
+
+This redefines the \type {draw} and \type {fill} command in such a way that they
+also show all the information.
+
+\startbuffer
+visualizepaths ;
+draw fullsquare scaled 3cm rotated 30 randomized 2mm ;
+\stopbuffer
+
+\typebuffer
+
+You may compare this feature to the \type {\showmakeup} command available in
+\CONTEXT, that redefines the \TEX\ primitives that deal with boxes, glues,
+penalties, and alike.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Of course you may want to take a look at the \METAPOST\ manual for its built in
+(more verbose) tracing options. One command that may prove to be useful is \type
+{show}, that you can apply to any variable. This command reports the current
+value (if known) to the terminal and log file.
+
+\startlinecorrection[blank]
+{\showmakeup\processMPbuffer}
+\stoplinecorrection
+
+The previous picture shows what is typeset when we also say \type {\showmakeup}.
+This command visualizes \TEX's boxes, skips, kerns and penalties. As you can see,
+there are some boxes involved, which is due to the conversion of \METAPOST\
+output to \PDF.
+
+\starttyping
+\startlinecorrection[blank]
+... the graphic ...
+\stoplinecorrection
+\stoptyping
+
+The small bar is a kern and the small rectangles are penalties. More details on
+this debugger can be found in the \CONTEXT\ manuals and the documentation of the
+modules involved.
+
+\stopsection
+
+\startsection[title=Comments]
+
+Sometimes, when trouble strikes, you might want to peek in the \PDF\ file to see
+what gets written there. Each graphic is marked with a number but when you
+have many it might make sense to add a comment to help you locate the code.
+
+\startbuffer
+\startMPcode
+    comment("test graphic") ;
+    message("processing a test graphic") ;
+    draw fullsquare scaled 1cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+This renders as:
+
+\startlinecorrection[blank]
+    \getbuffer
+\stoplinecorrection
+
+On the console we get these messages:
+
+\starttyping
+metapost > message : processing a test graphic
+metapost > warning : processing a test graphic
+\stoptyping
+
+And in the \PDF\ file we will find:
+
+\starttyping
+% mps graphic 1: begin
+% mps graphic 1: test graphic
+q 0 g 0 G 10 M 1 j 1 J
+0.500000000 w
+-14.173233032 -14.173233032 m
+14.173233032 -14.173233032 l
+14.173233032 14.173233032 l
+-14.173233032 14.173233032 l
+-14.173233032 -14.173233032 l
+h S
+0 g 0 G Q
+% mps graphic 1: end
+\stoptyping
+
+Here are some examples of constructed messages:
+
+\starttyping
+message "2:                okay           (done)" ;
+message "1: " & dq      & "okay" & dq & " (done)" ;
+message "3: " & quotation "okay"      & " (done)" ;
+message "3: " & quote     "okay"      & " (done)" ;
+message "4: " & quotation 123         & " (done)" ;
+message "5: " & quotation true        & " (done)" ;
+message "6: " & quote     true        & " (done)" ;
+message "7: " & tostring  true        & " (done)" ;
+message "8: " & tostring  (1,2)       & " (done)" ;
+message "9: " & topair    (1,2)       & " (done)" ;
+\stoptyping
+
+and this is what you get:
+
+\starttyping
+metapost > message : 2: okay (done)
+metapost > message : 1: "okay" (done)
+metapost > message : 3: "okay" (done)
+metapost > message : 3: 'okay' (done)
+metapost > message : 4: "123" (done)
+metapost > message : 5: "true" (done)
+metapost > message : 6: 'true' (done)
+metapost > message : 7: true (done)
+metapost > message : 8: 1 2 (done)
+metapost > message : 9: (1,2) (done)
+\stoptyping
+
+\stopsection
+
+\startsection[title=Pens]
+
+A circular pen is applied to a path in a different way than for instance a
+square pen. Circular pens are mapped onto \POSTSCRIPT\ pens while for other
+pens an outline is calculated that gets filled. Take this code:
+
+\startbuffer[a]
+\startMPcode
+    draw fullcircle xscaled 6cm yscaled 3cm
+        withpen pensquare scaled 5mm rotated 30
+        withcolor .625yellow ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[b]
+\startMPcode
+    draw envelope pensquare scaled 5mm rotated 30 of
+        (fullcircle xscaled 6cm yscaled 3cm)
+        withpen pencircle scaled 1mm
+        withcolor .375white ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[c]
+\enabletrackers[metapost.forcestroke]
+\startMPcode
+    draw fullcircle xscaled 6cm yscaled 3cm
+        withpen pensquare scaled 5mm rotated 30
+        withcolor .625red ;
+\stopMPcode
+\disabletrackers[metapost.forcestroke]
+\stopbuffer
+
+\typebuffer[a]
+
+and this:
+
+\typebuffer[b]
+
+and:
+
+\typebuffer[c]
+
+When we overlay these three we get. The envelope only returns the outer curve.
+
+\startlinecorrection[blank]
+\startoverlay
+    {\getbuffer[a]}
+    {\getbuffer[b]}
+    {\getbuffer[c]}
+\stopoverlay
+\stoplinecorrection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -43,6 +43,7 @@
                 <cd:constant type="joinedup"/>
                 <cd:constant type="serried"/>
                 <cd:constant type="stopper"/>
+                <cd:constant type="nostopper"/>
                 <cd:constant type="unpacked"/>
                 <cd:constant type="repeat"/>
                 <cd:constant type="norepeat"/>

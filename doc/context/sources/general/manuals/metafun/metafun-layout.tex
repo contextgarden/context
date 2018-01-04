@@ -1,0 +1,990 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-layout
+
+\environment metafun-environment
+
+\startchapter[title={Enhancing the layout}]
+
+\startintro
+
+One of the most powerful and flexible commands of \CONTEXT\ is \type {\framed}.
+We can use the background features of this command to invoke and position
+graphics that adapt themselves to the current situation. Once understood,
+overlays will become a natural part of the \CONTEXT\ users toolkit.
+
+\stopintro
+
+\startsection[title={Overlays}]
+
+\index{overlays}
+
+Many \CONTEXT\ commands support overlays. The term {\em overlay} is a bit
+confusing, since such an overlay in most cases will lay under the text. However,
+because there can be many layers on top of each other, the term suits its
+purpose.
+
+When we want to put a \METAPOST\ graphic under some text, we go through a three
+step process. First we define the graphic itself:
+
+\startbuffer
+\startuniqueMPgraphic{demo circle}
+  path p ;
+  p := fullcircle xscaled \overlaywidth yscaled \overlayheight ;
+  fill p withcolor .85white ;
+  draw p withpen pencircle scaled 2pt withcolor .625red ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+This graphic will adapt itself to the width and height of the overlay. Both \type
+{\overlaywidth} and \type {\overlayheight} are macros that return a dimension
+followed by a space. The next step is to register this graphic as an overlay.
+
+\startbuffer
+\defineoverlay[demo circle][\uniqueMPgraphic{demo circle}]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We can now use this overlay in any command that provides the \type {\framed}
+functionality. Since this graphic is defined as unique, \CONTEXT\ will try to
+reuse already calculated and embedded graphics when possible.
+
+\startbuffer
+\framed[background=demo circle]{This text is overlayed.}
+\stopbuffer
+
+\typebuffer
+
+The background can be set to \type {color}, \type {screen}, an overlay
+identifier, like \typ {demo circle}, or a comma separated list of those.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+The \type {\framed} command automatically draws a ruled box, which can be quite
+useful when debugging a graphic. However, in this case we want to turn the frame
+off.
+
+\startbuffer
+\framed
+  [background=demo circle,frame=off]
+  {This text is overlayed.}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+In this case, it would have made sense to either set the \type {offset} to a
+larger value, or to set \type {backgroundoffset}. In the latter case, the ellipse
+is positioned outside the frame.
+
+The difference between the three offsets \type {offset}, \type {frameoffset} and
+\type {backgroundoffset} is demonstrated in \in {figure} [fig:offsets]. While the
+\type {offset} is added to the (natural or specified) dimensions of the content
+of the box, the other two are applied to the frame and background and don't add
+to the dimensions.
+
+In the first row we only set the \type {offset}, while in the second row, the
+(text) offset is set to \type {3pt}. When not specified, the \type {offset} has a
+comfortable default value of \type {.25ex} (some 25\% of the height of an~x).
+
+\startbuffer
+\setupframed
+  [width=.3\textwidth,
+   background=demo circle]
+\startcombination[3*3]
+  {\framed[offset=none]         {\TeX}} {\tt offset=none}
+  {\framed[offset=overlay]      {\TeX}} {\tt offset=overlay}
+  {\framed[offset=0pt]          {\TeX}} {\tt offset=0pt}
+  {\framed[offset=1pt]          {\TeX}} {\tt offset=1pt}
+  {\framed[offset=2pt]          {\TeX}} {\tt offset=2pt}
+  {\framed[offset=4pt]          {\TeX}} {\tt offset=4pt}
+  {\framed[offset=3pt]          {\TeX}} {\tt offset=3pt}
+  {\framed[frameoffset=3pt]     {\TeX}} {\tt frameoffset=3pt}
+  {\framed[backgroundoffset=3pt]{\TeX}} {\tt backgroundoffset=3pt}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here][fig:offsets]
+  {The three offsets.}
+  {\getbuffer}
+
+As the first row in \in {figure} [fig:offsets] demonstrates, instead of a value,
+one can pass a keyword. The \type {overlay} keyword implies that there is no
+offset at all and that the lines cover the content. With \type {none} the frame
+is drawn tight around the content. When the offset is set to \type {0pt} or more,
+the text is automatically set to at least the height of a line. You can turn this
+feature off by saying \type {strut=off}. More details can be found in the
+\CONTEXT\ manual.
+
+In \in {figure} [fig:all offsets] we have set {offset} to \type {3pt}, \type
+{frameoffset} to \type {6pt} and \type {backgroundoffset} to \type {9pt}. Both
+the frame and background offset are sort of imaginary, since they don't
+contribute to the size of the box.
+
+\startbuffer
+\ruledhbox
+  {\framed
+     [offset=3pt,frameoffset=6pt,backgroundoffset=9pt,
+      background=screen,backgroundscreen=.85]
+     {Welcome in the hall of frame!}}
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here][fig:all offsets]
+  {The three offsets.}
+  {\getbuffer}
+
+\stopsection
+
+\startsection[title={Overlay variables}]
+
+The communication between \TEX\ and embedded \METAPOST\ graphics takes place by
+means of some macros.
+
+\starttabulate[|l|p|]
+\HL
+\NC overlay status macro    \NC meaning                        \NC \NR
+\HL
+\NC \tex {overlaywidth}     \NC the width of the graphic, as
+                                calculated from the actual
+                                width and background offset    \NC \NR
+\NC \tex {overlayheight}    \NC the height of the graphic, as
+                                calculated from the actual
+                                height, depth and background
+                                offset                         \NC \NR
+\NC \tex {overlaydepth}     \NC the depth of the graphic, if
+                                available                      \NC \NR
+\NC \tex {overlaycolor}     \NC the background color, if given \NC \NR
+\NC \tex {overlaylinecolor} \NC the color of the frame         \NC \NR
+\NC \tex {overlaylinewidth} \NC the width of the frame         \NC \NR
+\HL
+\stoptabulate
+
+The dimensions of the overlay are determined by dimensions of the background,
+which normally is the natural size of a \type {\framed}. When a background offset
+is specified, it is added to \type {overlayheight} and \type {overlaywidth}.
+
+Colors can be converted by \type {\MPcolor} and in addition to the macros
+mentioned, you can use all macros that expand into a dimension or dimen register
+prefixed by the \TEX\ primitive \type {\the} (this and other primitives are
+explained in \quotation {The \TeX book}, by Donald Knuth).
+
+\stopsection
+
+\startsection[title={Stacking overlays}]
+
+A background can be a gray scale (\type {screen}), a color (\type {color}), a
+previously defined overlay identifier, or any combination of these. The next
+assignments are therefore valid:
+
+\starttyping
+\framed[background=color,backgroundcolor=red]{...}
+\framed[background=screen,backgroundscreen=.8]{...}
+\framed[background=circle]{...}
+\framed[background={color,cow},backgroundcolor=red]{...}
+\framed[background={color,cow,grid},backgroundcolor=red]{...}
+\stoptyping
+
+In the last three cases of course you have to define \type {circle}, \type {cow}
+and \type {grid} as overlay. These items are packed in a comma separated list,
+which has to be surrounded by \type {{}}.
+
+\stopsection
+
+\startsection[title={Foregrounds}]
+
+\startbuffer[a]
+\startuniqueMPgraphic{backfore}
+  draw fullcircle
+    xscaled \overlaywidth yscaled \overlayheight
+    withpen pencircle scaled 2pt
+    withcolor .625yellow ;
+\stopuniqueMPgraphic
+
+\defineoverlay[backfore][\uniqueMPgraphic{backfore}]
+\stopbuffer
+
+\startbuffer[b]
+\framed
+  [background=backfore,backgroundoffset=4pt]
+  {one, two, three, \unknown}
+\stopbuffer
+
+\startbuffer[c]
+\framed
+  [background={foreground,backfore},backgroundoffset=4pt]
+  {one, two, three, \unknown}
+\stopbuffer
+
+The overlay system is actually a system of layers. Sometimes we are confronted
+with a situation in which we want the text behind another layer. This can be
+achieved by explicitly placing the foreground layer, as in \in {figure}
+[fig:foreground].
+
+\getbuffer[a]
+
+\placefigure
+  [here][fig:foreground]
+  {Foreground material moved backwards.}
+  {\setupframed[linewidth=1pt]%
+   \startcombination
+     {\getbuffer[b]} {frame on top layer}
+     {\getbuffer[c]} {frame on bottom layer}
+   \stopcombination}
+
+The graphic layer is defined as follows:
+
+\typebuffer[a]
+
+The two framed texts have a slightly different definition. The leftmost graphic
+is defined as:
+
+\typebuffer[b]
+
+The rightmost graphic is specified as:
+
+\typebuffer[c]
+
+The current values of the frame color and frame width are passed to the overlay.
+It often makes more sense to use colors defined at the document level, if only to
+force consistency.
+
+\startbuffer
+\startuniqueMPgraphic{super ellipse}
+  path p ; p := unitsquare
+    xscaled \overlaywidth yscaled \overlayheight
+    superellipsed .85 ;
+  pickup pencircle scaled \overlaylinewidth ;
+  fill p withcolor \MPcolor{\overlaycolor} ;
+  draw p withcolor \MPcolor{\overlaylinecolor} ;
+\stopuniqueMPgraphic
+
+\defineoverlay[super ellipse][\uniqueMPgraphic{super ellipse}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This background demonstrates that a super ellipse is rather well suited as frame.
+
+\startbuffer
+\framed
+  [background=super ellipse,
+   frame=off,
+   width=3cm,
+   align=middle,
+   framecolor=darkyellow,
+   rulethickness=2pt,
+   backgroundcolor=darkgray]
+  {\white This is a\\Super Ellipsed\\sentence.}
+\stopbuffer
+
+\typebuffer
+
+Such a super ellipse looks quite nice and is a good candidate for backgrounds,
+for which the superness should be at least~.85.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Typesetting graphics}]
+
+I have run into people who consider it kind of strange when you want to use \TEX\
+for non||mathematical typesetting. If you agree with them, you may skip this
+section with your eyes closed.
+
+One of the \CONTEXT\ presentation styles (number 15, tagged as balls) stepwise
+builds screens full of sentences, quotes or concepts, packages in balloons and
+typesets them as a paragraph. We will demonstrate that \TEX\ can typeset graphics
+using the following statement.
+
+% \let\processword\relax
+
+\startbuffer[lions]
+\processwords{As you may know, \TEX's ambassador is a lion, while {\METAFONT}
+is represented by a lioness. It is still unclear if they have a relationship,
+but if so, and if a cub is born, may it enjoy \METAFUN.}
+\stopbuffer
+
+\startquotation
+\def\processwords#1{#1}\getbuffer[lions]
+\stopquotation
+
+The low level \CONTEXT\ macro \type {\processwords} provides a mechanism to treat
+the individual words of its argument. The macro is called as follows:
+
+\typebuffer[lions]
+
+In order to perform a task, you should also define a macro \type {\processword},
+which takes one argument. The previous quote was typeset with the following
+definition in place:
+
+\starttyping
+\def\processword#1{#1}
+\stoptyping
+
+A slightly more complicated definition is the following:
+
+\startbuffer
+\def\processword#1{\noindent\framed{#1}\space}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We now get:
+
+\blank\getbuffer[lions]\blank
+
+If we can use \type {\framed}, we can also use backgrounds.
+
+\startbuffer
+\def\processword#1%
+  {\noindent\framed[frame=off,background=lions]{#1} }
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can add a supperellipsed frame using the following definition:
+
+\startbuffer
+\startuniqueMPgraphic{lions a}
+  path p ; p := fullsquare
+   xyscaled (\overlaywidth,\overlayheight) superellipsed .85 ;
+  pickup pencircle scaled 1pt ;
+  fill p withcolor .850white ; draw p withcolor .625yellow ;
+\stopuniqueMPgraphic
+
+\defineoverlay[lions][\uniqueMPgraphic{lions a}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\bgroup \blank \veryraggedright\getbuffer[lions]\unskip \blank \egroup
+
+\startbuffer
+\startuseMPgraphic{lions b}
+  path p ; p := fullsquare
+    xyscaled (\overlaywidth,\overlayheight) randomized 5pt ;
+  pickup pencircle scaled 1pt ;
+  fill p withcolor .850white ; draw p withcolor .625yellow ;
+\stopuseMPgraphic
+
+\defineoverlay[lions][\uniqueMPgraphic{lions b}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\bgroup \blank \veryraggedcenter\getbuffer[lions]\unskip \blank \egroup
+
+\startbuffer
+\startuniqueMPgraphic{lions c}
+  path p ; p := fullsquare
+    xyscaled (\overlaywidth,\overlayheight) squeezed 2pt ;
+  pickup pencircle scaled 1pt ;
+  fill p withcolor .850white ; draw p withcolor .625yellow ;
+\stopuniqueMPgraphic
+
+\defineoverlay[lions][\uniqueMPgraphic{lions c}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\bgroup \blank \veryraggedleft\getbuffer[lions]\unskip \blank \egroup
+
+These paragraphs were typeset with the following settings.
+
+\starttyping
+\setupalign[broad, right]  % == \veryraggedright
+\setupalign[broad, middle] % == \veryraggedcenter
+\setupalign[broad, left]   % == \veryraggedleft
+\stoptyping
+
+The \type {broad} increases the raggedness. We defined three different graphics
+(a, b and c) because we want some to be unique, which saves some processing. Of
+course we don't reuse the random graphics. In the definition of \type
+{\processword} we have to use \type {\noindent} because otherwise \TEX\ will put
+each graphic on a line of its own. Watch the space at the end of the macro.
+
+\stopsection
+
+\startsection[title={Graphics and macros}]
+
+Because \TEX's typographic engine and \METAPOST's graphic engine are separated,
+interfacing between them is not as natural as you may expect. In \CONTEXT\ we
+have tried to integrate them as much as possible, but using the interface is not
+always as convenient as it should be. What method you follow, depends on the
+problem at hand.
+
+The official \METAPOST\ way to embed \TEX\ code into graphics is to use \typ
+{btex ... etex}. As soon as \CONTEXT\ writes the graphic data to the intermediate
+\METAPOST\ file, it looks for these commands. When it has encountered an \type
+{etex}, \CONTEXT\ will make sure that the text that is to be typeset by \TEX\ is
+{\em not} expanded. This is what you may expect, because when you would embed
+those commands in a stand||alone graphic, they would also not be expanded, if
+only because \METAPOST\ does not know \TEX. With expansion we mean that \TEX\
+commands are replaced by their meaning (which can be quite extensive).
+
+{\em Users of \CONTEXT\ MKIV\ can skip the next paragraph}.
+
+When \METAPOST\ sees a \type {btex} command, it will consult a so called \type
+{mpx} file. This file holds the \METAPOST\ representation of the text typeset by
+\TEX. Before \METAPOST\ processes a graphic definition file, it first calls
+another program that filters the \type {btex} commands from the source file, and
+generates a \TEX\ file from them. This file is then processed by \TEX, and after
+that converted to a \type {mpx} file. In \CONTEXT\ we let \TEXEXEC\ take care of
+this whole process.
+
+Because the \typ {btex ... etex} commands are filtered from the raw \METAPOST\
+source code, they cannot be part of macro definitions and loop constructs. When
+used that way, only one instance would be found, while in practice multiple
+instances may occur.
+
+This drawback is overcome by \METAFUN's \type {textext} command. This command
+still uses \typ {btex ... etex} but writes these commands to a separate job
+related file each time it is used. \footnote {It took the author a while to find
+out that there is a \METAPOST\ module called \type {tex.mp} that provides a
+similar feature, but with the disadvantage that each text results in a call to
+\TEX. Each text goes into a temporary file, which is then included and results in
+\METAPOST\ triggering \TEX.} After the first \METAPOST\ run, this file is merged
+with the original file, and \METAPOST\ is called again. So, at the cost of an
+additional run, we can use text typeset by \TEX\ in a more versatile way. Because
+\METAPOST\ runs are much faster than \TEX\ runs, the price to pay in terms of run
+time is acceptable. Unlike \typ {btex ... etex}, the \TEX\ code in \type
+{textext} command is expanded, but as long as \CONTEXT\ is used this is seldom a
+problem, because most commands are somewhat protected.
+
+If we define a graphic with text to be typeset by \TEX, there is a good chance
+that this text is not frozen but passes as argument. A \TEX||like solution for
+passing arbitrary content to such a graphic is the following: \footnote {The \type
+{\unexpanded} prefix makes the command robust for being passed as argument. It is not
+to be confused with the primitive. We had this feature already when the primitive
+showed up and it was considered to be inconvenient for other macro packages to adapt to
+the \CONTEXT\ situation. So keep that in mind when you mix macro packages.}
+
+\startbuffer[def]
+\unexpanded\def\RotatedText#1#2%
+  {\startuseMPgraphic{RotatedText}
+     draw btex #2 etex rotated #1 ;
+   \stopuseMPgraphic
+   \useMPgraphic{RotatedText}}
+\stopbuffer
+
+\typebuffer[def] \getbuffer[def]
+
+This macro takes two arguments (the \type {#} identifies an
+argument):
+
+\startbuffer[exa]
+\RotatedText{15}{Some Rotated Text}
+\stopbuffer
+
+\typebuffer[exa]
+
+The text is rotated over 15 degrees about the origin in a counterclockwise
+direction.
+
+\startlinecorrection[blank]
+\getbuffer[exa]
+\stoplinecorrection
+
+In \CONTEXT\ we seldom pass settings like the angle of rotation in this manner.
+You can use \type {\setupMPvariables} to set up graphic||specific variables. Such
+a variable can be accessed with \type {\MPvar}.
+
+\startbuffer[def]
+\setupMPvariables[RotatedText][rotation=90]
+
+\startuseMPgraphic{RotatedText}
+  draw textext{Some Text} rotated \MPvar{rotation} ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[def] \getbuffer[def]
+
+An example:
+
+\startbuffer[exa]
+\RotatedText{-15}{Some Rotated Text}
+\stopbuffer
+
+\typebuffer[exa]
+
+\startlinecorrection[blank]
+\getbuffer[exa]
+\stoplinecorrection
+
+In a similar fashion we can isolate the text. This permits us to use the same
+graphics with different settings.
+
+\startbuffer[def]
+\setupMPvariables[RotatedText][rotation=270]
+
+\setMPtext{RotatedText}{Some Text}
+
+\startuseMPgraphic{RotatedText}
+  draw \MPbetex{RotatedText} rotated \MPvar{rotation} ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[def] \getbuffer[def]
+
+This works as expected:
+
+\startbuffer[exa]
+\RotatedText{165}{Some Rotated Text}
+\stopbuffer
+
+\typebuffer[exa]
+
+\startlinecorrection[blank]
+\getbuffer[exa]
+\stoplinecorrection
+
+It is now a small step towards an encapsulating macro (we assume that you are
+familiar with \TEX\ macro definitions).
+
+\startbuffer[def]
+\def\RotatedText[#1]#2%
+  {\setupMPvariables[RotatedText][#1]%
+   \setMPtext{RotatedText}{#2}%
+   \useMPgraphic{RotatedText}}
+
+\setupMPvariables[RotatedText][rotation=90]
+
+\startuseMPgraphic{RotatedText}
+  draw \MPbetex{RotatedText} rotated \MPvar{rotation} ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[def] \getbuffer[def]
+
+Again, we default to a 90 degrees rotation, and pass both the settings and text
+in an indirect way. This method permits you to build complicated graphics and
+still keep macros readable.
+
+\startbuffer[exa]
+\RotatedText[rotation=240]{Some Rotated Text}
+\stopbuffer
+
+\typebuffer[exa]
+
+\startlinecorrection[blank]
+\getbuffer[exa]
+\stoplinecorrection
+
+You may wonder why we don't use the variable mechanism to pass the text. The main
+reason is that the text mechanism offers a few more features, one of which is
+that it passes the text straight on, without the danger of unwanted expansion of
+embedded macros. Using \type {\setMPtext} also permits you to separate \TEX\ and
+\METAPOST\ code and reuse it multiple times (imagine using the same graphic in a
+section head command).
+
+There are three ways to access a text defined with \type {\setMPtext}. Imagine
+that we have the following definitions:
+
+\startbuffer
+\setMPtext {1} {Now is this \TeX\ or not?}
+\setMPtext {2} {See what happens here.}
+\setMPtext {3} {Text streams become pictures.}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {\MPbetex} macro returns a \typ {btex ... etex} construct. The \type
+{\MPstring} returns the text as a \METAPOST\ string, between quotes. The raw text
+can be fetched with \type {\MPtext}.
+
+\startbuffer
+\startMPcode
+  picture p ; p :=           \MPbetex {1}          ;
+  picture q ; q :=  textext( \MPstring{2}        ) ;
+  picture r ; r := thelabel("\MPtext  {3}",origin) ;
+
+  for i=p, boundingbox p : draw i withcolor .625red    ; endfor ;
+  for i=q, boundingbox q : draw i withcolor .625yellow ; endfor ;
+  for i=r, boundingbox r : draw i withcolor .625white  ; endfor ;
+
+  currentpicture := currentpicture scaled 2 ;
+  draw origin
+    withpen pencircle scaled 5.0mm withcolor white ;
+  draw origin
+    withpen pencircle scaled 2.5mm withcolor black ;
+  draw boundingbox currentpicture
+    withpen pencircle scaled .1mm
+    dashed evenly ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+The first two lines return text typeset by \TEX, while the last line leaves this
+to \METAPOST.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+If you watch closely, you will notice that the first (red) alternative is
+positioned with the baseline on the origin.
+
+\startbuffer
+\startMPcode
+  picture p ; p :=                  \MPbetex {1}          ;
+  picture q ; q :=  textext.origin( \MPstring{2}        ) ;
+  picture r ; r := thelabel.origin("\MPtext  {3}",origin) ;
+
+  for i=p, boundingbox p : draw i withcolor .625red    ; endfor ;
+  for i=q, boundingbox q : draw i withcolor .625yellow ; endfor ;
+  for i=r, boundingbox r : draw i withcolor .625white  ; endfor ;
+
+  currentpicture := currentpicture scaled 2 ;
+  draw origin withpen pencircle scaled 5.0mm
+    withcolor white ;
+  draw origin withpen pencircle scaled 2.5mm
+    withcolor black ;
+  draw boundingbox currentpicture
+    withpen pencircle scaled .1mm
+    dashed evenly ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+This draws:
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+This picture demonstrates that we can also position \type {textext}'s and \type
+{label}'s on the baseline. For this purpose the repertoire of positioning
+directives (\type {top}, \type {lft}, etc.) is extended with an \type {origin}
+directive. Another extra positioning directive is \type {raw}. This one does not
+do any positioning at all.
+
+\starttyping
+picture q ; q :=  textext.origin( \MPstring{2}        ) ;
+picture r ; r := thelabel.origin("\MPtext  {3}",origin) ;
+\stoptyping
+
+We will now apply this knowledge of text inclusion in graphics to a more advanced
+example. The next definitions are the answer to a question on the \CONTEXT\
+mailinglist with regards to framed texts with titles.
+
+\startbuffer[a]
+\defineoverlay[FunnyFrame][\useMPgraphic{FunnyFrame}]
+
+\defineframedtext[FunnyText][frame=off,background=FunnyFrame]
+
+\def\StartFrame{\startFunnyText}
+\def\StopFrame {\stopFunnyText }
+
+\def\FrameTitle#1%
+  {\setMPtext{FunnyFrame}{\hbox spread 1em{\hss\strut#1\hss}}}
+
+\setMPtext{FunnyFrame}{} % initialize the text variable
+\stopbuffer
+
+\startbuffer[b]
+\startuseMPgraphic{FunnyFrame}
+  picture p ; numeric w, h, o ;
+  p := textext.rt(\MPstring{FunnyFrame}) ;
+  w := OverlayWidth ; h := OverlayHeight ; o := BodyFontSize ;
+  p := p shifted (2o,h-ypart center p) ; draw p ;
+  drawoptions (withpen pencircle scaled 1pt withcolor .625red) ;
+  draw (2o,h)--(0,h)--(0,0)--(w,0)--(w,h)--(xpart urcorner p,h) ;
+  draw boundingbox p ;
+  setbounds currentpicture to unitsquare xyscaled(w,h) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[c1]
+\FrameTitle{Zapf (1)}
+
+\StartFrame
+Coming back to the use of typefaces in electronic
+publishing: many of the new typographers receive their
+knowledge and information about the rules of typography from
+books, from computer magazines or the instruction manuals
+which they get with the purchase of a PC or software.
+\StopFrame
+\stopbuffer
+
+\getbuffer[a,b,c1]
+
+In this example, the title is positioned on top of the frame. Title and text are
+entered as:
+
+\typebuffer[c1]
+
+The implementation is not that complicated and uses the frame commands that are
+built in \CONTEXT. Instead of letting \TEX\ draw the frame, we use \METAPOST,
+which we also use for handling the title. The graphic is defined as follows:
+
+\typebuffer[b]
+
+Because the framed title is partly positioned outside the main frame, and because
+the main frame will be combined with the text, we need to set the boundingbox
+explicitly. This is a way to create so called free figures, where part of the
+figure lays beyond the area that is taken into account when positioning the
+graphic. The shift
+
+\starttyping
+... shifted (2o,h-ypart center p)
+\stoptyping
+
+ensures that the title is vertically centered over the top line of the main box.
+
+The macros that use this graphic combine some techniques of defining macros,
+using predefined \CONTEXT\ classes, and passing information to graphics.
+
+\typebuffer[a]
+
+There is a little bit of low level \TEX\ code involved, like a horizontal box
+(\type {\hbox}) that stretches one em||space beyond its natural size (\type
+{spread 1em}) with a centered text (two times \type {\hss}). Instead of applying
+this spread, we could have enlarged the frame on both sides.
+
+\startbuffer[b]
+\startuseMPgraphic{FunnyFrame}
+  picture p ; numeric o ; path a, b ; pair c ;
+  p := textext.rt(\MPstring{FunnyFrame}) ;
+  a := unitsquare xyscaled(OverlayWidth,OverlayHeight) ;
+  o := BodyFontSize ;
+  p := p shifted (2o,OverlayHeight-ypart center p) ;
+  drawoptions (withpen pencircle scaled 1pt withcolor .625red) ;
+  b := a randomized (o/2) ;
+  fill b withcolor .85white ; draw b ;
+  b := (boundingbox p) randomized (o/8) ;
+  fill b withcolor .85white ; draw b ;
+  draw p withcolor black;
+  setbounds currentpicture to a ;
+ \stopuseMPgraphic
+\stopbuffer
+
+In the previous graphic we calculated the big rectangle taking the small one into
+account. This was needed because we don't use a background fill. The next
+definition does, so there we can use a more straightforward approach by just
+drawing (and filling) the small rectangle on top of the big one.
+
+\typebuffer[b] \getbuffer[b]
+
+\startbuffer[c2]
+\FrameTitle{Zapf (2)}
+
+\StartFrame
+There is not so much basic instruction, as of now, as there
+was in the old days, showing the differences between good
+and bad typographic design.
+\StopFrame
+\stopbuffer
+
+\getbuffer[c2]
+
+Because we use a random graphic, we cannot guarantee beforehand that the left and
+right edges of the small shape touch the horizontal lines in a nice way. The next
+alternative displaces the small shape plus text so that its center lays on the
+line. On the average, this looks better.
+
+\startbuffer[b]
+\startuseMPgraphic{FunnyFrame}
+  picture p ; numeric o ; path a, b ; pair c ;
+  p := textext.rt(\MPstring{FunnyFrame}) ;
+  a := unitsquare xyscaled(OverlayWidth,OverlayHeight) ;
+  o := BodyFontSize ;
+  p := p shifted (2o,OverlayHeight-ypart center p) ;
+  drawoptions (withpen pencircle scaled 1pt withcolor .625red) ;
+  b := a randomized (o/2) ;
+  fill b withcolor .85white ; draw b ;
+  c := center p ;
+  c := b intersectionpoint (c shifted (0,-o)--c shifted(0,o)) ;
+  p := p shifted (c-center p) ;
+  b := (boundingbox p) randomized (o/8) ;
+  fill b withcolor .85white ; draw b ;
+  draw p withcolor black;
+  setbounds currentpicture to a ;
+ \stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[b] \getbuffer[b]
+
+\getbuffer[c2]
+
+Yet another definition uses super ellipsed shapes instead of random ones. We need
+a high degree of superness (.95) in order to make sure that the curves don't
+touch the texts.
+
+\startbuffer[b]
+\startuseMPgraphic{FunnyFrame}
+  picture p ; numeric o ; path a, b ; pair c ;
+  p := textext.rt(\MPstring{FunnyFrame}) ;
+  o := BodyFontSize ;
+  a := unitsquare xyscaled(OverlayWidth,OverlayHeight) ;
+  p := p shifted (2o,OverlayHeight-ypart center p) ;
+  drawoptions (withpen pencircle scaled 1pt withcolor .625red) ;
+  b := a superellipsed .95 ;
+  fill b withcolor .85white ; draw b ;
+  b := (boundingbox p) superellipsed .95 ;
+  fill b withcolor .85white ; draw b ;
+  draw p withcolor black ;
+  setbounds currentpicture to a ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[b] \getbuffer[b]
+
+\startbuffer[c3]
+\FrameTitle{Zapf (3)}
+
+\StartFrame
+Many people are just fascinated by their PC's tricks, and
+think that a widely||praised program, called up on the
+screen, will make everything automatic from now on.
+\StopFrame
+\stopbuffer
+
+\getbuffer[c3]
+
+There are quite some hard coded values in these graphics, like the linewidths,
+offsets and colors. Some of these can be fetched from the \type {\framed}
+environment either by using \TEX\ macros or dimensions, or by using their
+\METAFUN\ counterparts. In the following table we summarize both the available
+\METAPOST\ variables and their \TEX\ counterparts. They may be used
+interchangeably.
+
+\starttabulate[|l|Tl|l|]
+\HL
+\NC \bf \METAPOST\ variable \NC \rm \bf \TEX\ command \NC \bf meaning \NC\NR
+\HL
+\NC OverlayWidth     \NC \string\overlaywidth
+                     \NC current width \NC\NR
+\NC OverlayHeight    \NC \string\overlayheight
+                     \NC current height \NC\NR
+\NC OverlayDepth     \NC \string\overlayheight
+                     \NC current depth (often zero) \NC\NR
+\NC OverlayColor     \NC \string\MPcolor\string{\string\overlaycolor\string}
+                     \NC background color \NC\NR
+\NC OverlayLineWidth \NC \string\overlaylinewidth
+                     \NC width of the frame \NC\NR
+\NC OverlayLineColor \NC \string\MPcolor\string{\overlaylinecolor\string}
+                     \NC color of the frame \NC\NR
+\NC BaseLineSkip     \NC \string\the\string\baselineskip
+                     \NC main line distance \NC\NR
+\NC LineHeight       \NC \string\the\string\baselineskip
+                     \NC idem \NC\NR
+\NC BodyFontSize     \NC \string\the\string\bodyfontsize
+                     \NC font size of the running text \NC\NR
+\NC StrutHeight      \NC \string\strutheight
+                     \NC space above the baseline \NC\NR
+\NC StrutDepth       \NC \string\strutdepth
+                     \NC space below the baseline \NC\NR
+\NC ExHeight         \NC 1ex
+                     \NC height of an x \NC \NR
+\NC EmWidth          \NC 1em
+                     \NC width of an m-dash \NC \NR
+\HL
+\stoptabulate
+
+\startbuffer[b]
+\startuseMPgraphic{FunnyFrame}
+  picture p ; numeric o ; path a, b ; pair c ;
+  p := textext.rt(\MPstring{FunnyFrame}) ;
+  o := BodyFontSize ;
+  a := unitsquare xyscaled(OverlayWidth,OverlayHeight) ;
+  p := p shifted (2o,OverlayHeight-ypart center p) ;
+  pickup pencircle scaled OverlayLineWidth ;
+  b := a superellipsed .95 ;
+  fill b withcolor OverlayColor ;
+  draw b withcolor OverlayLineColor ;
+  b := (boundingbox p) superellipsed .95 ;
+  fill b withcolor OverlayColor ;
+  draw b withcolor OverlayLineColor ;
+  draw p withcolor black ;
+  setbounds currentpicture to a ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[b] \getbuffer[b]
+
+\startbuffer[d]
+\setupframedtexts
+  [FunnyText]
+  [backgroundcolor=lightgray,
+   framecolor=darkred,
+   rulethickness=2pt,
+   offset=\bodyfontsize,
+   before={\blank[big,medium]},
+   after={\blank[big]},
+   width=\textwidth]
+\stopbuffer
+
+\getbuffer[d,c3]
+
+We used the following command to pass the settings:
+
+\typebuffer[d]
+
+In a real implementation, we should also take care of some additional spacing
+before the text, which is why we have added more space before than after the
+framed text.
+
+We demonstrated that when defining graphics that are part of the layout, you need
+to have access to information known to the typesetting engine. Take \in {figure}
+[fig:penalty]. The line height needs to match the font and the two thin
+horizontal lines should match the {\em x}||height. We also need to position the
+baseline, being the lowest one of a pair of lines, in such a way that it suits
+the proportions of the line as specified by the strut. A strut is an imaginary
+large character with no width. You should be aware of the fact that while \TEX\
+works its way top||down, in \METAPOST\ the origin is in the lower left corner.
+
+\startmode[screen]
+
+\placefigure
+  [page][fig:penalty]
+  {Penalty lines.}
+  {\typesetfile[mfun-902.tex][page=1,frame=on,height=.85\textheight]}
+
+\stopmode
+
+\startnotmode[screen]
+
+\placefigure
+  [here][fig:penalty]
+  {Penalty lines.}
+  {\typesetfile[mfun-902.tex][page=1,frame=on,height=.50\textheight]}
+
+\stopnotmode
+
+\typebuffer[handwrit]
+
+This code demonstrates the use of \type {LineHeight}, \type {ExHeight}, \type
+{StrutHeight} and \type {StrutDepth}. We set the interline spacing to 1.5 so that
+we get a bit more loose layout. The variables mentioned are set each time a
+graphic is processed and thereby match the current font settings.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

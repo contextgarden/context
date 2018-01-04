@@ -41,7 +41,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.01.03 16:08}
+\edef\contextversion{2018.01.04 17:37}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -76,8 +76,8 @@
 
 %D We just quit if new functionality is expected.
 
-\ifnum\luatexversion<70 % also change message
-    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.70!}
+\ifnum\luatexversion<106 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.06!}
     \expandafter\end
 \fi
 
@@ -520,6 +520,8 @@
 \loadmarkfile{pack-bar}
 \loadmarkfile{page-app}
 \loadmarkfile{meta-fig}
+
+\loadmarkfile{page-ffl}
 
 \loadmarkfile{lang-spa} % will become obsolete
 

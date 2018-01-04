@@ -1,0 +1,659 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-reference
+
+\environment metafun-environment
+
+\startchapter[reference=reference,title={Reference}]
+
+\startintro
+
+In this chapter, we will demonstrate most of the drawing related primitives and
+macros as present in plain \METAPOST\ and \METAFUN\ extensions.
+
+If a path is shown and|/|or a transformation is applied, we show the original in
+red and the transformed path or point in yellow. The small dark gray crosshair is
+the origin and the black rectangle the bounding box. In some drawings, in light
+gray we show the points that make up the path.
+
+This list describes traditional \METAPOST\ and the stable part of \METAFUN. As
+\METAPOST\ evolves, new primitives are added but they are not always that
+relevant to us. If you browse the \METAFUN\ sources you will for sure notice more
+functionality than summarized here. Most of that is meant for usage in \CONTEXT\
+and not exposed to the user. Other macros are still somewhat experimental but
+might become more official at some point. The same is true for \METAFUN\
+commands: not all make sense for daily usage and some are just there as helper
+for additional modules.
+
+\stopintro
+
+\startsection[title={Paths}]
+
+\index{paths}
+
+\ShowSampleA {mc} {pair}                  {(1,.5)}
+\ShowSampleA {mm} {pair .. pair}          {(0,0)..(.75,0)..(1,.25)..(1,1)}
+\ShowSampleA {mm} {pair ... pair}         {(0,0)..(.75,0)...(1,.25)..(1,1)}
+\ShowSampleA {mm} {pair -- pair\quad (a)} {(0,0)--(.75,0)--(1,.25)--(1,1)}
+\ShowSampleA {mm} {pair -- pair\quad (b)} {(0,0)..(.75,0)--(1,.25)..(1,1)}
+\ShowSampleA {mm} {pair --- pair}         {(0,0)..(.75,0)---(1,.25)..(1,1)}
+
+\ShowSampleA {mm} {pair softjoin pair}      {(0,0)..(.75,0) softjoin (1,.25)..(1,1)}
+\ShowSampleA {mp} {controls pair}           {(0,0)..controls (.75,0)..(1,1)}
+\ShowSampleA {mp} {controls pair and pair}  {(0,0)..controls (.75,0) and (1,.25)..(1,1)}
+\ShowSampleA {mp} {tension numeric}         {(0,0)..(.75,0)..tension 2.5..(1,.25)..(1,1)}
+\ShowSampleA {mp} {tension num.. and num..} {(0,0)..(.75,0)..tension 2.5 and 1.5..(1,.25)..(1,1)}
+\ShowSampleA {mp} {tension atleast numeric} {(0,0)..(.75,0)..tension atleast 1..(1,.25)..(1,1)}
+
+\ShowSampleA {mp} {cycle}        {(0,0)--(1,0)--(1,1)--cycle}
+\ShowSampleA {mp} {curl numeric} {(0,0){curl 1}..(.75,0)..(1,.25)..(1,1)}
+\ShowSampleA {mp} {dir numeric}  {(0,0){dir 30}..(1,1)}
+\ShowSampleA {mm} {left}         {(0,0){left}..(1,1)}
+\ShowSampleA {mm} {right}        {(0,0){right}..(1,1)}
+\ShowSampleA {mm} {up}           {(0,0){up}..(1,1)}
+\ShowSampleA {mm} {down}         {(0,0){down}..(1,1)}
+
+\ShowSampleA {mp} {path \& path} {(0,0)..(.75,.25) \& (.75,.25)..(1,1)}
+
+\ShowSampleA {mv} {unitvector}  {origin--unitvector(1,1)}
+\ShowSampleA {mp} {dir}         {origin--dir(45)}
+\ShowSampleA {mp} {angle}       {origin--dir(angle(1,1))}
+
+\ShowSampleA {mv} {fullcircle}  {fullcircle}
+\ShowSampleA {fv} {unitcircle}  {unitcircle}
+\ShowSampleA {fv} {fullsquare}  {fullsquare}
+\ShowSampleA {mv} {unitsquare}  {unitsquare}
+\ShowSampleA {fv} {fulltriangle}{fulltriangle}
+\ShowSampleA {fv} {unittriangle}{unittriangle}
+\ShowSampleA {fv} {fulldiamond} {fulldiamond}
+\ShowSampleA {fv} {unitdiamond} {unitdiamond}
+
+\ShowSampleA {mv} {halfcircle}    {halfcircle}
+\ShowSampleA {mv} {quartercircle} {quartercircle}
+
+\ShowSampleA {fv} {llcircle} {llcircle}
+\ShowSampleA {fv} {lrcircle} {lrcircle}
+\ShowSampleA {fv} {urcircle} {urcircle}
+\ShowSampleA {fv} {ulcircle} {ulcircle}
+\ShowSampleA {fv} {tcircle}  {tcircle}
+\ShowSampleA {fv} {bcircle}  {bcircle}
+\ShowSampleA {fv} {lcircle}  {lcircle}
+\ShowSampleA {fv} {rcircle}  {rcircle}
+
+\ShowSampleA {fv} {triangle}      {triangle}
+\ShowSampleA {fv} {righttriangle} {righttriangle}
+\ShowSampleA {fv} {uptriangle}    {uptriangle}
+\ShowSampleA {fv} {lefttriangle}  {lefttriangle}
+\ShowSampleA {fv} {downtriangle}  {downtriangle}
+
+\ShowSampleA {fv} {lltriangle} {lltriangle}
+\ShowSampleA {fv} {lrtriangle} {lrtriangle}
+\ShowSampleA {fv} {urtriangle} {urtriangle}
+\ShowSampleA {fv} {ultriangle} {ultriangle}
+
+\ShowSampleA {mm} {flex(pair,pair,pair)}
+                  {flex ((0,0),(1,1),(1,0))}
+\ShowSampleA {mm} {superellipse(pair,p..,p..,p..,num..)}
+                  {superellipse((1,.5),(.5,1),(0,.5),(.5,0),.75)}
+
+\ShowSampleA {fm} {path smoothed numeric/pair}           {unitsquare scaled 1.5 smoothed .2}
+\ShowSampleA {fm} {path cornered numeric/pair}           {lltriangle scaled 1.5 cornered .2}
+\ShowSampleA {fm} {path superellipsed numeric}           {unitsquare scaled 1.5 superellipsed .75}
+\ShowSampleA {fm} {path randomized numeric/pair}         {unitsquare scaled 1.5 randomized (.2,.2)}
+\ShowSampleA {fm} {path randomizedcontrols numeric/pair} {fullcircle scaled 1.5 randomizedcontrols (.2,.2)}
+\ShowSampleA {fm} {path squeezed numeric/pair}           {unitsquare scaled 1.5 squeezed (.2,.1)}
+\ShowSampleA {fm} {path snapped numeric/pair}            {fullcircle scaled 1.5 snapped (.2,.1)}
+
+\ShowSampleB {fm} {punked path}
+         {unitcircle scaled 1.5}
+  {punked unitcircle scaled 1.5}
+
+\ShowSampleB {fm} {curved path}
+         {((0,0)--(.2,1)--(1,.2)--cycle)}
+  {curved ((0,0)--(.2,1)--(1,.2)--cycle)}
+
+\ShowSampleB {fm} {laddered path}
+           {((0,0)--(1.4,.8)--(2.8,1.2)--(6.2,1.6))}
+  {laddered ((0,0)--(1.4,.8)--(2.8,1.2)--(6.2,1.6))}
+
+\ShowSampleB {fm} {path paralleled distance}
+           {((0,0)--(5,1))}
+           {((0,0)--(5,1)) paralleled .25}
+
+\ShowSampleB {fm} {shortened path}
+    {((0,0)--(6,1))}
+    {((0,0)--(6,1)) shortened 1}
+
+\ShowSampleB {fm} {unspiked path}
+           {((0,0)--(1,0)--(1,1)--(2,1)--(1,1)--(0,1)) shifted (-3,0)}
+  {unspiked ((0,0)--(1,0)--(1,1)--(2,1)--(1,1)--(0,1))}
+
+\ShowSampleB {fm} {simplified path}
+             {((0,0)--(1,0)--(2,0)--(2,1)--(0,1)--cycle) shifted (-3,0)}
+  {simplified ((0,0)--(1,0)--(2,0)--(2,1)--(0,1)--cycle)}
+
+\ShowSampleB {fm} {path blownup numeric/pair}
+             {fullcircle scaled 1.5}
+            {(fullcircle scaled 1.5) blownup .1}
+
+\ShowSampleB {fm} {path stretched numeric/pair\quad (a)}
+             {fullcircle scaled 1.5}
+            {(fullcircle scaled 1.5) stretched (1.1,0.8)}
+
+\ShowSampleB {fm} {path stretched numeric\quad (b)}
+             {((0,0)--(1,1))}
+             {((0,0)--(1,1)) stretched 1.5}
+
+\ShowSampleB {fm} {path xstretched numeric}
+             {fullcircle}
+             {fullcircle xstretched 5}
+
+\ShowSampleB {fm} {path ystretched numeric}
+             {fullcircle}
+             {fullcircle ystretched 1.5}
+
+\ShowSampleB {fm} {path enlonged numeric}
+             {((0,0)--(1,1))}
+             {((0,0)--(1,1)) enlonged 1.5}
+
+\ShowSampleB {fm} {path shorted numeric}
+             {((0,0)--(2,2))}
+             {((0,0)--(2,2)) shortened 0.5}
+
+\ShowSampleA {fm} {roundedsquare(num..,num..,num..)}
+                  {roundedsquare(2,1,.2)}
+
+\ShowSampleA {fm} {tensecircle(num..,num..,num..)}
+                  {tensecircle(2,1,.2)}
+
+\ShowSampleA {fm} {pair crossed size}
+                  {origin crossed 1}
+
+\ShowSampleA {fm} {path crossed size}
+                  {fullcircle scaled 2 crossed .5}
+
+\ShowSampleA {fm} {(constructed)function}
+                  {constructedfunction("--")("x","sin(x)",0,2pi,pi/10)}
+
+\ShowSampleA {fm} {curvedfunction}
+                  {curvedfunction("x","sin(x)",0,2pi,pi/10)}
+
+\ShowSampleA {fm} {straightfunction}
+                  {straightfunction("x","sin(x)",0,2pi,pi/10)}
+
+\ShowSampleA {fm} {constructedpath}
+                  {constructedpath("..")((0,0),(1,2),(2,1),(3,2))}
+
+\ShowSampleA {fm} {curvedpath}
+                  {curvedpath((0,0),(1,2),(2,1),(3,2))}
+
+\ShowSampleA {fm} {straightpath}
+                  {straightpath((0,0),(1,2),(2,1),(3,2))}
+
+\ShowSampleA {fm} {leftarrow}
+                  {leftarrow(fullcircle,3,2)}
+
+\ShowSampleA {fm} {rightarrow}
+                  {rightarrow(fullcircle,3,2)}
+
+\ShowSampleA {fm} {centerarrow}
+                  {centerarrow(fullcircle,3,2)}
+
+\ShowSampleX {fm} {arrowhead} {draw arrowhead fullcircle}
+\ShowSampleX {fm} {arrowpath} {draw arrowpath fullcircle}
+
+\ShowSampleA {mm} {buildcycle}
+                  {buildcycle(fullcircle,fullsquare)}
+
+\ShowSampleA {fm} {circularpath} {circularpath(4)}
+\ShowSampleA {fm} {squarepath}   {squarepath(4)}
+\ShowSampleA {fm} {linearpath}   {linearpath(4)}
+
+\stopsection
+
+\startsection[title={Transformations}]
+
+\index{transformations}
+
+\ShowSampleB {mp} {path scaled numeric}        {fullcircle} {fullcircle scaled .50}
+\ShowSampleB {mp} {path xscaled numeric}       {fullcircle} {fullcircle xscaled .25}
+\ShowSampleB {mp} {path yscaled numeric}       {fullcircle} {fullcircle yscaled .25}
+\ShowSampleB {mp} {path zscaled pair}          {fullcircle} {fullcircle zscaled (2,.25)}
+\ShowSampleB {mp} {path xyscaled numeric/pair} {fullcircle} {fullcircle xyscaled (.5,.7)}
+\ShowSampleB {mp} {path xyscaled pair}         {fullcircle} {fullcircle xyscaled (2,.25)}
+\ShowSampleB {mp} {path shifted pair}          {fullcircle} {fullcircle shifted (2,.25)}
+
+\ShowSampleB {fm} {path leftenlarged   numeric} {fullsquare} {fullsquare leftenlarged .25}
+\ShowSampleB {fm} {path topenlarged    numeric} {fullsquare} {fullsquare topenlarged .25}
+\ShowSampleB {fm} {path rightenlarged  numeric} {fullsquare} {fullsquare rightenlarged .25}
+\ShowSampleB {fm} {path bottomenlarged numeric} {fullsquare} {fullsquare bottomenlarged .25}
+
+\ShowSampleB {fm} {path enlarged numeric}   {fullcircle} {fullcircle enlarged .25}
+\ShowSampleB {fm} {path enlarged pair}      {fullcircle} {fullcircle enlarged (1,.25)}
+\ShowSampleB {fm} {path llenlarged numeric} {fullcircle} {fullcircle llenlarged .25}
+\ShowSampleB {fm} {path lrenlarged numeric} {fullcircle} {fullcircle lrenlarged .25}
+\ShowSampleB {fm} {path urenlarged numeric} {fullcircle} {fullcircle urenlarged .25}
+\ShowSampleB {fm} {path ulenlarged numeric} {fullcircle} {fullcircle ulenlarged .25}
+\ShowSampleB {fm} {path llenlarged pair}    {fullcircle} {fullcircle llenlarged (1,.25)}
+\ShowSampleB {fm} {path lrenlarged pair}    {fullcircle} {fullcircle lrenlarged (1,.25)}
+\ShowSampleB {fm} {path urenlarged pair}    {fullcircle} {fullcircle urenlarged (1,.25)}
+\ShowSampleB {fm} {path ulenlarged pair}    {fullcircle} {fullcircle ulenlarged (1,.25)}
+\ShowSampleB {fm} {path llmoved numeric}    {fullcircle} {fullcircle llmoved .25}
+\ShowSampleB {fm} {path lrmoved numeric}    {fullcircle} {fullcircle lrmoved .25}
+\ShowSampleB {fm} {path urmoved numeric}    {fullcircle} {fullcircle urmoved .25}
+\ShowSampleB {fm} {path ulmoved numeric}    {fullcircle} {fullcircle ulmoved .25}
+\ShowSampleB {fm} {path llmoved pair}       {fullcircle} {fullcircle llmoved (1,.25)}
+\ShowSampleB {fm} {path lrmoved pair}       {fullcircle} {fullcircle lrmoved (1,.25)}
+\ShowSampleB {fm} {path urmoved pair}       {fullcircle} {fullcircle urmoved (1,.25)}
+\ShowSampleB {fm} {path ulmoved pair}       {fullcircle} {fullcircle ulmoved (1,.25)}
+\ShowSampleB {mp} {path slanted numeric}    {fullcircle} {fullcircle slanted .5}
+\ShowSampleB {mp} {path rotated numeric}    {fullsquare} {fullsquare rotated 45}
+
+\ShowSampleB {mm} {path rotatedaround(pair,numeric)}  {fullsquare} {fullsquare rotatedaround((.25,.5),45)}
+\ShowSampleB {mm} {path reflectedabout(pair,pair)}    {fullcircle} {fullcircle reflectedabout((.25,-1),(.25,+1))}
+\ShowSampleB {mp} {reverse path}                      {fullcircle} {reverse fullcircle shifted(.5,0)}
+\ShowSampleB {mm} {counterclockwise path}             {fullcircle} {counterclockwise fullcircle shifted(.5,0)}
+\ShowSampleB {mm} {tensepath path}                    {fullcircle} {tensepath fullcircle}
+
+\ShowSampleB {mp} {subpath (numeric,numeric) of path} {fullcircle} {subpath (1,5) of fullcircle}
+\ShowSampleB {mm} {path cutbefore pair} {fullcircle} {fullcircle cutbefore point 3 of fullcircle}
+\ShowSampleB {mm} {path cutafter  pair} {fullcircle} {fullcircle cutafter point 3 of fullcircle}
+\ShowSampleB {mm} {path cutends .1} {fullcircle} {fullcircle cutends .5}
+
+\ShowSampleC {mp} {llcorner path} {fullcircle} {llcorner fullcircle}
+\ShowSampleC {mp} {lrcorner path} {fullcircle} {lrcorner fullcircle}
+\ShowSampleC {mp} {urcorner path} {fullcircle} {urcorner fullcircle}
+\ShowSampleC {mp} {ulcorner path} {fullcircle} {ulcorner fullcircle}
+\ShowSampleC {mm} {center   path} {fullcircle} {center   fullcircle}
+
+\ShowSampleD {fm} {boundingbox      path} {fullcircle} {boundingbox fullcircle}
+\ShowSampleD {fm} {boundingcircle   path} {fullsquare} {boundingcircle fullsquare}
+\ShowSampleD {fm} {innerboundingbox path} {fullcircle} {innerboundingbox fullcircle}
+\ShowSampleD {fm} {outerboundingbox path} {fullcircle} {outerboundingbox fullcircle}
+
+\ShowSampleDD {fm} {bottomboundary path} {fullcircle} {bottomboundary fullcircle}
+\ShowSampleDD {fm} {leftboundary   path} {fullcircle} {leftboundary fullcircle}
+\ShowSampleDD {fm} {topboundary    path} {fullcircle} {topboundary fullcircle}
+\ShowSampleDD {fm} {rightboundary  path} {fullcircle} {rightboundary fullcircle}
+
+\ShowSampleP {fm} {bbwidth path} {draw textext(decimal bbwidth (fullcircle xscaled 100 yscaled 200))}
+\ShowSampleP {fm} {bbwidth path} {draw textext(decimal bbheight (fullcircle xscaled 100 yscaled 200))}
+
+\ShowSampleE {fm} {path/picture xsized numeric}  {xsized 3cm} {currentpicture xsized 5cm}
+\ShowSampleE {fm} {path/picture ysized numeric}  {ysized 2cm} {currentpicture ysized 2cm}
+\ShowSampleE {fm} {path/picture xysized numeric} {xysized (3cm,2cm)} {currentpicture xysized (3cm,2cm)}
+
+\ShowSampleP {fm}
+  {area path}
+  {draw area ((0,10)--(20,20)--(30,5)--(40,10)--(50,5)--(60,5))}
+
+\ShowSampleT {mp}
+  {setbounds picture}
+  {draw fullcircle ; setbounds currentpicture to unitsquare}
+  {draw fullcircle scaled .5 InGray; setbounds currentpicture to unitsquare scaled .5}
+
+\ShowSampleT {mm}
+  {clip path}
+  {fill fullcircle ; clip currentpicture to fullsquare scaled 0.9}
+  {fill fullcircle scaled 1 InRed ; clip currentpicture to fullsquare scaled 0.9}
+
+\ShowSampleT {mm}
+  {path peepholed  path}
+  {fill (fullcircle peepholed fullsquare)}
+  {fill (fullcircle peepholed fullsquare) InRed}
+
+\ShowSampleT {fm}
+  {anchored}
+  {draw anchored.urt(textext("ll"),origin)}
+  {draw anchored.urt(textext("ll") xsized (5mm/Scale),origin) InRed ;}
+
+% \ShowSampleT {fm}
+%   {autoalign}
+%   {draw textext.autoalign(260)("260")}
+%   {draw textext.autoalign(260)("260")}
+
+% draw textext.autoalign(260)("\strut oeps 3") ;
+
+\ShowSampleX {fm}
+    {path crossingunder path}
+    {draw (fullsquare rotated 45) crossingunder fullsquare}
+
+\stopsection
+
+\startsection[title={Points}]
+
+\index{points}
+
+%ShowSampleF {mp} {center path}                 {fullcircle} {center fullcircle}
+\ShowSampleF {mm} {top pair}                    {fullcircle} {top center fullcircle}
+\ShowSampleF {mm} {bot pair}                    {fullcircle} {bot center fullcircle}
+\ShowSampleF {mm} {lft pair}                    {fullcircle} {lft center fullcircle}
+\ShowSampleF {mm} {rt pair}                     {fullcircle} {rt  center fullcircle}
+\ShowSampleF {mp} {point       numeric of path} {fullcircle} {point 2 of fullcircle}
+\ShowSampleF {fm} {point       numeric on path} {fullcircle} {point .5 on fullcircle}
+\ShowSampleF {fm} {point    numeric along path} {fullcircle} {point 1cm along fullcircle}
+\ShowSampleF {mp} {precontrol  numeric of path} {fullcircle} {precontrol 2 of fullcircle}
+\ShowSampleF {mp} {postcontrol numeric of path} {fullcircle} {postcontrol 2 of fullcircle}
+\ShowSampleF {mp} {directionpoint pair of path} {fullcircle} {directionpoint (2,3) of fullcircle}
+
+\ShowSampleG {mc} {numeric[pair,pair]} {(1,1)} {.5[(0,0),(1,1)]}
+
+\ShowSampleH {mm} {path intersectionpoint path} {fullcircle} {fulldiamond}
+                  {fullcircle intersectionpoint fulldiamond}
+
+\ShowSampleHH {mm} {interpath(numeric,path,path}
+                   {interpath(.8,fullcircle,fullsquare)}
+
+\ShowSampleHH {fm} {interpolated(numeric,path,path}
+                   {interpolated(.8,fullcircle,fullsquare)}
+
+\ShowSampleO {mm} {right} {draw left}
+\ShowSampleO {mm} {up}    {draw up}
+\ShowSampleO {mm} {left}  {draw left}
+\ShowSampleO {mm} {down}  {draw down}
+
+\stopsection
+
+\startsection[title={Colors}]
+
+\index{colors}
+
+\ShowSampleI {mp} {withcolor rgbcolor} {withcolor (.625,0,0)}
+\ShowSampleI {mp} {withrgbcolor rgbcolor} {withrgbcolor (.625,0,0)}
+\ShowSampleI {mp} {withcmykcolor cmykcolor} {withcmykcolor (.375,0,0,0)}
+\ShowSampleI {mp} {withgray / withgrey numeric} {withgray .625}
+\ShowSampleI {mp} {withcolor namedcolor} {withcolor namedcolor("darkblue")}
+\ShowSampleI {mp} {withcolor spotcolor} {withcolor spotcolor("tempone",red/2)}
+\ShowSampleI {mp} {withcolor multitonecolor} {withcolor .2 * multitonecolor("temptwo",blue/2,yellow/3)}
+
+Remark: at the time of this writing only Acrobat shows spot- and multitonecolors
+properly. Possible indications of a viewing problem are factors not being applied
+(in the page stream) or colors that are way off.
+
+\ShowSampleU {mp} {red}     {fill fullcircle scaled 2 withcolor red/2}
+\ShowSampleU {mp} {green}   {fill fullcircle scaled 2 withcolor green/2}
+\ShowSampleU {mp} {blue}    {fill fullcircle scaled 2 withcolor blue/2}
+\ShowSampleU {mp} {cyan}    {fill fullcircle scaled 2 withcolor cyan/2}
+\ShowSampleU {mp} {magenta} {fill fullcircle scaled 2 withcolor magenta/2}
+\ShowSampleU {mp} {yellow}  {fill fullcircle scaled 2 withcolor yellow/2}
+\ShowSampleU {mp} {black}   {fill fullcircle scaled 2 withcolor black/2}
+\ShowSampleU {mp} {white}   {fill fullcircle scaled 2 withcolor white/2}
+
+\ShowSampleU {mp} {blackcolor} {fill fullcircle withcolor blackcolor red}
+
+%ShowSampleI {fm} {withcolor cmyk(c,m,y,k)}  {withcolor cmyk(0,.625,.625,0)}
+%ShowSampleI {fm} {withcolor transparent(n.m,color)}  {withcolor transparent(1,.625,red)}
+
+\ShowSampleI {fm} {withtransparency(num,num)} {withcolor red withtransparency (1,.625)}
+
+% \ShowSampleZ {fm} {withshade numeric} {Shades need to be declared before they can be (re)used.}
+
+\startMPinclusions
+    defineshade cshade withshademethod "circular" ;
+    defineshade lshade withshademethod "linear" ;
+\stopMPinclusions
+
+\ShowSampleW {fm} {shaded someshade }
+    {fill fullsquare shaded lshade}
+    {fill fullsquare scaled 2cm shaded lshade}
+
+This assumes the definition:
+
+\starttyping
+defineshade lshade withshademethod "linear" ;
+\stoptyping
+
+\ShowSampleW {fm} {shaded someshade}
+    {fill fullcircle shaded cshade}
+    {fill fullcircle scaled 2cm shaded cshade}
+
+This assumes the definition:
+
+\starttyping
+defineshade cshade withshademethod "circular" ;
+\stoptyping
+
+%     withshadefactor 1
+%     withshadedomain (0,1)
+%     withshadecolors (black,white)
+%     withtransparency (1,.5)
+
+% \startMPcode
+%     fill fullcircle scaled 3cm
+%         shaded myshade
+%         withshadefactor 0.7
+%     ;
+% \stopMPcode
+
+% \startMPcode
+%     fill fullcircle scaled 3cm
+%         shaded myshade
+%         withshadecolors (red,green)
+%         withshadefactor 1
+%         withtransparency (1,.75)
+%     ;
+% \stopMPcode
+
+% \startMPcode
+%     fill fullcircle scaled 3cm
+%         shaded myshade ;
+%         withshadefactor 1
+%         withshadedomain (0,1)
+%         withshadecolors (green,blue)
+%         withtransparency (1,.5)
+%     ;
+% \stopMPcode
+
+% \startMPcode
+%     fill fullcircle scaled 3cm
+%         shaded myshade ;
+%         withshadefactor 1
+%         withshadedomain (0,1)
+%         withcolor blue shadedinto yellow
+%         withtransparency (1,.5)
+%     ;
+% \stopMPcode
+
+\ShowSampleV {mp}
+    {basiccolors}
+    {for i=0 upto 21 : fill ... withcolor basiccolors[i] ; endfor}
+    {for i=0 upto 21 : fill fullcircle shifted (i,0) withcolor basiccolors[i] ; endfor}
+
+\stopsection
+
+\startsection[title={Attributes}]
+
+\index{attributes}
+
+\ShowSampleII {mp} {dashed withdots} {dashed withdots}
+\ShowSampleII {mp} {dashed evenly}   {dashed evenly}
+\ShowSampleII {mp} {dashed oddly}    {dashed oddly}
+\ShowSampleII {mp} {dashpattern}     {dashed dashpattern (on .1 off .2 on .3 off .4)}
+\ShowSampleII {mp} {undashed}        {dashed evenly undashed}
+
+\ShowSampleJ {mm} {pencircle transform} {pencircle}
+\ShowSampleJ {mm} {pensquare transform} {pensquare}
+\ShowSampleJ {mm} {penrazor transform}  {penrazor}
+\ShowSampleK {mm} {penspeck transform}  {penspeck}
+
+\ShowSampleL {mm} {draw}         {fullcircle}
+\ShowSampleL {mm} {fill}         {fullcircle}
+\ShowSampleL {mm} {filldraw}     {fullcircle}
+\ShowSampleL {mm} {drawfill}     {fullcircle}
+\ShowSampleL {mm} {drawdot}      {origin}
+\ShowSampleL {mm} {drawarrow}    {fullcircle}
+\ShowSampleL {mm} {drawdblarrow} {fullcircle}
+
+\ShowSampleL {fm} {eofill}       {fullcircle}
+
+\ShowSampleM {mm} {undraw}     {fullcircle}
+\ShowSampleM {mm} {unfill}     {fullcircle}
+\ShowSampleM {mm} {unfilldraw} {fullcircle}
+\ShowSampleM {mm} {undrawfill} {fullcircle}
+\ShowSampleM {mm} {undrawdot}  {origin}
+
+\ShowSampleQ {mm} {cutdraw} {origin--(1,1)}
+
+\ShowSampleN {mv} {butt}    {linecap := butt}    {(0,.5)--(.5,0)--(1,1)}
+\ShowSampleN {mv} {rounded} {linecap := rounded} {(0,.5)--(.5,0)--(1,1)}
+\ShowSampleN {mv} {squared} {linecap := squared} {(0,.5)--(.5,0)--(1,1)}
+
+\ShowSampleN {mv} {mitered} {linejoin := mitered} {(0,.5)--(.5,0)--(1,1)}
+\ShowSampleN {mv} {rounded} {linejoin := rounded} {(0,.5)--(.5,0)--(1,1)}
+\ShowSampleN {mv} {beveled} {linejoin := beveled} {(0,.5)--(.5,0)--(1,1)}
+
+\ShowSampleR {fm} {inverted picture}         {inverted currentpicture}
+\ShowSampleR {fm} {picture uncolored color}  {currentpicture uncolored green}
+\ShowSampleR {fm} {picture softened numeric} {currentpicture softened .8}
+\ShowSampleR {fm} {picture softened color}   {currentpicture softened (.7,.8,.9)}
+\ShowSampleR {fm} {grayed picture}           {grayed currentpicture}
+
+\stopsection
+
+\startsection[title={Text}]
+
+\index{text}
+
+\ShowSampleO {mm} {label}           {label("MetaFun",origin)}
+\ShowSampleO {mm} {label.top}   {label.top("MetaFun",origin)}
+\ShowSampleO {mm} {label.bot}   {label.bot("MetaFun",origin)}
+\ShowSampleO {mm} {label.lft}   {label.lft("MetaFun",origin)}
+\ShowSampleO {mm} {label.rt}     {label.rt("MetaFun",origin)}
+\ShowSampleO {mm} {label.llft} {label.llft("MetaFun",origin)}
+\ShowSampleO {mm} {label.lrt}   {label.lrt("MetaFun",origin)}
+\ShowSampleO {mm} {label.urt}   {label.urt("MetaFun",origin)}
+\ShowSampleO {mm} {label.ulft} {label.ulft("MetaFun",origin)}
+
+\ShowSampleW {mp} {dotlabel}
+  {dotlabel.bot("\tttf metafun",(2cm,1cm))}
+  {dotlabel.bot("\tttf metafun",(2cm,1cm))}
+
+\ShowSampleW {mp} {dotlabels + range .. thru ..}
+  {z1 = ... ; dotlabels.bot(range 1 thru 3)}
+  {z1=(0,0); z2=(10mm,10mm); z3=(20mm,15mm); ; z4=(30mm,5mm); dotlabels.bot(range 1 thru 4)}
+
+\ShowSampleW {mp} {labels + range .. thru ..}
+  {z1 = ... ; labels.bot(range 1 thru 3)}
+  {z1=(0,0); z2=(10mm,10mm); z3=(20mm,15mm); ; z4=(30mm,5mm); labels.bot(range 1 thru 4)}
+
+\ShowSampleQQ {fm}
+  {thelabel(string,pair)}
+  {draw thelabel("MetaFun",(2cm,0))}
+
+\ShowSampleQQ {fm}
+  {formatted(string)}
+  {draw textext(formatted("@0.5f",1.234))}
+
+\ShowSampleQQ {fm}
+  {format(string) : graph package}
+  {draw textext(format("@5E-2",1.234))}
+
+\ShowSampleP {mp}
+  {btex text etex}
+  {draw btex MetaTeX etex}
+
+\ShowSampleQQ {fm}
+  {textext(string)}
+  {draw textext("MetaFun")}
+
+\ShowSampleQQ {fm}
+  {thetextext(string,pair)}
+  {draw thetextext("MetaFun",(2cm,0))}
+
+% \ShowSampleQQ {fm}
+%   {graphictext string ...}
+%   {graphictext "MetaFun"}
+
+\ShowSampleQQQ {fm}
+  {outlinetext.d("string")(d)}
+  {draw outlinetext.d("MetaFun")(InRed)}
+
+\ShowSampleQQQ {fm}
+  {outlinetext.f("string")(f)}
+  {draw outlinetext.f("MetaFun")(InYellow)}
+
+\ShowSampleQQQ {fm}
+  {outlinetext.b("string")(f)(d)}
+  {draw outlinetext.b("MetaFun")(InYellow)(InRed)}
+
+\ShowSampleQQQ {fm}
+  {outlinetext.r("string")(d)(f)}
+  {draw outlinetext.r("MetaFun")(InRed)(InYellow)}
+
+\ShowSampleUU {fm}
+  {outlinetext.p("string")}
+  {draw outlinetext.p("MetaFun")}
+
+\stopsection
+
+\startsection[title={Control}]
+
+\index{loops}
+
+\ShowSampleU {mp} {for (positive step) until} {for i=0 step 2 until 8: drawdot (i,0) ; endfor}
+\ShowSampleU {mp} {for (negative step) until} {for i=6 step -2 until 0: drawdot (i,0) ; endfor}
+\ShowSampleU {mm} {for upto} {for i=0 upto 12: drawdot (i,0) ; endfor}
+\ShowSampleU {mm} {for downto} {for i=10 downto 0: drawdot (i,0) ; endfor}
+\ShowSampleU {mm} {forsuffixes} {forsuffixes i=1,4,6,12: drawdot (i,0) ; endfor}
+
+\stopsection
+
+\startsection[title={Graphics}]
+
+\index{graphics}
+
+\ShowSampleS {fm}
+  {loadfigure string number numeric ...}
+  {loadfigure "mycow.mp" number 1 scaled .25}
+
+\ShowSampleS {fm}
+  {externalfigure string ...}
+  {draw externalfigure "mycow.pdf" scaled 3cm}
+
+\ShowSampleT {fm} {addbackground text}
+  {addbackground withcolor .625 yellow}
+  {fill fullcircle xyscaled (2,1) InRed; addbackground InYellow}
+
+\ShowSampleQQ {mm} {image (text)}
+  {draw image(draw fullcircle) xscaled 4cm yscaled 1cm}
+
+\ShowSampleT {mm} {decorated (text) text}
+  {draw decorated (....) withcolor red}
+  {draw decorated (fill fullcircle) InRed}
+
+\ShowSampleT {mm} {undecorated (text) text}
+  {draw undecorated (.... withcolor yellow) withcolor red}
+  {draw undecorated (fill fullcircle InYellow) InRed}
+
+\ShowSampleT {mm} {redecorated (text) text}
+  {draw redecorated (.... withcolor yellow) withcolor red}
+  {draw redecorated (fill fullcircle InYellow) InRed}
+
+\ShowSampleS {mm}
+  {bitmapimage (w,h,data)}
+  {draw bitmapimage (2,2,"114477AA") rotated 15 scaled 4cm}
+
+\ShowSampleT {mm}
+  {withmask string}
+  {draw externalfigure "m-1.png" scaled 2cm withmask "m-2.png"}
+  {Scale := 1 ;
+   draw externalfigure "m-2.png" scaled 2cm shifted (-3cm,0) ;
+   draw externalfigure "m-1.png" scaled 2cm shifted (-6cm,0) ;
+   draw externalfigure "m-1.png" scaled 2cm withmask "m-2.png"}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+%% draw leftpath  fullcircle scaled 1cm withpen pencircle scaled 1mm withcolor .625red ;
+%% draw reverse leftpath (reverse fullcircle scaled 2cm) withpen pencircle scaled 1mm withcolor .625yellow ;
+%% draw rightpath fullcircle scaled 3cm withpen pencircle scaled 1mm withcolor .625white ;
+%%
+%% path p ; p := (0,0) .. (1,2) .. cycle ;
+%% draw leftpath  p scaled 1cm withpen pencircle scaled 1mm withcolor .625red ;
+%% draw reverse leftpath (reverse p  scaled 2cm) withpen pencircle scaled 1mm withcolor .625yellow ;
+%% draw rightpath p  scaled 3cm  withpen pencircle scaled 1mm withcolor .625white ;

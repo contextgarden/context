@@ -1,0 +1,151 @@
+\startenvironment metafun-environment-layout
+
+\setupsystem
+  [random=big]
+
+\setupfootertexts
+  [section][] % [Preliminary Version \currentdate][]
+  [][section] % [][Preliminary Version \currentdate]
+
+\useMPlibrary
+  [clp,txt]
+
+\definepapersize
+  [mine]
+  [width=21cm,
+   height=28cm]
+
+\setuppapersize
+  [mine]
+  [A4]
+
+\setuplayout
+  [topspace=1cm,
+   backspace=3cm,
+   cutspace=3cm,
+   leftmargin=.75cm,
+   leftmargindistance=.5cm,
+   rightmargin=1.25cm,
+   rightmargindistance=1cm,
+   header=1cm,
+   headerdistance=1cm,
+   footer=1cm,
+   footerdistance=1cm,
+   width=middle,
+   height=middle,
+ % marking=on,
+   location=middle]
+
+\startmode[book]
+
+  % \definepapersize
+  %   [mine]
+  %   [width=21cm,
+  %    height=24cm]
+  %
+  % \setuppapersize
+  %   [mine]
+  %   [oversized]
+  %
+  % \setuplayout
+  %   [backspace=2.5cm,
+  %    cutspace=3.5cm]
+
+    \setuplayout
+      [marking=on,
+       scale=\luaexpr{24/28}]
+
+\stopmode
+
+\startmode[print]
+
+    \setuppapersize
+      [mine]
+      [mine]
+
+\stopmode
+
+\setupcolumns
+  [distance=1cm]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\definetypeface [metafunbodyfont] [rm] [serif] [pagella]  [default]
+\definetypeface [metafunbodyfont] [ss] [sans]  [modern]   [default]
+\definetypeface [metafunbodyfont] [tt] [mono]  [modern]   [default]
+\definetypeface [metafunbodyfont] [mm] [math]  [palatino] [default]
+
+\setupbodyfont [metafunbodyfont,10pt] % 11 pt and 12pt -> errors due to intersection mess
+
+\definefont[RotFont][RegularBold*default]
+
+% \setupindenting
+%   [medium,yes]
+
+\setupwhitespace
+  [medium]
+
+\setuptyping
+  [margin=standard,
+   blank=halfline]
+
+\definecolor [darkred]    [r=.625]
+\definecolor [darkyellow] [r=.625,g=.625] % not: [y=.625]
+\definecolor [darkgray]   [s=.625]
+\definecolor [lightgray]  [s=.875]
+
+\definecolor [metafun]    [darkred]
+
+\startMPinclusions
+    color darkred    ; darkred    := \MPcolor{darkred}    ;
+    color darkyellow ; darkyellow := \MPcolor{darkyellow} ;
+    color darkgray   ; darkgray   := \MPcolor{darkgray}   ;
+    color lightgray  ; lightgray  := \MPcolor{lightgray}  ;
+\stopMPinclusions
+
+\setupinteraction % otherwise funny page dimensions due to
+  [state=start,   % grouping half way the file in demo text
+   style=,
+   color=,
+   contrastcolor=]
+
+% \enabledirectives[refences.linkmethod=page]
+
+% \setupstructure % needs \startchapter
+%   [state=start]
+
+\placebookmarks
+  [chapter,title,section]
+  [all]
+  [force=yes]
+
+\setuptolerance
+  [verytolerant]
+
+\definestartstop
+  [intro]
+  [style=slanted,
+   after=\blank]
+
+\setupquote
+  [before=\blank\startnarrower,
+   after=\stopnarrower\blank]
+
+\setuplist
+  [chapter]
+  [after={\blank[line]}]
+
+\setupcombinedlist
+  [content]
+  [aligntitle=yes,
+   alternative=c,
+   interaction=all]
+
+\setuptabulate
+  [rulecolor=darkyellow,
+   rulethickness=1pt]
+
+\setuplist[chapter][style=bold]
+
+\stopenvironment

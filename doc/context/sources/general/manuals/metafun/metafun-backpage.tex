@@ -1,0 +1,53 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\doifmode{book}{\endinput}
+
+\startcomponent metafun-backpage
+
+\environment metafun-environment
+
+\startstandardmakeup[doublesided=no,page=right]
+  % back page
+\stopstandardmakeup
+
+\setupbackgrounds
+  [leftpage]
+  [background=back page]
+
+\definecolor[twhite][s=1,t=.80,a=1]
+
+\setupbackgrounds
+  [text][text]
+  [background=color,
+   backgroundcolor=twhite,
+   backgroundoffset=.5cm]
+
+\setuplayout
+  [cutspace=2cm,
+   backspace=8cm,
+   header=0pt,
+   footer=0pt,
+   topspace=17cm,
+   bottomspace=2cm]
+
+\startstandardmakeup[doublesided=no,page=left,top=,bottom=]
+
+  \switchtobodyfont[big]
+
+  \setupinterlinespace[stretch=.5]
+
+  \getbuffer[backtext]
+
+  \blank
+
+  \getbuffer[backbanner]
+
+\stopstandardmakeup
+
+\setupbackgrounds
+  [rightpage]
+  [background=]
+
+\stopcomponent

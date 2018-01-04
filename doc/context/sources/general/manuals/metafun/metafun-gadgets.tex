@@ -1,0 +1,548 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-gadgets
+
+\environment metafun-environment
+
+\startchapter[title={Shapes, symbols and buttons}]
+
+\startintro
+
+One can use \METAPOST\ to define symbols and enhance buttons. Here we introduce
+some of the gadgets that come with \CONTEXT, as well as explain how to integrate
+such gadgets yourself.
+
+\stopintro
+
+\startsection[title={Interfacing to \TEX}]
+
+\index {interfacing}
+
+\startbuffer[a]
+\setupMPvariables
+  [EnglishRule]
+  [height=1ex,
+   width=\availablehsize,
+   color=darkgray]
+
+\startuniqueMPgraphic{EnglishRule}{height,width,color}
+  numeric height ; height = \MPvar{height} ;
+  x1 = 0 ; x3 = \MPvar{width} ; x2 = x4 = .5x3 ;
+  y1 = y3 = 0 ; y2 := -y4 = height/2 ;
+  fill z1 .. z2 .. z3 & z3 .. z4 .. z1 & cycle
+    withcolor \MPvar{color} ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\startbuffer[b]
+\defineblank
+  [EnglishRule]
+  [medium]
+
+\unexpanded\def\EnglishRule
+  {\start
+   \dontcomplain
+   \startlinecorrection[EnglishRule]
+     \noindent \reuseMPgraphic{EnglishRule}
+   \stoplinecorrection
+   \stop}
+\stopbuffer
+
+\getbuffer[a,b]
+
+In the early days of \METAPOST\ support in \CONTEXT, Tobias Burnus asked me if it
+was possible to define English rules. What exactly does an english rule look
+like? Here is one:
+
+\EnglishRule
+
+As you can see, such a rule has to adapt itself to the current text width,
+normally \type {\hsize} in \TEX, or on request \type {\availablehsize} in
+\CONTEXT. We need to set the height to a reasonable size, related to the font
+size, and we also need to take care of proper spacing. Of course we want to run
+\METAPOST\ as less times as possible, so we need to use unique graphics. Let's
+start with the graphic.
+
+\typebuffer[a]
+
+As you can see, we pass two arguments to the graphic definition. The first
+argument is the name, the second argument is a comma separated list of variables.
+This list serves two purposes. First this list is used to create a unique profile
+for the graphic. This means that when we change the value of a variable, a new
+graphic is generated that reflects the change. A second purpose of the list is to
+convert \TEX\ data structures into \METAPOST\ ones, especially dimensions and
+colors. The graphic itself is not that spectacular. We use \type {&} because we
+don't want smooth connections.
+
+\typebuffer[b]
+
+When setting the variables, we used \type {\availablehsize}. We need to use \type
+{\noindent}, a rather familiar \TEX\ primitive, that we use here to start a non
+indented paragraph, being the graphic. The line correction is needed to get the
+spacing around the rule (graphic) right. We pass a blank skip identifier that is
+mapped to a convenient medium skip.
+
+\startbuffer[c]
+Why is this called an English line?
+
+\startnarrower
+  \EnglishRule
+    Is it because they cannot draw a straight one? This could be true
+    after a few strong beers, but then, how do Germans draw a line?
+  \EnglishRule
+\stopnarrower
+\stopbuffer
+
+\typebuffer[c]
+
+As expected, the rule adapts itself to the current width of the text. The height
+of the rule in the middle matches the height of a character with no ascenders and
+descenders.
+
+\getbuffer[c]
+
+\stopsection
+
+\startsection[title={Random graphics}]
+
+\index{randomization}
+
+\startbuffer[a]
+\startuseMPgraphic{fuzzycount}
+   begingroup
+   save height, vstep, hsize, span, drift, d, cp ;
+   height := 3/ 4 * \the \bodyfontsize * \currentfontscale ;
+   span   := 1/ 3 * height ;
+   drift  := 1/10 * height ;
+   hsize  := \the\hsize ;
+   vstep  := \the\lineheight ;
+   xmax   := hsize div 5span ;
+   pickup pencircle scaled (1/12 * height) ;
+   def d = (uniformdeviate drift) enddef ;
+   for i := 1 upto \MPvar{n} :
+     xpos := ((i-1) mod (5*xmax))*span ;
+     ypos := ((i-1) div (5*xmax))*vstep ;
+     draw
+       if (i mod 5)=0 : ((-d-4.5span,d)--(+d-0.5span,height-d))
+       else           : ((-d,+d)--(+d,height-d)) fi
+       shifted (xpos,-ypos+d-drift) ;
+   endfor;
+   picture cp ; cp := currentpicture ;
+   if (ypart ulcorner cp - ypart llcorner cp) <= vstep :
+     setbounds currentpicture to
+       (llcorner cp shifted (0,-ypart llcorner cp) --
+        lrcorner cp shifted (0,-ypart lrcorner cp) --
+        urcorner cp -- ulcorner cp -- cycle) ;
+   fi
+   endgroup ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[b]
+\useMPgraphic{fuzzycount}{n=1001}
+\stopbuffer
+
+Given enough time and paper, we can probably give you some
+
+\startlinecorrection[blank]
+\getbuffer[a,b]
+\stoplinecorrection
+
+reasons why \METAPOST\ is fun. To mention a few: you can enhance the layout with
+graphic ornaments, you can tune your graphics at runtime, and simple high quality
+graphics can be very effective.
+
+\startbuffer[c]
+\startuseMPgraphic{fuzzycount}
+   begingroup
+   save height, span, drift, d, cp ;
+   height := 3/ 5 * \baselinedistance ;
+   span   := 1/ 3 * height ;
+   drift  := 1/10 * height ;
+   pickup pencircle scaled (1/12 * height) ;
+   def d = (uniformdeviate drift) enddef ;
+   for i := 1 upto \MPvar{n} :
+     draw
+       if (i mod 5)=0 : ((-d-4.5span,d)--(+d-0.5span,height-d))
+       else           : ((-d,+d)--(+d,height-d)) fi
+       shifted (span*i,d-drift) ;
+   endfor;
+   picture cp ; cp := currentpicture ; % for readability
+   setbounds currentpicture to
+     (llcorner cp shifted (0,-ypart llcorner cp) --
+      lrcorner cp shifted (0,-ypart lrcorner cp) --
+      urcorner cp -- ulcorner cp -- cycle) ;
+   endgroup ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[d]
+\setupMPvariables[fuzzycount][n=10]
+\stopbuffer
+
+\getbuffer[c,d]
+
+The previous graphics draws exactly 1001 lines in a scratch||numbers||in||a||wall
+fashion. In 1998, the \NTG\ did a survey among its members, and in the report, we
+used this fuzzy counter to enhance the rather dull tables.
+
+\startbuffer
+\starttabulate[|l|c|l|]
+\HL
+\NC system  \NC \%   \NC \# users                        \NC\NR
+\HL
+\NC Atari   \NC 10.4 \NC \useMPgraphic{fuzzycount}{n=11} \NC\NR
+\NC MSDOS   \NC 49.1 \NC \useMPgraphic{fuzzycount}{n=52} \NC\NR
+\NC OS/2    \NC ~9.4 \NC \useMPgraphic{fuzzycount}{n=10} \NC\NR
+\NC MacOS   \NC ~5.7 \NC \useMPgraphic{fuzzycount}{n= 6} \NC\NR
+\NC UNIX    \NC 51.9 \NC \useMPgraphic{fuzzycount}{n=55} \NC\NR
+\NC WINDOWS \NC 64.2 \NC \useMPgraphic{fuzzycount}{n=68} \NC\NR
+\HL
+\stoptabulate
+\stopbuffer
+
+\placetable
+  [here][tab:fuzzy]
+  {Operating system (n=106).}{\getbuffer}
+
+\in {Table} [tab:fuzzy] demonstrates how scratch numbers can be used. An
+interesting side effect is that when you look long enough to these kind of
+graphics, it looks like the lines are no longer horizontal. This table is defined
+as follows:
+
+\typebuffer
+
+You will notice that we pass a variable to the graphic using a second argument.
+We can access this variable with \type {\MPvar}. The graphic is defined as usable
+graphic, because we want to generate a unique random one each time.
+
+\typebuffer[c]
+
+The core of the macro is the \type {for} loop. Within this loop, we draw groups
+of four plus one lines. The draw path's look a bit complicated, but this has to
+do with the fact that a \type {mod} returns $0-4$ while we like to deal with
+$1-5$.
+
+The height adapts itself to the height of the line. The bounding box correction
+at the end ensures that the baseline is consistent and that the random vertical
+offsets fall below the baseline.
+
+Because we want to be sure that \type {n} has a value, we preset it by saying:
+
+\typebuffer[d]
+
+In the table, it makes sense to adapt the drawing to the lineheight, but a more
+general solution is to adapt the height to the fontsize.
+
+\starttyping
+height := 3/ 4 * \the \bodyfontsize * \currentfontscale ;
+\stoptyping
+
+\getbuffer[a]
+
+In the table we called the graphic directly, but how about making it available as
+a conversion macro? In \CONTEXT\ this is not that hard:
+
+\startbuffer
+\def\fuzzycount#1{{\tx\useMPgraphic{fuzzycount}{n=#1}}}
+\defineconversion[fuzzy][\fuzzycount]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because such a counter should not be that large, we use \type {\tx} to switch to
+a smaller font. This also demonstrates how the graphic adapts itself to the font
+size.
+
+We can now use this conversion for instance in an itemize. To save space we use
+three columns and no white space between the lines. The \type {2*broad} directive
+makes sure that we have enough room for the number.
+
+\startbuffer
+\startitemize[fuzzy,pack,2*broad,columns,three]
+\item one   \item two   \item three
+\item four  \item five  \item six
+\item seven \item eight \item nine
+\stopitemize
+\stopbuffer
+
+\getbuffer
+
+\typebuffer
+
+A careful reader will have noticed that the previous definition of the fuzzy
+counter drawing is not suited to generate the graphics we started with.
+
+\typebuffer[b]
+
+This time we want to limit the width to the current \type {\hsize}. We only need
+to add a few lines of code. Watch how we don't recalculate the bounding box when
+more lines are used.
+
+\typebuffer[a]
+
+\stopsection
+
+\startsection[title={Graphic variables}]
+
+\index{graphics+variables}
+\index{variables}
+
+In the previous sections we have seen that we can pass information to the graphic
+by means of variables. How exactly does this mechanism work?
+
+\startbuffer[def]
+\setupMPvariables[smile][type=1,height=1.25ex,color=darkred]
+
+\startuniqueMPgraphic{smile}{type,height,color}
+  numeric size ; size := \MPvar{height} ;
+  drawoptions(withcolor \MPvar{color}) ;
+  pickup pencircle xscaled (size/6) yscaled (size/12) ;
+  draw halfcircle rotated -90 scaled size ;
+  pickup pencircle scaled (size/4) ;
+  if     \MPvar{type}=1 :
+    for i=-1,+1 : draw origin shifted (0,i*size/4) ; endfor ;
+  elseif \MPvar{type}=2 :
+    for i=-1,+1 : draw origin shifted (-size/2,i*size/4) ; endfor ;
+    pickup pencircle scaled (size/6) ;
+    draw (size/4,0) -- (-size/4,0) ;
+  fi ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\startbuffer[sym]
+\definesymbol[smile]    [\uniqueMPgraphic{smile}{type=1}]
+\definesymbol[smilemore][\uniqueMPgraphic{smile}{type=2}]
+\stopbuffer
+
+\startbuffer[exa]
+Say it with a \symbol [smile]\ or maybe even a \symbol
+[smilemore], although seeing too many \dorecurse {10}
+{\symbol [smile]\ } \unskip in one text may make you cry.
+\stopbuffer
+
+\getbuffer[def,sym]
+
+A nice application of setting up variables for a specific graphic (or class of
+graphics) is the following. In an email message the author can express his own or
+the readers expected emotions with so called smilies like: \symbol [smile]. If
+you want them in print, you can revert to combinations of characters in a font,
+but as a \TEX\ user you may want to include nicer graphics.
+
+A convenient way to implement these is to make them into symbols, one reason
+being that in that case they will adapt themselves to the current font size.
+
+\typebuffer[exa] \getbuffer[exa]
+
+Because we want an efficient implementation, we will use unique graphics, because
+these will only be generated when the circumstances change.
+
+\typebuffer[sym]
+
+The definition itself then becomes:
+
+\typebuffer[def]
+
+We can now change some characteristics of the smilies without the need to
+redefine the graphic.
+
+\startbuffer[set]
+\setupMPvariables[smile][height=1ex,color=darkred]
+\stopbuffer
+
+\typebuffer[set]
+
+\getbuffer[set,exa]
+
+In order to keep the smilies unique there is some magic involved, watch the
+second argument in the next line:
+
+\starttyping
+\startuniqueMPgraphic{smile}{type,height,color}
+\stoptyping
+
+Because unique graphics often are used in backgrounds, its uniqueness is
+determined by the overlay characteristics. In our case however the uniqueness is
+determined by the smilies type, height and color. By explicitly specifying these,
+we make sure that they count in the creation of the uniqueness stamp.
+
+\startbuffer[exa]
+\midaligned{\switchtobodyfont[60pt]\symbol[smile]}
+\stopbuffer
+
+\typebuffer[exa]
+
+Because we use the ex||height, the previous call works as expected.
+
+\startlinecorrection[blank]
+\getbuffer[exa]
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Shape libraries}]
+
+\index{graphics+libraries}
+
+Unfortunately it takes some effort to define graphics, attach them to an overlay,
+and invoke the background. However, the good news is that since in many cases we
+want a consistent layout, we only have to do it once. The next table has some
+hashed backgrounds. (More information about how to define tables can be found in
+the \CONTEXT\ documentation and Up||To||Date documents.)
+
+\startbuffer
+\bTABLE[frame=off,meta:hash:linecolor=darkyellow,offset=3ex]
+  \bTR
+    \bTD[background=meta:hash:right]      right      \eTD
+    \bTD[background=meta:hash:left]       left       \eTD
+    \bTD[background=meta:hash:horizontal] horizontal \eTD
+    \bTD[background=meta:hash:vertical]   vertical   \eTD
+  \eTR
+\eTABLE
+\stopbuffer
+
+\getbuffer[shape-a,shape-b,shape-c]
+
+\placetable
+  {A hashed table.}
+  {\getbuffer}
+
+This table is defined as:
+
+\typebuffer
+
+The graphics themselves are defined in a \METAPOST\ module. In this particular
+example, the macro \type {some_hash} is defined in the file \type {mp-back.mp}.
+This macro takes six arguments:
+
+\starttyping
+some_hash (width, height, linewidth, linecolor, angle, gap) ;
+\stoptyping
+
+Because we don't want to define a specific overlay for each color and linewidth,
+we will use variables in the definition of the unique graphic.
+
+\typebuffer[shape-a]
+
+These variables are preset using \type {\setupMPvariables}:
+
+\typebuffer[shape-b]
+
+The last step in this process is to define the different
+alternatives as overlays:
+
+\typebuffer[shape-c]
+
+As we can see in the definition of the table, we can pass settings to the \type
+{\bTABLE} command. Actually, we can pass such settings to each command that
+supports backgrounds, or more precisely \type {\framed}. \in {Table} [tab:hashes]
+is for instance defined as:
+
+\startbuffer
+\bTABLE[frame=off,meta:hash:linewidth=.4pt,align=middle,offset=2ex]
+  \bTR
+    \bTD[background={meta:hash:left,meta:hash:right},
+         meta:hash:linecolor=darkyellow]
+        left        \par \& \par right    \eTD
+    \bTD[background={meta:hash:horizontal,meta:hash:vertical},
+         meta:hash:linecolor=darkred]
+         horizontal \par \& \par vertical \eTD
+  \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer
+
+The long names are somewhat cumbersome, but in that way we can prevent name
+clashes. Also, since the \METAPOST\ interface is english, the variables are also
+english.
+
+\placetable
+  [here][tab:hashes]
+  {A double hashed table.}
+  {\getbuffer}
+
+\stopsection
+
+\startsection[title={Symbol collections}]
+
+\index{graphics+symbols}
+\index{symbols}
+
+In \CONTEXT, a symbol can be defined without much coding. The advantage of using
+symbols is that you can redefine them depending on the situation. So,
+
+\starttyping
+\definesymbol [yes] [\em Yes!]
+\stoptyping
+
+creates a symbol, that lets \type {\symbol[yes]} expand into {\em Yes!} Since
+nearly anything can be a symbol, we can also say:
+
+\starttyping
+\definesymbol [yes] [\mathematics{\star}]
+\stoptyping
+
+or even the already defined symbol \symbol[star], by saying:
+
+\starttyping
+\definesymbol [yes] [{\symbol[star]}]
+\stoptyping
+
+It may be clear that we can use a graphic as well:
+
+\typebuffer[symb-c]
+
+Since we have collected some nice buttons in a \METAPOST\ file already, we can
+use a rather simple definition:
+
+\typebuffer[symb-a]
+
+This leaves a few settings:
+
+\typebuffer[symb-b]
+
+These symbols are collected in \in {table} [tab:symbols], and are called up with
+the \CONTEXT\ commands like \type {\symbol[menu:left]}. If needed, we can collect
+these button symbols in a so called symbol set, which permits us to instantly
+switch between sets with similar symbols.
+
+\startbuffer
+\bTABLE[frame=off,width=36pt,align=middle]
+  \bTR \bTD \dontleavehmode \symbol[menu:left]   \eTD
+       \bTD \dontleavehmode \symbol[menu:right]  \eTD
+       \bTD \dontleavehmode \symbol[menu:list]   \eTD
+       \bTD \dontleavehmode \symbol[menu:index]  \eTD
+       \bTD \dontleavehmode \symbol[menu:person] \eTD
+       \bTD \dontleavehmode \symbol[menu:stop]   \eTD
+       \bTD \dontleavehmode \symbol[menu:info]   \eTD
+       \bTD \dontleavehmode \symbol[menu:down]   \eTD
+       \bTD \dontleavehmode \symbol[menu:up]     \eTD
+       \bTD \dontleavehmode \symbol[menu:print]  \eTD \eTR
+  \bTR \bTD left   \eTD
+       \bTD right  \eTD
+       \bTD list   \eTD
+       \bTD index  \eTD
+       \bTD person \eTD
+       \bTD stop   \eTD
+       \bTD info   \eTD
+       \bTD down   \eTD
+       \bTD up     \eTD
+       \bTD print  \eTD \eTR
+\eTABLE
+\stopbuffer
+
+\getbuffer[symb-a,symb-b,symb-c]
+
+\placetable
+  [here][tab:symbols]
+  {A collection of button symbols.}
+  {\getbuffer}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

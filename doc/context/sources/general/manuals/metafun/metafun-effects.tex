@@ -1,0 +1,2596 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+% graphic text takes 5 sec on 21
+
+\startcomponent metafun-effects
+
+\environment metafun-environment
+
+\useMPlibrary[outlines]
+
+\startchapter[reference=sec:effects,title={Special effects}]
+
+\startintro
+
+Sometimes we want to go beyond \METAPOST's native features. Examples of such an
+extension are \CMYK\ colors, shading and transparency. Although features like
+this should be used with care, sometimes the documents look and feel can profit
+from it.
+
+If you don't want the whole graphic, but only a part of it, clipping comes into
+play. In addition to the standard clipping features, we can use \METAPOST\ to
+provide a decent clipping path. In this chapter we will uncover the details.
+
+We will also introduce ways to include externally defined graphics and outline
+fonts. We will demonstrate that within reasonable bounds you can manipulate such
+graphics.
+
+\stopintro
+
+\startsection[title={Spot colors}]
+
+You can define spot and multitone colors directly in \METAFUN, although normally
+you will do it at the \TEX\ end for consistency. At the \TEX\ end we define this:
+
+\startbuffer
+\definecolor [SpotBlue]   [c=1,m=.38,y=0,k=.64]
+\definecolor [SpotYellow] [c=0,m=.28,y=1,k=.06]
+\definemultitonecolor [MultiColor] [SpotBlue=.5,SpotYellow=.25]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+draw image  (
+    fill unitsquare shifted (7,0)
+        withcolor namedcolor("MultiColor") ;
+    fill unitsquare shifted (6,0)
+        withcolor .6 * spotcolor("temp1",red) ;
+    fill unitsquare shifted (5,0)
+        withcolor .4 * spotcolor("temp1",red) ;
+    fill unitsquare shifted (4,0)
+        withcolor .5 * spotcolor("temp2",.5green) ;
+    fill unitsquare shifted (3,0)
+        withcolor .5 * spotcolor("temp3",green) ;
+    fill unitsquare shifted (2,0)
+        withcolor multitonecolor("temp4",blue/2,yellow/2,green/2,magenta/3) ;
+) xsized TextWidth ;
+\stopbuffer
+
+Next we process this graphic:
+
+\typebuffer
+
+and get:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Transparency}]
+
+\index{transparency}
+
+{\em In the screen version we use a light gray background color. As a result,
+some of the transparency methods demonstrated here give unexpected results. The
+A4 version of this document demonstrates the real effects.}
+
+Although transparent colors have been around for some time already, it was only
+around 2000 that they made it as a high level feature into document format
+languages like \PDF. Supporting such a feature at a higher abstraction level is
+not only more portable, but also less sensitive for misinterpretation.
+
+\startbuffer[mpdef]
+vardef ColorCircle (expr method, factor, ca, cb, cc) =
+  save u, p ; path p ; p := fullcircle shifted (1/4,0) ;
+  image
+    ( fill p rotated  90 withcolor ca withtransparency (method,factor) ;
+      fill p rotated 210 withcolor cb withtransparency (method,factor) ;
+      fill p rotated 330 withcolor cc withtransparency (method,factor) ; )
+enddef ;
+\stopbuffer
+
+\typebuffer[mpdef]
+
+\startbuffer[mp]
+draw ColorCircle ("normal", .5, red, green, blue) xsized 3cm ;
+currentpicture := currentpicture shifted (-4cm,0) ;
+draw ColorCircle ("exclusion", .5, red, green, blue) xsized 3cm ;
+currentpicture := currentpicture shifted (-4cm,0) ;
+draw ColorCircle ("exclusion", 1, red, green, blue) xsized 3cm ;
+\stopbuffer
+
+\typebuffer[mp]
+
+\startlinecorrection[blank]
+\processMPbuffer[mpdef,mp]
+\stoplinecorrection
+
+\startbuffer[mp]
+cmykcolor xcyan    ; xcyan    := (1,0,0,0) ;
+cmykcolor xmagenta ; xmagenta := (0,1,0,0) ;
+cmykcolor xyellow  ; xyellow  := (0,0,1,0) ;
+
+draw ColorCircle ("exclusion", .5, xcyan, xmagenta, xyellow) xsized 3cm ;
+\stopbuffer
+
+\typebuffer[mp]
+
+\startlinecorrection[blank]
+\processMPbuffer[mpdef,mp]
+\stoplinecorrection
+
+You can be tempted to use transparency as a convenient way to achieve soft
+colors. In that case you should be aware of the fact that rendering transparent
+colors takes more time than normal colors \footnote {When your printer does not
+support this feature natively, the intermediate (\POSTSCRIPT) file send to the
+printing engine is also larger.}
+
+Fortunatey, \METAPOST\ provides a similar mechanism. The last circle in the
+following row demonstrates how we can trigger colors proportionally to other
+colors. Normally \type {background} is white, but you can set predefined color
+variables to another value.
+
+\startbuffer[mp]
+path p ; p := fullcircle scaled 2cm ;
+fill p shifted (0cm,0) withcolor blue  ;
+fill p shifted (3cm,0) withcolor .5blue  ;
+fill p shifted (6cm,0) withcolor transparent (1,0.5,blue) ;
+fill p shifted (9cm,0) withcolor .5[blue,white] ;
+\stopbuffer
+
+\typebuffer[mp]
+
+\startlinecorrection[blank]
+\processMPbuffer[mp]
+\stoplinecorrection
+
+The next series demonstrates that we use the complementary factor \type {.7} in
+the \METAPOST\ soft color to achieve the same softness as the \type {.3}
+transparency.
+
+\startbuffer[mp]
+path p ; p := fullcircle scaled 2cm ;
+fill p shifted (0cm,0) withcolor red  ;
+fill p shifted (3cm,0) withcolor .7red ;
+fill p shifted (6cm,0) withcolor transparent (1,0.3,red) ;
+fill p shifted (9cm,0) withcolor .7[red,white] ;
+\stopbuffer
+
+\typebuffer[mp]
+
+\startlinecorrection[blank]
+\processMPbuffer[mp]
+\stoplinecorrection
+
+\startbuffer[mp]
+vardef SampleText (expr t, c) =
+  save p ; picture p ;
+  p := image (draw t infont "\truefontname{Regular}") ;
+  draw (p shifted (- xpart center p,0)) scaled 5 withcolor c;
+enddef ;
+
+SampleText ("Much Of This"   , transparent(1, .5, red  )) ;
+SampleText ("Functionality"  , transparent(1, .5, green)) ;
+SampleText ("Was Written"    , transparent(1, .5, blue )) ;
+SampleText ("While Listening", transparent(1, .5, cmyk(1,0,0,0))) ;
+SampleText ("To the CD's Of" , transparent(1, .5, cmyk(0,1,0,0))) ;
+SampleText ("Tori Amos"      , transparent(1, .5, cmyk(0,0,1,0))) ;
+\stopbuffer
+
+So far we have applied transparent colors to shapes but text can also be the
+target.
+
+\typebuffer[mp]
+
+The source code of this example illustrates that the \CMYK\ color space is also
+supported. The \type {\truefontname} macro communicates the running font from
+\TEX\ to \METAPOST. Instead of such low level code one can of course also use the
+\type {textext} macro.
+
+\startbuffer[mp]
+vardef SampleText (expr t) =
+  draw textext(t) scaled 5 ;
+enddef ;
+
+SampleText ("\colored[a=1,t=.5,r=1]{Much Of This}") ;
+SampleText ("\colored[a=1,t=.5,g=1]{Functionality}") ;
+SampleText ("\colored[a=1,t=.5,b=1]{Was Written}") ;
+SampleText ("\colored[a=1,t=.5,c=1]{While Listening}") ;
+SampleText ("\colored[a=1,t=.5,m=1]{To the CD's Of}") ;
+SampleText ("\colored[a=1,t=.5,y=1]{Tori Amos}") ;
+\stopbuffer
+
+However, as we do the typesetting in \TEX\ in \MKIV\ this is the way to go:
+
+\typebuffer[mp]
+
+As expected we get:
+
+\startlinecorrection[blank]
+\processMPbuffer[mp]
+\stoplinecorrection
+
+Currently the 12 in \PDF\ available transparency methods are supported. \footnote
+{In the future we may also support more control over the individual methods.} You
+can use both numbers and names. As you may expect, both \CONTEXT\ and \METAFUN\
+support transparency in the same way. \in {Figure} [fig:transparencies] shows how
+the method affects the result.
+
+\startuseMPgraphic{test}
+numeric u ; u := if lua.mp.mode("screen") : 12mm else : 20mm fi ;
+
+path p ; p := fullcircle scaled u shifted (u/4,0);
+
+% cmykcolor xyellow ; xyellow := (0,0,1,0) ;
+% color xgreen      ; xgreen  := (0,1,0) ;
+% color xblue       ; xblue   := (0,0,1) ;
+
+% fill p rotated  90 withcolor transparent("\MPvar{a}",.5,xyellow) ;
+% fill p rotated 210 withcolor transparent("\MPvar{a}",.5,xgreen) ;
+% fill p rotated 330 withcolor transparent("\MPvar{a}",.5,xblue) ;
+
+fill p rotated  90 withcolor (0,0,1,0) withtransparency("\MPvar{a}",.5) ;
+fill p rotated 210 withcolor (0,1,0)   withtransparency("\MPvar{a}",.5) ;
+fill p rotated 330 withcolor (0,0,1)   withtransparency("\MPvar{a}",.5) ;
+\stopuseMPgraphic
+
+\startplacefigure[location=here,reference=fig:transparencies,title={The 12 transparency alternatives by name.}]
+    \doifelsemode {screen} {
+        \setupcombination[nx=8,ny=2]
+    } {
+        \setupcombination[nx=4,ny=4]
+    }
+    \startcombination
+      {\useMPgraphic{test}{a=normal}}     {\tttf normal}
+      {\useMPgraphic{test}{a=multiply}}   {\tttf multiply}
+      {\useMPgraphic{test}{a=screen}}     {\tttf screen}
+      {\useMPgraphic{test}{a=overlay}}    {\tttf overlay}
+      {\useMPgraphic{test}{a=softlight}}  {\tttf softlight}
+      {\useMPgraphic{test}{a=hardlight}}  {\tttf hardlight}
+      {\useMPgraphic{test}{a=colordodge}} {\tttf colordodge}
+      {\useMPgraphic{test}{a=colorburn}}  {\tttf colorburn}
+      {\useMPgraphic{test}{a=darken}}     {\tttf darken}
+      {\useMPgraphic{test}{a=lighten}}    {\tttf lighten}
+      {\useMPgraphic{test}{a=difference}} {\tttf difference}
+      {\useMPgraphic{test}{a=exclusion}}  {\tttf exclusion}
+      {\useMPgraphic{test}{a=hue}}        {\tttf hue}
+      {\useMPgraphic{test}{a=saturation}} {\tttf saturation}
+      {\useMPgraphic{test}{a=color}}      {\tttf color}
+      {\useMPgraphic{test}{a=luminosity}} {\tttf luminosity}
+    \stopcombination
+\stopplacefigure
+
+In \CONTEXT\ a transparent color is defined in a similar way as \quote {normal}
+colors. The transparency method is specified with the \type {a} key (either by
+number or by name) and the factor \type {t}.
+
+\startbuffer
+\definecolor [tred]   [r=1,t=.5,a=exclusion]
+\definecolor [tgreen] [g=1,t=.5,a=exclusion]
+\definecolor [tblue]  [b=1,t=.5,a=exclusion]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Both keys are needed. You can define your own symbolic names using:
+
+\starttyping
+\definetransparency [myowndefault] [1]
+\stoptyping
+
+The \type {\MPcolor} macro passes a color from \CONTEXT\ to \METAPOST, including
+the transparency specification.
+
+\startbuffer[mp]
+u := 2cm ; path p ; p := fullcircle scaled u shifted (u/4,0);
+
+fill p rotated  90 withcolor \MPcolor{tred} ;
+fill p rotated 210 withcolor \MPcolor{tgreen} ;
+fill p rotated 330 withcolor \MPcolor{tblue} ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[mp]
+\stoplinecorrection
+
+Of course this also works well for \CMYK\ colors.
+
+\startbuffer
+\definecolor[tred]  [c=1,k=.2,t=.5,a=1]
+\definecolor[tgreen][m=1,k=.2,t=.5,a=1]
+\definecolor[tblue] [y=1,k=.2,t=.5,a=1]
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[mp]
+\stoplinecorrection
+
+Gray scales work as well:
+
+\startbuffer
+\definecolor[ta][s=.9,t=.7,a=11]
+\definecolor[tb][s=.7,t=.7,a=11]
+\definecolor[tc][s=.5,t=.7,a=11]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We apply this to some text. By using an overlay we can conveniently explore the
+difference in fonts.
+
+% \startbuffer
+% def SampleText (expr s, f, c) =
+%   draw s infont f scaled 5 withcolor c ;
+% enddef ;
+
+% SampleText("Hello", "\truefontname{Regular}"       , \MPcolor{ta}) ;
+% SampleText("Hello", "\truefontname{RegularBold}"   , \MPcolor{tb}) ;
+% SampleText("Hello", "\truefontname{RegularSlanted}", \MPcolor{tc}) ;
+% \stopbuffer
+
+\startbuffer
+draw textext("\color[ta]{\tf Hello}") scaled 5 ;
+draw textext("\color[tb]{\bf Hello}") scaled 5 ;
+draw textext("\color[tc]{\sl Hello}") scaled 5 ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Shading}]
+
+\startsubsection[title=Introduction]
+
+\index{shading}
+
+In this section we introduce different kinds of shading. Since \METAPOST\ does
+not support this feature directly, we have to fall back on a few tricks. For the
+moment shading is only supported in \PDF. In the following examples, we will use
+the next three colors:
+
+\startbuffer
+\definecolor[a][darkyellow]
+\definecolor[b][s=.8]
+\definecolor[c][darkred]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Shading support evolved in steps and alongside development of the backend code. Also,
+as it became more used a second interface came available. We discuss both here.
+
+\stopsubsection
+
+\startsubsection[title=The old method]
+
+First we discuss the old method which is still valid and also available in
+\MKII. It illustrates some of the principles.
+
+\startbuffer[a]
+\startuniqueMPgraphic{CircularShade}
+  path  p ;
+  p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+  circular_shade(p,0,\MPcolor{a},\MPcolor{b}) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{LinearShade}
+  path  p ;
+  p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+  linear_shade(p,0,\MPcolor{a},\MPcolor{b});
+\stopuniqueMPgraphic
+\stopbuffer
+
+\startbuffer[b]
+\defineoverlay[circular shade][\uniqueMPgraphic{CircularShade}]
+\defineoverlay[linear shade]  [\uniqueMPgraphic{LinearShade}]
+\stopbuffer
+
+\startbuffer[c]
+\framed
+  [background=circular shade,frame=off]
+  {\bf \white Hi there, I'm Circular!}
+\stopbuffer
+
+\startbuffer[d]
+\framed
+  [background=linear shade,frame=off]
+  {\bf \white Whow, this is Linear!}
+\stopbuffer
+
+A shade is a fill with a stepwise change in color. In \POSTSCRIPT\ (level 2), the
+way this color changes can be circular, linear, or according to a user defined
+function. Circular and linear shades look like this:
+
+\startlinecorrection[blank]
+\getbuffer[a,b,c]
+\stoplinecorrection
+
+\startlinecorrection[blank]
+\getbuffer[a,b,d]
+\stoplinecorrection
+
+As you can see, the shade lays behind the text, as a background overlay. These
+overlays are unique \METAPOST\ graphics, so they will adapt themselves to the
+dimensions of the foreground.
+
+\typebuffer[b]
+
+The two framed texts are defined as:
+
+\typebuffer[c]
+
+and:
+
+\typebuffer[d]
+
+We still have to define the graphics. Here we use a macro that takes four
+arguments: a path, a number identifying the center of shading, and the colors to
+start and end with.
+
+\typebuffer[a]
+
+The \METAPOST\ macros, \type {circular_shade} and \type {linear_shade}, add
+information to the \METAPOST\ output file, which is interpreted by the converter
+built in \CONTEXT. Shading comes down to interpolation between two or more points
+or user supplied ranges. A poor mans way of doing this, is to build the graphics
+piecewise with slightly changing colors. But, instead of \quote {manually}
+stepping through the color values, we can use the more efficient and generalized
+\POSTSCRIPT\ level~2 and \PDF\ level~1.3 shading feature.
+
+\def\SomeShade#1#2#3% waarom unique ?
+  {\startuniqueMPgraphic{shade-#1}
+     width := \overlaywidth ;
+     height := \overlayheight ;
+     path p ; p := unitsquare xscaled width yscaled height ;
+     #2_shade(p,#3,\MPcolor{a},\MPcolor{b}) ;
+   \stopuniqueMPgraphic
+   \defineoverlay[shade-#1][\uniqueMPgraphic{shade-#1}]%
+   \framed[background=shade-#1,width=2cm,height=2cm,frame=off]{}}
+
+\startlinecorrection[blank]
+\startcombination[5*1]
+  {\SomeShade{20}{circular}{0}} {circular 0}
+  {\SomeShade{21}{circular}{1}} {circular 1}
+  {\SomeShade{22}{circular}{2}} {circular 2}
+  {\SomeShade{23}{circular}{3}} {circular 3}
+  {\SomeShade{24}{circular}{4}} {circular 4}
+\stopcombination
+\stoplinecorrection
+
+\startlinecorrection[blank]
+\startcombination[4*2]
+  {\SomeShade{32}{linear}{1}} {linear 1}
+  {\SomeShade{32}{linear}{2}} {linear 2}
+  {\SomeShade{33}{linear}{3}} {linear 3}
+  {\SomeShade{34}{linear}{4}} {linear 4}
+  {\SomeShade{35}{linear}{5}} {linear 5}
+  {\SomeShade{36}{linear}{6}} {linear 6}
+  {\SomeShade{37}{linear}{7}} {linear 7}
+  {\SomeShade{38}{linear}{8}} {linear 8}
+\stopcombination
+\stoplinecorrection
+
+% % This limitation si no longer present in mpiv.
+%
+% Shading is not a \METAPOST\ feature, which means that it has to be implemented
+% using so called specials, directives that end up in the output file.
+% Unfortunately these are not coupled to the specific path, which means that we
+% have to do a significant amount of internal bookkeeping. Also, in \PDF\ we have
+% to make sure that the graphics and their resources (being the shading functions)
+% are packaged together.
+%
+% Because of this implementation, shading may behave somewhat unexpected at times.
+% A rather normal case is the next one, where we place 5~shaded circles in a row.
+%
+% \startbuffer
+% path p ; p := fullcircle scaled 1cm ;
+% for i=0 step 2cm until 8cm :
+%   circular_shade(p shifted (i,0),0,\MPcolor{a},\MPcolor{b}) ;
+% endfor ;
+% \stopbuffer
+%
+% \typebuffer
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% At first sight, in the next situation, we would expect something similar, because
+% we simply copy the same circle 5~times. However, due to the way we have
+% implemented shading in \CONTEXT, we do indeed copy the circles, but the shade
+% definition is frozen and the same one is used for all 5~circles. This means that
+% the center of the shading stays at the first circle.
+%
+% \startbuffer
+% circular_shade(fullcircle scaled 1cm,0,\MPcolor{a},\MPcolor{b}) ;
+% picture s ; s := currentpicture ; currentpicture := nullpicture ;
+% for i=0 step 2cm until 8cm :
+%   addto currentpicture also s shifted (i,0) ;
+% endfor ;
+% \stopbuffer
+%
+% \typebuffer
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% Unlike \TEX, \METAPOST\ does not keep its specials attached to the current path,
+% and flushes them before the graphic data. Since we use these specials to register
+% shading information, it is rather hard to tightly connect a specific shade with a
+% certain fill, especially if an already performed fill is not accessible, which is
+% the case when we copy a picture.
+%
+% This may seem a disadvantage, but fortunately it also has its positive side. In
+% the next example we don't copy, but reuse an already defined shade. By storing
+% the reference to this shade, and referring to it by using \type {withshade}, we
+% can use a shade that operates on multiple shapes.
+
+\startbuffer
+sh := define_circular_shade
+  (origin,origin,0,8cm,\MPcolor{a},\MPcolor{b}) ;
+for i=0 step 2cm until 8cm :
+  fill fullcircle scaled 1cm shifted (i,0) withshade sh ;
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The low level macro \type {define_circular_shade} is fed with two pairs (points),
+two radius, and two colors. The shade is distributed between the colors according
+to the radius.
+
+Shading can hardly be called an easy issue. The macros that we provide here are
+in fact simplifications, which means that at a lower level, one can do more
+advanced things. Here we limit ourselves to the more common cases. In the
+previous examples, we used an arrow to indicate the direction and magnitude of
+the shade. The next macro demonstrates the principles in a different way.
+
+\startbuffer[a]
+def test_shade (expr a, b, ra, rb) =
+  pickup pencircle scaled 1mm ;
+
+  color ca ; ca := \MPcolor{a} ;
+  color cb ; cb := \MPcolor{b} ;
+  color cc ; cc := \MPcolor{c} ;
+
+  path pa ; pa := fullcircle scaled 2ra shifted a ;
+  path pb ; pb := fullcircle scaled 2rb shifted b ;
+
+  sh := define_circular_shade(a,b,ra,rb,ca,cb) ;
+
+  fill pb withshade sh ;
+  draw pb withcolor cc ;
+  draw pa withcolor cc ;
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+The shade is distributed between two circles, each with a radius and center
+point. All four can be set, but as the next calls demonstrate, we can normally do
+with less, which is why we provided the macro with less parameters.
+
+\startbuffer[b]
+test_shade(origin, origin,   0cm, 1cm) ;
+\stopbuffer
+\startbuffer[c]
+test_shade(origin, origin, .25cm, 1cm) ;
+\stopbuffer
+\startbuffer[d]
+test_shade(origin, origin, .50cm, 1cm) ;
+\stopbuffer
+
+\startbuffer[f]
+\startlinecorrection[blank]
+\hbox
+  {\processMPbuffer[a,b]\quad
+   \processMPbuffer[a,c]\quad
+   \processMPbuffer[a,d]}
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer[b,c,d] \getbuffer[f]
+
+\startbuffer[b]
+test_shade(origin, origin shifted (.25cm,0),   0cm, 1cm) ;
+\stopbuffer
+\startbuffer[c]
+test_shade(origin, origin shifted (.25cm,0), .25cm, 1cm) ;
+\stopbuffer
+\startbuffer[d]
+test_shade(origin, origin shifted (.25cm,0), .50cm, 1cm) ;
+\stopbuffer
+
+\typebuffer[b,c,d] \getbuffer[f]
+
+\startbuffer[b]
+test_shade(origin shifted (.25cm,0), origin,   0cm, 1cm) ;
+\stopbuffer
+\startbuffer[c]
+test_shade(origin shifted (.25cm,0), origin, .25cm, 1cm) ;
+\stopbuffer
+\startbuffer[d]
+test_shade(origin shifted (.25cm,0), origin, .50cm, 1cm) ;
+\stopbuffer
+
+\typebuffer[b,c,d] \getbuffer[f]
+
+\startbuffer[a]
+def test_shade (expr a, b) =
+  pickup pencircle scaled 1mm ;
+
+  color ca ; ca := \MPcolor{a} ;
+  color cb ; cb := \MPcolor{b} ;
+  color cc ; cc := \MPcolor{c} ;
+
+  sh := define_linear_shade(a,b,ca,cb) ;
+
+  fill fullsquare scaled 2cm withshade sh ;
+  draw a withcolor cc ;
+  draw b withcolor cc ;
+enddef ;
+\stopbuffer
+
+In a similar fashion, we can define a linear shade. This time we only pass two
+points and two colors.
+
+\typebuffer[a]
+
+Although one can control shading to a large extend, in practice only a few cases
+really make sense.
+
+\startbuffer[b]
+test_shade(origin, origin shifted (1cm,0)) ;
+\stopbuffer
+\startbuffer[c]
+test_shade(origin shifted (-1cm,0), origin shifted (1cm,0)) ;
+\stopbuffer
+\startbuffer[d]
+test_shade(origin shifted (-1cm,-1cm), origin shifted (1cm,1cm)) ;
+\stopbuffer
+
+\startbuffer[f]
+\startlinecorrection[blank]
+\hbox
+  {\processMPbuffer[a,b]\quad
+   \processMPbuffer[a,c]\quad
+   \processMPbuffer[a,d]}
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer[b,c,d] \getbuffer[f]
+
+\stopsubsection
+
+\startsubsection[title=The new method]
+
+By now the shader macros are rather advanced and specifications are easier than
+before. Here we discuss the new method. An example is:
+
+\startbuffer
+fill fullsquare xyscaled (TextWidth,1cm)
+    withshademethod "linear"
+    withshadevector (1,0)
+    withshadecolors (darkred,darkgreen)
+;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+There are several properties that can be set:
+
+\starttabulate[|l|p|]
+\NC domain  \NC The range over which the colors run, with a minimum of 0 and maximum of 1. \NC \NR
+\NC color   \NC A color to start from and one to end with, we default from black to white. \NC \NR
+\NC type    \NC The shading can be linear or circular. \NC \NR
+\NC center  \NC The origin of the shade vector. \NC \NR
+\NC radius  \NC The radius vector of a circular shade. \NC \NR
+\NC vector  \NC Where we start and end the shading. \NC \NR
+\stoptabulate
+
+For a linear shade the centers are the lower left and upper right corners, for a
+circular shade it's the center of the path. For a circular shade the radius runs
+from zero to the maximum distance from the center as determined by the
+boundingbox.
+
+The vector is used as follows: the first coordinate (xpart) determines the point
+on the path where we start, the second coordinate (ypart) the point on the
+path where we end.
+
+\startbuffer[a]
+fill fullsquare xyscaled (TextWidth,1cm)
+    withshademethod "linear"
+    withshadevector (1,0)
+    withshadecolors (darkred,darkgreen)
+;
+\stopbuffer
+
+\startbuffer[b]
+draw fullsquare xyscaled (TextWidth,1cm)
+    shownshadevector (1,0)
+    withpen pencircle scaled 2
+    withcolor .5white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer[a,b]
+\stoplinecorrection
+
+In the end only the x coordinate matters, but using a point on the path sort of
+fits in \METAPOST. In the case of a rectangle we have 4 points while circle has 8
+points.
+
+\startbuffer[a]
+fill fullcircle xyscaled (TextWidth,1cm)
+    withshademethod "linear"
+    withshadevector (2,4)
+    withshadecolors (darkred,darkgreen)
+;
+\stopbuffer
+
+\startbuffer[b]
+draw fullcircle xyscaled (TextWidth,1cm)
+    shownshadevector (2,4)
+    withpen pencircle scaled 2
+    withcolor .5white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer[a,b]
+\stoplinecorrection
+
+A triangle has three points. Using 1 and 2 as second vector value gives the same
+results as do values in the range 0 upto 1 and 2 upto 3 (0 again).
+
+\startbuffer[a]
+fill fulltriangle xyscaled (TextWidth,1cm)
+    withshademethod "linear"
+    withshadevector (0.25,0.75)
+    withshadecolors (darkred,darkgreen)
+;
+\stopbuffer
+
+\startbuffer[b]
+draw fulltriangle xyscaled (TextWidth,1cm)
+    shownshadevector (0.25,0.75)
+    withpen pencircle scaled 2
+    withcolor .5white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer[a,b]
+\stoplinecorrection
+
+The shadevector relates to (the x coordinates of) points on the path. A variant is
+to use the boundingbox:
+
+\startbuffer[a]
+for i=1 upto 3 :
+    fill fulltriangle xyscaled (TextWidth,1cm)
+        shifted (0,-i*15mm)
+        withshademethod "linear"
+        withshadedirection (1,1-i/4)
+        withshadecolors (darkgreen,darkblue)
+    ;
+endfor ;
+\stopbuffer
+
+\startbuffer[b]
+for i=1 upto 3 :
+    draw fulltriangle xyscaled (TextWidth,1cm)
+        shifted (0,-i*15mm)
+        shownshadevector (1,1-i/4)
+        withpen pencircle scaled 2
+        withcolor .5white ;
+endfor ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startlinecorrection[blank]
+    \processMPbuffer[a,b]
+\stoplinecorrection
+
+So, where a vector is defined as going from {\em point xpart a of pth} to
+{\em point ypart a of pth}, a direction goes from {\em point xpart a of
+boundingbox pth} to {\em point ypart a of boundingbox pth}.
+
+To make life convenient we provide a few constants that indicate directions:
+
+\starttyping
+pair shadedup    ; shadedup    := (0.5,2.5) ;
+pair shadeddown  ; shadeddown  := (2.5,0.5) ;
+pair shadedleft  ; shadedleft  := (1.5,3.5) ;
+pair shadedright ; shadedright := (3.5,1.5) ;
+\stoptyping
+
+\startbuffer[a]
+for d = shadedup, shadeddown, shadedleft, shadedright :
+    fill fullsquare xyscaled (TextWidth,1cm)
+        withshademethod "linear"
+        withshadedirection d
+        withshadecolors (darkgreen,darkblue)
+    ;
+    currentpicture := currentpicture shifted (0,15mm) ;
+endfor ;
+\stopbuffer
+
+\startbuffer[b]
+currentpicture := currentpicture shifted (0,-60mm) ;
+for d = shadedup, shadeddown, shadedleft, shadedright :
+    draw fullsquare xyscaled (TextWidth,1cm)
+        shownshadedirection d
+        withpen pencircle scaled 2
+        withcolor .5white ;
+    currentpicture := currentpicture shifted (0,15mm) ;
+endfor ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startlinecorrection[blank]
+    \processMPbuffer[a,b]
+\stoplinecorrection
+
+In case of a circular shade another method comes in handy:
+
+\startbuffer[a]
+fill fullcircle xyscaled (TextWidth,4cm)
+    withshademethod "circular"
+    withshadecenter (.7,.9)
+    withshadecolors (darkblue,darkyellow)
+;
+\stopbuffer
+
+\startbuffer[b]
+draw fullcircle xyscaled (TextWidth,4cm)
+    shownshadecenter (.7,.9)
+    withpen pencircle scaled 2
+    withcolor .5white ;
+\stopbuffer
+
+\typebuffer
+
+Here the values relate to the center of path i.e.\ they shift the center by the
+given fraction of the width and height of the boundingbox devided by 2.
+
+\startlinecorrection[blank]
+    \processMPbuffer[a,b]
+\stoplinecorrection
+
+You can set a center directly i.e.\ unrelated to the center of the path as
+follows:
+
+\startbuffer[a]
+fill fullcircle xyscaled (TextWidth,4cm)
+    withshademethod "circular"
+    withshadeorigin (-30mm,-15mm)
+    withshadecolors (darkblue,darkyellow)
+;
+\stopbuffer
+
+\startbuffer[b]
+draw fullcircle xyscaled (TextWidth,4cm)
+    shownshadeorigin (-30mm,-15mm)
+    withpen pencircle scaled 2
+    withcolor .5white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer[a,b]
+\stoplinecorrection
+
+In a similar way you can set an explicit radius:
+
+\startbuffer[a]
+fill fullcircle xyscaled (TextWidth,1cm)
+    withshademethod "circular"
+    withshaderadius (10mm,50mm)
+    withshadecolors (darkblue,darkyellow)
+;
+currentpicture := currentpicture shifted (0,15mm) ;
+fill fullcircle xyscaled (TextWidth,1cm)
+    withshademethod "circular"
+    withshaderadius (50mm,10mm)
+    withshadecolors (darkgreen,darkred)
+;
+currentpicture := currentpicture shifted (0,15mm) ;
+fill fullcircle xyscaled (TextWidth,1cm)
+    withshademethod "circular"
+    withshaderadius (TextWidth/3,0mm)
+    withshadecolors (darkmagenta,darkcyan)
+;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer[a]
+\stoplinecorrection
+
+A more fancy feature is combined shades. This works as follows:
+
+\startbuffer[a]
+fill fullsquare xyscaled (TextWidth,1cm)
+    withshademethod "linear"
+    withshadevector (0,1)
+    withshadestep (
+        withshadefraction .3
+        withshadecolors (red,green)
+    )
+    withshadestep (
+        withshadefraction .5
+        withshadecolors (green,blue)
+    )
+    withshadestep (
+        withshadefraction .7
+        withshadecolors (blue,red)
+    )
+    withshadestep (
+        withshadefraction 1
+        withshadecolors (red,yellow)
+    )
+;
+\stopbuffer
+
+\typebuffer[a]
+
+By stepwise defining the colored bands you get:
+
+\startlinecorrection[blank]
+    \processMPbuffer[a]
+\stoplinecorrection
+
+Shades work well with colors and transparencies. This involves quite some
+resource managament in the backend but it's hidden by the interface.
+
+\startbuffer[a]
+fill fullsquare scaled 5cm
+    withshademethod "linear"
+    withshadefactor 1
+    withshadedomain (0,1)
+    withshadevector (0.5,2.75)
+    withshadecolors (red,green) ;
+
+fill fullcircle scaled 5cm
+    withshademethod "circular"
+    withshadefactor 1
+    withshadedomain (0,1)
+    withshadecenter (.25,.25)
+    withshadecolors (green,blue) ;
+
+fill fulltriangle scaled 5cm
+    withshademethod "circular"
+    withshadefactor 1
+    withshadedomain (0,1)
+    withshadecenter (.25,.25)
+    withshadecolors (blue,yellow) ;
+\stopbuffer
+
+\startbuffer[b]
+fill fullsquare scaled 5cm
+    withcolor white ;
+fill fullsquare scaled 5cm
+    withshademethod "linear"
+    withshadevector (0.5,2.75)
+    withshadecolors (red,green)
+    withtransparency (1,.5) ;
+
+fill fullcircle scaled 5cm
+    withcolor white ;
+fill fullcircle scaled 5cm
+    withshademethod "circular"
+    withshadecenter (.25,.25)
+    withshadecolors (green,blue)
+    withtransparency (1,.5) ;
+
+fill fulltriangle scaled 5cm
+    withcolor white ;
+fill fulltriangle scaled 5cm
+    withshademethod "circular"
+    withshadecenter (.25,.25)
+    withcolor blue shadedinto yellow
+    withtransparency (1,.5) ;
+\stopbuffer
+
+\startbuffer[c]
+fill fullsquare scaled 5cm
+    withshademethod "linear"
+    withshadevector (0.5,2.75)
+    withshadecolors (red,green)
+    withtransparency (1,.5) ;
+
+fill fullcircle scaled 5cm
+    withshademethod "circular"
+    withshadecenter (.25,.25)
+    withcolor green shadedinto blue
+    withtransparency (1,.5) ;
+
+fill fulltriangle scaled 5cm
+    withshademethod "circular"
+    withshadecenter (.25,.25)
+    withcolor blue shadedinto yellow
+    withtransparency (1,.5) ;
+\stopbuffer
+
+Here are some shades without transparency:
+
+\typebuffer[a]
+
+When the background is white, transparency is just a way to achieve soft colors.
+We leave out the defaults.
+
+\typebuffer[b]
+
+Real transparency will show op darker due to the accumulated colors. This time we
+demonstrate an alternative color specification.
+
+\typebuffer[c]
+
+\startplacefigure[reference=shades:transparency,title={Transparency applied to shades.}]
+    \startcombination[3*1]
+        {\processMPbuffer[a]} {no transparency}
+        {\processMPbuffer[b]} {transparency on white}
+        {\processMPbuffer[c]} {real transparency}
+    \stopcombination
+\stopplacefigure
+
+Within reasonable bounds you can move around and adapt shaded paths but you need
+to keep in mind that due to the fact that we are dealing with relatively complex
+data structures there are some limits. For instance it is possible to define a
+shade as (kind of) variable and reuse it. it's also possible then to overload
+some properties.
+
+% % still supported but not advertized:
+%
+% numeric n ; n = define_linear_shade (center fullcircle,center fullsquare,red,green) ;
+%
+% fill fullcircle randomized 1cm xyscaled(10cm,8cm) withshade n ;
+
+\startbuffer
+defineshade myshade
+    withshademethod "circular"
+    withshadefactor 1
+    withshadedomain (0,1)
+    withshadecolors (black,white)
+    withtransparency (1,.5)
+;
+
+for i=1 upto 5 :
+    fill fullcircle randomized 1 xyscaled(5cm,3cm)
+        shaded myshade ;
+endfor ;
+
+draw image (
+    for i=1 upto 5 :
+        fill fullcircle randomized 1
+            shaded myshade
+            withshadecolors (yellow,blue) ;
+    endfor ;
+) xyscaled(5cm,3cm) shifted (5cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+We get two groups of five overlayed shades here, one with a different color. The
+shade properties can only be applied to paths (see \in {figure}
+[fig:shades:defined]).
+
+\startplacefigure[reference=fig:shades:defined,title={Reusing defined shaded.}]
+    \processMPbuffer
+\stopplacefigure
+
+In older versions one could not reposition or scale a shaded path without losing
+or crippling the shade properties. Nowadays this is no longer a limitation, as we
+demonstrate in the following examples. You can disable this feature if wanted.
+The results are shown in \in {figure} [fig:shades:transform]. Without the
+transform the vectors and such are kept which might be useful in special cases.
+
+\startbuffer[a]
+fill fullsquare xyscaled (15mm, 15mm)
+    withshademethod "linear"
+    withshadedirection shadedright
+    withshadecolors (red,(1,1,1)) ;
+
+fill fullsquare xyscaled (10mm, 10mm)
+    withshademethod "circular"
+    withshadecolors (green,blue) ;
+
+currentpicture := currentpicture xysized (.4TextWidth,30mm) ;
+currentpicture := currentpicture shifted (5mm,5mm) ;
+\stopbuffer
+
+\typebuffer[a]
+
+The transform can be ignored with:
+
+\startbuffer[b]
+fill fullsquare xyscaled (15mm, 15mm)
+    withshademethod "linear"
+    withshadetransform "no"
+    withshadedirection shadedright
+    withshadecolors (red,(1,1,1)) ;
+
+fill fullsquare xyscaled (10mm, 10mm)
+    withshademethod "circular"
+    withshadetransform "no"
+    withshadecolors (green,blue) ;
+
+currentpicture := currentpicture xysized (.4TextWidth,30mm) ;
+currentpicture := currentpicture shifted (5mm,5mm) ;
+\stopbuffer
+
+\typebuffer[b]
+
+\startplacefigure[reference=fig:shades:transform,title={Shifting and scaling shades.}]
+    \startcombination
+        {\processMPbuffer[a]} {with transform}
+        {\processMPbuffer[b]} {without transform}
+    \stopcombination
+\stopplacefigure
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Clipping}]
+
+\index{clipping}
+
+In this section we will use the graphic representation (although simplified) of a
+Dutch cow to demonstrate clipping.
+
+\startbuffer
+\placefigure
+  {A cow.}
+  {\externalfigure[cow-fun.mps][width=4cm]}
+\stopbuffer
+
+\getbuffer
+
+Since this cow is defined as a \METAPOST\ graphic, we use the suffix \type {mps}
+instead of \type {eps} or a number, although \CONTEXT\ will recognize each as
+being \METAPOST\ output. The placement of the cow is defined as:
+
+\typebuffer
+
+Clipping is combined with a matrix, as in \in {figure} [fig:clipped cow 1]. The
+content to be clipped is divided in \type {nx} by \type {ny} rectangles. For
+instance, \type {nx=5} and \type {ny=8} will produce a 40~cell grid with
+5~columns of 8~rows.
+
+\startbuffer
+\startbuffer
+\setupclipping[nx=3,ny=2]
+\startcombination
+  {\clip[x=1,y=1]{\externalfigure[cow-fun.mps][width=4cm]}} {1,1}
+  {\clip[x=3,y=1]{\externalfigure[cow-fun.mps][width=4cm]}} {3,1}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:clipped cow 1]
+  {A clipped cow.}{\getbuffer}
+\stopbuffer
+
+\getbuffer
+
+Here we have divided the cow in six cells, so that we can clip its head and tail.
+This kind of clipping enables you to zoom in or focus on a specific part of a
+graphic.
+
+\typebuffer
+
+Alternatively, we can specify a \type {width}, \type {height}, \type {hoffset}
+and \type {voffset}, as demonstrated in \in {figure} [fig:clipped cow 2].
+
+\startbuffer
+\placefigure
+  [here][fig:clipped cow 2]
+  {Another clipped cow.}
+  {\clip
+     [width=2cm,height=2cm,hoffset=0cm,voffset=0cm]
+     {\externalfigure[cow-fun.mps][width=4cm]}}
+\stopbuffer
+
+\getbuffer
+
+\typebuffer
+
+Because \METAPOST\ supports clipping, it will be no surprise that both techniques
+can be combined. In the next example we will zoom in on the head of the cow. We
+also use this opportunity to demonstrate how you can package a clip in a figure
+definition.
+
+\startbuffer
+\startMPclip{head clip}
+ w := \width ; h := \height ;
+ clip currentpicture to
+  ((0,h)--(w,h){down}..{left}(0,0)--cycle) ;
+\stopMPclip
+
+\placefigure
+  [here][fig:circular clipped cowhead]
+  {A quarter circle applied to a cows head.}
+  {\ruledhbox
+     {\clip
+        [nx=2,ny=2,x=1,y=1,mp=head clip]
+        {\externalfigure[cow-fun.mps][width=4cm]}}}
+\stopbuffer
+
+\typebuffer
+
+A more advanced clip is demonstrated in \in {figure} [fig:circular clipped
+cowhead]. We added \type {\ruledhbox} to demonstrate the dimensions of the
+resulting graphic. Putting something in such a ruled box is often a quick way to
+test spacing.
+
+\getbuffer
+
+Although a clip path definition can contain any \METAPOST\ command, even
+graphics, it must contain at least one clipping path. The first one encountered
+in the resulting graphic is used. In the example we used a path that is built out
+of three subpaths.
+
+\starttyping
+(0,h)--(w,h){down}..{left}(0,0)--cycle
+\stoptyping
+
+We start in the top left corner and draw a straight line. Next we draw a curve to
+the origin. Directives like \type {down} and \type {right} force the curve in a
+certain direction. With \type {cycle} we close the path. Because we use this path
+as a clipping path, we use \type {clip} instead of \type {draw} or \type {fill}.
+
+\startbuffer
+w := 4cm ; h := 2cm ;
+draw (0,h)--(w,h){down}..{left}(0,0)--cycle
+  withpen pencircle scaled 1mm withcolor .625red ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Clipping as such is not limited to graphics. Take for instance the text buffer:
+
+\startbuffer
+\startbuffer[sample]
+\framed
+  [align=middle,width=4cm,background=screen,frame=off]
+  {A \METAPOST\ clip is not the same as a video clip,
+   although we can use \METAPOST\ to produce a video clip.}
+\stopbuffer
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We can call up such a buffer as if it were an external figure. \in {Figure}
+[fig:clipped text 1] shows the result. This time we use a different clip path:
+
+\startbuffer[a]
+\startMPclip{text clip}
+  clip currentpicture to fullcircle shifted (.5,.5)
+    xscaled \width yscaled \height ;
+\stopMPclip
+\stopbuffer
+
+\typebuffer[a]
+
+To load a buffer, we have to specify its name and type, as in:
+
+\startbuffer[b]
+\placefigure
+  [here][fig:clipped text 1]
+  {A clipped buffer (text).}
+  {\clip
+     [nx=1,ny=1,mp=text clip]
+     {\externalfigure[sample][type=buffer,width=4cm]}}
+\stopbuffer
+
+\typebuffer[b]
+
+\getbuffer[a,b]
+
+The next few lines demonstrate that we can combine techniques like backgrounds
+and clipping.
+
+\startbuffer
+\startuseMPgraphic{clip outline}
+ draw fullcircle
+   xscaled \overlaywidth yscaled \overlayheight
+   withpen pencircle scaled 4mm
+   withcolor .625red ;
+\stopuseMPgraphic
+
+\defineoverlay[clip outline][\useMPgraphic{clip outline}]
+
+\placefigure
+  [here][fig:clipped text 2]
+  {A clipped buffer (text).}
+  {\framed
+     [background=clip outline,offset=overlay,frame=off]
+     {\clip
+        [nx=1,ny=1,mp=text clip]
+        {\externalfigure[sample][type=buffer,width=4cm]}}}
+\stopbuffer
+
+\typebuffer
+
+We could have avoided the \type {\framed} here, by using the \typ{clip outline}
+overlay as a background of the sample. In that case, the resulting linewidth
+would have been 2.5~mm instead of 5~mm, since the clipping path goes through the
+center of the line.
+
+\getbuffer
+
+In most cases, the clip path will be a rather simple path and defining such a
+path every time you need it, can be annoying. \in {Figure} [fig:clipping paths]
+shows a collection of predefined clipping paths. These are available after
+loading the \METAPOST\ clipping library.
+
+\starttyping
+\useMPlibrary[clp]
+\stoptyping
+
+We already saw how the circular clipping path was defined. The diamond is defined
+in a similar way, using the predefined path \type {diamond}:
+
+\starttyping
+\startMPclip{diamond}
+  clip currentpicture to unitdiamond
+    xscaled \width yscaled \height ;
+\stopMPclip
+\stoptyping
+
+The definition of the negated ellipse (\type {negellipse}) uses the primary \type
+{peepholed}. This primary is defined in one of the \METAPOST\ modules that come
+with \CONTEXT.
+
+\starttyping
+\startMPclip{negellipse}
+  clip currentpicture to (unitcircle peepholed unitsquare)
+    xscaled \width yscaled \height ;
+\stopMPclip
+\stoptyping
+
+The definition of \type {peepholed} is rather dirty and using \type {peepholed}
+is restricted to well defined situations (like here). It's called a primary
+because it acts as an operator at the same level as \type {*} and \type {scaled}.
+
+\startbuffer
+\setupclipping  [nx=1,ny=1,x=1,y=1]
+\setupblackrules[width=2cm,height=1cm]
+\startcombination[6*3]
+  {\clip[mp=urellipse] {\darkred\blackrule}} {urellipse}
+  {\clip[mp=ulellipse] {\darkred\blackrule}} {ulellipse}
+  {\clip[mp=llellipse] {\darkred\blackrule}} {llellipse}
+  {\clip[mp=lrellipse] {\darkred\blackrule}} {lrellipse}
+  {\clip[mp=ellipse]   {\darkred\blackrule}} {ellipse}
+  {\clip[mp=negellipse]{\darkred\blackrule}} {negellipse}
+  {\clip[mp=tellipse]  {\darkred\blackrule}} {tellipse}
+  {\clip[mp=bellipse]  {\darkred\blackrule}} {bellipse}
+  {\clip[mp=lellipse]  {\darkred\blackrule}} {lellipse}
+  {\clip[mp=rellipse]  {\darkred\blackrule}} {rellipse}
+  {}                                         {}
+  {}                                         {}
+  {\clip[mp=urtriangle]{\darkred\blackrule}} {urtriangle}
+  {\clip[mp=ultriangle]{\darkred\blackrule}} {ultriangle}
+  {\clip[mp=lltriangle]{\darkred\blackrule}} {lltriangle}
+  {\clip[mp=lrtriangle]{\darkred\blackrule}} {lrtriangle}
+  {\clip[mp=diamond]   {\darkred\blackrule}} {diamond}
+  {\clip[mp=negdiamond]{\darkred\blackrule}} {negdiamond}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:clipping paths]
+  {A collection of predefined clipping paths.}
+  {\getbuffer}
+
+\stopsection
+
+\startsection[title={Including graphics}]
+
+\index{graphics+including}
+
+This document demonstrates that it is no big problem to include \METAPOST\
+graphics in a \TEX\ document. But how about including graphics in a \METAPOST\
+picture? In this section we will explore a couple of macros that provide you this
+feature.
+
+Before we go into details, we introduce a very impressive program called
+\PSTOEDIT\ by Wolfgang Glunz. This program runs on top of \GHOSTSCRIPT\ and is
+able to convert \POSTSCRIPT\ code into other formats, among them \METAPOST\ (that
+part of the \PSTOEDIT\ code is due to Scott Pakin). Some of the graphics that we
+use in this section are produced that way. For us, the next call works well, but
+the exact call may differ per version or platform.
+
+\starttyping
+pstoedit -ssp -dt -f mpost yourfile.ps newfile.mp
+\stoptyping
+
+We have converted the Dutch cow that shows up in many \CONTEXT\ documents into
+\METAPOST\ using this program. The resulting \METAPOST\ file encapsulates the cow
+in \METAPOST\ figure~1: \type {beginfig(1)}. Of course you can process this file
+like any other, but more interesting is to use this code in an indirect way.
+
+\startbuffer
+loadfigure "mycow.mp" number 1 scaled .5 ;
+\stopbuffer
+
+\typebuffer
+
+This call will load figure~1 from the specified \METAPOST\ file, in such a way
+that there is no interference with the current (encapsulating) figure.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Because this graphic is the result from a conversion, there are only paths. If
+you want to import a more complex graphic, you need to make sure that the
+variables used in there do not conflict with the one currently in use.
+
+\METAPOST\ is good in drawing vector graphics, but lacks natural support for
+bitmaps, but the next macro offers a way out. This macro permits you to include
+graphics in \PNG, \PDF, and \JPG\ format, or more precise: those formats
+supported by \PDFTEX.\pagereference[hacker]
+
+\startbuffer
+draw externalfigure "hacker.png" scaled 5cm shifted (-6cm,0) ;
+draw externalfigure "hacker.png" scaled 5cm slanted .5 ;
+\stopbuffer
+
+\typebuffer
+
+You can apply the usual transformations, but only those applied directly will be
+taken into account. This means that you (currently) cannot store external figures
+in picture variables in order to transform them afterwards.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Although you are limited in what you can do with such graphics, you can include
+them multiple times with a minimum of overhead. Graphics are stored in objects
+and embedded only once.
+
+\startbuffer
+numeric s ; pair d, c ;
+for i := 1 upto 5 :
+  s := 3cm randomized 1cm ;           % size of picture
+  c := .5(s,s) ;                      % center of picture
+  d := (2cm*i,.5cm) randomized .5cm ; % displacement
+  draw externalfigure "hacker.png"
+    scaled s rotatedaround (c,0 randomized 30) shifted d ;
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+Because we cannot store the graphic in a picture and scale afterwards, we
+calculate the scale in advance, so that we can rotate around the center.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+As long as you don't mess around with a stored external figure, you're safe. The
+following example demonstrates how we can combine two special driven features:
+figure inclusion and shading.
+
+\startbuffer
+picture p ;
+p := externalfigure "hacker.png" scaled 150pt ;
+clip p to unitcircle scaled 150pt ;
+circular_shade(boundingbox p enlarged 10pt, 0, .2red, .9red) ;
+addto currentpicture also p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+We end this section with a few more words to \METAPOST\ inclusion. It may seem
+that in order to use the features discussed here, you need to use \CONTEXT\ as
+typesetting engine. This is not true. First of all, you can use the small \TEX\
+package \MPTOPDF\ (described in another manual) or you can make small \CONTEXT\
+files with one page graphics. The advantage of the last method is that you can
+manipulate graphics a bit.
+
+\starttyping
+\setupcolors[cmyk=yes,rgb=no,state=start]
+
+\starttext
+
+\startMPpage[offset=6pt]
+  loadfigure "niceone.mp" number 10 ;
+\stopMPpage
+
+\stoptext
+\stoptyping
+
+The resulting \PDF\ file can be included as any other graphic
+and has the advantage that it is self contained.
+
+\stopsection
+
+\startsection[reference=sec:conversion,title={Changing colors}]
+
+\index{color+manipulating}
+
+One of the advantages of \METAPOST\ graphics is that it is rather easy to force
+consistency in colors and line widths. You seldom can influence third party
+graphics that way, but we can use some \METAFUN\ trickery to get around this
+limitation.
+
+\startbuffer
+loadfigure "mycow.mp" number 1 scaled .35 ;
+refill currentpicture withcolor .625red ;
+\stopbuffer
+
+Say that we want a red cow instead of a black one. The following code does the
+trick:
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+In a similar way we can influence the width and colors of the lines.
+
+\startbuffer
+loadfigure "mycow.mp" number 1 scaled .35 ;
+refill currentpicture withcolor .625red ;
+redraw currentpicture withpen pencircle scaled 2pt withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Of course we can also use the more fancy features of \METAFUN, like transparency
+and shading.
+
+\startbuffer
+loadfigure "mycow.mp" number 1 scaled .35 ;
+numeric sh ; sh := define_linear_shade
+  (llcorner currentpicture,urcorner currentpicture,.625red, .625yellow) ;
+refill currentpicture withshade sh ;
+redraw currentpicture withpen pencircle scaled 2pt withcolor .5white;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Before we show a next trick, we draw a few circles.
+
+\startbuffer[a]
+fill fullcircle scaled 2cm                 withcolor yellow ;
+fill fullcircle scaled 2cm shifted (3cm,0) withcolor red ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+The yellow and red color do not match the main document colors, but this is no
+problem: we can remap them, without spoiling the original definition.
+
+\startbuffer[b]
+remapcolor(yellow,.625yellow) ;
+remapcolor(red   ,.625red) ;
+recolor currentpicture ;
+resetcolormap ;
+\stopbuffer
+
+\typebuffer[a,b]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+We can combine the inclusion technique with remapping colors. This time using an
+artist impression of one of Hasselts Canals (gracht in Dutch)\pagereference
+[canal].
+
+\startbuffer[a]
+loadfigure "gracht.mp" number 1 scaled .5 ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+If you think that the sky is too bright in this picture, and given that you also
+know which color is used, you can fool the reader by remapping a few colors.
+
+\startbuffer[b]
+color skycolor   ; skycolor   := (0.8,0.90,1.0) ;
+color watercolor ; watercolor := (0.9,0.95,1.0) ;
+remapcolor(skycolor  ,.8skycolor  ) ;
+remapcolor(watercolor,.8watercolor) ;
+recolor currentpicture ;
+resetcolormap ;
+\stopbuffer
+
+\typebuffer[a,b]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+Including another \METAPOST\ graphic, refilling, redrawing, and recoloring are
+all relatively simple features that use no real tricks. Opposite to the next
+feature, which is implemented using the \METAPOST\ special driver that comes with
+\CONTEXT.
+
+\METAPOST\ is not really meant for manipulating graphics, but the previous
+examples demonstrated that we have some control over individual colors. In the
+next series of examples we will treat the picture as a whole. First we invert the
+colors using \type {inverted}.
+
+\startbuffer
+loadfigure "gracht.mp" number 1 scaled .5 ;
+addto currentpicture also
+  inverted currentpicture
+  shifted (bbwidth(currentpicture)+.5cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+This is a special case of \type {uncolored}. In the next example we explicitly
+specify the color.
+
+\startbuffer
+loadfigure "gracht.mp" number 1 scaled .5 ;
+addto currentpicture also
+  (currentpicture uncolored green)
+  shifted (bbwidth(currentpicture)+.5cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+You can also multiply each color using \type {softened}. In the next sample, the
+colors have 80\% of their value.
+
+\startbuffer
+loadfigure "gracht.mp" number 1 scaled .5 ;
+addto currentpicture also
+  (currentpicture softened .8)
+  shifted (bbwidth(currentpicture)+.5cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+You can also use this operator to harden colors, simply by
+providing a value larger than~1. Keep in mind that colors
+are clipped at~1 anyway.
+
+\startbuffer
+loadfigure "gracht.mp" number 1 scaled .5 ;
+addto currentpicture also
+  (currentpicture softened 1.2)
+  shifted (bbwidth(currentpicture)+.5cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+By providing a triplet, you can treat each color component
+independently.
+
+\startbuffer
+loadfigure "gracht.mp" number 1 scaled .5 ;
+addto currentpicture also
+  (currentpicture softened (.7,.8,.9))
+  shifted (bbwidth(currentpicture)+.5cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+After these examples your are probably sick of seeing this picture in color, so
+let's turn the colors into a weigthed grayscales (in a way similar to the way
+black and white television treated color).
+
+\startbuffer
+loadfigure "gracht.mp" number 1 scaled .5 ;
+addto currentpicture also
+  grayed currentpicture
+  shifted (bbwidth(currentpicture)+.5cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+\stopsection
+
+% \startsection[title={Outline fonts}]
+%
+% \index{text+outlines}
+% \index{outlines}
+%
+% Outline fonts don't belong to \METAPOST's repertoire of features. Nevertheless we
+% can simulate this in a reasonable way. We will not discuss all details here,
+% because most details are covered in the \MAKEMPY\ manual.
+%
+% The macro responsible for outline fonts is \type {graphictext}. The first
+% argument should be a string. This string is processed by \TEX. Additionally you
+% can provide transformation directives and color specifications. The next example
+% demonstrates this.
+%
+% \startbuffer
+% graphictext "\bf Fun" scaled 4 zscaled (1,1.5)
+%   withdrawcolor blue
+%   withfillcolor .5white
+%   withpen pencircle scaled 5pt
+% \stopbuffer
+%
+% \typebuffer
+%
+% Once the text is typeset by \TEX, it is converted to \POSTSCRIPT\ and converted
+% into \METAPOST\ by the \PSTOEDIT\ program. The resulting graphic is imported,
+% analyzed, and processed conforming the specifications of \type {graphictext}.
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% By default the shapes are filled after they are drawn. This has the advantage
+% that in characters built out of pieces, disturbing lines fragments are covered.
+% The drawback is that you get only half the linewidth. You can reverse the drawing
+% order by adding the \type {reversefill} directive. The previous graphic then
+% comes out as:
+%
+% \startbuffer
+% graphictext "\bf Fun" scaled 4 zscaled (1,1.5)
+%   reversefill
+%   withdrawcolor blue
+%   withfillcolor .5white
+%   withpen pencircle scaled 5pt
+% \stopbuffer
+%
+% \typebuffer
+%
+% The \type {reversefill} directive can be countered by \type {outlinefill}.
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% The next example is taken from the \MAKEMPY\ manual. It demonstrates that you can
+% combine \TEX's powerful line breaking with \METAPOST's graphic capabilities.
+%
+% \startbuffer
+% \startuseMPgraphic{quotation}
+%   picture one ; one := image ( graphictext
+%     \MPstring{text}
+%     scaled 1.5
+%     withdrawcolor .625blue
+%     withfillcolor .625white
+%     withpen pencircle scaled 1pt ; ) ;
+%   picture two ; two := image ( graphictext
+%     \MPstring{author}
+%     scaled 2
+%     withdrawcolor .625red
+%     withfillcolor .625white
+%     withpen pencircle scaled 2pt ; ) ;
+%   currentpicture := one ;
+%   addto currentpicture also two
+%     shifted lrcorner one
+%     shifted - 1.125 lrcorner two
+%     shifted (0, - 1.250 * ypart urcorner two)  ;
+%   setbounds currentpicture to boundingbox currentpicture enlarged 3pt ;
+% \stopuseMPgraphic
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+%
+% In this graphic, we have two text fragments, the first one is a text, the second
+% one the name of the author. We combine the quotation and author into this graphic
+% using the following definitions:
+%
+% \startbuffer
+% \setMPtext{text}  {\vbox{\hsize 8.5cm \input zapf }}
+% \setMPtext{author}{\hbox{\sl Hermann Zapf}}
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+%
+% These definitions assume that the file \type {zapf.tex} is present on the system
+% (which is the case when you have installed \CONTEXT). The graphic can now be
+% typeset using the following call:
+%
+% \startbuffer
+% \placefigure
+%   {A text does not need to be an outline in order to be
+%    typeset in an outline font.}
+%   {\useMPgraphic{quotation}}
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+%
+% The quality of the output depends on how the glyphs are constructed. For
+% instance, in \TEX, math symbols are sometimes composed of glyph fragments and
+% rules.
+%
+% \startbuffer
+% graphictext
+%   "$$\sqrt{1+x}$$"
+%   scaled 8
+%   withdrawcolor .625red
+%   withpen pencircle scaled 1.5pt
+% \stopbuffer
+%
+% \typebuffer
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% This is not really a problem because we can also fill the shapes. It is the
+% reason why the fill is applied after the draw and in such case the effective line
+% width is half the size specified.
+%
+% \startbuffer
+% graphictext
+%   "$$\left({{\sqrt{1+x}}\over{\sqrt{2+x^2}}}\right)$$"
+%   scaled 4
+%   dashed evenly
+%   withdrawcolor .625red
+%   withfillcolor .850white
+%   withpen pencircle scaled 1.5pt
+% \stopbuffer
+%
+% \typebuffer
+%
+% In this example we also use a dashed line. Instead of normal colors, we could
+% have used shades or transparent colors.
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% Instead of supplying the text directly, you can use the indirect method. This
+% permits you to process rather complex data without messing up your \METAPOST\
+% code.
+%
+% \startbuffer
+% \setMPtext {some math}%
+%   {\usemodule[mathml]
+%    \xmlprocessdata
+%      {main}
+%      {<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+%         <apply> <log/>
+%           <logbase> <cn> 2 </cn> </logbase>
+%           <apply> <plus/>
+%             <ci> x </ci>
+%             <cn> 1 </cn>
+%           </apply>
+%         </apply>
+%       </math>}
+%      {}}
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+%
+% Here we feed some \MATHML\ into \TEX, which in turn shows up as a \METAPOST\
+% graphic.
+%
+% \startbuffer
+% graphictext
+%   \MPstring{some math}
+%   scaled 4
+%   withdrawcolor .625red
+%   withfillcolor .625white
+%   withpen pencircle scaled 1.5pt
+% \stopbuffer
+%
+% \typebuffer
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% \stopsection
+
+\startsection[title={Outline fonts}]
+
+\index{text+outlines}
+\index{outlines}
+
+Outline fonts don't belong to \METAPOST's repertoire of features. Nevertheless we
+can simulate this in a reasonable way. The current version of \METAFUN\ uses the
+outline subsystem of \CONTEXT\ \MKIV, but in earlier days we used an external
+process: a \PDF\ file is generated that has the snippet, that gets converted to
+\POSTSCRIPT, which in turn is converted to \METAPOST\ with \type {pstoedit} and
+from that result we filter the outlines. This method uses \type {graphictext} and
+is covered in the \MAKEMPY\ manual. Here we discuss the new method using \type
+{outlinetext}.
+
+\startbuffer
+draw outlinetext.b("\bf Funky")
+  (withcolor .5white)
+  (withcolor blue withpen pencircle scaled 1/5)
+   scaled 4 zscaled (1,0.5) ;
+\stopbuffer
+
+\typebuffer
+
+Once the text is typeset by \TEX, the result (a node list) is parsed and a
+\METAPOST\ representation is created. The glyphs are converted to outlines that
+are taken from the original font. For the moment this only works for \OPENTYPE\
+fonts.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\startbuffer[1]
+draw outlinetext ("\bf Funky")
+   scaled 3 ;
+\stopbuffer
+
+\startbuffer[2]
+draw outlinetext.d ("\bf Funky")
+   (withcolor red withpen pencircle scaled 1/5)
+   scaled 3 ;
+\stopbuffer
+
+\startbuffer[3]
+draw outlinetext.f ("\bf Funky")
+   (withcolor blue)
+   scaled 3 ;
+\stopbuffer
+
+\startbuffer[4]
+draw outlinetext.b ("\bf Funky")
+   (withcolor blue)
+   (withcolor red withpen pencircle scaled 1/5)
+   scaled 3 ;
+\stopbuffer
+
+\startbuffer[5]
+draw outlinetext.r ("\bf Funky")
+   (withcolor blue)
+   (withcolor red withpen pencircle scaled 1/5)
+   scaled 3 ;
+\stopbuffer
+
+\startplacetable[reference=tab:outlinetext,title={The four variants of \type {graphictext}.}]
+    \bTABLE[offset=1ex]
+        \dorecurse{5}{\bTR \bTD \processMPbuffer[#1] \eTD \bTD \typebuffer[#1] \eTD \eTR}
+    \eTABLE
+\stopplacetable
+
+The five variants of this command are shown in \in {table} [tab:outlinetext]: the
+suffix determines the number of arguments and rendering. The \type {r} suffix
+reverses the order: the fill comes over the draw. There is a \type {p} suffix
+that returns just the picture.
+
+The next example demonstrates that you can combine \TEX's powerful line breaking
+algorithm with \METAPOST's graphic capabilities.
+
+\startbuffer
+\startuseMPgraphic{quotation}
+  picture one ; one := image ( draw outlinetext.b
+    (\MPstring{text})
+    (withcolor .625white)
+    (withcolor .625blue withpen pencircle scaled 1/5)
+    scaled 1.5
+  ) ;
+  picture two ; two := image ( draw outlinetext.b
+    (\MPstring{author})
+    (withcolor .625white)
+    (withcolor .625red withpen pencircle scaled 1/5)
+    scaled 2
+  ) ;
+  currentpicture := one ;
+  addto currentpicture also two
+    shifted lrcorner one
+    shifted - 1.125 lrcorner two
+    shifted (0, - 2 * ypart urcorner two)  ;
+  setbounds currentpicture to boundingbox currentpicture enlarged 3pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In this graphic, we have two text fragments, the first one is a text, the second
+one the name of the author. We combine the quotation and author into this graphic
+using the following definitions:
+
+\startbuffer
+\setMPtext
+  {text}
+  {\vbox
+     {\setupalign[verytolerant,stretch]
+      \hsize 8.5cm
+      \input zapf }}
+\setMPtext
+  {author}
+  {\hbox
+     {\sl Hermann Zapf}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+These definitions assume that the file \type {zapf.tex} is present on the system
+(which is the case when you have installed \CONTEXT). The graphic can now be
+typeset using the following call:
+
+\startbuffer
+\placefigure
+  [here]
+  [fig:zapf]
+  {A text does not need to be an outline in order to be
+   typeset in an outline font.}
+  {\useMPgraphic{quotation}}
+\stopbuffer
+
+\typebuffer
+
+The result is \in {figure} [fig:zapf]. The quality of the output depends on how
+the glyphs are constructed. For instance, in \TEX, math symbols are sometimes
+composed of glyph fragments and rules.
+
+\start
+    \def||{-}
+    \getbuffer
+\stop
+
+\startbuffer
+draw outlinetext.d
+  ("\mathematics{\sqrt{1+x}}")
+  (withcolor .625red withpen pencircle scaled 1/5)
+  scaled 8
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+This is not really a problem because we can also fill the shapes. It is the
+reason why the fill is applied after the draw and in such case the effective line
+width is half the size specified.
+
+\startbuffer
+draw outlinetext.b
+  ("\mathematics{\left({{\sqrt{1+x}}\over{\sqrt{2+x^2}}}\right)}")
+  (withcolor .850white)
+  (withcolor .625red
+   dashed evenly scaled .1
+   withpen pencircle scaled 1/5)
+  scaled 8
+\stopbuffer
+
+\typebuffer
+
+In this example (shown in \in {figure} [fig:dashedoutline]) we also use a dashed
+line.
+
+\placefigure
+  [here]
+  [fig:dashedoutline]
+  {A dashed outline text.}
+  {\processMPbuffer}
+
+Instead of supplying the text directly, you can use the indirect method. This
+permits you to process rather complex data without messing up your \METAPOST\
+code.
+
+\startbuffer
+\usemodule[mathml]
+
+\setMPtext {some math}%
+  {\xmlprocessdata
+     {main}
+     {<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+        <apply> <log/>
+          <logbase> <cn> 2 </cn> </logbase>
+          <apply> <plus/>
+            <ci> x </ci>
+            <cn> 1 </cn>
+          </apply>
+        </apply>
+      </math>}
+     {}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we feed some \MATHML\ into \TEX, which in turn shows up as a \METAPOST\
+graphic (\in {figure} [fig:mathml]).
+
+\startbuffer
+draw outlinetext.b
+  (\MPstring{some math})
+  (withcolor .625white)
+  (withcolor .625red withpen pencircle scaled 1/5)
+  scaled 8
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here]
+  [fig:mathml]
+  {A \MATHML\ snippet turned into outlines.}
+  {\processMPbuffer}
+
+Outlines are fun to look at. Here are a few ways to visualize a glyph:
+
+\startbuffer[1]
+\startcombination[3*1]
+    {\ruledhbox\bgroup
+       \showshape[character=(,alternative=text]%
+     \egroup} {}
+    {\ruledhbox\bgroup
+       \showshape[character=a,alternative=text]%
+     \egroup} {}
+    {\ruledhbox\bgroup
+       \showshape[character=x,alternative=text]%
+     \egroup} {}
+\stopcombination
+\stopbuffer
+
+\typebuffer[1]
+
+You can control the rendering a bit by setting \type {option}. Possible options
+are: \type {box}, \type {width}, \type {min}, \type {max} and \type {comment}.
+The \type {simple} option disables all. The simple results are shown in
+\in{figure} [fig:showshape].
+
+\startbuffer[2]
+\startcombination[3*1]
+    {\ruledhbox\bgroup
+       \showshape[character=(,alternative=text,option=simple]%
+     \egroup} {}
+    {\ruledhbox\bgroup
+       \showshape[character=a,alternative=text,option=simple]%
+     \egroup} {}
+    {\ruledhbox\bgroup
+       \showshape[character=x,alternative=text,option=simple]%
+     \egroup} {}
+\stopcombination
+\stopbuffer
+
+\typebuffer[2]
+
+\startplacefigure[reference=fig:showshape,title={Showing shapes.}]
+    \getbuffer[2]
+\stopplacefigure
+
+When you use this feature you need to be aware of the fact that fonts can have
+features, for instance ligatures and kerns between characters. In \in {figure}
+[fig:outlines:features] we see a few examples with and without features, one with
+Pagella (the Zapf quote) and one with Optima Nova (the Tufte quote).
+
+\startplacefigure[reference=fig:outlines:features,title={Pagela (\OPENTYPE) and Optima Nova (\TYPEONE)}]
+    \startcombination[1*4]
+        \bgroup
+            \def|#1|{-}%
+            \definedfont[texgyrepagella-regular.otf*none]%
+            \startMPcode
+                draw outlinetext.b
+                    ("\framed[align=normal,width=max]{\input{zapf}}")
+                    (withcolor .375white)
+                    (withcolor .625red withpen pencircle scaled 1/10) ;
+            \stopMPcode
+        \egroup {pagella / no features}
+        \bgroup
+            \def|#1|{-}%
+            \definedfont[texgyrepagella-regular.otf*default]%
+            \startMPcode
+                draw outlinetext.b
+                    ("\framed[align=normal,width=max]{\input{zapf}}")
+                    (withcolor .375white)
+                    (withcolor .625blue withpen pencircle scaled 1/10) ;
+            \stopMPcode
+        \egroup {pagella / default features}
+        \bgroup
+            \def|#1|{-}%
+            \definedfont[lt55476.afm*none]% optima nova
+            \startMPcode
+                draw outlinetext.b
+                    ("\framed[align=normal,width=max]{\input{tufte}}")
+                    (withcolor .375white)
+                    (withcolor .625green withpen pencircle scaled 1/10) ;
+            \stopMPcode
+        \egroup {optima nova / no features}
+        \bgroup
+            \def|#1|{-}%
+            \definedfont[lt55476.afm*default]% optima nova
+            \startMPcode
+                draw outlinetext.b
+                    ("\framed[align=normal,width=max]{\input{tufte}}")
+                    (withcolor .375white)
+                    (withcolor .625yellow withpen pencircle scaled 1/10) ;
+            \stopMPcode
+        \egroup {optima nova / default features}
+    \stopcombination
+\stopplacefigure
+
+Given that a shape has a path that is suitable for it, you can use special effects,
+like:
+
+\startbuffer
+    draw image (
+        draw outlinetext.d
+            ("Abracadabra")
+            (withpen pencircle scaled 1/10 dashed withdots scaled 1/20) ;
+    ) xsized TextWidth ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+    \processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Transparency groups]
+
+The following feature is not that usefull but implemented anyway. The \PDF\ reference says:
+
+\startitemize
+    \startitem
+        A group may be isolated or non-isolated, which shall determine the
+        initial backdrop against which its stack is composited.
+    \stopitem
+    \startitem
+        A group may be knockout or non-knockout, which shall determine whether
+        the objects within its stack are composited with one another or only with
+        the group’s backdrop.
+    \stopitem
+\stopitemize
+
+and then carries on with a detailed explanation of groups. Here we stick to just
+mentioning how one can create a group in a picture. First we define a helper:
+
+\startbuffer
+\startMPdefinitions
+    def ShowGroup (expr clr) (text grouped) =
+        draw image (
+            drawarrow (10,0) -- (0,0)
+                withtransparency(1,.5)
+                withcolor clr ;
+        ) grouped ;
+        currentpicture := currentpicture xsized (TextWidth/8) ;
+        setbounds currentpicture to boundingbox currentpicture enlarged 2mm ;
+        addbackground withcolor .5white ;
+    enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+    \startcombination[5*1]
+        {\startMPcode ShowGroup(.5red)    ()                            \stopMPcode} {\tttf no group}
+        {\startMPcode ShowGroup(.5green)  (asgroup "")                  \stopMPcode} {\tttf group}
+        {\startMPcode ShowGroup(.5blue)   (asgroup "isolated")          \stopMPcode} {\tttf isolated}
+        {\startMPcode ShowGroup(.5cyan)   (asgroup "knockout")          \stopMPcode} {\tttf knockout}
+        {\startMPcode ShowGroup(.5magenta)(asgroup "isolated,knockout") \stopMPcode} {\tttf isolated\crlf knockout}
+    \stopcombination
+\stoplinecorrection
+
+The syntax is:
+
+\starttyping
+draw somepicture|somepath grouped "[isolated|knockout] ;
+\stoptyping
+
+The group becomes an object and is no longer part of the stream of graphic
+operators but a reference. For what it's worth: I never needed this feature.
+
+\stopsection
+
+\startsection[title=Decorating]
+
+Although the \METAPOST\ language is quite powerful the number of data types is
+not that large and when it comes to drawing stuff there are only paths and
+pictures. A path is a list of points (with controlpoints) and a few properties,
+like the pen, linewidth, linecap, color and such. For a long time in \METAFUN\ we
+used so called specials to implement extensions (like shading). This was done by
+using special colors and associating these with entries in the special section at
+the top of the output.
+
+Nowadays we use the pre- and postscript properties of paths. The advantage is
+that we can add whatever we want, as long as the backend supports it and because
+the backend is written in \LUA\ there are no real limitations. So, instead of
+extending \METAPOST\ we extend the \METAFUN\ macros and backend.
+
+Most extensions use the prescripts. Think of this:
+
+\starttyping
+draw fullcircle
+    withprescript "do this"
+    withprescript "and that"
+    withprescript "and even more" ;
+\stoptyping
+
+Eventually this becomes a string:
+
+\starttyping
+and even more<newline>and that<newline>do this
+\stoptyping
+
+\typebuffer
+
+The prescripts get prepended, while the postscripts (that we use for text only)
+get appended. When we draw a picture with properties (like color) they get
+overwritten but not so (with good reason) for the pre- and postscripts: these
+just accumulate. We will now demonstrate how we can manipulate the picture
+(a bit).
+
+\startbuffer
+picture MyShape ; MyShape := image (
+    fill fullsquare xyscaled (4,1) withcolor .625red ;
+    fill fullsquare xyscaled (3,1) withcolor .625green ;
+    fill fullsquare xyscaled (2,1) withcolor .625blue ;
+    fill fullsquare xyscaled (1,1) withcolor .625yellow ;
+) xysized (TextWidth,1cm) ;
+
+draw MyShape;
+\stopbuffer
+
+\typebuffer
+
+We just draw the (natural) picture:
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+When we draw the picture with a new color, all its components get recolored:
+
+\startbuffer
+draw MyShape
+    withcolor .625magenta ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+However, when we add a transparency only the first component gets adapted because
+we use prescripts for this extension. (An extension using the postscripts would
+affect the last component.)
+
+\startbuffer
+draw MyShape
+    withcolor .625magenta
+    withtransparency (1,.5) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+The same logic applied to the \type {image}: prescripts get prepended to the
+first copmponent, postscripts to the last.
+
+\startbuffer
+draw image (draw MyShape)
+    withcolor .625cyan ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+\startbuffer
+draw image (draw MyShape)
+    withcolor .625cyan
+    withtransparency (1,.5) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+The \type {undecorated} macro ignores the properties. We can't reset the scripts as
+this could ruin the effects like shading.
+
+\startbuffer
+draw undecorated (draw MyShape)
+    withcolor .625white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+The \type {decorated} macro applies the properties to each component.
+
+\startbuffer
+draw decorated (draw MyShape)
+    withtransparency (1,.5) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+Here we kept the colors as they are but next we redo them:
+
+\startbuffer
+draw decorated (draw MyShape)
+    withcolor .625magenta
+    withtransparency (1,.5) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+The \type {redecorated} macro is the most intrusive as it resets the properties.
+This also means that you will loose texts, shades etc.
+
+\startbuffer
+draw redecorated (draw MyShape)
+    withtransparency (1,.5) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+Indeed we get no color (but black) but we can bring back some color:
+
+\startbuffer
+draw redecorated (draw MyShape)
+    withcolor .625yellow
+    withtransparency (1,.5) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Properties]
+
+The (plain) \METAPOST\ macro \type {drawoptions} stored its arguments
+in a macro that gets expanded when something is drawn (or filled). So, when you say
+
+\starttyping
+drawoptions(withcolor red) ;
+draw somepath ;
+\stoptyping
+
+This effectively is:
+
+\starttyping
+draw somepath withcolor red ;
+\stoptyping
+
+A disadvantage is that there is not much control over where it gets applied,
+especially when you hide drawing operations in macros. It's the reason why
+personally I always prefer explicit options. If you want some abstraction
+you can use the properties feature:
+
+\startbuffer
+\startMPcode
+    property p[] ;
+    p1 = properties(withcolor "darkred") ;
+    p2 = properties(withcolor "darkblue") ;
+    p3 = properties(withcolor "darkgreen") ;
+    fill fullsquare xysized (TextWidth,12mm) withproperties p1 ;
+    fill fullsquare xysized (TextWidth, 8mm) withproperties p2 ;
+    fill fullsquare xysized (TextWidth, 4mm) withproperties p3 ;
+    fill fullsquare xysized (TextWidth, 2mm) withproperties p1 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here we use an \quote {array} of properties but a single property is also possible:
+
+\startbuffer
+\startMPcode
+    property p ;
+    p = properties(withcolor "darkyellow") ;
+    fill fullsquare xysized (TextWidth,4mm) withproperties p ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

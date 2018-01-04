@@ -1,0 +1,321 @@
+\startenvironment metafun-environment-sample
+
+\startuseMPgraphic{sample setup}
+    numeric Scale ; Scale := 2cm ;
+    numeric Size ; Size := 2.5mm/Scale ;
+    numeric Pen ; Pen := .25mm/Scale ;
+    path Path ;
+    pickup pencircle scaled (4Pen) ;
+    def InRed    = withcolor .625red    enddef ;
+    def InYellow = withcolor .625yellow enddef ;
+    def InGray   = withpen pencircle scaled   Pen  withcolor .625white enddef ;
+    def InBetween= withpen pencircle scaled (4Pen) withcolor .800white enddef ;
+    def InBlack  = withpen pencircle scaled   Pen                      enddef ;
+    def InWhite  = withpen pencircle scaled   Pen  withcolor     white enddef ;
+    def DrawArrow text t =
+        draw      t ; Path := boundingbox currentpicture ;
+        drawarrow t ; setbounds currentpicture to Path ;
+    enddef ;
+    def ColorCircle =
+        fill llcircle withcolor .625red    ;
+        fill lrcircle withcolor .625green  ;
+        fill urcircle withcolor .625blue   ;
+        fill ulcircle withcolor .625yellow ;
+    enddef ;
+    evenly   := dashpattern(on (3mm/Scale) off (3mm/Scale)) ;
+    withdots := dashpattern(off (2.5mm/Scale) on 0 off (2.5mm/Scale)) ;
+    ahlength := 4mm/Scale ; ahangle := 30 ;
+    draw (origin shifted (0,Size)--origin shifted (0,-Size)) ;
+    draw (origin shifted (Size,0)--origin shifted (-Size,0)) ;
+    picture Origin ; Origin := currentpicture ;
+    setbounds Origin to origin--cycle ;
+    currentpicture := nullpicture ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{sample finish}
+    draw boundingbox currentpicture InBlack ;
+    draw Origin InGray ;
+    currentpicture := currentpicture scaled Scale ;
+\stopuseMPgraphic
+
+% fm = metafun  macro
+% fv = metafun  variable
+% mc = metapost concept
+% mm = metapost macro
+% mp = metapost primitive
+% mv = metapost variable
+
+\starttexdefinition unexpanded DoDoSampleHead#1#2#3
+    \setbox\scratchbox\vbox {
+        \tabskip\zeropoint
+        \tt\tfx
+        \halign {
+            \strut\hss##\unskip\unskip
+            \cr#3\cr#1\cr
+        }
+    }
+    \ht\scratchbox\ht\strutbox
+    \dp\scratchbox\dp\strutbox
+    \noligature{#2}\black
+    \hfill
+    \box\scratchbox
+    \ignorespaces
+\stoptexdefinition
+
+\starttexdefinition unexpanded DoSampleHead #1#2#3
+    \processaction
+        [#1]
+        [fm=>\DoDoSampleHead{metafun      macro}{#2}{#3},
+         fv=>\DoDoSampleHead{metafun   variable}{#2}{#3},
+         mc=>\DoDoSampleHead{metapost   concept}{#2}{#3},
+         mm=>\DoDoSampleHead{metapost     macro}{#2}{#3},
+         mp=>\DoDoSampleHead{metapost primitive}{#2}{#3},
+         mv=>\DoDoSampleHead{metapost  variable}{#2}{#3}]
+\stoptexdefinition
+
+\starttexdefinition unexpanded SampleHead #1#2#3
+    \expanded{\extrosubject{\DoSampleHead{#1}{#2}{\detokenize{#3}}}}
+\stoptexdefinition
+
+\starttexdefinition unexpanded StartSample
+    \doquintuplegroupempty\doStartSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded StopSample
+    % dummy
+\stoptexdefinition
+
+\starttexdefinition unexpanded doStartSample #1#2#3#4#5#6 StopSample
+    \bgroup
+    \SampleHead{#1}{#2}{#3}
+    \startuseMPgraphic{dummy}
+        \includeMPgraphic{sample setup}
+        #6
+        \includeMPgraphic{sample finish}
+    \stopuseMPgraphic
+    \blank[samepage]
+    \startlinecorrection[blank]
+        \useMPgraphic{dummy}
+    \stoplinecorrection
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleZ #1#2#3
+    \bgroup
+    \SampleHead{#1}{#2}{}
+    \blank[samepage]
+    #3
+    \par
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleA #1#2#3
+    \StartSample{#1}{#2}{#3}
+        path p ; p := #3 ; % freeze randomized
+        if length(p)>0 :
+            DrawArrow  p InRed ;
+        fi ;
+        drawpoints p InBetween ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleB #1#2#3#4
+    \StartSample{#1}{#2}{#4}
+        DrawArrow (#3) InRed ;
+        DrawArrow (#4) InYellow ;
+        drawpoints (#3) InBetween ;
+        drawpoints (#4) InBetween ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleC #1#2#3#4
+    \StartSample{#1}{#2}{#4}
+        path bb ; bb := boundingbox #3 ;
+        DrawArrow #3 InRed ;
+        draw #4 withpen pencircle scaled .15 InYellow ;
+        setbounds currentpicture to bb ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleD #1#2#3#4
+    \StartSample{#1}{#2}{#4}
+        DrawArrow #3 InRed ;
+        setbounds currentpicture to #4 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleDD #1#2#3#4
+    \StartSample{#1}{#2}{#4}
+        DrawArrow #3 InRed ;
+        DrawArrow #4 InYellow ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleE #1#2#3#4
+    \StartSample{#1}{#2}{#4}
+        fill fullcircle scaled 1cm InRed ;
+        currentpicture := currentpicture #3 ;
+        Scale := 1 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleF #1#2#3#4
+    \StartSample{#1}{#2}{#4}
+        DrawArrow #3 InRed ;
+        drawdot   #4 InYellow ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleG #1#2#3#4
+    \StartSample{#1}{#2}{#4}
+        draw    #3 InRed ;
+        drawdot #4 InYellow ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleH #1#2#3#4#5
+    \StartSample{#1}{#2}{#5}
+        DrawArrow #3 InRed ;
+        DrawArrow #4 InYellow ;
+        drawdot   #5 InWhite ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleHH #1#2#3
+    \StartSample{#1}{#2}{#3}
+        draw #3 InRed ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleI #1#2#3
+    \StartSample{#1}{#2}{#3}
+        draw fullcircle InRed #3 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleII #1#2#3
+    \StartSample{#1}{#2}{#3}
+        draw fullcircle #3 InRed ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleJ #1#2#3
+    \StartSample{#1}{withpen #2}{withpen #3 scaled 2mm}
+        draw fullcircle xscaled 2 withpen #3 scaled Pen InRed ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleK #1#2#3
+    \StartSample{#1}{withpen #2}{withpen #3}
+        draw fullcircle xscaled 2 withpen #3 InRed ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleL #1#2#3
+    \StartSample{#1}{#2}{#2 #3}
+        #2 #3 InRed;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleM #1#2#3
+    \StartSample{#1}{#2}{#2 #3}
+        fill boundingbox (#3--cycle) InRed ;
+        #2 #3 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleN #1#2#3#4
+    \StartSample{#1}{#2}{#3}
+        #3 ;
+        draw #4 withpen pencircle scaled 25Pen InRed ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleO #1#2#3
+    \StartSample{#1}{#2}{#3}
+        drawdot origin InRed ;
+        #3 scaled (2.5/Scale) InYellow ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleP #1#2#3
+    \StartSample{#1}{#2}{#3}
+        drawdot origin InRed ;
+        #3 scaled (2.5/Scale) InYellow ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleQ #1#2#3
+    \StartSample{#1}{#2}{#3}
+        #2 #3 withpen pencircle scaled 25Pen InRed ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleQQ #1#2#3
+    \StartSample{#1}{#2}{#3}
+        #3 scaled (2.5/Scale) withpen pencircle scaled Pen InYellow ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleQQQ #1#2#3
+    \StartSample{#1}{#2}{#3}
+        #3 scaled (2.5/Scale) withpen pencircle scaled Pen ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleR #1#2#3
+    \StartSample{#1}{#2}{#3}
+        ColorCircle ;
+        addto currentpicture also (#3) shifted (bbwidth(currentpicture)+.1,0) ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleS #1#2#3
+    \StartSample{#1}{#2}{#3}
+        Pen := Pen * Scale ; Scale := 1 ; #3 ;%
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleT #1#2#3#4
+    \StartSample{#1}{#2}{#3}
+        #4 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleU #1#2#3
+    \StartSample{#1}{#2}{#3}
+        Scale := Scale / 5 ;
+        #3 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleUU #1#2#3
+    \StartSample{#1}{#2}{#3}
+        Scale := Scale / 10 ;
+        #3 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleV #1#2#3#4
+    \StartSample{#1}{#2}{#3}
+        Scale := Scale / 5 ;
+        Pen := Pen * 20 ;
+        #4 ;
+        Pen := Pen / 20 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleW #1#2#3#4
+    \StartSample{#1}{#2}{#3}
+        Scale := 1 ;
+        #4 ;
+    \StopSample
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowSampleX #1#2#3
+    \StartSample{#1}{#2}{#3}
+        #3 InRed ;
+    \StopSample
+\stoptexdefinition
+
+\stopenvironment

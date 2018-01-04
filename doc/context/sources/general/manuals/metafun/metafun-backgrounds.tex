@@ -1,0 +1,878 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-backgrounds
+
+\environment metafun-environment
+
+\startchapter[reference=sec:page,title={Page backgrounds}]
+
+\startintro
+
+Especially in interactive documents, adding backgrounds to the page and text
+areas not only enhances readability, but also makes it more convenient to
+identify header, footers and navigational areas. In this chapter we will
+demonstrate that with \METAPOST\ we can go beyond the \TEX\ based features
+present in \CONTEXT. One section is dedicated to graphics and printing,
+especially bleeding.
+
+\stopintro
+
+\startsection[title={The basic layout}]
+
+\index {layout}
+
+In the \CONTEXT\ manual you can find many details on the composition of the page.
+When \TEX\ typesets text, crossing the page boundary triggers \TEX's output
+routine. This routine is responsible for pasting the body text that goes onto a
+page in the correct area. A simple representation of such a page is:
+
+\startbuffer[a]
+\startuseMPgraphic{layout 1}
+  pickup pencircle scaled 1mm ;
+  fill unitsquare xyscaled (7cm,8cm)
+    withcolor .85white ;
+  fill unitsquare xyscaled (5cm,5cm) shifted (1cm,1.5cm)
+    withcolor .625yellow ;
+  fill unitsquare xyscaled (5cm,1cm) shifted (1cm,.5cm)
+    withcolor .625red ;
+  fill unitsquare xyscaled (5cm,1cm) shifted (1cm,6.5cm)
+    withcolor .625red ;
+  draw unitsquare xyscaled (5cm,7cm) shifted (1cm,.5cm)
+    withcolor .25white ;
+  drawarrow (2cm,8cm) -- top (2cm,7.5cm) ;
+  drawarrow (0cm,7cm) -- lft (1cm,7cm) ;
+  clip currentpicture to unitsquare xyscaled (7cm,8cm) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[b]
+\startuseMPgraphic{layout 2}
+  \includeMPgraphic{layout 1}
+  clip currentpicture to unitsquare scaled 3cm shifted (0,5cm) ;
+  currentpicture := currentpicture scaled 2 shifted (0,-8cm) ;
+  setbounds currentpicture to unitsquare xyscaled (6cm,8cm) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer[a,b]
+
+\startbuffer[c]
+\startlinecorrection[blank]
+\hbox
+  {\useMPgraphic{layout 1}\hskip1cm
+   \useMPgraphic{layout 2}}
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer[c]
+
+The red areas are the header and footer, while the yellow areas contains the text
+flow. We can turn headers on and off and|/|or hide them. For this reason, the
+header, text and footer areas together make up the height of the text.
+
+A close look at the left picture will reveal that the two arrows point to the
+center of the lines. This is achieved by the \type {top} and \type {lft}
+directives. If we would not have clipped the picture, the arrow would have stuck
+half a line width outside the gray area that represents the page. When
+constructing such pictures, one should really pay attention to such details,
+since it pays off in the overall look and feel of the document.
+
+The vertical arrow represents the top space, while the horizontal arrow denotes
+the distance to the back of the cover (back space). By changing their values, you
+can shift the main body text on the page. In a double sided layout scheme, the
+back space is automatically mirrored on even pages.
+
+An advanced \METAPOST\ user may wonder why we hard code the dimensions, and avoid
+\METAPOST's powerful mechanisms for defining relations. Our experience has taught
+us that in pictures like this, providing a general solution seldom pays large
+dividents or savings in time.
+
+\typebuffer[a]
+
+As you can see, the left graphic is defined as a series of rectangles. The \type
+{xyscaled} macro is part of the \CONTEXT\ files, and saves some typing and space.
+It is defined as a primary, requiring both left and right operands.
+
+\starttyping
+primarydef p xyscaled q =
+  p xscaled (xpart q) yscaled (ypart q)
+enddef ;
+\stoptyping
+
+Zooming in on the top left corner only takes a few lines. First we clip the
+correct part, next we scale it up, and finally we let the bounding box suit the
+left picture.
+
+\typebuffer[b]
+
+This code demonstrates how you can reuse a graphic inside another one. This
+strategy can easily be used to stepwise build (or extend) graphics. The two
+graphics were put side by side with the following command. Watch the use of line
+correction commands. They optimize the white space around the graphic.
+
+\typebuffer[c]
+
+As soon as you want to make an electronic document, you will want to use
+different areas of the screen for different purposes: text, menus, buttons, etc.
+For this reason, \CONTEXT\ provides not only left and right margins, but also
+additional left and right edge areas and top and bottom margins. These areas are
+shown in the figure on the next page.
+
+\startbuffer[aa]
+pickup pencircle scaled 2pt ;
+
+numeric w[], h[], x[], y[], u ; u := .5cm ;
+
+numeric width  ; width  := \the\textwidth  ;
+numeric height ; height := \the\textheight ;
+\stopbuffer
+
+\startbuffer[bb]
+w[1] = 2u ; w[2] = 3u ; w[4] = 3u ; w[5] = 2u ;
+h[1] = 1u ; h[2] = 1u ; h[4] = 1u ; h[5] = 1u ;
+
+w[1]+w[2]+w[3]+w[4]+w[5]+4u = width  ;
+h[1]+h[2]+h[3]+h[4]+h[5]+4u = height ;
+
+x[1] = 1u ;                y[1] = 1u ;
+x[2] = x[1] + w[1] + .5u ; y[2] = y[1] + h[1] + .5u ;
+x[3] = x[2] + w[2] + .5u ; y[3] = y[2] + h[2] + .5u ;
+x[4] = x[3] + w[3] + .5u ; y[4] = y[3] + h[3] + .5u ;
+x[5] = x[4] + w[4] + .5u ; y[5] = y[4] + h[4] + .5u ;
+\stopbuffer
+
+\startbuffer[cc]
+def do_it (expr xx, yy, cc) =
+  draw unitsquare
+    xyscaled (w[xx],h[yy]) shifted (x[xx],y[yy])
+    withcolor if cc : .625red else : .625yellow fi ;
+enddef ;
+
+fill unitsquare xyscaled (width,height) withcolor .85white;
+
+do_it (1,1,false) ; do_it (5,1,false) ;
+do_it (2,1,false) ; do_it (3,1,false) ; do_it (4,1,false) ;
+
+do_it (1,2,false) ; do_it (5,2,false) ;
+do_it (2,2,true ) ; do_it (3,2,true ) ; do_it (4,2,true ) ;
+
+do_it (1,3,false) ; do_it (5,3,false) ;
+do_it (2,3,true ) ; do_it (3,3,true ) ; do_it (4,3,true ) ;
+
+do_it (1,4,false) ; do_it (5,4,false) ;
+do_it (2,4,true ) ; do_it (3,4,true ) ; do_it (4,4,true ) ;
+
+do_it (1,5,false) ; do_it (5,5,false) ;
+do_it (2,5,false) ; do_it (3,5,false) ; do_it (4,5,false) ;
+\stopbuffer
+
+\startbuffer[dd]
+def do_it (expr yy, tt) =
+  path p ;
+  p := unitsquare xyscaled (w[1],h[yy]) shifted (x[1],y[yy]) ;
+  label.lft(tt, center p shifted (-w[1]/2-u-.25cm,0)) ;
+enddef ;
+
+do_it (1,btex bottom etex) ;
+do_it (2,btex footer etex) ;
+do_it (3,btex text   etex) ;
+do_it (4,btex header etex) ;
+do_it (5,btex top    etex) ;
+\stopbuffer
+
+\startbuffer[ee]
+def do_it (expr xx, tt) =
+  path p ;
+  p := unitsquare xyscaled (w[xx],h[1]) shifted (x[xx],y[1]) ;
+  label(tt, center p shifted (0,height-h[1]/2)) ;
+enddef ;
+
+do_it (1,btex edge   etex) ;
+do_it (2,btex margin etex) ;
+do_it (3,btex text   etex) ;
+do_it (4,btex margin etex) ;
+do_it (5,btex edge   etex) ;
+\stopbuffer
+
+\startbuffer[ff]
+setbounds currentpicture to
+  unitsquare xyscaled (width,height) ;
+\stopbuffer
+
+% We use two chars for buffer names, otherwise we can get
+% get in conflict with the next buffers with similar names.
+
+\startpostponing
+\centerbox{\processMPbuffer[aa,bb,cc,dd,ee,ff]}
+\stoppostponing
+
+When defining this graphic, all areas have related dimensions. Here it makes
+sense to let \METAPOST\ calculate these dimensions as much as possible. First we
+define the five by five matrix of areas. We pass the width and height of the main
+text area. Because they are stored in \TEX\ dimension registers, we have to
+prefix them by \type {\the}.
+
+\typebuffer[aa]
+
+We now specify the lower left corners using \type {=} instead of the \type {:=},
+which means that \METAPOST\ will calculate \type {w[3]} and \type {h[3]} for us.
+
+\typebuffer[bb]
+
+Because we are going to repeat ourselves, we draw the areas using a macro.
+Depending on its importance, we color it red or yellow.
+
+\typebuffer[cc]
+
+This picture in itself is not yet explanatory, so we add some labels. Again, we
+use a macro, which we feed with a picture generated by \TEX. Since these pictures
+are filtered from the source and pre||processed, we cannot embed the \type
+{btex}||\type {etex} in the macro \type {do_it} and pass a string. It has to be
+done this way. \footnote {This is true only in a regular \METAPOST\ run. In
+\CONTEXT\ \MKIV\ we follow a different route.}
+
+\typebuffer[dd]
+
+In the horizontal direction we have edges, margins and text. There are left and
+right edges and margins, which are swapped on even pages when you typeset a
+double sided document.
+
+\typebuffer[ee]
+
+Since we want the graphic to match the dimensions of the text area of the current
+page, we have to make sure that the bounding box is adapted accordingly. By this
+action, the labels will fall outside the bounding box. When we directly embed a
+graphic, this works ok, but when we start scaling and reusing, due to the object
+reuse mechanism the graphic will be clipped to the bounding box.
+
+\typebuffer[ff]
+
+In the following sections we will demonstrate how you can put graphics behind
+these 25~areas, as well as behind the (left and right) page.
+
+\stopsection
+
+\startsection[title={Setting up backgrounds}]
+
+\index {overlays}
+\index {backgrounds}
+
+One way of protecting a document for unwanted usage is to put an annoying word in
+the background. If you like this, you may try the following. The macro \type
+{ysized} is part of the macros that come with \CONTEXT\ and scales a picture to a
+specific size.
+
+\startbuffer[a]
+\startuniqueMPgraphic{concept}
+  draw btex \colored[s=.8]{\bf CONCEPT} etex rotated 60 ;
+  currentpicture := currentpicture
+    ysized (\overlayheight-.5cm) ;
+\stopuniqueMPgraphic
+
+\defineoverlay[concept][\uniqueMPgraphic{concept}]
+\stopbuffer
+
+\typebuffer[a]
+
+You can now put this graphic in the page background by
+saying:
+
+\starttyping
+\setupbackgrounds[page][background=concept]
+\stoptyping
+
+You may consider the next alternative a bit better, but still it renders the text
+unreadable. Like \type {xysized}, the macro \type {enlarged} is not part of
+standard \METAPOST, but comes with \CONTEXT.
+
+\startbuffer[b]
+\startuniqueMPgraphic{copyright}
+  picture p ; p := btex \colored[s=.8]{COPYRIGHT} etex
+    rotated 90 ;
+  setbounds p to boundingbox p enlarged 1pt ;
+  draw p ;
+  currentpicture := currentpicture
+    xysized (\overlaywidth,\overlayheight) ;
+\stopuniqueMPgraphic
+
+\defineoverlay[copyright][\uniqueMPgraphic{copyright}]
+\stopbuffer
+
+\typebuffer[b]
+
+Again, we put this graphic in the background. By using a unique graphic, we make
+sure that it's rendered only once and reused when possible.
+
+\startbuffer[c]
+\setupbackgrounds[text][rightmargin][background=copyright]
+\stopbuffer
+
+\typebuffer[c]
+
+\doifnotmode{screen}{\getbuffer[b,c]}
+
+In both cases, we slightly scale down the graphic. We do so because otherwise a
+small portion of the text is clipped off. This is unrelated to \TEX\ or
+\METAPOST, but a characteristic of the font. Compare the following Pagella, Latin
+Modern and Termes gi's (the Pagella is the body font of this text).
+
+\startbuffer
+\hbox \bgroup
+    \hbox{\definedfont[file:texgyrepagella-regular at 6cm]gi}%
+    \hbox{\definedfont[file:lmroman10-regular      at 6cm]gi}%
+    \hbox{\definedfont[file:texgyretermes-regular  at 6cm]gi}%
+\egroup
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+{\showboxes \getbuffer}
+\stoplinecorrection
+
+Watch how the bounding boxes differ and sometimes cross the shape. So, in order
+not to loose part of a glyph when clipping, you need to add a bit of space. \in
+{Figure} [fig:annoying] shows the two backgrounds in action.
+
+\startbuffer
+\getbuffer[a,b]
+\def\ShowPage#1% % (yet) no image as background to image
+  {\framed       % possible due to nested file problems
+      [background=#1,offset=overlay]
+      {\typesetfile[mfun-900.tex][page=1,width=.4\textwidth]}}
+\startcombination
+  {\ShowPage{concept}}   {concept}
+  {\ShowPage{copyright}} {copyright}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:annoying]
+  {Two examples of annoying backgrounds.}
+  {\getbuffer}
+
+If you really want to add such texts to a document, in \CONTEXT\ we don't have to
+use the page background, but can use one of the layout areas instead (like \type
+{[text][text]} or \type {[text][leftmargin]})
+
+\typebuffer[d]
+
+There is one drawback: when your left and right margin have different dimensions,
+the text will be scaled differently on odd and even pages. Normally this is no
+problem for a draft.
+
+As an alternative you can use the \type {\setuptexts} command and wrap the
+graphic in a box with the right dimensions, using code like:
+
+\starttyping
+\startuniqueMPgraphic{copyright}
+  picture p ; p := btex COPYRIGHT etex rotated 90 ;
+  setbounds p to boundingbox p enlarged 1pt ;
+  draw p withcolor .8white ;
+  xyscale_currentpicture(\the\leftmarginwidth,\the\textheight) ;
+\stopuniqueMPgraphic
+
+\setuptexttexts [margin] [] [\uniqueMPgraphic{copyright}]
+\stoptyping
+
+The graphic goes into the outer margin. The second argument can be used to put
+something in the inner margin.
+
+\stopsection
+
+\startsection[title={Multiple overlays}]
+
+\index{overlays+stack}
+
+\setupbackgrounds[text][rightmargin][background=]
+
+You can stack overlays. Consider the next case, where we assume that you have
+enabled interaction support using \type {\setupinteraction[state=start]}:
+
+\starttyping
+\setupbackgrounds
+  [page]
+  [background={color,nextpage},
+   backgroundcolor=darkyellow]
+\stoptyping
+
+Here, the page gets a colored background and a hyperlink to the next page,
+previously defined by:
+
+\starttyping
+\defineoverlay[nextpage][\overlaybutton{nextpage}]
+\stoptyping
+
+An \type {\overlaybutton} is just a button, with all attributes (color, frame,
+etc) set to nothing, having the dimensions of the overlay. The argument is one of
+the permitted destinations, like \type {nextpage}, \type {firstpage}, \type
+{SearchDocument} and alike.
+
+For efficiency reasons, the background areas (like \type {[text][text]}) are
+calculated only when their definition has changed. When a background changes per
+page, we have to recalculate it on each page. In the next example, the macro
+\type {\overlaybutton} generates a different button on each page. But, since we
+don't explicitly set the background at each page, there is no way the background
+drawing mechanism can know that this button has changed. Therefore, we must force
+recalculation with:
+
+\starttyping
+\setupbackgrounds[state=repeat]
+\stoptyping
+
+You can test this concept yourself with the following code. Here we assume that
+you have a file called \type {tufte.tex} on your system, which is the case if you
+have \CONTEXT\ installed. However, you can just as easily use any file having a
+paragraph of two of text.
+
+\starttyping
+\starttext
+\setupinteraction[state=start]
+\setupbackgrounds[state=repeat]
+\defineoverlay[nextpage][\overlaybutton{nextpage}]
+\setupbackgrounds[text][text][background=nextpage]
+\dorecurse{20}{\input tufte \par}
+\stoptext
+\stoptyping
+
+Note that you can move forward from page to page in the resulting \PDF\ file by
+clicking on each page with the mouse. Now compile this file without setting the
+background state to \type {repeat} and note the difference as you click pages
+with the mouse.
+
+Setting the state was not needed when we used the page background:
+
+\starttyping
+\setupbackgrounds[page][background=nextpage]
+\stoptyping
+
+The \type {\dorecurse} macro is handy for testing since it saves us typing. One
+can nest this macro as in:
+
+\starttyping
+\dorecurse{20}{\dorecurse{10}{Hello World! }\par}
+\stoptyping
+
+The current step is available in \type {\recurselevel} and the depth (nesting
+level) in \type {\recursedepth}.
+
+\stopsection
+
+\startsection[title={Crossing borders}]
+
+\index{backgrounds}
+
+In many cases, the previously mentioned background areas will suffice, but in the
+case of more complicated backgrounds, you may wish to use \METAPOST\ to draw
+graphics that combine or span these areas.
+
+At runtime \CONTEXT\ saves information on the layout that can be picked up by
+\METAPOST. The framework for a page graphic is:
+
+\starttyping
+StartPage;
+  % all kind of commands
+StopPage ;
+\stoptyping
+
+Between the \type {StartPage} and \type {StopPage} command you have access to a
+wide range of variables:
+
+\starttabulate[|l|Tp|]
+\HL
+\NC page       \NC PaperHeight PaperWidth               \NC \NR
+\NC            \NC PrintPaperHeight PrintPaperWidth     \NC \NR
+\NC            \NC PageOffset PageDepth                 \NC \NR
+\NC margins    \NC TopSpace BackSpace                   \NC \NR
+\NC text       \NC MakeupHeight MakeupWidth             \NC \NR
+\NC vertical   \NC TopHeight TopDistance                \NC \NR
+\NC            \NC HeaderHeight HeaderDistance          \NC \NR
+\NC            \NC TextHeight                           \NC \NR
+\NC            \NC FooterDistance FooterHeight          \NC \NR
+\NC            \NC BottomDistance BottomHeight          \NC \NR
+\NC horizontal \NC LeftEdgeWidth LeftEdgeDistance       \NC \NR
+\NC            \NC LeftMarginWidth LeftMarginDistance   \NC \NR
+\NC            \NC TextWidth                            \NC \NR
+\NC            \NC RightMarginDistance RightMarginWidth \NC \NR
+\NC            \NC RightEdgeDistance RightEdgeWidth     \NC \NR
+\HL
+\stoptabulate
+
+Since using these variables to construct paths is not that handy because the
+areas are available as predefined paths, which we will demonstrate here.
+
+\placefigure
+  [here][fig:back 1]
+  {A background with combined areas.}
+  {\startcombination
+     {\typesetfile[mfun-900.tex][page=2,width=.4\textwidth]}{even}
+     {\typesetfile[mfun-900.tex][page=3,width=.4\textwidth]}{odd}
+   \stopcombination}
+
+In \in {figure} [fig:back 1] you see two pages (odd and even) with a background
+spanning the outer margin and the text area. You can access an area in two ways.
+The area itself is available as \type {Area}.
+
+\starttyping
+StartPage ;
+  fill Area[Text][Text] withcolor .85white ;
+StopPage ;
+\stoptyping
+
+If you use an area this way, you will notice that it is not positioned at the
+right place. An \type {Area} is just a rectangle. If you want a positioned area,
+you should use the \type {Field} array:
+
+\starttyping
+StartPage ;
+  fill Field[Text][Text] withcolor .85white ;
+StopPage ;
+\stoptyping
+
+The location of an area is available in \type {Location}, so the previous
+definition is the same as:
+
+\starttyping
+StartPage ;
+  fill Area[Text][Text] shifted Location[Text][Text]
+    withcolor .85white ;
+StopPage ;
+\stoptyping
+
+The following definition fills and draws the margin and text areas.
+
+\typebuffer[back-2]
+
+This background is assigned to the page layer by saying:
+
+\typebuffer[back-0]
+
+As you can see in \in {figure} [fig:back 2], the text is typeset rather tightly
+between the left and right margins.
+
+\placefigure
+  [here][fig:back 2]
+  {A background with split areas.}
+  {\startcombination
+     {\typesetfile[mfun-900.tex][page=4,width=.4\textwidth]}{even}
+     {\typesetfile[mfun-900.tex][page=5,width=.4\textwidth]}{odd}
+   \stopcombination}
+
+This can easily be solved by enlarging the areas a bit. The next example
+demonstrates this on the text area, which is shown in \in {figure} [fig:back 3].
+
+\typebuffer[back-3]
+
+\placefigure
+  [here][fig:back 3]
+  {A background with enlarged text area.}
+  {\startcombination
+     {\typesetfile[mfun-900.tex][page=6,width=.4\textwidth]}{even}
+     {\typesetfile[mfun-900.tex][page=7,width=.4\textwidth]}{odd}
+   \stopcombination}
+
+The \type {enlarged} macro can be used like \type {shifted} and accepts either a
+numeric or a pair.
+
+How do we define a background as in \in {figure} [fig:back 1]? Because \type
+{Field} provides us the positioned areas, we can use the corners of those.
+
+\typebuffer[back-1]
+
+In this definition we calculate a different path for odd and even pages. When
+done, we enlarge the path a bit. If you want to use different offsets in all
+directions, you can use moved corner points.
+
+\typebuffer[back-4]
+
+Here we displace the corners randomly which leads to backgrounds like \in
+{figure} [fig:back 4]. The following definition would have worked as well:
+
+\typebuffer[back-4x]
+
+\placefigure
+  [here][fig:back 4]
+  {A random text area.}
+  {\startcombination
+     {\typesetfile[mfun-900.tex][page=8,width=.4\textwidth]}{even}
+     {\typesetfile[mfun-900.tex][page=9,width=.4\textwidth]}{odd}
+   \stopcombination}
+
+The previous graphics are defined as usable ones, which means that they will be
+recalculated each page. This is rather inefficient when the shapes don't change.
+But, using a reusable graphic instead, would result in only one graphic for both
+pages. Since the layout for the left and right page differs, another method is
+needed.
+
+Instead of putting the same graphic on the page layer, we put two different ones
+on the left and right page layer.
+
+\starttyping
+\defineoverlay[left page] [\useMPgraphic{left page}]
+\defineoverlay[right page][\useMPgraphic{right page}]
+
+\setupbackgrounds[leftpage] [background=left page]
+\setupbackgrounds[rightpage][background=right page]
+\stoptyping
+
+Now we only have to split the previously defined graphic into two parts. In order
+to force consistency, we isolate the code that fills and draws. The left page
+code looks like:
+
+\starttyping
+\startreusableMPgraphic{left page}
+  StartPage ;
+    path Main ; Main :=
+      llcorner Field[OuterMargin][Text] --
+      lrcorner Field[Text]       [Text] --
+      urcorner Field[Text]       [Text] --
+      ulcorner Field[OuterMargin][Text] -- cycle ;
+    \includeMPgraphic{draw page}
+  StopPage ;
+\stopreusableMPgraphic
+\stoptyping
+
+The right page text looks similar:
+
+\starttyping
+\startreusableMPgraphic{right page}
+  StartPage ;
+    path Main ; Main :=
+      lrcorner Field[OuterMargin][Text] --
+      llcorner Field[Text]       [Text] --
+      ulcorner Field[Text]       [Text] --
+      urcorner Field[OuterMargin][Text] -- cycle ;
+    \includeMPgraphic{draw page}
+  StopPage ;
+\stopreusableMPgraphic
+\stoptyping
+
+Watch how we used a reusable graphic first and a simple usable one next.
+Actually, the next graphic is not a stand alone graphic.
+
+\starttyping
+\startuseMPgraphic{draw page}
+  Main := Main enlarged 6pt ;
+  pickup pencircle scaled 2pt ;
+  fill Page withcolor .625white ;
+  fill Main withcolor .850white ;
+  draw Main withcolor .625red ;
+\stopuseMPgraphic
+\stoptyping
+
+We have seen some predefined paths and locations. Apart from the \type {Page}
+path, they take two arguments that specify their position on the layout grid.
+
+\starttabulate[|lT|l|]
+\HL
+\NC path Area     [][] \NC an area similar to a \CONTEXT\ one    \NC \NR
+\NC pair Location [][] \NC the position of this area             \NC \NR
+\NC path Field    [][] \NC the area positioned at the right place \NC \NR
+\NC path Page          \NC the page itself \NC \NR
+\HL
+\stoptabulate
+
+Some less used and more obscure variables are the following.
+
+\starttabulate[|lT|l|]
+\HL
+\NC numeric Hstep [] \NC the horizontal distance to the previous area \NC \NR
+\NC numeric Vstep [] \NC the vertical distance to the previous area \NC \NR
+\NC numeric Hsize [] \NC the width of an area  \NC \NR
+\NC numeric Vsize [] \NC the height of an area \NC \NR
+\HL
+\stoptabulate
+
+The array variables are accessed by using constants:
+
+\starttabulate[|l|l|]
+\HL
+\NC horizontal           \NC vertical        \NC \NR
+\HL
+\NC LeftEdge             \NC Top             \NC \NR
+\NC LeftEdgeSeparator    \NC TopSeparator    \NC \NR
+\NC LeftMargin           \NC Header          \NC \NR
+\NC LeftMarginSeparator  \NC HeaderSeparator \NC \NR
+\NC Text                 \NC Text            \NC \NR
+\NC RightMarginSeparator \NC FooterSeparator \NC \NR
+\NC RightMargin          \NC Footer          \NC \NR
+\NC RightEdgeSeparator   \NC BottomSeparator \NC \NR
+\NC RightEdge            \NC Bottom          \NC \NR
+\HL
+\stoptabulate
+
+In addition to these, there are \type {Margin}, \type {InnerMargin} and \type
+{OuterMargin} which adapt themselves to the current odd or even page. The same is
+true for \type {Edge}, \type {InnerEdge} and \type {OuterEdge}, although these
+will seldom be used, since interactive documents are always single sided.
+
+We started this chapter with spending a lot of code to simulate the page areas.
+It will be clear now that in practice this is much easier using the mechanism
+described here.
+
+\placefigure
+  [here][fig:back 5]
+  {A quick way to draw all used areas.}
+  {\setupexternalfigures[background=color,backgroundcolor=white]%
+   \startcombination
+     {\typesetfile[mfun-900.tex][page=10,width=.4\textwidth]}{even}
+     {\typesetfile[mfun-900.tex][page=11,width=.4\textwidth]}{odd}
+   \stopcombination}
+
+In \in {figure} [fig:back 5] we see all used areas. Areas that are not used are
+not drawn (which saves some testing). This background was defined as:
+
+\typebuffer[back-5]
+
+We use two nested \type {for} loops to step over the areas. A \type {for} loop
+with a step of~1 will fail, because the indices are defined in a rather special
+way. On the other hand, the mechanism is rather tolerant, in the sense that \type
+{[i][j]} and \type {[j][i]} are both accepted.
+
+\stopsection
+
+\startsection[title={Bleeding}]
+
+\index {bleeding}
+
+If you want to share your document all over the world, it makes sense to use a
+paper format like {\em letter} or {\em A4}. In that case, the layout often
+matches the paper size.
+
+\startlinecorrection[blank]
+\startMPcode
+  path p ; p := fullcircle xyscaled (21mm,29.7mm) ;
+  path q ; q := boundingbox p ;
+  fill q withcolor .625white ;
+  fill p withcolor .625yellow ;
+  currentpicture := currentpicture shifted (-31mm,0) ;
+  fill q withcolor .625white ;
+  fill p xsized (bbwidth(p)-2mm) withcolor .625yellow ;
+  currentpicture := currentpicture shifted (-31mm,0) ;
+  fill q withcolor .625white ;
+  fill p withcolor .625yellow ;
+  draw q enlarged -1mm withpen pencircle scaled 2mm withcolor .625white ;
+\stopMPcode
+\stoplinecorrection
+
+The left picture demonstrates what happens when you have a printer that is
+capable of printing from edge to edge. If you have such a printer, you're lucky.
+The middle picture demonstrates what happens if you have a properly set up
+printing program and|/|or printer: the page is scaled down so that the content
+fits into the non printable area of the printer. One reason why printers don't
+print from edge to edge is that the engine is not that happy when toner or ink
+ends up next to the page. The third picture shows what happens when a printer
+simply ignores content that runs over the non printable area. In many cases it's
+best to make sure that the content leaves a margin of 5mm from the edges.
+
+Books and magazines seldom use the popular desk||top paper sizes. Here the
+designer determined the paper size and layout more or less independent from the
+size of the sheet on which the result is printed. Instead of one page per sheet,
+arrangements of 2 upto 32 or more pages per sheet are made. The process of
+arranging pages in such a way that these sheets can be folded and combined into
+books is called page imposition. \CONTEXT\ supports a wide range of page
+imposition schemes. More information on this can be found in the \CONTEXT\
+manuals.
+
+The fact that the sheet on which a page is printed is larger than the page itself
+opens the possibility to use the full page for content. In that case, especially
+when you use background graphics, you need to make sure that indeed the page is
+covered completely. Where in desk top printing you can get away with imperfection
+simply because the printing engines have their limitations, in professional
+output you need to be more considerate.
+
+\startlinecorrection[blank]
+\startMPcode
+  path p ; p := fullsquare xyscaled (4cm,5cm) ;
+  path q ; q := fullsquare xyscaled (3cm,4cm) ;
+  path r ; r := fullsquare xyscaled (2cm,3cm) shifted (-.5cm,.5cm) ;
+  fill p withcolor .625white ;
+  fill q withcolor .850white ;
+  currentpicture := currentpicture shifted (-45mm,0) ;
+  fill p withcolor .625white ;
+  fill q withcolor .850white ;
+  fill r withcolor transparent(1,.5,.625yellow) ;
+  currentpicture := currentpicture shifted (-45mm,0) ;
+  fill p withcolor .625white ;
+  fill q withcolor .850white ;
+  r := r topenlarged 2mm leftenlarged 2mm ;
+  fill r withcolor transparent(1,.5,.625yellow) ;
+\stopMPcode
+\stoplinecorrection
+
+Slightly enlarging a graphic so that it exceeds the natural page limits is called
+bleeding. Because quite often layout elements have a rectangular nature,
+\METAFUN\ provides a couple of operations that can save you some work in defining
+bleeding boxes.
+
+\startbuffer
+path p, q ;
+def ShowPath =
+  fill p withcolor transparent(1,.5,.625yellow) ;
+  fill q withcolor transparent(1,.5,.625yellow) ;
+  currentpicture := currentpicture shifted (-25mm,0) ;
+enddef ;
+p := q := fullsquare xyscaled (2cm,3cm) ; ShowPath ;
+p := p leftenlarged   2mm ; ShowPath ;
+p := p topenlarged    2mm ; ShowPath ;
+p := p rightenlarged  2mm ; ShowPath ;
+p := p bottomenlarged 2mm ; ShowPath ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+This graphic is generated as follows:
+
+\typebuffer
+
+The trick is in the last couple of lines. In addition to the general \type
+{enlarged} operator, we have 4~operators that enlarge a rectangle in a certain
+direction. This means that we can define the original path using dimensions
+related to the layout, and add bleed strips independently.
+
+\startbuffer
+path p ; p := fullsquare xyscaled (4cm,1cm) ;
+path q ; q := p leftenlarged 2mm topenlarged 2mm ;
+fill p withcolor transparent(1,.5,.625yellow) ;
+fill q withcolor transparent(1,.5,.625yellow) ;
+draw boundingbox currentpicture withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+This example demonstrates that when we enlarge a graphic, the bounding box also
+gets larger. Because this can interfere with the placement of such a graphic, we
+need to make sure that the bleeding is there but not seen.
+
+\startbuffer
+path p ; p := fullsquare xyscaled (4cm,1cm) ;
+path q ; q := p leftenlarged 2mm topenlarged 2mm ;
+fill p withcolor transparent(1,.5,.625yellow) ;
+fill q withcolor transparent(1,.5,.625yellow) ;
+setbounds currentpicture to p ;
+draw boundingbox currentpicture withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+There are two more operators: \type {innerenlarged} and \type {outerenlarged}.
+These expand to either \type {leftenlarged} or \type {rightenlarged}, depending
+on the page being left or right hand.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

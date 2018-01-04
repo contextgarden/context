@@ -1,0 +1,108 @@
+% language=uk macros=mkvi
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+%
+% comment   : This manual was originally written for MkII and as a consequence many examples
+%             are coded in a bit different way than we would nowadays do in MkIV. But, as we
+%             try to be downward compatible, it doesn't hurt.
+%
+% comment   : I also use this manual for benchmarking ConTeXt MkIV. On my current machine (a
+%             2013 dell i7 laptop) one run takes some 18.1 seconds for LuaTeX and around 14.2
+%             seconds for LuajitTeX which is quite okay given the amount of graphics (428
+%             pages).
+%
+% comment   : This is one of the manuals that can be ordered at http://www.h2o-books.com and
+%             it's actually meant to be read on paper.
+
+\enabledirectives[hyphenator.optimize]
+\enabledirectives[hyphenator.flatten]
+% \setuphyphenation[method=traditional]
+
+% \enabletrackers[*defin*]
+
+% \enablemode[screen]
+\enablemode[print]
+% \enablemode[book]
+
+% \usemodule[luacalls]
+
+% todo: check startintro .. stopintro each chapter
+
+% \showframe
+
+\startproduct metafun
+
+\environment metafun-environment
+
+\startnotmode[screen]
+    \component   metafun-titlepage-paper
+    \component   metafun-colofon-paper
+\stopnotmode
+
+\startmode[screen]
+    \environment metafun-environment-screen
+    \component   metafun-titlepage-screen
+\stopmode
+
+\startfrontmatter
+    \component   metafun-introduction
+    \component   metafun-contents
+    \component   metafun-conventions
+\stopfrontmatter
+
+\startbodymatter
+    \component   metafun-welcome
+    \component   metafun-basics
+    \component   metafun-embedding
+    \component   metafun-layout
+    \component   metafun-positioning
+    \component   metafun-backgrounds
+    \component   metafun-gadgets
+    \component   metafun-effects
+    \component   metafun-functions
+    \component   metafun-text
+    \component   metafun-debugging
+    \component   metafun-styles
+    \component   metafun-examples
+    \component   metafun-macros
+    \component   metafun-lua
+    %component   metafun-graphics
+    \component   metafun-sneaky
+\stopbodymatter
+
+\startappendices
+  % \component   metafun-programs
+    \component   metafun-syntax
+    \component   metafun-document
+    \component   metafun-reference
+  % \component   metafun-literature
+\stopappendices
+
+\startbackmatter
+    \component   metafun-index
+\stopbackmatter
+
+\startmode[screen]
+    \component   metafun-colofon-screen
+\stopmode
+
+\startnotmode[screen]
+    \component   metafun-backpage
+\stopnotmode
+
+\stopproduct

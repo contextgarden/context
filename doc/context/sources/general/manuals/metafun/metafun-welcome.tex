@@ -1,0 +1,3502 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-welcome
+
+\environment metafun-environment
+
+\startchapter[reference=sec:welcome,title={Welcome to MetaPost}]
+
+\startintro
+
+In this chapter, we will introduce the most important \METAPOST\ concepts as well
+as demonstrate some drawing primitives and operators. This chapter does not
+replace the \METAFONT\ book or \METAPOST\ manual, both of which provide a lot of
+explanations, examples, and (dirty) tricks.
+
+As its title says, the \METAFONT\ book by Donald.\ E.\ Knuth is about fonts.
+Nevertheless, buying a copy is worth the money, because as a \METAPOST\ user you
+can benefit from the excellent chapters about curves, algebraic expressions, and
+(linear) equations. The following sections are incomplete in many aspects. More
+details on how to define your own macros can be found in both the \METAFONT\ book
+and \METAPOST\ manual, but you will probably only appreciate the nasty details if
+you have written a few simple figures yourself. This chapter will give you a
+start.
+
+A whole section is dedicated to the basic extensions to \METAPOST\ as provided by
+\METAFUN. Most of them are meant to make defining graphics like those shown in
+this document more convenient.
+
+Many of the concepts introduced here will be discussed in more detail in later
+chapters. So, you may consider this chapter to be an appetizer for the following
+chapters. If you want to get started quickly, you can safely skip this chapter
+now.
+
+\stopintro
+
+\startsection[title={Paths}]
+
+\index{paths}
+
+Paths are the building blocks of \METAPOST\ graphics. In its simplest form, a
+path is a single point.
+
+\startuseMPgraphic{axis}
+  tickstep := 1cm ; ticklength := 2mm ;
+  drawticks unitsquare xscaled 4cm yscaled 3cm shifted (-1cm,-1cm) ;
+  tickstep := tickstep/2 ; ticklength := ticklength/2 ;
+  drawticks unitsquare xscaled 4cm yscaled 3cm shifted (-1cm,-1cm) ;
+\stopuseMPgraphic
+
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  drawpoint "1cm,1.5cm" ;
+\stopMPcode
+\stoplinecorrection
+
+Such a point is identified by two numbers, which represent the horizontal and
+vertical position, often referred to as $x$ and $y$, or $(x,y)$. Because there
+are two numbers involved, in \METAPOST\ this point is called a pair. Its related
+datatype is therefore \type {pair}. The following statements assigns the point we
+showed previously to a pair variable.
+
+\starttyping
+pair somepoint ; somepoint := (1cm,1.5cm) ;
+\stoptyping
+
+A pair can be used to identify a point in the two dimensional coordinate space,
+but it can also be used to denote a vector (being a direction or displacement).
+For instance, \type {(0,1)} means \quote {go up}. Looking through math glasses,
+you may consider them vectors, and if you know how to deal with them, \METAPOST\
+may be your friend, since it knows how to manipulate them.
+
+You can connect points and the result is called a path. A path is a straight or
+bent line, and is not necessarily a smooth curve. An example of a simple
+rectangular path is: \footnote {In the next examples we use the debugging
+features discussed in \in {chapter} [sec:debugging] to visualize the points,
+paths and bounding boxes.}
+
+\startuseMPgraphic{path}
+  path p ;
+  p := unitsquare xyscaled (2cm,1cm) shifted (.5cm,.5cm) ;
+\stopuseMPgraphic
+
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  drawpath p ;
+\stopMPcode
+\stoplinecorrection
+
+This path is constructed out of four points:
+
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  swappointlabels := true ; drawpath p ; drawpoints p ;
+\stopMPcode
+\stoplinecorrection
+
+Such a path has both a beginning and end and runs in a certain direction:
+
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  autoarrows := true ;
+  swappointlabels := true ; drawarrowpath p ; drawpoints p ;
+\stopMPcode
+\stoplinecorrection
+
+A path can be open or closed. The previous path is an example of a closed path.
+An open path looks like this:
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,1.5cm)..(2cm,0cm) ;
+\stopuseMPgraphic
+
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  swappointlabels := true ; drawpath p ; drawpoints p ;
+\stopMPcode
+\stoplinecorrection
+
+When we close this path |<|and in a moment we will see how to do this|>| the path
+looks like:
+
+\startbuffer
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  p := p .. cycle ;
+  swappointlabels := true ; drawpath p ; drawpoints p ;
+\stopMPcode
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer
+
+The open path is defined as:
+
+\starttyping
+(1cm,1cm)..(1.5cm,1.5cm)..(2cm,0cm)
+\stoptyping
+
+The \quote {double period} connector \type {..} tells \METAPOST\ that we want to
+connect the lines by a smooth curve. If you want to connect points with straight
+line segments, you should use \type {--}.
+
+Closing the path is done by connecting the first and last point, using the \type
+{cycle} command.
+
+\starttyping
+(1cm,1cm)..(1.5cm,1.5cm)..(2cm,0cm)..cycle
+\stoptyping
+
+Feel free to use \type {..} or \type {--} at any point in your path.
+
+\starttyping
+(1cm,1cm)--(1.5cm,1.5cm)..(2cm,0cm)..cycle
+\stoptyping
+
+\startuseMPgraphic{path}
+path p ; p := (1cm,1cm)--(1.5cm,1.5cm)..(2cm,0cm)..cycle ;
+\stopuseMPgraphic
+
+This path, when drawn, looks like this:
+
+\getbuffer
+
+As you can see in some of the previous examples, \METAPOST\ is capable of drawing
+a smooth curve through the three points that make up the path. We will now
+examine how this is done.
+
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  p := p .. cycle ; swappointlabels := true ;
+  drawpath p ; drawcontrollines p ; drawpoints p ; drawcontrolpoints p ;
+\stopMPcode
+\stoplinecorrection
+
+The six small points are the so called control points. These points pull their
+parent point in a certain direction. The further away such a point is, the
+stronger the pull.
+
+Each point has at most two control points. As you can see in the following
+graphic, the endpoints of a non closed curve have only one control point.
+
+\startuseMPgraphic{path}
+path p ; p := (1.5cm,1.5cm)..(2cm,0cm)..(1cm,1cm) ;
+\stopuseMPgraphic
+
+\startbuffer[path]
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  swappointlabels := true ;
+  drawpath p ; drawcontrollines p ; drawpoints p ; drawcontrolpoints p ;
+\stopMPcode
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer[path]
+
+This time we used the path:
+
+\starttyping
+(1.5cm,1.5cm)..(2cm,0cm)..(1cm,1cm)
+\stoptyping
+
+When you connect points by a smooth curve, \METAPOST\ will calculate the control
+points itself, unless you specify one or more of them.
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,1.5cm)..controls (3cm,2cm)..(2cm,0cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+This path is specified as:
+
+\starttyping
+(1cm,1cm)..(1.5cm,1.5cm)..controls (3cm,2cm)..(2cm,0cm)
+\stoptyping
+
+In this path, the second and third point share a control point. Watch how the
+curve is pulled in that direction. It is possible to pull a bit less by choosing
+a different control point:
+
+\starttyping
+(1cm,1cm)..(1.5cm,1.5cm)..controls (2.75cm,1.25cm)..(2cm,0cm)
+\stoptyping
+
+Now we get:
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,1.5cm)..controls (2.75cm,1.25cm)..(2cm,0cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+We can also specify a different control point for each connecting segment.
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..controls (.5cm,2cm) and (2.5cm,2cm)..(2cm,.5cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+This path is defined as:
+
+\starttyping
+(1cm,1cm)..controls (.5cm,2cm) and (2.5cm,2cm)..(2cm,.5cm)
+\stoptyping
+
+\stopsection
+
+\startsection[title={Transformations}]
+
+\index{transformations}
+
+We can store a path in a path variable. Before we can use such a variable, we
+have to allocate its memory slot with \type {path}.
+
+\starttyping
+path p ; p := (1cm,1cm)..(1.5cm,2cm)..(2cm,0cm) ;
+\stoptyping
+
+Although we can manipulate any path in the same way, using a variable saves us
+the effort to key in a path more than once.
+
+\startuseMPgraphic{axis}
+  tickstep := 1cm ; ticklength := 2mm ;
+  drawticks unitsquare xscaled 8cm yscaled 4cm ;
+  tickstep := tickstep/2 ; ticklength := ticklength/2 ;
+  drawticks unitsquare xscaled 8cm yscaled 4cm ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,2cm)..(2cm,0cm)..cycle ;
+  path q ; q := p shifted (4cm,2cm) ;
+\stopuseMPgraphic
+
+\startbuffer[path]
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  swappointlabels := true ;
+  drawpath p ; drawcontrollines p ; drawpoints p ; drawcontrolpoints p ;
+  drawpath q ; drawcontrollines q ; drawpoints q ; drawcontrolpoints q ;
+\stopMPcode
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer[path]
+
+In this graphic, the path stored in \type {p} is drawn twice, once in its
+displaced form. The displacement is defined as:
+
+\starttyping
+p shifted (4cm,2cm)
+\stoptyping
+
+In a similar fashion you can rotate a path. You can even combine shifts and
+rotations. First we rotate the path 15 degrees counter||clockwise around the
+origin.
+
+\starttyping
+p rotated 15
+\stoptyping
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,2cm)..(2cm,0cm)..cycle ;
+  path q ; q := p rotated 15 ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+This rotation becomes more visible when we also shift the path to the right by
+saying:
+
+\starttyping
+rotated 15 shifted (4cm,0cm)
+\stoptyping
+
+Now we get:
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,2cm)..(2cm,0cm)..cycle ;
+  path q ; q := p rotated 15 shifted (4cm,0cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+Note that \type {rotated 15} is equivalent to \typ {p rotatedaround (origin,
+15)}.
+
+It may make more sense to rotate the shape around its center. This can easily be
+achieved with the \type {rotatedaround} command. Again, we move the path to the
+right afterwards.
+
+\starttyping
+p rotatedaround(center p, 15) shifted (4cm,0cm)
+\stoptyping
+
+\startuseMPgraphic{axis}
+  tickstep := 1cm ; ticklength := 2mm ;
+  drawticks unitsquare xscaled 10cm yscaled 3cm ;
+  tickstep := tickstep/2 ; ticklength := ticklength/2 ;
+  drawticks unitsquare xscaled 10cm yscaled 3cm ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,2cm)..(2cm,0cm)..cycle ;
+  path q ; q := p rotatedaround(center p, 15) shifted (4cm,0cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+Yet another transformation is slanting. Just like characters can be upright or
+slanted, a graphic can be:
+
+\starttyping
+p slanted 1.5 shifted (4cm,0cm)
+\stoptyping
+
+\startuseMPgraphic{path}
+  path p ; p := (1cm,1cm)..(1.5cm,2cm)..(2cm,0cm)..cycle ;
+  path q ; q := p slanted 1.5 shifted (4cm,0cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+The slant operation's main application is in tilting fonts. The $x$||coodinates
+are increased by a percentage of their $y$||coordinate, so here every $x$ becomes
+$x+1.5y$. The $y$||coordinate is left untouched. The following table summarizes
+the most important primitive transformations that \METAPOST\ supports.
+
+\starttabulate[|lT|l|]
+\HL
+\NC \METAPOST\ code     \NC mathematical equivalent \NC \NR
+\HL
+\NC (x,y) shifted (a,b) \NC $(x+a,y+b)$     \NC \NR
+\NC (x,y) scaled  s     \NC $(sx,sy)$       \NC \NR
+\NC (x,y) xscaled s     \NC $(sx,y)$        \NC \NR
+\NC (x,y) yscaled s     \NC $(x,sy)$        \NC \NR
+\NC (x,y) zscaled (u,v) \NC $(xu-yv,xv+yu)$ \NC \NR
+\NC (x,y) slanted s     \NC $(x+sy,y)$      \NC \NR
+\NC (x,y) rotated r     \NC $(x\cos(r)-y\sin(r),x\sin(r)+y\cos(r))$ \NC \NR
+\HL
+\stoptabulate
+
+The previously mentioned \type {rotatedaround} is not a primitive but a macro,
+defined in terms of shifts and rotations. Another transformation macro is
+mirroring, or in \METAPOST\ terminology, \type {reflectedabout}.
+
+\startbuffer[path]
+\startlinecorrection[blank]
+\startMPcode
+  \includeMPgraphic{axis}
+  \includeMPgraphic{path}
+  swappointlabels := true ;
+  drawpath p ; drawpoints p ;
+  drawpath q ; drawpoints q ;
+\stopMPcode
+\stoplinecorrection
+\stopbuffer
+
+\startuseMPgraphic{path}
+  path p ; p := unitsquare scaled 2cm shifted (2cm,.5cm) ;
+  path q ; q := unitsquare scaled 2cm shifted (2cm,.5cm) reflectedabout((2.4cm,-.5),(2.4cm,3cm)) ;
+  draw (2.4cm,-.5cm)--(2.4cm,3cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+The reflection axis is specified by a pair of points. For example, in the graphic
+above, we used the following command to reflect the square about a line through
+the given points.
+
+\starttyping
+p reflectedabout((2.4cm,-.5),(2.4cm,3cm))
+\stoptyping
+
+The line about which the path is mirrored. Mirroring does not have to be parallel
+to an axis.
+
+\starttyping
+p reflectedabout((2.4cm,-.5),(2.6cm,3cm))
+\stoptyping
+
+The rectangle now becomes:
+
+\startuseMPgraphic{path}
+  path p ; p := unitsquare scaled 2cm shifted (2cm,.5cm) ;
+  path q ; q := unitsquare scaled 2cm shifted (2cm,.5cm) reflectedabout((2.4cm,-.5),(2.6cm,3cm)) ;
+  draw (2.4cm,-.5cm)--(2.6cm,3cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+\pagereference [zscaled]The table also mentions \type {zscaled}.
+
+\startuseMPgraphic{path}
+path p ; p := unitsquare scaled (1cm)                shifted (1cm,.5cm) ;
+path q ; q := unitsquare scaled (1cm) zscaled (2,.5) shifted (1cm,.5cm) ;
+\stopuseMPgraphic
+
+\getbuffer[path]
+
+A \type {zscaled} specification takes a vector as argument:
+
+\starttyping
+p zscaled (2,.5)
+\stoptyping
+
+The result looks like a combination of scaling and rotation, and conforms to the
+formula in the previous table.
+
+Transformations can be defined in terms of a transform matrix. Such a matrix is
+stored in a transform variable. For example:
+
+\starttyping
+transform t ; t := identity scaled 2cm shifted (4cm,1cm) ;
+\stoptyping
+
+We use the associated keyword \type {transformed} to apply this matrix to a path
+or picture.
+
+\starttyping
+p transformed t
+\stoptyping
+
+In this example we've taken the \type {identity} matrix as starting point but you
+can use any predefined transformation. The identity matrix is defined in such a
+way that it scales by a factor of one in both directions and shifts over the
+zero||vector.
+
+Transform variables can save quite some typing and may help you to force
+consistency when many similar transformations are to be done. Instead of changing
+the scaling, shifting and other transformations you can then stick to just
+changing the one transform variable.
+
+\stopsection
+
+\startsection[title={Constructing paths}]
+
+\index{paths}
+
+In most cases, a path will have more points than the few shown here. Take for
+instance a so called {\em super ellipse}.
+
+\startlinecorrection[blank]
+\startMPcode
+path p ; p := fullsquare xyscaled (5cm,3cm) superellipsed .85 ;
+drawpath p ; drawpoints p ;
+visualizepaths ; draw p shifted (6cm,0cm) withcolor .625yellow ;
+\stopMPcode
+\stoplinecorrection
+
+These graphics provide a lot of information. In this picture the crosshair in the
+center is the {\em origin} and the dashed rectangle is the {\em bounding box} of
+the super ellipse. The bounding box specifies the position of the graphic in
+relation to the origin as well as its width and height.
+
+In the graphic on the right, you can see the points that make up the closed path
+as well as the control points. Each point has a number with the first point
+numbered zero. Because the path is closed, the first and last point coincide.
+
+\startuseMPgraphic{axis}
+  tickstep := 1cm ; ticklength := 2mm ;
+  drawticks unitsquare xscaled 8cm yscaled 3cm ;
+  tickstep := tickstep/2 ; ticklength := ticklength/2 ;
+  drawticks unitsquare xscaled 8cm yscaled 3cm ;
+\stopuseMPgraphic
+
+\startbuffer
+\startlinecorrection[blank]
+\startMPcode
+  string tmp ; defaultfont := "\truefontname{Mono}" ;
+  \includeMPgraphic{axis}
+  \includeMPgraphic{points}
+  \includeMPgraphic{path}
+  label.lft(verbatim(tmp),(14.5cm,2.5cm)) ;
+  drawwholepath scantokens(tmp) ;
+\stopMPcode
+\stoplinecorrection
+\stopbuffer
+
+We've used the commands \type {..} and \type {--} as path connecting directives.
+In the next series of examples, we will demonstrate a few more. However, before
+doing that, we define a few points, using the predefined \type {z} variables.
+
+\startuseMPgraphic{points}
+  z0 = (0.5cm,1.5cm) ; z1 = (2.5cm,2.5cm) ;
+  z2 = (6.5cm,0.5cm) ; z3 = (3.0cm,1.5cm) ;
+\stopuseMPgraphic
+
+\starttyping
+z0 = (0.5cm,1.5cm) ; z1 = (2.5cm,2.5cm) ;
+z2 = (6.5cm,0.5cm) ; z3 = (3.0cm,1.5cm) ;
+\stoptyping
+
+Here \type {z1} is a short way of saying \type {(x1,y1)}. When a \type {z}
+variable is called, the corresponding \type {x} and \type {y} variables are
+available too. Later we will discuss \METAPOST\ capability to deal with
+expressions, which are expressed using an \type {=} instead of \type {:=}. In
+this case the expression related to \type {z0} is expanded into:
+
+\starttyping
+z0 = (x0,y0) = (0.5cm,1.5cm) ;
+\stoptyping
+
+But for this moment let's forget about their expressive nature and simply see
+them as points which we will now connect by straight line segments.
+
+\startuseMPgraphic{path}
+  tmp := "z0--z1--z2--z3--cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+The smooth curved connection, using \type {..} looks like:
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2..z3..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+If we replace the \type {..} by \type {...}, we get a tighter path.
+
+\startuseMPgraphic{path}
+  tmp := "z0...z1...z2...z3...cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Since there are \type {..}, \type {--}, and \type {...}, it will be no surprise
+that there is also \type {---}.
+
+\startuseMPgraphic{path}
+  tmp := "z0---z1---z2---z3---cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+If you compare this graphic with the one using \type {--} the result is the same,
+but there is a clear difference in control points. As a result, combining \type
+{..} with \type {--} or \type {---} makes a big difference. Here we get a
+non||smooth connection between the curves and the straight line.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2--z3..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+As you can see in the next graphic, when we use \type {---}, we get a smooth
+connection between the straight line and the rest of the curve.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2---z3..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+So far, we have joined the four points as one path. Alternatively, we can
+constrict subpaths and connect them using the ampersand symbol, \type {&}.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2 & z2..z3..z0 & cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+So far we have created a closed path. Closing is done by \type {cycle}. The
+following path may look closed but is in fact open.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2..z3..z0" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Only a closed path can be filled. The closed alternative looks as follows. We
+will see many examples of filled closed paths later on.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2..z3..z0..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Here the final \type {..} will try to make a smooth connection, but because we
+already are at the starting point, this is not possible. However, the \type
+{cycle} command can automatically connect to the first point. Watch the
+difference between the previous and the next path.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2..z3..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+It is also possible to combine two paths into one that don't have common head and
+tails. First we define an open path:
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+The following path is a closed one, and crosses the previously shown path.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z3..z1..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+With \type {buildcycle} we can combine two paths into one.
+
+\startuseMPgraphic{path}
+  tmp := "buildcycle(z0..z1..z2 , z0..z3..z1..cycle)" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+We would refer readers to the \METAFONT\ book and the \METAPOST\ manual for an
+explanation of the intricacies of the \type {buildcycle} command. It is an
+extremely complicated command, and there is just not enough room here to do it
+justice. We suffice with saying that the paths should cross at least once before
+the \type {buildcycle} command can craft a combined path from two given paths. We
+encourage readers to experiment with this command.
+
+In order to demonstrate another technique of joining paths, we first draw a few
+strange paths. The last of these three graphics demonstrates the use of \type
+{softjoin}.
+
+\startuseMPgraphic{path}
+  tmp := "z0--z1..z2--z3" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2--z3" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Watch how \type {softjoin} removes a point in the process of smoothing a
+connection. The smoothness is accomplished by adapting the control points of the
+neighbouring points in the appropriate way.
+
+\startuseMPgraphic{path}
+  tmp := "z0--z1 softjoin z2--z3" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Once a path is known, you can cut off a slice of it. We will demonstrate a few
+alternative ways of doing so, but first we show one more time the path that we
+take as starting point.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..z2..z3..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+This path is made up out of five points, where the cycle duplicates the first
+point and connects the loose ends. The first point has number zero.
+
+We can use these points in the \type {subpath} command, which takes two
+arguments, specifying the range of points to cut of the path specified after the
+keyword \type {of}.
+
+\startuseMPgraphic{path}
+  tmp := "subpath(2,4) of (z0..z1..z2..z3..cycle)" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+The new (sub|)|path is a new path with its own points that start numbering at
+zero. The next graphic shows both the original and the subpath from point 1
+upto~3.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..z2..z3..cycle)" ;
+  sub := "subpath(1,3)" ;
+\stopuseMPgraphic
+
+\startbuffer[sub]
+\startlinecorrection[blank]
+\startMPcode
+  string tmp, sub ; defaultfont := "\truefontname{Mono}" ;
+  \includeMPgraphic{axis}
+  \includeMPgraphic{points}
+  \includeMPgraphic{path}
+  label.lft(verbatim(tmp),(14.5cm,2.5cm)) ;
+  label.lft(verbatim(sub),(14.5cm,2.0cm)) ;
+  sub := sub & " of " & tmp ;
+  path p ; p := scantokens(tmp) ;
+  path q ; q := scantokens(sub) ;
+  drawwholepath p ; swappointlabels := true ;
+  drawpath q withcolor .625yellow ;
+  drawpoints q withcolor .625red ;
+  drawpointlabels q ;
+\stopMPcode
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer[sub]
+
+In spite of what you may think, a point is not fixed. This is why in \METAPOST\ a
+point along a path is officially called a time. The next example demonstrates
+that we can specify any time on the path.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..z2..z3..cycle)" ;
+  sub := "subpath(2.45,3.85)" ;
+\stopuseMPgraphic
+
+\getbuffer[sub]
+
+Often we want to take a slice starting at a specific point. This is provided by
+\type {cutafter} and its companion \type {cutbefore}. Watch out, this time we use
+a non||cyclic path.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..z2..z3)" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+When you use \type {cutafter} and \type {cutbefore} it really helps if you know
+in what direction the path runs.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..z2..z3) cutafter z2" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..z2..z3) cutbefore z1" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Here is a somewhat silly way of accomplishing the same thing, but it is a nice
+introduction to \METAPOST's \type {point} operation. In order to use this command
+effectively, you need to know how many points make up the path.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..z2..z3) cutbefore point 2 of (z0..z1..z2..z3)" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+As with \type {subpath}, you can use fractions to specify the time on the path,
+although the resulting point is not necessarily positioned linearly along the
+curve.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..z2..z3) cutbefore point 2.5 of (z0..z1..z2..z3)" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+If you really want to know the details of where fraction points are positioned,
+you should read the \METAFONT\ book and study the source of \METAFONT\ and
+\METAPOST, where you will find the complicated formulas that are used to
+calculate smooth curves.
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Like any closed path, this path has points where the tangent is horizontal or
+vertical. Early in this chapter we mentioned that a pair (or point) can specify a
+direction or vector. Although any angle is possible, we often use one of four
+predefined directions:
+
+\starttabulate[|Tl|Tl|]
+\HL
+\NC right \NC ( 1, 0) \NC \NR
+\NC up    \NC ( 0, 1) \NC \NR
+\NC left  \NC (-1, 0) \NC \NR
+\NC down  \NC ( 0,-1) \NC \NR
+\HL
+\stoptabulate
+
+We can use these predefined directions in combination with \type {directionpoint}
+and \type {cutafter}. The following command locates the first point on the path
+that has a tangent that points vertically upward, and then feeds this point to
+the \type {cutafter} command.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..cycle) cutafter directionpoint up of (z0..z1..cycle)" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+You are not limited to predefined direction vectors. You can provide a pair to
+indicate a direction. In the next example we use the following cyclic path:
+
+\startuseMPgraphic{path}
+  tmp := "z0..z1..cycle" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+Using \type {( )} is not mandatory but makes the expression look less
+complicated.
+
+\startuseMPgraphic{path}
+  tmp := "(z0..z1..cycle) cutafter directionpoint (1,1) of (z0..z1..cycle)" ;
+\stopuseMPgraphic
+
+\getbuffer
+
+We will apply these commands in the next chapters, but first we will finish our
+introduction in \METAPOST. We have seen how a path is constructed and what can be
+done with it. Now it is time to demonstrate how such a path is turned into a
+graphic.
+
+\stopsection
+
+\startsection[title={Angles}]
+
+\index{angles}
+\index{rotation}
+
+You can go from angles to vectors and vice versa using the \type {angle} and
+\type {dir} functions. The next example show both in action.
+
+\startbuffer
+pickup pencircle scaled 2mm ;
+draw (origin -- dir(45) -- dir(0) -- cycle)
+  scaled 3cm                   withcolor .625red ;
+draw (origin -- dir(angle(1,1)) -- dir(angle(1,0)) -- cycle)
+  scaled 3cm shifted (3.5cm,0) withcolor .625yellow ;
+draw (origin -- (1,1) -- (1,0) -- cycle)
+  scaled 3cm shifted (7cm,0)   withcolor .625white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The \type {dir} command returns an unit vector, which is why the first two shapes
+look different and are smaller than the third one. We can compensate for that by
+an additional scaling:
+
+\startbuffer
+pickup pencircle scaled 2mm ;
+draw (origin -- dir(45) -- dir(0) -- cycle)
+  scaled sqrt(2) scaled 3cm                   withcolor .625red ;
+draw (origin -- dir(angle(1,1)) -- dir(angle(1,0)) -- cycle)
+  scaled sqrt(2) scaled 3cm shifted (4.5cm,0) withcolor .625yellow ;
+draw (origin -- (1,1) -- (1,0) -- cycle)
+                 scaled 3cm shifted (9cm,0)   withcolor .625white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Drawing pictures}]
+
+\index{drawing}
+
+Once a path is defined, either directly or as a variable, you can turn it into a
+picture. You can draw a path, like we did in the previous examples, or you can
+fill it, but only if it is closed.
+
+\startlinecorrection[blank]
+\startMPcode
+visualizepaths ;
+path p ; p := (0cm,1cm)..(2cm,2cm)..(4cm,0cm)..cycle ;
+draw p withcolor .625red ;
+fill p shifted (7cm,0) withcolor .625white ;
+\stopMPcode
+\stoplinecorrection
+
+Drawing is done by applying the \type {draw} command to a path, as in:
+
+\starttyping
+draw (0cm,1cm)..(2cm,2cm)..(4cm,0cm)..cycle ;
+\stoptyping
+
+The rightmost graphic was made with \type {fill}:
+
+\starttyping
+fill (0cm,1cm)..(2cm,2cm)..(4cm,0cm)..cycle ;
+\stoptyping
+
+If you try to duplicate this drawing, you will notice that you will get black
+lines instead of red and a black fill instead of a gray one. When drawing or
+filling a path, you can give it a color, use all kinds of pens, and achieve
+special effects like dashes or arrows.
+
+\startlinecorrection[blank]
+\startMPcode
+visualizepaths ;
+path p ; p := (0cm,1cm)..(2cm,2cm)..(4cm,0cm)..(2.5cm,1cm)..cycle ;
+drawarrow p withcolor .625red ;
+draw p shifted (7cm,0) dashed withdots withcolor .625yellow ;
+\stopMPcode
+\stoplinecorrection
+
+These two graphics were defined and drawn using the following commands. Later we
+will explain how you can set the line width (or penshape in terms of \METAPOST).
+
+\starttyping
+path p ; p := (0cm,1cm)..(2cm,2cm)..(4cm,0cm)..(2.5cm,1cm)..cycle ;
+drawarrow p withcolor .625red ;
+draw p shifted (7cm,0) dashed withdots withcolor .625yellow ;
+\stoptyping
+
+Once we have drawn one or more paths, we can store them in a picture variable.
+The straightforward way to store a picture is to copy it from the current
+picture:
+
+\starttyping
+picture pic ; pic := currentpicture ;
+\stoptyping
+
+The following command effectively clears the picture memory and allows us to
+start anew.
+
+\starttyping
+currentpicture := nullpicture ;
+\stoptyping
+
+We can shift, rotate and slant the picture stored in \type {pic} as we did with
+paths. We can say:
+
+\starttyping
+draw pic rotated 45 withcolor red ;
+\stoptyping
+
+A picture can hold multiple paths. You may compare a picture to grouping as
+provided by drawing applications.
+
+\starttyping
+draw (0cm,0cm)--(1cm,1cm) ; draw (1cm,0cm)--(0cm,1cm) ;
+picture pic ; pic := currentpicture ;
+draw pic shifted (3cm,0cm) ; draw pic shifted (6cm,0cm) ;
+pic := currentpicture ; draw pic shifted (0cm,2cm) ;
+\stoptyping
+
+We first draw two paths and store the resulting \quote {cross} in a picture
+variable. Then we draw this picture two times, so that we now have three copies
+of the cross. We store the accumulated drawing again, so that after duplication,
+we finally get six crosses.
+
+\startlinecorrection[blank]
+\startMPcode
+path p ; p := (0cm,0cm)--(1cm,1cm) ;
+path q ; q := (1cm,0cm)--(0cm,1cm) ;
+for i=p,q :
+  drawpath i ; drawcontrollines i ; drawpoints i ; drawcontrolpoints i ;
+endfor ;
+picture pic ; pic := currentpicture ;
+draw pic shifted (3cm,0cm) ;
+draw pic shifted (6cm,0cm) ;
+pic := currentpicture ;
+draw pic shifted (0cm,2cm) ;
+\stopMPcode
+\stoplinecorrection
+
+You can often follow several routes to reach the same solution. Consider for
+instance the following graphic.
+
+\startbuffer[points]
+w := 4cm ; h := 2cm ; ww := 1cm ; hh := 1.5cm ;
+\stopbuffer
+
+\startbuffer[common]
+drawoptions(withcolor .625white) ;
+\stopbuffer
+
+\startbuffer[background]
+fill (unitsquare xscaled w yscaled h) enlarged 2mm withcolor .625yellow ;
+\stopbuffer
+
+\startbuffer[shape]
+fill (0,0)--(ww,0)--(ww,hh)--(w,hh)--(w,h)--(0,h)--cycle ;
+fill (ww,0)--(w,0)--(w,hh)--cycle ;
+\stopbuffer
+
+\typebuffer[shape]
+
+\startlinecorrection[blank]
+\processMPbuffer[common,points,shape]
+\stoplinecorrection
+
+The points that are used to construct the paths are defined using the constants
+\type {w}, \type {h}, \type {ww} and \type {hh}. These are defined as follows:
+
+\typebuffer[points]
+
+In this case we draw two shapes that leave part of the rectangle uncovered. If
+you have a background, this technique allows the background to \quote {show
+through} the graphic.
+
+\startlinecorrection[blank]
+\processMPbuffer[common,points,background,shape]
+\stoplinecorrection
+
+A not uncommon practice when making complicated graphics is to use unfill
+operations. Since \METAPOST\ provides one, let us see what happens if we apply
+this command.
+
+\startbuffer[shape]
+fill (0,0)--(w,0)--(w,h)--(0,h)--cycle ;
+unfill (ww,0)--(w,hh)--(ww,hh)--cycle ;
+\stopbuffer
+
+\typebuffer[shape]
+
+\startlinecorrection[blank]
+\processMPbuffer[common,points,background,shape]
+\stoplinecorrection
+
+This does not always give the desired effect, because \METAPOST's \type {unfill}
+is not really an unfill, but a \type {fill} with color \type {background}. Since
+this color is white by default, we get what we just showed. So, if we set \type
+{background} to \type {black}, using \typ {background := black}, we get:
+
+\startbuffer[back]
+background := black ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[back,common,points,background,shape]
+\stoplinecorrection
+
+Of course, you can set the variable \type {background} to a different color, but
+this does not hide the fact that \METAPOST\ lacks a real unfill operation.
+
+\startbuffer[shape]
+fill (0,0)--(0,h)--(w,h)--(w,0)--(ww,0)--(w,hh)--(ww,hh)--
+     (ww,0)--cycle ;
+\stopbuffer
+
+\startbuffer[path]
+autoarrows := true ;
+path p ; p := (0,0)--(0,h)--(w,h)--(w,0)--(ww,0)--(w,hh)--(ww,hh)--
+  (ww,0)--cycle ;
+draw p withpen pencircle scaled 1mm withcolor .625red;
+numeric l ; l := length(p)-1 ;
+for i=0 upto l :
+ drawarrow subpath(i,i+1) of p
+   withpen pencircle scaled 1mm
+   withcolor (.5+.5(i/l))*red ;
+endfor ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[common,points,background,shape]
+\stoplinecorrection
+
+Since we don't consider this \type {unfill} a suitable operator, you may wonder
+how we achieved the above result.
+
+\typebuffer[shape]
+
+\startlinecorrection[blank]
+\processMPbuffer[common,points,background,shape,path]
+\stoplinecorrection
+
+This feature depends on the \POSTSCRIPT\ way of filling closed paths, which comes
+down to filling either the left or the right hand side of a curve. The following
+alternative works too.
+
+\startbuffer[shape]
+fill (0,0)--(0,h)--(w,h)--(w,hh)--(ww,hh)--(ww,0)--(w,hh)--
+     (w,0)--cycle ;
+\stopbuffer
+
+\typebuffer[shape]
+
+\startlinecorrection[blank]
+\processMPbuffer[common,points,background,shape]
+\stoplinecorrection
+
+The next alternative will fail. This has to do with the change in direction at
+point \type {(0,0)} halfway through the path. Sometimes changing direction can
+give curious but desirable effects, but here it brings no good.
+
+\startbuffer[shape]
+fill (0,0)--(0,h)--(w,h)--(w,0)--(0,0)--(ww,0)--(ww,hh)--
+     (w,hh)--(ww,0)--cycle ;
+\stopbuffer
+
+\typebuffer[shape]
+
+This path fails because of the way \POSTSCRIPT\ implements its fill operator.
+More details on how \POSTSCRIPT\ defines fills can be found in the reference
+manuals.
+
+\startlinecorrection[blank]
+\processMPbuffer[common,points,background,shape]
+\stoplinecorrection
+
+Some of the operations we have seen are hard coded into \METAPOST\ and are called
+primitives. Others are defined as macros, that is, a sequence of \METAPOST\
+commands. Since they are used often, you may expect \type {draw} and \type {fill}
+to be primitives, but they are not. They are macros defined in terms of
+primitives.
+
+Given a path \type {pat}, you can consider a \type {draw} to be defined in terms
+of:
+
+\starttyping
+addto currentpicture doublepath pat
+\stoptyping
+
+The \type {fill} command on the other hand is defined as:
+
+\starttyping
+addto currentpicture contour pat
+\stoptyping
+
+Both macros are actually a bit more complicated but this is mainly due to the
+fact that they also have to deal with attributes like the pen and color they draw
+with.
+
+You can use \type {doublepath} and \type {contour} directly, but we will use
+\type {draw} and \type {fill} whenever possible.
+
+Given a picture \type {pic}, the following code is valid:
+
+\starttyping
+addto currentpicture also pic
+\stoptyping
+
+You can add pictures to existing picture variables, where \type {currentpicture}
+is the picture that is flushed to the output file. Watch the subtle difference
+between adding a \type {doublepath}, \type {contour} or \type {picture}.
+
+\stopsection
+
+\startsection[title={Variables}]
+
+\index{variables}
+
+At this point you may have noted that \METAPOST\ is a programming language.
+Contrary to some of today's languages, \METAPOST\ is a simple and clean language.
+Actually, it is a macro language. Although \METAPOST\ and \TEX\ are a couple, the
+languages differ in many aspects. If you are using both, you will sometimes wish
+that features present in one would be available in the other. When using both
+languages, in the end you will understand why the conceptual differences make
+sense.
+
+Being written in \PASCAL, it will be no surprise that \METAPOST\ has some
+\PASCAL||like features, although some may also recognize features from \ALGOL68\
+in it.
+
+First there is the concept of variables and assignments. There are several data
+types, some of which we already have seen.
+
+\starttabulate
+\HL
+\NC numeric \NC real number in the range $-4096 \ldots +4096$          \NC \NR
+\NC boolean \NC a variable that takes one of two states: true or false \NC \NR
+\NC pair    \NC point or vector in 2||dimensional space                \NC \NR
+\NC path    \NC a piecewise collection of curves and line segments     \NC \NR
+\NC picture \NC collection of stroked or filled paths                  \NC \NR
+\NC string  \NC sequence of characters, like \type {"metapost"}        \NC \NR
+\NC color   \NC vector of three (rgb) or four (cmyk) numbers           \NC \NR
+\HL
+\stoptabulate
+
+There are two additional types, \type {transform} and \type {pen}, but we will
+not discuss these in depth.
+
+\starttabulate
+\HL
+\NC transform \NC transformation vector with six elements \NC \NR
+\NC pen       \NC pen specification                       \NC \NR
+\HL
+\stoptabulate
+
+You can achieve interesting effects by using pens with certain shapes. For the
+moment you may consider a pen to be a path itself that is applied to the path
+that is drawn.
+
+The \type {numeric} data type is used so often that it is the default type of any
+non declared variable. This means that
+
+\starttyping
+n := 10 ;
+\stoptyping
+
+is the same as
+
+\starttyping
+numeric n ; n := 10 ;
+\stoptyping
+
+When writing collections of macros, it makes sense to use the second method,
+because you can never be sure if \type {n} isn't already declared as a picture
+variable, and assigning a numeric to a picture variable is not permitted.
+
+Because we often deal with collections of objects, such as a series of points,
+all variables can be organized in arrays. For instance:
+
+\starttyping
+numeric n[] ; n[3] := 10 ; n[5] := 13 ;
+\stoptyping
+
+An array is a collection of variables of the same type that are assigned and
+accessed by indexing the variable name, as in \type {n[3] := 5}.
+Multi||dimensional arrays are also supported. Since you need a bit of imagination
+to find an application for 5||dimensional arrays, we restrict ourselves to a
+two||dimensional example.
+
+\starttyping
+numeric n[][] ; n[2][3] := 10 ;
+\stoptyping
+
+A nice feature is that the bounds of such an array needs not to be set
+beforehand. This also means that each cell that you access is reported as {\em
+unknown} unless you have assigned it a value.
+
+Behind the screens there are not really arrays. It's just a matter of creating
+hash entries. It might not be obvious, but the following assignments are all
+equivalent:
+
+\startbuffer
+i_111_222     := 1cm ;
+i_[111]_[222] := 1cm ;
+i_[111][222]  := 1cm ;
+draw
+    image (
+        draw (0cm,i_111_222) ;
+        draw (1cm,i_[111]_[222]) ;
+        draw (2cm,i_[111][222]) ;
+    )
+    withpen pencircle scaled 5mm
+    withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+Sometimes \METAPOST\ ways are mysterious:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Conditions}]
+
+\index{conditions}
+
+The existence of boolean variables indicates the presence of conditionals.
+Indeed, the general form of \METAPOST's conditional follows:
+
+\starttyping
+if n=10 : draw p ; else : draw q ; fi ;
+\stoptyping
+
+Watch the colons after the if and else clause. They may not be omitted. The
+semi||colons on the other hand, are optional and depend on the context. You may
+say things like:
+
+\starttyping
+draw if n=10 : p ; else : q ; fi ;
+\stoptyping
+
+Here we can omit a few semi||colons:
+
+\starttyping
+draw if n=10 : p else : q fi withcolor red ;
+\stoptyping
+
+Adding semi||colons after \type {p} and \type {q} will definitely result in an
+error message, since the semi||colon ends the draw operation and \typ {withcolor
+red} becomes an isolated piece of nonsense.
+
+There is no case statement available, but for most purposes, the following
+extension is adequate:
+
+\starttyping
+draw p withcolor if n<10 : red elseif n=10 : green else : blue fi ;
+\stoptyping
+
+There is a wide repertoire of boolean tests available.
+
+\starttyping
+if picture p :
+if known   n :
+if odd     i :
+if cycle   q :
+\stoptyping
+
+Of course, you can use \type {and}, \type {or}, \type {not}, and \type {( )} to
+construct very advanced boolean expressions. If you have a bit of programming
+experience, you will appreciate the extensive support of conditionals in
+\METAPOST.
+
+\stopsection
+
+\startsection[title={Loops}]
+
+\index{loops}
+
+Yet another programming concept present in \METAPOST\ is the loop statement, the
+familiar \quote {for loop} of all programming languages.
+
+\starttyping
+for i=0 step 2 until 20 :
+  draw (0,i) ;
+endfor ;
+\stoptyping
+
+As explained convincingly in Niklaus Wirth's book on algorithms and
+datastructures, the for loop is the natural companion to an array. Given an array
+of length $n$, you can construct a path out of the points that make up the array.
+
+\starttyping
+draw for i=0 step 1 until n-1 : p[i] .. endfor p[n] ;
+\stoptyping
+
+If the step increment is not explicitly stated, it has an assumed value of 1. We
+can shorten the previous loop construct as follows:
+
+\starttyping
+draw for i=0 upto n-1 : p[i] .. endfor p[n] ;
+\stoptyping
+
+After seeing \type {if} in action, the following \type {for} loop will be no
+surprise:
+
+\startbuffer
+draw origin for i=0 step 10 until 100 : ..{down}(i,0) endfor ;
+\stopbuffer
+
+\typebuffer
+
+This gives the zig||zag curve:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+You can use a loop to iterate over a list of objects. A simple 3||step iteration
+is:
+
+\starttyping
+for i=p,q,r :
+  fill i withcolor .8white ;
+  draw i withcolor red ;
+endfor ;
+\stoptyping
+Using \type {for} in this manner can sometimes save a bit of typing. The list can
+contain any expression, and may be of different types.
+
+In the previous example the \type {i} is an independent variable, local to the
+for loop. If you want to change the loop variable itself, you need to use \type
+{forsuffixes}. In the next loop the paths \type {p}, \type {q} and~\type {r} are
+all shifted.
+
+\starttyping
+forsuffixes i = p, q, r :
+  i := i shifted (3cm,2cm) ;
+endfor ;
+\stoptyping
+
+Sometimes you may want to loop forever until a specific condition occurs. For
+this, \METAPOST\ provides a special looping mechanism:
+
+\startbuffer[demo]
+numeric done[][], i, j, n ; n := 0 ;
+forever :
+  i := round(uniformdeviate(10)) ; j := round(uniformdeviate(2)) ;
+  if unknown done[i][j] :
+    drawdot (i*cm,j*cm) ; n := n + 1 ; done[i][j] := n ;
+  fi ;
+  exitif n = 10 ;
+endfor ;
+\stopbuffer
+
+\typebuffer[demo]
+
+Here we remain in the loop until we have 10 points placed. We use an array to
+keep track of placed points. The \METAPOST\ macro \type {uniformdeviate(n)}
+returns a random number between 0 and~n and the \type {round} command is used to
+move the result toward the nearest integer. The \type {unknown} primitive allows
+us to test if the array element already exists, otherwise we exit the
+conditional. This saves a bit of computational time as each point is drawn and
+indexed only once.
+
+\startbuffer[pen]
+pickup pencircle scaled 2mm ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[pen,demo]
+\stoplinecorrection
+
+The loop terminator \type {exitif} and its companion \type {exitunless} can be
+used in \type {for}, \type {forsuffixes} and \type {forever}.
+
+\stopsection
+
+\startsection[title={Macros}]
+
+\index{macros}
+\index{definitions}
+
+In the previous section we introduced \type {upto}. Actually this is not part of
+the built in syntax, but a sort of shortcut, defined by:
+
+\starttyping
+def upto = step 1 until enddef ;
+\stoptyping
+
+You just saw a macro definition where \type {upto} is the name of the macro. The
+counterpart of \type {upto} is \type {downto}. Whenever you use \type {upto}, it
+is replaced by \typ {step 1 until}. This replacement is called expansion.
+
+There are several types of macros. A primary macro is used to define your own
+operators. For example:
+
+\starttyping
+primarydef p doublescaled s =
+  p xscaled (s/2) yscaled (s*2)
+enddef ;
+\stoptyping
+
+Once defined, the \type {doublescaled} macro is implemented as in the following
+example:
+
+\starttyping
+draw somepath doublescaled 2cm withcolor red ;
+\stoptyping
+
+When this command is executed, the macro is expanded. Thus, the actual content of
+this command becomes:
+
+\starttyping
+draw somepath xscaled 1cm yscaled 4cm withcolor red ;
+\stoptyping
+
+If in the definition of \type {doublescaled} we had added a semi||colon after
+\type {(s*2)}, we could not have set the color, because the semicolon ends the
+statement. The \type {draw} expects a path, so the macro can best return one.
+
+A macro can take one or more arguments, as in:
+
+\starttyping
+def drawrandomscaledpath (expr p, s) =
+  draw p xscaled (s/2) yscaled (s*2) ;
+enddef ;
+\stoptyping
+
+When using this macro, it is expected that you will pass it two parameters, the
+first being a path, the second a numeric scale factor.
+
+\starttyping
+drawrandomscaledpath(fullsquare, 3cm) ;
+\stoptyping
+
+Sometimes we want to return a value from a macro. In that case we must make sure
+that any calculations don't interfere with the expectations. Consider:
+
+\starttyping
+vardef randomscaledpath(expr p, s) =
+  numeric r ; r := round(1 + uniformdeviate(4)) ;
+  p xscaled (s/r) yscaled (s*r)
+enddef ;
+\stoptyping
+
+Because we want to use the same value of \type {r} twice, we have to use an
+intermediate variable. By using a \type {vardef} we hide everything but the last
+statement. It is important to distinguish \type {def} macros from those defined
+with \type {vardef}. In the latter case, \type {vardef} macros are not a simple
+expansion and replacement. Rather, \type {vardef} macros return the value of
+their last statement. In the case of the \type {randomscaledpath} macro, a path
+is returned. This macro is used in the following manner:
+
+\starttyping
+path mypath ; mypath := randomscaledpath(unitsquare,4cm) ;
+\stoptyping
+
+Note that we send \type {randomscaledpath} a path (\type {unitsquare}) and a
+scaling factor (\type {4cm}). The macro returns a scaled path which is then
+stored in the path variable \type {mypath}.
+
+The following argument types are accepted:
+
+\starttabulate
+\HL
+\NC expr   \NC something that can be assigned to a variable      \NC \NR
+\NC text   \NC arbitrary \METAPOST\ code ending with a \type {;} \NC \NR
+\NC suffix \NC a variable bound to another variable              \NC \NR
+\HL
+\stoptabulate
+An expression is passed by value. This means that in the body of the macro, a
+copy is used and the original is left untouched. On the other hand, any change to
+a variable passed as suffix is also applied to the original.
+
+Local variables must be handled in a special manner, since they may conflict with
+variables used elsewhere. This is because all variables are global by default.
+The way out of this problem is using grouping in combination with saving
+variables. The use of grouping is not restricted to macros and may be used
+anywhere in your code. Variables saved and declared in a group are local to that
+group. Once the group is exited the variables cease to exist.
+
+\starttyping
+vardef randomscaledpath(expr p, s) =
+  begingroup ; save r ; numeric r ;
+    r := round(1 + uniformdeviate(4)) ;
+    p xscaled (s/r) yscaled (s*r)
+  endgroup
+enddef ;
+\stoptyping
+
+In this particular case, we could have omitted the grouping, since \type {vardef}
+macros are always grouped automatically. Therefore, we could have defined the
+macro as:
+
+\starttyping
+vardef randomscaledpath(expr p, s) =
+  save r ; numeric r ; r := round(1 + uniformdeviate(4)) ;
+  p xscaled (s/r) yscaled (s*r)
+enddef ;
+\stoptyping
+
+The command \type {save r} declares that the variable \type {r} is local to the
+macro. Thus, any changes to the (new) numeric variable \type {r} are local and
+will not interfere with a variable \type {r} defined outside the macro. This is
+important to understand, as variables outside the macro are global and accessible
+to the code within the body of the macro.
+
+Macro definitions may be nested, but since most \METAPOST\ code is relatively
+simple, it is seldom needed. Nesting is discouraged as it makes your code less
+readable.
+
+Besides \type {def} and \type {vardef}, \METAPOST\ also provides the classifiers
+\type {primarydef}, \type {secondarydef} and \type {tertiarydef}. You can use
+these classifiers to define macros like those provided by \METAPOST\ itself:
+
+\starttyping
+primarydef   x mod               y = ... enddef ;
+secondarydef p intersectionpoint q = ... enddef ;
+tertiarydef  p softjoin          q = ... enddef ;
+\stoptyping
+A primary macro acts like the binary operators \type {*} or \type {scaled} and
+\type {shifted}. Secondary macros are like \type {+}, \type {-} and logical \type
+{or}, and take less precedence. The tertiary operators like \type {<} or the path
+and string concatenation operator \type {&} have tertiary macros as companions.
+More details can be found in the \METAFONT\ book. When it comes to taking
+precedence, \METAPOST\ tries to be as natural as possible, in the sense that you
+need to provide as few \type {( )}'s as possible. When in doubt, or when
+surprised by unexpected results, use parentheses.
+
+\stopsection
+
+\startsection[title={Arguments}]
+
+\index{arguments}
+\index{macros+arguments}
+
+The \METAPOST\ macro language is rather flexible in how you feed arguments to
+macros. If you have only one argument, the following definitions and calls are
+valid.
+
+\starttyping
+def test  expr a  = enddef ; test (a) ; test a ;
+def test (expr a) = enddef ; test (a) ; test a ;
+\stoptyping
+
+A more complex definition is the following. As you can see, you can call the
+\type {test} macro in your favorite way.
+
+\starttyping
+def test (expr a,b) (expr c,d) = enddef ;
+
+test (a) (b) (c) (d) ;
+test (a,b) (c,d) ;
+test (a,b,c) (d) ;
+test (a,b,c,d) ;
+\stoptyping
+
+The type of the arguments is one of \type {expr}, \type {primary} or \type
+{suffix}. When fetching arguments, \METAPOST\ uses the type to determine how and
+what to grab. A fourth type is \type {text}. When no parenthesis are used, a
+\type {text} argument grabs everything upto the next semicolon.
+
+\starttyping
+def test (expr a) text b = enddef ;
+
+test (a) ; test (a) b ;
+\stoptyping
+
+You can use a \type {text} to grab arguments like \typ {withpen pencircle scaled
+10 withcolor red}. Because \type {text} is so hungry, you may occasionally need a
+two stage definition:
+
+\starttyping
+def test    expr a         = dotext(a) enddef ;
+def dotest (expr a) text b = ...       enddef ;
+
+test a ; test a b ;
+\stoptyping
+
+This definition permits arguments without parenthesis, which is something you
+want with commands like \type {draw}.
+
+The \type {vardef} alternative behaves in a similar way. It always provides
+grouping. You need to generate a return value and as a result may not end with a
+semicolon.
+
+You may consider the whole \type {vardef} to be encapsulated into parenthesis and
+thereby to be a (self contained) variable. Adding additional parenthesis often
+does more harm than good:
+
+\starttyping
+vardef test (expr a) =
+  ( do tricky things with a ; manipulated_a )
+enddef ;
+\stoptyping
+
+Here the tricky things become part of the return value, which quite certainly is
+something that you don't want.
+
+The three operator look||alike macro definitions are less flexible and have the
+definition scheme:
+
+\starttyping
+primarydef   x test y = enddef ;
+secondarydef x test y = enddef ;
+tertiarydef  x test y = enddef ;
+\stoptyping
+
+When defining macros using this threesome you need to be aware of the associated
+priorities. When using these definitions, you also have to provide your own
+grouping.
+
+In the plain \METAPOST\ macro collection (\type {plain.mp}) you can find many
+examples of clever definitions. The following (simplified) version of \type {min}
+demonstrates how we use the argument handler to isolate the first argument from
+the provided list, simply by using two arguments.
+
+\starttyping
+vardef min (expr u) (text t) =
+  save min_u ; min_u := u ;
+  for uu = t : if uu<u : min_u := uu ; fi endfor
+  min_u
+enddef ;
+\stoptyping
+
+The special sequence \type {@#} is used to pick up a so called delimited argument:
+
+\starttyping
+vardef TryMe@#(expr x) =
+  % we can now use @#, which is just text
+enddef ;
+\stoptyping
+
+This feature is used in the definition of \type {z} as used in \type {z1} or
+\type {z234}:
+
+\starttyping
+vardef z@# = (x@#,y@#) enddef ;
+\stoptyping
+
+Other applications can be found in the label drawing macros where the anchor
+point is assigned to the obscure variable \type {@#}.
+
+\stopsection
+
+\startsection[title={Pens}]
+
+\index{pens}
+
+When drawing, three attributes can be applied to it: a dashpattern, a pen
+and|/|or a color. You may consider an arrowhead an attribute, but actually it is
+just an additional drawing, appended to the path.
+
+The (predefined) \type {pencircle} attribute looks like:
+
+\starttyping
+withpen pencircle
+\stoptyping
+
+where \type {pencircle} is a special kind of path, stored in a pen variable. Like
+any path, you can transform it. You can scale it equally in all directions:
+
+\starttyping
+withpen pencircle scaled 1mm
+\stoptyping
+
+You can also provide unequal scales, creating an elliptically shaped and rotated
+pen.
+
+\starttyping
+withpen pencircle xscaled 2mm yscaled 4mm rotated 30
+\stoptyping
+
+In the following graphic, the circle in the center is drawn without any option,
+which means that the default pen is used, being a pencircle with a radius of half
+a base point. The other three circles are drawn with different pen
+specifications.
+
+\startlinecorrection[blank]
+\startMPcode
+path p ; p := fullcircle scaled 1cm ;
+drawoptions (withcolor .625yellow) ;
+draw p ;
+drawoptions (withcolor .625red) ;
+draw p scaled 2 withpen pencircle ;
+drawoptions (withcolor .625yellow) ;
+draw p scaled 3 withpen pencircle scaled 1mm ;
+drawoptions (withcolor .625red) ;
+draw p scaled 4 withpen pencircle xscaled 2mm yscaled 4mm rotated 30 ;
+\stopMPcode
+\stoplinecorrection
+
+If you forget about the colors, the \METAPOST\ code to achieve this is as
+follows.
+
+\starttyping
+path p ; p := fullcircle scaled 1cm ;
+draw p ;
+draw p scaled 2 withpen pencircle ;
+draw p scaled 3 withpen pencircle scaled 1mm ;
+draw p scaled 4 withpen pencircle xscaled 2mm yscaled 4mm rotated 30 ;
+\stoptyping
+
+If this were the only way of specifying a pen, we would be faced with a
+considerable amount of typing, particularly in situations where we use pens
+similar to the fourth specification above. For that reason, \METAPOST\ supports
+the concept of a current pen. The best way to set this pen is to use the \type
+{pickup} macro.
+
+\starttyping
+pickup pencircle xscaled 2mm yscaled 4mm rotated 30 ;
+\stoptyping
+
+This macro also stores some characteristics of the pen in variables, so that they
+can be used in (the more complicated) calculations that are involved in
+situations like drawing font||like graphics.
+
+If we substitute \type {pencircle} by \type {pensquare}, we get a different kind
+of shapes. In the non rotated pens, the top, bottom, left and right parts of the
+curve are thinner.
+
+\startlinecorrection[blank]
+\startMPcode
+path p ; p := fullcircle scaled 1cm ;
+drawoptions (withcolor .625yellow) ;
+draw p ;
+drawoptions (withcolor .625red) ;
+draw p scaled 2 withpen pensquare ;
+drawoptions (withcolor .625yellow) ;
+draw p scaled 3 withpen pensquare scaled 1mm ;
+drawoptions (withcolor .625red) ;
+draw p scaled 4 withpen pensquare xscaled 2mm yscaled 4mm rotated 30 ;
+\stopMPcode
+\stoplinecorrection
+
+You should look at pens in the way an artist does. He follows a shape and in
+doing so he or she twists the pen (and thereby the nib) and puts more or less
+pressure on it.
+
+The chance that you have an appropriate pen laying at your desk is not so big,
+but you can simulate the following \METAPOST's pen by taking two pencils and
+holding them together in one hand. If you position them in a 45 degrees angle,
+and draw a circle, you will get something like:
+
+\startlinecorrection[blank]
+\startMPcode
+path p ; p := fullcircle xscaled 2cm yscaled 3cm ;
+drawoptions(withcolor .625red withpen pencircle scaled .5mm);
+draw p ; draw p shifted (.3cm,.3cm) ;
+\stopMPcode
+\stoplinecorrection
+
+If you take a calligraphic pen with a thin edge of .5cm, you will get:
+
+\startlinecorrection[blank]
+\startMPcode
+drawoptions(withcolor .625red);
+path p ; p := fullcircle xscaled 2cm yscaled 3cm ;
+draw p withpen makepen ((0,0)--(.3cm,.3cm)) withcolor .625white ;
+drawoptions(withcolor .625red withpen pencircle scaled .25mm);
+draw p ; draw p shifted (.3cm,.3cm) ;
+\stopMPcode
+\stoplinecorrection
+
+You can define such a pen yourself:
+
+\starttyping
+path p ; p := fullcircle xscaled 2cm yscaled 3cm ;
+pen doublepen ; doublepen := makepen ((0,0)--(.3cm,.3cm)) ;
+pickup doublepen ; draw p ;
+\stoptyping
+
+Here we define a new pen using the \type {pen} command. Then we define a path,
+and make a pen out of it using the \type {makepen} macro. The path should be a
+relatively simple one, otherwise \METAPOST\ will complain.
+
+You can use \type {makepen} with the previously introduced \type {withpen}:
+
+\starttyping
+draw p withpen makepen ((0,0)--(.3cm,.3cm)) ;
+\stoptyping
+
+and \type {pickup}:
+
+\starttyping
+pickup makepen ((0,0)--(.3cm,.3cm)) ; draw p ;
+\stoptyping
+
+You can use \type {makepen} and \type {makepath} to convert paths into pens and
+vice versa.
+
+Pens are very important when defining fonts, and \METAFONT\ is meant to be a font
+creation tool. Since \METAPOST\ has a slightly different audience, it lacks some
+features in this area, but offers a few others instead. Nevertheless, one can try
+to design a font using \METAPOST. Of course, pens are among the designers best
+kept secrets. But even then, not every~O is a nice looking one.
+
+\startlinecorrection[blank]
+\startMPcode
+path p ; p := fullcircle xscaled 2cm yscaled 3cm ;
+draw p withpen makepen (unitsquare scaled .4cm superellipsed .85)
+withcolor .625white  ;
+\stopMPcode
+\stoplinecorrection
+
+\startbuffer[s00]
+    path p ; p := (-1,0) {down} .. {up} (1,0) ;
+    draw pensilled(p, pensquare scaled (1/3))
+        scaled 2cm ;
+    draw boundingbox image(draw p)
+        scaled 2cm ;
+\stopbuffer
+
+\startbuffer[s30]
+    path p ; p := (-1,0) {down} .. {up} (1,0) ;
+    draw pensilled(p, pensquare scaled (1/3) rotated 30)
+        scaled 2cm ;
+    draw boundingbox image(draw p)
+        scaled 2cm ;
+\stopbuffer
+
+\startbuffer[s45]
+    path p ; p := (-1,0) {down} .. {up} (1,0) ;
+    draw pensilled(p, pensquare scaled (1/3) rotated 45)
+        scaled 2cm ;
+    draw boundingbox image(draw p)
+        scaled 2cm ;
+\stopbuffer
+
+\startbuffer[c00]
+    path p ; p := (-1,0) {down} .. {up} (1,0) ;
+    draw pensilled(p, pencircle scaled (1/3))
+        scaled 2cm ;
+    draw boundingbox image(draw p)
+        scaled 2cm ;
+\stopbuffer
+
+\startbuffer[c30]
+    path p ; p := (-1,0) {down} .. {up} (1,0) ;
+    draw pensilled(p, pencircle scaled (1/3) rotated 30)
+        scaled 2cm ;
+    draw boundingbox image(draw p)
+        scaled 2cm ;
+\stopbuffer
+
+\startbuffer[c45]
+    path p ; p := (-1,0) {down} .. {up} (1,0) ;
+    draw pensilled(p, pencircle scaled (1/3) rotated 45)
+        scaled 2cm ;
+    draw boundingbox image(draw p)
+        scaled 2cm ;
+\stopbuffer
+
+\startbuffer[f30]
+    interim pensilstep := 1/6 ;
+    draw pensilled(fullcircle, pencircle xscaled (1/10) yscaled (2/10) rotated 30)
+        scaled 5cm ;
+    draw boundingbox fullcircle
+        scaled 5cm ;
+\stopbuffer
+
+The \type {pensilled} macro is a variant on a macro used for testing some border
+cases in the engine. It provides a nice way to see what actually happens when a
+pen is applied. \in {Figure} [fig:pensilled] demonstrates this macro. The first
+row shows a square pen:
+
+\typebuffer[s30]
+
+and the second row a circular pen:
+
+\typebuffer[c30]
+
+\startplacefigure[title={How pens are applied.},reference=fig:pensilled]
+    \startcombination[3*2]
+        {\processMPbuffer[s00]} {\tttf pensquare rotated 0}
+        {\processMPbuffer[s30]} {\tttf pensquare rotated 30}
+        {\processMPbuffer[s45]} {\tttf pensquare rotated 45}
+        {\processMPbuffer[c00]} {\tttf pencircle rotated 0}
+        {\processMPbuffer[c30]} {\tttf pencircle rotated 30}
+        {\processMPbuffer[c45]} {\tttf pencircle rotated 45}
+    \stopcombination
+\stopplacefigure
+
+The effects of rotation and non|-|proportional scaling are demonstrated
+in \in {figure} [fig:pensilled:fullcircle].
+
+\typebuffer[f30]
+
+\startplacefigure[title={A proportionally scaled and rotated pen.},reference=fig:pensilled:fullcircle]
+    \processMPbuffer[f30]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title={Joining lines}]
+
+\index{joining}
+\index{paths+joining}
+
+The way lines are joined or end is closely related to the way \POSTSCRIPT\
+handles this. By setting the variables \type {linejoin} and \type {linecap}, you
+can influence the drawing process. \in {Figure} [fig:joints] demonstrates the
+alternatives. The gray curves are drawn with both variables set to \type
+{rounded}.
+
+\startnotmode[screen]
+
+\def\showMPline#1#2%
+  {\startMPcode
+     path p ; p := ((0,0)--(.5,1)--(1,0)) xscaled 3cm yscaled 1.5cm ;
+     pickup pencircle scaled 1cm ;
+     draw p withcolor .625white ;
+     interim linejoin := #1 ;
+     interim linecap  := #2 ;
+     draw p withcolor transparent(1,.5,.625yellow) ;
+   \stopMPcode}
+
+\stopnotmode
+
+\startmode[screen]
+
+\def\showMPline#1#2%
+  {\startMPcode
+     path p ; p := ((0,0)--(.5,1)--(1,0)) xscaled 2.5cm yscaled 1.25cm ;
+     pickup pencircle scaled .75cm ;
+     draw p withcolor .625white ;
+     interim linejoin := #1 ;
+     interim linecap  := #2 ;
+     draw p withcolor transparent(1,.5,.625yellow) ;
+   \stopMPcode}
+
+\stopmode
+
+\def\showMPtext#1#2%
+  {linejoin=#1\par linecap=#2}
+
+\startbuffer
+\startcombination[3*3]
+  {\showMPline{mitered}{butt}}    {\showMPtext{mitered}{butt}}
+  {\showMPline{mitered}{rounded}} {\showMPtext{mitered}{rounded}}
+  {\showMPline{mitered}{squared}} {\showMPtext{mitered}{squared}}
+  {\showMPline{rounded}{butt}}    {\showMPtext{rounded}{butt}}
+  {\showMPline{rounded}{rounded}} {\showMPtext{rounded}{rounded}}
+  {\showMPline{rounded}{squared}} {\showMPtext{rounded}{squared}}
+  {\showMPline{beveled}{butt}}    {\showMPtext{beveled}{butt}}
+  {\showMPline{beveled}{rounded}} {\showMPtext{beveled}{rounded}}
+  {\showMPline{beveled}{squared}} {\showMPtext{beveled}{squared}}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here] [fig:joints]
+  {The nine ways to end and join lines.}
+  {\getbuffer}
+
+By setting the variable \type {miterlimit}, you can influence the mitering of
+joints. The next example demonstrates that the value of this variable acts as a
+trigger.
+
+\startbuffer
+interim linejoin := mitered ;
+for i :=1 step 1 until 5 :
+  interim miterlimit := i*pt ;
+  draw ((0,0)--(.5,1)--(1,0)) shifted (1.5i,0) scaled 50pt
+    withpen pencircle scaled 10pt withcolor .625red ;
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+The variables \type {linejoin}, \type {linecap} and \type {miterlimit} are so
+called {\em internal} variables. When we prefix their assignments by \type
+{interim}, the setting will be local within groups, like \typ {beginfig ...
+endfig}.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Colors}]
+
+\index{attributes}
+\index{color}
+So far, we have seen some colors in graphics. It must be said that \METAPOST\
+color model is not that advanced, although playing with colors in the \METAPOST\
+way can be fun. In later chapters we will discuss some extensions that provide
+shading.
+
+Colors are defined as vectors with three components: a red, green and blue one.
+Like pens, colors have their \type {with}||command:
+
+\starttyping
+withcolor (.4,.5.,6)
+\stoptyping
+
+You can define color variables, like:
+
+\starttyping
+color darkred ; darkred := (.625,0.0) ;
+\stoptyping
+
+You can now use this color as:
+
+\starttyping
+withcolor darkred
+\stoptyping
+
+Given that \type {red} is already defined, we also could have said:
+
+\starttyping
+withcolor .625red
+\stoptyping
+
+Because for \METAPOST\ colors are just vectors, you can do things similar to
+points. A color halfway red and green is therefore accomplished with:
+
+\starttyping
+withcolor .5[red,green]
+\stoptyping
+
+Since only the \RGB\ color space is supported, this is about all we can tell
+about colors for this moment. Later we will discuss some nasty details.
+
+\stopsection
+
+\startsection[title={Dashes}]
+
+\index{dashes}
+
+A dash pattern is a simple picture that is build out of straight lines. Any
+slightly more complicated picture will be reduced to straight lines and a real
+complicated one is rejected, and in this respect \METAPOST\ considers a circle to
+be a complicated path.
+
+The next example demonstrates how to get a dashed line. First we built picture
+\type {p}, that we apply to a path. Here we use a straight path, but dashing can
+be applied to any path.
+
+\startbuffer
+picture p ; p := nullpicture ;
+addto p doublepath ((0,0)--(3mm,3mm)) shifted (6mm,6mm) ;
+draw (0,0)--(10cm,0) dashed p withpen pencircle scaled 1mm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+This way of defining a pattern is not that handy, especially if you start
+wondering why you need to supply a slanted path. Therefore, \METAPOST\ provides a
+more convenient mechanism to define a pattern.
+
+\startbuffer
+picture p ; p := dashpattern(on 3mm off 3mm) ;
+draw (0,0)--(10cm,0) dashed p withpen pencircle scaled 1mm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Most dashpatterns can be defined in terms of on and off. This simple on||off
+dashpattern is predefined as picture \type {evenly}. Because this is a picture,
+you can (and often need to) scale it.
+
+\startbuffer
+draw (0,0)--(10cm,0) dashed (evenly scaled 1mm)
+  withpen pencircle scaled 1mm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Opposite to a defaultpen, there is no default color and default dash pattern set.
+The macro \type {drawoptions} provides you a way to set the default attributes.
+
+\starttyping
+drawoptions(dashed evenly withcolor red) ;
+\stoptyping
+
+\stopsection
+
+\startsection[reference=sec:text,title={Text}]
+
+\index{text}
+
+Since \METAFONT\ is meant for designing fonts, the only means for including text
+are those that permit you to add labels to positions for the sole purpose of
+documentation.
+
+Because \METAPOST\ is derived from \METAFONT\ it provides labels too, but in
+order to let users add more sophisticated text, like a math formula, to a
+graphic, it also provides an interface to \TEX.
+
+Because we will spend a whole chapter on using text in \METAPOST\ we limit the
+discussion here to a few fundamentals.
+
+\startbuffer[font]
+defaultfont  := "\truefontname{Mono}" ;
+defaultscale := .8 ;
+\stopbuffer
+
+\startbuffer[label]
+pair a ; a := (3cm,3cm) ;
+label.top("top",a) ; label.bot("bot",a) ;
+label.lft("lft",a) ; label.rt ("rt" ,a) ;
+\stopbuffer
+
+\typebuffer[label]
+
+These four labels show up at the position stored in the pair variable \type {a},
+anchored in the way specified after the period.
+
+\startlinecorrection[blank]
+\processMPbuffer[font,label]
+\stoplinecorrection
+
+The command \type {dotlabel} also typesets the point as a rather visible dot.
+
+\startbuffer[label]
+pair a ; a := (3cm,3cm) ;
+dotlabel.top("top",a) ; dotlabel.bot("bot",a) ;
+dotlabel.lft("lft",a) ; dotlabel.rt ("rt" ,a) ;
+\stopbuffer
+
+\typebuffer[label]
+
+\startlinecorrection[blank]
+\processMPbuffer[font,label]
+\stoplinecorrection
+
+The command \type {thelabel} returns the typeset label as picture that you can
+manipulate or draw afterwards.
+
+\startbuffer[label]
+pair a ; a := (3cm,3cm) ; pickup pencircle scaled 1mm ;
+drawdot a withcolor .625yellow ;
+draw thelabel.rt("the right way",a) withcolor .625red ;
+\stopbuffer
+
+\typebuffer[label]
+
+You can of course rotate, slant and manipulate such a label picture like any
+other picture.
+
+\startlinecorrection[blank]
+\processMPbuffer[font,label]
+\stoplinecorrection
+
+The font can be specified in the string \type {defaultfont} and the scale in
+\type {defaultscale}. Labels are defined using the low level operator \type
+{infont}. The next statement returns a picture:
+
+\startbuffer[mp]
+draw "this string will become a sequence of glyphs (MP)"
+  infont defaultfont scaled defaultscale ;
+\stopbuffer
+
+\typebuffer[mp]
+
+By default the \type {infont} operator is not that clever and does not apply
+kerning. Also, typesetting math or accented characters are not supported. The way
+out of this problem is using \typ {btex ... etex}.
+
+\startbuffer[tex]
+draw btex this string will become a sequence of glyphs (\TeX) etex ;
+\stopbuffer
+
+\typebuffer[tex]
+
+The difference between those two methods is shown below. The outcome of \type
+{infont} depends on the current setting of the variable \type {defaultfont}.
+
+\startlinecorrection[blank]
+\processMPbuffer[mp]
+\processMPbuffer[tex]
+\stoplinecorrection
+
+When you run inside \CONTEXT\ (as we do here) there is no difference between
+\type {infont} and the \TEX\ methods. This is because we overload the \type
+{infont} operator and also pass its content to \TEX. Both \type {infont} and
+\type {btex} use the macro \type {textext} which is intercepted and redirects the
+task to \TEX. This happens in the current run so there is no need to pass extra
+information about fonts.
+
+Instead of passing strings to \type {infont}, you can also pass characters, using
+\type {char}, for example \type {char(73)}. When you use \type {infont} you
+normally expect the font to be \ASCII\ conforming. If this is not the case, you
+must make sure that the encoding of the font that you use matches your
+expectations. However, as we overload this macro it does not really matter since
+the string is passed to \TEX\ anyway. For instance, \UTF\ encoded text should
+work fine as \CONTEXT\ itself understands this encoding.
+
+\stopsection
+
+\startsection[title={Linear equations}]
+
+\index{equations}
+\index{expressions}
+
+\startbuffer[a]
+\defineMPinstance
+  [solvers]
+  [format=metafun,
+   extensions=yes,
+   initializations=yes]
+\stopbuffer
+
+\startbuffer[b]
+\startMPdefinitions{solvers}
+def draw_problem (expr p, q, r, s, show_labels) =
+  begingroup ; save x, y, a, b, c, d, e, f, g, h ;
+
+  z11 = z42 = p ; z21 = z12 = q ; z31 = z22 = r ; z41 = z32 = s ;
+
+  a = x12 - x11 ; b = y12 - y11 ; c = x22 - x21 ; d = y22 - y21 ;
+  e = x32 - x31 ; f = y32 - y31 ; g = x42 - x41 ; h = y42 - y41 ;
+
+  z11 = (x11,   y11)   ; z12 = (x12,   y12)   ;
+  z13 = (x12-b, y12+a) ; z14 = (x11-b, y11+a) ;
+  z21 = (x21,   y21)   ; z22 = (x22,   y22)   ;
+  z23 = (x22-d, y22+c) ; z24 = (x21-d, y21+c) ;
+  z31 = (x31,   y31)   ; z32 = (x32,   y32)   ;
+  z33 = (x32-f, y32+e) ; z34 = (x31-f, y31+e) ;
+  z41 = (x41,   y41)   ; z42 = (x42,   y42)   ;
+  z43 = (x42-h, y42+g) ; z44 = (x41-h, y41+g) ;
+
+  pickup pencircle scaled .5pt ;
+
+  draw z11--z12--z13--z14--cycle ; draw z11--z13 ; draw z12--z14 ;
+  draw z21--z22--z23--z24--cycle ; draw z21--z23 ; draw z22--z24 ;
+  draw z31--z32--z33--z34--cycle ; draw z31--z33 ; draw z32--z34 ;
+  draw z41--z42--z43--z44--cycle ; draw z41--z43 ; draw z42--z44 ;
+
+  z1 = 0.5[z11,z13] ; z2 = 0.5[z21,z23] ;
+  z3 = 0.5[z31,z33] ; z4 = 0.5[z41,z43] ;
+
+  draw z1--z3 dashed evenly ; draw z2--z4 dashed evenly ;
+
+  z0 = whatever[z1,z3] = whatever[z2,z4] ;
+  mark_rt_angle (z1, z0, z2) ; % z2 is not used at all
+
+  if show_labels > 0 :
+    draw_problem_labels ;
+  fi ;
+
+  endgroup ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\startbuffer[c]
+\startMPdefinitions{solvers}
+angle_radius := 10pt ;
+
+def mark_rt_angle (expr a, b, c) =
+  draw ((1,0)--(1,1)--(0,1))
+    zscaled (angle_radius*unitvector(a-b))
+    shifted b
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\startbuffer[d]
+\startMPdefinitions{solvers}
+def draw_problem_labels =
+    pickup pencircle scaled 5pt ;
+
+    dotlabel.llft("$Z_{11}$", z11) ; dotlabel.ulft("$Z_{12}$", z12) ;
+    dotlabel.ulft("$Z_{13}$", z13) ; dotlabel.llft("$Z_{14}$", z14) ;
+
+    dotlabel.lrt ("$Z_{21}$", z21) ; dotlabel.llft("$Z_{22}$", z22) ;
+    dotlabel.urt ("$Z_{23}$", z23) ; dotlabel.ulft("$Z_{24}$", z24) ;
+
+    dotlabel.urt ("$Z_{31}$", z31) ; dotlabel.ulft("$Z_{32}$", z32) ;
+    dotlabel.urt ("$Z_{33}$", z33) ; dotlabel.urt ("$Z_{34}$", z34) ;
+
+    dotlabel.lrt ("$Z_{41}$", z41) ; dotlabel.urt ("$Z_{42}$", z42) ;
+    dotlabel.llft("$Z_{43}$", z43) ; dotlabel.lrt ("$Z_{44}$", z44) ;
+
+    dotlabel.urt ("$Z_{0}$", z0) ;
+    dotlabel.lft ("$Z_{1}$", z1) ; dotlabel.top ("$Z_{2}$", z2) ;
+    dotlabel.rt  ("$Z_{3}$", z3) ; dotlabel.bot ("$Z_{4}$", z4) ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\startbuffer[e]
+\startuseMPgraphic{solvers::one}{i,j,s}
+  draw_problem (
+              (400pt,400pt), (300pt,600pt),
+    \MPvar{i}[(300pt,600pt), (550pt,800pt)],
+    \MPvar{j}[(400pt,400pt), (550pt,500pt)],
+    \MPvar{s}
+ ) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[f]
+\placefigure
+  [here][fig:problem]
+  {The problem.}
+  {\scale
+     [width=\textwidth]
+     {\useMPgraphic{solvers::one}{i=0.6,j=1.0,s=1}}}
+\stopbuffer
+
+In the previous sections, we used the assignment operator \type {:=} to assign a
+value to a variable. Although for most of the graphics that we will present in
+later chapters, an assignment is appropriate, specifying a graphic in terms of
+expressions is not only more flexible, but also more in the spirit of the
+designers of \METAFONT\ and \METAPOST.
+
+The \METAFONT\ book and \METAPOST\ manual provide lots of examples, some of which
+involve math that we don't consider to belong to everyones repertoire. But, even
+for non mathematicians using expressions can be a rewarding challenge.
+
+The next introduction to linear equations is based on my first experiences with
+\METAPOST\ and involves a mathematical challenge posed by a friend. I quickly
+ascertained that a graphical proof was far more easy than some proof with a lot
+of $\sin (this)$ and $\cos (that)$ and long forgotten formulas.
+
+I was expected to prove that the lines connecting the centers of four squares
+drawn upon the four sides of a quadrilateral were perpendicular (see \in {figure}
+[fig:problem]).
+
+\getbuffer[a,b,c,d,e]
+
+\getbuffer[f]
+
+This graphic was generated with the following command:
+
+\typebuffer[f]
+
+We will use this example to introduce a few new concepts, one being instances. In
+a large document there can be many \METAPOST\ graphics and they might fall in
+different categories. In this manual we have graphics that are generated as part
+of the style as wel as examples that show what \METAFUN\ can do. As definitions
+and variables in \METAPOST\ are global by default, there is a possibility that we
+end up with clashes. This can be avoided by grouping graphics in instances. Here
+we create an instance for the example that we're about to show.
+
+\typebuffer[a]
+
+We can now limit the scope of definitions to this specific instance. Let's start
+with the macro that takes care of drawing the solution to our problem. The macro
+accepts four pairs of coordinates that determine the central quadrilateral. All
+of them are expressions.
+
+\typebuffer[b]
+
+Because we want to call this macro more than once, we first have to save the
+locally used values. Instead of declaring local variables, one can hide their use
+from the outside world. In most cases variables behave globally. If we don't save
+them, subsequent calls will lead to errors due to conflicting equations. We can
+omit the grouping commands, because we wrap the graphic in a figure, and figures
+are grouped already.
+
+We will use the predefined \type {z} variable, or actually a macro that returns a
+variable. This variable has two components, an \type {x} and \type {y}
+coordinate. So, we don't save \type {z}, but the related variables \type {x} and
+\type {y}.
+
+Next we draw four squares and instead of hard coding their corner points, we use
+\METAPOST's equation solver. Watch the use of \type {=} which means that we just
+state dependencies. In languages like \PERL, the equal sign is used in
+assignments, but in \METAPOST\ it is used to express relations.
+
+In a first version, we will just name a lot of simple relations, as we can read
+them from a sketch drawn on paper. So, we end up with quite some \type {z}
+related expressions.
+
+For those interested in the mathematics behind this code, we add a short
+explanation. Absolutely key to the construction is the fact that you traverse the
+original quadrilateral in a clockwise orientation. What is really going on here
+is vector geometry. You calculate the vector from $z_{11}$ to $z_{12}$ (the first
+side of the original quadrilateral) with:
+
+\starttyping
+(a,b) = z12 - z11 ;
+\stoptyping
+
+This gives a vector that points from $z_{11}$ to $z_{12}$. Now, how about an
+image that shows that the vector $(-b,a)$ is a 90 degree rotation in the
+counterclockwise direction. Thus, the points $z_{13}$ and $z_{14}$ are easily
+calculated with vector addition.
+
+\starttyping
+z13 = z12 + (-b,a) ;
+z14 = z11 + (-b,a) ;
+\stoptyping
+
+This pattern continues as you move around the original quadrilateral in a
+clockwise manner. \footnote {Thanks to David Arnold for this bonus explanation.}
+
+The code that calculates the pairs \type {a} through \type {h}, can be written in
+a more compact way.
+
+\starttyping
+(a,b) = z12 - z11 ; (c,d) = z22 - z21 ;
+(e,f) = z32 - z31 ; (g,h) = z42 - z41 ;
+\stoptyping
+
+The centers of each square can also be calculated by \METAPOST. The next lines
+define that those points are positioned halfway the extremes.
+
+\starttyping
+z1 = 0.5[z11,z13] ; z2 = 0.5[z21,z23] ;
+z3 = 0.5[z31,z33] ; z4 = 0.5[z41,z43] ;
+\stoptyping
+
+Once we have defined the relations we can let \METAPOST\ solve the equations.
+This is triggered when a variable is needed, for instance when we draw the
+squares and their diagonals. We connect the centers of the squares using a dashed
+line style.
+
+Just to be complete, we add a symbol that marks the right angle. First we
+determine the common point of the two lines, that lays at {\em whatever} point
+\METAPOST\ finds suitable.
+
+The definition of \type {mark_rt_angle} is copied from the \METAPOST\ manual and
+shows how compact a definition can be (see \at {page} [zscaled] for an
+introduction to \type {zscaled}).
+
+\typebuffer[c]
+
+So far, most equations are rather simple, and in order to solve them, \METAPOST\
+did not have to work real hard. The only boundary condition is that in order to
+find a solution, \METAPOST\ must be able to solve all dependencies.
+
+The actual value of the \type {whatever} variable is that it saves us from
+introducing a slew of variables that will never be used again. We could write:
+
+\starttyping
+z0 = A[z1,z3] = B[z2,z4] ;
+\stoptyping
+
+and get the same result, but the \type {whatever} variable saves us the trouble
+of introducing intermediate variables for which we have no use once the
+calculation is finished.
+
+The macro \type{mark_rt_angle} draws the angle symbol and later we will see how
+it is defined. First we draw the labels. Unfortunately we cannot package \typ
+{btex ... etex} into a macro, because it is processed in a rather special way.
+Each \typ {btex ... etex} occurance is filtered from the source and converted
+into a snippet of \TEX\ code. When passed through \TEX, each snippet becomes a
+page, and an auxiliary program converts each page into a \METAPOST\ picture
+definition, which is loaded by \METAPOST. The limitation lays in the fact that
+the filtering is done independent from the \METAPOST\ run, which means that loops
+(and other code) are not seen at all. Later we will introduce the \METAFUN\ way
+around this.
+
+In order to get all the labels typeset, we have to put a lot of code here. The
+macro \type {dotlabel} draws a dot and places the typeset label.
+
+\typebuffer[d]
+
+Watch out: as we are in \CONTEXT, we can pass regular \TEX\ code to the label
+macro. In a standalone \METAPOST\ run you'd have to use the \type {btex} variant.
+
+We are going to draw a lot of pictures, so we define an extra macro. This time we
+hard||code some values. The fractions \type {i} and \type {j} are responsible for
+the visual iteration process, while \type {s} determines the labels. We pass
+these variables to the graphic using an extra argument. When you define the
+(useable) graphic you need to tell what variables it can expect.
+
+\typebuffer[e]
+
+Of course we could have used a loop construct here, but defining auxiliary macros
+probably takes more time than simply calling the drawing macro directly. The
+results are shown on a separate page (\in{figure}[fig:solution]).
+
+\startbuffer[x]
+\def\MyTest#1#2%
+  {\scale
+     [width=.25\textwidth]
+     {\useMPgraphic{solvers::one}{i=#1,j=#2,s=0}}}
+\stopbuffer
+
+\startbuffer[y]
+  \startcombination[3*4]
+    {\MyTest{1.0}{1.0}} {1.0 / 1.0} {\MyTest{0.8}{1.0}} {0.8 / 1.0}
+    {\MyTest{0.6}{1.0}} {0.6 / 1.0} {\MyTest{0.4}{1.0}} {0.4 / 1.0}
+    {\MyTest{0.2}{1.0}} {0.2 / 1.0} {\MyTest{0.0}{1.0}} {0.0 / 1.0}
+    {\MyTest{0.0}{1.0}} {0.0 / 1.0} {\MyTest{0.0}{0.8}} {0.0 / 0.8}
+    {\MyTest{0.0}{0.6}} {0.0 / 0.6} {\MyTest{0.0}{0.4}} {0.0 / 0.4}
+    {\MyTest{0.0}{0.2}} {0.0 / 0.2} {\MyTest{0.0}{0.0}} {0.0 / 0.0}
+  \stopcombination
+\stopbuffer
+
+We will use a helper macro (that saves us typing):
+
+\typebuffer[x]
+
+We now can say:
+
+\typebuffer[y]
+
+Watch how we pass the settings to the graphic definition using an extra argument.
+We force using the \type {solvers} instance by prefixing the name.
+
+\startpostponing
+
+  \startnotmode[screen]
+    \placefigure
+      [here][fig:solution]
+      {The solution.}
+      {\getbuffer[x,y]}
+  \stopnotmode
+
+  \startmode[screen]
+    \placefigure
+      [here][fig:solution]
+      {The solution.}
+      {\getbuffer[x,y]}
+  \stopmode
+
+  \page
+
+\stoppostponing
+
+It does not need that much imagination to see the four sided problem converge to
+a three sided one, which itself converges to a two sided one. In the two sided
+alternative it's not that hard to prove that the angle is indeed 90 degrees.
+
+As soon as you can see a clear pattern in some code, it's time to consider using
+loops. In the previous code, we used semi indexes, like \type {12} in \type
+{z12}. In this case \type{12} does reflect something related to square~1 and~2,
+but in reality the 12 is just twelve. This does not harm our expressions.
+
+A different approach is to use a two dimensional array. In doing so, we can
+access the variables more easily using loops. If we omit the labels, and angle
+macro, the previously defined macro can be reduced considerably.
+
+\starttyping
+def draw_problem (expr n, p, q, r, s) = % number and 4 positions
+  begingroup ; save x, y ;
+
+  z[1][1] = p ; z[2][1] = q ; z[3][1] = r ; z[4][1] = s ;
+
+  for i=1 upto 4 :
+    z[i][1] = (x[i][1],y[i][1]) = z[if i=1: 4 else: i-1 fi][2] ;
+    z[i][2] = (x[i][2],y[i][2]) ;
+    z[i][3] = (x[i][2]-y[i][2]+y[i][1], y[i][2]+x[i][2]-x[i][1]) ;
+    z[i][4] = (x[i][1]-y[i][2]+y[i][1], y[i][1]+x[i][2]-x[i][1]) ;
+    z[i] = 0.5[z[i][1],z[i][3]] ;
+  endfor ;
+
+  z[0] = whatever[z[1],z[3]] = whatever[z[2],z[4]] ;
+
+  pickup pencircle scaled .5pt ;
+
+  for i=1 upto 4 :
+    draw z[i][1]--z[i][2]--z[i][3]--z[i][4]--cycle ;
+    draw z[i][1]--z[i][3] ; draw z[i][2]--z[i][4] ;
+    if i<3 : draw z[i]--z[i+2] dashed evenly fi ;
+  endfor ;
+
+  draw ((1,0)--(1,1)--(0,1))
+    zscaled (unitvector(z[1]-z[0])*10pt)
+    shifted z[0] ;
+
+  endgroup ;
+enddef ;
+\stoptyping
+
+I think that we could argue quite some time about the readability of this code.
+If you start from a sketch, and the series of equations does a good job, there is
+hardly any need for such improvements to the code. On the other hand, there are
+situations where the simplified (reduced) case can be extended more easily, for
+instance to handle 10 points instead of~4. It all depends on how you want to
+spend your free hours.
+
+\stopsection
+
+\startsection[title={Clipping}]
+
+\index{clipping}
+
+For applications that do something with a drawing, for instance \TEX\ embedding a
+graphic in a text flow, it is important to know the dimensions of the graphic.
+The maximum dimensions of a graphic are specified by its bounding box.
+
+\startlinecorrection[blank]
+\startMPcode
+path p ; p := fullcircle scaled 3cm ;
+draw p withpen pencircle scaled 1mm withcolor .625red ;
+draw boundingbox p withpen pencircle scaled .1mm ;
+draw llcorner boundingbox p withpen pencircle scaled 2mm withcolor .625yellow  ;
+draw urcorner boundingbox p withpen pencircle scaled 2mm withcolor .625yellow  ;
+\stopMPcode
+\stoplinecorrection
+
+A bounding box is defined by its lower left and upper right corners. If you open
+the \POSTSCRIPT\ file produced by \METAPOST, you may find lines like:
+
+\starttyping
+%%BoundingBox: -46 -46 46 46
+\stoptyping
+
+or, when supported,
+
+\starttyping
+%%HiResBoundingBox: -45.35432 -45.35432 45.35432 45.35432
+\stoptyping
+
+The first two numbers define the lower left corner and the last two numbers the
+upper right corner. From these values, you can calculate the width and height of
+the graphic.
+
+A graphic may extend beyond its bounding box. It depends on the application that
+uses the graphic whether that part of the graphic is shown.
+
+In \METAPOST\ you can ask for all four points of the bounding box of a path or
+picture as well as the center.
+
+\starttabulate[|lT|l|]
+\HL
+\NC llcorner p \NC lower left corner  \NC \NR
+\NC lrcorner p \NC lower right corner \NC \NR
+\NC urcorner p \NC upper right corner \NC \NR
+\NC ulcorner p \NC upper left corner  \NC \NR
+\NC center   p \NC the center point   \NC \NR
+\HL
+\stoptabulate
+
+You can construct the bounding box of path~\type {p} out of the four points
+mentioned:
+
+\starttyping
+llcorner p -- lrcorner p -- urcorner p -- ulcorner p -- cycle
+\stoptyping
+
+You can set the bounding box of a picture, which can be handy if you want to
+build a picture in steps and show the intermediate results using the same
+dimensions as the final picture, or when you want to show only a small piece.
+
+\startbuffer
+fill fullcircle scaled 2cm withcolor .625yellow ;
+setbounds currentpicture to unitsquare scaled 1cm ;
+draw unitsquare scaled 1cm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+Here, we set the bounding box with the command \type {setbounds}, which takes a
+path.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The graphic extends beyond the bounding box, but the bounding box determines the
+placement and therefore the spacing around the graphic. We can get rid of the
+artwork outside the bounding box by clipping it.
+
+\startbuffer
+fill fullcircle scaled 2cm withcolor .625yellow ;
+clip currentpicture to unitsquare scaled 1cm ;
+\stopbuffer
+
+\typebuffer
+
+The resulting picture is just as large but shows less of the picture.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Some extensions}]
+
+We will now encounter a couple of transformations that can make your life easy
+when you use \METAPOST\ for making graphics like the ones demonstrated in this
+document. These transformations are not part of standard \METAPOST, but come with
+\METAFUN.
+
+A very handy extension is \type {enlarged}. Although you can feed it with any
+path, it will return a rectangle larger or smaller than the boundingbox of that
+path. You can specify a pair or a numeric.
+
+\startbuffer
+path p ; p := fullsquare scaled 2cm ;
+drawpath p ; drawpoints p ;
+p := (p shifted (3cm,0)) enlarged (.5cm,.25cm) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+There are a few more alternatives, like \type {bottomenlarged}, \type
+{rightenlarged}, \type {topenlarged} and \type {leftenlarged}.
+
+The \type {cornered} operator will replace sharp corners by rounded ones (we
+could not use \type {rounded} because this is already in use).
+
+\startbuffer
+path p ; p := ((1,0)--(2,0)--(2,2)--(1,2)--(0,1)--cycle)
+  xysized (4cm,2cm) ;
+drawpath p ; drawpoints p ;
+p := (p shifted (5cm,0)) cornered .5cm ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+The \type {smoothed} operation is a less subtle one, since it operates on the
+bounding box and thereby can result in a different shape.
+
+\startbuffer
+path p ; p := ((1,0)--(2,0)--(2,2)--cycle) xysized (4cm,2cm) ;
+drawpath p ; drawpoints p ;
+p := (p shifted (5cm,0)) smoothed .5cm ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+The next one, \type {simplified}, can be applied to paths that are constructed
+automatically. Instead of testing for duplicate points during construction, you
+can clean up the path afterwards.
+
+\startbuffer
+path p ; p :=
+  ((0,0)--(1,0)--(2,0)--(2,1)--(2,2)--(1,2)--(0,2)--(0,1)--cycle)
+  xysized (4cm,2cm) ;
+drawpath p ; drawpoints p ;
+p := simplified (p shifted (5cm,0)) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+A cousin of the previous operation is \type {unspiked}. This one removes ugly
+left|-|overs. It works well for the average case.
+
+\startbuffer
+path p ; p :=
+  ((0,0)--(2,0)--(3,1)--(2,0)--(2,2)--(1,2)--(1,3)--(1,2)--(0,1)--cycle)
+  xysized (4cm,2cm) ;
+drawpath p ; drawpoints p ;
+p := unspiked (p shifted (5cm,0)) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+There are a couple of operations that manipulate the path in more drastic ways.
+Take \type {randomized}.
+
+\startbuffer
+path p ; p := fullsquare scaled 2cm ;
+drawpath p ; drawpoints p ;
+p := (p shifted (5cm,0)) randomized .5cm ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Or how about \type {squeezed}:
+
+\startbuffer
+path p ; p := fullsquare scaled 2cm randomized .5cm ;
+drawpath p ; drawpoints p ;
+p := (p shifted (5cm,0)) squeezed .5cm ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+A \type {punked} path is, like a punked font, a font with less smooth curves (in
+our case, only straight lines).
+
+\startbuffer
+path p ; p := fullcircle scaled 2cm randomized .5cm ;
+drawpath p ; drawpoints p ;
+p := punked (p shifted (5cm,0)) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+A \type {curved} path on the other hand has smooth connections. Where in many
+cases a punked path becomes smaller, a curved path will be larger.
+
+\startbuffer
+path p ; p := fullsquare scaled 2cm randomized .5cm ;
+drawpath p ; drawpoints p ;
+p := curved (p shifted (5cm,0)) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Probably less usefull (although we use it in one of the \OPENTYPE\ visualizers)
+is \type {laddered}:
+
+\startbuffer
+path p ; p := fullcircle scaled 3cm ;
+drawpath p ; drawpoints p ;
+p := laddered (p shifted (5cm,0)) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+When writing \PPCHTEX\ (that can be used to draw chemical structure formulas) I
+needed a parallelizing macro, so here it is:
+
+\startbuffer
+path p ; p := fullcircle scaled 3cm ;
+drawpath p ; drawpoints p ;
+p := p paralleled 1cm ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+If you use a negative argument (like \type {-1cm}) the parallel line will be
+drawn at the other side.
+
+The \type {blownup} operation scales the path but keeps the center in the same
+place.
+
+\startbuffer
+path p ; p := fullsquare xyscaled (4cm,1cm) randomized .5cm ;
+drawpath p ; drawpoints p ;
+p := p blownup .5cm ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+The \type {shortened} operation also scales the path but only makes it longer or
+shorter. This macro only works on straight paths.
+
+\startbuffer
+path p ; p := (0,0) -- (2cm,3cm) ;
+drawpath p ; drawpoints p ;
+p := p shortened 1cm ;
+drawpath p ; drawpoints p ;
+p := p shortened -1cm ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Here are a few more drawing helpers. Even if you don't need them you might at
+some point take a look at their definitions to see what happens there. First we
+give a square round corners with \type {roundedsquare}:
+
+\startbuffer
+path p ; p := roundedsquare(2cm,4cm,.25cm) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Next we draw a square|-|like circle (or circle|-|like square) using \type
+{tensecircle}:
+
+\startbuffer
+path p ; p := tensecircle(2cm,4cm,.25cm) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Often I make such helpers in the process of writing larger drawing systems. Take
+\type {crossed}:
+
+\startbuffer
+path p ; p := origin crossed 1cm ;
+drawpath p ; drawpoints p ;
+p := (origin crossed fullcircle scaled 2cm crossed .5cm) shifted (3cm,0) ;
+drawpath p ; drawpoints p ;
+\stopbuffer
+
+\typebuffer
+
+These examples demonstrate that a path is made up out of points (something that
+you probably already knew by now). The \METAPOST\ operator \type {of} can be used
+to \quote {access} a certain point at a curve.
+
+\startbuffer
+path p ; p := fullsquare xyscaled (3cm,2cm) randomized .5cm ;
+drawpath p ; drawpoints p ; drawpointlabels p ;
+draw point 2.25 of p withpen pencircle scaled 5mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+To this we add two more operators: \type {on} and \type {along}. With \type {on}
+you get the point at the supplied distance from point~0; with \type {along} you
+get the point at the fraction of the length of the path.
+
+\startbuffer
+path p, q, r ;
+p := fullsquare xyscaled (2cm,2cm) randomized .5cm ;
+q := p shifted (3cm,0) ; r := q shifted (3cm,0) ;
+drawpath p ; drawpoints p ; drawpointlabels p ;
+drawpath q ; drawpoints q ; drawpointlabels q ;
+drawpath r ; drawpoints r ; drawpointlabels r ;
+pickup pencircle scaled 5mm ;
+draw point 2.25   of    p withcolor .625red ;
+draw point 2.50cm on    q withcolor .625yellow ;
+draw point  .45   along r withcolor .625white ;
+\stopbuffer
+
+\typebuffer
+
+Beware: the \type {length} of a path is the number of points minus one. The
+shapes below are constructed from 5~points and a length of~4. If you want the
+length as dimension, you should use \type {arclength}.
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+We will now play a bit with simple lines. With \type {cutends}, you can (indeed)
+cut off the ends of a curve. The specification is a dimension.
+
+\startbuffer
+path p ; p := (0cm,0cm)        -- (4cm,1cm) ;
+path q ; q := (5cm,0cm){right} .. (9cm,1cm) ;
+drawpath p ; drawpoints p ; drawpath q ; drawpoints q ;
+p := p cutends .5cm ; q := q cutends .5cm ;
+drawpathoptions (withpen pencircle scaled 5pt withcolor .625yellow) ;
+drawpointoptions(withpen pencircle scaled 4pt withcolor .625red) ;
+drawpath p ; drawpoints p ; drawpath q ; drawpoints q ;
+resetdrawoptions ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+As with more operators, \type {cutends} accepts a numeric or a pair. Watch the
+subtle difference between the next and the previous use of \type {cutends}.
+
+\startbuffer
+path p ; p := (0cm,0) .. (4cm,0) .. (8cm,0) .. (4cm,0) .. cycle ;
+drawpath p ; drawpoints p ; p := p cutends (2cm,1cm) ;
+drawpathoptions (withpen pencircle scaled 5pt withcolor .625yellow) ;
+drawpointoptions(withpen pencircle scaled 4pt withcolor .625red) ;
+drawpath p ; drawpoints p ;
+resetdrawoptions ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+When \type {stretched} is applied to a path, it is scaled but the starting point
+(point~0) keeps its location. The specification is a scale.
+
+\startbuffer
+path p ; p := (0cm,0) .. (3cm,1cm) .. (4cm,0) .. (5cm,1cm) ;
+drawpath p ; drawpoints p ; p := p stretched 1.1 ;
+drawpathoptions (withpen pencircle scaled 2.5pt withcolor .625yellow) ;
+drawpointoptions(withpen pencircle scaled 4.0pt withcolor .625red) ;
+drawpath p ; drawpoints p ; resetdrawoptions ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+We can scale in two directions independently or even in one direction by
+providing a zero value. In the next example we apply the stretch two times.
+
+\startbuffer
+path p ; p := (0cm,0) .. (3cm,1cm) .. (4cm,0) .. (5cm,1cm) ;
+drawpath p ; drawpoints p ; p := p stretched (.75,1.25) ;
+drawpathoptions (withpen pencircle scaled 2.5pt withcolor .625yellow) ;
+drawpointoptions(withpen pencircle scaled 4.0pt withcolor .625red) ;
+drawpath p ; drawpoints p ; p := p stretched (0,1.5) ;
+drawpathoptions (withpen pencircle scaled 4.0pt withcolor .625red) ;
+drawpointoptions(withpen pencircle scaled 2.5pt withcolor .625yellow) ;
+drawpath p ; drawpoints p ; resetdrawoptions ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+We already met the \type {randomize} operator. This one is the chameleon under
+the operators.
+
+\startbuffer
+draw fullsquare xyscaled (4cm,2cm)
+  randomized .25cm
+  shifted origin randomized (1cm, 2cm)
+  withcolor red randomized (.625, .850)
+  withpen pencircle scaled (5pt randomized 1pt) ;
+\stopbuffer
+
+\typebuffer
+
+So, \type {randomized} can handle a numeric, pair, path and color, and its
+specification can be a numeric, pair or color, depending on what we're dealing
+with.
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+In the previous example we also see \type {xyscaled} in action. Opposite to \type
+{scaled}, \type {xscaled} and \type {yscaled}, this is not one of \METAPOST\
+build in features. The same is true for the \type {.sized} operators.
+
+\startbuffer[a]
+picture p ; p := image
+  ( draw fullsquare
+      xyscaled (300,800)
+      withpen pencircle scaled 50
+      withcolor .625 yellow ; ) ;
+draw p xysized (3cm,2cm) shifted (bbwidth(currentpicture)+.5cm,0) ;
+draw p xysized  2cm      shifted (bbwidth(currentpicture)+.5cm,0) ;
+draw p xsized   1cm      shifted (bbwidth(currentpicture)+.5cm,0) ;
+draw p ysized   2cm      shifted (bbwidth(currentpicture)+.5cm,0) ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startlinecorrection[blank] \processMPbuffer[a] \stoplinecorrection
+
+Here, the \type {image} macro creates an (actually rather large) picture. The
+last four lines actually draw this picture, but at the given dimensions. Watch
+how the line width scales accordingly. If you don't want this, you can add the
+following line:
+
+\startbuffer[b]
+redraw currentpicture withpen pencircle scaled 2pt ;
+draw boundingbox currenpicture withpen pencircle scaled .5mm ;
+\stopbuffer
+
+\typebuffer[b]
+
+Watch how the boundingbox is not affected:
+
+\startlinecorrection[blank] \processMPbuffer[a,b] \stoplinecorrection
+
+In this example we also used \type {bbwidth} (which has a companion macro \type
+{bbheight}). You can apply this macro to a path or a picture.
+
+In fact you don't always need to follow this complex route if you want to simply
+redraw a path with another pen or color.
+
+\startbuffer
+draw fullcircle scaled 1cm
+  withcolor .625red    withpen pencircle scaled 1mm ;
+draw currentpicture
+  withcolor .625yellow withpen pencircle scaled 3mm ;
+draw boundingbox currentpicture
+  withpen pencircle scaled .5mm ;
+\stopbuffer
+
+\typebuffer
+
+This is what you will get from this:
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+If you want to add a background color to a picture you can do that afterwards.
+This can be handy when you don't know in advance what size the picture will have.
+
+\startbuffer
+fill fullcircle scaled 1cm withcolor .625red ;
+addbackground withcolor .625 yellow ;
+\stopbuffer
+
+\typebuffer
+
+The background is just a filled rectangle that gets the same size as the current
+picture, that is put on top of it.
+
+\startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title={Cutting and pasting}]
+
+\index{paths+cutting}
+\index{cutting}
+
+When enhancing or building a graphic, often parts of already constructed paths
+are needed. The \type {subpath}, \type {cutbefore} and \type {cutafter} operators
+can be used to split paths in smaller pieces. In order to do so, we must know
+where we are on the path that is involved. For this we use points on the path.
+Unfortunately we can only use these points when we know where they are located.
+In this section we will combine some techniques discussed in previous sections.
+We will define a few macros, manipulate some paths and draw curves and points.
+
+\startbuffer
+path p ; p := fullcircle yscaled 3cm xscaled .9TextWidth ;
+drawpath p ; drawpoints p withcolor .625red ; drawpointlabels p ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+This circle is drawn by scaling the predefined path \type {fullcircle}. This path
+is constructed using 8~points. As you can see, these points are not distributed
+equally along the path. In the following graphic, the second and third point of
+the curve are colored red, and point 2.5 is colored yellow. Point~0 is marked in
+black. This point is positioned halfway between point~2 and~3.
+
+\startbuffer
+path p ; p := fullcircle scaled 3cm xscaled 2 ;
+pickup pencircle scaled 5mm ; autoarrows := true ;
+drawarrow         p withcolor .625white ;
+draw point 0.0 of p ;
+draw point 2.0 of p withcolor .625red ;
+draw point 2.5 of p withcolor .625yellow ;
+draw point 3.0 of p withcolor .625red ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+It is clear that, unless you know exactly how the path is constructed, other
+methods should be available. A specific point on a path is accessed by \typ
+{point ... of}, but the next example demonstrates two more alternatives.
+
+\startbuffer
+path p ; p := fullcircle scaled 3cm xscaled 2 ;
+pickup pencircle scaled 5mm ;
+draw                 p withcolor .625white ;
+draw point 3   of    p withcolor .625red ;
+draw point .6  along p withcolor .625yellow ;
+draw point 3cm on    p ;
+\stopbuffer
+
+\typebuffer
+
+So, in addition to \type {on} to specify a point by number (in \METAPOST\
+terminology called time), we have \type {along} to specify a point as fraction of
+the path, and \type {on} to specify the position in a dimension.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The \type {on} and \type {along} operators are macros and can be defined as:
+
+\starttyping
+primarydef len on pat =
+  (arctime len of pat) of pat
+enddef ;
+
+primarydef pct along pat =
+  (arctime (pct * (arclength pat)) of pat) of pat
+enddef ;
+\stoptyping
+
+These macros introduce two new primitives, \type {arctime} and \type {arclength}.
+While \type {arctime} returns a number denoting the time of the point on the
+path, \type {arclength} returns a dimension.
+
+\quotation {When mathematicians draw parametric curves, they frequently need to
+indicate the direction of motion. I often have need of a little macro that will
+put an arrow of requested length, anchored at a point on the curve, and bending
+with the curve in the direction of motion.}
+
+When David Arnold asked me how this could be achieved, the fact that a length was
+requested meant that the solution should be sought in using the primitives and
+macros we introduced a few paragraphs before. Say that we want to call for such
+an arrow as follows.
+
+\startbuffer[a]
+path p ; p := fullcircle scaled 3cm ;
+pair q ; q := point .4 along p ;
+pickup pencircle scaled 2mm ;
+draw                p        withcolor .625white ;
+drawarrow somearrow(p,q,2cm) withcolor .625red ;
+draw                  q      withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer[a]
+
+Because we want to follow the path, we need to construct the arrow from this
+path. Therefore, we first reduce the path by cutting off the part before the
+given point. Next we cut off the end of the resulting path so that we keep a
+slice that has the length that was asked for. Since we can only cut at points, we
+determine this point using the \type {arctime} primitive.
+
+\startbuffer[b]
+vardef somearrow (expr pat, loc, len) =
+  save p ; path p ; p := pat cutbefore loc ;
+  (p cutafter point (arctime len of p) of p)
+enddef ;
+\stopbuffer
+
+\typebuffer[b]
+
+By using a \type {vardef} we hide the intermediate assignments. Such \type
+{vardef} is automatically surrounded by \type {begingroup} and \type {endgroup},
+so the \type {save} is local to this macro. When processed, this code produces
+the following graphic:
+
+\startbuffer[c]
+autoarrows := true ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[c,b,a]
+\stoplinecorrection
+
+This graphic shows that we need a bit more control over the exact position of the
+arrow. It would be nice if we could start the arrow at the point, or end there,
+or center the arrow around the point. Therefore, the real implementation is a bit
+more advanced.
+
+\startbuffer
+vardef pointarrow (expr pat, loc, len, off) =
+  save l, r, s, t ; path l, r ; numeric s ; pair t ;
+  t := if pair loc : loc else : point loc along pat fi ;
+  s := len/2 - off ; if s<=0 : s := 0 elseif s>len : s := len fi ;
+  r := pat cutbefore t ;
+  r := (r cutafter point (arctime s of r) of r) ;
+  s := len/2 + off ; if s<=0 : s := 0 elseif s>len : s := len fi ;
+  l := reverse (pat cutafter t) ;
+  l := (reverse (l cutafter point (arctime s of l) of l)) ;
+  (l..r)
+enddef ;
+\stopbuffer
+
+\typebuffer
+
+This code fragment also demonstrates how we can treat the \type {loc} argument as
+pair (coordinates) or fraction of the path. We calculate the piece of path before
+and after the given point separately and paste them afterwards as \type {(l..r)}.
+By adding braces we can manipulate the path in expressions without the danger of
+handling \type {r} alone.
+
+We can now implement left, center and right arrows by providing this macro the
+right parameters. The offset (the fourth parameter), is responsible for a
+backward displacement. This may seem strange, but negative values would be even
+more confusing.
+
+\startbuffer
+def rightarrow (expr p,t,l) = pointarrow(p,t,l,-l) enddef ;
+def leftarrow  (expr p,t,l) = pointarrow(p,t,l,+l) enddef ;
+def centerarrow(expr p,t,l) = pointarrow(p,t,l, 0) enddef ;
+\stopbuffer
+
+\typebuffer
+
+We can now apply this macro as follows:
+
+\startbuffer[a]
+path p ; p := fullcircle scaled 3cm ;
+pickup pencircle scaled 2mm ;
+draw p withcolor .625white ;
+drawarrow leftarrow  (p,     .4     ,2cm) withcolor .625red ;
+drawarrow centerarrow(p,point 5 of p,2cm) withcolor .625yellow ;
+draw point .4 along p withcolor .625yellow ;
+draw point  5 of    p withcolor .625red ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+Watch how we can pass a point (\typ {point 5 of p}) as well as a fraction (\type
+{.4}). The following graphic demonstrates a few more alternatives.
+
+\startbuffer[a]
+pickup pencircle scaled 2mm; autoarrows := true ;
+
+path p ; p := fullcircle yscaled 3cm xscaled .9TextWidth ;
+
+draw p withcolor .5white;
+
+for i=1, 2, 3 :
+  drawdot point i of p withpen pencircle scaled 5mm withcolor .625white ;
+endfor ;
+for i=.60, .75, .90 :
+  drawdot point i along p withpen pencircle scaled 5mm withcolor .625white ;
+endfor ;
+\stopbuffer
+
+\startbuffer[b]
+drawarrow leftarrow   (p,point 1 of p,2cm) withcolor red     ;
+drawarrow centerarrow (p,point 2 of p,2cm) withcolor blue    ;
+drawarrow rightarrow  (p,point 3 of p,2cm) withcolor green   ;
+drawarrow pointarrow  (p,.60,4cm,+.5cm)    withcolor yellow  ;
+drawarrow pointarrow  (p,.75,3cm,-.5cm)    withcolor cyan    ;
+drawarrow centerarrow (p,.90,3cm)          withcolor magenta ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+The arrows are drawn using the previously defined macros. Watch the positive and
+negative offsets in call to \type {pointarrow}.
+
+\typebuffer[b]
+
+\stopsection
+
+\startsection[title={Current picture}]
+
+\index {pictures}
+
+When you draw paths, texts and|/|or pictures they are added to the so called
+current picture. You can manipulate this current picture as is demonstrated in
+this manual. Let's show a few current picture related tricks.
+
+\startbuffer
+  draw fullcircle scaled 1cm withpen pencircle scaled 1mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+We can manipulate the picture as a whole:
+
+\startbuffer
+  draw fullcircle scaled 1cm withpen pencircle scaled 1mm withcolor .625red ;
+  currentpicture := currentpicture slanted .5 ;
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Sometimes it's handy to temporarily set aside the current picture.
+
+\startbuffer
+  draw fullcircle scaled 1cm withpen pencircle scaled 1mm withcolor .625red ;
+  currentpicture := currentpicture slanted .5 ;
+  pushcurrentpicture ;
+  draw fullcircle scaled 1cm withpen pencircle scaled 1mm withcolor .625yellow ;
+  currentpicture := currentpicture slanted -.5 ;
+  popcurrentpicture ;
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+These are \METAFUN\ commands but \METAPOST\ itself comes with a variant, \type
+{image}, and you explicitly have to draw this picture (or otherwise add it to the
+currentpicture).
+
+\startbuffer
+  draw fullcircle scaled 1cm withpen pencircle scaled 1mm withcolor .625red ;
+  currentpicture := currentpicture slanted .5 ;
+  draw image (
+    draw fullcircle scaled 1cm
+        withpen pencircle scaled 1mm withcolor .625yellow ;
+    currentpicture := currentpicture slanted -.5 ;
+  ) ;
+\stopbuffer
+
+\typebuffer \startlinecorrection[blank] \processMPbuffer \stoplinecorrection
+
+Each graphic starts fresh with an empty current picture. In \METAFUN\ we make
+sure that we also reset some otherwise global variables, like color, pen and some
+line properties.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

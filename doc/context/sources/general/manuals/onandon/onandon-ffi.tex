@@ -1,0 +1,554 @@
+% language=uk
+
+\startcomponent onandon-ffi
+
+\environment onandon-environment
+
+\startchapter[title={Plug mode, an application of ffi}]
+
+A while ago, at an NTG meeting, Kai Eigner and Ivo Geradts demonstrated how to
+use the Harfbuzz (hb) library for processing \OPENTYPE\ fonts. The main
+motivation for them playing with that was that it provides a way to compare the
+\LUA\ based font machinery with other methods. They also assumed that it would
+give a better performance for complex fonts and|/|or scripts.
+
+One of the guiding principles of \LUATEX\ development is that we don't provide
+hard coded solutions. For that reason we opened up the internals so that one can
+provide solutions written in pure \LUA, but, of course, one can cooperate with
+libraries via \LUA\ code as well. Hard coding solutions makes no sense as there
+are often several solutions possible, depending on one's need. Although
+development is closely related to \CONTEXT, the development of the \LUATEX\
+engine is generic. We try to be macro package agnostic. Already in an early stage
+we made sure that the \CONTEXT\ font handler could be used in other packages as
+well, but one can easily dream up light weight variants for specific purposes.
+The standard \TEX\ font handling was kept and is called \type {base} mode in
+\CONTEXT. The \LUA\ variant is tagged \type {node} mode because it operates on
+the node list. Later we will refer to these modes.
+
+With the output of \XETEX\ for comparison, the first motive mentioned for looking
+into support for such a library is not that strong. And when we want to test
+against the standard, we can use MS-Word. A minimal \CONTEXT\ \MKIV\ installation
+one only has the \LUATEX\ engine. Maintaining several renderers simultaneously
+might give rise to unwanted dependencies.
+
+The second motive could be more valid for users because, for complex fonts, there
+is|=|or at least was|=|a performance hit with the \LUA\ variant. Some fonts use
+many lookup steps or are inefficient even in using their own features. It must be
+said that till now I haven't heard \CONTEXT\ users complain about speed. In fact,
+the font handling became many times faster the last few years, and probably no
+one even noticed. Also, when using alternatives to the built in methods, in the
+end, you will loose functionality and|/|or interactions with other mechanisms
+that are built into the current font system. Any possible gain in speed is lost,
+or even becomes negative, when a user wants to use additional functionality that
+requires additional processing. \footnote {In general we try to stay away from
+libraries. For instance, graphics can be manipulated with external programs, and
+caching the result is much more efficient than recreating it. Apart from \SQL\
+support, where integration makes sense, I never felt the need for libraries. And
+even \SQL\ can efficiently be dealt with via intermediate files.}
+
+Just kicking in some alternative machinery is not the whole story. We still need
+to deal with the way \TEX\ sees text, and that, in practice, is as a sequence of
+glyph nodes|=|mixed with discretionaries for languages that hyphenate, glue,
+kern, boxes, math, and more. It's the discretionary part that makes it a bit
+complex. In contextual analysis as well as positioning one needs to process up to
+three additional cases: the pre, post and replace texts|=|either or not linked
+backward and forward. And as applied features accumulate one ends up winding and
+unwinding these snippets. In the process one also needs to keep an eye on spaces
+as they can be involved in lookups. Also, when injecting or removing glyphs one
+needs to deal with attributes associated with nodes. Of course something hard
+codes in the engine might help a little, but then one ends up with the situation
+where macro packages have different demands (and possible interactions) and no
+solution is the right one. Using \LUA\ as glue is a way to avoid that problem. In
+fact, once we go along that route, it starts making sense to come up with a
+stripped down \LUATEX\ that might suit \CONTEXT\ better, but it's not a route we
+are eager to follow right now.
+
+Kai and Ivo are plain \TEX\ users so they use a font definition and switching
+environment that is quite different from \CONTEXT. In an average \CONTEXT\ run
+the time spent on font processing is measurable but not the main bottleneck
+because other time consuming things happen. Sometimes the load on the font
+subsystem can be higher because we provide additional features normally not found
+in \OPENTYPE. Add to that a more dynamic font model and it will be clear that
+comparing performance between situations that use different macro packages is not
+that trivial (or relevant).
+
+More reasons why we follow a \LUA\ route are that we: support (run time
+generated) virtual fonts, are able to kick in additional features, can let the
+font mechanism cooperate with other functionality, and so on. In the upcoming
+years more trickery will be provided in the current mechanisms. Because we had to
+figure out a lot of these \OPENTYPE\ things a decade ago when standards were
+fuzzy quite some tracing and visualization is available. Below we will see some
+timings, It's important to keep in mind that in \CONTEXT\ the \OPENTYPE\ font
+handler can do a bit more if requested to do so, which comes with a bit of
+overhead when the handler is used in \CONTEXT|=|something we can live with.
+
+Some time after Kai's presentation he produced an article, and that was the
+moment I looked into the code and tried to replicate his experiments. Because
+we're talking libraries, one can understand that this is not entirely trivial,
+especially because I'm on another platform than he is|=|Windows instead of OSX.
+The first thing that I did was rewrite the code that glues the library to \TEX\
+in a way that is more suitable for \CONTEXT. Mixing with existing modes (\type
+{base} or \type {node} mode) makes no sense and is asking for unwanted
+interferences, so instead a new \type {plug} mode was introduced. A sort of
+general text filtering mechanism was derived from the original code so that we
+can plug in whatever we want. After all, stability is not the strongest point of
+today's software development, so when we depend on a library, we need to be
+prepared for other (library based) solutions|=|for instance, if I understood
+correctly, \XETEX\ switched a few times.
+
+After redoing the code the next step was to get the library running and I decided
+that the \type {ffi} route made most sense. \footnote {One can think of a
+intermediate layer but I'm pretty sure that I have different demands than others,
+but \type {ffi} sort of frees us from endless discussions.} Due to some expected
+functions not being supported, my efforts in using the library failed. At that
+time I thought it was a matter of interfacing, but I could get around it by
+piping into the command line tools that come with the library, and that was good
+enough for testing. Of course it was dead slow, but the main objective was
+comparison of rendering so it doesn't matter that much. After that I just quit
+and moved on to something else.
+
+At some point Kai's article came close to publishing, and I tried the old code
+again, and, surprise, after some messing around, the library worked. On my system
+the one shipped with Inkscape is used, which is okay as it frees me from bothering
+about installations. As already mentioned, we have no real reason in \CONTEXT\
+for using fonts libraries, but the interesting part was that it permitted me to
+play with this so called \type {ffi}. At that moment it was only available in
+\LUAJITTEX\. Because that creates a nasty dependency, after a while, Luigi
+Scarso and I managed to get a similar library working in stock \LUATEX\, which is
+of course the reference. So, I decided to give it a second try, and in the process
+I rewrote the interfacing code. After all, there is no reason not to be nice for
+libraries and optimize the interface where possible.
+
+Now, after a decade of writing \LUA\ code, I dare to claim that I know a bit
+about how to write relatively fast code. I was surprised to see that where Kai
+claimed that the library was faster than the \LUA\ code.I saw that it really
+depends on the font. Sometimes the library approach is actually slower, which is
+not what one expects. But remember that one argument for using a library is for
+complex fonts and scripts. So what is meant with complex?
+
+Most Latin fonts are not complex|=|ligatures and kerns and maybe a little bit of
+contextual analysis. Here the \LUA\ variant is the clear winner. It runs upto ten
+times faster. For more complex Latin fonts, like EBgaramond, that resolves
+ligatures in a different way, the library catches up, but still the \LUA\ handler
+is faster. Keep in mind that we need to juggle discretionary nodes in any case.
+One difference between both methods is that the \LUA\ handler runs over all the
+lists (although it has to jump over fonts not being processed then), while the
+library gets snippets. However, tests show that the overhead involved in that is
+close to zero and can be neglected. Already long ago we saw that when we compared
+\MKIV\ \LUATEX\ and \MKII\ \XETEX, the \LUA\ based font handler is not that slow
+at all. This makes sense because the problem doesn't change, and maybe more
+importantly because \LUA\ is a pretty fast language. If one or the other approach
+is less that two times faster the gain will probably go unnoticed in real runs.
+In my experience a few bad choices in macro or style writing is more harmful than
+a bit slower font machinery. Kick in some additional node processing and it might
+make comparison of a run even harder. By the way, one reason why font handling
+has been sped up over the years is because our workflows sometimes have a high
+load, and, for instance, processing a set of 5 documents remotely has to be fast.
+Also, in an edit workflow you want the runtime to be a bit comfortable.
+
+Contrary to Latin, a pure Arabic text (normally) has no discretionary nodes, and
+the library profits most of this. Some day I have to pick up the thread with
+Idris about the potential use of discretionary nodes in Arabic typesetting.
+Contrary to Arabic, Latin text has not many replacements and positioning, and,
+therefore, the \LUA\ variant gets the advantage. Some of the additional features
+that the \LUA\ variant provides can, of course, be provided for the library
+variant by adding some pre- and postprocessing of the list, but then you quickly
+loose any gain a library provides. So, Arabic has less complex node lists with no
+branches into discretinaries, but it definitely has more replacements,
+positioning and contextual lookups due to the many calls to helpers in the \LUA\
+code. Here the library should win because it can (I assume) use more optimized
+datastructures.
+
+In Kai's prototype there are some cheats for right|-|to|-|left rendering and
+special scripts like Devanagari. As these tweaks mostly involve discretionary
+nodes; there is no real need for them. When we don't hyphenate no time is wasted
+anyway. I didn't test Devanagari, but there is some preprocessing needed in the
+\LUA\ variant (provided by Kai and Ivo) that I might rewrite from scratch once I
+understand what happens there. But still, I expect the library to perform
+somewhat better there but I didn't test it. Eventually I might add support for
+some more scripts that demand special treatments, but so far there has not been
+any request for it.
+
+So what is the processing speed of non|-|Latin scripts? An experiment with Arabic
+using the frequently used Arabtype font showed that the library performs faster,
+but when we use a mixed Latin and Arabic document the differences become less
+significant. On pure Latin documents the \LUA\ variant will probably win. On pure
+Arabic the library might be on top. On average there is little difference in
+processing speed between the \LUA\ and library engines when processing mixed
+documents. The main question is, does one want to loose functionality provided by
+the \LUA\ variant? Of course one can depend on functionality provided by the
+library but not by the \LUA\ variant. In the end the user decides.
+
+How did we measure? The baseline measurement is the so called \type {none} mode:
+nothing is done there. It's fast but still takes a bit of time as it is triggered
+by a general mode identifying pass. That pass determines what font processing
+modes are needed for a list. \type {Base} mode only makes sense for Latin and has
+some limitations. It's fast and, basically, its run time can be neglected. That's
+why, for instance, \PDFTEX\ is faster than the other engines, but it doesn't do
+\UNICODE\ well. \type {Node} mode is the fancy name for the \LUA\ font handler.
+So, in order of increasing run time we have: \type {none}, \type {base} and \type
+{node}. If we compare \type{node} mode with \type {plug} mode (in our case using
+the hb library), we can subtract \type {none} mode. This gives a cleaner (more
+distinctive) comparison but not a real honest one because the identifying pass
+always happens.
+
+We also tested with and without hyphenation, but in practice that makes no sense.
+Only verbatim is typeset that way, and normally we typeset that in \type {none}
+mode anyway. On the other hand mixing fonts does happen. All the tests start with
+forced garbage collection in order to get rid of that variance. We also pack into
+horizontal boxes so that the par builder (with all kind of associated callbacks)
+doesn't kick in, although the \type {node} mode should compensate that.
+
+Keep in mind that the tests are somewhat dumb. There is no overhead in handling
+structure, building pages, adding color or whatever. I never process raw text. As
+a reference it's no problem to let \CONTEXT\ process hundreds of pages per
+second. In practice a moderate complex document like the metafun manual does some
+20 pages per second. In other words, only a fraction of the time is spent on
+fonts. The timings for \LUATEX\ are as follows:
+
+\usemodule[m-fonts-plugins]
+
+\startluacode
+    local process = moduledata.plugins.processlist
+    local data    = table.load("m-fonts-plugins-timings-luatex.lua")
+                 or table.load("t:/sources/m-fonts-plugins-timings-luatex.lua")
+
+    context.testpage { 6 }
+    context.subsubject("luatex latin")
+    process(data.timings.latin)
+    context.testpage { 6 }
+    context.subsubject("luatex arabic")
+    process(data.timings.arabic)
+    context.testpage { 6 }
+    context.subsubject("luatex mixed")
+    process(data.timings.mixed)
+\stopluacode
+
+The timings for \LUAJITTEX\ are, of course, overall better. This is because the
+virtual machine is faster, but at the cost of some limitations. We seldom run
+into these limitations, but fonts with large tables can't be cached unless we
+rewrite some code and sacrifice clean solutions. Instead, we perform a runtime
+conversion which is not that noticeable when it's just a few fonts. The numbers
+below are not influenced by this as the test stays away from these rare cases.
+
+\startluacode
+    local process = moduledata.plugins.processlist
+    local data    = table.load("m-fonts-plugins-timings-luajittex.lua")
+                 or table.load("t:/sources/m-fonts-plugins-timings-luajittex.lua")
+
+    context.testpage { 6 }
+    context.subsubject("luajittex latin")
+    process(data.timings.latin)
+    context.testpage { 6 }
+    context.subsubject("luajittex arabic")
+    process(data.timings.arabic)
+    context.testpage { 6 }
+    context.subsubject("luajittex mixed")
+    process(data.timings.mixed)
+\stopluacode
+
+A few side notes. Since a library is an abstraction, one has to live with what
+one gets. In my case that was a crash in \UTF-32 mode. I could get around it, but
+one advantage of using \LUA\ is that it's hard to crash|=|if only because as a
+scripting language it manages its memory well without user interference. My
+policy with libraries is just to wait till things get fixed and not bother with
+the why and how of the internals.
+
+Although \CONTEXT\ will officially support the \type {plug} model, it will not be
+actively used by me, or in documentation, so for support users are on their own.
+I didn't test the \type {plug} mode in real documents. Most documents that I
+process are Latin (or a mix), and redefining feature sets or adapting styles for
+testing makes no sense. So, can one just switch engines without looking at the
+way a font is defined? The answer is|=|not really, because (even without the user
+knowing about it) virtual fonts might be used, additional features kicked in and
+other mechanisms can make assumptions about how fonts are dealt with too.
+
+The useability of \type {plug} mode probably depends on the workflow one has. We
+use \CONTEXT\ in a few very specific workflows where, interestingly, we only use a
+small subset of its functionality. Most of which is driven by users, and tweaking
+fonts is popular and has resulted in all kind of mechanisms. So, for us it's
+unlikely that we will use it. If you process (in bursts) many documents in
+succession, each demanding a few runs, you don't want to sacrifice speed.
+
+Of course timing can (and likely will) be different for plain \TEX\ and \LATEX\
+usage. It depends on how mechanisms are hooked into the callbacks, what extra
+work is done or not done compared to \CONTEXT. This means that my timings for
+\CONTEXT\ for sure will differ from those of other packages. Timings are a
+snapshot anyway. And as said, font processing is just one of the many things that
+goes on. If you are not using \CONTEXT\ you probably will use Kai's version
+because it is adapted to his use case and well tested.
+
+A fundamental difference between the two approaches is that|=|whereas the \LUA\
+variant operates on node lists only, the \type {plug} variant generates strings
+that get passed to a library where, in the \CONTEXT\ variant of hb support, we
+use \UTF-32 strings. Interesting, a couple of years ago I considered using a
+similar method for \LUA\ but eventually decided against it, first of all for
+performance reasons, but mostly because one still has to use some linked list
+model. I might pick up that idea as a variant, but because all this \TEX\ related
+development doesn't really pay off and costs a lot of free time it will probably
+never happen.
+
+I finish with a few words on how to use the plug model. Because the library
+initializes a default set of features,\footnote {Somehow passing features to the
+library fails for Arabic. So when you don't get the desired result, just try with
+the defaults.} all you need to do is load the plugin mechanism:
+
+\starttyping
+\usemodule[fonts-plugins]
+\stoptyping
+
+Next you define features that use this extension:
+
+\starttyping
+\definefontfeature
+  [hb-native]
+  [mode=plug,
+   features=harfbuzz,
+   shaper=native]
+\stoptyping
+
+After this you can use this feature set when you define fonts. Here is a complete
+example:
+
+\starttyping
+\usemodule[fonts-plugins]
+
+\starttext
+
+    \definefontfeature
+      [hb-library]
+      [mode=plug,
+       features=harfbuzz,
+       shaper=native]
+
+    \definedfont[Serif*hb-library]
+
+    \input ward \par
+
+    \definefontfeature
+      [hb-binary]
+      [mode=plug,
+       features=harfbuzz,
+       method=binary,
+       shaper=uniscribe]
+
+    \definedfont[Serif*hb-binary]
+
+    \input ward \par
+
+\stoptext
+\stoptyping
+
+The second variant uses the \type {hb-shape} binary which is, of course, pretty
+slow, but does the job and is okay for testing.
+
+There are a few trackers available too:
+
+\starttyping
+\enabletrackers[fonts.plugins.hb.colors]
+\enabletrackers[fonts.plugins.hb.details]
+\stoptyping
+
+The first one colors replaced glyphs while the second gives lot of information
+about what is going on. If you want to know what gets passed to the library you
+can use the \type {text} plugin:
+
+\starttyping
+\definefontfeature[test][mode=plug,features=text]
+\start
+    \definedfont[Serif*test]
+    \input ward \par
+\stop
+\stoptyping
+
+This produces something:
+
+\starttyping[style=\ttx]
+otf plugin > text > start run 3
+otf plugin > text > 001 : [-] The [+]-> U+00054 U+00068 U+00065
+otf plugin > text > 002 : [+] Earth, [+]-> U+00045 U+00061 U+00072 ...
+otf plugin > text > 003 : [+] as [+]-> U+00061 U+00073
+otf plugin > text > 004 : [+] a [+]-> U+00061
+otf plugin > text > 005 : [+] habi- [-]-> U+00068 U+00061 U+00062 ...
+otf plugin > text > 006 : [-] tat [+]-> U+00074 U+00061 U+00074
+otf plugin > text > 007 : [+] habitat [+]-> U+00068 U+00061 U+00062 ...
+otf plugin > text > 008 : [+] for [+]-> U+00066 U+0006F U+00072
+otf plugin > text > 009 : [+] an- [-]-> U+00061 U+0006E U+0002D
+\stoptyping
+
+You can see how hyphenation of \type {habi-tat} results in two snippets and a
+whole word. The font engine can decide to turn this word
+into a disc node with a pre, post and replace text. Of course the machinery will
+try to retain as many hyphenation points as possible. Among the tricky parts of
+this are lookups across and inside discretionary nodes resulting in (optional)
+replacements and kerning. You can imagine that there is some trade off between
+performance and quality here. The results are normally acceptable, especially
+because \TEX\ is so clever in breaking paragraphs into lines.
+
+Using this mechanism (there might be variants in the future) permits the user to
+cook up special solutions. After all, that is what \LUATEX\ is about|=|the
+traditional core engine with the ability to plug in your own code using \LUA.
+This is just an example of it.
+
+I'm not sure yet when the plugin mechanism will be in the \CONTEXT\ distribution,
+but it might happen once the \type {ffi} library is supported in \LUATEX. At the
+end of this document the basics of the test setup are shown, just in case you
+wonder what the numbers apply to.
+
+Just to put things in perspective, the current (February 2017) \METAFUN\ manual
+has 424 pages. It takes \LUATEX\ 18.3 seconds and \LUAJITTEX\ 14.4 seconds on my
+Dell 7600 laptop with 3840QM mobile i7 processor. Of this 6.1 (4.5) seconds is
+used for processing 2170 \METAPOST\ graphics. Loading the 15 fonts used takes
+0.25 (0.3) seconds, which includes also loading the outline of some. Font
+handling is part of the, so called, hlist processing and takes around 1 (0.5)
+second, and attribute backend processing takes 0.7 (0.3) seconds. One problem in
+these timings is that font processing often goes too fast for timing, especially
+when we have lots of small snippets. For example, short runs like titles and such
+take no time at all, and verbatim needs no font processing. The difference in
+runtime between \LUATEX\ and \LUAJITTEX\ is significant so we can safely assume
+that we spend some more time on fonts than reported. Even if we add a few
+seconds, in this rather complete document, the time spent on fonts is still not
+that impressive. A five fold increase in processing (we use mostly Pagella and
+Dejavu) is a significant addition to the total run time, especially if you need a
+few runs to get cross referencing etc.\ right.
+
+The test files are the familiar ones present in the distribution. The \type
+{tufte} example is a good torture test for discretionary processing. We preload
+the files so that we don't have the overhead of \type {\input}.
+
+\starttyping
+\edef\tufte{\cldloadfile{tufte.tex}}
+\edef\khatt{\cldloadfile{khatt-ar.tex}}
+\stoptyping
+
+We use six buffers for the tests. The Latin test uses three fonts and also
+has a paragraph with mixed font usage. Loading the fonts happens once before
+the test, and the local (re)definition takes no time. Also, we compensate
+for general overhead by subtracting the \type {none} timings.
+
+\starttyping
+\startbuffer[latin-definitions]
+\definefont[TestA][Serif*test]
+\definefont[TestB][SerifItalic*test]
+\definefont[TestC][SerifBold*test]
+\stopbuffer
+
+\startbuffer[latin-text]
+\TestA \tufte \par
+\TestB \tufte \par
+\TestC \tufte \par
+\dorecurse {10} {%
+    \TestA Fluffy Test Font A
+    \TestB Fluffy Test Font B
+    \TestC Fluffy Test Font C
+}\par
+\stopbuffer
+\stoptyping
+
+The Arabic tests are a bit simpler. Of course we do need to make sure that we go
+from right to left.
+
+\starttyping
+\startbuffer[arabic-definitions]
+\definedfont[Arabic*test at 14pt]
+\setupinterlinespace[line=18pt]
+\setupalign[r2l]
+\stopbuffer
+
+\startbuffer[arabic-text]
+\dorecurse {10} {
+    \khatt\space
+    \khatt\space
+    \khatt\blank
+}
+\stopbuffer
+\stoptyping
+
+The mixed case use a Latin and an Arabic font and also processes a mixed script
+paragraph.
+
+\starttyping
+\startbuffer[mixed-definitions]
+\definefont[TestL][Serif*test]
+\definefont[TestA][Arabic*test at 14pt]
+\setupinterlinespace[line=18pt]
+\setupalign[r2l]
+\stopbuffer
+
+\startbuffer[mixed-text]
+\dorecurse {2} {
+    {\TestA\khatt\space\khatt\space\khatt}
+    {\TestL\lefttoright\tufte}
+    \blank
+    \dorecurse{10}{%
+        {\TestA وَ قَرْمِطْ بَيْنَ الْحُرُوفِ؛ فَإِنَّ}
+        {\TestL\lefttoright A snippet text that makes no sense.}
+    }
+}
+\stopbuffer
+\stoptyping
+
+The related font features are defined as follows:
+
+\starttyping
+\definefontfeature
+  [test-none]
+  [mode=none]
+
+\definefontfeature
+  [test-base]
+  [mode=base,
+   liga=yes,
+   kern=yes]
+
+\definefontfeature
+  [test-node]
+  [mode=node,
+   script=auto,
+   autoscript=position,
+   autolanguage=position,
+   ccmp=yes,liga=yes,clig=yes,
+   kern=yes,mark=yes,mkmk=yes,
+   curs=yes]
+
+\definefontfeature
+  [test-text]
+  [mode=plug,
+   features=text]
+
+\definefontfeature
+  [test-native]
+  [mode=plug,
+   features=harfbuzz,
+   shaper=native]
+
+\definefontfeature
+  [arabic-node]
+  [arabic]
+
+\definefontfeature
+  [arabic-native]
+  [mode=plug,
+   features=harfbuzz,
+   script=arab,language=dflt,
+   shaper=native]
+\stoptyping
+
+The timings are collected in \LUA\ tables and typeset afterwards, so there is no
+interference there either.
+
+{\em The timings are as usual a snapshot and just indications. The relative times
+can differ over time depending on how binaries are compiled, libraries are
+improved and \LUA\ code evolves. In node mode we can have experimental trickery
+that is not yet optimized. Also, especially with complex fonts like Husayni, not
+all shapers give the same result, although node mode and Uniscribe should be the
+same in most cases. A future (public) version of Husayni will play more safe and
+use less complex sequences of features.}
+
+% And for the record: when I finished it, this 12 page documents processes in
+% roughly 1~second with \LUATEX\ and 0.8 second with \LUAJITTEX\ which is okay for
+% a edit|-|preview cycle.
+
+\stopchapter
+
+\stopcomponent

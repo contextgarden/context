@@ -1,0 +1,785 @@
+% language=uk
+
+% no zero timing compensation, just simple tests
+% m4all book
+
+\startcomponent onandon-performance
+
+\environment onandon-environment
+
+\startchapter[title=Performance]
+
+\startsection[title=Introduction]
+
+This chapter is about performance. Although it concerns \LUATEX\ this text is
+only meant for \CONTEXT\ users. This is not because they ever complain about
+performance, on the contrary, I never received a complain from them. No, it's
+because it gives them some ammunition against the occasionally occurring nagging
+about the speed of \LUATEX\ (somewhere on the web or at some meeting). My
+experience is that in most such cases those complaining have no clue what they're
+talking about, so effectively we could just ignore them, but let's, for the sake
+of our users, waste some words on the issue.
+
+\stopsection
+
+\startsection[title=What performance]
+
+So what exactly does performance refer to? If you use \CONTEXT\ there are
+probably only two things that matter:
+
+\startitemize[packed]
+\startitem How long does one run take. \stopitem
+\startitem How many runs do I need. \stopitem
+\stopitemize
+
+Processing speed is reported at the end of a run in terms of seconds spent on the
+run, but also in pages per second. The runtime is made up out of three
+components:
+
+\startitemize[packed]
+\startitem start-up time \stopitem
+\startitem processing pages \stopitem
+\startitem finishing the document \stopitem
+\stopitemize
+
+The startup time is rather constant. Let's take my 2013 Dell Precision with
+i7-3840QM as reference. A simple
+
+\starttyping
+\starttext
+\stoptext
+\stoptyping
+
+document reports 0.4 seconds but as we wrap the run in an \type {mtxrun}
+management run we have an additional 0.3 overhead (auxiliary file handling, \PDF\
+viewer management, etc). This includes loading the Latin Modern font. With
+\LUAJITTEX\ these times are below 0.3 and 0.2 seconds. It might look like much
+overhead but in an edit|-|preview runs it feels snappy. One can try this:
+
+\starttyping
+\stoptext
+\stoptyping
+
+which bring down the time to about 0.2 seconds for both engines but as it doesn't
+do anything useful that is is no practice.
+
+Finishing a document is not that demanding because most gets flushed as we go.
+The more (large) fonts we use, the longer it takes to finish a document but on
+the average that time is not worth noticing. The main runtime contribution comes
+from processing the pages.
+
+Okay, this is not always true. For instance, if we process a 400 page book from
+2500 small \XML\ files with multiple graphics per page, there is a little
+overhead in loading the files and constructing the \XML\ tree as well as in
+inserting the graphics but in such cases one expects a few seconds more runtime. The
+\METAFUN\ manual has some 450 pages with over 2500 runtime generated \METAPOST\
+graphics. It has color, uses quite some fonts, has lots of font switches
+(verbatim too) but still one run takes only 18 seconds in stock \LUATEX\ and less
+that 15 seconds with \LUAJITTEX. Keep these numbers in mind if a non|-|\CONTEXT\
+users barks against the performance tree that his few page mediocre document
+takes 10 seconds to compile: the content, styling, quality of macros and whatever
+one can come up with all plays a role. Personally I find any rate between 10 and
+30 pages per second acceptable, and if I get the lower rate then I normally know
+pretty well that the job is demanding in all kind of aspects.
+
+Over time the \CONTEXT||\LUATEX\ combination, in spite of the fact that more
+functionality has been added, has not become slower. In fact, some subsystems
+have been sped up. For instance font handling is very sensitive for adding
+functionality. However, each version so far performed a bit better. Whenever some
+neat new trickery was added, at the same time improvements were made thanks to
+more insight in the matter. In practice we're not talking of changes in speed by
+large factors but more by small percentages. I'm pretty sure that most \CONTEXT\
+users never noticed. Recently a 15\endash30\% speed up (in font handling) was
+realized (for more complex fonts) but only when you use such complex fonts and
+pages full of text you will see a positive impact on the whole run.
+
+There is one important factor I didn't mention yet: the efficiency of the
+console. You can best check that by making a format (\typ {context --make en}).
+When that is done by piping the messages to a file, it takes 3.2 seconds on my
+laptop and about the same when done from the editor (\SCITE), maybe because the
+\LUATEX\ run and the log pane run on a different thread. When I use the standard
+console it takes 3.8 seconds in Windows 10 Creative update (in older versions it
+took 4.3 and slightly less when using a console wrapper). The powershell takes
+3.2 seconds which is the same as piping to a file. Interesting is that in Bash on
+Windows it takes 2.8 seconds and 2.6 seconds when piped to a file. Normal runs
+are somewhat slower, but it looks like the 64 bit Linux binary is somewhat faster
+than the 64 bit mingw version. \footnote {Long ago we found that \LUATEX\ is very
+sensitive to for instance the \CPU\ cache so maybe there are some differences due
+to optimization flags and|/|or the fact that bash runs in one thread and all file
+\IO\ in the main windows instance. Who knows.} Anyway, it demonstrates that when
+someone yells a number you need to ask what the conditions where.
+
+At a \CONTEXT\ meeting there has been a presentation about possible speed|-|up of
+a run for instance by using a separate syntax checker to prevent a useless run.
+However, the use case concerned a document that took a minute on the machine
+used, while the same document took a few seconds on mine. At the same meeting we
+also did a comparison of speed for a \LATEX\ run using \PDFTEX\ and the same
+document migrated to \CONTEXT\ \MKIV\ using \LUATEX\ (Harald K\"onigs \XML\
+torture and compatibility test). Contrary to what one might expect, the
+\CONTEXT\ run was significantly faster; the resulting document was a few
+gigabytes in size.
+
+\stopsection
+
+\startsection[title=Bottlenecks]
+
+I will discuss a few potential bottlenecks next. A complex integrated system like
+\CONTEXT\ has lots of components and some can be quite demanding. However, when
+something is not used, it has no (or hardly any) impact on performance. Even when
+we spend a lot of time in \LUA\ that is not the reason for a slow|-|down.
+Sometimes using \LUA\ results in a speedup, sometimes it doesn't matter. Complex
+mechanisms like natural tables for instance will not suddenly become less
+complex. So, let's focus on the \quotation {aspects} that come up in those
+complaints: fonts and \LUA. Because I only use \CONTEXT\ and occasionally test
+with the plain \TEX\ version that we provide, I will not explore the potential
+impact of using truckloads of packages, styles and such, which I'm sure of plays
+a role, but one neglected in the discussion.
+
+\startsubsubject[title=Fonts]
+
+According to the principles of \LUATEX\ we process (\OPENTYPE) fonts using \LUA.
+That way we have complete control over any aspect of font handling, and can, as
+to be expected in \TEX\ systems, provide users what they need, now and in the
+future. In fact, if we didn't had that freedom in \CONTEXT\ I'd probably already
+quit using \TEX\ a decade ago and found myself some other (programming) niche.
+
+After a font is loaded, part of the data gets passed to the \TEX\ engine so that
+it can do its work. For instance, in order to be able to typeset a paragraph,
+\TEX\ needs to know the dimensions of glyphs. Once a font has been loaded
+(that is, the binary blob) the next time it's fetched from a cache. Initial
+loading (and preparation) takes some time, depending on the complexity or size of
+the font. Loading from cache is close to instantaneous. After loading the
+dimensions are passed to \TEX\ but all data remains accessible for any desired
+usage. The \OPENTYPE\ feature processor for instance uses that data and \CONTEXT\
+for sure needs that data (fast accessible) for different purposes too.
+
+When a font is used in so called base mode, we let \TEX\ do the ligaturing and
+kerning. This is possible with simple fonts and features. If you have a critical
+workflow you might enable base mode, which can be done per font instance.
+Processing in node mode takes some time but how much depends on the font and
+script. Normally there is no difference between \CONTEXT\ and generic usage. In
+\CONTEXT\ we also have dynamic features, and the impact on performance depends on
+usage. In addition to base and node we also have plug mode but that is only used
+for testing and therefore not advertised.
+
+Every \type {\hbox} and every paragraph goes through the font handler. Because
+we support mixed modes, some analysis takes place, and because we do more in
+\CONTEXT, the generic analyzer is more light weight, which again can mean that a
+generic run is not slower than a similar \CONTEXT\ one.
+
+Interesting is that added functionality for variable and|/|or color fonts had no
+impact on performance. Runtime added user features can have some impact but when
+defined well it can be neglected. I bet that when you add additional node list
+handling yourself, its impact on performance is larger. But in the end what
+counts is that the job gets done and the more you demand the higher the price you
+pay.
+
+\stopsubsubject
+
+\startsubsubject[title=\LUA]
+
+The second possible bottleneck when using \LUATEX\ can be in using \LUA\ code.
+However, using that as argument for slow runs is laughable. For instance
+\CONTEXT\ \MKIV\ can easily spend half its time in \LUA\ and that is not making
+it any slower than \MKII\ using \PDFTEX\ doing equally complex things. For
+instance the embedded \METAPOST\ library makes \MKIV\ way faster than \MKII, and
+the built|-|in \XML\ processing capabilities in \MKIV\ can easily beat \MKII\
+\XML\ handling, apart from the fact that it can do more, like filtering by path
+and expression. In fact, files that take, say, half a minute in \MKIV, could as
+well have taken 15 minutes or more in \MKII\ (and imagine multiple runs then).
+
+So, for \CONTEXT\ using \LUA\ to achieve its objectives is mandate. The
+combination of \TEX, \METAPOST\ and \LUA\ is pretty powerful! Each of these
+components is really fast. If \TEX\ is your bottleneck, review your macros! When
+\LUA\ seems to be the bad, go over your code and make it better. Much of the
+\LUA\ code I see flying around doesn't look that efficient, which is okay because
+the interpreter is really fast, but don't blame \LUA\ beforehand, blame your
+coding (style) first. When \METAPOST\ is the bottleneck, well, sometimes not much
+can be done about it, but when you know that language well enough you can often
+make it perform better.
+
+For the record: every additional mechanism that kicks in, like character spacing
+(the ugly one), case treatments, special word and line trickery, marginal stuff,
+graphics, line numbering, underlining, referencing, and a few dozen more will add
+a bit to the processing time. In that case, in \CONTEXT, the font related runtime
+gets pretty well obscured by other things happening, just that you know.
+
+\stopsubsubject
+
+\stopsection
+
+\startsection[title=Some timing]
+
+Next I will show some timings related to fonts. For this I use stock \LUATEX\
+(second column) as well as \LUAJITTEX\ (last column) which of course performs
+much better. The timings are given in 3 decimals but often (within a set of runs)
+and as the system load is normally consistent in a set of test runs the last two
+decimals only matter in relative comparison. So, for comparing runs over time
+round to the first decimal. Let's start with loading a bodyfont. This happens
+once per document and normally one has only one bodyfont active. Loading involves
+definitions as well as setting up math so a couple of fonts are actually loaded,
+even if they're not used later on. A setup normally involves a serif, sans, mono,
+and math setup (in \CONTEXT). \footnote {The timing for Latin Modern is so low
+because that font is loaded already.}
+
+\environment onandon-speed-000
+
+\ShowSample{onandon-speed-000} % bodyfont
+
+There is a bit difference between the font sets but a safe average is 150 milli
+seconds and this is rather constant over runs.
+
+An actual font switch can result in loading a font but this is a one time overhead.
+Loading four variants (regular, bold, italic and bold italic) roughly takes the
+following time:
+
+\ShowSample{onandon-speed-001} % four variants
+
+Using them again later on takes no time:
+
+\ShowSample{onandon-speed-002} % four variants
+
+Before we start timing the font handler, first a few baseline benchmarks are
+shown. When no font is applied and nothing else is done with the node list we
+get:
+
+\ShowSample{onandon-speed-009}
+
+A simple monospaced, no features applied, run takes a bit more:
+
+\ShowSample{onandon-speed-010}
+
+Now we show a one font typesetting run. As the two benchmarks before, we just
+typeset a text in a \type {\hbox}, so no par builder interference happens. We use
+the \type {sapolsky} sample text and typeset it 100 times 4 (either of not with
+font switches).
+
+\ShowSample{onandon-speed-003}
+
+Much more runtime is needed when we typeset with four font switches. The garamond
+is most demanding. Actually we're not doing 4 fonts there because it has no bold,
+so the numbers are a bit lower than expected for this example. One reason for it
+being demanding is that it has lots of (contextual) lookups. The only comment I
+can make about that is that it also depends on the strategies of the font
+designer. Combining lookups saves space and time so complexity of a font is not
+always a good predictor for performance hits.
+
+% \ShowSample{onandon-speed-004}
+
+If we typeset paragraphs we get this:
+
+\ShowSample{onandon-speed-005}
+
+We're talking of some 275 pages here.
+
+\ShowSample{onandon-speed-006}
+
+There is of course overhead in handling paragraphs and pages:
+
+\ShowSample{onandon-speed-011}
+
+Before I discuss these numbers in more details two more benchmarks are
+shown. The next table concerns a paragraph with only a few (bold) words.
+
+\ShowSample{onandon-speed-007}
+
+The following table has paragraphs with a few mono spaced words
+typeset using \type{\type}.
+
+\ShowSample{onandon-speed-008}
+
+When a node list (hbox or paragraph) is processed, each glyph is looked at. One
+important property of \LUATEX\ (compared to \PDFTEX) is that it hyphenates the
+whole text, not only the most feasible spots. For the \type {sapolsky} snippet
+this results in 200 potential breakpoints, registered in an equal number of
+discretionary nodes. The snippet has 688 characters grouped into 125 words and
+because it's an English quote we're not hampered with composed characters or
+complex script handling. And, when we mention 100 runs then we actually mean
+400 ones when font switching and bodyfonts are compared
+
+\startnarrower
+    \showglyphs \showfontkerns
+    \input sapolsky \wordright{Robert M. Sapolsky}
+\stopnarrower
+
+In order to get substitutions and positioning right we need not only to consult
+streams of glyphs but also combinations with preceding pre or replace, or
+trailing post and replace texts. When a font has a bit more complex substitutions,
+as ebgaramond has, multiple (sometimes hundreds of) passes over the list are made.
+This is why the more complex a font is, the more runtime is involved.
+
+Another factor, one you could easily deduce from the benchmarks, is intermediate
+font switches. Even a few such switches (in the last benchmarks) already result
+in a runtime penalty. The four switch benchmarks show an impressive increase of
+runtime, but it's good to know that such a situation seldom happens. It's also
+important not to confuse for instance a verbatim snippet with a bold one. The
+bold one is indeed leading to a pass over the list, but verbatim is normally
+skipped because it uses a font that needs no processing. That verbatim or bold
+have the same penalty is mainly due to the fact that verbatim itself is costly:
+the text is picked up using a different catcode regime and travels through \TEX\
+and \LUA\ before it finally gets typeset. This relates to special treatments of
+spacing and syntax highlighting and such.
+
+Also keep in mind that the page examples are quite unreal. We use a layout with
+no margins, just text from edge to edge.
+
+\placefigure
+  {\SampleTitle{onandon-speed-005}}
+  {\externalfigure[onandon-speed-005][frame=on,orientation=90,width=.45\textheight]}
+
+\placefigure
+  {\SampleTitle{onandon-speed-006}}
+  {\externalfigure[onandon-speed-006][frame=on,orientation=90,maxwidth=.45\textheight,maxheight=\textwidth]}
+
+\placefigure
+  {\SampleTitle{onandon-speed-007}}
+  {\externalfigure[onandon-speed-007][frame=on,orientation=90,width=.45\textheight]}
+
+\placefigure
+  {\SampleTitle{onandon-speed-008}}
+  {\externalfigure[onandon-speed-008][frame=on,orientation=90,width=.45\textheight]}
+
+\placefigure
+  {\SampleTitle{onandon-speed-011}}
+  {\externalfigure[onandon-speed-011][frame=on,orientation=90,width=.45\textheight]}
+
+So what is a realistic example? That is hard to say. Unfortunately no one ever
+asked us to typeset novels. They are rather brain dead products for a machinery
+so they process fast. On the mentioned laptop 350 word pages in Dejavu fonts can
+be processed at a rate of 75 pages per second with \LUATEX\ and over 100 pages
+per second with \LUAJITTEX . On a more modern laptop or professional server
+performance is of course better. And for automated flows batch mode is your
+friend. The rate is not much worse for a document in a language with a bit more
+complex character handling, take accents or ligatures. Of course \PDFTEX\ is
+faster on such a dumb document but kick in some more functionality and the
+advantage quickly disappears. So, if someone complains that \LUATEX\ needs 10 or
+more seconds for a simple few page document \unknown\ you can bet that when the
+fonts are seen as reason, that the setup is pretty bad. Personally I'd not waste
+time on such a complaint.
+
+\stopsection
+
+\startsection[title=Valid questions]
+
+Here are some reasonable questions that you can ask when someone complains to you
+about the slowness of \LUATEX:
+
+\startsubsubject[title={What engines do you compare?}]
+
+If you come from \PDFTEX\ you come from an 8~bit world: input and font handling
+are based on bytes and hyphenation is integrated into the par builder. If you use
+\UTF-8\ in \PDFTEX, the input is decoded by \TEX\ macros which carries a speed
+penalty. Because in the wide engines macro names can also be \UTF\ sequences,
+construction of macro names is less efficient too.
+
+When you try to use wide fonts, again there is a penalty. Now, if you use \XETEX\
+or \LUATEX\ your input is \UTF-8 which becomes something 32 bit internally. Fonts
+are wide so more resources are needed, apart from these fonts being larger and in
+need of more processing due to feature handling. Where \XETEX\ uses a library,
+\LUATEX\ uses its own handler. Does that have a consequence for performance? Yes
+and no. First of all it depends on how much time is spent on fonts at all, but
+even then the difference is not that large. Sometimes \XETEX\ wins, sometimes
+\LUATEX. One thing is clear: \LUATEX\ is more flexible as we can roll out our own
+solutions and therefore do more advanced font magic. For \CONTEXT\ it doesn't
+matter as we use \LUATEX\ exclusively and rely on the flexible font handler, also
+for future extensions. If really needed you can kick in a library based handler
+but it's (currently) not distributed as we loose other functionality which in
+turn would result in complaints about that fact (apart from conflicting with the
+strive for independence).
+
+There is no doubt that \PDFTEX\ is faster but for \CONTEXT\ it's an obsolete
+engine. The hard coded solutions engine \XETEX\ is also not feasible for
+\CONTEXT\ either. So, in practice \CONTEXT\ users have no choice: \LUATEX\ is
+used, but users of other macro packages can use the alternatives if they are not
+satisfied with performance. The fact that \CONTEXT\ users don't complain about
+speed is a clear signal that this is no issue. And, if you want more speed you
+can use \LUAJITTEX. \footnote {In plug mode we can actually test a library and
+experiments have shown that performance on the average is much worse but it can
+be a bit better for complex scripts, although a gain gets unnoticed in normal
+documents. So, one can decide to use a library but at the cost of much other
+functionality that \CONTEXT\ offers, so we don't support it.} In the last section
+the different engines will be compared in more detail.
+
+Just that you know, when we do the four switches example in plain \TEX\ on my
+laptop I get a rate of 40 pages per second, and for one font 180 pages per
+second. There is of course a bit more going on in \CONTEXT\ in page building and
+so, but the difference between plain and \CONTEXT\ is not that large.
+
+\stopsubsubject
+
+\startsubsubject[title={What macro package is used?}]
+
+If the answer is that when plain \TEX\ is used, a follow up question is: what
+variant? The \CONTEXT\ distribution ships with \type {luatex-plain} and that is
+our benchmark. If there really is a bottleneck it is worth exploring. But keep in
+mind that in order to be plain, not that much can be done. The \LUATEX\ part is
+just an example of an implementation. We already discussed \CONTEXT, and for
+\LATEX\ I don't want to speculate where performance hits might come from. When
+we're talking fonts, \CONTEXT\ can actually a bit slower than the generic (or
+\LATEX) variant because we can kick in more functionality. Also, when you compare
+macro packages, keep in mind that when node list processing code is added in that
+package the impact depends on interaction with other functionality and depends on
+the efficiency of the code. You can't compare mechanisms or draw general
+conclusions when you don't know what else is done!
+
+\stopsubsubject
+
+\startsubsubject[title={What do you load?}]
+
+Most \CONTEXT\ modules are small and load fast. Of course there can be exceptions
+when we rely on third party code; for instance loading tikz takes a a bit of
+time. It makes no sense to look for ways to speed that system up because it is
+maintained elsewhere. There can probably be gained a bit but again, no user
+complained so far.
+
+If \CONTEXT\ is not used, one probably also uses a large \TEX\ installations.
+File lookup in \CONTEXT\ is done differently and can can be faster. Even loading
+can be more efficient in \CONTEXT, but it's hard to generalize that conclusion.
+If one complains about loading fonts being an issue, just try to measure how much
+time is spent on loading other code.
+
+\stopsubsubject
+
+\startsubsubject[title={Did you patch macros?}]
+
+Not everyone is a \TEX pert. So, coming up with macros that are expanded many
+times and|/|or have inefficient user interfacing can have some impact. If someone
+complains about one subsystem being slow, then honestly demands to complain about
+other subsystems as well. You get what you ask for.
+
+\stopsubsubject
+
+\startsubsubject[title={How efficient is the code that you use?}]
+
+Writing super efficient code only makes sense when it's used frequently. In
+\CONTEXT\ most code is reasonable efficient. It can be that in one document fonts
+are responsible for most runtime, but in another document table construction can
+be more demanding while yet another document puts some stress on interactive
+features. When hz or protrusion is enabled then you run substantially slower
+anyway so when you are willing to sacrifice 10\% or more runtime don't complain
+about other components. The same is true for enabling \SYNCTEX: if you are
+willing to add more than 10\% runtime for that, don't wither about the same
+amount for font handling. \footnote {In \CONTEXT\ we use a \SYNCTEX\ alternative
+that is somewhat faster but it remains a fact that enabling more and more
+functionality will make the penalty of for instance font processing relatively
+small.}
+
+\stopsubsubject
+
+\startsubsubject[title={How efficient is the styling that you use?}]
+
+Probably the most easily overseen optimization is in switching fonts and color.
+Although in \CONTEXT\ font switching is fast, I have no clue about it in other
+macro packages. But in a style you can decide to use inefficient (massive) font
+switches. The effects can easily be tested by commenting bit and pieces. For
+instance sometimes you need to do a full bodyfont switch when changing a style,
+like assigning \type {\small\bf} to the \type {style} key in \type {\setuphead},
+but often using e.g.\ \type {\tfd} is much more efficient and works quite as
+well. Just try it.
+
+\stopsubsubject
+
+\startsubsubject[title={Are fonts really the bottleneck?}]
+
+We already mentioned that one can look in the wrong direction. Maybe once someone
+is convinced that fonts are the culprit, it gets hard to look at the real issue.
+If a similar job in different macro packages has a significant different runtime
+one can wonder what happens indeed.
+
+It is good to keep in mind that the amount of text is often not as large as you
+think. It's easy to do a test with hundreds of paragraphs of text but in practice
+we have whitespace, section titles, half empty pages, floats, itemize and similar
+constructs, etc. Often we don't mix many fonts in the running text either. So, in
+the end a real document is the best test.
+
+\stopsubsubject
+
+\startsubsubject[title={If you use \LUA, is that code any good?}]
+
+You can gain from the faster virtual machine of \LUAJITTEX. Don't expect wonders
+from the jitting as that only pays of for long runs with the same code used over
+and over again. If the gain is high you can even wonder how well written your
+\LUA\ code is anyway.
+
+\stopsubsubject
+
+\startsubsubject[title={What if they don't believe you?}]
+
+So, say that someone finds \LUATEX\ slow, what can be done about it? Just advice
+him or her to stick to tool used previously. Then, if arguments come that one
+also wants to use \UTF-8, \OPENTYPE\ fonts, a bit of \METAPOST, and is looking
+forward to using \LUA\ runtime, the only answer is: take it or leave it. You pay
+a price for progress, but if you do your job well, the price is not that large.
+Tell them to spend time on learning and maybe adapting and bark against their own
+tree before barking against those who took that step a decade ago. Most \CONTEXT\
+users took that step and someone still using \LUATEX\ after a decade can't be
+that stupid. It's always best to first wonder what one actually asks from \LUATEX,
+and if the benefit of having \LUA\ on board has an advantage. If not, one can
+just use another engine.
+
+Also think of this. When a job is slow, for me it's no problem to identify where
+the problem is. The question then is: can something be done about it? Well, I
+happily keep the answer for myself. After all, some people always need room to
+complain, maybe if only to hide their ignorance or incompetence. Who knows.
+
+\stopsubsubject
+
+\stopsection
+
+\startsection[title={Comparing engines}]
+
+The next comparison is to be taken with a grain of salt and concerns the state of
+affairs mid 2017. First of all, you cannot really compare \MKII\ with \MKIV: the
+later has more functionality (or a more advanced implementation of
+functionality). And as mentioned you can also not really compare \PDFTEX\ and the
+wide engines. Anyway, here are some (useless) tests. First a bunch of loads. Keep
+in mind that different engines also deal differently with reading files. For
+instance \MKIV\ uses \LUATEX\ callbacks to normalize the input and has its own
+readers. There is a bit more overhead in starting up a \LUATEX\ run and some
+functionality is enabled that is not present in \MKII. The format is also larger,
+if only because we preload a lot of useful font, character and script related
+data.
+
+\starttyping
+\starttext
+    \dorecurse {#1} {
+        \input knuth
+        \par
+    }
+\stoptext
+\stoptyping
+
+When looking at the numbers one should realize that the times include startup and
+job management by the runner scripts. We also run in batchmode to avoid logging
+to influence runtime. The average is calculated from 5 runs.
+
+% sample 1, number of runs: 5
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 2500 \NC \NR
+\HL
+\BC pdftex    \NC 0.43 \NC 0.77 \NC 2.33 \NC \NR
+\BC xetex     \NC 0.85 \NC 2.66 \NC 10.79 \NC \NR
+\BC luatex    \NC 0.94 \NC 2.50 \NC 9.44 \NC \NR
+\BC luajittex \NC 0.68 \NC 1.69 \NC 6.34 \NC \NR
+\HL
+\stoptabulate
+
+The second example does a few switches in a paragraph:
+
+\starttyping
+\starttext
+    \dorecurse {#1} {
+        \tf \input knuth
+        \bf \input knuth
+        \it \input knuth
+        \bs \input knuth
+        \par
+    }
+\stoptext
+\stoptyping
+
+% sample 2, number of runs: 5
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 2500 \NC \NR
+\HL
+\BC pdftex    \NC 0.58 \NC 2.10 \NC 8.97 \NC \NR
+\BC xetex     \NC 1.47 \NC 8.66 \NC 42.50 \NC \NR
+\BC luatex    \NC 1.59 \NC 8.26 \NC 38.11 \NC \NR
+\BC luajittex \NC 1.12 \NC 5.57 \NC 25.48 \NC \NR
+\HL
+\stoptabulate
+
+The third examples does a few more, resulting in multiple subranges
+per style:
+
+\starttyping
+\starttext
+    \dorecurse {#1} {
+        \tf \input knuth \it knuth
+        \bf \input knuth \bs knuth
+        \it \input knuth \tf knuth
+        \bs \input knuth \bf knuth
+        \par
+    }
+\stoptext
+\stoptyping
+
+% sample 3, number of runs: 5
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 2500 \NC \NR
+\HL
+\BC pdftex    \NC 0.59 \NC 2.20 \NC 9.52 \NC \NR
+\BC xetex     \NC 1.49 \NC 8.88 \NC 43.85 \NC \NR
+\BC luatex    \NC 1.64 \NC 8.91 \NC 41.26 \NC \NR
+\BC luajittex \NC 1.15 \NC 5.91 \NC 27.15 \NC \NR
+\HL
+\stoptabulate
+
+The last example adds some color. Enabling more functionality can have an impact
+on performance. In fact, as \MKIV\ uses a lot of \LUA\ and is also more advanced
+that \MKII, one can expect a performance hit but in practice the opposite
+happens, which can also be due to some fundamental differences deep down at the
+macro level.
+
+\starttyping
+\setupcolors[state=start] % default in MkIV
+
+\starttext
+    \dorecurse {#1} {
+        {\red \tf \input knuth \green \it knuth}
+        {\red \bf \input knuth \green \bs knuth}
+        {\red \it \input knuth \green \tf knuth}
+        {\red \bs \input knuth \green \bf knuth}
+        \par
+    }
+\stoptext
+\stoptyping
+
+% sample 4, number of runs: 5
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 2500 \NC \NR
+\HL
+\BC pdftex    \NC 0.61 \NC 2.36 \NC 10.33 \NC \NR
+\BC xetex     \NC 1.53 \NC 9.25 \NC 45.59 \NC \NR
+\BC luatex    \NC 1.65 \NC 8.91 \NC 41.32 \NC \NR
+\BC luajittex \NC 1.15 \NC 5.93 \NC 27.34 \NC \NR
+\HL
+\stoptabulate
+
+In these measurements the accuracy is a few decimals but a pattern is visible. As
+expected \PDFTEX\ wins on simple documents but starts loosing when things get
+more complex. For these tests I used 64 bit binaries. A 32 bit \XETEX\ with
+\MKII\ performs the same as \LUAJITTEX\ with \MKIV, but a 64 bit \XETEX\ is
+actually quite a bit slower. In that case the mingw cross compiled \LUATEX\
+version does pretty well. A 64 bit \PDFTEX\ is also slower (it looks) that a 32
+bit version. So in the end, there are more factors that play a role. Choosing
+between \LUATEX\ and \LUAJITTEX\ depends on how well the memory limited
+\LUAJITTEX\ variant can handle your documents and fonts.
+
+Because in most of our recent styles we use \OPENTYPE\ fonts and (structural)
+features as well as recent \METAFUN\ extensions only present in \MKIV\ we cannot
+compare engines using such documents. The mentioned performance of \LUATEX\ (or
+\LUAJITTEX) and \MKIV\ on the \METAFUN\ manual illustrate that in most cases this
+combination is a clear winner.
+
+\starttyping
+\starttext
+    \dorecurse {#1} {
+        \null \page
+    }
+\stoptext
+\stoptyping
+
+This gives:
+
+% sample 5, number of runs: 5
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 2500 \NC \NR
+\HL
+\BC pdftex    \NC 0.46 \NC 1.05 \NC 3.72 \NC \NR
+\BC xetex     \NC 0.73 \NC 1.80 \NC 6.56 \NC \NR
+\BC luatex    \NC 0.84 \NC 1.44 \NC 4.07 \NC \NR
+\BC luajittex \NC 0.61 \NC 1.10 \NC 3.33 \NC \NR
+\HL
+\stoptabulate
+
+That leaves the zero run:
+
+\starttyping
+\starttext
+    \dorecurse {#1} {
+        % nothing
+    }
+\stoptext
+\stoptyping
+
+This gives the following numbers. In longer runs the difference in overhead is
+neglectable.
+
+% sample 6, number of runs: 5
+
+\starttabulate[||r|r|r|]
+\HL
+\BC engine \BC 50 \BC 500 \BC 2500 \NC \NR
+\HL
+\BC pdftex    \NC 0.36 \NC 0.36 \NC 0.36 \NC \NR
+\BC xetex     \NC 0.57 \NC 0.57 \NC 0.59 \NC \NR
+\BC luatex    \NC 0.74 \NC 0.74 \NC 0.74 \NC \NR
+\BC luajittex \NC 0.53 \NC 0.53 \NC 0.54 \NC \NR
+\HL
+\stoptabulate
+
+It will be clear that when we use different fonts the numbers will also be
+different. And if you use a lot of runtime \METAPOST\ graphics (for instance for
+backgrounds), the \MKIV\ runs end up at the top. And when we process \XML\ it
+will be clear that going back to \MKII\ is no longer a realistic option. It must
+be noted that I occasionally manage to improve performance but we've now reached
+a state where there is not that much to gain. Some functionality is hard to
+compare. For instance in \CONTEXT\ we don't use much of the \PDF\ backend
+features because we implement them all in \LUA. In fact, even in \MKII\ already a
+done in \TEX, so in the end the speed difference there is not large and often in
+favour of \MKIV.
+
+For the record I mention that shipping out the about 1250 pages has some overhead
+too: about 2 seconds. Here \LUAJITTEX\ is 20\% more efficient which is an
+indication of quite some \LUA\ involvement. Loading the input files has an
+overhead of about half a second. Starting up \LUATEX\ takes more time that
+\PDFTEX\ and \XETEX, but that disadvantage disappears with more pages. So, in the
+end there are quite some factors that blur the measurements. In practice what
+matters is convenience: does the runtime feel reasonable and in most cases it
+does.
+
+If I would replace my laptop with a reasonable comparable alternative that one
+would be some 35\% faster (single threads on processors don't gain much per year).
+I guess that this is about the same increase in performance that \CONTEXT\
+\MKIV\ got in that period. I don't expect such a gain in the coming years so
+at some point we're stuck with what we have.
+
+\stopsection
+
+\startsection[title=Summary]
+
+So, how \quotation {slow} is \LUATEX\ really compared to the other engines? If we
+go back in time to when the first wide engines showed up, \OMEGA\ was considered
+to be slow, although I never tested that myself. Then, when \XETEX\ showed up,
+there was not much talk about speed, just about the fact that we could use
+\OPENTYPE\ fonts and native \UTF\ input. If you look at the numbers, for sure you
+can say that it was much slower than \PDFTEX. So how come that some people
+complain about \LUATEX\ being so slow, especially when we take into account that
+it's not that much slower than \XETEX, and that \LUAJITTEX\ is often faster that
+\XETEX. Also, computers have become faster. With the wide engines you get more
+functionality and that comes at a price. This was accepted for \XETEX\ and is
+also acceptable for \LUATEX. But the price is nto that high if you take into
+account that hardware performs better: you just need to compare \LUATEX\ (and
+\XETEX) runtime with \PDFTEX\ runtime 15 years ago.
+
+As a comparison, look at games and video. Resolution became much higher as did
+color depth. Higher frame rates were in demand. Therefore the hardware had to
+become faster and it did, and as a result the user experience kept up. No user
+will say that a modern game is slower than an old one, because the old one does
+500 frames per second compared to some 50 for the new game on the modern
+hardware. In a similar fashion, the demands for typesetting became higher:
+\UNICODE, \OPENTYPE, graphics, \XML, advanced \PDF, more complex (niche)
+typesetting, etc. This happened more or less in parallel with computers becoming
+more powerful. So, as with games, the user experience didn't degrade with
+demands. Comparing \LUATEX\ with \PDFTEX\ is like comparing a low res, low frame
+rate, low color game with a modern one. You need to have up to date hardware and
+even then, the writer of such programs need to make sure it runs efficient,
+simply because hardware no longer scales like it did decades ago. You need to
+look at the larger picture.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

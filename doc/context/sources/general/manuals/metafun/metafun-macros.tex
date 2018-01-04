@@ -1,0 +1,91 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-macros
+
+\environment metafun-environment
+
+\startchapter[title={\METAFUN\ macros}]
+
+\index{metafun}
+
+\startintro
+
+\CONTEXT\ comes with a series of \METAPOST\ modules. In this chapter we will
+summarize the most important \TEX\ and \METAPOST\ macros. More information can be
+found in the documentation of the modules.
+
+\stopintro
+
+There are several ways to use the power of \METAFUN, either or not using
+\CONTEXT.
+
+\startitemize[n]
+
+\startitem
+    You can create an independent \type {mp} file and process it with the
+    \METAPOST\ program or \MPTOPDF. Depending on what features you use, the
+    succes of a run depends on the proper set up of the programs that take care
+    of running \TEX\ for \type {btex}.
+\stopitem
+
+\startitem
+    You can embed the graphic in a \type {\startMPpage} construct and process it
+    with \CONTEXT\ \MKIV. In that case you have the full \METAFUN\ functionality
+    available. If for some reason you still want to use \MKII, you need to use
+    \TEXEXEC\ as before processing the file, it will do a couple of checks on the
+    file. It will also make sure that the temporary files (\type {mpt} for \type
+    {textext}'s and \type {mpo} for outline fonts) are taken care of too.
+\stopitem
+
+\startitem
+    You can integrate the graphic in the document flow, using buffers, \METAPOST\
+    code sections, or (reusable) graphic containers. In that case the graphics
+    are processed runtime or between runs. This happens automatically.
+\stopitem
+
+\stopitemize
+
+Unless you want to write low level \CONTEXT\ code yourself, there is no real
+reason to look into the modules that deal with \METAPOST\ support. The
+traditional (partly generic) code is collected in:
+
+\starttabulate[|lT|p|]
+\NC supp-mps.tex \NC low level inclusion macros and housekeeping \NC\NR
+\NC supp-mpe.tex \NC experimental extensions (like specials)     \NC\NR
+\NC supp-pdf.tex \NC \METAPOST\ to \PDF\ conversion              \NC\NR
+\stoptabulate
+
+Especially the last two can be used in other macro packages. However, in
+\CONTEXT\ we have regrouped the code (plus more) in other files:
+
+\starttabulate[|lT|p|]
+\NC meta-***.tex \NC definition and managing   \NC\NR
+\NC mlib-***.tex \NC processing and conversion \NC\NR
+\stoptabulate
+
+The last category will certainly grow. Some of these modules are preloaded,
+others can be loaded using the command \type {\useMPlibrary}, like
+
+\starttyping
+\useMPlibrary[clp,txt]
+\stoptyping
+
+for loading the predefined clipping paths and text tricks.
+
+The \METAPOST\ code is organized in files named \type {mp-****.mp}. The core file
+is \type {mp-tool.mp} and this file can comfortably be used in stand||alone
+graphics. The file \type {metafun.mp} is used to load the collection of modules
+into a format. The collection of \METAPOST\ code files will grow in due time, but
+as long as you use the \METAFUN\ format, you don't have to keep track of the
+organization of files. Most files relate to subsystems and are loaded
+automatically, like the files that implement page layout support and flow charts.
+
+Although this document is the main source of information, occasionally the source
+code of \METAFUN, and in many cases the source code of \CONTEXT\ may contain
+additional information and examples.
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,457 @@
+% language=uk
+
+\usemodule[fonts-emoji]
+
+\environment onandon-environment
+
+% \definefont[MyEmoji][emojionecolor-svginot*default,svg]
+% \definefont[MyEmoji][seguiemj*seguiemj-bw]
+% \definefont[MyEmoji][emojionemozilla*default,overlay]
+% \definefont[MyEmoji][applecoloremoji*default,bitmap]
+
+\definefontfeature[seguiemj-cl][default][colr=yes,ccmp=yes,dist=yes]
+\definefontfeature[seguiemj-bw][default][ccmp=yes,dist=yes]
+
+\definefont[MyEmoji]     [seguiemj*seguiemj-cl]
+\definefont[MyEmojiLarge][seguiemj*seguiemj-cl @ 100pt]
+
+\definefontsynonym[emoji][seguiemj*seguiemj-cl]
+
+\startcomponent onandon-emoji
+
+\startchapter[title=Emoji again]
+
+Because at the \CONTEXT\ 2016 meeting color fonts \footnote {For that occasion
+the cowfont, a practical joke concerning Dutch \quote {koeieletters}, were turned
+into a color font and presented at the meeting.} were on the agenda, some time
+was spent on emoji (these colorful small picture glyphs). When possible I bring
+kids to the Bacho\TEX\ conference so for the 2017 BachoTUG I decided to do
+something with emoji that, after all, are mostly used by those younger than I am.
+So, I had to take a look at the current state. Here are some observations.
+
+The \UNICODE\ standard defines a whole lot of emoji and if mankind manages to
+survive for a while one can assume that a lot more will be added. After all,
+icons as well as variants keep evolving. There are several ways to organize these
+symbols in groups but I will not give grouping a try. Just visit \type
+{emojipedia.org} and you get served well. For this story I only mention that:
+
+\startitemize
+    \startitem
+        There are quite some shapes and nearly all of them are in color. The
+        yellow ones, smilies and such, are quite prominently present but there
+        are many more.
+    \stopitem
+    \startitem
+        A special subset is fulled by persons: man, woman, girl, boy and recently
+        a baby.
+    \stopitem
+    \startitem
+        The grown ups can be combined in loving couples (either or not kissing)
+        and then can form families, but only upto 2 young kids or gender neutral
+        babies.
+    \stopitem
+    \startitem
+        All persons can be flagged with one of five skin tones so that not all
+        persons (or heads) look bright yellow.
+    \stopitem
+    \startitem
+        Interesting is that girls and boys are still fond of magenta (pinkish)
+        and cyan (blueish) cloths and ornaments. Also haircuts are rather
+        specific to the gender.
+    \stopitem
+\stopitemize
+
+For rendering color emojis we have a few color related \OPENTYPE\ font properties
+available: bitmaps, \SVG\, and stacked glyphs. Now, if you think of the
+combinations that can be made with skin tones, you realize that fonts can become
+pretty large if each combination results in a glyph. In the first half of 2017
+\MICROSOFT\ released an update for its emoji font and the company took the
+challenge to provide not only mixed skin tone couples, but also supported skin
+tones for the kids, including a baby.
+
+This recent addition already adds over 25.000 additional glyphs \footnote {That
+is the amount I counted when I added all combinations runtime but the emojipedia
+mentions twice that amount. Currently in \CONTEXT\ we resolve such combinations
+when requested.} so imagine what will happen in the future. But, instead of
+making a picture for each variant, a different solution has been chosen. For
+coloring this seguiemj font uses the (very flexible) stacking technology: a color
+shape is an overlay of colored symbols. The colors are organized in pallets and
+it's no big deal to add additional pallets if needed. Instead of adding
+pre|-|composed shapes (as is needed with bitmaps and \SVG) snippets are used to
+build alternative glyphs and these can be combined into new shapes by
+substitution and positioning (for that kerns, mark anchoring and distance
+compensation is used).
+
+So, a family can be constructed of composed shapes (man, woman, etc) that each
+are composed of snippets (skull, hair, mouth, eyes). So, effectively a family of
+four is a bunch of maybe 25 small glyphs overlayed and colored. In \in {figure}
+[fig:emojisnippets] we see how a shape is constructed out of separate glyphs. \in
+{Figure} [fig:emojisnippetsoverlay] shows how they can be overlayed with colors
+(we use a dedicated color set).
+
+\startplacefigure[title={Emoji snippets.},reference=fig:emojisnippets]
+    \scale[width=\textwidth]{\framed[frame=off,offset=overlay,align=normal]\bgroup
+        \forgetall
+        \MyEmoji
+        \ShowEmojiSnippets
+          [family man light skin tone
+           woman dark skin tone
+           girl medium skin tone
+           boy medium skin tone]
+    \egroup}
+\stopplacefigure
+
+\startplacefigure[title={Emoji snippets overlayed.},reference=fig:emojisnippetsoverlay]
+    \scale[width=\textwidth]{\framed[frame=off,offset=overlay,align=normal]\bgroup
+        \forgetall
+        \MyEmoji
+        \ShowEmojiSnippetsOverlay
+          [family man light skin tone
+           woman dark skin tone
+           girl medium skin tone
+           boy medium skin tone]
+    \egroup}
+\stopplacefigure
+
+When a font supports it, a sequence of emoji can be turned into a more compact
+representation. In \in {figure} [fig:emojiskintones] we see how skin tones are
+applied in such combinations. \in {Figure} [fig:emojiglyphs] shows the small
+snippets.
+
+\startplacefigure[title={Emoji families and such with skin tones.},reference=fig:emojiskintones,location=page]
+    \startcombination[2*4]
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family man woman girl boy}}}
+            {family man woman girl boy}
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family woman girl boy}}}
+            {family woman girl boy}
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family woman woman girl boy}}}
+            {family woman woman girl boy}
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family man girl boy}}}
+            {family man girl boy}
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family
+             man dark skin tone
+             woman girl baby}}}
+            {family
+             man dark skin tone
+             woman girl baby}
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family
+             man light skin tone
+             woman light skin tone
+             girl dark skin tone}}}
+            {family
+             man light skin tone
+             woman light skin tone
+             girl dark skin tone}
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family woman girl boy}}}
+            {family woman girl boy}
+        {\ruledhbox{\MyEmojiLarge\resolvedemoji
+            {family
+             man light skin tone
+             woman dark skin tone
+             girl medium skin tone
+             boy medium skin tone}}}
+            {family
+             man light skin tone
+             woman dark skin tone
+             girl medium skin tone
+             boy medium skin tone}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[title={Emoji glyphs.},reference=fig:emojiglyphs]
+    \scale[width=\textwidth]{\framed[frame=off,offset=overlay,align=normal]\bgroup
+        \forgetall
+        \MyEmoji
+        \ShowEmojiGlyphs
+          [family man light skin tone
+           woman dark skin tone
+           girl medium skin tone
+           boy medium skin tone]
+    \egroup}
+\stopplacefigure
+
+When we have to choose a font we need to take the following criteria into
+account:
+
+\startitemize
+\startitem
+    What is the quality of the shapes? For sure, outlines are best if you want to
+    scale too.
+\stopitem
+\startitem
+    How efficient is a shape constructed. In that respect a bitmap or \SVG\ image
+    is just one entity.
+\stopitem
+\startitem
+    How well can (semi) arbitrary combinations of emoji be provided. Here the
+    glyph approach wins.
+\stopitem
+\startitem
+    Are all skin colors for all human relates shapes supported? Actually it opens
+    the possibility for racist fonts.
+\stopitem
+\startitem
+    Are all reasonable combinations of persons supported? It looks like (depending
+    on time and version) kissing men or women can be missing, maybe because of
+    social political reasons.
+\stopitem
+\startitem
+    Are black and white shapes provided alongside color shapes.
+\stopitem
+\stopitemize
+
+Maybe an \SVG\ or bitmap image can have a lot of detail compared to a stacked
+glyph but, when we're just using pictographic representations, the later is the
+best choice.
+
+When I was playing a bit with the skin tone variants and other combinations that
+should result in some composed shape, I used the \UNICODE\ test files but I got
+the impression that there are some errors in the test suite, for instance with
+respect to modifiers. Maybe the fonts are just doing the wrong thing or maybe
+some implement these sequences a bit inconsistent. This will probably improve
+over time but the question is if we should intercept issues. I'm not in favour of
+this because it adds more and more fuzzy code that not only wastes cycles
+(energy) but is also a conceptual horror. So, when testing, imperfection has to
+be accepted for now. This is no big deal as until now no one ever asked for emoji
+support in \CONTEXT.
+
+When no combined shape is provided, the original sequence shows up. A side effect
+can be that zero|-|width|-| joiners and modifiers become visible. This depends on
+the fonts. Users probably don't care that much about it. Now how do we suppose
+that users enter these emoji (sequences) in a document source? One can imagine a
+pop up in the editor but \TEX ies are often using commands for special cases.
+
+We already showed some combined shapes. The reader might appreciate the outcome
+but getting there from the input takes a bit of work. For instance a two person
+\typ {man light skin tone woman medium skin tone girl medium-light skin tone baby
+medium-light skin tone} involves this:
+
+\blank
+\start
+    \setupalign[verytolerant]
+    \showotfcomposition
+      {seguiemj*seguiemj-cl}
+      {1}
+      {\resolvedemoji{family
+            man light skin tone
+            woman medium skin tone
+            girl medium-light skin tone
+            baby medium-light skin tone}}
+\stop
+\blank
+
+A black and white example is the following \type {family woman girl}:
+
+\blank
+\start
+    \setupalign[verytolerant]
+    \showotfcomposition
+      {seguiemj*seguiemj-bw}
+      {1}
+      {\resolvedemoji{family woman girl}}
+\stop
+\blank
+
+I will not show all emoji, just the subset that contains the word \type {woman}
+in the description. As you can see the persons in the sequences are separated by
+a zero|-|width|-|joiner. There are some curious ones, for instance a \typ {woman
+wearing turban} which in terms of \UNICODE\ input is a female combine with a
+turban wearing man becomes a beardless woman wearing a turban. Woman vampires and
+zombies are not supported so these are male properties.
+
+\startpacked
+    \MyEmoji
+    \ShowEmoji[woman]
+\stoppacked
+
+So what if you don't like these colors? Because we're dealing with \TEX\ you can
+assume that if there is some way around the fixed color sets, then it will be
+provided. So, when you use \CONTEXT, here is away to overload them:
+
+\startbuffer
+\definecolor[emoji-red]   [r=.4]
+\definecolor[emoji-green] [g=.4]
+\definecolor[emoji-blue]  [b=.4]
+\definecolor[emoji-yellow][r=.4,g=.4]
+\definecolor[emoji-gray]  [s=1,t=.5,a=1]
+
+\definefontcolorpalette
+  [emoji-s]
+  [black,emoji-gray]
+
+\definefontcolorpalette
+  [emoji-r]
+  [emoji-red,emoji-gray]
+
+\definefontcolorpalette
+  [emoji-g]
+  [emoji-green,emoji-gray]
+
+\definefontcolorpalette
+  [emoji-b]
+  [emoji-blue,emoji-gray]
+
+\definefontcolorpalette
+  [emoji-y]
+  [emoji-yellow,emoji-gray]
+
+\definefontfeature[seguiemj-s][ccmp=yes,dist=yes,colr=emoji-s]
+\definefontfeature[seguiemj-r][ccmp=yes,dist=yes,colr=emoji-r]
+\definefontfeature[seguiemj-g][ccmp=yes,dist=yes,colr=emoji-g]
+\definefontfeature[seguiemj-b][ccmp=yes,dist=yes,colr=emoji-b]
+\definefontfeature[seguiemj-y][ccmp=yes,dist=yes,colr=emoji-y]
+
+\definefont[MyEmojiS][seguiemj*seguiemj-s]
+\definefont[MyEmojiR][seguiemj*seguiemj-r]
+\definefont[MyEmojiG][seguiemj*seguiemj-g]
+\definefont[MyEmojiB][seguiemj*seguiemj-b]
+\definefont[MyEmojiY][seguiemj*seguiemj-y]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startplacefigure[title={Overloading colors by plugging in a sequence of alternate colors.},reference=fig:emojioverload,location=page]
+\startcombination[4*6]
+    {\scale[height=.1\textheight]{\MyEmoji \resolvedemoji{triangular ruler}}} {}
+    {\scale[height=.1\textheight]{\MyEmoji \resolvedemoji{rabbit face}}}      {}
+    {\scale[height=.1\textheight]{\MyEmoji \resolvedemoji{man}}}              {}
+    {\scale[height=.1\textheight]{\MyEmoji \resolvedemoji{woman}}}            {}
+    {\scale[height=.1\textheight]{\MyEmojiR\resolvedemoji{triangular ruler}}} {}
+    {\scale[height=.1\textheight]{\MyEmojiR\resolvedemoji{rabbit face}}}      {}
+    {\scale[height=.1\textheight]{\MyEmojiR\resolvedemoji{man}}}              {}
+    {\scale[height=.1\textheight]{\MyEmojiR\resolvedemoji{woman}}}            {}
+    {\scale[height=.1\textheight]{\MyEmojiG\resolvedemoji{triangular ruler}}} {}
+    {\scale[height=.1\textheight]{\MyEmojiG\resolvedemoji{rabbit face}}}      {}
+    {\scale[height=.1\textheight]{\MyEmojiG\resolvedemoji{man}}}              {}
+    {\scale[height=.1\textheight]{\MyEmojiG\resolvedemoji{woman}}}            {}
+    {\scale[height=.1\textheight]{\MyEmojiB\resolvedemoji{triangular ruler}}} {}
+    {\scale[height=.1\textheight]{\MyEmojiB\resolvedemoji{rabbit face}}}      {}
+    {\scale[height=.1\textheight]{\MyEmojiB\resolvedemoji{man}}}              {}
+    {\scale[height=.1\textheight]{\MyEmojiB\resolvedemoji{woman}}}            {}
+    {\scale[height=.1\textheight]{\MyEmojiY\resolvedemoji{triangular ruler}}} {}
+    {\scale[height=.1\textheight]{\MyEmojiY\resolvedemoji{rabbit face}}}      {}
+    {\scale[height=.1\textheight]{\MyEmojiY\resolvedemoji{man}}}              {}
+    {\scale[height=.1\textheight]{\MyEmojiY\resolvedemoji{woman}}}            {}
+    {\scale[height=.1\textheight]{\MyEmojiS\resolvedemoji{triangular ruler}}} {}
+    {\scale[height=.1\textheight]{\MyEmojiS\resolvedemoji{rabbit face}}}      {}
+    {\scale[height=.1\textheight]{\MyEmojiS\resolvedemoji{man}}}              {}
+    {\scale[height=.1\textheight]{\MyEmojiS\resolvedemoji{woman}}}            {}
+\stopcombination
+\vskip2ex % looks nicer
+\stopplacefigure
+
+In \in {figure} [fig:emojioverload] we see how this is applied. You can provide
+as many colors as needed but when you don't provide enough the last one is used.
+This way we get the overlayed transparent colors in the examples. By using
+transparency we don't obscure shapes.
+
+The emojipedia mentions \quotation {Asked about the design, \MICROSOFT\ told
+emojipedia that one of the reasons for the thick stroke was to allow each emoji
+to be easily read on any background color.} The first glyph in the stack seems to
+do the trick, so just make sure that it doesn't become white. And, before I read
+that remark, while preparing a presentation with a colored background, I had
+already noticed that using a background was no problem. This font definitely sets
+the standard.
+
+How do we know what colors are used? The next table shows the first color palette
+of seguiemj. There are quite some colors so defining your own definitely involved
+some studying.
+
+{\MyEmoji\ShowEmojiPalettes[1]}
+
+Normally special symbols are accessed in \CONTEXT\ with the \type {symbol}
+command where symbols are organized in symbol sets. This is a rather old
+mechanism and dates from the time that fonts were limited in coverage and symbols
+were collected in special fonts. The emoji are accessed by their own command:
+\type {\emoji}. The font used has the font synonym \type {emoji} so you need to
+set that one first:
+
+\starttyping
+\definefontsynonym[emoji][seguiemj*seguiemj-cl]
+\stoptyping
+
+Here is an example:
+
+\startbuffer
+\emoji{woman light skin tone}\quad
+\emoji{woman scientist}\quad
+{\bfd bigger \emoji{man health worker}}
+\stopbuffer
+
+\typebuffer
+
+or typeset: \getbuffer
+
+The emoji symbol scales with the normal running font. When you ask for a family
+with skin toned members the lookup can result in another match (or no match)
+because one never knows to what extend a font supports it.
+
+\starttabulate[|l|p|]
+\NC \type{\expandedemoji} \NC the sequence constructed from the given string \NC \NR
+\NC \type{\resolvedemoji} \NC a protected sequence constructed from the given string \NC \NR
+\NC \type{\checkedemoji } \NC an typeset sequence with unresolved modifiers and joiners removed \NC \NR
+\NC \type{\emoji}         \NC a typeset resolved sequence using the \type {emoji} font synonym \NC \NR
+\NC \type{\robustemoji}   \NC a typeset checked sequence using the \type {emoji} font synonym \NC \NR
+\stoptabulate
+
+In case you wonder how some of the details above were typeset, there is a module
+\type {fonts-emoji} that provides some helpers for introspection.
+
+\starttabulate[|l|p|]
+\NC \type {\ShowEmoji}                \NC show all the emoji in the current font \NC \NR
+\NC \type {\ShowEmojiSnippets}        \NC show the snippets of a given emoji \NC \NR
+\NC \type {\ShowEmojiSnippetsOverlay} \NC show the overlayed snippets of a given emoji \NC \NR
+\NC \type {\ShowEmojiGlyphs}          \NC show the snippets of a typeset emoji \NC \NR
+\NC \type {\ShowEmojiPalettes}        \NC show the color pallets in the current font \NC \NR
+\stoptabulate
+
+Examples of usage are:
+
+\starttyping
+\ShowEmojiSnippets[family man woman girl boy]
+\ShowEmojiGlyphs  [family man woman baby girl]
+\ShowEmoji        [^man]
+\ShowEmoji
+\ShowEmojiPalettes
+\ShowEmojiPalettes[1]
+\stoptyping
+
+A good source of information about emoji is the mentioned \type {emojipedia.org}
+website. There you find not only details about all these symbols but also has
+some history. It compares updates in fonts too. It mentions for instance that in
+the creative update of Windows 10, some persons grew beards in the seguiemj font
+and others lost an eye. Now, if you look at the snippets shown before, you can
+wonder if that eye is really gone. Maybe the color is wrong or the order of
+stacking is not right. I decided not to waste time looking into that.
+
+Another quote: \quotation {Support for color emoji presentation on \MSWINDOWS\ is
+limited. Many applications on \MSWINDOWS\ display emojis with a black and white
+text presentation instead of their color version.} Well, we can do better with
+\TEX, but as usual not that many people really cares about that. But it's fun
+anyway.
+
+We end with a warning. When you use \quote {ligatures} like this, you really need
+to check the outcome. For instance, when \MICROSOFT\ updated the font end 2017,
+same gender couples got different hair style for the individuals so that one can
+still distinguish them. However, kissing couples and couples in love (indicated
+by a heart) seem to be removed. Who knows how and when politics creep into fonts:
+is public mixed couple kissing permitted, do we support families with any mix of
+gender, is associating pink with girls okay or not, how do we distinguish male
+and female anyway? In \in {figure} [fig:old-and-new] we see the same combination
+twice, the early 2017 rendering versus the late 2017 rendering. Can you notice
+the differences?
+
+\startplacefigure[title={Incompatible updates.},reference=fig:old-and-new]
+    \externalfigure[onandon-seguiemj.pdf][width=\textwidth]
+\stopplacefigure
+
+\stopchapter
+
+\stopcomponent

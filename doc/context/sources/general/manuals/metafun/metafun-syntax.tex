@@ -1,0 +1,1130 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+% eoclip: no postscript possible yet
+%
+% mpprocset mpxbreak
+
+% path expression -> path
+
+% listsize
+% copylist
+% sortlist
+% shapedlist
+% listtocurves
+% listtolines
+
+\startcomponent metafun-syntax
+
+\environment metafun-environment
+
+\startchapter[title={\METAPOST\ syntax}]
+
+\index{syntax}
+\index{language}
+
+\startintro
+
+In the \METAFONT\ book as well as the \METAPOST\ manual, you can find the exact
+specification of the language. Below you find the full \METAPOST\ syntax, to
+which we add the basic \METAFUN\ extensions. If this page looks too cryptic, you
+can safely skip to the next chapter. We don't distinguish between primitives and
+functionality defined in the \METAPOST\ format, simply because the core is kept
+small and a macro package is supposed to extend that core.
+
+\stopintro
+
+% \startsection[title={Syntax diagrams}]
+
+The following syntax diagrams are derived from the diagrams in the \METAPOST\
+manual. The \mathematics {\rightarrow} represents \quote {means} and the
+\mathematics {\vert} symbol stands for \quote {or}.
+
+The diagrams describe the hard coded \METAPOST\ syntax as well as most of the
+macros and variables defined in the plain \METAPOST\ format that belongs to the
+core of the system. They also include most of the fundamental \METAFUN\ commands.
+We have omitted the \METAPOST\ and \METAFONT\ commands that make no sense any
+more or are irrelevant for common usage. Specific \METAFUN\ modules are not
+included here, only general tools, text helpers and extensions to the built||in
+capabilities like transparency. If you feel that something is missing that should
+be specified here, just let me know.
+
+\start \switchtobodyfont[8pt] % small]
+
+\StartSyntax
+\S{atom}
+    \M \S{variable} \S{argument}
+    \O \S{number or fraction}
+    \O \S{internal variable}
+    \O \( \S{expression} \)
+    \O \L{begingroup} \S{statement list} \S{expression} \L{endgroup}
+    \O \S{nullary op}
+    \O \L{btex} \S{typesetting command} \L{etex}
+  % \O \L{verbatimtex} \S{typesetting command} \L{etex}
+    \O \S{pseudo function}
+\StopSyntax
+
+\StartSyntax
+\S{primary}
+    \M \S{atom}
+    \O \( \S{numeric expression} \L{,} \S{numeric expression} \)
+    \O \( \S{numeric expression} \L{,} \S{numeric expression} \L{,} \S{numeric expression} \)
+    \O \( \S{numeric expression} \L{,} \S{numeric expression} \L{,} \S{numeric expression} \L{,} \S{numeric expression} \)
+    \O \S{of operator} \S{expression} \L{of} \S{primary}
+    \O \S{numeric expression} \S{expression} \FL{along} \S{path expression}
+    \O \S{numeric expression} \S{expression} \FL{on} \S{path expression}
+    \O \S{unary op} \S{primary}
+    \O \L{str} \S{suffix}
+    \O \L{z} \S{suffix}
+    \O \S{numeric atom} \[ \S{expression} \L{,} \S{expression} \]
+    \O \S{scalar multiplication op} \S{primary}
+    \O \S{color expression} \FL{shadedinto} \S{color expression}
+    \O \S{picture expression} \FL{asgroup} \S{string expression}
+    \O \S{picture expression} \FL{onlayer} \S{string expression}
+\StopSyntax
+
+\StartSyntax
+\S{secondary}
+    \M \S{primary}
+    \O \S{secondary} \S{primary binop} \S{primary}
+    \O \S{secondary} \S{transformer}
+\StopSyntax
+
+\StartSyntax
+\S{tertiary}
+    \M \S{secondary}
+    \O \S{tertiary} \S{secondary binop} \S{secondary}
+\StopSyntax
+
+\StartSyntax
+\S{subexpression}
+    \M \S{tertiary}
+    \O \S{path expression} \S{path join} \S{path knot}
+\StopSyntax
+
+\StartSyntax
+\S{expression}
+    \M \S{subexpression}
+    \O \S{expression} \S{tertiary binop} \S{tertiary}
+    \O \S{path subexpression} \S{direction specifier}
+    \O \S{path subexpression} \S{path join} \L{cycle}
+\StopSyntax
+
+\StartSyntax
+\S{path knot}
+    \M \S{tertiary}
+\StopSyntax
+
+\StartSyntax
+\S{path join}
+    \M \L{--}
+    \O \S{direction specifier} \S{basic path join} \S{direction specifier}
+\StopSyntax
+
+\StartSyntax
+\S {direction specifier}
+    \M \S{empty}
+    \O \{ \L{curl} \S{numeric expression} \}
+    \O \{ \S{pair expression} \}
+    \O \{ \S{numeric expression} \L{,} \S{numeric expression} \}
+\StopSyntax
+
+\StartSyntax
+\S{basic path join}
+    \M \L{..}
+    \O \L{...}
+    \O \L{..} \S{tension} \L{..}
+    %O \L{..} \S{tension} \L{..} % check what got lost here
+    \O \L{..} \S{controls} \L{..}
+\StopSyntax
+
+\StartSyntax % atleast added
+\S{tension}
+    \M \L{tension} \S{numeric primary}
+    \O \L{tension} \L{atleast} \S{numeric primary}
+    \O \L{tension} \S{numeric primary} \L{and} \S{numeric primary}
+\StopSyntax
+
+\StartSyntax
+\S{controls}
+    \M controls \S{pair primary}
+    \O controls \S{pair primary} \L{and} \S{pair primary}
+\StopSyntax
+
+\StartSyntax
+\S{argument}
+    \M \S{symbolic token}
+\StopSyntax
+
+\StartSyntax
+\S{number or fraction}
+    \M \S{number} \L{/} \S{number}
+    \O \S{number} \Q{not followed by} \L{/} \S{number}
+\StopSyntax
+
+\StartSyntax
+\S{scalar multiplication op}
+    \M \L{+} \O \L{-}
+    \O \S{number or fraction} \Q{not followed by} \S{add op} \S{number}
+\StopSyntax
+
+\StartSyntax
+\S{transformer}
+    \M \L {rotated}            \S {numeric primary}
+    \O \L {scaled}             \S {numeric primary}
+    \O \L {shifted}            \S {pair primary}
+    \O \L {slanted}            \S {numeric primary}
+    \O \L {transformed}        \S {transform primary}
+    \O \L {xscaled}            \S {numeric primary} \O \L {yscaled} \S {numeric primary} \O \FL{xyscaled} \S {numeric or pair primary}
+    \O \L {zscaled}            \S {pair primary}
+    \O \L {reflectedabout}     \L \( \S{pair expression} \L{,} \S{pair expression} \)
+    \O \L {rotatedaround}      \L \( \S{pair expression} \L{,} \S{numeric expression} \)
+    \O \FL{xsized}             \S {numeric primary} \O \FL{ysized} \S {numeric primary} \O \FL{xysized} \S {numeric or pair primary}
+    \O \FL{blownup}            \S {numeric or pair primary}
+    \O \FL{enlarged}           \S {numeric or pair primary}
+    \O \FL{xstretched}         \S {numeric primary} \O \FL{ystretched} \S{numeric primary} \O \FL{stretched} \S{numeric or pair primary}
+    \O \FL{shortened}          \S {numeric or pair primary}
+    \O \FL{enlonged}           \S {numeric or pair primary}
+    \O \FL{crossed}            \S {numeric primary}
+    \O \FL{paralelled}         \S {numeric primary}
+    \O \FL{curved}             \S {numeric primary}
+    \O \FL{laddered}
+    \O \FL{leftenlarged}       \S{numeric primary} \O \FL{llenlarged} \S{numeric primary} \O \FL{llmoved} \S{numeric primary}
+    \O \FL{rightenlarged}      \S{numeric primary} \O \FL{lrenlarged} \S{numeric primary} \O \FL{lrmoved} \S{numeric primary}
+    \O \FL{topenlarged}        \S{numeric primary} \O \FL{urenlarged} \S{numeric primary} \O \FL{urmoved} \S{numeric primary}
+    \O \FL{bottomenlarged}     \S{numeric primary} \O \FL{ulenlarged} \S{numeric primary} \O \FL{ulmoved} \S{numeric primary}
+    \O \FL{randomized}         \S{numeric or pair or color primary}
+    \O \FL{randomizedcontrols} \S{numeric or pair}
+    \O \FL{snapped}            \S{numeric or pair primary}
+    \O \FL{cornered}           \S{numeric or pair}
+    \O \FL{peepholed}          \S{path expression}
+    \O \FL{smoothed}           \S{numeric or pair}
+    \O \FL{squeezed}           \S{numeric or pair primary}
+    \O \FL{superellipsed}      \S{numeric primary}
+    \O \FL{randomshifted}      \S{numeric or pair primary}
+    \O \FL{uncolored}          \S{color primary}
+    \O \FL{softened}           \S{numeric or color primary}
+    \O \FL{asgroup}            \S{string primary}
+    \O \L {gobbled}            \S{primary}
+    %
+    \O \FL {insideof}          \S{path expression}
+    \O \FL {outsideof}         \S{path expression}
+    \O \FL {crossinunder}      \S{path expression}
+\StopSyntax
+
+\StartSyntax
+\S{numeric or pair primary}
+    \M \S{numeric primary}
+    \O \S{pair primary}
+\StopSyntax
+
+\StartSyntax
+\S{numeric or pair or color primary}
+    \M \S{numeric primary}
+    \O \S{pair primary}
+    \O \S{color primary}
+\StopSyntax
+
+\StartSyntax
+\S{numeric or color primary}
+    \M \S{numeric primary}
+    \O \S{color primary}
+\StopSyntax
+
+\StartSyntax
+\S{nullary op}
+    \M \L{false} \O \L{true}
+    \O \L{normaldeviate}
+    \O \L{nullpen} \O \L{nullpicture} \O \L{pencircle}%
+    \O \L{whatever}
+\StopSyntax
+
+\StartSyntax
+\S{unary op}
+    \M \S{type}
+    \O \L {ASCII}
+    \O \FL{asin} \O \FL{asinh} \O \FL{acos} \O \FL{acosh} \O \FL{atan} \O \L {cosd} \O \FL{cos} \O \FL{cosh} \O \FL{cot} \O \FL{cotd} \O \L {sind} \O \FL{sin} \O \FL{sinh} \O \FL{tand} \O \FL{tan}
+    \O \L {inverse} \O \FL{inv} \O \FL{invcos} \O \FL{invsin} \O \FL{invtan}
+    \O \FL{sqr} \O \L {sqrt} \O \L {pow} \O \FL{exp} \O \L {mexp} \O \L {mlog} \O \FL{ln} \O \FL{log} \O \L {uniformdeviate}
+    \O \L {abs} \O \L {round} \O \L {odd} \O \L {ceiling} \O \L {floor}
+    \O \L {dir} \O \L {angle} \O \L {length} \O \L {arclength}
+    \O \L {bbox} \O \FL{bbwidth} \O \FL{bbheight}
+    \O \L {bot} \O \L {lft} \O \L {rt} \O \L {top} \O \L {center}
+    \O \FL{colordecimals} \O \L {decimal} \O \FL{ddecimal} \O \FL{dddecimal} \O \FL{ddddecimal} \O \FL{condition} \O \FL{tostring}
+    \O \FL{boundingbox} \O \FL{outerboundingbox} \O \FL{innerboundingbox} \O \L {bbox}
+    \O \L {colorpart} \O {fontpart} \O \L {pathpart} \O \L {penpart} \O \L {textpart} \O \L {dashpart}
+    \O \L {redpart} \O \L {greenpart} \O \L {bluepart} \O \L {greypart} \O \L {graypart}
+    \O \L {cyanpart} \O \L {magentapart} \O \L {yellowpart} \O \L {blackpart}
+    \O \L {postscriptpart} \O \L {prescriptpart}
+    \O \L {clipped} \O \L {bounded} \O \L {stroked} \O \L {filled} \O \L {textual}
+    \O \FL{punked} \O \L{paralleled}
+    \O \FL{leftboundary} \O \FL{rightboundary} \O \FL{topboundary} \O \FL{bottomboundary}
+    \O \L {xpart} \O \L {xxpart} \O \L {xypart} \O \L {ypart} \O \L {yxpart} \O \L {yypart}
+    \O \L {oct} \O \L {hex}
+    \O \L {colortype}
+    \O \FL{grayed} \O \FL{greyed}
+    \O \L {llcorner} \O \L {lrcorner} \O \L {ulcorner} \O \L {urcorner}
+    \O \L {not} \O \L {known} \O \L {unknown}
+    \O \FL{blackcolor} \O \FL{whitecolor} \O \L {colormodel}
+    \O \L {char} \O \L {fontsize}
+    \O \L {cycle} \O \L {reverse} \O \L {counterclockwise}
+    \O \L {makepath} \O \L {makepen}
+    \O \L {unitvector}
+    \O \L {turningnumber}
+    \O \L {circularpath} \O \L {squarepath} \O \L {linearpath}
+    % maybe pseudo functions:
+    \O \FL{area} \O \FL{inverted} \O \FL{simplified} \O \FL{unspiked}
+\StopSyntax
+
+\StartSyntax
+\S{type}
+    \M \L{boolean} \O \L{numeric} \O \L{pair} \O \L{path}
+    \O \L{pen} \O \L{picture} \O \L{string} \O \L{transform}
+    \O \L{color} \O \L{cmykcolor} \O \FL {greycolor} \FL {graycolor}\O \L{rgbcolor}
+    \O \FL{property}\O \FL{transparency}
+    \O \L{outer} \O \L{inner}
+\StopSyntax
+
+\StartSyntax
+\S{primary binop}
+    \M \L{*} \O \L{/} \O \L{**} \O \L{and}
+    \O \L{dotprod} \O \L{div} \O \L{infont} \O \L{mod}
+\StopSyntax
+
+\StartSyntax
+\S{secondary binop}
+    \M \L{+} \O \L{-} \O \L{++} \O \L{+-+} \O \L{or}
+    \O \L{intersectionpoint} \O \L{intersectiontimes}
+\StopSyntax
+
+\StartSyntax
+\S{tertiary binop}
+    \M \L{&} \O \L{<} \O \L{<=} \O \L{<>} \O \L{=} \O \L{>} \O \L{>=}
+    \O \L{cutafter} \O \L{cutbefore} \O \FL{cutends}
+    \O \L{softjoin}
+\StopSyntax
+
+\StartSyntax
+\S{of operator}
+    \M \L{arctime} \O \L{direction} \O \L{directiontime} \O \L{directionpoint}%
+    \O \L{penoffset} \O \L{point}
+    \O \L{postcontrol} \O \L{precontrol} \O \L{subpath} \O \L{substring}
+    \O \L{takepower}
+\StopSyntax
+
+\StartSyntax
+\S{variable}
+    \M \S{predefined numeric variable}
+    \O \S{predefined path variable}
+    \O \S{predefined picture variable}
+    \O \S{predefined transform variable}
+    \O \S{predefined pair variable}
+    \O \S{predefined pen variable}
+    \O \S{predefined string variable}
+    \O \S{predefined dashpattern}
+    \O \S{predefined rgbcolor variable}
+    \O \S{predefined macro}
+    \O \S{tag} \S{suffix}
+\StopSyntax
+
+\StartSyntax
+\S{predefined numeric variable}
+    \M \FL{nothing yet}
+\StopSyntax
+
+\StartSyntax
+\S{predefined picture variable}
+    \M \FL{blankpicture}
+    \O \L{currentpicture}
+\StopSyntax
+
+\StartSyntax
+\S{predefined transform variable}
+    \M \L{identity} \O \L{currenttransform}
+\StopSyntax
+
+\StartSyntax
+\S{predefined path variable}
+    \M \FL{originpath}
+    \O \FL{fullcircle} \O \FL{fullsquare} \O \FL{fulldiamond} \O \FL{fulltriangle}
+    \O \FL{unitcircle} \O \FL{unitsquare} \O \FL{unitdiamond} \O \FL{unittriangle}
+    \O \FL{halfcircle} \O \FL{quartercircle}
+    \O \FL{llcircle} \O \FL{lrcircle} \O \FL{urcircle} \O \FL{ulcircle}
+    \O \FL{bcircle} \O \FL{tcircle} \O \FL{lcircle} \O \FL{rcircle}
+    \O \FL{triangle}
+    \O \FL{righttriangle} \O \FL{uptriangle} \O \FL{lefttriangle} \O \FL{downtriangle}
+    \O \FL{lltriangle} \O \FL{lrtriangle} \O \FL{urtriangle} \O \FL{ultriangle}
+    \O \L{cuttings}
+\StopSyntax
+
+\StartSyntax
+\S{predefined pair variable}
+    \M \L{right} \O \L{up} \O \L{left} \O \L{down}
+    \M \L{shadedright} \O \L{shadedup} \O \L{shadedleft} \O \L{shadeddown}
+\StopSyntax
+
+\StartSyntax
+\S{predefined pen variable}
+    \M \FL{pensquare} \O \FL{penrazor} \O \FL{penspec}
+    \O \L{currentpen}
+\StopSyntax
+
+\StartSyntax
+\S{predefined string variable}
+    \M \FL{EOF}
+    \O \FL{CRLF} \O \FL{crlf}
+    \O \FL{DQUOTE} \O \FL{dquote} \O \L{ditto}
+    \O \FL{SPACE} \O \FL{space}
+    \O \FL{PERCENT} \O \FL{percent}
+    \O \L{defaultfont}
+    \O \L{extra_beginfig} \O \L {extra_endfig}
+    \O \FL{pathconnectors}
+\StopSyntax
+
+\StartSyntax
+\S{predefined dashpattern}
+    \M \L{evenly} \O \FL{oddly} \O \L{withdots}
+\StopSyntax
+
+\StartSyntax
+\S{predefined rgbcolor variable}
+    \M \L{red}  \O \L{green}   \O \L{blue}   \O \L{white}
+    \O \L{cyan} \O \L{magenta} \O \L{yellow} \O \L{black}
+    \O \L{background}
+    \O \FL{basiccolors}
+\StopSyntax
+
+\StartSyntax
+\S{predefined macro}
+    \M \FL{shipit} \O \FL{bye}
+    \O \FL{resetdrawoptions}
+    \O \FL{visualizepaths} \O \FL{naturalizepaths}
+\StopSyntax
+
+\StartSyntax
+\S{suffix}
+    \M \S{empty}
+    \O \S{suffix} \S{subscript}
+    \O \S{suffix} \S{tag}
+    \O \S{suffix parameter}
+\StopSyntax
+
+\StartSyntax
+\S{subscript}
+    \M \S{number}
+    \O \[ \S{numeric expression} \]
+\StopSyntax
+
+\StartSyntax
+\S{internal variable}
+    \M \L{ahangle} \O \L{ahlength}
+    \O \L{bboxmargin} \O \L{labeloffset}
+    \O \L{charcode}
+    \O \L{defaultcolormodel} \O \L{defaultpen} \O \L{defaultscale}
+    \O \L{linecap} \O \L{linejoin} \O \L{miterlimit}
+    \O \L{outputformat} \O \L{outputtemplate} \O \O \L{prologues}
+    \O \L{showstopping} \L{pausing}
+    \O \L{tracingoutput} \O \L{tracingcapsules} \O \L{tracingchoices} \O \L{tracingcommands} \O \L{tracingequations}
+    \O \L{tracinglostchars}  \O \L{tracingmacros} \O \L{tracingonline} \O \L{tracingrestores} \O \L{tracingspecs}
+    \O \L{tracingstats} \O \L{tracingtitles}
+    \O \L{truecorners} \O \L{warningcheck}
+    \O \L{dotlabeldiam}
+    \O \L{day} \O \L{month} \O \L{year} \O \L{hour} \O \L{minute}  \O \L{time}
+    \O \L{mm} \O \L{pt} \O \L{dd} \O \L{bp} \O \L{cm} \O \L{pc} \O \L{cc} \O \L{in}
+    \O \L{butt} \O \L{rounded} \O \L{squared} \O \L{mitered} \O \L{beveled}
+    \O \FL{pi} \O \FL{radian} \O \FL{eps} \O \FL{epsilon}
+    \O \FL{nocolormodel} \O \FL{greycolormodel} \O \FL{graycolormodel} \O \FL{rgbcolormodel} \O \FL{cmykcolormodel}
+  % \O \FL{shadefactor}
+    \O \FL{textextoffset}
+    \O \FL{maxdimensions}
+    \O \L{infinity}
+    \O \FL{charscale}
+    \O \FL{metapostversion}
+    \O \FL{normaltransparent} \O \FL{multiplytransparent} \O \FL{screentransparent} \O \FL{overlaytransparent}
+    \O \FL{softlighttransparent} \O \FL{hardlighttransparent} \O \FL{colordodgetransparent} \O \FL{colorburntransparent}
+    \O \FL{darkentransparent} \O \FL{lightentransparent} \O \FL{differencetransparent} \O \FL{exclusiontransparent}
+    \O \FL{huetransparent} \O \FL{saturationtransparent} \O \FL{colortransparent} \O \FL{luminositytransparent}
+    \O \S{symbolic token defined by \L{newinternal}}
+    \O \L{ahangle} \O \L{ahlength}
+    \O \L{bboxmargin}
+    \O \L{pen_bot} \O \L{pen_top} \O \L{pen_lft} \O \L{pen_rt}
+    \O \L{join_radius}
+    \O \L{crossingscale} \O \L{crossingoption}
+\StopSyntax
+
+\StartSyntax
+\S{pseudo function}
+    \M \L {min}              \( \S{expression list} \)%
+    \O \L {max}              \( \S{expression list} \)
+    \O \L {incr}             \( \S{numeric variable} \)%
+    \O \L {decr}             \( \S{numeric variable} \)
+    \O \L {dashpattern}      \( \S{on/off list} \)
+    \O \L {interpath}        \( \S{numeric expression} \L{,} \S{path expression} \L{,} \S{path expression} \)
+    \O \FL{interpolated}     \( \S{numeric expression} \L{,} \S{path expression} \L{,} \S{path expression} \)
+    \O \L {buildcycle}       \( \S{path expression list} \)
+    \O \L {thelabel}         \S{label suffix} \( \S{expression} \L{,} \S{pair expression} \)
+    \O \FL{thefreelabel}     \( \S{expression}\L{,} \S{pair expression} \L{,} \S{pair expression} \)
+    \O \FL{anglebetween}     \( \S{path expression} \L{,} \S{path expression} \L{,} \S{expression} \)
+    \O \L {flex}             \( \S{text} \)
+    \O \L {hide}             \( \S{text} \)
+    \O \L {gobble}           \S{primary}
+    \O \L {clearit}
+    \O \L {clearpen}
+    \O \L {clearxy}
+    \O \FL{pointarrow}       \( \S{path expression} \L{,} \S{numeric or pair primary} \L{,} \S{numeric expression} \)
+    \O \FL{centerarrow}      \( \S{path expression} \L{,} \S{numeric or pair primary} \L{,} \S{numeric expression} \)
+    \O \FL{leftarrow}        \( \S{path expression} \L{,} \S{numeric or pair primary} \L{,} \S{numeric expression} \)
+    \O \FL{rightarrow}       \( \S{path expression} \L{,} \S{numeric or pair primary} \L{,} \S{numeric expression} \)
+    \O \FL{paired}           \( \S{numeric or pair} \)%
+    \O \FL{tripled}          \( \S{numeric or color} \)
+    \O \FL{remappedcolor}    \( \S{color expression} \)
+    \O \FL{superellipse}     \( \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \L{,} \L{numeric primary} \L{,} \N  \L{numeric primary} \)
+    \O \FL{roundedsquare}    \( \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \)
+    \O \FL{tensecircle}      \( \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \)
+    \O \FL{tensepath}        \( \S{path primary} \)
+    \O \FL{(constructed)function}%
+                             \( \S{string expression} \)%
+                             \( \S{string primary} \L{,} \S{string primary} \L{,} \S{numeric primary} \L{,}
+                             \N \S{numeric primary} \L{,} \S{numeric primary} \)
+    \O \FL{straightfunction} \( \S{string primary} \L{,} \S{string primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \L{,}
+                             \N \S{numeric primary} \)
+    \O \FL{curvedfunction}   \( \S{string primary} \L{,} \S{string primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \L{,}
+                             \N \S{numeric primary} \)
+   %\O \FL{punkedfunction}   \( \S{string primary} \L{,} \S{string primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \)
+   %\O \FL{tightfunction}    \( \S{string primary} \L{,} \S{string primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \)
+    \O \FL{constructedpairs} \( \S{string expression} \) \( \S{pair array} \)
+    \O \FL{straightpairs}    \( \S{pair array} \)
+    \O \FL{curvedpairs}      \( \S{pair array} \)
+   %\O \FL{punkedpairs}      \( \S{pair array} \)
+   %\O \FL{tightpairs}       \( \S{pair array} \)
+    \O \FL{constructedpath}  \( \S{string expression} \) \( \S{text} \)
+    \O \FL{straightpath}     \( \S{text} \)
+    \O \FL{curvedpath}       \( \S{text} \)
+   %\O \FL{punkedpath}       \( \S{text} \)
+   %\O \FL{tightpath}        \( \S{text} \)
+    \O \FL{epsed}            \S{numeric primary}
+    \O \FL{arrowhead}        \S{path primary}
+    \O \FL{arrowpath}        \S{path primary}
+    \O \FL{infinite}         \S{path primary}
+    %
+    \O \FL{tolist}           \( \S{pair array} \) \( \S{text} \)
+    \O \FL{topath}           \( \S{pair array} \) \( \S{text} \)
+    \O \FL{tocycle}          \( \S{pair array} \) \( \S{text} \)
+    \O \FL{pencilled}        \( \S{path expression} \) \( \S{pen expression} \)
+\StopSyntax
+
+\StartSyntax
+\S{color expression}
+    \M \S{basic color expression}
+    \O \S{string primary}
+    \O \FL{namedcolor} \( \S{string primary} \)
+    \O \FL{spotcolor} \( \S{string primary} \L{,} \S{basic color expression} \)
+    \O \FL{multitonecolor} \( \S{string primary} \L{,} \S{basic color expression list} \)
+\StopSyntax
+
+\StartSyntax
+\S{basic color expression}
+    \M \S{rgb color expression}
+    \O \S{cmyk color expression}
+    \O \S{gray color expression}
+\StopSyntax
+
+\StartSyntax
+\S{basic color expression list}
+    \M \S{basic color expression}
+    \O \S{basic color expression list} \L{,} \S{basic color expression}
+\StopSyntax
+
+\StartSyntax
+\S{rgb color expression}
+    \M \S\( \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \S\)
+\StopSyntax
+
+\StartSyntax
+\S{cmyk color expression}
+    \M \S\( \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \L{,} \S{numeric primary} \S\)
+\StopSyntax
+
+\StartSyntax
+\S{gray color expression}
+    \M \S\( \S{numeric primary} \S\)
+    \O \S{numeric primary}
+\StopSyntax
+
+\StartSyntax
+\S{path expression list}
+    \M \S{path expression}
+    \O \S{path expression list} \L{,} \S{path expression}
+\StopSyntax
+
+\StartSyntax
+\S{on/off list}
+    \M \S{on/off list} \S{on/off clause}
+    \O \S{on/off clause}
+\StopSyntax
+
+\StartSyntax
+\S{on/off clause}
+    \M \L{on} \S{numeric tertiary}
+    \O \L{off} \S{numeric tertiary}
+\StopSyntax
+
+\StartSyntax
+\S{boolean expression}   \M \S{expression}
+\S{cmyk expression}      \M \S{expression}
+\S{color expression}     \M \S{expression}
+\S{numeric atom}         \M \S{atom}
+\S{numeric expression}   \M \S{expression}
+\S{numeric primary}      \M \S{primary}
+\S{numeric tertiary}     \M \S{tertiary}
+\S{numeric variable}     \M \S{variable} \O \S{internal variable}
+\S{pair expression}      \M \S{expression}
+\S{pair primary}         \M \S{primary}
+\S{path expression}      \M \S{expression}
+\S{path subexpression}   \M \S{subexpression}
+\S{pen expression}       \M \S{expression}
+\S{picture expression}   \M \S{expression}
+\S{picture variable}     \M \S{variable}
+\S{rgb expression}       \M \S{expression}
+\S{string expression}    \M \S{expression}
+\S{suffix parameter}     \M \S{parameter}
+\S{transform primary}    \M \S{primary}
+\StopSyntax
+
+\StartSyntax
+\S{program}
+    \M \S{statement list} \L{end}
+\StopSyntax
+
+\StartSyntax
+\S{statement list}
+    \M \S{empty}
+    \O \S{statement list} \L{;} \S{statement}
+\StopSyntax
+
+\StartSyntax
+\S{statement}
+    \M \S{empty}
+    \O \S{equation}
+    \O \S{assignment}
+    \O \S{declaration}
+    \O \S{macro definition}
+    \O \S{compound}
+    \O \S{pseudo procedure}
+    \O \S{command}
+\StopSyntax
+
+\StartSyntax
+\S{compound}
+    \M \L{begingroup} \S{statement list} \L{endgroup}
+    \O \L{beginfig} \( \S{numeric expression} \) \L{;} \S{statement list} \S{;} \L{endfig}
+    \O \FL{beginglyph} \( \S{glyph property list} \) \L{;} \S{statement list} \S{;} \L{endglyph}
+    \O \L{image builder} \( \S{statement list} \)
+\StopSyntax
+
+\StartSyntax
+\S{image builder}
+    \M {image} \O \FL {decorated} \O \FL {redecorated} \O \FL {undecorated}
+\StopSyntax
+
+\StartSyntax
+\S{glyph property list}
+    \M \S{numeric expression} \L{,} \S{numeric expression} \L{,} \S{numeric expression} \L{,} \S{numeric expression}
+\StopSyntax
+
+\StartSyntax
+\S{equation}
+    \M \S{expression} \L{=} \S{right-hand side}
+\StopSyntax
+
+\StartSyntax
+\S{assignment}
+    \M \S{variable}          \L{:=} \S{right-hand side}
+    \O \S{internal variable} \L{:=} \S{right-hand side}
+\StopSyntax
+
+\StartSyntax
+\S{right-and side}
+    \M \S{expression}
+    \O \S{equation}
+    \O \S{assignment}
+\StopSyntax
+
+\StartSyntax
+\S{declaration}
+    \M \S{type} \S{declaration list}
+\StopSyntax
+
+\StartSyntax
+\S{declaration list}
+    \M \S{generic variable}
+    \O \S{declaration list} \L{,} \S{generic variable}
+\StopSyntax
+
+\StartSyntax
+\S{generic variable}
+    \M \S{Symbolic token} \S{generic suffix}
+\StopSyntax
+
+\StartSyntax
+\S{generic suffix}
+    \M \S{empty}
+    \O \S{generic suffix} \S{tag}
+    \O \S{generic suffix} \L{[]}
+\StopSyntax
+
+\StartSyntax
+\S{macro definition}
+    \M \S{macro heading} \L{=} \S{replacement text} \L{enddef}
+\StopSyntax
+
+\StartSyntax
+\S{macro heading}
+    \M \L{def}        \S{Symbolic token} \S{delimited part} \S{undelimited part}
+    \O \L{vardef}     \S{generic variable} \S{delimited part} \S{undelimited part}
+    \O \L{vardef}     \S{generic variable} \L{@#} \S{delimited part} \S{undelimited part}
+    \O \S{binary def} \S{parameter} \S {symbolic token} \S{parameter}
+\StopSyntax
+
+\StartSyntax
+\S{delimited part}
+    \M \S{empty}
+    \O \S{delimited part} \( \S{parameter type} \S{parameter tokens} \)
+\StopSyntax
+
+\StartSyntax
+\S{parameter type}
+    \M \L{expr}
+    \O \L{suffix}
+    \O \L{text}
+\StopSyntax
+
+\StartSyntax
+\S{parameter tokens}
+    \M \S{parameter}
+    \O \S{parameter tokens} \L{,} \S{parameter}
+\StopSyntax
+
+\StartSyntax
+\S{parameter}
+    \M \S{Symbolic token}
+\StopSyntax
+
+\StartSyntax
+\S{undelimited part}
+    \M \S{empty}
+    \O \S{parameter type} \S{parameter}
+    \O \S{precedence level} \S{parameter}
+    \O \L{expr} \S{parameter} \L{of} \S{parameter}
+\StopSyntax
+
+\StartSyntax
+\S{precedence level}
+    \M \L{primary}
+    \O \L{secondary}
+    \O \L{tertiary}
+\StopSyntax
+
+\StartSyntax
+\S{binary def}
+    \M \S{primarydef}
+    \O \S{secondarydef}
+    \O \S{tertiarydef}
+\StopSyntax
+
+\StartSyntax
+\S{pseudo procedure}
+    \M \L {drawoptions}  \( \S{option list} \)
+    \O \L {label}        \S{label suffix} \( \S{expression} \L{,} \S{pair expression} \)
+    \O \L {thelabel}     \S{label suffix} \( \S{expression} \L{,} \S{pair expression} \)
+    \O \L {dotlabel}     \S{label suffix} \( \S{expression} \L{,} \S{pair expression} \)
+    \O \L {makelabel}    \S{makelabel}
+    \O \L {labels}       \S{label suffix} \( \S{point number list} \)
+    \O \L {dotlabels}    \S{label suffix} \( \S{point number list} \)
+    \O \FL{textext}      \S{label suffix} \( \S{expression} \)
+    \O \FL{infotext}     \S{label suffix} \( \S{expression}, \S{numeric expression} \)
+    \O \FL{thetextext}   \S{label suffix} \( \S{expression}, \S{pair expression} \)
+    \O \FL{rawtextext}   \( \S{expression} \)
+    \O \FL{verbatim}     \S{string expression}
+    \O \FL{freelabel}    \( \S{expression} \L{,} \S{pair expression} \L{,} \S{pair expression} \)
+    \O \FL{freedotlabel} \( \S{expression} \L{,} \S{pair expression} \L{,} \S{pair expression} \)
+    \O \FL{remapcolor}   \( \S{color expression} \L{,} \S{color expression} \)
+    \O \FL{resetcolormap}
+    \O \FL{recolor}      \S{picture expression}
+    \O \FL{bitmapimage}  \( \S{numeric primary} \L{,}  \S{numeric primary} \L{,} \S{string primary} \)
+    \O \FL{pushboundingbox} \O \FL{popboundingbox}
+    \O \FL{pushcurrentpicture} \O \FL{popcurrentpicture}
+    \O \FL{externalfigure} \S{string expression} \S{transformer}
+    \O \FL{loadfigure} \S{string expression} \L{number} \S{numeric expression} \S{transformer}
+    \O \FL{properties}
+    \O \L {anchored} \S{label suffix} \( \S{expression} \L{,} \S{pair expression} \)
+\StopSyntax
+
+\StartSyntax
+\S{point number list}
+    \M \S{suffix} \O \S{point number list} \L{,} \S{suffix}
+\StopSyntax
+
+\StartSyntax
+\S{label suffix}
+    \M \S{empty}
+    \O \L{lft} \O \L{rt}\O \L{top} \O \L{bot} \O \L{ulft} \O \L{urt}%
+       \O \L{llft} \O \L{lrt} \O \FL{raw} \O \FL{origin}
+\StopSyntax
+
+\StartSyntax
+\S{command}
+    \M \L{clip}        \S{picture variable} \L{to} \S{path expression}
+    \O \L{interim}     \S{internal variable} \L{:=} \S{right-hand side}
+    \O \L{let}         \S{symbolic token} \L{=} \S{symbolic token}
+    \O \L{pickup}      \S{expression}
+    \O \L{randomseed}  \L{:=} \S{numeric expression}
+    \O \L{save}        \S{symbolic token list}
+    \O \L{delimiters}  \S{character} \S{character}
+    \O \L{setbounds}   \S{picture variable} \L{to} \S{path expression}
+    \O \L{shipout}     \S{picture expression}
+    \O \L{special}     \S{string expression}
+    \O \L{endinput}
+    \O \L{expandafter}
+    \O \S{addto command}
+    \O \S{drawing command}
+    \O \S{font metric command}
+    \O \S{newinternal command}
+    \O \S{message command}
+    \O \S{mode command}
+    \O \S{show command}
+    \O \S{special command}
+    \O \S{tracing command}
+    \O \S{scantokens} \S{string expression}
+    \O \FL{defineshade} \S{symbolic token} \S{shading expression}
+    \O \L{write} \S{string expression} \L{to} \S{string expression}
+    \O \L{readfrom} \S{string expression}
+    \O \FL{readfile} \S{string expression}
+    \O \L{readstring}
+    \O \L{restoreclipcolor}
+    \O \L{savepen}
+    \O \L{runscript}
+    \O \L{relax}
+\StopSyntax
+
+\StartSyntax
+\S{show command}
+    \M \L{show}             \S{expression list}
+    \O \L{showvariable}     \S{symbolic token list}
+    \O \L{showtoken}        \S{symbolic token list}
+    \O \L{showdependencies}
+\StopSyntax
+
+\StartSyntax
+\S{symbolic token list}
+    \M \S{symbolic token}
+    \O \S{symbolic token} \L{,} \S{symbolic token list}
+\StopSyntax
+
+\StartSyntax
+\S{expression list}
+    \M \S{expression}
+    \O \S{expression list} \L{,} \S{expression}
+\StopSyntax
+
+\StartSyntax
+\S{addto command}
+    \M \L{addto} \S{picture variable} \L{also}       \S{picture expression} \S{option list}
+    \O \L{addto} \S{picture variable} \L{contour}    \S{path expression} \S{option list}
+    \O \L{addto} \S{picture variable} \L{doublepath} \S{path expression} \S{option list}
+\StopSyntax
+
+\StartSyntax
+\S{option list}
+    \M \S{empty}
+    \O \S{drawing option} \S{option list}
+\StopSyntax
+
+\StartSyntax
+\S{drawing option}
+    \M \L {withcolor}        \S{color expression}%
+        \O \FL {withgrey}    \S{numeric expression}%
+        \O \FL {withgray}    \S{numeric expression}
+    \O \L {withrgbcolor}     \S{rgb expression}%
+    \O \L {withcmykcolor}    \S{cmyk expression}%
+    \O \L {withgreyscale}    \S{numeric expression}
+    \O \L {withoutcolor}
+    \O \L {withprescript}    \S{string expression}%
+    \O \L {withpostscript}   \S{string expression}
+    \O \L {withpen}          \S{pen expression}
+    \O \L {dashed}           \S{picture expression}
+    \O \FL{undashed}
+    \O \FL{withshade}        \S{numeric expression} \O \FL{shaded} \S{shading expression}
+    \O \FL{withproperties}   \S{property primary}
+    \O \FL{withtransparency} \S{pair primary}
+    \O \FL{withlinearshade}    \(%
+        \S{path expression}    \L{,}%
+        \S{path expression}    \L{,}%
+        \S{color expression}   \L{,}%
+        \S{color expression}   \)
+    \O \FL{withcircularshade}  \(%
+        \S{path ex}    \L{,}%
+        \S{path ex}    \L{,}%
+        \S{numeric ex} \L{,}%
+        \S{numeric ex} \L{,}%
+        \S{color ex}   \L{,}%
+        \S{color ex}   \)
+    \O  \S{shading expression}
+    \O \FL{onlayer}          \S{string expression}
+    \O \FL{withmask}         \S{string expression}
+\StopSyntax
+
+\StartSyntax
+\S{property expression}
+  \M \( {drawing option} \)
+\StopSyntax
+
+\StartSyntax
+\S{shading expression}
+    \M \FL{withshademethod} \L{string expression}
+    \O \FL{withshadefactor} \L{numeric expression}
+    \O \FL{withshadedomain} \L{pair expression}
+    \O \FL{withshadevector} \L{pair expression}
+    \O \FL{withshaderadius} \L{pair expression}
+    \O \FL{withshadeorigin} \L{pair expression}
+    \O \FL{withshadecolors} \( \S{color expression} \L{,} \S{color expression} \)
+    \O \FL{withshadecenter} \L{pair expression}
+\StopSyntax
+
+\StartSyntax
+\S{drawing command}
+    \M \L{draw} \S{picture expression} \S{option list}
+    \O \S{fill type} \S{path expression} \S{option list}
+\StopSyntax
+
+\StartSyntax
+\S{fill type}
+    \M \L {fill} \O \L{unfill} \O \FL{refill}
+    \O \L {draw} \O \L{undraw} \O \FL{redraw}
+    \O \L {filldraw} \O \FL{drawfill} \O \L{undrawfill} \O \L{unfilldraw}
+    \O \FL{eofill} \O \FL{nofill} \O \FL{fillup}
+    \O \L {drawdot}
+    \O \L {drawarrow} \O \L{drawdblarrow}
+    \O \L {cutdraw}
+    \O \L {visualizer}
+    \O \FL{normaldraw} \O \FL{normalfill}
+\StopSyntax
+
+\StartSyntax
+\S{visualizer}
+    \M \FL{drawboundary} \O \FL{drawboundingbox} \O \FL{drawboundoptions}
+    \O \FL{drawcontrollines} \O \FL{drawcontroloptions} \O \FL{drawcontrolpoints}
+    \O \FL{drawlabeloptions} \O \FL{drawlineoptions} \O \FL{drawoptions}
+    \O \FL{draworigin} \O \FL{draworiginoptions}
+    \O \FL{drawpath} \O \FL{drawpathoptions}
+    \O \FL{drawpoint} \O \FL{drawpointlabels} \O \FL{drawpointoptions}
+    \O \FL{drawpoints} \O \FL{drawwholepath}
+    \O \FL{visualizeddraw} \O \FL{visualizedfill}
+\StopSyntax
+
+\StartSyntax
+\S{newinternal command}
+    \M \L{newinternal} \S{internal type} \S{symbolic token list}
+    \O \S{newinternal} \S{symbolic token list}
+\StopSyntax
+
+\StartSyntax
+\S{message command}
+    \M \L{errhelp}          \S{string expression}
+    \O \L{errmessage}       \S{string expression}
+    \O \L{filenametemplate} \S{string expression}
+    \O \L{message}          \S{string expression}
+\StopSyntax
+
+\StartSyntax
+\S{mode command}
+    \M \L{batchmode}
+    \O \L{nonstopmode}
+    \O \L{scrollmode}
+    \O \L{errorstopmode}
+    \O \L{interact}
+\StopSyntax
+
+\StartSyntax
+\S{special command}
+    \M \L{fontmapfile}    \S{string expression}
+    \O \L{fontmapline}    \S{string expression}
+    \O \L{special}        \S{string expression}
+    \O \L{input}          \S{string expression}
+    \O \L{prologies}      \S{numeric expression}
+    \O \L{outputtemplate} \S{string expression}
+    \O \L{outputformat}   \S{string expression}
+\StopSyntax
+
+\StartSyntax
+\S{tracing command}
+    \M \L{tracingall}
+    \O \L{loggingall}
+    \O \L{tracingnone}
+\StopSyntax
+
+\StartSyntax
+\S{if test}
+    \M \L{if} \S{boolean expression} \L{:} \S{balanced tokens} \S{alternatives} \L{fi}
+\StopSyntax
+
+\StartSyntax
+\S{alternatives}
+    \M \S{empty}
+    \O \L{else} \L{:} \S{balanced tokens}
+    \O \L{elseif} \S{boolean expression} \S{:} \S{balanced tokens} \S{alternatives}
+    \O \L{exit} \O \L{exitif} \S{boolean expression} \O \L{exitunless} \S{boolean expression}
+    \O \L{break}
+\StopSyntax
+
+\StartSyntax
+\S{loop}
+    \M \S{loop header} \L{:} \S{loop text} \L{endfor}
+\StopSyntax
+
+\StartSyntax
+\S{loop header}
+    \M \L{for} \S{symbolic token} \L{=} \S{progression}
+    \O \L{for} \S{symbolic token} \L{=} \S{for list}
+    \O \L{for} \S{symbolic token} \L{within} \S{picture expression}
+    \O \L{forsuffixes} \S{symbolic token} \L{=} \S{suffix list}
+    \O \L{forever}
+\StopSyntax
+
+\StartSyntax
+\S{progression}
+    \M \S{numeric expression} \L{upto} \S{numeric expression}
+    \O \S{numeric expression} \L{downto} \S{numeric expression}
+    \O \S{numeric expression} \L{step} \S{numeric expression} \L{until} \S{numeric expression}
+    \O \L{range} \S{numeric expression} \L{thru} \S{numeric expression}
+\StopSyntax
+
+\StartSyntax
+\S{for list}
+    \M \S{expression}
+    \O \S{for list} \L{,} \S{expression}
+\StopSyntax
+
+\StartSyntax
+\S{suffix list}
+    \M \S{suffix}
+    \O \S{suffix list} \L{,} \S{suffix}
+\StopSyntax
+
+\stop
+
+% \stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \startsection[title={Left overs}]
+
+% There are a few more concepts and commands available in \METAFUN, like color
+% remapping, shading and graphic inclusion. Because they have their own small
+% syntax world, we present them here.
+%
+% You may consider shades to be internally represented by a hidden datastructure.
+% The end user has access to a shade by means of a pointer, expressed in a numeric.
+%
+% \start \switchtobodyfont[small]
+%
+% \StartSyntax
+% \S{pseudo procedure}
+%   \M \FL{linear_shade}%
+%       \( \S{path expression}  \L{,} \S{numeric expression}%
+%       \L{,} \S{color expression} \L{,} \S{color expression} \)
+%   \O \FL{circular_shade}%
+%       \( \S{path expression}  \L{,} \S{numeric expression}%
+%       \L{,} \S{color expression} \L{,} \S{color expression} \)
+% \StopSyntax
+%
+% \StartSyntax
+% \S{pseudo function}
+%   \M \FL{define_linear_shade}%
+%       \( \S{pair  expr} \L{,} \S{pair    expr}%
+%       \L{,} \S{color expr} \L{,} \S{color   expr} \)
+%   \O \FL{define_circular_shade}%
+%       \( \S{pair  expr} \L{,} \S{pair    expr}%
+%       \L{,} \S{path  expr} \L{,} \S{path    expr}%
+%       \L{,} \S{color expr} \L{,} \S{color   expr} \)
+%   \O \FL{predefined_linear_shade}%
+%       \( \S{path  expr} \L{,} \S{numeric expr}%
+%       \L{,} \S{color expr} \L{,} \S{color   expr} \)
+%   \O \FL{predefined_circular_shade}%
+%       \( \S{path  expr} \L{,} \S{numeric expr}%
+%       \L{,} \S{color expr} \L{,} \S{color   expr} \)
+% \StopSyntax
+%
+% \stop
+
+% External figures are just files, so the string passed as first argument needs to
+% be a valid filename. Additionally, they need to be given dimensions.
+
+% \start \switchtobodyfont[small]
+%
+% \StartSyntax
+% \S{pseudo procedure}
+%   \M \FL{externalfigure} \S{string expression} \S{transformer}
+% \StopSyntax
+%
+% \stop
+
+% An external \METAPOST\ graphic can be loaded by filename and figure number. The
+% normal transformations can be applied.
+%
+% \start \switchtobodyfont[small]
+%
+% \StartSyntax
+% \S{pseudo procedure}
+%   \M \FL{loadfigure} \S{string expression} \L{number} \S{numeric expression} \S{transformer}
+% \StopSyntax
+%
+% \stop
+
+% A graphic text is (normally) an outline representation of a snippet of text
+% typeset by \TEX. This procedure has a couple of dedicated options.
+
+% \start \switchtobodyfont[small]
+
+% \StartSyntax
+% \S{pseudo procedure}
+%   \M \FL{graphictext} \S{string expression} \S{transformer} \S{text option list}
+%   \O \FL{regraphictext} \S{transformer} \S{text option list}
+% \StopSyntax
+
+% \StartSyntax
+% \S{text option list}
+%   \M \S{empty}
+%   \O \S{text drawing option} \S{text option list}
+% \StopSyntax
+
+% \StartSyntax
+% \S{text drawing option}
+%   \M \S{drawing option}
+%   \O \FL{reversefill}
+%   \O \FL{outlinefill}
+%   \O \FL{withdrawcolor} \S{color expression}
+%   \O \FL{withfillcolor} \S{color expression}
+% \StopSyntax
+
+% \StartSyntax
+% \S{pseudo procedure}
+%   \M \FL{resetgraphictextdirective}
+%   \O \FL{graphictextdirective} \S {string expression}
+% \StopSyntax
+
+% \StartSyntax
+% \S{internal variable}
+%   \M \FL{graphictextformat}
+% \StopSyntax
+
+% \stop
+
+% \stopsection
+
+% \stopchapter
+
+% \stopcomponent

@@ -15752,7 +15752,7 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command _error_="category=&quot;fonts&quot; file=&quot;typo-drp.mkiv&quot;" level="style" name="setupinitial">
+  <cd:command category="fonts" file="typo-drp.mkiv" level="style" name="setupinitial">
    <cd:arguments>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="cd:name"/>
@@ -17113,6 +17113,7 @@
      <cd:constant type="joinedup"/>
      <cd:constant type="serried"/>
      <cd:constant type="stopper"/>
+     <cd:constant type="nostopper"/>
      <cd:constant type="unpacked"/>
      <cd:constant type="repeat"/>
      <cd:constant type="norepeat"/>

@@ -1,0 +1,44 @@
+% macros=mkvi
+
+\usemodule[art-01] \dontcomplain
+
+\starttexdefinition unexpanded TestFont #font#variant#size
+    \bgroup
+        \definedfont[name:#font#variant*default @ #size]
+        \setupinterlinespace
+      % \showstruts
+      % \strut
+        \samplefile{tufte}
+        \par
+    \egroup
+\stoptexdefinition
+
+\starttext
+
+\dorecurse {5} {
+
+    \dostepwiserecurse {8} {14} {1} { % 30 fonts
+        \TestFont {adobevariablefontprototype} {extralight} {##1pt}
+        \TestFont {adobevariablefontprototype} {light}      {##1pt}
+        \TestFont {adobevariablefontprototype} {regular}    {##1pt}
+        \TestFont {adobevariablefontprototype} {semibold}   {##1pt}
+        \TestFont {adobevariablefontprototype} {bold}       {##1pt}
+        \TestFont {adobevariablefontprototype} {black}      {##1pt}
+    }
+
+    \page
+
+  % \dostepwiserecurse {8} {14} {1} { % 40 fonts
+  %     \TestFont {avenirnextvariable} {regular}          {##1pt}
+  %     \TestFont {avenirnextvariable} {medium}           {##1pt}
+  %     \TestFont {avenirnextvariable} {bold}             {##1pt}
+  %     \TestFont {avenirnextvariable} {heavy }           {##1pt}
+  %     \TestFont {avenirnextvariable} {condensed}        {##1pt}
+  %     \TestFont {avenirnextvariable} {medium condensed} {##1pt}
+  %     \TestFont {avenirnextvariable} {bold condensed}   {##1pt}
+  %     \TestFont {avenirnextvariable} {heavy condensed}  {##1pt}
+  % }
+
+}
+
+\stoptext

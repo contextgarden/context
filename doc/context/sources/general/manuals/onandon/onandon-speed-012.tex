@@ -1,0 +1,20 @@
+\environment onandon-speed-000
+
+\ProcessSample{bodyfont} \setupbodyfont[dejavu]
+
+\dontcomplain
+
+\starttext
+
+\def\SampleCount{1000}
+
+\def\Sample#1%
+  {\start
+%    \switchtobodyfont[#1]
+   \dorecurse\SampleCount{\sapolsky\par}
+   \stop}
+
+% \ProcessSample{\SampleCount\space pages no features}
+\ProcessBaselineSample{\SampleCount\space paragraphs text}
+
+\stoptext

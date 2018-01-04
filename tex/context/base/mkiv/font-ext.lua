@@ -977,6 +977,58 @@ registerotffeature {
 --
 -- end
 
+do
+
+    local P, lpegpatterns, lpegmatch  = lpeg.P, lpeg.patterns, lpeg.match
+
+    local amount, stretch, shrink, extra
+
+    local factor  = lpegpatterns.unsigned
+    local space   = lpegpatterns.space
+    local pattern = (
+                                            (factor / function(n) amount  = tonumber(n) or amount  end)
+        + (P("+") + P("plus" )) * space^0 * (factor / function(n) stretch = tonumber(n) or stretch end)
+        + (P("-") + P("minus")) * space^0 * (factor / function(n) shrink  = tonumber(n) or shrink  end)
+        + (         P("extra")) * space^0 * (factor / function(n) extra   = tonumber(n) or extra   end)
+        + space^1
+    )^1
+
+    local function initialize(tfmdata,key,value)
+        local characters = tfmdata.characters
+        local parameters = tfmdata.parameters
+        if type(value) == "string" then
+            local emwidth = parameters.quad
+            amount, stretch, shrink, extra = 0, 0, 0, false
+            lpegmatch(pattern,value)
+            if not extra then
+                if shrink ~= 0 then
+                    extra = shrink
+                elseif stretch ~= 0 then
+                    extra = stretch
+                else
+                    extra = amount
+                end
+            end
+            parameters.space         = amount  * emwidth
+            parameters.space_stretch = stretch * emwidth
+            parameters.space_shrink  = shrink  * emwidth
+            parameters.extra_space   = extra   * emwidth
+        end
+    end
+
+    -- 1.1 + 1.2 - 1.3 minus 1.4 plus 1.1 extra 1.4 -- last one wins
+
+    registerotffeature {
+        name        = "spacing",
+        description = "space settings",
+        manipulators = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+end
+
 -- -- historic stuff, move from font-ota (handled differently, typo-rep)
 --
 -- local delete_node = nodes.delete

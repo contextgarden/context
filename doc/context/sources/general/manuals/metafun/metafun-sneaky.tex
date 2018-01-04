@@ -1,0 +1,60 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-conventions
+
+\environment metafun-environment
+
+\startchapter[title={Conventions}]
+
+\startsection[title={Suffixes}]
+
+One characteristic of using \METAFUN\ in \CONTEXT\ is that it is basically one
+long run. The code snippets become figures that then get converted to \PDF\ and
+embedded. If text is involved, each figure is actually processed twice, once to
+identify what needs to be typeset, and once with the result(ing metrics).
+Normally that gets unnoticed. You can check for the state by consulting the
+boolean \type {mfun_trial_run}.
+
+A consequence of the one run cq.\ multiple runs is that you need to be careful with
+undefined or special variables. Consider the following:
+
+\starttyping
+vardef foo@#(text t) =
+    save s ; string s ; s := str @# ;
+    if length(s) > 0 :
+        textext(s)
+    else :
+        nullpicture
+    fi
+enddef ;
+\stoptyping
+
+The following works ok in the first run when bar is undefined:
+
+\starttyping
+draw foo.bar("a") ;
+\stoptyping
+
+But if afterwards we say:
+
+\starttyping
+vardef bar(expr x) =
+    123
+enddef ;
+\stoptyping
+
+and expand \type {foo.bar} again we will get an error message because this time
+\type {bar} expands. Suffixes are always expanded!
+
+The lesson is: when you get unexpected results or errors, check your variable
+definitions. You can use the \type {begingroup} and \type {endgroup} primitives
+to protect your variables but then you also need to explicitly use \type {save}
+to store their meanings and allocate new ones after that inside the group.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,116 @@
+% \startenvironment onandon-speed-000
+
+% \dontcomplain
+
+\edef\sapolsky{\ignorespaces\cldloadfile{sapolsky}\removeunwantedspaces}
+
+\startluacode
+
+    function document.ResetSample(title)
+        document.elapsed = {
+            title = title,
+            times = { },
+        }
+    end
+
+    function document.RegisterSample(bodyfont,elapsed)
+        table.insert(document.elapsed.times, {
+            bodyfont = bodyfont,
+            elapsed  = elapsed
+        })
+    end
+
+    function document.SaveSample()
+        if LUATEXENGINE == "luajittex" then
+            table.save(tex.jobname.."-jit.lua",document.elapsed)
+        else
+            table.save(tex.jobname..".lua",document.elapsed)
+        end
+    end
+
+    function document.ShowSample(filename)
+     -- context.typefile(filename..".tex")
+        local elapsed    = table.load(file.nameonly(filename)..".lua")
+        local elapsedjit = table.load(file.nameonly(filename).."-jit.lua")
+        if elapsed and elapsedjit then
+            context.testpage { 6 }
+            context.starttabulate { "|l|l|lp|" }
+            context.HL()
+            context.NC() context.formatted.rlap("\\bf %s",elapsed.title)
+            context.NC()
+            context.NC()
+            context.NC() context.NR()
+            context.HL()
+            local times    = elapsed.times
+            local timesjit = elapsedjit.times
+            for j=1,#times do
+                local t    = times[j]
+                local tjit = timesjit[j]
+                context.NC() context(t.bodyfont)
+                context.NC() context(t.elapsed)
+                context.NC() context(tjit.elapsed)
+                context.NC() context.NR()
+            end
+            context.HL()
+            context.stoptabulate()
+        end
+    end
+
+    function document.SampleTitle(filename)
+        local elapsed = table.load(filename..".lua")
+        if elapsed then
+            context(elapsed.title)
+        end
+    end
+\stopluacode
+
+\appendtoks
+    \ctxlua{document.SaveSample()}%
+\to \everystoptext
+
+\def\SampleCount{1000}
+\def\SampleCount{100}
+
+\unexpanded\def\RegisterSample#1%
+  {\ctxlua{document.RegisterSample("#1","\elapsedtime")}}
+
+\unexpanded\def\ProcessSample#1%
+  {\page
+   \ctxlua{document.ResetSample("#1")}%
+   \resettimer \Sample {modern}      \RegisterSample {modern}
+   \resettimer \Sample {pagella}     \RegisterSample {pagella}
+   \resettimer \Sample {termes}      \RegisterSample {termes}
+   \resettimer \Sample {cambria}     \RegisterSample {cambria}
+   \resettimer \Sample {dejavu}      \RegisterSample {dejavu}
+   \resettimer \Sample {ebgaramond}  \RegisterSample {ebgaramond}
+   \resettimer \Sample {lucidaot}    \RegisterSample {lucidaot}
+   \page }
+
+\unexpanded\def\ProcessBaselineSample#1%
+  {\page
+   \ctxlua{document.ResetSample("#1")}%
+   \resettimer \Sample {baseline} \RegisterSample {baseline}
+   \page }
+
+\unexpanded\def\Sample#1%
+  {\setupbodyfont[#1]}
+
+\unexpanded\def\ShowSample#1%
+  {\ctxlua{document.ShowSample("#1")}}
+
+\unexpanded\def\SampleTitle#1%
+  {\ctxlua{document.SampleTitle("#1.lua")}}
+
+\continueifinputfile{onandon-speed-000.tex}
+
+\starttext
+
+\ProcessSample{bodyfont}
+
+\setbox\scratchbox\vbox{\hsize1pt\tttf\sapolsky} \getnoflines{\htdp\scratchbox}
+
+\writestatus{!!!!!!}{noflines : \the\noflines}
+
+\stoptext
+
+% \stopenvironment

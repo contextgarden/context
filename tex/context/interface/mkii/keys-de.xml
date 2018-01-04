@@ -379,6 +379,7 @@
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normal'/>
 		<cd:variable name='nospacing' value='nospacing'/>
+		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='nicht'/>
 		<cd:variable name='notation' value='notation'/>
 		<cd:variable name='note' value='note'/>
@@ -990,6 +991,7 @@
 		<cd:constant name='nlines' value='zzeile'/>
 		<cd:constant name='norm' value='norm'/>
 		<cd:constant name='note' value='note'/>
+		<cd:constant name='notes' value='notes'/>
 		<cd:constant name='nr' value='nr'/>
 		<cd:constant name='nright' value='nrechts'/>
 		<cd:constant name='ntop' value='noben'/>
@@ -1177,7 +1179,9 @@
 		<cd:constant name='source' value='quelle'/>
 		<cd:constant name='space' value='spatium'/>
 		<cd:constant name='spaceafter' value='nachspatium'/>
+		<cd:constant name='spaceafterside' value='spaceafterside'/>
 		<cd:constant name='spacebefore' value='vorspatium'/>
+		<cd:constant name='spacebeforeside' value='spacebeforeside'/>
 		<cd:constant name='spaceinbetween' value='spaceinbetween'/>
 		<cd:constant name='spacing' value='spatiumausgleich'/>
 		<cd:constant name='specification' value='specification'/>

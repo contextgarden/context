@@ -1,0 +1,393 @@
+% language=uk
+
+\startcomponent onandon-editing
+
+\environment onandon-environment
+
+\startchapter[title=Editing]
+
+\startsection[title=Introduction]
+
+% This introduction is similar to the workflows chapter.
+
+Some users like the synctex feature that is built in the \TEX\ engines.
+Personally I never use it because it doesn't work well with the kind of documents
+I maintain. If you have one document source, and don't shuffle around (reuse)
+text too much it probably works out okay but that is not our practice. Here I
+will describe how you can enable a more \CONTEXT\ specific synctex support so
+that aware \PDF\ viewers can bring you back to the source.
+
+\stopsection
+
+\startsection[title={The premise}]
+
+Most of the time we provide our customers with an authoring workflow consisting
+of:
+
+\startitemize[packed]
+    \startitem the typesetting engine \CONTEXT \stopitem
+    \startitem the styles to generate the desired \PDF\ files \stopitem
+    \startitem the text editor \SCITE \stopitem
+    \startitem the \SUMATRAPDF\ viewer \stopitem
+\stopitemize
+
+For the \MATHML\ we advice the \MATHTYPE\ editor and we provide them with a
+customized \MATHML\ translator for the copy & paste actions. When \ASCIIMATH\ is
+used to code math no special tools are needed.
+
+What people operate this workflow? Sometimes it's an author, but most of the time
+they are editors with a background in copy|-|editing. We call them \XML\ editors,
+because they are maintaining the large (sets of) \XML\ documents and edit
+directly in the \XML\ sources.
+
+Maybe you'll ask yourself \quotation {Can they do that? Can they edit directly in
+the \XML\ resource?} The answer is yes, because after they have hit the
+processing key they are rewarded with a publishable \PDF\ document in a demanding
+layout.
+
+The \XML\ sources have a dual purpose. They form the basis for:
+
+\startitemize[packed]
+    \startitem
+        all folio products that are generated in \XML\ to \PDF\ workflow(s)
+    \stopitem
+    \startitem
+        the digital web product(s)
+    \stopitem
+\stopitemize
+
+The \XML\ editors do their proofing chapter|-|wise. Sometimes a chapter is one
+big \XML\ file (10.000 lines is no exception when the chapter contains hundreds
+of bloated \MATHML\ snippets). In other projects they have to deal with chapters
+that are made up of hundreds (100 upto 500) of smaller \XML\ files.
+
+\stopsection
+
+\startsection[title={The problem}]
+
+Let's keep it simple: there's a typo. Here's what an \XML\ editor will do:
+
+\startitemize[packed]
+    \startitem
+        start \SCITE
+    \stopitem
+    \startitem
+        open a file
+    \stopitem
+    \startitem
+        correct the typo
+    \stopitem
+    \startitem
+        generate the \PDF
+    \stopitem
+    \startitem
+        proof the \PDF\ and see if his alteration has some undesired side
+        effects like text flow of image floating
+    \stopitem
+\stopitemize
+
+So far so good. When the editor dealing with one big \XML\ file there's no
+problem. Hopefully the filename will indicate the specific chapter. He or she
+opens the file and searches for the typo. And then correction happens. But what
+if there are hundreds of small \XML\ files. How does the editor know in which
+file the typo can be found?
+
+First, let's give a few statistics based on two projects that are in a revision
+stage.
+
+\starttabulate[|c|c|c|c|]
+\HL
+\NC
+    project \NC
+    chapters \NC
+    \# of files \NC
+    average \# of lines \NC \NR
+\HL
+\NC
+    A \NC
+    16 \NC
+    16 \NC
+    11000 \NC \NR
+\NC
+    B \NC
+    132 \NC
+    16000\footnote{132 chapters consisting of $\pm 120$ files.} \NC
+    100 \NC \NR
+\HL
+\stoptabulate
+
+The \XML\ resource passes three stages: a raw, a semi final and a final version.
+The raw \XML\ version originates from a web authoring tool that is used by the
+author. Then the \PDF\ is proofread and the \XML\ editor goes to work.
+
+\starttabulate[|l|c|c|]
+\HL
+\NC
+    workflow \NC
+    \# edit locations and adaptations \NC
+    \# runs\footnote {Maybe you can now see why we put quite some effort in
+       keeping \CONTEXT\ working at a comfortable speed.} \NC \NR
+\HL
+\NC
+    raw to semifinal \NC
+    75 \NC
+    105 \NC \NR
+\NC
+    semifinal to final \NC
+    35 \NC
+    55 \NC \NR
+\HL
+\stoptabulate
+
+Keep in mind that altering text may cause text to flow and images to float in a
+way that an \XML\ editor will have to finetune and needs multiple runs for one
+correction.
+
+Just to give an idea of the work involved. A typical semi final needs some 50
+runs where each run takes 20 seconds (assuming 3 runs to get all cross
+referencing right). The numbers of explicit pagebreaks is about 5, and (related
+to formulas) explicit linebreaks around 8. It takes some 2 hours to get
+everything right, which includes checking in detail, fixing some things and if
+needed moving content a bit around.
+
+Now we broaden the earlier question into: how can we make the work of an \XML\
+editor as easy and efficient as possible?
+
+\stopsection
+
+\startsection[title={Enhancing efficiency}]
+
+Since it is easier to proof content for folio and web via PDF documents we
+generate proof \PDF\ files in which the complete content is shown. The proof can
+be a massive document. A normal 40 page chapter can explode to 140 pages
+visualizing all the content that is coded in the \XML\ file(s).
+
+The content in the proof is shown in an effective way and a functional order.
+Let's give a few examples of how we enhance the \XML\ editors effectiveness:
+
+\startitemize[packed]
+
+\startitem
+    By default the proof \PDF\ file is interactive which serves testing the tocs
+    and the register.
+\stopitem
+\startitem
+    The web hyperlinks are active so their destinatation can be tested.
+\stopitem
+\startitem
+    The questions and their answers are displayed in eachothers proximity. This
+    sounds logical but in folio they are two seperate products (theory and
+    answer books).
+\stopitem
+\startitem
+    Medium specific content (web or folio) is typographically highligthed. For
+    example by colored backgrounds.
+\stopitem
+\startitem
+    When spelling mode is on the \XML\ editor can easily pick out the colored
+    misspelled words.
+\stopitem
+\startitem
+    Images can be active areas although this is of no interest to \XML\ editors.
+    Clicking the image results in opening the image file in its corresponding
+    application for maintenance.
+\stopitem
+\startitem
+    For practical reasons the filenames and paths of the \XML\ files are
+    displayed. The filenames are active links and clicking them results in
+    opening the destination \XML\ file in \SCITE.
+\stopitem
+\stopitemize
+
+Okay. The last option is a nice feature. However, the destination file is opened
+at the top of the file and you still have to find the typo or whatever
+incorrect issue you are looking for.
+
+So a further enhancement in efficiency would be to jump to the typo's
+corresponding line in the \XML\ source. This is where \SYNCTEX\ comes into view.
+This feature, present in the \TEX\ engines, provides a way to go from \PDF\ to
+source by using a secondary file with positions. Unfortunately that mechanism is
+hardly useable for \CONTEXT\ because it assumes a page and file handling model
+different from what we use. However, as \CONTEXT\ uses \LUATEX, it can also
+provide it's own alternative.
+
+\stopsection
+
+% The rest is similar to the workflows chapter.
+
+\startsection[title=What we want]
+
+The \SYNCTEX\ method roughly works as follows. Internally \TEX\ constricts linked
+lists of glyphs, kerns, glue, boxes, rules etc. These elements are called nodes.
+Some nodes carry information about the file and line where they were created. In
+the backend this information gets somehow translated in a (sort of) verbose tree
+that describes the makeup in terms of boxes, glue and kerns. From that
+information the \SYNCTEX\ parser library, hooked into a \PDF\ viewer, can go back
+from a position on the screen to a line in a file. One would expect this to be a
+relative simple rectangle based model, but as far as I can see it's way more
+complex than that. There are some comments that \CONTEXT\ is not supported well
+because it has a layered page model, which indicates that there are some
+assumptions about how macro packages are supposed to work. Also the used
+heuristics not only involve some specific spot (location) but also involve the
+corners and edges. It is therefore not so much a (simple) generic system but a
+mechanism geared for a macro package like \LATEX.
+
+Because we have a couple of users who need to edit complex sets of documents,
+coded in \TEX\ or \XML, I decided to come up with a variant that doesn't use the
+\SYNCTEX\ machinery but manipulates the few \SYNCTEX\ fields directly \footnote {This
+is something that in my opinion should have been possible right from the start
+but it's too late now to change the system and it would not be used beyond
+\CONTEXT\ anyway.} and eventually outputs a straightforward file for the editor.
+Of course we need to follow some rules so that the editor can deal with it. It
+took a bit of trial and error to get the right information in the support file
+needed by the viewer but we got there.
+
+The prerequisites of a decent \CONTEXT\ \quotation {click on preview and goto
+editor} are the following:
+
+\startitemize
+
+\startitem
+    It only makes sense to click on text in the text flow. Headers and footers
+    are often generated from structure, and special typographic elements can
+    originate in macros hooked into commands instead of in the source.
+\stopitem
+
+\startitem
+    Users should not be able to reach environments (styles) and other files
+    loaded from the (normally read|-|only) \TEX\ tree, like modules. We don't
+    want accidental changes in such files.
+\stopitem
+
+\startitem
+    We not only have \TEX\ files but also \XML\ files and these can normally
+    flush in rather arbitrary ways. Although the concept of lines is sort of
+    lost in such a file, there is still a relation between lines and the snippets
+    that make out the content of an \XML\ node.
+\stopitem
+
+\startitem
+    In the case of \XML\ files the overhead related to preserving line
+    numbers should be minimal and have no impact on loading and memory when
+    these features are not used.
+\stopitem
+
+\startitem
+    The overhead in terms of an auxiliary file size and complexity as well
+    as producing that file should be minimal. It should be easy to turn on and
+    off these features. (I'd never turn them on by default.)
+\stopitem
+
+\stopitemize
+
+It is unavoidable that we get more run time but I assume that for the average user
+that is no big deal. It pays off when you have a workflow when a book (or even a
+chapter in a book) is generated from hundreds of small \XML\ files. There is no
+overhead when \SYNCTEX\ is not used.
+
+In \CONTEXT\ we don't use the built|-|in \SYNCTEX\ features, that is: we let
+filename and line numbers be set but often these are overloaded explicitly. The
+output file is not compressed and constructed by \CONTEXT. There is no benefit in
+compression and the files are probably smaller than default \SYNCTEX\ anyway.
+
+\stopsection
+
+\startsection[title=Commands]
+
+Although you can enable this mechanism with directives it makes sense to do it
+using the following command.
+
+\starttyping
+\setupsynctex[state=start]
+\stoptyping
+
+The advantage of using an explicit command instead of some command line option is
+that in an editor it's easier to disable this trickery. Commenting that line will
+speed up processing when needed. This command can also be given in an environment
+(style). On the command line you can say
+
+\starttyping
+context --synctex somefile.tex
+\stoptyping
+
+A third method is to put this at the top of your file:
+
+\starttyping
+% synctex=yes
+\stoptyping
+
+Often an \XML\ files is very structured and although probably the main body of
+text is flushed as a stream, specific elements can be flushed out of order. In
+educational documents flushing for instance answers to exercises can happen out of
+order. In that case we still need to make sure that we go to the right spot in
+the file. It will never be 100\% perfect but it's better than nothing. The
+above command will also enable \XML\ support.
+
+If you don't want a file to be accessed, you can block it:
+
+\starttyping
+\blocksynctexfile[foo.tex]
+\stoptyping
+
+Of course you need to configure the viewer to respond to the request for
+editing. In Sumatra combined with SciTE the magic command is:
+
+\starttyping
+c:\data\system\scite\wscite\scite.exe "%f" "-goto:%l"
+\stoptyping
+
+Such a command is independent of the macro package so you can just consult the
+manual or help info that comes with a viewer, given that it supports this linking
+back to the source at all.
+
+If you enable tracing (see next section) you can what has become clickable.
+Instead of words you can also work with ranges, which not only gives less runtime
+but also much smaller \type {.synctex} files. Use
+
+\starttyping
+\setupsynctex[state=start,method=min]
+\stoptyping
+
+to get words clickable and
+
+\starttyping
+\setupsynctex[state=start,method=max]
+\stoptyping
+
+if you want somewhat more efficient ranges. The overhead for \type {min} is about
+10 percent while \type {max} slows down around 5 percent.
+
+\stopsection
+
+\startsection[title=Tracing]
+
+In case you want to see what gets synced you can enable a tracker:
+
+\starttyping
+\enabletrackers[system.synctex.visualize]
+\enabletrackers[system.synctex.visualize=real]
+\stoptyping
+
+The following tracker outputs some status information about \XML\ flushing. Such
+trackers only make sense for developers.
+
+\starttyping
+\enabletrackers[system.synctex.xml]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Warning]
+
+Don't turn on this feature when you don't need it. This is one of those mechanism
+that hits performance badly.
+
+Depending on needs the functionality can be improved and|/|or extended. Of course
+you can always use the traditional \SYNCTEX\ method but don't expect it to behave
+as described here.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

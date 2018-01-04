@@ -1,0 +1,117 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-conventions
+
+\environment metafun-environment
+
+\startchapter[title={Conventions}]
+
+\index {running}
+\index {processing}
+
+When reading this manual, you may be tempted to test the examples shown. This can
+be done in several ways. You can make a file and process that file by \METAPOST.
+Such a file looks like:
+
+\starttyping
+beginfig(1) ;
+  fill fullcircle scaled 5cm withcolor red ; % a graphic
+endfig ;
+
+end .
+\stoptyping
+
+Don't forget the semi||colons that end the statements. If the file is saved as
+\type {yourfile.mp}, then the file can be processed. Before we process this file,
+we first need to load some basic \METAPOST\ definitions, because the built in
+repertoire of commands is rather limited. Such a set is called a format. The
+standard format is called {metapost} but we will use a more extensive set of
+macros \type {metafun}. In the past such a set was converted into a \type {mem}
+file and running the above file was done with:
+
+\starttyping
+mpost --mem=metafun.mem yourfile
+\stoptyping
+
+However, this is no longer the case and macros need to be loaded at startup as
+follows:
+
+\starttyping
+mpost --ini metafun.mpii yourfile.mp
+\stoptyping
+
+Watch the suffix \type {mpii}: this refers to the stand alone, the one that
+doesn't rely on \LUATEX.
+
+After the run the results are available in \type {yourfile.1} and can be viewed
+with \GHOSTSCRIPT. You don't need to close the file so reprocessing is very
+convenient.
+
+Because we will go beyond standard \METAPOST, we will use the \type {mpiv} files.
+These work with the library which in turn means that we will run from within
+\CONTEXT. This has the advantage that we also have advanced font support at our
+hands. In that case, a simple file looks like:
+
+\starttyping
+\starttext
+  \startMPpage
+    fill fullcircle scaled 5cm withcolor red ;
+  \stopMPpage
+  \startMPpage
+    fill unitsquare scaled 5cm withcolor red ;
+  \stopMPpage
+\stoptext
+\stoptyping
+
+If the file is saved as \type {yourfile.tex}, then you can produce a \PDF\ file
+with: \footnote {In fact, you could also process the \METAPOST\ file directly
+because the \type {context} script will recognize it as such and wrap it into
+a page.}
+
+\starttyping
+context yourfile
+\stoptyping
+
+The previous call will use \LUATEX\ and \CONTEXT\ \MKIV\ to produce a file with
+two pages using the built in \METAPOST\ library with \METAFUN. When you use this
+route you will automatically get the integrated text support shown in this
+manual, including \OPENTYPE\ support. If one page is enough, you can also say:
+
+\starttyping
+\startMPpage
+fill fullcircle scaled 5cm withcolor red ;
+\stopMPpage
+\stoptyping
+
+So when you have a running \CONTEXT\ on your system you don't need to bother
+about installing \METAPOST\ and running \METAFUN.
+
+We will use lots of color. Don't worry if your red is not our red, or your yellow
+does not match ours. We've made color definitions to match the overall design of
+this document, but you should feel free to use any color of choice in the
+upcoming examples.
+
+By default, \CONTEXT\ has turned its color mechanism on. If you don't want your
+graphics to have color, you should say:
+
+\starttyping
+\setupcolors[state=stop]
+\stoptyping
+
+but in todays documents color is so normal that you will probably never do that.
+Because \METAFUN\ hooks into the \CONTEXT\ color mechanism, you can also use its
+color space and conversion related features.
+
+You need to keep in mind that just like \CONTEXT\ \MKII\ is frozen, the \type
+{mpii} macros are also not extended. From now on we assume that you use \CONTEXT\
+\MKIV\ which exclusively uses \type {mpiv} macros.
+
+Even if you want to use \METAFUN\ but not \CONTEXT, you can still best use the
+mentioned page method as it will give you decent text processing. You need to
+know (and use) only a few \CONTEXT\ commands then.
+
+\stopchapter
+
+\stopcomponent

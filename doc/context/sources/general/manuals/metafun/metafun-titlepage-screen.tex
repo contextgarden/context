@@ -1,0 +1,30 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-titlepage-screen
+
+\environment metafun-environment
+
+\startstandardmakeup[topstate=empty]
+
+    \definefont[Big]   [RegularBold*default at 60pt]
+    \definefont[Medium][RegularBold*default at 48pt]
+    \definefont[Small] [RegularBold*default at 32pt]
+    \definefont[Tiny]  [RegularBold*default at 24pt]
+
+% \showstruts
+
+    \startcolor[darkyellow]
+
+        \Big                            METAFUN      \par
+        \Tiny   \setstrut        \strut context mkiv \par
+        \vfill
+        \Tiny   \setstrut \hfill \strut \currentdate \par
+        \Small  \setstrut \hfill \strut Hans Hagen   \par
+
+    \stopcolor
+
+\stopstandardmakeup
+
+\stopcomponent

@@ -1,0 +1,118 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-document
+
+\environment metafun-environment
+
+\startchapter[title={This document}]
+
+\startintro
+
+This document is produced in \CONTEXT\ and can serve as an example of how to
+integrate \METAPOST\ graphics into \TEX. In this appendix we will discuss some
+details of producing this document.
+
+\stopintro
+
+We did not use any special tricks, so most of the examples you have seen are
+coded just as shown. We used buffers to ensure that the code used to produce the
+accompanying graphic is identical to the typeset code in the document. Here is an
+example.
+
+\starttyping
+\startbuffer[dummy]
+draw fullcircle
+  xscaled 3cm yscaled 2cm
+  rotatedaround(origin,30)
+  withcolor .625red ;
+\stopbuffer
+\stoptyping
+
+Instead of using \type {\getbuffer}, we used the following command:
+
+\starttyping
+\startlinecorrection[blank]
+\processMPbuffer[dummy]
+\stoplinecorrection
+\stoptyping
+
+The line correction commands take care of proper spacing around the graphic. If
+you want to process more buffers at once, you can pass their names as a comma
+separated list. Alternatively, we could have said:
+
+\starttyping
+\startuseMPgraphic{dummy}
+  draw fullcircle
+    xscaled 3cm yscaled 2cm
+    rotatedaround(origin,30)
+    withcolor .625red ;
+\stopuseMPgraphic
+\stoptyping
+
+When including this graphic, we again take care of spacing.
+
+\starttyping
+\startlinecorrection[blank]
+\useMPgraphic{dummy}
+\stoplinecorrection
+\stoptyping
+
+The first version of this manual was produced with \PDFTEX\ and call|-|outs to
+\METAPOST. Because the number of graphics is large, we processed that version
+using the \type {--automp} directive (at that moment we were using \TEXEXEC). And
+even then runtime was so unconveniently long that updating this manual became
+less and less fun. The current version is produced with \LUATEX\ and \CONTEXT\
+\MKIV, which brings down the runtime (including runtime calls to independent
+\CONTEXT\ runs for the outline examples) to some 45 seconds on a 2.2 Gig Dell
+M90. Given that (at the time of writing this) over 1700 graphics are generated on
+the fly, this is not bad at all. On my current machine, a Dell M6700 with an
+Intel Core i7|-|3840QM running at 2.8 (3.9) Ghz (and Windows~8) the runtime of
+the third version was just above 20 seconds all|-|in and some 25\percent\ less
+when using \LUAJITTEX. When I started with updating to version 4 of this manual,
+I timed about 15 seconds on the same machine (but with Windows-10) which means
+that in the meantime the \CONTEXT|/|\LUATEX\ combination gained some 25\%
+performance. Using the new Bash|-|On|-|Windows subsystem gives the same
+performance. Of course each update adds pages so in the end we need more time
+with each update but it remains a nice test case. The tight integration of \TEX,
+\METAPOST\ and \LUA\ pays off.
+
+The document style is not that complicated. The main complication in such a
+document is to make sure that \METAPOST\ is operating under the same font regime,
+but in \MKIV\ this happens automatically. As document font we use the URW
+Palatino for the running text combined with Computer Modern Typewriter. Because
+this document is available as paper and screen document, some large graphics are
+scaled down in the screen version.
+
+We don't use any special tricks in typesetting this document, but when we added
+the section about transparency, a dirty trick was needed in a few cases in order to
+get the described results. Because the screen document has gray backgrounds,
+exclusive transparencies come out \quote {wrong}. In the function drawing example
+we use the following trick to get a black background behind the graphics only. We
+have a buffer that contains a few lines of code:
+
+% buffer only available in screen mode
+
+\starttyping
+picture savedpicture ;
+savedpicture := currentpicture ;
+currentpicture := nullpicture ;
+draw savedpicture withcolor black ;
+draw savedpicture ;
+\stoptyping
+
+Since we use buffers for the graphics as well, we can now process a buffer with
+name \type {example} as follows:
+
+\starttyping
+\processbuffer[example,wipe]
+\stoptyping
+
+This means that the example code is included two times. After it is processed, we
+recolor the currentpicture black, and after that we add the original picture once
+again.
+
+\stopchapter
+
+\stopcomponent

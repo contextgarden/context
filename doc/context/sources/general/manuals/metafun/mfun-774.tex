@@ -1,0 +1,103 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\usemodule[present-organic]
+
+\setupMPvariables[page][alternative=1]
+
+\startuseMPgraphic{page}
+
+  \includeMPgraphic{rightsuperbutton}
+
+  StartPage ;
+
+    path p, q ;
+
+    p := Field[Text][Text] enlarged 36pt superellipsed .90 ;
+
+    fill Page
+      withcolor \MPcolor{yellow} ;
+    fill p
+      withcolor \MPcolor{white} ;
+    draw p
+      dashed dashpattern (on 9pt off 9pt)
+      withpen pencircle scaled 3pt
+      withcolor \MPcolor{red} ;
+
+    p := Field[Text][Text] enlarged 48pt superellipsed .90 ;
+
+    draw p
+      dashed dashpattern (on 9pt off 9pt)
+      withpen pencircle scaled 1.5pt ;
+
+    def right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+      if (pp>0) and (rr>0) :
+        q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ;
+        fill q
+          withcolor \MPcolor{white} ;
+        draw ptop
+          withpen pencircle scaled 1.5pt ;
+        draw pbot
+          withpen pencircle scaled 1.5pt ;
+        draw q
+          dashed dashpattern (on 9pt off 9pt)
+          withpen pencircle scaled 3pt
+          withcolor if rr=2 : \MPcolor{gray} else : \MPcolor{red} fi ;
+      fi ;
+    enddef ;
+
+    \MPmenubuttons{right}
+
+  StopPage ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{rightsuperbutton}
+
+vardef rightsuperbutton (expr pat, xpos, ypos, wid, hei) =
+
+  save p, t, b, edge, shift, width, height ;
+  path p, ptop, pbot ; pair t, b ; numeric edge, shift, width, height ;
+
+  edge  := xpos + wid ; shift := ypos + hei ;
+
+  p := rightpath pat ;
+
+draw p withpen pencircle scaled 1.5pt ;
+
+  ptop := ((-infinity,shift)--(edge,shift)) ;
+  pbot := ((-infinity,shift-hei)--(edge,shift-hei)) ;
+
+  t := p intersectionpoint ptop ;
+  b := p intersectionpoint pbot ;
+
+  label.llft("t",t) ;
+  label.ulft("b",b) ;
+
+  p := subpath(0,xpart (p intersectiontimes ptop)) of p ;
+  p := subpath(xpart (p intersectiontimes pbot),length(p)) of p ;
+
+  (p --               t -- point 1 of ptop &
+        point 1 of ptop -- point 1 of pbot &
+        point 1 of pbot -- b
+     -- cycle)
+
+enddef ;
+
+\stopuseMPgraphic
+
+
+
+\starttext
+
+\TitlePage
+  {A Few Nice Quotes\\
+   A Simple Style Demo\\
+   Hans Hagen, August 2000}
+
+\Topic {Douglas R. Hofstadter} \input douglas \page
+\Topic {Donald E. Knuth}       \input knuth   \page
+\Topic {Edward R. Tufte}       \input tufte   \page
+\Topic {Hermann Zapf}          \input zapf    \page
+
+\stoptext

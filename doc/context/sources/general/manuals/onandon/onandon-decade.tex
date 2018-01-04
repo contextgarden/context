@@ -1,0 +1,90 @@
+% language=uk
+
+\startcomponent onandon-decade
+
+\environment onandon-environment
+
+\startchapter[title=The first decade]
+
+When writing this it's hard to believe that we're already a decade working on
+\LUATEX\ and about the same time on \MKIV. The question is, did we achieve the
+objectives? The answer can easily be \quotation {yes} because we didn't start
+with objectives, just with some experiments with a \LUA\ extension interface.
+However, it quickly became clear that this was the way to go. Already in an early
+stage we took a stand in what direction we had to move.
+
+How did we end up with \LUA\ and not one of the other popular scripting
+languages? The \CONTEXT\ macro package always came with a runner. Not only did
+the runner manage the (often) multiple runs, it also took care of sorting the
+index and other inter|-|job activities. Additional helpers were written for
+installing fonts, managing (and converting) images, job control, etc. First they
+were binaries (written in \MODULA\ 2), but successive implementations used \PERL\
+and \RUBY. When I found out that the \SCITE\ editor I switched to had an
+extension mechanism using \LUA, I immediately liked that language. It's clean,
+not bloated, relatively stable, evolves in an academic environment and is not
+driven by commerce and|/|or short term success, and above all, the syntax makes
+the code look good. So, it was the most natural candidate for extending \TEX.
+
+Already for along time, \TEX\ is a stable program and whatever we do with it, we
+should not break it. There has been frontend extensions, like \ETEX, and backend
+extensions, like \PDFTEX, and experiments like \OMEGA\ and \ALEPH\ and we could
+start from there. So, basically we took \PDFTEX, after all, that was what we used
+for the first experiments, and merged some \ALEPH\ directional code in it. A
+tremendous effort was undertaken (thanks to funding by the Oriental \TEX\
+project) to convert the code base from \PASCAL\ to~\CCODE.
+
+It is hard to get an agreement over what needs to be added and it's a real waste
+of time to enter that route by endless discussions: every \TEX\ user has
+different demands and macro packages differ in philosophy . So, in the spirit of
+the extension language \LUA\ we stuck to concept of \quotation {If you want it
+better, write it in \LUA}. As a consequence we had to provide access to the
+internals with efficient and convenient methods, something that happened
+stepwise. We did extend the engine with a few features that make live easier but
+tried to limit ourselves. On the other hand, due to developments with fonts and
+languages we generalized these concepts so that extending and controlling them is
+easier. And, due to developments in math font technology we also added
+alternative code paths to the math renderer.
+
+All these matters have been presented and discussed at meetings, in user group
+journals and in documents that are part of the \CONTEXT\ suite. And during this
+decade the \CONTEXT\ users have been patient testers of whatever we threw at them
+in the \MKIV\ version of this macro package.
+
+It's kind of interesting to note that in the \TEX\ community it takes a while
+before version 1 of programs becomes available. Some programs never (seem to)
+reach that state. However, for us version 1.0 marks the moment that we consider
+the interfaces to be stable. Of course we move on so a version 2.0 can divert and
+provide more or even less interfaces, provide new functionality or drop obsolete
+features. The intermediate versions (up to version one) were always quite useable
+in production. In 2005 the first prototype of \LUATEX\ was demonstrated at the
+\TUG\ conference, and in 2007 at the \TUG\ conference we had a whole day on
+\LUATEX. At that time \CONTEXT\ \MKIV\ evolved fast and we already had decent
+\OPENTYPE\ support as part of the oriental \TEX\ project. It was in those years
+that the major reorganization of the code base took place but in successive years
+many subsystems were opened and cleaned up. There were some occasions where an
+interface was changed for the better but adapting was not that hard. It might
+have helped that much of \CONTEXT\ \MKIV\ is written in \LUA. What also helped is
+that most \CONTEXT\ users quickly switched to \MKIV, if only because \MKII\ was
+frozen. And, thanks to those users, we were able to root out bugs and
+bottlenecks. It was interesting to see that the approach of mixing \TEX,
+\METAPOST\ and \LUA\ catched on quite well.
+
+By the end of September 2016, at the 10\high{th} \CONTEXT\ meeting we released
+what we call the first long term stable version of \LUATEX. This version performs
+quite well but we might still add a few things here and there and the code will be
+further cleaned up and documented. In the meantime \LUATEX\ is also used in other
+macro packages. It will not replace \PDFTEX\ (at least not soon) because that
+engine does the job for most of the publications done in \TEX: articles. As they
+are mostly in English and use traditional fonts, there is no need to switch to
+the more flexible but somewhat slower \LUATEX. In a similar fashion \XETEX\
+serves those who want the benefits of \PDFTEX, hard|-|coded font support and
+token juggling at the \TEX\ level. We will support those engines with \MKII\ but
+as mentioned, we will not develop new code for. We strongly advice \CONTEXT\ users
+to use \LUATEX\ but there the advertisements stop. Personally I haven't used
+\PDFTEX\ (which made \TEX\ survive in the evolving world of electronic documents)
+for a decade and I never really used \XETEX\ (which opened up the \TEX\ world to
+modern fonts). At least for the coming decade I hope that \LUATEX\ can serve us well.
+
+\stopchapter
+
+\stopcomponent

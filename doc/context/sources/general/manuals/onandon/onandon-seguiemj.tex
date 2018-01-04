@@ -1,0 +1,54 @@
+% language=uk
+
+\environment onandon-environment
+
+\setuppagenumbering[alternative=singlesided]
+
+\definefontfeature[seguiemj-cl][default][colr=yes,ccmp=yes,dist=yes]
+
+\definefont[MyEmojiLargeOld][seguiemj-old*seguiemj-cl @ 100pt]
+\definefont[MyEmojiLargeNew][seguiemj*seguiemj-cl @ 100pt]
+
+\def\ShowThem#1%
+  {\ruledhbox{\MyEmojiLargeOld\resolvedemoji{#1}}%
+   \quad
+   \ruledhbox{\MyEmojiLargeNew\resolvedemoji{#1}}}
+
+\def\ShowGone#1%
+  {\setbox\scratchbox\ruledhbox{\MyEmojiLargeOld\resolvedemoji{#1}}%
+   \copy\scratchbox
+   \quad
+   \ruledhbox to \wd\scratchbox
+     {\lower\dp\scratchbox\vbox to \htdp\scratchbox
+        {\vss
+         \hbox to \wd\scratchbox{\hss no longer supported\hss}%
+         \vss}}}
+
+\starttext
+
+\startTEXpage[offset=.5pt]
+\startcombination[2*5]
+    {\ShowThem{family woman woman girl boy}}%
+              {family woman woman girl boy}
+    {\ShowThem{family woman woman boy boy}}%
+              {family woman woman boy boy}
+    {\ShowThem{family woman girl boy}}
+              {family woman girl boy}
+    {\ShowThem{family man dark skin tone woman girl baby}}
+              {family man dark skin tone woman girl baby}
+    {\ShowThem{family man light skin tone woman light skin tone girl dark skin tone}}
+              {family man light skin tone woman light skin tone girl dark skin tone}
+    {\ShowThem{family man girl boy}}
+              {family man girl boy}
+    {\ShowThem{family man man girl boy}}%
+              {family man man girl boy}
+    {\ShowThem{family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone}}
+              {family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone}
+    {\ShowGone{couple with heart man light skin tone man medium-dark skin tone}}
+              {couple with heart man light skin tone man medium-dark skin tone}
+    {\ShowGone{kiss man medium-light skin tone man dark skin tone}}
+              {kiss man medium-light skin tone man dark skin tone}
+\stopcombination
+\stopTEXpage
+
+\stoptext

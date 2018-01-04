@@ -1,0 +1,27 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\setupMPpage
+  [offset=1pt,
+   background=color,
+   backgroundcolor=gray]
+
+\definecolor [gray]   [s=.625]
+\definecolor [red]    [r=.625]
+\definecolor [yellow] [r=.625,g=.625]
+
+\startuseMPgraphic{test}
+    fill fullsquare rotated 45 scaled 4cm
+        withcolor \MPcolor{yellow} ;
+\stopuseMPgraphic
+
+\starttext
+
+\startMPpage
+    \includeMPgraphic{test}
+    fill fullcircle scaled 3cm
+        withcolor \MPcolor{red} ;
+\stopMPpage
+
+\stoptext

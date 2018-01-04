@@ -16398,6 +16398,10 @@ return {
    ["pe"]="ایست",
    ["ro"]="stopper",
   },
+  ["nostopper"]={
+   ["en"]="nostopper",
+   ["nl"]="geenafsluiter",
+  },
   ["stretch"]={
    ["cs"]="natahnout",
    ["de"]="strecken",

@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinitial" level="style"category="fonts" file="typo-drp.mkiv">
+    <cd:command name="setupinitial" level="style" category="fonts" file="typo-drp.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">

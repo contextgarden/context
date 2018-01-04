@@ -1,0 +1,1013 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-positioning
+
+\environment metafun-environment
+
+\startchapter[reference=sec:positioning,title={Positional graphics}]
+
+\startintro
+
+In this chapter, we will explore one of the more advanced, but also conceptually
+more difficult, graphic capabilities of \CONTEXT. It took quite a few experiments
+to find the {\em right} way to support these kind of graphics, and you can be
+sure that in due time extensions will show up. You can skip this chapter if you
+are no \CONTEXT\ user. Because we're now a decade into \MKIV\ the tricks here
+will assume that you use \CONTEXT\ \MKIV\ because we have a more convenient
+interface there. For old|-|school \MKII\ usage you can look in old \METAFUN\
+manuals or in the \type {mkii} source files. Of course we remain compatible, it's
+just that more (convenient) interfaces were added.
+
+\stopintro
+
+\startsection[title={The status quo}]
+
+After \TEX\ has read a paragraph of text, it will try to break this paragraph
+into lines. When this is done, the result is flushed and after that \TEX\ will
+check if a page should be split off. As a result, we can hardly predict how a
+document will come out. Therefore, when we want graphics to adapt themselves to
+this text, maybe even to text broken across lines, we have to deal with this
+asynchronous feature of \TEX\ in a rather advanced way. Before we present a way
+of dealing with this complexity, we will elaborate on the nature of embedded
+graphics in \TEX.
+
+When \TEX\ entered the world of typesetting, desktop printers were not that
+common, let alone color desktop printers. But times have changed and nowadays we
+want color and graphics and if possible we want them integrated in the text. When
+\METAPOST\ showed up it depended on the \DVI\ processor to recognize the
+\POSTSCRIPT\ code as being produced by \METAPOST\ and therefore also include the
+fonts that were used. But color was still limited to \RGB. When \PDFTEX\ evolved
+I wrote an interpreter (in \TEX) that could translate the output to \PDF. This
+also opened up the possibility to add features to \METAPOST, like \CMYK\ colors,
+shading, transparencies etc. But basically the \TEX\ and \METAPOST\ processes
+were rather isolated. We could of course pass information to \METAPOST\ and pick
+up information from \METAPOST\ in a second pass. That has changed in \LUATEX.
+
+In order to really integrate \METAPOST\ graphics into the flow you need to know
+where you are on the page and how large graphics should be, especially when you
+want them to depend on the layout. A first solution to this was to embed specials
+in the \DVI\ that could later be used to extract positions. In retrospect this
+was a relative trivial extension, something that could have been around much
+earlier but somehow didn't happen. Anyhow, after some experiments \PDFTEX\ got a
+native position tracker which meant that no post processor was needed. Of course
+\LUATEX\ inherited this feature too. Because positioning is rather bound to the
+macro package reading this chapter only makes sense when you use \CONTEXT.
+
+\stopsection
+
+\startbuffer[arrow:1]
+\startMPpositionmethod{mypos:arrow}
+  \startMPpositiongraphic{mypos:arrow}
+    save pa, pb, pm, pab, na, nb, sa, sb ;
+    path pa, pb, pm, pab ; numeric na, nb ; string sa, sb ;
+    % the tags
+    sa := texstr("from") ;
+    sb := texstr("to") ;
+    % we need to check page crossing so we fetch the page numbers
+    na := positionpage(sa) ;
+    nb := positionpage(sb) ;
+    % we use the repositioned shapes
+    pa := positionbox(sa) ;
+    pb := positionbox(sb) ;
+    % but want circles instead of rectangles
+    pa := llcorner pa .. lrcorner pa .. urcorner pa .. ulcorner pa .. cycle ;
+    pb := llcorner pb .. lrcorner pb .. urcorner pb .. ulcorner pb .. cycle ;
+    pickup pencircle scaled 1pt ;
+    if na = nb :
+      % both are on the same page
+      fill pa withcolor .800white ;
+      fill pb withcolor .800white ;
+      draw pa withcolor .625yellow ;
+      draw pb withcolor .625yellow ;
+      pm := .5[center pa,center pb] shifted (0,2*LineHeight) ;
+      pab := center pa  .. pm .. center pb ;
+      pab := pab cutbefore (pab intersectionpoint pa) ;
+      pab := pab cutafter  (pab intersectionpoint pb) ;
+      drawarrow pab dashed evenly withcolor .625red ;
+      positionatanchor(sa) ;
+    elseif nb < na :
+      % they are on different pages and we're at the first one
+      fill pb withcolor .800white ;
+      draw pb withcolor .625yellow ;
+      pab := center pb {up} .. ulcorner bbox pb ;
+      pab := pab cutbefore (pab intersectionpoint pb) ;
+      drawarrow pab dashed evenly withcolor .625red ;
+      positionatanchor(sb) ;
+    else :
+      % they are on different pages and we're at the last one
+      fill pa withcolor .800white ;
+      draw pa withcolor .625yellow ;
+      pab := center pa {up} .. urcorner bbox pa ;
+      pab := pab cutbefore (pab intersectionpoint pa) ;
+      drawarrow pab dashed evenly withcolor .625red ;
+      positionatanchor(sa) ;
+    fi ;
+  \stopMPpositiongraphic
+  % we put it here at the first position
+  \MPpositiongraphic{mypos:arrow}
+  % we need to carry information forward and make sure that we also
+  % check and flush at the second position of the pair
+  \ifnum\MPp{\MPvar{from}}<\MPp{\MPvar{to}}\relax
+    \expanded{\setMPpositiongraphic{\MPvar{to}}{mypos:arrow}{to=\MPvar{from}}}
+  \fi
+\stopMPpositionmethod
+\stopbuffer
+
+\startbuffer[arrow:2]
+\setMPpositiongraphic{A-1}{mypos:arrow}{to=A-2}
+\stopbuffer
+
+\startbuffer[box:1]
+\startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
+    string tag; tag := "\MPvar{self}" ;
+    path box ; box := positionbox(tag) ;
+    box := box enlarged  \MPvar{filloffset} ;
+    fill box
+        withcolor \MPvar{fillcolor} ;
+    draw box
+        withcolor \MPvar{linecolor}
+        withpen pencircle scaled \MPvar{linewidth} ;
+    positioninregion ;
+\stopMPpositiongraphic
+\stopbuffer
+
+\startbuffer[box:1:also]
+\startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
+    path box ; box := positionbox(texstr("self")) ;
+    box := box enlarged  texvar("filloffset") ;
+    fill box
+        withcolor texvar("fillcolor") ;
+    draw box
+        withcolor texvar("linecolor")
+        withpen pencircle scaled texvar("linewidth") ;
+    positioninregion ;
+\stopMPpositiongraphic
+\stopbuffer
+
+\startbuffer[box:2]
+\setupMPvariables
+  [mpos:box]
+  [linecolor=blue,
+   linewidth=\linewidth,
+   fillcolor=lightgray,
+   filloffset=2pt]
+
+\setupMPvariables[mpos:box][linecolor=darkred]
+\setupMPvariables[mpos:par][linecolor=darkred]
+
+\startpositionoverlay{backgraphics}
+  \setMPpositiongraphic{A-0}{mpos:box}{self=A-0}
+  \setMPpositiongraphic{A-3}{mpos:box}{self=A-3}
+  \setMPpositiongraphic{A-4}{mpos:box}{self=A-4}
+\stoppositionoverlay
+\stopbuffer
+
+\getbuffer[arrow:1,arrow:2]
+\getbuffer[box:1,box:2]
+
+\startsection[title={The concept}]
+
+\index {graphics+positioning}
+\index {positioning}
+\index {anchoring}
+
+Because we have a \LUA\ connection in \MPLIB, we have implemented a couple of
+helpers that make live easier. This is also why the following examples are \MKIV\
+specific, although \MKII\ can do the same, but with a bit different set of
+helpers. We can for instance query properties of \hpos {A-0} {positions} without
+using \TEX\ macros but can use \METAPOST\ macros instead. Let's give an example.
+The background and frame behind the word \type {position} in this paragraph is
+not done with \type {\framed} but using a different mechanism:
+
+\starttyping
+to get \hpos {A-0} {positions} sorted
+\stoptyping
+
+The \type {\hpos} refers to a position and we have bound that position to a graphic:
+
+\starttyping
+\setMPpositiongraphic{A-0}{mpos:box}{self=A-0}
+\stoptyping
+
+The graphic itself is defined with:
+
+\typebuffer[box:1]
+
+A variant that has no macro calls and does all via the \LUA\ intercaface in \MKIV\ is
+the following:
+
+\typebuffer[box:1:also]
+
+A \type {\hpos} position has several properties: the coordinates of the origin:
+\type {x} and \type {y}, the dimensions of the boxed content, \type {w}, \type
+{h} and \type {d}, and the page number \type {p}. An additional helper \type
+{positioninregion} will move the drawing to the right spot in the region.
+Examples or regions are the page, text area or some overlay. The \type
+{positionatanchor} variant relocates to the anchor of the given tag. The first
+helper is actually a shortcut for:
+
+\starttyping
+currentpicture := currentpicture shifted - positionxy(positionanchor) ;
+\stoptyping
+
+In our case we use a dedicated layer \type {backgraphics} that we have hooked into
+the page backgrounds:
+
+\starttyping
+\setupbackgrounds
+  [page]
+  [background={backgraphics,foreground,foregraphics}]
+
+\defineoverlay [backgraphics] [\positionoverlay{backgraphics}]
+\defineoverlay [foregraphics] [\positionoverlay{foregraphics}]
+\stoptyping
+
+The relation between position graphics and that layer are defined as follows
+(we will come back to this in a moment):
+
+\typebuffer[box:2]
+
+\stopsection
+
+\startsection[title={A more detailed view}]
+
+As we know, a decent portion of \TEX's attention is focused on breaking
+paragraphs into lines and determining the optimal point to split off the page.
+Trying to locate the optimal points to break lines is a dynamic process. The
+space between words is flexible and we don't know in advance when a \hpos {A-1}
+{word} or piece of a word |<|maybe it's best to talk of typographic \hpos {A-2}
+{globs} instead|>| will end up on the page. It might even cross the page
+boundary.
+
+In the previous section we saw \hpos {A-3} {word} and \hpos {A-4} {globs}
+encircled and connected by an arrow. This graphic can be drawn only when the
+position and dimensions are known. Unfortunately, this information is only
+available after the paragraph is typeset and the best breakpoints are chosen.
+\bpos {A-5} Because the text must be laid on top of the graphic, the graphic must
+precede the first word in the typeset stream or it must be positioned on a
+separate layer. In the latter case it can be calculated directly after the
+paragraph is typeset, but in the former case a second pass is needed. \epos {A-5}
+Because such graphics are not bound to one paragraph, the multi||pass option
+suits better because it gives us more control: the more we know about he final
+state, the better we can act upon it. Think of graphics on the first page that
+depend on the content of the last page \bpos {A-6} or, as in this paragraph,
+backgrounds that depend on the typeset text. \epos {A-6}
+
+The arrows that connect the shapes are drawn with the following code that now
+looks familiar:
+
+\typebuffer[arrow:1]
+
+and
+
+\typebuffer[arrow:2]
+
+However, here we anchor at one of the positions because we don't flush in a layer
+but at the position itself. Indeed it looks complex.
+
+It may be clear now that we need some positional information in order to provide
+features like the ones shown here. The fact that we will act upon in a second
+pass simplifies the task, although it forces us to store the positional
+information between runs in some place. This may look uncomfortable at first
+sight, but it also enables us to store some additional information. Now why is
+that needed?
+
+A position has no dimensions, it's just a place somewhere on the page. In order
+to do tricks like those shown here, we also need to know the height and depth of
+lines at a specific point as well as the width of the box(es) we're dealing with.
+In the encircled examples, the dimensions of the box following the positional
+node are stored along with the position.
+
+In order to process the graphics, we tag each point with a name, so that we can
+attach actions to those points. In fact they become trigger points. As we will
+demonstrate, we also need to store the current page number. This brings the data
+stored with a point to:
+
+\starttyping
+<identifier> <pagenumber> <x> <y> <width> <height> <depth>
+\stoptyping
+
+Actually we store more information, for example the region in which the positions
+sit. Depending on the use we can also get access to paragraph and line properties
+but discussing these is beyond this manual. These are for instance used in the
+text backgrounds.
+
+The page number is needed in order to let the graphics engine determine boundary
+conditions. Backgrounds like those shown here can span multiple pages. In order
+to calculate the right backgrounds, some additional information must be
+available, like the top and bottom of the current text area. In fact, these are
+just normal points that can be saved while processing the split off page. So,
+apart from positioning anchors in the text we need anchors on crucial points of
+the layout. This means that this kind of support cannot be fully integrated into
+the \TEX\ kernel, unless we also add extensive support for layout definitions,
+and that is probably not what we want.
+
+As soon as something like $(x,y)$ shows up, a logical question is where $(0,0)$
+is located. Although this is a valid question, the answer is less important than
+you may expect. Even if we know that ($0,0)$ is \quote {officially} located in
+the bottom left corner of the page, the simple fact that in \CONTEXT\ we are
+dealing with a mixed page concept, like paper size and print paper size, or left
+and right pages, forces us to think in relative positions instead of absolute
+ones. Therefore, graphics, even those that involve multiple positions, are
+anchored to a position on the layer on which they are located.
+
+Users who simply want to use these features may wonder why we go into so much
+detail. The main reason is that in the end many users will want to go beyond the
+simple cases, and when dealing with these issues, you must be aware not only of
+height, depth and width, but also of the crossing of a page boundary, and the
+height and depth of lines. In some cases your graphics may have to respond to
+layout characteristics, like differences between odd and even pages. Given that
+unique identifiers are used for anchor points, in \CONTEXT\ you can have access
+to all the information needed. Here are some of the helpers:
+
+\starttabulate[|T||]
+\NC positionpath  (tag) \NC the path determined by width, height and depth \NC \NR
+\NC positionxy    (tag) \NC the origin \NC \NR
+\NC positionwhd   (tag) \NC the dimensions (in a triplet) \NC \NR
+\NC positionpage  (tag) \NC the page number fo the position \NC \NR
+\NC positionregion(tag) \NC the region that the position sits in \NC \NR
+\NC positionbox   (tag) \NC the positioned box (path shifted over coordinates) \NC \NR
+\NC positionanchor      \NC the current anchor of the region \NC \NR
+\stoptabulate
+
+The \type {positionwhd} macro returns a triplet that you can query, like:
+
+\starttyping
+triplet whd ; whd := positionwhd("\MPvar{from}");
+numeric wd; wd := wdpart whd ;
+\stoptyping
+
+We will add more such convenient helpers in the future. In the \CONTEXT\
+distribution you can find examples (in manuals or librarties) that demonstrate
+other tricks with positioning.
+
+\stopsection
+
+\startsection[title={Anchors and layers}]
+
+\index{anchoring}
+\index{layers}
+
+\startbuffer[g-circle]
+\startMPpositiongraphic{mypos:circle}
+  path p ; p := positionbox(texstr("self")) ;
+  p := fullcircle xsized (bbwidth(p)+4pt) shifted center p ;
+  pickup pencircle scaled 1pt ;
+  fill p withcolor .800white ;
+  draw p withcolor .625yellow ;
+  positioninregion ;
+\stopMPpositiongraphic
+\stopbuffer
+
+\startbuffer[g-line]
+\startMPpositiongraphic{mypos:line}
+  path pa, pb, pab ; numeric na, nb ; string ta, tb ;
+  ta := texstr("from") ;
+  tb := texstr("to") ;
+  na := positionpage(ta) ;
+  nb := positionpage(tb) ;
+  pa := positionbox(ta) ;
+  pb := positionbox(tb) ;
+  pa := fullcircle xsized (bbwidth(pa)+4pt) shifted center pa ;
+  pb := fullcircle xsized (bbwidth(pb)+4pt) shifted center pb ;
+  if na = nb :
+    pab := center pa -- center pb ;
+    pab := pab cutbefore (pab intersectionpoint pa) ;
+    pab := pab cutafter  (pab intersectionpoint pb) ;
+    pickup pencircle scaled 1pt ;
+    draw pab withcolor .625yellow ;
+    positioninregion ;
+  fi ;
+\stopMPpositiongraphic
+\stopbuffer
+
+\getbuffer[g-circle,g-line]
+
+\startbuffer[a]
+\setMPpositiongraphic{X-1}{mypos:arrow}{to=X-2}
+\setMPpositiongraphic{X-2}{mypos:arrow}{to=X-3}
+\stopbuffer
+
+\startbuffer[b]
+In a previous section we saw that some \hpos {X-1} {words} were
+\hpos {X-2} {circled} and connected by an \hpos {X-3} {arrow}.
+As with most things in \CONTEXT, marking these words is separated
+from declaring what to do with those words. This paragraph is keyed
+in as:
+\stopbuffer
+
+\getbuffer[a,b]
+
+\typebuffer[b]
+
+We see three position anchors, each marked by an identifier: \type {X-1}, \type
+{X-2} and \type {X-3}. Each of these anchors can be associated with a (series) of
+graphic operations. Here we defined:
+
+\typebuffer[a]
+
+These examples clearly demonstrate that we cannot control to what extent graphics
+will cover text and vice versa. A solution to this problem is using position
+overlays. We can define such an overlay as follows:
+
+\startbuffer
+\startpositionoverlay{backgraphics}
+  \setMPpositiongraphic{G-1}{mypos:circle}
+  \setMPpositiongraphic{G-2}{mypos:circle}
+  \setMPpositiongraphic{G-3}{mypos:circle}
+  \setMPpositiongraphic{G-4}{mypos:circle}
+\stoppositionoverlay
+
+\startpositionoverlay{foregraphics}
+  \setMPpositiongraphic{G-1}{mypos:line}{to=G-2}
+  \setMPpositiongraphic{G-2}{mypos:line}{to=G-3}
+  \setMPpositiongraphic{G-3}{mypos:line}{to=G-4}
+\stoppositionoverlay
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+First we have defined an \hpos {G-1} {\strut overlay}. This
+overlay can be attached to some overlay layer, like, in our
+case, the \hpos {G-2} {\strut page}. We define four small \hpos
+{G-3} {\strut circles}. These are drawn as soon as the page
+overlay is typeset. Because they are located in the
+background, they don't cover the \hpos {G-4} {\strut text}, while
+the lines do. The previous paragraph was typeset by saying:
+\stopbuffer
+
+\getbuffer \typebuffer
+
+As said, the circles are on the background layer, but the lines are not! They are
+positioned on top of the text. This is a direct result of the definition of the
+page background:
+
+\starttyping
+\defineoverlay [foregraphics] [\positionoverlay{foregraphics}]
+\defineoverlay [backgraphics] [\positionoverlay{backgraphics}]
+
+\setupbackgrounds
+  [page]
+  [background={backgraphics,foreground,foregraphics}]
+\stoptyping
+
+\doifmode{screen}{\writestatus{CHECK}{POSITION GRAPHICS}}
+
+In this definition, the predefined overlay \type {foreground} inserts the page
+data itself, so the foreground graphics end up on top. This example also
+demonstrates that you should be well aware of the way \CONTEXT\ builds a page.
+There are six main layers, in some cases with sublayers. The body text goes into
+the main text layer, which, unless forced otherwise, lays on top.
+
+\startitemize[packed,n,columns,three]
+\item  paper background
+\item  area backgrounds
+\item  page backgrounds
+\item  text areas
+\item  logo areas
+\item  main text
+\stopitemize
+
+The paper background is used for special (sometimes internal) purposes. There are
+three page backgrounds: left, right and both. The text areas, logo areas and
+backgrounds form a $5 \times 5$ matrix with columns containing the leftedge,
+leftmargin, text, rightmargin, and rightedge. The rows of the matrix contain the
+top, header, text, footer, and bottom. The main text is what you are reading now.
+
+Since the page background is applied last, the previous layers can be considered
+to be the foreground to the page background layer. And, indeed, it is available
+as an overlay under the name \type {foreground}, as we already saw in the
+example. Foregrounds are available in most cases, but (for the moment) not when
+we are dealing with the text area. Since anchoring the graphics is implemented
+rather independent of the position of the graphics themselves, this is no real
+problem, we can put them all on the page layer, if needed in separate overlays.
+
+How is such a graphic defined? In fact these graphics are a special case of the
+already present mechanism of including \METAPOST\ graphics. The circles are
+defined as follows:
+
+\typebuffer[g-circle]
+
+Drawing the lines is handled in a similar fashion.
+
+\typebuffer[g-line]
+
+The command \tex {startMPpositiongraphic} defines a graphic, in this example we
+have called it \type {mypos:circle}. Here we show the definition out of order but
+normally you need to define it before you refer to it.
+
+The \METAPOST\ macro \type {positionbox} returns a box that is constructed from
+the coordinates and dimensions. After this call, the corners are available via
+\type {llcorner}, \type {lrcorner}, \type {urcorner} and \type {ulcorner}. The
+center is accessible by \type {center}. When we are finished drawing the graphic,
+we can anchor the result with \type {positioninregion}. This macro automatically
+handles positioning on specific layers. The helper macros are not loaded by
+default, you do that with:
+
+\typebuffer[g-include]
+
+The position macro \type {\MPpos} returns the current characteristics of a
+position. The previously defined G~positions return:
+
+\starttabulate[|c|c|c|c|c|c|c|]
+\HL
+\NC position\NC page\NC$x$\NC$y$\NC width\NC height\NC depth\NC\NR
+\HL
+\NC G-1\NC\MPp{G-1}\NC\MPx{G-1}\NC\MPy{G-1}\NC\MPw{G-1}\NC\MPh{G-1}\NC\MPd{G-1}\NC\NR
+\NC G-2\NC\MPp{G-2}\NC\MPx{G-2}\NC\MPy{G-2}\NC\MPw{G-2}\NC\MPh{G-2}\NC\MPd{G-2}\NC\NR
+\NC G-3\NC\MPp{G-3}\NC\MPx{G-3}\NC\MPy{G-3}\NC\MPw{G-3}\NC\MPh{G-3}\NC\MPd{G-3}\NC\NR
+\NC G-4\NC\MPp{G-4}\NC\MPx{G-4}\NC\MPy{G-4}\NC\MPw{G-4}\NC\MPh{G-4}\NC\MPd{G-4}\NC\NR
+\HL
+\stoptabulate
+
+The numbers represent the real pagenumber~$p$, the current position $(x,y)$, and
+the dimensions of the box $(w,h,d)$ if known. These values are fed directly into
+\METAPOST\ graphics but the individual components can be asked for by \type
+{\MPp}, \type {\MPx}, \type {\MPy}, \type {\MPw}, \type {\MPh} and \type {\MPd}.
+
+In the previous definition of the graphic, we saw another macro, \type {\MPvar}.
+When we invoke a graphic or attach a graphic to a layer, we can pass variables.
+We can also set specific variables in other ways, as we will see later.
+
+\starttyping
+\setMPpositiongraphic{G-1}{mypos:circle}
+\setMPpositiongraphic{G-1}{mypos:line}{to=G-2}
+\stoptyping
+
+In the second definition, we let the variable \type {to} point to another
+position. When needed, we can ask for the value of \type {to} by \type
+{\MPvar{to}}. For reasons of convenience, the current position is assigned
+automatically to \type {from} and \type {self}. This means that in the line we
+saw in the graphic:
+
+\starttyping
+path p ; p := positionbox(texstr("self")) ;
+\stoptyping
+
+\type {texstr("self")} will return the current position, which, fed to \type
+{positionbox} will return a box with the right dimensions. We already warned the
+reader: this is not an easy chapter.
+
+\stopsection
+
+\startsection[title={More layers}]
+
+\index{layers}
+
+\setupbackgrounds
+  [state=repeat]
+
+Overlays are one of the nicer features of \CONTEXT\ and even more nice things can
+be build on top of them. Overlays are defined first and then assigned to framed
+boxes using the \type {background} variable.
+
+You can stack overlays, which is why they are called as such. You can use the
+special overlay called \type {foreground} to move the topmost (often text) layer
+down in the stack.
+
+\starttabulate
+\HL
+\NC background overlay \NC a text, graphic, hyperlink or widget      \NC \NR
+\NC position overlay   \NC a series of macros triggered by positions \NC \NR
+\NC background layer   \NC a box that can hold boxes with offsets    \NC \NR
+\HL
+\stoptabulate
+
+The last kind of layer can be used in other situations as well, but in most cases
+it will be hooked into a background overlay.
+
+\startbuffer
+\definelayer[MyLayer][option=test]
+
+\setupbackgrounds[text][leftmargin][background=MyLayer]
+
+\setlayer[MyLayer][x=.5cm,y=5cm]
+  {\rotate{\framed{This goes to the background}}}
+\stopbuffer
+
+\typebuffer \getbuffer \setuplayer[MyLayer][option=] % no frames
+
+In this case the framed text will be placed in the background of the (current)
+page with the given offset to the topleft corner. Instead of a fixed position,
+you can inherit the current position using the \type {position} directive. Say
+that we have a layer called \type {YourLayer} which we put in the background of
+the text area.
+
+\startbuffer
+\definelayer[YourLayer]
+\setupbackgrounds[text][text][background=YourLayer]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can now move some framed text to this layer using \type {\setlayer} with the
+directive \type {position} set to \type {yes}.
+
+\startbuffer
+here: \setlayer[YourLayer][position=yes]{\inframed{Here}}
+\stopbuffer
+
+\typebuffer
+
+You can influence the placement by explicitly providing an offset (\type
+{hoffset} and|/|or \type {voffset}), a position (\type {x} and|/|or \type {y}) or
+a location directive (\type {location}). Normally you will use the offsets for
+the layer as a whole and the positions for individual contributions. The next
+example demonstrates the use of a location directive.
+
+\startbuffer
+here: \setlayer[YourLayer][position=yes,location=c]{\inframed{Here}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Many layers can be in use at the same time. In the next example we put something
+in the page layer. By default, we turn on position tracking, which visualizes the
+bounding box of the content and shows the reference point.
+
+\startbuffer
+\definelayer[BackLayer][position=yes]
+\setupbackgrounds[page][background=BackLayer]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\setupbackgrounds
+  [page]
+  [background={PageFrame,BackLayer,backgraphics,foreground,foregraphics}]
+
+Next we define an overlay that we can put behind for instance framed texts. We
+use \METAPOST\ to draw \type {Shape}.
+
+\startbuffer
+\defineoverlay[Shape] [BackLayer] [\uniqueMPgraphic{Shape}]
+
+\startuniqueMPgraphic{Shape}
+  path p ; p := fullcircle xyscaled(OverlayWidth,OverlayHeight) ;
+  fill p withcolor \MPcolor{lightgray} ;
+  draw p withpen pencircle scaled 1pt withcolor \MPcolor{darkred} ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer[def]
+\defineframed[Shaped][background=Shape,frame=off,location=low]
+\stopbuffer
+
+\getbuffer[def]
+
+We can now put this background shape behind the running text, for instance with:
+
+\startbuffer
+.... some \inframed[background=Shape]{text} with a frame ...
+.... some \Shaped{text} with a frame ...
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+The \type {\Shaped} macro was defined as:
+
+\typebuffer[def]
+
+Watch how the graphics are moved to the background while the frame of the first
+text stays on top, since it remains part of the text flow.
+
+\startbuffer[def]
+\setuplayer[BackLayer][direction=reverse]
+\stopbuffer
+
+\getbuffer[def]
+
+\startlines
+\getbuffer
+\stoplines
+
+In the previous instance of the example we have reversed the stacking. Reversal
+can be done with the \type {direction} directive.
+
+\typebuffer[def]
+
+% next series
+
+\startbuffer
+\setuplayer
+  [BackLayer]
+  [position=no,corner=bottom,height=\paperheight]
+
+\setlayer[BackLayer][x=2cm,y=10cm,location=bl]
+  {\externalfigure[somecow.pdf][width=1cm]}
+
+\setlayer[BackLayer][x=1cm,y=8cm,location=br]
+  {\externalfigure[somecow.pdf][width=1cm]}
+
+\setlayer[BackLayer][x=2cm,y=4cm,location=tl]
+  {\externalfigure[somecow.pdf][width=1cm]}
+
+\setlayer[BackLayer][x=10cm,y=1cm,location=tr]
+  {\externalfigure[somecow.pdf][width=1cm]}
+\stopbuffer
+
+You can influence the placement of a background component by using a different
+anchor point.
+
+\typebuffer {\setuplayer[option=test]\getbuffer}
+
+\startbuffer[xx]
+\setuplayer
+  [BackLayer]
+  [position=no,corner=bottom,height=\paperheight]
+
+\setlayer[BackLayer][x=15cm,y=5cm,location=bl]
+  {\externalfigure[somecow.pdf][width=3cm]}
+
+\setlayer[BackLayer][x=15cm,y=5cm,location=br]
+  {\externalfigure[somecow.pdf][width=3cm]}
+
+\setlayer[BackLayer][x=15cm,y=5cm,location=tl]
+  {\externalfigure[somecow.pdf][width=2cm]}
+
+\setlayer[BackLayer][x=15cm,y=5cm,location=tr]
+  {\externalfigure[somecow.pdf][width=2cm]}
+
+\setlayer[BackLayer][x=15cm,y=5cm,location=c]
+  {\externalfigure[somecow.pdf][width=3cm]}
+\stopbuffer
+
+% \startpostponing
+
+Instead of using relative positions, you can also use absolute ones. Of course
+you need to know how your coordinates relate to the rest of the layout
+definition.
+
+\typebuffer[xx]
+
+These examples again demonstrate how we can influence the placement by assigning
+an anchor point to \type {position}. Here we also put the reference point in the
+lower left corner (\type {bottom}). This mechanism only works when we also use
+\type {height}.
+
+{\setuplayer[option=test]\getbuffer[xx]}
+
+\page
+
+% \stoppostponing
+
+\setupbackgrounds
+  [page]
+  [background={PageFrame,DemoLayer,backgraphics,foreground,foregraphics}]
+
+\definelayer
+  [DemoLayer]
+  [position=yes]
+
+\startbuffer
+\definelayer
+  [DemoLayer]
+  [position=yes]
+
+\startplacefigure[title={Demo 1}]
+    \ruledhbox\bgroup
+        \setlayerframed
+            [DemoLayer] [hoffset=-10mm,voffset=5mm]
+            {\startMPcode
+                fill fullcircle scaled 2cm withcolor .625red ;
+             \stopMPcode}%
+        \setlayerframed
+            [DemoLayer] [voffset=-10mm]
+            {\startMPcode
+                fill fullcircle scaled 2cm withcolor .625green ;
+             \stopMPcode}%
+        \setlayerframed
+            [DemoLayer] [hoffset=10mm,voffset=5mm]
+            {\startMPcode
+                fill fullcircle scaled 2cm withcolor .625blue ;
+             \stopMPcode}%
+    \egroup
+\stopplacefigure
+\stopbuffer
+
+\getbuffer
+
+One of the reasons for developing the layer mechanism was that we needed to
+slightly change the position of figures in the final stage of typesetting. The
+previous pages demonstrate how one can position anything anywhere on the page,
+but in the case of figures the position may depend on where the text ends up on
+the page.
+
+Normally, when you manipulate a document this way, you are in the final stage of
+typesetting. You may qualify this as desk top publishing without actually using a
+desktop.
+
+\typebuffer
+
+\startbuffer[demo]
+\startbuffer
+\setlayer [DemoLayer]
+  [position=yes,
+   voffset=-1.5cm,
+   width=3cm,
+   height=2cm]
+  {\MPfigure{somecow.pdf}{scaled .5 slanted .5}}
+\stopbuffer
+
+\placefigure[right]{}{\ruledhbox{\getbuffer}}
+\stopbuffer
+
+{\setuplayer[option=test]\getbuffer[demo]}
+
+The previous example also demonstrated the use of \METAPOST\ for rotating the
+picture. The \type {\MPfigure} macro encapsulates the code in a shortcut. You can
+achieve special effects by using the layers behind floating bodies and alike, but
+always keep in mind that the readability of the text should not be violated too
+much.
+
+\typebuffer[demo]
+
+In these examples we added a \type {\ruledhbox} around the pseudo graphics so
+that you can see what the size is of those graphics.
+
+% summary
+
+We have already seen a lot of parameters that can be used to control the content
+of a layer. There are a few more. General housekeeping takes place with:
+
+\starttabulate[|Tl|Tl|l|]
+\HL
+\NC state     \NC start   \NC enable the layer            \NC \NR
+\NC           \NC stop    \NC disable the layer           \NC \NR
+\NC position  \NC no      \NC use absolute positions      \NC \NR
+\NC           \NC yes     \NC use relative positions      \NC \NR
+\NC           \NC overlay \NC idem, but ignore the size   \NC \NR
+\NC direction \NC normal  \NC put new data on top         \NC \NR
+\NC           \NC reverse \NC put new data below old data \NC \NR
+\HL
+\stoptabulate
+
+Sometimes all data needs to be offset in a similar way. You can use both offset
+parameters for that.
+
+\starttabulate[|Tl|l|]
+\HL
+\NC hoffset \NC an additional horizontal displacement \NC \NR
+\NC voffset \NC an additional vertical   displacement \NC \NR
+\HL
+\stoptabulate
+
+You can position data anywhere in the layer. When positioning is turned on, the
+current position will get a placeholder. You can change the dimensions of that
+placeholder (when \type {position} is set to \type {overlay}), zero dimensions
+are used.
+
+\starttabulate[|Tl|l|]
+\HL
+\NC x        \NC the horizontal displacement \NC \NR
+\NC y        \NC the vertical   displacement \NC \NR
+\NC width    \NC the (non natural) width     \NC \NR
+\NC height   \NC the (non natural) height    \NC \NR
+\NC location \NC \tttf l r t b c lt lb rt rb \NC \NR
+\HL
+\stoptabulate
+
+The \type {location} directive determines what point of the data is used as
+reference point. You can keep track of this point and the placement when you
+enable test mode. This is how the rectangles in the previous examples were
+drawn.
+
+\starttabulate[|Tl|Tl|l|]
+\HL
+\NC option \NC test \NC show positioning information \NC \NR
+\HL
+\stoptabulate
+
+When you are enhancing the final version of a document, you can explicitly
+specify on what page the data will go. Use this option with care.
+
+\starttabulate[|Tl|l|]
+\HL
+\NC page \NC the page where the data will go \NC \NR
+\HL
+\stoptabulate
+
+Because layers can migrate to other pages, they may disappear due to the
+background not being recalculated. In case of doubt, you can force repetitive
+background calculation by:
+
+\starttyping
+\setupbackgrounds[state=repeat]
+\stoptyping
+
+% restore 'm
+
+\setupbackgrounds
+  [page]
+  [background={PageFrame,backgraphics,foreground,foregraphics}]
+
+\setupbackgrounds
+  [state=start]
+
+\stopsection
+
+\startsection[title={Complex text in graphics}]
+
+\index{text}
+
+If you like to embed \METAPOST\ snippets in \CONTEXT, you may want to combine
+text and graphics and let \METAPOST\ provide the position and the dimensions of
+the text to be typeset outside by \TEX. For most applications using the \METAFUN\
+\type {textext} macro works well enough, but when the typeset text needs to
+communicate with the typesetting engine, for instance because it contains
+hyperlinks or references, you can use the following method:
+
+\startitemize[packed]
+\item define a layer
+\item define a (reusable) graphic
+\item put your text into the layer
+\item combine the graphic with the text
+\stopitemize
+
+You must be aware of the fact that when the layer is flushed, its content is
+gone. You can take advantage of this by using the same graphic with multiple
+texts.
+
+\startbuffer
+\definelayer[test]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+You don't need to pass the width and height explicitly, but when you do so, you
+have access to them later.
+
+\startbuffer
+\startuseMPgraphic{oeps}
+  path p ; p := fullcircle scaled 6cm ;
+  fill p withcolor .8white ;
+  draw p withpen pencircle scaled 1mm withcolor .625red ;
+  register ("somepos-1",0cm,0cm,center currentpicture) ;
+  register ("somepos-2",3cm,1cm,(-1cm,-1cm)) ;
+  register ("somepos-3",2cm,0cm,(-2cm,2cm)) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \METAFUN\ \type {register} macro takes the following arguments:
+
+\starttyping
+register ("tag",width,height,(x offset,y offset)) ;
+\stoptyping
+
+The width and height are available in the macros \type {\MPlayerwidth} and \type
+{\MPlayerheight} and are equivalent to \type {\MPw{tag}} and \type {\MPh{tag}},
+
+\startbuffer
+\setMPlayer [test] [somepos-1] [location=c]
+  {Does it work al right?}
+
+\setMPlayer [test] [somepos-2]
+  {\framed
+     [width=\MPlayerwidth,height=\MPlayerheight,
+      background=color,backgroundcolor=white]
+     {It Works!}}
+
+\setMPlayer [test] [somepos-3]
+  {\externalfigure[cow-fun.mps][width=2cm]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Combining the graphic and the text is handled by the macro \type {\getMPlayer}.
+
+\startbuffer
+\getMPlayer [test] {\useMPgraphic{oeps}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The macro \type {\getMPlayer} is built on top of \type {\framed}. The settings
+passed in the (optional) second argument are the same as those to \type
+{\framed}.
+
+\starttyping
+\getMPlayer
+  [test]
+  [frame=on,offset=5pt]
+  {\useMPgraphic{oeps}}
+\stoptyping
+
+As you see, you need a bit of a twisted mind to handle graphics this way, but at
+least the functionality is there to create complex graphics in a declarative way.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

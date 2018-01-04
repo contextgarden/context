@@ -1,0 +1,3269 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-examples
+
+\environment metafun-environment
+
+\startchapter[title={A few applications}]
+
+\startintro
+
+For those who need to be inspired, we will demonstrate how \METAPOST\ can be used
+to enhance your document with simple graphics. In these examples we will try to
+be not too clever, simply because we lack the experience to be that clever. The
+real tricks can be found in the files that come with \METAPOST.
+
+\stopintro
+
+\startsection[reference={sec:coils,sec:springs},title={Simple drawings}]
+
+In the words of John Hobby, the creator of \METAPOST, \quotation {\METAPOST\ is
+particularly well||suited for generating figures for technical documents where
+some aspects of a picture may be controlled by mathematical or geometrical
+constraints that are best expressed symbolically. In other words, \METAPOST\ is
+not meant to take the place of a freehand drawing tool or even an interactive
+graphics editor}.
+
+An example of such a picture is the following one, which is dedicated to David
+Arnold, who asked me once how to draw a spring. So, imagine that we want to draw
+a schematic view of a system of four springs.
+
+\startbuffer[a]
+def spring (expr a, b, w, h, n) =
+  ( ( (0,0) -- (0,h) --
+      for i=1 upto n-1: (if odd(i) : - fi w/2,i+h) -- endfor
+      (0,n+h) -- (0,n+2h) )
+    yscaled ((xpart (b-a) ++ ypart (b-a))/(n+2h))
+    rotatedaround(origin,-90+angle(b-a))
+    shifted a )
+enddef ;
+\stopbuffer
+
+\startbuffer[b]
+vardef spring (expr a, b, w, h, n) =
+  pair vec ; path pat ; numeric len ; numeric ang ;
+  vec := (b-a) ;
+  pat := for i=1 upto n-1: (if odd(i):-fi w/2,i)--endfor (0,n) ;
+  pat := (0,0)--(0,h)-- pat shifted (0,h)--(0,n+h)--(0,n+2h) ;
+  len := (xpart vec ++ ypart vec)/(n+2h) ;
+  ang := -90+angle(vec) ;
+  ( pat yscaled len rotatedaround(origin,ang) shifted a )
+enddef ;
+\stopbuffer
+
+\startbuffer[c]
+path p ; p :=
+  (0,0)--spring((.5cm,0),(2.5cm,0),.5cm,0,10)--(3cm,0) ;
+
+draw p withpen pencircle scaled 2pt ;
+draw p withpen pencircle scaled 1pt withcolor .8white;
+\stopbuffer
+
+\startbuffer[d]
+z1 = (+2cm,0) ; z2 = (0,+2cm) ;
+z3 = (-2cm,0) ; z4 = (0,-2cm) ;
+
+pickup pencircle scaled 1.5pt ;
+
+drawoptions (withcolor .625red) ;
+
+draw spring (z1, z2, .75cm, 2, 10) ; draw z1 -- 1.5 z1 ;
+draw spring (z2, z3, .75cm, 2,  9) ; draw z2 -- 1.1 z2 ;
+draw spring (z3, z4, .75cm, 2,  8) ; draw z3 -- 1.5 z3 ;
+draw spring (z4, z1, .75cm, 2,  7) ; draw z4 -- 1.1 z4 ;
+\stopbuffer
+
+\startbuffer[e]
+drawarrow
+  (0,0)--spring((.5cm,0),(2.5cm,0),.5cm,0,10)--(3cm,0)
+  withpen pencircle scaled 2pt withcolor .625red ;
+\stopbuffer
+
+\startbuffer[f]
+numeric u ; u := 1mm ; pickup pencircle scaled (u/2) ;
+drawoptions (withcolor .625red) ;
+draw (0,0)--spring((5u,0),(25u,0),5u,0,10)--(30u,0) ;
+drawoptions (dashed evenly withcolor .5white) ;
+draw (0,0)--spring((5u,0),(35u,0),(25/35)*5u,0,10)--(40u,0) ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,d]
+\stoplinecorrection
+
+A rather natural way to define such a system is:
+
+\typebuffer[d]
+
+Here, the macro \type {spring} takes 5~arguments: two points, the width of the
+winding, the length of the connecting pieces, and the number of elements (half
+windings). The definition of \type {spring} is less complicated than readable.
+
+\typebuffer[a]
+
+First we build a path starting in the origin, going left or right depending on
+the counter being an odd number.
+
+\starttyping
+pat := (0,0) ;
+for i=1 upto n-1:
+  if odd(i) :
+    pat := pat -- (-w/2,i) ;
+  else :
+    pat := pat -- (+w/2,i) ;
+  fi ;
+endfor ;
+pat := pat -- (0,n) ;
+\stoptyping
+
+Once you are accustomed to the way \METAPOST\ interprets (specialists may say
+expand) the source code, you will start using \type {if} and \type {for}
+statements in assignments. The previous code can be converted in a one liner,
+using the pattern:
+
+\starttyping
+pat := for i=1 upto n-1: (x,y)-- endfor (0,n) ;
+\stoptyping
+
+The loop splits out a series of \type {(x,y)--} but the last point is added
+outside the loop. Otherwise \type {pat} would have ended with a dangling \type
+{--}. Of course we need to replace \type {(x,y)} by something meaningful, so we
+get:
+
+\starttyping
+pat := for i=1 upto n-1: (if odd(i):-fi w/2,i)--endfor (0,n) ;
+\stoptyping
+
+We scale this path to the length needed. The expression $b-a$ calculates a
+vector, starting at $a$ and ending at $b$. In \METAPOST, the expression \type
+{a++b} is identical to $\sqrt{a^2+b^2}$. Thus, the expression \typ {xpart (b-a)
+++ ypart (b-a)} calculates the length of the vector $b-a$. Because the unscaled
+spring has length $n+2h$, scaling by the expression \typ {((xpart (b-a) ++ ypart
+(b-a)) / (n+2h))} gives the spring the same length as the vector $b-a$.
+
+Because we have drawn our spring in the vertical position, we first rotate it 90
+degrees clockwise to a horizontal position, and then rotate it through an angle
+equal to the angle in which the vector $b-a$ is pointing. After that, we shift it
+to the first point. The main complications are that we also want to draw
+connecting lines at the beginning and end, as well as support springs that
+connect arbitrary points. Since no check is done on the parameters, you should be
+careful in using this macro.
+
+When we want to improve the readability, we have to use intermediate variables.
+Since the macro is expected to return a path, we must make sure that the content
+matches this expectation.
+
+\typebuffer[b]
+
+If you use \type {vardef}, then the last statement is the return value. Here,
+when \typ {p := spring (z1, z2, .75cm, 2, 10)} is being parsed, the macro is
+expanded, the variables are kept invisible for the assignment, and the path at
+the end is considered to be the return value. In a \type {def} the whole body of
+the macro is \quote {pasted} in the text, while in a \type {vardef} only the last
+line is visible. We will demonstrate this with a simple example.
+
+\starttyping
+def one = (n,n) ; n := n+1 ; enddef ;
+def two = n := n + 1 ; (n,n) enddef ;
+\stoptyping
+
+Now, when we say:
+
+\starttyping
+pair a, b ; numeric n ; n= 10 ; a := one ; b := two ;
+\stoptyping
+
+we definitely get an error message. This is because, when macro \type {two} is
+expanded, \METAPOST\ sees something:
+
+\starttyping
+b := n := n + 1 ;
+\stoptyping
+
+By changing the second definition in
+
+\starttyping
+vardef two = n := n + 1 ; (n,n) enddef ;
+\stoptyping
+
+the increment is expanded out of sight for \type {b :=} and the pair \type
+{(n,n)} is returned.
+
+We can draw a slightly better looking spring by drawing twice with a different
+pen. The following commands use the spring macro implemented by the \type
+{vardef}.
+
+\typebuffer[c]
+
+This time we get:
+
+\startlinecorrection[blank]
+\processMPbuffer[a,c]
+\stoplinecorrection
+
+Since the \type {spring} macro returns a path, you can do whatever is possible
+with a path, like drawing an arrow:
+
+\startlinecorrection[blank]
+\processMPbuffer[a,e]
+\stoplinecorrection
+
+Or even (watch how we use the neutral unit \type {u} to specify the dimensions):
+
+\startlinecorrection[blank]
+\processMPbuffer[a,f]
+\stoplinecorrection
+
+This was keyed in as:
+
+\typebuffer[e]
+
+and:
+
+\typebuffer[f]
+
+\stopsection
+
+\startsection[reference=sec:free labels,title={Free labels}]
+
+\index {labels}
+
+The \METAPOST\ label macro enables you to position text at certain points. This
+macro is kind of special, because it also enables you to influence the
+positioning. For that purpose it uses a special kind of syntax which we will not
+discuss here in detail.
+
+\startbuffer[a]
+pickup pencircle scaled 1mm ;
+path p ; p := fullcircle scaled 3cm ;
+draw p withcolor .625yellow ;
+dotlabel.rt   ("right"       , point 0 of p) ;
+dotlabel.urt  ("upper right" , point 1 of p) ;
+dotlabel.top  ("top"         , point 2 of p) ;
+dotlabel.ulft ("upper left"  , point 3 of p) ;
+dotlabel.lft  ("left"        , point 4 of p) ;
+dotlabel.llft ("lower left"  , point 5 of p) ;
+dotlabel.bot  ("bottom"      , point 6 of p) ;
+dotlabel.lrt  ("lower right" , point 7 of p) ;
+\stopbuffer
+
+\typebuffer[a]
+
+The \type {label} command just typesets a text, while \type {dotlabel} also draws
+a dot at the position of the label. The \type {thelabel} (not shown here) command
+returns a picture.
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+There is a numeric constant \type {labeloffset} that can be set to influence the
+distance between the point given and the content of the label. When we set the
+offset to zero, we get the following output.
+
+\startbuffer[x]
+interim labeloffset := 0pt ; % local assignment
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a]
+\stoplinecorrection
+
+This kind of positioning works well as long as we know where we want the label to
+be placed. However, when we place labels automatically, for instance in a macro,
+we have to apply a few clever tricks. There are for sure many ways to accomplish
+this goal, but here we will follow the mathless method.
+
+\startbuffer[a]
+pickup pencircle scaled 1mm ;
+path p ; p := fullcircle scaled 3cm ;
+draw p withcolor .625yellow ;
+vardef do (expr str) =
+  save currentpicture ; picture currentpicture ;
+  currentpicture := thelabel(str,origin) ;
+  draw boundingbox currentpicture withpen pencircle scaled .5pt ;
+  currentpicture
+enddef ;
+\stopbuffer
+
+\startbuffer[b]
+dotlabel.rt   (do("right")       , point 0 of p) ;
+dotlabel.urt  (do("upper right") , point 1 of p) ;
+dotlabel.top  (do("top")         , point 2 of p) ;
+dotlabel.ulft (do("upper left")  , point 3 of p) ;
+dotlabel.lft  (do("left")        , point 4 of p) ;
+dotlabel.llft (do("lower left")  , point 5 of p) ;
+dotlabel.bot  (do("bottom")      , point 6 of p) ;
+dotlabel.lrt  (do("lower right") , point 7 of p) ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+The previous graphic visualizes the bounding box of the labels. This bounding box
+is rather tight and therefore the placement of labels will always be suboptimal.
+Compare the alignment of the left- and rightmost labels. The \type {btex}||\type
+{etex} method is better, since then we can add struts, like:
+
+\starttyping
+btex \strut right etex
+\stoptyping
+
+to force labels with uniform depths and heights. The next graphic demonstrates
+that this looks better indeed. Also, as \TEX\ does the typesetting we get the
+current text font instead of the label font and the content will be properly
+typeset; for instance kerning will be applied when applicable. Spending some time
+on such details pays back in better graphics.
+
+\startbuffer[b]
+dotlabel.rt   (do(btex \strut right       etex) , point 0 of p) ;
+dotlabel.urt  (do(btex \strut upper right etex) , point 1 of p) ;
+dotlabel.top  (do(btex \strut top         etex) , point 2 of p) ;
+dotlabel.ulft (do(btex \strut upper left  etex) , point 3 of p) ;
+dotlabel.lft  (do(btex \strut left        etex) , point 4 of p) ;
+dotlabel.llft (do(btex \strut lower left  etex) , point 5 of p) ;
+dotlabel.bot  (do(btex \strut bottom      etex) , point 6 of p) ;
+dotlabel.lrt  (do(btex \strut lower right etex) , point 7 of p) ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+Now, what happens when we want to place labels in other positions? In the worst
+case, given that we place the labels manually, we end up in vague arguments in
+favour for one or the other placement.
+
+\startbuffer[y]
+p := p rotatedaround(center p, 22.5) ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,y,b]
+\stoplinecorrection
+
+Although any automatic mechanism will be sub||optimal, we can give it a try to
+write a macro that deals with arbitrary locations. This macro will accept three
+arguments and return a picture.
+
+\starttyping
+thefreelabel("some string or picture",a position,the origin)
+\stoptyping
+
+Our testcase is just a simple \type {for} loop that places a series of labels.
+The \type {freedotlabel} macro is derived from \type {thefreelabel}.
+
+\startbuffer[c]
+pickup pencircle scaled 1mm ;
+path p ; p := fullcircle scaled 3cm ;
+draw p withcolor .625yellow ;
+for i=0 step .5 until 7.5 :
+  freedotlabel ("text" , point i of p, center p) ;
+endfor ;
+\stopbuffer
+
+\typebuffer[c]
+
+As a first step we will simply place the labels without any correction. We also
+visualize the bounding box.
+
+\startbuffer[b]
+vardef freedotlabel (expr str, loc, ori) =
+  drawdot loc ; draw thefreelabel(str,loc,ori) ;
+enddef ;
+
+vardef freelabel (expr str, loc, ori) =
+  draw thefreelabel(str,loc,ori) ;
+enddef ;
+\stopbuffer
+
+\startbuffer[a]
+vardef thefreelabel (expr str, loc, ori) =
+  save s ; picture s ; s := thelabel(str,loc) ;
+  draw boundingbox s withpen pencircle scaled .5pt ;
+  s
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+To make our lives more easy, we also define a macro that draws the dot as well as
+a macro that draws the label.
+
+\typebuffer[b]
+
+Now we get:
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b,c]
+\stoplinecorrection
+
+The original label macros permits us to align the label at positions, 4~corners
+and 4~points halfway the sides. It happens that circles are also composed of
+8~points. Because in most cases the label is to be positioned in the direction of
+the center of a curve and the point at hand, it makes sense to take circles as
+the starting points for positioning the labels.
+
+To help us in positioning, we define a special square path, \type {freesquare}.
+This path is constructed out of 8~points that match the positions that are used
+to align labels.
+
+\startbuffer[d]
+path freesquare ;
+
+freesquare := ((-1,0)--(-1,-1)--(0,-1)--(+1,-1)--
+               (+1,0)--(+1,+1)--(0,+1)--(-1,+1)--cycle) scaled .5 ;
+\stopbuffer
+
+\typebuffer[d]
+
+We now show this free path together with a circle, using the following
+definitions:
+
+\startbuffer[e]
+drawpath        fullcircle scaled 3cm ;
+drawpoints      fullcircle scaled 3cm ;
+drawpointlabels fullcircle scaled 3cm ;
+currentpicture := currentpicture shifted (5cm,0) ;
+drawpath        freesquare scaled 3cm ;
+drawpoints      freesquare scaled 3cm ;
+drawpointlabels freesquare scaled 3cm ;
+\stopbuffer
+
+\typebuffer[e]
+
+We use two drawing macros that are part of the suite of visual debugging macros.
+
+\startlinecorrection[blank]
+\processMPbuffer[x,d,e]
+\stoplinecorrection
+
+As you can see, point~1 is the corner point that suits best for alignment when a
+label is put at point~1 of the circle. We will now rewrite \type {thefreelabel}
+in such a way that the appropriate point of the associated \type {freesquare} is
+found.
+
+\startbuffer[a]
+vardef thefreelabel (expr str, loc, ori) =
+  save s, p, q, l ; picture s ; path p, q ; pair l ;
+  s := thelabel(str,loc) ;
+  p := fullcircle scaled (2*length(loc-ori)) shifted ori ;
+  q := freesquare xyscaled (urcorner s - llcorner s) ;
+  l := point (xpart (p intersectiontimes (ori--loc))) of q ;
+  draw q shifted loc withpen pencircle scaled .5pt ;
+  draw l shifted loc withcolor .625yellow ;
+  draw loc withcolor .625red ;
+  s
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+The macro xyscaled is part of \METAFUN\ and scales in two directions at once. The
+\METAPOST\ primitive \type {intersectiontimes} returns a pair of time values of
+the point where two paths intersect. The first part of the pair concerns the
+first path.
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b,c]
+\stoplinecorrection
+
+We are now a small step from the exact placement. If we change the last line of
+the macro into:
+
+\starttyping
+(s shifted -l)
+\stoptyping
+
+we get the displacement we want. Although the final look and feel is also
+determined by the text itself, the average result is quite acceptable.
+
+\startbuffer[a]
+vardef thefreelabel (expr str, loc, ori) =
+  save s, p, q, l ; picture s ; path p, q ; pair l ;
+  s := thelabel(str,loc) ;
+  p := fullcircle scaled (2*length(loc-ori)) shifted ori ;
+  q := freesquare xyscaled (urcorner s - llcorner s) ;
+  l := point (xpart (p intersectiontimes (ori--loc))) of q ;
+  draw q shifted loc withpen pencircle scaled .5pt ;
+  draw l shifted loc withcolor .625yellow ;
+  draw loc withcolor .625red ;
+  (s shifted -l)
+enddef ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b,c]
+\stoplinecorrection
+
+Because we also want to pass pictures, and add a bit of offset too, the final
+implementation is slightly more complicated. The picture is handled with an
+additional condition, and the offset with the \METAFUN\ macro \type {enlarged}.
+
+\startbuffer[a]
+newinternal freelabeloffset ; freelabeloffset := 3pt ;
+
+vardef thefreelabel (expr str, loc, ori) =
+  save s, p, q, l ; picture s ; path p, q ; pair l ;
+  interim labeloffset := freelabeloffset ;
+  s := if string str : thelabel(str,loc)
+       else          : str shifted -center str shifted loc fi ;
+  setbounds s to boundingbox s enlarged freelabeloffset ;
+  p := fullcircle scaled (2*length(loc-ori)) shifted ori ;
+  q := freesquare xyscaled (urcorner s - llcorner s) ;
+  l := point (xpart (p intersectiontimes (ori--loc))) of q ;
+  setbounds s to boundingbox s enlarged -freelabeloffset ;
+  (s shifted -l)
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+Watch how we temporarily enlarge the bounding box of the typeset label text. We
+will now test this macro on a slightly rotated circle, using labels typeset by
+\TEX. The \type {reverse} is there purely for cosmetic reasons, to suit the label
+texts.
+
+\startbuffer[b]
+pickup pencircle scaled 1mm ;
+path p ; p := reverse fullcircle rotated -25 scaled 3cm ;
+draw p withcolor .625yellow ; pair cp ; cp := center p ;
+freedotlabel (btex \strut We can    etex, point 0 of p, cp) ;
+freedotlabel (btex \strut go on     etex, point 1 of p, cp) ;
+freedotlabel (btex \strut and on    etex, point 2 of p, cp) ;
+freedotlabel (btex \strut in        etex, point 3 of p, cp) ;
+freedotlabel (btex \strut defining  etex, point 4 of p, cp) ;
+freedotlabel (btex \strut funny     etex, point 5 of p, cp) ;
+freedotlabel (btex \strut macros.   etex, point 6 of p, cp) ;
+freedotlabel (btex \strut Can't we? etex, point 7 of p, cp) ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+\typebuffer[b]
+
+Unfortunately we can run into problems due to rounding errors. Therefore we use a
+less readable but more safe expression for calculating the intersection points.
+Instead of using point \type {loc} as endpoint we use \type {loc} shifted over a
+very small distance into the direction \type {loc} from \type{ori}. In the
+assignment to~\type {l} we replace \type {loc} by:
+
+\starttyping
+ ( (1+eps) * arclength(ori--loc) * unitvector(loc-ori) )
+\stoptyping
+
+\stopsection
+
+\startsection[title={Marking angles}]
+
+\index{angles}
+
+A convenient \METAPOST\ macro is \type {unitvector}. When we draw a line segment
+from the origin to the point returned by this macro, the segment has a length of
+1~base point. This macro has a wide range of applications, but some basic
+knowledge of vector algebra is handy. The following lines of \METAPOST\ code
+demonstrate the basics behind unitvectors.
+
+\startbuffer
+pair uv ; pickup pencircle scaled 1mm ; autoarrows := true ;
+draw fullcircle scaled 2cm withcolor .625red    ;
+for i=(10,35), (-40,-20), (85,-15) :
+  draw origin--i dashed evenly withcolor .625white ;
+  drawarrow origin--unitvector(i) scaled 1cm withcolor .625yellow ;
+endfor ;
+draw origin withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+The circle has a radius of 1cm, and the three line segments are drawn from the
+origin in the direction of the points that are passed as arguments. Because the
+vector has length of~1, we scale it to the radius to let it touch the circle. By
+setting \type {autoarrows} we make sure that the arrowheads are scaled
+proportionally to the linewidth of 1~mm.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+An application of this macro is drawing the angle between two lines. In the
+\METAPOST\ manual you can find two macros for drawing angles: \type {mark_angle}
+and \type {mark_rt_angle}. You may want to take a look at their definitions
+before we start developing our own alternatives.
+
+\startbuffer[x]
+pickup pencircle scaled 1mm ; autoarrows := true ;
+drawoptions(withcolor .625white) ;
+\stopbuffer
+
+\startbuffer[a]
+def anglebetween (expr a, b) =
+  (unitvector(a){a rotated 90} .. unitvector(b))
+enddef ;
+\stopbuffer
+
+\startbuffer[b]
+pair a, b ; a := (2cm,-1cm) ; b := (3cm,1cm) ;
+drawarrow origin--a ; drawarrow origin--b ;
+drawarrow anglebetween(a,b) scaled 1cm withcolor .625red ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+The previous graphic demonstrates what we want to accomplish: a circular curve
+indicating the angle between two straight lines. The lines and curve are drawn
+with the code:
+
+\typebuffer[b]
+
+where \type {anglebetween} is defined as:
+
+\typebuffer[a]
+
+Both unitvectors return just a point on the line positioned 1~unit (later scaled
+to 1cm) from the origin. We connect these points by a curve that starts in the
+direction at the first point. If we omit the \type {a rotated 90} direction
+specifier, we get:
+
+\startbuffer[a]
+def anglebetween (expr a, b) =
+  (unitvector(a) .. unitvector(b))
+enddef ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+These definitions of \type {anglebetween} are far from perfect. If we don't start
+in the origin, we get the curve in the wrong place and when we swap both points,
+we get the wrong curve.
+
+\startbuffer[a]
+def anglebetween (expr endofa, endofb, common, length) =
+  (unitvector (endofa-common){(endofa-common) rotated 90} ..
+   unitvector (endofb-common)) scaled length shifted common
+enddef ;
+\stopbuffer
+
+\startbuffer[b]
+pair a, b, c ; a := (2cm,-1cm) ; b := (3cm,1cm) ; c := (-1cm,.5cm) ;
+drawarrow c--a ; drawarrow c--b ;
+drawarrow anglebetween(a,b,c,1cm) withcolor .625red ;
+\stopbuffer
+
+The solution for the displacement is given in the \METAPOST\ manual and looks
+like this (we package the macro a bit different):
+
+\typebuffer[a]
+
+As you can see, we compensate for the origin of both vectors. This macro is
+called with a few more parameters. We need to pass the length, since we want to
+add the shift to the macro and the shift takes place after the scaling.
+
+\typebuffer[b]
+
+That the results are indeed correct, is demonstrated by the output of following
+example:
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+However, when we swap the points, we get:
+
+\startbuffer[a]
+def anglebetween (expr endofb, endofa, common, length) =
+  (unitvector (endofa-common){(endofa-common) rotated 90} ..
+   unitvector (endofb-common)) scaled length shifted common
+enddef ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+This means that instead of rotating over $90$ degrees, we have to rotate over
+$-90$ or $270$ degrees. That way the arrow will also point in the other
+direction. There are undoubtedly more ways to determine the direction, but the
+following method also demonstrates the use of \type {turningnumber}, which
+reports the direction of a path. For this purpose we compose a dummy cyclic path.
+
+\startbuffer[a]
+vardef anglebetween (expr endofa, endofb, common, length) =
+  save tn ; tn := turningnumber(common--endofa--endofb--cycle) ;
+show tn ;
+  (unitvector(endofa-common){(endofa-common) rotated (tn*90)} ..
+   unitvector(endofb-common)) scaled length shifted common
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+Because we use an intermediate variable, just to keep things readable, we have to
+use \type {vardef} to hide the assignment for the outside world. We demonstrate
+this macro using the following code:
+
+\startbuffer[b]
+pair a, b, c ; a := (2cm,-1cm) ; b := (3cm,1cm) ; c := (-1cm,.5cm) ;
+drawarrow c--a ; drawarrow c--b ;
+drawarrow anglebetween(a,b,c,0.75cm) withcolor .625red ;
+drawarrow anglebetween(b,a,c,1.50cm) withcolor .625red ;
+\stopbuffer
+
+\typebuffer[b]
+
+Watch how both arrows point in the direction of the line that is determined by
+the second point.
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+We now have the framework of an angle drawing macro ready and can start working
+placing the label.
+
+\startbuffer[a]
+vardef anglebetween (expr endofa, endofb, common, length, str) =
+  save curve, where ; path curve ; numeric where ;
+  where := turningnumber (common--endofa--endofb--cycle) ;
+  curve := (unitvector(endofa-common){(endofa-common) rotated (where*90)}
+         .. unitvector(endofb-common)) scaled length shifted common ;
+  draw thefreelabel(str,point .5 of curve,common) withcolor black ;
+  curve
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+The macro \type {thefreelabel} is part of \METAFUN\ and is explained in detail in
+\in {section} [sec:free labels]. This macro tries to place the label as good as
+possible without user interference.
+
+\startbuffer[b]
+pair a ; a := (2cm,-1cm) ; drawarrow origin--a ;
+pair b ; b := (3cm, 1cm) ; drawarrow origin--b ;
+drawarrow
+  anglebetween(a,b,origin,1cm,btex $\alpha$ etex)
+  withcolor .625red ;
+\stopbuffer
+
+\typebuffer[b]
+
+Instead of a picture we may also pass a string, but using \TEX\ by means of \type
+{btex}||\type {etex} often leads to better results.
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+Because in most cases we want the length to be consistent between figures and
+because passing two paths is more convenient than passing three points, the final
+definition looks slightly different.
+
+\startbuffer[a]
+numeric anglelength ; anglelength := 20pt ;
+
+vardef anglebetween (expr a, b, str) = % path path string
+  save endofa, endofb, common, curve, where ;
+  pair endofa, endofb, common ; path curve ; numeric where ;
+  endofa := point length(a) of a ;
+  endofb := point length(b) of b ;
+  if round point 0 of a = round point 0 of b :
+    common := point 0 of a ;
+  else :
+    common := a intersectionpoint b ;
+  fi ;
+  where := turningnumber (common--endofa--endofb--cycle) ;
+  curve := (unitvector (endofa-common){(endofa-common) rotated (where*90)} ..
+            unitvector (endofb-common)) scaled anglelength shifted common ;
+  draw thefreelabel(str,point .5 of curve,common) withcolor black ;
+  curve
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+This macro has a few more \type {if}'s than its predecessor. First we test if the
+label is a string, and if so, we calculate the picture ourselves, otherwise we
+leave this to the user.
+
+\startbuffer[b]
+path a, b, c, d, e, f ;
+a := origin--( 2cm, 1cm) ; b := origin--( 1cm, 2cm) ;
+c := origin--(-2cm, 2cm) ; d := origin--(-2cm,-1cm) ;
+e := origin--(-1cm,-2cm) ; f := origin--( 1cm,-2cm) ;
+for i=a, b, c, d, e, f : drawarrow i ; endfor ;
+anglelength := 1.0cm ; drawoptions(withcolor .625red) ;
+drawarrow         anglebetween(a,b,btex $\alpha  $ etex) ;
+drawarrow         anglebetween(c,d,btex $\gamma  $ etex) ;
+drawarrow         anglebetween(e,f,btex $\epsilon$ etex) ;
+anglelength := 1.5cm ; drawoptions(withcolor .625yellow) ;
+drawdblarrow      anglebetween(b,c,btex $\beta   $ etex) ;
+drawarrow reverse anglebetween(d,e,btex $\delta  $ etex) ;
+drawarrow         anglebetween(a,f,btex $\zeta   $ etex) ;
+\stopbuffer
+
+\typebuffer[b]
+
+Because \type {anglebetween} returns a path, you can apply transformations to it,
+like reversing. Close reading of the previous code learns that the macro handles
+both directions.
+
+\startlinecorrection[blank]
+\processMPbuffer[x,a,b]
+\stoplinecorrection
+
+Multiples of 90 degrees are often identified by a rectangular symbol. We will now
+extend the previously defined macro in such a way that more types can be drawn.
+
+\startbuffer[a]
+numeric anglelength ; anglelength := 20pt ;
+numeric anglemethod ; anglemethod :=    1 ;
+
+vardef anglebetween (expr a, b, str) = % path path string
+  save pointa, pointb, common, middle, offset ;
+  pair pointa, pointb, common, middle, offset ;
+  save curve ; path curve ;
+  save where ; numeric where ;
+  if round point 0 of a = round point 0 of b :
+    common := point 0 of a ;
+  else :
+    common := a intersectionpoint b ;
+  fi ;
+  pointa := point anglelength on a ;
+  pointb := point anglelength on b ;
+  where  := turningnumber (common--pointa--pointb--cycle) ;
+  middle := ((common--pointa) rotatedaround (pointa,-where*90))
+                            intersectionpoint
+            ((common--pointb) rotatedaround (pointb, where*90)) ;
+  if     anglemethod = 1 :
+    curve  := pointa{unitvector(middle-pointa)}.. pointb;
+    middle := point .5 along curve ;
+  elseif anglemethod = 2 :
+    middle := common rotatedaround(.5[pointa,pointb],180) ;
+    curve  := pointa--middle--pointb ;
+  elseif anglemethod = 3 :
+    curve  := pointa--middle--pointb ;
+  elseif anglemethod = 4 :
+    curve  := pointa..controls middle..pointb ;
+    middle := point .5 along curve ;
+  fi ;
+  draw thefreelabel(str, middle, common) withcolor black ;
+  curve
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[p]
+anglemethod := 1 ;
+\stopbuffer
+
+\startbuffer[q]
+anglemethod := 2 ;
+\stopbuffer
+
+\startbuffer[r]
+anglemethod := 3 ;
+\stopbuffer
+
+\startbuffer
+\startcombination[3*1]
+  {\processMPbuffer[x,a,p,b]} {method 1}
+  {\processMPbuffer[x,a,q,b]} {method 2}
+  {\processMPbuffer[x,a,r,b]} {method 3}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:three methods]
+  {Three ways of marking angles.}
+  {\getbuffer}
+
+\in {Figure} [fig:three methods] shows the first three alternative methods
+implemented here. Instead of using \typ {unitvectors}, we now calculate the
+points using the \typ {arctime} and \typ {arclength} primitives. Instead of
+complicated expressions, we use the \METAFUN\ operators \type {along} and \type
+{on}. The following expressions are equivalent.
+
+\starttyping
+pointa := point anglelength on a ;
+middle := point .5 along curve ;
+
+pointa := point (arctime anglelength of a) of a ;
+middle := arctime (.5(arclength curve)) of curve) of curve ;
+\stoptyping
+
+The third method can be implemented in different, more math intensive ways, but
+the current implementation suits rather well and is understood by the author.
+
+\stopsection
+
+\startsection[reference=sec:color circles,title={Color circles}]
+
+\index{color}
+
+In \in {chapter} [sec:embedding] we showed a few color circles. Drawing such a
+graphic can be done in several ways, and here we will show a few methods. First
+we will demonstrate how you can apply \type {cutafter} and \type {cutbefore},
+next we will show how the \METAPOST\ macro \type {buildpath} can be used, and
+finally we will present a clean solution using \type {subpath}. We will assume
+that the circle is called with the macro:
+
+\starttyping
+colorcircle (4cm, red, green, blue) ;
+\stoptyping
+
+\startbuffer[circle]
+vardef colorcircle (expr size, red, green, blue) =
+  save r, g, b, rr, gg, bb, cc, mm, yy ;
+  save b_r, b_g, g_r, g_b ;
+  save radius ;
+
+  path r, g, b, rr, bb, gg, cc, mm, yy ;
+  pair b_r, b_g, g_r, g_b ;
+
+  numeric radius ; radius := 3cm ;
+
+  pickup pencircle scaled (radius/20) ;
+
+  r := g := b := fullcircle scaled radius shifted (0,radius/4);
+
+  r := r rotatedaround(origin, 15) ; % drawarrow r withcolor red   ;
+  g := g rotatedaround(origin,135) ; % drawarrow g withcolor green ;
+  b := b rotatedaround(origin,255) ; % drawarrow b withcolor blue  ;
+
+  b_r :=         b intersectionpoint r ; % draw b_r ;
+  b_g :=         b intersectionpoint g ; % draw b_g ;
+  g_r := reverse g intersectionpoint r ; % draw g_r ;
+  g_b := reverse g intersectionpoint b ; % draw g_b ;
+
+  bb := b cutafter  b_r ; bb := bb cutbefore b_g ; % drawarrow bb ;
+  gg := g cutbefore b_g ; gg := gg cutafter  g_r ; % drawarrow gg ;
+  rr := r cutbefore g_r &        r cutafter  b_r ; % drawarrow rr ;
+
+  cc := b cutbefore b_r ; cc := cc cutafter  g_b ; % drawarrow br ;
+  yy := g cutbefore g_r ; yy := yy cutafter  g_b ; % drawarrow rg ;
+  mm := r cutbefore g_r &        r cutafter  b_r ; % drawarrow gb ;
+
+  bb := gg -- rr -- reverse bb -- cycle ;
+  gg := bb rotatedaround(origin,120) ;
+  rr := bb rotatedaround(origin,240) ;
+
+  cc := mm -- cc -- reverse yy -- cycle ;
+  yy := cc rotatedaround(origin,120) ;
+  mm := cc rotatedaround(origin,240) ;
+
+  fill fullcircle scaled radius withcolor white ;
+
+  fill rr withcolor red   ; fill cc withcolor white-red   ;
+  fill gg withcolor green ; fill mm withcolor white-green ;
+  fill bb withcolor blue  ; fill yy withcolor white-blue  ;
+
+  for i = rr,gg,bb,cc,mm,yy : draw i withcolor .5white ; endfor ;
+
+  currentpicture := currentpicture xsized size ;
+enddef ;
+\stopbuffer
+
+We need to calculate seven paths. The first implementation does all the handywork
+itself and thereby is rather long, complicated and unreadable. It does not really
+use the strength of \METAPOST\ yet.
+
+\typebuffer[circle]
+
+In determining the right intersection points, you need to know where the path
+starts and in what direction it moves. In case of doubt, drawing the path as an
+arrow helps. If you want to see the small paths used, you need to comment the
+lines with the \type {fill}'s and uncomment the lines with \type {draw}'s. Due to
+the symmetry and the fact that we keep the figure centered around the origin, we
+only need to calculate two paths since we can rotate them.
+
+There are for sure more (efficient) ways to draw such a figure, but this one
+demonstrates a few new tricks, like grouping. We use grouping here because we
+want to use \type {mm} to indicate the magenta path, and \type {mm} normally
+means millimeter. Within a group, you can save variables. These get their old
+values when the group is left.
+
+With \type {for} we process multiple paths after each other. In this case it
+hardly saves tokens, but it looks more clever.
+
+One of the more efficient methods is using the \type {buildcycle} macro. This
+macro takes two or more paths and calculates the combined path. Although this is
+a rather clever macro, you should be prepared to help it a bit when paths have
+multiple intersection points. Again, we could follow a more secure mathematical
+method, but the next one took only a few minutes of trial and error. To save some
+memory, we redefine the \type {colors} graphic.
+
+\startbuffer[demo]
+colorcircle(4cm, red, green, blue) ;
+\stopbuffer
+
+When we call this macro as:
+
+\typebuffer[demo]
+
+we get:
+
+\startlinecorrection[blank]
+\processMPbuffer[circle,demo]
+\stoplinecorrection
+
+Of course this macro is only used for demonstration purposes and has no real use.
+
+\startbuffer[circle]
+vardef colorcircle (expr size, red, green, blue) =
+  save r, g, b, rr, gg, bb, cc, mm, yy ; save radius ;
+  path r, g, b, rr, bb, gg, cc, mm, yy ; numeric radius ;
+
+  radius := 5cm ; pickup pencircle scaled (radius/25) ;
+
+  r := g := b := fullcircle scaled radius shifted (0,radius/4) ;
+
+  r := r rotatedaround (origin, 15) ;
+  g := g rotatedaround (origin,135) ;
+  b := b rotatedaround (origin,255) ;
+
+  r := r rotatedaround(center r,-90) ;
+  g := g rotatedaround(center g, 90) ;
+
+  gg := buildcycle(buildcycle(reverse r,b),g) ;
+  cc := buildcycle(buildcycle(b,reverse g),r) ;
+
+  rr := gg rotatedaround(origin,120) ;
+  bb := gg rotatedaround(origin,240) ;
+
+  yy := cc rotatedaround(origin,120) ;
+  mm := cc rotatedaround(origin,240) ;
+
+  fill fullcircle scaled radius withcolor white ;
+
+  fill rr withcolor red   ; fill cc withcolor white-red   ;
+  fill gg withcolor green ; fill mm withcolor white-green ;
+  fill bb withcolor blue  ; fill yy withcolor white-blue  ;
+
+  for i = rr,gg,bb,cc,mm,yy : draw i withcolor .5white ; endfor ;
+
+  currentpicture := currentpicture xsized size ;
+enddef ;
+\stopbuffer
+
+\typebuffer [circle]
+
+Since we don't want to duplicate a graphic, this time we show the dark
+alternatives.
+
+\startbuffer[demo]
+colorcircle(4cm, .5red, .5green, .5blue) ;
+\stopbuffer
+
+\typebuffer[demo]
+
+This kind of unsafe path calculations are very sensitive to breaking. Changing
+the \type {radius/4} into something else demonstrates this but we will not
+challenge this macro that much. Therefore, the 50\% color circle shows up as:
+
+\startlinecorrection[blank]
+\processMPbuffer[circle,demo]
+\stoplinecorrection
+
+This command is part of \METAFUN\ and can be used to determine nice color
+combinations by also looking at their complementary colors.
+
+\startbuffer[demo]
+colorcircle (4cm, .7red, .5green, .3blue) ;
+\stopbuffer
+
+\typebuffer[demo]
+
+\startlinecorrection[blank]
+\processMPbuffer[circle,demo]
+\stoplinecorrection
+
+The next circle that we draw shows the three main colors used in this document.
+This circle is not that beautiful.
+
+\startbuffer[demo]
+colorcircle(4cm,.625red,.625yellow,.625white) ;
+\stopbuffer
+
+\typebuffer[demo]
+
+\startlinecorrection[blank]
+\processMPbuffer[circle,demo]
+\stoplinecorrection
+
+This definition can be cleaned up a bit by using \type {transform}, but the fuzzy
+\type {buildcycle}'s remain.
+
+\startbuffer[circle]
+vardef colorcircle (expr size, red, green, blue) =
+  save r, g, b, rr, gg, bb, cc, mm, yy ; save radius ;
+  path r, g, b, rr, bb, gg, cc, mm, yy ; numeric radius ;
+
+  radius := 5cm ; pickup pencircle scaled (radius/25) ;
+
+  transform t ; t := identity rotatedaround(origin,120) ;
+
+  r := fullcircle scaled radius
+   shifted (0,radius/4) rotatedaround(origin,15) ;
+
+  g := r transformed t ; b := g transformed t ;
+
+  r := r rotatedaround(center r,-90) ;
+  g := g rotatedaround(center g, 90) ;
+
+  gg := buildcycle(buildcycle(reverse r,b),g) ;
+  cc := buildcycle(buildcycle(b,reverse g),r) ;
+
+  rr := gg transformed t ; bb := rr transformed t ;
+  yy := cc transformed t ; mm := yy transformed t ;
+
+  fill fullcircle scaled radius withcolor white ;
+
+  fill rr withcolor red   ; fill cc withcolor white-red   ;
+  fill gg withcolor green ; fill mm withcolor white-green ;
+  fill bb withcolor blue  ; fill yy withcolor white-blue  ;
+
+  for i = rr,gg,bb,cc,mm,yy : draw i withcolor .5white ; endfor ;
+
+  currentpicture := currentpicture xsized size ;
+enddef ;
+\stopbuffer
+
+\typebuffer [circle]
+
+\startbuffer[demo]
+colorcircle(4cm,(.4,.6,.8),(.8,.4,.6),(.6,.8,.4));
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[circle,demo]
+\stoplinecorrection
+
+This rather nice circle is defined as:
+
+\typebuffer[demo]
+
+The final implementation, which is part of \METAFUN, is slightly more efficient.
+
+\startbuffer[circle]
+vardef colorcircle (expr size, red, green, blue) =
+  save r, g, b, c, m, y, w ; save radius ;
+  path r, g, b, c, m, y, w ; numeric radius ;
+
+  radius := 5cm ; pickup pencircle scaled (radius/25) ;
+
+  transform t ; t := identity rotatedaround(origin,120) ;
+
+  r := fullcircle rotated 90 scaled radius
+         shifted (0,radius/4) rotatedaround(origin,135) ;
+
+  b := r transformed t ; g := b transformed t ;
+
+  c := buildcycle(subpath(1,7) of g, subpath(1,7) of b) ;
+  y := c transformed t ; m := y transformed t ;
+
+  w := buildcycle(subpath(3,5) of r,
+         subpath(3,5) of g, subpath(3,5) of b) ;
+
+  pushcurrentpicture ;
+
+  fill r withcolor red   ;
+  fill g withcolor green ;
+  fill b withcolor blue  ;
+  fill c withcolor white-red   ;
+  fill m withcolor white-green ;
+  fill y withcolor white-blue  ;
+  fill w withcolor white ;
+
+  for i = r,g,b,c,m,y : draw i withcolor .5white ; endfor ;
+
+  currentpicture := currentpicture xsized size ;
+
+  popcurrentpicture ;
+enddef ;
+\stopbuffer
+
+\typebuffer [circle]
+
+Here, we first fill the primary circles, next we fill the secondary ones. These
+also cover the center, which is why finally we fill the center with white.
+
+\startbuffer[demo]
+colorcircle(4cm,(.2,.5,.8),(.8,.2,.5),(.5,.8,.2));
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[circle,demo]
+\stoplinecorrection
+
+The circle uses the following colors:
+
+\typebuffer[demo]
+
+The next graphic demonstrates how the subpaths look that build the shapes.
+
+\startbuffer[circle]
+vardef colorcircle (expr size, red, green, blue) =
+  save r, g, b, c, m, y, w ; save radius ;
+  path r, g, b, c, m, y, w ; numeric radius ;
+
+  radius := 5cm ; pickup pencircle scaled (radius/25) ;
+
+  transform t ; t := identity rotatedaround(origin,120) ;
+
+  r := fullcircle rotated 90 scaled radius
+         shifted (0,radius/4) rotatedaround(origin,135) ;
+
+  b := r transformed t ; g := b transformed t ;
+
+  c := buildcycle(subpath(1,7) of g,subpath(1,7) of b) ;
+  y := c transformed t ; m := y transformed t ;
+
+  w := buildcycle(subpath(3,5) of r,
+         subpath(3,5) of g, subpath(3,5) of b) ;
+
+  pushcurrentpicture ;
+
+  def do_it =
+    fill r withcolor red   ;
+    fill g withcolor green ;
+    fill b withcolor blue  ;
+    fill c withcolor white-red   ;
+    fill m withcolor white-green ;
+    fill y withcolor white-blue  ;
+    fill w withcolor white ;
+    for i = r,g,b,c,m,y : draw i withcolor .5white ; endfor ;
+  enddef ;
+
+  autoarrows := true ;
+
+  do_it ;
+  for i=r,g,b : drawarrow i withcolor black ; endfor ;
+  currentpicture := currentpicture shifted (-2radius,0) ;
+
+  do_it ;
+  for i=r,g,b : drawarrow subpath(1,7) of i withcolor black ; endfor ;
+  currentpicture := currentpicture shifted (-2radius,0) ;
+
+  do_it ;
+  for i=r,g,b : drawarrow subpath(3,5) of i withcolor black ; endfor ;
+  currentpicture := currentpicture shifted (+4radius,2radius) ;
+
+  drawarrow r withpen pencircle scaled (radius/10) withcolor red   ;
+  drawarrow g withpen pencircle scaled (radius/20) withcolor green ;
+  drawarrow b withpen pencircle scaled (radius/40) withcolor blue  ;
+  currentpicture := currentpicture shifted (-2radius,0) ;
+
+  drawarrow c withpen pencircle scaled (radius/10) withcolor white-red   ;
+  drawarrow m withpen pencircle scaled (radius/20) withcolor white-green ;
+  drawarrow y withpen pencircle scaled (radius/40) withcolor white-blue  ;
+  currentpicture := currentpicture shifted (-2radius,0) ;
+
+  drawarrow w withcolor black ;
+
+  currentpicture := currentpicture xsized 3size ;
+
+  popcurrentpicture ;
+enddef ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[circle,demo]
+\stoplinecorrection
+
+We did not mention what the push and pop commands are responsible for. Scaling
+the current picture is well defined as long as we deal with one graphic. However,
+if the current picture already has some content, this content is also scaled. The
+push and pop commands let us add content to the current picture as well as
+manipulating the picture as a whole without any side effects. The final result is
+put on top of the already drawn content. Instead of the sequence:
+
+\starttyping
+pushcurrentpicture ;
+  ...
+  currentpicture := currentpicture ... transformations ... ;
+popcurrentpicture ;
+\stoptyping
+
+you can say:
+
+\starttyping
+pushcurrentpicture ;
+  ...
+popcurrentpicture ... transformations ... ;
+\stoptyping
+
+Both are equivalent to:
+
+\starttyping
+draw image ( ... ) ... transformations ... ;
+\stoptyping
+
+For larger sequences of commands, the push||pop alternative gives a bit more more
+readable code.
+
+\stopsection
+
+\startsection[title={Fool yourself}]
+
+When doing a literature search on the human perception of black||white edges, I
+ran into several articles with graphics that I remember having seen before in
+books on psychology, physiology and|/|or ergonomics. One of the articles was by
+Edward H.~Adelson of MIT and we will use a few of his example graphics in our
+exploration to what extend \METAPOST\ can be of help in those disciplines. Since
+such graphics normally occur in typeset documents, we will define them in the
+document source.
+
+\startbuffer[a]
+\startbuffer
+interim linecap := butt ; numeric u ; u := 1cm ;
+pickup pencircle scaled .5u ;
+for i=1u step u until 5u :
+  draw (0,i) -- (5u,i) ;
+endfor ;
+for i=2u step u until 4u :
+  draw   (u,i) -- (2u,i)                   withcolor .5white ;
+  draw ((3u,i) -- (4u,i)) shifted (0,-.5u) withcolor .5white ;
+endfor ;
+\stopbuffer
+\stopbuffer
+
+\startbuffer[b]
+\placefigure
+  [here][fig:tricked 1]
+  {White's illusion.}
+  {\processMPbuffer}
+\stopbuffer
+
+\getbuffer[a,b]
+
+Unless you belong to the happy few whose visual capabilities are not distorted by
+neural optimizations, in \in {figure} [fig:tricked 1] the gray rectangles at the
+left look lighter than those on the right. Alas, you can fool yourself, but
+\METAPOST\ does not cheat. This graphic, referred to as White's illusion, is
+defined as follows.
+
+\typebuffer[a]
+
+Watch how we include the code directly. We have packaged this graphic in a buffer
+which we include as a floating figure.
+
+\typebuffer[b]
+
+When passed to \METAPOST, this code is encapsulated in its \type {beginfig} and
+\type {endfig} macros and thereby grouped. But any change to a variable that is
+not explicitly saved, migrates to the outer level. In order to prevent all
+successive graphics to have butt'd linecaps, we have to change this line
+characteristic locally. Because \type {linecap} is defined as an internal
+variable, we have to use \type {interim} to overload its value. Because \type {u}
+is a rather commonly used scratch variable, we don't save its value.
+
+Watch how we use \type {u} as the loop step. In spite of what your eyes tell you,
+this graphic only has two explicit color directives, both being 50\% black. In
+the next example we will use some real colors.
+
+\startbuffer[a]
+\startuseMPgraphic{first}
+  numeric size, delta ;
+  size := 2.5cm ; delta := size/3 ;
+  color mainshade, topshade, bottomshade, centershade ;
+  mainshade := \MPcolor{funcolor} ;
+  topshade := .9mainshade ; bottomshade := .5mainshade ;
+  centershade := .5[topshade,bottomshade] ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[b]
+\startuseMPgraphic{second}
+  \includeMPgraphic{first}
+  fill fullsquare scaled size  withcolor topshade ;
+  fill fullsquare scaled delta withcolor centershade ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[c]
+\startuseMPgraphic{third}
+  \includeMPgraphic{first}
+  fill fullsquare scaled size  withcolor bottomshade ;
+  fill fullsquare scaled delta withcolor centershade ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer[a,b,c]
+
+\startbuffer[d]
+\startcombination[5*2]
+  {\definecolor[funcolor][red]   \useMPgraphic{second}} {}
+  {\definecolor[funcolor][green] \useMPgraphic{second}} {}
+  {\definecolor[funcolor][blue]  \useMPgraphic{second}} {}
+  {\definecolor[funcolor][yellow]\useMPgraphic{second}} {}
+  {\definecolor[funcolor][white] \useMPgraphic{second}} {}
+  {\definecolor[funcolor][red]   \useMPgraphic{third}}  {}
+  {\definecolor[funcolor][green] \useMPgraphic{third}}  {}
+  {\definecolor[funcolor][blue]  \useMPgraphic{third}}  {}
+  {\definecolor[funcolor][yellow]\useMPgraphic{third}}  {}
+  {\definecolor[funcolor][white] \useMPgraphic{third}}  {}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:tricked 2]
+  {The simultaneous contrast effect.}
+  {\getbuffer[d]}
+
+In \in {figure} [fig:tricked 2] the small squares in the center of each colored
+pair of big squares have the same shade, but the way we perceive them are
+influenced by their surroundings. Both sets of squares are defined using usable
+graphics. The top squares are defined as:
+
+\typebuffer[b]
+
+and the bottom squares are coded as:
+
+\typebuffer[c]
+
+Because both graphics share code, we have defined that code as a separate
+graphic, that we include. The only point of interest in this definition is the
+fact that we let \METAPOST\ interpolate between the two colors using \type {.5[
+]}.
+
+\typebuffer[a]
+
+The color \type {funcolor} is provided by \CONTEXT, and since we want to use this
+graphic with different colors, this kind of mapping is quite convenient. The
+bunch of graphics is packaged in a combination with empty captions. Note how we
+set the color before we include the graphic.
+
+\typebuffer[d]
+
+We use a similar arrangement for the following graphic, where we have replaced
+the definitions of \type {first}, \type {second} and \type {third} by new
+definitions.
+
+\startbuffer[a]
+\startuseMPgraphic{first}
+  numeric height, width, radius, gap ; gap := 1mm ;
+  height = 2.5cm ; width := height/2 ; radius := height/2.5 ;
+  color mainshade, leftshade, rightshade, centershade ;
+  mainshade := \MPcolor{funcolor} ;
+  leftshade := .9mainshade ; rightshade := .5mainshade ;
+  centershade := .5[leftshade,rightshade] ;
+  fill unitsquare xyscaled ( width,height) withcolor leftshade ;
+  fill unitsquare xyscaled (-width,height) withcolor rightshade ;
+  draw (fullcircle scaled radius) shifted (0,height/2)
+    withpen pencircle scaled (radius/2) withcolor centershade ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[b]
+\startuseMPgraphic{second}
+  \includeMPgraphic{first}
+  interim linecap := butt ; pickup pencircle scaled gap ;
+  draw (0,0) -- (0,height) withcolor white ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[c]
+\startuseMPgraphic{third}
+  \includeMPgraphic{first}
+  picture p, q ; p := q := currentpicture ;
+  clip p to unitsquare xscaled  width yscaled height ;
+  clip q to unitsquare xscaled -width yscaled height ;
+  currentpicture := p ;
+  addto currentpicture also q shifted (0,radius/2) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer[a,b,c]
+
+\startbuffer[d]
+\startcombination[5*3]
+  {\definecolor[funcolor][red]   \useMPgraphic{first}}  {}
+  {\definecolor[funcolor][green] \useMPgraphic{first}}  {}
+  {\definecolor[funcolor][blue]  \useMPgraphic{first}}  {}
+  {\definecolor[funcolor][yellow]\useMPgraphic{first}}  {}
+  {\definecolor[funcolor][white] \useMPgraphic{first}}  {}
+  {\definecolor[funcolor][red]   \useMPgraphic{second}} {}
+  {\definecolor[funcolor][green] \useMPgraphic{second}} {}
+  {\definecolor[funcolor][blue]  \useMPgraphic{second}} {}
+  {\definecolor[funcolor][yellow]\useMPgraphic{second}} {}
+  {\definecolor[funcolor][white] \useMPgraphic{second}} {}
+  {\definecolor[funcolor][red]   \useMPgraphic{third}}  {}
+  {\definecolor[funcolor][green] \useMPgraphic{third}}  {}
+  {\definecolor[funcolor][blue]  \useMPgraphic{third}}  {}
+  {\definecolor[funcolor][yellow]\useMPgraphic{third}}  {}
+  {\definecolor[funcolor][white] \useMPgraphic{third}}  {}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:tricked 3]
+  {Koffka's examples of manipulating contrast by changing
+   the spatial configuration.}
+  {\getbuffer[d]}
+
+The definition of the first row of \in {figure} [fig:tricked 3] is used in the
+second and third and therefore is the most complicated. We use quite some scratch
+variables to reach a high level of abstraction. The \type {xyscaled} operator is
+a \METAFUN\ macro.
+
+\typebuffer[a]
+
+The graphics of the second row extends those of the first by drawing a white line
+through the middle. In this example setting the linecap is not really needed,
+because rounded top and bottoms in white are invisible and the part that extends
+beyond the points does not count in calculating the bounding box.
+
+\typebuffer[b]
+
+The third row graphics again extend the first graphic. First we copy the picture
+constructed so far. Watch the double assignment. Next we clip the pictures in
+half, and shift the right half down over the width of the circle.
+
+\typebuffer[c]
+
+\stopsection
+
+% \startsection[title={Puzzles}]
+%
+% {\em Maybe.}
+%
+% \stopsection
+%
+% \startsection[title={Flow charts}]
+%
+% {\em Instead of starting anew every time, you can use predefined macros, like
+% those in the flow chart module. Let's see how we can influence the \METAPOST\
+% code. Maybe not here.}
+%
+% \stopsection
+%
+% \startsection[title={Chemistry}]
+%
+% {\em \METAPOST\ can do it's work unseen, as in the chemistry module that comes
+% with \CONTEXT. There, \METAPOST\ is used as one of the graphical plug||ins. It
+% demonstrates that we can put \METAPOST\ to work without seeing any code.}
+%
+% \stopsection
+
+\startsection[title={Growing graphics}]
+
+Although \METAPOST\ is not really suited as a simulation engine, it is possible
+to build graphics that are built and displayed incrementally with a sequence of
+mouse clicks. The following example is the result of an email discussion David
+Arnold and the author had while \METAFUN\ evolved.
+
+Instead of defining the graphics in a separate \METAPOST\ file, we will
+incorporate them in the document source in which they are used. We can use
+several methods.
+
+\startitemize[n]
+\startitem
+    Define macros and figures in a separate file and include the graphics as
+    external graphics.
+\stopitem
+\startitem
+    Define everything in the document source as usable graphics and include the
+    graphics using \type {\useMPgraphic}.
+\stopitem
+\startitem
+    Package the graphic components in buffers and paste those together as
+    graphics that can be processed at run time.
+\stopitem
+\stopitemize
+
+The first method is the most independent one, which has its advantages if we want
+to use the graphics in other applications too. The second method works well in
+graphics where parts of the definitions change between invocations of the
+graphic. This method follows the template:
+
+\starttyping
+\startuseMPgraphic{whatever}
+ ...
+\stopuseMPgraphic
+
+\startuseMPgraphic{result}
+  ...
+  \includeMPgraphic{whatever}
+  ...
+\stopuseMPgraphic
+
+\useMPgraphic{result}
+\stoptyping
+
+The disadvantage of this method is that it cannot be combined with \type
+{btex}||\type {etex} since it is nearly impossible to determine when, how, and to
+what extent the content of a graphic should be expanded before writing it to the
+temporary \METAPOST\ file.
+
+Therefore, we will demonstrate how buffers can be used. This third method closely
+parallels the first way of defining graphics. A nice side effect is that we can
+easily typeset these buffers verbatim, which we did to typeset this document.
+
+We are going to do a classic compass and straightedge construction, the bisection
+of a line segment joining two arbitrary points. We will construct five graphics,
+where each one displays one step of the construction. We will embed each graphic
+in a start||stop command. Later we will see the advantage of this strategy.
+
+\startbuffer
+\startbuffer[a]
+def start_everything = enddef ;
+def stop_everything  = enddef ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startbuffer[b]
+numeric u, w ; u := .5cm ; w := 1pt ;
+
+pickup pencircle scaled w ;
+
+def draw_dot expr p =
+  draw p withpen pencircle scaled 3w ;
+enddef ;
+
+def stand_out =
+  drawoptions(withcolor .625red) ;
+enddef ;
+\stopbuffer
+\stopbuffer
+
+We are going to draw a few dots, and to force consistency we first define a macro
+\type {draw_dot}. The current step will be highlighted in red using \type
+{stand_out}.
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startbuffer[c]
+def draw_basics =
+  pair pointA, pointB ; path lineAB ;
+  pointA := origin ; pointB := pointA shifted (5u,0) ;
+  lineAB := pointA -- pointB ;
+  draw lineAB ;
+  draw_dot pointA ; label.lft(btex A etex, pointA) ;
+  draw_dot pointB ; label.rt (btex B etex, pointB) ;
+enddef ;
+\stopbuffer
+\stopbuffer
+
+First, we construct the macro that will plot two points $A$ and $B$ and connect
+them with a line segment.
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startbuffer[1]
+start_everything ;
+  stand_out ; draw_basics ;
+stop_everything ;
+\stopbuffer
+\stopbuffer
+
+The code in this buffer executes the preceding macros. The \type {..._everything}
+commands are still undefined, but later we can use these hooks for special
+purposes.
+
+\typebuffer \getbuffer
+
+This graphic can now be embedded by the \CONTEXT\ command
+\type {\processMPbuffer}. This command, like the ordinary
+buffer inclusion commands, accepts a list of buffers.
+
+\startbuffer
+\startlinecorrection[blank]
+\ruledhbox{\processMPbuffer[a,b,c,1]}
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer
+
+We use \type {\ruledhbox} to show the tight bounding box of the graphic. The line
+correction takes care of proper spacing around non textual content, like
+graphics. \footnote {These spacing commands try to get the spacing around the
+content visually compatible, and take the height and depth of the preceding and
+following text into account.} This is only needed when the graphic is part of the
+text flow!
+
+\getbuffer
+
+Next, we draw two circles of equal radius, one centered at point $A$, the other
+at point $B$.
+
+\startbuffer
+\startbuffer[d]
+def draw_circles =
+  path circleA, circleB ; numeric radius, distance ;
+  distance := (xpart pointB) - (xpart pointA) ;
+  radius := 2/3 * distance ;
+  circleA := fullcircle scaled (2*radius) ;
+  circleB := circleA shifted pointB ;
+  draw circleA ;
+  draw circleB ;
+enddef ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startbuffer[2]
+start_everything ;
+  draw_basics ; stand_out ; draw_circles ;
+stop_everything ;
+\stopbuffer
+\stopbuffer
+
+As you can see, we move down the \type {stand_out} macro so that only the
+additions are colored red.
+
+\typebuffer \getbuffer
+
+We now use \type{\processMPbuffer[a,b,c,d,2]} to include the latest step.
+
+\startlinecorrection[blank]
+\ruledhbox{\processMPbuffer[a,b,c,d,2]}
+\stoplinecorrection
+
+The next step in the construction of the perpendicular bisector requires that we
+find and label the points of intersection of the two circles centered at points
+$A$ and $B$. The intersection points are calculated as follows. Watch the \type
+{reverse} operation, which makes sure that we get the second intersection point.
+
+\startbuffer
+\startbuffer[e]
+def draw_intersection =
+  pair pointC, pointD ;
+  pointC := circleA intersectionpoint circleB ;
+  pointD := (reverse circleA) intersectionpoint (reverse circleB) ;
+  draw_dot pointC ; label.lft(btex C etex, pointC shifted (-2w,0)) ;
+  draw_dot pointD ; label.lft(btex D etex, pointD shifted (-2w,0)) ;
+enddef ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startbuffer[3]
+start_everything ;
+  draw_basics ; draw_circles ; stand_out ; draw_intersection ;
+stop_everything ;
+\stopbuffer
+\stopbuffer
+
+In placing the label, we must make sure that the text runs free of the lines and
+curves. Again, move the \type {stand_out} macro just prior to \type
+{draw_intersection} macro, so that this step is highlighted in the drawing color,
+while prior steps are drawn in the default color (in this case black).
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+\ruledhbox{\processMPbuffer[a,b,c,d,e,3]}
+\stoplinecorrection
+
+The line drawn through points $C$ and $D$ will be the perpendicular bisector of
+the line segment connecting points $A$ and $B$. In the next step we will draw a
+line using the plain \METAPOST\ \type {drawdblarrow} macro that draws arrowheads
+at each end of a path.
+
+\startbuffer
+\startbuffer[f]
+def draw_bisector =
+  path lineCD ;
+  lineCD := origin -- origin shifted (2*distance,0) ;
+  lineCD := lineCD rotated 90 shifted 0.5[pointA,pointB] ;
+  lineCD := lineCD shifted (0,-distance) ;
+  drawdblarrow lineCD ;
+enddef ;
+\stopbuffer
+
+\startbuffer[4]
+start_everything ;
+  draw_basics ; draw_circles ; draw_intersection ; stand_out ;
+  draw_bisector ;
+stop_everything ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+\ruledhbox{\processMPbuffer[a,b,c,d,e,f,4]}
+\stoplinecorrection
+
+The following code draws the intersection of line $C-D$ and line segment $A-B$,
+which can be shown to be the midpoint of segment $A-B$.
+
+\startbuffer
+\startbuffer[g]
+def draw_midpoint =
+  pair pointM ;
+  pointM := lineCD intersectionpoint lineAB ;
+  draw_dot pointM ; label.llft(btex M etex, pointM) ;
+enddef ;
+\stopbuffer
+
+\startbuffer[5]
+start_everything ;
+  draw_basics ; draw_circles ; draw_intersection ; draw_bisector ;
+  stand_out ; draw_midpoint ;
+stop_everything ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+\ruledhbox{\processMPbuffer[a,b,c,d,e,f,g,5]}
+\stoplinecorrection
+
+As long as we place the graphics as individual insertions in our document,
+everything is fine. However, if we wish to place them all at once, or as we shall
+see later, place them on top of one another in a fieldstack, it makes sense to
+give them all the same bounding box. We can do this by completing the \type
+{start_everything} and \type {stop_everything} commands.
+
+\startbuffer
+\startbuffer[a]
+def start_everything =
+  path bb ;
+  draw_basics ;
+  draw_circles ;
+  draw_intersection ;
+  draw_bisector ;
+  draw_midpoint ;
+  bb := boundingbox currentpicture ;
+  currentpicture := nullpicture ;
+enddef ;
+
+def stop_everything =
+  setbounds currentpicture to bb ;
+enddef ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In \in {figure} [fig:1 till 5] we demonstrate the effect of this redefinition.
+For this purpose we scale down the graphic to a comfortable 40\%, of course by
+using an additional buffer. We also visualize the bounding box.
+
+\startbuffer
+\startbuffer[h]
+def stop_everything =
+  setbounds currentpicture to bb ;
+  draw bb withpen pencircle scaled .5pt withcolor .625yellow ;
+  currentpicture := currentpicture scaled .4 ;
+enddef ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The graphic itself is defined as follows. Watch how we use the default buffer to
+keep the definitions readable.
+
+\startbuffer
+\startbuffer
+\startcombination[5*1]
+  {\processMPbuffer[a,b,c,h,d,e,f,g,1]} {step 1}
+  {\processMPbuffer[a,b,c,h,d,e,f,g,2]} {step 2}
+  {\processMPbuffer[a,b,c,h,d,e,f,g,3]} {step 3}
+  {\processMPbuffer[a,b,c,h,d,e,f,g,4]} {step 4}
+  {\processMPbuffer[a,b,c,h,d,e,f,g,5]} {step 5}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:1 till 5]
+  {The five graphics, each with the same bounding box.}
+  {\getbuffer}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As the original purpose of these graphics was not to show them side by side, but
+to present them as field stack in a document to be viewed at the computer screen.
+For this purpose we have to define the graphics as symbols.
+
+\startbuffer
+\definesymbol[step 1][{\processMPbuffer[a,b,c,d,e,f,g,1]}]
+\definesymbol[step 2][{\processMPbuffer[a,b,c,d,e,f,g,2]}]
+\definesymbol[step 3][{\processMPbuffer[a,b,c,d,e,f,g,3]}]
+\definesymbol[step 4][{\processMPbuffer[a,b,c,d,e,f,g,4]}]
+\definesymbol[step 5][{\processMPbuffer[a,b,c,d,e,f,g,5]}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A field stack is a sequence of overlayed graphics. We will arrange these to cycle
+manually, with clicks of the mouse, through the sequence of graphs depicting the
+construction of the midpoint of segment $A-B$. So, in fact we are dealing with a
+manual simulation. The definition of such a stack is as follows:
+
+\startbuffer
+\definefieldstack
+  [midpoint construction]
+  [step 1, step 2, step 3, step 4, step 5]
+  [frame=on,offset=3pt,framecolor=darkyellow,rulethickness=1pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The first argument is to be a unique identifier, the second argument takes a list
+of symbols, while the third argument accepts settings. More on this command can
+be found in the \CONTEXT\ manuals.
+
+The stack is shown as \in {figure} [fig:steps]. Its caption provides a button,
+which enables the reader to cycle through the stack. We call this a stack because
+the graphics are positioned on top of each other. Only one of them is visible at
+any time.
+
+\startbuffer
+\placefigure
+  [here][fig:steps]
+  {Bisecting a line segment with compass and straightedge? Just
+   click \goto {here} [JS(Walk_Field{midpoint construction})] to
+   walk through the construction! (This stack is only visible
+   in a \PDF\ viewer that supports widgets.)}
+  {\framed{\startoverlay
+     {\symbol[step 1]}
+     {\fieldstack[midpoint construction]}
+   \stopoverlay}}
+\stopbuffer
+
+\typebuffer
+
+We cheat a bit and overlay the stack over the first symbol because otherwise
+nothing shows up in print (nowadays I mostly use sumatrapdf).
+
+{\setupinteraction[color=darkred,contrastcolor=darkred]\getbuffer}
+
+At the start of this section, we mentioned three methods. When we use the first
+method of putting all the graphics in an external \METAPOST\ file, the following
+framework suits. We assume that the file is called \type {step.mp} and that it is
+kept by the user along with his document source. We start with the definitions of
+the graphic steps. These are the same as the ones shown previously.
+
+\starttyping
+def draw_basics       = ... enddef ;
+def draw_circles      = ... enddef ;
+def draw_intersection = ... enddef ;
+def draw_bisector     = ... enddef ;
+def draw_midpoint     = ... enddef ;
+def stand_out         = ... enddef ;
+\stoptyping
+
+We can safe some code by letting the \type {..._everything} take care of the
+\type {beginfig} and \type {endfig} macros.
+
+\starttyping
+def start_everything (expr n) = beginfig(n) ; ... enddef ;
+def stop_everything           =    ... ; endfig ; enddef ;
+\stoptyping
+
+The five graphics now become:
+
+\starttyping
+start_everything (1) ;
+  stand_out ; draw_basics ;
+stop_everything ;
+
+start_everything (2) ;
+  draw_basics ; stand_out ; draw_circles ;
+stop_everything ;
+
+start_everything (3) ;
+  draw_basics ; draw_circles ; stand_out ; draw_intersection ;
+stop_everything ;
+
+start_everything (4) ;
+  draw_basics ; draw_circles ; draw_intersection ; stand_out ;
+  draw_bisector ;
+stop_everything ;
+
+start_everything (5) ;
+  draw_basics ; draw_circles ; draw_intersection ; draw_bisector ;
+  stand_out ; draw_midpoint ;
+stop_everything ;
+\stoptyping
+
+The definitions of the symbols now refer to an external
+figure.
+
+\starttyping
+\definesymbol[step 1][{\externalfigure[step.1]}]
+\definesymbol[step 2][{\externalfigure[step.2]}]
+\definesymbol[step 3][{\externalfigure[step.3]}]
+\definesymbol[step 4][{\externalfigure[step.4]}]
+\definesymbol[step 5][{\externalfigure[step.5]}]
+\stoptyping
+
+Which method is used, depends on the way the graphics are used. In this example
+we wanted to change the definition of \type {..._everything}, so here the third
+method was quite useful.
+
+\stopsection
+
+\startsection[title={Simple Logos}]
+
+\startbuffer[ns]
+numeric width, height, line, delta ;
+width = 5cm ; height = width/2 ; line = height/4 ; delta = line ;
+
+linejoin := mitered ; pickup pencircle scaled line ;
+
+color nsblue   ; nsblue   := (0,0,1) ;
+color nsyellow ; nsyellow := (1,1,0) ;
+
+z1 = (0, height/2) ;
+z2 = (width/2-height/4, y1) ;
+z3 = (width/2+height/4, y4) ;
+z4 = (width, 0) ;
+
+z5 = (x4+height/2, y1) ;
+z6 = (x4, 2y1) ;
+z7 = 1.5[z5,z6] ;
+
+path p ; p := z1--z2--z3--z4 ; path q ; q := z3--z4--z5--z7 ;
+
+numeric d, lx, ly, ux, uy ; d = line/2 ;
+
+lx = -3d - d/3  ; ly = -d ; ux = rt x5 + d/3 ; uy = top y6 ;
+
+path r ; r := (lx,ly)--(ux,ly)--(ux,uy)--(lx,uy)--cycle;
+
+lx := lx-delta ; ly := ly-delta ; ux := ux+delta ; uy := uy+delta ;
+
+path s ; s := (lx,ly)--(ux,ly)--(ux,uy)--(lx,uy)--cycle;
+
+draw p withcolor nsblue ; draw q withcolor nsblue ;
+
+addto currentpicture also currentpicture
+  rotatedaround (.5[z2,z3],180) shifted (height/4,height/2) ;
+
+picture savedpicture ; savedpicture := currentpicture ;
+
+clip currentpicture to r ;
+setbounds currentpicture to r ;
+
+savedpicture := currentpicture ; currentpicture := nullpicture ;
+
+fill s withcolor nsyellow ;
+addto currentpicture also savedpicture ;
+\stopbuffer
+
+Many company logos earn their beauty from their simplicity. One of the logos that
+most Dutch people have imprinted in their mind is that of the Dutch Railway
+Company (NS). An interesting feature of this logo is that, although it is widely
+known, drawing it on a piece of paper from mind is a task that many people fail.
+
+\startlinecorrection[blank]
+\processMPbuffer[ns]
+\stoplinecorrection
+
+This logo makes a good candidate for demonstrating a few fine points of drawing
+graphics, like using linear equations, setting line drawing characteristics,
+clipping and manipulating bounding boxes.
+
+The implementation below is quite certainly not according to the official
+specifications, but it can nevertheless serve as an example of defining such
+logos.
+
+\startbuffer[a]
+numeric width  ; width  = 3cm ;
+numeric height ; height = width/2 ;
+numeric line   ; line   = height/4 ;
+\stopbuffer
+
+As always, we need to determine the dimensions first. Here, both the height and
+line width depend on the width of the graphic.
+
+Instead of calculating the blue shape such that it will be a filled outline, we
+will draw the logo shape using line segments. This is why we need the \type
+{line} parameter.
+
+\typebuffer[a]
+
+We want sharp corners which can be achieved by setting \type {linejoin} to \type
+{mitered}.
+
+\startbuffer[b]
+linejoin := mitered ; pickup pencircle scaled line ;
+\stopbuffer
+
+\typebuffer[b]
+
+The colors are rather primary blue and yellow. At the time of writing this
+manual, Dutch trains are still painted yellow, so we will use that shade as
+background color.
+
+\startbuffer[c]
+color nsblue   ; nsblue   := (0,0,1) ;
+color nsyellow ; nsyellow := (1,1,0) ;
+\stopbuffer
+
+\typebuffer[c]
+
+We will now describe the main curves. Although these expressions are not that
+advanced, they demonstrate that we can express relationships instead of using
+assignments.
+
+\startbuffer[d]
+z1 = (0, height/2) ;
+z2 = (width/2-height/4, y1) ;
+z3 = (width/2+height/4, y4) ;
+z4 = (width, 0) ;
+
+path p ; p := z1--z2--z3--z4 ;
+\stopbuffer
+
+\typebuffer[d]
+
+Although it is accepted to consider \type {z} to be a variable, it is in fact a
+\type {vardef} macro, that expands into a pair \type {(x,y)}. This means that the
+previous definitions internally become:
+
+\starttyping
+(x1,y1) = (0, height/2) ;
+(x2,y2) = (width/2-height/4, y1) ;
+(x3,y3) = (width/2+height/4, y4) ;
+(x4,y4) = (width, 0) ;
+\stoptyping
+
+These 8 relations can be solved by \METAPOST, since all dependencies are known.
+
+\starttyping
+x1 = 0                ; y1 = height/2 ;
+x2 = width/2-height/4 ; y2 = y1       ;
+x3 = width/2+height/4 ; y3 = y4       ;
+x4 = width            ; y4 = 0        ;
+\stoptyping
+
+Since we express the variables \type {x} and \type {y} in terms of relations, we
+cannot reuse them, because that would mean that inconsistent relations occur. So,
+the following lines will lead to an error message:
+
+\starttyping
+z1 = (10,20) ; z1 = (30,50) ;
+\stoptyping
+
+For similar reasons, we may not assign a value (using \type {:=}) to such a \type
+{z} variable. Within a \METAPOST\ figure, \type {z} variables are automatically
+saved, which means that they can be reused for each figure.
+
+\startbuffer[x]
+drawpath p ; drawpoints p ; drawpointlabels p ;
+\stopbuffer
+
+So far, we have defined the following segment of the logo.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,x]
+\stoplinecorrection
+
+\startbuffer[e]
+z5 = (x4+height/2, y1) ;
+z6 = (x4, 2y1) ;
+z7 = 1.5[z5,z6] ;
+
+path q ; q := z3--z4--z5--z7 ;
+\stopbuffer
+
+The next expressions are used to define the second segment. The third expression
+determines \type {z7} to be positioned on the line \type {z5--z6}, where we
+extend this line by 50\%.
+
+\typebuffer[e]
+
+\startbuffer[x]
+drawpath q ; drawpoints q ; drawpointlabels q ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,x]
+\stoplinecorrection
+
+If we combine these two segments, we get:
+
+\startbuffer[x]
+drawpath p ; drawpoints p ; drawpointlabels p ;
+swappointlabels := true ;
+drawpath q ; drawpoints q ; drawpointlabels q ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,x]
+\stoplinecorrection
+
+However, when we draw them using the right linewidth and color, you will notice
+that we're not yet done:
+
+\startbuffer[f]
+draw p withcolor nsblue ; draw q withcolor nsblue ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,f]
+\stoplinecorrection
+
+The second curve is similar to the first one, but rotated over 180 degrees.
+
+\startbuffer[g]
+addto currentpicture also currentpicture
+  rotatedaround (.5[z2,z3],180) shifted (height/4,height/2) ;
+\stopbuffer
+
+\typebuffer[g]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,f,g]
+\stoplinecorrection
+
+In order to get the sharp edges, we need to clip off part of
+the curves and at first sight, we may consider using a
+scaled bounding box. However, when we show the natural
+bounding box, you will notice that a more complicated bit of
+calculations is needed.
+
+\startbuffer[x]
+draw boundingbox currentpicture
+  withpen pencircle scaled .5mm withcolor .625white ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,f,g,x]
+\stoplinecorrection
+
+The right clip path is calculated using the following expressions. Watch how we
+use \type {rt} and \type {top} to correct for the linewidth.
+
+\startbuffer[h]
+numeric d, lx, ly, ux, uy ; d = line/2 ;
+
+lx = -3d - d/3  ; ly = -d ; ux = rt x5 + d/3 ; uy = top y6 ;
+
+path r ; r := (lx,ly)--(ux,ly)--(ux,uy)--(lx,uy)--cycle;
+\stopbuffer
+
+\typebuffer[h]
+
+The clipping path is applied by saying:
+
+\startbuffer[i]
+clip currentpicture to r ;
+\stopbuffer
+
+\typebuffer[i]
+
+The result is quite acceptable:
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,f,g,h,i]
+\stoplinecorrection
+
+But, if you watch closely to how this graphic extends into to left margin of this
+document, you will see that the bounding box is not yet right.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,f,g,h,i,x]
+\stoplinecorrection
+
+\startbuffer[j]
+setbounds currentpicture to r ;
+\stopbuffer
+
+\typebuffer[j]
+
+We use the same path \type {r} to correct the bounding box.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,f,g,h,i,j,x]
+\stoplinecorrection
+
+There are a few subtle points involved, like setting the \type {linejoin}
+variable. If we had not set it to \type {mitered}, we would have got round
+corners. We don't set the \type {linecap}, because a flat cap would not extend
+far enough into the touching curve and would have left a small hole. The next
+example shows what happens if we set these variables to the wrong values:
+
+\startbuffer[bb]
+linejoin := rounded ; linecap := mitered ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,bb,c,d,e,f,g,h,i,j]
+\stoplinecorrection
+
+In fact we misuse the fact that both curves overlay each other.
+
+\startbuffer[f]
+draw p withcolor nsblue ; draw q withcolor .625white ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d,e,f,g,h,i,j]
+\stoplinecorrection
+
+The complete logo definition is a bit more extensive because we also want to add
+a background. Because we need to clip the blue foreground graphic, we must
+temporarily store it when we fill the background.
+
+\typebuffer[ns]
+
+For practical use it makes sense to package this definition in a macro to which
+we pass the dimensions.
+
+\stopsection
+
+\startsection[title={Music sheets}]
+
+The next example demonstrates quite some features. Imagine that we want to make
+us a couple of sheets so that we can write a musical masterpiece. Let's also
+forget that \TEX\ can draw lines, which means that somehow we need to use
+\METAPOST.
+
+Drawing a bar is not that complicated as the following code demonstrates.
+
+\startbuffer
+\startusableMPgraphic{bar}
+  vardef MusicBar (expr width, gap, linewidth, barwidth) =
+    image
+      ( interim linecap := butt ;
+        for i=1 upto 5 :
+          draw ((0,0)--(width,0)) shifted (0,(i-1)*gap)
+            withpen pencircle scaled linewidth ;
+        endfor ;
+        for i=llcorner currentpicture -- ulcorner currentpicture ,
+              lrcorner currentpicture -- urcorner currentpicture :
+          draw i withpen pencircle scaled barwidth ;
+        endfor ; )
+  enddef ;
+\stopusableMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can define the sidebars a bit more efficient using two predefined subpaths:
+
+\starttyping
+for i=leftboundary currentpicture, rightboundary currentpicture :
+\stoptyping
+
+We define a macro \type {MusicBar} that takes four arguments. The first two
+determine the dimensions, the last two concern the line widths. Now watch how we
+can use this macro:
+
+\startbuffer
+\includeMPgraphic{bar} ;
+draw MusicBar (200pt, 6pt, 1pt, 2pt) ;
+draw MusicBar (300pt, 6pt, 1pt, 2pt) shifted (0,-30pt) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+As you can see in this example, the bar is a picture that can be transformed
+(shifted in our case). However, a close look at the macro teaches us that it does
+a couple of draws too. This is possible because we wrap the whole in an image
+using the \type {image} macro. This macro temporary saves the current picture,
+and at the end puts the old \type {currentpicture} under the new one.
+
+We wrap the whole in a \type {vardef}. This means that the image is returned as
+if it was a variable. Actually, the last thing in a \type {vardef} should be a
+proper return value, in our case a picture. This also means that we may not end
+the \type {vardef} with a semi colon. So, when the content of the \type {vardef}
+is expanded, we get something
+
+\starttyping
+draw some_picture ... ;
+\stoptyping
+
+Because we are still drawing something, we can add transform directives and set
+attributes, like the color.
+
+The second \type {for} loop demonstrates two nice features. Instead of repeating
+the draw operation by copying code, we apply it to a list, in our case a list of
+paths. This list contains two simple line paths. Because an \type {image} starts
+with a fresh \type {currentpicture}, we can safely use the bounding box data to
+determine the height of the line.
+
+The next step in producing the sheets of paper is to put several bars on a page,
+preferable with the width of the current text. This time we will use a reusable
+graphic, because each bar is the same.
+
+\startbuffer
+\startreusableMPgraphic{bars}
+  \includeMPgraphic{bar} ;
+  draw MusicBar (TextWidth, 6pt, 1pt, 2pt) withcolor .625yellow ;
+\stopreusableMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+\reuseMPgraphic{bars}
+\stoplinecorrection
+
+Instead of going through the trouble of letting \METAPOST\ calculate the positions
+of the bars, we will use \TEX. We put 12 bars on a page and let \TEX\ take care
+of the inter||bar spacing. Because we only want stretchable space between bars,
+called glue in \TEX, we need to remove the last added glue.
+
+\startnotmode[screen]
+
+\startbuffer[music]
+\startstandardmakeup[doublesided=no,page=]
+  \dorecurse{15}{\reuseMPgraphic{bars}\vfill}\removelastskip
+\stopstandardmakeup
+\stopbuffer
+
+\stopnotmode
+
+\startmode[screen]
+
+\startbuffer[music]
+\startstandardmakeup[doublesided=no,page=]
+  \dorecurse{10}{\reuseMPgraphic{bars}\vfill}\removelastskip
+\stopstandardmakeup
+\stopbuffer
+
+\stopmode
+
+\typebuffer[music]
+
+\startusableMPgraphic{bar}
+  vardef MusicBar (expr width, gap, linewidth, barwidth) =
+    image
+      ( interim linecap := butt ;
+        for i=1 upto 5 :
+          draw ((0,0)--(width,0))
+            randomized (1pt,1.5pt)
+            shifted (0,(i-1)*gap)
+            withpen pencircle scaled linewidth ;
+        endfor ;
+        for i=llcorner currentpicture -- ulcorner currentpicture ,
+              lrcorner currentpicture -- urcorner currentpicture :
+          draw i randomized 2pt shifted (0,-1pt)
+            withpen pencircle scaled barwidth ;
+        endfor ; )
+  enddef ;
+\stopusableMPgraphic
+
+\startreusableMPgraphic{bars} % trigger a new one
+  \includeMPgraphic{bar} ;
+  draw MusicBar (TextWidth, 6pt, 1pt, 2pt) withcolor .625yellow ;
+\stopreusableMPgraphic
+
+It may add to the atmosphere of handy||work if you slightly randomize the lines.
+We leave it up to the reader to figure out how the code should be changed to
+accomplish this.
+
+\startlinecorrection[blank]
+\reuseMPgraphic{bars}
+\stoplinecorrection
+
+The complete result is shown on the next page.
+
+\startpostponing
+\getbuffer[music]
+\stoppostponing
+
+\stopsection
+
+\startsection[title={The euro symbol}]
+
+When Patrick Gundlach posted a nice \METAPOST\ version of the euro symbol to the
+\CONTEXT\ discussion list, he added the comment \quotation {The official
+construction is ambiguous: how thick are the horizontal bars? How much do they
+stick out to the left? Is this thing a circle or what? Are the angles on the left
+side of the bars the same as the one on the right side? \unknown} The alternative
+below is probably not as official as his, but permits a finetuning. You are
+warned: whatever you try, the euro {\em is} and {\em will remain} an ugly symbol.
+
+We use a couple of global variables to control the euro shape within reasonable
+bounds. Then we define two circles. Next we define a vertical line that we use in
+a couple of cut and paste operations. Watch how the top left point of the outer
+circle determines the slant of the line that we use to slice the vertical bars.
+
+\startbuffer[euro]
+boolean trace_euro ; trace_euro := false ;
+
+vardef euro_symbol = image ( % begin_of_euro
+
+if unknown euro_radius   : euro_radius   := 2cm             ; fi ;
+if unknown euro_width    : euro_width    := 3euro_radius/16 ; fi ;
+if unknown euro_r_offset : euro_r_offset := euro_width      ; fi ;
+if unknown euro_l_offset : euro_l_offset := euro_radius/32  ; fi ;
+if unknown euro_l_shift  : euro_l_shift  := euro_r_offset   ; fi ;
+if unknown euro_v_delta  : euro_v_delta  := euro_width/4    ; fi ;
+
+save
+  outer_circle, inner_circle, hor_bar,
+  right_line, right_slant, top_slant,  bot_slant,
+  euro_circle, euro_topbar, euro_botbar ;
+
+path
+  outer_circle, inner_circle, hor_bar,
+  right_line, right_slant, top_slant, bot_slant,
+  euro_circle, euro_topbar, euro_botbar ;
+
+outer_circle := fullcircle scaled euro_radius ;
+inner_circle := fullcircle scaled (euro_radius-euro_width) ;
+
+if trace_euro : for i = outer_circle, inner_circle :
+  draw i withpen pencircle scaled 1pt withcolor .5white ;
+endfor ; fi ;
+
+right_line :=
+  (lrcorner outer_circle -- urcorner outer_circle)
+  shifted (-euro_r_offset,0) ;
+
+outer_circle := outer_circle cutbefore right_line ;
+
+right_slant :=
+  point 0 of outer_circle
+  -- origin shifted (0,ypart lrcorner outer_circle) ;
+
+euro_circle := buildcycle(outer_circle, right_line,
+  reverse inner_circle, reverse right_slant) ;
+
+hor_bar := (-euro_radius,0) -- (euro_radius,0) ;
+
+top_slant :=
+  right_slant shifted (-euro_radius+euro_r_offset-euro_l_offset,0) ;
+
+bot_slant :=
+  top_slant shifted (0,-euro_l_shift) ;
+
+if trace_euro : for i = right_line, right_slant, top_slant, bot_slant :
+  draw i withpen pencircle scaled 1pt withcolor .5white ;
+endfor ; fi ;
+
+euro_topbar := buildcycle
+  (top_slant, hor_bar shifted (0, euro_v_delta),
+   right_slant, hor_bar shifted (0, euro_v_delta+euro_width/2)) ;
+
+euro_botbar := buildcycle
+  (bot_slant, hor_bar shifted (0,-euro_v_delta),
+   right_slant, hor_bar shifted (0,-euro_v_delta-euro_width/2)) ;
+
+for i = euro_circle, euro_topbar, euro_botbar :
+  draw i withpen pencircle scaled 0 ;
+endfor ;
+for i = euro_circle, euro_topbar, euro_botbar :
+  fill i withpen pencircle scaled 0 ;
+endfor ;
+
+if trace_euro :
+  drawpoints euro_circle withcolor red   ;
+  drawpoints euro_topbar withcolor green ;
+  drawpoints euro_botbar withcolor blue  ;
+fi ;
+
+) enddef ; % end_of_euro
+\stopbuffer
+
+\typebuffer[euro]
+
+We only set a parameter when it is not yet set. This has
+the advantage that we don't have to set them when we change
+one. This way of manipulating paths (cutting and building)
+does not always work well because of rounding errors, but
+here it does work.
+
+\startbuffer[demo]
+euro_radius := 4cm ; trace_euro := true ; draw euro_symbol ;
+\stopbuffer
+
+\typebuffer[demo]
+
+For educational purposes, we have added a bit of
+tracing. When enabled, the euro shows up as:
+
+\startlinecorrection[blank]
+\processMPbuffer[euro,demo]
+\stoplinecorrection
+
+Of course it would be best to define the euro as one shape, but we won't go
+though that process right now. By packaging the combined paths in an image, we
+can conveniently color the euro symbol:
+
+\startbuffer[demo]
+draw euro_symbol withcolor .625red ;
+\stopbuffer
+
+\typebuffer[demo]
+
+\startlinecorrection[blank]
+\processMPbuffer[euro,demo]
+\stoplinecorrection
+
+You may wonder why we both draw and fill the euro, using a pen with zero width.
+We've done this in order to demonstrate the \type {redraw} and \type {refill}
+macros.
+
+\startbuffer[extra]
+redraw currentpicture withpen pencircle scaled 4pt withcolor .625yellow ;
+refill currentpicture withcolor .625white ;
+setbounds currentpicture to boundingbox currentpicture enlarged 2pt ;
+\stopbuffer
+
+\typebuffer[extra]
+
+\startlinecorrection[blank]
+\processMPbuffer[euro,demo,extra]
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Killing time}]
+
+Not seldom \TEX\ users want to use this program and its meta||relatives as
+general purpose tools, even at the cost of quite some effort or suboptimal
+results. Imagine that you are under way from our planet to Mars. After a long
+period of sleep you wake up and start wondering on what track you are. You even
+start questioning the experts that send you on your way, so you pop open your
+laptop, launch your editor and start metaposting.
+
+First you need to determine the begin and end points of your journey. For now it
+is enough to know the relative angle of the paths that both planets follow as
+well as the path themselves. We assume circular paths.
+
+\startbuffer
+path a ; a := fullcircle scaled 3cm ;
+path b ; b := fullcircle scaled 2cm rotated 120 ;
+
+draw a withpen pencircle scaled 1mm withcolor .625red ;
+draw b withpen pencircle scaled 1mm withcolor .625yellow ;
+
+draw point 0 of a withpen pencircle scaled 2mm ;
+draw point 0 of b withpen pencircle scaled 2mm ;
+\stopbuffer
+
+\typebuffer
+
+The rotation 120 can be calculated from the relative starting points and time the
+journey will take. Alternatively we can use the time along the path, but this
+would be a bit more fuzzy later on. \footnote {In case you wonder why \METAPOST\
+talks about the time on a path, you now have a cue.}
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+After a bit of playing with drawing paths between the two points, you decide to
+make a macro. We want to feed the angle between the paths but also the connecting
+path. So, we have to pass a path, but unfortunately we don't have direct access
+to the points. By splitting the argument definition we can pass an expression
+first, and a wildcard argument next.
+
+\startbuffer
+\startuseMPgraphic{gamble}
+def Gamble (expr rot) (text track) =
+  path a ; a := fullcircle scaled 3cm ;
+  path b ; b := fullcircle scaled 2cm rotated rot ;
+
+  pair aa ; aa := point 0 of a ;
+  pair bb ; bb := point 0 of b ;
+  path ab ; ab := track ;
+
+  draw a  withpen pencircle scaled 1mm withcolor .625red ;
+  draw b  withpen pencircle scaled 1mm withcolor .625yellow ;
+
+  draw aa withpen pencircle scaled 2mm ;
+  draw bb withpen pencircle scaled 2mm ;
+
+  drawarrow ab withpen pencircle scaled 1mm withcolor .625white ;
+
+  setbounds currentpicture to boundingbox a enlarged 2mm ;
+  draw boundingbox currentpicture withpen pencircle scaled .25mm ;
+enddef ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because at this distance nobody will bother us with the thickness of the pen and
+colors, we code them the hard way. We create our own universe by setting a fixed
+boundingbox.
+
+We leave the Earth in the most popular way, straight upwards and after a few
+cycles, we leave it parallel to the surface. The path drawn reminds much of the
+trajectories shown in popular magazines.
+
+\startbuffer
+\startMPcode
+\includeMPgraphic{gamble} ;
+Gamble(120, aa {(0,1)} .. bb) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+According to \METAPOST, when we leave the Earth straight upwards and want a
+smooth trajectory, we have to pass through outer space.
+
+\startbuffer
+\startMPcode
+\includeMPgraphic{gamble} ;
+Gamble(120,aa {(1,0)} .. bb) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+Given that we want a smooth path as well as a short journey, we can best follow
+Mars' path. Here we face the risk that when we travel slower than Mars does, we
+have a problem.
+
+\startbuffer
+\startMPcode
+\includeMPgraphic{gamble} ;
+Gamble(120,aa {dir 90} .. {precontrol 0 of b rotated 90} bb) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+We can even travel a shorter path when we leave Earth at the surface that faces
+the point of arrival.
+
+\startbuffer
+\startMPcode
+\includeMPgraphic{gamble} ;
+Gamble(120,aa .. {precontrol 0 of b rotated 90} bb) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+In the end we decide that although the trajectories look impressive, we will not
+trust our lives to \METAPOST. A beautiful path is not neccessarily a good path.
+But even then, this macro provides a nice way to experiment with directions,
+controls and tensions.
+
+\stopsection
+
+% \startsection[title={Animations}]
+%
+% {\em Although \METAPOST\ is not that well suited for free hand drawings, you can
+% use it to make stylistics animations.}
+%
+% \stopsection
+
+\startsection[title={Selective randomization}]
+
+In this document we have used a lot of randomization. Because \CONTEXT\ often
+needs multiple runs to sort out cross references, positions, tables of contents,
+and so on, being real random every run would result in endless runs to get things
+right, because the size of graphics changes. This is prevented by storing the
+random seed betweeen runs. You can remove the \type {tuc} file to get a new seed
+(or run \type {context --purgeall}).
+
+Here is another example of randomization. This time we only randomize the control
+points so the main shape sort of remains intact which can be handy when you use
+such random shapes around text but still want a predictable size.
+
+\startbuffer
+\startMPcode
+fill fullcircle scaled 2cm
+    randomizedcontrols 0.1cm
+    withcolor darkred
+    withtransparency (1,.5) ;
+fill ((1cm,0)--(0,1cm)--(-1cm,0)--cycle)
+    randomizedcontrols 0.1cm
+    withcolor darkblue
+    withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+draw image (
+    fill fullcircle scaled 2cm
+        withcolor darkred
+        withtransparency (1,.5) ;
+    fill ((1cm,0)--(0,1cm)--(-1cm,0)--cycle)
+        withcolor darkblue
+        withtransparency (1,.5) ;
+) randomizedcontrols 0.1cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Snapping]
+
+There are quite some helpers in \METAFUN\ and I must admit that I forgot
+about most. Some just ended up in the core because they can be useful, others
+serve as illustration. Here's one of them: \type {snapped}. First we define
+a few helpers that we then use to check out a few shapes.
+
+\startbuffer
+\startMPdefinitions
+def ShowSnapGrid(text shape) =
+    fill (shape xsized 77mm) withcolor white/3 ;
+    draw image (
+        for i=10mm step 5mm until 100mm :
+            draw fullsquare scaled i ;
+        endfor ;
+    ) withcolor 2white/3 ;
+    drawpoints (shape xsized 77mm) withcolor black ;
+enddef ;
+
+vardef SnapShape expr shape =
+    image (
+        draw       shape ;
+        drawpoints shape ;
+    )
+enddef ;
+
+vardef ShowSnapShape expr shape =
+    ShowSnapGrid(shape);
+
+    draw SnapShape(shape xsized 77mm snapped -5mm      ) withcolor red ;
+    draw SnapShape(shape xsized 77mm snapped  5mm      ) withcolor red ;
+    draw SnapShape(shape xsized 77mm snapped (5mm,10mm)) withcolor green ;
+    draw SnapShape(shape xsized 77mm snapped (5mm,15mm)) withcolor blue ;
+    draw SnapShape(shape xsized 77mm snapped (5mm,20mm)) withcolor yellow ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In \in {figures} [fig:snapper:1], \in [fig:snapper:2] and \in [fig:snapper:3] we
+see how the original shape gets snapped on the grid. Of course in more complex
+images the direction of the snapping can change the result in an unwanted way,
+like overlapping shapes that obscure others, but normally this snapping is only
+useful for simple predictable cases (like title pages).
+
+\startplacefigure[reference=fig:snapper:1,title={Messing with \type{fullcircle}.}]
+\startMPcode
+    ShowSnapShape(fullcircle);
+\stopMPcode
+\stopplacefigure
+
+\startplacefigure[reference=fig:snapper:2,title={\type{fullsquare}}]
+\startMPcode
+    ShowSnapShape(fullsquare);
+\stopMPcode
+\stopplacefigure
+
+\startplacefigure[reference=fig:snapper:3,title={\type{fulltriangle}}]
+\startMPcode
+    ShowSnapShape(fulltriangle);
+\stopMPcode
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Arrowheads]
+
+Arrows are actually drawn quite well in \METAPOST, as the arrowheads nicely adapt
+to the direction of the point where the arrowhead is attached. There are however
+some limitations as the following examples demonstrate: arrows don't work well
+with transparency and you can probably figure out why. Alan Braslau came up with
+an extension that allows to set the dimple of the head. You can see all this
+in \in {figure} [fig:arrowheads].
+
+\startbuffer[a]
+numeric unit ; unit := mm ;
+
+drawoptions(withcolor .6blue withtransparency (1,.25)) ;
+
+pickup pencircle scaled 2unit ; ahlength := 6unit ;
+
+picture p ; p := image (
+    drawarrow reverse fullcircle rotated - 5 scaled 50unit ;
+    drawarrow reverse fullcircle rotated -10 scaled 30unit ;
+) shifted ( -45unit, 0unit) ;
+
+for i=0 step 90 until 360 : draw p rotated i ; endfor ;
+
+currentpicture := currentpicture shifted - center currentpicture ;
+
+p := currentpicture ; p := image (
+    draw llcorner p -- center p ;
+    drawarrow llcorner p -- 0.875[llcorner p,center p] ;
+) ;
+
+for i=0 step 90 until 360 : draw p rotated i ; endfor ;
+
+clip currentpicture to boundingbox (fullcircle scaled 80unit) ;
+
+if lua.mp.mode("screen") :
+    currentpicture := currentpicture ysized .4TextHeight ;
+else :
+    currentpicture := currentpicture xsized .4TextWidth ;
+fi ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+    resetarrows ;
+\stopbuffer
+
+\startbuffer[a1]
+    ahvariant := 1 ;
+\stopbuffer
+\startbuffer[a2]
+    ahvariant := 2 ;
+\stopbuffer
+
+\startbuffer[a3]
+    ahvariant := 1 ; ahdimple  := 1/2 ;
+\stopbuffer
+\startbuffer[a4]
+    ahvariant := 1 ; ahdimple  := 1 ;
+\stopbuffer
+\startbuffer[a5]
+    ahvariant := 1 ; ahdimple  := 5/2 ;
+\stopbuffer
+
+\startplacefigure[reference=fig:arrowheads,title=The way arrowheads are constructed.]
+    \doifelsemode {screen} {
+        \setupcombination[nx=3,ny=2]
+    } {
+        \setupcombination[nx=2,ny=3]
+    }
+    \startcombination[distance=2em]
+        {\processMPbuffer[a,   b]} {\tttf ahvariant=0}
+        {\processMPbuffer[a1,a,b]} {\tttf ahvariant=1}
+        {\processMPbuffer[a2,a,b]} {\tttf ahvariant=2}
+        {\processMPbuffer[a3,a,b]} {\tttf ahvariant=1, ahdimple=1/2}
+        {\processMPbuffer[a4,a,b]} {\tttf ahvariant=1, ahdimple=1}
+        {\processMPbuffer[a5,a,b]} {\tttf ahvariant=1, ahdimple=5/2}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Teaser]
+
+Sometimes, when playing with \METAPOST\ you run into interesting cases. Here is
+one. The result is shown in \in {figure} [fig:teaser:1].
+
+\startbuffer
+\startusableMPgraphic{BackgroundTeaser}
+    fill OverlayBox enlarged 1mm withcolor darkyellow ; % bleed
+    path p ; p := OverlayBox enlarged  -5mm ;
+    path q ; q := OverlayBox enlarged -10mm ;
+    fill q withcolor white ;
+    drawoptions(withcolor darkred) ;
+    fill reverse topboundary    q -- topboundary    p -- cycle ;
+    fill reverse bottomboundary q -- bottomboundary p -- cycle ;
+    drawoptions(withcolor darkgreen) ;
+    fill reverse leftboundary   q -- leftboundary   p -- cycle ;
+    fill reverse rightboundary  q -- rightboundary  p -- cycle ;
+\stopusableMPgraphic
+
+\defineoverlay
+  [BackgroundTeaser]
+  [\useMPgraphic{BackgroundTeaser}]
+
+\framed
+  [frame=off,
+   offset=15mm,
+   background=BackgroundTeaser,
+   align=normal]
+  {\input knuth }
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[reference=fig:teaser:1,title=Can you guess what happens here?]
+    \getbuffer
+\stopplacefigure
+
+\stopsection
+
+\startsection[title={Lists}]
+
+For some specific purpose I needed to sort a list of paths and therefore
+\METAFUN\ comes with a quick sort macro. Its working can be demonstrated by an
+example.
+
+\startbuffer[a]
+pair p[], pp[] ; numeric n ; n := 25 ;
+for i=1 upto n : p[i] := origin randomized 4cm ; endfor ;
+\stopbuffer
+
+\startbuffer[b]
+copylist(p,pp) ; % unsorted
+drawarrow listtolines(pp) shifted (  0,0) withcolor darkblue ;
+\stopbuffer
+
+\startbuffer[c]
+copylist(p,pp) ; sortlist(pp)() ; % sorted
+drawarrow listtolines(pp) shifted (300,0) withcolor darkyellow ;
+\stopbuffer
+
+\startbuffer[d]
+copylist(p,pp) ; sortlist(pp)(xpart) ;
+drawarrow listtolines(pp) shifted (100,0) withcolor darkred ;
+
+\stopbuffer
+\startbuffer[e]
+copylist(p,pp) ; sortlist(pp)(ypart) ;
+drawarrow listtolines(pp) shifted (200,0) withcolor darkgreen ;
+\stopbuffer
+
+\startbuffer[f]
+vardef whow expr p = (xpart p + ypart p) enddef ;
+
+copylist(p,pp) ; sortlist(pp)(whow) ;
+drawarrow listtolines(pp) shifted (400,0) withcolor darkcyan ;
+\stopbuffer
+
+\startbuffer[g]
+vardef whow expr p = (xpart p ++ ypart p) enddef ;
+
+copylist(p,pp) ; sortlist(pp)(whow) ;
+drawarrow listtolines(pp) shifted (500,0) withcolor darkmagenta ;
+\stopbuffer
+
+\typebuffer[a,b,c,d,e,f,g]
+
+The result of this code is shown in \in {figure} [fig:sorting].
+
+\startplacefigure[reference=fig:sorting,title={Using the sorter.}]
+    \startcombination[3*2]
+        {\processMPbuffer[a,b]} {\tttf unsorted}
+        {\processMPbuffer[a,c]} {\tttf sorted}
+        {\processMPbuffer[a,d]} {\tttf xpart}
+        {\processMPbuffer[a,e]} {\tttf ypath}
+        {\processMPbuffer[a,f]} {\tttf xpart p + ypart p}
+        {\processMPbuffer[a,g]} {\tttf xpart p ++ ypart p}
+    \stopcombination
+\stopplacefigure
+
+There is a helper that converts a list of paths into a shape that covers all
+of them. In \in {figure} [fig:shapedlist] three shaped lists are shown.
+
+\startbuffer[a]
+    def ShowShape(expr e) =
+        draw image (
+
+            save p ; path p[] ;
+
+            def MakeShape(expr i,w,h,x,y) =
+                p[i] := e
+                    xysized ((w,h) randomized (2mm,1mm))
+                    shifted ((x,y) randomized (2mm,1mm)) ;
+            enddef ;
+
+            MakeShape(1,40mm,6mm,10mm,  0mm) ;
+            MakeShape(2,50mm,5mm, 5mm,-10mm) ;
+            MakeShape(3,20mm,8mm,30mm,-20mm) ;
+            MakeShape(4,55mm,5mm,10mm,-30mm) ;
+            MakeShape(5,55mm,5mm, 5mm,-50mm) ;
+
+            save s ; path s ; s := shapedlist(p) ; drawarrow  s ;
+
+            linejoin := butt ;
+
+            for i=1 upto 5 :
+                fill p[i] withcolor .75white withtransparency (1,.5) ;
+                draw thetextext("\tttf " & decimal i, center p[i]) ;
+            endfor ;
+
+        ) ysized 4cm ;
+    enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+ShowShape(unitsquare)
+\stopbuffer
+
+\startbuffer[c]
+ShowShape(unitcircle)
+\stopbuffer
+
+\startbuffer[d]
+ShowShape(unittriangle)
+\stopbuffer
+
+\startplacefigure[reference=fig:shapedlist,title={The \type {shapedlist} macro returns the envelope that covers all the paths in the list.}]
+    \startcombination[3*1]
+        {\processMPbuffer[a,b]} {\tttf unitsquare}
+        {\processMPbuffer[a,c]} {\tttf unitcircle}
+        {\processMPbuffer[a,d]} {\tttf unittriangle}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Table cells]
+
+Sometimes a standard \CONTEXT\ feature doesn't work out as expected. Take the
+following table:
+
+\startbuffer
+\bTABLE[frame=on,framecolor=blue,rulethickness=1pt]
+    \bTR
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD[framecolor=magenta] test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+    \eTR
+    \bTR
+        \bTD test \eTD
+        \bTD[framecolor=red] test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD[framecolor=green] test \eTD
+    \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer
+
+Because cells are drawn top|-|down and left|-|right a next cell border
+overruns the previous one.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\startbuffer
+\bTABLE[frame=on,framecolor=blue,rulethickness=1pt]
+    \bTR
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD[framecolor=magenta,frameoffset=-.5pt] test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+    \eTR
+    \bTR
+        \bTD test \eTD
+        \bTD[framecolor=red,frameoffset=-.5pt] test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD[framecolor=green,frameoffset=-.5pt] test \eTD
+    \eTR
+\eTABLE
+\stopbuffer
+
+You can try this:
+
+\typebuffer
+
+which gives us something that is not okay either for cells that touch an edge:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+but we can cheat:
+
+\startlinecorrection
+\framed
+  [offset=overlay,
+   frameoffset=.5pt,
+   framecolor=blue,
+   rulethickness=1pt]
+  {\getbuffer}
+\stoplinecorrection
+
+This is achieved by framing the whole table:
+
+\starttyping
+\framed
+  [offset=overlay,
+   frameoffset=.5pt,
+   framecolor=blue,
+   rulethickness=1pt]
+  {...}
+\stoptyping
+
+\startbuffer
+\startuseMPgraphic{cell:innerframe}{innercolor}
+    draw OverlayBox enlarged -1.5OverlayLineWidth
+        withpen pensquare scaled OverlayLineWidth
+        withcolor \MPvar{innercolor} ;
+\stopuseMPgraphic
+
+\defineoverlay
+  [innerframe]
+  [{\uniqueMPgraphic{cell:innerframe}%
+      {innercolor=\framedparameter{innercolor}}}]
+
+\bTABLE[frame=on,framecolor=blue,rulethickness=1pt,innercolor=magenta]
+    \bTR
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD[background=innerframe] test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+    \eTR
+    \bTR
+        \bTD test \eTD
+        \bTD[background=innerframe,innercolor=red] test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD test \eTD
+        \bTD[background=innerframe,innercolor=green] test \eTD
+    \eTR
+\eTABLE
+\stopbuffer
+
+A \METAPOST\ alternative is also possible and it gives a bit nicer
+interface too:
+
+\typebuffer
+
+We get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

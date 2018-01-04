@@ -1,0 +1,374 @@
+% language=uk
+
+\setuppapersize
+  [S6]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=darkgray]
+
+\setuplayout
+  [backspace=24pt,
+   topspace=20pt,
+   bottomspace=8pt,
+   width=middle,
+   height=middle,
+   footerdistance=8pt,
+   footer=8pt,
+   header=0pt]
+
+\setupcolors
+  [textcolor=white]
+
+\setupbodyfont
+  [dejavu,14.4pt]
+
+\definecolor[trace:o] [s=1]
+\definecolor[trace:r] [s=1]
+\definecolor[trace:do][s=1]
+\definecolor[trace:dr][s=1]
+
+\usemodule[abr-03]
+
+\definefontfeature[noligatures][liga=no]
+
+\setuphead
+  [section]
+  [page=yes,
+   style=\bfb,
+   after={\blank[3*medium]}]
+
+\setuphead
+  [subsection]
+  [page=no,
+   style=\bf\addfeature{noligatures},
+   before={\blank[3*medium]},
+   after={\blank}]
+
+\setupfooter
+  [strut=no,
+   style=\bf]
+
+\startdocument
+  [title={Picture Fonts},
+   subtitle={welcome to a (beautiful) mess},
+   author={Hans Hagen},
+   occasion={BachoTUG 2017}]
+
+\startstandardmakeup
+    \vskip32pt
+    \bfd \setupinterlinespace
+    \documentvariable{title}
+    \crlf
+    \bfb \setupinterlinespace
+    \vskip12pt
+    \documentvariable{subtitle}
+    \vfill
+    \bfb \setupinterlinespace
+    \documentvariable{author}
+    \crlf
+    \documentvariable{occasion}
+\stopstandardmakeup
+
+\startsubject[title=A Summary]
+
+\startitemize
+\startitem
+    {\bf the macro package's view:} just a font like any other but it needs to configure
+    some extra color related properties
+\stopitem
+\startitem
+    {\bf the engine's view:} depending on the technology a normal font that needs a bit
+    special treatment or needs to be dealt with as collection of graphics
+\stopitem
+\startitem
+    {\bf the viewer's view:} regular outline glyphs or images tagged as kind of
+    characters so that their unicode representation can be cut and paste
+\stopitem
+\startitem
+    {\bf the user's view:} more pictures than glyphs although some people one can
+    communicate using them
+\stopitem
+\stopitemize
+
+So, in practice, for most \TEX\ users it's probably not a high priority font but more a fun
+one.
+
+\stopsubject
+
+\startsubject[title=Technologies]
+
+As each vendor came up with something, we have to deal with a all kinds of formats. And or
+course, as eagerness pushes things on the market before it's perfect we now have to deal
+with all of them.
+
+\startitemize
+\startitem
+    {\bf overlapping glyphs:} this technique uses the \type {colr} and \type {cpal} tables
+    and is actually a quite clean technology, you can combine in different ways
+\stopitem
+\startitem
+    {\bf svg graphics:} this technique uses the \type {svg} table that contains a svg vector
+    image
+\stopitem
+\startitem
+    {\bf bitmap graphics:} this technique uses for instance \type {sbix} tables that can have
+    various graphic images
+\stopitem
+\stopitemize
+
+The first two are already supported in the \CONTEXT\ font loader and processor
+for a while, the last one was added recently.
+
+\blank
+
+Only the overlapping method is useable for the tens of thousands of skin tone combinations of
+families, (kissing) couples, and professions.
+
+\stopsubject
+
+\startsubject[title=Preparation]
+
+For now one has to enable the feature:
+
+\startbuffer
+\definefontfeature[overlay][default][ccmp=yes,colr=yes,dist=yes]
+\definefontfeature[svg]    [default][svg=yes]
+\definefontfeature[bitmap] [default][sbix=yes]
+
+\definefontfeature [colored] [default]
+  [cmcp=yes,dist=yes,
+   colr=yes,svg=yes,sbix=yes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Defining a font is not different from others
+
+\starttyping
+\definefont[MyEmojiFont] [seguiemj*overlay]
+\definefontsynonym[emoji][seguiemj*overlay]
+\stoptyping
+
+As is using:
+
+\starttyping
+{\MyEmojiFont\resolvedemoji{woman}}
+\emoji{woman}
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=Accessing shapes]
+
+\startbuffer
+\definesymbol[man]  [\emoji{man}]
+\definesymbol[woman][\emoji{woman}]
+\definesymbol[girl] [\emoji{girl}]
+\definesymbol[boy]  [\emoji{boy}]
+
+\definesymbol[family][\emoji{family man woman girl boy}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\starttyping
+\definefontsynonym[emoji][file:seguiemj.ttf*default,overlay]
+
+\symbol[boy] \symbol[girl] \symbol[man] \symbol[woman]
+
+\symbol[family]
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=Different fonts]
+
+\def\ShowThem#1#2#3%
+  {\NC #1
+   \NC default
+   \NC \definefontsynonym[emoji][#3*default]\symbol[boy] \symbol[girl] \symbol[man] \symbol[woman]
+   \NC \definefontsynonym[emoji][#3*default]\symbol[family]
+   \NC \NR
+   \NC
+   \NC #2
+   \NC \definefontsynonym[emoji][#3*#2]\symbol[boy] \symbol[girl] \symbol[man] \symbol[woman]
+   \NC \definefontsynonym[emoji][#3*#2]\symbol[family]
+   \NC \NR}
+
+\starttabulate[|T|T|||]
+    \ShowThem{seguiemj}             {overlay}{file:seguiemj.ttf}
+    \ShowThem{emojionecolor-svginot}{svg}    {file:emojionecolor-svginot.ttf}
+    \ShowThem{emojionemozilla}      {overlay}{file:emojionemozilla.ttf}
+    \ShowThem{applecoloremoji}      {bitmap} {file:applecoloremoji.ttc}
+\stoptabulate
+
+\stopsubject
+
+\startsubject[title=Ligatures]
+
+\definefontfeature[seguiemj-cl][default][colr=yes,ccmp=yes,dist=yes]
+\definefontfeature[seguiemj-bw][default][ccmp=yes]
+
+% \definefont[MyEmoji][emojionecolor-svginot*default,svg]
+% \definefont[MyEmoji][seguiemj*seguiemj-bw]
+\definefont[MyEmoji][seguiemj*seguiemj-cl]
+% \definefont[MyEmoji][emojionemozilla*default,overlay]
+% \definefont[MyEmoji][applecoloremoji*default,bitmap]
+
+{\MyEmoji 👨🏽‍🌾 👨🏽‍🍳 👨🏽‍🎓 👨🏽‍🎤 👨🏽‍🎨 👨🏽‍🏫 👨🏽‍🏭 👨🏽‍💻 👨🏽‍💼 👨🏽‍🔧 👨🏽‍🔬 👨🏽‍🚀}
+
+\starttabulate[|T|T||]
+\NC character         \NC 1F477       \NC \MyEmoji \utfchar{"1F477} \NC \NR % construction worker
+\NC skin modifier     \NC 1F3FE       \NC \MyEmoji \utfchar{"1F3FE} \NC \NR % medium dark skin
+\NC ligature          \NC 1F477 1F3FE \NC \MyEmoji \utfchar{"1F477}%
+                                                   \utfchar{"1F3FE} \NC \NR
+\NC zero width joiner \NC 0200D       \NC \MyEmoji \utfchar{"0200D} \NC \NR
+\NC female modifier   \NC 02640 0FE0F \NC \MyEmoji \utfchar{"02640}%
+                                                   \utfchar{"0FE0F} \NC \NR
+\NC the whole lot     \NC             \NC \MyEmoji \utfchar{"1F477}%
+                                                   \utfchar{"1F3FE}%
+                                                   \utfchar{"0200D}%
+                                                   \utfchar{"02640}%
+                                                   \utfchar{"0FE0F} \NC \NR
+\stoptabulate
+
+\starttabulate[|T|T||]
+\NC 1F468 1F3FD 200D 1F33E \NC \MyEmoji 👨🏽‍🌾 \NC man farmer          medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F373 \NC \MyEmoji 👨🏽‍🍳 \NC man cook            medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F393 \NC \MyEmoji 👨🏽‍🎓 \NC man student         medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F3A4 \NC \MyEmoji 👨🏽‍🎤 \NC man singer          medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F3A8 \NC \MyEmoji 👨🏽‍🎨 \NC man artist          medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F3EB \NC \MyEmoji 👨🏽‍🏫 \NC man teacher         medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F3ED \NC \MyEmoji 👨🏽‍🏭 \NC man factory worker  medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F4BB \NC \MyEmoji 👨🏽‍💻 \NC man technologist    medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F4BC \NC \MyEmoji 👨🏽‍💼 \NC man office worker   medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F527 \NC \MyEmoji 👨🏽‍🔧 \NC man mechanic        medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F52C \NC \MyEmoji 👨🏽‍🔬 \NC man scientist       medium skin tone \NC \NR
+\NC 1F468 1F3FD 200D 1F680 \NC \MyEmoji 👨🏽‍🚀 \NC man astronaut       medium skin tone \NC \NR
+\stoptabulate
+
+\stopsubject
+
+\usemodule[fonts-emoji]
+
+\startsubject[title=Snippets]
+
+\start
+
+    \definedfont[seguiemj*seguiemj-cl @ 32pt]
+
+    \ShowEmojiSnippets
+        [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+
+    \vskip1ex
+
+    \ShowEmojiSnippetsOverlay
+        [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+
+    \vskip1ex
+
+    \ShowEmojiGlyphs
+        [family man light skin tone woman dark skin tone girl medium skin tone boy medium skin tone]
+
+\stop
+
+\stopsubject
+
+\startsubject[title=Using \type{\ShowEmoji[^man]}]
+
+\start
+
+    \MyEmoji
+
+    \ShowEmoji[^man]
+
+\stop
+
+\stopsubject
+
+\startsubject[title=Recoloring Seguiem]
+
+\start
+
+\definecolor[emoji-red]   [r=.4]
+\definecolor[emoji-blue]  [b=.4]
+\definecolor[emoji-yellow][y=.4]
+\definecolor[emoji-gray]  [s=.5,t=.5,a=1]
+
+\definefontcolorpalette
+  [emoji-red]
+  [emoji-red,emoji-gray]
+
+\definefontcolorpalette
+  [emoji-blue]
+  [emoji-blue,emoji-gray]
+
+\definefontcolorpalette
+  [emoji-yellow]
+  [emoji-yellow,emoji-gray]
+
+\definefontfeature[seguiemj-r][default][ccmp=yes,dist=yes,colr=emoji-red]
+\definefontfeature[seguiemj-b][default][ccmp=yes,dist=yes,colr=emoji-blue]
+\definefontfeature[seguiemj-y][default][ccmp=yes,dist=yes,colr=emoji-yellow]
+
+\definefont[MyColoredEmojiR][seguiemj*seguiemj-r @ 80pt]
+\definefont[MyColoredEmojiB][seguiemj*seguiemj-b @ 80pt]
+\definefont[MyColoredEmojiY][seguiemj*seguiemj-y @ 80pt]
+
+\MyColoredEmojiR
+    \resolvedemoji{man}
+    \resolvedemoji{woman}
+    \resolvedemoji{baby}
+
+\vskip24pt
+
+\MyColoredEmojiB
+    \resolvedemoji{triangular ruler}
+    \resolvedemoji{rabbit face}
+    \resolvedemoji{family man woman girl boy}
+
+\vskip24pt
+
+\MyColoredEmojiY
+    \resolvedemoji{triangular ruler}
+    \resolvedemoji{rabbit face}
+    \resolvedemoji{family man woman girl boy}
+
+\stop
+
+\page
+
+\starttyping
+\definecolor [emoji-red]  [r=.4]
+\definecolor [emoji-gray] [s=.5,t=.5,a=1]
+
+\definefontcolorpalette
+  [emoji-red]
+  [emoji-red,emoji-gray]
+
+\definefontfeature
+  [seguiemj-r]
+  [default]
+  [ccmp=yes,dist=yes,colr=emoji-red]
+
+\definefont
+  [MyColoredEmojiR]
+  [seguiemj*seguiemj-r @ 80pt]
+
+\MyColoredEmojiR
+    \emoji{man}
+    \emoji{woman}
+    \emoji{baby}
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=Pallet \type{\ShowEmojiPalettes[1]}]
+
+{\MyEmoji \ShowEmojiPalettes[1]}
+
+\stopsubject
+
+\stopdocument

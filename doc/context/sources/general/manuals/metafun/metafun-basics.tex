@@ -1,0 +1,3587 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-basics
+
+\environment metafun-environment
+
+\startchapter[title={A few more details}]
+
+\startintro
+
+In this chapter we will see how to define a \METAPOST\ graphic, and how to
+include it in a document. Since the exact dimensions of graphics play an
+important role in the placement of a graphic, we will explore the way a bounding
+box is constructed.
+
+We will also pay attention to the usage of units and the side effects of scaling
+and shifting, since they can contradict our expectations in unexpected ways.
+Furthermore we will explore a few obscure areas.
+
+\stopintro
+
+\startsection[title={Making graphics}]
+
+\index{graphics}
+
+In this manual we will use \METAPOST\ in a rather straightforward way, and we
+will try to avoid complicated math as much as possible. We will do a bit of
+drawing, clipping, and moving around. Occasionally we will see some more
+complicated manipulations.
+
+When defined as stand||alone graphic, a \METAPOST\ file looks like this:
+
+\starttyping
+% Let's draw a circle.
+
+beginfig (7) ;
+  draw fullcircle scaled 3cm withpen pencircle scaled 1cm ;
+endfig ;
+
+end .
+\stoptyping
+
+The main structuring components in such a file are the \type {beginfig} and \type
+{endfig} macros. Like in a big story, the file has many sub||sentences, where
+each sub||sentence ends with a semi||colon. Although the \type {end} command at
+the end of the file concludes the story, putting a period there is a finishing
+touch. Actually, after the \type {end} command you can put whatever text you
+wish, your comments, your grocery list, whatever. Comments in \METAPOST, prefixed
+by a percent sign, as in \typ {% Let's draw a circle}, are ignored by the
+interpreter, but useful reminders for the programmer.
+
+If the file is saved as \type {yourfile.mp}, then the file is processed by
+\METAPOST\ by issuing the following command:
+
+\starttyping
+mpost yourfile
+\stoptyping
+
+after which you will have a graphic called \type {yourfile.7}, which contains a
+series of \POSTSCRIPT\ commands. Because \METAPOST\ does all the work, this file
+is efficient and compact. The number of distinct \POSTSCRIPT\ operators used is
+limited, which has the advantage that we can postprocess this file rather easily.
+Alternatively \METAPOST\ can generate \SVG\ output. It does when you say
+
+\starttyping
+outputformat := "svg" ;
+\stoptyping
+
+Here we will not go into details about this format. Even \POSTSCRIPT\ is not
+covered in detail as we use \METAPOST\ mostly in embedded form.
+
+We can view this file in a \POSTSCRIPT\ viewer like \GHOSTVIEW\ or convert the
+graphic to \PDF\ (using \type {mptopdf}) and view the result in a suitable \PDF\
+viewer like \ACROBAT. Of course, you can embed such a file in a \CONTEXT\
+document, using a command like:
+
+\starttyping
+\externalfigure[yourfile.7]
+\stoptyping
+
+We will go in more detail about embedding graphics in \in {chapter}
+[sec:embedding].
+
+If you have installed \CONTEXT, somewhere on your system there resides a file
+\type {mp-tool.mp}. If you make a stand||alone graphic, it's best to put the
+following line at the top of your file:
+
+\starttyping
+input mp-tool ; % or input metafun ;
+\stoptyping
+
+By loading this file, the resulting graphic will provide a high resolution
+bounding box, which enables more accurate placement. The file also sets the \typ
+{prologues := 1} so that viewers like \GHOSTVIEW\ can refresh the file when it is
+changed.
+
+Next we will introduce some more \METAPOST\ commands. From now on, we will omit
+the encapsulating \type {beginfig} and \type {endfig} macros. If you want to
+process these examples yourself, you should add those commands yourself, or if
+you use \CONTEXT\ you don't need them at all.
+
+\startbuffer
+pickup pencircle scaled .5cm ;
+draw unitsquare xscaled 8cm yscaled 1cm withcolor .625white ;
+draw origin withcolor .625yellow ;
+pickup pencircle scaled 1pt ;
+draw bbox currentpicture withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+In this example we see a mixture of so called primitives as well as macros. A
+primitive is something hard coded, a built||in command, while a macro is a
+collection of such primitives, packaged in a way that they can be recalled
+easily. Where \type {scaled} is a primitive and \type {draw} a macro, \type
+{unitsquare} is a path variable, an abbreviation for:
+
+\starttyping
+unitsquare = (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle ;
+\stoptyping
+
+The double dash (\type {--}) is also a macro, used to connect two points with a
+straight line segment. However, \type {cycle} is a primitive, which connects the
+last point of the unitsquare to the first on unitsquare's path. Path variables
+must first be declared, as in:
+
+\starttyping
+path unitsquare ;
+\stoptyping
+
+A large collection of such macros is available when you launch \METAPOST. Consult
+the \METAPOST\ manual for details.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+In the first line of our example, we set the drawing pen to \type {.5cm}. You can
+also specify such a dimension in other units, like points (\type {pt}). When no
+unit is provided, \METAPOST\ will use a big point (\type {bp}) , the \POSTSCRIPT\
+approximation of a point.
+
+The second line does just as it says: it draws a rectangle of certain dimensions
+in a certain color. In the third line we draw a colored dot at the origin of the
+coordinate system in which we are drawing. Finally, we set up a smaller pen and
+draw the bounding box of the current picture, using the variable \type
+{currentpicture}. Normally, all drawn shapes end up in this picture variable.
+
+\stopsection
+
+\startsection[title={Bounding boxes}]
+
+\index{boundingbox}
+
+If you take a close look at the last picture in the previous section, you will
+notice that the bounding box is larger than the picture. This is one of the nasty
+side effects of \METAPOST's \type {bbox} macro. This macro draws a box, but with
+a certain offset. The next example shows how we can manipulate this offset.
+Personally I never use the \type {bbox} macro because this offset is rather
+annoying. Also, the \type {boundingbox} operator combined with \type {enlarged}
+can provide any offset you want.
+
+\startbuffer
+pickup pencircle scaled .5cm ;
+draw unitsquare xscaled 8cm yscaled 1cm withcolor .625white ;
+path bb ; bboxmargin := 0pt ; bb := bbox currentpicture ;
+draw bb withpen pencircle scaled 1pt withcolor .625red ;
+draw origin withpen pencircle scaled 5pt withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+In the third line we define a path variable. We assign the current bounding box
+to this variable, but first we set the offset to zero. The last line demonstrates
+how to draw such a path. Instead of setting the pen as we did in the first line,
+we pass the dimensions directly.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Where \type {draw} draws a path, the \type {fill} macro fills one. In order to be
+filled, a path should be closed, which is accomplished by the \type {cycle}
+primitive, as we saw in constructing the \type {unitsquare} path.
+
+\startbuffer
+pickup pencircle scaled .5cm ;
+fill unitsquare xscaled 8cm yscaled 1cm withcolor .625white ;
+path bb ; bboxmargin := 0pt ; bb := bbox currentpicture ;
+draw bb withpen pencircle scaled 1pt withcolor .625red ;
+draw origin withpen pencircle scaled 5pt withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+This example demonstrates that when we fill the path, the resulting graphic is
+smaller. Where \type {draw} follows the center of a path, \type {fill} stays
+inside the path.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+A third alternative is the \type {filldraw} macro. From the previous examples, we
+would expect a bounding box that matches the one of the drawn path.
+
+\startbuffer
+pickup pencircle scaled .5cm ;
+filldraw unitsquare xscaled 8cm yscaled 1cm withcolor .625white ;
+path bb ; bboxmargin := 0pt ; bb := bbox currentpicture ;
+draw bb withpen pencircle scaled 1pt withcolor .625red ;
+draw origin withpen pencircle scaled 5pt withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+% The resulting graphic has the bounding box of the fill. Note
+% how the path, because it is stroked with a .5cm pen, extends
+% beyond the border of the bounding box. The way this image
+% shows up depends on the viewer (settings) you use to render
+% the graphic. For example, in \GHOSTVIEW, if you disable
+% clipping to the bounding box, only the positive quadrant of
+% the graphic is shown. Further, if you enable clipping to the
+% bounding box, this image will look exactly like the previous
+% image created with the fill command. In many cases, it may
+% be best to avoid the \type {filldraw} command.
+
+The resulting graphic has the bounding box of the fill. Note how the path,
+because it is stroked with a .5cm pen, extends beyond the border of the previous
+bounding box. The way this image shows up depends on the viewer (settings) you
+use to render the graphic. For example, in \GHOSTVIEW, if you disable clipping to
+the bounding box, only the positive quadrant of the graphic is shown. \footnote
+{Old versions of \METAPOST\ calculated the boundingbox differently for a \type
+{filldraw}: through the middle of the penpath.}
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+From the previous examples, you can conclude that the following alternative
+results in a proper bounding box:
+
+\startbuffer
+pickup pencircle scaled .5cm ;
+path p ; p := unitsquare xscaled 8cm yscaled 1cm ;
+fill p withcolor .625white ;
+draw p withcolor .625white ;
+path bb ; bboxmargin := 0pt ; bb := bbox currentpicture ;
+draw bb withpen pencircle scaled 1pt withcolor .625red ;
+draw origin withpen pencircle scaled 5pt withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The \CONTEXT\ distribution comes with a set of \METAPOST\ modules, one of which
+contains the \type {drawfill} macro, which provides the outer bounding box.
+\footnote {Starting from version 1.0 \METAPOST\ calculates the boundingbox
+differently and the distinction between \type {drawfill} and \type {filldraw} is
+gone. We keep them around both for compatibility.} Next we demonstrate its use in
+another, more complicated example.
+
+\startbuffer
+picture finalpicture ; finalpicture := nullpicture ;
+numeric n ; n := 0 ; bboxmargin := 0pt ;
+pickup pencircle scaled .5cm ;
+
+def shape =
+  unitsquare scaled 2cm withcolor .625white ;
+  draw bbox currentpicture
+    withpen pencircle scaled .5mm withcolor .625red ;
+  addto finalpicture also currentpicture shifted(n*3cm,0) ;
+  currentpicture := nullpicture ; n := n+1 ;
+enddef ;
+
+fill shape ; draw shape ; filldraw shape ; drawfill shape ;
+
+currentpicture := finalpicture ;
+\stopbuffer
+
+\typebuffer
+
+Here we introduce a macro definition, \type {shape}. In \METAPOST, the start of a
+macro definition is indicated with the keyword \type {def}. Thereafter, you can
+insert other variables and commands, even other macro definitions. The keyword
+\type {enddef} signals the end of the macro definition. The result is shown in
+\in {figure} [fig:draws and fills]; watch the bounding boxes. Close reading of
+the macro will reveal that the \type {fill}, \type {draw}, \type {filldraw} and
+\type {drawfill} macros are applied to the first \type {unitsquare} path in the
+macro.
+
+\placefigure
+  [here]
+  [fig:draws and fills]
+  {A \type {fill}, \type {draw}, \type {filldraw} and \type
+   {drawfill} applied to the same square.}
+  {\processMPbuffer}
+
+In this macro, \type {bbox} calls a macro that returns the enlarged bounding box
+of a path. By setting \type {bboxmargin} we can influence how much the bounding
+box is enlarged. Since this is an existing variable, we don't have to allocate
+it, like we do with~\type{numeric n}. Unless you take special precautions,
+variables are global by nature and persistent outside macros.
+
+\starttyping
+picture finalpicture ; finalpicture := nullpicture ;
+\stoptyping
+
+Just as \type {numeric} allocates an integer variable, the \type {picture}
+primitive allocates a picture data structure. We explicitly have to set this
+picture to nothing using the built||in primitive \type {nullpicture}.
+
+Later on, we will add the drawn paths as accumulated in \type {currentpicture} to
+this \type {finalpicture} in the following manner.
+
+\starttyping
+addto finalpicture also currentpicture shifted(n*3cm,0) ;
+\stoptyping
+
+Since we want to add a few more and don't want them to overlap, we shift them.
+Therefore we have to erase the current picture as well as increment the shift
+counter.
+
+\starttyping
+currentpicture := nullpicture ; n := n+1 ;
+\stoptyping
+
+The \type {drawfill} macro is one of the \METAFUN\ macros. Another handy macro is
+\type {boundingbox}. When used instead of \type {bbox}, you don't have to set the
+margin to zero.
+
+\startbuffer
+drawoptions (withcolor .625white) ;
+path p ; p := unitsquare scaled 2cm ;
+fill p shifted (3cm,0) ;
+pickup pencircle scaled .5cm ; fill p shifted (6cm,0) ;
+fill p shifted (9cm,0) withpen pencircle scaled .5cm ;
+\stopbuffer
+
+\placefigure
+  [here]
+  [fig:more draws and fills]
+  {The influence of pens on \type {fill}.}
+  {\processMPbuffer}
+
+There is a subtle point in filling a shape. In \in {figure} [fig:more draws and
+fills] you see the influence of the pen on a \type {fill} operation. An indirect
+specification has no influence, and results in a filled rectangle with sharp
+corners. The third rectangle is drawn with a direct pen specification which
+results in a larger shape with rounds corners. However, the bounding box is the
+same in all three cases. The graphic is defined as follows. This time we don't
+use a (complicated) macro.
+
+\typebuffer
+
+When a graphic is constructed, its components end up in an internal data
+structure in a more or less layered way. This means that as long as a graphic is
+not flushed, you may consider it to be a stack of paths and texts with the paths
+being drawn or filled shapes or acting as clipping paths or bounding boxes.
+
+When you ask for the dimensions of a graphic the lower left and upper right
+corner are calculated using this stack. Because you can explicitly set bounding
+boxes, you can lie about the dimensions of a graphic. This is a very useful
+feature. In the rare case that you want to know the truth and nothing but the
+truth, you can tweak the \type {truecorners} numeric variable. We will
+demonstrate this with a few examples.
+
+\startbuffer
+fill fullcircle scaled 1cm withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\ruledhbox{\processMPbuffer}\stoplinecorrection
+
+\startbuffer
+fill fullcircle scaled 1cm withcolor .625yellow ;
+setbounds currentpicture to boundingbox currentpicture enlarged 2mm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\ruledhbox{\processMPbuffer}\stoplinecorrection
+
+\startbuffer
+fill fullcircle scaled 1cm withcolor .625yellow ;
+setbounds currentpicture to boundingbox currentpicture enlarged 2mm ;
+interim truecorners := 1 ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\ruledhbox{\processMPbuffer}\stoplinecorrection
+
+\startbuffer
+fill fullcircle scaled 1cm withcolor .625yellow ;
+interim truecorners := 1 ;
+setbounds currentpicture to boundingbox currentpicture enlarged 2mm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\ruledhbox{\processMPbuffer}\stoplinecorrection
+
+As you can see here, as soon as we set \type {truecorners} to~1, the bounding box
+settings are ignored. \footnote {Normally you will use grouping to keep the
+interim local. In \METAFUN\ each figure restores this variable at the beginning.}
+
+There are two related macros: \type {bbwidth} and \type {bbheight} that you can
+apply to a path.
+
+\startbuffer
+fill unitcircle xscaled 4cm yscaled 2cm
+    withpen pencircle scaled 1mm withcolor .625red ;
+draw origin -- (bbwidth(currentpicture),0)
+    withpen pencircle scaled 1mm withcolor .625yellow ;
+draw origin -- (0,bbheight(currentpicture))
+    withpen pencircle scaled 1mm withcolor .625white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+\stopsection
+
+Yet another helper is \type {boundingcircle}. Its effect can best be demonstrated with
+a few examples:
+
+\startbuffer[a]
+path p ; p := fullsquare scaled 2cm ;
+
+draw                p withpen pencircle scaled 3mm withcolor .625white ;
+draw center         p withpen pencircle scaled 3mm withcolor .625white ;
+draw boundingbox    p withpen pencircle scaled 1mm withcolor .625red ;
+draw boundingcircle p withpen pencircle scaled 1mm withcolor .625yellow ;
+\stopbuffer
+
+\startbuffer[b]
+path p ; p := fullcircle scaled 2cm ;
+
+draw                p withpen pencircle scaled 3mm withcolor .625white ;
+draw center         p withpen pencircle scaled 3mm withcolor .625white ;
+draw boundingbox    p withpen pencircle scaled 1mm withcolor .625red ;
+draw boundingcircle p withpen pencircle scaled 1mm withcolor .625yellow ;
+\stopbuffer
+
+\startbuffer[c]
+path p ; p := fulltriangle scaled 2cm ;
+
+draw                p withpen pencircle scaled 3mm withcolor .625white ;
+draw center         p withpen pencircle scaled 3mm withcolor .625white ;
+draw boundingbox    p withpen pencircle scaled 1mm withcolor .625red ;
+draw boundingcircle p withpen pencircle scaled 1mm withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer[a,b,c]
+
+You can consider the \type {boundingcircle} to be a round boundingbox.
+
+\startlinecorrection
+\startcombination[nx=3,ny=1,location=middle]
+    {\processMPbuffer[a]} {square}
+    {\processMPbuffer[b]} {circle}
+    {\processMPbuffer[c]} {triangle}
+\stopcombination
+\stoplinecorrection
+
+\startsection[title={Units}]
+
+\index{units}
+
+Like \TEX, \METAPOST\ supports multiple units of length. In \TEX, these units are
+hard coded and handled by the parser, where the internal unit of length is the
+scaled point (\type {sp}), something on the nanometer range. Because \METAPOST\
+is focused on \POSTSCRIPT\ output, its internal unit is the big point (\type
+{bp}). All other units are derived from this unit and available as numeric
+instead of hard coded.
+
+\starttyping
+mm =  2.83464 ; pt =  0.99626 ; dd =  1.06601 ; bp :=  1 ;
+cm = 28.34645 ; pc = 11.95517 ; cc = 12.79213 ; in := 72 ;
+\stoptyping
+
+Careful reading reveals that only the \type {bp} and \type {in} are fixed, while
+the rest of the dimensions are scalar multiples of \type {bp}.
+
+Since we are dealing with graphics, the most commonly used dimensions are \type
+{pt}, \type {bp}, \type {mm}, \type {cm} and~\type {in}.
+
+\startuseMPgraphic{pt}
+  fill fullsquare scaled 72.27pt withcolor .625yellow ;
+  fill fullcircle scaled 72.27pt withcolor white ;
+  label("72.27pt", center currentpicture) ;
+\stopuseMPgraphic
+\startuseMPgraphic{bp}
+  fill fullsquare scaled 72bp withcolor .625yellow ;
+  fill fullcircle scaled 72bp withcolor white ;
+  label("72bp", center currentpicture) ;
+\stopuseMPgraphic
+\startuseMPgraphic{mm}
+  fill fullsquare scaled 25.4mm withcolor .625yellow ;
+  fill fullcircle scaled 25.4mm withcolor white ;
+  label("25.4mm", center currentpicture) ;
+\stopuseMPgraphic
+\startuseMPgraphic{cm}
+  fill fullsquare scaled 2.54cm withcolor .625yellow ;
+  fill fullcircle scaled 2.54cm withcolor white ;
+  label("2.54cm", center currentpicture) ;
+\stopuseMPgraphic
+\startuseMPgraphic{in}
+  fill fullsquare scaled 1in withcolor .625yellow ;
+  fill fullcircle scaled 1in withcolor white ;
+  label("1in", center currentpicture) ;
+\stopuseMPgraphic
+
+\startlinecorrection[blank]
+\hbox to \hsize
+  {\useMPgraphic{pt}\hss
+   \useMPgraphic{bp}\hss
+   \useMPgraphic{mm}\hss
+   \useMPgraphic{cm}\hss
+   \useMPgraphic{in}}
+\stoplinecorrection
+
+The text in the center of the leftmost graphic is typeset by \METAPOST\ as a
+label.
+
+\starttyping
+fill fullsquare scaled 72.27pt withcolor .625yellow ;
+fill fullcircle scaled 72.27pt withcolor white ;
+label("72.27pt", center currentpicture) ;
+\stoptyping
+
+In \METAPOST\ the following lines are identical:
+
+\starttyping
+draw fullcircle scaled 100 ;
+draw fullcircle scaled 100bp ;
+\stoptyping
+
+You might be tempted to omit the unit, but this can be confusing, particularly if
+you also program in a language like \METAFONT, where the \type {pt} is the base
+unit. This means that a circle scaled to 100 in \METAPOST\ is not the same as a
+circle scaled to 100 in \METAFONT. Consider the next definition:
+
+\startbuffer
+pickup pencircle scaled 0 ;
+fill unitsquare
+  xscaled 400pt yscaled -.5cm withcolor .625red ;
+fill unitsquare
+  xscaled 400bp yscaled +.5cm withcolor .625yellow ;
+drawoptions(withcolor white) ;
+label.rt("400 pt", origin shifted (0, -.25cm)) ;
+label.rt("400 bp", origin shifted (0, +.25cm)) ;
+\stopbuffer
+
+\typebuffer
+
+When processed, the difference between a \type {pt} and \type {bp} shows rather
+well. Watch how we use \type {.rt} to move the label to the right; you can
+compare this with \TEX's macro \type {\rlap}. You might want to experiment with
+\type {.lft}, \type {.top}, \type {.bot}, \type {.ulft}, \type {.urt}, \type
+{.llft} and \type {.lrt}.
+
+The difference between both bars is exactly \scratchdimen = 400 bp
+\advance\scratchdimen by -400 pt \the \scratchdimen \space (as calculated by
+\TEX).
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Where \TEX\ is anchored in tradition, and therefore more or less uses the \type
+{pt} as the default unit, \METAPOST, much like \POSTSCRIPT, has its roots in the
+computer sciences. There, to simplify calculations, an inch is divided in 72 big
+points, and .72pt is sacrificed.
+
+When you consider that \POSTSCRIPT\ is a high end graphic programming language,
+you may wonder why this sacrifice was made. Although the difference between \type
+{1bp} and \type {1pt} is miniscule, this difference is the source of much
+(unknown) confusion. When \TEX\ users talk about a \type {10pt} font, a desktop
+publisher hears \type {10bp}. In a similar vein, when we define a papersize
+having a width of \type {600pt} and a height of \type {450pt}, which is papersize
+\type {S6} in \CONTEXT, a \POSTSCRIPT\ or \PDF\ viewer will report slightly
+smaller values as page dimensions. This is because those programs claim the \type
+{pt} to be a \type {bp}. [This confusion can lead to interesting discussions with
+desktop publishers when they have to use \TEX. They often think that their demand
+of a baseline distance of \type {13.4} is met when we set it to \type {13.4pt},
+while actually they were thinking of \type {13.4bp}, which of course in other
+programs is specified using a \type {pt} suffix.]
+
+Therefore, when embedding graphics in \CONTEXT, we strongly recommend that you
+use \type {pt} as the base unit instead. The main reason why we spend so many
+words on this issue is that, when neglected, large graphics may look inaccurate.
+Actually, when taken care of, it is one of the (many) reasons why \TEX\ documents
+always look so accurate. Given that the eye is sensitive to distortions of far
+less than \type {1pt}, you can be puzzled by the fact that many drawing programs
+only provide a bounding box in rounded units. Thereby, they round to the next
+position, to prevent unwanted cropping. For some reason this low resolution has
+made it into the high end \POSTSCRIPT\ standard.
+
+In \CONTEXT\ we try to deal with these issues as well as possible.
+
+\stopsection
+
+\startsection[title={Scaling and shifting}]
+
+\index{scaling}
+\index{shifting}
+
+When we draw a shape, \METAPOST\ will adapt the bounding box accordingly. This
+means that a graphic has its natural dimensions, unless of course we adapt the
+bounding box manually. When you limit your graphic to a simple shape, say a
+rectangle, shifting it to some place can get obscured by this fact. Therefore,
+the following series of shapes appear to be the same.
+
+\startbuffer
+draw
+  unitsquare xscaled 6cm yscaled 1.5cm
+  withpen pencircle scaled 2mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+\startbuffer
+draw
+  unitsquare shifted (.5,.5) xscaled 6cm yscaled 1.5cm
+  withpen pencircle scaled 2mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+\startbuffer
+draw
+  unitsquare shifted (-.5,-.5) xscaled 6cm yscaled 1.5cm
+  withpen pencircle scaled 2mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+\startbuffer
+draw
+  unitsquare xscaled 6cm yscaled 1.5cm shifted (1cm,1cm)
+  withpen pencircle scaled 2mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+\startbuffer
+draw
+  unitsquare xscaled 6cm yscaled 1.5cm shifted (1.5cm,1cm)
+  withpen pencircle scaled 2mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+However, when we combine such graphics into one, we will see in what respect the
+scaling and shifting actually takes place.
+
+\startbuffer
+draw
+  unitsquare xscaled 6cm yscaled 2cm
+  withpen pencircle scaled 3.0mm withcolor .625yellow ;
+draw
+  unitsquare shifted (.5,.5) xscaled 6cm yscaled 2cm
+  withpen pencircle scaled 3.0mm withcolor .625red ;
+draw
+  unitsquare xscaled 6cm yscaled 2cm shifted (1cm,1cm)
+  withpen pencircle scaled 3.0mm withcolor .625white ;
+draw
+  unitsquare xscaled 6cm yscaled 2cm shifted (1.5cm,1cm)
+  withpen pencircle scaled 1.5mm withcolor white ;
+draw
+  unitsquare shifted (-.5,-.5) xscaled 6cm yscaled 2cm
+  withpen pencircle scaled 1mm withcolor black ;
+draw origin withpen pencircle scaled 1mm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+As you can see, the transformations are applied in series. Sometimes this is not
+what we want, in which case we can use parentheses to force the desired
+behaviour. The lesson learned is that {\em scaling and shifting} is not always
+the same as {\em shifting and scaling}.
+
+\startbuffer
+draw
+  origin -- origin shifted ((4cm,0cm) shifted (4cm,0cm))
+  withpen pencircle scaled 1cm withcolor .625white ;
+draw
+  origin -- origin shifted (4cm,0cm) shifted (4cm,0cm)
+  withpen pencircle scaled 8mm withcolor .625yellow ;
+draw
+  (origin -- origin shifted (4cm,0cm)) shifted (4cm,0cm)
+  withpen pencircle scaled 6mm withcolor .625red ;
+draw
+  origin -- (origin shifted (4cm,0cm) shifted (4cm,0cm))
+  withpen pencircle scaled 4mm withcolor white ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+Especially when a path results from a call to a macro, using parentheses around a
+path may help, as in the following example.
+
+\startbuffer
+def unitslant = origin -- origin shifted (1,1) enddef ;
+draw
+  unitslant xscaled 5cm yscaled 1cm
+  withpen pencircle scaled 1cm withcolor .625red ;
+draw
+  (unitslant) xscaled 5cm yscaled 1cm
+  withpen pencircle scaled 5mm withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+The next definition of \type {unitslant} is therefore better.
+
+\startbuffer
+def unitslant = (origin -- origin shifted (1,1)) enddef ;
+draw
+  unitslant xscaled 5cm yscaled 1cm
+  withpen pencircle scaled 5mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]\processMPbuffer\stoplinecorrection
+
+An even better alternative is:
+
+\startbuffer
+path unitslant ; unitslant = origin -- origin shifted (1,1) ;
+draw
+  unitslant xscaled 5cm yscaled 1cm
+  withpen pencircle scaled 5mm withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Curve construction}]
+
+\index{curves}
+
+\doifmodeelse{screen}
+  {\def\Xcom{3}\def\Ycom{2}\def\Zcom{\the\textheight}}
+  {\def\Xcom{2}\def\Ycom{3}\def\Zcom{\the\textwidth }}
+
+Chapter 3 of the \METAFONT\ book explains the mathematics behind the construction
+of curves. Both \METAFONT\ and \METAPOST\ implement B\'ezier curves. The fact
+that these curves are named after Pierre B\'ezier obscures the fact that the math
+behind them originates with Serge\u{\i} Bernshte\u{\i}n.
+
+The points on the curve are determined by the following formula:
+
+\placeformula[-]
+\startformula
+z(t) = (1-t)^3 z_1 + 3 (1-t)^2 t z_2 + 3 (1-t) t^2 z_3 + t^3 z_4
+\stopformula
+
+Here, the parameter $t$ runs from $[0,1]$. As you can see, we are dealing with
+four points. In practice this means that when we construct a curve from multiple
+points, we act on two points and the two control points in between. So, the
+segment that goes from $z_1$ to $z_4$ is calculated using these two points and
+the points that \METAFONT|/|\METAPOST\ calls post control point and pre control
+point.
+
+\startbuffer[a]
+vardef dodrawmidpoints (expr a, b, c, d, n, col, m)  =
+  save e, f, g, h, i, j ; pair e, f, g, h, i, j ;
+  e := .5[a,b] ; f := .5[b,c] ; g := .5[c,d] ;
+  h := .5[e,f] ; i := .5[f,g] ; j := .5[h,i] ;
+  if m= 0 : drawpoints j          elseif
+     m= 1 : draw       a--b--c--d elseif
+     m= 2 : draw       e--f--g    elseif
+     m= 3 : draw       h--i       elseif
+     m= 4 : draw       a--e--h--j elseif
+     m= 5 : draw       j--i--g--d elseif
+     m=11 : drawpoints a--b--c--d elseif
+     m=12 : drawpoints e--f--g    elseif
+     m=13 : drawpoints h--i       elseif
+     m=14 : drawpoints a--e--h--j elseif
+     m=15 : drawpoints j--i--g--d     fi withcolor col ;
+  if n>1 :
+    dodrawmidpoints(a, e, h, j, n-1, col, m) ;
+    dodrawmidpoints(j, i, g, d, n-1, col, m) ;
+  fi ;
+enddef ;
+
+vardef drawmidpoints (expr p, n, col, m) =
+  save a, b, c, d ; pair a, b, c, d ;
+  for x=0 upto length(p)-1 :
+    a := point x   of p ; b := postcontrol x   of p ;
+    d := point x+1 of p ; c := precontrol  x+1 of p ;
+    dodrawmidpoints(a,b,c,d,n,col,m) ;
+  endfor ;
+enddef ;
+\stopbuffer
+
+\startbuffer[b]
+path p ; p := (4cm,4cm)..(6cm,0cm)..(1cm,2cm) ;
+\stopbuffer
+
+\startbuffer[c]
+drawpath          p ;
+drawcontrollines  p withcolor .625yellow ;
+drawcontrolpoints p withcolor .625red ;
+drawpoints        p withcolor .625red ;
+freelabel(btex $z_1$ etex, point       0 of p, center p) ;
+freelabel(btex $z_2$ etex, postcontrol 0 of p, center p) ;
+freelabel(btex $z_3$ etex, precontrol  1 of p, center p) ;
+freelabel(btex $z_4$ etex, point       1 of p, center p) ;
+freelabel(btex $z_5$ etex, postcontrol 1 of p, center p) ;
+freelabel(btex $z_6$ etex, precontrol  2 of p, center p) ;
+freelabel(btex $z_7$ etex, point       2 of p, center p) ;
+\stopbuffer
+
+\startbuffer[x]
+draw boundingbox p enlarged 1cm ;
+setbounds currentpicture to boundingbox p enlarged 1cm ;
+currentpicture := currentpicture xsized (.45*\Zcom) ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,x]
+\stoplinecorrection
+
+The previous curve is constructed from the three points $z_1$, $z_4$ and $z_7$.
+The curve is drawn in \METAPOST\ by \type {z1..z4..z7} and is made up out of two
+segments. The first segment is determined by the following points:
+
+\startitemize[packed,n]
+\item point $z_1$ of the curve
+\item the postcontrol point $z_2$ of $z_1$
+\item the precontrol point $z_3$ of $z_4$
+\item point $z_4$ of the curve
+\stopitemize
+
+On the next pages we will see how the whole curve is constructed from these
+quadruples of points. The process comes down to connecting the mid points of the
+straight lines to the points mentioned. We do this three times, which is why
+these curves are classified as third order approximations.
+
+The first series of graphics demonstrates the process of determining the mid
+points. The third order midpoint is positioned on the final curve. The second
+series focuses on the results: new sets of four points that will be used in a
+next stage. The last series only shows the third order midpoints. As you can see,
+after some six iterations we have already reached a rather good fit of the final
+curve. The exact number of iterations depends on the resolution needed. You will
+notice that the construction speed (density) differs per segment.
+
+\startpostponing
+
+% cc .. hh in order to avoid conflicts with c-...
+
+\startbuffer[cc]
+drawpath p ; drawpoints p ; drawcontrolpoints p ;
+\stopbuffer
+
+\startbuffer[dd]
+drawmidpoints(p,1,.625red, 11) ; drawmidpoints(p,1,.625yellow, 1) ;
+\stopbuffer
+
+\startbuffer[ee]
+drawmidpoints(p,1,.625red, 12) ; drawmidpoints(p,1,.625yellow, 2) ;
+\stopbuffer
+
+\startbuffer[ff]
+drawmidpoints(p,1,.625red, 13) ; drawmidpoints(p,1,.625yellow, 3) ;
+\stopbuffer
+
+\startbuffer[gg]
+drawmidpoints(p,1,.625red, 14) ; drawmidpoints(p,1,.625yellow, 4) ;
+\stopbuffer
+
+\startbuffer[hh]
+drawmidpoints(p,1,.625red, 15) ; drawmidpoints(p,1,.625yellow, 5) ;
+\stopbuffer
+
+\startbuffer
+\startcombination[\Xcom*\Ycom]
+  {\processMPbuffer[a,b,cc,x]}          {points}
+  {\processMPbuffer[a,b,cc,dd,x]}       {first  order curve}
+  {\processMPbuffer[a,b,cc,dd,ee,x]}    {second order curve}
+  {\processMPbuffer[a,b,cc,dd,ee,ff,x]} {third  order curve}
+  {\processMPbuffer[a,b,cc,dd,ee,gg,x]} {left   side  curves}
+  {\processMPbuffer[a,b,cc,dd,ee,hh,x]} {right  side  curves}
+\stopcombination
+\stopbuffer
+
+\getbuffer \page
+
+\startbuffer[dd]
+drawmidpoints(p,1,.625red, 11) ;
+drawmidpoints(p,1,.625yellow, 1) ;
+\stopbuffer
+
+\startbuffer[ee]
+for i=11, 12 : drawmidpoints(p,1,.625red, i) ; endfor ;
+drawmidpoints(p,1,.625yellow, 2) ;
+\stopbuffer
+
+\startbuffer[ff]
+for i=11, 12, 13 : drawmidpoints(p,1,.625red, i) ; endfor ;
+drawmidpoints(p,1,.625yellow, 3) ;
+\stopbuffer
+
+\startbuffer[gg]
+for i=11,12,13,14 : drawmidpoints(p,1,.625red, i) ; endfor ;
+drawmidpoints(p,1,.625yellow, 4) ;
+\stopbuffer
+
+\startbuffer[hh]
+for i=11, 12, 13, 14, 15 : drawmidpoints(p,1,.625red, i) ; endfor ;
+drawmidpoints(p,1,.625yellow, 5) ;
+\stopbuffer
+
+\startbuffer
+\startcombination[\Xcom*\Ycom]
+  {\processMPbuffer[a,b,cc,x]}   {points}
+  {\processMPbuffer[a,b,cc,dd,x]} {first  order points}
+  {\processMPbuffer[a,b,cc,ee,x]} {second order points}
+  {\processMPbuffer[a,b,cc,ff,x]} {third  order points}
+  {\processMPbuffer[a,b,cc,gg,x]} {left   side  points}
+  {\processMPbuffer[a,b,cc,hh,x]} {right  side  points}
+\stopcombination
+\stopbuffer
+
+\getbuffer \page
+
+\startbuffer[cc]
+drawpath p ; drawmidpoints (p,1,.625yellow, 0) ;
+\stopbuffer
+
+\startbuffer[dd]
+drawpath p ; drawmidpoints (p,2,.625yellow, 0) ;
+\stopbuffer
+
+\startbuffer[ee]
+drawpath p ; drawmidpoints (p,3,.625yellow, 0) ;
+\stopbuffer
+
+\startbuffer[ff]
+drawpath p ; drawmidpoints (p,4,.625yellow, 0) ;
+\stopbuffer
+
+\startbuffer[gg]
+drawpath p ; drawmidpoints (p,5,.625yellow, 0) ;
+\stopbuffer
+
+\startbuffer[hh]
+drawpath p ; drawmidpoints (p,6,.625yellow, 0) ;
+\stopbuffer
+
+\startbuffer
+\startcombination[\Xcom*\Ycom]
+  {\processMPbuffer[a,b,cc,x]}                {first  iteration}
+  {\processMPbuffer[a,b,cc,dd,x]}             {second iteration}
+  {\processMPbuffer[a,b,cc,dd,ee,x]}          {third  iteration}
+  {\processMPbuffer[a,b,cc,dd,ee,ff,x]}       {fourth iteration}
+  {\processMPbuffer[a,b,cc,dd,ee,ff,gg,x]}    {fifth  iteration}
+  {\processMPbuffer[a,b,cc,dd,ee,ff,gg,hh,x]} {sixths iteration}
+\stopcombination
+\stopbuffer
+
+\getbuffer \page
+
+\stoppostponing
+
+% here we pick up the thread, if we would not flush the
+% pages before the next text, the reader could become
+% confused
+
+The path in these examples is defined as follows:
+
+\typebuffer[b]
+
+If you are playing with graphics like this, the \METAFUN\ macro \type {randomize}
+may come in handy:
+
+\startbuffer[bb]
+p := p randomized (1cm,.5cm) ;
+\stopbuffer
+
+\typebuffer[bb]
+
+If we apply this operation a couple of times we can see how the (control) points
+vary. (Using the randomizer saves us the troubles of finding nice example
+values.) The angle between the tangent as well as the distance from the parent
+point determine the curve.
+
+\startbuffer[xx]
+currentpicture := currentpicture scaled .5 ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\hbox to \hsize
+  {\processMPbuffer[a,b,bb,c,x,xx]\hss
+   \processMPbuffer[a,b,bb,c,x,xx]\hss
+   \processMPbuffer[a,b,bb,c,x,xx]\hss
+   \processMPbuffer[a,b,bb,c,x,xx]}
+\stoplinecorrection
+
+% new thread
+
+Just in case you are interested in how such graphical simulations can be
+organized, we show simplified versions of the macros used here. (In the previous
+examples we minimized the complexity of the code by using buffers, but describing
+this mechanism is out of the scope of this section.)
+
+\startbuffer[demo]
+vardef dodrawmidpoints (expr a, b, c, d, n)  =
+  save e, f, g, h, i, j ; pair e, f, g, h, i, j ;
+  e := .5[a,b] ; f := .5[b,c] ; g := .5[c,d] ;
+  h := .5[e,f] ; i := .5[f,g] ; j := .5[h,i] ;
+  draw j ;
+  if n>1 :
+    dodrawmidpoints(a, e, h, j, n-1) ;
+    dodrawmidpoints(j, i, g, d, n-1) ;
+  fi ;
+enddef ;
+
+vardef drawmidpoints (expr p, n) =
+  save a, b, c, d ; pair a, b, c, d ;
+  for x=0 upto length(p)-1 :
+    a := point x   of p ; b := postcontrol x   of p ;
+    d := point x+1 of p ; c := precontrol  x+1 of p ;
+    dodrawmidpoints(a, b, c, d, n) ;
+  endfor ;
+enddef ;
+\stopbuffer
+
+We need to loop over all segments of a curve, where for each segment the left and
+right side sub curves are handled recursively, upto the requested depth (denoted
+as \type {n}). For this we define the following macros.
+
+\typebuffer[demo]
+
+\startbuffer[zero]
+drawoptions (withpen pencircle scaled 5pt withcolor .625red);
+\stopbuffer
+
+\startbuffer[extra]
+drawoptions (withpen pencircle scaled 5pt withcolor .625yellow);
+\stopbuffer
+
+We apply this macro to a simple shape:
+
+\startbuffer[one]
+drawmidpoints (fullcircle xscaled 300pt yscaled 50pt, 1) ;
+\stopbuffer
+
+\typebuffer[one]
+
+When drawn, this results in the points that makes up the
+curve:
+
+\startlinecorrection[blank]
+\processMPbuffer[demo,zero,one]
+\stoplinecorrection
+
+We now add an extra iteration (resulting in the yellow points):
+
+\startbuffer[two]
+drawmidpoints (fullcircle xscaled 300pt yscaled 50pt, 2) ;
+\stopbuffer
+
+\typebuffer[two]
+
+and get:
+
+\startlinecorrection[blank]
+\processMPbuffer[demo,zero,two,extra,one]
+\stoplinecorrection
+
+We don't even need that much iterations to get a good result. The depth needed to
+get a good result depends on the size of the pen and the resolution of the device
+on which the curve is visualized.
+
+\startbuffer[zero]
+drawoptions (withpen pencircle scaled 2pt withcolor .625red) ;
+\stopbuffer
+
+\startbuffer[three]
+for i=1 upto 7 :
+  drawmidpoints (fullcircle
+    xscaled (300pt+i*10pt) yscaled (50pt+i*10pt), i) ;
+endfor ;
+\stopbuffer
+
+\typebuffer[three]
+
+Here we show 7 iterations in one graphic.
+
+\startlinecorrection[blank]
+\processMPbuffer[demo,zero,three]
+\stoplinecorrection
+
+In practice it is not that trivial to determine the depth needed. The next
+example demonstrates how the resolution of the result depends on the length and
+nature of the segment.
+
+\startbuffer[four]
+drawmidpoints (fullsquare
+  xscaled 300pt yscaled 50pt randomized (20pt,10pt), 5) ;
+\stopbuffer
+
+\typebuffer[four]
+
+\startlinecorrection[blank]
+\processMPbuffer[demo,zero,four]
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Inflection, tension and curl}]
+
+\index{inflection}
+\index{tension}
+\index{curl}
+
+The \METAPOST\ manual describes the meaning of \type {...} as \quotation {choose
+an inflection||free path between these points unless the endpoint directions make
+this impossible}. To use the words of David Arnold: a point of inflection is
+where a path switches concavity, from concave up to concave down, for example.
+
+It is surprisingly difficult to find nice examples that demonstrate the
+difference between \type {..} and \type {...}, as it is often \quote {impossible}
+to honour the request for less inflection. We will demonstrate this with a few
+graphics.
+
+In the four figures on the next pages, you will see that \type {...} is not
+really suited for taming wild curves. If you really want to make sure that a
+curve stays within certain bounds, you have to specify it as such using control
+or intermediate points. In the figures that follow, the gray curves draw the
+random path using \type {..} on top of yellow curves that use the \type {...}
+connection. As you can see, in only a few occasions do the yellow \quote
+{inflection} free curves show up.
+
+For those who asked for the code that produces these pictures, we now include it
+here. We use a macro \type {sample} which we define as a usable graphic (nearly
+all examples in this manual are coded in the document source).
+
+\startbuffer
+\startuseMPgraphic{sample}
+def sample (expr rx, ry) =
+  path p, q ; numeric n, m, r, a, b ;
+  color c ; c := \MPcolor{lightgray} ;
+  a := 3mm ; b := 2mm ; r := 2cm ; n := 7 ; m := 5 ;
+  q := unitsquare scaled r xyscaled (n,m) shifted (.5r,.5r) ;
+  draw q withpen pencircle scaled (b/4) withcolor .625yellow;
+  for i=1 upto n : for j=1 upto m :
+    p := (fullcircle scaled r randomized (r/rx,r/ry))
+      shifted ((i,j) scaled r) ;
+    pickup pencircle scaled a ;
+    draw for k=0 upto length(p) :
+      point k of p ..  endfor cycle withcolor c ;
+    draw for k=0 upto length(p) :
+      point k of p ... endfor cycle withcolor c ;
+    pickup pencircle scaled b ;
+    draw for k=0 upto length(p) :
+      point k of p ..  endfor cycle withcolor .625yellow ;
+    draw for k=0 upto length(p) :
+      point k of p ... endfor cycle withcolor .625white ;
+    for k=0 upto length(p) :
+      draw point k of p withcolor .625red ;
+    endfor ;
+  endfor ; endfor ;
+  setbounds currentpicture to q ;
+enddef ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As you see, not so much code is needed. The graphics themselves were produced
+with a couple of commands like:
+
+\startbuffer
+\placefigure
+  {Circles with minimized inflection and 25\% randomized points.}
+  {\startMPcode
+     \includeMPgraphic{sample} ; sample(4,4) ;
+   \stopMPcode}
+\stopbuffer
+
+\typebuffer
+
+\startpostponing
+
+\placefigure
+  {Circles with minimized inflection and 25\% randomized points.}
+  {\startMPcode\includeMPgraphic{sample} ; sample(4,4) ; \stopMPcode}
+
+\placefigure
+  {Circles with minimized inflection and 33\% randomized points.}
+  {\startMPcode\includeMPgraphic{sample} ; sample(3,3) ; \stopMPcode}
+
+\page
+
+\placefigure
+  {Circles with minimized inflection and 50\% randomized points.}
+  {\startMPcode\includeMPgraphic{sample} ; sample(2,2) ; \stopMPcode}
+
+\placefigure
+  {Circles with minimized inflection and 100\% randomized points.}
+  {\startMPcode\includeMPgraphic{sample} ; sample(1,1) ; \stopMPcode}
+
+\page
+
+\stoppostponing
+
+The tension specifier can be used to influence the curvature. To quote the
+\METAPOST\ manual once more: \quotation {The tension parameter can be less than
+one, but it must be at least $3/4$}. The following paths are the same:
+
+\starttyping
+z1 .. z2
+z1 .. tension 1 .. z2
+z1 .. tension 1 and 1 .. z2
+\stoptyping
+
+The triple dot command \type {...} is actually a macro that makes the following
+commands equivalent. Both commands will draw identical paths.
+
+\starttyping
+z1 ... z2
+z1 .. tension atleast 1 .. z2
+\stoptyping
+
+The \type {atleast} directive tells \METAPOST\ to do some magic behind the
+screens. Both the $3/4$ and the \type {atleast} lead directly to the question:
+\quotation {What, exactly, is the influence of the tension directive?} We will
+try to demystify the \type {tension} specifier through a sequence of graphics.
+
+\startbuffer
+u := 1cm ; z1 = (0,0) ; z2 = (2u,4u) ; z3 = (4u,0) ;
+def sample (expr p, c) =
+  draw p withpen pencircle scaled 2.5mm withcolor white ;
+  draw p withpen pencircle scaled 2.0mm withcolor c ;
+enddef ;
+for i=.75 step .05 until 1 :
+  sample (z1 .. tension i .. z2 .. z3, .625red) ;
+endfor ;
+for i=1 step .05 until 2 :
+  sample (z1 .. tension i .. z2 .. z3, .625yellow) ;
+endfor ;
+sample (z1 .. z2 .. z3, .625white) ;
+sample (z1 ... z2 ... z3, .625white) ;
+\stopbuffer
+
+\typebuffer
+
+Indeed values less than .75 give an error message, but large values are okay. As
+you can see, the two gray curves are the same. Here, \type {atleast 1} means~1,
+even if larger values are useful.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\startbuffer
+u := 1cm ; z1 = (0,0) ; z2 = (2u,4u) ; z3 = (4u,0) ;
+def sample (expr p, c) =
+  draw p withpen pencircle scaled 2.5mm withcolor white ;
+  draw p withpen pencircle scaled 2.0mm withcolor c ;
+enddef ;
+for i=.75 step .05 until 1 :
+  sample (z1 .. tension i and 2i .. z2 .. z3, .625red) ;
+endfor ;
+for i=1 step .05 until 2 :
+  sample (z1 .. tension i and 2i .. z2 .. z3, .625yellow) ;
+endfor ;
+sample (z1 .. z2 .. z3, .625white) ;
+sample (z1 ... z2 ... z3, .625white) ;
+\stopbuffer
+
+Curves finally are made up out of points, and each point has two control points.
+Since the \type {tension} specifier finally becomes a control point, it is not
+surprising that you may specify two tension values. If we replace the tension in
+the previous example by
+
+\starttyping
+.. tension i and 2i ..
+\stoptyping
+
+we get the following graphic:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\startbuffer
+u := 1cm ; z1 = (0,0) ; z2 = (2u,4u) ; z3 = (4u,0) ;
+def sample (expr p, c) =
+  draw p withpen pencircle scaled 2.5mm withcolor white ;
+  draw p withpen pencircle scaled 2.0mm withcolor c ;
+enddef ;
+for i=.75 step .05 until 1 :
+  sample (z1 .. tension 2i and i .. z2 .. z3, .625red) ;
+endfor ;
+for i=1 step .05 until 2 :
+  sample (z1 .. tension 2i and i .. z2 .. z3, .625yellow) ;
+endfor ;
+sample (z1 .. z2 .. z3, .625white) ;
+sample (z1 ... z2 ... z3, .625white) ;
+\stopbuffer
+
+If we swap both values (\type {.. tension 2i and i ..}) we get:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\startbuffer[a]
+u := 1cm ; z1 = (0,0) ; z2 = (2u,4u) ; z3 = (4u,0) ;
+def sample (expr p, c) =
+  drawpath          p withpen pencircle scaled 2.5mm withcolor c ;
+  drawcontrollines  p withcolor c ;
+  drawpoints        p ;
+  drawcontrolpoints p ;
+enddef ;
+\stopbuffer
+
+We mentioned control points. We will now draw a few extreme tensions and show the
+control points as \METAPOST\ calculates them.
+
+\startbuffer[b]
+sample (z1 .. tension 0.75 .. z2 .. z3, .625red) ;
+sample (z1 .. tension 2.00 .. z2 .. z3, .625yellow) ;
+sample (z1 ..                 z2 .. z3, .625white) ;
+\stopbuffer
+
+\typebuffer[b]
+
+First we will show the symmetrical tensions.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+The asymetrical tensions are less prominent. We use the following values:
+
+\startbuffer[b]
+sample (z1 .. tension   .75 and 10    .. z2 .. z3, .625red) ;
+sample (z1 .. tension 10    and   .75 .. z2 .. z3, .625yellow) ;
+sample (z1 ..                            z2 .. z3, .625white) ;
+\stopbuffer
+
+\typebuffer[b]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+What happens when you use the \METAPOST\ maximum value of \type {infinity}
+instead of 10? Playing with this kind of graphic can be fun, especially when we
+apply a few tricks.
+
+\startbuffer
+def sample (expr p, c) =
+  draw p withpen pencircle scaled 2.5mm withcolor white ;
+  draw p withpen pencircle scaled 2.0mm withcolor c ;
+enddef;
+
+u := 1cm ; z1 = (0,0) ; z2 = (2u,4u) ; z3 = (4u,0) ;
+
+for i=0 step .05 until 1 :
+  sample(z1 .. tension (.75+i) .. z2 .. z3, i[.625red,.625yellow]) ;
+endfor;
+\stopbuffer
+
+\typebuffer
+
+Here we change the color along with the tension. This clearly demonstrates that
+we're dealing with a non linear phenomena.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+We can (misuse) transparant colors to illustrate how the effect becomes less with
+growing tension.
+
+\startbuffer
+def sample (expr p) (text c)=
+  draw p withpen pencircle scaled 2.0mm withcolor c ;
+enddef;
+
+u := 1cm ; z1 = (0,0) ; z2 = (2u,4u) ; z3 = (4u,0) ;
+
+for i=0 step .05 until 1 :
+  sample(z1 .. tension (.75+i) .. z2 .. z3, transparent(1,1-i,.625red)) ;
+endfor;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+A third magic directive is \type {curl}. The curl is attached to a point between
+\type {{ }}, like \type {{curl 2}}. Anything between curly braces is a direction
+specifier, so instead of a \type {curl} you may specify a vector, like \type
+{{(2,3)}}, a pair of numbers, as in \type {{2,3}}, or a direction, like \type
+{{dir 30}}. Because vectors and angles are straightforward, we will focus a bit
+on \type {curl}.
+
+\starttyping
+z0 .. z1 .. z2
+z0 {curl 1} .. z1 .. {curl 1} z2
+\stoptyping
+
+So, a \type {curl} of~1 is the default. When set to~1, the begin and|/|or end
+points are approached. Given the following definitions:
+
+\startbuffer[a]
+u := 1cm ; z1 = (0,0) ; z2 = (2u,4u) ; z3 = (4u,0) ;
+def sample (expr p, c) =
+  draw p withpen pencircle scaled 2.5mm withcolor white ;
+  draw p withpen pencircle scaled 2.0mm withcolor c ;
+enddef ;
+\stopbuffer
+
+\typebuffer[a]
+
+We can draw three curved paths.
+
+\startbuffer[b]
+sample (z1 {curl 0} .. z2 .. {curl 0} z3, .625red) ;
+sample (z1 {curl 2} .. z2 .. {curl 2} z3, .625yellow) ;
+sample (z1 {curl 1} .. z2 .. {curl 1} z3, .625white) ;
+\stopbuffer
+
+\typebuffer[b]
+
+The third (gray) curve is the default situation, so we could have left the \type
+{curl} specifier out of the expression.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+\startbuffer[b]
+sample (z1 {curl        0} .. z2 .. {curl        0} z3, .625red) ;
+sample (z1 {curl infinity} .. z2 .. {curl infinity} z3, .625yellow) ;
+sample (z1 {curl        1} .. z2 .. {curl        1} z3, .625white) ;
+\stopbuffer
+
+The curly specs have a lower bound of zero and no upper bound. When we use
+\METAPOST\ maximum value of \type {infinity} instead of~2, we get:
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+These curves were defined as:
+
+\typebuffer[b]
+
+It may sound strange, but internally \METAPOST\ can handle
+larger values than \type {infinity}.
+
+\startbuffer[b]
+sample (z1 {curl  infinity} .. z2 .. {curl  infinity} z3, .625red) ;
+sample (z1 {curl 4infinity} .. z2 .. {curl 4infinity} z3, .625yellow) ;
+sample (z1 {curl 8infinity} .. z2 .. {curl 8infinity} z3, .625white) ;
+\stopbuffer
+
+\typebuffer[b]
+
+Although this is quite certainly undefined behaviour, interesting effects can be
+achieved. When you turn off \METAPOST's first stage overflow catcher by setting
+\type {warningcheck} to zero, you can go upto 8 times \type {infinity}, which,
+being some $2^{15}$, is still far from what today's infinity is supposed to be.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+As the built||in \METAPOST\ command \type {..} accepts the \type {curl} and \type
+{tension} directives as described in this section, you will now probably
+understand the following plain \METAPOST\ definitions:
+
+\starttyping
+def --  = {curl 1} .. {curl 1}    enddef ;
+def --- = .. tension infinity ..  enddef ;
+def ... = .. tension atleast 1 .. enddef ;
+\stoptyping
+
+These definitions also point out why you cannot add directives to the left or
+right side of \type {--}, \type {---} and \type {...}: they are directives
+themselves!
+
+\stopsection
+
+\startsection[title={Transformations}]
+
+\index{transformations}
+
+A \type {transform} is a vector that is used in what is called an affine
+transformation. To quote the \METAPOST\ manual:
+
+\startquotation
+If $p=(p_x,p_y)$ is a pair and $T$ is a transform, then
+\type {p transform T} is a pair of the form:
+
+\startformula
+(t_x + t_{xx} p_x + t_{xy} p_y, t_y + t_{yx} p_x + t_{yy} p_y)
+\stopformula
+
+where the six numeric quantities $(t_x, t_y, t_{xx}, t_{xy},
+t_{yx}, t_{yy})$ determine T.
+\stopquotation
+
+In literature concerning \POSTSCRIPT\ and \PDF\ you will find many references to
+such transformation matrices. A matrix of $(s_x,0,0,s_y,0,0)$ is scaling by $s_x$
+in the horizontal direction and $s_y$ in the vertical direction, while
+$(1,0,t_x,1,0,t_y)$ is a shift over $t_x,t_y$. Of course combinations are also
+possible.
+
+Although these descriptions seem in conflict with each other in the nature and
+order of the transform components in the vectors, the concepts are the same. You
+normally populate transformation matrices using \type {scaled}, \type {shifted},
+\type {rotated}.
+
+\starttyping
+transform t ; t := identity shifted (a,b) rotated c scaled d ;
+path p ; p := fullcircle transformed t ;
+\stoptyping
+
+The previous lines of code are equivalent to:
+
+\starttyping
+path p ; p := fullcircle shifted (a,b) rotated c scaled d ;
+\stoptyping
+
+You always need a starting point, in this case the identity matrix \type
+{identity}: $(0,0,1,0,0,1)$. By the way, in \POSTSCRIPT\ the zero vector is
+$(1,0,0,1,0,0)$. So, unless you want to extract the components using \type
+{xpart}, \type {xypart}, \type {xxpart}, \type {ypart}, \type {yxpart} and|/|or \
+\type {yypart}, you may as well forget about the internal representation.
+
+You can invert a transformation using the \type {inverse} macro, which is defined
+as follows, using an equation:
+
+\starttyping
+vardef inverse primary T =
+  transform T_ ; T_ transformed T = identity ; T_
+enddef ;
+\stoptyping
+
+Using transform matrices makes sense when similar transformations need to be
+applied on many paths, pictures, pens, or other transforms. However, in most
+cases you will use the predefined commands \type {scaled}, \type {shifted}, \type
+{rotated} and alike. We will now demonstrate the most common transformations in a
+text example.
+
+\startbuffer[a]
+draw btex \bfd MetaFun etex ;
+draw boundingbox currentpicture withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer[a]
+
+Before an independent \METAPOST\ run, the \typ {btex ... etex}'s are filtered
+from the file and passed on to \TEX. After that, the \DVI\ file is converted to a
+list of pictures, which is consulted by \METAPOST. This is no longer the case in
+\LUATEX\ where we use \MPLIB, so users don't have to worry about these issues:
+just ignore what is mentioned in the official \METAPOST\ manual.
+
+We can manipulate the pictures representing text like any graphic as well as draw
+it with \type {draw}.
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+We show the transformations in relation to the origin and make the origin stand
+out a bit more by painting it a bit larger in white first.
+
+\startbuffer[c]
+draw origin withpen pencircle scaled 1.5mm withcolor white ;
+draw origin withpen pencircle scaled 1mm withcolor .625red
+\stopbuffer
+
+\typebuffer[c]
+
+The origin is in the lower left corner of the picture.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,c]
+\stoplinecorrection
+
+Because the transformation keywords are proper english, we let the pictures speak
+for themselves.
+
+% shifted
+
+\startbuffer[b]
+currentpicture := currentpicture shifted (0,-1cm) ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% rotated
+
+\startbuffer[b]
+currentpicture := currentpicture rotated 180 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% rotatedaround
+
+\startbuffer[b]
+currentpicture := currentpicture rotatedaround(origin,30) ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% scaled
+
+\startbuffer[b]
+currentpicture := currentpicture scaled 1.75 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% scaled
+
+\startbuffer[b]
+currentpicture := currentpicture scaled -1 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% xscaled
+
+\startbuffer[b]
+currentpicture := currentpicture xscaled 3.50 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% xscaled
+
+\startbuffer[b]
+currentpicture := currentpicture xscaled -1 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% yscaled
+
+\startbuffer[b]
+currentpicture := currentpicture yscaled .5 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% yscaled
+
+\startbuffer[b]
+currentpicture := currentpicture yscaled -1 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% slanted
+
+\startbuffer[b]
+currentpicture := currentpicture slanted .5 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% slanted
+
+\startbuffer[b]
+currentpicture := currentpicture slanted -.5 ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% zscaled
+
+\startbuffer[b]
+currentpicture := currentpicture zscaled (.75,.25) ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% reflectedabout
+
+\startbuffer[b]
+currentpicture := currentpicture
+  reflectedabout(llcorner currentpicture,urcorner currentpicture) ;
+\stopbuffer
+
+\page[preference] \typebuffer[b] \page[no]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+% reverse counterclockwise turningnumber
+
+A path has a certain direction. When the \type {turningnumber} of a path is
+larger than zero, it runs in clockwise direction. The \METAPOST\ primitive \type
+{reverse} changes the direction, while the macro \type {counterclockwise} can be
+used to get a path running in a well defined direction.
+
+\startbuffer
+drawoptions(withpen pencircle scaled 2pt withcolor .625red) ;
+path p ; p := fullcircle scaled 1cm ;
+drawarrow                          p ;
+drawarrow reverse                  p shifted (2cm,0) ;
+drawarrow counterclockwise         p shifted (4cm,0) ;
+drawarrow counterclockwise reverse p shifted (6cm,0) ;
+drawarrow reverse counterclockwise p shifted (8cm,0) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Only this far}]
+
+When you take a close look at the definitions of the Computer Modern Roman fonts,
+defined in the \METAFONT\ book, you will notice a high level of abstraction.
+Instead of hard coded points you will find points defined in terms of \quote
+{being the same as this point} or \quote {touching that point}. In this section
+we will spend some time on this touchy aspect.
+
+\startbuffer[a]
+pickup pencircle scaled 2mm ;
+path p ; p := fullsquare scaled 2cm ;
+draw p withcolor .625white ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+This rectangle is a scaled instance of the predefined \METAFUN\ path \type
+{fullsquare} which is centered around the origin.
+
+\typebuffer[a]
+
+On this path, halfway between two of its corners, we define a point \type {q}:
+
+\startbuffer[b]
+pair q ; q := .5[llcorner p, lrcorner p] ;
+\stopbuffer
+
+\typebuffer[b]
+
+We draw this point in red, using:
+
+\startbuffer[c]
+draw q withcolor .625red ;
+\stopbuffer
+
+\typebuffer[c]
+
+As you can see, this point is drawn on top of the path.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+There are four of those midpoints, and when we connect them, we get:
+
+\startbuffer[c]
+draw q -- q rotated 90 -- q rotated 180 --
+  q rotated 270 -- cycle withcolor .625red ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+Because path \type {p} is centered around the origin, we can simply rotate point
+\type {q} a few times.
+
+\typebuffer[c]
+
+There are situations, where you don't want the red path to be drawn inside
+another path, or more general: where you want points to touch instead of being
+overlayed.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+We can achieve this by defining point \type {q} to be located on top of the
+midpoint.
+
+\startbuffer[b]
+pair q ; q := top .5[llcorner p, lrcorner p] ;
+\stopbuffer
+
+\typebuffer[b]
+
+The predefined macro \type {top} moves the point over the distance similar to the
+current pen width.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+Because we are dealing with two drawing operations, and since the path inside is
+drawn through the center of points, we need to repeat this move in order to draw
+the red path really inside the other one.
+
+\startbuffer[b]
+pair q ; q := top top .5[llcorner p, lrcorner p] ;
+\stopbuffer
+
+\typebuffer[b]
+
+Operations like \type {top} and its relatives \type {bot}, \type {lft} and \type
+{rt} can be applied sequentally.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+We already showed that \type {q} was defined as a series of rotations.
+
+\typebuffer[c]
+
+As an intermezzo we will show an alternative definition of \type {q}. Because
+each point is rotated 90 degrees more, we can define a macro that expands into
+the point and rotates afterwards. Because each consecutive point on the path is
+rotated an additional 90 degrees, we use the \METAPOST\ macro \type {hide} to
+isolate the assignment. The \type {hide} command executes the hidden command and
+afterwards continues as if it were never there. You must not confuse this with
+grouping, since the hidden commands are visible to its surroundings.
+
+\startbuffer[c]
+def qq = q hide(q := q rotated 90) enddef ;
+draw qq -- qq -- qq -- qq -- cycle withcolor .625red ;
+\stopbuffer
+
+\typebuffer[c]
+
+The macro \type {top} uses the characteristics of the current pen to determine
+the displacement. However, for the more complicated pen shapes we need a
+different trick to get an inside path. Let's start by defining an elliptical
+path.
+
+\startbuffer[a]
+pickup pencircle xscaled 3mm yscaled 5mm rotated 30 ;
+path p ; p := fullcircle xscaled 6cm yscaled 3cm ;
+draw p withcolor .625white ;
+\stopbuffer
+
+\typebuffer[a]
+
+We draw this path using a non standard pen. In the \METAFONT\ manual you will
+find methods to draw shapes with similar pens, where the pen is also turning, as
+it does in real calligraphy. Here we stick to a more simple one.
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+We construct the inner path from the points that make up the curve. Watch how we
+use a for loop to compose the new path. When used this way, no semi colon may be
+used to end the loop, since it would isolate the color directive.
+
+\startbuffer[b]
+draw point 0 of p
+  for i=1 upto length(p) : -- point (i) of p endfor
+  withcolor .625red ;
+\stopbuffer
+
+\typebuffer[b]
+
+The points are still located on the original path.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+We can move the points to the inside by shifting them over the penwidth in the
+direction perpendicular to the point. Because we use this transformation more
+than once, we wrap it into a macro. This also keeps the code readable.
+
+\startbuffer[b]
+vardef inside expr pnt of p =
+  (point pnt of p shifted
+     -(penoffset direction pnt of p of currentpen))
+enddef ;
+draw inside 0 of p
+  for i=1 upto length(p) : -- inside i of p endfor
+  withcolor .625red ;
+\stopbuffer
+
+\typebuffer[b]
+
+Whenever you define a pen, \METAPOST\ stores its characteristics in some private
+variables which are used in the \type {top} and alike directives. The \type
+{penoffset} is a built in primitive and is defined as the \quotation {point on
+the pen furthest to the right of the given direction}. Deep down in \METAPOST\
+pens are actually simple paths and therefore \METAPOST\ has a notion of a point
+on the penpath. In the \METAFONT\ book and \METAPOST\ manual you can find in
+depth discussions on pens.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+We're still not there. Like in a previous example, we need to shift over twice
+the pen width. To get good results, we should determine the width of the pen at
+that particular point, which is not trivial. The more general solution, which
+permits us to specify the amount of shifting, is as follows.
+
+\startbuffer[b]
+vardef penpoint expr pnt of p =
+  save n, d ; numeric n, d ;
+  (n,d) = if pair pnt : pnt else : (pnt,1) fi ;
+  (point n of p shifted
+     ((penoffset direction n of p of currentpen) scaled d))
+enddef ;
+\stopbuffer
+
+\typebuffer[b]
+
+When the point specification is extended with a distance, in which case we have a
+pair expression, the point and distance are derived from this specification.
+First we demonstrate the simple case:
+
+\startbuffer[c]
+draw penpoint 0 of p
+  for i=1 upto length(p)-1 : .. penpoint i of p endfor .. cycle
+  withcolor .625red ;
+\stopbuffer
+
+\typebuffer[c]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+In the next graphic, we draw both an inner and and outer path.
+
+\startbuffer[c]
+draw penpoint (0,-2) of p
+  for i=1 upto length(p)-1 : .. penpoint (i,-2) of p endfor .. cycle
+  withcolor .625red ;
+draw penpoint (0,+2) of p
+  for i=1 upto length(p)-1 : .. penpoint (i,+2) of p endfor .. cycle
+  withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer[c]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c]
+\stoplinecorrection
+
+\startbuffer[a]
+path p, q, r ;
+
+p := fullcircle scaled 3cm ;
+q := p shifted (7cm,0cm) ;
+r := center p -- center q ;
+\stopbuffer
+
+\startbuffer[b]
+pair pr, qr ;
+
+pr := p intersectionpoint r ;
+qr := q intersectionpoint r ;
+
+r := r cutbefore pr cutafter qr ;
+\stopbuffer
+
+\startbuffer[c]
+r := r cutbefore (point 5pt on r) ;
+r := r cutafter (point -5pt on r) ;
+\stopbuffer
+
+\startbuffer[cc]
+r := r cutends 5pt ;
+\stopbuffer
+
+\startbuffer[d]
+draw p withpen pencircle scaled 10pt withcolor .625red ;
+draw q withpen pencircle scaled 10pt withcolor .625yellow ;
+draw r withpen pencircle scaled 20pt withcolor .625white ;
+\stopbuffer
+
+\startbuffer[dd]
+draw r withpen pencircle scaled 20pt withcolor .625white ;
+draw p withpen pencircle scaled 10pt withcolor .625red ;
+draw q withpen pencircle scaled 10pt withcolor .625yellow ;
+\stopbuffer
+
+Another case when \type {top} and friends cannot be applied in a general way is
+the following. Consider the three paths:
+
+\typebuffer[a]
+
+We draw these paths with:
+
+\typebuffer[d]
+
+The line is drawn from center to center and since the line has a non zero width
+and a round line cap, it extends beyond this point.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,d]
+\stoplinecorrection
+
+If we want the line to stop at the circular paths, we can cut off the pieces that
+extend beyond those paths.
+
+\typebuffer[b]
+
+This time we get:
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,d]
+\stoplinecorrection
+
+Due to the thicker line width used when drawing the straight line, part of that
+line is still visible inside the circles. So, we need to clip off a bit more.
+
+\typebuffer[c]
+
+The \type {point ... on} operation is a \METAFUN\ macro that takes a dimension.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,c,d]
+\stoplinecorrection
+
+In order to save you some typing, \METAFUN\ provides a macro \type {cutends} that
+does the same job:
+
+\typebuffer[cc]
+
+This time we draw the path in a different order:
+
+\typebuffer[dd]
+
+That way we hide the still remaining overlapping part of the line.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b,cc,dd]
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Directions}]
+
+\index{directions}
+
+Quite often you have to tell \METAPOST\ in what direction a line should be drawn.
+A direction is specified as a vector. There are four predefined vectors: \type
+{up}, \type {down}, \type {left}, \type {right}. These are defined as follows:
+
+\starttyping
+pair up, down, left, right ;
+up = -down = (0,1) ; right = -left = (1,0) ;
+\stoptyping
+
+We can use these predefined pairs as specifications and in calculations.
+
+\startbuffer
+dotlabel.top("up"   , up    * 1cm) ;
+dotlabel.bot("down" , down  * 1cm) ;
+dotlabel.lft("left" , left  * 1cm) ;
+dotlabel.rt ("right", right * 1cm) ;
+
+drawoptions (withpen pencircle scaled .25mm withcolor .625 red) ;
+
+drawarrow origin -- up    * 1cm ;
+drawarrow origin -- down  * 1cm ;
+drawarrow origin -- left  * 1cm ;
+drawarrow origin -- right * 1cm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+This graphic can also be defined in a more efficient (but probably more cryptic)
+way. The next definition demonstrates a few nice tricks. Instead of looping over
+the four directions, we loop over their names. Inside the loop we convert these
+names, or strings, into a pair by scanning the string using \type {scantokens}.
+The \type {freedotlabel} macro is part of \METAFUN\ and takes three arguments: a
+label string (or alternatively a picture), a point (location), and the \quote
+{center of gravity}. The label is positioned in the direction opposite to this
+center of gravity.
+
+\startbuffer
+pair destination ;
+for whereto = "up", "down", "left", "right" :
+  destination := scantokens(whereto) * 1cm ;
+  freedotlabel(whereto, destination, origin) ;
+  drawarrow origin -- destination
+    withpen pencircle scaled .25mm withcolor .625 red ;
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+So, in this code fragment, we use the string as string and (by means of \type
+{scantokens}) as a point or vector.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The previous definition is a stepping stone to the next one. This time we don't
+use points, but the \type {dir} command. This command converts an angle into an
+unitvector.
+
+\startbuffer
+pair destination ;
+for whereto = 0 step 30 until 330 :
+  destination := dir(whereto) * 1.5cm ;
+  freedotlabel(decimal whereto, destination, origin) ;
+  drawarrow origin -- destination
+    withpen pencircle scaled .25mm withcolor .625 red ;
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+In \METAPOST\ the angles go counter clockwise, which is not that illogical if you
+look at it from the point of view of vector algebra.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Analyzing pictures}]
+
+\index{pictures+analyzing}
+
+{\em Unless you really want to know all details, you can safely skip this
+section. The \METAPOST\ features discussed here are mainly of importance when you
+write (advanced) macros.}
+
+% Later we will discuss in detail how you can use either \METAPOST\ or \TEX\ to
+% typeset text (\in {section} [sec:text] and \in {chapter} [sec:typesetting]), so
+% here we limit our exploration to a quick introduction. The most direct way of
+% processing text in \METAPOST\ is using the \type {infont} operator.
+%
+% \startbuffer[mp]
+% draw "this string will become a sequence of glyphs (MP)"
+%   infont defaultfont scaled defaultscale ;
+% \stopbuffer
+%
+% \typebuffer[mp]
+%
+% The text between \type {"} is passed to \TEX, and the resulting \DVI\ will be
+% converted into a picture with textual components. So, we get:
+%
+% \startlinecorrection[blank]
+% \midaligned{\processMPbuffer[mp]}
+% \stoplinecorrection
+%
+% The same string typeset by \TEX\ shows up as:
+%
+% \blank
+% \midaligned{this string will become a sequence of glyphs (\TeX)}
+% \blank
+%
+% The following \METAPOST\ features are not covered by the \METAPOST\ manual, but
+% most of them are discussed in the appendix of the \type {graph} package written
+% by John Hobby.
+%
+%It is possible to disassemble a picture by means of a special for loop using the
+%\type {within} specifier. The following code walks over a picture and draws the
+%components with their bounding boxes.
+%
+% \startbuffer[show]
+% for i within currentpicture :
+%   draw boundingbox i withcolor .625yellow ;
+% endfor ;
+% \stopbuffer
+%
+% \typebuffer[show]
+%
+% We can use the disassemble loop feature to look into the previously shown
+% example text.
+%
+% \startlinecorrection[blank]
+% \processMPbuffer[mp,show]
+% \stoplinecorrection
+%
+% The second line is typeset by \TEX. The resulting \DVI\ code is converted into a
+% series of pictures, which \METAPOST\ pastes into one picture. You may also notice
+% that in the set of pictures that originate in \TEX, the space is replaced by a
+% shift (this is because \TEX\ knows no space).
+%
+% An interesting aspect of this \quote {loop over a picture} feature, is that it
+% can provide insight in how \TEX\ is composing a paragraph.
+%
+% \startbuffer
+% draw btex \framed[width=fit,align=middle]{\input tufte \relax} etex ;
+% for i within currentpicture :
+%   draw boundingbox i withpen pencircle scaled .2pt withcolor .625yellow ;
+% endfor ;
+% \stopbuffer
+%
+% \startlinecorrection[blank]
+% \processMPbuffer
+% \stoplinecorrection
+%
+% You may also notice, that rules produced by \TEX\ are converted to straight line
+% segments. Because the line extends 50\% of its linewidth beyond a point, there is
+% a slight overshoot. This picture was defined in a few lines:
+%
+% \typebuffer
+%
+% If we use a Times Roman instead of a Palatino, we get quite
+% different results.
+%
+% \startlinecorrection[blank]
+% \startMPenvironment
+%   %\let\fontclass\empty
+%   \usetypescript[times][texnansi]
+%   \switchtobodyfont[times,10pt]
+% \stopMPenvironment
+% \processMPbuffer
+% \stoplinecorrection
+%
+% In \CONTEXT, you can easily change the body font for
+% \METAPOST\ graphics with directives like:
+%
+% \starttyping
+% \startMPenvironment
+%   \usetypescript[times][texnansi]
+%   \switchtobodyfont[times,10pt]
+% \stopMPenvironment
+% \stoptyping
+%
+% This font has far less kerning. Even more interesting is the Lucida Bright
+% Handwriting font, which is defined in such a way that no kerning is needed at
+% all.
+%
+% \startlinecorrection[blank]
+% \resetMPenvironment
+% \startMPenvironment
+%   %\let\fontclass\empty
+%   \usetypescript[lucida][texnansi]
+%   \switchtobodyfont[lucida,hw,10pt]
+% \stopMPenvironment
+% \processMPbuffer
+% \stoplinecorrection
+%
+% You can ask for the number of components with \type {length}. A component can be
+% a stroked or filled path, or a text resulting from an \type {infont} operation.
+% If the (last) path is a clip path, or when the whole picture has a forced
+% boundingbox, the picture is treated as a whole. We will demonstrate this later.
+
+We can decompose \METAPOST\ pictures using a \type {within} loop. You may wonder
+if such a \type {within} loop construct has any real application, and as you can
+expect, it has. In \in {section} [sec:color circles] a macro is defined that
+draws a colored circle. If you want the inverted alternative, you can pass the
+inverted color specification, but wouldn't it be more convenient if there was an
+operator that did this for you automatically? Unfortunately there isn't one so we
+have to define one ourselves in a macro.
+
+\startbuffer
+colorcircle(4cm,(.4,.6,.8),(.4,.8,.6),(.6,.4,.8)) ;
+addto currentpicture also inverted currentpicture shifted (5cm,0) ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+These circles were drawn using:
+
+\typebuffer
+
+When we \type {draw} a path, or stroke a path, as it is called officially, we
+actually perform an addition:
+
+\starttyping
+addto currentpicture doublepath somepath
+\stoptyping
+
+The \type {fill} command is actually:
+
+\starttyping
+addto currentpicture contour somepath
+\stoptyping
+
+We will need both \type {doublepath} and \type {contour} operations in the
+definition of \type {inverted}.
+
+When \METAPOST\ has digested a path into a picture, it keeps track of some
+characteristics. We can ask for them using \type {part...} operators. The
+following operators can be applied to a transform vector (one of \METAPOST's data
+types), but also to a picture. Say that we have drawn a circle:
+
+\startbuffer[a]
+draw fullcircle
+  xscaled 3cm yscaled 2cm
+  dashed dashpattern(on 3mm off 3mm)
+  withpen pencircle scaled 1mm
+  withcolor .625red ;
+picture p ; p := currentpicture ;
+\stopbuffer
+
+\typebuffer[a]
+
+This circle looks like:
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+We can now ask for some of the characteristics of \type {currentpicture}, like
+its color. We could write the values to the log file, but it is more convenient
+to put them on paper.
+
+\startbuffer[b]
+label.rt("redpart: "   & decimal redpart   p, (4cm,+.5cm)) ;
+label.rt("greenpart: " & decimal greenpart p, (4cm,  0cm)) ;
+label.rt("bluepart: "  & decimal bluepart  p, (4cm,-.5cm)) ;
+\stopbuffer
+
+\typebuffer[b]
+
+Here the \type {&} glues strings together, while the decimal operator converts a
+number into a string.
+
+The result has no typographic beauty |<|keep in mind that here we use \METAPOST\
+to typeset the text|>|but the result serves its purpose.
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+We can also ask for the path itself (\type {pathpart}), the pen (\type {penpart})
+and the dashpattern (\type {dashpart}), but these can only be assigned to
+variables of the corresponding type.
+
+A path can be stroked or filled, in which case it is a cyclic path. It can have a
+non natural bounding box, be a clip path, consist of line segments or contain
+text. All these characteristics can be tested.
+
+\startbuffer[b]
+label.rt("filled: "  & condition filled         p, (4cm,+1.25cm)) ;
+label.rt("stroked: " & condition stroked        p, (4cm,+0.75cm)) ;
+label.rt("textual: " & condition textual        p, (4cm,+0.25cm)) ;
+label.rt("clipped: " & condition clipped        p, (4cm,-0.25cm)) ;
+label.rt("bounded: " & condition bounded        p, (4cm,-0.75cm)) ;
+label.rt("cycle: "   & condition cycle pathpart p, (4cm,-1.25cm)) ;
+\stopbuffer
+
+\typebuffer[b]
+
+\startlinecorrection[blank]
+\processMPbuffer[a,b]
+\stoplinecorrection
+
+In this code snippet, \type {condition} is a macro that takes care of translating
+a boolean value into a string (like \type {decimal} does with a numeric value).
+
+\starttyping
+def condition primary b =
+  if b : "true" else : "false" fi
+enddef ;
+\stoptyping
+
+Clip paths and bounding boxes are kind of special in the sense that they can
+obscure components. The following examples demonstrate this. In case of a clip
+path or bounding box, the \type {pathpart} operator returns this path. In any
+case that asking for a value does not make sense |<|a clipping path for instance
+has no color|>| a zero (null) value is returned.
+
+\startbuffer[b]
+n := 1 ;
+for i within currentpicture : n := n + 1 ;
+  label("n: "       & decimal           n & " / " &
+        "length: "  & decimal   length  i & " / " &
+        "stroked: " & condition stroked i & " / " &
+        "clipped: " & condition clipped i & " / " &
+        "bounded: " & condition bounded i , (0,-n*.5cm)) ;
+endfor ;
+\stopbuffer
+
+\startbuffer[c]
+\startlinecorrection[blank]
+\framed[offset=overlay,frame=off,background=color,backgroundcolor=gray]{\processMPbuffer[a,b]}
+\stoplinecorrection
+\stopbuffer
+
+\startbuffer[a]
+draw      fullcircle withpen pencircle scaled 6mm ;
+clip      currentpicture to fullcircle ;
+setbounds currentpicture to fullcircle ;
+\stopbuffer
+
+\typebuffer[a] \getbuffer[c]
+
+\startbuffer[a]
+draw      fullcircle withpen pencircle scaled 6mm ;
+setbounds currentpicture to fullcircle ;
+clip      currentpicture to fullcircle ;
+\stopbuffer
+
+\typebuffer[a] \getbuffer[c]
+
+\startbuffer[a]
+clip      currentpicture to fullcircle ;
+draw      fullcircle withpen pencircle scaled 6mm ;
+setbounds currentpicture to fullcircle ;
+\stopbuffer
+
+\typebuffer[a] \getbuffer[c]
+
+\startbuffer[a]
+clip      currentpicture to fullcircle ;
+setbounds currentpicture to fullcircle ;
+draw      fullcircle withpen pencircle scaled 6mm ;
+\stopbuffer
+
+\typebuffer[a] \getbuffer[c]
+
+\startbuffer[a]
+setbounds currentpicture to fullcircle ;
+clip      currentpicture to fullcircle ;
+draw      fullcircle withpen pencircle scaled 6mm ;
+\stopbuffer
+
+\typebuffer[a] \getbuffer[c]
+
+\startbuffer[a]
+setbounds currentpicture to fullcircle ;
+draw      fullcircle withpen pencircle scaled 6mm ;
+clip      currentpicture to fullcircle ;
+\stopbuffer
+
+\typebuffer[a] \getbuffer[c]
+
+The description lines were generated by the following loop:
+
+\typebuffer[b]
+
+% % The following is no longer valid in MetaFun:
+%
+% If we have a textual picture, we can also ask for the text and font. Take the
+% following picture:
+%
+% \startbuffer[a]
+% picture p ;
+% p := "MetaFun" normalinfont "rm-lmr10" scaled 2 rotated 30 slanted .5 ;
+% p := p shifted (0,-ypart center p) ;
+% currentpicture := p ;
+% \stopbuffer
+%
+% \typebuffer[a]
+%
+% Here we can ask for:
+%
+% \startbuffer[b]
+% label.rt("textpart: " & textpart p, (4cm,+0.25cm)) ;
+% label.rt("fontpart: " & fontpart p, (4cm,-0.25cm)) ;
+% \stopbuffer
+%
+% \typebuffer[b]
+%
+% and get:
+%
+% \startlinecorrection[blank]
+% \processMPbuffer[a,b]
+% \stoplinecorrection
+%
+% We use \type {normalinfont} instead of \type {infont} because in \METAFUN\ this
+% operator is overloaded and follows another route for including text.
+%
+% If we're dealing with a path, the transformations have ended up in the path
+% specification. If we have a text picture, we can explicitly ask for the transform
+% components.
+%
+% \startbuffer[b]
+% label.rt("xpart: "  & decimal xpart  p, (4cm,+1.25cm)) ;
+% label.rt("ypart: "  & decimal ypart  p, (4cm,+0.75cm)) ;
+% label.rt("xxpart: " & decimal xxpart p, (4cm,+0.25cm)) ;
+% label.rt("xypart: " & decimal xypart p, (4cm,-0.25cm)) ;
+% label.rt("yxpart: " & decimal yxpart p, (4cm,-0.75cm)) ;
+% label.rt("yypart: " & decimal yypart p, (4cm,-1.25cm)) ;
+% \stopbuffer
+%
+% \typebuffer[b]
+%
+% \startlinecorrection[blank]
+% \processMPbuffer[a,b]
+% \stoplinecorrection
+%
+% We will now define the \type {inverted} macro using these primitives. Because we
+% have to return a picture, we cannot use \type {draw} and \type {fill} but need to
+% use the low level operators. Because a picture can consist of more than one path,
+% we need a temporary picture \type {pp}.
+%
+% \starttyping
+% vardef inverted expr p =
+%   save pp ; picture pp ; pp := nullpicture ;
+%   for i within p :
+%     addto pp
+%     if stroked i or filled i :
+%       if filled i : contour else : doublepath fi pathpart i
+%       dashed dashpart i withpen penpart i
+%     else :
+%       also i
+%     fi
+%     withcolor white-(redpart i, greenpart i, bluepart i) ;
+%   endfor ;
+%   pp
+% enddef ;
+% \stoptyping
+%
+% We probably need to handle a few more border cases, but for general purposes,
+% this macro works as expected.
+
+The textual capabilities built in \METAPOST\ are rather limited but in \CONTEXT\
+we have overloaded the relevant operators. There we hook into the normal font
+handler. The native text related operators are:
+
+\starttyping
+draw "MetaFun" infont "somefont" scaled 2 rotated 30 slanted .5 ;
+draw btex MetaFun etex scaled 2 rotated 30 slanted .5 ;
+\stoptyping
+
+The \type {infont} operator directly calls for a font and in stock \METAPOST\ is
+limited to (eight bit) \TYPEONE\ fonts. In \CONTEXT\ you can do this:
+
+\startbuffer[a]
+draw "MetaFun" infont "SerifBold*default" xscaled 5 rotated 5 slanted .5 ;
+\stopbuffer
+
+\typebuffer[a]
+
+The specification is a regular \CONTEXT\ font specification.
+
+\startlinecorrection[blank]
+\processMPbuffer[a]
+\stoplinecorrection
+
+The \type {btex ... etex} variant in normal \METAPOST\ delegates to \TEX\ and in \MKII\
+indeed we filter them and process them between runs (or at runtime). In \MKIV\ they are
+also handled by \TEX\ but in an even more integrated and immediate way.
+
+The two primitives \type {textpart} and \type {fontpart} that can be used to disassemble
+a picture don't apply to \METAFUN\ as contrary to \METAPOST\ we don't convert the result
+to a picture. In later chapters we will discuss text in more detail.
+
+From the previous examples it may be clear that each picture has some associated
+data stored with it. From the \type {bounded} boolean test we can conclude that
+the bounding box is part of this data. Internally \METAPOST\ keeps track of two
+bounding boxes: the natural one, and the forced one. The forced one is actually a
+component of the picture which applies to all previously added graphics. You can
+calculate the bounding box from the \type {llcorner} and \type {urcorner} or if
+you like \type {ulcorner} and \type {lrcorner} and the \METAFUN\ command \type
+{boundingbox} does so.
+
+The four corners that make up the bounding box are either the natural ones, or
+the ones forced by \type {setbounds}. You can force \METAPOST\ to report the
+natural ones by setting \type {truecorners} to~1. The next example demonstrates
+this feature.
+
+\startbuffer
+pickup pencircle scaled 2mm ; path p, q ;
+draw fullcircle
+  scaled 4cm slanted .5 withcolor .625white ;
+setbounds currentpicture to
+  boundingbox currentpicture enlarged -5mm ;
+interim truecorners := 0 ; p := boundingbox currentpicture ;
+interim truecorners := 1 ; q := boundingbox currentpicture ;
+pickup pencircle scaled 1mm ;
+draw p withcolor .625red ;
+draw q withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+We use \type {interim} because \type {truecorners} is an internal \METAPOST\
+variable.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+% % we already redefined infont so it's kind of dangerous to provide this example
+%
+% Since \METAPOST\ can handle fonts (it can even generate font metric files) it is
+% no surprise that we can also ask for the natural size of a font. For this we use
+% \type {fontsize}. However, you should beware of the fact that the size reported
+% is in base points. Since this is \METAPOST's native unit, this is no problem in
+% calculations, but it may look confusing when you \type {show} this size on your
+% terminal and get less that 10 reported for a \type {cmr10} font.
+%
+% \starttyping
+% show fontsize "cmr10" ;
+% \stoptyping
+%
+% In order to demonstrate that \type {fontsize} is useful, we extend the \type
+% {infont} command. In the process we show a few macro definition tricks. What we
+% want is a \TEX\ like specification of a font size:
+%
+% \startbuffer[txt]
+% draw "MetaFun" infont defaultfont at 20pt ;
+% \stopbuffer
+%
+% \typebuffer[txt]
+%
+% We can store the current meaning of a primitive or macro in a new macro. We do so
+% with \type {infont}:
+%
+% \startbuffer[a]
+% let normalinfont = infont ;
+% \stopbuffer
+%
+% \typebuffer[a]
+%
+% We can only know the size if we know the name of the font, so we have to redefine
+% \type {infont} to pick up this name.
+%
+% \startbuffer[b]
+% numeric lastfontsize ; lastfontsize = fontsize defaultfont ;
+% \stopbuffer
+%
+% \startbuffer[c]
+% primarydef infont primary name = % patched: def should work too
+%   hide(lastfontsize := fontsize name)
+%   normalinfont name
+% enddef ;
+% \stopbuffer
+%
+% \typebuffer[c]
+%
+% Because we are replacing an operator, and since \METAPOST\ expects one, we have
+% to use \type {def} instead of \type {vardef} (which is actually a kind of
+% variable). For the same reason, we have to pick up a \type {primary}. If we would
+% use a \typ {expr name}, we would end up in an unwanted look ahead. The \type
+% {hide} macro hides the assignment and makes this macro behave like a \type
+% {vardef} with respect to hiding expressions. We may not put a semi colon after
+% the \type {)} because it would stop \METAPOST\ from reading on, and thereby
+% invoke an error message.
+%
+% We can now define \type {at}. This macro picks up an expression (which can be
+% more than just a number) and return a scale transform that normalizes the given
+% size to the design size.
+%
+% \startbuffer[d]
+% def at expr size =
+%   scaled (size/lastfontsize)
+% enddef ;
+% \stopbuffer
+%
+% \typebuffer[d]
+%
+% Because this macro is defined global, and therefore can be used apart from \type
+% {infont}, we predefine the size:
+%
+% \typebuffer[b]
+%
+% When defined this way \type {at} a comfortable 20 points, the string \type
+% {MetaFun} comes out as follows:
+%
+% \startlinecorrection[blank]
+% \processMPbuffer[a,b,c,d,txt]
+% \stoplinecorrection
+
+\stopsection
+
+\startsection[title={Filling}]
+
+\index{filling}
+\index{reversing}
+
+In most cases a path ends up being drawn or filled. When filling a path, it
+doesn't matter in what direction the path runs, as long as it's closed you're
+fine. You can however change the direction any time along the path. Here is an
+example of what happens when you fill a path that is partially reversed.
+
+\startbuffer
+fill fullsquare rotated 45 scaled 2cm
+    withcolor .625 red ;
+fill fullcircle scaled 2cm -- reverse fullcircle scaled 1cm -- cycle
+    withcolor .625 yellow ;
+\stopbuffer
+
+\typebuffer
+
+You'll notice that the inner circle is not filled:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Now watch the following:
+
+\startbuffer
+fill
+    fullsquare rotated 45 scaled 2cm
+ -- fullcircle scaled 2cm
+ -- cycle
+    withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+This results in:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Compare this with:
+
+\startbuffer
+fill
+    fullsquare rotated 45 scaled 2cm
+ -- reverse fullcircle scaled 2cm -- cycle
+ -- cycle
+    withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+giving:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The normal filling happens according to the non||zero winding rule. An alternative is the
+odd||even rule. There we don't need the reverse trick:
+
+\startbuffer
+eofill fullsquare rotated 45 scaled 2cm
+ -- fullcircle scaled 2cm -- cycle
+    withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+The \type {eofill} is a \METAFUN\ extension. Hopefully the next explains a bit
+how this works (you can find explanations zon the internet).
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\startuseMPgraphic{demo}
+    def DrawIt(text how) =
+        path p ; p := ((0,0) .. (1,0) .. (1,1) .. (0,1) .. (1,0) .. (2,1) .. cycle) scaled 2cm ;
+        how p withcolor .625 yellow ;
+        draw p withcolor .625 red ;
+        for i=0 step 0.05 until 1  :
+            fill arrowheadonpath (p,i)
+            withcolor .625 red ;
+        endfor ;
+        draw  (0.5,0.5) scaled 2cm                 withpen pencircle scaled .5mm withcolor .375 white ;
+        draw ((0.5,0.5) scaled 2cm -- llcorner p)  withpen pencircle scaled .5mm withcolor .375 white ;
+        draw  (1.5,1.5) scaled 2cm                 withpen pencircle scaled .5mm withcolor .375 white ;
+        draw ((1.5,1.5) scaled 2cm -- urcorner p)  withpen pencircle scaled .5mm withcolor .375 white ;
+    enddef ;
+\stopuseMPgraphic
+
+\startlinecorrection[blank]
+    \startcombination[distance=4em]
+      {\startMPcode \includeMPgraphic{demo} DrawIt(eofill) \stopMPcode} {\type{eofill}}
+      {\startMPcode \includeMPgraphic{demo} DrawIt(fill)   \stopMPcode} {\type{fill}}
+    \stopcombination
+\stoplinecorrection
+
+In the case of a normal fill, the non||zero winding rule is applied: a winding
+number is calculated by subtracting 1 each time the line (from inside an area to
+someplace outside) is crossed clockwise while 1 is added each time we cross
+anti||clockwise. When the total is non zero the area is filled. Here we run in one
+direction and therefore we always get a fill. In the previous example where we
+used a reverse, an anti||clockwise crossing was nilled by a clockwise one.
+
+The leftmost shape uses \type {eofill} and therefore the odd||even rule gets
+applied. This time we follow the line and when it gets crossed en even number of
+times the area will not be filled.
+
+A glyph is often constructed from more than one path and eventually the shape is
+filled with an odd||even fill (\type {eofill}) operation. Take the following
+sequence:
+
+\startbuffer
+pickup pencircle scaled 1mm ;
+draw fullsquare scaled 2cm ;
+draw fullsquare scaled 2cm shifted (1cm,0) ;
+draw fullsquare scaled 2cm shifted (0,1cm) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+We can use a sequence of \type {nofill} ending with a \type {eofill} to create
+a combined shape. This is not done in \METAPOST\ but in the backend.
+
+\startbuffer
+nofill fullsquare scaled 2cm ;
+nofill fullsquare scaled 2cm shifted (1cm,0) ;
+eofill fullsquare scaled 2cm shifted (0,1cm) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+As this is used for glyphs, we demonstrate this mechanism with a simple \type {O}
+shape:
+
+\startbuffer
+nofill fullcircle xyscaled (2cm,3cm) ;
+eofill fullcircle xyscaled (1cm,2cm) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Another backend related feature is \type {fillup}. This is just a combination
+of a fill and a draw in one go. It can save some bytes in the output file.
+
+\startbuffer
+draw image (
+    pickup pencircle scaled 5mm ;
+    fill   fullsquare scaled 2cm ;
+    draw   fullsquare scaled 2cm ;
+    fillup fullsquare scaled 2cm shifted (4cm,0) ;
+) withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Pitfalls}]
+
+When writing macros, you need to be careful in what
+operations apply to what object. There is for instance a
+difference between the following code:
+
+\startbuffer
+pickup pencircle scaled 2pt ;
+draw  (0,0)--(0,1)--(1,1)  scaled 1cm withcolor .625 red ;
+draw ((0,0)--(0,1)--(1,1)) scaled 2cm withcolor .625 yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The \type {scaled} operates on the previous expression which in the first case is
+the point \type {(1,1)} and in the second case the whole path.
+
+\startbuffer
+pickup pencircle scaled 2pt ;
+draw  (0,0)--(0,1)--(1,1)--cycle  scaled 1cm withcolor .625 red ;
+draw ((0,0)--(0,1)--(1,1)--cycle) scaled 2cm withcolor .625 yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Here the last element in the first case is not the cycle, and the next
+alternative does not help us much in discovering what is going on. (Well, at
+least something {\em is} going on, because the result seems to have some
+dimensions.)
+
+\startbuffer
+pickup pencircle scaled 2pt ;
+draw  (1,1)--cycle  scaled 1cm withcolor .625 red ;
+draw ((1,1)--cycle) scaled 1cm withcolor .625 yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The next lines demonstrate that we're dealing with the dark sides of \METAPOST,
+and from that we may conclude that in case of doubt it's best to add parenthesis
+when such fuzzy situations threaten to occur.
+
+\startbuffer
+pickup pencircle scaled 2pt ;
+draw  (0,1)--(1,1)--cycle  scaled 1cm withcolor .625 red ;
+draw ((0,1)--(1,1)--cycle) scaled 1cm withcolor .625 yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+There are more cases where the result may surprise you. Take the following code:
+
+\startbuffer
+drawarrow ((0,0)--(10,0))
+  withpen pencircle scaled 2pt
+  withcolor red randomized (.4,.9) ;
+currentpicture := currentpicture scaled 8 ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The arrow is made up out of two pieces and each piece gets a different shade of
+red. This is because the attributes are collected and applied to each of the
+components that make up the arrow. Because for each component the attribute code
+is expanded again, we get two random colors. One way around this is to apply the
+color afterwards.
+
+\startbuffer
+draw
+  image (drawarrow ((0,0)--(10,0)) withpen pencircle scaled 2pt)
+  scaled 8 withcolor red randomized (.4,.9) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Here the \type {image} macro creates a picture and as you can see, this provides
+a way to draw within a draw operation.
+
+Once you see the benefits of \type {image}, you will use it frequently. Another
+handy (at first sight strange) macro is \type {hide}. You can use this in
+situations where you don't want code to interfere.
+
+\starttyping
+def mydraw text t =
+  boolean error ; error := false ;
+  def withpencil expr p = hide (error := true) enddef ;
+  draw t ;
+  if error : message "pencils are not supported here" fi ;
+enddef ;
+mydraw fullcircle scaled 10cm withpencil sharp ;
+\stoptyping
+
+Here, setting the boolean normally interferes with the draw operation, but by
+hiding the assignment, this code becomes valid. This code will bring the message
+to your terminal and log file.
+
+Once you start using expressions you have a good chance of encountering messages
+with regard to redundant expressions. The following code is for instance a
+recipe for problems:
+
+\starttyping
+z1 = (1,0) ; z1 = (2,0) ;
+\stoptyping
+
+Changing the \type {=} into \type {:=} helps, but this may not be what you want.
+
+Because the \type {z}||variables are used frequently, they are reset each figure.
+You can also reset them yourself, using the \type {clearxy} macro. The \METAFUN\
+version clears all \type {z}||variables, unless you explictly specify what
+variables to reset. \footnote {This version resulted from a discussion on the
+\METAFONT\ discussion list and is due to Bogus\l{}aw Jackowski.} If you want to
+play with this macro, see what happens when you run the following code:
+
+\starttyping
+show x0 ; z0 = (10,10) ;
+show x0 ; x0 := whatever ; y0 := whatever ;
+show x0 ; z0 = (20,20) ;
+show x0 ; clearxy 0 ;
+show x0 ; z0 = (30,30) ;
+\stoptyping
+
+So, the following calls are all legal:
+
+\starttyping
+clearxy ; clearxy 1 ; clearxy 1, 8, 10 ;
+\stoptyping
+
+Keep in mind that for each figure a full clear is done anyway. You should not
+confuse this command with \type {clearit}, which clears \type {currentpicture}.
+
+\stopsection
+
+\startsection[title={\TeX\ versus \MetaPost}]
+
+If you are defining your own \TEX\ and \METAPOST\ macros, you will notice that
+there are a couple of essential differences between the two macro languages. In
+\TEX\ the following code is invalid. \footnote {In \ETEX\ the calculation can be
+done in less lines using a \type {\numexpr}.}
+
+\starttyping
+\def\fancyplied#1%
+  {\ifnum#1=0
+     \message{zero argument}%
+   \fi
+   \count0=#1 \multiply \count0 by \count0
+   \count2=#1 \multiply \count2 by 2
+   \count4=#1 \divide   \count4 by 2
+   \advance \count0 by \count2
+   \advance \count0 by \count4
+   \count4 }
+\hskip \fancyplied{3} pt
+\stoptyping
+
+This is because \TEX\ is very strict in what tokens it expects next. In
+\METAPOST\ however, you can use \type {vardef}'d macros to hide nasty
+intermediate calculations.
+
+\starttyping
+vardef fancyplied expr x =
+  if x=0 : message "x is zero" ; (x*x+2x+x/2)
+enddef ;
+a := a shifted (fancyplied 3pt,0) ;
+\stoptyping
+
+Hiding intermediate calculations and manipulations is a very strong point of
+\METAPOST.
+
+Another important difference between both languages is the way grouping is
+implemented. Because \TEX\ is dealing with a flow of information, strong grouping
+is a must and therefore part of the language. Occasionally you run into
+situations where you wished that you could reach over a group (for instance in
+order to pass a value).
+
+In \METAPOST\ grouping behaves quite different. First of all, it provides the
+mechanism that hides processing from the current flow. The previously mentioned
+\type {vardef} is implicitly grouped. Contrary to \TEX, in \METAPOST\ all
+assignments are global by default, even in a group. If you assign a variable
+inside a group it is persistent unless you first save the variable (or macro)
+using the \type {save} operator.
+
+So, in the next code snippet, the value of \type {\value} inside the box is {\em
+no} but after the box is typeset, it will be {\em yes} again.
+
+\starttyping
+\def\value{yes} \hbox{\def\value{no}\value} \value
+\stoptyping
+
+To make a value local in \METAPOST, the following code is needed.
+
+\starttyping
+string value ; value := "yes" ;
+def intermezzo
+  begingroup ;
+    save value ; string value ; value := "no" ;
+  endgroup ;
+enddef ;
+\stoptyping
+
+Once you start writing your own \METAPOST\ macros, you will appreciate this
+\quote {always global} behaviour. As with other differences between the two
+languages, they make sense if you look at what the programs are supposed to do.
+
+\stopsection
+
+\startsection[title={Internals and Interims}]
+
+\index{internals}
+\index{interims}
+
+Related to grouping is the internal numeric datatype. When numeric variables are
+defined as interim, you can quickly overload them inside a group.
+
+\starttyping
+newinternal mynumber ; mynumber := 1 ;
+
+begingroup ; ... interim mynumber := 0 ; ... ; endgroup ;
+\stoptyping
+
+You can only \type {interim} a variable if it is already defined using \type
+{newinternal}.
+
+Among the \METAPOST\ macros is one called \type {drawdot}. This macro is kind of
+redundant because, at least at first sight, you can use draw to achieve the same
+result. There is however a very subtle difference: a dot is slightly larger than
+a drawn point. We guess that it's about the device pixel, so you may not even
+notice it. It may even be due to differences in accuracy of the methods to render
+them.
+
+\startbuffer
+pickup pencircle scaled 50pt ;
+drawdot origin shifted (-120pt,0) ; draw origin shifted (-60pt,0) ;
+drawdot origin ; draw origin withcolor white ;
+setbounds currentpicture to boundingbox currentpicture enlarged 1pt ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Named colors]
+
+The \type {withcolor} operator accepts a color expression but in \METAFUN\ it
+also accepts a string indicating a color defined at the \TEX\ end. Most helpers
+that deal with colors are able to deal with named colors as well. Here are some
+examples. First we define a few colors:
+
+\startbuffer
+\definecolor[MyColor1][r=.5]
+\definecolor[MyColor2][g=.5]
+\definecolor[MyColor3][b=.5]
+\definecolor[MyColor4][s=.8]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we access them:
+
+\startbuffer
+fill fullcircle scaled 12 withcolor "MyColor1" ;
+fill fullcircle scaled 10 withcolor "MyColor2" ;
+fill fullcircle scaled  8 withcolor complementary "MyColor3" ;
+fill fullcircle scaled  6 withcolor complemented "MyColor3" ;
+fill fullcircle scaled  4 withcolor "MyColor4" randomized 2 ;
+fill fullcircle scaled  2 withcolor "MyColor4" randomized 2 ;
+addbackground
+    withcolor .5[resolvedcolor("MyColor4"),resolvedcolor("MyColor2")] ;
+currentpicture := currentpicture ysized 4cm ;
+\stopbuffer
+
+\typebuffer
+
+And get:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Formatted text]
+
+Text support in \METAFUN\ has evolved quite a bit over years. For compatibility
+reasons we keep old methods around but in practice one can probably do all with
+the following:
+
+\starttabulate[|T|p|]
+\NC textext[.anchor](str)        \NC position a text relative to the origin \NC \NR
+\NC thetextext[.anchor](str,pos) \NC position a text relative to the given position \NC \NR
+\NC rawtextext[.anchor](str,pos) \NC idem but with less checking \NC \NR
+\stoptabulate
+
+If needed all functionality could be combined in one call (textext) but we keep
+it this way.
+
+You need to keep in mind that text in \METAPOST\ is not a first class object but
+something virtual that is known to \METAFUN\ as something with path like properties
+but is actually dealt with in the backend. This means that timing is important.
+
+\starttyping
+\startMPinitializations
+picture p ; p := image(draw textext("Foo"););
+\stopMPinitializations
+
+\startMPcode
+    picture q ; q := image(draw textext("Bar"););
+    picture r ; r := image(draw textext("Gnu"););
+    draw p ;
+    draw q shifted (2cm,0) ;
+    draw r shifted (4cm,0) ;
+\stopMPcode
+\stoptyping
+
+This will work out well because an initialization is part of a figure, but
+this will fail:
+
+\starttyping
+\startMPinclusions
+picture p ; p := image(draw textext("Foo"););
+\stopMPinclusions
+\stoptyping
+
+because inclusions happen before the local textexts get initialized and
+due to the multipass implementation are not seeN a second time. The order of
+processing is:
+
+\starttabulate[|l|c|c|]
+\BC action          \BC first pass  \BC second pass \NC \NR
+\NC definitions     \NC yes \NC     \NC \NR
+\NC extensions      \NC yes \NC     \NC \NR
+\NC inclusions      \NC yes \NC     \NC \NR
+\NC begin figure    \NC yes \NC yes \NC \NR
+\NC initializations \NC yes \NC yes \NC \NR
+\NC metapost code   \NC yes \NC yes \NC \NR
+\NC end figure      \NC yes \NC yes \NC \NR
+\stoptabulate
+
+The graph package (that comes with \METAPOST) has some pseudo typesetting on
+board needed to format numbers. Because we don't want to interfere with the
+definitions of macros used in that package we provide another set of macros for
+formatting: \type {fmttext}, \type {thefmttext} and \type {rawfmttext}.
+
+\startbuffer
+\startMPcode
+draw thefmttext("\bf@3.2f done",123.45678) withcolor darkred ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+Here we pass one variable to the format but there can be more: \inlinebuffer. In
+\LUA\ the \type {%} is used as format directive but that does not work well in
+\TEX\ and \LUA\ which is why we use \type {@} instead. The formatting is done
+with the formatters subsystem which is an extension to the regular \LUA\ \type
+{format} function. More information can be found in \type {clf-mkiv.pdf} but one
+extension is not mentioned there: \type {%!texexp!}. This directive takes one
+argument by default but optionally can take one or two extra arguments: the
+format of the base number and one for the exponent. The following code
+demonstrates this:
+
+\startbuffer
+\startMPcode{doublefun}
+draw image (
+  draw thefmttext.rt("@!texexp!", 10.4698E30,              (0,-1LineHeight)) ;
+  draw thefmttext.rt("@1!texexp!",10.4698E30,              (0,-2LineHeight)) ;
+  draw thefmttext.rt("@2!texexp!",10.4698E30,"@2.3f",      (0,-3LineHeight)) ;
+  draw thefmttext.rt("@3!texexp!",10.4698E30,false,"@2i",  (0,-4LineHeight)) ;
+  draw thefmttext.rt("@3!texexp!",10.4698E30,"@2.3f","@2i",(0,-5LineHeight)) ;
+) withcolor darkblue ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+We switch to double mode because we use large numbers.
+
+\startlinecorrection[blank]
+    \getbuffer
+\stoplinecorrection
+
+Of course this extra formatter is also supported in the \type {context}
+command:
+
+\startbuffer
+\startluacode
+context("%!texexp!, ",    10.4698E30)
+context("%1!texexp!, ",   10.4698E30)
+context("%2!texexp!, ",   10.4698E30,"@2.3f")
+context("%3!texexp! and ",10.4698E30,false,"@2i")
+context("%3!texexp!",     10.4698E30,"@2.3f","@2i")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This gives: \inlinebuffer .
+
+\stopsection
+
+\startsection[title=Lists (aka suffixed variables)]
+
+Sometimes graphics are constructed using lists. There are a few helpers (and
+maybe there will be some more) that can make things a bit easier. Say that we
+do this:
+
+\startbuffer
+pair a[] ;
+a[1] := (0,0) ; a[2] := (1,0) ;
+a[3] := (1,1) ; a[4] := (0,1) ;
+a[5] := (1,1) ; a[6] := (2,0) ;
+
+draw topath(a,--) ysized 2cm
+    withpen pencircle scaled 1mm
+    withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The \type {topath} macro converts the list into a path, in this case an ugly one.
+
+Say that we want to get rid of the sixth entry. For that we can use the \type
+{dispose} macro. You can use the dispose for any type (except a macro).
+
+\startbuffer
+dispose(a[6]) ;
+draw topath(a,--) ysized 2cm
+    withpen pencircle scaled 1mm
+    withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+We still have some duplicate entries here:
+
+\startbuffer
+dispose(a[6]) ;
+drawpoints topath(a,--) ysized 2cm
+    withpen pencircle scaled 1mm
+    withcolor .625red ;
+drawpointlabels topath(a,--) ysized 2cm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+These can be removed with:
+
+\startbuffer
+uniquelist(a) ;
+draw topath(a,--) ysized 2cm
+    withpen pencircle scaled 1mm
+    withcolor .625yellow ;
+drawpoints topath(a,--) ysized 2cm
+    withpen pencircle scaled 1mm
+    withcolor .625red ;
+drawpointlabels topath(a,--) ysized 2cm ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Sometimes a list needs to be sorted and here is the solution:
+
+\startbuffer
+sortlist(a,nothing) ;
+draw topath(a,--) ysized 2cm
+    withpen pencircle scaled 1mm
+    withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The second argument can be an operator that takes a pair variable:
+
+\startbuffer
+sortlist(a,xpart) ;
+draw topath(a,--) ysized 2cm
+    withpen pencircle scaled 3mm
+    withcolor .625red ;
+sortlist(a,ypart) ;
+draw topath(a,--) ysized 2cm
+    withpen pencircle scaled 2mm
+    withcolor .625yellow ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Constructing a list can be sped up with the \type {tolist} macro.
+
+\startbuffer
+pair a[], b[], c[], d[] ;
+tolist(a,1,(0,0),(1,0),(1,1),(0,1)--(1,1)--(2,2)) ;
+tolist(b,0,(0,0),(1,0),(1,1),(0,1)--(1,1)--(2,2)) ;
+tolist(c,(0,0),(1,0),(1,1),(0,1)--(1,1)--(2,2)) ;
+tolist(d,(0,0),(1,0),(1,1)) ;
+
+draw image (
+    draw topath(a,--) shifted (0,0) ;
+    draw topath(b,--) shifted (3,0) ;
+    draw topath(c,--) shifted (6,0) ;
+    draw topath(d,--) shifted (9,0) ;
+) ysized 2cm withpen pencircle scaled 1mm withcolor .625red ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Segmented paths]
+
+\index {segmented paths}There are all kind of helpers in \METAFUN\ and some are
+discussed here. In \in {figure} [fig:segmentedpaths] we see a few macros that
+return a (smooth) path made from segments. You can for instance use these to do
+things that use the points on a path, like anchoring text.
+
+\startbuffer
+def DrawSomePath(text t) =
+    drawpath        t withcolor .625red ;
+    drawpoints      t withcolor white ;
+    drawpointlabels t ;
+enddef ;
+
+DrawSomePath(circularpath(5) scaled 12cm) ;
+DrawSomePath(squarepath  (5) scaled  8cm) ;
+DrawSomePath(linearpath  (5) scaled  4cm) ;
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[title={A few segmented paths.},reference=fig:segmentedpaths]
+    \processMPbuffer
+\stopplacefigure
+
+\index {crossing paths}The following examples demonstrates two mechanisms. In the
+image two paths are drawn on top of each other but one of them has holes where
+the other one crosses. The \type {crossingunder} macro was written by Alan
+Braslau as part of the node based diagram builder. In the process the arrow
+drawing code was adapted to accept a picture.
+
+\startbuffer[a]
+drawarrow image (
+    draw ((fullcircle scaled 2.25cm) crossingunder (fullsquare scaled 2cm))
+        withpen pencircle scaled 1mm withcolor .625green ;
+    draw  (fullsquare scaled 2cm)
+        withpen pencircle scaled 1mm withcolor .625blue ;
+) ;
+drawarrow image (
+    draw  (fullsquare scaled 4cm)
+        withpen pencircle scaled 1mm withcolor .625red ;
+    draw ((fullcircle scaled 5cm) crossingunder (fullsquare scaled 4cm))
+        withpen pencircle scaled 1mm withcolor .625yellow ;
+) ;
+\stopbuffer
+
+\startbuffer[b]
+drawarrow image (
+    draw ((fullsquare scaled 2cm) crossingunder (fullcircle scaled 2.25cm))
+        withpen pencircle scaled 1mm withcolor .625blue ;
+    draw  (fullcircle scaled 2.25cm)
+        withpen pencircle scaled 1mm withcolor .625green ;
+) ;
+drawarrow image (
+    draw  (fullcircle scaled 5cm)
+        withpen pencircle scaled 1mm withcolor .625yellow ;
+    draw ((fullsquare scaled 4cm) crossingunder (fullcircle scaled 5cm))
+        withpen pencircle scaled 1mm withcolor .625red ;
+) ;
+\stopbuffer
+
+\typebuffer[a]
+
+The next variant uses a different order:
+
+\typebuffer[b]
+
+The results are shown in \in {figure} [fig:crossingunder]. The internal variable
+\type {crossingscale} can be used to make the gap wider or narrower. The gap has
+a default value of 20.
+
+\startplacefigure[title=Crossing paths without touching,reference=fig:crossingunder]
+    \startcombination
+        {\processMPbuffer[a]} {}
+        {\processMPbuffer[b]} {}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

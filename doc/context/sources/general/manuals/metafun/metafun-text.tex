@@ -1,0 +1,1784 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-text
+
+\environment metafun-environment
+
+\startchapter[reference=sec:typesetting,title={Typesetting in \METAPOST}]
+
+\startintro
+
+It is said that a picture tells more than a thousand words. So you might expect
+that text in graphics becomes superfluous. Out of experience we can tell you that
+this is not the case. In this chapter we explore the ways to add text to
+\METAPOST\ graphics, and let you choose whether or not to have it typeset by
+\TEX.
+
+\stopintro
+
+\startsection[title={The process}]
+
+\index{text}
+
+You can let \METAPOST\ process text that is typeset by \TEX. Such text is first
+embedded in the \METAPOST\ file in the following way:
+
+\starttyping
+btex Some text to be typeset by \TEX etex
+\stoptyping
+
+This returns a picture, but only after \METAPOST\ has made sure that \TEX\ has
+converted it into something useful. This process of conversion is slightly system
+dependent and even a bit obscure. Traditional \METAPOST\ calls a program that
+filters the \type {btex}|\unknown|\type {etex} commands, next it calls \TEX\ by
+passing the output routine, in order to make sure that each piece of text ends up
+on its own page, and afterwards it again calls a program that converts the \DVI\
+pages into \METAPOST\ pictures. In \LUATEX's \MPLIB\ a different route is
+followed.
+
+In \CONTEXT\ \MKII, when using \WEBC, you can generate the graphics at run||time.
+This takes more time than processing the graphics afterwards, but has the
+advantage that \TEX\ knows immediately what graphic it is dealing with. When
+enabled, \CONTEXT\ will call either \METAPOST, or, when the graphic contains
+\type {btex}||\type {etex} commands, call \TEXEXEC, which in turn makes sure that
+the right auxiliary programs are executed.
+
+In \CONTEXT\ \MKIV\ you won't notice this at all because everything is tightly
+integrated with \LUATEX's \MPLIB. This has an enormous speed gain: when this
+manual had about 425 pages, on my laptop with mobile 3840QM processor, one run of
+this document takes 18 seconds (14.5 with \LUAJITTEX) and that includes loadint a
+bunch of (outline) fonts and processing some 2200 \METAPOST\ images. While
+writing the first version of this manual runtime was upto 50 times slower for
+half the number of pages so compared to \MKII\ we have gained a lot.
+
+\startFLOWchart[metatex]
+    \startFLOWcell
+      \name       {script 1}
+      \location   {1,1}
+      \shape      {action}
+      \text       {\type{context}}
+      \connection [rl] {context 1}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {context 1}
+      \location   {2,1}
+      \shape      {action}
+      \text       {\CONTEXT}
+      \connection [bt] {metapost 1}
+      \connection [rl] {script 2}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {metapost 1}
+      \location   {2,2}
+      \shape      {action}
+      \text       {\METAPOST}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {script 2}
+      \location   {3,1}
+      \shape      {action}
+      \text       {\type{context}}
+      \connection [rl] {context  2}
+      \connection [bt] {metapost 2}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {context 2}
+      \location   {4,1}
+      \shape      {action}
+      \text       {\CONTEXT}
+    \stopFLOWcell
+    \startFLOWcell
+      \name       {metapost 2}
+      \location   {3,2}
+      \shape      {action}
+      \text       {\METAPOST}
+    \stopFLOWcell
+\stopFLOWchart
+
+\startplacefigure[title={How \TEX\ and \METAPOST\ work together.}]
+    \FLOWchart[metatex]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title={Environments}]
+
+\index{environments}
+
+In case you want to pass code that is shared by all \type {btex}||\type {etex}
+pictures, \METAPOST\ provides:
+
+\starttyping
+verbatimtex \DefineSomeCommands etex ;
+\stoptyping
+
+However, in \CONTEXT\ one has a better mechanism available. In \CONTEXT\ \MKII\
+the advised method is passing environments. The best way to pass them is the
+following. As an example we switch to the 15 basic \POSTSCRIPT\ fonts.
+
+\startbuffer[pos]
+\startMPenvironment
+  \usetypescript[palatino][texnansi] % mkii has encodings
+  \setupbodyfont[palatino]
+\stopMPenvironment
+\stopbuffer
+
+\typebuffer[pos]
+
+This means that in code like the following, a Palatino font will be used.
+
+\starttyping
+\startMPcode
+draw btex Meta is a female lion! etex
+  xysized (\the\textwidth,\the\textheight) ;
+\stopMPcode
+\stoptyping
+
+However, in \CONTEXT\ \MKIV\ this method is no longer recomended as all
+processing happens in the same run anyway.
+
+% beware: extensive scaling can make acrobat crash and okular drop the !
+
+\startbuffer[lioncode]
+\startMPcode
+numeric w, h ; w := \the\textwidth ; h := w/2 ;
+
+picture p ; p := btex \colored[r=.375,g=.375]{Meta is a female lion!} etex
+    xysized (w,h) ;
+picture q ; q := btex \colored[r=.625]       {Meta is a female lion!} etex
+    xysized (w,h) ;
+
+path b ; b := boundingbox p ; draw p ;
+
+for i=(.28w,.90h),(.85w,.90h),(w,.05h) :
+  picture r ; r := q ;
+  path s ; s := (fullsquare xscaled .05w yscaled .4h) shifted i ;
+  clip r to s ; draw r ; % draw s ;
+endfor ;
+
+setbounds currentpicture to b ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[lioncode]
+
+\in {Figure} [lionclip] shows the previous sentence in a slightly different look.
+You may consider coloring the dots to be an exercise in clipping.
+
+\getbuffer[pos]
+
+\placefigure
+  [here][lionclip]
+  {An example of clipping.}
+  {\getbuffer[lioncode]}
+
+\resetMPenvironment
+
+An environment can be reset with \typ {\resetMPenvironment} or by passing \type
+{reset} to \typ {\startMPenvironment}.
+
+\starttyping
+\startMPenvironment[reset]
+  \usetypescript[postscript][texnansi] % mkii
+  \setupbodyfont[postscript]
+\stopMPenvironment
+\stoptyping
+
+So, to summarize: if you're using \CONTEXT\ \MKIV\ you might as well forgot what
+you just read.
+
+\stopsection
+
+\startsection[title={Labels}]
+
+\index{labels}
+
+In \METAPOST\ you can use the \type {label} macro to position text at certain
+points.
+
+\starttyping
+label("x", origin) ;
+\stoptyping
+
+The font and scale are determined by two variables, \type {defaultfont} and \type
+{defaultscale}, the former expecting the name of a font in the form of a string,
+the latter expecting a numeric to be used in the scaling of the font. Should you
+choose not to set these yourself, they default to \type {"Mono"} and \type
+{1.0}, respectively. However, you can change the defaults as follows:
+
+\starttyping
+defaultfont  := "texgyrepagella-regular*default" ;
+defaultscale := 1.2 ;
+\stoptyping
+
+These settings selects Pagella at about 12pt. You can also set these variables
+to \CONTEXT\ related values. For \CONTEXT\ graphics they are set to:
+
+\starttyping
+defaultfont  := "\truefontname{Regular}*default" ;
+defaultscale := \the\bodyfontsize/10 ;
+\stoptyping
+
+This means that they will adapt themselves to the current body font (in this
+document we get \truefontname{Regular}) and the current size of the bodyfont
+(here \the\bodyfontsize/10).
+
+\stopsection
+
+\startsection[title={\TeX\ text}]
+
+\index{text}
+
+In the next example we will use a special mechanism for building graphics step by
+step. The advantage of this method is that we can do intermediate calculations in
+\TEX. Our objective is to write a macro that draws text along a circular path.
+While doing so we want to achieve the following:
+
+\startitemize[packed]
+\item  the text should be properly kerned, i.e.\ the
+       spacing between characters should be optimal,
+\item  the position on the circle should vary, and
+\item  the radius of the circle should vary.
+\stopitemize
+
+This implementation is not the most straightforward one, but by doing it step by
+step, at least we see what is involved. Later, we will see a better method. If
+you run these examples yourself, you must make sure that the \TEX\ environment of
+your document matches the one used by \METAPOST.
+
+We let the bodyfont match the font used in this document, and define \type
+{RotFont} to be the regular typeface, the one you are reading right now, but
+bold.
+
+\startbuffer
+\definefont[RotFont][RegularBold*default]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Since \METAPOST\ is unaware of kerning, we have to use \TEX\ to keep track of the
+positions. We will split the text into tokens (often characters) and store the
+result in an array of pictures (\type {pic}). We will also store the accumulated
+width in an array (\type {len}). The number of characters is stored in~\type {n}.
+In a few paragraphs we will see why the other arrays are needed.
+
+While defining the graphic, we need \TEX\ to do some calculations. Therefore, we
+will use \type {\startMPdrawing} to stepwise construct the definition. The basic
+pattern we will follow is:
+
+\starttyping
+\resetMPdrawing
+\startMPdrawing
+  metapost code
+\stopMPdrawing
+tex code
+\startMPdrawing
+  metapost code
+\stopMPdrawing
+\MPdrawingdonetrue
+\getMPdrawing
+\stoptyping
+
+In the process, we will use a few variables. We will store the individual
+characters of the text in the variable \type {pic}, its width in \type {wid} and
+the length of the string so far in \type {len}. Later we will use the \type {pos}
+array to store the position where a character ends up. The variable \type {n}
+holds the number of tokens.
+
+\startbuffer[init]
+\resetMPdrawing
+\startMPdrawing
+  picture pic[] ;
+  numeric wid[], len[], pos[], n ;
+  wid[0] := len[0] := pos[0] := n := 0 ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[init]
+
+We also started fresh by resetting the drawing. From now on, each start command
+will add some more to this graphic. The next macro is responsible for collecting
+the data. Each element is passed on to \TEX, using the \type {btex} construct.
+So, \METAPOST\ itself will call \TEX !
+
+\startbuffer[toks]
+\def\whatever#1%
+  {\appendtoks#1\to\MPtoks
+   \setbox\MPbox=\hbox{\bfd\the\MPtoks}%
+   \startMPdrawing
+     n := n + 1 ; len[n] := \the\wd\MPbox ;
+   \stopMPdrawing
+   \startMPdrawing[-]
+     pic[n] := textext("\bfd\setstrut\strut#1") ;
+     pic[n] := pic[n] shifted - llcorner pic[n] ;
+   \stopMPdrawing}
+
+\handletokens MetaPost is Fun!\with\whatever
+\stopbuffer
+
+\typebuffer[toks]
+
+We use the low level \CONTEXT\ macro \type {\appendtoks} to extend the token list
+\type {\MPtoks}. The \type {\handletokens} macro passes each token (character) of
+\typ {MetaPost is Fun!} to the macro \type {\whatever}. The tokens are appended
+to the token register \type {\MPtoks} (already defined). Then we typeset the
+content of \type {\MPtoks} in \type {\MPbox} (also already defined). The width of
+the box is passed to \METAPOST\ and stored in \type {len}.
+
+By default the content of the drawing is expanded, which means that the macro is
+replaced by its current meaning, so the current width ends up in the \METAPOST\
+file. The next part of the drawing, starting with \type {btex}, puts the token in
+a picture. This time we don't expand the drawing, since we want to pass font
+information. Here, the \type {[-]} suppresses expansion of \typ {btex \bfd #1
+etex}. The process is iterated by \type {\handletokens} for each character of the
+text \typ {MetaPost is Fun!}.
+
+Before we typeset the text, now available in pieces in \type {pic}, in a circle,
+we will first demonstrate what they look like. You may like to take a look at the
+file \type {mpgraph.mp} to see what is passed to \METAPOST.
+
+\startbuffer[test]
+\startMPdrawing
+  pair len ; len := origin ;
+  for i=1 upto n :
+    draw pic[i] shifted len ;
+    draw boundingbox pic[i] shifted len
+      withpen pencircle scaled .25pt withcolor red ;
+    len := len+(xpart urcorner pic[i]-xpart llcorner pic[i],0) ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[test]
+
+\startbuffer[show]
+\MPdrawingdonetrue\getMPdrawing
+\stopbuffer
+
+We can call up this drawing with \type {\getMPdrawing}, but first we inform the
+compiler that our \METAPOST\ drawing is completed.
+
+\typebuffer[show]
+
+This results in:
+
+\startlinecorrection[blank]
+\getbuffer[init,toks,test,show]
+\stoplinecorrection
+
+Compare this text with the text as typeset by \TEX:
+
+\blank \start \bfd MetaPost is Fun!\par \stop \blank
+
+and you will see that the text produced by \METAPOST\ is not properly kerned.
+When putting characters after each other, \TEX\ uses the information available in
+the font, to optimize the spacing between characters, while \METAPOST\ looks at
+characters as separate entities. But, since we have stored the optimal spacing in
+\type {len}, we can let \METAPOST\ do a better job. Let's first calculate the
+correction needed.
+
+\startbuffer[kern]
+\startMPdrawing
+  for i=1 upto n :
+    wid[i] := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
+    pos[i] := len[i]-wid[i] ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[kern]
+
+This compares well to the text as typeset by \TEX:
+
+\blank \start \bfd MetaPost is Fun!\par \stop \blank
+
+We can now use the values in \type {pos} to position the pictures according to
+what \TEX\ considered to be the best (relative) position.
+
+\startbuffer[test]
+\startMPdrawing
+  for i=1 upto n :
+    draw pic[i] shifted (pos[i],0) ;
+    draw boundingbox pic[i] shifted (pos[i],0)
+      withpen pencircle scaled .25pt withcolor red ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[test]
+
+That this correction is adequate, is demonstrated in the next graphic. If you
+look closely, you will see that for instance the \quote {o} is moved to the left,
+under the capital \quote {P}.
+
+\startlinecorrection[blank]
+\getbuffer[init,toks,kern,test,show]
+\stoplinecorrection
+
+When we want to position the pictures along a circle, we need to apply some
+rotations, especially because we want to go clockwise. Since we don't want to use
+\quote {complicated} math or more advanced \METAPOST\ code yet, we will do it in
+steps.
+
+\startbuffer[swap]
+\startMPdrawing
+  for i=1 upto n:
+    pic[i] := pic[i] rotatedaround(origin,-270) ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[swap]
+
+\startlinecorrection[blank]
+\getbuffer[init,toks,kern,swap,test,show]
+\stoplinecorrection
+
+\startbuffer[cent]
+\startMPdrawing
+  for i=1 upto n :
+    pic[i] := pic[i]
+      shifted (0,ypart -.5[ulcorner pic[i],llcorner pic[i]]) ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+We will now center the pictures around the baseline. Centering comes down to
+shifting over half the height of the picture. This can be expressed by:
+
+\starttyping
+ypart -.5[ulcorner pic[i],llcorner pic[i]]
+\stoptyping
+
+but different ways of calculating the distance are possible
+too.
+
+\typebuffer[cent]
+
+So, now we have:
+
+\startlinecorrection[blank]
+\getbuffer[init,toks,kern,swap,cent,test,show]
+\stoplinecorrection
+
+When we typeset on a (half) circle, we should map the actual length onto a
+partial circle. We denote the radius with an~\type {r} and shift the pictures to
+the left.
+
+\startbuffer[shif]
+\startMPdrawing
+  numeric r ; r := len[n]/pi ;
+  for i=1 upto n :
+    pic[i] := pic[i] shifted (-r,0) ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[shif]
+
+You can now use the following code to test the current state of the pictures. Of
+course this code should not end up in the final definitions.
+
+\startbuffer[test]
+\startMPdrawing
+  draw origin
+    withpen pencircle scaled 5pt withcolor red ;
+  for i=1 upto n :
+    draw pic[i] ;
+    draw boundingbox pic[i]
+      withpen pencircle scaled .25pt withcolor red ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[test]
+
+\startlinecorrection[blank]
+\getbuffer[init,toks,kern,swap,cent,shif,test,show]
+\stoplinecorrection
+
+Later we will write a compact, efficient macro to take care of rotation. However,
+for the moment, so as not to overwhelm you with complicated code, we will rotate
+each individual picture with the following code fragment.
+
+\startbuffer[rots]
+\startMPdrawing
+  numeric delta, extra, radius, rot[] ;
+
+  delta  := extra := radius := 0 ;
+
+  for i=1 upto n :
+    rot[i] := extra+delta-((pos[i]+.5wid[i])/len[n])*(180+2delta) ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[rots]
+
+Here we introduce a few variables that we can use later to tune the result a bit.
+With \type {delta}, the space between the characters can be increased, while
+\type {extra} rotates the whole string around the origin. The \type {radius}
+variable can be used to increase the distance to the origin. Without these
+variables, the assignment would have been:
+
+\starttyping
+rot[i] := ((pos[i]+.5wid[i])/len[n])*180 ;
+\stoptyping
+
+Placing the pictures is now rather easy:
+
+\startbuffer[done]
+\startMPdrawing
+  for i=1 upto n :
+    draw pic[i] shifted (-radius,0) rotatedaround(origin,rot[i]) ;
+  endfor ;
+\stopMPdrawing
+\stopbuffer
+
+\typebuffer[done]
+
+The pictures are now positioned on half a circle, properly kerned.
+
+\startlinecorrection[blank]
+\getbuffer[init,toks,kern,swap,cent,shif,rots,done,show]
+\stoplinecorrection
+
+A bit more insight is given in the next picture:
+
+\startbuffer[test]
+\startMPdrawing
+  def moved(expr i) =
+    shifted (-radius,0) rotatedaround(origin,rot[i])
+  enddef ;
+  pickup pencircle scaled .5pt ;
+  for i=1 upto n :
+    draw pic[i] moved(i) ;
+    draw boundingbox pic[i] moved(i) withcolor red ;
+    draw origin -- center pic[i] moved(i) withcolor green ;
+  endfor ;
+  draw tcircle scaled 2r withcolor blue ;
+\stopMPdrawing
+\stopbuffer
+
+\startlinecorrection[blank]
+\getbuffer[init,toks,kern,swap,cent,shif,rots,test,show]
+\stoplinecorrection
+
+This was defined as follows. The path variable \type {tcycle} is predefined to
+the top half of a fullcircle.
+
+\typebuffer[test]
+
+We will now package all of this into a nice, efficient macro, using, of course,
+the predefined scratch registers \type {\MPtoks} and \type {\MPbox}. First we
+define the token processor. Note again the expansion inhibition switch \type
+{[-]}.
+
+\startbuffer
+\def\processrotationtoken#1%
+  {\appendtoks#1\to\MPtoks
+   \setbox\MPbox=\hbox{\RotFont\the\MPtoks}%
+   \startMPdrawing
+     n := n + 1 ; len[n] := \the\wd\MPbox ;
+   \stopMPdrawing
+   \startMPdrawing[-]
+     pic[n] := textext("\RotFont\setstrut\strut#1") ;
+     pic[n] := pic[n] shifted - llcorner pic[n] ;
+   \stopMPdrawing}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The main macro is a bit more complicated but by using a few scratch numerics, we
+can keep it readable.
+
+\startbuffer
+\def\rotatetokens#1#2#3#4% delta extra radius tokens
+  {\vbox\bgroup
+   \MPtoks\emptytoks
+   \resetMPdrawing
+   \startMPdrawing
+     picture pic[] ;
+     numeric wid, len[], rot ;
+     numeric delta, extra, radius, n, r ;
+     len[0] := n := 0 ;
+     delta  := #1 ; extra := #2 ; radius := #3 ;
+   \stopMPdrawing
+   \handletokens#4\with\processrotationtoken
+   \startMPdrawing
+     r := len[n]/pi ;
+     for i=1 upto n :
+       wid := abs(xpart lrcorner pic[i] -
+                  xpart llcorner pic[i]) ;
+       rot := extra + delta -
+              ((len[i]-.5wid)/len[n]) * (180+2delta) ;
+       draw pic[i]
+         rotatedaround (origin,-270) shifted (-r-radius,
+         ypart -.5[ulcorner pic[i], llcorner pic[i]])
+         rotatedaround (origin,rot) ;
+     endfor ;
+   \stopMPdrawing
+   \MPdrawingdonetrue
+   \getMPdrawing
+   \resetMPdrawing
+   \egroup}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startbuffer
+\startcombination[3*1]
+  {\rotatetokens {0} {0}{0}{Does it work ok?}} {A}
+  {\rotatetokens{20} {0}{0}{Does it work ok?}} {B}
+  {\rotatetokens{20}{30}{0}{Does it work ok?}} {C}
+\stopcombination
+\stopbuffer
+
+We can use this macro as follows:
+
+\typebuffer
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+The previous macro is not really an example of generalization, but we used it for
+demonstrating how to build graphics in a stepwise way. If you put the steps in
+buffers, you can even combine steps and replace them at will. This is how we made
+the previous step by step examples: We put each sub||graphic in a buffer and then
+called the ones we wanted.
+
+We now present a more general approach to typesetting along a given path. This
+method is not only more robust and general, it is also a more compact definition,
+especially if we omit the tracing and testing code. We use a familiar auxiliary
+definition. The \type {\setstrut} and \type {\strut} commands ensure that the
+lines have the proper depth and height.
+
+\startbuffer
+\def\processfollowingtoken#1%
+  {\appendtoks#1\to\MPtoks
+   \setbox\MPbox=\hbox{\RotFont\setstrut\strut\the\MPtoks}%
+   \startMPdrawing
+     n := n + 1 ; len[n] := \the\wd\MPbox ;
+   \stopMPdrawing
+   \startMPdrawing[-]
+     pic[n] := btex \RotFont\setstrut\strut#1 etex ;
+     pic[n] := pic[n] shifted -llcorner pic[n] ;
+   \stopMPdrawing}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In \MKII\ the previous code is collected in the macro \type {\followtokens} but
+in \MKIV\ we use a different approach. There we use a mix of \TEX, \METAPOST, and
+\LUA\ to define that macro. The principles remain the same but the code is more
+robust.
+
+\input meta-imp-txt.mkiv % we need to force a reload \useMPlibrary[txt]
+
+So, how does this compare to earlier results? The original, full text as typeset
+by \TEX, looks like:
+
+\blank \start \RotFont We now follow some arbitrary path ... \stop \blank
+
+In the examples, the text is typeset along the path with:
+
+\startbuffer[toks]
+\followtokens{We now follow some arbitrary path ...}
+\stopbuffer
+
+\typebuffer[toks]
+
+\startlinecorrection[blank]
+\getbuffer[toks]
+\stoplinecorrection
+
+Since we did not set a path, a dummy path is used. We can provide a path by
+(re)defining the graphic \type {followtokens}.
+
+\startbuffer[trac]
+\startMPinclusions
+  boolean TraceRot ; TraceRot := true ;
+\stopMPinclusions
+\stopbuffer
+
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := fullcircle ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer
+\typebuffer[draw]
+\startlinecorrection[blank]
+\hbox
+  {\getbuffer[draw,toks]\hskip1cm
+   \getbuffer[trac,draw,toks]}
+\stoplinecorrection
+\stopbuffer
+
+\getbuffer
+
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := reverse fullcircle ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer
+
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,-1cm)--(0,1cm)--(3cm,-1cm) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer
+
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,0)--(3cm,1cm) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer
+
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(3cm,0) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer
+
+\startbuffer[draw]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := (-3cm,0)..(-1cm,1cm)..(0cm,-2cm)..(3cm,0) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\getbuffer
+
+When turned on, tracing will produce bounding boxes as well as draw the path.
+Tracing can be turned on by saying:
+
+\typebuffer[trac]
+
+% let's turn it off now
+
+\startMPinclusions
+  boolean TraceRot ; TraceRot := false ;
+\stopMPinclusions
+
+The next example is dedicated to Giuseppe Bilotta who wants to handle multiple
+strings and uses a patched version of \type {\followtokens}. To avoid a
+complicated explanation, we will present an alternative here that uses overlays.
+This method also avoids complicated path definitions.
+
+\startbuffer
+\startoverlay
+  {\startuseMPgraphic{followtokens}
+     draw fullcircle scaled 5cm .
+       withpen pencircle scaled 1pt withcolor .625yellow ;
+     draw fullsquare scaled 5.25cm
+       withpen pencircle scaled 1pt withcolor .625red ;
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { Met{\`a} superiore }}
+  {\startuseMPgraphic{followtokens}
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle rotated 90 scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { {$\star$} }}
+  {\startuseMPgraphic{followtokens}
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle rotated 180 scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { Met{\`a} inferiore }}
+  {\startuseMPgraphic{followtokens}
+     drawoptions (withcolor .625red) ;
+     path RotPath ; RotPath := halfcircle rotated 270 scaled 5cm ;
+     setbounds currentpicture to boundingbox fullcircle scaled 5.25cm ;
+   \stopuseMPgraphic
+   \followtokens { {$\star$} }}
+\stopoverlay
+\stopbuffer
+
+\typebuffer
+
+In order to fool the overlay macro that each graphic has the same size, we force
+a bounding box.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Talking to \TEX}]
+
+Sometimes, others may say oftentimes, we are in need for some fancy typesetting.
+If we want to typeset a paragraph of text in a non standard shape, like a circle,
+we have to fall back on \type {\parshape}. Unfortunately, \TEX\ is not that
+strong in providing the specifications of more complicated shapes, unless you are
+willing to do some complicated arithmetic \TEX. Given that \METAPOST\ knows how
+to deal with shapes, the question is: \quotation {Can \METAPOST\ be of help?}
+
+In the process of finding out how to deal with this, we first define a simple
+path. Because we are going to replace pieces of code, we will compose the graphic
+from components. First, we create the path.
+
+\startbuffer
+\startuseMPgraphic{text path}
+  path p ; p := ((0,1)..(-1,0)..(1,0)--cycle) scaled 65pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This shape is not that beautiful, but it has a few characteristics that will help
+us to identify bordercases.
+
+\startbuffer
+\startuseMPgraphic{text draw}
+  drawarrow p withpen pencircle scaled 1pt withcolor red ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Now we use \CONTEXT's \type {\includeMPgraphic} command to build our graphic from
+the previously defined components.
+
+\startbuffer
+\startuseMPgraphic{text}
+  \includeMPgraphic{text path}
+  \includeMPgraphic{text draw}
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When called with \type {\useMPgraphic{text}}, we get:
+
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+For the moment we start the path at $(x=0,y>0)$, but later using more complicated
+macros, we will see that we can use arbitrary paths.
+
+We are going to split the path in two, and will use the points that make up the
+bounding box as calcutated by \METAPOST. The next graphic shows one of these
+points, the lower left corner, available as point \typ {llcorner p}.
+
+\startbuffer
+\startuseMPgraphic{text draw}
+  draw             p withpen pencircle scaled 3pt withcolor red ;
+  draw boundingbox p withpen pencircle scaled 1pt ;
+  draw llcorner    p withpen pencircle scaled 5pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+The five points that \METAPOST\ can report for each path or picture are:
+
+\starttabulate[|Tl|l|]
+\NC llcorner \NC lower left  corner            \NC \NR
+\NC lrcorner \NC lower right corner            \NC \NR
+\NC urcorner \NC upper right corner            \NC \NR
+\NC ulcorner \NC upper left  corner            \NC \NR
+\NC center   \NC intersection of the diagonals \NC \NR
+\stoptabulate
+
+If we want to typeset text inside this circle, we need to know where a line
+starts and ends. Given that lines are horizontal and straight, we therefore need
+to calculate the intersection points of the lines and the path. As a first step,
+we calculate the top and bottom of the path and after that we split off the left
+and right path.
+
+\startbuffer
+\startuseMPgraphic{text split}
+  pair t, b ; path l, r ;
+
+  t := (ulcorner p -- urcorner p) intersectionpoint p ;
+  b := (llcorner p -- lrcorner p) intersectionpoint p ;
+
+  l := p cutbefore t ; l := l cutafter b ;
+  r := p cutbefore b ; r := r cutafter t ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {intersectionpoint} macro returns the point where two paths cross. If
+the paths don't cross, an error is reported, when the paths cross more times,
+just one point is returned. The \type {cutafter} and \type {cutbefore} commands
+do as their names say and return a path.
+
+In the \type {text split} code fragment, \type {t} and \type {b} are the top
+points of the main path, while \type {l} and \type {r} become the left and right
+half of path \type {p}.
+
+We now draw the original path using a thick pen and both halves with a thinner
+pen on top of the original. The arrows show the direction.
+
+\startbuffer
+\startuseMPgraphic{text draw}
+  draw      p withpen pencircle scaled 3pt withcolor red ;
+  drawarrow l withpen pencircle scaled 1pt withcolor green ;
+  drawarrow r withpen pencircle scaled 1pt withcolor blue ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We use \type {\includeMPgraphic} to assemble the components:
+
+\startbuffer
+\startuseMPgraphic{text}
+  \includeMPgraphic{text path}
+  \includeMPgraphic{text split}
+  \includeMPgraphic{text draw}
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This graphic is typeset with \type {\useMPgraphic{text}}:
+
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+Before we are going to use them, we define some variables that specify the text.
+We use a baseline distance of 8~points. The part of the line above the baseline
+is 7.2~points, while the (maximum) depth is 2.8~points. These ratios are the ones
+we use in \CONTEXT. Because we don't want the text to touch the circle so we
+define an offset too.
+
+\startbuffer
+\startuseMPgraphic{text vars}
+  baselineskip := 8pt ;
+  strutheight  := (7.2/10) * baselineskip ;
+  strutdepth   := (2.8/10) * baselineskip ;
+  offset       := baselineskip/2 ;
+  topskip      := strutheight ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We more or less achieve the offset by scaling the path. In doing so, we use the
+width and height, which we call \type {hsize} and \type {vsize}, thereby
+conforming to the \TEX\ naming scheme.
+
+First we calculate both dimensions from the bounding box of the path. Next we
+down scale the path to compensate for the offset. When done, we recalculate the
+dimensions.
+
+\startbuffer
+\startuseMPgraphic{text move}
+  pair t, b ; path q, l, r ;
+
+  hsize := xpart lrcorner p - xpart llcorner p ;
+  vsize := ypart urcorner p - ypart lrcorner p ;
+
+  q := p xscaled ((hsize-2offset)/hsize)
+         yscaled ((vsize-2offset)/vsize) ;
+
+  hsize := xpart lrcorner q - xpart llcorner q ;
+  vsize := ypart urcorner q - ypart lrcorner q ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startuseMPgraphic{text split}
+  t := (ulcorner q -- urcorner q) intersectionpoint q ;
+  b := (llcorner q -- lrcorner q) intersectionpoint q ;
+
+  l := q cutbefore t ; l := l cutafter b ;
+  r := q cutbefore b ; r := r cutafter t ;
+\stopuseMPgraphic
+\stopbuffer
+
+We adapt the \type {text split} code to use the reduced path
+instead of the original.
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startuseMPgraphic{text draw}
+  drawarrow p withpen pencircle scaled 1pt withcolor red ;
+  draw      t withpen pencircle scaled 2pt ;
+  draw      b withpen pencircle scaled 2pt ;
+  drawarrow l withpen pencircle scaled 1pt withcolor green ;
+  drawarrow r withpen pencircle scaled 1pt withcolor blue ;
+\stopuseMPgraphic
+\stopbuffer
+
+In order to test what we have reached so far, we draw the original path, the left
+and right part of the reduced path, and both the top and bottom point.
+
+\typebuffer \getbuffer
+
+Again we use \type {\includeMPgraphic} to combine the
+components into a graphic.
+
+\startbuffer
+\startuseMPgraphic{text}
+  \includeMPgraphic{text path} \includeMPgraphic{text vars}
+  \includeMPgraphic{text move} \includeMPgraphic{text split}
+  \includeMPgraphic{text draw}
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Then we use \type {\useMPgraphic{text}} to call up the picture.
+
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+The offset is not optimal. Note the funny gap at the top. We could try to fix
+this, but there is a better way to optimize both paths.
+
+We lower the top edge of \type {q}'s bounding box by \type {topskip}, then cut
+any part of the left and right pieces of \type {q} that lie above it. Similarly,
+we raise the bottom edge and cut off the pieces that fall below this line.
+
+\startbuffer
+\startuseMPgraphic{text cutoff}
+  path tt, bb ;
+
+  tt := (ulcorner q -- urcorner q) shifted (0,-topskip) ;
+  bb := (llcorner q -- lrcorner q) shifted (0,strutdepth) ;
+
+  l := l cutbefore (l intersectionpoint tt) ;
+  l := l cutafter  (l intersectionpoint bb) ;
+  r := r cutbefore (r intersectionpoint bb) ;
+  r := r cutafter  (r intersectionpoint tt) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because we use \type {\includeMPgraphic} to construct the graphic, we can
+redefine \type {text draw} to show the result of this effort.
+
+\startbuffer
+\startuseMPgraphic{text draw}
+  drawarrow p withpen pencircle scaled 1pt withcolor red ;
+  drawarrow l withpen pencircle scaled 1pt withcolor green ;
+  drawarrow r withpen pencircle scaled 1pt withcolor blue ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {text} graphic now becomes:
+
+\startbuffer
+\startuseMPgraphic{text}
+  \includeMPgraphic{text path}   \includeMPgraphic{text vars}
+  \includeMPgraphic{text move}   \includeMPgraphic{text split}
+  \includeMPgraphic{text cutoff} \includeMPgraphic{text draw}
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Or, as graphic:
+
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+We are now ready for an attempt to calculate the shape of the text. For each
+line, we have to calculate the left and right intersection points, and since a
+line has a height and depth, we have to determine which part touches first.
+
+\startbuffer
+\startuseMPgraphic{text calc}
+  vardef found_point (expr lin, pat, sig) =
+    pair a, b ;
+    a := pat intersection_point (lin shifted (0,strutheight)) ;
+    if intersection_found :
+      a := a shifted (0,-strutheight) ;
+    else :
+      a := pat intersection_point lin ;
+    fi ;
+    b := pat intersection_point (lin shifted (0,-strutdepth)) ;
+    if intersection_found :
+      if sig :
+        if xpart b > xpart a : a := b shifted (0,strutdepth) fi ;
+      else :
+        if xpart b < xpart a : a := b shifted (0,strutdepth) fi ;
+      fi ;
+    fi ;
+    a
+  enddef ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Instead of using \METAPOST's \type {intersectionpoint} macro, we use one that
+comes with \CONTEXT. That way we don't get an error message when no point is
+found, and can use a boolean flag to take further action. Since we use a \type
+{vardef}, all calculations are hidden and the~\type {a} at the end is returned,
+so that we can use this macro in an assignment. The \type {sig} variable is used
+to distinguish between the beginning and end of a line (the left and right
+subpath).
+
+\startbuffer
+\startuseMPgraphic{text step}
+  path line; pair lll, rrr ;
+
+  for i=topskip step baselineskip until vsize :
+
+    line := (ulcorner q -- urcorner q) shifted (0,-i) ;
+
+    lll := found_point(line,l,true ) ;
+    rrr := found_point(line,r,false) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we divide the available space in lines. The first line starts at \type
+{strutheight} from the top.
+
+We can now finish our graphic by visualizing the lines. Both the height and depth
+of the lines are shown.
+
+\startbuffer
+\startuseMPgraphic{text line}
+    fill (lll--rrr--rrr shifted (0,strutheight)--lll
+      shifted (0,strutheight)--cycle) withcolor .5white ;
+    fill (lll--rrr--rrr shifted (0,-strutdepth)--lll
+      shifted (0,-strutdepth)--cycle) withcolor .7white ;
+    draw lll withpen pencircle scaled 2pt ;
+    draw rrr withpen pencircle scaled 2pt ;
+    draw (lll--rrr) withpen pencircle scaled .5pt ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{text done}
+  endfor ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The result is still a bit disappointing.
+
+\startbuffer
+\startuseMPgraphic{text}
+  \includeMPgraphic{text path}   \includeMPgraphic{text vars}
+  \includeMPgraphic{text move}   \includeMPgraphic{text split}
+  \includeMPgraphic{text cutoff} \includeMPgraphic{text draw}
+  \includeMPgraphic{text calc}   \includeMPgraphic{text step}
+  \includeMPgraphic{text line}   \includeMPgraphic{text done}
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+In order to catch the overflow at the bottom, we need to change the \type
+{for}||loop a bit, so that the number of lines does not exceed the available
+space. The test that surrounds the assignment of \type {vvsize} makes sure that
+we get better results when we (on purpose) take a smaller height.
+
+\startbuffer
+\startuseMPgraphic{text step}
+  path line; pair lll, rrr ; numeric vvsize ;
+
+  if (strutheight+strutdepth<baselineskip) :
+    vvsize := vsize ;
+  else :
+    vvsize := (vsize div baselineskip) * baselineskip ;
+  fi ;
+
+  for i=topskip step baselineskip until vvsize :
+
+    line := (ulcorner q -- urcorner q) shifted (0,-i) ;
+
+    lll := found_point(line,l,true ) ;
+    rrr := found_point(line,r,false) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+We can manipulate the heigth and depth of the lines to give different (and maybe
+better) results.
+
+\startbuffer
+\startuseMPgraphic{text vars}
+baselineskip := 8pt ;
+strutheight  := 4pt ;
+strutdepth   := 2pt ;
+offset       := 4pt ;
+topskip      := 3pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[blank]
+\useMPgraphic{text}
+\stoplinecorrection
+
+This kind of graphic trickery in itself is not enough to get \TEX\ into
+typesetting within the bounds of a closed curve. Since \METAPOST\ can write
+information to a file, and \TEX\ can read such a file, a natural way to handle
+this is to let \METAPOST\ write a \type {\parshape} specification.
+
+\startbuffer
+\startuseMPgraphic{text macro}
+  def provide_parshape (expr p, offset, baselineskip,
+    strutheight, strutdepth, topskip) =
+
+    \includeMPgraphic{text move}
+    \includeMPgraphic{text split}
+    \includeMPgraphic{text cutoff}
+    \includeMPgraphic{text draw}
+    \includeMPgraphic{text calc}
+    \includeMPgraphic{text loop}
+    \includeMPgraphic{text save}
+
+  enddef ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We have to adapt the for||loop to register the information about the lines. After
+the loop we write those values to a file using another loop.
+
+\startbuffer
+\startuseMPgraphic{text loop}
+  path line; pair lll, rrr ; numeric vvsize, n ; n := 0 ;
+
+  if (strutheight+strutdepth<baselineskip) :
+    vvsize := vsize ;
+  else :
+    vvsize := (vsize div baselineskip) * baselineskip ;
+  fi ;
+
+  for i=topskip step baselineskip until vvsize :
+
+    line := (ulcorner q -- urcorner q) shifted (0,-i) ;
+
+    lll := found_point(line,l,true ) ;
+    rrr := found_point(line,r,false) ;
+
+    n := n + 1 ;
+
+    indent[n] := abs(xpart lll - xpart llcorner q) ;
+    width[n]  := abs(xpart rrr - xpart lll) ;
+
+  endfor ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{text save}
+  write "\parshape " & decimal n to "mfun-mp-data.txt" ;
+  for i=1 upto n:
+    write decimal indent[i]&"bp " &
+          decimal  width[i]&"bp " to "mfun-mp-data.txt" ;
+  endfor ;
+  write EOF to "mfun-mp-data.txt" ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can call this macro using the part we used in the previous examples.
+
+\startbuffer
+\startuseMPgraphic{text}
+  \includeMPgraphic{text macro}
+
+  path p ; p := ((0,1)..(-1,0)..(1,0)--cycle) scaled 65pt ;
+
+  provide_parshape
+   (p,                     % shape path
+    .5*\baselinedistance,  % offset
+    \baselinedistance,     % distance between lines
+    \strutheight,          % height of a line
+    \strutdepth,           % depth of a line
+    \strutheight) ;        % height of first line
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+After we called \type {\useMPgraphic{text}}, the resulting file looks as follows.
+You can call up this file by its anonymous name \type {\MPdatafile}, since this
+macro gets the value of the graphic at hand.
+
+\startnointerference
+    \useMPgraphic{text}
+\stopnointerference
+
+\typefile{mfun-mp-data.txt}
+
+% \blank{\em todo: mp data file}\blank
+% \writestatus{!!!!}{todo: mp data file}
+
+So, reading in this file at the start of a paragraph will setup \TEX\ to follow
+this shape.
+
+The final implementation is a bit more complicated since it takes care of paths
+that are not centered around the origin and don't start at the top point. We
+achieve this by moving the path to the center:
+
+\starttyping
+cp := center p ; q := p shifted - cp ;
+\stoptyping
+
+The arbitrary starting point is taken care of by a slightly more complicated path
+cutter. First we make sure that the path runs counterclockwise.
+
+\starttyping
+if xpart directionpoint t of q < 0 : q := reverse q fi ;
+\stoptyping
+
+Knowing this, we can split the path in two, using a slightly different splitter:
+
+\starttyping
+l := q cutbefore t ;
+l := l if xpart point 0 of q < 0 : & q fi cutafter b ;
+r := q cutbefore b ;
+r := r if xpart point 0 of q > 0 : & q fi cutafter t ;
+\stoptyping
+
+As always, when implementing a feature like this, some effort goes into a proper
+user interface. In doing so, we need some \TEX\ trickery that goes beyond this
+text, like collecting text and splitting of the part needed. Also, we want to be
+able to handle multiple shapes at once, like the next example demonstrates.
+
+\stopsection
+
+\startsection[title={Libraries}]
+
+\index{graphics+libraries}
+
+The macro discussed in the previous section is included in one of the \METAPOST\
+libraries, so we first have to say:
+
+\startbuffer
+\useMPlibrary[txt]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We define four shapes. They are not really beautiful, but they demonstrate what
+happens in border cases. For instance, too small first lines are ignored. First
+we define a circle. Watch how the dimensions are set in the graphic. The
+arguments passed to \type {build_parshape} are: path, an offset, an additional
+horizontal and vertical displacement, the baseline distance, the height and depth
+of the line, and the height of the first line (topskip in \TEX\ terminology). The
+height and depth of a line are often called strut height and depth, with a strut
+being an invisible character with maximum dimensions.
+
+\startbuffer
+\startuseMPgraphic{test 1}
+  path p ; p := fullcircle scaled 6cm ;
+
+  build_parshape(p,6pt,0,0,\baselinedistance,
+    \strutheight,\strutdepth,\strutheight) ;
+
+  draw p withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The second shape is a diamond. This is a rather useless shape, unless the text
+suits the small lines at the top and bottom.
+
+\startbuffer
+\startuseMPgraphic{test 2}
+  path p ; p := fullsquare rotated 45 scaled 5cm ;
+
+  build_parshape(p,6pt,0,0,\baselinedistance,
+    \strutheight,\strutdepth,\strutheight) ;
+
+  draw p withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The third and fourth shape demonstrate that providing a suitable offset is not
+always trivial.
+
+\startbuffer
+\startuseMPgraphic{test 3}
+  numeric w, h ; w := h := 6cm ;
+  path p ; p := (.5w,h) -- (0,h) -- (0,0) -- (w,0) &
+    (w,0) .. (.75w,.5h) .. (w,h) & (w,h) -- cycle ;
+
+  build_parshape(p,6pt,0,0,\baselinedistance,
+    \strutheight,\strutdepth,\strutheight) ;
+
+  draw p withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Contrary to the first three shapes, here we use a different path for the
+calculations and the drawing. Watch carefully! If, instead of an offset, we pass
+a path, \METAPOST\ is able to calculate the right dimensions and offsets. This is
+needed, since we need these later on.
+
+\startbuffer
+\startuseMPgraphic{test 4}
+  numeric w, h, o ;
+
+  def shape = (o,o) -- (w-o,o) & (w-o,o) .. (.75w-o,.5h) ..
+    (w-2o,h-o) & (w-2o,h-o) -- (o,h-o) -- cycle
+  enddef ;
+
+  w := h := 6cm ; o := 6pt ; path p ; p := shape ;
+  w := h := 6cm ; o := 0pt ; path q ; q := shape ;
+
+  build_parshape(p,q,6pt,6pt,\baselinedistance,
+    \strutheight,\strutdepth,\strutheight) ;
+
+  draw q withpen pencircle scaled 1pt ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Since we also want these graphics as backgrounds, we define them as overlays. If
+you don't want to show the graphic, you may omit this step.
+
+\startbuffer
+\defineoverlay[test 1][\useMPgraphic{test 1}]
+\defineoverlay[test 2][\useMPgraphic{test 2}]
+\defineoverlay[test 3][\useMPgraphic{test 3}]
+\defineoverlay[test 4][\useMPgraphic{test 4}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As text, we use a quote from Douglas R.~Hofstadter's book \quotation {Metamagical
+Themas, Questing for the Essence of Mind and Pattern}. Watch how we pass a list
+of shapes.
+
+\startbuffer[text]
+\startshapetext[test 1,test 2,test 3,test 4]
+  \forgetall % as it says
+  \setupalign[verytolerant,stretch,normal]%
+  \input douglas % Douglas R. Hofstadter
+\stopshapetext
+\stopbuffer
+
+\typebuffer[text]
+
+Finally we combine text and shapes. Since we also want a background, we use \type
+{\framed}. The macros \type {\parwidth} and \type {\parheight} are automatically
+set to the current shape dimensions. The normal result is shown in \in {figure}
+[fig:shapes].
+
+\startbuffer[shapes]
+\startbuffer
+\setupframed
+  [offset=overlay,align=normal,frame=off,
+   width=\parwidth,height=\parheight]
+\startcombination[2*2]
+  {\framed[background=test 1]{\getshapetext}} {test 1}
+  {\framed[background=test 2]{\getshapetext}} {test 2}
+  {\framed[background=test 3]{\getshapetext}} {test 3}
+  {\framed[background=test 4]{\getshapetext}} {test 4}
+\stopcombination
+\stopbuffer
+\stopbuffer
+
+\typebuffer[shapes]
+
+\getbuffer[shapes]
+
+By using a buffer we keep \type {\placefigure} readable.
+
+\startbuffer[a]
+\placefigure
+  [here][fig:shapes]
+  {A continuous text, typeset in a non||standard shape,
+   spread over four areas, and right aligned.}
+  {\getbuffer}
+\stopbuffer
+
+\startbuffer[b]
+\placefigure
+  [here][fig:shapes]
+  {A continuous text, typeset in a non||standard shape,
+   spread over four areas.}
+  {\scale[factor=max,height=.9\textheight]{\getbuffer}}
+\stopbuffer
+
+\typebuffer[a]
+
+\doifmodeelse{screen}{\getbuffer[text,b]}{\getbuffer[text,a]}
+
+The traced alternative is shown in \in {figure} [fig:traced shapes]. This one is
+defined as:
+
+\startbuffer[a]
+\placefigure
+  [here][fig:traced shapes]
+  {A continuous text, typeset in a non||standard shape,
+   spread over four areas (tracing on).}
+  {\startMPinclusions
+     boolean trace_parshape ; trace_parshape := true ;
+   \stopMPinclusions
+   \getbuffer}
+\stopbuffer
+
+\startbuffer[b]
+\placefigure
+  [here][fig:traced shapes]
+  {A continuous text, typeset in a non||standard shape,
+   spread over four areas (tracing on).}
+  {\startMPinclusions
+     boolean trace_parshape ; trace_parshape := true ;
+   \stopMPinclusions
+   \scale[factor=max,height=.9\textheight]{\getbuffer}}
+\stopbuffer
+
+\typebuffer[a]
+
+\doifmodeelse{screen}{\getbuffer[text,b]}{\getbuffer[text,a]}
+
+% {\em This mechanism is still somewhat experimental and will be optimized and
+% extended with name spaces and more.}
+
+\blank
+
+We can combine all those tricks, although the input is somewhat fuzzy. First we
+define a quote typeset in a circular paragraph shape.
+
+\startbuffer[shape]
+\startuseMPgraphic{center}
+  build_parshape(fullcircle scaled 8cm,0,0,0,\baselinedistance,
+    \strutheight,\strutdepth,\strutheight) ;
+\stopuseMPgraphic
+
+\startshapetext[center]
+  \input douglas
+\stopshapetext
+
+\defineoverlay[center][\useMPgraphic{center}]
+\stopbuffer
+
+\typebuffer[shape]
+
+We will surround this text with a circular line, that we define as follows. By
+using a buffer we keep things organized.
+
+\startbuffer
+\startbuffer[circle]
+\startuseMPgraphic{followtokens}
+  path RotPath ; RotPath := reverse fullcircle
+    rotatedaround(origin,90)
+    xscaled \overlaywidth yscaled \overlayheight ;
+  drawoptions (withcolor .625red) ;
+\stopuseMPgraphic
+
+\followtokens
+  {This is just a dummy text, kerned by \TeX\ and typeset
+   in a circle using \MetaPost.\quad}
+\stopbuffer
+
+\defineoverlay[edge][{\getbuffer[circle]}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The text and graphics come together in a framed text:
+
+\startbuffer
+\startbuffer[quote]
+\framed
+  [offset=24pt,
+   background=edge,
+   frame=off,
+   backgroundoffset=-18pt]
+  {\getshapetext}
+\stopbuffer
+
+\placefigure
+  {One more time Hofstadter's quotation (normal).}
+  {\getbuffer[shape,quote]}
+
+\placefigure
+  {One more time Hofstadter's quotation (traced).}
+  {\startMPinclusions
+      boolean TraceRot ; TraceRot := true ;
+   \stopMPinclusions
+   \getbuffer[shape,quote]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+% {\em Here also, I will rewrite things a bit so that we can avoid \type
+% {\startMPdrawing} outside the macro, and thereby avoid problems. I can also add
+% the maps cdrom cover as example.}
+
+\stopsection
+
+% \startsection[title={Visualizing \TEX}]
+%
+% The next example is a bit out of place in this manual, but nevertheless
+% demonstrates how one can use \METAPOST\ to get insight in what \TEX\ is doing
+% inside.
+%
+% The author of \PDFTEX, \THANH, has extended the paragraph builder with a
+% provision for protruding characters and glyphs substitution, also known as {\it
+% hz} (which stands for Hermann Zapf). The {\it hz} optimization involves an
+% additional pass over the lines and|/|or paragraph, in order to determine how
+% inconsistency in gaps can be reduced by substituting an \quote {\scale [sx=1.01]
+% {a}} by an \quote {\scale [sx=5] {a}} or \quote {\scale [sx=.5] {a}}. In \in
+% {figure} [fig:hz] you can find the visualization in action. By means of colors we
+% indicate in what way glyphs are substituted by slightly larger or smaller values.
+% More details on how the {\it hz} optimization works can be found in \THANH's
+% thesis.
+%
+% \placefigure
+%   [page][fig:hz]
+%   {When we feed \TEX\ code into \METAPOST\ and back, we
+%    can visualize {\it hz}||optimization in a colorful way.}
+%   {\doifmodeelse{screen}
+%      {\externalfigure[mfun-hzs.pdf][height=.8\textheight]}
+%      {\externalfigure[mfun-hzp.pdf][height=.8\textheight]}}
+%
+% In order to avoid a complicated discussion about how to set up \PDFTEX\ to use
+% {\it hz} |<|this can best be left over to the macro package that you use|>| we
+% will illustrate the method behind this kind of visualizations in a more simple
+% case.
+%
+% When you include a \METAPOST\ graphic in \PDFTEX, the output produced by
+% \METAPOST\ is interpreted by a bunch of macros and converted into raw \PDF\ code.
+% In the process special extensions, like shading, transparency, graphic inclusion,
+% are taken care of. When the converter encounters a font inclusion directive,
+% i.e.\ the \POSTSCRIPT\ \type {fshow} operator, it uses the \TEX\ font handler to
+% take care of the font. A benefit of this approach is that \TEX\ and \METAPOST\
+% share the same font resources and therefore the inclusion is done in the way
+% expected.
+%
+% The low level macro that takes care of the font inclusion provides a couple of so
+% called hooks, that permit us to do additional manipulations with the character
+% sequences that are encountered.
+%
+% \startbuffer[demo]
+% draw
+%   btex \definedfont[cmr10]%
+%     Combine the power of \TeX\ and \MetaPost !
+%   etex scaled 2 ;
+% \stopbuffer
+%
+% \typebuffer[demo]
+%
+% When processed, this gives the graphic:
+%
+% \startlinecorrection[blank]
+% \processMPbuffer[demo]
+% \stoplinecorrection
+%
+% The result is not spectacular, and there is no indication that \METAPOST\ has
+% been in action. The following line of code sets the hook \type {\MPfshowcommand}
+% |<|this commands takes one argument|>| to produce a ruled horizontal box.
+%
+% \startbuffer
+% \let\MPfshowcommand\ruledhbox
+% \stopbuffer
+%
+% \typebuffer
+%
+% \startlinecorrection[blank]
+% \getbuffer \processMPbuffer[demo]
+% \stoplinecorrection
+%
+% If you watch closely, you will see that the ruled boxes contain one or more
+% characters (or more precise glyphs). This is a result from \TEX\ explicitely
+% kerning characters.
+%
+% A second hook is provided in the macro that takes care of the font switch. This
+% command is defined as follows:
+%
+% \starttyping
+% \def\setMPfshowfont#1#2%
+%   {\font\temp=#1\space at #2\relax\temp}
+% \stoptyping
+%
+% The first argument is the raw font name, and the second argument specifies the
+% desired size. If we want to see what fonts are involved, we can redefine the
+% hooks as follows.
+%
+% \starttyping
+% \def\setMPfshowfont#1#2%
+%   {\message{[using #1 at #2 in mp graphic]}%
+%    \font\temp=#1\space at #2\relax\temp}
+% \stoptyping
+%
+% It happens that two fonts are used: \type {cmr10} and \type {logo10}. Once we
+% know this, we can apply some magic: we set the color to the fontname and define a
+% couple of colors that match the name.
+%
+% \startbuffer
+% \definecolor [cmr10]  [darkred]
+% \definecolor [logo10] [darkyellow]
+%
+% \def\setMPfshowfont#1#2%
+%   {\color[#1]\font\temp=#1\space at #2\relax\temp}
+% \stopbuffer
+%
+% \typebuffer
+%
+% In the case of the \type {\it hz} examples we had to define a couple of more
+% colors, but the principle remains.
+%
+% \startlinecorrection[blank]
+% \getbuffer \processMPbuffer[demo]
+% \stoplinecorrection
+%
+% We don't expect the user to use tricks like this on a daily basis, but it
+% demonstrates that with a bit of knowlegde of the internals of \CONTEXT, you can
+% produce nice examples of typographic programming.
+%
+% \stopsection
+
+\stopchapter
+
+\stopcomponent

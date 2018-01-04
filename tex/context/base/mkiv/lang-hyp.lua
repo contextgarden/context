@@ -688,10 +688,6 @@ if context then
 
     local a_hyphenation      = attributes.private("hyphenation")
 
-    local expanders          = languages.expanders -- gone in 1.005
-    local expand_explicit    = expanders and expanders[explicit_code]
-    local expand_automatic   = expanders and expanders[automatic_code]
-
     local interwordpenalty   = 5000
 
     function traditional.loadpatterns(language)
@@ -1543,28 +1539,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     skipping = false
                 end
                 if id == disc_code then
-                    if expanded then
-                        -- pre 1.005
-                        local subtype = getsubtype(current)
-                        if subtype == discretionary_code then -- \discretionary
-                            size = 0
-                        elseif subtype == explicit_code then -- \- => only here
-                            -- automatic (-) : the old parser makes negative char entries
-                            size = 0
-                            expand_explicit(current)
-                        elseif subtype == automatic_code then -- - => only here
-                            -- automatic (-) : the old hyphenator turns an exhyphen into glyph+disc
-                            size = 0
-                            expand_automatic(current)
-                        else
-                            -- first         : done by the hyphenator
-                            -- second        : done by the hyphenator
-                            -- regular       : done by the hyphenator
-                            size = 0
-                        end
-                    else
-                        size = 0
-                    end
+                    size = 0
                     current = getnext(current)
                     if hyphenonly then
                         skipping = true
@@ -1634,7 +1609,6 @@ featureset.hyphenonly   = hyphenonly == v_yes
     -- local replaceaction = nodes.tasks.replaceaction -- no longer overload this way (too many local switches)
 
     local hyphenate  = lang.hyphenate
-    local expanders  = languages.expanders
     local methods    = { }
     local usedmethod = false
     local stack      = { }
@@ -1642,29 +1616,6 @@ featureset.hyphenonly   = hyphenonly == v_yes
     local function original(head)
         local done = hyphenate(head)
         return head, done
-    end
-
-    local expanded = function (head)
-        local done = hyphenate(head)
-        return head, done
-    end
-
-    if LUATEXVERSION < 1.005 then
-
-        expanded = function(head)
-            local done = hyphenate(head)
-            if done then
-                for d in traverse_id(disc_code,tonut(head)) do
-                    local s = getsubtype(d)
-                    if s ~= discretionary_code then
-                        expanders[s](d,template)
-                        done = true
-                    end
-                end
-            end
-            return head, done
-        end
-
     end
 
     local getcount = tex.getcount
@@ -1693,7 +1644,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
     methods.tex         = original
     methods.original    = original
-    methods.expanded    = expanded -- obsolete starting with 1.005
+    methods.expanded    = original -- was expanded before 1.005
     methods.traditional = languages.hyphenators.traditional.hyphenate
     methods.none        = false -- function(head) return head, false end
 

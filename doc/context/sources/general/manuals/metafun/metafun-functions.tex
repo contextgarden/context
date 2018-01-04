@@ -1,0 +1,611 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-functions
+
+\environment metafun-environment
+
+\startchapter[title={Functions}]
+
+\index{functions}
+
+\startintro
+
+\METAPOST\ provides a wide range of functions, like \type {sind} and \type
+{floor}. We will discuss most of them here and define a few more. We will also
+introduce a few methods for drawing grids and functions.
+
+\stopintro
+
+\startsection[title={Overview}]
+
+What follows is a short overview of the functions that can be applied to numeric
+expressions and strings. Functions that operate on pairs, colors, paths and
+pictures are discussed in other chapters.
+
+First of all we have \type {+}, \type {-}, \type {/} and \type {*}. For as far as
+is reasonable, you can apply these to numerics, pairs and colors. Strings can be
+concatenated by \type {&}.
+
+Pythagorean addition is accomplished by \type {++}, while Pythagorean subtraction
+is handled by \type {+-+}. The \type {**} operator gives you exponentiation. The
+nature of the \METAPOST\ language is such that you can easily define interesting
+functions using such symbols.
+
+The logarithmic functions are based on bytes. This makes them quite accurate but
+forces you to think like a computer.
+
+\starttabulate[|lT|l|]
+\HL
+\NC mexp(x) \NC expential function with base 256 \NC \NR
+\NC mlog(x) \NC logarithm with base 256          \NC \NR
+\HL
+\stoptabulate
+
+The basic goniometric functions operate on degrees, which is why they have a
+\quote {d} in their name.
+
+\starttabulate[|lT|l|]
+\HL
+\NC cosd(x) \NC cosine of $x$ with $x$ in degrees \NC \NR
+\NC sind(x) \NC sine of $x$ with $x$ in degrees   \NC \NR
+\HL
+\stoptabulate
+
+There are three ways to truncate numbers. The \type {round} function can also
+handle pairs and colors.
+
+\starttabulate[|lT|l|]
+\HL
+\NC ceiling(x) \NC the least integer greater than or equal to $x$     \NC \NR
+\NC floor(x)   \NC the greatest integer less than or equal to $x$     \NC \NR
+\NC round(x)   \NC round each component of $x$ to the nearest integer \NC \NR
+\HL
+\stoptabulate
+
+Of course we have:
+
+\starttabulate[|lT|l|]
+\HL
+\NC x mod y     \NC the remainder of $x/y$         \NC \NR
+\NC x div y     \NC the integer part of $x/y$      \NC \NR
+\NC abs(x)      \NC the absolute value of $x$      \NC \NR
+\NC sqrt(x)     \NC the square root of $x$         \NC \NR
+\NC x dotprod y \NC the dot product of two vectors \NC \NR
+\HL
+\stoptabulate
+
+What would life be without a certain randomness and uncertainty:
+
+\starttabulate[|lT|l|]
+\HL
+\NC normaldeviate     \NC a number with mean 0 and standard deviation 1 \NC \NR
+\NC uniformdeviate(x) \NC a number between zero and $x$                 \NC \NR
+\HL
+\stoptabulate
+
+The following functions are actually macros:
+
+\starttabulate[|lT|l|]
+\HL
+\NC decr(x,n)   \NC decrement $x$ by $n$                 \NC \NR
+\NC incr(x,n)   \NC increment $x$ by $n$                 \NC \NR
+\NC max(a,b,..) \NC return the maximum value in the list \NC \NR
+\NC min(a,b,..) \NC return the minimum value in the list \NC \NR
+\HL
+\stoptabulate
+
+The \type {min} and \type {max} funtions can be applied to numerics as well as
+strings.
+
+The following functions are related to strings:
+
+\starttabulate[|lT|l|]
+\HL
+\NC oct s     \NC string representation of an octal number      \NC \NR
+\NC hex s     \NC string representation of a hexadecimal number \NC \NR
+\NC str s     \NC string representation for a suffix            \NC \NR
+\NC ASCII s   \NC \ASCII\ value of the first character          \NC \NR
+\NC char x    \NC character of the given \ASCII\ code           \NC \NR
+\NC decimal x \NC decimal representation of a numeric           \NC \NR
+\HL
+\stoptabulate
+
+With \type {substring (i,j) of s} you can filter the substring bounded by the
+given indices from the given string.
+
+In \METAFUN\ we provide a few more functions (you can take a look in \type
+{mp-tool.mp} to see how they are defined. You need to be aware of very subtle
+rounding errors. Normally these only show up when you reverse an operation. This
+is a result from mapping to and from internal quantities.
+
+\starttabulate[|Tl|ml|]
+\HL
+\NC sqr(x)    \NC x^2       \NC \NR
+\NC log(x)    \NC \log(x)   \NC \NR
+\NC ln(x)     \NC \ln(x)    \NC \NR
+\NC exp(x)    \NC {\rm e}^x \NC \NR
+\NC pow(x, p) \NC x^p       \NC \NR
+\NC inv(x)    \NC 1/x       \NC \NR
+\HL
+\stoptabulate
+
+The following sine and cosine functions take radians instead of angles in
+degrees.
+
+\starttabulate[|Tl|Tl|Tl|]
+\HL
+\NC sin(x) \NC asin(x) \NC invsin(x) \NC \NR
+\NC cos(x) \NC acos(x) \NC invcos(x) \NC \NR
+\HL
+\stoptabulate
+
+There are no tangent functions, so we provide both the radian and degrees
+versions:
+
+\starttabulate[|Tl|Tl|]
+\HL
+\NC tan(x) \NC tand(x) \NC \NR
+\NC cot(x) \NC cotd(x) \NC \NR
+\HL
+\stoptabulate
+
+Here are a couple of hyperbolic functions.
+
+\starttabulate[|Tl|Tl|]
+\HL
+\NC sinh(x) \NC asinh(x) \NC \NR
+\NC cosh(x) \NC acosh(x) \NC \NR
+\HL
+\stoptabulate
+
+We end with a few additional string converters.
+
+\starttabulate[|Tl|l|]
+\HL
+\NC ddecimal x  \NC decimal representation of a pair   \NC \NR
+\NC dddecimal x \NC decimal representation of a color  \NC \NR
+\NC condition x \NC string representation of a boolean \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title={Grids}]
+
+\index{grids}
+\index{axis}
+
+Some day you may want to use \METAPOST\ to draw a function like graphic. In the
+regular \TEX\ distributions you will find a module \type {graph.mp} that provides
+many ways to accomplish this. For the moment, \METAFUN\ does not provide advanced
+features with respect to drawing functions, so this section will be relatively
+short.
+
+When drawing a functions (for educational purposes) we need to draw a couple of
+axis or a grid as well as a shape. Along the axis we can put labels. For this we
+can use the \METAPOST\ package \type {format.mp}, but this does not integrate
+that well into the way \METAFUN\ deals with text typeset by \TEX.
+
+For those who love dirty tricks and clever macros, close reading of the code in
+\type {format.mp} may be worthwhile. The format macros in there use \TEX\ to
+typeset the core components of a number, and use the dimensions of those
+components to compose combinations of signs, numbers and superscripts.
+
+In \METAFUN\ we have the module \type {mp-form.mp} which contains most of the
+code in \type {format.mp} but in a form that is a bit more suited for fine
+tuning. This permits us to use either the composition method, or to fall back on
+the \type {textext} method that is part of \METAFUN. That way we can also handle
+fonts that have digits with different dimensions. Another \quote {change}
+concerns the pattern separator. Instead of a \type {%} we use \type {@}; you can
+choose to set another separator, but for embedded definitions \type {%} is
+definitely a bad choice because \TEX\ sees it as a comment and ignores everything
+following it.
+
+\startbuffer[grd]
+drawoptions(withpen pencircle scaled 1pt withcolor .625yellow) ;
+
+draw hlingrid(0, 10, 1, 3cm, 3cm) ;
+draw vlingrid(0, 10, 1, 3cm, 3cm) ;
+
+draw hlingrid(0, 10, 1, 3cm, 3cm) shifted ( 3.5cm,0) ;
+draw vloggrid(0, 10, 1, 3cm, 3cm) shifted ( 3.5cm,0) ;
+
+draw hloggrid(0, 10, 1, 3cm, 3cm) shifted ( 7.0cm,0) ;
+draw vlingrid(0, 10, 1, 3cm, 3cm) shifted ( 7.0cm,0) ;
+
+draw hloggrid(0, 10, 1, 3cm, 3cm) shifted (10.5cm,0) ;
+draw vloggrid(0, 10, 1, 3cm, 3cm) shifted (10.5cm,0) ;
+\stopbuffer
+
+\typebuffer[grd]
+
+\startlinecorrection[blank]
+\processMPbuffer[grd]
+\stoplinecorrection
+
+\startbuffer[grd]
+drawoptions(withpen pencircle scaled 1pt withcolor .625yellow) ;
+
+draw hlingrid(0, 10, 1, 3cm, 3cm) slanted .5 ;
+draw vlingrid(0, 10, 1, 3cm, 3cm) slanted .5 ;
+\stopbuffer
+
+\typebuffer[grd]
+
+\startlinecorrection[blank]
+\processMPbuffer[grd]
+\stoplinecorrection
+
+Using macros like these often involves a bit of trial and error. The arguments to
+these macros are as follows:
+
+\starttyping
+hlingrid (Min, Max, Step, Length, Width)
+vlingrid (Min, Max, Step, Length, Height)
+hloggrid (Min, Max, Step, Length, Width)
+vloggrid (Min, Max, Step, Length, Height)
+\stoptyping
+
+The macros take the following text upto the semi||colon into account and return a
+picture. We will now apply this knowledge to a more meaningful example. First we
+draw a grid.
+
+You can use the grid drawing macros to produce your own paper, for instance using
+the following mixed \TEX ||\METAFUN\ code:
+
+\typebuffer[gridpage]
+
+This produces a page (as in \in {figure} [fig:gridpage]) with a metric grid. If
+you're hooked to the inch, you can set \type {unit := 1in}. If you want to
+process this code, you need to wrap it into the normal document producing
+commands:
+
+\starttyping
+\setupcolors[state=start]
+
+\starttext
+   ... definitions ...
+\stoptext
+\stoptyping
+
+\placefigure
+  [page]
+  [fig:gridpage]
+  {Quick and dirty grid paper.}
+  {\typesetfile
+     [mfun-901.tex]
+     [page=1,height=.9\textheight]}
+
+\stopsection
+
+\startsection[title={Drawing functions}]
+
+Today there are powerful tools to draw functions on grids, but for simple
+functions you can comfortably use \METAPOST. Let's first draw a simple
+log||linear grid.
+
+\startbuffer[grd]
+drawoptions(withpen pencircle scaled .25pt withcolor .5white) ;
+
+draw hlingrid    (0, 20, .2, 20cm, 10cm) ;
+draw vloggrid    (0, 10, .5, 10cm, 20cm) ;
+
+drawoptions(withpen pencircle scaled .50pt) ;
+
+draw hlingrid    (0, 20,  1, 20cm, 10cm) ;
+draw vloggrid    (0, 10,  1, 10cm, 20cm) ;
+\stopbuffer
+
+\typebuffer[grd]
+
+To this grid we add some labels:
+
+\startbuffer[txt]
+fmt_pictures  := false ;    % use TeX as formatting engine
+textextoffset := ExHeight ; % a variable set by ConTeXt
+
+draw hlintext.lft(0, 20,  5, 20cm, "@3e") ;
+draw vlogtext.bot(0, 10,  9, 10cm, "@3e") ;
+\stopbuffer
+
+\typebuffer[txt]
+
+The arguments to the text placement macros are similar to the ones for drawing
+the axes. Here we provide a format string.
+
+\starttyping
+hlintext (Min, Max, Step, Length, Format)
+vlintext (Min, Max, Step, Length, Format)
+hlogtext (Min, Max, Step, Length, Format)
+vlogtext (Min, Max, Step, Length, Format)
+\stoptyping
+
+When drawing a smooth function related curve, you need to provide enough sample
+points. The \type {function} macro will generate them for you, but you need to
+make sure that for instance the maximum and minimum values are part of the
+generated series of points. Also, a smooth curve is not always the right curve.
+Therefore we provide three drawing modes:
+
+\starttabulate[|cT|l|]
+\HL
+\NC \bf method \NC \bf result                     \NC \NR
+\HL
+\NC 1 \NC a punked curve, drawn using \type {--}  \NC \NR
+\NC 2 \NC a smooth curve, drawn using \type {..}  \NC \NR
+\NC 3 \NC a tight  curve, drawn using \type {...} \NC \NR
+\HL
+\stoptabulate
+
+If method~2 or~3 do not give the desired outcome, you can try a smaller step
+combined with method~1.
+
+\startbuffer[log]
+draw
+  function(1,"log(x)","x",1,10,1) xyscaled (10cm,2cm)
+  withpen pencircle scaled 5mm withcolor transparent(1,.5,yellow) ;
+
+draw
+  function(2,".5log(x)","x",1,10,1) xyscaled (10cm,2cm)
+  withpen pencircle scaled 5mm withcolor transparent(1,.5,blue) ;
+\stopbuffer
+
+\typebuffer[log]
+
+\placefigure
+  [page]
+  {An example of a graphic with labels along the axes.}
+  {\doifmodeelse{screen}
+     {\scale[height=.85\textheight]{\processMPbuffer[grd,txt,log]}}
+     {\processMPbuffer[grd,txt,log]}}
+
+The first argument to the \type {function} macro specifies the drawing method.
+The last three arguments are the start value, end value and step. The second and
+third argument specify the function to be drawn. In this case the pairs \type
+{(x,x)} and \type {(.5log(x),x)} are calculated.
+
+\startbuffer[gon]
+textextoffset := ExHeight ;
+
+drawoptions(withpen pencircle scaled .50pt) ;
+
+draw hlingrid(-10, 10, 1, 10cm, 10cm) ;
+draw vlingrid(  0, 20, 1, 10cm, 20cm) shifted (0,-10cm) ;
+
+drawoptions() ;
+
+draw
+  function(2,"x","sind(x)",0,360,10) xyscaled (1cm/36,10cm)
+  withpen pencircle scaled 5mm withcolor transparent(1,.5,blue) ;
+
+draw
+  function(2,"x","sin(x*pi)",0,epsed(2),.1) xyscaled (10cm/2,5cm)
+  withpen pencircle scaled 5mm withcolor transparent(1,.5,yellow) ;
+
+draw
+  function(2,"x","cosd(x)",0,360,10) xyscaled (1cm/36,10cm)
+  withpen pencircle scaled 5mm withcolor transparent(1,.5,red) ;
+
+draw
+  function(2,"x","cos(x*pi)",0,epsed(2),.1) xyscaled (10cm/2,5cm)
+  withpen pencircle scaled 5mm withcolor transparent(1,.5,green) ;
+\stopbuffer
+
+\typebuffer[gon]
+
+\placefigure
+  [page]
+  {By using transparent colors, we don't have to calculate
+   and mark the common points: they already stand out.}
+  {\doifmodeelse{screen}
+     {\scale[height=.85\textheight]{\processMPbuffer[gon]}}
+     {\processMPbuffer[gon]}}
+
+In this example we draw sinus and cosine functions using degrees and radians. In
+the case of radians the end points are not calculated due to rounding errors. In
+such case you can use the \type {epsed} value, which gives slightly more
+playroom.
+
+\startbuffer[mix]
+draw function (1, "x", "sin(2x)"    , 1, 10, .01) scaled 1.5cm
+  withpen pencircle scaled 1mm withcolor transparent(1,.5,red) ;
+draw function (1, "x", "sin(2x*x)"  , 1, 10, .01) scaled 1.5cm
+  withpen pencircle scaled 1mm withcolor transparent(1,.5,green) ;
+draw function (1, "x", "sin(2x*x+x)", 1, 10, .01) scaled 1.5cm
+  withpen pencircle scaled 1mm withcolor transparent(1,.5,blue) ;
+\stopbuffer
+
+\typebuffer[mix]
+
+Of course you can do without a grid. The next example demonstrates a nice
+application of transparencies.
+
+\startlinecorrection[blank]
+\processMPbuffer[mix]
+\stoplinecorrection
+
+If we use the \type {exclusion} method for the transparencies, combined with no
+transparency, we get the following alternative.
+
+\startbuffer[mix]
+draw function (2, "x", "sin(x)" , 0, 2pi, pi/40) scaled 2cm
+  withpen pencircle scaled 5mm withcolor transparent("exclusion",1,red) ;
+draw function (2, "x", "sin(2x)", 0, 2pi, pi/40) scaled 2cm
+  withpen pencircle scaled 5mm withcolor transparent("exclusion",1,green) ;
+draw function (2, "x", "sin(3x)", 0, 2pi, pi/40) scaled 2cm
+  withpen pencircle scaled 5mm withcolor transparent("exclusion",1,blue) ;
+\stopbuffer
+
+\typebuffer[mix]
+
+\startlinecorrection[blank]
+\processMPbuffer[mix,wipe]
+\stoplinecorrection
+
+The next alternative uses a larger step, and as a result (in drawing mode~2)
+gives worse results. (Without the \type {epsed} it would have looked even worse
+in the end points.
+
+ \startbuffer[mix]
+draw function (2, "x", "sin(x)" , 0, epsed(2pi), pi/10) scaled 2cm
+  withpen pencircle scaled 5mm withcolor transparent("exclusion",1,red) ;
+draw function (2, "x", "sin(2x)", 0, epsed(2pi), pi/10) scaled 2cm
+  withpen pencircle scaled 5mm withcolor transparent("exclusion",1,green) ;
+draw function (2, "x", "sin(3x)", 0, epsed(2pi), pi/10) scaled 2cm
+  withpen pencircle scaled 5mm withcolor transparent("exclusion",1,blue) ;
+\stopbuffer
+
+\typebuffer[mix]
+
+\startlinecorrection[blank]
+\processMPbuffer[mix,wipe]
+\stoplinecorrection
+
+There are enough applications out there to draw nice functions, like gnuplot for
+which Mojca Miklavec made a backend that works well with \CONTEXT. Nevertheless
+it can be illustrative to explore the possibilities of the \CONTEXT, \LUATEX,
+\METAPOST\ combination using functions.
+
+First of all you can use \LUA\ to make paths and this is used in some of the
+debugging and tracing options that come with \CONTEXT. For instance, if you
+process a document with
+
+\starttyping
+context --timing yourdoc.tex
+\stoptyping
+
+then you can afterwards process a file that is generated while processing this
+document:
+
+\starttyping
+context --extras timing yourdoc
+\stoptyping
+
+This will give you a document with graphics that show where \LUATEX\ spent its
+time on. Of course these graphics are generated with \METAPOST.
+
+There are a few helpers built in (and more might follow). For example:
+
+\startbuffer
+draw
+  \ctxlua {
+    metapost.metafun.topath {
+        { x=1, y=1 },
+        { x=1, y=3 },
+        { 4, 1},
+        "cycle"
+    }
+  }
+  xysized(4cm,3cm)
+  withpen pencircle scaled 1mm
+  withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+The \type {topath} function takes a table of points or strings.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+You can pass a connector so
+
+\startbuffer
+draw
+  \ctxlua {
+    metapost.metafun.topath (
+        {
+            { x=1, y=1 },
+            { x=1, y=3 },
+            { 4,   1 },
+            "cycle"
+        },
+        "--"
+    )
+  }
+  xysized(4cm,3cm)
+  withpen pencircle scaled 1mm
+  withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+gives:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Writing such \LUA\ functions is no big deal. For instance we have available:
+
+\starttyping
+function metapost.metafun.interpolate(f,b,e,s,c)
+    tex.write("(")
+    for i=b,e,(e-b)/s do
+        local d = loadstring (
+            string.formatters["return function(x) return %s end"](f)
+        )
+        if d then
+            d = d()
+            if i > b then
+                tex.write(c or "...")
+            end
+            tex.write(string.formatters["(%F,%F)"](i,d(i)))
+        end
+    end
+    tex.write(")")
+end
+\stoptyping
+
+An example of usage is:
+
+\startbuffer
+draw
+  \ctxlua{metapost.metafun.interpolate(
+    "math.sin(x^2+2*x+math.sqrt(math.abs(x)))",
+    -math.pi/2,math.pi/2,100
+  )}
+  xysized(6cm,3cm)
+  withpen pencircle scaled 1mm
+  withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+And indeed we get some drawing:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Let's see what happens when we use less accuracy and a different connector:
+
+\startbuffer
+draw
+  \ctxlua{metapost.metafun.interpolate(
+    "math.sin(x^2+2*x+math.sqrt(math.abs(x)))",
+    -math.pi/2,math.pi/2,10,"--"
+  )}
+  xysized(6cm,3cm)
+  withpen pencircle scaled 1mm
+  withcolor .625 red ;
+\stopbuffer
+
+\typebuffer
+
+Now we get:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Of course we could extend this \LUA\ function with all kind of options and we
+might even do that when we need it.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

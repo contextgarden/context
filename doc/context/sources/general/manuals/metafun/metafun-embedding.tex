@@ -1,0 +1,1208 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startcomponent metafun-embedding
+
+\environment metafun-environment
+
+\startchapter[reference=sec:embedding,title={Embedded graphics}]
+
+\startintro
+
+In addition to the \type {beginfig}||\type {endfig} method, there are other ways
+to define and include a \METAPOST\ graphic. Each method has its advantages and
+disadvantages.
+
+In the previous chapter we were still assuming that the graphic was defined in
+its own file. In this chapter we will introduce the interface between \CONTEXT\
+and \METAPOST\ and demonstrate how the definitions of the graphics can be
+embedded in the document source.
+
+\stopintro
+
+\startsection[title={Getting started}]
+
+\index{running}
+\index{processing}
+
+From now on, we will assume that you have \CONTEXT\ running on your platform.
+Since \PDF\ has full graphics support, we also assume that you use \LUATEX\ in
+combination with \CONTEXT\ \MKIV, although most will also work with other engines
+and \MKII. Since this document is not meant as a \CONTEXT\ tutorial, we will
+limit this introduction to the basics needed to run the examples.
+
+A simple document looks like:
+
+\starttyping
+\starttext
+  Some text.
+\stoptext
+\stoptyping
+
+You can process this document with the \LUA\ based command line interface to
+\CONTEXT. If the source code is embedded in the file \type {mytext.tex}, you can
+say:
+
+\starttyping
+context mytext
+\stoptyping
+
+We will use color, and in \MKIV\ color is enabled by default. If you don't want
+color you can tell \CONTEXT, so
+
+\starttyping
+\setupcolors[state=stop]
+\starttext
+  Some \color[blue]{text} and/or \color[green]{graphics}.
+\stoptext
+\stoptyping
+
+comes out in black and white.
+
+In later chapters we will occasionally see some more \CONTEXT\ commands show up.
+If you want to know more about what \CONTEXT\ can do for you, we recommend the
+beginners manual and the reference manual, as well as the wiki pages.
+
+\stopsection
+
+\startsection[title={External graphics}]
+
+\index {graphics+external}
+
+Since \TEX\ has no graphic capabilities built in, a graphic is referred to as an
+external figure. A \METAPOST\ graphic often has a number as suffix, so embedding
+such a graphic is done by:
+
+\starttyping
+\externalfigure[graphic.123][width=4cm]
+\stoptyping
+
+An alternative method is to separate the definition from the inclusion. An
+example of a definition is:
+
+\starttyping
+\useexternalfigure[pentastar][star.803][height=4cm]
+\useexternalfigure[octostar] [star.804][pentastar]
+\stoptyping
+
+Here, the second definition inherits the characteristics from the first one.
+These graphics can be summoned like:
+
+\starttyping
+\placefigure
+  {A five||point star drawn by \METAPOST.}
+  {\externalfigure[pentastar]}
+\stoptyping
+
+Here the stars are defined as stand||alone graphics, in a file called \type
+{star.mp}. Such a file can look like:
+
+\starttyping
+def star (expr size, n, pos) =
+  for a=0 step 360/n until round(360*(1-1/n)) :
+    draw (origin -- (size/2,0))
+      rotatedaround (origin,a) shifted pos ;
+  endfor ;
+enddef ;
+
+beginfig(803) ;
+  pickup pencircle scaled 2mm ; star(2cm,5,origin) ;
+endfig ;
+
+beginfig(804) ;
+  pickup pencircle scaled 1mm ; star(1cm,8,origin) ;
+  pickup pencircle scaled 2mm ; star(2cm,7,(3cm,0)) ;
+endfig ;
+
+end.
+\stoptyping
+
+This \type {star} macro will produce graphics like:
+
+\startbuffer
+def star (expr size, n, pos) =
+  for a=0 step 360/n until round(360*(1-1/n)) :
+    draw (origin -- (size/2,0))
+      rotatedaround (origin,a) shifted pos ;
+  endfor ;
+enddef ;
+
+for i=5 upto 10 :
+  drawoptions (withpen pencircle scaled 2mm withcolor .625red) ;
+  star(1cm,i,origin shifted (i*2cm,0)) ;
+endfor ;
+\stopbuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+But, now that we have instant \METAPOST\ available in \LUATEX, there is no need
+for external images and we can collect them in libraries, as we will see later
+on.
+
+\stopsection
+
+\startsection[title={Integrated graphics}]
+
+\index{graphics+embedded}
+
+An integrated graphic is defined in the document source or in a style definition
+file. The most primitive way of doing this is just inserting the code:
+
+\starttyping
+\startMPcode
+  fill fullcircle scaled 200pt withcolor .625white ;
+\stopMPcode
+\stoptyping
+
+Such a graphic is used once at the spot where it is defined. In this document we
+also generate graphics while we finish a page, so there is a good chance that
+when we have constructed a graphic which will be called on the next page, the
+wrong graphic is placed.
+
+For this reason there are are more convenient ways of defining and using
+graphics, which have the added advantage that you can predefine multiple
+graphics, thereby separating the definitions from the usage.
+
+The first alternative is a {\em usable} graphic. Such a graphic is calculated
+anew each time it is used. An example of a usable graphic is:
+
+\starttyping
+\startuseMPgraphic{name}
+  fill fullcircle scaled 200pt withcolor .625yellow ;
+\stopuseMPgraphic
+\stoptyping
+
+When you put this definition in the preamble of your document, you can place this
+graphic anywhere in the file, saying:
+
+\starttyping
+\useMPgraphic{name}
+\stoptyping
+
+As said, this graphic is calculated each time it is placed, which can be time
+consuming. Apart from the time aspect, this also means that the graphic itself is
+incorporated many times. Therefore, for graphics that don't change, \CONTEXT\
+provides {\em reusable} graphics:
+
+\starttyping
+\startreusableMPgraphic{name}
+  fill fullcircle scaled 200pt withcolor .625yellow;
+\stopreusableMPgraphic
+\stoptyping
+
+This definition is accompanied by:
+
+\starttyping
+\reuseMPgraphic{name}
+\stoptyping
+
+Imagine that we use a graphic as a background for a button. We can create a
+unique and reusable graphic by saying:
+
+\starttyping
+\def\MyGraphic
+  {\startreusableMPgraphic{name:\overlaywidth:\overlayheight}
+      path p ; p := unitsquare
+        xscaled OverlayWidth yscaled OverlayHeight ;
+      fill p withcolor .625yellow ;
+      draw p withcolor .625red ;
+   \stopreusableMPgraphic
+   \reuseMPgraphic{name:\overlaywidth:\overlayheight}}
+\stoptyping
+
+Notice the use of \type {OverlayWidth} and \type {OverlayHeight}. These variables
+are set for each call to \METAPOST. After this we can say:
+
+\starttyping
+\defineoverlay[my graphic][\MyGraphic]
+\button[background=my graphic,frame=off]{Go Home}[firstpage]
+\stoptyping
+
+Say that we have a 30pt by 20pt button, then the identifier will be \type
+{name:30pt:20pt}. Different dimensions will lead to other identifiers, so this
+sort of makes the graphics unique.
+
+We can bypass the ugly looking \type {\def} by using a third class of embedded
+graphics, the {\em unique} graphics.
+
+\starttyping
+\startuniqueMPgraphic{name}
+  path p ; p := unitsquare
+    xscaled OverlayWidth yscaled OverlayHeight ;
+  fill p withcolor .625yellow ;
+  draw p withcolor .625red ;
+\stopuniqueMPgraphic
+\stoptyping
+
+Now we can say:
+
+\starttyping
+\defineoverlay[my graphic][\uniqueMPgraphic{name}]
+\button[background=my graphic,frame=off]{Go Home}[firstpage]
+\stoptyping
+
+A shorter variant is:
+
+\starttyping
+\startuniqueMPgraphic{name}
+  fill OverlayBox withcolor .625yellow ;
+  draw OverlayBox withcolor .625red ;
+\stopuniqueMPgraphic
+\stoptyping
+
+You may wonder why unique graphics are needed when a single graphic might be used
+multiple times by scaling it to fit the situation. Since a unique graphic is
+calculated for each distinctive case, we can be sure that the current
+circumstances are taken into account. Also, scaling would result in incomparable
+graphics. Consider the following definition:
+
+\startbuffer[a]
+\startuseMPgraphic{demo}
+  draw unitsquare
+    xscaled 5cm yscaled 1cm
+    withpen pencircle scaled 2mm
+    withcolor .625red ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[a]
+
+Since we reuse the graphic, the dimensions are sort of fixed, and because the
+graphic is calculated once, scaling it will result in incompatible line widths.
+
+\startbuffer[b]
+\hbox \bgroup
+  \scale[width=5cm,height=1cm]{\useMPgraphic{demo}}\quad
+  \scale[width=8cm,height=1cm]{\useMPgraphic{demo}}%
+\egroup
+\stopbuffer
+
+\startlinecorrection[blank]
+\getbuffer[a,b]
+\stoplinecorrection
+
+These graphics were placed with:
+
+\typebuffer[b]
+
+Imagine what happens when we add some buttons to an interactive document without
+taking care of this side effect. All the frames would look different. Consider
+the following example.
+
+\startbuffer[a]
+\startuniqueMPgraphic{right or wrong}
+  pickup pencircle scaled .075 ;
+  fill unitsquare withcolor .8white ;
+  draw unitsquare withcolor .625red ;
+  currentpicture := currentpicture
+    xscaled OverlayWidth yscaled OverlayHeight ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\typebuffer[a]
+
+Let's define this graphic as a background to some buttons.
+
+\startbuffer[b]
+\defineoverlay[button][\uniqueMPgraphic{right or wrong}]
+\setupbuttons[background=button,frame=off]
+\stopbuffer
+
+\startbuffer[c]
+\hbox
+  {\button {previous}          [previouspage]\quad
+   \button {next}              [nextpage]\quad
+   \button {index}             [index]\quad
+   \button {table of contents} [content]}
+\stopbuffer
+
+\typebuffer[b,c]
+
+The buttons will look like:
+
+\startlinecorrection[blank]
+\setupinteraction[state=start,color=,contrastcolor=]
+\getbuffer[a,b,c]
+\stoplinecorrection
+
+Compare these with:
+
+\startbuffer[a]
+\startuniqueMPgraphic{wrong or right}
+  pickup pencircle scaled 3pt ;
+  path p ; p := unitsquare
+    xscaled OverlayWidth yscaled OverlayHeight ;
+  fill p withcolor .8white ;
+  draw p withcolor .625red ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\startlinecorrection[blank]
+\getbuffer[a,b]
+\defineoverlay[button][\uniqueMPgraphic{wrong or right}]
+\setupinteraction[state=start,color=,contrastcolor=]
+\getbuffer[c]
+\stoplinecorrection
+
+Here the graphic was defined as:
+
+\typebuffer[a]
+
+The last class of embedded graphics are the {\em runtime} graphics. When a
+company logo is defined in a separate file \type {mylogos.mp}, you can run this
+file by saying:
+
+\starttyping
+\startMPrun
+  input mylogos ;
+\stopMPrun
+\stoptyping
+
+The source for the logo is stored in a file named \type {mylogos.mp}.
+
+\startbuffer
+beginfig(21) ;
+  draw fullsquare            withcolor .625red ;
+  draw fullsquare rotated 45 withcolor .625red ;
+  picture cp ; cp := currentpicture ;
+  def copy = addto currentpicture also cp enddef ;
+  copy scaled .9 withcolor .625white  ;
+  copy scaled .7 withcolor .625yellow ;
+  copy scaled .6 withcolor .625white  ;
+  copy scaled .4 withcolor .625red    ;
+  copy scaled .3 withcolor .625white  ;
+  fill fullcircle scaled .2 withcolor .625yellow ;
+  currentpicture := currentpicture scaled 50 ;
+endfig ;
+end .
+\stopbuffer
+
+\typebuffer
+
+In this example the result is available in the virtual file \type {mprun.21}.
+This file can be included in the normal way, using:
+
+\starttyping
+\externalfigure[mprun.21][width=5cm]
+\stoptyping
+
+\startuseMPgraphic{dummy logo}
+  draw fullsquare            withcolor .625red ;
+  draw fullsquare rotated 45 withcolor .625red ;
+  picture cp ; cp := currentpicture ;
+  def copy = addto currentpicture also cp enddef ;
+  copy scaled .9 withcolor .625white  ;
+  copy scaled .7 withcolor .625yellow ;
+  copy scaled .6 withcolor .625white  ;
+  copy scaled .4 withcolor .625red    ;
+  copy scaled .3 withcolor .625white  ;
+  fill fullcircle scaled .2 withcolor .625yellow ;
+  currentpicture := currentpicture scaled 3cm ;
+\stopuseMPgraphic
+
+\placefigure
+  {The logo is defined in the file \type {mylogos.mp} as
+   figure~21 and processed by means of the \type {mprun}
+   method.}
+  {\useMPgraphic{dummy logo}}
+
+Optionally you can specify a name and an instance. This has the advantage that
+the graphics don't interfere with the regular inline graphics. Here the instance
+used is \type {extrafun} and the name where the run is stored is \type {mydemo}.
+
+\startbuffer
+\startMPrun{extrafun::mydemo}
+    input mfun-mrun-demo.mp ;
+\stopMPrun
+
+\placefigure
+  {An external file can have multiple graphics. Here we show a few
+   images that we used to use on the \PRAGMA\ \CONTEXT\ website.}
+  {\startcombination[2*2]
+     {\externalfigure[mprun:extrafun::mydemo.1][height=6cm]} {downloads}
+     {\externalfigure[mprun:extrafun::mydemo.2][height=6cm]} {links}
+     {\externalfigure[mprun:extrafun::mydemo.3][height=6cm]} {mirrors}
+     {\externalfigure[mprun:extrafun::mydemo.4][height=6cm]} {team}
+   \stopcombination}
+\stopbuffer
+
+\typebuffer
+
+Keep in mind that the whole file will be processed (using the built in library)
+in order to get one graphic. Normally this is no big deal.
+
+\getbuffer
+
+\stopsection
+
+\startsection[title={Using \METAFUN\ but not \CONTEXT}]
+
+\index{graphics+standalone}
+
+If you don't want to use \CONTEXT\ but still want to use \METAFUN, a rather
+convenient method is the following. Create a file that
+
+\starttyping
+\startMPpage
+    % Your mp code goes here. You can use the textext
+    % macro as discussed later to deal with typeset text.
+\stopMPpage
+\stoptyping
+
+When you process that file with the \type {context} command you will get a \PDF\
+file that you can include in any application that can embed a \PDF\ image. In
+this case your exposure to \CONTEXT\ is minimal.
+
+\stopsection
+
+\startsection[title={Graphic buffers}]
+
+\index{graphics+buffers}
+\index{buffers}
+
+In addition to the macros defined in the previous section, you can use \CONTEXT's
+buffers to handle graphics. This can be handy when making documentation, so it
+makes sense to spend a few words on them.
+
+A buffer is a container for content that is to be (re|)|used later on. The main
+reason for their existence is that they were needed for typesetting manuals and
+articles on \TEX. By putting the code snippets in buffers, we don't have to key
+in the code twice, since we can either show the code of buffers verbatim, or
+process the code as part of the text flow. This means that the risk of mismatch
+between the code shown and the typeset text is minimized.
+
+\startbuffer[a]
+\startbuffer
+You are reading the \METAFUN\ manual.
+\stopbuffer
+\stopbuffer
+
+\typebuffer[a]
+
+This buffer can be typeset verbatim using \type {\typebuffer} and processed using
+\type {\getbuffer}, as we will do now:
+
+\blank \getbuffer[a] \blank
+
+An other advantage of using buffers, is that they help you keeping the document
+source clean. In many places in this manual we put table or figure definitions in
+a buffer and pass the buffer to another command, like:
+
+\starttyping
+\placefigure{A very big table}{\getbuffer}
+\stoptyping
+
+Sometimes it makes sense to collect buffers in separate files. In that case we
+give them names.
+
+\startbuffer
+\startbuffer[mfun]
+You are reading the \METAFUN\ manual.
+\stopbuffer
+\stopbuffer
+
+This time we should say \type {\typebuffer[mfun]} to typeset the code verbatim.
+Instead of \TEX\ code, we can put \METAPOST\ definitions in buffers.
+
+\startbuffer
+\startbuffer[graphic]
+draw fullcircle scaled 2cm ;
+\stopbuffer
+\stopbuffer
+
+Buffers can be used to stepwise build graphics. By putting code in multiple
+buffers, you can selectively process this code.
+
+\startbuffer
+\startbuffer[red]
+drawoptions(withcolor .625red) ;
+\stopbuffer
+
+\startbuffer[yellow]
+drawoptions(withcolor .625yellow) ;
+\stopbuffer
+\stopbuffer
+
+\typebuffer
+
+We can now include the same graphic in two colors by simply using different
+buffers. This time we use the special command \type {\processMPbuffer}, since
+\type {\getbuffer} will typeset the code fragment, which is not what we want.
+
+\startbuffer
+\startlinecorrection[blank]
+\processMPbuffer[red,graphic]
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer
+
+The line correction macros take care of proper spacing around the graphic. The
+\type {[blank]} directive tells \CONTEXT\ to add more space before and after the
+graphic.
+
+\startbuffer
+\startlinecorrection[blank]
+\processMPbuffer[yellow,graphic]
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer
+
+Which mechanism you use, (multiple) buffers or (re|)|usable graphics, depends on
+your preferences. Buffers are slower but don't take memory, while (re|)|usable
+graphics are stored in memory which means that they are accessed faster.
+
+\stopsection
+
+\startsection[title={Communicating color}]
+
+\index{color}
+
+Now that color has moved to the desktop, even simple documents have become more
+colorful, so we need a way to consistently apply color to text as well as
+graphics. In \CONTEXT, colors are called by name.
+
+The next definitions demonstrate that we can define a color using different color
+models, \RGB\ or \CMYK. Depending on the configuration, \CONTEXT\ will convert
+one color system to the other, \RGB\ to \CMYK, or vice versa. The full repertoire
+of color components that can be set is as follows.
+
+\starttyping
+\definecolor[color one]  [r=.1, g=.2, b=.3]
+\definecolor[color two]  [c=.4, m=.5, y=.6, k=.7]
+\definecolor[color three][s=.8]
+\stoptyping
+
+The numbers are limited to the range $0\dots1$ and represent percentages. Black
+is represented by:
+
+\starttyping
+\definecolor[black 1] [r=0, g=0, b=0]
+\definecolor[black 2] [c=0, m=0, y=0, k=1]
+\definecolor[black 3] [s=0]
+\stoptyping
+
+Predefined colors are passed to \METAPOST\ graphics via the \type {\MPcolor}.
+First we define some colors.
+
+\starttyping
+\definecolor[darkyellow][y=.625] % a CMYK color
+\definecolor[darkred]   [r=.625] % a RGB color
+\definecolor[darkgray]  [s=.625] % a gray scale
+\stoptyping
+
+These are the colors we used in this document. The next example uses two of them.
+
+\startbuffer
+\startuseMPgraphic{color demo}
+  pickup pencircle scaled 1mm ;
+  path p ; p := fullcircle xscaled 10cm yscaled 1cm ;
+  fill p withcolor \MPcolor{darkgray} ;
+  draw p withcolor \MPcolor{darkred} ;
+\stopuseMPgraphic
+
+\useMPgraphic{color demo}
+\stopbuffer
+
+\typebuffer
+
+The previous example uses a pure \RGB\ red shade, combined with a gray fill.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+Originally \METAPOST\ only supported only the \RGB\ and gray color spaces. In \METAFUN\
+we also supported \CMYK\ and spot colors, using an extension mechanism that hooked into
+the backend. At some point \METAPOST\ got native support for \CMYK. When you use mixed
+color models you need to be aware of the fact that their related variables have different
+types:
+
+\starttabulate[||T|T|]
+\NC gray \NC numeric   \NC s         \NC \NR
+\NC rgb  \NC color     \NC (r,g,b)   \NC \NR
+\NC cmyk \NC cmykcolor \NC (c,m,y,k) \NC \NR
+\stoptabulate
+
+Because in \METAFUN\ (\type {mpiv}) we hook deeply into the \CONTEXT\ color
+mechanisms we can use symbolic names instead. and these are just strings.
+
+There is a fundamental difference between a yellow as defined in \CONTEXT\ using
+\CMYK\ and a \RGB\ yellow.
+
+\startbuffer
+\definecolor[cmyyellow]    [y=1]
+\definecolor[rgbyellow]    [r=1,g=1]
+
+\definecolor[cmydarkyellow][y=.625]
+\definecolor[rgbdarkyellow][r=.625,g=.625]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\in {Figure} [fig:many yellows:pass] demonstrates what happens when we multiply
+colors by a factor. Since we are not dealing with real \CMYK\ colors,
+multiplication gives different results for \CMYK\ colors passed as \type
+{\MPcolor}. \in {Figure} [fig:many yellows:fetch] we show the same colors but
+this time we use a different method, one that avoids the \TEX\ macro. This method
+can be used in \MKIV. We will use both methods in examples.
+
+\def\TestColor#1%
+  {\startuseMPgraphic{yellow}
+     fill unitsquare xscaled (.30*\the\hsize) yscaled 1cm withcolor #1 ;
+   \stopuseMPgraphic
+   \useMPgraphic{yellow}}
+
+\startbuffer
+\setuptype[style=\ttx]%
+\startcombination[3*3]
+  {\TestColor{(0,0,1,0)}}               {\type{(0,0,1,0)}}
+  {\TestColor{(1,1,0)}}                 {\type{(1,1,0)}}
+  {\TestColor{(.5,.5,0)}}               {\type{(.5,.5,0)}}
+  {\TestColor{\MPcolor{rgbyellow}}}     {\type{\MPcolor{rgbyellow}}}
+  {\TestColor{\MPcolor{rgbdarkyellow}}} {\type{\MPcolor{rgbdarkyellow}}}
+  {\TestColor{.5\MPcolor{rgbyellow}}}   {\type{.5\MPcolor{rgbyellow}}}
+  {\TestColor{\MPcolor{cmyyellow}}}     {\type{\MPcolor{cmyyellow}}}
+  {\TestColor{\MPcolor{cmydarkyellow}}} {\type{\MPcolor{cmydarkyellow}}}
+  {\TestColor{.5\MPcolor{cmyyellow}}}   {\type{.5\MPcolor{cmyyellow}}}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:many yellows:pass]
+  {All kinds of yellow (passing valued from \TEX).}
+  {\getbuffer}
+
+\startbuffer
+\setuptype[style=\ttx]%
+\startcombination[3*3]
+  {\TestColor{(0,0,1,0)}}                 {\type{(0,0,1,0)}}
+  {\TestColor{(1,1,0)}}                   {\type{(1,1,0)}}
+  {\TestColor{(.5,.5,0)}}                 {\type{(.5,.5,0)}}
+  {\TestColor{"rgbyellow"}}               {\type{"rgbyellow"}}
+  {\TestColor{"rgbdarkyellow"}}           {\type{"rgbdarkyellow"}}
+  {\TestColor{.5namedcolor("rgbyellow")}} {\type{.5namedcolor("rgbyellow")}}
+  {\TestColor{"cmyyellow"}}               {\type{"cmyyellow"}}
+  {\TestColor{"cmydarkyellow"}}           {\type{"cmydarkyellow"}}
+  {\TestColor{.5namedcolor("cmyyellow")}} {\type{.5namedcolor("cmyyellow")}}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:many yellows:fetch]
+  {All kinds of yellow (fetching values from \TEX).}
+  {\getbuffer}
+
+So, \type {.625red} is the same as \type {[r=.5]}, but \type {.625yellow} is not
+the same as \type {[y=.5]}, but matches \type {[r=.5,g=.5]}. \in {Figure}
+[fig:some reds] shows the pure and half reds.
+
+\def\TestColor#1%
+  {\startMPcode
+     fill unitsquare xscaled (.30*\the\hsize) yscaled 1cm withcolor #1 ;
+   \stopMPcode}
+
+\startbuffer
+\setuptype[style=\ttx]\setupcolors[mpcmyk=no]
+\startcombination[3*2]
+  {\TestColor{red}}                   {\type{red}}
+  {\TestColor{(1,0,0)}}               {\type{(1,0,0)}}
+  {\TestColor{(.625,0,0)}}            {\type{(.625,0,0)}}
+  {\TestColor{"red"}}                 {\type{"red")}}
+  {\TestColor{"darkred"}}             {\type{"darkred")}}
+  {\TestColor{.625namedcolor("red")}} {\type{.625namedcolor("red")}}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:some reds]
+  {Some kinds of red.}
+  {\getbuffer}
+
+In order to prevent problems, we advise you to stick to \RGB\ color
+when you create documents for screen and \CMYK\ when producing for print.
+
+In the \METAFUN\ macro collection there is a macro \type {cmyk} that takes four
+arguments, representing the cyan, magenta, yellow, and black component. Nowadays
+you don't need it as we have native \CMYK.
+
+\startbuffer
+fill unitsquare xyscaled (10cm, 5mm) withcolor cmyk(1,0,.3,.3) ;
+fill unitsquare xyscaled (10cm,-5mm) withcolor     (1,.3,0,.3) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+If you take a close look at the numbers, you will notice that the cyan component
+results in a 100\% ink contribution. You will also notice that 30\% black ink is
+added. This means that we cannot safely convert this color to \RGB\ ($r=1-c-k<0$)
+without losing information. Nevertheless the previous blue bar is presented all
+right. This is due to the fact that in \METAFUN\ the \CMYK\ colors are handled as
+they should, even when \METAPOST\ does not support this color model.
+
+If you use this feature independent of \CONTEXT, you need to enable it by setting
+\type {cmykcolors} to \type {true}. You have to convert the resulting graphic to
+\PDF\ by using for instance the \type {mptopdf} suite.
+
+In \CONTEXT\ you can influence this conversion by changing parameters related to
+color handling:
+
+\starttyping
+\setupcolors[cmyk=yes,rgb=no]
+\stoptyping
+
+Unless you know what you are doing, you don't have to change the default settings
+(both \type {yes}). In the \CONTEXT\ reference manual you can also read how color
+reduction can be handled.
+
+Special care should be paid to gray scales. Combining equal quantities of the
+three color inks will not lead to a gray scale, but to a muddy brown shade.
+
+\startbuffer
+fill fullsquare xyscaled (10cm,  2cm) withcolor .5white ;
+fill fullsquare xyscaled ( 6cm,1.5cm) withcolor cmyk(.5,.5,.5,0) ;
+fill fullsquare xyscaled ( 2cm,  1cm) withcolor cmyk(0,0,0,.5) ;
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+In \in {figure} [fig:cmyk 1] \in {and} [fig:cmyk 2] you can see some more colors
+defined in the \CMYK\ color space. When you display the screen version of this
+document, you will notice that the way colors are displayed can differ per
+viewer. This is typical for \CMYK\ colors and has to do with the fact that some
+assumptions are made with respect to the (print) medium.
+
+\startbuffer[mp]
+  fill fullcircle xyscaled (3cm,1cm) withcolor \MPcolor{test} ;
+\stopbuffer
+
+\startbuffer[cmyk]
+\startcombination[4*1]
+  {\definecolor[test][c=1,y=.3,k=.3] \processMPbuffer[mp]} {c=1 y=.3 k=.3}
+  {\definecolor[test][c=.9,y=.15]    \processMPbuffer[mp]} {c=.9 y=.15}
+  {\definecolor[test][c=.25,y=.8]    \processMPbuffer[mp]} {c=.25 y=.8}
+  {\definecolor[test][c=.45,y=.1]    \processMPbuffer[mp]} {c=.45 y=.1}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here][fig:cmyk 1]
+  {\CMYK\ support enabled.}
+  {\getbuffer[cmyk]}
+
+\placefigure
+  [here][fig:cmyk 2]
+  {\CMYK\ support disabled, no support in \METAPOST.}
+  {\setupcolors[cmyk=no]\getbuffer[cmyk]\setupcolors[cmyk=yes]}
+
+\stopsection
+
+% \startsection[title={Common definitions}]
+%
+% \index{inclusions}
+% \index{common definitions}
+%
+% When using many graphics, there is a chance that they share common definitions.
+% Such shared components can be defined by:
+%
+% \starttyping
+% \startMPinclusions
+%   color mycolor ; mycolor := .625red ;
+% \stopMPinclusions
+% \stoptyping
+%
+% {\em The following is only true for \CONTEXT\ \MKII ! Users of \MKIV\ can skip
+% this section.}
+%
+% All \METAPOST\ graphics defined in the document end up in the files \type
+% {mpgraph.mp} and \type {mprun.mp}. When processed, they produce (sometimes many)
+% graphic files. When you use \CONTEXT\ \MKII\ and \TEXEXEC\ to process documents,
+% these two files are processed automatically after a run so that in a next run,
+% the right graphics are available.
+%
+% When you are using the \type {web2c} distribution, \CONTEXT\ can call \METAPOST\
+% at runtime and thereby use the right graphics instantaneously. In order to use
+% this feature, you have to enable \type {\write18} in the file \type {texmf.cnf}.
+% Also, in the file \type {cont-sys.tex}, that holds local preferences, or in the
+% document source, you should say:
+%
+% \starttyping
+% \runMPgraphicstrue
+% \stoptyping
+%
+% This enables runtime generation of graphics using the low level \TEX\ command
+% \type {\write18}. First make sure that your local brand of \TEX\ supports this
+% feature. A simple test is making a \TEX\ file with the following line:
+%
+% \starttyping
+% \immediate\write18{echo It works}
+% \stoptyping
+%
+% If this fails, you should consult the manual that comes with your system, locate
+% an expert or ask around on the \CONTEXT\ mailing list. Of course you can also
+% decide to let \TEXEXEC\ take care of processing the graphics afterwards. This has
+% the advantage of being faster but has the disadvantage that you need additional
+% \TEX\ runs.
+%
+% If you generate the graphics at run time, you should consider to turn on graphic
+% slot recycling, which means that you often end up with fewer intermediate files:
+%
+% \starttyping
+% \recycleMPslotstrue
+% \stoptyping
+%
+% There are a few more low level switches and features, but these go beyond the
+% purpose of this manual. Some of these features, like the option to add tokens to
+% \type {\everyMPgraphic} are for experts only, and fooling around with them can
+% interfere with existing features.
+%
+% \stopsection
+
+\startsection[title={One page graphics}]
+
+An advantage of using \CONTEXT\ to make your \METAPOST\ graphics is you don't
+have to bother about specials, font inclusion and all those nasty things that can
+spoil a good day. An example of such a graphic is the file \type {mfun-800} that
+resides on the computer of the author.
+
+\typefile{mfun-800}
+
+Given that \CONTEXT\ is present on your system, you can process this file with:
+
+\starttyping
+context mfun-800
+\stoptyping
+
+You can define many graphics in one file. Later you can include individual pages
+from the resulting \PDF\ file in your document:
+
+\startbuffer
+\placefigure
+  {A silly figure, demonstrating that stand||alone||graphics
+   can be made.}
+  {\typesetfile[mfun-800.tex][page=1]}
+\stopbuffer
+
+\typebuffer
+
+In this case the \type {page=1} specification is not really needed. You can scale
+and manipulate the figure in any way supported by the macro package that you use.
+
+\getbuffer
+
+\stopsection
+
+\startsection[title={Managing resources}]
+
+A graphic consists of curves, either or not filled with a given color. A graphic
+can also include text, which means that fonts are used. Finally a graphic can
+have special effects, like a shaded fill. Colors, fonts and special effects go
+under the name resources, since they may demand special care or support from the
+viewing or printing device.
+
+% When fonts are used, a \METAPOST\ file is not self contained. This means that the
+% postprocessing program has to deal with the fonts. In \CONTEXT, the special
+% driver |<|and \PDFTEX\ support is considered as such|>| takes care of this.
+
+Special effects, like shading, are supported by dedicated \METAPOST\ modules.
+These are included in the \CONTEXT\ distribution and will be discussed later in
+\in {chapter} [sec:effects].
+
+Since \METAPOST\ supports color, an embedded graphic can be rather colorful.
+However, when color support is disabled or set up to convert colors to gray
+scales, \CONTEXT\ will convert the colors in the graphics to gray scales.
+
+\startbuffer[circle]
+  colorcircle(4cm,red,green,blue) ;
+\stopbuffer
+
+\startbuffer
+\startcombination[3*1]
+  {\setupcolors[state=start]\processMPbuffer[circle]}          {full color}
+  {\setupcolors[state=stop]\processMPbuffer[circle]}           {weighted gray}
+  {\setupcolors[state=stop,factor=no]\processMPbuffer[circle]} {linear gray}
+\stopcombination
+\stopbuffer
+
+You may wonder what the advantage is of weighted gray conversion. \in {Figure}
+[fig:color circles] shows the difference between natural colors, weighted gray
+scales and straightforward, non||weighted, gray scales.
+
+\placefigure
+  [here][fig:color circles]
+  {The advantage of weighted gray over linear gray.}
+  {\getbuffer\setupcolors[state=start,factor=yes]} % just to be sure
+
+When we convert color to gray, we use the following formula. This kind of
+conversion also takes place in black and white televisions.
+
+\placeformula [-]
+  \startformula
+    G = .30r + .59g + .11b
+  \stopformula
+
+\in {Section} [sec:conversion] introduces the \type {grayed} operation that you
+can use to convert a colored picture into a gray one. This macro uses the same
+conversion method as mentioned here.
+
+\stopsection
+
+\startsection[title={Instances}]
+
+There are a few instances predefined and if you want to isolate your own
+graphics from whatever \CONTEXT\ itself cooks up, you can define more as the
+extra overhead can be neglected.
+
+\starttabulate[|T|T|T|T|T|]
+\BC name        \BC format  \BC extensions \BC initializations \BC method  \NC \NR
+\NC metafun     \NC metafun \NC yes        \NC yes             \NC         \NC \NR
+\NC extrafun    \NC metafun \NC yes        \NC yes             \NC         \NC \NR
+\NC lessfun     \NC metafun \NC            \NC                 \NC         \NC \NR
+\NC doublefun   \NC metafun \NC yes        \NC yes             \NC double  \NC \NR
+\NC binaryfun   \NC metafun \NC yes        \NC yes             \NC binary  \NC \NR
+\NC decimalfun  \NC metafun \NC yes        \NC yes             \NC decimal \NC \NR
+\stoptabulate
+
+According to this the \type {doublefun} instance is defined as:
+
+\starttyping
+\defineMPinstance
+  [doublefun]
+  [format=metafun,
+   extensions=yes,
+   initializations=yes,
+   method=double]
+\stoptyping
+
+The \type {extensions} key relates to:
+
+\starttyping
+\startMPextensions
+    % some code
+\stopMPextensions
+\stoptyping
+
+that are used to pass (common) extensions to the instance. The \type
+{initializations} key relates to:
+
+\starttyping
+\startMPinitializations
+    % some code
+\stopMPinitializations
+\stoptyping
+
+that are used to communicate \TEX\ properties to the instance (they are
+expanded each graphic). Instance bound definitions can be set with:
+
+\starttyping
+\startMPdefinitions{doublefun}
+    % some code
+\stopMPdefinitions
+\stoptyping
+
+We do have more instances, for instance for the chemical subsystem. If you load
+the \type {graph} module you get a double precision \type {graph} instance. We might
+use more private ones in the future.
+
+When you make graphic pages, you can do this:
+
+\starttyping
+\startMPpage[instance=doublefun]
+    % some code
+\stopMPpage
+\stoptyping
+
+When you use the other commands you can optionally specify an instance:
+
+\startbuffer[metafun]
+\startMPcode{metafun}
+    draw textext(decimal pi) scaled 2 withcolor .625red ;
+    draw boundingbox currentpicture enlarged 2pt ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[extrafun]
+\startMPcode{extrafun}
+    draw textext(decimal pi) scaled 2 withcolor .625green ;
+    draw boundingbox currentpicture enlarged 2pt  ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[doublefun]
+\startMPcode{doublefun}
+    draw textext(decimal pi) scaled 2 withcolor .625blue ;
+    draw boundingbox currentpicture enlarged 2pt  ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[binaryfun]
+\startMPcode{binaryfun}
+    draw textext(decimal pi) scaled 2 withcolor .625yellow ;
+    draw boundingbox currentpicture enlarged 2pt  ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[decimalfun]
+\startMPcode{decimalfun}
+    draw textext(decimal pi) scaled 2 withcolor .375white ;
+    draw boundingbox currentpicture enlarged 2pt  ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[metafun,extrafun,doublefun,binaryfun,decimalfun]
+
+The result is shown in \in {figure} [fig:instances] and as expected there
+is a different value for $\pi$ reported.
+
+\startplacefigure[reference=fig:instances,title={Instances can use different number systems.}]
+    \startcombination[1*5]
+        {\getbuffer[metafun]}    {metafun}
+        {\getbuffer[extrafun]}   {extrafun}
+        {\getbuffer[doublefun]}  {doublefun}
+        {\getbuffer[binaryfun]}  {binaryfun}
+        {\getbuffer[decimalfun]} {decimalfun}
+    \stopcombination
+\stopplacefigure
+
+You need to be aware of the fact that the results of a (for instance) double
+instance can differ from a scaled (the default) one. As long as graphics can be
+processed in both models (which is the case as long as the dimensions stay below
+4096 base points) the outcome is probably not that different. However, we've seen
+that the accuracy of for instance $\pi$ (just a variable) differs. I like to use
+random values and the random generators are definitely different: each of the
+number libraries has its own implementation. Let's look at that. We define two
+random graphic generators:
+
+\startbuffer
+\startuseMPgraphic{normaldeviate}
+    randomseed := 100 ;
+    draw fullsquare
+        withpen pencircle scaled 1/200
+        withcolor .5white ;
+    for i=1 upto 500 :
+        draw (normaldeviate,normaldeviate)
+            scaled 1/3
+            withpen pencircle scaled 1/30
+            withtransparency (1,.5) ;
+    endfor ;
+    setbounds currentpicture to
+        boundingbox fullcircle
+        enlarged 1/2 ;
+    currentpicture :=
+        currentpicture
+        xsized (2TextWidth/5) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+And:
+
+\startbuffer
+\startuseMPgraphic{uniformdeviate}
+    randomseed := 100 ;
+    draw fullsquare
+        withpen pencircle scaled 1/200
+        withcolor .5white ;
+    for i=1 upto 500 :
+        draw (-1/2 + uniformdeviate 1,-1/2 + uniformdeviate 1)
+            withpen pencircle scaled 1/30
+            withtransparency (1,.5) ;
+    endfor ;
+    setbounds currentpicture to
+        boundingbox fullcircle
+        enlarged 1/2 ;
+    currentpicture :=
+        currentpicture
+        xsized (2TextWidth/5) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We show the results for a normaldeviate in \in {figure} [fig:random:1] \in {upto}
+[fig:random:4] you see the randomizers per number system. In \in {figure}
+[fig:random:compared] we demonstrate that the scaled version has its own variant.
+
+\unexpanded\def\TestRandomFun#1#2#3%
+  {\startMPcode{#1}
+      draw image(\includeMPgraphic{#2})
+          withcolor #3 ;
+   \stopMPcode}
+
+\startplacefigure[reference=fig:random:1,title={The scaled randomizers.}]
+    \pushrandomseed
+        \startcombination
+            {\TestRandomFun{metafun}   {normaldeviate} {darkred}}    {normaldeviate}
+            {\TestRandomFun{metafun}   {uniformdeviate}{darkred}}    {uniformdeviate}
+        \stopcombination
+    \poprandomseed
+\stopplacefigure
+
+\startplacefigure[reference=fig:random:2,title={The double randomizers.}]
+    \pushrandomseed
+        \startcombination
+            {\TestRandomFun{doublefun} {normaldeviate} {darkgreen}}  {normaldeviate}
+            {\TestRandomFun{doublefun} {uniformdeviate}{darkgreen}}  {uniformdeviate}
+        \stopcombination
+    \poprandomseed
+\stopplacefigure
+
+\startplacefigure[reference=fig:random:3,title={The decimal randomizers.}]
+    \pushrandomseed
+        \startcombination
+            {\TestRandomFun{decimalfun}{normaldeviate} {darkblue}}   {normaldeviate}
+            {\TestRandomFun{decimalfun}{uniformdeviate}{darkblue}}   {uniformdeviate}
+        \stopcombination
+    \poprandomseed
+\stopplacefigure
+
+\startplacefigure[reference=fig:random:4,title={The binary randomizers.}]
+    \pushrandomseed
+        \startcombination
+            {\TestRandomFun{binaryfun} {normaldeviate} {darkyellow}} {normaldeviate}
+            {\TestRandomFun{binaryfun} {uniformdeviate}{darkyellow}} {uniformdeviate}
+        \stopcombination
+    \poprandomseed
+\stopplacefigure
+
+\startplacefigure[reference=fig:random:compared,title={Normaldeviate and uniformdeviate overlayed.}]
+    \pushrandomseed
+        \startcombination[2*1]
+            \bgroup
+                \startoverlay
+                    {\TestRandomFun{metafun}   {normaldeviate} {darkred}}
+                    {\TestRandomFun{doublefun} {normaldeviate} {darkgreen}}
+                    {\TestRandomFun{decimalfun}{normaldeviate} {darkblue}}
+                    {\TestRandomFun{binaryfun} {normaldeviate} {darkyellow}}
+                \stopoverlay
+            \egroup {normaldeviate}
+            \bgroup
+                \startoverlay
+                    {\TestRandomFun{metafun}   {uniformdeviate}{darkred}}
+                    {\TestRandomFun{doublefun} {uniformdeviate}{darkgreen}}
+                    {\TestRandomFun{decimalfun}{uniformdeviate}{darkblue}}
+                    {\TestRandomFun{binaryfun} {uniformdeviate}{darkyellow}}
+                \stopoverlay
+            \egroup {uniformdeviate}
+        \stopcombination
+    \poprandomseed
+\stopplacefigure
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

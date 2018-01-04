@@ -1,0 +1,595 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startenvironment metafun-environment
+
+\environment metafun-environment-layout
+
+\usemodule[abr-01,syntax]
+
+\startuseMPgraphic{cover page}
+
+    numeric w ; w := PaperWidth -eps ; % or clip
+    numeric h ; h := PaperHeight-eps ; % or clip
+
+    for i=0cm step 1cm until w  :
+        for j=0cm step 1cm until h :
+            fill unitsquare scaled 1cm shifted (i,j) withcolor (.6+uniformdeviate.35)*white ;
+        endfor ;
+    endfor ;
+
+  % clip currentpicture to unitsquare xyscaled (w,h) ;
+
+    for i=0cm step 1cm until w+.5cm :
+        draw (i,0) -- (i,h) withpen pensquare scaled .5mm withcolor .625yellow ;
+    endfor ;
+
+    for i=0cm step 1cm until h+.5cm :
+        draw (0,i) -- (w,i) withpen pensquare scaled .5mm withcolor .625yellow ;
+    endfor ;
+
+\stopuseMPgraphic
+
+\startuseMPgraphic{title page}
+
+    StartPage ;
+
+        \includeMPgraphic{cover page}
+
+        picture p ; p := image (draw rawtextext("\darkred\definedfont[Sans]metafun"   )) ;
+        picture q ; q := image (draw rawtextext("\darkred\definedfont[Sans]Hans Hagen")) ;
+    %   picture r ; r := image (draw rawtextext("\darkred\definedfont[Sans]\doifnotmode{book}{context mkiv}")) ;
+        picture r ; r := image (draw rawtextext("\darkred\definedfont[Sans]context mkiv")) ;
+
+        p := p xsized(PaperHeight - 2cm) ;
+        q := q xsized(PaperWidth  - 8cm) ;
+        r := r xsized(6cm) ;
+
+        p := p rotated 90 ;
+        r := r rotated 90 ;
+
+        draw p shifted (urcorner Page - urcorner p - (1cm,1cm) - (-1mm,0) ) ;
+        draw q shifted (1cm, 1cm) ;
+        draw r shifted (urcorner Page - urcorner r - (5cm,2cm) ) ;
+
+    StopPage ;
+
+    setbounds currentpicture to Page ;
+
+\stopuseMPgraphic
+
+\startuseMPgraphic{back page}
+
+    \includeMPgraphic{cover page}
+
+\stopuseMPgraphic
+
+\startuseMPgraphic{small grid}
+
+    numeric w ; w := \overlaywidth ;
+    numeric h ; h := \overlayheight ;
+    numeric d ; d := .25cm ;
+
+    drawoptions(withcolor (.6+uniformdeviate.35)*white) ;
+
+    for i=0cm step d until w  :
+        for j=0cm step d until h :
+            fill unitsquare scaled d shifted (i,j) ;
+        endfor ;
+    endfor ;
+
+    drawoptions(withpen pencircle scaled .125mm withcolor .625yellow) ;
+
+    for i=0 step d until w+d : draw (i,0) -- (i,h) ; endfor ;
+    for i=0 step d until h+d : draw (0,i) -- (w,i) ; endfor ;
+
+\stopuseMPgraphic
+
+\defineoverlay[title page][\useMPgraphic{title page}]
+
+\startnotmode[proof]
+    \defineoverlay[back  page][\useMPgraphic{back  page}]
+    \defineoverlay[small grid][\useMPgraphic{small grid}]
+\stopnotmode
+
+% could be all in mp
+
+\starttexdefinition unexpanded OnGrid#1
+    \hbox to \hsize \bgroup
+        \ifodd\realpageno
+            \hss
+        \fi
+        \setbox\scratchbox=\hbox {
+            \color[darkred]{#1}
+        }
+        \scratchoffset.25cm
+        \scratchwidth\wd\scratchbox
+        \ifdim\scratchwidth>\zeropoint
+            \advance \scratchwidth by .5\scratchoffset
+            \divide  \scratchwidth by   \scratchoffset
+            \multiply\scratchwidth by   \scratchoffset
+            \advance \scratchwidth by  2\scratchoffset
+        \else
+            \scratchwidth8\scratchoffset
+        \fi
+        \dp\scratchbox  \scratchoffset
+        \ht\scratchbox 2\scratchoffset
+        \framed [
+            background=small grid,
+            frame=off,
+            offset=overlay
+        ] {
+            \hbox to \scratchwidth {
+                \hss
+                \box\scratchbox
+                \hss
+            }
+        }
+        \unless \ifodd\realpageno
+            \hss
+        \fi
+    \egroup
+\stoptexdefinition
+
+\setupfootertexts
+  [margin]
+  []
+  [\OnGrid{\doifelsetext{\getmarking[chapter]}{\getmarking[chapter]}{\getmarking[title]}}]
+
+\startuseMPgraphic{circled}
+    pickup pencircle scaled 1mm ;
+    drawoptions(withcolor (.6+uniformdeviate.35)*white) ;
+    fill fullcircle xscaled 1.5cm yscaled 1cm ;
+    drawoptions(withcolor .625yellow) ;
+    draw fullcircle xscaled 1.5cm yscaled 1cm ;
+\stopuseMPgraphic
+
+\startnotmode[proof]
+    \defineoverlay[circled][\useMPgraphic{circled}]
+\stopnotmode
+
+\starttexdefinition unexpanded Circled #1
+    \framed [
+        background=circled,
+        frame=off,
+        offset=overlay
+    ] {
+        \color[darkred]{#1}
+    }
+\stoptexdefinition
+
+\setuppagenumbering
+  [location=]
+
+\setupheadertexts
+  [margin]
+  [][\hbox to \hsize{\hss\Circled\pagenumber\hss}]
+
+\setupheader
+  [style=bold]
+
+\setupfooter
+  [style=bold]
+
+\startuniqueMPgraphic{titled}
+    path p ; p := unitsquare xscaled OverlayWidth yscaled OverlayHeight ;
+    pickup pencircle scaled 1mm ;
+    drawoptions(withcolor .625yellow) ;
+    draw llcorner p -- lrcorner p ;
+    setbounds currentpicture to p ;
+\stopuniqueMPgraphic
+
+\defineoverlay[titled][\uniqueMPgraphic{titled}]
+
+\starttexdefinition unexpanded ChapterCommand #1#2
+    \ifconditional\headshownumber
+        \ifdim\leftmarginwidth<\rightmarginwidth
+          \donetrue
+        \else
+          \donefalse
+        \fi
+        \hskip-\ifdone\leftmargintotal\else\rightmargintotal\fi
+        \framed [
+            background=titled,
+            frame=off,
+            offset=0pt
+        ] {
+            \hbox to \ifdone\leftmarginwidth\else\rightmarginwidth\fi {
+                #1
+                \hss
+            }
+            \hskip\ifdone\leftmargindistance\else\rightmargindistance\fi
+            #2
+        }
+    \else
+        \framed [
+            background=titled,
+            frame=off,
+            offset=0pt
+        ] {
+            #2
+        }
+    \fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded TitleCommand #1#2
+    \framed [
+        background=titled,
+        frame=off,
+        offset=0pt
+    ] {
+        #2
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded IntroTitleCommand #1#2
+    \framed [
+        background=titled,
+        frame=off,
+        offset=0pt,
+        width=\textwidth
+    ] {
+        \hfill
+        #2
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded ExtroTitleCommand #1#2
+    \framed [
+        background=titled,
+        frame=off,
+        offset=0pt,
+        width=\textwidth
+    ] {
+        \hss
+        #2
+        \hss
+    }
+\stoptexdefinition
+
+\setuphead
+  [chapter,section,subsection,subsubsection]
+  [color=darkred]
+
+\setuphead
+  [chapter]
+  [style=\bfc]
+
+\setuphead
+  [section]
+  [style=\bfa]
+
+\setuphead
+  [subsection]
+  [style=\bf]
+
+\setuphead
+  [subsubsection]
+  [style=\bf]
+
+\setuphead
+  [chapter,section,subsection,subsubsection]
+  [command=\ChapterCommand]
+
+\setuphead
+  [title,subject,subsubject,subsubsubject]
+  [command=\TitleCommand]
+
+
+\definehead [introsubject] [subsubject]
+\definehead [extrosubject] [subsubject]
+
+\setuphead [introsubject] [command=\IntroTitleCommand]
+\setuphead [extrosubject] [command=\ExtroTitleCommand]
+
+\setuphead
+  [subsection,subsubject]
+  [before=\blank,
+   after=\blank]
+
+% charts
+
+\usemodule[chart]
+
+\setupFLOWcharts
+  [offset=0pt,
+   width=6\bodyfontsize,
+   height=3\bodyfontsize,
+   dx=\bodyfontsize,
+   dy=\bodyfontsize]
+
+\setupFLOWshapes
+  [framecolor=darkred]
+
+\setupFLOWlines
+  [color=darkyellow]
+
+% hm, slows down the whole doc
+
+\setupbackgrounds
+  [page]
+  [background={backgraphics,foreground,foregraphics}]
+
+\defineoverlay [backgraphics] [\positionoverlay{backgraphics}]
+\defineoverlay [foregraphics] [\positionoverlay{foregraphics}]
+
+\startbuffer[shape-a]
+\startuniqueMPgraphic{meta:hash}{linewidth,linecolor,angle,gap}
+  if unknown context_back : input mp-back ; fi ;
+  some_hash ( OverlayWidth, OverlayHeight ,
+              \MPvar{linewidth}, \MPvar{linecolor} ,
+              \MPvar{angle}, \MPvar{gap} ) ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\startbuffer[shape-b]
+\setupMPvariables
+  [meta:hash]
+  [gap=.25\bodyfontsize,
+   angle=45,
+   linewidth=\overlaylinewidth,
+   linecolor=\overlaylinecolor]
+\stopbuffer
+
+\startbuffer[shape-c]
+\def\metahashoverlay#1{\uniqueMPgraphic{meta:hash}{angle=#1}}
+
+\defineoverlay[meta:hash:right]     [\metahashoverlay{ +45}]
+\defineoverlay[meta:hash:left]      [\metahashoverlay{ -45}]
+\defineoverlay[meta:hash:horizontal][\metahashoverlay{+180}]
+\defineoverlay[meta:hash:vertical]  [\metahashoverlay{ -90}]
+\stopbuffer
+
+\startbuffer[symb-a]
+\startuniqueMPgraphic{meta:button}{type,size,linecolor,fillcolor}
+  if unknown context_butt : input mp-butt ; fi ;
+  some_button ( \MPvar{type},
+                \MPvar{size},
+                \MPvar{linecolor},
+                \MPvar{fillcolor} ) ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\startbuffer[symb-b]
+\setupMPvariables
+  [meta:button]
+  [type=1,
+   size=2\bodyfontsize,
+   fillcolor=gray,
+   linecolor=darkred]
+\stopbuffer
+
+\startbuffer[symb-c]
+\def\metabuttonsymbol#1{\uniqueMPgraphic{meta:button}{type=#1}}
+
+\definesymbol[menu:left]  [\metabuttonsymbol{101}]
+\definesymbol[menu:right] [\metabuttonsymbol{102}]
+\definesymbol[menu:list]  [\metabuttonsymbol{103}]
+\definesymbol[menu:index] [\metabuttonsymbol{104}]
+\definesymbol[menu:person][\metabuttonsymbol{105}]
+\definesymbol[menu:stop]  [\metabuttonsymbol{106}]
+\definesymbol[menu:info]  [\metabuttonsymbol{107}]
+\definesymbol[menu:down]  [\metabuttonsymbol{108}]
+\definesymbol[menu:up]    [\metabuttonsymbol{109}]
+\definesymbol[menu:print] [\metabuttonsymbol{110}]
+\stopbuffer
+
+\hyphenation{tool-kit}
+
+\startbuffer[pagetext]
+\subject{Edward  R. Tufte}      \input tufte   \par
+\subject{Donald  E. Knuth}      \input knuth   \par
+\subject{Douglas R. Hostadter}  \input douglas \page
+\stopbuffer
+
+\startbuffer[back-0]
+\defineoverlay[page][\useMPgraphic{page}]
+\setupbackgrounds[page][background=page]
+\stopbuffer
+
+\startbuffer[back-1]
+\startuseMPgraphic{page}
+  StartPage ;
+    path Main ;
+    if OnRightPage :
+      Main := lrcorner Field[OuterMargin][Text] --
+              llcorner Field[Text]       [Text] --
+              ulcorner Field[Text]       [Text] --
+              urcorner Field[OuterMargin][Text] -- cycle ;
+    else :
+      Main := llcorner Field[OuterMargin][Text] --
+              lrcorner Field[Text]       [Text] --
+              urcorner Field[Text]       [Text] --
+              ulcorner Field[OuterMargin][Text] -- cycle ;
+    fi ;
+    Main := Main enlarged 6pt ;
+    pickup pencircle scaled 2pt ;
+    fill Page withcolor .625white ;
+    fill Main withcolor .850white ;
+    draw Main withcolor .625red ;
+  StopPage ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[back-2]
+\startuseMPgraphic{page}
+  StartPage ;
+    pickup pencircle scaled 2pt ;
+    fill Page                     withcolor .625white ;
+    fill Field[OuterMargin][Text] withcolor .850white ;
+    fill Field[Text]       [Text] withcolor .850white ;
+    draw Field[OuterMargin][Text] withcolor .625red ;
+    draw Field[Text]       [Text] withcolor .625red ;
+  StopPage ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[back-3]
+\startuseMPgraphic{page}
+  StartPage ;
+    pickup pencircle scaled 2pt ;
+    fill Page                            withcolor .625white ;
+    fill Field[Text][Text] enlarged .5cm withcolor .850white ;
+    draw Field[Text][Text] enlarged .5cm withcolor .625red ;
+  StopPage ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[back-4]
+\startuseMPgraphic{page}
+  StartPage ;
+    def somewhere =
+      (uniformdeviate 1cm,uniformdeviate 1cm)
+    enddef ;
+    path Main ;
+    Main := Field[Text][Text] lrmoved somewhere --
+            Field[Text][Text] llmoved somewhere --
+            Field[Text][Text] ulmoved somewhere --
+            Field[Text][Text] urmoved somewhere -- cycle ;
+    pickup pencircle scaled 2pt ;
+    fill Page withcolor .625white ;
+    fill Main withcolor .850white ;
+    draw Main withcolor .625red ;
+  StopPage ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[back-4x]
+\startuseMPgraphic{page}
+  StartPage ;
+    path Main ; Main := Field[Text][Text] randomized 1cm ;
+    pickup pencircle scaled 2pt ;
+    fill Page withcolor .625white ;
+    fill Main withcolor .850white ;
+    draw Main withcolor .625red ;
+  StopPage ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[back-5]
+\startuseMPgraphic{page}
+  StartPage
+    for i=Top,Header,Text,Footer,Bottom :
+      for j=LeftEdge,LeftMargin,Text,RightMargin,RightEdge :
+        draw Field[i][j] withpen pencircle scaled 2pt withcolor .625red ;
+      endfor ;
+    endfor ;
+  StopPage
+\stopuseMPgraphic
+\stopbuffer
+
+\starttexdefinition unexpanded Literature #1#2#3
+    \blank
+    \noindentation
+    #1
+    \space
+    \begingroup
+        \bf
+        #2
+    \endgroup
+    \space
+    #3
+    \blank
+\stoptexdefinition
+
+\environment metafun-environment-samples
+
+\startbuffer[handwrit]
+
+\usetypescript[serif][chorus]
+
+\definefont[SomeHandwriting][TeXGyreChorus-MediumItalic*default at 12pt]
+
+\start \SomeHandwriting\setstrut
+
+\startMPpage
+  StartPage ;
+    numeric l, n ; path p ;
+    l := 1.5LineHeight ;
+    n := 0 ;
+    p := origin shifted (l,0) -- origin shifted (PaperWidth-l,0) ;
+    for i=PaperHeight-l step -l until l :
+      n := n + 1 ;
+      fill         p shifted (0,i+StrutHeight) --
+        reverse p shifted (0,i-StrutDepth ) -- cycle
+        withcolor .85white ;
+      draw p shifted (0,i)
+        withpen pencircle scaled .25pt
+        withcolor .5white ;
+      draw p shifted (0,i+ExHeight)
+        withpen pencircle scaled .25pt
+        withcolor .5white ;
+      draw textext.origin("\strut How are those penalty lines called
+        in english? I may not steal candies ..." & decimal n)
+          shifted (l,i)
+          shifted (0,-StrutDepth) ;
+    endfor ;
+  StopPage ;
+\stopMPpage
+\stop
+\stopbuffer
+
+\startbuffer[gridpage]
+\startMPpage
+  StartPage ;
+    width  := PaperWidth  ; height := PaperHeight ; unit := cm ;
+    drawoptions(withpen pencircle scaled .2pt withcolor .8white) ;
+    draw vlingrid(0, width /unit, 1/10, width,  height) ;
+    draw hlingrid(0, height/unit, 1/10, height, width ) ;
+    drawoptions(withpen pencircle scaled .5pt withcolor .4white) ;
+    draw vlingrid(0, width /unit, 1,    width,  height) ;
+    draw hlingrid(0, height/unit, 1,    height, width ) ;
+  StopPage ;
+\stopMPpage
+\stopbuffer
+
+% needed to get white backgrounds
+
+\startmode[screen]
+
+\startbuffer[wipe]
+picture savedpicture ;
+savedpicture := currentpicture ;
+currentpicture := nullpicture ;
+draw savedpicture withcolor black ;
+draw savedpicture ;
+\stopbuffer
+
+\stopmode
+
+\startnotmode[screen]
+
+\startbuffer[wipe]
+  % nothing to whipe
+\stopbuffer
+
+\stopnotmode
+
+\startbuffer[backtext]
+
+    This document introduces you in the world of the graphic programming language
+    \MetaPost. Not only the language itself is covered in detail, but also the way to
+    interface with the typographic language \TeX. We also present the collection of
+    \MetaPost\ extensions that come with the \ConTeXt\ typesetting system. This
+    collection goes under the name \MetaFun.
+
+    \blank
+
+    All aspects of the \MetaPost\ language are covered. The first chapters focus on
+    the language itself, later chapters cover aspects like color, graphic
+    inclusions, adding labels, and stepwise constructing graphics. We finish with a
+    graphical overview of commands.
+
+\stopbuffer
+
+\startbuffer[backbanner]
+
+  \WidthSpanningText
+    {PRAGMA Advanced Document Engineering, Hasselt NL, \currentdate[year]}
+    {\hsize}
+    {RegularBold}
+
+\stopbuffer
+
+\stopenvironment

@@ -1,0 +1,26 @@
+\starttext
+
+\definefontfeature
+  [seguiemj-cl]
+  [default]
+  [colr=yes,
+   ccmp=yes,
+   dist=yes]
+
+\definefont
+  [MyEmoji]
+  [seguiemj*seguiemj-cl]
+
+\typefile{emoji-demo-001.tex}
+
+\showotfcomposition
+  {seguiemj*seguiemj-cl}
+  {1}
+  {\resolvedemoji
+     {family
+      man light skin tone
+      woman dark skin tone
+      girl medium skin tone
+      boy medium skin tone}}
+
+\stoptext

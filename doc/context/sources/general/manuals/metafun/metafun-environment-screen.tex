@@ -1,0 +1,139 @@
+% language=uk
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\startenvironment mfun-environment-screen
+
+\enablemode[screen]
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [backspace=60pt,
+   topspace=60pt,
+   cutspace=0pt,
+   header=0pt,
+   footer=0pt,
+   bottom=20pt,
+   bottomdistance=40pt,
+   top=20pt,
+   topdistance=40pt,
+   leftmargin=30pt,
+   leftmargindistance=25pt,
+   rightmargin=0pt,
+   edge=0pt,
+   width=middle,
+   height=middle]
+
+\setupbodyfont
+  [9pt]
+
+\setuppagenumbering
+  [alternative=singlesided]
+
+\setupinteraction
+  [state=start,
+   style=bold,
+   color=darkred,
+   contrastcolor=darkred,
+   symbolset=navigation 3,
+   menu=on]
+
+\setupsymbolset
+  [navigation 3]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupinteractionmenu
+  [bottom]
+  [unknownreference=yes,
+   state=start]
+
+\setuptoptexts
+  []
+  [{\lightgray \bf Page \pagenumber
+    \doifcontent\quad{}{}\hbox{\getmarking[section]}}]
+
+\startinteractionmenu[bottom]
+    \txt \bf \lightgray \getmarking[chapter] \\
+    \hfill
+    \bgroup
+    \setupinteraction[color=white,contrastcolor=white]
+    \got [CloseDocument] exit \\
+    \egroup
+    \got [content]  content  \\
+    \got [index]    index    \\
+%   \got [commands] commands \\
+    \got [reference] reference \\
+    \setupinteraction[color=white,contrastcolor=white]
+    \got [PreviousJump] \symbol[PreviousJump]  \\
+    \got [previouspage] \symbol[previouspage]  \\
+    \got [nextpage]     \symbol[nextpage]      \\
+    \got [NextJump]     \symbol[NextJump]      \\
+\stopinteractionmenu
+
+\starttexdefinition unexpanded ChapterCommand #1#2
+    \framed [
+        background=titled,
+        frame=off
+    ] {
+        #1
+        \quad
+        #2
+    }
+\stoptexdefinition
+
+\startuseMPgraphic{PageFrame}
+    StartPage ;
+        save p, q, ranx, rany, minx, miny, maxx, maxy ;
+        pickup pencircle scaled 4pt ;
+        pair p[] ; path q[] ; numeric ranx, rany, minx, miny, maxx, maxy ;
+        minx := BackSpace/2 ; maxx := PaperWidth -minx ; ranx := minx/2 ;
+        miny := TopSpace /2 ; maxy := PaperHeight-miny ; rany := miny/2 ;
+        p[0]  := llcorner Page ;
+        p[1]  := (minx,0)           randomshifted (ranx,0) ;
+        p[2]  := (maxx,0)           randomshifted (ranx,0) ;
+        p[3]  := lrcorner Page ;
+        p[4]  := (PaperWidth,miny)  randomshifted (0,rany) ;
+        p[5]  := (PaperWidth,maxy)  randomshifted (0,rany) ;
+        p[6]  := urcorner Page ;
+        p[7]  := (maxx,PaperHeight) randomshifted (ranx,0) ;
+        p[8]  := (minx,PaperHeight) randomshifted (ranx,0) ;
+        p[9]  := ulcorner Page ;
+        p[10] := (0,maxy)           randomshifted (0,rany) ;
+        p[11] := (0,miny)           randomshifted (0,rany) ;
+        def page_color = (.4+uniformdeviate.3)*white enddef ;
+        fill Page  withcolor \MPcolor{lightgray} ;
+        q[1] := p[9]--p[6]--p[ 5]--p[10]--cycle ;
+        q[2] := p[6]--p[3]--p[ 2]--p[ 7]--cycle ;
+        q[3] := p[3]--p[0]--p[11]--p[ 4]--cycle ;
+        q[4] := p[0]--p[9]--p[ 8]--p[ 1]--cycle ;
+        for i=1 upto 4: fill q[i] withcolor page_color ; endfor ;
+        q[1] := p[9]--p[8]--((p[8]--p[ 1]) intersectionpoint (p[10]--p[ 5]))--p[10]--cycle ;
+        q[2] := p[6]--p[5]--((p[5]--p[10]) intersectionpoint (p[ 2]--p[ 7]))--p[ 7]--cycle ;
+        q[3] := p[3]--p[4]--((p[4]--p[11]) intersectionpoint (p[ 7]--p[ 2]))--p[ 2]--cycle ;
+        q[4] := p[0]--p[1]--((p[1]--p[ 8]) intersectionpoint (p[ 4]--p[11]))--p[11]--cycle ;
+        for i=1 upto 4: fill q[i] withcolor page_color ; endfor ;
+        q[1] := p[ 8]--p[1] ;
+        q[2] := p[ 7]--p[2] ;
+        q[3] := p[10]--p[5] ;
+        q[4] := p[11]--p[4] ;
+        for i=1 upto 4: draw q[i] withcolor \MPcolor{darkred} ; endfor ;
+    StopPage ;
+\stopuseMPgraphic
+
+% \setupbackgrounds[page][background=PageFrame]
+
+\setupbackgrounds
+  [page]
+  [background={PageFrame,backgraphics,foreground,foregraphics}]
+
+\defineoverlay[PageFrame][\useMPgraphic{PageFrame}]
+
+\startMPinclusions
+    background := \MPcolor{lightgray} ;
+\stopMPinclusions
+
+\stopenvironment

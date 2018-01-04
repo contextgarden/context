@@ -115,85 +115,6 @@ nuts.tonut                = tonut
 nodes.tonode              = tonode
 nodes.tonut               = tonut
 
--- getters
-
--- if not direct.getcomponents then
---
---     local getfield   = direct.getfield
---     local setfield   = direct.setfield
---     local setsubtype = direct.setsubtype
---
---     local attributelist_code = nodecodes.attributelist
---
---     function direct.getcomponents(n)   return getfield(n,"components")   end
---     function direct.setcomponents(n,c)        setfield(n,"components",c) end
---     function direct.getkern(n)         return getfield(n,"kern")         end
---     function direct.getwidth(n)        return getfield(n,"width")        end
---     function direct.setwidth(n,w)      return setfield(n,"width",w)      end
---     function direct.getheight(n)       return getfield(n,"height")       end
---     function direct.setheight(n,h)     return setfield(n,"height",h)     end
---     function direct.getdepth(n)        return getfield(n,"depth")        end
---     function direct.setdepth(n,d)      return setfield(n,"depth",d)      end
---     function direct.getshift(n)        return getfield(n,"shift")        end
---     function direct.setshift(n,s)      return setfield(n,"shift",s)      end
---     function direct.getpenalty(n)      return getfield(n,"penalty")      end
---     function direct.setpenalty(n,p)           setfield(n,"penalty",p)    end
---     function direct.getdir(n)          return getfield(n,"dir")          end
---     function direct.setdir(n,p)               setfield(n,"dir",p)        end
---     function direct.getlanguage(n)     return getfield(n,"lang")         end
---     function direct.setlanguage(n,l)   return setfield(n,"lang",l)       end
---     function direct.getattributelist(n)       getfield(n,"attr")         end
---
---     function direct.getnucleus(n)      return getfield(n,"nucleus")      end
---     function direct.setnucleus(n,p)    return setfield(n,"nucleus",p)    end
---     function direct.getsup(n)          return getfield(n,"sup")          end
---     function direct.setsup(n,p)        return setfield(n,"sup",p)        end
---     function direct.getsub(n)          return getfield(n,"sub")          end
---     function direct.setsub(n,p)        return setfield(n,"sub",p)        end
---
---     function direct.setattributelist(n,a)
---         if a and type(a) ~= attributelist_code then
---             a = getfield(a,"attr")
---         end
---         setfield(n,"attr",a)
---     end
---
---     function direct.setkern(n,k,s)
---         setfield(n,"kern",k)
---         if s then
---             setsubtype(n,s)
---         end
---     end
---
---     function direct.setfont(n,f,c)
---         setfield(n,"font",f)
---         if c then
---             setfield(n,"char",f)
---         end
---     end
---
---     function direct.getoffsets(n)
---         return getfield(n,"xoffset"), getfield(n,"yoffset")
---     end
---
---     function direct.setoffsets(n,x,y)
---         if x then
---             setfield(n,"xoffset",x)
---         end
---         if y then
---             setfield(n,"yoffset",y)
---         end
---     end
---
--- end
---
--- if LUATEXVERSION < 1.005 then
---     local getfield = direct.getfield
---     function direct.getnucleus(n) return getfield(n,"nucleus") end
---     function direct.getsub    (n) return getfield(n,"sub") end
---     function direct.getsup    (n) return getfield(n,"sup") end
--- end
-
 -- -- some tracing:
 --
 -- local hash = table.setmetatableindex("number")
@@ -217,14 +138,12 @@ nodes.tonut               = tonut
 --         return f(...)
 --     end
 -- end
-
+--
 -- track("getfield")
-
--- setters
 
 -- helpers
 
-if not direct.getfam then
+if not direct.getfam then -- LUATEXVERSION < 1.070
     local getfield = direct.getfield
     local setfield = direct.setfield
 
@@ -408,20 +327,6 @@ local d_setlink            = direct.setlink
 local d_setboth            = direct.setboth
 local d_getboth            = direct.getboth
 
--- local function remove(head,current,free_too)
---     local t = current
---     head, current = d_remove_node(head,current)
---     if not t then
---         -- forget about it
---     elseif free_too then
---         d_flush_node(t)
---         t = nil
---     else
---         d_setboth(t) -- (t,nil,nil)
---     end
---     return head, current, t
--- end
-
 local function remove(head,current,free_too)
     if current then
         local h, c = d_remove_node(head,current)
@@ -454,12 +359,6 @@ function nuts.replace(head,current,new) -- no head returned if false
         head, current, new = false, head, current
     end
     local prev, next = d_getboth(current)
---     if next then
---         d_setlink(new,next)
---     end
---     if prev then
---         d_setlink(prev,new)
---     end
     if prev or next then
         d_setlink(prev,new,next)
     end
@@ -957,7 +856,7 @@ if not nuts.unprotect_glyph then
 
 end
 
-if LUATEXFUNCTIONALITY < 6384 then
+if LUATEXFUNCTIONALITY < 6384 then -- LUATEXVERSION < 1.070
 
     local getfield = nuts.getfield
     local setfield = nuts.setfield

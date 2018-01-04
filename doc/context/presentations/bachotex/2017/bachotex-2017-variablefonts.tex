@@ -1,0 +1,500 @@
+% language=uk
+
+\setuppapersize
+  [S6]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=darkblue]
+
+\setuplayout
+  [backspace=24pt,
+   topspace=20pt,
+   bottomspace=8pt,
+   width=middle,
+   height=middle,
+   footerdistance=8pt,
+   footer=8pt,
+   header=0pt]
+
+\setupcolors
+  [textcolor=white]
+
+\setupbodyfont
+  [dejavu,14.4pt]
+
+\definecolor[trace:o] [s=1]
+\definecolor[trace:r] [s=1]
+\definecolor[trace:do][s=1]
+\definecolor[trace:dr][s=1]
+
+\usemodule[abr-03]
+
+\definefontfeature[noligatures][liga=no]
+
+\setuphead
+  [section]
+  [page=yes,
+   style=\bfb,
+   after={\blank[3*medium]}]
+
+\setuphead
+  [subsection]
+  [page=no,
+   style=\bf\addfeature{noligatures},
+   before={\blank[3*medium]},
+   after={\blank}]
+
+\setupfooter
+  [strut=no,
+   style=\bf]
+
+\startuseMPgraphic{pagenumber}
+    if LastPageNumber > 0 :
+        draw outlinetext.f
+            (decimal RealPageNumber)
+            (withcolor "darkgray")
+            xysized ((RealPageNumber/LastPageNumber) * TextWidth/2,FooterHeight) ;
+    fi ;
+\stopuseMPgraphic
+
+\setupfootertexts
+  [\useMPgraphic{pagenumber}]
+
+\startdocument
+  [title={Variable Fonts},
+   subtitle={we're ready for them},
+   author={Hans Hagen},
+   occasion={BachoTUG 2017}]
+
+\startstandardmakeup
+    \vskip32pt
+    \bfd \setupinterlinespace
+    \documentvariable{title}
+    \crlf
+    \bfb \setupinterlinespace
+    \vskip12pt
+    \documentvariable{subtitle}
+    \vfill
+    \bfb \setupinterlinespace
+    \documentvariable{author}
+    \crlf
+    \documentvariable{occasion}
+\stopstandardmakeup
+
+\startsubject[title=A Summary]
+
+\startitemize
+\startitem
+    {\bf the macro package's view:} just a font but with many possible variations
+    in shapes (width, weight, slope, etc) and therefore a bit more complex user
+    interface
+\stopitem
+\startitem
+    {\bf the engine's view:} an abstraction not different from other fonts but
+    that needs a special treatment in the backend
+\stopitem
+\startitem
+    {\bf the viewer's view:} a font to be displayed like any other with outlines
+    in cff of ttf format
+\stopitem
+\startitem
+    {\bf the user's view:} an opentype font with possibly surprising shapes of
+    which you need to know a bit more than usual if you want to profit from it
+\stopitem
+\stopitemize
+
+So, in practice, for most \TEX\ users it's just a font that has to be supported by
+\TEX\ and friends.
+
+\stopsubject
+
+\startsubject[title=Starting point]
+
+\startitemize
+\startitem
+    The OpenType 1.8 specification at the MicroSoft website defined the extra
+    tables and explains bits and pieces.
+\stopitem
+\startitem
+    There a few fonts that have relevant tables (not all) and implement variants
+    as well as features.
+\stopitem
+\startitem
+    There are some posts on the internet that show a bit about axis and other things
+    that go on in these fonts.
+\stopitem
+\startitem
+    Luckily we have ways (in \CONTEXT) to explore what goes on in these fonts and
+    how they could look.
+\stopitem
+\startitem
+    Condition: no tricks, no fuzzy heuristics, just the specification should be
+    enough.
+\stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject[title=Implementation steps]
+
+\startitemize
+\startitem
+    First try to render variants in order to see what we're dealing with. This was not too
+    hard (starting with cff) because we have already virtual font support.
+\stopitem
+\startitem
+    Next try to load the relevant tables and figure out what these deltas and such really
+    mean and how axis and regions and \unknown\ have to be applied.
+\stopitem
+\startitem
+    Try to make it all work on a real piece of text, so not only shapes but also features
+    and dimensions.
+\stopitem
+\startitem
+    Finally make sure that the font can get embedded as a normal font and not as inline
+    (tagged) graphic.
+\stopitem
+\startitem
+    Also, try to generalize the helpers and methods in such ways that we can experiment
+    with additional tricks (after all, \TEX\ is about control).
+\stopitem
+\startitem
+    Todo: once there are more fonts (with the right data tables), check the code with the
+    specification.
+\stopitem
+\stopitemize
+
+\stopsubject
+
+\setupTABLE[c][1][style=tttf,align={flushleft,lohi}]
+
+\startsubject[title=Adobe Variable Font Prototype (cff)]
+
+\unexpanded\def\SampleFont#1#2% weight / contrast
+  {\definedfont[name:adobevariablefontprototype#1*default at 32pt]It looks like this!}
+
+\bTABLE[distance=2em,frame=off]
+\bTR \bTD extralight               0/0   \eTD \bTD \SampleFont {extralight}          \eTD \eTR
+\bTR \bTD light                  150/0   \eTD \bTD \SampleFont {light}               \eTD \eTR
+\bTR \bTD regular                394/0   \eTD \bTD \SampleFont {regular}             \eTD \eTR
+\bTR \bTD semibold               600/0   \eTD \bTD \SampleFont {semibold}            \eTD \eTR
+\bTR \bTD bold                   824/0   \eTD \bTD \SampleFont {bold}                \eTD \eTR
+\bTR \bTD black high contrast   1000/100 \eTD \bTD \SampleFont {blackhighcontrast}   \eTD \eTR
+\bTR \bTD black medium contrast 1000/50  \eTD \bTD \SampleFont {blackmediumcontrast} \eTD \eTR
+\bTR \bTD black                 1000/0   \eTD \bTD \SampleFont {black}               \eTD \eTR
+\eTABLE
+
+\stopsubject
+
+% \starttyping
+% \definefont
+%   [MyLightFont]
+%   [name:adobevariablefontprototypelight*default]
+% \stoptyping
+
+\unexpanded\def\SampleFont#1#2% weight / width
+  {\definedfont[name:avenirnextvariable#1*default at 32pt]It looks like this!}
+
+\startsubject[title=Avenir Next Variable (ttf)]
+
+\bTABLE[distance=2em,frame=off]
+\bTR \bTD regular           400/100 \eTD \bTD \SampleFont {regular}         \eTD \eTR
+\bTR \bTD medium            500/100 \eTD \bTD \SampleFont {medium}          \eTD \eTR
+\bTR \bTD bold              700/100 \eTD \bTD \SampleFont {bold}            \eTD \eTR
+\bTR \bTD heavy             900/100 \eTD \bTD \SampleFont {heavy}           \eTD \eTR
+\bTR \bTD condensed         400/75  \eTD \bTD \SampleFont {condensed}       \eTD \eTR
+\bTR \bTD medium condensed  500/75  \eTD \bTD \SampleFont {mediumcondensed} \eTD \eTR
+\bTR \bTD bold condensed    700/75  \eTD \bTD \SampleFont {boldcondensed}   \eTD \eTR
+\bTR \bTD heavy condensed   900/75  \eTD \bTD \SampleFont {heavycondensed}  \eTD \eTR
+\eTABLE
+
+\stopsubject
+
+\startbuffer[both]
+\vfill
+\startMPcode
+  draw outlinetext.b
+    ("\getbuffer[a]")
+    (withcolor "white")
+    (withcolor "red" withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\startMPcode
+  draw outlinetext.b
+    ("\getbuffer[b]")
+    (withcolor "white")
+    (withcolor "red" withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\startMPcode
+  draw outlinetext.b
+    ("\getbuffer[c]")
+    (withcolor "white")
+    (withcolor "red" withpen pencircle scaled 1/10)
+    xsized .90TextWidth ;
+\stopMPcode
+\vfill
+\stopbuffer
+
+\startbuffer[fill]
+\vfill
+\startMPcode
+  draw outlinetext.f
+    ("\getbuffer[a]")
+    (withcolor "white")
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\startMPcode
+  draw outlinetext.f
+    ("\getbuffer[b]")
+    (withcolor "white")
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\startMPcode
+  draw outlinetext.f
+    ("\getbuffer[c]")
+    (withcolor "white")
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\stopbuffer
+
+\startbuffer[draw]
+\vfill
+\startMPcode
+  draw outlinetext.d
+    ("\getbuffer[a]")
+    (withcolor "white" withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\startMPcode
+  draw outlinetext.d
+    ("\getbuffer[b]")
+    (withcolor "white" withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\startMPcode
+  draw outlinetext.d
+    ("\getbuffer[c]")
+    (withcolor "white" withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+\vfill
+\stopbuffer
+
+\startbuffer[overlay]
+\startoverlay{%
+\startMPcode
+  draw outlinetext.d
+    ("\getbuffer[a]")
+    (withcolor "green" withtransparency (3,0.5) withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+}{%
+\startMPcode
+  draw outlinetext.d
+    ("\getbuffer[b]")
+    (withcolor "yellow" withtransparency (3,0.5) withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+}{%
+\startMPcode
+  draw outlinetext.d
+    ("\getbuffer[c]")
+    (withcolor "red" withtransparency (3,0.5) withpen pencircle scaled 1/10)
+    xsized .9TextWidth ;
+\stopMPcode
+}
+\stopoverlay
+\stopbuffer
+
+\startbuffer[a]
+\definedfont[name:adobevariablefontprototypeextralight]bachotex%
+\stopbuffer
+
+\startbuffer[b]
+\definedfont[name:adobevariablefontprototypelight]bachotex%
+\stopbuffer
+
+\startbuffer[c]
+\definedfont[name:adobevariablefontprototypebold]bachotex%
+\stopbuffer
+
+\startsubject[title=Metafontisch overlap (1)]
+    \getbuffer[both]
+\stopsubject
+
+\startbuffer[a]
+\definefontfeature[whatever][axis={weight:50}]%
+\definedfont[name:adobevariablefontprototype*whatever]bachotex%
+\stopbuffer
+
+\startbuffer[b]
+\definefontfeature[whatever][axis={weight:300}]%
+\definedfont[name:adobevariablefontprototype*whatever]bachotex%
+\stopbuffer
+
+\startbuffer[c]
+\definefontfeature[whatever][axis={weight:700}]%
+\definedfont[name:adobevariablefontprototype*whatever]bachotex%
+\stopbuffer
+
+\startsubject[title=Metafontisch overlap (2)]
+    \getbuffer[both]
+\stopsubject
+\startsubject[title=Fills hide the details]
+    \getbuffer[fill]
+\stopsubject
+\startsubject[title=Unsuitable outlines]
+    \getbuffer[draw]
+\stopsubject
+
+\startbuffer[a]
+\definefontfeature[whatever][axis={weight:100,contrast:0}]%
+\definedfont[name:adobevariablefontprototype*whatever]bachotex%
+\stopbuffer
+
+\startbuffer[b]
+\definefontfeature[whatever][axis={weight:200,contrast:20}]%
+\definedfont[name:adobevariablefontprototype*whatever]bachotex%
+\stopbuffer
+
+\startbuffer[c]
+\definefontfeature[whatever][axis={weight:200,contrast:50}]%
+\definedfont[name:adobevariablefontprototype*whatever]bachotex%
+\stopbuffer
+
+\startsubject[title=Stay within specification]
+    \getbuffer[draw]
+\stopsubject
+
+\startsubject[title=Subjective choices]
+    \getbuffer[fill]
+\stopsubject
+
+\startbuffer[a]
+\definefontfeature[whatever][axis={weight:100,contrast:0}]%
+\definedfont[name:adobevariablefontprototype*whatever]tex%
+\stopbuffer
+
+\startbuffer[b]
+\definefontfeature[whatever][axis={weight:200,contrast:20}]%
+\definedfont[name:adobevariablefontprototype*whatever]tex%
+\stopbuffer
+
+\startbuffer[c]
+\definefontfeature[whatever][axis={weight:200,contrast:50}]%
+\definedfont[name:adobevariablefontprototype*whatever]tex%
+\stopbuffer
+
+\startsubject[title=Difficult choices]
+    \getbuffer[overlay]
+\stopsubject
+
+\startsubject[title=Definitions (1)]
+
+\startbuffer
+\definefontfeature
+  [default:shaped]
+  [default]
+  [axis={width:10}]
+
+\definefont
+  [SomeFont]
+  [file:avenirnextvariable*default:shaped]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\start \setupinterlinespace \showglyphs \showfontkerns \SomeFont \input zapf \wordright{Hermann Zapf}\par \stop
+
+\stopsubject
+
+\startsubject[title=Definitions (2)]
+
+\startbuffer
+\definefontfeature
+  [default:shaped]
+  [default]
+  [axis={width:100,weight=200}]
+
+\definefont
+  [SomeFont]
+  [file:avenirnextvariable*default:shaped @ 12pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\start \setupinterlinespace  \showglyphs \showfontkerns \SomeFont \input zapf \wordright{Hermann Zapf}\par \stop
+
+\stopsubject
+
+\startsubject[title=Transformations]
+
+\subsubject{correction:}
+
+\startformula
+    x^\prime = x
+             + s_{x1} \cdot x_1
+             + s_{x2} \cdot x_2
+             + s_{x3} \cdot x_3
+             + s_{x4} \cdot x_4
+\stopformula
+
+\startformula
+    y^\prime = y
+             + s_{y1} \cdot y_1
+             + s_{y2} \cdot y_2
+             + s_{y3} \cdot y_3
+             + s_{y4} \cdot y_4
+\stopformula
+
+\subsubject{internal cff:}
+
+\starttyping
+1 <setvstore>
+120 [10 -30 40 -60] 1 <blend> ... <operator>
+100 120 [10 -30 40 -60] [30 -10 -30 20] 2 <blend> .. <operator>
+\stoptyping
+
+\subsubject{external ttf:}
+
+\starttyping
+apply x deltas [10 -30 40 -60] to x 120
+apply y deltas [30 -10 -30 20] to y 100
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=Follow up]
+
+\startitemize
+\startitem
+    Performance is quite okay because we cache instances. I might come up with an
+    alternative way but there is not much to gain.
+\stopitem
+\startitem
+    Once fonts show up alternative interfaces to axis and scaling can be explored
+    and provided.
+\stopitem
+\startitem
+    I will look into ways to do all the backend font code in \CONTEXT\ in \LUA\
+    (easier to update and more flexible).
+\stopitem
+\startitem
+    Luigi and I will play with variable fonts defined in the traditional meta tools
+    that come with \TEX.
+\stopitem
+\stopitemize
+
+\stopsubject
+
+\stopdocument
