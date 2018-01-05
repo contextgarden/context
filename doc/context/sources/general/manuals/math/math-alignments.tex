@@ -1,0 +1,243 @@
+\environment math-layout
+
+\startcomponent math-alignments
+
+\startchapter[title=Alignments and such]
+
+\startsection[title=Usingmpersands]
+
+When you come from plain \TEX, using ampersands probably comes as a custom, like in:
+
+\startbuffer
+\startformula
+\bordermatrix {
+   a & b & c & d \cr
+   e & f & G & h \cr
+   i & j & k & l \cr
+}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+or:
+
+\startbuffer
+\startformula
+\bbordermatrix {
+   a & b & c & d \cr
+   e & f & G & h \cr
+   i & j & k & l \cr
+}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A more \CONTEXT\ way is this:
+
+\startbuffer
+\startformula
+\startbordermatrix
+   \NC a \NC b \NC c \NC d \NR
+   \NC e \NC f \NC G \NC h \NR
+   \NC i \NC j \NC k \NC l \NR
+\stopbordermatrix
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+and:
+
+\startbuffer
+\startformula
+\startbbordermatrix
+   \NC a \NC b \NC c \NC d \NR
+   \NC e \NC f \NC G \NC h \NR
+   \NC i \NC j \NC k \NC l \NR
+\stopbbordermatrix
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Just that you know. In general ampersands in \CONTEXT\ text mode are just that:
+ampersands, not something alignment related.
+
+\stopsection
+
+\startsection[title=Locations]
+
+The \type {location} feature gives some control over the alignment of alignments.
+The following examples are taken from an email exchange with Henri Menke.
+
+\startbuffer
+\startplaceformula
+  \startformula
+    \startmathalignment[location=top]
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+    \stopmathalignment
+    \quad\text{or}\quad
+    \startmathalignment[location=center]
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+    \stopmathalignment
+    \quad\text{or}\quad
+    \startmathalignment[location=bottom]
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+    \stopmathalignment
+  \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Numbering works ok for a single mathalignment
+
+\startbuffer
+\startplaceformula
+  \startformula
+    \startmathalignment[number=auto]
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+    \stopmathalignment
+  \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+But for one with a location the results are suboptimal:
+
+\startbuffer
+\startplaceformula
+  \startformula
+    \startmathalignment[location=center,number=auto]
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+      \NC a + b \NC= c + d \NR
+    \stopmathalignment
+  \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here is a real example:
+
+\startbuffer
+\startplaceformula
+  \startformula
+    U_2 = \frac{1}{2!}
+    \int_0^\beta \diff\tau_1 \int_0^\beta \diff\tau_2\;
+    \sum_{\startsubstack k_1,q_1 \NR k_2,q_2 \stopsubstack}
+    \Bigl\langle
+    \startmathalignment[location=top,align=left]
+      \NC \mathcal T \Bigl[c_{k_1}^\dagger(\tau_1) \Delta_{k_1,q_1}^r c_{-k_1}^*(\tau_1)
+        +  c_{-q_1}^T(\tau_1) \Delta_{k_1,q_1}^{r\dagger} c_{q_1}(\tau_1)\Bigr] \NR
+      \NC \times \Bigl[c_{k_2}^\dagger(\tau_2) \Delta_{k_2,q_2}^r c_{-k_2}^*(\tau_2)
+        +  c_{-q_2}^T(\tau_2) \Delta_{k_2,q_2}^{r\dagger} c_{q_2}(\tau_2)\Bigr] \Bigr\rangle.\NR
+    \stopmathalignment
+  \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsection
+
+\startsection[title=Tuning alignments]
+
+Again a few examples of manipulating alignments. It really helps to play
+with examples if you want to get an idea what is possible.
+
+\startbuffer
+\startformula
+    \startalign[m=2,align={middle}]
+        \NC \text to 6cm{} \NC x = 0 \NR
+    \stopalign
+\stopformula
+
+\startformula
+    \startalign[m=2,align={middle}]
+        \NC \text to 6cm{One\hfill}           \NC a = 1 \NR
+        \NC \text to 6cm{One Two\hfill}       \NC b = 2 \NR
+        \NC \text to 6cm{One Two Three\hfill} \NC c = 3 \NR
+    \stopalign
+\stopformula
+
+\startformula
+    \startalign[m=2,align={left}]
+        \NC \text to 6cm{One\hfill}           \NC a = 1 \NR
+        \NC \text to 6cm{One Two\hfill}       \NC b = 2 \NR
+        \NC \text to 6cm{One Two Three\hfill} \NC c = 3 \NR
+    \stopalign
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startformula
+    \startalign[m=2,align={middle}]
+        \NC \text to 6cm{} \NC x = 0 \NR
+    \stopalign
+\stopformula
+
+\startformula
+    \startalign[m=2,align={middle}]
+        \NC \text to 6cm{One}           \NC a = 1 \NR
+        \NC \text to 6cm{One Two}       \NC b = 2 \NR
+        \NC \text to 6cm{One Two Three} \NC c = 3 \NR
+    \stopalign
+\stopformula
+
+\startformula
+    \startalign[m=2,align={left}]
+        \NC \text to 6cm{One}           \NC a = 1 \NR
+        \NC \text to 6cm{One Two}       \NC b = 2 \NR
+        \NC \text to 6cm{One Two Three} \NC c = 3 \NR
+    \stopalign
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startformula
+    \startalign[m=2,align={middle}]
+        \NC \text{} \NC x = 0 \NR
+    \stopalign
+\stopformula
+
+\startformula
+    \startalign[m=2,align={middle}]
+        \NC \text{One}           \NC a = 1 \NR
+        \NC \text{One Two}       \NC b = 2 \NR
+        \NC \text{One Two Three} \NC c = 3 \NR
+    \stopalign
+\stopformula
+
+\startformula
+    \startalign[m=2,align={left}]
+        \NC \text{One}           \NC a = 1 \NR
+        \NC \text{One Two}       \NC b = 2 \NR
+        \NC \text{One Two Three} \NC c = 3 \NR
+    \stopalign
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

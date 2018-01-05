@@ -10751,6 +10751,14 @@ return {
    ["pe"]="بست",
    ["ro"]="strut",
   },
+  ["numberstrut"]={
+   ["en"]="numberstrut",
+   ["nl"]="nummerstrut",
+  },
+  ["titlestrut"]={
+   ["en"]="titlestrut",
+   ["nl"]="titelstrut",
+  },
   ["style"]={
    ["cs"]="pismeno",
    ["de"]="stil",

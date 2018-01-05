@@ -315,15 +315,29 @@ function mathematics.define(family)
         local mathclass = character.mathclass
         local mathspec = character.mathspec
         if mathspec then
+            if mathclass then
+                local name = character.mathname
+                if name then
+                    report_math("fatal error, conlicting mathclass and mathspec for %C",unicode)
+                    os.exit()
+                else
+                    local class = classes[mathclass] or mathclass -- no real checks needed
+                    if not class then
+                        if trace_defining then
+                            report("unknown",family,unicode)
+                        end
+                    else
+                        if trace_defining then
+                            report(class,family,unicode)
+                        end
+                        mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
+                    end
+                end
+            end
             for i=1,#mathspec do
                 local m = mathspec[i]
                 local name = m.name
                 local class = m.class
-                if not class then
-                    class = mathclass
-                elseif not mathclass then
-                    mathclass = class
-                end
                 if class then
                     class = classes[class] or class -- no real checks needed
                     if name then
@@ -332,7 +346,7 @@ function mathematics.define(family)
                         end
                         setmathsymbol(name,class,family,unicode)
                     else
-                        name = class == classes.variable or class == classes.number and character.adobename
+                        name = (class == classes.variable or class == classes.number) and character.adobename -- bad
                         if name and trace_defining then
                             report(class,family,unicode,name)
                         end
@@ -340,17 +354,22 @@ function mathematics.define(family)
                     mset, dset = setmathcharacter(class,family,unicode,m.unicode or unicode,mset,dset) -- see solidus
                 end
             end
-        end
-        if mathclass then
+        elseif mathclass then
             local name = character.mathname
             local class = classes[mathclass] or mathclass -- no real checks needed
-            if name == false then
+            if not class then
+                if trace_defining then
+                    report("unknown",family,unicode,name)
+                end
+            elseif name == false then
                 if trace_defining then
                     report(class,family,unicode,name)
                 end
-                mset, dset = setmathcharacter(class,family,unicode,mset,dset)
+                mset, dset = setmathcharacter(class,family,unicode,unicode,mset,dset)
             else
-                name = name or character.contextname
+             -- if not name then
+             --     name = character.contextname -- too dangerous, we loose textslash and a few more
+             -- end
                 if name then
                     if trace_defining then
                         report(class,family,unicode,name)

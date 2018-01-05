@@ -379,6 +379,7 @@
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normale'/>
 		<cd:variable name='nospacing' value='nospacing'/>
+		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='non'/>
 		<cd:variable name='notation' value='notation'/>
 		<cd:variable name='note' value='note'/>
@@ -627,6 +628,10 @@
 		<cd:constant name='align' value='allinea'/>
 		<cd:constant name='aligncharacter' value='allineacarattere'/>
 		<cd:constant name='alignmentcharacter' value='carattereallineamento'/>
+		<cd:constant name='alignmentleftsample' value='alignmentleftsample'/>
+		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
+		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
+		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='allineatitolo'/>
 		<cd:constant name='alternative' value='alternativa'/>
@@ -913,6 +918,7 @@
 		<cd:constant name='leftoffset' value='offsetsinistro'/>
 		<cd:constant name='leftquotation' value='citazionesinistra'/>
 		<cd:constant name='leftquote' value='menzionesinistra'/>
+		<cd:constant name='leftsample' value='leftsample'/>
 		<cd:constant name='leftsentence' value='frasesinistra'/>
 		<cd:constant name='leftspeech' value='leftspeech'/>
 		<cd:constant name='leftstyle' value='stilesinistra'/>
@@ -985,6 +991,7 @@
 		<cd:constant name='nlines' value='nrighe'/>
 		<cd:constant name='norm' value='norma'/>
 		<cd:constant name='note' value='note'/>
+		<cd:constant name='notes' value='notes'/>
 		<cd:constant name='nr' value='nr'/>
 		<cd:constant name='nright' value='ndestra'/>
 		<cd:constant name='ntop' value='ncima'/>
@@ -1004,6 +1011,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='stilenumero'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1115,6 +1123,7 @@
 		<cd:constant name='rightoffset' value='offsetdestro'/>
 		<cd:constant name='rightquotation' value='citazionedestra'/>
 		<cd:constant name='rightquote' value='menzionedestra'/>
+		<cd:constant name='rightsample' value='rightsample'/>
 		<cd:constant name='rightsentence' value='frasedestra'/>
 		<cd:constant name='rightspeech' value='rightspeech'/>
 		<cd:constant name='rightstyle' value='stiledestra'/>
@@ -1171,7 +1180,9 @@
 		<cd:constant name='source' value='origine'/>
 		<cd:constant name='space' value='spazio'/>
 		<cd:constant name='spaceafter' value='spaziodopo'/>
+		<cd:constant name='spaceafterside' value='spaceafterside'/>
 		<cd:constant name='spacebefore' value='spazioprima'/>
+		<cd:constant name='spacebeforeside' value='spacebeforeside'/>
 		<cd:constant name='spaceinbetween' value='spaceinbetween'/>
 		<cd:constant name='spacing' value='spaziatura'/>
 		<cd:constant name='specification' value='specification'/>
@@ -1236,6 +1247,7 @@
 		<cd:constant name='titledistance' value='distanzatitolo'/>
 		<cd:constant name='titleleft' value='titleleft'/>
 		<cd:constant name='titleright' value='titleright'/>
+		<cd:constant name='titlestrut' value='titlestrut'/>
 		<cd:constant name='titlestyle' value='stiletitolo'/>
 		<cd:constant name='to' value='verso'/>
 		<cd:constant name='toffset' value='toffset'/>

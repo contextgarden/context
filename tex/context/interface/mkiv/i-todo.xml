@@ -8,6 +8,14 @@
     \definefacingfloat
     \setupfacingfloat
 
-    spaceinbetween inbetween style color page
+    keywords: spaceinbetween inbetween style color page
+
+    typo-pnc.mkiv
+
+    \setperiodkerning
+    \resetperiodkerning
+    \defineperiodkerning
+
+    keywords: factor
 
 -->

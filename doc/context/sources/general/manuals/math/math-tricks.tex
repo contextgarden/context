@@ -454,6 +454,130 @@ defined explicitly.
 
 \stopsection
 
+\startsection[title=Middle class fences]
+
+The next examples are somewhat obscure. They are a side effect of some extensions
+to the engine that were introduced to control spacing around the \type {\middle}
+class fences. Actually there is no real middle class and spacing was somewhat
+hard codes when \type {\middle} was added to \ETEX. In \LUATEX\ we have
+introduced keywords to some primitives that control spacing and other properties.
+This permits better control over spacing than messing around with (for instance)
+injected \type {\mathrel} commands that can have their own side effects.
+
+\startbuffer
+\def\Middle{\middle|}
+\def\Riddle{\Umiddle class 5 |}
+\def\Left  {\left  (}
+\def\Right {\right )}
+\def\Rel   {\mathrel{}}
+\def\Per   {\mathrel{.}}
+\stopbuffer
+
+\startbuffer[1a]
+$          a                b          $
+\stopbuffer
+\startbuffer[1b]
+$     \Rel a\Rel            b\Rel      $
+\stopbuffer
+
+\startbuffer[2a]
+$          a                b          $
+\stopbuffer
+\startbuffer[2b]
+$     \Per a\Per            b\Per      $
+\stopbuffer
+
+\startbuffer[3a]
+$\Left     a    \Middle     b    \Right$
+\stopbuffer
+\startbuffer[3b]
+$\Left\Rel a    \Middle\Rel b\Rel\Right$
+\stopbuffer
+
+\startbuffer[4a]
+$\Left     a    \Middle     b    \Right$
+\stopbuffer
+\startbuffer[4b]
+$\Left\Rel a    \Middle\Per b\Per\Right$
+\stopbuffer
+
+\startbuffer[5a]
+$\Left     a    \Middle     b    \Right$
+\stopbuffer
+\startbuffer[5b]
+$\Left\Rel a\Rel\Middle\Rel b\Rel\Right$
+\stopbuffer
+
+\startbuffer[6a]
+$\Left     a    \Middle     b    \Right$
+\stopbuffer
+\startbuffer[6b]
+$\Left\Per a\Per\Middle\Per b\Per\Right$
+\stopbuffer
+
+\startbuffer[7a]
+$\Left     a    \Riddle     b    \Right$
+\stopbuffer
+\startbuffer[7b]
+$\Left\Rel a    \Riddle\Rel b\Rel\Right$
+\stopbuffer
+
+\startbuffer[8a]
+$\Left     a    \Riddle     b    \Right$
+\stopbuffer
+\startbuffer[8b]
+$\Left\Rel a    \Riddle\Per b\Per\Right$
+\stopbuffer
+
+\startbuffer[9a]
+$\Left     a    \Riddle     b    \Right$
+\stopbuffer
+\startbuffer[9b]
+$\Left\Rel a\Rel\Riddle\Rel b\Rel\Right$
+\stopbuffer
+
+\startbuffer[10a]
+$\Left     a    \Riddle     b    \Right$
+\stopbuffer
+\startbuffer[10b]
+$\Left\Per a\Per\Riddle\Per b\Per\Right$
+\stopbuffer
+
+We use the following definitions:
+
+\typebuffer
+
+Applied to samples these give the following outcome and spacing:
+
+\start
+    \getbuffer
+
+    \starttabulate
+        \NC \ruledhbox{\typeinlinebuffer[1a]}  \NC \showglyphs \inlinebuffer[1a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[1b]}  \NC \showglyphs \inlinebuffer[1b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[2a]}  \NC \showglyphs \inlinebuffer[2a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[2b]}  \NC \showglyphs \inlinebuffer[2b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[3a]}  \NC \showglyphs \inlinebuffer[3a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[3b]}  \NC \showglyphs \inlinebuffer[3b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[4a]}  \NC \showglyphs \inlinebuffer[4a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[4b]}  \NC \showglyphs \inlinebuffer[4b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[5a]}  \NC \showglyphs \inlinebuffer[5a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[5b]}  \NC \showglyphs \inlinebuffer[5b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[6a]}  \NC \showglyphs \inlinebuffer[6a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[6b]}  \NC \showglyphs \inlinebuffer[6b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[7a]}  \NC \showglyphs \inlinebuffer[7a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[7b]}  \NC \showglyphs \inlinebuffer[7b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[8a]}  \NC \showglyphs \inlinebuffer[8a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[8b]}  \NC \showglyphs \inlinebuffer[8b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[9a]}  \NC \showglyphs \inlinebuffer[9a]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[9b]}  \NC \showglyphs \inlinebuffer[9b]  \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[10a]} \NC \showglyphs \inlinebuffer[10a] \NC \NR
+        \NC \ruledhbox{\typeinlinebuffer[10b]} \NC \showglyphs \inlinebuffer[10b] \NC \NR
+    \stoptabulate
+\stop
+
+\stopsection
+
 \stopcomponent
 
 % \enabletrackers[math.makeup=boxes]

@@ -69,6 +69,61 @@ are some examples:
 
 \typebuffer \getbuffer
 
+In the next examples we demonstrate how we can avoid numbering, pass a reference as key,
+use assignments instead and add a title or suffix.
+
+\startbuffer
+\startplaceformula
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[-]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[p]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[reference=foo]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[title=whatever]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[suffix=q]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[r]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+If you want consistent spacing you can enforce this:
+
+\startbuffer
+\startplaceformula[s]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[-]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[-]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\setupformulas[numberstrut=always]
+\startplaceformula[-]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\startplaceformula[-]
+    \startformula e=mc^2 \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \start \showstruts \getbuffer \stop
+
+Possible values for \type {numberstrut} are \type {yes} (the default), \type
+{always} and \type {no}.
+
 \stopchapter
 
 \stopcomponent

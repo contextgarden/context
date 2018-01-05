@@ -46,6 +46,7 @@
    \c!indentnext=\v!no,
    \c!alternative=\s!default,
    \c!strut=\v!no,
+   \c!numberstrut=\v!yes, % \v!no \v!yes \v!always
    \c!distance=2\emwidth]
 
 \setupformulaframed
@@ -236,11 +237,14 @@
     \global\setfalse\c_strc_formulas_inside_place_sub
 \to \everyresetformulas
 
+\def\strc_formulas_place_number_noneed
+  {\doif{\formulaparameter\c!numberstrut}\v!always\strut}
+
 \def\strc_formulas_place_numbering % place formula
   {\settrue\c_strc_formulas_handle_number
    \strc_formulas_check_reference\c_strc_formulas_place_number_mode\currentplaceformulareference
    \ifnum\c_strc_formulas_place_number_mode=\plustwo
-     \glet\strc_formulas_place_number\relax
+     \glet\strc_formulas_place_number\strc_formulas_place_number_noneed
    \else
      \glet\strc_formulas_place_number\strc_formulas_place_number_indeed
    \fi
@@ -281,7 +285,12 @@
    \begingroup
    \useformulastyleandcolor\c!numberstyle\c!numbercolor
    \formulaparameter\c!numbercommand
-     {\strut
+     {\edef\p_strut{\formulaparameter\c!numberstrut}%
+      \ifx\p_strut\v!always
+         \strut
+      \else\ifx\p_strut\v!yes
+         \strut
+      \fi\fi
       \formulaparameter\c!left
       \namedtaggedlabeltexts
         \t!formulalabel \v!formula

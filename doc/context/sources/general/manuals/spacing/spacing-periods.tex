@@ -1,0 +1,79 @@
+% language=uk
+
+\environment spacing-style
+
+\startcomponent spacing-periods
+
+\startchapter[title=Periods in abbreviations]
+
+% \enabletrackers[typesetters.periodkerns]
+
+When you use so called non french spacing you get more spacing after punctuation
+(as determined by the \type {sfcode} of the punctuation character) . However,
+when you use periods as delimiters for abbreviations, that period is not the end
+of a sentence and you want normal interword spacing instead. One way to achieve
+this is to add a backslash after the period but in an automated workflow where
+the source is not coming from \TEX\ but for instance in \XML\ format, you can't
+do that. The \type {\setupspacing} command can be used to set one of:
+
+\starttabulate[|T|p|]
+\NC fixed  \NC \showglyphs \frenchspacing    bla bla e.g. some more \NC \NR
+\NC packed \NC \showglyphs \newfrenchspacing bla bla e.g. some more \NC \NR
+\NC broad  \NC \showglyphs \nonfrenchspacing bla bla e.g. some more \NC \NR
+\stoptabulate
+
+The \type {packed} case is similar to \type {fixed} but has slightly larger (some
+5\percent) spacing after punctuation which (at least historically) avoids some
+side effects with hyphenation and dashes. We default to \type {broad} anyway.
+
+The next examples demonstrate what the \type {\setperiodkerning} does when it gets
+an option passed. Its counterpart is \type {\resetperiodkerning}.
+
+\starttabulate[|T|Tr|p|]
+    \HL
+    \NC                   \NC    \NC \showglyphs \nonfrenchspacing \resetperiodkerning                  bla bla e.g. some more \NC \NR
+    \NC                   \NC    \NC \showglyphs \nonfrenchspacing \resetperiodkerning                  bla bla e.g. Some more \NC \NR
+    \HL
+    \NC zerospaceperiods  \NC 0  \NC \showglyphs \nonfrenchspacing \setperiodkerning  [zerospaceperiods]bla bla e.g. some more \NC \NR
+    \NC                   \NC    \NC \showglyphs \nonfrenchspacing \setperiodkerning  [zerospaceperiods]bla bla e.g. Some more \NC \NR
+    \HL
+    \NC smallspaceperiods \NC .25\NC \showglyphs \nonfrenchspacing \setperiodkerning [smallspaceperiods]bla bla e.g. some more \NC \NR
+    \NC                   \NC    \NC \showglyphs \nonfrenchspacing \setperiodkerning [smallspaceperiods]bla bla e.g. Some more \NC \NR
+    \HL
+    \NC halfspaceperiods  \NC .50 \NC \showglyphs \nonfrenchspacing \setperiodkerning  [halfspaceperiods]bla bla e.g. some more \NC \NR
+    \NC                   \NC    \NC \showglyphs \nonfrenchspacing \setperiodkerning  [halfspaceperiods]bla bla e.g. Some more \NC \NR
+    \HL
+\stoptabulate
+
+Next we enlarge the affected bit of text so that you can see that the last two
+options also affects the space after the periods that bind the characters.
+
+\startlinecorrection
+\startcombination[4*2]
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \resetperiodkerning                  e.g. s}}} {}
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \setperiodkerning  [zerospaceperiods]e.g. s}}} {}
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \setperiodkerning [smallspaceperiods]e.g. s}}} {}
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \setperiodkerning  [halfspaceperiods]e.g. s}}} {}
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \resetperiodkerning                  e.g. S}}} {}
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \setperiodkerning  [zerospaceperiods]e.g. S}}} {\ttxx zerospaceperiods}
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \setperiodkerning [smallspaceperiods]e.g. S}}} {\ttxx smallspaceperiods}
+    {\scale[scale=3500]{\ruledhbox{\showglyphs \nonfrenchspacing \setperiodkerning  [halfspaceperiods]e.g. S}}} {\ttxx halfspaceperiods}
+\stopcombination
+\stoplinecorrection
+
+Defining more options is easy, we only specify the factor that determines mid
+periods. When \type {factor} is zero, only the final period is looked at.
+
+\starttyping
+\defineperiodkerning [zerospaceperiods]  [factor=0]
+\defineperiodkerning [smallspaceperiods] [factor=.25]
+\defineperiodkerning [halfspaceperiods]  [factor=.5]
+\stoptyping
+
+This mechanism has been present for a while but I forgot about it. When cleaning
+up code it was decided to add it to the core. Maybe more options and features are
+needed but so far there has never been demand for this so \unknown
+
+\stopchapter
+
+\stopcomponent

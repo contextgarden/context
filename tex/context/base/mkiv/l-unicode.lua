@@ -18,6 +18,9 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 -- todo: utf.sub replacement (used in syst-aux)
 -- we put these in the utf namespace:
 
+-- used     : byte char gmatch len lower sub upper
+-- not used : dump find format gfind gsub match rep reverse
+
 utf = utf or (unicode and unicode.utf8) or { }
 
 utf.characters = utf.characters or string.utfcharacters
