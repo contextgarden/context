@@ -1,0 +1,100 @@
+% language=uk
+
+\environment math-layout
+
+\startcomponent math-input
+
+\startchapter[title=Inputting math]
+
+\startsection[title=Collapsing]
+
+When in text mode you enter a combination of combining accent and character, a
+composed character is assumed and often you then get one shape in your document.
+A similar feature is available in math mode. After some discussion and analysis
+of the potential clashes and confusion (thanks to Aditya Mahajan) we settled on a
+combination of methods: so called math lists entries that we entered in the
+character database and|/|or so called special sequences that are part of
+\UNICODE. In the next tables we use \type {ml} for math list and \type {sp} for
+specials. Collapsing mode \type {1} only uses the specials, while \type {2} first
+checks the specials and then the math lists, and \type {3} does the reverse.
+
+In the database you can find this (a few fields have been omitted):
+
+\starttyping
+[0x2260] = {
+    adobename   = "notequal",
+    category    = "sm",
+    description = "NOT EQUAL TO",
+    mathlist    = { 0x2F, 0x3D },
+    mathspec    = {
+        {
+            class = "relation",
+            name  = "neq",
+        },
+        {
+            class = "relation",
+            name  = "ne",
+        },
+    },
+    specials    = { "char", 0x3D, 0x338 },
+    unicodeslot = 0x2260,
+}
+\stoptyping
+
+and
+
+\starttyping
+[0x2261] = {
+    adobename      = "equivalence",
+    category       = "sm",
+    description    = "IDENTICAL TO",
+    mathclass      = "relation",
+    mathextensible = "h",
+    mathname       = "equiv",
+    mathlist       = { 0x3D, 0x3D },
+    unicodeslot    = 0x2261,
+}
+\stoptyping
+
+Here are a few examples:
+
+\def\Test#1%
+  {\NC \bf \type{$#1$}
+   \NC \setupmathematics[collapsing=0] $#1$
+   \NC \setupmathematics[collapsing=1] $#1$
+   \NC \setupmathematics[collapsing=2] $#1$
+   \NC \setupmathematics[collapsing=3] $#1$ \NC \NR}
+
+\starttabulate[|c|cp|cp|cp|cp|]
+    \NC \BC \ttbf 0 \BC \ttbf 1 (sp) \BC \ttbf 2 (sp ml) \BC \ttbf 3 (ml sp) \BC \NR
+    \Test{==}
+    \Test{/=}
+    \Test{>=}
+\stoptabulate
+
+A complete list of collapses can be generated after loading one of the tracing
+modules:
+
+\startbuffer
+\usemodule[math-ligatures]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This provides the command:
+
+\startbuffer
+\showmathligatures
+\stopbuffer
+
+\typebuffer
+
+which gives:
+
+\start \switchtobodyfont[8pt] \getbuffer \stop
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

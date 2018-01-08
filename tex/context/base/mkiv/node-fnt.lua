@@ -143,28 +143,28 @@ local ligaturing = nuts.ligaturing
 local kerning    = nuts.kerning
 
 -- -- -- this will go away
-
-local disccodes        = nodes.disccodes
-local explicit_code    = disccodes.explicit
-local automatic_code   = disccodes.automatic
-local expanders        = nil
-
-function fonts.setdiscexpansion(v)
-    if v == nil or v == true then
-        expanders = languages and languages.expanders
-    elseif type(v) == "table" then
-        expanders = v
-    else
-        expanders = false
-    end
-end
-
-function fonts.getdiscexpansion()
-    return expanders and true or false
-end
-
-fonts.setdiscexpansion(true)
-
+--
+-- local disccodes        = nodes.disccodes
+-- local explicit_code    = disccodes.explicit
+-- local automatic_code   = disccodes.automatic
+-- local expanders        = nil
+--
+-- function fonts.setdiscexpansion(v)
+--     if v == nil or v == true then
+--         expanders = languages and languages.expanders
+--     elseif type(v) == "table" then
+--         expanders = v
+--     else
+--         expanders = false
+--     end
+-- end
+--
+-- function fonts.getdiscexpansion()
+--     return expanders and true or false
+-- end
+--
+-- fonts.setdiscexpansion(true)
+--
 -- -- -- till here
 
 local function start_trace(head)
@@ -196,9 +196,9 @@ local function stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expa
     report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
     report_fonts("built-in: %s",b > 0 and b or "none")
     report_fonts("removed : %s",r > 0 and r or "none")
-if expanders then
-    report_fonts("expanded: %s",e > 0 and e or "none")
-end
+ -- if expanders then
+ --     report_fonts("expanded: %s",e > 0 and e or "none")
+ -- end
     report_fonts()
 end
 
@@ -445,12 +445,12 @@ function handlers.characters(head,groupcode,size,packtype,direction)
                 if firstnone then
                     protectnone()
                 end
-            elseif expanders then
-                local subtype = getsubtype(d)
-                if subtype == automatic_code or subtype == explicit_code then
-                    expanders[subtype](d)
-                    e = e + 1
-                end
+         -- elseif expanders then
+         --     local subtype = getsubtype(d)
+         --     if subtype == automatic_code or subtype == explicit_code then
+         --         expanders[subtype](d)
+         --         e = e + 1
+         --     end
             end
         end
 

@@ -1,0 +1,236 @@
+% language=uk
+
+\environment spacing-style
+
+\startcomponent spacing-periods
+
+\startchapter[title=Spacing]
+
+\startsection[title=Spaces]
+
+When \TEX\ reads its input and transforms content it into a node list spaces are
+turned into glue nodes of subtype \quote {spaceskip} or \quote {xspaceskip}. In
+pseudo code, this is what happens:
+
+\starttyping
+if spacefactor >= 2000 and xspaceskip ~= 0 then
+    space   = xspaceskip_space
+    stretch = xspaceskip_stretch
+    shrink  = xspaceskip_shrink
+    subtype = xspaceskip
+else
+    if spaceskip == 0 then
+        space   = font_space
+        stretch = font_stretch
+        shrink  = font_shrink
+    else
+        space   = spaceskip_space
+        stretch = spaceskip_stretch
+        shrink  = spaceskip_shrink
+    end
+    if space_factor >= 2000
+        space = space + font_extraspace
+    end
+    stretch = stretch * space_factor
+    shrink  = shrink  * space_factor
+    subtype = spaceskip
+end
+insert_glue(space,stretch,shrink,subtype)
+\stoptyping
+
+We demonstrate the effects in a few examples. You can use \typ {\showmakeup [space]} to
+visualize spaces.
+
+\def\ShowSpaces#1#2#3%
+  {\blank
+   \start
+   \startsubsubsubject[title={case #1: \type{#2} and \type {#3}}]
+   \dontleavehmode
+   #2\relax
+   #3\relax
+   \showmakeup[space]%
+ % \definedfont[Serif*default]%
+   \nonfrenchspacing
+   \strut x\space x.\space x\crlf
+   \frenchspacing
+   \strut x\space x.\space x\par
+   \stop
+   \stopsubsubject
+   \blank}
+
+\ShowSpaces{1}{\spacefactor2000}{\xspaceskip100pt}
+
+\starttabulate[|l|l|]
+\HL
+\NC \type {\spacefactor} \NC $\geq 2000$ \NC \NR
+\NC \type {\xspaceskip}  \NC $\neq    0$ \NC \NR
+\HL
+\NC space   \NC xspaceskip_space   \NC \NR
+\NC stretch \NC xspaceskip_stretch \NC \NR
+\NC shrink  \NC xspaceskip_shrink  \NC \NR
+\NC subtype \NC xspaceskip         \NC \NR
+\HL
+\stoptabulate
+
+\ShowSpaces{2}{\spacefactor1000}{\spaceskip0pt}
+
+\starttabulate[|l|l|]
+\HL
+\NC \type {\spacefactor} \NC $\lt 2000$ \NC \NR
+\NC \type {\spaceskip}   \NC $\eq    0$ \NC \NR
+\HL
+\NC space   \NC font_space   \NC \NR
+\NC stretch \NC font_stretch \NC \NR
+\NC shrink  \NC font_shrink  \NC \NR
+\NC subtype \NC spaceskip    \NC \NR
+\HL
+\stoptabulate
+
+\ShowSpaces{3}{\spacefactor2000}{\spaceskip0pt}
+
+\starttabulate[|l|l|]
+\HL
+\NC \type {\spacefactor} \NC $\geq 2000$ \NC \NR
+\NC \type {\spaceskip}   \NC $\eq     0$ \NC \NR
+\HL
+\NC space   \NC font_space $+$ extraspace_font \NC \NR
+\NC stretch \NC font_stretch                   \NC \NR
+\NC shrink  \NC font_shrink                    \NC \NR
+\NC subtype \NC spaceskip                      \NC \NR
+\HL
+\stoptabulate
+
+\ShowSpaces{4}{\spacefactor1000}{\spaceskip100pt}
+
+\starttabulate[|l|l|]
+\HL
+\NC \type {\spacefactor} \NC $\lt  2000$ \NC \NR
+\NC \type {\spaceskip}   \NC $\neq    0$ \NC \NR
+\HL
+\NC space   \NC font_space                         \NC \NR
+\NC stretch \NC font_stretch $\times$ space_factor \NC \NR
+\NC shrink  \NC font_shrink  $\times$ space_factor \NC \NR
+\NC subtype \NC spaceskip                          \NC \NR
+\HL
+\stoptabulate
+
+\ShowSpaces{5}{\spacefactor2000}{\spaceskip100pt}
+
+\starttabulate[|l|l|]
+\HL
+\NC \type {\spacefactor} \NC $\geq 2000$ \NC \NR
+\NC \type {\spaceskip}   \NC $\neq    0$ \NC \NR
+\HL
+\NC space   \NC font_space   $+$ extraspace_font   \NC \NR
+\NC stretch \NC font_stretch $\times$ space_factor \NC \NR
+\NC shrink  \NC font_shrink  $\times$ space_factor \NC \NR
+\NC subtype \NC spaceskip                          \NC \NR
+\HL
+\stoptabulate
+
+The width of a space relates to the design of a font and therefore the t width of
+the space, its stretch and its shrink are taken from the font and scaled
+accordingly. Normally we take the space character in the font as reference.
+Traditional \TEX\ fonts don't have that character but \OPENTYPE\ fonts have. When
+there is no space character, in the case of a monospaced font we take the
+emwidth, otherwise we take half the emwidth. As a last resort we can take the
+average width of characters. And of even that fails we take half of the font
+units. But, as mentioned, modern fonts have a space.
+
+In the \CONTEXT\ font loader we use a stretch that is 1/2 of the width of a space
+and the shrink is 1/3 the width of a space. These values are familiar for those
+who come from traditional \TEX.
+
+As with many variables, you can overload these values when a font is loaded by
+setting the \type {spacing} feature. Here is how this is done:
+
+\startbuffer
+\definefontfeature
+  [morespace]
+  [spacing=0.50 plus 0.50 minus 0.250]
+\definefontfeature
+  [lessspace]
+  [spacing=0.25 plus 0.25 minus 0.125]
+\definefontfeature
+  [extramorespace]
+  [spacing=0.50 plus 0.50 minus 0.250 extra 2.00]
+\definefontfeature
+  [extralessspace]
+  [spacing=0.25 plus 0.25 minus 0.125 extra 2.00]
+
+\definedfont[Serif*default]
+    \inleft{\infofont default}
+    \samplefile{klein}\par
+    \blank
+\definedfont[Serif*default,morespace]
+    \inleft{\infofont morespace}
+    \samplefile{klein}\par
+    \blank
+\definedfont[Serif*default,extramorespace]
+    \inleft{\infofont extramorespace}
+    \samplefile{klein}\par
+    \blank
+\definedfont[Serif*default,lessspace]
+    \inleft{\infofont lessspace}
+    \samplefile{klein}\par
+    \blank
+\definedfont[Serif*default,extralessspace]
+    \inleft{\infofont extralessspace}
+    \samplefile{klein}\par
+    \blank
+\stopbuffer
+
+\typebuffer
+
+For demonstration purposes we use a somewhat excessive \type {extra}
+specification. By default the extra space is equal to the shrink.
+
+\blank \start
+    \showmakeup[space]
+    \getbuffer
+\stop \blank
+
+\stopsection
+
+\startsection[title=Expansion]
+
+Spaces become glue that can shrink or stretch. In the worst case words will come
+too close, or the gap will be large. Even worse is that this can lead to
+successive lines in a paragraph looking different with respect to spacing. A solution
+for this is to use font expansion, although the benefits are often less than
+some users want (you) to believe.
+
+This mechanism is enabled with \type {\setupalign}. There are two variants (\type
+{hz} and \type {fullhz}) and a reset (\type {nohz}). In \in {figure} [fig:expansion]
+we use the following font definition:
+
+\startbuffer
+\definefont[testfont][Normal*default,quality @ 9pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We use \type {\showfontexpansion} to view the effective expansion factors of each
+glyph. When \type {fullhz} is used fontkerns also can get expanded. Zero values
+are not shown. The font kern factors are shown below the character factors. They
+can be neglected and one can even wonder if they need a treatment especially
+because kerns are also used for relative positioning, accent anchoring and
+cursive attachments.
+
+\startplacefigure[reference=fig:expansion,title={The two expansion methods in action.}]
+    \startcombination[nx=3,ny=2,location=top]
+                                                           {\framed[foregroundstyle=\testfont,width=.3\textwidth,align={normal,tolerant,nohz}]  {\showfontexpansion\samplefile{ward}}}   {}
+                                                           {\framed[foregroundstyle=\testfont,width=.3\textwidth,align={normal,tolerant,fullhz}]{\showfontexpansion\samplefile{ward}}}   {}
+                                                           {\framed[foregroundstyle=\testfont,width=.3\textwidth,align={normal,tolerant,hz}]    {\showfontexpansion\samplefile{ward}}}   {}
+       {\scale[width=.3\textwidth]{\clip[nx=2,ny=4,x=2,y=3]{\framed[foregroundstyle=\testfont,width=.3\textwidth,align={normal,tolerant,nohz}]  {\showfontexpansion\samplefile{ward}}}}} {\tttf{nohz}}
+       {\scale[width=.3\textwidth]{\clip[nx=2,ny=4,x=2,y=3]{\framed[foregroundstyle=\testfont,width=.3\textwidth,align={normal,tolerant,fullhz}]{\showfontexpansion\samplefile{ward}}}}} {\tttf{fullhz}}
+       {\scale[width=.3\textwidth]{\clip[nx=2,ny=4,x=2,y=3]{\framed[foregroundstyle=\testfont,width=.3\textwidth,align={normal,tolerant,hz}]    {\showfontexpansion\samplefile{ward}}}}} {\tttf{hz}}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

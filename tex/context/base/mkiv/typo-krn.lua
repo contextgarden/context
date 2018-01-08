@@ -446,24 +446,24 @@ function kerns.handler(head)
             elseif id == disc_code then
                 local prev, next, pglyph, nglyph -- delayed till needed
                 local subtype = getsubtype(start)
-                if subtype == automatic_code then
-                    -- this is kind of special, as we have already injected the
-                    -- previous kern
-                    local prev   = getprev(start)
-                    local pglyph = prev and getid(prev) == glyph_code
-                    languages.expand(start,pglyph and prev)
-                    -- we can have a different start now
-                elseif subtype ~= discretionary_code then
-                    prev    = getprev(start)
-                    pglyph  = prev and getid(prev) == glyph_code
-                    languages.expand(start,pglyph and prev)
-                end
+             -- if subtype == automatic_code then
+             --     -- this is kind of special, as we have already injected the
+             --     -- previous kern
+             --     local prev   = getprev(start)
+             --     local pglyph = prev and getid(prev) == glyph_code
+             --     languages.expand(start,pglyph and prev)
+             --     -- we can have a different start now
+             -- elseif subtype ~= discretionary_code then
+             --     prev    = getprev(start)
+             --     pglyph  = prev and getid(prev) == glyph_code
+             --     languages.expand(start,pglyph and prev)
+             -- end
                 local pre, post, replace = getdisc(start)
                 local indeed = false
                 if pre then
                     local okay = false
                     if not prev then
-                        prev   = prev or getprev(start)
+                        prev   = getprev(start)
                         pglyph = prev and getid(prev) == glyph_code
                     end
                     if pglyph then
@@ -491,7 +491,7 @@ function kerns.handler(head)
                 if replace then
                     local okay = false
                     if not prev then
-                        prev    = prev or getprev(start)
+                        prev    = getprev(start)
                         pglyph  = prev and getid(prev) == glyph_code
                     end
                     if pglyph then

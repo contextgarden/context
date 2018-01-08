@@ -1011,6 +1011,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='stilnumar'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1246,6 +1247,7 @@
 		<cd:constant name='titledistance' value='distantatitlu'/>
 		<cd:constant name='titleleft' value='titleleft'/>
 		<cd:constant name='titleright' value='titleright'/>
+		<cd:constant name='titlestrut' value='titlestrut'/>
 		<cd:constant name='titlestyle' value='stiltitlu'/>
 		<cd:constant name='to' value='catre'/>
 		<cd:constant name='toffset' value='toffset'/>

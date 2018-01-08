@@ -15,6 +15,7 @@ local sortedkeys, sortedhash, serialize, fastcopy = table.sortedkeys, table.sort
 local derivetable = table.derive
 local ioflush = io.flush
 local round = math.round
+local setmetatable, getmetatable, rawget, rawset = setmetatable, getmetatable, rawget, rawset
 
 local trace_defining  = false  trackers.register("fonts.defining",  function(v) trace_defining = v end)
 local trace_scaling   = false  trackers.register("fonts.scaling",   function(v) trace_scaling  = v end)
@@ -230,27 +231,87 @@ function constructors.trytosharefont(target,tfmdata)
     end
 end
 
+-- function constructors.enhanceparameters(parameters)
+--     local xheight = parameters.x_height
+--     local quad    = parameters.quad
+--     local space   = parameters.space
+--     local stretch = parameters.space_stretch
+--     local shrink  = parameters.space_shrink
+--     local extra   = parameters.extra_space
+--     local slant   = parameters.slant
+--     -- synonyms
+--     parameters.xheight       = xheight
+--     parameters.spacestretch  = stretch
+--     parameters.spaceshrink   = shrink
+--     parameters.extraspace    = extra
+--     parameters.em            = quad
+--     parameters.ex            = xheight
+--     parameters.slantperpoint = slant
+--     parameters.spacing = {
+--         width   = space,
+--         stretch = stretch,
+--         shrink  = shrink,
+--         extra   = extra,
+--     }
+-- end
+
+local synonyms = {
+    exheight      = "x_height",
+    xheight       = "x_height",
+    ex            = "x_height",
+    emwidth       = "quad",
+    em            = "quad",
+    spacestretch  = "space_stretch",
+    stretch       = "space_stretch",
+    spaceshrink   = "space_shrink",
+    shrink        = "space_shrink",
+    extraspace    = "extra_space",
+    xspace        = "extra_space",
+    slantperpoint = "slant",
+}
+
 function constructors.enhanceparameters(parameters)
-    local xheight = parameters.x_height
-    local quad    = parameters.quad
-    local space   = parameters.space
-    local stretch = parameters.space_stretch
-    local shrink  = parameters.space_shrink
-    local extra   = parameters.extra_space
-    local slant   = parameters.slant
-    parameters.xheight       = xheight
-    parameters.spacestretch  = stretch
-    parameters.spaceshrink   = shrink
-    parameters.extraspace    = extra
-    parameters.em            = quad
-    parameters.ex            = xheight
-    parameters.slantperpoint = slant
-    parameters.spacing = {
-        width   = space,
-        stretch = stretch,
-        shrink  = shrink,
-        extra   = extra,
-    }
+    local mt = getmetatable(parameters)
+    local getter = function(t,k)
+        if not k then
+            return nil
+        end
+        local s = synonyms[k]
+        if s then
+            return rawget(t,s) or (mt and mt[s]) or nil
+        end
+        if k == "spacing" then
+            return {
+                width   = t.space,
+                stretch = t.space_stretch,
+                shrink  = t.space_shrink,
+                extra   = t.extra_space,
+            }
+        end
+        return mt and mt[k] or nil
+    end
+    local setter = function(t,k,v)
+        if not k then
+            return 0
+        end
+        local s = synonyms[k]
+        if s then
+            rawset(t,s,v)
+        elseif k == "spacing" then
+            if type(v) == "table" then
+                rawset(t,"space",v.width or 0)
+                rawset(t,"space_stretch",v.stretch or 0)
+                rawset(t,"space_shrink",v.shrink or 0)
+                rawset(t,"extra_space",v.extra or 0)
+            end
+        else
+            rawset(t,k,v)
+        end
+    end
+    setmetatable(parameters, {
+        __index    = getter,
+        __newindex = setter,
+    })
 end
 
 local function mathkerns(v,vdelta)
@@ -493,7 +554,7 @@ function constructors.scale(tfmdata,specification)
         targetparameters.descender = delta * descender
     end
     --
-    constructors.enhanceparameters(targetparameters) -- official copies for us
+    constructors.enhanceparameters(targetparameters) -- official copies for us, now virtual
     --
     local protrusionfactor = (targetquad ~= 0 and 1000/targetquad) or 0
     local scaledwidth      = defaultwidth  * hdelta

@@ -121,21 +121,22 @@ local bor   = bit32.bor
 
 local enableaction        = nodes.tasks.enableaction
 
-local trace_hbox
-local trace_vbox
-local trace_vtop
-local trace_kern
-local trace_glue
-local trace_penalty
-local trace_fontkern
-local trace_strut
-local trace_whatsit
-local trace_user
-local trace_math
-local trace_italic
-local trace_discretionary
-local trace_expansion
-local trace_line
+-- local trace_hbox
+-- local trace_vbox
+-- local trace_vtop
+-- local trace_kern
+-- local trace_glue
+-- local trace_penalty
+-- local trace_fontkern
+-- local trace_strut
+-- local trace_whatsit
+-- local trace_user
+-- local trace_math
+-- local trace_italic
+-- local trace_discretionary
+-- local trace_expansion
+-- local trace_line
+-- local trace_space
 
 local report_visualize = logs.reporter("visualize")
 
@@ -162,10 +163,11 @@ local modes = {
     discretionary =  32768,
     expansion     =  65536,
     line          = 131072,
+    space         = 262144,
 }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion, l_line
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space
 
 local enabled = false
 local layers  = { }
@@ -219,6 +221,7 @@ local function enable()
     l_discretionary = layers.discretionary
     l_expansion     = layers.expansion
     l_line          = layers.line
+    l_space         = layers.space
     enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -362,6 +365,7 @@ local c_negative        = "trace:r"
 local c_zero            = "trace:g"
 local c_text            = "trace:s"
 local c_space           = "trace:y"
+local c_space_x         = "trace:m"
 local c_skip_a          = "trace:c"
 local c_skip_b          = "trace:m"
 local c_glyph           = "trace:o"
@@ -377,6 +381,7 @@ local c_negative_d      = "trace:dr"
 local c_zero_d          = "trace:dg"
 local c_text_d          = "trace:ds"
 local c_space_d         = "trace:dy"
+local c_space_x_d       = "trace:dm"
 local c_skip_a_d        = "trace:dc"
 local c_skip_b_d        = "trace:dm"
 local c_glyph_d         = "trace:do"
@@ -405,8 +410,30 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     if lap then
         info = new_hlist(setlink(new_kern(-width),info))
     else
-        info = new_hlist(info)
+        info = new_hlist(info) -- a bit overkill: double wrapped
     end
+    if layer then
+        setattr(info,a_layer,layer)
+    end
+    return info, width
+end
+
+local function someblob(str,layer,color,textcolor,width)
+    local text = hpack_string(str,usedfont)
+    local size = getwidth(text)
+    local rule = new_rule(width,2*exheight,exheight/2)
+    local kern = new_kern(-width + (width-size)/2)
+    if color then
+        setcolor(rule,color)
+    end
+    if textcolor then
+        setlistcolor(getlist(text),textcolor)
+    end
+    local info = setlink(rule,kern,text)
+    setlisttransparency(info,c_zero)
+    info = hpack_nodes(info)
+    local width = getwidth(info)
+    info = new_hlist(info)
     if layer then
         setattr(info,a_layer,layer)
     end
@@ -898,8 +925,8 @@ local ruledglue do
     local gluecodes      = nodes.gluecodes
     local cleaders_code  = gluecodes.cleaders
     local userskip_code  = gluecodes.userskip
-    local space_code     = gluecodes.space
-    local xspace_code    = gluecodes.xspace
+    local space_code     = gluecodes.spaceskip
+    local xspace_code    = gluecodes.xspaceskip
     local leftskip_code  = gluecodes.leftskip
     local rightskip_code = gluecodes.rightskip
 
@@ -908,28 +935,28 @@ local ruledglue do
 
     local tags = {
      -- userskip              = "US",
-        lineskip              = "LS",
-        baselineskip          = "BS",
-        parskip               = "PS",
-        abovedisplayskip      = "DA",
-        belowdisplayskip      = "DB",
-        abovedisplayshortskip = "SA",
-        belowdisplayshortskip = "SB",
-        leftskip              = "LS",
-        rightskip             = "RS",
-        topskip               = "TS",
-        splittopskip          = "ST",
-        tabskip               = "AS",
-        spaceskip             = "SS",
-        xspaceskip            = "XS",
-        parfillskip           = "PF",
-        thinmuskip            = "MS",
-        medmuskip             = "MM",
-        thickmuskip           = "ML",
-        leaders               = "NL",
-        cleaders              = "CL",
-        xleaders              = "XL",
-        gleaders              = "GL",
+        [gluecodes.lineskip]              = "LS",
+        [gluecodes.baselineskip]          = "BS",
+        [gluecodes.parskip]               = "PS",
+        [gluecodes.abovedisplayskip]      = "DA",
+        [gluecodes.belowdisplayskip]      = "DB",
+        [gluecodes.abovedisplayshortskip] = "SA",
+        [gluecodes.belowdisplayshortskip] = "SB",
+        [gluecodes.leftskip]              = "LS",
+        [gluecodes.rightskip]             = "RS",
+        [gluecodes.topskip]               = "TS",
+        [gluecodes.splittopskip]          = "ST",
+        [gluecodes.tabskip]               = "AS",
+        [gluecodes.spaceskip]             = "SP",
+        [gluecodes.xspaceskip]            = "XS",
+        [gluecodes.parfillskip]           = "PF",
+        [gluecodes.thinmuskip]            = "MS",
+        [gluecodes.medmuskip]             = "MM",
+        [gluecodes.thickmuskip]           = "ML",
+        [gluecodes.leaders]               = "NL",
+        [gluecodes.cleaders]              = "CL",
+        [gluecodes.xleaders]              = "XL",
+        [gluecodes.gleaders]              = "GL",
      -- true                  = "VS",
      -- false                 = "HS",
     }
@@ -944,7 +971,7 @@ local ruledglue do
         if info then
             -- print("glue hit")
         else
-            if subtype == space_code or subtype == xspace_code then -- not yet all space
+            if subtype == space_code or subtype == xspace_code then
                 info = sometext(amount,l_glue,c_space)
             elseif subtype == leftskip_code or subtype == rightskip_code then
                 info = sometext(amount,l_glue,c_skip_a)
@@ -967,6 +994,55 @@ local ruledglue do
         end
         head, current = insert_node_before(head,current,info)
         return head, getnext(current)
+    end
+
+ -- ruledspace = function(head,current,parent)
+ --     local subtype = getsubtype(current)
+ --     if subtype == space_code or subtype == xspace_code then
+ --         local width  = effectiveglue(current,parent)
+ --         local amount = formatters["%s:%0.3f"](tags[subtype] or "HS",width*pt_factor)
+ --         local info   = g_cache_h[amount]
+ --         if info then
+ --             -- print("space hit")
+ --         else
+ --             info = sometext(amount,l_glue,c_space)
+ --             g_cache_h[amount] = info
+ --         end
+ --         info = copy_list(info)
+ --         head, current = insert_node_before(head,current,info)
+ --         return head, getnext(current)
+ --     else
+ --         return head, current
+ --     end
+ -- end
+
+    local g_cache_s = caches["space"]
+    local g_cache_x = caches["xspace"]
+
+    ruledspace = function(head,current,parent)
+        local subtype = getsubtype(current)
+        if subtype == space_code or subtype == xspace_code then -- not yet all space
+            local width = effectiveglue(current,parent)
+            local info
+            if subtype == space_code then
+                info = g_cache_s[width]
+                if not info then
+                    info = someblob("SP",l_glue,c_space,nil,width)
+                    g_cache_s[width] = info
+                end
+            else
+                info = g_cache_x[width]
+                if not info then
+                    info = someblob("XS",l_glue,c_space_x,nil,width)
+                    g_cache_x[width] = info
+                end
+            end
+            info = copy_list(info)
+            head, current = insert_node_before(head,current,info)
+            return head, getnext(current)
+        else
+            return head, current
+        end
     end
 
 end
@@ -1103,24 +1179,28 @@ do
     local line_code           = listcodes.line
 
     local function visualize(head,vertical,forced,parent)
-        local trace_hbox     = false
-        local trace_vbox     = false
-        local trace_vtop     = false
-        local trace_kern     = false
-        local trace_glue     = false
-        local trace_penalty  = false
-        local trace_fontkern = false
-        local trace_strut    = false
-        local trace_whatsit  = false
-        local trace_glyph    = false
-        local trace_simple   = false
-        local trace_user     = false
-        local trace_math     = false
-        local trace_italic   = false
-        local trace_origin   = false
-        local current        = head
-        local previous       = nil
-        local attr           = unsetvalue
+        local trace_hbox           = false
+        local trace_vbox           = false
+        local trace_vtop           = false
+        local trace_kern           = false
+        local trace_glue           = false
+        local trace_penalty        = false
+        local trace_fontkern       = false
+        local trace_strut          = false
+        local trace_whatsit        = false
+        local trace_glyph          = false
+        local trace_simple         = false
+        local trace_user           = false
+        local trace_math           = false
+        local trace_italic         = false
+        local trace_origin         = false
+        local trace_discretionary  = false
+        local trace_expansion      = false
+        local trace_line           = false
+        local trace_space          = false
+        local current              = head
+        local previous             = nil
+        local attr                 = unsetvalue
         local prev_trace_fontkern  = nil
         local prev_trace_italic    = nil
         local prev_trace_expansion = nil
@@ -1150,6 +1230,7 @@ do
                     trace_discretionary = false
                     trace_expansion     = false
                     trace_line          = false
+                    trace_space         = false
                 else -- dead slow:
                     trace_hbox          = band(a,     1) ~= 0
                     trace_vbox          = band(a,     2) ~= 0
@@ -1169,6 +1250,7 @@ do
                     trace_discretionary = band(a, 32768) ~= 0
                     trace_expansion     = band(a, 65536) ~= 0
                     trace_line          = band(a,131072) ~= 0
+                    trace_space         = band(a,262144) ~= 0
                 end
                 attr = a
             end
@@ -1222,6 +1304,8 @@ do
                     setleader(current,visualize(content,false,nil,parent))
                 elseif trace_glue then
                     head, current = ruledglue(head,current,vertical,parent)
+                elseif trace_space then
+                    head, current = ruledspace(head,current,parent)
                 end
             elseif id == penalty_code then
                 if trace_penalty then

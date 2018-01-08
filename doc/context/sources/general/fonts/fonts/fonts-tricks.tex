@@ -1,0 +1,183 @@
+% language=uk
+
+\startcomponent fonts-tricks
+
+\environment fonts-environment
+
+\startchapter[title=Tricks][color=middleorange]
+
+\startsection[title=Introduction]
+
+In this chapter topics that don't fit in the previous chapters are
+collected.
+
+\stopsection
+
+\startsection[title=Extra characters]
+
+In one of our projects we need a small (high) minus and here we discuss
+one way of achieving this. An option is to define a new character
+and use a font feature to add it, as in:
+
+\starttyping
+\startluacode
+  local function addextraminus(tfmdata)
+    fonts.helpers.addprivate(tfmdata, "smallminus", ... ) -- see below
+    fonts.helpers.addprivate(tfmdata, "highminus",  ... ) -- see below
+  end
+  fonts.constructors.newfeatures.otf.register {
+    name        = "extraminus",
+    description = "extra minus symbols",
+    default     = true,
+    manipulators = {
+      base = addextraminus,
+      node = addextraminus,
+    }
+  }
+\stopluacode
+\stoptyping
+
+However, why make it an option when we can just add it to any font. So,
+we can end up with just:
+
+\typebuffer[extraminus] % already defined before loading fonts
+
+It is important to do this before fonts get loaded. Next we need to decide how to
+access these characters. A straightforward way is:
+
+\startbuffer
+\def\smallminus{\privatechar{smallminus}}
+\def\highminus {\privatechar{highminus}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+An alternative is:
+
+\starttyping
+\definemathcommand [smallminus] [ord] {\privatechar{smallminus}}
+\definemathcommand [highminus]  [ord] {\privatechar{highminus}}
+\stoptyping
+
+but that fails in text mode. So, we can consider:
+
+\starttyping
+\def\smallminus{\mathortext{\mathord{\privatechar{smallminus}}}{\privatechar{smallminus}}}
+\def\highminus {\mathortext{\mathord{\privatechar {highminus}}}{\privatechar {highminus}}}
+\stoptyping
+
+or more compact
+
+\starttyping
+\def\smallminus{\mathortext\mathord\firstofoneargument{\privatechar{smallminus}}}
+\def\highminus {\mathortext\mathord\firstofoneargument{\privatechar {highminus}}}
+\stoptyping
+
+What method you choose depends on usage. With the first, simple definitions we
+get this:
+
+\startbuffer
+[\getprivateslot{smallminus}] [\getprivatechar{smallminus}] [\smallminus] $[\smallminus]$\par
+[\getprivateslot {highminus}] [\getprivatechar {highminus}] [\highminus ] $[\highminus ]$\par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because we are fully expandable we can even use this in:
+
+\startbuffer
+\bTABLE[aligncharacter=yes,alignmentcharacter={text->\smallminus}]
+  \bTR \bTD \mathminus100\smallminus00+ \eTD \eTR
+  \bTR \bTD           100\smallminus00  \eTD \eTR
+  \bTR \bTD \mathminus 99\smallminus00+ \eTD \eTR
+  \bTR \bTD \mathminus 99\smallminus00  \eTD \eTR
+  \bTR \bTD           100\highminus     \eTD \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+With the other definitions the alignment would not work. If you need both then
+you can define different commands for text and math.
+
+\stopsection
+
+\startsection[title=Tabular numbers]
+
+Some font features are meant to be used in controlled situations. An example is
+the \type {tnum} feature that triggers so called \quote {tabular figures} meaning
+numbers that have equal widths. Its opposite feature is \type {lnum} or lining
+figures. We have two predefined \CONTEXT\ font features for this:
+
+\starttyping
+\definefontfeature [inlinenumbers]  [lnum=yes,tnum=no]
+\definefontfeature [tabularnumbers] [tnum=yes,lnum=no]
+\stoptyping
+
+Some mechanisms in \CONTEXT\ had better be aware of this and one of them is the
+alignment mechanism in tables.
+
+\startbuffer[demo]
+\startcombination[before=,after=]
+    \startcontent
+        \switchtobodyfont[pagella]\showglyphs%
+        \disabledirectives[typesetters.characteralign.autofont]%
+        \bTABLE[alignmentcharacter=.,aligncharacter=yes]
+            \bTR \bTD  11.111 \eTD \eTR
+            \bTR \bTD   2.2   \eTD \eTR
+            \bTR \bTD 444.444 \eTD \eTR
+        \eTABLE
+        \enabledirectives[typesetters.characteralign.autofont]%
+    \stopcontent
+    \startcaption
+        \small manual \type {tnum}
+    \stopcaption
+    \startcontent
+        \switchtobodyfont[pagella]\showglyphs%
+        \bTABLE[alignmentcharacter=.,aligncharacter=yes]
+            \bTR \bTD  11.111 \eTD \eTR
+            \bTR \bTD   2.2   \eTD \eTR
+            \bTR \bTD 444.444 \eTD \eTR
+        \eTABLE
+    \stopcontent
+    \startcaption
+        \small auto \type {tnum}
+    \stopcaption
+\stopcombination
+\stopbuffer
+
+In the following examples we demonstrate how the automatic font adaption makes
+sure that tabular figures are used. The table is defined as:
+
+\typebuffer[demo]
+
+\startbuffer
+\dontleavehmode\hbox to .3\textwidth \bgroup
+    \hss\getbuffer[demo]\hss
+\egroup
+\stopbuffer
+
+In \in {figure}[fig:tabularnumbers] we see what the features do. We use the \type
+{\feature} or \type {\addfeature} macro for this. For the moment this trickery is
+controlled by a directive (beware: enabling them is global).
+
+\startplacefigure[reference=fig:tabularnumbers,title={Tabular numbers}]
+    \startcombination[nx=3,ny=2]
+        {\getbuffer}                             {\tt\nohyphens default}
+        {\addfeature  [inlinenumbers]\getbuffer} {\tt\nohyphens inlinenumbers}
+        {\addfeature [tabularnumbers]\getbuffer} {\tt\nohyphens tabularnumbers}
+        {\addfeature[oldstylenumbers]\getbuffer} {\tt\nohyphens oldstylenumbers}
+        {\addfeature[oldstylenumbers]%
+         \addfeature  [inlinenumbers]\getbuffer} {\tt\nohyphens oldstylenumbers\par inlinenumbers}
+        {\addfeature[oldstylenumbers]%
+         \addfeature [tabularnumbers]\getbuffer} {\tt\nohyphens oldstylenumbers\par tabularnumbers}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\stopchapter

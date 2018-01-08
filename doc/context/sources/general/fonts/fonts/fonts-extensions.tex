@@ -2612,6 +2612,92 @@ gets defined and because we share resources it even has to happen before the
 first font gets loaded. So, the \type {\blockligatures} commands go before
 setting up the body font. This is no real problem because it's a hack anyway.
 
+The next example combines several tricks:
+
+\startbuffer[definitions]
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "kernligatures",
+        type = "kern",
+        data = {
+            f = { i = 50, l = 50 },
+        }
+    }
+\stopluacode
+
+\blockligatures[u:fl:a]
+
+\definefontfeature[default:b][default][blockligatures=yes]
+\definefontfeature[default:k][default][blockligatures=yes,kernligatures=yes]
+
+\showfontkerns
+\stopbuffer
+
+\startbuffer[demo]
+{\definedfont[Brill*default   @ 11pt]auflage}\par
+{\definedfont[Brill*default:b @ 11pt]auflage}\par
+{\definedfont[Brill*default:k @ 11pt]auflage}\par
+\stopbuffer
+
+\typebuffer[definitions,demo] \getbuffer[definitions]
+
+\startlinecorrection
+    \externalfigure[demo.buffer][width=4cm]
+\stoplinecorrection
+
+Processing fonts is complicated by the fact that a text can be hyphenated. This
+complicates for instance ligature building which can cross the pre, post and|/|or
+replace bounds. The current implementation does a decent job although there will
+always be border cases. And, figuring out what goes wrong is a pain. There are
+several ways to trace what happens and here's one. As mentioned, blocking only
+works when we haven't not yet defined a font instance, so we use a funny size
+here.
+
+\startbuffer
+\blockligatures[u:fl:a]
+
+\definefontfeature
+  [blockligatures]
+  [default]
+  [blockligatures=yes]
+
+\startotfcompositionlist{texgyrepagella-regular*blockligatures @ 14.5pt}{l2r}
+    \HL
+    \showotfcompositionsample{auflage}
+    \showotfcompositionsample{a\discretionary{-}{}{}uflage}
+    \showotfcompositionsample{au\discretionary{-}{}{}flage}
+    \showotfcompositionsample{auf\discretionary{-}{}{}lage}
+    \showotfcompositionsample{aufl\discretionary{-}{}{}age}
+    \showotfcompositionsample{aufla\discretionary{-}{}{}ge}
+    \showotfcompositionsample{auflag\discretionary{-}{}{}e}
+    \HL
+    \showotfcompositionsample{auflegt}
+    \showotfcompositionsample{a\discretionary{-}{}{}uflegt}
+    \showotfcompositionsample{au\discretionary{-}{}{}flegt}
+    \showotfcompositionsample{auf\discretionary{-}{}{}legt}
+    \showotfcompositionsample{aufl\discretionary{-}{}{}egt}
+    \showotfcompositionsample{aufle\discretionary{-}{}{}gt}
+    \showotfcompositionsample{aufleg\discretionary{-}{}{}t}
+    \HL
+\stopotfcompositionlist
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here is another example. This one demonstrates that ligatures can force
+collapsing of discretionaries.
+
+\startbuffer
+\startotfcompositionlist{Serif*default @ 11pt}{l2r}
+    \HL
+    \showotfcompositionsample{effe}
+    \showotfcompositionsample{efficient}
+    \HL
+\stopotfcompositionlist
+\stopbuffer
+
+\typebuffer \getbuffer
+
 \stopsection
 
 \startsection[title=Collections]

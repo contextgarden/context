@@ -4,7 +4,7 @@
 
 \startchapter[title=Alignments and such]
 
-\startsection[title=Usingmpersands]
+\startsection[title=Using ampersands]
 
 When you come from plain \TEX, using ampersands probably comes as a custom, like in:
 
@@ -136,15 +136,25 @@ Here is a real example:
 \startplaceformula
   \startformula
     U_2 = \frac{1}{2!}
-    \int_0^\beta \diff\tau_1 \int_0^\beta \diff\tau_2\;
-    \sum_{\startsubstack k_1,q_1 \NR k_2,q_2 \stopsubstack}
-    \Bigl\langle
-    \startmathalignment[location=top,align=left]
-      \NC \mathcal T \Bigl[c_{k_1}^\dagger(\tau_1) \Delta_{k_1,q_1}^r c_{-k_1}^*(\tau_1)
-        +  c_{-q_1}^T(\tau_1) \Delta_{k_1,q_1}^{r\dagger} c_{q_1}(\tau_1)\Bigr] \NR
-      \NC \times \Bigl[c_{k_2}^\dagger(\tau_2) \Delta_{k_2,q_2}^r c_{-k_2}^*(\tau_2)
-        +  c_{-q_2}^T(\tau_2) \Delta_{k_2,q_2}^{r\dagger} c_{q_2}(\tau_2)\Bigr] \Bigr\rangle.\NR
-    \stopmathalignment
+      \int_0^\beta \diff\tau_1 \int_0^\beta \diff\tau_2\;
+      \sum_{\startsubstack k_1,q_1 \NR k_2,q_2 \stopsubstack}
+      \Bigl\langle
+      \startmathalignment[location=top,align=left]
+        \NC
+          \mathcal T \Bigl[
+            c_{k_1}^\dagger (\tau_1)
+            \Delta_{k_1,q_1}^r c_{-k_1}^* (\tau_1) + c_{-q_1}^T (\tau_1)
+            \Delta_{k_1,q_1}^{r\dagger} c_{q_1} (\tau_1)
+          \Bigr]
+        \NR
+        \NC
+          \times \Bigl[
+            c_{k_2}^\dagger(\tau_2) \Delta_{k_2,q_2}^r c_{-k_2}^*
+            (\tau_2) + c_{-q_2}^T (\tau_2) \Delta_{k_2,q_2}^{r\dagger}
+            c_{q_2} (\tau_2)
+          \Bigr] \Bigr\rangle .
+        \NR
+      \stopmathalignment
   \stopformula
 \stopplaceformula
 \stopbuffer

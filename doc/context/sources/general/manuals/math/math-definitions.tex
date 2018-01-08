@@ -1,0 +1,101 @@
+\environment math-layout
+
+\startcomponent math-definitions
+
+\startchapter[title=Definitions]
+
+\startsection[title=Special stackers]
+
+There are many math symbols but never enough. Here is an example of how you can
+roll out your own. We start out with nothing:
+
+\startbuffer
+\definemathstackers
+  [nosymbol]
+  [voffset=\zeropoint,
+   hoffset=\zeropoint,
+   mathclass=ord,
+   topoffset=\zeropoint,
+   middlecommand=,
+   color=maincolor]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+You can now use this class of stackers:
+
+\startbuffer
+\startformula
+  \mathover [nosymbol] {"2217} {A}
+  \mathover [nosymbol] {"2218} {A}
+  \mathover [nosymbol] {"2219} {A}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+This looks like this:
+
+\getbuffer
+
+But we want proper math, which means an an italic nucleus, a properly placed
+accent, a shift of that accent matching the slope or the nucleus, so we actually
+need:
+
+\startbuffer
+\definemathstackers
+  [mysymbol]
+  [voffset=-.30\mathexheight,
+   hoffset=\zeropoint,
+   mathclass=ord,
+   topoffset=.4\mathemwidth,
+   middlecommand=\mathematics,
+   color=maincolor]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startformula
+  \mathover  [mysymbol]{"2217}       {A}
+  \mathover  [mysymbol]{"2218}       {A}
+  \mathover  [mysymbol]{"2219}       {A}
+  \mathunder [mysymbol]       {"2217}{A}
+  \mathunder [mysymbol]       {"2218}{A}
+  \mathunder [mysymbol]       {"2219}{A}
+  \mathdouble[mysymbol]{"2217}{"2217}{A}
+  \mathdouble[mysymbol]{"2218}{"2218}{A}
+  \mathdouble[mysymbol]{"2219}{"2219}{A}
+\stopformula
+\stopbuffer
+
+We show both over and under variants:
+
+\typebuffer
+
+So this time we get:
+
+\getbuffer
+
+We can now redefine the \quote {interiorset} symbol to use
+\type {0x2217} instead of \type {0x2218}:
+
+\startbuffer
+\definemathover[mysymbol][interiorset]["2217]
+
+\startformula
+    \interiorset{A}^{\interiorset{A}^{\interiorset{A}}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+Of course normally you will not use color:
+
+\getbuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

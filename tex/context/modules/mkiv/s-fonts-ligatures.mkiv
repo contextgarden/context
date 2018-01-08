@@ -156,12 +156,12 @@
 \stoptexdefinition
 
 \starttexdefinition showotfligaturesexample #1#2
-    \ctxlua{document.currentdiscexpansion = fonts.getdiscexpansion()}%
+  % \ctxlua{document.currentdiscexpansion = fonts.getdiscexpansion()}%
     \showotfligaturescaptions  {#1}
     \showotfligatureslines     {#2}
     \showotfligaturesparagraphs{#2}
     \showotfligaturesextremes  {#2}
-    \ctxlua{fonts.setdiscexpansion(document.currentdiscexpansion)}%
+  % \ctxlua{fonts.setdiscexpansion(document.currentdiscexpansion)}%
 \stoptexdefinition
 
 % todo: n -> and split in lua

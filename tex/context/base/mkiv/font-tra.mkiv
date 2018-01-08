@@ -346,8 +346,12 @@
 \unexpanded\def\startotfcompositionlist#1#2#3\stopotfcompositionlist
   {\begingroup
    \unexpanded\def\showotfcompositionsample##1%
-     {\NC\type{##1}\NC\showotfcompositionlist{#1}{#2}{##1}\NC\definedfont[#1]##1\NC\NR}%
-   \starttabulate[||||]
+     {\NC\type{##1}%
+      \NC\showotfcompositionlist{Mono}{#2}{##1}%
+      \NC\showotfcompositionlist{#1}{#2}{##1}%
+      \NC\definedfont[#1]##1%
+      \NC\NR}%
+   \starttabulate[|||||]%
      #3%
    \stoptabulate
    \endgroup}

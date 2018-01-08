@@ -1,6 +1,46 @@
 \startenvironment fonts-environment
 
-    \blockligatures[fi,fl,ff] % we need to do this beforehand
+    % we need to do this beforehand
+
+    \blockligatures[fi,fl,ff]
+
+    \startbuffer[extraminus]
+    \startluacode
+        fonts.helpers.addextraprivate("smallminus", function(tfmdata)
+            local hchar = tfmdata.characters[0x002D]
+            local mchar = tfmdata.characters[0x2212]
+            if hchar and mchar then
+                return {
+                    width    = hchar.width,
+                    height   = mchar.height,
+                    commands = {
+                        { "down", hchar.height - mchar.height },
+                        { "char", 0x002D },
+                    }
+                }
+            end
+        end)
+        fonts.helpers.addextraprivate("highminus", function(tfmdata)
+            local hchar = tfmdata.characters[0x002D]
+            local mchar = tfmdata.characters[0x2212]
+            local xchar = tfmdata.characters[0x0058]
+            if hchar and mchar and xchar then
+                return {
+                    width    = hchar.width,
+                    height   = mchar.height,
+                    commands = {
+                        { "down", - xchar.height + mchar.height },
+                        { "char", 0x002D },
+                    }
+                }
+            end
+        end)
+    \stopluacode
+    \stopbuffer
+
+    \getbuffer[extraminus]
+
+    % so far for preloading
 
     \environment manuals-explaining-environment
     \environment manuals-explaining-cover

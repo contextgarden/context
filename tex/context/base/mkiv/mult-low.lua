@@ -244,6 +244,7 @@ return {
         "doifelsenextoptional", "doifnextoptionalelse",
         "doifelsenextoptionalcs", "doifnextoptionalcselse",
         "doifelsefastoptionalcheck", "doiffastoptionalcheckelse",
+        "doifelsefastoptionalcheckcs", "doiffastoptionalcheckcselse",
         "doifelsenextbgroup", "doifnextbgroupelse",
         "doifelsenextbgroupcs", "doifnextbgroupcselse",
         "doifelsenextparenthesis", "doifnextparenthesiselse",

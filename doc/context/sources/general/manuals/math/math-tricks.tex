@@ -578,6 +578,32 @@ Applied to samples these give the following outcome and spacing:
 
 \stopsection
 
+\startsection[title=Auto|-|punctuation]
+
+\def\TestA#1#2#3%
+  {\ifnum#1=0 \type{#2}\else\setupmathematics[autopunctuation={#2}]$#3$\fi}
+
+\def\TestB#1#2%
+  {\NC \TestA{#1}{no}           {#2}
+   \NC \TestA{#1}{yes}          {#2}
+   \NC \TestA{#1}{yes,semicolon}{#2}
+   \NC \TestA{#1}{all}          {#2}
+   \NC \TestA{#1}{all,semicolon}{#2}
+   \NC \NR}
+
+The \type {\setupmathematics} command has an option \type {autopunctuation} that
+influences the way spacing after punctuatuon is handled, especially in cases like
+the following (coordinates and such):
+
+\starttabulate[|c|c|c|c|c|]
+   \TestB{0}{}
+   \TestB{1}{(1,2)=(1, 2)}
+   \TestB{1}{(1.2)=(1. 2)}
+   \TestB{1}{(1;2)=(1; 2)}
+\stoptabulate
+
+\stopsection
+
 \stopcomponent
 
 % \enabletrackers[math.makeup=boxes]
