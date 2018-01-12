@@ -416,7 +416,7 @@ local luaenvironment         = P("lua") * (P("setups") + P("code") + P(true))
 local inlinelua              = P("\\") * (
                                     P("ctx") * (P("lua") + P("command") + P("late") * (P("lua") + P("command")) + P("function"))
                                   + P("cld") * (P("command") + P("context"))
-                                  + P("luaexpr")
+                                  + P("lua") * (P("expr") + P("script") + P("thread"))
                                   + (P("direct") + P("late")) * P("lua")
                                )
 

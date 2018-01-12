@@ -47,12 +47,13 @@
 
     \starttypescript [\s!sans] [biolinum] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Biolinum-Regular]     [\s!features=\s!default]
-        \definefontsynonym [\s!SansBold]       [Biolinum-Bold]        [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]     [Biolinum-Italic]      [\s!features=\s!default]
-        \definefontsynonym [\s!SansSlanted]    [Biolinum-Slanted]     [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic] [Biolinum-BoldSlanted] [\s!features=\s!default]
-        \definefontsynonym [SansCaps]          [Biolinum-Regular]     [\s!features=\s!smallcaps]
+        \definefontsynonym [\s!Sans]            [Biolinum-Regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]        [Biolinum-Bold]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]      [Biolinum-Italic]      [\s!features=\s!default]
+        \definefontsynonym [\s!SansSlanted]     [Biolinum-Slanted]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic]  [Biolinum-BoldSlanted] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldSlanted] [Biolinum-BoldSlanted] [\s!features=\s!default]
+        \definefontsynonym [SansCaps]           [Biolinum-Regular]     [\s!features=\s!smallcaps]
     \stoptypescript
 
     \starttypescript [libertine]
@@ -60,6 +61,7 @@
         \definetypeface [libertine] [\s!ss] [\s!sans]  [biolinum]  [\s!default]
         \definetypeface [libertine] [\s!tt] [\s!mono]  [default]   [\s!default]
         %definetypeface [libertine] [\s!mm] [\s!math]  [times]     [\s!default]
+        \definetypeface [libertine] [\s!mm] [\s!math]  [default]   [\s!default]
         \quittypescriptscanning
     \stoptypescript
 

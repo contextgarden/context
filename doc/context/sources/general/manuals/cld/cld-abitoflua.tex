@@ -803,6 +803,35 @@ seen from their meaning:
 \cldcommand    #1{\directlua{context.#1}}
 \stoptyping
 
+The \type {\directlua{}} command can also be implemented using the token parser
+and \LUA\ itself. A variant is therefore \type {\luascript{}} which can be
+considered an alias but with a bit different error reporting. A variant on this
+is the \type {\luathread {name} {code}} command. Here is an example of their
+usage:
+
+\startbuffer
+\luascript        {        context("foo 1:") context(i) } \par
+\luathread {test} { i = 10 context("bar 1:") context(i) } \par
+\luathread {test} {        context("bar 2:") context(i) } \par
+\luathread {test} {} % resets
+\luathread {test} {        context("bar 3:") context(i) } \par
+\luascript        {        context("foo 2:") context(i) } \par
+\stopbuffer
+
+\typebuffer
+
+These commands result in:
+
+\startpacked \getbuffer \stoppacked
+
+% \testfeatureonce{100000}{\directlua        {local a = 10 local a = 10 local a = 10}} % 0.53s
+% \testfeatureonce{100000}{\luascript        {local a = 10 local a = 10 local a = 10}} % 0.62s
+% \testfeatureonce{100000}{\luathread {test} {local a = 10 local a = 10 local a = 10}} % 0.79s
+
+The variable \type {i} is local to the thread (which is not really a thread in
+\LUA\ but more a named piece of code that provides an environment which is shared
+over the calls with the same name. You will probably never need these.
+
 Each time a call out to \LUA\ happens the argument eventually gets parsed, converted
 into tokens, then back into a string, compiled to bytecode and executed. The next
 example code shows a mechanism that avoids this:

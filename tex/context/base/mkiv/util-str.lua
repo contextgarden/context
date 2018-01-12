@@ -296,7 +296,7 @@ end
 --
 -- integer            %...i   number
 -- integer            %...d   number
--- unsigned           %...u   number
+-- unsigned           %...u   number -- no tused
 -- character          %...c   number
 -- hexadecimal        %...x   number
 -- HEXADECIMAL        %...X   number

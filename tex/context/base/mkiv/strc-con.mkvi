@@ -188,6 +188,27 @@
 
 % \ifdefined\dotagsetconstruction \else \let\dotagsetconstruction\relax \fi
 
+% \startuseMPgraphic{MyFrame}
+%     picture p ; numeric o ; path a, b ; pair c ;
+%     p := textext.rt("\FunnyFramed{\currentconstructiontext}") ;
+%   % p := textext.rt("\wrappedconstruction{\FunnyFramed{\currentconstructiontext}}") ;
+%   % p := textext.rt("\FunnyFramed{\wrappedconstruction{\currentconstructiontext}}") ;
+%   % p := textext.rt("\FunnyFramed{\wrappedcurrentconstruction}") ;
+%     ...
+% \stopuseMPgraphic
+%
+% \defineoverlay[MyFrame][\useMPgraphic{MyFrame}]
+%
+% \defineframedtext
+%   [MyText]
+%   [frame=off,
+%    background=MyFrame]
+%
+% \defineenumeration[Theorem]
+%   [alternative=empty,
+%    before=\startMyText,
+%    after=\stopMyText]
+
 \newtoks\everyconstruction
 
 \unexpanded\def\currentconstructiontext
@@ -200,6 +221,24 @@
    \constructionparameter\c!text
    \p_strc_constructions_sample
    \endstrut}
+
+\unexpanded\def\wrappedconstruction#1%
+  {\begingroup
+     \iftrialtypesetting \else
+       \currentconstructionsynchronize
+       \attribute\destinationattribute\currentconstructionattribute\relax
+     \fi
+     #1%
+   \endgroup}
+
+\unexpanded\def\wrappedcurrentconstruction
+  {\begingroup
+     \iftrialtypesetting \else
+       \currentconstructionsynchronize
+       \attribute\destinationattribute\currentconstructionattribute\relax
+     \fi
+     \currentconstructiontext
+   \endgroup}
 
 \unexpanded\setvalue{\??constructionmainhandler\v!construction}#1%
   {\iftrialtypesetting \else
@@ -480,6 +519,10 @@
 \defineconstructionalternative
   [\v!command]
   [\c!renderingsetup=\??constructionrenderings:\v!command]
+
+\defineconstructionalternative
+  [\v!empty]
+  [\c!renderingsetup=\??constructionrenderings:\v!empty]
 
 \newbox   \constructionheadbox
 \newskip  \leftconstructionskip
@@ -853,6 +896,12 @@
 \startsetups[\??constructionrenderings:\v!command]
     \noindent
     \constructionparameter\c!headcommand{\flushconstructionheadbox}
+    \useconstructionstyleandcolor\c!style\c!color
+    \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!empty]
+    \noindent
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups

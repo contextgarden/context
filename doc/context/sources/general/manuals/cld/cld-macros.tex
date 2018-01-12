@@ -163,6 +163,62 @@ is handled automatically.
 
 \stopsection
 
+\startsection[title=Looking inside]
+
+If needed you can access the body of a macro. Take for instance:
+
+\startbuffer
+\def\TestA{A}
+\def\TestB{\def\TestC{c}}
+\def\TestC{C}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The following example demonsttaies how we can look inside these macros. You need
+to be aware of the fact that the whole blob of \LUA\ codes is finished before we
+return to \TEX, so when we pipe the meaning of \type {TestB} back to \TEX\ it
+only gets expanded afterwards. We can use a function to get back to \LUA. It's
+only then that the meaning of \type {testC} is changed by the (piped) expansion
+of \type {TestB}.
+
+\startbuffer
+\startluacode
+context(tokens.getters.macro("TestA"))
+context(tokens.getters.macro("TestB"))
+context(tokens.getters.macro("TestC"))
+tokens.setters.macro("TestA","a")
+context(tokens.getters.macro("TestA"))
+context(function()
+    context(tokens.getters.macro("TestA"))
+    context(tokens.getters.macro("TestB"))
+    context(tokens.getters.macro("TestC"))
+end)
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here is another example:
+
+\startbuffer
+\startluacode
+if tokens.getters.macro("fontstyle") == "rm" then
+    context("serif")
+else
+    context("unknown")
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Of course this assumes that you have some knowledge of the \CONTEXT\ internals.
+
+\getbuffer
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

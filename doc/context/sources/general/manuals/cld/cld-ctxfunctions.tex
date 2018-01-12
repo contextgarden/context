@@ -520,20 +520,24 @@ node types.
 \ShowLuaExampleString{nodes.idstostring(tex.box[0])}
 \ShowLuaExampleString{nodes.idstostring(tex.box[0].list)}
 
-The number of nodes in a list is identified with the \type {count} function.
+The number of nodes in a list is identified with the \type {countall} function.
 Nested nodes are counted too.
 
-\ShowLuaExampleString{nodes.count(tex.box[0])}
-\ShowLuaExampleString{nodes.count(tex.box[0].list)}
+\ShowLuaExampleString{nodes.countall(tex.box[0])}
+\ShowLuaExampleString{nodes.countall(tex.box[0].list)}
 
-There are functions to check node types and node id's:
+There are a lot of helpers in the \type {nodes} namespace. In fact, we map all the
+helpers provided by the engine itself under \type {nodes} too. These are described
+in the \LUATEX\ manual. There are for instance functions to check node types and
+node id's:
 
 \starttyping
 local str = node.type(1)
 local num = node.id("vlist")
 \stoptyping
 
-These are basic \LUATEX\ functions. In addition to those we also provide a few
+These are basic \LUATEX\ functions. In addition to those we also provide a few more
+helpers as well as
 mapping tables. There are two tables that map node id's to strings and backwards:
 
 \starttabulate

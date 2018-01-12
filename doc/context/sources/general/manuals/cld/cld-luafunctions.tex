@@ -732,27 +732,28 @@ The following table gives an overview of the possible format directives. The
 \type {s} is the most probably candidate and can handle numbers well as strings.
 Watch how the minus sign influences the alignment. \footnote {There can be
 differences between platforms although so far we haven't run into problems. Also,
-\LUA\ 5.2 does a bit more checking on correct arguments.}
+\LUA\ 5.2 does a bit more checking on correct arguments and \LUA\ 5.3 is more
+picky on integers.}
 
 \starttabulate[|lB|lT|lT|lT|]
 \HL
-\NC integer     \NC \letterpercent i    \NC 12345  \NC \cldcontext{"\letterpercent i",   12345 } \NC \NR
-\NC integer     \NC \letterpercent d    \NC 12345  \NC \cldcontext{"\letterpercent d",   12345 } \NC \NR
-\NC unsigned    \NC \letterpercent u    \NC -12345 \NC \cldcontext{"\letterpercent u",   12345 } \NC \NR
-\NC character   \NC \letterpercent c    \NC 123    \NC \cldcontext{"\letterpercent c",   89    } \NC \NR
-\NC hexadecimal \NC \letterpercent x    \NC 123    \NC \cldcontext{"\letterpercent x",   123   } \NC \NR
-\NC             \NC \letterpercent X    \NC 123    \NC \cldcontext{"\letterpercent X",   123   } \NC \NR
-\NC octal       \NC \letterpercent o    \NC 12345  \NC \cldcontext{"\letterpercent o",   12345 } \NC \NR
+\NC integer     \NC \letterpercent i    \NC 12345  \NC \cldcontext{string.format("\letterpercent i",   12345 )} \NC \NR
+\NC integer     \NC \letterpercent d    \NC 12345  \NC \cldcontext{string.format("\letterpercent d",   12345 )} \NC \NR
+\NC unsigned    \NC \letterpercent u    \NC -12345 \NC \cldcontext{string.format("\letterpercent u",   12345 )} \NC \NR
+\NC character   \NC \letterpercent c    \NC 123    \NC \cldcontext{string.format("\letterpercent c",   89    )} \NC \NR
+\NC hexadecimal \NC \letterpercent x    \NC 123    \NC \cldcontext{string.format("\letterpercent x",   123   )} \NC \NR
+\NC             \NC \letterpercent X    \NC 123    \NC \cldcontext{string.format("\letterpercent X",   123   )} \NC \NR
+\NC octal       \NC \letterpercent o    \NC 12345  \NC \cldcontext{string.format("\letterpercent o",   12345 )} \NC \NR
 \HL
-\NC string      \NC \letterpercent s    \NC abc    \NC \cldcontext{"\letterpercent s",   "abcd"} \NC \NR
-\NC             \NC \letterpercent -8s  \NC 123    \NC \cldcontext{"\letterpercent -8s", 123   } \NC \NR
-\NC             \NC \letterpercent 8s   \NC 123    \NC \cldcontext{"\letterpercent 8s",  123   } \NC \NR
+\NC string      \NC \letterpercent s    \NC abc    \NC \cldcontext{string.format("\letterpercent s",   "abcd")} \NC \NR
+\NC             \NC \letterpercent -8s  \NC 123    \NC \cldcontext{string.format("\letterpercent -8s", 123   )} \NC \NR
+\NC             \NC \letterpercent 8s   \NC 123    \NC \cldcontext{string.format("\letterpercent 8s",  123   )} \NC \NR
 \HL
-\NC float       \NC \letterpercent 0.2f \NC 12.345 \NC \cldcontext{"\letterpercent 0.2f",12.345} \NC \NR
-\NC exponential \NC \letterpercent 0.2e \NC 12.345 \NC \cldcontext{"\letterpercent 0.2e",12.345} \NC \NR
-\NC             \NC \letterpercent 0.2E \NC 12.345 \NC \cldcontext{"\letterpercent 0.2E",12.345} \NC \NR
-\NC autofloat   \NC \letterpercent 0.2g \NC 12.345 \NC \cldcontext{"\letterpercent 0.2g",12.345} \NC \NR
-\NC             \NC \letterpercent 0.2G \NC 12.345 \NC \cldcontext{"\letterpercent 0.2G",12.345} \NC \NR
+\NC float       \NC \letterpercent 0.2f \NC 12.345 \NC \cldcontext{string.format("\letterpercent 0.2f",12.345)} \NC \NR
+\NC exponential \NC \letterpercent 0.2e \NC 12.345 \NC \cldcontext{string.format("\letterpercent 0.2e",12.345)} \NC \NR
+\NC             \NC \letterpercent 0.2E \NC 12.345 \NC \cldcontext{string.format("\letterpercent 0.2E",12.345)} \NC \NR
+\NC autofloat   \NC \letterpercent 0.2g \NC 12.345 \NC \cldcontext{string.format("\letterpercent 0.2g",12.345)} \NC \NR
+\NC             \NC \letterpercent 0.2G \NC 12.345 \NC \cldcontext{string.format("\letterpercent 0.2G",12.345)} \NC \NR
 \HL
 \stoptabulate
 
@@ -842,58 +843,100 @@ context.typebuffer( { "dummy" }, { numbering = "line" })
 The \type {format} function discussed before is the built|-|in. As an alternative
 \CONTEXT\ provides an additional formatter that has some extensions. Interesting
 is that that one is often more efficient, although there are cases where the
-speed is comparable. In addition to the regular \type {format} function we have
-the following extra formatting keys: \footnote {As we run out of keys some are
-somewhat counter intuitive, like \type {l} for booleans (logical).}
+speed is comparable. As we run out of keys, some extra ones are a bit counter
+intuitive, like \type {l} for booleans (logical).
 
 \start \setuptype[color=]
 
 \starttabulate[|lB|lT|lT|lT|]
 \HL
-\NC utf character    \NC \letterpercent c            \NC 322           \NC \cldcontext{"\letterpercent c",322} \NC \NR
+\NC utf character       \NC \letterpercent c            \NC 322           \NC \cldcontext{"\letterpercent c",322} \NC \NR
 \HL
-\NC force tostring   \NC \letterpercent S            \NC nil           \NC \cldcontext{"\letterpercent S",nil} \NC \NR
-\NC                  \NC \letterpercent Q            \NC nil           \NC \cldcontext{"\letterpercent Q",nil} \NC \NR
-\NC                  \NC \letterpercent N            \NC 0123          \NC \cldcontext{"\letterpercent N","0123"} \NC \NR
+\NC string              \NC \letterpercent s            \NC foo           \NC \cldcontext{"\letterpercent s","foo"} \NC \NR
+\NC force tostring      \NC \letterpercent S            \NC nil           \NC \cldcontext{"\letterpercent S",nil} \NC \NR
+\NC quoted string       \NC \letterpercent q            \NC foo           \NC \cldcontext{"\letterpercent q","foo"} \NC \NR
+\NC force quoted string \NC \letterpercent Q            \NC nil           \NC \cldcontext{"\letterpercent Q",nil} \NC \NR
+\NC                     \NC \letterpercent N            \NC 0123          \NC \cldcontext{"\letterpercent N","0123"} \NC \NR
+\NC automatic quoted    \NC \letterpercent a            \NC true          \NC \cldcontext{"\letterpercent a",true} \NC \NR\NC \NR
+\NC                     \NC \letterpercent A            \NC true          \NC \cldcontext{"\letterpercent A",true} \NC \NR\NC \NR
+\NC left aligned utf    \NC \letterpercent 30<          \NC xx½xx         \NC \cldcontext{"\letterpercent 30<","xx½xx"} \NC \NR\NC \NR
+\NC right aligned utf   \NC \letterpercent 30>          \NC xx½xx         \NC \cldcontext{"\letterpercent 30>","xx½xx"} \NC \NR\NC \NR
 \HL
-\NC signed number    \NC \letterpercent I            \NC 1234          \NC \cldcontext{"\letterpercent I",1234} \NC \NR
-\NC rounded number   \NC \letterpercent r            \NC 1234.56       \NC \cldcontext{"\letterpercent r",1234.56} \NC \NR
+\NC integer             \NC \letterpercent i            \NC 1234          \NC \cldcontext{"\letterpercent i",1234} \NC \NR
+\NC integer             \NC \letterpercent d            \NC 1234          \NC \cldcontext{"\letterpercent d",1234} \NC \NR
+\NC signed number       \NC \letterpercent I            \NC 1234          \NC \cldcontext{"\letterpercent I",1234} \NC \NR
+\NC rounded number      \NC \letterpercent r            \NC 1234.56       \NC \cldcontext{"\letterpercent r",1234.56} \NC \NR
+\NC stripped number     \NC \letterpercent N            \NC 000123        \NC \cldcontext{"\letterpercent N","000123"} \NC \NR
+\NC comma/period float  \NC \letterpercent m            \NC 12.34         \NC \cldcontext{"\letterpercent m",12.34} \NC \NR
+\NC period/comma float  \NC \letterpercent M            \NC 12.34         \NC \cldcontext{"\letterpercent M",12.34} \NC \NR
 \HL
-\NC sparseexp        \NC \letterpercent 0.2j         \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2j",12.345e120} \NC \NR
-\NC                  \NC \letterpercent 0.2J         \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2J",12.345e120} \NC \NR
+\NC hexadecimal         \NC \letterpercent x            \NC 1234          \NC \cldcontext{"\letterpercent x",1234} \NC \NR
+\NC                     \NC \letterpercent X            \NC 1234          \NC \cldcontext{"\letterpercent X",1234} \NC \NR
+\NC octal               \NC \letterpercent o            \NC 1234          \NC \cldcontext{"\letterpercent o",1234} \NC \NR
 \HL
-\NC unicode value 0x \NC \letterpercent h            \NC ł 1234        \NC \cldcontext{"\letterpercent v \letterpercent v", "ł",1234} \NC \NR
-\NC                  \NC \letterpercent H            \NC ł 1234        \NC \cldcontext{"\letterpercent V \letterpercent V", "ł",1234} \NC \NR
-\NC unicode value U+ \NC \letterpercent u            \NC ł 1234        \NC \cldcontext{"\letterpercent u \letterpercent u", "ł",1234} \NC \NR
-\NC                  \NC \letterpercent U            \NC ł 1234        \NC \cldcontext{"\letterpercent U \letterpercent U", "ł",1234} \NC \NR
+\NC float               \NC \letterpercent 0.2f         \NC 12.345        \NC \cldcontext{"\letterpercent 0.2f",12.345} \NC \NR
+\NC formatted float     \NC \letterpercent 2.3k         \NC 12.3456       \NC \cldcontext{"\letterpercent 2.3f",12.3456} \NC \NR
+\NC checked float       \NC \letterpercent 0.2F         \NC 12.30         \NC \cldcontext{"\letterpercent 0.2F",12.3} \NC \NR
+\NC exponential         \NC \letterpercent .2e          \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2j",12.345e120} \NC \NR
+\NC                     \NC \letterpercent .2E          \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2J",12.345e120} \NC \NR
+\NC sparse exp          \NC \letterpercent 0.2j         \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2j",12.345e120} \NC \NR
+\NC                     \NC \letterpercent 0.2J         \NC 12.345e120    \NC \cldcontext{"\letterpercent 0.2J",12.345e120} \NC \NR
+\NC autofloat           \NC \letterpercent g            \NC 12.345        \NC \cldcontext{"\letterpercent 0.2J",12.345} \NC \NR
+\NC                     \NC \letterpercent G            \NC 12.345        \NC \cldcontext{"\letterpercent 0.2J",12.345} \NC \NR
 \HL
-\NC points           \NC \letterpercent p            \NC 1234567       \NC \cldcontext{"\letterpercent p",1234567} \NC \NR
-\NC basepoints       \NC \letterpercent b            \NC 1234567       \NC \cldcontext{"\letterpercent b",1234567} \NC \NR
+\NC unicode value 0x    \NC \letterpercent h            \NC ł 1234        \NC \cldcontext{"\letterpercent v \letterpercent v", "ł",1234} \NC \NR
+\NC                     \NC \letterpercent H            \NC ł 1234        \NC \cldcontext{"\letterpercent V \letterpercent V", "ł",1234} \NC \NR
+\NC unicode value U+    \NC \letterpercent u            \NC ł 1234        \NC \cldcontext{"\letterpercent u \letterpercent u", "ł",1234} \NC \NR
+\NC                     \NC \letterpercent U            \NC ł 1234        \NC \cldcontext{"\letterpercent U \letterpercent U", "ł",1234} \NC \NR
 \HL
-\NC table concat     \NC \letterpercent t            \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent t",{1,2,3}}  \NC \NR
-\NC                  \NC \letterpercent *t           \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent *t",{1,2,3}} \NC \NR
-\NC                  \NC \letterpercent \arg{ AND }t \NC \arg{a=1,b=3} \NC \cldcontext{"\letterpercent +{ AND }T",{a=1,b=2}} \NC \NR
-\NC table serialize  \NC \letterpercent T            \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent *t",{1,2,3}} \NC \NR
-\NC                  \NC \letterpercent T            \NC \arg{a=1,b=3} \NC \let|\relax\cldcontext{"\letterpercent T",{a=1,b=2}} \NC \NR
-\NC                  \NC \letterpercent +T           \NC \arg{a=1,b=3} \NC \cldcontext{"\letterpercent [+T]",{a=1,b=2}} \NC \NR
+\NC points              \NC \letterpercent p            \NC 1234567       \NC \cldcontext{"\letterpercent p",1234567} \NC \NR
+\NC basepoints          \NC \letterpercent b            \NC 1234567       \NC \cldcontext{"\letterpercent b",1234567} \NC \NR
 \HL
-\NC boolean (logic)  \NC \letterpercent l            \NC "a" == "b"    \NC \cldcontext{"\letterpercent l","a"=="b"} \NC \NR
-\NC                  \NC \letterpercent L            \NC "a" == "b"    \NC \cldcontext{"\letterpercent L","a"=="b"} \NC \NR
+\NC table concat        \NC \letterpercent t            \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent t",{1,2,3}}  \NC \NR
+\NC                     \NC \letterpercent *t           \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent *t",{1,2,3}} \NC \NR
+\NC                     \NC \letterpercent \arg{ AND }t \NC \arg{a=1,b=3} \NC \cldcontext{"\letterpercent +{ AND }T",{a=1,b=2}} \NC \NR
+\NC table serialize     \NC \letterpercent T            \NC \arg{1,2,3}   \NC \cldcontext{"\letterpercent *t",{1,2,3}} \NC \NR
+\NC                     \NC \letterpercent T            \NC \arg{a=1,b=3} \NC \let|\relax\cldcontext{"\letterpercent T",{a=1,b=2}} \NC \NR
+\NC                     \NC \letterpercent +T           \NC \arg{a=1,b=3} \NC \cldcontext{"\letterpercent [+T]",{a=1,b=2}} \NC \NR
 \HL
-\NC whitespace       \NC \letterpercent w            \NC 3             \NC \obeyspaces\vl\cldcontext{"\letterpercent w",3}\vl \NC \NR
-\NC                  \NC \letterpercent 2w           \NC 3             \NC \obeyspaces\vl\cldcontext{"\letterpercent 2w",3}\vl \NC \NR
-\NC                  \NC \letterpercent 4W           \NC               \NC \obeyspaces\vl\cldcontext{"\letterpercent 4W"}\vl \NC \NR
+\NC boolean (logic)     \NC \letterpercent l            \NC "a" == "b"    \NC \cldcontext{"\letterpercent l","a"=="b"} \NC \NR
+\NC                     \NC \letterpercent L            \NC "a" == "b"    \NC \cldcontext{"\letterpercent L","a"=="b"} \NC \NR
 \HL
-\NC skip             \NC \letterpercent 2z            \NC 1,2,3,4      \NC \obeyspaces\vl\cldcontext{"\letterpercent s\letterpercent 2z\letterpercent s",1,2,3,4}\vl \NC \NR
+\NC whitespace          \NC \letterpercent w            \NC 3             \NC \obeyspaces\vl\cldcontext{"\letterpercent w",3}\vl \NC \NR
+\NC                     \NC \letterpercent 2w           \NC 3             \NC \obeyspaces\vl\cldcontext{"\letterpercent 2w",3}\vl \NC \NR
+\NC                     \NC \letterpercent 4W           \NC               \NC \obeyspaces\vl\cldcontext{"\letterpercent 4W"}\vl \NC \NR
+\HL
+\NC skip                \NC \letterpercent 2z            \NC 1,2,3,4      \NC \obeyspaces\vl\cldcontext{"\letterpercent s\letterpercent 2z\letterpercent s",1,2,3,4}\vl \NC \NR
 \HL
 \stoptabulate
 
 \stop
 
-There is also a generic formatter: \type {a} and \type {A}. This one converts the
-argument into a string and deals with strings, number, booleans, tables and
-whatever. We mostly use these in tracing. The lowercase variant uses single
-quotes, and the uppercase variant uses double quotes.
+The generic formatters \type {a} and \type {A} convert the argument into a string
+and deals with strings, number, booleans, tables and whatever. We mostly use
+these in tracing. The lowercase variant uses single quotes, and the uppercase
+variant uses double quotes.
+
+A special one is the alignment formatter, which is a variant on the \type {s} one
+that also takes an optional positive of negative number:
+
+\startbuffer
+\startluacode
+context.start()
+context.tttf()
+context.verbatim("[[% 30<]]","xxaxx") context.par()
+context.verbatim("[[% 30<]]","xx½xx") context.par()
+context.verbatim("[[% 30>]]","xxaxx") context.par()
+context.verbatim("[[% 30>]]","xx½xx") context.par()
+context.verbatim("[[%-30<]]","xxaxx") context.par()
+context.verbatim("[[%-30<]]","xx½xx") context.par()
+context.verbatim("[[%-30>]]","xxaxx") context.par()
+context.verbatim("[[%-30>]]","xx½xx") context.par()
+context.stop()
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
 
 There are two more formatters plugged in: \type {!xml!} and \type {!tex!}. These
 are best demonstrated with an example:
@@ -1416,50 +1459,52 @@ end
 In the \type {number} namespace we collect some helpers that deal with numbers as
 well as bits. Starting with \LUA\ 5.2 a library \type {bit32} is but the language
 itself doesn't provide for them via operators: the library uses functions to
-manipulate numbers upto 2\high{32}. For advanced bit manipulations you should use
-the \type {bit32} library, otherwise it's best to stick to the functions
-described here.
+manipulate numbers upto 2\high{32}. In the latest \LUATEX\ you can use the new
+bit related operators.
 
-\startsummary[title={hasbit setbit clearbit}]
-
-As bitsets are numbers you will also use numbers to qualify them. So, if you want to
-set bits 1, 4 and 8, you can to that using the following specification:
-
-\starttyping
-local b = 1 + 4 + 8 -- 0x1 + 0x4 + 0x8
-local b = 13        -- or 0xC
-\stoptyping
-
-However, changing one bit by adding a number to an existing doesn't work out that well
-if that number already has that bit set. Instead we use:
-
-\starttyping
-local b = number.setbit(b,0x4)
-\stoptyping
-
-In a similar fashion you can turn of a bit:
-
-\starttyping
-local b = number.clearbit(b,0x4)
-\stoptyping
-
-Testing for a bit(set) is done as follows:
-
-\starttyping
-local okay = number.hasbit(b,0x4)
-\stoptyping
-
-\stopsummary
-
-\startsummary[title={bit}]
-
-Where the previously mentioned helpers work with numbers representing one or more
-bits, it is sometimes handy to work with positions. The \type {bit} function
-returns the associated number value.
-
-\ShowLuaExampleThree {number} {bit} {5}
-
-\stopsummary
+% For advanced bit manipulations you should use the \type {bit32} library, otherwise
+% it's best to stick to the functions described here.
+%
+% \startsummary[title={hasbit setbit clearbit}]
+%
+% As bitsets are numbers you will also use numbers to qualify them. So, if you want to
+% set bits 1, 4 and 8, you can to that using the following specification:
+%
+% \starttyping
+% local b = 1 + 4 + 8 -- 0x1 + 0x4 + 0x8
+% local b = 13        -- or 0xC
+% \stoptyping
+%
+% However, changing one bit by adding a number to an existing doesn't work out that well
+% if that number already has that bit set. Instead we use:
+%
+% \starttyping
+% local b = number.setbit(b,0x4)
+% \stoptyping
+%
+% In a similar fashion you can turn of a bit:
+%
+% \starttyping
+% local b = number.clearbit(b,0x4)
+% \stoptyping
+%
+% Testing for a bit(set) is done as follows:
+%
+% \starttyping
+% local okay = number.hasbit(b,0x4)
+% \stoptyping
+%
+% \stopsummary
+%
+% \startsummary[title={bit}]
+%
+% Where the previously mentioned helpers work with numbers representing one or more
+% bits, it is sometimes handy to work with positions. The \type {bit} function
+% returns the associated number value.
+%
+% \ShowLuaExampleThree {number} {bit} {5}
+%
+% \stopsummary
 
 \startsummary[title={tobitstring}]
 
@@ -1472,32 +1517,32 @@ we provide a helper: \type {tobitsting}.
 
 \stopsummary
 
-\startsummary[title={bits}]
-
-If you ever want to convert a bitset into a table containing the set bits you can
-use this function.
-
-\ShowLuaExampleTwo {number} {bits} {11}
-
-\stopsummary
-
-\startsummary[title={toset}]
-
-A string or number can be split into digits with \type {toset}. Beware, this
-function does not return a function but multiple numbers
-
-\starttyping
-local a, b, c, d = number.toset("1001")
-\stoptyping
-
-The returned values are either numbers or \type {nil} when an valid digit is
-seen.
-
-\ShowLuaExampleSeven {number} {toset} {100101}
-\ShowLuaExampleSeven {number} {toset} {"100101"}
-\ShowLuaExampleSeven {number} {toset} {"21546"}
-
-\stopsummary
+% \startsummary[title={bits}]
+%
+% If you ever want to convert a bitset into a table containing the set bits you can
+% use this function.
+%
+% \ShowLuaExampleTwo {number} {bits} {11}
+%
+% \stopsummary
+%
+% \startsummary[title={toset}]
+%
+% A string or number can be split into digits with \type {toset}. Beware, this
+% function does not return a function but multiple numbers
+%
+% \starttyping
+% local a, b, c, d = number.toset("1001")
+% \stoptyping
+%
+% The returned values are either numbers or \type {nil} when an valid digit is
+% seen.
+%
+% \ShowLuaExampleSeven {number} {toset} {100101}
+% \ShowLuaExampleSeven {number} {toset} {"100101"}
+% \ShowLuaExampleSeven {number} {toset} {"21546"}
+%
+% \stopsummary
 
 \startsummary[title={valid}]
 
