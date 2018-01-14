@@ -44,15 +44,15 @@ appendaction("processors",   "characters",  "scripts.injectors.handler")        
 appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
 appendaction("processors",   "words",       "languages.hyphenators.handler")                     -- always on
 appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled  -- might move up
-appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled  -- might move down
+appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
 appendaction("processors",   "fonts",       "nodes.injections.handler")
 appendaction("processors",   "fonts",       "typesetters.fontkerns.handler")
 appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
-appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
-appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
+appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- not always on (could be selective: if only node mode)
+appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- not always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 ------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 appendaction("processors",   "fonts",       "nodes.handlers.flatten")

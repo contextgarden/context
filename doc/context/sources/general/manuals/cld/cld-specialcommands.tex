@@ -8,6 +8,8 @@
 
 \index{tracing}
 
+\startsection[title=Tracing]
+
 There are a few functions in the \type {context} namespace that are no
 macros at the \TEX\ end.
 
@@ -28,18 +30,176 @@ There are a few tracing options that you can set at the \TEX\ end:
 \enabletrackers[context.trace]
 \stoptyping
 
-A few macros have special functions at the \LUA\ end. One of them is \type
-{\char}. The function makes sure that the characters ends up right. The same is
-true for \type {\chardef}. So, you don't need to mess around with \type {\relax}
-or trailing spaces as you would do at the \TEX\ end in order to tell the scanner
-to stop looking ahead.
+\stopsection
+
+\startsection[title=Overloads]
+
+A few macros have special functions (overloads) at the \LUA\ end. One of them is
+\type {\char}. The function makes sure that the characters ends up right. The
+same is true for \type {\chardef}. So, you don't need to mess around with \type
+{\relax} or trailing spaces as you would do at the \TEX\ end in order to tell the
+scanner to stop looking ahead.
 
 \starttyping
 context.char(123)
 \stoptyping
 
 Other examples of macros that have optimized functions are \type {\par},
-\type{\bgroup} and \type {\egroup}.
+\type{\bgroup} and \type {\egroup}. Or take this:
+
+\startbuffer
+1: \ctxlua{commands.doif(true)}{one}
+2: \cldcommand{doif("a","a","two")}
+3: \ctxcommand{doif(true)}{three}
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopsection
+
+\startsection[title=Steps]
+
+When you run the following code:
+
+\setbox0\emptybox
+
+\starttyping
+\startluacode
+  context.startitemize()
+    context.startitem()
+      context("BEFORE 1")
+    context.stopitem()
+    context("\\setbox0\\hbox{!!!!}")
+    context.startitem()
+      context("%p",tex.getbox(0).width)
+    context.stopitem()
+  context.stopitemize()
+\stopluacode
+\stoptyping
+
+You get a message like:
+
+\starttyping
+[ctxlua]:8: attempt to index a nil value
+...
+10             context("\\setbox0\\hbox{!!!!}")
+11             context.startitem()
+12 >>              context("%p",tex.getbox(0).width)
+...
+\stoptyping
+
+due to the fact that the box is still void. All that the \CONTEXT\ commands feed
+into \TEX\ happens when the code snippet has finished. You can however run a
+snippet of code the following way:
+
+\startbuffer
+\startluacode
+  context.stepwise (function()
+    context.startitemize()
+      context.startitem()
+        context.step("BEFORE 1")
+      context.stopitem()
+      context.step("\\setbox0\\hbox{!!!!}")
+      context.startitem()
+        context.step("%p",tex.getbox(0).width)
+      context.stopitem()
+    context.stopitemize()
+  end)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+and get:
+
+\getbuffer
+
+A more extensive example is:
+
+\startbuffer
+\startluacode
+  context.stepwise (function()
+    context.startitemize()
+      context.startitem()
+        context.step("BEFORE 1")
+      context.stopitem()
+      context.step("\\setbox0\\hbox{!!!!}")
+      context.startitem()
+        context.step("%p",tex.getbox(0).width)
+      context.stopitem()
+      context.startitem()
+        context.step("BEFORE 2")
+      context.stopitem()
+      context.step("\\setbox2\\hbox{????}")
+      context.startitem()
+        context.step("%p",tex.getbox(2).width)
+      context.startitem()
+        context.step("BEFORE 3")
+      context.stopitem()
+      context.startitem()
+        context.step("\\copy0\\copy2")
+      context.stopitem()
+      context.startitem()
+        context.step("BEFORE 4")
+        context.startitemize()
+          context.stepwise (function()
+            context.step("\\bgroup")
+            context.step("\\setbox0\\hbox{>>>>}")
+            context.startitem()
+              context.step("%p",tex.getbox(0).width)
+            context.stopitem()
+            context.step("\\setbox2\\hbox{<<<<}")
+            context.startitem()
+              context.step("%p",tex.getbox(2).width)
+            context.stopitem()
+            context.startitem()
+              context.step("\\copy0\\copy2")
+            context.stopitem()
+            context.startitem()
+              context.step("\\copy0\\copy2")
+            context.stopitem()
+            context.step("\\egroup")
+          end)
+        context.stopitemize()
+      context.stopitem()
+      context.startitem()
+        context.step("AFTER 1\\par")
+      context.stopitem()
+      context.startitem()
+        context.step("\\copy0\\copy2\\par")
+      context.stopitem()
+      context.startitem()
+        context.step("\\copy0\\copy2\\par")
+      context.stopitem()
+      context.startitem()
+        context.step("AFTER 2\\par")
+      context.stopitem()
+      context.startitem()
+        context.step("\\copy0\\copy2\\par")
+      context.stopitem()
+      context.startitem()
+        context.step("\\copy0\\copy2\\par")
+      context.stopitem()
+    context.stopitemize()
+  end)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+which gives:
+
+\getbuffer
+
+A step returns control to \TEX\ immediately and after the \TEX\ code that it
+feeds back is expanded, returns to \LUA. There are some limitations due to the
+input stack but normally that us no real issue.
+
+\stopsection
 
 \stopchapter
 

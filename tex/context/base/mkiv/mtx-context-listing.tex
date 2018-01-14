@@ -97,12 +97,15 @@
         context.usemodule { "scite" }
     end
 
-    if #document.files > 0 then
+    local done  = false
+    local files = document.files
+
+    if #files > 0 then
         if document.arguments.sort then
-            table.sort(document.files)
+            table.sort(files)
         end
-        for i=1,#document.files do
-            local filename = document.files[i]
+        for i=1,#files do
+            local filename = files[i]
             if not string.find(filename,"^mtx%-context%-") then
                 local pretty = document.arguments.pretty
                 if pretty == true then
@@ -129,9 +132,12 @@
                 else
                     context.typefile(filename)
                 end
+                done = true
             end
         end
-    else
+    end
+
+    if not done then
         context("no files given")
     end
 

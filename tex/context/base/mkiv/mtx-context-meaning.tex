@@ -1,0 +1,83 @@
+%D \module
+%D   [       file=mtx-context-meaning,
+%D        version=2018.01.12,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Show Meanings,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin help
+%
+% usage: context --extra=meaning [options] list-of-commands
+%
+% --pattern : match given pattern
+%
+% example: context --extra=meaning --pattern=*paper*
+%          context --extra=meaning setuplayout
+%          context --extra=meaning setup_layout
+%
+% end help
+
+\input mtx-context-common.tex
+
+\setupbodyfont
+  [dejavu]
+
+\def\showmeaning#1%
+  {\writestatus{meaning}{\strippedcsname#1}%
+   \writestring{}%
+   \writestring{\expandafter\meaning\begincsname#1\endcsname}}
+
+\starttext
+
+\startluacode
+    local h = tex.hashtokens()
+
+    local function showmeaning(str)
+        local s = string.gsub(str,"^\\","")
+        local p = "^" .. string.topattern(s) .. "$"
+        context("pattern: ")
+        context.type(s)
+        context.blank()
+        for i=1,#h do
+            local hi = h[i]
+            if string.find(h[i],p) then
+                context.type(hi)
+                context.par()
+                context.showmeaning(hi)
+            end
+        end
+        context.page()
+    end
+
+    local done    = false
+    local pattern = document.arguments.pattern
+
+    if pattern then
+        pattern = { pattern}
+    else
+        pattern = document.files
+    end
+
+    if type(pattern) == "table" then
+        table.sort(pattern)
+        for i=1,#pattern do
+            local p = pattern[i]
+            if not string.find(p,"^mtx%-context%-") then
+                done = true
+                showmeaning(p)
+            end
+        end
+    end
+
+    if not done then
+        context("no search pattern given")
+    end
+\stopluacode
+
+\stoptext

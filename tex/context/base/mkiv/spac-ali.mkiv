@@ -791,9 +791,16 @@
 \setvalue{\??aligncommand\v!extremestretch }{\toksapp\t_spac_align_collected{\spac_align_set_extreme_stretch}}
 
 \setvalue{\??aligncommand  \v!final}{\c_spac_align_state_par_fill\plusone}
+\setvalue{\??aligncommand1*\v!final}{\c_spac_align_state_par_fill\plusone}
 \setvalue{\??aligncommand2*\v!final}{\c_spac_align_state_par_fill\plustwo}      % hardcoded multiplier
 \setvalue{\??aligncommand3*\v!final}{\c_spac_align_state_par_fill\plusthree}
 \setvalue{\??aligncommand4*\v!final}{\c_spac_align_state_par_fill\plusfour}
+
+% a one shot (only usefull in e.g. framed, also needs tolerance and stretch)
+
+\setvalue{\??aligncommand  \v!more}{\toksapp\t_spac_align_collected{\looseness\plusone}}
+\setvalue{\??aligncommand1*\v!more}{\toksapp\t_spac_align_collected{\looseness\plusone}}
+\setvalue{\??aligncommand2*\v!more}{\toksapp\t_spac_align_collected{\looseness\plustwo}}
 
 % \setvalue{\??aligncommand ... }{\toksapp\t_spac_align_collected{\nopenalties}}
 % \setvalue{\??aligncommand ... }{\toksapp\t_spac_align_collected{\setdefaultpenalties}}

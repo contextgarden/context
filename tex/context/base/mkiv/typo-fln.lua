@@ -38,7 +38,8 @@ local getprev            = nuts.getprev
 local getboth            = nuts.getboth
 local setboth            = nuts.setboth
 local getid              = nuts.getid
-local getfield           = nuts.getfield
+local getsubtype         = nuts.getsubtype
+local getwidth           = nuts.getwidth
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
 local getattr            = nuts.getattr
@@ -53,14 +54,19 @@ local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
+local glue_code          = nodecodes.glue
+
+local spaceskip_code     = nodes.gluecodes.spaceskip
 
 local traverse_id        = nuts.traverse_id
 local flush_node_list    = nuts.flush_list
 local flush_node         = nuts.flush_node
 local copy_node_list     = nuts.copy_list
+local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
 local list_dimensions    = nuts.dimensions
+local hpack_node_list    = nuts.hpack
 
 local nodepool           = nuts.pool
 local newpenalty         = nodepool.penalty
@@ -114,7 +120,7 @@ implement {
 }
 
 actions[v_line] = function(head,setting)
- -- local attribute = fonts.specifiers.contextnumber(setting.feature) -- was experimental
+ -- local attribute  = fonts.specifiers.contextnumber(setting.feature) -- was experimental
     local dynamic    = setting.dynamic
     local font       = setting.font
     local noflines   = setting.n or 1
@@ -165,11 +171,28 @@ actions[v_line] = function(head,setting)
             hsize = hsize - hangindent
         end
 
+        local function list_dimensions(list,start)
+            local temp = copy_node_list(list,start)
+            temp = tonode(temp)
+            temp = nodes.handlers.characters(temp)
+            temp = nodes.injections.handler(temp)
+         -- temp = typesetters.fontkerns.handler(temp) -- maybe when enabled
+         -- nodes.handlers.protectglyphs(temp)         -- not needed as we discard
+         -- temp = typesetters.spacings.handler(temp)  -- maybe when enabled
+         -- temp = typesetters.kerns.handler(temp)     -- maybe when enabled
+            temp = tonut(temp)
+            temp = hpack_node_list(temp)
+            local width = getwidth(temp)
+            flush_node_list(temp)
+            return width
+        end
+
         local function try(extra)
             local width = list_dimensions(list,start)
             if extra then
                 width = width + list_dimensions(extra)
             end
+         -- report_firstlines("line length: %p, progression: %p, text: %s",hsize,width,nodes.listtoutf(list,nil,nil,start))
             if width > hsize then
                 list = prev
                 return true
@@ -187,7 +210,10 @@ actions[v_line] = function(head,setting)
             elseif id == disc_code then
                 -- this could be an option
                 n = n + 1
-                if try(getfield(start,"pre")) then
+                local pre, post, replace = getdisc(start)
+                if pre and try(pre) then
+                    break
+                elseif replace and try(replace) then
                     break
                 end
             elseif id == kern_code then -- todo: fontkern
@@ -203,6 +229,9 @@ actions[v_line] = function(head,setting)
             linebreaks[i] = n
         end
     end
+
+    flush_node_list(temp)
+
     local start = head
     local n     = 0
 
@@ -224,6 +253,7 @@ actions[v_line] = function(head,setting)
         local linebreak = linebreaks[i]
         while start and n < nofchars do
             local id = getid(start)
+            local ok = false
             if id == glyph_code then
                 n = n + 1
                 update(start)
@@ -268,6 +298,8 @@ actions[v_line] = function(head,setting)
                 end
                 setdisc(disc,pre,post,replace)
                 flush_node(disc)
+            elseif id == glue_code then
+                head = insert_node_before(head,start,newpenalty(10000)) -- nobreak
             end
             if linebreak == n then
                 if trace_firstlines then
@@ -281,7 +313,7 @@ actions[v_line] = function(head,setting)
             start = getnext(start)
         end
     end
-    flush_node_list(temp)
+
     return head, true
 end
 

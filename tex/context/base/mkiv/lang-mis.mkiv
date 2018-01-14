@@ -139,16 +139,13 @@
 %D \stop
 
 %D \macros
-%D   {compoundhyphen,
-%D    beginofsubsentence,endofsubsentence}
+%D   {compoundhyphen}
 %D
 %D Now let's go to the macros. First we define some variables. In the main \CONTEXT\
 %D modules these can be tuned by a setup command. Watch the (maybe) better looking
 %D compound hyphen.
 
 \ifx\compoundhyphen    \undefined \unexpanded\def\compoundhyphen    {\hbox{-\kern-.25ex-}} \fi
-\ifx\beginofsubsentence\undefined \unexpanded\def\beginofsubsentence{\hbox{\emdash}}       \fi
-\ifx\endofsubsentence  \undefined \unexpanded\def\endofsubsentence  {\hbox{\emdash}}       \fi
 
 %D The last two variables are needed for subsentences |<|like this one|>| which we
 %D did not yet mention. We want to enable breaking but at the same time don't want
@@ -162,14 +159,17 @@
 \unexpanded\def\permithyphenation{\ifhmode\prewordbreak\fi} % doesn't remove spaces
 
 %D \macros
-%D   {beginofsubsentencespacing,endofsubsentencespacing}
+%D   {beginofsubsentence,endofsubsentence,
+%D    beginofsubsentencespacing,endofsubsentencespacing}
 %D
 %D In the previous macros we provided two hooks which can be used to support nested
 %D sub||sentences. In \CONTEXT\ these hooks are used to insert a small space when
 %D needed.
 
-\ifx\beginofsubsentencespacing\undefined \let\beginofsubsentencespacing\relax \fi
-\ifx\endofsubsentencespacing  \undefined \let\endofsubsentencespacing  \relax \fi
+% \ifx\beginofsubsentence       \undefined \unexpanded\def\beginofsubsentence{\hbox{\emdash}} \fi
+% \ifx\endofsubsentence         \undefined \unexpanded\def\endofsubsentence  {\hbox{\emdash}} \fi
+% \ifx\beginofsubsentencespacing\undefined \let\beginofsubsentencespacing\relax \fi
+% \ifx\endofsubsentencespacing  \undefined \let\endofsubsentencespacing  \relax \fi
 
 %D The following piece of code is a torture test compound handling. The \type
 %D {\relax} before the \type {\ifmmode} is needed because of the alignment scanner
@@ -313,7 +313,7 @@
        \prewordbreak\discretionary{\hbox{#2}}{}{\hbox{#2}}\allowbreak\postwordbreak
      \fi\fi
    \fi\fi
-   \nextnextnext} % lookahead in commands
+   \nextnextnext}
 
 %D \macros
 %D   {directdiscretionary}
@@ -412,14 +412,27 @@
   {\prewordbreak\discretionary{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}%
    \allowbreak\postwordbreak} % bugged
 
+% \definetextmodediscretionary <
+%   {\beginofsubsentence\prewordbreak\beginofsubsentencespacing}
+%
+% \definetextmodediscretionary >
+%   {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+%
+% \definetextmodediscretionary =
+%   {\prewordbreak\midsentence\prewordbreak}
+
 \definetextmodediscretionary <
-  {\beginofsubsentence\prewordbreak\beginofsubsentencespacing}
+  {\beginofsubsentence\prewordbreak\beginofsubsentencespacing
+   \aftergroup\ignorespaces} % tricky, we need to go over the \nextnextnext
 
 \definetextmodediscretionary >
-  {\endofsubsentencespacing\prewordbreak\endofsubsentence}
+  {\removeunwantedspaces
+   \endofsubsentencespacing\prewordbreak\endofsubsentence}
 
 \definetextmodediscretionary =
-  {\prewordbreak\midsentence\prewordbreak} % {\prewordbreak\compoundhyphen}
+  {\removeunwantedspaces
+   \prewordbreak\midsentence\prewordbreak
+   \aftergroup\ignorespaces}
 
 % french
 

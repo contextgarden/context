@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/12/18 15:56:34
+-- merge date  : 01/14/18 15:55:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -34752,7 +34752,7 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
   end
 end
 function nodes.handlers.basepass(head)
-  if not basemodepass then
+  if basemodepass then
     head=n_ligaturing(head)
     head=n_kerning(head)
   end

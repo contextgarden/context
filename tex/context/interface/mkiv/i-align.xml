@@ -53,9 +53,13 @@
                 <cd:constant type="stretch"/>
                 <cd:constant type="extremestretch"/>
                 <cd:constant type="final"/>
+                <cd:constant type="1*final"/>
                 <cd:constant type="2*final"/>
                 <cd:constant type="3*final"/>
                 <cd:constant type="4*final"/>
+                <cd:constant type="more"/>
+                <cd:constant type="1*more"/>
+                <cd:constant type="2*more"/>
                 <!--
                     <cd:constant type="cd:name"/>
                 -->

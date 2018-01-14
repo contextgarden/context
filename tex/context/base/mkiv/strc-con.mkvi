@@ -524,6 +524,11 @@
   [\v!empty]
   [\c!renderingsetup=\??constructionrenderings:\v!empty]
 
+\defineconstructionalternative
+  [\v!label]
+  [\c!renderingsetup=\??constructionrenderings:\v!label,
+   \c!width=]
+
 \newbox   \constructionheadbox
 \newskip  \leftconstructionskip
 \newskip  \rightconstructionskip
@@ -904,6 +909,13 @@
     \noindent
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
+\stopsetups
+
+\startsetups[\??constructionrenderings:\v!label]
+    \dontleavehmode
+    \begingroup
+    \constructionparameter\c!headcommand{\flushconstructionheadbox}
+    \endgroup
 \stopsetups
 
 % you can use \placeclosesymbol or \qed to place a symbol at the end of a

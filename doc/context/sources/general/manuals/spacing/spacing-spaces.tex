@@ -230,6 +230,46 @@ cursive attachments.
 
 \stopsection
 
+\startsection[title=Looseness]
+
+The \type {\looseness} parameter can be used to let the par builder add more
+lines, but that condition is only met when the demand is reasonable. So we need
+stretch and often also tolerance to achieve it.
+
+\starttyping
+\looseness=1 ... text ... \par
+\stoptyping
+
+This setting is reset afterwards. Because \type {framed} does some grouping deep down,
+we need either to use it in there like this:
+
+\starttyping
+\framed
+  [align={normal,verytolerant,stretch},strut=no]
+  {\looseness1 ... \par}
+\stoptyping
+
+which is somewhat clumsy, or we can do:
+
+\starttyping
+\framed
+  [align={normal,verytolerant,stretch,2*more}]
+  {...}
+\stoptyping
+
+This is demonstrated in \in {figure} [fig:looseness].
+
+\startplacefigure[reference=fig:looseness,title={Looseness in action.}]
+    \dontcomplain
+    \startcombination[location=top,nx=3,ny=1]
+        {\framed[foregroundstyle=small,align={normal,verytolerant,stretch},       width=.3\textwidth]{\samplefile{sapolsky}\unskip}} {}
+        {\framed[foregroundstyle=small,align={normal,verytolerant,stretch,1*more},width=.3\textwidth]{\samplefile{sapolsky}\unskip}} {\type {1*more}}
+        {\framed[foregroundstyle=small,align={normal,verytolerant,stretch,2*more},width=.3\textwidth]{\samplefile{sapolsky}\unskip}} {\type {2*more}}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

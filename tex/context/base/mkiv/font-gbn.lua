@@ -235,7 +235,7 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
 end
 
 function nodes.handlers.basepass(head)
-    if not basemodepass then
+    if basemodepass then
         head = n_ligaturing(head)
         head = n_kerning(head)
     end

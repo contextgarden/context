@@ -258,4 +258,6 @@
 
     <cd:command name="subsentence" type="environment" level="document" category="language" file="typo-del.mkiv"/>
 
+    <cd:command name="midsubsentence" level="document" category="language" file="typo-del.mkiv"/>
+
 </cd:interface>
