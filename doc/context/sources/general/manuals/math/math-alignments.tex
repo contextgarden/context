@@ -248,6 +248,50 @@ with examples if you want to get an idea what is possible.
 
 \stopsection
 
+\startsection[title={Splitting over pages}]
+
+Because formula placement has positioning options a formula gets
+wrapped in a box. As a consequence formulas will not break across
+pages. This can be an issue with alignments. There is an experimental
+option for this (the result is shown in \in {figure} [fig:splitalign]):
+
+\startbuffer[demo]
+\usemodule[art-01]
+\setupbodyfont[13pt]
+\starttext
+  \input tufte
+  \startplaceformula
+    \startsplitformula
+      \startalign
+        \NC a \EQ b \NR[+]
+        \NC   \EQ d \NR
+        \NC c \EQ f \NR[+]
+        \NC   \EQ g \NR
+        \NC   \EQ h \NR[+]
+        \dorecurse{100}{\NC \EQ i + #1 - #1\NR[+]}%
+        \NC   \EQ x \NR
+      \stopalign
+    \stopsplitformula
+  \stopplaceformula
+  \input tufte
+\stoptext
+\stopbuffer
+
+\typebuffer[demo]
+
+\startplacefigure[title={Splitting an alignment.},reference=fig:splitalign]
+    \startcombination[nx=4,ny=1]
+      {\typesetbuffer[demo][page=1,width=\measure{combination}]} {}
+      {\typesetbuffer[demo][page=2,width=\measure{combination}]} {}
+      {\typesetbuffer[demo][page=3,width=\measure{combination}]} {}
+      {\typesetbuffer[demo][page=4,width=\measure{combination}]} {}
+    \stopcombination
+\stopplacefigure
+
+\stoptext
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

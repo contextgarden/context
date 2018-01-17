@@ -180,4 +180,123 @@ controlled by a directive (beware: enabling them is global).
 
 \stopsection
 
+\startsection[title=Symbols]
+
+You can access glyphs by name but you need to know that name, for example:
+
+\startbuffer
+\definefontsynonym [bends] [file:manfnt.afm]
+
+\startsymbolset [Dangerous Bends]
+    \definesymbol [dbend]   [\resolvedglyphdirect{bends}{n:char_7e}]
+    \definesymbol [lhdbend] [\resolvedglyphdirect{bends}{n:char_7f}]
+\stopsymbolset
+
+\setupsymbolset [Dangerous Bends]
+
+Two dangerous bends: \symbol{dbend} and \symbol{lhdbend}.
+\stopbuffer
+
+\typebuffer
+
+You can best save the fonts you use that way in a place that doesn't get
+overwritten because names can change.
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Alternative styles]
+
+\startbuffer[demo]
+    \start
+        \getbuffer[setup]
+        \subject{[ {\myslanted myslanted} ] [ {\it it} ] [ {\slanted slanted} ] [ $x=1$ ]}
+        [ {\myslanted myslanted} ] [ {\it it} ] [ {\slanted slanted} ] [ $x=1$ ]
+        \typebuffer[setup]
+        \blackrule[width=\hsize,height=1pt,depth=0pt]
+    \stop
+\stopbuffer
+
+In section heads we want a nested style (e.g.\ italic) to adapt to the main font.
+The following definitions shows how you can influence that process. We use the
+following \type {demo} buffer as sample:
+
+\typebuffer[demo]
+
+\startbuffer
+\blackrule[width=\hsize,height=1pt,depth=0pt]
+
+\startbuffer[setup]
+\setuphead[subject][style=\tfb,before=,after=]
+\definealternativestyle [myslanted] [\it] []
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\setuphead[subject][style=\tfb,before=,after=]
+\definealternativestyle [myslanted] [\it] [\bi]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\setuphead[subject][style=\tfb,before=,after=]
+\definealternativestyle [myslanted] [\it] [\tf]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\definealternativestyle [myslanted] [\normalitalicface]
+\setuphead[subject][style=bold,before=,after=]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\definealternativestyle [myslanted] [\normalitalicface]
+\setuphead[subject][style=\bfd,before=,after=]
+\stopbuffer
+
+\getbuffer[demo]
+
+\startbuffer[setup]
+\definealternativestyle [myslanted] [\slantedface]
+\setuphead[subject][style=boldface,before=,after=]
+\stopbuffer
+
+\getbuffer[demo]
+\stopbuffer
+
+You can influence the main method of operation with:
+
+\starttyping
+\setupalternativestyles[method=normal]
+\setupalternativestyles[method=auto]
+\stoptyping
+
+\startplacefigure[title={Alternative style methods.},reference=fig:alternativestyle]
+    \startcombination
+        {\setupalternativestyles[method=normal]\scale[width=.45\textwidth]{\framed[width=.85\textwidth,align=normal,frame=off,offset=overlay]{\getbuffer}}} {\type{method=normal}}
+        {\setupalternativestyles  [method=auto]\scale[width=.45\textwidth]{\framed[width=.85\textwidth,align=normal,frame=off,offset=overlay]{\getbuffer}}} {\type{method=auto}}
+    \stopcombination
+\stopplacefigure
+
+The result is shown in \in {figure} [fig:alternativestyle]. Relevant commands are:
+
+\starttyping
+\emphasistypeface
+\emphasisboldface
+
+\normaltypeface    \typeface
+\normalboldface    \boldface
+\normalslantedface \slantedface
+\normalitalicface  \italicface
+\swaptypeface      \swapface
+\stoptyping
+
+\stopsection
+
 \stopchapter

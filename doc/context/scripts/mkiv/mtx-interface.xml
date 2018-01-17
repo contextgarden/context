@@ -21,6 +21,7 @@
     <flag name="text"><short>create text files for commands and environments</short></flag>
     <flag name="raw"><short>report commands to the console</short></flag>
     <flag name="check"><short>generate check file</short></flag>
+    <flag name="meaning"><short>report the mening of commands</short></flag>
    </subcategory>
    <subcategory>
     <flag name="toutf"><short>replace named characters by utf</short></flag>
@@ -29,6 +30,9 @@
    <subcategory>
     <flag name="suffix"><short>use given suffix for output files</short></flag>
     <flag name="force"><short>force action even when in doubt</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern"><short>a pattern for meaning lookups</short></flag>
    </subcategory>
   </category>
  </flags>

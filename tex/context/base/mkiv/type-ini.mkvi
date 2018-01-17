@@ -258,7 +258,7 @@
 \def\font_typescripts_synonym_define[#name][#synonym]%
   {\ifsecondargument\setevalue{\??typescriptsynonyms#name}{#synonym}\fi}
 
-\def\truetypescript#name% recursove so no \lastnamedcs
+\def\truetypescript#name% recursive so no \lastnamedcs
   {\ifcsname\??typescriptsynonyms#name\endcsname
     %\expandafter\truetypescript\csname\??typescriptsynonyms#name\endcsname
      \expandafter\truetypescript\lastnamedcs

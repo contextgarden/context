@@ -430,10 +430,13 @@
       {\ifmmode
          \let\stopalign\align_math_normal_stop % cannot be an unexpanded def ... lookahead in align
          \expandafter\align_math_normal_start
+       \else\ifinformula
+         \let\stopalign\align_math_normal_stop
+         \doubleexpandafter\align_math_normal_start
        \else
          \let\stopalign\align_text_normal_stop
-         \expandafter\align_text_normal_start
-       \fi}
+         \doubleexpandafter\align_text_normal_start
+       \fi\fi}
 
     \let\stopalign\relax
 
@@ -441,10 +444,13 @@
       {\ifmmode
          \let\stopalignment\align_math_normal_stop % cannot be an unexpanded def ... lookahead in align
          \expandafter\align_math_normal_start
+       \else\ifinformula
+         \let\stopalignment\align_math_normal_stop % cannot be an unexpanded def ... lookahead in align
+         \doubleexpandafter\align_math_normal_start
        \else
          \let\stopalignment\align_text_normal_stop
-         \expandafter\align_text_normal_start
-       \fi}
+         \doubleexpandafter\align_text_normal_start
+       \fi\fi}
 
     \let\stopalignment\relax
 
@@ -1307,10 +1313,12 @@
   {\setvalue{\??mathinnerstart#1}{#2}%
    \setvalue{\??mathinnerstop #1}{#3}}
 
-\newif\iftracemath
+\installtextracker
+  {formulas.boxes}
+  {\let\math_hbox\ruledhbox}
+  {\let\math_hbox\hbox}
 
-\def\math_hbox
-  {\iftracemath\ruledhbox\else\hbox\fi}
+\let\math_hbox\hbox
 
 \newconstant\mathraggedstatus % normal left center  right
 \newconstant\mathnumberstatus % nothing normal shift_right
@@ -1793,7 +1801,24 @@
 \setupmathematics
   [\c!textdistance=\zeropoint]
 
-%D For documentation, see \type {math-mkiv.tex}.
+%D This is an experiment. No fancy spacing and alignments here. If we ever
+%D go that route it might result in incompatible rendering.
+
+\unexpanded\def\startsplitformula
+  {\ifhmode
+     \par
+   \fi
+   \begingroup
+   \beforedisplayspace
+   % subset of \everydisplay:
+   \attribute \mathmodeattribute \plusone
+   \settrue \indisplaymath
+   % end of subset
+   \informulatrue}
+
+\unexpanded\def\stopsplitformula
+  {\afterdisplayspace
+   \endgroup}
 
 \protect \endinput
 

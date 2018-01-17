@@ -276,6 +276,8 @@
 \unexpanded\def\pack_combinations_start_indeed[#1*#2*#3]%
   {\global\c_pack_combinations_x#1\relax
    \global\c_pack_combinations_y#2\relax
+   \setexpandedcombinationparameter\c!nx{\the\c_pack_combinations_x}% in case we access it
+   \setexpandedcombinationparameter\c!ny{\the\c_pack_combinations_y}% in case we access it
    \pack_combinations_check_x_y
    \dotagcombination
    \global\setbox\b_pack_combinations_captions\emptybox
@@ -795,25 +797,25 @@
    \pairedboxparameter\c!inbetween
    \box\b_pack_pairedboxes_second}
 
-\setvalue{\??pairedboxalign  \v!left}% 0
+\setvalue{\??pairedboxalign\v!left}% 0
   {\let\pack_pairedboxes_align_l\relax
    \let\pack_pairedboxes_align_r\hss
    \let\pack_pairedboxes_align_t\relax
    \let\pack_pairedboxes_align_b\relax}
 
-\setvalue{\??pairedboxalign \v!right}% 1
+\setvalue{\??pairedboxalign\v!right}% 1
   {\let\pack_pairedboxes_align_l\hss
    \let\pack_pairedboxes_align_r\relax
    \let\pack_pairedboxes_align_t\relax
    \let\pack_pairedboxes_align_b\relax}
 
-\setvalue{\??pairedboxalign  \v!high}% 2
+\setvalue{\??pairedboxalign\v!high}% 2
   {\let\pack_pairedboxes_align_l\relax
    \let\pack_pairedboxes_align_r\relax
    \let\pack_pairedboxes_align_t\relax
    \let\pack_pairedboxes_align_b\vss}
 
-\setvalue{\??pairedboxalign   \v!low}% 3
+\setvalue{\??pairedboxalign\v!low}% 3
   {\let\pack_pairedboxes_align_l\relax
    \let\pack_pairedboxes_align_r\relax
    \let\pack_pairedboxes_align_t\vss

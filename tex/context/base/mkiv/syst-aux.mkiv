@@ -181,7 +181,6 @@
 %D These are not needed any more now that we have wide screens (and bytes come
 %D cheap).
 
-
 \let\@EA          \singleexpandafter
 \let\@EAEAEA      \doubleexpandafter
 \let\@EAEAEAEAEAEA\tripleexpandafter
@@ -3097,25 +3096,6 @@
 %D A fully expandable message:
 
 \let\immediatemessage\clf_immediatemessage % {} mandate
-
-%D \macros
-%D   {debuggerinfo}
-%D
-%D For debugging purposes we can enhance macros with the
-%D next alternative. Here \type{debuggerinfo} stands for both
-%D a macro accepting two arguments and a boolean (in fact a
-%D few macro's too).
-
-% \newif\ifdebuggerinfo
-%
-% \unexpanded\def\debuggerinfo#1#2%
-%   {\ifdebuggerinfo
-%      \writestatus{debugger}{#1:: #2}%
-%    \fi}
-%
-% \ifdefined\writestatus \else \let\writestatus\normalwritestatus \fi
-
-% % % % % % % % % % % % % % % % % % % % % % % %
 
 %D \macros
 %D   {rawgetparameters}

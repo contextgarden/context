@@ -379,6 +379,7 @@
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normal'/>
 		<cd:variable name='nospacing' value='sansespacement'/>
+		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='pas'/>
 		<cd:variable name='notation' value='notation'/>
 		<cd:variable name='note' value='note'/>
@@ -1010,6 +1011,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='stylenumero'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1178,7 +1180,9 @@
 		<cd:constant name='source' value='origine'/>
 		<cd:constant name='space' value='espace'/>
 		<cd:constant name='spaceafter' value='espaceapres'/>
+		<cd:constant name='spaceafterside' value='spaceafterside'/>
 		<cd:constant name='spacebefore' value='espaceavant'/>
+		<cd:constant name='spacebeforeside' value='spacebeforeside'/>
 		<cd:constant name='spaceinbetween' value='spaceinbetween'/>
 		<cd:constant name='spacing' value='espacement'/>
 		<cd:constant name='specification' value='specification'/>
@@ -1243,6 +1247,7 @@
 		<cd:constant name='titledistance' value='distancetitre'/>
 		<cd:constant name='titleleft' value='titleleft'/>
 		<cd:constant name='titleright' value='titleright'/>
+		<cd:constant name='titlestrut' value='titlestrut'/>
 		<cd:constant name='titlestyle' value='styletitre'/>
 		<cd:constant name='to' value='vers'/>
 		<cd:constant name='toffset' value='toffset'/>

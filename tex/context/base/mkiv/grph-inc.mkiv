@@ -872,16 +872,26 @@
   [\v!inline]
   [\c!height=\lineheight]
 
+\definemeasure
+  [\v!combination]
+  [(\textwidth
+    -\effectiveleftskip
+    -\effectiverightskip
+    -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
+   )/\combinationparameter\c!nx]
+
 \defineexternalfigure
   [\v!combination]
-  [\c!width=\dimexpr(%
-     \textwidth-\effectiveleftskip-\effectiverightskip
-    -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
-   )/\combinationparameter\c!nx\relax]
+  [\c!width=\measure{\v!combination}]
 
 % \startcombination[nx=2,ny=1]
 %     {\externalfigure[dummy][combination]} {}
 %     {\externalfigure[dummy][combination]} {}
+% \stopcombination
+
+% \startcombination[nx=2,ny=1]
+%     {\externalfigure[dummy][width=\measure{combination}]} {}
+%     {\externalfigure[dummy][width=\measure{combination}]} {}
 % \stopcombination
 
 % \startcombination[nx=2,ny=2]

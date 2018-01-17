@@ -35,6 +35,7 @@ local helpinfo = [[
     <flag name="text"><short>create text files for commands and environments</short></flag>
     <flag name="raw"><short>report commands to the console</short></flag>
     <flag name="check"><short>generate check file</short></flag>
+    <flag name="meaning"><short>report the mening of commands</short></flag>
    </subcategory>
    <subcategory>
     <flag name="toutf"><short>replace named characters by utf</short></flag>
@@ -43,6 +44,9 @@ local helpinfo = [[
    <subcategory>
     <flag name="suffix"><short>use given suffix for output files</short></flag>
     <flag name="force"><short>force action even when in doubt</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern"><short>a pattern for meaning lookups</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -666,12 +670,34 @@ function scripts.interface.toutf()
     end
 end
 
+function scripts.interface.meaning()
+    local runner  = "mtxrun --silent --script context --extra=meaning --once --noconsole --nostatistics"
+    local pattern = environment.arguments.pattern
+    local files   = environment.files
+    if type(pattern) == "string" then
+        runner = runner .. ' --pattern="' .. pattern .. '"'
+    elseif files and #files > 0 then
+        for i=1,#files do
+            runner = runner .. ' "' .. files[i] .. '"'
+        end
+    else
+        return
+    end
+    local r = os.resultof(runner)
+    if type(r) == "string" then
+        r = gsub(r,"^.-(meaning%s+>)","\n%1")
+        print(r)
+    end
+end
+
 local ea = environment.argument
 
 if ea("mkii") then
     scripts.interface.mkii()
 elseif ea("preprocess") then
     scripts.interface.preprocess()
+elseif ea("meaning") then
+    scripts.interface.meaning()
 elseif ea("toutf") then
     scripts.interface.toutf()
 elseif ea("bidi") then

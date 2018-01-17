@@ -1516,6 +1516,18 @@ local function attribute(collected,a,default)
     end
 end
 
+local function parameter(collected,p,default)
+    if collected and #collected > 0 then
+        local pa = collected[1].pa
+        local str = (pa and pa[p]) or default
+        if str and str ~= "" then
+            contextsprint(notcatcodes,str)
+        end
+    elseif default then
+        contextsprint(notcatcodes,default)
+    end
+end
+
 local function chainattribute(collected,arguments,default) -- todo: optional levels
     if collected and #collected > 0 then
         local e = collected[1]
@@ -1672,6 +1684,8 @@ texfinalizers.reverse        = reverse
 texfinalizers.count          = count
 texfinalizers.command        = command
 texfinalizers.attribute      = attribute
+texfinalizers.param          = parameter
+texfinalizers.parameter      = parameter
 texfinalizers.text           = text
 texfinalizers.stripped       = stripped
 texfinalizers.lower          = lower
@@ -1806,6 +1820,15 @@ function lxml.attribute(id,pattern,a,default)
     end
 end
 
+function lxml.parameter(id,pattern,p,default)
+    local collected = xmlapplylpath(getid(id),pattern)
+    if collected then
+        parameter(collected,p,default)
+    end
+end
+
+lxml.param = lxml.parameter
+
 function lxml.raw(id,pattern) -- the content, untouched by commands
     local collected = (pattern and xmlapplylpath(getid(id),pattern)) or getid(id)
     if collected and #collected > 0 then
@@ -1910,45 +1933,6 @@ function lxml.pos(id)
     contextsprint(ctxcatcodes,e and e.ni or 0)
 end
 
--- function lxml.att(id,a,default)
---     local root = getid(id)
---     if root then
---         local at = root.at
---         local str = (at and at[a]) or default
---         if str and str ~= "" then
---             contextsprint(notcatcodes,str)
---         end
---     elseif default then
---         contextsprint(notcatcodes,default)
---     end
--- end
---
--- no need for an assignment so:
-
--- function lxml.att(id,a,default)
---     local e = getid(id)
---     if e then
---         local at = e.at
---         if at then
---             -- normally always true
---             local str = at[a]
---             if not str then
---                 if default and default ~= "" then
---                     contextsprint(notcatcodes,default)
---                 end
---             elseif str ~= "" then
---                 contextsprint(notcatcodes,str)
---             else
---                 -- explicit empty is valid
---             end
---         elseif default and default ~= "" then
---             contextsprint(notcatcodes,default)
---         end
---     elseif default and default ~= "" then
---         contextsprint(notcatcodes,default)
---     end
--- end
-
 do
 
     local att
@@ -2002,6 +1986,45 @@ do
 
     function lxml.lastatt()
         contextsprint(notcatcodes,att)
+    end
+
+end
+
+do
+
+    local par
+
+    function lxml.par(id,p,default)
+        local e = getid(id)
+        if e then
+            local pa = e.pa
+            if pa then
+                -- normally always true
+                par = pa[p]
+                if not par then
+                    if default and default ~= "" then
+                        par = default
+                        contextsprint(notcatcodes,default)
+                    end
+                elseif par ~= "" then
+                    contextsprint(notcatcodes,par)
+                else
+                    -- explicit empty is valid
+                end
+            elseif default and default ~= "" then
+                par = default
+                contextsprint(notcatcodes,default)
+            end
+        elseif default and default ~= "" then
+            par = default
+            contextsprint(notcatcodes,default)
+        else
+            par = ""
+        end
+    end
+
+    function lxml.lastpar()
+        contextsprint(notcatcodes,par)
     end
 
 end
@@ -2115,33 +2138,37 @@ end
 
 -- testers
 
-local found, empty = xml.found, xml.empty
+do
 
-local doif, doifnot, doifelse = commands.doif, commands.doifnot, commands.doifelse
+    local found, empty = xml.found, xml.empty
 
-function lxml.doif         (id,pattern) doif    (found(getid(id),pattern)) end
-function lxml.doifnot      (id,pattern) doifnot (found(getid(id),pattern)) end
-function lxml.doifelse     (id,pattern) doifelse(found(getid(id),pattern)) end
-function lxml.doiftext     (id,pattern) doif    (not empty(getid(id),pattern)) end
-function lxml.doifnottext  (id,pattern) doifnot (not empty(getid(id),pattern)) end
-function lxml.doifelsetext (id,pattern) doifelse(not empty(getid(id),pattern)) end
+    local doif, doifnot, doifelse = commands.doif, commands.doifnot, commands.doifelse
 
--- special case: "*" and "" -> self else lpath lookup
+    function lxml.doif         (id,pattern) doif    (found(getid(id),pattern)) end
+    function lxml.doifnot      (id,pattern) doifnot (found(getid(id),pattern)) end
+    function lxml.doifelse     (id,pattern) doifelse(found(getid(id),pattern)) end
+    function lxml.doiftext     (id,pattern) doif    (not empty(getid(id),pattern)) end
+    function lxml.doifnottext  (id,pattern) doifnot (not empty(getid(id),pattern)) end
+    function lxml.doifelsetext (id,pattern) doifelse(not empty(getid(id),pattern)) end
 
-local function checkedempty(id,pattern)
-    local e = getid(id)
-    if not pattern or pattern == "" then
-        local dt = e.dt
-        local nt = #dt
-        return (nt == 0) or (nt == 1 and dt[1] == "")
-    else
-        return empty(getid(id),pattern)
+    -- special case: "*" and "" -> self else lpath lookup
+
+    local function checkedempty(id,pattern)
+        local e = getid(id)
+        if not pattern or pattern == "" then
+            local dt = e.dt
+            local nt = #dt
+            return (nt == 0) or (nt == 1 and dt[1] == "")
+        else
+            return empty(getid(id),pattern)
+        end
     end
-end
 
-function lxml.doifempty    (id,pattern) doif    (checkedempty(id,pattern)) end
-function lxml.doifnotempty (id,pattern) doifnot (checkedempty(id,pattern)) end
-function lxml.doifelseempty(id,pattern) doifelse(checkedempty(id,pattern)) end
+    function lxml.doifempty    (id,pattern) doif    (checkedempty(id,pattern)) end
+    function lxml.doifnotempty (id,pattern) doifnot (checkedempty(id,pattern)) end
+    function lxml.doifelseempty(id,pattern) doifelse(checkedempty(id,pattern)) end
+
+end
 
 -- status info
 
@@ -2295,145 +2322,139 @@ function lxml.tobuffer(id,pattern,name,unescaped,contentonly)
     end
 end
 
+-- parameters
 
--- relatively new:
-
-local permitted        = nil
-local ctx_xmlinjector  = context.xmlinjector
-
-xml.pihandlers["injector"] = function(category,rest,e)
-    local options = options_to_array(rest)
-    local action  = options[1]
-    if not action then
-        return
-    end
-    local n = #options
-    if n > 1 then
-        local category = options[2]
-        if category == "*" then
-            ctx_xmlinjector(action)
-        elseif permitted then
-            if n == 2 then
-                if permitted[category] then
-                    ctx_xmlinjector(action)
-                end
-            else
-                for i=2,n do
-                    local category = options[i]
-                    if category == "*" or permitted[category] then
-                        ctx_xmlinjector(action)
-                        return
-                    end
-                end
-            end
+function lxml.setatt(id,name,value)
+    local e = getid(id)
+    if e then
+        local a = e.at
+        if a then
+            a[name] = value
+        else
+            e.at = { [name] = value }
         end
-    else
-        ctx_xmlinjector(action)
     end
 end
 
-local pattern = P("context-") * C((1-patterns.whitespace)^1) * C(P(1)^1)
+function lxml.setpar(id,name,value)
+    local e = getid(id)
+    if e then
+        local p = e.pa
+        if p then
+            p[name] = value
+        else
+            e.pa = { [name] = value }
+        end
+    end
+end
 
-function lxml.applyselectors(id)
-    local root = getid(id)
-    local function filter(e)
-        local dt = e.dt
-        if not dt then
-            report_lxml("error in selector, no data in %a",e.tg or "?")
+function lxml.setattribute(id,pattern,name,value)
+    local collected = xmlapplylpath(getid(id),pattern)
+    if collected then
+        for i=1,#collected do
+            setatt(collected[i],name,value)
+        end
+    end
+end
+
+function lxml.setparameter(id,pattern,name,value)
+    local collected = xmlapplylpath(getid(id),pattern)
+    if collected then
+        for i=1,#collected do
+            setpar(collected[i],name,value)
+        end
+    end
+end
+
+lxml.setparam = lxml.setparameter
+
+-- relatively new:
+
+do
+
+    local permitted        = nil
+    local ctx_xmlinjector  = context.xmlinjector
+
+    xml.pihandlers["injector"] = function(category,rest,e)
+        local options = options_to_array(rest)
+        local action  = options[1]
+        if not action then
             return
         end
-        local ndt  = #dt
-        local done = false
-        local i = 1
-        while i <= ndt do
-            local dti = dt[i]
-            if type(dti) == "table" then
-                if dti.tg == "@pi@" then
-                    local text = dti.dt[1]
-                    local what, rest = lpegmatch(pattern,text)
-                    if what == "select" then
-                        local categories = options_to_hash(rest)
-                        if categories["begin"] then
-                            local okay = false
-                            if permitted then
-                                for k, v in next, permitted do
-                                    if categories[k] then
-                                        okay = k
-                                        break
+        local n = #options
+        if n > 1 then
+            local category = options[2]
+            if category == "*" then
+                ctx_xmlinjector(action)
+            elseif permitted then
+                if n == 2 then
+                    if permitted[category] then
+                        ctx_xmlinjector(action)
+                    end
+                else
+                    for i=2,n do
+                        local category = options[i]
+                        if category == "*" or permitted[category] then
+                            ctx_xmlinjector(action)
+                            return
+                        end
+                    end
+                end
+            end
+        else
+            ctx_xmlinjector(action)
+        end
+    end
+
+    local pattern = P("context-") * C((1-patterns.whitespace)^1) * C(P(1)^1)
+
+    function lxml.applyselectors(id)
+        local root = getid(id)
+        local function filter(e)
+            local dt = e.dt
+            if not dt then
+                report_lxml("error in selector, no data in %a",e.tg or "?")
+                return
+            end
+            local ndt  = #dt
+            local done = false
+            local i = 1
+            while i <= ndt do
+                local dti = dt[i]
+                if type(dti) == "table" then
+                    if dti.tg == "@pi@" then
+                        local text = dti.dt[1]
+                        local what, rest = lpegmatch(pattern,text)
+                        if what == "select" then
+                            local categories = options_to_hash(rest)
+                            if categories["begin"] then
+                                local okay = false
+                                if permitted then
+                                    for k, v in next, permitted do
+                                        if categories[k] then
+                                            okay = k
+                                            break
+                                        end
                                     end
                                 end
-                            end
-                            if okay then
-                                if trace_selectors then
-                                    report_lxml("accepting selector: %s",okay)
-                                end
-                            else
-                                categories.begin = false
-                                if trace_selectors then
-                                    report_lxml("rejecting selector: % t",sortedkeys(categories))
-                                end
-                            end
-                            for j=i,ndt do
-                                local dtj = dt[j]
-                                if type(dtj) == "table" then
-                                    local tg = dtj.tg
-                                    if tg == "@pi@" then
-                                        local text = dtj.dt[1]
-                                        local what, rest = lpegmatch(pattern,text)
-                                        if what == "select" then
-                                            local categories = options_to_hash(rest)
-                                            if categories["end"] then
-                                                i = j
-                                                break
-                                            else
-                                                -- error
-                                            end
-                                        end
-                                    elseif not okay then
-                                        dtj.tg = "@cm@"
+                                if okay then
+                                    if trace_selectors then
+                                        report_lxml("accepting selector: %s",okay)
                                     end
                                 else
---                                     dt[j] = "" -- okay ?
-                                end
-                            end
-                        end
-                    elseif what == "include" then
-                        local categories = options_to_hash(rest)
-                        if categories["begin"] then
-                            local okay = false
-                            if permitted then
-                                for k, v in next, permitted do
-                                    if categories[k] then
-                                        okay = k
-                                        break
+                                    categories.begin = false
+                                    if trace_selectors then
+                                        report_lxml("rejecting selector: % t",sortedkeys(categories))
                                     end
                                 end
-                            end
-                            if okay then
-                                if trace_selectors then
-                                    report_lxml("accepting include: %s",okay)
-                                end
-                            else
-                                categories.begin = false
-                                if trace_selectors then
-                                    report_lxml("rejecting include: % t",sortedkeys(categories))
-                                end
-                            end
-                            if okay then
                                 for j=i,ndt do
                                     local dtj = dt[j]
                                     if type(dtj) == "table" then
                                         local tg = dtj.tg
-                                        if tg == "@cm@" then
-                                            local content = dtj.dt[1]
-                                            local element = root and xml.toelement(content,root)
-                                            dt[j] = element
-                                            element.__p__ = dt -- needs checking
-                                            done = true
-                                        elseif tg == "@pi@" then
+                                        if tg == "@pi@" then
                                             local text = dtj.dt[1]
                                             local what, rest = lpegmatch(pattern,text)
-                                            if what == "include" then
+                                            if what == "select" then
                                                 local categories = options_to_hash(rest)
                                                 if categories["end"] then
                                                     i = j
@@ -2442,48 +2463,103 @@ function lxml.applyselectors(id)
                                                     -- error
                                                 end
                                             end
+                                        elseif not okay then
+                                            dtj.tg = "@cm@"
+                                        end
+                                    else
+    --                                     dt[j] = "" -- okay ?
+                                    end
+                                end
+                            end
+                        elseif what == "include" then
+                            local categories = options_to_hash(rest)
+                            if categories["begin"] then
+                                local okay = false
+                                if permitted then
+                                    for k, v in next, permitted do
+                                        if categories[k] then
+                                            okay = k
+                                            break
+                                        end
+                                    end
+                                end
+                                if okay then
+                                    if trace_selectors then
+                                        report_lxml("accepting include: %s",okay)
+                                    end
+                                else
+                                    categories.begin = false
+                                    if trace_selectors then
+                                        report_lxml("rejecting include: % t",sortedkeys(categories))
+                                    end
+                                end
+                                if okay then
+                                    for j=i,ndt do
+                                        local dtj = dt[j]
+                                        if type(dtj) == "table" then
+                                            local tg = dtj.tg
+                                            if tg == "@cm@" then
+                                                local content = dtj.dt[1]
+                                                local element = root and xml.toelement(content,root)
+                                                dt[j] = element
+                                                element.__p__ = dt -- needs checking
+                                                done = true
+                                            elseif tg == "@pi@" then
+                                                local text = dtj.dt[1]
+                                                local what, rest = lpegmatch(pattern,text)
+                                                if what == "include" then
+                                                    local categories = options_to_hash(rest)
+                                                    if categories["end"] then
+                                                        i = j
+                                                        break
+                                                    else
+                                                        -- error
+                                                    end
+                                                end
+                                            end
                                         end
                                     end
                                 end
                             end
+                        elseif dti then
+                            filter(dti)
                         end
-                    elseif dti then
-                        filter(dti)
+                    end
+                    if done then
+                        -- probably not needed
+                        xml.reindex(dt)
                     end
                 end
-                if done then
-                    -- probably not needed
-                    xml.reindex(dt)
+                i = i + 1
+            end
+        end
+        xmlwithelements(root,filter)
+    end
+
+    function xml.setinjectors(set)
+        local s = settings_to_set(set)
+        if permitted then
+            for k, v in next, s do
+                permitted[k] = true
+            end
+        else
+            permitted = s
+        end
+    end
+
+    function xml.resetinjectors(set)
+        if permitted and set and set ~= "" then
+            local s = settings_to_set(set)
+            for k, v in next, s do
+                if v then
+                    permitted[k] = nil
                 end
             end
-            i = i + 1
+        else
+            permitted = nil
         end
     end
-    xmlwithelements(root,filter)
-end
 
-function xml.setinjectors(set)
-    local s = settings_to_set(set)
-    if permitted then
-        for k, v in next, s do
-            permitted[k] = true
-        end
-    else
-        permitted = s
-    end
-end
-
-function xml.resetinjectors(set)
-    if permitted and set and set ~= "" then
-        local s = settings_to_set(set)
-        for k, v in next, s do
-            if v then
-                permitted[k] = nil
-            end
-        end
-    else
-        permitted = nil
-    end
 end
 
 implement {

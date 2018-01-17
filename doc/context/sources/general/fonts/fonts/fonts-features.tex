@@ -2708,6 +2708,32 @@ do do:
 
 \startsection[title=Spacekerns]
 
+Some fonts kern glyphs with spaces. Although \TEX\ doesn't really have spaces we do
+support this. However, it's implemented as part of kerning so when you define such
+kerns you need to hook it into for instance the \type {kern} feature:
+
+\starttyping
+\startluacode
+    local kern = -50
+    local pair = { [32] = kern }
+
+    fonts.handlers.otf.addfeature {
+        name    = "kern", -- spacekerns assume kern
+        type    = "kern",
+        data    = {
+            A = pair, V = pair, W = pair,
+            [32] = {
+                A = kern,
+                V = kern,
+                W = kern,
+            },
+        }
+    }
+\stopluacode
+\stoptyping
+
+Of course this depends on font properties so one can wonder how useful this is.
+
 \stopsection
 
 \stopchapter

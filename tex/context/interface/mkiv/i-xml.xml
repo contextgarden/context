@@ -367,6 +367,14 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="xmlsetatt" level="style" category="xml" file="lxml-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-node"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="xmlattdef" level="style" category="xml" file="lxml-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-node"/>
@@ -389,6 +397,15 @@
             <cd:resolve name="argument-node"/>
             <cd:resolve name="argument-lpath"/>
             <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmlsetattribute" level="style" category="xml" file="lxml-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-node"/>
+            <cd:resolve name="argument-lpath"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
@@ -415,6 +432,40 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="xmlpar" level="style" category="xml" file="lxml-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-node"/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmlsetpar" level="style" category="xml" file="lxml-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-node"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmlparam" level="style" category="xml" file="lxml-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-node"/>
+            <cd:resolve name="argument-lpath"/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmlsetparam" level="style" category="xml" file="lxml-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-node"/>
+            <cd:resolve name="argument-lpath"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmllastpar" level="style" category="xml" file="lxml-ini.mkiv"/>
 
     <cd:command name="xmldirectives" level="style" category="xml" file="lxml-ini.mkiv">
         <cd:arguments>

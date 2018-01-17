@@ -324,4 +324,6 @@
 
     <cd:command name="breakhere" scope="formula" level="document" category="mathematics" file="strc-mat"/>
 
+    <cd:command name="splitformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv"/>
+
 </cd:interface>

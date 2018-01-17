@@ -1381,23 +1381,30 @@
      \penalty\zerocount % otherwise no split in columns, maybe just always (tex just adds it to accumulated)
    \fi}
 
-
 \appendtoks
   \strc_notes_set_penalties
-  \forgetall
+  \forgetall % again
   \strc_notes_set_bodyfont
   \redoconvertfont % to undo \undo calls in in headings etc
   \splittopskip\strutht  % not actually needed here
   \splitmaxdepth\strutdp % not actually needed here
-  % brrr
-%   \leftmargindistance \noteparameter\c!margindistance
-%   \rightmargindistance\leftmargindistance
-%   \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
-%     \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
-%   \fi
+  % not:
+% \leftmargindistance \noteparameter\c!margindistance
+% \rightmargindistance\leftmargindistance
+% \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
+%   \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
+% \fi
+  %
 \to \everyinsidenoteinsert
 
-\appendtoks % only needed when columns
+% maybe but better use [scope=local] here
+%
+% \appendtoks
+%     \setfalse\inhibitmargindata
+% \to \everyinsidenoteinsert
+
+\appendtoks
+    % only needed when columns (could be three \set...)
     \setsimplecolumnshsize[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
 \to \everyinsidenoteinsert
 

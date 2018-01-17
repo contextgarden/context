@@ -254,7 +254,6 @@
   {\begingroup
    \meta_enable_include
    \the\everyMPgraphic
-  %\setMPrandomseed % this has to change
    \edef\p_initializations{\MPinstanceparameter\s!initializations}%
    \ifx\p_initializations\v!yes
      \settrue \c_meta_include_initializations
@@ -326,17 +325,6 @@
    \def\MPaskedfigure{all}%
    \meta_process_graphic{input "#1" ;}%
    \endgroup}
-
-% \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
-%
-% \let\theMPrandomseed\empty
-%
-% \def\setMPrandomseed
-%   {\ifsetMPrandomseed
-%      \def\theMPrandomseed{randomseed:=\mprandomnumber;}%
-%    \else
-%      \let\theMPrandomseed\empty
-%    \fi}
 
 %D Calling up previously defined graphics.
 

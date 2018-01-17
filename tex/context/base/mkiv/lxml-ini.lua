@@ -39,19 +39,15 @@ implement { name = "xmldoifelseselfempty", actions = lxml.doifelseempty,     arg
 
 --------- { name = "xmlcontent",           actions = lxml.content,           arguments = "string" }
 --------- { name = "xmlflushstripped",     actions = lxml.strip,             arguments = { "string", true } }
+
 implement { name = "xmlall",               actions = lxml.all,               arguments = { "string", "string" } }
-implement { name = "xmllastmatch",         actions = lxml.lastmatch }
-implement { name = "xmlpushmatch",         actions = lxml.pushmatch }
-implement { name = "xmlpopmatch",          actions = lxml.popmatch }
 implement { name = "xmlatt",               actions = lxml.att,               arguments = { "string", "string" } }
-implement { name = "xmllastatt",           actions = lxml.lastatt }
 implement { name = "xmlattdef",            actions = lxml.att,               arguments = { "string", "string", "string" } }
 implement { name = "xmlattribute",         actions = lxml.attribute,         arguments = { "string", "string", "string" } }
 implement { name = "xmlattributedef",      actions = lxml.attribute,         arguments = { "string", "string", "string", "string" } }
-implement { name = "xmlpath",              actions = lxml.path,              arguments = { "string", "'/'" } }
+implement { name = "xmlbadinclusions",     actions = lxml.badinclusions,     arguments = "string" }
 implement { name = "xmlchainatt",          actions = lxml.chainattribute,    arguments = { "string", "'/'", "string" } }
 implement { name = "xmlchainattdef",       actions = lxml.chainattribute,    arguments = { "string", "'/'", "string", "string"  } }
-implement { name = "xmlrefatt",            actions = lxml.refatt,            arguments = { "string", "string" } }
 implement { name = "xmlchecknamespace",    actions =  xml.checknamespace,    arguments = { "lxmlid", "string", "string" } }
 implement { name = "xmlcommand",           actions = lxml.command,           arguments = { "string", "string", "string" } }
 implement { name = "xmlconcat",            actions = lxml.concat,            arguments = { "string", "string", "string" } }                     --  \detokenize{#3}
@@ -71,17 +67,21 @@ implement { name = "xmlfirst",             actions = lxml.first,             arg
 implement { name = "xmlflush",             actions = lxml.flush,             arguments = "string" }
 implement { name = "xmlflushcontext",      actions = lxml.context,           arguments = "string" }
 implement { name = "xmlflushlinewise",     actions = lxml.flushlinewise,     arguments = "string" }
+implement { name = "xmlflushpure",         actions = lxml.pure,              arguments = "string" }
 implement { name = "xmlflushspacewise",    actions = lxml.flushspacewise,    arguments = "string" }
+implement { name = "xmlflushtext",         actions = lxml.text,              arguments = "string" }
 implement { name = "xmlfunction",          actions = lxml.applyfunction,     arguments = { "string", "string" } }
 implement { name = "xmlinclude",           actions = lxml.include,           arguments = { "string", "string", "string", true } }
 implement { name = "xmlincludeoptions",    actions = lxml.include,           arguments = { "string", "string", "string", "string" } }
 implement { name = "xmlinclusion",         actions = lxml.inclusion,         arguments = "string" }
 implement { name = "xmlinclusionbase",     actions = lxml.inclusion,         arguments = { "string", false, true } }
 implement { name = "xmlinclusions",        actions = lxml.inclusions,        arguments = "string" }
-implement { name = "xmlbadinclusions",     actions = lxml.badinclusions,     arguments = "string" }
 implement { name = "xmlindex",             actions = lxml.index,             arguments = { "string", "string", "string" } } -- can be integer but now we can alias
 implement { name = "xmlinlineverbatim",    actions = lxml.inlineverbatim,    arguments = "string" }
 implement { name = "xmllast",              actions = lxml.last,              arguments = { "string", "string" } }
+implement { name = "xmllastatt",           actions = lxml.lastatt }
+implement { name = "xmllastmatch",         actions = lxml.lastmatch }
+implement { name = "xmllastpar",           actions = lxml.lastpar }
 implement { name = "xmlload",              actions = lxml.load,              arguments = { "string", "string", "string" } }
 implement { name = "xmlloadbuffer",        actions = lxml.loadbuffer,        arguments = { "string", "string", "string" } }
 implement { name = "xmlloaddata",          actions = lxml.loaddata,          arguments = { "string", "string", "string" } }
@@ -91,13 +91,24 @@ implement { name = "xmlmatch",             actions = lxml.match,             arg
 implement { name = "xmlname",              actions = lxml.name,              arguments = "string" }
 implement { name = "xmlnamespace",         actions = lxml.namespace,         arguments = "string" }
 implement { name = "xmlnonspace",          actions = lxml.nonspace,          arguments = { "string", "string" } }
+implement { name = "xmlpar",               actions = lxml.par,               arguments = { "string", "string" } }
+implement { name = "xmlparam",             actions = lxml.param,             arguments = { "string", "string", "string" } }
+implement { name = "xmlpath",              actions = lxml.path,              arguments = { "string", "'/'" } }
+implement { name = "xmlpopmatch",          actions = lxml.popmatch }
 implement { name = "xmlpos",               actions = lxml.pos,               arguments = "string" }
+implement { name = "xmlpure",              actions = lxml.pure,              arguments = { "string", "string" } }
+implement { name = "xmlpushmatch",         actions = lxml.pushmatch }
 implement { name = "xmlraw",               actions = lxml.raw,               arguments = { "string", "string" } }
 implement { name = "xmlrawtex",            actions = lxml.rawtex,            arguments = { "string", "string" } }
+implement { name = "xmlrefatt",            actions = lxml.refatt,            arguments = { "string", "string" } }
 implement { name = "xmlregisterns",        actions =  xml.registerns,        arguments = { "string", "string" } }
 implement { name = "xmlremapname",         actions =  xml.remapname,         arguments = { "lxmlid", "string","string","string" } }
 implement { name = "xmlremapnamespace",    actions =  xml.renamespace,       arguments = { "lxmlid", "string", "string" } }
 implement { name = "xmlsave",              actions = lxml.save,              arguments = { "string", "string" } }
+implement { name = "xmlsetatt",            actions = lxml.setatt,            arguments = { "string", "string", "string" } }
+implement { name = "xmlsetattribute",      actions = lxml.setattribute,      arguments = { "string", "string", "string", "string" } }
+implement { name = "xmlsetpar",            actions = lxml.setpar,            arguments = { "string", "string", "string" } }
+implement { name = "xmlsetparam",          actions = lxml.setparam,          arguments = { "string", "string", "string", "string" } }
 implement { name = "xmlsetsetup",          actions = lxml.setsetup,          arguments = { "string", "string", "string" } }
 implement { name = "xmlsnippet",           actions = lxml.snippet,           arguments = { "string", "string" } }
 implement { name = "xmlstrip",             actions = lxml.strip,             arguments = { "string", "string" } }
@@ -107,12 +118,9 @@ implement { name = "xmlstripped",          actions = lxml.stripped,          arg
 implement { name = "xmlstrippednolines",   actions = lxml.stripped,          arguments = { "string", "string", true } }
 implement { name = "xmltag",               actions = lxml.tag,               arguments = "string" }
 implement { name = "xmltext",              actions = lxml.text,              arguments = { "string", "string" } }
-implement { name = "xmlpure",              actions = lxml.pure,              arguments = { "string", "string" } }
-implement { name = "xmlflushtext",         actions = lxml.text,              arguments = "string" }
-implement { name = "xmlflushpure",         actions = lxml.pure,              arguments = "string" }
 implement { name = "xmltobuffer",          actions = lxml.tobuffer,          arguments = { "string", "string", "string" } }
-implement { name = "xmltobufferverbose",   actions = lxml.tobuffer,          arguments = { "string", "string", "string", true, true } }
 implement { name = "xmltobuffertextonly",  actions = lxml.tobuffer,          arguments = { "string", "string", "string", false } }
+implement { name = "xmltobufferverbose",   actions = lxml.tobuffer,          arguments = { "string", "string", "string", true, true } }
 implement { name = "xmltofile",            actions = lxml.tofile,            arguments = { "string", "string", "string" } }
 implement { name = "xmltoparameters",      actions = lxml.toparameters,      arguments = "string" }
 implement { name = "xmlverbatim",          actions = lxml.verbatim,          arguments = "string" }

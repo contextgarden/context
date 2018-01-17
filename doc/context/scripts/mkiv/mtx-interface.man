@@ -38,6 +38,9 @@ report commands to the console
 .B --check
 generate check file
 .TP
+.B --meaning
+report the mening of commands
+.TP
 .B --toutf
 replace named characters by utf
 .TP
@@ -49,6 +52,9 @@ use given suffix for output files
 .TP
 .B --force
 force action even when in doubt
+.TP
+.B --pattern
+a pattern for meaning lookups
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

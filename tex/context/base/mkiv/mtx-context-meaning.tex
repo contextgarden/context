@@ -20,6 +20,8 @@
 % example: context --extra=meaning --pattern=*paper*
 %          context --extra=meaning setuplayout
 %          context --extra=meaning setup_layout
+%          context --extra=meaning --once --noconsole --nostatistics setuplayout
+%          mtxrun --silent --script context --extra=meaning --once  --noconsole --nostatistics  setuplayout
 %
 % end help
 
@@ -29,9 +31,11 @@
   [dejavu]
 
 \def\showmeaning#1%
-  {\writestatus{meaning}{\strippedcsname#1}%
+  {\ctxlua{logs.pushtarget("both")}%
+   \writestatus{meaning}{\strippedcsname#1}%
    \writestring{}%
-   \writestring{\expandafter\meaning\begincsname#1\endcsname}}
+   \writestring{\expandafter\meaning\begincsname#1\endcsname}%
+   \ctxlua{logs.poptarget()}}
 
 \starttext
 

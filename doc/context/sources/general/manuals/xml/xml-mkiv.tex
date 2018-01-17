@@ -1274,6 +1274,15 @@ The following commands return strings. Normally these are used in tests.
     returns the last attribute found (this avoids a lookup)
 \stopxmlcmd
 
+\startxmlcmd {\cmdbasicsetup{xmlsetatt}}
+    set the value of attribute \cmdinternal {cd:name}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetattribute}}
+    set the value of attribute \cmdinternal {cd:name} for each match of \cmdinternal
+    {cd:lpath}
+\stopxmlcmd
+
 \stopsection
 
 \startsection[title={manipulation}]
@@ -1606,6 +1615,80 @@ normal <emph type='bold'>bold</emph> normal
 
 This mechanism is not really bound to elements and attributes so you can use this
 mechanism for other purposes as well.
+
+\stopsection
+
+\startsection[title={Parameters}]
+
+\startbuffer[test]
+<something whatever="alpha">
+    <what>
+        beta
+    </what>
+</something>
+\stopbuffer
+
+\startbuffer
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{\xmldocument}{*}{xml:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mysetups}
+
+\startxmlsetups xml:something
+    parameter : \xmlpar   {#1}{whatever}\par
+    attribute : \xmlatt   {#1}{whatever}\par
+    text      : \xmlfirst {#1}{what}    \par
+                \xmlsetpar{#1}{whatever}{gamma}
+    parameter : \xmlpar   {#1}{whatever}\par
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:what
+    what: \xmlflush{#1}\par
+    parameter : \xmlparam{#1}{..}{whatever}\par
+\stopxmlsetups
+
+\xmlprocessbuffer{main}{test}{}
+\stopbuffer
+
+Say that we have this \XML\ blob:
+
+\typebuffer[test]
+
+With:
+
+\typebuffer
+
+we get:
+
+\getbuffer
+
+Parameters are stored with a node.
+
+\startxmlcmd {\cmdbasicsetup{xmlpar}}
+    returns the value of parameter \cmdinternal {cd:name} or empty if no such
+    parameter exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlparam}}
+    finds a first match for \cmdinternal {cd:lpath} at \cmdinternal {cd:node} and
+    returns the value of parameter \cmdinternal {cd:name} or empty if no such
+    parameter exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmllastpar}}
+    returns the last parameter found (this avoids a lookup)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetpar}}
+    set the value of parameter \cmdinternal {cd:name}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetparam}}
+    set the value of parameter \cmdinternal {cd:name} for each match of \cmdinternal
+    {cd:lpath}
+\stopxmlcmd
 
 \stopsection
 

@@ -215,9 +215,9 @@ end
 --     if filename and filesuffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
 --         local oldsize = #str
 --         str = lpegmatch(parser,str,1,true) or str
---         pushtarget("log")
+--         pushtarget("logfile")
 --         report_macros("processed mkvi file %a, delta %s",filename,oldsize-#str)
---         poptarget("log")
+--         poptarget()
 --     end
 --     return str
 -- end
@@ -231,9 +231,9 @@ local processors = { }
 function processors.mkvi(str,filename)
     local oldsize = #str
     str = lpegmatch(parser,str,1,true) or str
-    pushtarget("log")
+    pushtarget("logfile")
     report_macros("processed mkvi file %a, delta %s",filename,oldsize-#str)
-    poptarget("log")
+    poptarget()
     return str
 end
 
@@ -246,9 +246,9 @@ function processors.mkix(str,filename) -- we could intercept earlier so that cac
     end
     local oldsize = #str
     str = convertlmxstring(str,document.variables,false) or str
-    pushtarget("log")
+    pushtarget("logfile")
     report_macros("processed mkix file %a, delta %s",filename,oldsize-#str)
-    poptarget("log")
+    poptarget()
     return str
 end
 
@@ -262,9 +262,9 @@ function processors.mkxi(str,filename)
     local oldsize = #str
     str = convertlmxstring(str,document.variables,false) or str
     str = lpegmatch(parser,str,1,true) or str
-    pushtarget("log")
+    pushtarget("logfile")
     report_macros("processed mkxi file %a, delta %s",filename,oldsize-#str)
-    poptarget("log")
+    poptarget()
     return str
 end
 
@@ -283,9 +283,9 @@ function macros.processmkvi(str,filename)
     if filename and filesuffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
         local oldsize = #str
         str = lpegmatch(parser,str,1,true) or str
-        pushtarget("log")
+        pushtarget("logfile")
         report_macros("processed mkvi file %a, delta %s",filename,oldsize-#str)
-        poptarget("log")
+        poptarget()
     end
     return str
 end
@@ -313,9 +313,9 @@ if resolvers.schemes then
                 io.savedata(cachename,str)
             else
                 local result = lpegmatch(parser,str,1,true) or str
-                pushtarget("log")
+                pushtarget("logfile")
                 report_macros("processed scheme %a, delta %s",filename,#str-#result)
-                poptarget("log")
+                poptarget()
                 io.savedata(cachename,result)
             end
         end

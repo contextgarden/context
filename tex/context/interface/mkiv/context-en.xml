@@ -13312,6 +13312,7 @@
   <cd:command category="mathematics" file="strc-mat" level="system" name="placecurrentformulanumber"/>
   <cd:command category="mathematics" file="strc-mat" level="document" name="alignhere" scope="formula"/>
   <cd:command category="mathematics" file="strc-mat" level="document" name="breakhere" scope="formula"/>
+  <cd:command category="mathematics" file="strc-mat.mkiv" level="document" name="splitformula" type="environment"/>
  </cd:interface>
  <cd:interface file="i-fraction.xml">
   <cd:command category="mathematics" file="math-frc.mkiv" level="style" name="definemathfraction">
@@ -45189,6 +45190,19 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlsetatt">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlattdef">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -45223,6 +45237,22 @@
     </cd:keywords>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlsetattribute">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:lpath"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -45265,6 +45295,59 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlpar">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlsetpar">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlparam">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:lpath"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmlsetparam">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:lpath"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmllastpar"/>
   <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldirectives">
    <cd:arguments>
     <cd:keywords delimiters="braces">
