@@ -939,6 +939,75 @@
 \activatemathcharacter\underscoreasciicode
 \activatemathcharacter\ampersandasciicode
 
+\appendtoks
+    \edef\p_ampersand{\mathematicsparameter\s!ampersand}%
+    \ifx\p_ampersand\v!normal
+        \let\specialmathaligntab\normalmathaligntab
+    \else
+        \let\specialmathaligntab\mathampersand
+    \fi
+\to \everysetupmathematics
+
+%D A simplified version of this code is:
+%D
+%D \starttyping
+%D \catcode"26=12
+%D
+%D \bgroup
+%D     \global\mathcode"26="8000
+%D
+%D     \catcode"26=4
+%D
+%D     \xdef\normalmathaligntab{&}
+%D
+%D     \catcode"26=13
+%D
+%D     \global\everymath{\def&{\normalmathaligntab}}
+%D \egroup
+%D \stoptyping
+%D
+%D The following works okay:
+%D
+%D \starttyping
+%D A & B
+%D \stoptyping
+%D
+%D As does:
+%D
+%D \starttyping
+%D $A \Umathchar"2"0"26 B$
+%D \stoptyping
+%D
+%D But the next code:
+%D
+%D \starttyping
+%D $A \char"26 B$
+%D \stoptyping
+%D
+%D fails with: \type{Misplaced alignment tab character &} and here is the
+%D reason.
+%D
+%D When we have a letter or other category a check happens for an active
+%D character and when it has one then it gets expanded and fed back into the
+%D scanner (sort of).
+%D
+%D A \type {\char} is also fed back as raw character and again when it's letter
+%D of other goes through the same process.
+%D
+%D This means that we cannot have a definition like:
+%D
+%D \starttyping
+%D \def\AND{\char"26\relax}
+%D \stoptyping
+%D
+%D that can be used in math mode, which is why the cweb macros do:
+%D
+%D \starttyping
+%D \def\AND{\def\AND{\mathchar"2026\relax}\AND}
+%D \stoptyping
+%D
+%D Maybe we need an option to treat chars like chars.
+
 % \activatemathcharacter\primeasciicode
 
 % not used:
@@ -1056,22 +1125,33 @@
 %
 % \egroup
 
+% $\char26$ gives an error because it expands to an active character that
+% then becomes an & which is then seen as an alignment character; anyway,
+% even when we switch like this the diufferen tmeaning only happens when
+% we're in math mode which can be delayed till we're in a cell
+
 \bgroup
 
     \catcode\underscoreasciicode\activecatcode
     \catcode\circumflexasciicode\activecatcode
     \catcode\ampersandasciicode \activecatcode
 
+    \glet\specialmathaligntab\normalmathaligntab
+
     \unexpanded\gdef\obeymathcatcodes
       {\let _\normalsubscript
        \let ^\normalsuperscript
-       \let &\normalmathaligntab}
+       \def &\specialmathaligntab
+       }
 
     \doglobal \appendtoks
         \let _\normalsubscript
         \let ^\normalsuperscript
-        \let &\normalmathaligntab % use \def when it's \aligntab
-    \to \everymathematics
+        \let &\specialmathaligntab
+   \to \everymathematics
+
+  % \unexpanded\gdef\normalmathampersands
+  %   {\let\specialmathaligntab\mathampersand}
 
 \egroup
 

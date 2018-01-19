@@ -41,6 +41,9 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="simplecommand">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
                 <cd:parameter name="location">
                     <cd:constant type="top"/>
                     <cd:constant type="bottom"/>

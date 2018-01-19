@@ -1,0 +1,176 @@
+% language=uk
+
+\environment math-layout
+
+\startcomponent math-oddities
+
+\startchapter[title=Things you might forget]
+
+\startsection[title=Ampersands]
+
+You can skip this, but if you continue reading, here is some low level plain code
+(don't use this in \CONTEXT):
+
+\starttyping
+\def\matrix#1%
+  {\null
+   \,
+   \vcenter
+     {\normalbaselines
+      \ialign{\hfil$##$\hfil && \quad\hfil$##$\hfil\crcr
+      \mathstrut\crcr
+      \noalign{\kern-\baselineskip}
+      #1\crcr
+      \mathstrut\crcr
+      \noalign{\kern-\baselineskip}}}%
+   \,}
+\stoptyping
+
+You see the \type {&} here and it's the alignment cell separator. The special
+meaning of these characters is determined by the so called catcode. Here we have:
+
+\starttyping
+\catcode"26=4
+\stoptyping
+
+Character \type {0x26} is the ampersand. In \CONTEXT\ this character can be used
+in text mode because we never use it as alignment character, which is something
+typical \TEX. The same is true for \type {^} and \type {_}. So, effectively we
+have (for instance):
+
+\starttyping
+\catcode"26=12
+\stoptyping
+
+In order to still get this \type {&} supported as alignment character in math
+mode, we have to jump through some hoops. Think of this (again, don't do this in
+\CONTEXT):
+
+\starttyping
+\bgroup
+    \global\mathcode"26="8000
+
+    \catcode"26=4
+
+    \xdef\normalmathaligntab{&}
+
+    \catcode"26=13
+
+    \global\everymath{\def&{\normalmathaligntab}}
+\egroup
+\stoptyping
+
+Before we go on you should realize that we never use the \type {&} in \CONTEXT\
+as separator. The sole reason for dealing with this issue is that users can have
+their own code that uses the ampersand that way. In \CONTEXT\ we do things like:
+
+\starttyping
+\startformula
+    \startmatrix
+        \NC 1 \NC 2 \NR
+        \NC 3 \NC 4 \NR
+    \stopmatrix
+\stopformula
+\stoptyping
+
+Where \type {\NC} can be more powerful than a \type {&}. Anyhow, the reason for
+discussing this here is that there can be surprises. In a running text you can do
+this:
+
+\starttyping
+A & B
+\stoptyping
+
+Which procces okay and gives the ampersand as glyph. The following is also okay:
+
+\starttyping
+$A \Umathchar"2"0"26 B$
+\stoptyping
+
+However, the next one:
+
+\starttyping
+$A \char"26 B$
+\stoptyping
+
+fails with a \type {Misplaced alignment tab character &}. The reason is that
+where in text mode \TEX's parser will turn the \type {\char} into a character
+node and carry on afterwards, in math mode it will treat this inpout as were it a
+directly input character, so the above is like, where the \type {&} has active
+properties and becomes the sparator ampersand which then triggers the error:
+
+\starttyping
+$A & B$
+\stoptyping
+
+This means that we cannot have a definition like:
+
+\starttyping
+\def\AND{\char"26\relax}
+\stoptyping
+
+that can be used in math mode, which is why the \CWEB\ macros do:
+
+\starttyping
+\def\AND{\def\AND{\mathchar"2026\relax}\AND}
+\stoptyping
+
+Back to the plain example. The \type {\matrix} command has to be wrapped in
+math mode and therefore the \type {&} will adapt, while in most \CONTEXT\
+constructs that use alignment, we're not in math mode at all when we start
+with the alignment. Therefore the \type {&} will be just an ampersand in most
+\CONTEXT\ cases.
+
+So to summarize: don't expect \type {\char"26} to work out well in math mode
+because all kind of magic kicks in. These are the more obscure features and side
+effects of \TEX\ dealing with input and it's really hard to predict how \TEX\
+will see the ampersand you entered. You need to know the internals and even then
+it's non trivial. Take
+
+\starttyping
+\startformula
+\startalign
+    \NC x \NR
+    \NC x \NR
+\stopalign
+\stopformula
+\stoptyping
+
+versus:
+
+\starttyping
+\startformula
+\startalign
+    & x \NR
+    & x \NR
+\stopalign
+\stopformula
+\stoptyping
+
+versus:
+
+\starttyping
+\startformula
+\startalign
+    \NC x & y \NR
+    \NC x & y \NR
+\stopalign
+\stopformula
+\stoptyping
+
+The first case works as expected, the second one treats the \type {&} as text and
+the third one, as we enter math mode with \type {\NC}, depends on circumstances.
+If you use just \CONTEXT\ math coding, you can say:
+
+\starttyping
+\setupmathematics
+  [ampersand=normal]
+\stoptyping
+
+And always render an ampersand (although a math one in math mode).
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

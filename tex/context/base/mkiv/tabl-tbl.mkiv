@@ -227,7 +227,6 @@
 
 \let             \m_tabl_tabulate_separator_factor \empty % fraction
 
-\newif           \iftracetabulate            % will become a tracker
 \newtoks         \everytabulatepar           % where used ?
 \newtoks         \everytabulate              % public ?
 
@@ -308,11 +307,16 @@
    \kern-\linewidth
    \tabl_tabulate_break_no}
 
+\installtextracker
+  {tables.tabulate.breaks}
+  {\let\tabl_tabulate_break_no_tracer\tabl_tabulate_nobreak_inject_tracer}
+  {\let\tabl_tabulate_break_no_tracer\donothing}
+
+\let\tabl_tabulate_break_no_tracer\donothing
+
 \def\tabl_tabulate_nobreak_inject_indeed
   {\tabl_tabulate_break_no
-   \iftracetabulate
-     \tabl_tabulate_nobreak_inject_tracer
-   \fi}
+   \tabl_tabulate_break_no_tracer}
 
 \def\tabl_tabulate_nobreak_inject
   {\tabulatenoalign{\tabl_tabulate_nobreak_inject_indeed}}

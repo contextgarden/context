@@ -383,7 +383,12 @@
 \newif\iftightTBLrowspan    \tightTBLrowspantrue
 \newif\iftightTBLcolspan    \tightTBLcolspanfalse
 
-\newif\iftraceTABLE         \traceTABLEfalse
+\newconditional \c_tabl_ntb_trace_widths
+
+\installtextracker
+  {tables.natural.widths}
+  {\settrue \c_tabl_ntb_trace_widths}
+  {\setfalse\c_tabl_ntb_trace_widths}
 
 % so far
 
@@ -1684,7 +1689,7 @@
 \def\tabl_ntb_check_widths_two{\tabl_ntb_check_widths_indeed\plusone  } % 1 = real run
 
 \def\tabl_ntb_check_widths_indeed#1%
-  {\iftraceTABLE\tabl_ntb_show_widths B#1\fi
+  {\ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths B#1\fi
    \!!counta\zerocount
    \!!dimena\dimexpr
      \hsize
@@ -1717,7 +1722,7 @@
           \fi
         \fi
       \fi}%
-   \iftraceTABLE\tabl_ntb_show_widths M#1\fi
+   \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths M#1\fi
    \ifcase\!!counta \else \divide\!!dimena \!!counta \fi
    \dorecurse\c_tabl_ntb_maximum_col
      {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
@@ -1730,7 +1735,7 @@
           \tabl_ntb_set_wid\recurselevel{\the\!!dimena}%
         \fi
       \fi}%
-   \iftraceTABLE\tabl_ntb_show_widths E#1\fi}
+   \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths E#1\fi}
 
 \def\tabl_ntb_check_heights_one_indeed
   {\!!countb\tabl_ntb_get_row\c_tabl_ntb_current_row_three\c_tabl_ntb_current_col_three\relax

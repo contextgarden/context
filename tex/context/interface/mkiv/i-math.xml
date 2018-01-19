@@ -106,6 +106,9 @@
                     <cd:constant type="ams"/>
                     <cd:constant type="ctx" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="ampersand">
+                    <cd:constant type="normal"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

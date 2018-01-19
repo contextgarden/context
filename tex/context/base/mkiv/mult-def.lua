@@ -11107,6 +11107,10 @@ return {
    ["pe"]="رنگ‌عنوان",
    ["ro"]="culoaretitlu",
   },
+  ["simplecommand"]={
+   ["en"]="simplecommand",
+   ["nl"]="simpelcommando",
+  },
   ["titlecommand"]={
    ["cs"]="titlecommand",
    ["de"]="titlecommand",

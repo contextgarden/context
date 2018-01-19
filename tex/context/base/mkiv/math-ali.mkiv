@@ -1138,6 +1138,84 @@
 %D
 %D \typebuffer  % does not run well: \getbuffer
 
+%D Handy for the \type {m-matrix} module:
+
+\unexpanded\def\startnamedmatrix
+  {\dodoubleempty\math_matrix_start_named}
+
+\def\math_matrix_start_named[#1][#2]%
+  {\begingroup
+   \edef\currentmathmatrix{#1}%
+   \ifsecondargument
+     \setupcurrentmathmatrix[#2]%
+   \fi
+   \math_matrix_start\currentmathmatrix}
+
+\def\stopnamedmatrix
+  {\math_matrix_stop
+   \endgroup}
+
+%D The following code is derived from Aditya's simplematrix prototype but
+%D adapted to regular mathmatrices (which saves some code so it can go into
+%D the core):
+
+\def\math_matrix_simple_row#1%
+  {\rawprocesscommalist[#1]\math_matrix_simple_col
+   \toksapp\scratchtoks{\NR}}
+
+\def\math_matrix_simple_col#1%
+  {\toksapp\scratchtoks{\NC#1}}
+
+\unexpanded\def\math_matrix_simple[#1][#2]#3%
+  {\begingroup
+   \edef\currentmathmatrix{#1}%
+   \ifsecondargument
+     \setupcurrentmathmatrix[#2]%
+   \fi
+   \scratchtoks\emptytoks
+   \processlist[];\math_matrix_simple_row[#3]%
+   \math_matrix_start\currentmathmatrix
+   \the\scratchtoks
+   \math_matrix_stop
+   \endgroup}
+
+%D We hook it into the normal mathmatrix code:
+
+\appendtoks
+    \edef\p_simplecommand{\mathmatrixparameter\c!simplecommand}%
+    \ifx\p_simplecommand\empty\else
+        \setuevalue{\p_simplecommand}{\dodoubleempty\math_matrix_simple[\currentmathmatrix]}%
+    \fi
+\to \everydefinemathmatrix
+
+%D And predefine some matrices:
+
+\definemathmatrix[matrix:parentheses][\c!left={\left(\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right)},\c!align=\v!middle]
+\definemathmatrix[matrix:brackets]   [\c!left={\left[\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right]},\c!align=\v!middle]
+\definemathmatrix[matrix:bars]       [\c!left={\left|\mskip\thinmuskip},\c!right={\mskip\thinmuskip\right|},\c!align=\v!middle]
+
+\definemathmatrix[thematrix][matrix:parentheses][\c!simplecommand=thematrix]
+
+%D \startbuffer
+%D \startformula
+%D \thematrix{1,2,3,4;5,6,7,8;9,10,11,12}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \startformula
+%D \startthematrix
+%D     \NC 1\NC 2\NC 3\NC 4\NR
+%D     \NC 5\NC 6\NC 7\NC 8\NR
+%D     \NC 9\NC10\NC11\NC12\NR
+%D \stopthematrix
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
 %D \macros
 %D   {startintertext}
 %D

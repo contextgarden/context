@@ -1168,6 +1168,7 @@
 		<cd:constant name='sidespacebefore' value='spatiulateralinainte'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='semn'/>
+		<cd:constant name='simplecommand' value='simplecommand'/>
 		<cd:constant name='size' value='dimensiune'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>

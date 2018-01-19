@@ -70,10 +70,16 @@ end
 
 -- todo: define a matrix at the tex end so that we have more control
 
+-- local fences = {
+--     parentheses = { left = "\\left(\\,", right = "\\,\\right)" },
+--     brackets    = { left = "\\left[\\,", right = "\\,\\right]" },
+--     bars        = { left = "\\left|\\,", right = "\\,\\right|" },
+-- }
+
 local fences = {
-    parentheses = { left = "\\left(\\,", right = "\\,\\right)" },
-    brackets    = { left = "\\left[\\,", right = "\\,\\right]" },
-    bars        = { left = "\\left|\\,", right = "\\,\\right|" },
+    parentheses = { "matrix:parentheses" },
+    brackets    = { "matrix:brackets" },
+    bars        = { "matrix:bars" },
 }
 
 -- one can add more fences
@@ -104,7 +110,7 @@ function matrix.typeset(m,options)
         elseif tonumber(template) then
             template = "%0." .. template .. "F"
         end
-        context.startmatrix(whatever)
+        context.startnamedmatrix(whatever)
             if type(m[1]) ~= "table" then
                 m = { copy(m) }
             end
@@ -121,7 +127,7 @@ function matrix.typeset(m,options)
                 end
                 context.NR()
             end
-        context.stopmatrix()
+        context.stopnamedmatrix()
     elseif m then
         context(m)
     end

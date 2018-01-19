@@ -21,7 +21,8 @@
 %          context --extra=meaning setuplayout
 %          context --extra=meaning setup_layout
 %          context --extra=meaning --once --noconsole --nostatistics setuplayout
-%          mtxrun --silent --script context --extra=meaning --once  --noconsole --nostatistics  setuplayout
+%          mtxrun --silent --script context --extra=meaning --once  --noconsole --nostatistics setuplayout
+%          mtxrun --script interface --meaning setuplayout
 %
 % end help
 
@@ -39,22 +40,21 @@
 
 \starttext
 
+\usemodule[setups-macros]
+
 \startluacode
     local h = tex.hashtokens()
 
     local function showmeaning(str)
-        local s = string.gsub(str,"^\\","")
-        local p = "^" .. string.topattern(s) .. "$"
+        local h = interfaces.macros.collect(str)
         context("pattern: ")
-        context.type(s)
+        context.type(str)
         context.blank()
         for i=1,#h do
             local hi = h[i]
-            if string.find(h[i],p) then
-                context.type(hi)
-                context.par()
-                context.showmeaning(hi)
-            end
+            context.type(hi)
+            context.par()
+            context.showmeaning(hi)
         end
         context.page()
     end
