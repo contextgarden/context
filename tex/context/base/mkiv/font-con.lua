@@ -841,7 +841,7 @@ function constructors.scale(tfmdata,specification)
                 local ok = false
                 for i=1,#vc do
                     local key = vc[i][1]
-                    if key == "right" or key == "down" then
+                    if key == "right" or key == "down" or key == "rule" then
                         ok = true
                         break
                     end
@@ -1044,8 +1044,6 @@ function constructors.hashfeatures(specification) -- will be overloaded
     local features = specification.features
     if features then
         local t, n = { }, 0
--- inspect(features)
---         for category, list in next, features do
         for category, list in sortedhash(features) do
             if next(list) then
                 local hasher = hashmethods[category]

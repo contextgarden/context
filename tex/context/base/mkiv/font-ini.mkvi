@@ -2832,4 +2832,12 @@
 %       \let\fontalternative#alternative%
 %       \font_helpers_synchronize_font}}
 
+%D \macros
+%D   {addfontpath}
+%D
+%D A way to add a path at runtime (no need to generate database):
+
+\unexpanded\def\usefontpath[#1]%
+  {\clf_addfontpath{#1}}
+
 \protect \endinput

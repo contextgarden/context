@@ -106,6 +106,7 @@ nodes.ignorablefields = ignore
 local function astable(n,sparse) -- not yet ok, might get obsolete anyway
     n = tonode(n)
     local f = getfields(n)
+    local t = { }
     for i=1,#f do
         local v = f[i]
         local d = n[v]

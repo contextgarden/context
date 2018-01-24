@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/19/18 13:42:33
+-- merge date  : 01/24/18 10:47:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -8403,7 +8403,7 @@ function constructors.scale(tfmdata,specification)
         local ok=false
         for i=1,#vc do
           local key=vc[i][1]
-          if key=="right" or key=="down" then
+          if key=="right" or key=="down" or key=="rule" then
             ok=true
             break
           end

@@ -158,13 +158,22 @@ vardef fromtopaths@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
                  fi ;
             save deviation ;
             deviation := if numeric d: d else: 0 fi ;
-            r1 = if deviation=0 : r0
-                else :
-                    point 0 of r0 ..
-                    unitvector direction .5length r0 of r0 rotated 90
-                        scaled deviation * arclength r0
-                        shifted point .5length r0 of r0 ..
-                    point length r0 of r0
+            r1 = if (point 0 of r0) = (point length r0 of r0) :
+                     (fullcircle rotated 180
+                         if mfun_laboff@# <> origin :
+                             rotated angle mfun_laboff@#
+                             shifted     .5mfun_laboff@#
+                         fi)
+                         scaled deviation
+                         shifted point 0 of r0
+                 elseif deviation=0 :
+                     r0
+                 else :
+                     point 0 of r0 ..
+                     unitvector direction .5length r0 of r0 rotated 90
+                         scaled deviation * arclength r0
+                         shifted point .5length r0 of r0 ..
+                     point length r0 of r0
                 fi ;
         else :
             if known l :

@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['font-syn'] = {
 
 local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, match, find, lower, upper = string.sub, string.gsub, string.match, string.find, string.lower, string.upper
-local concat, sort, fastcopy = table.concat, table.sort, table.fastcopy
+local concat, sort, fastcopy, tohash = table.concat, table.sort, table.fastcopy, table.tohash
 local serialize, sortedhash = table.serialize, table.sortedhash
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
@@ -35,6 +35,7 @@ local splitname            = file.splitname
 local basename             = file.basename
 local nameonly             = file.nameonly
 local pathpart             = file.pathpart
+local suffixonly           = file.suffix
 local filejoin             = file.join
 local is_qualified_path    = file.is_qualified_path
 local exists               = io.exists
@@ -423,9 +424,10 @@ filters.list = {
 
 -- to be considered: loop over paths per list entry (so first all otf ttf etc)
 
-names.fontconfigfile     = "fonts.conf" -- a bit weird format, bonus feature
-names.osfontdirvariable  = "OSFONTDIR"  -- the official way, in minimals etc
-names.extrafontsvariable = "EXTRAFONTS" -- the official way, in minimals etc
+names.fontconfigfile       = "fonts.conf"   -- a bit weird format, bonus feature
+names.osfontdirvariable    = "OSFONTDIR"    -- the official way, in minimals etc
+names.extrafontsvariable   = "EXTRAFONTS"   -- the official way, in minimals etc
+names.runtimefontsvariable = "RUNTIMEFONTS" -- the official way, in minimals etc
 
 filters.paths = { }
 filters.names = { }
@@ -1515,10 +1517,54 @@ end
 --     end
 -- end
 
+local runtimefiles = { }
+local runtimedone  = false
+
+local function addruntimepath(path)
+    names.load()
+    local paths    = type(path) == "table" and path or { path }
+    local suffixes = tohash(filters.list)
+    for i=1,#paths do
+        local path = resolveprefix(paths[i])
+        if path ~= "" then
+            local list = dir.glob(path.."/*")
+            for i=1,#list do
+                local fullname = list[i]
+                local suffix   = lower(suffixonly(fullname))
+                if suffixes[suffix] then
+                    local c = cleanfilename(fullname)
+                    runtimefiles[c] = fullname
+                    if trace_names then
+                        report_names("adding runtime filename %a for %a",c,fullname)
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function addruntimefiles(variable)
+    local paths = variable and resolvers.expandedpathlistfromvariable(variable)
+    if paths and #paths > 0 then
+        addruntimepath(paths)
+    end
+end
+
+names.addruntimepath  = addruntimepath
+names.addruntimefiles = addruntimefiles
+
 function names.getfilename(askedname,suffix) -- last resort, strip funny chars
+    if not runtimedone then
+        addruntimefiles(names.runtimefontsvariable)
+        runtimedone = true
+    end
+    local cleanname = cleanfilename(askedname,suffix)
+    local found     = runtimefiles[cleanname]
+    if found then
+        return found
+    end
     names.load()
     local files = names.data.files
-    local cleanname = cleanfilename(askedname,suffix)
     local found = files and files[cleanname] or ""
     if found == "" and is_reloaded() then
         files = names.data.files

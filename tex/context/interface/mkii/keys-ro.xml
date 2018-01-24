@@ -855,6 +855,7 @@
 		<cd:constant name='headerstate' value='stareantet'/>
 		<cd:constant name='headlabel' value='etichetatitlu'/>
 		<cd:constant name='headnumber' value='numartitlu'/>
+		<cd:constant name='headseparator' value='headseparator'/>
 		<cd:constant name='headstyle' value='stiltitlu'/>
 		<cd:constant name='height' value='inaltime'/>
 		<cd:constant name='hfactor' value='hfactor'/>

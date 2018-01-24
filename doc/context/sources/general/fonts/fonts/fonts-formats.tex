@@ -844,17 +844,16 @@ to the representation that we need they get cached. You can peek into the cache
 which is someplace on your system (depending on the setup):
 
 \starttabulate[|l|p|]
-\NC \type{fonts/afm}    \NC type one fonts, converted from \type {afm} and \type
-                            {pfb} files \NC \NR
-\NC \type{fonts/data}   \NC font name databases \NC \NR
-\NC \type{fonts/mp}     \NC fonts created using \METAPOST \NC \NR
-\NC \type{fonts/otf}    \NC open type fonts, converted from \type {ttf}, \type {otf},
-                            \type {ttc} and \type {ttx} files loaded using the
-                            \FONTFORGE\ loader \NC \NR
-\NC \type{fonts/otl}    \NC open type fonts, converted from \type {ttf}, \type {otf},
-                            \type {ttc} and \type {ttx} files loaded using the
-                            \CONTEXT\ \LUA\ loader \NC \NR
-\NC \type{fonts/shapes} \NC outlines of fonts (for instance for use in \METAFUN) \NC \NR
+\NC \type{fonts/data}    \NC font name databases \NC \NR
+\NC \type{fonts/mp}      \NC fonts created using \METAPOST \NC \NR
+\NC \type{fonts/one}     \NC type one fonts, converted from \type {afm} and \type
+                             {pfb} files \NC \NR
+\NC \type{fonts/otl}     \NC open type fonts, converted from \type {ttf}, \type {otf},
+                             \type {ttc} and \type {ttx} files loaded using the
+                             \CONTEXT\ \LUA\ loader \NC \NR
+\NC \type{fonts/pdf}     \NC font shapes for color fonts \NC \NR
+\NC \type{fonts/shapes}  \NC outlines of fonts (for instance for use in \METAFUN) \NC \NR
+\NC \type{fonts/streams} \NC font programs for variable font instances \NC \NR
 \stoptabulate
 
 There can be three types of files there. The \type{tma} files are just \LUA\
@@ -865,6 +864,30 @@ are optimized for space and memory (aka: packed) but you can expand them with
 
 Fonts in the cache are automatically updated when you install new versions of a
 font or when the \CONTEXT\ font loader has been updated.
+
+\stopsection
+
+\startsection[title=Paths]
+
+The search for fonts happens on paths defined in \type {texmf.cnf}. The information
+in there is used to generate a file database for fast access with priorities based
+on file type. The \TDS\ is starting point. The environment variable driven paths
+\type {OSFONTDIR} (set automatically) and \type {EXTRAFONTDIR} are taken into account.
+
+In addition you can set \type {RUNTIMEFONTS} which is, when set, consulted at
+runtime. You can also add a path in your style:
+
+\starttyping
+\usefontpath[c:/data/projects/myproject/fonts]
+\stoptyping
+
+although in general we recommend to put fonts in
+
+\starttyping
+<texroot>/tex/texmf-fonts/fonts/data]
+\stoptyping
+
+which is more efficient.
 
 \stopsection
 

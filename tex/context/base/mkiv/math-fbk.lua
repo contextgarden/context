@@ -15,6 +15,7 @@ local report_fallbacks  = logs.reporter("math","fallbacks")
 local formatters        = string.formatters
 local fastcopy          = table.fastcopy
 local byte              = string.byte
+local sortedhash        = table.sortedhash
 
 local fallbacks         = { }
 mathematics.fallbacks   = fallbacks
@@ -114,7 +115,7 @@ function fallbacks.apply(target,original)
     }
     target.mathrelation = data
     --
-    for k, v in next, virtualcharacters do
+    for k, v in sortedhash(virtualcharacters) do
         if not characters[k] then
             local tv = type(v)
             local cd = nil
@@ -123,7 +124,7 @@ function fallbacks.apply(target,original)
             elseif tv == "number" then
                 cd = characters[v]
             elseif tv == "function" then
-                cd = v(data)
+                cd = v(data) -- ,k
             end
             if cd then
                 characters[k] = cd
@@ -314,7 +315,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
     local characters = target.characters
     local olddata = characters[oldchr]
     -- brrr ... pagella has only next
-    if olddata and not olddata.commands and olddata.width > 0 then
+    if olddata and not olddata.commands then -- not: and olddata.width > 0
         local addprivate = fonts.helpers.addprivate
         if swap then
             swap = characters[swap]

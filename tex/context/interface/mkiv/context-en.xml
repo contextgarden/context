@@ -10190,6 +10190,9 @@
      <cd:parameter name="distance">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="headseparator">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
      <cd:parameter name="inbetween">
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -12921,6 +12924,13 @@
    <cd:arguments>
     <cd:keywords list="yes">
      <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="font-ini.mkvi" level="style" name="addfontpath">
+   <cd:arguments>
+    <cd:keywords list="yes">
+     <cd:constant type="cd:path"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>

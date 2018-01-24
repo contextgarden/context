@@ -2220,14 +2220,23 @@
 
 \definevspacing[\s!default]   [\v!white] % was big for a while
 
-% \dorecurse{10} % todo: other values < 4000
-%   {\normalexpanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr4000+250*\recurselevel\relax]}}
-
 \newcount\c_spac_vspacing_special_base \c_spac_vspacing_special_base = 32250 % 4000
 \newcount\c_spac_vspacing_special_step \c_spac_vspacing_special_step =    10 %  250
 
-\dorecurse{10}
-  {\normalexpanded{\definevspacing[\v!samepage-\recurselevel][penalty:\the\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*\recurselevel\relax]}}
+\unexpanded\def\spac_vspacing_define_same_page#1%
+  {\normalexpanded{\definevspacing
+     [\v!samepage-#1]%
+     [penalty:\the\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*#1\relax]}}
+
+\dorecurse{20}{\spac_vspacing_define_same_page{#1}}
+
+\ifdefined\everydefinesection
+    \appendtoks
+        \spac_vspacing_define_same_page\maxstructuredepth
+    \to \everydefinesection
+\else
+    % the order has changed so this code has to move to strf-def.mkiv then
+\fi
 
 \definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
 \definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references

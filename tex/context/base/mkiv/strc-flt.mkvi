@@ -344,7 +344,8 @@
        \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
        \ifnofloatcaption \else \ifemptyfloatcaption \else
          \doifelsenothing{\floatcaptionparameter\c!spaceinbetween}
-           {\scratchskip\floatcaptionparameter\c!distance\relax
+           {\floatcaptionparameter\c!headseparator\relax
+            \scratchskip\floatcaptionparameter\c!distance\relax
             \dotfskip\scratchskip\emergencystretch.5\scratchskip}
            {\blank[\floatcaptionparameter\c!spaceinbetween]}%
        \fi \fi

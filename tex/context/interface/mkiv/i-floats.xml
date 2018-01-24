@@ -290,6 +290,10 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <!-- headstyle headcolor headseparator -->
+                <cd:parameter name="headseparator">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
                 <cd:parameter name="inbetween">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>

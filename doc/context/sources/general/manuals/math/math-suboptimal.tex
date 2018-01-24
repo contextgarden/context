@@ -15,12 +15,11 @@ snippets.
 However, the quality of the coverage can differ per font. Here we show how Latin
 Modern, Pagella, Cambria, Lucida and Dejavu look like:
 
-\showglyphs
-
 \starttexdefinition ShowSample #1#2
     \start
+        \showglyphs
         \switchtobodyfont [#1]
-        #2: \dorecurse{50}{$\vec{\blackrule[width=##1pt]}$\space}\unskip
+        \dontleavehmode#2: \dorecurse{50}{$\vec{\blackrule[width=##1pt]}$\space}\unskip
         \par
     \stop
 \stoptexdefinition

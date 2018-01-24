@@ -17,7 +17,7 @@ local context, commands = context, commands
 local format, gmatch, match, find, lower, upper, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.upper, string.gsub, string.byte, string.topattern
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
-local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
+local settings_to_hash, hash_to_string, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string, utilities.parsers.settings_to_array
 local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
@@ -3086,3 +3086,11 @@ else
         report_adding("adding characters to %!font:name! is not yet supported",id)
     end
 end
+
+implement {
+    name      = "addfontpath",
+    arguments = "string",
+    actions   = function(list)
+        names.addruntimepath(settings_to_array(list))
+    end
+}

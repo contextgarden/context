@@ -1715,4 +1715,12 @@
         </cd:arguments>
     </cd:command>
 
+    <!-- question for ws: maybe move to i-file with ... level="system" category="structure" ... -->
+
+    <cd:command name="addfontpath" level="style" category="fonts" file="font-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-path-list"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

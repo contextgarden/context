@@ -35,6 +35,7 @@ local tonode          = nuts.tonode
 ----- getfield        = nuts.getfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
+local getboth         = nuts.getboth
 local getdisc         = nuts.getdisc
 local getid           = nuts.getid
 local getlist         = nuts.getlist
@@ -80,9 +81,8 @@ local texsetdimen     = tex.setdimen
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
     while current do
-        local id   = getid(current)
-        local next = getnext(current)
-        local prev = getprev(current)
+        local id = getid(current)
+        local prev, next = getboth(current)
         if id == disc_code then
             local pre, post, replace = getdisc(current)
             if not usecolor then
@@ -99,31 +99,14 @@ local function hyphenatedlist(head,usecolor)
                 flush_list(replace)
             end
             setdisc(current)
-            setboth(current)
---             local list = setlink (
---                 pre and new_penalty(10000),
---                 pre,
---                 current,
---                 post,
---                 post and new_penalty(10000)
---             )
---             local tail = find_tail(list)
---             if prev then
---                 setlink(prev,list)
---             end
---             if next then
---                 setlink(tail,next)
---             end
-            setlink (
-                prev, -- there had better be one
-                pre and new_penalty(10000),
-                pre,
-                current,
-                post,
-                post and new_penalty(10000),
-                next
-            )
-         -- flush_node(current)
+            if pre then
+                setlink(prev,new_penalty(10000),pre)
+                setlink(find_tail(pre),current)
+            end
+            if post then
+                setlink(current,new_penalty(10000),post)
+                setlink(find_tail(post),next)
+            end
         elseif id == vlist_code or id == hlist_code then
             hyphenatedlist(getlist(current))
         end

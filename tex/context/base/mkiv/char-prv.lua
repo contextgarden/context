@@ -106,6 +106,20 @@ characters.private={
   mathname="mapsfromchar",
   unicodeslot=0xFE324,
  },
+ [0xFE33E]={
+  description="TOP OF 0x023E",
+  mathclass="topaccent",
+  mathextensible="r",
+  mathstretch="h",
+  unicodeslot=0xFE33E,
+ },
+ [0xFE33F]={
+  description="BOTTOM OF 0x023E",
+  mathclass="botaccent",
+  mathextensible="r",
+  mathstretch="h",
+  unicodeslot=0xFE33E,
+ },
  [0xFE350]={
   category="sm",
   description="MATHEMATICAL DOUBLE ARROW LEFT END",

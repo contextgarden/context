@@ -8202,6 +8202,10 @@ return {
    ["pe"]="تبدیل‌سر",
    ["ro"]="conversietitlu",
   },
+  ["headseparator"]={
+   ["en"]="headseparator",
+   ["nl"]="kopscheider",
+  },
   ["header"]={
    ["cs"]="zahlavi",
    ["de"]="kopfzeile",

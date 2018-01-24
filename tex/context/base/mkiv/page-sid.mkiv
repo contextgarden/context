@@ -204,7 +204,13 @@
 
 \def\page_sides_flush_floats_text
   {\par
-   \ifdim\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax>\zeropoint % -\pagedepth
+   \ifdim\dimexpr
+        \d_page_sides_vsize
+    \ifnum\c_anch_backgrounds_text_level>\plusone
+       -\d_page_sides_bottomskip
+    \fi
+       -\pagetotal
+        \relax>\zeropoint % -\pagedepth
      \page_sides_flush_floats_progress
      \page_sides_flush_floats_after_none
    \fi
@@ -271,7 +277,14 @@
    \forgetall
    \offinterlineskip
    \doloop
-     {\scratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal-\pagedepth\relax
+     {\scratchdimen\dimexpr
+         \d_page_sides_vsize
+    \ifnum\c_anch_backgrounds_text_level>\plusone
+        -\d_page_sides_bottomskip
+    \fi
+        -\pagetotal
+        -\pagedepth
+      \relax
       \ifdim\scratchdimen>\onepoint % good enough, if we change it it will become a threshold
         \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
           \exitloop
@@ -863,10 +876,10 @@
 %D We need to hook it into the other otr's. This code will be adapted once we rename
 %D the callers. We use \type {\def} as they can be redefined! Some will become obsolete
 
-\def\checksidefloat         {\page_sides_check_floats}
-\def\flushsidefloats        {\page_sides_flush_floats_text}
-\def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
-\def\forgetsidefloats       {\page_sides_forget_floats}
-%def\synchronizesidefloats  {\page_sides_synchronize_floats}
+\unexpanded\def\checksidefloat         {\page_sides_check_floats}
+\unexpanded\def\flushsidefloats        {\page_sides_flush_floats_text}
+\unexpanded\def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
+\unexpanded\def\forgetsidefloats       {\page_sides_forget_floats}
+%unexpanded\def\synchronizesidefloats  {\page_sides_synchronize_floats}
 
 \protect \endinput

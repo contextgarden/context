@@ -12,65 +12,29 @@
 
 \unprotect
 
-\definesection[\s!section-8]
-\definesection[\s!section-9]
-\definesection[\s!section-10]
-\definesection[\s!section-11]
-\definesection[\s!section-12]
+\writestatus\m!system{}
+\writestatus\m!system{\the\maxstructuredepth\space levels sections are already predefined}
+\writestatus\m!system{}
 
-\definehead
-  [\v!subsubsubsubsubsection]
-  [\c!section=\s!section-8,
-   \c!default=\v!subsubsubsubsection]
+\protect
 
-\definehead
-  [\v!subsubsubsubsubsubsection]
-  [\c!section=\s!section-9,
-   \c!default=\v!subsubsubsubsubsection]
+\continueifinputfile{m-subsub.mkiv}
 
-\definehead
-  [\v!subsubsubsubsubsubsubsection]
-  [\c!section=\s!section-10,
-   \c!default=\v!subsubsubsubsubsubsection]
+\starttext
 
-\definehead
-  [\v!subsubsubsubsubsubsubsubsection]
-  [\c!section=\s!section-11,
-   \c!default=\v!subsubsubsubsubsubsubsection]
+  % \part                               {level  1 part}
+    \chapter                            {level  2 chapter}
+    \section                            {level  3 section}
+    \subsection                         {level  4 subsection}
+    \subsubsection                      {level  5 subsubsection}
+    \subsubsubsection                   {level  6 subsubsubsection}
+    \subsubsubsubsection                {level  7 subsubsubsubsection}
+    \subsubsubsubsubsection             {level  8 subsubsubsubsubsection}
+    \subsubsubsubsubsubsection          {level  9 subsubsubsubsubsubsection}
+    \subsubsubsubsubsubsubsection       {level 10 subsubsubsubsubsubsubsection}
+    \subsubsubsubsubsubsubsubsection    {level 11 subsubsubsubsubsubsubsubsection}
+    \subsubsubsubsubsubsubsubsubsection {level 12 subsubsubsubsubsubsubsubsubsection}
 
-\definehead
-  [\v!subsubsubsubsubsubsubsubsubsection]
-  [\c!section=\s!section-12,
-   \c!default=\v!subsubsubsubsubsubsubsubsection]
+    In case you wonder: level 1 part.
 
-\definehead
-  [\v!subsubsubsubsubsubject]
-  [\c!coupling=\v!subsubsubsubsubsection,
-   \c!default=\v!subsubsubsubsubsection,
-   \c!incrementnumber=\v!no]
-
-\definehead
-  [\v!subsubsubsubsubsubsubject]
-  [\c!coupling=\v!subsubsubsubsubsubsection,
-   \c!default=\v!subsubsubsubsubsubsection,
-   \c!incrementnumber=\v!no]
-
-\definehead
-  [\v!subsubsubsubsubsubsubsubject]
-  [\c!coupling=\v!subsubsubsubsubsubsubsection,
-   \c!default=\v!subsubsubsubsubsubsubsection,
-   \c!incrementnumber=\v!no]
-
-\definehead
-  [\v!subsubsubsubsubsubsubsubsubject]
-  [\c!coupling=\v!subsubsubsubsubsubsubsubsection,
-   \c!default=\v!subsubsubsubsubsubsubsubsection,
-   \c!incrementnumber=\v!no]
-
-\definehead
-  [\v!subsubsubsubsubsubsubsubsubsubject]
-  [\c!coupling=\v!subsubsubsubsubsubsubsubsubsection,
-   \c!default=\v!subsubsubsubsubsubsubsubsubsection,
-   \c!incrementnumber=\v!no]
-
-\protect \endinput
+\stoptext
