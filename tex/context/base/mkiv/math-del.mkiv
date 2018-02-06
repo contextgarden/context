@@ -69,13 +69,16 @@
 
 % A new experiment:
 
-\installcorenamespace {mathextensible}
+% Hm, we already have \definemathextensible so we need to preserve that one. We now
+% use \definemathdelimiter.
 
-\installcommandhandler \??mathextensible {mathextensible} \??mathextensible
+\installcorenamespace {mathdelimiter}
 
-\let\setupmathextensibles\setupmathextensible
+\installcommandhandler \??mathdelimiter {mathdelimiter} \??mathdelimiter
 
-\setupmathextensibles
+\let\setupmathdelimiters\setupmathdelimiter
+
+\setupmathdelimiters
   [\c!symbol=0,
    \c!command=\v!yes,
    \c!factor=1.5,
@@ -85,50 +88,50 @@
    \c!depth=\exheight]
 
 \appendtoks
-    \edef\p_command{\mathextensibleparameter\c!command}%
+    \edef\p_command{\mathdelimiterparameter\c!command}%
     \ifx\p_command\v!yes
-        \setuevalue\currentmathextensible{\math_fenced_extensible[\currentmathextensible]}%
+        \setuevalue\currentmathdelimiter{\math_fenced_extensible[\currentmathdelimiter]}%
     \fi
-\to \everydefinemathextensible
+\to \everydefinemathdelimiter
 
 \unexpanded\def\math_fenced_extensible
   {\dodoubleempty\math_fenced_extensible_indeed}
 
 \unexpanded\def\math_fenced_extensible_indeed[#1][#2]%
   {\mathop
-     {\edef\currentmathextensible{#1}%
-      \edef\p_factor{\mathextensibleparameter\c!factor}%
+     {\edef\currentmathdelimiter{#1}%
+      \edef\p_factor{\mathdelimiterparameter\c!factor}%
       \ifsecondargument
         \doifassignmentelse{#2}
-          {\setupcurrentmathextensible[#2]%
-           \edef\p_factor{\mathextensibleparameter\c!factor}}%
+          {\setupcurrentmathdelimiter[#2]%
+           \edef\p_factor{\mathdelimiterparameter\c!factor}}%
           {\edef\p_factor{#2}}%
       \else
-        \edef\p_factor{\mathextensibleparameter\c!factor}%
+        \edef\p_factor{\mathdelimiterparameter\c!factor}%
       \fi
-      \edef\p_exact{\mathextensibleparameter\c!exact}%
-      \edef\p_axis {\mathextensibleparameter\c!axis}%
-      \edef\p_leftoffset{\mathextensibleparameter\c!leftoffset}%
-      \edef\p_rightoffset{\mathextensibleparameter\c!rightoffset}%
+      \edef\p_exact{\mathdelimiterparameter\c!exact}%
+      \edef\p_axis {\mathdelimiterparameter\c!axis}%
+      \edef\p_leftoffset{\mathdelimiterparameter\c!leftoffset}%
+      \edef\p_rightoffset{\mathdelimiterparameter\c!rightoffset}%
       \ifx\p_leftoffset\empty\else
         \mskip\p_leftoffset
       \fi
       \Uvextensible
          \ifx\p_exact\v!yes exact \fi
          \ifx\p_axis \v!yes axis  \fi
-         height \p_factor\dimexpr\mathextensibleparameter\c!height\relax
-         depth  \p_factor\dimexpr\mathextensibleparameter\c!depth \relax
-         \Udelimiter\zerocount\zerocount\mathextensibleparameter\c!symbol
+         height \p_factor\dimexpr\mathdelimiterparameter\c!height\relax
+         depth  \p_factor\dimexpr\mathdelimiterparameter\c!depth \relax
+         \Udelimiter\zerocount\zerocount\mathdelimiterparameter\c!symbol
       \relax
       \ifx\p_rightoffset\empty\else
         \mskip\p_rightoffset
       \fi}}
 
-\let\mathextensible\math_fenced_extensible
+\let\mathdelimiter\math_fenced_extensible
 
-\definemathextensible[integral][\c!symbol="222B]
+\definemathdelimiter[integral][\c!symbol="222B]
 
-% \setupmathextensible[integral][rightoffset=-3mu,exact=yes,factor=2]
+% \setupmathdelimiter[integral][rightoffset=-3mu,exact=yes,factor=2]
 %
 % \let\inlineint \int
 % \let\displayint\integral

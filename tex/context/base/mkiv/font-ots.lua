@@ -2404,7 +2404,6 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
 
     local startchar = nofcontext == 1 or ischar(start,currentfont) -- only needed in a chain
 
-
     for k=1,nofcontexts do -- does this disc mess work well with n > 1
 
         local ck  = contexts[k]
@@ -3653,6 +3652,56 @@ local function pardirstate(start)
     end
     return getnext(start), new, new
 end
+
+-- -- some day we move to this:
+--
+-- local function txtdirstate1(start,stack,top,rlparmode)
+--     local dir, sub = getdirection(start)
+--     local new
+--     if sub then
+--         if top == 1 then
+--             top = 0
+--             new = rlparmode
+--         elseif dir < 2 then
+--             top = top - 1
+--             if stack[top] == 1 then
+--                 new = -1
+--             else
+--                 new = 1
+--             end
+--         else
+--             new = rlparmode
+--         end
+--     elseif dir == 1 then
+--         top = top + 1
+--         stack[top] = 1
+--         new = -1
+--     elseif dir == 0 then
+--         top = top + 1
+--         stack[top] = 0
+--         new = 1
+--     else
+--         new = rlparmode
+--     end
+--     if trace_directions then
+--         report_process("directions after txtdir %a: parmode %a, txtmode %a, level %a",dir,mref(rlparmode),mref(new),top)
+--     end
+--     return getnext(start), top, new
+-- end
+--
+-- local function pardirstate(start)
+--     local dir = getdirection(start)
+--     local new = 0
+--     if dir == 0 then
+--         new = 1
+--     elseif dir == 1 then
+--         new = -1
+--     end
+--     if trace_directions then
+--         report_process("directions after pardir %a: parmode %a",dir,mref(new))
+--     end
+--     return getnext(start), new, new
+-- end
 
 otf.helpers             = otf.helpers or { }
 otf.helpers.txtdirstate = txtdirstate

@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='fatto'/>
 		<cd:variable name='february' value='febbraio'/>
+		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='figura'/>
 		<cd:variable name='figures' value='figure'/>
 		<cd:variable name='file' value='file'/>
@@ -855,6 +856,7 @@
 		<cd:constant name='headerstate' value='statointestazione'/>
 		<cd:constant name='headlabel' value='etichettatesta'/>
 		<cd:constant name='headnumber' value='numerotesta'/>
+		<cd:constant name='headseparator' value='headseparator'/>
 		<cd:constant name='headstyle' value='stiletesta'/>
 		<cd:constant name='height' value='altezza'/>
 		<cd:constant name='hfactor' value='hfactor'/>
@@ -1168,6 +1170,7 @@
 		<cd:constant name='sidespacebefore' value='spaziolateraleprima'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='segno'/>
+		<cd:constant name='simplecommand' value='simplecommand'/>
 		<cd:constant name='size' value='dimensione'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>

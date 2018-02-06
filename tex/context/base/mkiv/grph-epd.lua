@@ -13,18 +13,33 @@ local settings_to_hash = utilities.parsers.settings_to_hash
 
 local codeinjections = backends.codeinjections
 
-function figures.mergegoodies(optionlist)
+local function mergegoodies(optionlist)
     local options = settings_to_hash(optionlist)
-    local all = options[variables.all] or options[variables.yes]
+    local all     = options[variables.all] or options[variables.yes]
     if all or options[variables.reference] then
         codeinjections.mergereferences()
     end
-    if all or options[variables.layer] then
-        codeinjections.mergeviewerlayers()
+    if all or options[variables.comment] then
+        codeinjections.mergecomments()
     end
     if all or options[variables.bookmark] then
         codeinjections.mergebookmarks()
     end
+    if all or options[variables.field] then
+        codeinjections.mergefields()
+    end
+    if all or options[variables.layer] then
+        codeinjections.mergeviewerlayers()
+    end
+    codeinjections.flushmergelayer()
+end
+
+function figures.mergegoodies(optionlist)
+    context.stepwise(function()
+        -- we use stepwise because we might need to define symbols
+        -- for stamps that have no default appearance
+        mergegoodies(optionlist)
+    end)
 end
 
 interfaces.implement {

@@ -62,7 +62,7 @@ function evohome.server(specification)
         return
     end
 
-    local port = specification.port or (presets.server and presets.server.port) or 806
+    local port = specification.port or (presets.server and presets.server.port) or 8068
     local host = specification.host or (presets.server and presets.server.host) or "*"
 
     package.extraluapath(presets.filepath)

@@ -59,6 +59,7 @@ lpdf.epdf       = lpdf_epdf
 --     --
 --     getDict        = object.getDict
 --     getArray       = object.getArray
+--     getInt         = object.getInt
 --     getReal        = object.getReal
 --     getNum         = object.getNum
 --     getString      = object.getString
@@ -112,6 +113,7 @@ local openPDF          = epdf.open
 local getDict          = object.getDict
 local getArray         = object.getArray
 local getReal          = object.getReal
+local getInt           = object.getInt
 local getNum           = object.getNum
 local getString        = object.getString
 local getBool          = object.getBool
@@ -193,15 +195,50 @@ local checked_access
 
 local frompdfdoc = lpdf.frompdfdoc
 
-local function get_flagged(t,f,k)
-    local fk = f[k]
-    if not fk then
-        return t[k]
-    elseif fk == "rawtext" then
-        return frompdfdoc(t[k])
-    else -- no other flags yet
-        return t[k]
+local get_flagged
+
+if lpdf.dictionary then
+
+    local pdfdictionary = lpdf.dictionary
+    local pdfarray      = lpdf.array
+    local pdfconstant   = lpdf.constant
+    local pdfstring     = lpdf.string
+    local pdfunicode    = lpdf.unicode
+
+    get_flagged = function(t,f,k)
+        local tk = t[k] -- triggers resolve
+        local fk = f[k]
+        if not fk then
+            return tk
+        elseif fk == "name" then
+            return pdfconstant(tk)
+        elseif fk == "array" then
+            return pdfarray(tk)
+        elseif fk == "dictionary" then
+            return pdfarray(tk)
+        elseif fk == "rawtext" then
+            return pdfstring(tk)
+        elseif fk == "unicode" then
+            return pdfunicode(tk)
+        else
+            return tk
+        end
     end
+
+else
+
+    get_flagged = function(t,f,k)
+        local tk = t[k] -- triggers resolve
+        local fk = f[k]
+        if not fk then
+            return tk
+        elseif fk == "rawtext" then
+            return frompdfdoc(tk)
+        else
+            return tk
+        end
+    end
+
 end
 
 local function prepare(document,d,t,n,k,mt,flags)
@@ -220,7 +257,7 @@ local function prepare(document,d,t,n,k,mt,flags)
                         local cached = document.__cache__[objnum]
                         if not cached then
                             cached = checked_access[kind](v,document,objnum,mt)
-                            if c then
+                            if cached then
                                 document.__cache__[objnum] = cached
                                 document.__xrefs__[cached] = objnum
                             end
@@ -261,8 +298,11 @@ local function some_dictionary(d,document)
             __call = function(t,k)
                 return get_flagged(t,f,k)
             end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "dictionary"
     end
 end
 
@@ -279,8 +319,11 @@ local function get_dictionary(object,document,r,mt)
             __call = function(t,k)
                 return get_flagged(t,f,k)
             end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "dictionary"
     end
 end
 
@@ -314,8 +357,14 @@ local function prepare(document,a,t,n,k)
             fatal_error("error: invalid value at index %a in array of %a",i,document.filename)
         end
     end
-    getmetatable(t).__index = nil
-    return t[k]
+    local m = getmetatable(t)
+    if m then
+        m.__index = nil
+        m.__len   = nil
+    end
+    if k then
+        return t[k]
+    end
 end
 
 local function some_array(a,document)
@@ -324,13 +373,20 @@ local function some_array(a,document)
         local t = { n = n }
         setmetatable(t, {
             __index = function(t,k)
-                return prepare(document,a,t,n,k)
+                return prepare(document,a,t,n,k,_,_,f)
             end,
             __len = function(t)
+                prepare(document,a,t,n,_,_,f)
                 return n
             end,
+            __call = function(t,k)
+                return get_flagged(t,f,k)
+            end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "array"
     end
 end
 
@@ -339,15 +395,23 @@ local function get_array(object,document)
     local n = a and arrayGetLength(a) or 0
     if n > 0 then
         local t = { n = n }
+        local f = { }
         setmetatable(t, {
             __index = function(t,k)
-                return prepare(document,a,t,n,k)
+                return prepare(document,a,t,n,k,_,_,f)
             end,
             __len = function(t)
+                prepare(document,a,t,n,_,_,f)
                 return n
             end,
+            __call = function(t,k)
+                return get_flagged(t,f,k)
+            end,
+         -- __kind = function(k)
+         --     return f[k] or type(t[k])
+         -- end,
         } )
-        return t
+        return t, "array"
     end
 end
 
@@ -395,7 +459,7 @@ local u_pattern = lpeg.patterns.utfbom_16_be * lpeg.patterns.utf16_to_utf8_be
 ----- b_pattern = lpeg.patterns.hextobytes
 
 local function get_string(v)
-    -- the toutf function only converts a utf16 string and leves the original
+    -- the toutf function only converts a utf16 string and leaves the original
     -- untouched otherwise; one might want to apply lpdf.frompdfdoc to a
     -- non-unicode string
     local s = getString(v)
@@ -404,7 +468,7 @@ local function get_string(v)
     end
     local u = lpegmatch(u_pattern,s)
     if u then
-        return u -- , "unicode"
+        return u, "unicode"
     end
     -- this is too tricky and fails on e.g. reload of url www.pragma-ade.com)
  -- local b = lpegmatch(b_pattern,s)
@@ -412,6 +476,10 @@ local function get_string(v)
  --     return b, "rawtext"
  -- end
     return s, "rawtext"
+end
+
+local function get_name(v)
+    return getName(v), "name"
 end
 
 local function get_null()
@@ -436,10 +504,10 @@ checked_access = setmetatableindex(function(t,k)
 end)
 
 checked_access[typenumbers.boolean]    = getBool
-checked_access[typenumbers.integer]    = getNum
+checked_access[typenumbers.integer]    = getInt
 checked_access[typenumbers.real]       = getReal
 checked_access[typenumbers.string]     = get_string     -- getString
-checked_access[typenumbers.name]       = getName
+checked_access[typenumbers.name]       = get_name
 checked_access[typenumbers.null]       = get_null
 checked_access[typenumbers.array]      = get_array      -- d,document,r
 checked_access[typenumbers.dictionary] = get_dictionary -- d,document,r

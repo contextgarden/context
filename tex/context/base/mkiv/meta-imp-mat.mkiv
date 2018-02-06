@@ -18,6 +18,7 @@
 % / for cambria
 
 \startMPextensions
+
     vardef math_stacker_overbracket_shape =
         image (
             draw
@@ -78,72 +79,111 @@
     vardef math_stacker_underbar_shape =
         math_stacker_overbar_shape rotated 180
     enddef ;
-    vardef math_stacker_arrow_shape =
+
+    % arrows
+
+    vardef math_stacker_arrow_shape(expr axis, ex, em) =
         image (
+            interim ahlength := ex/2;
             drawarrow
-                (OverlayWidth,OverlayOffset) -- (0,OverlayOffset)
+                ((OverlayWidth,ex/2) -- (0,ex/2))
             withcolor
                 OverlayLineColor ;
-            setbounds currentpicture to boundingbox currentpicture bottomenlarged (OverlayOffset/2) topenlarged (OverlayOffset/2) ;
+            setbounds currentpicture to unitsquare xysized(OverlayWidth,ex) ;
         )
     enddef ;
-    vardef math_stacker_leftarrow_shape =
-        math_stacker_arrow_shape
+    vardef math_stacker_leftrightarrow_shape(expr axis, ex, em) =
+        image (
+            interim ahlength := ex/2;
+            drawdblarrow
+                ((OverlayWidth,ex/2) -- (0,ex/2))
+            withcolor
+                OverlayLineColor ;
+            setbounds currentpicture to unitsquare xysized(OverlayWidth,ex) ;
+        )
     enddef ;
-    vardef math_stacker_rightarrow_shape =
-        math_stacker_arrow_shape rotated 180
+    vardef math_stacker_rightoverleftarrow_shape(expr axis, ex, em) =
+        image (
+            interim ahlength := ex/2;
+            drawdoublearrows
+                ((OverlayWidth,ex/2) -- (0,ex/2))
+            withcolor
+                OverlayLineColor ;
+            setbounds currentpicture to unitsquare xysized(OverlayWidth,ex) ;
+        )
     enddef ;
+    vardef math_stacker_leftarrow_shape(expr axis, ex, em) =
+        math_stacker_arrow_shape(axis,ex,em)
+    enddef ;
+    vardef math_stacker_rightarrow_shape(expr axis, ex, em) =
+        math_stacker_arrow_shape(axis,ex,em) rotated 180
+    enddef ;
+
+    % main handler
+
     def math_stacker_draw(expr p) =
         draw
             p
         withpen
             pencircle
-                xscaled (2OverlayLineWidth)
-              % yscaled (3OverlayLineWidth/4)
-                yscaled (3OverlayLineWidth)
-              % rotated 30 ;
-                rotated 45 ;
+              % xscaled (2OverlayLineWidth)
+              % yscaled (3OverlayLineWidth)
+              % rotated 45 ;
+                scaled (OverlayLineWidth) ;
     enddef ;
+
 \stopMPextensions
 
-\startuniqueMPgraphic{math:stacker:\number"FE3B4}
+\startuniqueMPgraphic{math:stacker:\number"FE3B4}{axis,ex,em}
     math_stacker_draw(math_stacker_overbracket_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3B5}
+\startuniqueMPgraphic{math:stacker:\number"FE3B5}{axis,ex,em}
     math_stacker_draw(math_stacker_underbracket_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DC}
+\startuniqueMPgraphic{math:stacker:\number"FE3DC}{axis,ex,em}
     math_stacker_draw(math_stacker_overparent_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DD}
+\startuniqueMPgraphic{math:stacker:\number"FE3DD}{axis,ex,em}
     math_stacker_draw(math_stacker_underparent_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DE}
+\startuniqueMPgraphic{math:stacker:\number"FE3DE}{axis,ex,em}
     math_stacker_draw(math_stacker_overbrace_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DF}
+\startuniqueMPgraphic{math:stacker:\number"FE3DF}{axis,ex,em}
     math_stacker_draw(math_stacker_underbrace_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE33E}
+\startuniqueMPgraphic{math:stacker:\number"FE33E}{axis,ex,em}
     math_stacker_draw(math_stacker_overbar_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE33F}
+\startuniqueMPgraphic{math:stacker:\number"FE33F}{axis,ex,em}
     math_stacker_draw(math_stacker_underbar_shape) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"2190}
-    math_stacker_draw(math_stacker_leftarrow_shape) ;
+\startuniqueMPgraphic{math:stacker:\number"2190}{axis,ex,em}
+    math_stacker_draw(math_stacker_leftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"2192}
-    math_stacker_draw(math_stacker_rightarrow_shape) ;
+\startuniqueMPgraphic{math:stacker:\number"2192}{axis,ex,em}
+    math_stacker_draw(math_stacker_rightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"2194}{axis,ex,em}
+    math_stacker_draw(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"27F7}{axis,ex,em}
+    math_stacker_draw(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"21C4}{axis,ex,em}
+    math_stacker_draw(math_stacker_rightoverleftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
 \stopuniqueMPgraphic
 
 %D Radicals:
@@ -158,7 +198,7 @@
     enddef ;
 \stopMPextensions
 
-\startuniqueMPgraphic{math:radical:default}%{...}
+\startuniqueMPgraphic{math:radical:default}{axis,ex,em}
     draw
         math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
         withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30

@@ -1788,6 +1788,19 @@
      % error
    \fi}
 
+\def\triggeredmathstyleparameter#1% to bypass the relax
+  {\ifcase\numexpr\normalmathstyle\relax
+     #1\displaystyle             \or % 0
+     #1\crampeddisplaystyle      \or % 1
+     #1\textstyle                \or % 2
+     #1\crampedtextstyle         \or % 3
+     #1\scriptstyle              \or % 4
+     #1\crampedscriptstyle       \or % 5
+     #1\scriptscriptstyle        \or % 6
+     #1\crampedscriptscriptstyle \else
+     % error
+   \fi}
+
 \def\mathstylefont#1% #1 is number (\normalmathstyle)
   {\ifcase\numexpr#1\relax
      \textfont         \or
@@ -1799,7 +1812,20 @@
      \scriptscriptfont \or
      \scriptscriptfont \else
      \textfont
-   \fi\zerocount} % hm, can ie other value as well
+   \fi\fam} % was \zerocount
+
+\def\somemathstylefont#1% #1 is number (\normalmathstyle)
+  {\ifcase\numexpr#1\relax
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \textfont         \or
+     \scriptfont       \or
+     \scriptfont       \or
+     \scriptscriptfont \or
+     \scriptscriptfont \else
+     \textfont
+   \fi}
 
 \def\mathsmallstylefont#1% #1 is number (\normalmathstyle)
   {\ifcase\numexpr#1\relax
@@ -1812,7 +1838,7 @@
      \scriptscriptfont \or
      \scriptscriptfont \else
      \scriptfont
-   \fi\zerocount} % hm, can ie other value as well
+   \fi\fam} % was \zerocount
 
 \def\mathstyleface#1% #1 is number (\normalmathstyle)
   {\ifcase\numexpr#1\relax
@@ -1878,6 +1904,12 @@
                 unknown\fi]}}}
 
 \unexpanded\def\showmathstyle{\verbosemathstyle\normalmathstyle}
+
+%D Handy too:
+
+\def\mathcharwd{\fontcharwd\mathstylefont\normalmathstyle}
+\def\mathcharht{\fontcharht\mathstylefont\normalmathstyle}
+\def\mathchardp{\fontchardp\mathstylefont\normalmathstyle}
 
 %D Some dimension fun:
 

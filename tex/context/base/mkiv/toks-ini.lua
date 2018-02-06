@@ -55,39 +55,26 @@ if setinspector then
 
 end
 
-local scan_toks    = token.scan_toks
-local scan_string  = token.scan_string
-local scan_int     = token.scan_int
-local scan_code    = token.scan_code
-local scan_dimen   = token.scan_dimen
-local scan_glue    = token.scan_glue
-local scan_keyword = token.scan_keyword
-local scan_token   = token.scan_token
-local scan_word    = token.scan_word
-local scan_number  = token.scan_number
-local scan_csname  = token.scan_csname
+local scan_toks       = token.scan_toks
+local scan_string     = token.scan_string
+local scan_int        = token.scan_int
+local scan_code       = token.scan_code
+local scan_dimen      = token.scan_dimen
+local scan_glue       = token.scan_glue
+local scan_keyword    = token.scan_keyword
+local scan_keyword_cs = token.scan_keyword_cs or scan_keyword
+local scan_token      = token.scan_token
+local scan_word       = token.scan_word
+local scan_number     = token.scan_number
+local scan_csname     = token.scan_csname
 
-local get_next     = token.get_next
+local get_next        = token.get_next
 
-if not token.get_macro then
-    local scantoks = tex.scantoks
-    local gettoks  = tex.gettoks
-    function token.get_meaning(name)
-        scantoks("t_get_macro",tex.ctxcatcodes,"\\"..name)
-        return gettoks("t_get_macro")
-    end
-    function token.get_macro(name)
-        scantoks("t_get_macro",tex.ctxcatcodes,"\\"..name)
-        local s = gettoks("t_get_macro")
-        return match(s,"^.-%->(.*)$") or s
-    end
-end
-
-local set_macro    = token.set_macro
-local get_macro    = token.get_macro
-local get_meaning  = token.get_meaning
-local get_cmdname  = token.get_cmdname
-local create_token = token.create
+local set_macro       = token.set_macro
+local get_macro       = token.get_macro
+local get_meaning     = token.get_meaning
+local get_cmdname     = token.get_cmdname
+local create_token    = token.create
 
 function tokens.defined(name)
     return get_cmdname(create_token(name)) ~= "undefined_cs"
@@ -251,6 +238,7 @@ tokens.scanners = { -- these expand
     number    = scan_number,
     boolean   = scan_boolean,
     keyword   = scan_keyword,
+    keywordcs = scan_keyword_cs,
     csname    = scan_csname,
 }
 

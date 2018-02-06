@@ -98,7 +98,7 @@
 % $\Udelimiterunder 0 "2190{x}$ \par $\Udelimiterunder 0 "27F8{x}$\par
 
 \setvalue{\??mathextensiblefallbacks}%
-  {\hbox{\vrule\s!width\scratchwidth\s!height.1\exheight\s!depth\zeropoint}}
+  {\hpack{\vrule\s!width\scratchwidth\s!height.1\mathexheight\s!depth\zeropoint}}
 
 % \def\math_stackers_with_fallback#codepoint%
 %   {\begingroup
@@ -160,17 +160,13 @@
    \c!right=,
    \c!mathclass=\s!rel,
    \c!alternative=\v!normal,
-   \c!mp=math:stacker:\number\scratchunicode,
-   \c!mpheight=\exheight,
-   \c!mpdepth=\exheight,
-   \c!mpoffset=.25\exheight,
-   \c!voffset=.25\exheight,
-   \c!hoffset=.5\emwidth,
+   \c!voffset=.25\mathexheight,
+   \c!hoffset=\zeropoint,
    \c!topoffset=\zeropoint, % for manual italic correction
    \c!distance=\mathstackersparameter\c!voffset, % distance between symbol and base (can be different from voffset)
-   \c!minheight=\exheight,
+   \c!minheight=\mathexheight,
    \c!mindepth=\zeropoint,
-   \c!minwidth=.5\emwidth,
+   \c!minwidth=.5\mathemwidth,
    \c!order=\v!normal,
    \c!strut=,
    \c!color=, % todo: when I need it
@@ -230,16 +226,46 @@
 \letvalue{\??mathstackersalternative\v!normal }\math_stackers_content
 \letvalue{\??mathstackersalternative\v!default}\math_stackers_content
 
+\setupmathstackers
+  [\c!mp=math:stacker:\number\scratchunicode,
+   \c!mpheight=\mathcharht\scratchunicode,
+   \c!mpdepth=\mathchardp\scratchunicode,
+   \c!mpoffset=.25\mathexheight]
+
+% \setvalue{\??mathstackersalternative\v!mp}%
+%   {\hbox\bgroup %  todo: add code key + tag
+%    \d_overlay_width    \scratchwidth
+%    \d_overlay_height   \dimexpr\mathstackersparameter\c!mpheight
+%    \d_overlay_depth    \dimexpr\mathstackersparameter\c!mpdepth
+%    \d_overlay_offset   \dimexpr\mathstackersparameter\c!mpoffset
+%    \d_overlay_linewidth\linewidth
+%    \edef\overlaylinecolor{\mathstackersparameter\c!color}%
+%    \edef\p_mp{\mathstackersparameter\c!mp}%
+%    \uniqueMPgraphic{\p_mp}%
+%    \egroup}
+
 \setvalue{\??mathstackersalternative\v!mp}%
-  {\hbox\bgroup %  todo: add code key + tag
+  {\normalexpanded{\math_stackers_mp_box
+     {\the\dimexpr\mathstackersparameter\c!mpheight}%
+     {\the\dimexpr\mathstackersparameter\c!mpdepth}%
+     {\the\dimexpr\mathstackersparameter\c!mpoffset}%
+     {\the\dimexpr\triggeredmathstyleparameter\Umathfractionrule}%
+     {\the\dimexpr\triggeredmathstyleparameter\Umathaxis}%
+     {\the\mathexheight}%
+     {\the\mathemwidth}%
+   }}
+
+\unexpanded\def\math_stackers_mp_box#1#2#3#4#5#6#7%
+  {\hpack\bgroup %  todo: add code key + tag
+   % we can speed up \mathexheight expansion a bit
    \d_overlay_width    \scratchwidth
-   \d_overlay_height   \dimexpr\mathstackersparameter\c!mpheight
-   \d_overlay_depth    \dimexpr\mathstackersparameter\c!mpdepth
-   \d_overlay_offset   \dimexpr\mathstackersparameter\c!mpoffset
-   \d_overlay_linewidth\linewidth
+   \d_overlay_height   #1\relax
+   \d_overlay_depth    #2\relax
+   \d_overlay_offset   #3\relax
+   \d_overlay_linewidth#4\relax
    \edef\overlaylinecolor{\mathstackersparameter\c!color}%
    \edef\p_mp{\mathstackersparameter\c!mp}%
-   \uniqueMPgraphic{\p_mp}%
+   \uniqueMPgraphic{\p_mp}{axis=#5,ex=#6,em=#7}%
    \egroup}
 
 \def\math_stackers_check_unicode#codepoint%
@@ -251,7 +277,7 @@
      % heads/tails + hoffset
    \else\ifx\p_offset\v!min
      % heads/tails - hoffset
-     \advance\scratchleftoffset-\scratchhoffset
+     \advance\scratchleftoffset -\scratchhoffset
      \advance\scratchrightoffset-\scratchhoffset
    \else % \v!normal
      % hoffset
@@ -298,15 +324,27 @@
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
      {\edef\p_offset     {\mathstackersparameter\c!offset}%
       \edef\p_location   {\mathstackersparameter\c!location}%
-      \edef\p_order      {\mathstackersparameter\c!order}%
       \edef\p_strut      {\mathstackersparameter\c!strut}%
       \edef\p_alternative{\mathstackersparameter\c!alternative}%
-      \ifx\p_order\v!reverse
-        \edef\m_math_stackers_text_top   {#bottomtext}%
-        \edef\m_math_stackers_text_bottom{#toptext}%
-      \else
-        \edef\m_math_stackers_text_top   {#toptext}%
-        \edef\m_math_stackers_text_bottom{#bottomtext}%
+    % \ifx\p_order\v!reverse
+    %   \ifsecondargument
+    %     \edef\m_math_stackers_text_top   {#bottomtext}%
+    %     \edef\m_math_stackers_text_bottom{#toptext}%
+    %   \else
+    %     \edef\m_math_stackers_text_top   {#toptext}%
+    %     \let\m_math_stackers_text_bottom  \empty
+    %   \fi
+    % \else
+    %   \edef\m_math_stackers_text_top   {#toptext}%
+    %   \edef\m_math_stackers_text_bottom{#bottomtext}%
+    % \fi
+      \edef\m_math_stackers_text_top   {#toptext}%
+      \edef\m_math_stackers_text_bottom{#bottomtext}%
+      \ifsecondargument
+        \edef\p_order{\mathstackersparameter\c!order}%
+        \ifx\p_order\v!reverse
+          \swapmacros\m_math_stackers_text_top\m_math_stackers_text_bottom
+        \fi
       \fi
       \scratchleftoffset \zeropoint
       \scratchrightoffset\zeropoint
@@ -327,13 +365,20 @@
       \fi
       %
       \ifcase#method\relax
-        \scratchwidth\wd
-          \ifdim\wd\scratchboxone>\wd\scratchboxtwo
-            \scratchboxone
-          \else
-            \scratchboxtwo
-          \fi
-        \relax
+        % e.g. extensible
+       %\scratchwidth\wd
+       %  \ifdim\wd\scratchboxone>\wd\scratchboxtwo
+       %    \scratchboxone
+       %  \else
+       %    \scratchboxtwo
+       %  \fi
+       %\relax
+        \scratchwidth\mathcharwd\scratchunicode
+        \ifdim\wd\scratchboxone>\scratchwidth
+          \scratchwidth\wd\scratchboxone
+        \else\ifdim\wd\scratchboxtwo>\scratchwidth
+          \scratchwidth\wd\scratchboxtwo
+        \fi\fi
       \else
         \ifx\m_math_stackers_text_middle\empty
           \setbox\scratchboxthree\emptyhbox
@@ -1020,10 +1065,10 @@
 %D Here come the new ones:
 
 \definemathstackers [\v!none]   [\v!mathematics] [\c!hoffset=\zeropoint]
-\definemathstackers [\v!normal] [\v!mathematics] [\c!hoffset=0.5\emwidth] % the default
-\definemathstackers [\v!small]  [\v!mathematics] [\c!hoffset=1\emwidth]
-\definemathstackers [\v!medium] [\v!mathematics] [\c!hoffset=1.5\emwidth]
-\definemathstackers [\v!big]    [\v!mathematics] [\c!hoffset=2\emwidth]
+\definemathstackers [\v!normal] [\v!mathematics] [\c!hoffset=0.5\mathemwidth] % the default
+\definemathstackers [\v!small]  [\v!mathematics] [\c!hoffset=1\mathemwidth]
+\definemathstackers [\v!medium] [\v!mathematics] [\c!hoffset=1.5\mathemwidth]
+\definemathstackers [\v!big]    [\v!mathematics] [\c!hoffset=2\mathemwidth]
 
 \definemathextensible [\v!reverse] [xrel]                ["002D]
 \definemathextensible [\v!reverse] [xequal]              ["003D]
@@ -1185,7 +1230,7 @@
   [\c!offset=\v!max,
    \c!left=\enspace,
    \c!right=\enspace,
-   \c!hoffset=.5\emwidth]
+   \c!hoffset=.5\mathemwidth]
 
 \definemathextensible [\v!chemistry] [cleftarrow]          ["2190]
 \definemathextensible [\v!chemistry] [crightarrow]         ["2192]

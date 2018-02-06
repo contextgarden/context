@@ -4,6 +4,8 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
+    <!-- todo definemathdelimuter, was overloading define mathextensible -->
+
     <cd:command name="definemathstackers" level="style" category="mathematics" file="math-stc.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
@@ -140,7 +142,7 @@
             <cd:resolve name="instance-mathextensible"/>
         </cd:instances>
     </cd:command>
-        
+
     <cd:command name="definemathoverextensible" level="system" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">

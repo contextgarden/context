@@ -55,17 +55,50 @@ interfaces.implement {
 
 local ctx_resume = context.protected.cs.clf_step
 
-function context.step(first,...)
-    if first ~= nil then
-        context(first,...)
+local closeinput  = texio.closeinput -- experiment
+local closeindeed = true
+local stepsindeed = true
+
+directives.register("context.steps.nosteps",function(v) stepsindeed = not v end)
+directives.register("context.steps.noclose",function(v) closeindeed = not v end)
+
+if closeinput then
+
+    function context.step(first,...)
+        if first ~= nil then
+            context(first,...)
+        end
+if stepper then
+        ctx_resume()
+        yield()
+        if closeindeed then
+            closeinput()
+        end
+end
     end
-    ctx_resume()
-    yield()
+
+else
+
+    function context.step(first,...)
+        if first ~= nil then
+            context(first,...)
+        end
+if stepper then
+        ctx_resume()
+        yield()
+end
+    end
+
 end
 
 function context.stepwise(f)
-    depth = depth + 1
-    stack[depth] = stepper
-    stepper = create(f)
-    ctx_resume(stepper)
+    if stepsindeed then
+        depth = depth + 1
+        stack[depth] = stepper
+        stepper = create(f)
+     -- ctx_resume(stepper)
+        ctx_resume()
+    else
+        f()
+    end
 end

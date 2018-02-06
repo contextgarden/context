@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 -- internal references are indicated by a number (and turned into <autoprefix><number>)
 -- we only flush internal destinations that are referred
 
-local next, tostring, tonumber, rawget = next, tostring, tonumber, rawget
+local next, tostring, tonumber, rawget, type = next, tostring, tonumber, rawget, type
 local rep, format, find = string.rep, string.format, string.find
 local min = math.min
 local lpegmatch = lpeg.match
@@ -706,6 +706,9 @@ local function finishreference(width,height,depth,prerolled) -- %0.2f looks okay
 end
 
 local function finishannotation(width,height,depth,prerolled,r)
+    if type(prerolled) == "function" then
+        prerolled = prerolled()
+    end
     local annot = f_annot(prerolled,pdfrectangle(width,height,depth))
     if r then
         pdfdelayedobject(annot,r)
@@ -728,7 +731,8 @@ end
 function nodeinjections.annotation(width,height,depth,prerolled,r)
     if prerolled then
         if trace_references then
-            report_references("special: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
+            report_references("special: width %p, height %p, depth %p, prerolled %a",width,height,depth,
+                type(prerolled) == "string" and prerolled or "-")
         end
         return new_latelua(function() finishannotation(width,height,depth,prerolled,r or false) end)
     end

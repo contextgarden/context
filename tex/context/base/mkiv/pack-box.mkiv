@@ -1138,4 +1138,21 @@
    \box\nextbox
    \egroup}
 
+\unexpanded\def\overlayimage#1%
+  {\vpack to \overlayheight\bgroup
+     \vss
+     \hpack to \overlaywidth\bgroup
+        \hss
+        \externalfigure[#1][\c!factor=\v!min,\c!equalwidth=\overlaywidth,\c!equalheight=\overlayheight]%
+        \hss
+     \egroup
+     \vss
+  \egroup}
+
+\unexpanded\def\clippedoverlayimage#1%
+  {\clip
+     [\c!width=\overlaywidth,\c!height=\overlayheight]
+     {\overlayimage{#1}}}
+
+
 \protect \endinput

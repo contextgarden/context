@@ -61,17 +61,15 @@
 
 \newtoks\everyresetalign % todo
 
-% We will not use bodydir and pagedir so we disable them. That way we get
-% normal hyperlink support.
+%D We will not use bodydir and pagedir so we disable them. That way we get
+%D normal hyperlink support. We back on it (too hard to fake \type {\the}).
 
-\let\spac_directions_normal_body_dir\normalbodydir
-\let\spac_directions_normal_page_dir\normalpagedir
+\unexpanded\def\syst_fatal_dir_error#1%
+  {\writestatus{fatal error}{\string#1\space is forbidden}%
+   \wait}
 
-\unexpanded\def\bodydir{\afterassignment\spac_directions_bodydir_indeed\spac_directions_normal_body_dir} \let\normalbodydir\bodydir
-\unexpanded\def\pagedir{\afterassignment\spac_directions_pagedir_indeed\spac_directions_normal_page_dir} \let\normalpagedir\pagedir
-
-\def\spac_directions_bodydir_indeed{\spac_directions_normal_body_dir TLT\relax}
-\def\spac_directions_pagedir_indeed{\spac_directions_normal_page_dir TLT\relax}
+\def\pagedir      {\syst_fatal_dir_error\pagedir}        \let\normalpagedir\pagedir
+\def\bodydir      {\syst_fatal_dir_error\bodydir}        \let\normalbodydir\bodydir
 
 % This will become a more advanced layout controller soon:
 
@@ -105,59 +103,45 @@
    \textdir TRT\relax
    \pardir  TRT\relax}
 
-\newconditional\c_spac_auto_line_dir  \settrue\c_spac_auto_line_dir
+% % keep this as reference
+%
+% \unexpanded\def\spac_directions_lefttoright_hmode
+%   {\textdir TLT\relax
+%    \settrue\inlinelefttoright}
+%
+% \unexpanded\def\spac_directions_righttoleft_hmode
+%   {\textdir TRT\relax
+%    \setfalse\inlinelefttoright}
+%
+% \unexpanded\def\spac_directions_lefttoright_hmode
+%   {\ifzeropt\lastskip
+%      \textdir TLT\relax
+%    \else
+%      \scratchskip\lastskip
+%      \unskip
+%      \textdir TLT\relax
+%      \hskip\scratchskip
+%    \fi
+%    \settrue\inlinelefttoright}
+%
+% \unexpanded\def\spac_directions_righttoleft_hmode
+%   {\ifzeropt\lastskip
+%      \textdir TRT\relax
+%    \else
+%      \scratchskip\lastskip
+%      \unskip
+%      \textdir TRT\relax
+%      \hskip\scratchskip
+%    \fi
+%    \setfalse\inlinelefttoright}
 
-\ifdefined\linedir
+\unexpanded\def\spac_directions_lefttoright_hmode
+  {\linedir TLT\relax % linedir keeps subtype of skip
+   \settrue\inlinelefttoright}
 
-    \unexpanded\def\spac_directions_lefttoright_hmode
-      {\ifconditional\c_spac_auto_line_dir\linedir\else\textdir\fi TLT\relax % linedir keeps subtype
-       \setfalse\inlinerighttoleft}
-
-    \unexpanded\def\spac_directions_righttoleft_hmode
-      {\ifconditional\c_spac_auto_line_dir\linedir\else\textdir\fi TRT\relax % linedir keeps subtype
-       \setfalse\inlinelefttoright}
-
-\else % keep this as reference
-
-   \unexpanded\def\spac_directions_lefttoright_hmode
-     {\settrue\inlinelefttoright
-      \textdir TLT\relax}
-
-   \unexpanded\def\spac_directions_righttoleft_hmode
-     {\textdir TRT\relax
-      \setfalse\inlinelefttoright}
-
-    \unexpanded\def\spac_directions_lefttoright_hmode
-      {\ifconditional\c_spac_auto_line_dir
-         \ifzeropt\lastskip
-           \textdir TLT\relax
-         \else
-           \scratchskip\lastskip
-           \unskip
-           \textdir TLT\relax
-           \hskip\scratchskip
-         \fi
-       \else
-         \textdir TLT\relax
-       \fi
-       \setfalse\inlinerighttoleft}
-
-    \unexpanded\def\spac_directions_righttoleft_hmode
-      {\ifconditional\c_spac_auto_line_dir
-         \ifzeropt\lastskip
-           \textdir TRT\relax
-         \else
-           \scratchskip\lastskip
-           \unskip
-           \textdir TRT\relax
-           \hskip\scratchskip
-         \fi
-       \else
-         \textdir TRT\relax
-       \fi
-       \setfalse\inlinelefttoright}
-
-\fi
+\unexpanded\def\spac_directions_righttoleft_hmode
+  {\linedir TRT\relax % linedir keeps subtype of skip
+   \setfalse\inlinelefttoright}
 
 % \def\currentdirectionparameters
 %   {\ifconditional\inlinelefttoright \else

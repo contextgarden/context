@@ -30,9 +30,7 @@
 % \ifnum\thetextdir=0 L\else R\fi \textdir TRT \ifnum\thetextdir=0 L\else R\fi
 
 \unexpanded\def\showdirsinmargin
-  {\doifelse{\the\pardir}\!!TLT
-     {\inleft{\normalexpanded{\noexpand\hbox dir TLT{\ttxx[\the\pardir,\the\textdir]}}}}
-     {\inleft{\normalexpanded{\noexpand\hbox dir TLT{\ttxx[\the\pardir,\the\textdir]}}}}}
+  {\inleft{\normalexpanded{\noexpand\hbox dir TLT{\ttxx[\the\pardir,\the\textdir]}}}}
 
 \bgroup
     \catcode`L=\othercatcode \gdef\istltdir#1#2#3{\if#2L0\else1\fi}

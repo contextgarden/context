@@ -63,9 +63,14 @@ function mp.LayoutColumnWidth   () mpprint(getdimen("layoutcolumnwidth")   *fact
 function mp.SpineWidth          () mpprint(getdimen("spinewidth")          *factor) end
 function mp.PaperBleed          () mpprint(getdimen("paperbleed")          *factor) end
 
-function mp.PageNumber          () mpprint(getcount("pageno"))                      end
 function mp.RealPageNumber      () mpprint(getcount("realpageno"))                  end
+function mp.LastPageNumber      () mpprint(getcount("lastpageno"))                  end
+
+function mp.PageNumber          () mpprint(getcount("pageno"))                      end
 function mp.NOfPages            () mpprint(getcount("lastpageno"))                  end
+
+function mp.SubPageNumber       () mpprint(getcount("subpageno"))                   end
+function mp.NOfSubPages         () mpprint(getcount("lastsubpageno"))               end
 
 function mp.CurrentColumn       () mpprint(getcount("mofcolumns"))                  end
 function mp.NOfColumns          () mpprint(getcount("nofcolumns"))                  end

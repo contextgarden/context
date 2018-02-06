@@ -36,6 +36,7 @@ local MetapostSnippetConstructor   = verbatim.MetapostSnippetConstructor
 local MetapostSnippetBoundary      = verbatim.MetapostSnippetBoundary
 local MetapostSnippetSpecial       = verbatim.MetapostSnippetSpecial
 local MetapostSnippetComment       = verbatim.MetapostSnippetComment
+local MetapostSnippetCommentText   = verbatim.MetapostSnippetCommentText
 local MetapostSnippetQuote         = verbatim.MetapostSnippetQuote
 local MetapostSnippetString        = verbatim.MetapostSnippetString
 local MetapostSnippetNamePrimitive = verbatim.MetapostSnippetNamePrimitive
@@ -80,12 +81,13 @@ local handler = visualizers.newhandler {
     boundary     = function(s) MetapostSnippetBoundary(s) end,
     special      = function(s) MetapostSnippetSpecial(s) end,
     comment      = function(s) MetapostSnippetComment(s) end,
+    commenttext  = function(s) MetapostSnippetCommentText(s) end,
     string       = function(s) MetapostSnippetString(s) end,
     quote        = function(s) MetapostSnippetQuote(s) end,
     name         = visualizename,
 }
 
-local comment     = S("%")
+local comment     = P("%")
 local name        = (patterns.letter + S("_"))^1
 local constructor = S("$@#")
 local boundary    = S('()[]:=<>;"')
@@ -94,7 +96,7 @@ local special     = S("-+/*|`!?^&%.,")
 local grammar = visualizers.newgrammar("default", { "visualizer",
 
     comment     = makepattern(handler,"comment",comment)
-                * (V("space") + V("content"))^0,
+                * makepattern(handler,"commenttext",(patterns.anything - patterns.newline)^0),
     dstring     = makepattern(handler,"quote",patterns.dquote)
                 * makepattern(handler,"string",patterns.nodquote)
                 * makepattern(handler,"quote",patterns.dquote),

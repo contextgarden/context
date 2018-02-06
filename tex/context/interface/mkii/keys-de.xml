@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='gegeben'/>
 		<cd:variable name='february' value='februar'/>
+		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='abbildung'/>
 		<cd:variable name='figures' value='abbildungen'/>
 		<cd:variable name='file' value='datei'/>
@@ -855,6 +856,7 @@
 		<cd:constant name='headerstate' value='kopfzeilenstatus'/>
 		<cd:constant name='headlabel' value='headlabel'/>
 		<cd:constant name='headnumber' value='kopfnummer'/>
+		<cd:constant name='headseparator' value='headseparator'/>
 		<cd:constant name='headstyle' value='kopfstil'/>
 		<cd:constant name='height' value='hoehe'/>
 		<cd:constant name='hfactor' value='hfaktor'/>
@@ -1011,6 +1013,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='nummernstil'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1167,6 +1170,7 @@
 		<cd:constant name='sidespacebefore' value='nebenvorspatium'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='zeichen'/>
+		<cd:constant name='simplecommand' value='simplecommand'/>
 		<cd:constant name='size' value='groesse'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>
@@ -1246,6 +1250,7 @@
 		<cd:constant name='titledistance' value='titelabstand'/>
 		<cd:constant name='titleleft' value='titleleft'/>
 		<cd:constant name='titleright' value='titleright'/>
+		<cd:constant name='titlestrut' value='titlestrut'/>
 		<cd:constant name='titlestyle' value='titelstil'/>
 		<cd:constant name='to' value='zu'/>
 		<cd:constant name='toffset' value='toffset'/>

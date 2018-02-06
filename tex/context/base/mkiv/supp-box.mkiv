@@ -2747,19 +2747,12 @@
 
 %D And even rawer:
 
-\let\naturalhbox   \hbox
-\let\naturalvbox   \vbox
-\let\naturalvtop   \normalvtop
-\let\naturalvcenter\normalvtop
-
-\ifdefined\textdir
-
-    \unexpanded\def\naturalhbox {\hbox dir TLT}
-    \unexpanded\def\naturalvbox {\vbox dir TLT}
-    \unexpanded\def\naturalhpack{\hpack dir TLT}
-    \unexpanded\def\naturalvpack{\vpack dir TLT}
-
-\fi
+           \let\naturalvtop   \normalvtop
+           \let\naturalvcenter\normalvtop
+\unexpanded\def\naturalhbox  {\hbox  dir TLT}
+\unexpanded\def\naturalvbox  {\vbox  dir TLT}
+\unexpanded\def\naturalhpack {\hpack dir TLT}
+\unexpanded\def\naturalvpack {\vpack dir TLT}
 
 %D \macros
 %D   {vcenter}

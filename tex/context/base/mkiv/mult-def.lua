@@ -7829,6 +7829,7 @@ return {
   },
   ["field"]={
    ["en"]="field",
+   ["nl"]="veld",
   },
   ["fieldbackgroundcolor"]={
    ["cs"]="barvapozadipole",
@@ -13402,6 +13403,10 @@ return {
    ["nl"]="februari",
    ["pe"]="فوریه",
    ["ro"]="februarie",
+  },
+  ["field"]={
+   ["en"]="field",
+   ["nl"]="veld",
   },
   ["figure"]={
    ["cs"]="obrazek",

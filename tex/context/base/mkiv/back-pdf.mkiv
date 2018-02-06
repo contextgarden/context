@@ -109,11 +109,11 @@
 %D We don't support these directives, at least not this way. If they are needed
 %D by third party modules we can provide some interface.
 
-\let\pdfcreationdate           \relax \newtoks \pdfcreationdate
+%   \pdfcreationdate
 \let\pdfdecimaldigits          \relax \newcount\pdfdecimaldigits
 \let\pdfdestmargin             \relax \newdimen\pdfdestmargin
-\let\pdffontname               \relax \newcount\pdffontname
-\let\pdffontobjnum             \relax \newcount\pdffontobjnum
+%   \pdffontname
+%   \pdffontobjnum
 \let\pdffontsize               \relax \newcount\pdffontsize
 \let\pdfgamma                  \relax \newcount\pdfgamma
 \let\pdfgentounicode           \relax \newcount\pdfgentounicode
@@ -128,27 +128,27 @@
 \let\pdfinclusioncopyfonts     \relax \newcount\pdfinclusioncopyfonts
 \let\pdfinclusionerrorlevel    \relax \newcount\pdfinclusionerrorlevel
 \let\pdfinfoomitdate           \relax \newcount\pdfinfoomitdate
-\let\pdflastannot              \relax \newcount\pdflastannot
-\let\pdflastlink               \relax \newcount\pdflastlink
+%   \pdflastannot
+%   \pdflastlink
 \let\pdflinkmargin             \relax \newdimen\pdflinkmargin
 \let\pdfmajorversion           \relax \newcount\pdfmajorversion
 \let\pdfminorversion           \relax \newcount\pdfminorversion
 \let\pdfpagebox                \relax \newcount\pdfpagebox
-\let\pdfpageref                \relax \newcount\pdfpageref
+%   \pdfpageref
 \let\pdfpkfixeddpi             \relax \newcount\pdfpkfixeddpi
 \let\pdfpkmode                 \relax \newtoks \pdfpkmode
 \let\pdfpkresolution           \relax \newcount\pdfpkresolution
-\let\pdfretval                 \relax \newcount\pdfretval
+%   \pdfretval
 \let\pdfsuppressoptionalinfo   \relax \newcount\pdfsuppressoptionalinfo
 \let\pdfsuppressptexinfo       \relax \newcount\pdfsuppressptexinfo
-\let\pdftexrevision            \relax \newcount\pdftexrevision
-\let\pdftexversion             \relax \newcount\pdftexversion
+%   \pdftexrevision
+%   \pdftexversion
 \let\pdfthreadmargin           \relax \newdimen\pdfthreadmargin
 \let\pdftrailerid              \relax \newtoks \pdftrailerid
 \let\pdfuniqueresname          \relax \newcount\pdfuniqueresname
 \let\pdfvorigin                \relax \newcount\pdfvorigin
 \let\pdfxformmargin            \relax \newdimen\pdfxformmargin
-\let\pdfxformname              \relax \newcount\pdfxformname
+%   \pdfxformname
 
 %D These are still accepted but are normally not needed.
 
@@ -168,7 +168,7 @@
 
 \normalprotected\def\pdfliteral  {\pdfextension literal }
 \normalprotected\def\pdfobj      {\pdfextension obj }
-                \def\pdflastobj  {\numexpr\pdffeedback  lastobj\relax}
+                \def\pdflastobj  {\pdffeedback  lastobj}
 \normalprotected\def\pdfrefobj   {\pdfextension refobj }
 \normalprotected\def\pdfrestore  {\pdfextension restore\relax}
 \normalprotected\def\pdfsave     {\pdfextension save\relax}

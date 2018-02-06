@@ -122,6 +122,8 @@ backends.pdf     = pdfbackend
 lpdf             = lpdf or { }
 local lpdf       = lpdf
 
+lpdf.flags       = lpdf.flags or { } -- will be filled later
+
 do
 
     local setmajorversion = pdf.setmajorversion
@@ -1336,3 +1338,63 @@ implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, action
 implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
 implement { name = "lpdf_adddocumentshade",      arguments = two_strings, actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
 
+-- more helpers: copy from lepd to lpdf
+
+function lpdf.copyconstant(v)
+    if v ~= nil then
+        return pdfconstant(v)
+    end
+end
+
+function lpdf.copyboolean(v)
+    if v ~= nil then
+        return pdfboolean(v)
+    end
+end
+
+function lpdf.copyunicode(v)
+    if v then
+        return pdfunicode(v)
+    end
+end
+
+function lpdf.copyarray(a)
+    if a then
+        local t = pdfarray()
+        local k = a.__kind
+        for i=1,#a do
+            t[i] = a(i)
+        end
+-- inspect(t)
+        return t
+    end
+end
+
+function lpdf.copydictionary(d)
+    if d then
+        local t = pdfdictionary()
+        for k, v in next, d do
+            t[k] = d(k)
+        end
+-- inspect(t)
+        return t
+    end
+end
+
+function lpdf.copynumber(v)
+    return v
+end
+
+function lpdf.copyinteger(v)
+    return v -- maybe checking or round ?
+end
+
+function lpdf.copyfloat(v)
+    return v
+end
+
+function lpdf.copystring(v)
+    if v then
+        return pdfstring(v)
+    end
+end

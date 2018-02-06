@@ -171,6 +171,9 @@ plus.hidden      = plus.Hidden
 plus.printable   = plus.Printable
 plus.auto        = plus.AutoView
 
+lpdf.flags.widgets     = flag
+lpdf.flags.annotations = plus
+
 -- some day .. lpeg with function or table
 
 local function fieldflag(specification) -- /Ff
@@ -356,6 +359,8 @@ local function fieldsurrounding(specification)
     -- move up with "x.y Ts"
     return tostring(stream)
 end
+
+codeinjections.fieldsurrounding = fieldsurrounding
 
 local function registerfonts()
     if next(usedfonts) then

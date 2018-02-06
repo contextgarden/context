@@ -318,7 +318,7 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
     if olddata and not olddata.commands then -- not: and olddata.width > 0
         local addprivate = fonts.helpers.addprivate
         if swap then
-            swap = characters[swap]
+            swap   = characters[swap]
             height = swap.depth or 0
             depth  = 0
         else
@@ -346,7 +346,8 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                     height   = height,
                     depth    = depth,
                 }
-                local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+--                 local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+                local newnextglyph = addprivate(target,nil,newnextdata)
                 newdata.next = newnextglyph
                 local nextnextglyph = oldnextdata.next
                 if nextnextglyph == nextglyph then
@@ -377,7 +378,8 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                         height   = height,
                         depth    = depth,
                     }
-                    hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
+--                     hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
+                    hvi.glyph = addprivate(target,nil,newdata)
                 else
                     report_fallbacks("error in fallback: no valid horiz_variants, slot %X, index %i",oldglyph,i)
                 end
@@ -389,22 +391,36 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
     end
 end
 
-virtualcharacters[0x203E] = function(data) -- could be FE33E instead
+virtualcharacters[0x203E] = function(data)
     local target = data.target
     local height, depth = 0, 0
-    local mathparameters = target.mathparameters
-    if mathparameters then
-        height = mathparameters.OverbarVerticalGap
-        depth  = mathparameters.UnderbarVerticalGap
-    else
+--     local mathparameters = target.mathparameters
+--     if mathparameters then
+--         height = mathparameters.OverbarVerticalGap
+--         depth  = mathparameters.UnderbarVerticalGap
+--     else
         height = target.parameters.xheight/4
         depth  = height
-    end
+--     end
     return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth,nil,nil,0x203E)
 end
 
-virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
-virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
+-- virtualcharacters[0xFE33E] = virtualcharacters[0x203E] -- convenient
+-- virtualcharacters[0xFE33F] = virtualcharacters[0x203E] -- convenient
+
+virtualcharacters[0xFE33E] = function(data)
+    local target = data.target
+    local height = 0
+    local depth  = target.parameters.xheight/4
+    return accent_to_extensible(target,0xFE33E,data.original,0x0305,height,depth,nil,nil,0x203E)
+end
+
+virtualcharacters[0xFE33F] = function(data)
+    local target = data.target
+    local height = target.parameters.xheight/8
+    local depth  = height
+    return accent_to_extensible(target,0xFE33F,data.original,0x0305,height,depth,nil,nil,0x203E)
+end
 
 -- spacing (no need for a cache of widths)
 

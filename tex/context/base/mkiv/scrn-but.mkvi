@@ -75,13 +75,17 @@
   {\iffirstargument
      \setupcurrentbutton[#settings]%
    \fi
-   \scrn_button_make
-     \buttonparameter
-     \inheritedbuttonframed
-     \letbuttonparameter
-     \setbuttonparameter
-     {#text}%
-     {#action}%
+   % no \dontleavehmode as it will force a vbox to \hsize which then
+   % spoils a tight box
+   \hpack\bgroup
+     \scrn_button_make
+       \buttonparameter
+       \inheritedbuttonframed
+       \letbuttonparameter
+       \setbuttonparameter
+       {#text}%
+       {#action}%
+   \egroup
    \endgroup}
 
 \def\scrn_button_direct_ignore[#settings]#text[#destination]%

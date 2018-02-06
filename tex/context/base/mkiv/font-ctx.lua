@@ -1797,7 +1797,7 @@ function definers.resolve(specification) -- overload function in font-con.lua
     end
     -- so far for goodie hacks
     local hash = hashfeatures(specification)
-    local name = specification.name
+    local name = specification.name or "badfont"
     local sub  = specification.sub
     if sub and sub ~= "" then
         specification.hash = lower(name .. " @ " .. sub .. ' @ ' .. hash)

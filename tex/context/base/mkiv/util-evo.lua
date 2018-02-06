@@ -75,6 +75,12 @@ local defaultpresets = {
     },
 }
 
+local validzonetypes = {
+    ZoneTemperatureControl = true,
+    RadiatorZone           = true,
+    ZoneValves             = true,
+}
+
 local function validfile(presets,filename)
     if lfs.isfile(filename) then
         -- we're okay
@@ -472,7 +478,7 @@ local function geteverything(presets,noschedules)
                                                 if zonestatus and gatewayzone then
                                                     local zonename = zonestatus.name
                                                     local zoneid   = zonestatus.zoneId
-                                                    if gatewayzone.zoneType == "ZoneTemperatureControl" and zonename == gatewayzone.name then
+                                                    if validzonetypes[gatewayzone.zoneType] and zonename == gatewayzone.name then
                                                         gatewayzone.heatSetpointStatus = zonestatus.heatSetpointStatus
                                                         gatewayzone.temperatureStatus  = zonestatus.temperatureStatus
                                                         local zonestatus = usedzones[zonename] -- findzone(states,zonename)
@@ -530,8 +536,7 @@ local function gettemperatures(presets)
                                     if zones then
                                         local z = s[i].zones
                                         for i=1,#zones do
-                                            local zone = zones[i]
-                                            if zone.zoneType == "ZoneTemperatureControl" then
+                                            if validzonetypes[zone.zoneType] then
                                                 local z = z[i]
                                                 if z.name == zone.name then
                                                     zone.temperatureStatus = z.temperatureStatus
@@ -613,7 +618,7 @@ local function loadtemperatures(presets)
                                     local summary = { time = status.time }
                                     for i=1,#zones do
                                         local zone = zones[i]
-                                        if zone.zoneType == "ZoneTemperatureControl" then
+                                        if validzonetypes[zone.zoneType] then
                                             summary[#summary+1] = updatezone(presets,zone.name,zone)
                                         end
                                     end

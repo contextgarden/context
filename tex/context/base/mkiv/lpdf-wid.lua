@@ -25,7 +25,7 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 -- html5 media in pdf then.
 
 local tonumber, next = tonumber, next
-local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
+local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, string.lower
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -156,8 +156,8 @@ comment_symbols.Default      = Note
 
 local function analyzesymbol(symbol,collection)
     if not symbol or symbol == "" then
-        return collection.Default, nil
-    elseif collection[symbol] then
+        return collection and collection.Default, nil
+    elseif collection and collection[symbol] then
         return collection[symbol], nil
     else
         local setn, setr, setd
@@ -178,6 +178,17 @@ local function analyzesymbol(symbol,collection)
         return nil, appearanceref
     end
 end
+
+local function analyzenormalsymbol(symbol)
+    local appearance = pdfdictionary {
+        N = registeredsymbol(symbol),
+    }
+    local appearanceref = pdfshareobjectreference(appearance)
+    return appearanceref
+end
+
+codeinjections.analyzesymbol       = analyzesymbol
+codeinjections.analyzenormalsymbol = analyzenormalsymbol
 
 local function analyzelayer(layer)
     -- todo:  (specification.layer ~= "" and pdfreference(specification.layer)) or nil, -- todo: ref to layer
@@ -383,7 +394,7 @@ function nodeinjections.attachfile(specification)
             FS       = aref,
             Contents = pdfunicode(title),
             Name     = name,
-            NM       = pdfstring(format("attachment:%s",nofattachments)),
+            NM       = pdfstring("attachment:"..nofattachments),
             T        = author ~= "" and pdfunicode(author) or nil,
             Subj     = subtitle ~= "" and pdfunicode(subtitle) or nil,
             C        = analyzecolor(specification.colorvalue,specification.colormodel),
@@ -391,9 +402,13 @@ function nodeinjections.attachfile(specification)
             AP       = appearance,
             OC       = analyzelayer(specification.layer),
         }
-        local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
-        local box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
-        box.width, box.height, box.depth = width, height, depth
+        local width  = specification.width  or 0
+        local height = specification.height or 0
+        local depth  = specification.depth  or 0
+        local box    = hpack_node(nodeinjections.annotation(width,height,depth,d()))
+        box.width    = width
+        box.height   = height
+        box.depth    = depth
         return box
     end
 end
@@ -472,10 +487,12 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
         CA        = analyzetransparency(specification.transparencyvalue),
         OC        = analyzelayer(specification.layer),
         Name      = name,
-        NM        = pdfstring(format("comment:%s",nofcomments)),
+        NM        = pdfstring("comment:"..nofcomments),
         AP        = appearance,
     }
-    local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
+    local width  = specification.width  or 0
+    local height = specification.height or 0
+    local depth  = specification.depth  or 0
     local box
     if usepopupcomments then
         -- rather useless as we can hide/vide
@@ -493,7 +510,9 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
     else
         box = hpack_node(nodeinjections.annotation(width,height,depth,d()))
     end
-    box.width, box.height, box.depth = width, height, depth -- redundant
+    box.width  = width  -- redundant
+    box.height = height -- redundant
+    box.depth  = depth  -- redundant
     return box
 end
 

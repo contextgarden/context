@@ -19,19 +19,37 @@ local char, bold, getvalue = context.char, context.bold, context.getvalue
 
 local chardata = characters.data
 
-function moduledata.fonts.coverage.showcomparison(specification)
+function moduledata.fonts.coverage.showdifference(specification)
+    moduledata.fonts.coverage.showcomparison(specification,true)
+end
+
+function moduledata.fonts.coverage.showcomparison(specification,difference)
 
     specification = interfaces.checkedspecification(specification)
 
     local fontfiles = utilities.parsers.settings_to_array(specification.list or "")
     local pattern   = upper(specification.pattern or "")
+    local slot      = specification.slot or ""
 
     local present = { }
     local names   = { }
     local files   = { }
     local chars   = { }
+    local slots   = false
 
-    if not pattern then
+    if slot ~= "" then
+        slot = utilities.parsers.settings_to_array(slot)
+        for i=1,#slot do
+            local s = tonumber(slot[i])
+            if not s then
+                -- next one
+            elseif slots then
+                slots[s] = true
+            else
+                slots = { [s] = true }
+            end
+        end
+    elseif not pattern then
         -- skip
     elseif pattern == "" then
         pattern = nil
@@ -80,11 +98,13 @@ function moduledata.fonts.coverage.showcomparison(specification)
         table.concat(t," ")
     }
 
-    context.starttabulate { "|Tl" .. string.rep("|c",#names) .. "|Tl|" }
+    local nofnames = #names
+
+    context.starttabulate { "|Tl" .. string.rep("|c",nofnames) .. "|Tl|" }
     NC()
     bold("unicode")
     NC()
-    for i=1,#names do
+    for i=1,nofnames do
         bold(i)
         NC()
     end
@@ -93,17 +113,35 @@ function moduledata.fonts.coverage.showcomparison(specification)
     NR()
     HL()
     for k, v in table.sortedpairs(present) do
-        if k <= 0 then
+        local skip = false
+        if difference then
+            local n = 0
+            for i=1,nofnames do
+                if chars[i][k] then
+                    n= n + 1
+                end
+            end
+            skip = n == nofnames
+        end
+        if skip then
+            -- ignore
+        elseif k <= 0 then
             -- ignore
         elseif k >= 0x110000 then
             logs.report("warning","weird character %U",k)
         else
             local description = chardata[k].description
-            if not pattern or (pattern == k) or (description and lpegmatch(pattern,description)) then
+            local wantedslot  = true
+            if slots then
+                wantedslot = slots[k]
+            elseif pattern then
+                wantedslot = pattern == k or (description and lpegmatch(pattern,description))
+            end
+            if wantedslot then
                 NC()
                     context("%05X",k)
                 NC()
-                for i=1,#names do
+                for i=1,nofnames do
                     getvalue(names[i])
                     if chars[i][k] then
                         char(k)

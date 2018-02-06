@@ -24,6 +24,7 @@ local scanstring     = scanners.string
 local scaninteger    = scanners.integer
 local scannumber     = scanners.number
 local scankeyword    = scanners.keyword
+local scankeywordcs  = scanners.keywordcs
 local scanword       = scanners.word
 local scancode       = scanners.code
 local scanboolean    = scanners.boolean
@@ -117,6 +118,7 @@ local shortcuts = {
     scaninteger     = scaninteger,
     scannumber      = scannumber,
     scankeyword     = scankeyword,
+    scankeywordcs   = scankeywordcs,
     scanword        = scanword,
     scancode        = scancode,
     scanboolean     = scanboolean,
@@ -163,21 +165,21 @@ tokens.converters = {
 -- that I then need to check the TeX end. More pain than gain and a bit
 -- risky too.
 
-local f_if       = formatters[    "  if scankeyword('%s') then data['%s'] = scan%s()"]
-local f_elseif   = formatters["  elseif scankeyword('%s') then data['%s'] = scan%s()"]
+local f_if       = formatters[    "  if scankeywordcs('%s') then data['%s'] = scan%s()"]
+local f_elseif   = formatters["  elseif scankeywordcs('%s') then data['%s'] = scan%s()"]
 
 ----- f_if       = formatters["  local key = scanword() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"]
 ----- f_elseif   = formatters["  elseif key == '%s' then data['%s'] = scan%s()"]
 
------ f_if_x     = formatters[    "  if not data['%s'] and scankeyword('%s') then data['%s'] = scan%s()"]
------ f_elseif_x = formatters["  elseif not data['%s'] and scankeyword('%s') then data['%s'] = scan%s()"]
+----- f_if_x     = formatters[    "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
+----- f_elseif_x = formatters["  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
 
 local f_local    = formatters["local scan%s = scanners.%s"]
 local f_scan     = formatters["scan%s()"]
 local f_shortcut = formatters["local %s = scanners.converters.%s"]
 
-local f_if_c     = formatters[    "  if scankeyword('%s') then data['%s'] = %s(scan%s())"]
-local f_elseif_c = formatters["  elseif scankeyword('%s') then data['%s'] = %s(scan%s())"]
+local f_if_c     = formatters[    "  if scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
+local f_elseif_c = formatters["  elseif scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
 local f_scan_c   = formatters["%s(scan%s())"]
 
 -- see above

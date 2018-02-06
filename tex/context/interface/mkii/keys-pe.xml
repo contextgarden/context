@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='fact'/>
 		<cd:variable name='february' value='فوریه'/>
+		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='شکل'/>
 		<cd:variable name='figures' value='شکلها'/>
 		<cd:variable name='file' value='پرونده'/>
@@ -379,6 +380,7 @@
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='نرمال'/>
 		<cd:variable name='nospacing' value='بدون‌فضاگذاری'/>
+		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='بدون'/>
 		<cd:variable name='notation' value='notation'/>
 		<cd:variable name='note' value='note'/>
@@ -854,6 +856,7 @@
 		<cd:constant name='headerstate' value='وضعیت‌سربرگ'/>
 		<cd:constant name='headlabel' value='برچسب‌سر'/>
 		<cd:constant name='headnumber' value='شماره‌سر'/>
+		<cd:constant name='headseparator' value='headseparator'/>
 		<cd:constant name='headstyle' value='سبک‌سر'/>
 		<cd:constant name='height' value='ارتفاع'/>
 		<cd:constant name='hfactor' value='عامل‌ارتفاع'/>
@@ -1010,6 +1013,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='سبک‌شماره'/>
 		<cd:constant name='numberwidth' value='عرض‌شماره'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1166,6 +1170,7 @@
 		<cd:constant name='sidespacebefore' value='فضای‌کناری‌قبل'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='علامت'/>
+		<cd:constant name='simplecommand' value='simplecommand'/>
 		<cd:constant name='size' value='اندازه'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>
@@ -1245,6 +1250,7 @@
 		<cd:constant name='titledistance' value='فاصله‌عنوان'/>
 		<cd:constant name='titleleft' value='عنوان‌چپ'/>
 		<cd:constant name='titleright' value='عنوان‌راست'/>
+		<cd:constant name='titlestrut' value='titlestrut'/>
 		<cd:constant name='titlestyle' value='سبک‌عنوان'/>
 		<cd:constant name='to' value='به'/>
 		<cd:constant name='toffset' value='toffset'/>
