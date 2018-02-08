@@ -121,69 +121,65 @@
 
     % main handler
 
-    def math_stacker_draw(expr p) =
-        draw
-            p
-        withpen
-            pencircle
-              % xscaled (2OverlayLineWidth)
-              % yscaled (3OverlayLineWidth)
-              % rotated 45 ;
-                scaled (OverlayLineWidth) ;
+    def math_stacker_draw_accent(expr p) =
+        draw p withpen pencircle scaled OverlayLineWidth xyscaled (2,3) rotated 45 ;
     enddef ;
 
+    def math_stacker_draw_arrow(expr p) =
+        draw p withpen pencircle scaled OverlayLineWidth ;
+    enddef ;
 \stopMPextensions
 
 \startuniqueMPgraphic{math:stacker:\number"FE3B4}{axis,ex,em}
-    math_stacker_draw(math_stacker_overbracket_shape) ;
+    math_stacker_draw_accent(math_stacker_overbracket_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3B5}{axis,ex,em}
-    math_stacker_draw(math_stacker_underbracket_shape) ;
+    math_stacker_draw_accent(math_stacker_underbracket_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DC}{axis,ex,em}
-    math_stacker_draw(math_stacker_overparent_shape) ;
+    math_stacker_draw_accent(math_stacker_overparent_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DD}{axis,ex,em}
-    math_stacker_draw(math_stacker_underparent_shape) ;
+    math_stacker_draw_accent(math_stacker_underparent_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DE}{axis,ex,em}
-    math_stacker_draw(math_stacker_overbrace_shape) ;
+    math_stacker_draw_accent(math_stacker_overbrace_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DF}{axis,ex,em}
-    math_stacker_draw(math_stacker_underbrace_shape) ;
+    math_stacker_draw_accent(math_stacker_underbrace_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE33E}{axis,ex,em}
-    math_stacker_draw(math_stacker_overbar_shape) ;
+    math_stacker_draw_accent(math_stacker_overbar_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE33F}{axis,ex,em}
-    math_stacker_draw(math_stacker_underbar_shape) ;
+    math_stacker_draw_accent(math_stacker_underbar_shape) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"2190}{axis,ex,em}
-    math_stacker_draw(math_stacker_leftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_leftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"2192}{axis,ex,em}
-    math_stacker_draw(math_stacker_rightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_rightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"2194}{axis,ex,em}
-    math_stacker_draw(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"27F7}{axis,ex,em}
-    math_stacker_draw(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"21C4}{axis,ex,em}
-    math_stacker_draw(math_stacker_rightoverleftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_rightoverleftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
 \stopuniqueMPgraphic
 
 %D Radicals:

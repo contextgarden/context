@@ -972,7 +972,7 @@ end
 local function collect_files(names) -- potential files .. sort of too much when asking for just one file
     local filelist = { }            -- but we need it for pattern matching later on
     local noffiles = 0
-    local function check(hash,root,pathname,path,name)
+    local function check(hash,root,pathname,path,basename,name)
         if not pathname or find(path,pathname) then
             local variant = hash.type
             local search  = filejoin(root,path,name) -- funny no concatinator
@@ -1011,10 +1011,10 @@ local function collect_files(names) -- potential files .. sort of too much when 
                     local metadata = content.metadata
                     local realroot = metadata and metadata.path or hashname
                     if type(path) == "string" then
-                        check(hash,realroot,pathname,path,name)
+                        check(hash,realroot,pathname,path,basename,name)
                     else
                         for i=1,#path do
-                            check(hash,realroot,pathname,path[i],name)
+                            check(hash,realroot,pathname,path[i],basename,name)
                         end
                     end
                 end

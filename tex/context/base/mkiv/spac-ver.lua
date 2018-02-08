@@ -2115,4 +2115,18 @@ do
         end
     }
 
+    interfaces.implement {
+        name    = "showpagelist", -- will improve
+        actions = function()
+            local head = texlists.page_head
+            if head then
+                print("start")
+                while head do
+                    print("  " .. tostring(head))
+                    head = head.next
+                end
+            end
+        end
+    }
+
 end

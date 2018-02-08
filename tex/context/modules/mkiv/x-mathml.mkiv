@@ -2053,7 +2053,8 @@
                     \vcenter {
                         \framed
                             [frame=off,strut=no,background={\mmlmenclosenotation}] % offset is kind of undefined
-                            {\startimath
+                            {
+                             \startpickupmath
                                 \expanded{\doifelseinset {mml:enclose:longdiv} {\mmlmenclosenotation}} {
                                     \overline{\left)\strut\xmlflush{#1}\right.}
                                 } {
@@ -2071,7 +2072,8 @@
                                         }
                                     }
                                 }
-                            \stopimath}
+                             \stoppickupmath
+                            }
                     }
                 }
             }

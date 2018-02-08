@@ -144,12 +144,47 @@ nodes.tonut               = tonut
 -- helpers
 
 if not direct.getfam then -- LUATEXVERSION < 1.070
+
     local getfield = direct.getfield
     local setfield = direct.setfield
 
     direct.getfam = function(n)   return getfield(n,"small_fam")   end
     direct.setfam = function(n,f)        setfield(n,"small_fam",f) end
+
 end
+
+if not direct.getdirection then
+
+    local getdir = direct.getdir
+    local setdir = direct.setdir
+
+    direct.getdirection = function(n)
+        local d = getdir(n)
+        if d ==  "TLT" then return 0        end
+        if d == "+TLT" then return 0, false end
+        if d == "-TLT" then return 0, true  end
+        if d ==  "TRT" then return 1        end
+        if d == "+TRT" then return 1, false end
+        if d == "-TRT" then return 1, true  end
+        if d ==  "LTL" then return 2        end
+        if d == "+LTL" then return 2, false end
+        if d == "-LTL" then return 2, true  end
+        if d ==  "RTT" then return 3        end
+        if d == "+RTT" then return 3, false end
+        if d == "-RTT" then return 3, true  end
+    end
+
+    direct.setdirection = function(n,d,c)
+            if d == 0 then if c == true then setdir("-TLT") elseif c == false then setdir("+TLT") else setdir("TLT") end
+        elseif d == 1 then if c == true then setdir("-TRT") elseif c == false then setdir("+TRT") else setdir("TRT") end
+        elseif d == 2 then if c == true then setdir("-LTL") elseif c == false then setdir("+LTL") else setdir("LTL") end
+        elseif d == 3 then if c == true then setdir("-RTT") elseif c == false then setdir("+RTT") else setdir("RTT") end
+        else               if c == true then setdir("-TLT") elseif c == false then setdir("+TLT") else setdir("TLT") end end
+    end
+
+end
+
+local nuts                 = nodes.nuts
 
 nuts.tostring              = direct.tostring
 nuts.copy                  = direct.copy
@@ -299,6 +334,9 @@ nuts.setkern               = direct.setkern
 
 nuts.getdir                = direct.getdir
 nuts.setdir                = direct.setdir
+
+nuts.getdirection          = direct.getdirection
+nuts.setdirection          = direct.setdirection
 
 nuts.getpenalty            = direct.getpenalty
 nuts.setpenalty            = direct.setpenalty

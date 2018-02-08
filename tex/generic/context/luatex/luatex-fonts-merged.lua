@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/06/18 18:11:25
+-- merge date  : 02/09/18 00:04:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -23051,7 +23051,6 @@ local trace_bugs=false registertracker("otf.bugs",function(v) trace_bugs=v end)
 local trace_details=false registertracker("otf.details",function(v) trace_details=v end)
 local trace_steps=false registertracker("otf.steps",function(v) trace_steps=v end)
 local trace_skips=false registertracker("otf.skips",function(v) trace_skips=v end)
-local trace_directions=false registertracker("otf.directions",function(v) trace_directions=v end)
 local trace_plugins=false registertracker("otf.plugins",function(v) trace_plugins=v end)
 local trace_chains=false registertracker("otf.chains",function(v) trace_chains=v end)
 local trace_kernruns=false registertracker("otf.kernruns",function(v) trace_kernruns=v end)
@@ -23236,12 +23235,10 @@ local function pref(dataset,sequence)
     dataset[4],sequence.type,sequence.merged and "merged " or "",sequence.name)
 end
 local function mref(rlmode)
-  if not rlmode or rlmode==0 then
-    return "---"
-  elseif rlmode==-1 or rlmode=="+TRT" then
-    return "r2l"
-  else
+  if not rlmode or rlmode>=0 then
     return "l2r"
+  else
+    return "r2l"
   end
 end
 local function flattendisk(head,disc)
@@ -25954,45 +25951,41 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
   end
 end
 local function txtdirstate(start,stack,top,rlparmode)
+  local nxt=getnext(start)
   local dir=getdir(start)
-  local new=1
   if dir=="+TRT" then
     top=top+1
     stack[top]=dir
-    new=-1
+    return nxt,top,-1
   elseif dir=="+TLT" then
     top=top+1
     stack[top]=dir
+    return nxt,top,1
   elseif dir=="-TRT" or dir=="-TLT" then
     if top==1 then
-      top=0
-      new=rlparmode
+      return nxt,0,rlparmode
     else
       top=top-1
       if stack[top]=="+TRT" then
-        new=-1
+        return nxt,top,-1
+      else
+        return nxt,top,1
       end
     end
   else
-    new=rlparmode
+    return nxt,top,rlparmode
   end
-  if trace_directions then
-    report_process("directions after txtdir %a: parmode %a, txtmode %a, level %a",dir,mref(rlparmode),mref(new),top)
-  end
-  return getnext(start),top,new
 end
 local function pardirstate(start)
+  local nxt=getnext(start)
   local dir=getdir(start)
-  local new=0
   if dir=="TLT" then
-    new=1
+    return nxt,1,1
   elseif dir=="TRT" then
-    new=-1
+    return nxt,-1,-1
+  else
+    return nxt,0,0
   end
-  if trace_directions then
-    report_process("directions after pardir %a: parmode %a",dir,mref(new))
-  end
-  return getnext(start),new,new
 end
 otf.helpers=otf.helpers or {}
 otf.helpers.txtdirstate=txtdirstate

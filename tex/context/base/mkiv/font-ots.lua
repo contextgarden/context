@@ -111,6 +111,8 @@ mechanisms. Both put some constraints on the code here.</p>
 --
 -- Remark: Some optimizations made sense for 5.2 but seem less important for 5.3 but
 -- anyway served their purpose.
+--
+-- Todo: just (0=l2r and 1=r2l) or maybe (r2l = true)
 
 local type, next, tonumber = type, next, tonumber
 local random = math.random
@@ -141,7 +143,6 @@ local trace_bugs           = false  registertracker("otf.bugs",         function
 local trace_details        = false  registertracker("otf.details",      function(v) trace_details      = v end)
 local trace_steps          = false  registertracker("otf.steps",        function(v) trace_steps        = v end)
 local trace_skips          = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
-local trace_directions     = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
 local trace_plugins        = false  registertracker("otf.plugins",      function(v) trace_plugins      = v end)
 local trace_chains         = false  registertracker("otf.chains",       function(v) trace_chains       = v end)
 
@@ -378,12 +379,10 @@ local function pref(dataset,sequence)
 end
 
 local function mref(rlmode)
-    if not rlmode or rlmode == 0 then
-        return "---"
-    elseif rlmode == -1 or rlmode == "+TRT" then
-        return "r2l"
-    else
+    if not rlmode or rlmode >= 0 then
         return "l2r"
+    else
+        return "r2l"
     end
 end
 
@@ -3610,97 +3609,125 @@ end
 -- to be checked, nowadays we probably can assume properly matched directions
 -- so maybe we no longer need a stack
 
-local function txtdirstate(start,stack,top,rlparmode)
-    local dir = getdir(start)
-    local new = 1
-    if dir == "+TRT" then
-        top = top + 1
-        stack[top] = dir
-        new = -1
-    elseif dir == "+TLT" then
-        top = top + 1
-        stack[top] = dir
-    elseif dir == "-TRT" or dir == "-TLT" then
-        if top == 1 then
-            top = 0
-            new = rlparmode
-        else
-            top = top - 1
-            if stack[top] == "+TRT" then
-                new = -1
-            end
-        end
-    else
-        new = rlparmode
-    end
-    if trace_directions then
-        report_process("directions after txtdir %a: parmode %a, txtmode %a, level %a",dir,mref(rlparmode),mref(new),top)
-    end
-    return getnext(start), top, new
-end
-
-local function pardirstate(start)
-    local dir = getdir(start)
-    local new = 0
-    if dir == "TLT" then
-        new = 1
-    elseif dir == "TRT" then
-        new = -1
-    end
-    if trace_directions then
-        report_process("directions after pardir %a: parmode %a",dir,mref(new))
-    end
-    return getnext(start), new, new
-end
-
--- -- some day we move to this:
---
--- local function txtdirstate1(start,stack,top,rlparmode)
---     local dir, sub = getdirection(start)
---     local new
---     if sub then
+-- local function txtdirstate(start,stack,top,rlparmode)
+--     local dir = getdir(start)
+--     local new = 1
+--     if dir == "+TRT" then
+--         top = top + 1
+--         stack[top] = dir
+--         new = -1
+--     elseif dir == "+TLT" then
+--         top = top + 1
+--         stack[top] = dir
+--     elseif dir == "-TRT" or dir == "-TLT" then
 --         if top == 1 then
 --             top = 0
 --             new = rlparmode
---         elseif dir < 2 then
---             top = top - 1
---             if stack[top] == 1 then
---                 new = -1
---             else
---                 new = 1
---             end
 --         else
---             new = rlparmode
+--             top = top - 1
+--             if stack[top] == "+TRT" then
+--                 new = -1
+--             end
 --         end
---     elseif dir == 1 then
---         top = top + 1
---         stack[top] = 1
---         new = -1
---     elseif dir == 0 then
---         top = top + 1
---         stack[top] = 0
---         new = 1
 --     else
 --         new = rlparmode
---     end
---     if trace_directions then
---         report_process("directions after txtdir %a: parmode %a, txtmode %a, level %a",dir,mref(rlparmode),mref(new),top)
 --     end
 --     return getnext(start), top, new
 -- end
 --
 -- local function pardirstate(start)
---     local dir = getdirection(start)
+--     local dir = getdir(start)
 --     local new = 0
---     if dir == 0 then
+--     if dir == "TLT" then
 --         new = 1
---     elseif dir == 1 then
+--     elseif dir == "TRT" then
 --         new = -1
 --     end
---     if trace_directions then
---         report_process("directions after pardir %a: parmode %a",dir,mref(new))
---     end
 --     return getnext(start), new, new
+-- end
+
+local function txtdirstate(start,stack,top,rlparmode)
+    local nxt = getnext(start)
+    local dir = getdir(start)
+    if dir == "+TRT" then
+        top = top + 1
+        stack[top] = dir
+        return nxt, top, -1
+    elseif dir == "+TLT" then
+        top = top + 1
+        stack[top] = dir
+        return nxt, top, 1
+    elseif dir == "-TRT" or dir == "-TLT" then
+        if top == 1 then
+            return nxt, 0, rlparmode
+        else
+            top = top - 1
+            if stack[top] == "+TRT" then
+                return nxt, top, -1
+            else
+                return nxt, top, 1
+            end
+        end
+    else
+        return nxt, top, rlparmode
+    end
+end
+
+local function pardirstate(start)
+    local nxt = getnext(start)
+    local dir = getdir(start)
+    if dir == "TLT" then
+        return nxt, 1, 1
+    elseif dir == "TRT" then
+        return nxt, -1, -1
+    else
+        return nxt, 0, 0
+    end
+end
+
+-- -- this will become:
+--
+-- local getdirection = nuts.getdirection
+--
+-- local function txtdirstate1(start,stack,top,rlparmode)
+--     local nxt = getnext(start)
+--     local dir, sub = getdirection(start)
+--     if sub then
+--         if top == 1 then
+--             return nxt, 0, rlparmode
+--         elseif dir < 2 then
+--             top = top - 1
+--             if stack[top] == 1 then
+--                 return nxt, top, -1
+--             else
+--                 return nxt, top, 1
+--             end
+--         else
+--             return nxt, top, rlparmode
+--         end
+--     elseif dir == 1 then
+--         top = top + 1
+--         stack[top] = 1
+--         return nxt, top, -1
+--     elseif dir == 0 then
+--         top = top + 1
+--         stack[top] = 0
+--         return nxt, top, 1
+--     else
+--         return nxt, top, rlparmode
+--     end
+-- end
+--
+-- local function pardirstate1(start)
+--     local nxt = getnext(start)
+--     local dir = getdirection(start)
+--     if dir == 0 then
+--         return nxt, 1, 1
+--     elseif dir == 1 then
+--         return nxt, -1, -1
+--     else
+--         return nxt, 0, 0
+--     end
 -- end
 
 otf.helpers             = otf.helpers or { }
@@ -3812,6 +3839,7 @@ do
         end
 
         local initialrl = direction == "TRT" and -1 or 0
+     -- local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
 
         local done      = false
      -- local datasets  = otf.dataset(tfmdata,font,attr)
@@ -4095,6 +4123,7 @@ do
         local dirstack  = { } -- could move outside function but we can have local runs
         local start     = head
         local initialrl = direction == "TRT" and -1 or 0
+     -- local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
         local rlmode    = initialrl
         local rlparmode = initialrl
         local topstack  = 0

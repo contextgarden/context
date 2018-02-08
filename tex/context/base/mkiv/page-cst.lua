@@ -640,7 +640,7 @@ function columnsets.check(t)
         texsetcount("c_page_grd_reserved_state",5)
         return
     end
--- report("checking width %p, height %p, depth %p, slot (%i,%i)",boxwidth,boxheight,boxdepth,c,r)
+ -- report("checking width %p, height %p, depth %p, slot (%i,%i)",boxwidth,boxheight,boxdepth,c,r)
     local nr = ceil(boxheight/(lineheight+linedepth))
     --
     local action = methods[method]

@@ -169,6 +169,17 @@
   {\endgroup
    \stopimath}
 
+\unexpanded\def\startpickupmath % for the moment private
+  {\ifconditional\indisplaymath
+     \startforceddisplaymath
+     \let\stoppickupmath\stopforceddisplaymath
+   \else
+     \startimath
+     \let\stoppickupmath\stopimath
+   \fi}
+
+\let\stoppickupmath\relax
+
 % \unexpanded\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
 %    \ifmmode

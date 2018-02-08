@@ -26,14 +26,14 @@ nodes.is_mirrored = allocate {
  -- RTT = false,
 }
 
-nodes.is_rotated = allocate {
+nodes.is_rotated = allocate { -- used
  -- TLT = false,
  -- TRT = false,
  -- LTL = false,
     RTT = true, ["+RTT"] = true,
 }
 
-nodes.textdir_is_parallel = allocate {
+nodes.textdir_is_parallel = allocate { -- used
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -114,7 +114,7 @@ nodes.pardir_is_opposite = allocate {
     },
 }
 
-nodes.textdir_is_opposite = allocate {
+nodes.textdir_is_opposite = allocate { -- used
     TLT = {
      -- TLT = false,
         TRT = true, ["+TRT"] = true,
@@ -168,7 +168,7 @@ nodes.glyphdir_is_opposite = allocate {
     },
 }
 
-nodes.pardir_is_equal = allocate {
+nodes.pardir_is_equal = allocate { -- used
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -195,7 +195,7 @@ nodes.pardir_is_equal = allocate {
     },
 }
 
-nodes.textdir_is_equal = allocate {
+nodes.textdir_is_equal = allocate { -- used
     TLT = {
         TLT = true, ["+TLT"] = true,
      -- TRT = false,
@@ -222,7 +222,7 @@ nodes.textdir_is_equal = allocate {
     },
 }
 
-nodes.glyphdir_is_equal = allocate {
+nodes.glyphdir_is_equal = allocate { -- used
     TLT = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
@@ -290,14 +290,14 @@ nodes.glyphdir_is_orthogonal = allocate {
  -- RTT = false
 }
 
-nodes.dir_is_pop = allocate {
+nodes.dir_is_pop = allocate { -- used
     ["-TRT"] = true,
     ["-TLT"] = true,
     ["-LTL"] = true,
     ["-RTT"] = true,
 }
 
-nodes.dir_negation = allocate {
+nodes.dir_negation = allocate { -- used
     ["-TRT"] = "+TRT",
     ["-TLT"] = "+TLT",
     ["-LTL"] = "+LTL",

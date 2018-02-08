@@ -1175,6 +1175,7 @@ do
                     alternates = alternates,
                     registered = registered,
                     presets    = { },
+                    resets     = { },
                     hashes     = setmetatableindex("table")
                 }
                 resources.mathalternates = mathalternates
@@ -1239,7 +1240,7 @@ do
     local fontdata        = fonts.hashes.identifiers
     local fontresources   = fonts.hashes.resources
 
-    local function getalternate(fam,tag)
+    local function getalternate(fam,tag,current)
         local resources = fontresources[font_of_family(fam)]
         local attribute = unsetvalue
         if resources then
@@ -1247,25 +1248,37 @@ do
             if mathalternates then
                 local presets = mathalternates.presets
                 if presets then
+                    local resets = mathalternates.resets
                     attribute = presets[tag]
                     if not attribute then
                         attribute  = 0
                         local alternates = mathalternates.alternates
                         for s in gmatch(tag,"[^, ]+") do
-                            local a = alternates[s] -- or known[s]
-                            if a then
-                                attribute = attribute + a
+                            if s == v_reset then
+                                resets[tag] = true
+                                current = unsetvalue
+                            else
+                                local a = alternates[s] -- or known[s]
+                                if a then
+                                    attribute = bor(attribute,a)
+                                end
                             end
                         end
                         if attribute == 0 then
                             attribute = unsetvalue
                         end
                         presets[tag] = attribute
+                    elseif resets[tag] then
+                        current = unsetvalue
                     end
                 end
             end
         end
-        return attribute
+        if attribute > 0 and current and current > 0 then
+            return bor(current,attribute)
+        else
+            return attribute
+        end
     end
 
     local function presetalternate(fam,tag)
@@ -1280,10 +1293,7 @@ do
 
     local function setalternate(fam,tag)
         local a = texgetattribute(a_mathalternate)
-        local v = getalternate(fam,tag)
-        if a and a > 0 then
-            v = a + v
-        end
+        local v = getalternate(fam,tag,a)
         texsetattribute(a_mathalternate,v)
     end
 

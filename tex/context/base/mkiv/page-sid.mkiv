@@ -279,9 +279,10 @@
    \doloop
      {\scratchdimen\dimexpr
          \d_page_sides_vsize
-    \ifnum\c_anch_backgrounds_text_level>\plusone
+% no longer with the adapted skipper
+%     \ifnum\c_anch_backgrounds_text_level>\plusone
         -\d_page_sides_bottomskip
-    \fi
+%     \fi
         -\pagetotal
         -\pagedepth
       \relax
@@ -843,26 +844,65 @@
      \fi
    \fi}
 
-\def\page_sides_inject_dummy_lines_normal
-  {\dorecurse\privatescratchcounter{\hpack to \hsize{\strut\hss}}}
+% \def\page_sides_inject_dummy_lines_normal
+%   {\dorecurse\privatescratchcounter{\hpack to \hsize{\strut\hss}}}
+%
+% \def\page_sides_inject_dummy_lines_traced
+%   {\dorecurse\privatescratchcounter{\ruledhpack{\backgroundline[trace:b]{\hpack to \hsize{\strut\hss}}}}}
+%
+% \def\page_sides_inject_dummy_lines % so always one
+%   {\begingroup
+%    \privatescratchcounter\pageshrink
+%    \divide\privatescratchcounter \baselineskip
+%    \advance\privatescratchcounter \plusone
+%    \parskip\zeropoint
+%    \iftracesidefloats
+%      \page_sides_inject_dummy_lines_traced
+%    \else
+%      \page_sides_inject_dummy_lines_normal
+%    \fi
+%    \kern-\privatescratchcounter\baselineskip
+%    \penalty\zerocount
+%    \triggerpagebuilder % the penalty already does that
+%    \endgroup}
 
-\def\page_sides_inject_dummy_lines_traced
-  {\dorecurse\privatescratchcounter{\ruledhpack{\backgroundline[trace:b]{\hpack to \hsize{\strut\hss}}}}}
+\def\page_sides_inject_dummy_line_normal
+  {\hpack to \hsize{\strut\hss}}
+
+\def\page_sides_inject_dummy_line_traced
+  {\ruledhpack to \hsize{\backgroundline[trace:b]{\page_sides_inject_dummy_line_normal}}}
+
+% \def\page_sides_inject_dummy_lines % so always one
+%   {\par
+%    \begingroup
+%    \dontleavehmode
+%    \iftracesidefloats
+%      \page_sides_inject_dummy_line_traced
+%    \else
+%      \page_sides_inject_dummy_line_normal
+%    \fi
+%    \vskip-\lineheight
+%    \vskip-\parskip
+%    \endgroup}
 
 \def\page_sides_inject_dummy_lines % so always one
-  {\begingroup
+  {\par
+   \begingroup
    \privatescratchcounter\pageshrink
-   \divide\privatescratchcounter \baselineskip
-   \advance\privatescratchcounter \plusone
-   \parskip\zeropoint
-   \iftracesidefloats
-     \page_sides_inject_dummy_lines_traced
-   \else
-     \page_sides_inject_dummy_lines_normal
+   \divide\privatescratchcounter \lineheight % \baselineskip
+   \advance\privatescratchcounter\plusone
+   \ifcase\privatescratchcounter\else
+     \dorecurse\privatescratchcounter
+       {\dontleavehmode
+        \iftracesidefloats
+          \page_sides_inject_dummy_line_traced
+        \else
+          \page_sides_inject_dummy_line_normal
+        \fi
+        \par}%
    \fi
-   \kern-\privatescratchcounter\baselineskip
-   \penalty\zerocount
-   \triggerpagebuilder % the penalty already does that
+   \vskip-\lineheight
+   \vskip-\parskip
    \endgroup}
 
 \def\adjustsidefloatdisplaylines % public, will change

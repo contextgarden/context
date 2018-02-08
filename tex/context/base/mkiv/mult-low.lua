@@ -179,7 +179,7 @@ return {
         --
         "donetrue", "donefalse", "foundtrue", "foundfalse",
         --
-        "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","reqno",
+        "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","startpickupmath","stoppickupmath","reqno",
         --
         "mathortext",
         --

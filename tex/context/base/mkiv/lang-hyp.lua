@@ -1042,6 +1042,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
         local extrachars      = nil
         local hyphenchars     = nil
         local language        = nil
+        local lastfont        = nil
         local start           = nil
         local stop            = nil
         local word            = { } -- we reuse this table
@@ -1404,6 +1405,8 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
         local skipping = false
 
+        -- In "word word word." the sequences "word" and "." can be a different font!
+
         while current and current ~= last do -- and current
             local code, id = isglyph(current)
             if code then
@@ -1411,7 +1414,8 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     current = getnext(current)
                 else
                     local lang = getlang(current)
-                    if lang ~= language then
+                    local font = getfont(current)
+                    if lang ~= language or font ~= lastfont then
                         if dictionary and size > charmin and leftmin + rightmin <= size then
                             -- only german has many words starting with an uppercase character
                             if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
@@ -1423,10 +1427,10 @@ featureset.hyphenonly   = hyphenonly == v_yes
                                 end
                             end
                         end
-                        language = lang
-                        if language > 0 then
+                        lastfont = font
+                        if language ~= lang and lang > 0 then
                             --
-                            dictionary = dictionaries[language]
+                            dictionary = dictionaries[lang]
                             instance   = dictionary.instance
                             characters = dictionary.characters
                             unicodes   = dictionary.unicodes
@@ -1457,6 +1461,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                         else
                             size = 0
                         end
+                        language = lang
                     elseif language <= 0 then
                         --
                     elseif size > 0 then
