@@ -665,10 +665,16 @@
 
 \unexpanded\def\page_mix_routine_construct#1%
   {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
+   \ifconditional\c_page_mix_process_notes
+     \totalnoteheight\zeropoint
+   \else
+     \settotalinsertionheight
+   \fi
    \clf_mixsetsplit
        box          \b_page_mix_collected
        nofcolumns   \c_page_mix_n_of_columns
        maxheight    \d_page_mix_max_height
+       noteheight   \totalnoteheight
        step         \d_page_mix_balance_step
        cycles       \c_page_mix_balance_cycles
        preheight    \d_page_mix_preceding_height

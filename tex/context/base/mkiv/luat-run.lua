@@ -133,7 +133,13 @@ callbacks.register('process_input_buffer',    false,               "actions perf
 callbacks.register('process_output_buffer',   false,               "actions performed when writing data")
 
 callbacks.register("pre_dump",                pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
-callbacks.register("finish_synctex_callback", wrapup_synctex,      "rename temporary synctex file")
+
+if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6505 then
+    callbacks.register("finish_synctex",          wrapup_synctex,      "rename temporary synctex file")
+    callbacks.register('wrapup_run',              false,               "actions performed after closing files")
+else
+    callbacks.register("finish_synctex_callback", wrapup_synctex,      "rename temporary synctex file")
+end
 
 -- an example:
 

@@ -69,6 +69,8 @@ local getpenalty          = nuts.getpenalty
 local getwidth            = nuts.getwidth
 local getheight           = nuts.getheight
 local getdepth            = nuts.getdepth
+local traverse_id         = nuts.traverse_id
+local traverse            = nuts.traverse
 
 local theprop             = nuts.theprop
 
@@ -277,10 +279,14 @@ local function preparesplit(specification) -- a rather large function
     if nofcolumns == 0 then
         nofcolumns = 1
     end
-    local preheight = specification.preheight or 0
-    local extra     = specification.extra or 0
-    local maxheight = specification.maxheight
-    local optimal   = originalheight/nofcolumns
+    local preheight  = specification.preheight or 0
+    local extra      = specification.extra or 0
+    local maxheight  = specification.maxheight
+    local optimal    = originalheight/nofcolumns
+    local noteheight = specification.noteheight or 0
+
+    maxheight = maxheight - noteheight
+
     if specification.balance ~= v_yes then
         optimal = maxheight
     end
@@ -823,6 +829,23 @@ local function report_deltas(result,str)
     report_state("%s, cycles %s, deltas % | t",str,result.cycle or 1,t)
 end
 
+-- local function xxcollectinserts(h)
+--     local skips, total, order = 0, 0, 0
+--     print(h)
+--     if h then
+-- h = getlist(h)
+-- for n in traverse(h) do
+--     print(tonode(n))
+-- end
+--         for n in traverse_id(insert_code,h) do
+--             order = order + 1
+--             total = total + getheight(n)
+--             skips = skips + structures.notes.check_spacing(getsubtype(n),order)
+--         end
+--     end
+--     return skips, total
+-- end
+
 local function setsplit(specification)
     splitruns = splitruns + 1
     if trace_state then
@@ -1023,6 +1046,7 @@ implement {
            { "box", "integer" },
            { "nofcolumns", "integer" },
            { "maxheight", "dimen" },
+           { "noteheight", "dimen" },
            { "step", "dimen" },
            { "cycles", "integer" },
            { "preheight", "dimen" },

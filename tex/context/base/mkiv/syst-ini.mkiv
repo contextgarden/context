@@ -1016,30 +1016,30 @@
 % \chardef\pdfnotrapped      = 256
 % \chardef\pdfnoid           = 512
 
-\def\pdftexversion     {\pdffeedback version}
-\def\pdftexrevision    {\pdffeedback revision}
-\def\pdflastlink       {\pdffeedback lastlink}
-\def\pdfretval         {\pdffeedback retval}
-\def\pdflastobj        {\pdffeedback lastobj}
-\def\pdflastannot      {\pdffeedback lastannot}
-\def\pdfxformname      {\pdffeedback xformname}
-\def\pdfcreationdate   {\pdffeedback creationdate}
-\def\pdffontname       {\pdffeedback fontname}
-\def\pdffontobjnum     {\pdffeedback fontobjnum}
-\def\pdffontsize       {\pdffeedback fontsize}
-\def\pdfpageref        {\pdffeedback pageref}
-\def\pdfcolorstackinit {\pdffeedback colorstackinit}
+\def\pdftexversion           {\numexpr\pdffeedback version\relax}
+\def\pdftexrevision                  {\pdffeedback revision}
+\def\pdflastlink             {\numexpr\pdffeedback lastlink\relax}
+\def\pdfretval               {\numexpr\pdffeedback retval\relax}
+\def\pdflastobj              {\numexpr\pdffeedback lastobj\relax}
+\def\pdflastannot            {\numexpr\pdffeedback lastannot\relax}
+\def\pdfxformname            {\numexpr\pdffeedback xformname\relax}
+\def\pdfcreationdate                 {\pdffeedback creationdate}
+\def\pdffontname             {\numexpr\pdffeedback fontname\relax}
+\def\pdffontobjnum           {\numexpr\pdffeedback fontobjnum\relax}
+\def\pdffontsize             {\dimexpr\pdffeedback fontsize\relax}
+\def\pdfpageref              {\numexpr\pdffeedback pageref\relax}
+\def\pdfcolorstackinit               {\pdffeedback colorstackinit}
 
-\let\pdfxform           \saveboxresource
-\let\pdflastxform       \lastsavedboxresourceindex
-\let\pdfrefxform        \useboxresource
-\let\pdfximage          \saveimageresource
-\let\pdflastximage      \lastsavedimageresourceindex
-\let\pdflastximagepages \lastsavedimageresourcepages
-\let\pdfrefximage       \useimageresource
-\let\pdfsavepos         \savepos
-\let\pdflastxpos        \lastxpos
-\let\pdflastypos        \lastypos
+\let\pdfxform                 \saveboxresource
+\let\pdflastxform             \lastsavedboxresourceindex
+\let\pdfrefxform              \useboxresource
+\let\pdfximage                \saveimageresource
+\let\pdflastximage            \lastsavedimageresourceindex
+\let\pdflastximagepages       \lastsavedimageresourcepages
+\let\pdfrefximage             \useimageresource
+\let\pdfsavepos               \savepos
+\let\pdflastxpos              \lastxpos
+\let\pdflastypos              \lastypos
 
 \edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         \plusnine
 \edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      \plusone

@@ -827,18 +827,83 @@ local colors = { -- b g r
     [8] = 0x4F4F4F, -- dark
 }
 
--- SendEditor(SCI_COLOURISE, 0, -1) -- forces styling
+-- in principle, when we could inject some funny symbol that is nto part of the
+-- stream and/or use a different extra styling for each snippet then selection
+-- would work and rendering would look better too ... one problem is that a font
+-- rendering can collapse characters due to font features
+
+-- function OnChar(c)
+--
+--     cat = editor.CharAt
+--
+--     editor.CodePage = SC_CP_UTF8
+--     editor.Lexer    = SCLEX_CONTAINER
+--
+--     if not bidi then
+--         bidi = require("context.scite-ctx-bidi")
+--     end
+--
+--     local line = editor:LineFromPosition(editor.CurrentPos)
+--     local str  = editor:GetLine(line)
+--     local len  = #str
+--     local bol  = editor:PositionFromLine(line)
+--
+--     local t = { }
+--     local a = { }
+--     local n = 0
+--     local i = 0
+--
+--     local v
+--     while i < len do
+--         n = n + 1
+--         v, s = toutfcode(i)
+--         t[n] = v
+--         a[n] = s
+--         i = i + s
+--     end
+--
+--     local t = bidi.process(t)
+--
+--     local defaultcolor = mapping.l
+--     local mirrorcolor  = 1
+--
+--     local lastcolor = -1
+--     local runlength = 0
+--
+--     editor:StartStyling(bol,INDICS_MASK)
+--     for i=1,n do
+--         local ti = t[i]
+--         local direction = ti.direction
+--         local mirror    = t[i].mirror
+--         local color     = (mirror and mirrorcolor) or (direction and mapping[direction]) or defaultcolor
+--         if color == lastcolor then
+--             runlength = runlength + a[i]
+--         else
+--             if runlength > 0 then
+--                 editor:SetStyling(runlength,INDIC_STRIKE)
+--             end
+--             lastcolor = color
+--             runlength = a[i]
+--         end
+--     end
+--     if runlength > 0 then
+--         editor:SetStyling(runlength,INDIC_STRIKE)
+--     end
+--     editor:SetStyling(2,31)
+--
+--     dirty[props.FileNameExt] = true
+--
+-- end
 
 function show_bidi()
 
     cat = editor.CharAt
 
     editor.CodePage = SC_CP_UTF8
+    editor.Lexer    = SCLEX_CONTAINER
 
-    editor.Lexer = SCLEX_CONTAINER
-
-    for i=1,#colors do
-        editor.StyleFore[i] = colors[i]
+    for i=1,#colors do -- 0,#colors
+       editor.StyleFore[i] = colors[i]
     end
 
     if not bidi then
@@ -899,6 +964,7 @@ function show_bidi()
     end
 
     editor:SetStyling(2,31)
+--     editor:StartStyling(0,31)
 
     dirty[props.FileNameExt] = true
 

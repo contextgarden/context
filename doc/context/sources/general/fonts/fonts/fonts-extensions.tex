@@ -797,6 +797,23 @@ We use the following example. The results are shown in \in {figure}
     \getbuffer [example]
 \stopplacefigure
 
+You can see what happens in \in {figure} [expansion:visualized].
+
+\startbuffer[example]
+    \setupalign[hz]
+    \enabletrackers[*expansion*]
+    \definefontfeature[boundingbox][boundingbox={frame,empty}]
+    \definedfont[Serif*default,quality,boundingbox @ 12.1pt]
+    \samplefile{sapolsky}\par
+    \disabletrackers[*expansion*]
+\stopbuffer
+
+\typebuffer[example]
+
+\startplacefigure[reference=expansion:visualized,title=The injected expansion kerns.]
+    \getbuffer [example]
+\stopplacefigure
+
 \startsubsubject[title=Expansion and kerning]
 
 When we expand glyphs we also need to look at the font kerns between them. In the

@@ -73,8 +73,8 @@
 \unexpanded\def\pdffontattr      {\unsupportedpdfprimitive\pdffontattr}
 \unexpanded\def\pdfglyphtounicode{\unsupportedpdfprimitive\pdfglyphtounicode}
 
-\unexpanded\def\pdfannot{\clf_pdfannot}
-\unexpanded\def\pdfdest {\clf_pdfdest}
+\unexpanded\def\pdfannot         {\clf_pdfannot}
+\unexpanded\def\pdfdest          {\clf_pdfdest}
 
 %D Here we do intercept (silently) what gets passed. One should use the \CONTEXT\
 %D interfaces instead.
@@ -168,7 +168,7 @@
 
 \normalprotected\def\pdfliteral  {\pdfextension literal }
 \normalprotected\def\pdfobj      {\pdfextension obj }
-                \def\pdflastobj  {\pdffeedback  lastobj}
+                \def\pdflastobj  {\numexpr\pdffeedback  lastobj\relax}
 \normalprotected\def\pdfrefobj   {\pdfextension refobj }
 \normalprotected\def\pdfrestore  {\pdfextension restore\relax}
 \normalprotected\def\pdfsave     {\pdfextension save\relax}

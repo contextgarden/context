@@ -299,4 +299,90 @@ The result is shown in \in {figure} [fig:alternativestyle]. Relevant commands ar
 
 \stopsection
 
+\startsection[title={A virtual hack}]
+
+Here is some virtual trickery. A virtual font is just a font but instead of a
+character being a reference to a slot in a font (often via an index) it
+constructs a glyph from whatever characters, rules, displacements, inline \PDF\
+code, etc. We use them a lot deep down in \CONTEXT. The next example defines two
+characters represented by rules. This definition is about as minimalistic as
+reasonable and demonstrates how we can apply expansion (aka hz) to such a font.
+\footnote {You need \LUATEX\ 1.08 or later for this.} We store the font id (a
+number) in a macro. Watch how we don't refer to a glyph in a font. Because we
+don't specify its type as \type {virtual} we can leave out the \type {font}
+table. After all, we don't refer to real glyphs.
+
+\startbuffer
+\startluacode
+local d = 400000 -- just over 6pt
+local a = font.define {
+    characters = {
+        [string.byte("A")] =
+            {
+                width    = d,
+                depth    = d,
+                commands = { { "down", d }, { "rule", d, d } },
+                expansion_factor = 1000,
+            },
+        [string.byte("B")] =
+            {
+                width    = d,
+                height   = d,
+                commands = { { "rule", d, d } },
+                expansion_factor = 500,
+            },
+
+    },
+    parameters = {
+        space         = 2*d,
+        space_stretch = d,
+        space_shrink  = d,
+    },
+    stretch = 8,
+    shrink  = 8,
+    step    = 2,
+    name    = "foo"
+}
+
+tex.count.scratchcounter = a
+\stopluacode
+
+\edef\MyFontID{\the\scratchcounter}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+% \enabletrackers[*expans*]
+
+\startbuffer
+\startoverlay
+  {\vbox \bgroup
+     \setuptolerance[verytolerant,stretch]
+     \setfontid\MyFontID
+     \dorecurse{5}{ABABABABABABABABABABABABABABABABA }
+   \egroup}
+  {\vbox \bgroup
+     \normaladjustspacing2
+     \middlegray
+     \setuptolerance[verytolerant,stretch]
+     \setfontid\MyFontID
+     \dorecurse{5}{ABABABABABABABABABABABABABABABABA }
+   \egroup}
+\stopoverlay
+\stopbuffer
+
+We test this with some rather low level code and show the result in \in {figure}
+[fig:virtualhack]. Of course you will never define a font this way if only
+because we don't set important parameters and this version is not generic in the
+sense that it scales well. You can find better examples elsewhere in the manual
+and in the distribution.
+
+\typebuffer
+
+\startplacefigure[title={A virtual hack.},reference=fig:virtualhack]
+    \getbuffer
+\stopplacefigure
+
+\stopsection
+
 \stopchapter

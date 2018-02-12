@@ -1083,7 +1083,7 @@ hashmethods.normal = function(list)
 end
 
 --[[ldx--
-<p>In principle we can share tfm tables when we are in node for a font, but then
+<p>In principle we can share tfm tables when we are in need for a font, but then
 we need to define a font switch as an id/attr switch which is no fun, so in that
 case users can best use dynamic features ... so, we will not use that speedup. Okay,
 when we get rid of base mode we can optimize even further by sharing, but then we
