@@ -1683,13 +1683,14 @@ end
 -- parsing
 
 function OnOpen(filename)
- -- report("opening '%s' of %i bytes",filename,editor.TextLength)
+--     report("opening '%s' of %i bytes",filename,editor.TextLength)
     editor:Colourise(0,editor.TextLength)
 end
 
 
 function OnSwitchFile(filename)
     if dirty[props.FileNameExt] then
+--         report("switching '%s' of %i bytes",filename,editor.TextLength)
         editor:Colourise(0,editor.TextLength)
         dirty[props.FileNameExt] = false
     end
@@ -1699,3 +1700,5 @@ end
 -- hardcoded and could not be turned off ... alas.
 
 -- output.Lexer = 0
+
+-- SCI_SETBIDIRECTIONAL = SC_BIDIRECTIONAL_R2L

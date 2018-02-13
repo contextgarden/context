@@ -50,6 +50,9 @@ local function loadscitelexer()
     if not lexer then
         lexer = require("scite-context-lexer")
         require("scite-context-theme") -- uses lexer
+        if lexer then
+            lexer.context.disablewordcheck()
+        end
     end
     return lexer
 end

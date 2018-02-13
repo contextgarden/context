@@ -34,10 +34,13 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
+local getlang            = nuts.getlang
+local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local setsubtype         = nuts.setsubtype
+local setdisc            = nuts.setdisc
 local isglyph            = nuts.isglyph
 
 local setcolor           = nodes.tracers.colors.set
@@ -48,6 +51,8 @@ local remove_node        = nuts.remove
 local traverse_id        = nuts.traverse_id
 local traverse_char      = nuts.traverse_char
 
+local copy_node          = nuts.copy
+
 local tasks              = nodes.tasks
 
 local nodepool           = nuts.pool
@@ -55,12 +60,15 @@ local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 local new_kern           = nodepool.kern
 local new_rule           = nodepool.rule
+local new_disc           = nodepool.disc
 
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
-local glyph_code         = nodecodes.glyph
+local disccodes          = nodes.disccodes
 
-local space_skip_code    = skipcodes["spaceskip"]
+local glyph_code         = nodecodes.glyph
+local space_skip_code    = skipcodes.spaceskip
+local explicit_code      = disccodes.explicit
 
 local chardata           = characters.data
 local is_punctuation     = characters.is_punctuation
@@ -240,6 +248,10 @@ local methods = {
         return nbsp(head,current)
     end,
 
+    [0x00AD] = function(head,current) -- softhyphen
+        return insert_node_after(head,current,languages.explicithyphen(current))
+    end,
+
     [0x2000] = function(head,current) -- enquad
         return inject_quad_space(0x2000,head,current,1/2)
     end,
@@ -293,8 +305,10 @@ local methods = {
     end,
 
     [0x205F] = function(head,current) -- math thinspace
-        return inject_nobreak_space(0x205F,head,current,fontparameters[getfont(current)].space/8)
+        return inject_nobreak_space(0x205F,head,current,4*fontquads[getfont(current)]/18)
     end,
+
+    -- The next one is also a bom so maybe only when we have glyphs around it
 
  -- [0xFEFF] = function(head,current) -- zerowidthnobreakspace
  --     return head, current

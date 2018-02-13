@@ -106,6 +106,9 @@ local function process(buffer,filename,action)
     if not filename then
         filename = buffer.filename
     end
+    if not filename then
+        return
+    end
     if filename == buffer.filename then
         buffer:annotation_clear_all() -- needed ?
         io.save_file()

@@ -429,6 +429,9 @@ local texsetcatcode = tex.setcatcode
 local contextsprint = context.sprint
 local ctxcatcodes   = catcodes.numbers.ctxcatcodes
 
+local texsetmacro   = tokens.setters.macro
+local texsetchar    = tokens.setters.char
+
 function texcharacters.defineaccents()
     local ctx_dodefineaccentcommand = context.dodefineaccentcommand
     local ctx_dodefineaccent        = context.dodefineaccent
@@ -484,12 +487,38 @@ tex.uprint = commands.utfchar
 -- in contect we don't use lc and uc codes (in fact in luatex we should have a hf code)
 -- so at some point we might drop this
 
-local forbidden = tohash { -- at least now
-    0x00A0,
-    0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x200B, 0x200C, 0x200D,
-    0x202F,
-    0x205F,
- -- 0xFEFF,
+-- The following get set at the TeX end:
+
+local forbidden = tohash {
+    0x000A0, -- zs nobreakspace            <self>
+    0x000AD, -- cf softhyphen              <self>
+ -- 0x00600, -- cf arabicnumber            <self>
+ -- 0x00601, -- cf arabicsanah             <self>
+ -- 0x00602, -- cf arabicfootnotemarker    <self>
+ -- 0x00603, -- cf arabicsafha             <self>
+ -- 0x00604, -- cf arabicsamvat            <self>
+ -- 0x00605, -- cf arabicnumberabove       <self>
+ -- 0x0061C, -- cf arabiclettermark        <self>
+ -- 0x006DD, -- cf arabicendofayah         <self>
+ -- 0x008E2, -- cf arabicdisputedendofayah <self>
+    0x02000, -- zs enquad                  <self>
+    0x02001, -- zs emquad                  <self>
+    0x02002, -- zs enspace                 \kern .5\emwidth
+    0x02003, -- zs emspace                 \hskip \emwidth
+    0x02004, -- zs threeperemspace         <self>
+    0x02005, -- zs fourperemspace          <self>
+    0x02006, -- zs sixperemspace           <self>
+    0x02007, -- zs figurespace             <self>
+    0x02008, -- zs punctuationspace        <self>
+    0x02009, -- zs breakablethinspace      <self>
+    0x0200A, -- zs hairspace               <self>
+    0x0200B, -- cf zerowidthspace          <self>
+    0x0200C, -- cf zwnj                    <self>
+    0x0200D, -- cf zwj                     <self>
+    0x0202F, -- zs narrownobreakspace      <self>
+    0x0205F, -- zs medspace                \textormathspace +\medmuskip 2
+ -- 0x03000, -- zs ideographicspace        <self>
+ -- 0x0FEFF, -- cf zerowidthnobreakspace   \penalty \plustenthousand \kern \zeropoint
 }
 
 local csletters = characters.csletters -- also a signal that we have initialized
@@ -548,18 +577,15 @@ if not csletters then
                 if is_character[category] then
                     if chr.unicodeslot < 128 then
                         if isletter then
-                            -- setmacro
                             local c = utfchar(u)
-                            contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,c)) -- has no s
+                            texsetmacro(contextname,c)
                             csletters[c] = u
                         else
-                            -- setchar
-                            contextsprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u)) -- has no s
+                            texsetchar(contextname,u)
                         end
                     else
-                        -- setmacro
                         local c = utfchar(u)
-                        contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,c)) -- has no s
+                        texsetmacro(contextname,c)
                         if isletter and u >= 32 and u <= 65536 then
                             csletters[c] = u
                         end
@@ -584,9 +610,10 @@ if not csletters then
                     end
                     --
                 elseif is_command[category] and not forbidden[u] then
-                    -- set
-                    contextsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}")
-                    activated[#activated+1] = u
+                 -- contextsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\",contextname,"}}")
+                 -- activated[#activated+1] = u
+                    local c = utfchar(u)
+                    texsetmacro(contextname,c)
                 elseif is_mark[category] then
                     texsetlccode(u,u,u) -- for hyphenation
                 end

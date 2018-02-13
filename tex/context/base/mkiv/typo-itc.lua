@@ -248,7 +248,7 @@ local function domath(head,current, done)
                                 a = a + 100
                             end
                             if trace_italics then
-                                report_italics("adding italic between math %C and non punctuation %C",getchar(glyph),char)
+                                report_italics("%s italic %p between math %C and non punctuation %C","adding",a,getchar(glyph),char)
                             end
                             insert_node_after(head,glyph,correction_kern(a,glyph))
                             done = true
@@ -262,11 +262,12 @@ local function domath(head,current, done)
 end
 
 local function mathhandler(head)
-    local current = tonut(head)
+    local nuthead = tonut(head)
+    local current = nuthead
     local done    = false
     while current do
         if getid(current) == math_code then
-            current, done = domath(head,current,done)
+            current, done = domath(nuthead,current,done)
         end
         current = getnext(current)
     end

@@ -61,36 +61,37 @@ setmetatable(userids, {
 
 -- nuts overload
 
-local nuts       = nodes.nuts
-local nutpool    = { }
-nuts.pool        = nutpool
+local nuts         = nodes.nuts
+local nutpool      = { }
+nuts.pool          = nutpool
 
-local tonut      = nuts.tonut
-local tonode     = nuts.tonode
+local tonut        = nuts.tonut
+local tonode       = nuts.tonode
 
-local getbox     = nuts.getbox
-local getid      = nuts.getid
-local getlist    = nuts.getlist
-local getglue    = nuts.getglue
+local getbox       = nuts.getbox
+local getid        = nuts.getid
+local getlist      = nuts.getlist
+local getglue      = nuts.getglue
 
-local setfield   = nuts.setfield
-local setchar    = nuts.setchar
-local setlist    = nuts.setlist
-local setwhd     = nuts.setwhd
-local setglue    = nuts.setglue
-local setdisc    = nuts.setdisc
-local setfont    = nuts.setfont
-local setkern    = nuts.setkern
-local setpenalty = nuts.setpenalty
-local setdir     = nuts.setdir
-local setshift   = nuts.setshift
-local setwidth   = nuts.setwidth
-local setsubtype = nuts.setsubtype
-local setleader  = nuts.setleader
+local setfield     = nuts.setfield
+local setchar      = nuts.setchar
+local setlist      = nuts.setlist
+local setwhd       = nuts.setwhd
+local setglue      = nuts.setglue
+local setdisc      = nuts.setdisc
+local setfont      = nuts.setfont
+local setkern      = nuts.setkern
+local setpenalty   = nuts.setpenalty
+local setdir       = nuts.setdir
+local setdirection = nuts.setdirection
+local setshift     = nuts.setshift
+local setwidth     = nuts.setwidth
+local setsubtype   = nuts.setsubtype
+local setleader    = nuts.setleader
 
-local copy_nut   = nuts.copy
-local new_nut    = nuts.new
-local flush_nut  = nuts.flush
+local copy_nut     = nuts.copy
+local new_nut      = nuts.new
+local flush_nut    = nuts.flush
 
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
@@ -338,6 +339,18 @@ function nutpool.textdir(dir)
     local t = copy_nut(textdir)
     if dir then
         setdir(t,dir)
+    end
+    return t
+end
+
+function nutpool.direction(dir,swap)
+    local t = copy_nut(textdir)
+    if not dir then
+        -- just a l2r start node
+    elseif swap then
+        setdirection(t,dir,true)
+    else
+        setdirection(t,dir,false)
     end
     return t
 end

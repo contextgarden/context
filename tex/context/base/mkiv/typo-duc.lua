@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['typo-duc'] = {
     comment   = "Unicode bidi (sort of) variant c",
 }
 
+-- Will be replaced by typo-duc-new.lua!
+
 -- This is a follow up on typo-uda which itself is a follow up on t-bidi by Khaled Hosny which
 -- in turn is based on minibidi.c from Arabeyes. This is a further optimizations, as well as
 -- an update on some recent unicode bidi developments. There is (and will) also be more control
@@ -590,29 +592,31 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
         end
     else -- only more efficient when we have es/cs
         local runner = start + 2
-        local before = list[start]
-        local entry  = list[start + 1]
-        local after  = list[runner]
-        while after do
-            local direction = entry.direction
-            if direction == "es" then
-                if before.direction == "en" and after.direction == "en" then
-                    entry.direction = "en"
-                end
-            elseif direction == "cs" then
-                local prevdirection = before.direction
-                if prevdirection == "en" then
-                    if after.direction == "en" then
+        if runner <= limit then
+            local before = list[start]
+            local entry  = list[start + 1]
+            local after  = list[runner]
+            while after do
+                local direction = entry.direction
+                if direction == "es" then
+                    if before.direction == "en" and after.direction == "en" then
                         entry.direction = "en"
                     end
-                elseif prevdirection == "an" and after.direction == "an" then
-                    entry.direction = "an"
+                elseif direction == "cs" then
+                    local prevdirection = before.direction
+                    if prevdirection == "en" then
+                        if after.direction == "en" then
+                            entry.direction = "en"
+                        end
+                    elseif prevdirection == "an" and after.direction == "an" then
+                        entry.direction = "an"
+                    end
                 end
+                before  = current
+                current = after
+                after   = list[runner]
+                runner  = runner + 1
             end
-            before  = current
-            current = after
-            after   = list[runner]
-            runner  = runner + 1
         end
     end
 -- end

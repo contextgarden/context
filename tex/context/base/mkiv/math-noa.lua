@@ -1472,10 +1472,12 @@ do
                         end
                         setattr(pointer,a_mathitalics,correction)
                         setattr(parent,a_mathitalics,correction)
+                        return -- so no reset later on
                     end
                 end
             end
         end
+        setattr(pointer,a_mathitalics,unsetvalue)
     end
 
     function handlers.italics(head,style,penalties)

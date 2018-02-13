@@ -56,8 +56,13 @@
 
 %    \nobreakspace            {\begingroup\setalignstateattribute\normalUchar"00A0\endgroup} % 1 = left
 \edef\nobreakspace            {\normalUchar"00A0} % space
-\edef\ideographicspace        {\normalUchar"2000} % quad/2
-\edef\ideographichalffillspace{\normalUchar"2001} % quad
+\edef\softhyphen              {\normalUchar"00AD} % softhyohen
+\edef\enquad                  {\normalUchar"2000} % quad/2
+\edef\emquad                  {\normalUchar"2001} % quad
+
+\let\ideographicspace         \enquad
+\let\ideographichalffillspace \emquad
+
 \edef\twoperemspace           {\normalUchar"2002} % quad/2
 %                             %            "2003  % quad == \quad == \hskip\emwidth
 \edef\threeperemspace         {\normalUchar"2004} % quad/3
@@ -79,9 +84,9 @@
 \udef\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
 \udef\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax}
 
-\let\zwnj\zerowidthnonjoiner
-\let\zwj \zerowidthjoiner
-\let\nbsp\nobreakspace
+\let\zwnj                     \zerowidthnonjoiner
+\let\zwj                      \zerowidthjoiner
+\let\nbsp                     \nobreakspace
 
 \chardef\optionalspace"1F % will be space unless before punctuation
 

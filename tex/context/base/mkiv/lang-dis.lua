@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['lang-dis'] = {
 
 local concat = table.concat
 
+local tex                = tex
 local nodes              = nodes
 
 local tasks              = nodes.tasks
@@ -43,6 +44,8 @@ local traverse_id        = nuts.traverse_id
 local flush_list         = nuts.flush_list
 local flush_node         = nuts.flush_node
 
+local new_disc           = nuts.pool.disc
+
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes
 
@@ -58,6 +61,8 @@ local a_visualize        = attributes.private("visualizediscretionary")
 local setattribute       = tex.setattribute
 
 local getlanguagedata    = languages.getdata
+local prehyphenchar      = lang.prehyphenchar
+local posthyphenchar     = lang.posthyphenchar
 
 local check_regular      = true
 
@@ -200,3 +205,28 @@ directives.register("hyphenator.flatten",function(v)
     setaction("processors","nodes.handlers.flatten",v)
     setaction("contributers","nodes.handlers.flattenline",v)
 end)
+
+-- moved here:
+
+function languages.explicithyphen(template)
+    local pre, post
+    local disc = new_disc()
+    if template then
+        local langdata = getlanguagedata(getlang(template))
+        local instance = langdata and langdata.instance
+        if instance then
+            local prechr  = prehyphenchar(instance)
+            local postchr = posthyphenchar(instance)
+            if prechr >= 0 then
+                pre = copy_node(template)
+                setchar(pre,prechr)
+            end
+            if postchr >= 0 then
+                post = copy_node(template)
+                setchar(post,postchr)
+            end
+        end
+    end
+    setdisc(disc,pre,post,nil,explicit_code,tex.exhyphenpenalty)
+    return disc
+end

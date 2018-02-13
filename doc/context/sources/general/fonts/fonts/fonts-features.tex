@@ -1074,11 +1074,20 @@ correction of \type {0.025} but for some shapes a different value is used. Again
 we have some commands at the \TEX\ end:
 
 \starttyping
-\setupmathematics[italics=1] % fontitalics
-\setupmathematics[italics=2] % fontdata
-\setupmathematics[italics=3] % quad based
+\setupmathematics[italics=1] % apply italics with we have an italic font
+\setupmathematics[italics=2] % apply italics anyway
+\setupmathematics[italics=3] % apply italics only when italic or bolditalic shapes
 \setupmathematics[italics=4] % combination of 1 and 3
 \stoptyping
+
+An alternative is this:
+
+\starttyping
+\definefontfeature[mathextra][mathextra][collapseitalics=yes]
+\stoptyping
+
+This extends the \type {mathextra} feature to move the italic correction into
+the character's width. Often this works out ok.
 
 Because (definitely at the start of the \LUATEX\ project) we had no
 proper \OPENTYPE\ math fonts, but at the same time wanted to move on

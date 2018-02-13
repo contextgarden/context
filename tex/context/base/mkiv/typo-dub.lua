@@ -559,28 +559,30 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
         end
     else -- probably more efficient
         local runner = start + 2
-        local before = list[start]
-        local entry  = list[start + 1]
-        local after  = list[runner]
-        while after do
-            local direction = entry.direction
-            if direction == "es" then
-                if before.direction == "en" and after.direction == "en" then
-                    entry.direction = "en"
-                end
-            elseif direction == "cs" then
-                local prevdirection = before.direction
-                if prevdirection == "en" then
-                    if after.direction == "en" then
+        if runner <= limit then
+            local before = list[start]
+            local entry  = list[start + 1]
+            local after  = list[runner]
+            while after do
+                local direction = entry.direction
+                if direction == "es" then
+                    if before.direction == "en" and after.direction == "en" then
                         entry.direction = "en"
                     end
-                elseif prevdirection == "an" and after.direction == "an" then
-                    entry.direction = "an"
+                elseif direction == "cs" then
+                    local prevdirection = before.direction
+                    if prevdirection == "en" then
+                        if after.direction == "en" then
+                            entry.direction = "en"
+                        end
+                    elseif prevdirection == "an" and after.direction == "an" then
+                        entry.direction = "an"
+                    end
                 end
+                before  = current
+                current = after
+                after   = list[runner]
             end
-            before  = current
-            current = after
-            after   = list[runner]
         end
     end
     -- W5

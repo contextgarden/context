@@ -19,6 +19,10 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 
 -- local log      = true
 -- local trace    = true
+-- local f = io.open("e:/tmp/lexers.log","w")
+-- print = function(...)
+--     f:write(...,"\n")
+-- end
 
 -- GET GOING
 --
@@ -1034,7 +1038,12 @@ end
 --     },
 -- }
 
-local lists = { }
+local lists    = { }
+local disabled = false
+
+function context.disablewordcheck()
+    disabled = true
+end
 
 function context.setwordlist(tag,limit) -- returns hash (lowercase keys and original values)
     if not tag or tag == "" then
@@ -1623,6 +1632,27 @@ function context.lex(lexer,text,init_style)
             report("lexing '%s' with initial style '%s' and %s children",lexer._NAME,#lexer._CHILDREN or 0,init_style)
         end
         return matched(lexer,grammar,text)
+-- local result = matched(lexer,grammar,text)
+-- local fil = io.open("e:/tmp/foo.log","w")
+-- local len = #text
+-- local old = 1
+-- local txt = false
+-- for i=1,#result,2 do
+--     local tag = result[i]
+--     local pos = result[i+1]
+--     if nxt and tag == "text" then
+--         local wrd = sub(text,old,pos-1)
+--         fil:write(tag,"\t",wrd,"\n")
+--         if txt then
+--             result[i] = "internal"
+--             txt = false
+--         else
+--             txt = true
+--         end
+--     end
+--     old = pos
+-- end
+-- fil:close()
     else
         if trace then
             report("lexing '%s' with initial style '%s'",lexer._NAME,init_style)

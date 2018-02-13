@@ -16,6 +16,7 @@ local utfchar    = utf.char
 local char       = string.char
 local printtable = table.print
 local concat     = table.concat
+local format     = string.format
 
 if setinspector then
 
@@ -74,7 +75,14 @@ local set_macro       = token.set_macro
 local get_macro       = token.get_macro
 local get_meaning     = token.get_meaning
 local get_cmdname     = token.get_cmdname
+local set_char        = token.set_char
 local create_token    = token.create
+
+if not set_char then -- for a while
+    local contextsprint = context.sprint
+    local ctxcatcodes   = catcodes.numbers.ctxcatcodes
+    set_char = function(n,u) contextsprint(ctxcatcodes,format("\\chardef\\%s=%s",n,u)) end
+end
 
 function tokens.defined(name)
     return get_cmdname(create_token(name)) ~= "undefined_cs"
@@ -257,6 +265,7 @@ tokens.getters = { -- these don't expand
 
 tokens.setters = {
     macro = set_macro,
+    char  = set_char,
     count = tex.setcount,
     dimen = tex.setdimen,
     skip  = tex.setglue,

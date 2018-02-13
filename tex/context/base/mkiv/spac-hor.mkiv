@@ -515,7 +515,7 @@
 \fi
 
 \ifdefined\softhyphen \else
-    \let\softhyphen\-
+    \let\softhyphen\explicitdiscretionary
 \fi
 
 \cldcontext{"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}"}
@@ -1013,18 +1013,21 @@
 %D adapted to \type {\hspace}:
 
 \unexpanded\def\textormathspace         #1#2#3{\ifmmode\mskip#1#2\else\kern #1\hspaceamount\empty{#3}\fi\relax}
+\unexpanded\def\textormathspacecommand  #1#2#3{\ifmmode\mskip#1#2\else#3\fi\relax}
 \unexpanded\def\breakabletextormathspace#1#2#3{\ifmmode\mskip#1#2\else\hskip#1\hspaceamount\empty{#3}\fi\relax}
 
 \newmuskip\hairmuskip \hairmuskip=.15mu
 
 \unexpanded\def\hairspace    {\textormathspace+\hairmuskip{.5}}
 \unexpanded\def\thinspace    {\textormathspace+\thinmuskip 1}
-\unexpanded\def\medspace     {\textormathspace+\medmuskip  2}
+%unexpanded\def\medspace     {\textormathspace+\medmuskip  2}      % 4/18 em
 \unexpanded\def\thickspace   {\textormathspace+\thickmuskip3}
 \unexpanded\def\neghairspace {\textormathspace-\thinmuskip{.5}}
 \unexpanded\def\negthinspace {\textormathspace-\thinmuskip 1}
 \unexpanded\def\negmedspace  {\textormathspace-\medmuskip  2}
 \unexpanded\def\negthickspace{\textormathspace-\thickmuskip3}
+
+\unexpanded\edef\medspace    {\textormathspacecommand+\medmuskip{\Uchar"205F}}
 
 % needed for unicode:
 
@@ -1043,10 +1046,10 @@
 %unexpanded\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
 %unexpanded\def\zerowidthspace          {\hskip\zeropoint}
 
-\definehspace[.5][.1250\emspaceamount] % could also be [.1250\spaceamount]
-\definehspace[1] [.1667\emspaceamount]
-\definehspace[2] [.2222\emspaceamount]
-\definehspace[3] [.2777\emspaceamount]
+\definehspace[.5][.1250\emwidth] % hair
+\definehspace[1] [.1667\emwidth] % thin
+\definehspace[2] [.2222\emwidth] % med
+\definehspace[3] [.2777\emwidth] % thick
 
 \let \, \thinspace
 \let \: \medspace

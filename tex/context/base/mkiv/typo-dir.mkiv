@@ -22,7 +22,11 @@
 \registerctxluafile{typo-dha}{}
 \registerctxluafile{typo-dua}{}
 \registerctxluafile{typo-dub}{}
-\registerctxluafile{typo-duc}{}
+\doifelsefileexists{typo-duc-new.lua} {
+    \registerctxluafile{typo-duc-new}{}
+} {
+    \registerctxluafile{typo-duc}{}
+}
 
 \definesystemattribute[directions][public]
 

@@ -57,13 +57,13 @@ do -- todo: only once, store in global
     local definitions = context.loaddefinitions("scite-context-data-interfaces")
 
     if definitions then
-        local list = { }
+        local used = { }
         for interface, list in next, definitions do
             if interface ~= "common" then
-                list[#list+1] = interface
+                used[#used+1] = interface
                 local c = { }
                 -- these are shared
-                list = definitions.common
+                local list = definitions.common
                 if list then
                     for i=1,#list do
                         c[list[i]] = true
@@ -85,7 +85,8 @@ do -- todo: only once, store in global
                 commands[interface] = c
             end
         end
-        inform("context user interfaces '%s' supported",table.concat(list," "))
+        table.sort(used)
+        inform("context user interfaces '%s' supported",table.concat(used," "))
     end
 
     local definitions = context.loaddefinitions("scite-context-data-context")

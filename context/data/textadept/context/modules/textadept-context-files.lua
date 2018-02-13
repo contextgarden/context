@@ -369,7 +369,7 @@ do
     newkeys[OSX and 'mc' or 'cc'] = runner.check
     newkeys[OSX and 'mr' or 'cr'] = runner.process
     newkeys[OSX and 'mp' or 'cp'] = runner.preview
-    newkeys[OSX and 'mx' or 'cx'] = runner.quit
+ -- newkeys[OSX and 'mx' or 'cx'] = runner.quit -- makes no sense
 
     newkeys['f7']  = runner.process
     newkeys['f12'] = runner.process

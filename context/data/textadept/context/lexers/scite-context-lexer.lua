@@ -1625,7 +1625,7 @@ function context.lex(lexer,text,init_style)
         if trace then
             report("lexing '%s' with initial style '%s' and %s children",lexer._NAME,#lexer._CHILDREN or 0,init_style)
         end
-        return matched(lexer,grammar,text)
+        return result
     else
         if trace then
             report("lexing '%s' with initial style '%s'",lexer._NAME,init_style)

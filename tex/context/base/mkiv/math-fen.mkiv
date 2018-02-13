@@ -15,6 +15,14 @@
 
 \unprotect
 
+% maybe always "method=auto" for:
+%
+% \switchtobodyfont[cambria]
+% \ruledhbox{$f(x)$}
+% \ruledhbox{\mathdelimitersmode6$f\left(x\right)$}
+% \ruledhbox{\mathdelimitersmode7$f\left(x\right)$}
+% \ruledhbox{$f\left(\frac{1}{x}\right)$}
+
 % todo: mathstyle
 
 % \definemathfence [fancybracket] [bracket] [command=yes,color=blue]
@@ -38,7 +46,7 @@
 \let\setupmathfences\setupmathfence
 
 \setupmathfences
-  [\c!method=,
+  [\c!method=, % maybe always \v!auto
    \c!left=,
    \c!right=,
    \c!middle=,
@@ -811,7 +819,11 @@
     \fi
 \to \everysetupmathfence
 
-\unexpanded\def\enableautofencemode {\mathdelimitersmode\plusseven}
+\newconstant\c_math_fences_delimiters_mode \c_math_fences_delimiters_mode"16 % \numexpr"02+"04+"10\relax
+
+%unexpanded\def\enableautofencemode {\mathdelimitersmode\plussix} % the shift (1) is too fragile
+\unexpanded\def\enableautofencemode {\mathdelimitersmode\c_math_fences_delimiters_mode}
+
 \unexpanded\def\disableautofencemode{\mathdelimitersmode\zerocount}
 
 \appendtoks

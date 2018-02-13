@@ -117,6 +117,7 @@ mathematics.gaps = allocate {
     [0x1D4AD] = 0x0211B, -- ℛ script R
     [0x1D4BA] = 0x0212F, -- ℯ script e
     [0x1D4BC] = 0x0210A, -- ℊ script g
+ -- [0x1D4C1] = 0x02113, -- exception: liter
     [0x1D4C4] = 0x02134, -- ℴ script o
     [0x1D506] = 0x0212D, -- ℭ fraktur C
     [0x1D50B] = 0x0210C, -- ℌ fraktur H
