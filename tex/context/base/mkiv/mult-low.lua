@@ -124,7 +124,8 @@ return {
         --
         "luastringsep", "!!bs", "!!es",
         --
-        "lefttorightmark", "righttoleftmark",
+        "lefttorightmark", "righttoleftmark", "lrm", "rlm",
+        "bidilre", "bidirle", "bidipop", "bidilro", "bidirlo",
         --
         "breakablethinspace", "nobreakspace", "nonbreakablespace", "narrownobreakspace", "zerowidthnobreakspace",
         "ideographicspace", "ideographichalffillspace",
@@ -415,7 +416,9 @@ return {
         "rtlhbox", "ltrhbox", "rtlvbox", "ltrvbox", "rtlvtop", "ltrvtop",
         "autodirhbox", "autodirvbox", "autodirvtop",
         "leftorrighthbox", "leftorrightvbox", "leftorrightvtop",
-        "lefttoright", "righttoleft","synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
+        "lefttoright", "righttoleft", "checkedlefttoright", "checkedrighttoleft",
+        "synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
+        "dirlre", "dirrle", "dirlro", "dirrlo",
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens",
         --
@@ -425,7 +428,7 @@ return {
         --
         "nospace", "nospacing", "dospacing",
         --
-        "naturalhbox", "naturalvbox", "naturalhpack", "naturalvpack",
+        "naturalhbox", "naturalvbox", "naturalvtop", "naturalhpack", "naturalvpack",
         --
         "frule",
         --

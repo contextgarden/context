@@ -178,6 +178,38 @@
 \unexpanded\def\synchronizeinlinedirection
   {\textdir T\ifconditional\inlinelefttoright L\else R\fi T\relax}
 
+\unexpanded\def\checkedlefttoright
+  {\ifvmode
+     \spac_directions_lefttoright_vmode
+   \else
+     \spac_directions_lefttoright_hmode_checked
+   \fi}
+
+\unexpanded\def\checkedrighttoleft
+  {\ifvmode
+     \spac_directions_righttoleft_vmode
+   \else
+     \spac_directions_righttoleft_hmode_checked
+   \fi}
+
+\unexpanded\def\spac_directions_lefttoright_hmode_checked
+  {\ifconditional\inlinelefttoright\else
+     \lefttoright
+   \fi}
+
+\unexpanded\def\spac_directions_righttoleft_hmode_checked
+  {\ifconditional\inlinelefttoright
+     \righttoleft
+   \fi}
+
+\installcorenamespace{bidi}
+
+\letvalue{\??bidi\v!left }\checkedlefttoright \letvalue{\??bidi l2r}\checkedlefttoright
+\letvalue{\??bidi\v!right}\checkedrighttoleft \letvalue{\??bidi r2l}\checkedrighttoleft
+
+\unexpanded\def\usebidiparameter#1%
+  {\begincsname\??bidi#1\c!bidi\endcsname}
+
 % maybe some day:
 %
 % \newcount\postdirpenalty % \zerocount

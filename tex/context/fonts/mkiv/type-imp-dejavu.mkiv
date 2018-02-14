@@ -17,26 +17,26 @@
 
     \starttypescript [\s!serif] [dejavu] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]           [\s!name:dejavuserif]           [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBold]       [\s!name:dejavuserifbold]       [\s!features=\s!default]
-        \definefontsynonym [\s!SerifItalic]     [\s!name:dejavuserifitalic]     [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldItalic] [\s!name:dejavuserifbolditalic] [\s!features=\s!default]
+        \definefontsynonym [\s!Serif]           [\s!name:dejavuserif]           [\s!features=\s!default,\s!fallbacks=\s!Serif]
+        \definefontsynonym [\s!SerifBold]       [\s!name:dejavuserifbold]       [\s!features=\s!default,\s!fallbacks=\s!SerifBold]
+        \definefontsynonym [\s!SerifItalic]     [\s!name:dejavuserifitalic]     [\s!features=\s!default,\s!fallbacks=\s!SerifItalic]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!name:dejavuserifbolditalic] [\s!features=\s!default,\s!fallbacks=\s!SerifBoldItalic]
     \stoptypescript
 
     \starttypescript [\s!sans] [dejavu] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [\s!name:dejavusans]            [\s!features=\s!default]
-        \definefontsynonym [\s!SansBold]       [\s!name:dejavusansbold]        [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]     [\s!name:dejavusansoblique]     [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic] [\s!name:dejavusansboldoblique] [\s!features=\s!default]
+        \definefontsynonym [\s!Sans]           [\s!name:dejavusans]            [\s!features=\s!default,\s!fallbacks=\s!Sans]
+        \definefontsynonym [\s!SansBold]       [\s!name:dejavusansbold]        [\s!features=\s!default,\s!fallbacks=\s!SansBold]
+        \definefontsynonym [\s!SansItalic]     [\s!name:dejavusansoblique]     [\s!features=\s!default,\s!fallbacks=\s!SansItalic]
+        \definefontsynonym [\s!SansBoldItalic] [\s!name:dejavusansboldoblique] [\s!features=\s!default,\s!fallbacks=\s!SansBoldItalic]
     \stoptypescript
 
     \starttypescript [\s!mono] [dejavu] [\s!name]
         \setups[\s!font:\s!fallback:\s!mono]
-        \definefontsynonym [\s!Mono]           [\s!name:dejavusansmono]            [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonobold]        [\s!features=\s!none]
-        \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonooblique]     [\s!features=\s!none]
-        \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=\s!none]
+        \definefontsynonym [\s!Mono]           [\s!name:dejavusansmono]            [\s!features=\s!none,\s!fallbacks=\s!Mono]
+        \definefontsynonym [\s!MonoBold]       [\s!name:dejavusansmonobold]        [\s!features=\s!none,\s!fallbacks=\s!MonoBold]
+        \definefontsynonym [\s!MonoItalic]     [\s!name:dejavusansmonooblique]     [\s!features=\s!none,\s!fallbacks=\s!MonoItalic]
+        \definefontsynonym [\s!MonoBoldItalic] [\s!name:dejavusansmonoboldoblique] [\s!features=\s!none,\s!fallbacks=\s!MonoBoldItalic]
     \stoptypescript
 
     \starttypescript [\s!math][dejavu][\s!name]

@@ -62,6 +62,12 @@
                 <cd:parameter name="font">
                     <cd:constant type="auto"/>
                 </cd:parameter>
+                <cd:parameter name="bidi">
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="l2r"/>
+                    <cd:constant type="r2l"/>
+                </cd:parameter>
                 <cd:parameter name="text">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
@@ -131,7 +137,7 @@
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-            
+
     <cd:command name="doiflanguageelse" level="system" category="language conditional" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
@@ -147,7 +153,7 @@
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-            
+
     <cd:command name="doifpatternselse" level="system" category="language conditional" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>

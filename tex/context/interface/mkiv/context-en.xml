@@ -11202,6 +11202,9 @@
      <cd:parameter name="features">
       <cd:constant type="cd:name"/>
      </cd:parameter>
+     <cd:parameter name="factor">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -18372,6 +18375,12 @@
      </cd:parameter>
      <cd:parameter name="font">
       <cd:constant type="auto"/>
+     </cd:parameter>
+     <cd:parameter name="bidi">
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant type="l2r"/>
+      <cd:constant type="r2l"/>
      </cd:parameter>
      <cd:parameter name="text">
       <cd:constant type="cd:text"/>

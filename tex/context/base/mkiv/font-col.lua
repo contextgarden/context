@@ -16,6 +16,7 @@ local file, lpeg, table, string = file, lpeg, table, string
 local type, next, tonumber, toboolean = type, next, tonumber, toboolean
 local gmatch = string.gmatch
 local fastcopy = table.fastcopy
+local formatters = string.formatters
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -46,10 +47,19 @@ collections.definitions  = definitions
 local vectors            = collections.vectors or { }
 collections.vectors      = vectors
 
-local fontdata           = fonts.hashes.identifiers
-local chardata           = fonts.hashes.characters
-local propdata           = fonts.hashes.properties
+local fonthashes         = fonts.hashes
+local fonthelpers        = fonts.helpers
+
+local fontdata           = fonthashes.identifiers
+local fontquads          = fonthashes.quads
+local chardata           = fonthashes.characters
+local propdata           = fonthashes.properties
+
+local addprivate         = fonthelpers.addprivate
+local hasprivate         = fonthelpers.hasprivate
+
 local currentfont        = font.current
+local addcharacters      = font.addcharacters
 
 local fontpatternhassize = fonts.helpers.fontpatternhassize
 
@@ -133,6 +143,7 @@ function collections.define(name,font,ranges,details)
                 rscale   = tonumber (details.rscale) or 1,
                 force    = toboolean(details.force,true),
                 check    = toboolean(details.check,true),
+                factor   = tonumber(details.factor),
                 features = details.features,
             }
         end
@@ -172,6 +183,10 @@ function collections.clonevector(name)
         local cloneid    = list[i]
         local oldchars   = fontdata[current].characters
         local newchars   = fontdata[cloneid].characters
+        local factor     = definition.factor
+        if factor then
+            vector.factor = factor
+        end
         if trace_collecting then
             report_fonts("remapping font %a to %a for range %U - %U",current,cloneid,start,stop)
         end
@@ -257,6 +272,41 @@ function collections.report(message)
     end
 end
 
+local function monoslot(font,char,parent,factor)
+    local tfmdata     = fontdata[font]
+    local privatename = formatters["faked mono %s"](char)
+    local privateslot = hasprivate(tfmdata,privatename)
+    if privateslot then
+        return privateslot
+    else
+        local characters = tfmdata.characters
+        local properties = tfmdata.properties
+        local width      = factor * fontquads[parent]
+        local character  = characters[char]
+        if character then
+            local data = {
+                width    = width,
+                height   = character.height,
+                depth    = character.depth,
+                commands = {
+                    { "right", (width - character.width or 0)/2 },
+                    { "slot", 0, char }
+                }
+            }
+            local u = addprivate(tfmdata, privatename, data)
+            addcharacters(properties.id, {
+                type       = "real",
+                characters = {
+                    [u] = data
+                },
+            } )
+            return u
+        else
+            return char
+        end
+    end
+end
+
 function collections.process(head) -- this way we keep feature processing
     local done = false
     for n in traverse_char(tonut(head)) do
@@ -278,12 +328,17 @@ function collections.process(head) -- this way we keep feature processing
                 setfont(n,newfont,newchar)
                 done = true
             else
+                local fakemono = vector.factor
                 if trace_collecting then
                     report_fonts("remapping font %a to %a for character %C%s",
                         font,vect,char,not chardata[vect][char] and " (missing)" or ""
                     )
                 end
-                setfont(n,vect)
+                if fakemono then
+                    setfont(n,vect,monoslot(vect,char,font,fakemono))
+                else
+                    setfont(n,vect)
+                end
                 done = true
             end
         end

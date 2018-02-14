@@ -645,22 +645,32 @@ local function manipulatedimensions(tfmdata,key,value)
         local parameters = tfmdata.parameters
         local emwidth    = parameters.quad
         local exheight   = parameters.xheight
-        local width      = 0
-        local height     = 0
-        local depth      = 0
+        local newwidth   = false
+        local newheight  = false
+        local newdepth   = false
         if value == "strut" then
-            height = gettexdimen("strutht")
-            depth  = gettexdimen("strutdp")
+            newheight = gettexdimen("strutht")
+            newdepth  = gettexdimen("strutdp")
+        elseif value == "mono" then
+            newwidth  = emwidth
         else
             local spec = settings_to_array(value)
-            width  = (spec[1] or 0) * emwidth
-            height = (spec[2] or 0) * exheight
-            depth  = (spec[3] or 0) * exheight
+            newwidth  = tonumber(spec[1])
+            newheight = tonumber(spec[2])
+            newdepth  = tonumber(spec[3])
+            if newwidth  then newwidth  = newwidth  * emwidth  end
+            if newheight then newheight = newheight * exheight end
+            if newdepth  then newdepth  = newdepth  * exheight end
         end
-        if width > 0 then
+        if newwidth or newheight or newdepth then
             local additions = { }
             for unicode, old_c in next, characters do
-                local oldwidth = old_c.width
+                local oldwidth  = old_c.width
+                local oldheight = old_c.height
+                local olddepth  = old_c.depth
+                local width  = newwidth  or oldwidth  or 0
+                local height = newheight or oldheight or 0
+                local depth  = newdepth  or olddepth  or 0
                 if oldwidth ~= width then
                     -- Defining the tables in one step is more efficient
                     -- than adding fields later.
@@ -736,6 +746,53 @@ local dimensions_specification = {
 
 registerotffeature(dimensions_specification)
 registerafmfeature(dimensions_specification)
+
+--------------------------------------------------------------------------------------------------------------
+
+-- local function fakemonospace(tfmdata)
+--     local resources    = tfmdata.resources
+--     local gposfeatures = resources.features.gpos
+--     local characters   = tfmdata.characters
+--     local descriptions = tfmdata.descriptions
+--     local sequences    = resources.sequences
+--     local coverage     = { }
+--     local units        = tfmdata.shared.rawdata.metadata.units
+--     for k, v in next, characters do
+--         local w = descriptions[k].width
+--         local d = units - w
+--         coverage[k] = { -d/2, 0, units, 0 }
+--     end
+--     local f = { dflt = { dflt = true } }
+--     local s = #sequences + 1
+--     local t = {
+--         features = { fakemono = f },
+--         flags    = { false, false, false, false },
+--         index    = s,
+--         name     = "p_s_" .. s,
+--         nofsteps = 1,
+--         order    = { "fakemono" },
+--         skiphash = false,
+--         type     = "gpos_single",
+--         steps    = {
+--             {
+--                 format   = "single",
+--                 coverage = coverage,
+--             }
+--         }
+--     }
+--     gposfeatures["fakemono"] = f
+--     sequences[s] = t
+-- end
+--
+-- fonts.constructors.features.otf.register {
+--     name         = "fakemono",
+--     description  = "fake monospaced",
+--     initializers = {
+--         node     = fakemonospace,
+--     },
+-- }
+
+--------------------------------------------------------------------------------------------------------------
 
 -- for zhichu chen (see mailing list archive): we might add a few more variants
 -- in due time
@@ -1214,7 +1271,7 @@ local function getprivatecharornode(tfmdata,name)
     local font = properties.id
     local slot = getprivateslot(font,name)
     if slot then
-        -- todo: set current attribibutes
+        -- todo: set current attributes
         local char   = tfmdata.characters[slot]
         local tonode = char.tonode
         if tonode then

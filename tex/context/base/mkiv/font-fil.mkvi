@@ -461,13 +461,21 @@
 
 % we can pack them
 
+% \unexpanded\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
+%   {\setxvalue{\??fontclass\fontclass#style\s!rscale    }{#rscale}%
+%    \setxvalue{\??fontclass\fontclass#style\s!features  }{#features}%
+%    \setxvalue{\??fontclass\fontclass#style\s!fallbacks }{#fallbacks}%
+%    \setxvalue{\??fontclass\fontclass#style\s!goodies   }{#goodies}%
+%    \setxvalue{\??fontclass\fontclass#style\s!designsize}{#designsize}%
+%    \setxvalue{\??fontclass\fontclass#style\s!direction }{#direction}}
+
 \unexpanded\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
-  {\setxvalue{\??fontclass\fontclass#style\s!rscale    }{#rscale}%
-   \setxvalue{\??fontclass\fontclass#style\s!features  }{#features}%
-   \setxvalue{\??fontclass\fontclass#style\s!fallbacks }{#fallbacks}%
-   \setxvalue{\??fontclass\fontclass#style\s!goodies   }{#goodies}%
-   \setxvalue{\??fontclass\fontclass#style\s!designsize}{#designsize}%
-   \setxvalue{\??fontclass\fontclass#style\s!direction }{#direction}}
+  {\letgvalue{\??fontclass\fontclass#style\s!rscale    }#rscale%
+   \letgvalue{\??fontclass\fontclass#style\s!features  }#features%
+   \letgvalue{\??fontclass\fontclass#style\s!fallbacks }#fallbacks%
+   \letgvalue{\??fontclass\fontclass#style\s!goodies   }#goodies%
+   \letgvalue{\??fontclass\fontclass#style\s!designsize}#designsize%
+   \letgvalue{\??fontclass\fontclass#style\s!direction }#direction}       % math
 
 % bonus
 

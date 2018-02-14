@@ -99,6 +99,13 @@ if not rulecodes[5] then
     rulecodes[8] = "radical"
 end
 
+-- local dircodes =  mark(getsubtypes("dir"))
+
+dircodes = allocate {
+    [0] = "normal",
+    [1] = "cancel",
+}
+
 -- local glyphcodes = allocate {
 --     [0] = "character",
 --     [1] = "glyph",
@@ -297,6 +304,7 @@ local noadoptions = allocate {
 }
 
 skipcodes     = allocate(swapped(skipcodes,skipcodes))
+dircodes      = allocate(swapped(dircodes,dircodes))
 boundarycodes = allocate(swapped(boundarycodes,boundarycodes))
 noadcodes     = allocate(swapped(noadcodes,noadcodes))
 radicalcodes  = allocate(swapped(radicalcodes,radicalcodes))
@@ -317,29 +325,31 @@ leadercodes   = allocate(swapped(leadercodes,leadercodes))
 usercodes     = allocate(swapped(usercodes,usercodes))
 noadoptions   = allocate(swapped(noadoptions,noadoptions))
 
-nodes.skipcodes     = skipcodes
-nodes.boundarycodes = boundarycodes
-nodes.noadcodes     = noadcodes
-nodes.nodecodes     = nodecodes
-nodes.whatcodes     = whatcodes
-nodes.listcodes     = listcodes
-nodes.glyphcodes    = glyphcodes
-nodes.kerncodes     = kerncodes
-nodes.penaltycodes  = penaltycodes
-nodes.mathcodes     = mathcodes
-nodes.fillcodes     = fillcodes
-nodes.margincodes   = margincodes
-nodes.disccodes     = disccodes
-nodes.accentcodes   = accentcodes
-nodes.radicalcodes  = radicalcodes
-nodes.fencecodes    = fencecodes
-nodes.rulecodes     = rulecodes
-nodes.leadercodes   = leadercodes
-nodes.usercodes     = usercodes
-nodes.noadoptions   = noadoptions
+nodes.skipcodes      = skipcodes
+nodes.dircodes       = dircodes
+nodes.boundarycodes  = boundarycodes
+nodes.noadcodes      = noadcodes
+nodes.nodecodes      = nodecodes
+nodes.whatcodes      = whatcodes
+nodes.listcodes      = listcodes
+nodes.glyphcodes     = glyphcodes
+nodes.kerncodes      = kerncodes
+nodes.penaltycodes   = penaltycodes
+nodes.mathcodes      = mathcodes
+nodes.fillcodes      = fillcodes
+nodes.margincodes    = margincodes
+nodes.disccodes      = disccodes
+nodes.accentcodes    = accentcodes
+nodes.radicalcodes   = radicalcodes
+nodes.fencecodes     = fencecodes
+nodes.rulecodes      = rulecodes
+nodes.leadercodes    = leadercodes
+nodes.usercodes      = usercodes
+nodes.noadoptions    = noadoptions
 
-nodes.gluecodes          = skipcodes -- more official
-nodes.whatsitcodes       = whatcodes -- more official
+nodes.gluecodes          = skipcodes   -- more official
+nodes.directioncodes     = dircodes    -- more friendly
+nodes.whatsitcodes       = whatcodes   -- more official
 nodes.marginkerncodes    = margincodes
 nodes.discretionarycodes = disccodes
 

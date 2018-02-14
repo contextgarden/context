@@ -53,47 +53,6 @@ lpdf.epdf       = lpdf_epdf
 -- local dictGetLength, dictGetVal, dictGetValNF, dictGetKey
 -- local arrayGetLength, arrayGetNF, arrayGet
 -- local streamReset, streamGetDict, streamGetChar
---
--- do
---     local object   = epdf.Object()
---     --
---     getDict        = object.getDict
---     getArray       = object.getArray
---     getInt         = object.getInt
---     getReal        = object.getReal
---     getNum         = object.getNum
---     getString      = object.getString
---     getBool        = object.getBool
---     getName        = object.getName
---     getRef         = object.getRef
---     getRefNum      = object.getRefNum
---     --
---     getType        = object.getType
---     getTypeName    = object.getTypeName
---     --
---     streamReset    = object.streamReset
---     streamGetDict  = object.streamGetDict
---     streamGetChar  = object.streamGetChar
---     --
--- end
---
--- local function initialize_methods(xref)
---     local dictionary = epdf.Dict(xref)
---     local array      = epdf.Array(xref)
---     --
---     dictGetLength    = dictionary.getLength
---     dictGetVal       = dictionary.getVal
---     dictGetValNF     = dictionary.getValNF
---     dictGetKey       = dictionary.getKey
---     --
---     arrayGetLength   = array.getLength
---     arrayGetNF       = array.getNF
---     arrayGet         = array.get
---     --
---     initialize_methods = function()
---         -- already done
---     end
--- end
 
 -- We use as little as possible and also not an object interface. After all, we
 -- don't know how the library (and its api) evolves so we better can be prepared
@@ -101,9 +60,9 @@ lpdf.epdf       = lpdf_epdf
 
 local registry         = debug.getregistry()
 
-local object           = registry["epdf.Object"] -- or epdf.Object()
-local dictionary       = registry["epdf.Dict"]   -- or epdf.Dict(xref)  (possible when document open)
-local array            = registry["epdf.Array"]  -- or epdf.Array(xref) (possible when document open)
+local object           = registry["epdf.Object"]
+local dictionary       = registry["epdf.Dict"]
+local array            = registry["epdf.Array"]
 local xref             = registry["epdf.XRef"]
 local catalog          = registry["epdf.Catalog"]
 local pdfdoc           = registry["epdf.PDFDoc"]

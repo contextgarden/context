@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='fakt'/>
 		<cd:variable name='february' value='unor'/>
+		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='obrazek'/>
 		<cd:variable name='figures' value='obrazky'/>
 		<cd:variable name='file' value='soubor'/>
@@ -379,6 +380,7 @@
 		<cd:variable name='norepeat' value='norepeat'/>
 		<cd:variable name='normal' value='normalni'/>
 		<cd:variable name='nospacing' value='nospacing'/>
+		<cd:variable name='nostopper' value='nostopper'/>
 		<cd:variable name='not' value='ne'/>
 		<cd:variable name='notation' value='notation'/>
 		<cd:variable name='note' value='note'/>
@@ -854,6 +856,7 @@
 		<cd:constant name='headerstate' value='statuszahlavi'/>
 		<cd:constant name='headlabel' value='popisekhlavicky'/>
 		<cd:constant name='headnumber' value='cislonadpisu'/>
+		<cd:constant name='headseparator' value='headseparator'/>
 		<cd:constant name='headstyle' value='stylhlavicky'/>
 		<cd:constant name='height' value='vyska'/>
 		<cd:constant name='hfactor' value='vfaktor'/>
@@ -1010,6 +1013,7 @@
 		<cd:constant name='numberset' value='numberset'/>
 		<cd:constant name='numberstarter' value='numberstarter'/>
 		<cd:constant name='numberstopper' value='numberstopper'/>
+		<cd:constant name='numberstrut' value='numberstrut'/>
 		<cd:constant name='numberstyle' value='stylcisla'/>
 		<cd:constant name='numberwidth' value='numberwidth'/>
 		<cd:constant name='nx' value='nx'/>
@@ -1166,6 +1170,7 @@
 		<cd:constant name='sidespacebefore' value='bocnimezerapred'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='znak'/>
+		<cd:constant name='simplecommand' value='simplecommand'/>
 		<cd:constant name='size' value='velikost'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>
@@ -1178,7 +1183,9 @@
 		<cd:constant name='source' value='zdroj'/>
 		<cd:constant name='space' value='mezera'/>
 		<cd:constant name='spaceafter' value='mezeraza'/>
+		<cd:constant name='spaceafterside' value='spaceafterside'/>
 		<cd:constant name='spacebefore' value='mezerapred'/>
+		<cd:constant name='spacebeforeside' value='spacebeforeside'/>
 		<cd:constant name='spaceinbetween' value='spaceinbetween'/>
 		<cd:constant name='spacing' value='mezerovani'/>
 		<cd:constant name='specification' value='specification'/>
@@ -1243,6 +1250,7 @@
 		<cd:constant name='titledistance' value='vzdalenosttitulek'/>
 		<cd:constant name='titleleft' value='titleleft'/>
 		<cd:constant name='titleright' value='titleright'/>
+		<cd:constant name='titlestrut' value='titlestrut'/>
 		<cd:constant name='titlestyle' value='styltitulek'/>
 		<cd:constant name='to' value='na'/>
 		<cd:constant name='toffset' value='toffset'/>

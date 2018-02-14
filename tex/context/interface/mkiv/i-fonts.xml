@@ -34,6 +34,9 @@
                 <cd:parameter name="features">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

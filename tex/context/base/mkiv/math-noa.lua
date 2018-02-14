@@ -1116,8 +1116,8 @@ do
         if list and next(list) then
             local n, t = 0, { }
             for k, v in sortedhash(list) do
-                n = n + v
-                t[#t+1] = formatters["%C"](k)
+                n = n + 1
+                t[n] = formatters["%C"](k)
             end
             return formatters["% t (n=%s)"](t,n)
         end

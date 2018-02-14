@@ -539,6 +539,12 @@
     \fi
 \to \everylanguage
 
+% new
+
+\appendtoks
+    \usebidiparameter\languageparameter
+\to \everylanguage
+
 % this will move to core-spa !
 
 \appendtoks
@@ -559,12 +565,14 @@
 % \setuplanguage[\s!default][\s!font=\v!auto]
 % \setuplanguage[nl][\s!font=\v!auto]
 
-\ifdefined\feature \else \let\feature\gobbleoneargument \fi
-
 \appendtoks
     \edef\p_language_font{\languageparameter\s!font}%
-    \ifx\p_language_font\v!auto
+    \ifx\p_language_font\empty\else
+      \ifx\p_language_font\v!auto
         \doaddfeature\currentlanguage
+      \else
+        \doaddfeature\p_language_font
+      \fi
     \fi
 \to \everylanguage
 

@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='fapt'/>
 		<cd:variable name='february' value='februarie'/>
+		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='figura'/>
 		<cd:variable name='figures' value='figure'/>
 		<cd:variable name='file' value='fisier'/>

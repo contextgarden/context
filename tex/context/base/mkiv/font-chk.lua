@@ -35,6 +35,7 @@ local fontdata             = fonthashes.identifiers
 local fontcharacters       = fonthashes.characters
 
 local currentfont          = font.current
+local addcharacters        = font.addcharacters
 
 local helpers              = fonts.helpers
 
@@ -196,7 +197,7 @@ local pdf_blob = "pdf: q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1
 local cache = { } -- saves some tables but not that impressive
 
 local function missingtonode(tfmdata,character)
-    local commands  = character.commands
+    local commands = character.commands
     local fake  = hpack_node(new_special(commands[1][2])) -- todo: literal
     fake.width  = character.width
     fake.height = character.height
@@ -209,7 +210,11 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
     local properties = tfmdata.properties
     local size       = tfmdata.parameters.size
     local scale      = size * bpfactor
-    local tonode     = properties.finalized and missingtonode or nil
+    local tonode     = nil
+    local collected  = { }
+    if properties.finalized and not addcharacters then
+        tonode = missingtonode
+    end
     for i=1,#variants do
         local v = variants[i]
         local tag, r, g, b = v.tag, v.r, v.g, v.b
@@ -231,9 +236,18 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
                     }
                     cache[hash] = char
                 end
-                addprivate(tfmdata, privatename, char)
+                local u = addprivate(tfmdata, privatename, char)
+                if not tonode then
+                    collected[u] = char
+                end
             end
         end
+    end
+    if #collected > 0 then
+        addcharacters(properties.id, {
+            type       = "real",
+            characters = collected,
+        })
     end
 end
 
