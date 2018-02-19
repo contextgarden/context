@@ -65,6 +65,7 @@ local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
 local getdir              = nuts.getdir
 local getwidth            = nuts.getwidth
+local getdepth            = nuts.getdepth
 local getshift            = nuts.getshift
 
 local hpack_nodes         = nuts.hpack
@@ -164,10 +165,11 @@ local modes = {
     expansion     =  65536,
     line          = 131072,
     space         = 262144,
+    depth         = 524288,
 }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth
 
 local enabled = false
 local layers  = { }
@@ -222,6 +224,7 @@ local function enable()
     l_expansion     = layers.expansion
     l_line          = layers.line
     l_space         = layers.space
+    l_depth         = layers.depth
     enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
@@ -279,7 +282,7 @@ function nuts.setvisual(n,mode)
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
 end
 
-function nuts.setvisuals(n,mode)
+function nuts.setvisuals(n,mode) -- currently the same
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true,true))
 end
 
@@ -375,6 +378,7 @@ local c_math            = "trace:r"
 local c_origin          = "trace:o"
 local c_discretionary   = "trace:d"
 local c_expansion       = "trace:o"
+local c_depth           = "trace:o"
 
 local c_positive_d      = "trace:db"
 local c_negative_d      = "trace:dr"
@@ -391,6 +395,7 @@ local c_math_d          = "trace:dr"
 local c_origin_d        = "trace:do"
 local c_discretionary_d = "trace:dd"
 local c_expansion_d     = "trace:do"
+local c_depth_d         = "trace:do"
 
 local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
     local text = hpack_string(str,usedfont)
@@ -657,6 +662,23 @@ local math do
         end
         head, current = insert_node_after(head,current,copy_list(info))
         return head, current
+    end
+
+end
+
+local ruleddepth do
+
+    ruleddepth = function(current)
+        local depth = getdepth(current)
+        if depth ~= 0 then
+            local width = getwidth(current)
+            local rule  = new_rule(width,0,depth)
+            local kern  = new_kern(-width)
+            setcolor(rule,c_depth)
+            settransparency(rule,c_zero)
+            setattr(rule,a_layer,l_depth)
+            setlist(current,new_hlist(setlink(rule,kern,getlist(current))))
+        end
     end
 
 end
@@ -1198,6 +1220,7 @@ do
         local trace_expansion      = false
         local trace_line           = false
         local trace_space          = false
+        local trace_depth          = false
         local current              = head
         local previous             = nil
         local attr                 = unsetvalue
@@ -1231,6 +1254,7 @@ do
                     trace_expansion     = false
                     trace_line          = false
                     trace_space         = false
+                    trace_depth         = false
                 else -- dead slow:
                     trace_hbox          = band(a,     1) ~= 0
                     trace_vbox          = band(a,     2) ~= 0
@@ -1251,6 +1275,7 @@ do
                     trace_expansion     = band(a, 65536) ~= 0
                     trace_line          = band(a,131072) ~= 0
                     trace_space         = band(a,262144) ~= 0
+                    trace_depth         = band(a,524288) ~= 0
                 end
                 attr = a
             end
@@ -1315,6 +1340,9 @@ do
                 local content = getlist(current)
                 if content then
                     setlist(current,visualize(content,false,nil,current))
+                end
+                if trace_depth then
+                    ruleddepth(current)
                 end
                 if trace_line and getsubtype(current) == line_code then
                     head, current = ruledbox(head,current,false,l_line,"L__",trace_simple,previous,trace_origin,parent)

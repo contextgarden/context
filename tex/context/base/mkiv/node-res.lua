@@ -164,11 +164,11 @@ local special           = register_nut(new_nut("whatsit",whatsitcodes.special))
 local user_node         = new_nut("whatsit",whatsitcodes.userdefined)
 
 local user_number       = register_nut(copy_nut(user_node)) setfield(user_number,    "type",usercodes.number)
-local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.nodes)
+local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.node)
 local user_string       = register_nut(copy_nut(user_node)) setfield(user_string,    "type",usercodes.string)
-local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens,    "type",usercodes.tokens)
+local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens,    "type",usercodes.token)
 ----- user_lua          = register_nut(copy_nut(user_node)) setfield(user_lua,       "type",usercodes.lua) -- in > 0.95
-local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attributes)
+local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attribute)
 
 local left_margin_kern  = register_nut(new_nut("margin_kern",0))
 local right_margin_kern = register_nut(new_nut("margin_kern",1))

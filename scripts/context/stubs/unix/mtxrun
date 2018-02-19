@@ -918,7 +918,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38236, stripped down to: 20518
+-- original size: 38582, stripped down to: 20518
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -11928,7 +11928,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 59364, stripped down to: 37773
+-- original size: 59638, stripped down to: 37936
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -12781,7 +12781,7 @@ grammar_unparsed_text_nop=install(space,spacing,anything)
 grammar_parsed_text_one_yes,
 grammar_parsed_text_two_yes,
 grammar_unparsed_text_yes=install(space_nl,spacing_nl,anything_nl)
-local function _xmlconvert_(data,settings)
+local function _xmlconvert_(data,settings,detail)
   settings=settings or {} 
   preparexmlstate(settings)
   if settings.linenumbers then
@@ -12809,6 +12809,8 @@ local function _xmlconvert_(data,settings)
   nt=0
   if not data or data=="" then
     errorstr="empty xml file"
+  elseif data==true then
+    errorstr=detail or "problematic xml file"
   elseif utfize or resolve then
     local m=lpegmatch(grammar_parsed_text_one,data)
     if m then
@@ -12883,8 +12885,10 @@ local function xmlconvert(data,settings)
   local ok,result=pcall(function() return _xmlconvert_(data,settings) end)
   if ok then
     return result
+  elseif type(result)=="string" then
+    return _xmlconvert_(true,settings,result)
   else
-    return _xmlconvert_("",settings)
+    return _xmlconvert_(true,settings)
   end
 end
 xml.convert=xmlconvert
@@ -16262,7 +16266,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 17979, stripped down to: 11188
+-- original size: 21319, stripped down to: 11325
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -16464,46 +16468,38 @@ local nofsharedscans=0
 local addcasecraptoo=true
 local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
   local full=path=="" and spec or (spec..path..'/')
-  local dirs={}
+  local dirlist={}
   local nofdirs=0
   local pattern=tolerant and lessweird or weird
+  local filelist={}
+  local noffiles=0
   for name in directory(full) do
     if not lpegmatch(pattern,name) then
       local mode=attributes(full..name,"mode")
       if mode=="file" then
         n=n+1
-        local lower=lower(name)
-        local paths=files[lower]
-        if paths then
-          if onlyone then
-          else
-            if name~=lower then
-              local rl=remap[lower]
-              if not rl then
-                remap[lower]=name
-                r=r+1
-              elseif trace_globbing and rl~=name then
-                report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
-              end
-              if addcasecraptoo then
-                local paths=files[name]
-                if not paths then
-                  files[name]=path
-                elseif type(paths)=="string" then
-                  files[name]={ paths,path }
-                else
-                  paths[#paths+1]=path
-                end
-              end
-            end
-            if type(paths)=="string" then
-              files[lower]={ paths,path }
-            else
-              paths[#paths+1]=path
-            end
-          end
-        else 
-          files[lower]=path
+        noffiles=noffiles+1
+        filelist[noffiles]=name
+      elseif mode=="directory" then
+        m=m+1
+        nofdirs=nofdirs+1
+        if path~="" then
+          dirlist[nofdirs]=path.."/"..name
+        else
+          dirlist[nofdirs]=name
+        end
+      end
+    end
+  end
+  if noffiles>0 then
+    sort(filelist)
+    for i=1,noffiles do
+      local name=filelist[i]
+      local lower=lower(name)
+      local paths=files[lower]
+      if paths then
+        if onlyone then
+        else
           if name~=lower then
             local rl=remap[lower]
             if not rl then
@@ -16512,23 +16508,41 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
             elseif trace_globbing and rl~=name then
               report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
             end
+            if addcasecraptoo then
+              local paths=files[name]
+              if not paths then
+                files[name]=path
+              elseif type(paths)=="string" then
+                files[name]={ paths,path }
+              else
+                paths[#paths+1]=path
+              end
+            end
+          end
+          if type(paths)=="string" then
+            files[lower]={ paths,path }
+          else
+            paths[#paths+1]=path
           end
         end
-      elseif mode=="directory" then
-        m=m+1
-        nofdirs=nofdirs+1
-        if path~="" then
-          dirs[nofdirs]=path.."/"..name
-        else
-          dirs[nofdirs]=name
+      else 
+        files[lower]=path
+        if name~=lower then
+          local rl=remap[lower]
+          if not rl then
+            remap[lower]=name
+            r=r+1
+          elseif trace_globbing and rl~=name then
+            report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+          end
         end
       end
     end
   end
   if nofdirs>0 then
-    sort(dirs)
+    sort(dirlist)
     for i=1,nofdirs do
-      files,remap,n,m,r=scan(files,remap,spec,dirs[i],n,m,r,onlyonce,tolerant)
+      files,remap,n,m,r=scan(files,remap,spec,dirlist[i],n,m,r,onlyonce,tolerant)
     end
   end
   scancache[sub(full,1,-2)]=files
@@ -21086,8 +21100,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 868857
--- stripped bytes    : 315655
+-- original bytes    : 872817
+-- stripped bytes    : 319315
 
 -- end library merge
 

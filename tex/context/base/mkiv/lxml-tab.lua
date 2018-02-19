@@ -448,12 +448,12 @@ local function attribute_specification_error(str)
     return str
 end
 
--- these will be set later
-
--- in order to overcome lua limitations we wrap entity stuff in a
--- closure
+-- I'm sure that this lpeg can be simplified (less captures) but it evolved ...
+-- so i'm not going to change it now.
 
 do
+
+    -- In order to overcome lua limitations we wrap entity stuff in a closure.
 
     local badentity = "&" -- was "&error;"
 
@@ -1128,7 +1128,7 @@ grammar_unparsed_text_yes   = install(space_nl, spacing_nl, anything_nl)
 
 -- maybe we will add settings to result as well
 
-local function _xmlconvert_(data,settings)
+local function _xmlconvert_(data,settings,detail)
     settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
     preparexmlstate(settings)
     if settings.linenumbers then
@@ -1156,6 +1156,8 @@ local function _xmlconvert_(data,settings)
     nt = 0
     if not data or data == "" then
         errorstr = "empty xml file"
+    elseif data == true then
+        errorstr = detail or "problematic xml file"
     elseif utfize or resolve then
         local m = lpegmatch(grammar_parsed_text_one,data)
         if m then
@@ -1237,8 +1239,10 @@ local function xmlconvert(data,settings)
     local ok, result = pcall(function() return _xmlconvert_(data,settings) end)
     if ok then
         return result
+    elseif type(result) == "string" then
+        return _xmlconvert_(true,settings,result)
     else
-        return _xmlconvert_("",settings)
+        return _xmlconvert_(true,settings)
     end
 end
 

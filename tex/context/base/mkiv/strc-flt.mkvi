@@ -141,6 +141,7 @@
    \c!spaceafter=\v!big,
    \c!sidespacebefore=\rootfloatparameter\c!spacebefore,
    \c!sidespaceafter=\rootfloatparameter\c!spaceafter,
+   \c!sidespaceinbetween=\rootfloatparameter\c!spacebefore,
    \c!spacebeforeside=, % extra, not part of, can be used to add whitespace before text
    \c!spaceafterside=,  % idem
    \c!sidealign=\v!normal,
@@ -738,8 +739,6 @@
 \newdimen\d_strc_floats_margin
 \newdimen\d_strc_floats_top
 \newdimen\d_strc_floats_bottom
-%newdimen\d_strc_floats_top_side
-%newdimen\d_strc_floats_bottom_side
 
 \def\strc_floats_calculate_skip#target#skip%
   {\begingroup
@@ -766,6 +765,8 @@
    \global\d_page_sides_shift       \zeropoint
    \global\d_page_sides_maximum     \zeropoint
    \global\c_page_sides_align       \zerocount
+   \global\c_page_sides_tolerance   \zerocount
+   \global\c_page_sides_skipmode    \zerocount
    \global\c_strc_floats_rotation   \zerocount
    \global\d_strc_floats_margin     \rootfloatparameter\c!margin
    \global\d_page_sides_leftshift   \floatparameter    \c!leftmargindistance
@@ -779,15 +780,12 @@
    \ifconditional\c_strc_floats_par_float
      \global\d_strc_floats_top        \zeropoint
      \global\d_strc_floats_bottom     \zeropoint
-    %\strc_floats_calculate_skip\d_strc_floats_top_side   \c!spacebeforeside
-    %\strc_floats_calculate_skip\d_strc_floats_bottom_side\c!spaceafterside
      \strc_floats_calculate_skip\d_page_sides_topskip     \c!sidespacebefore
      \strc_floats_calculate_skip\d_page_sides_bottomskip  \c!sidespaceafter
+     \strc_floats_calculate_skip\d_page_sides_midskip     \c!sidespaceinbetween
    \else
      \global\d_page_sides_topskip     \zeropoint
      \global\d_page_sides_bottomskip  \zeropoint
-    %\global\d_strc_floats_top_side   \zeropoint
-    %\global\d_strc_floats_bottom_side\zeropoint
      \strc_floats_calculate_skip\d_strc_floats_top   \c!spacebefore
      \strc_floats_calculate_skip\d_strc_floats_bottom\c!spaceafter
    \fi
@@ -807,11 +805,11 @@
        \doifinset\v!grid    \floatlocation{\global\c_page_sides_align\plusfour }%
        \doifinset\v!halfline\floatlocation{\global\c_page_sides_align\plusfive }% meant for 'none'
      \fi
-     \doifinset\v!high\floatlocation{\global\d_page_sides_topskip   \zeropoint}%
-     \doifinset\v!low \floatlocation{\global\d_page_sides_bottomskip\zeropoint}%
-     \doifinset\v!fit \floatlocation{\global\d_page_sides_topskip   \zeropoint
-                                     \global\d_page_sides_bottomskip\zeropoint
-                                     \global\d_strc_floats_margin   \zeropoint}%
+     \doifinset\v!high        \floatlocation{\global\c_page_sides_skipmode \plusone  }%
+     \doifinset\v!low         \floatlocation{\global\c_page_sides_skipmode \plustwo  }%
+     \doifinset\v!fit         \floatlocation{\global\c_page_sides_skipmode \plusthree}%
+     \doifinset\v!tolerant    \floatlocation{\global\c_page_sides_tolerance\plusone  }%
+     \doifinset\v!verytolerant\floatlocation{\global\c_page_sides_tolerance\plustwo  }%
    \else
      \processallactionsinset
        [\floatlocation]%
@@ -836,12 +834,7 @@
       \letfloatcaptionparameter\c!rightmargin\effectiverightskip}%
    \ifemptyfloatcaption \ifnofloatnumber
      \global\nofloatcaptiontrue
-   \fi \fi
-   % more variable initializations
-   \ifconditional\c_strc_floats_par_float
-     \global\advance\d_page_sides_topskip   \d_page_sides_topoffset
-     \global\advance\d_page_sides_bottomskip\d_page_sides_bottomoffset
-   \fi}
+   \fi \fi}
 
 % documenteren in details
 
@@ -1282,7 +1275,7 @@
    \hsize\floattextwidth
    \ignorespaces}
 
-\def\strc_floats_stop_text_indeed
+\def\strc_floats_stop_text_indeed % todo
   {\egroup
    \doifnotinset\v!tall\floatlocation
      {\floattextheight\ifdim\ht\floattext<\floatheight\floatheight\else\ht\floattext\fi}%

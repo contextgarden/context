@@ -116,8 +116,6 @@ local function getfonts(pdffile)
             for k, v in next, lpdf.epdf.expand(fontlist) do
                 usedfonts[k] = lpdf.epdf.expand(v)
             end
-        else
-            report("no fonts")
         end
     end
     return usedfonts

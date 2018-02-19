@@ -390,7 +390,7 @@ local function btxauthorfield(i,field)
                     context(applymanipulation(manipulator,value) or value)
                 end
             elseif field == "initials" then
-                context(concat(the_initials(value,currentauthorsymbol)))
+                context(concat(the_initials(value,currentauthorsymbol,currentauthorconnector)))
             else
                 context(concat(value," "))
             end

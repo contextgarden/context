@@ -68,6 +68,7 @@ local allocate      = utilities.storage.allocate
 local formatcolumns = utilities.formatters.formatcolumns
 
 local getsubtypes   = node.subtypes
+local getvalues     = node.values
 
 -- local listcodes = allocate {
 --     [0] = "unknown",
@@ -128,7 +129,7 @@ local glyphcodes = mark(getsubtypes("glyph"))
 
 local disccodes = mark(getsubtypes("disc"))
 
--- local skipcodes = allocate {
+-- local gluecodes = allocate {
 --     [  0] = "userskip",
 --     [  1] = "lineskip",
 --     [  2] = "baselineskip",
@@ -157,7 +158,7 @@ local disccodes = mark(getsubtypes("disc"))
 --     [103] = "gleaders",
 -- }
 
-local skipcodes = mark(getsubtypes("glue"))
+local gluecodes = mark(getsubtypes("glue"))
 
 -- local leadercodes = allocate {
 --     [100] = "leaders",
@@ -283,12 +284,12 @@ local nodecodes = simplified(node.types())
 local whatcodes = simplified(node.whatsits())
 
 local usercodes = allocate {
-    [ 97] = "attributes", -- a
+    [ 97] = "attribute",  -- a
     [100] = "number",     -- d
     [108] = "lua",        -- l
-    [110] = "nodes",      -- n
+    [110] = "node",       -- n
     [115] = "string",     -- s
-    [116] = "tokens"      -- t
+    [116] = "token"       -- t
 }
 
 local noadoptions = allocate {
@@ -303,55 +304,93 @@ local noadoptions = allocate {
     right    = 0x14 + 0x08,
 }
 
-skipcodes     = allocate(swapped(skipcodes,skipcodes))
-dircodes      = allocate(swapped(dircodes,dircodes))
-boundarycodes = allocate(swapped(boundarycodes,boundarycodes))
-noadcodes     = allocate(swapped(noadcodes,noadcodes))
-radicalcodes  = allocate(swapped(radicalcodes,radicalcodes))
-nodecodes     = allocate(swapped(nodecodes,nodecodes))
-whatcodes     = allocate(swapped(whatcodes,whatcodes))
-listcodes     = allocate(swapped(listcodes,listcodes))
-glyphcodes    = allocate(swapped(glyphcodes,glyphcodes))
-kerncodes     = allocate(swapped(kerncodes,kerncodes))
-penaltycodes  = allocate(swapped(penaltycodes,penaltycodes))
-mathcodes     = allocate(swapped(mathcodes,mathcodes))
-fillcodes     = allocate(swapped(fillcodes,fillcodes))
-margincodes   = allocate(swapped(margincodes,margincodes))
-disccodes     = allocate(swapped(disccodes,disccodes))
-accentcodes   = allocate(swapped(accentcodes,accentcodes))
-fencecodes    = allocate(swapped(fencecodes,fencecodes))
-rulecodes     = allocate(swapped(rulecodes,rulecodes))
-leadercodes   = allocate(swapped(leadercodes,leadercodes))
-usercodes     = allocate(swapped(usercodes,usercodes))
-noadoptions   = allocate(swapped(noadoptions,noadoptions))
+-- local directionvalues  = mark(getvalues("dir"))
+-- local gluevalues       = mark(getvalues("glue"))
+-- local pdfliteralvalues = mark(getvalues("pdf_literal"))
 
-nodes.skipcodes      = skipcodes
-nodes.dircodes       = dircodes
-nodes.boundarycodes  = boundarycodes
-nodes.noadcodes      = noadcodes
-nodes.nodecodes      = nodecodes
-nodes.whatcodes      = whatcodes
-nodes.listcodes      = listcodes
-nodes.glyphcodes     = glyphcodes
-nodes.kerncodes      = kerncodes
-nodes.penaltycodes   = penaltycodes
-nodes.mathcodes      = mathcodes
-nodes.fillcodes      = fillcodes
-nodes.margincodes    = margincodes
-nodes.disccodes      = disccodes
-nodes.accentcodes    = accentcodes
-nodes.radicalcodes   = radicalcodes
-nodes.fencecodes     = fencecodes
-nodes.rulecodes      = rulecodes
-nodes.leadercodes    = leadercodes
-nodes.usercodes      = usercodes
-nodes.noadoptions    = noadoptions
+local dirvalues = allocate {
+    [0] = "TLT",
+    [1] = "TRT",
+    [2] = "LTL",
+    [3] = "RTT",
+}
 
-nodes.gluecodes          = skipcodes   -- more official
-nodes.directioncodes     = dircodes    -- more friendly
-nodes.whatsitcodes       = whatcodes   -- more official
+local gluevalues = allocate {
+    [0] = "normal",
+    [1] = "fi",
+    [2] = "fil",
+    [3] = "fill",
+    [4] = "filll",
+}
+
+local pdfliteralvalues = allocate {
+    [0] = "origin",
+    [1] = "page",
+    [2] = "always",
+    [3] = "raw",
+    [4] = "text",
+    [5] = "font",
+    [6] = "special",
+}
+
+gluecodes        = allocate(swapped(gluecodes,gluecodes))
+dircodes         = allocate(swapped(dircodes,dircodes))
+boundarycodes    = allocate(swapped(boundarycodes,boundarycodes))
+noadcodes        = allocate(swapped(noadcodes,noadcodes))
+radicalcodes     = allocate(swapped(radicalcodes,radicalcodes))
+nodecodes        = allocate(swapped(nodecodes,nodecodes))
+whatcodes        = allocate(swapped(whatcodes,whatcodes))
+listcodes        = allocate(swapped(listcodes,listcodes))
+glyphcodes       = allocate(swapped(glyphcodes,glyphcodes))
+kerncodes        = allocate(swapped(kerncodes,kerncodes))
+penaltycodes     = allocate(swapped(penaltycodes,penaltycodes))
+mathcodes        = allocate(swapped(mathcodes,mathcodes))
+fillcodes        = allocate(swapped(fillcodes,fillcodes))
+margincodes      = allocate(swapped(margincodes,margincodes))
+disccodes        = allocate(swapped(disccodes,disccodes))
+accentcodes      = allocate(swapped(accentcodes,accentcodes))
+fencecodes       = allocate(swapped(fencecodes,fencecodes))
+rulecodes        = allocate(swapped(rulecodes,rulecodes))
+leadercodes      = allocate(swapped(leadercodes,leadercodes))
+usercodes        = allocate(swapped(usercodes,usercodes))
+noadoptions      = allocate(swapped(noadoptions,noadoptions))
+dirvalues        = allocate(swapped(dirvalues,dirvalues))
+gluevalues       = allocate(swapped(gluevalues,gluevalues))
+pdfliteralvalues = allocate(swapped(pdfliteralvalues,pdfliteralvalues))
+
+nodes.gluecodes        = gluecodes
+nodes.dircodes         = dircodes
+nodes.boundarycodes    = boundarycodes
+nodes.noadcodes        = noadcodes
+nodes.nodecodes        = nodecodes
+nodes.whatcodes        = whatcodes
+nodes.listcodes        = listcodes
+nodes.glyphcodes       = glyphcodes
+nodes.kerncodes        = kerncodes
+nodes.penaltycodes     = penaltycodes
+nodes.mathcodes        = mathcodes
+nodes.fillcodes        = fillcodes
+nodes.margincodes      = margincodes
+nodes.disccodes        = disccodes
+nodes.accentcodes      = accentcodes
+nodes.radicalcodes     = radicalcodes
+nodes.fencecodes       = fencecodes
+nodes.rulecodes        = rulecodes
+nodes.leadercodes      = leadercodes
+nodes.usercodes        = usercodes
+nodes.noadoptions      = noadoptions
+nodes.dirvalues        = dirvalues
+nodes.gluevalues       = gluevalues
+nodes.pdfliteralvalues = pdfliteralvalues
+
+nodes.skipcodes          = gluecodes        -- more friendly
+nodes.directioncodes     = dircodes         -- more friendly
+nodes.whatsitcodes       = whatcodes        -- more official
 nodes.marginkerncodes    = margincodes
 nodes.discretionarycodes = disccodes
+nodes.directionvalues    = dirvalues        -- more friendly
+nodes.skipvalues         = gluevalues       -- more friendly
+nodes.literalvalues      = pdfliteralvalues -- more friendly
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
@@ -359,6 +398,8 @@ listcodes.column           = listcodes.alignment
 kerncodes.kerning          = kerncodes.fontkern
 
 kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
+
+pdfliteralvalues.direct    = pdfliteralvalues.always
 
 nodes.codes = allocate { -- mostly for listing
     glue        = skipcodes,

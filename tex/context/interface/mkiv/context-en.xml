@@ -10166,6 +10166,8 @@
       <cd:constant type="top"/>
       <cd:constant default="yes" type="bottom"/>
       <cd:constant type="stretch"/>
+      <cd:constant type="tolerant"/>
+      <cd:constant type="verytolerant"/>
       <cd:constant type="none"/>
       <cd:constant type="default"/>
      </cd:parameter>

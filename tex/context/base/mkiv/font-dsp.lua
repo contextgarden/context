@@ -3319,9 +3319,10 @@ function readers.stat(f,fontdata,specification)
         local values       = { }
         setposition(f,tableoffset+axisoffset)
         for i=1,nofaxis do
+            local tag = readtag(f)
             axis[i] = {
-                tag      = readtag(f),
-                name     = lower(extras[readushort(f)]),
+                tag      = tag,
+                name     = lower(extras[readushort(f)] or tag),
                 ordering = readushort(f), -- maybe gaps
                 variants = { }
             }
@@ -3341,7 +3342,7 @@ function readers.stat(f,fontdata,specification)
             local format  = readushort(f)
             local index   = readushort(f) + 1
             local flags   = readushort(f)
-            local name    = lower(extras[readushort(f)])
+            local name    = lower(extras[readushort(f)] or "no name")
             local value   = readfixed(f)
             local variant
             if format == 1 then

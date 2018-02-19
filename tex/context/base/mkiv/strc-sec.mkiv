@@ -596,10 +596,10 @@
     % mkii compatible. Somewhat weird that it's part of the
     % top level structure but it will be flattened anyway.
     \let\currenthead\currentsection %
-    \setheadparameter\c!textstyle  {\strictheadparameter\c!style}%
-    \setheadparameter\c!textcolor  {\strictheadparameter\c!color}%
-    \setheadparameter\c!numberstyle{\strictheadparameter\c!style}%
-    \setheadparameter\c!numbercolor{\strictheadparameter\c!color}%
+    \setheadparameter\c!textstyle  {\directheadparameter\c!style}%
+    \setheadparameter\c!textcolor  {\directheadparameter\c!color}%
+    \setheadparameter\c!numberstyle{\directheadparameter\c!style}%
+    \setheadparameter\c!numbercolor{\directheadparameter\c!color}%
 \to \everydefinesection
 
 % head -> head

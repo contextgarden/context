@@ -23,6 +23,16 @@ return {
     comment = "Goodies that complement xits (by Khaled Hosny).",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
+    filenames = {
+        ["xitsmath-regular.otf"] = {
+            "xitsmath-regular.otf",
+            "xits-math.otf",
+        },
+        ["xitsmath-bold.otf"] = {
+            "xitsmath-bold.otf",
+            "xits-mathbold.otf",
+        },
+    },
     mathematics = {
      -- italics = {
      --     ["xits-math"] = italics,

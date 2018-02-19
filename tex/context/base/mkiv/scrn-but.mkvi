@@ -554,7 +554,7 @@
    \setbox\b_scrn_menu\hbox to \d_scrn_menu_used_width
      {\ifx\currentinteractionmenustate\v!empty \else
         \interactionmenuparameter\c!left
-        \scrn_menu_package_vertical{\strictinteractionmenuparameter\c!menu}%
+        \scrn_menu_package_vertical{\directinteractionmenuparameter\c!menu}%
         \interactionmenuparameter\c!right
       \fi}%
    \edef\currentinteractionmenudistance{\interactionmenuparameter\c!distance}%
@@ -575,7 +575,7 @@
      {\ifx\currentinteractionmenustate\v!none \else
         \scrn_menu_top_align
         \interactionmenuparameter\c!before
-        \scrn_menu_package_horizontal{\strictinteractionmenuparameter\c!menu}%
+        \scrn_menu_package_horizontal{\directinteractionmenuparameter\c!menu}%
         \interactionmenuparameter\c!after
         \scrn_menu_bottom_align
       \fi}%
@@ -788,7 +788,7 @@
    \edef\currentinteractionmenu{#tag}%
    \doif{\interactionmenuparameter\c!state}\v!local
      {\letinteractionmenuparameter\c!state\v!start
-      \strictinteractionmenuparameter\c!menu}%
+      \directinteractionmenuparameter\c!menu}%
    \endgroup}
 
 %D Direct call (todo):

@@ -10485,6 +10485,10 @@ return {
    ["pe"]="فضای‌کناری‌قبل",
    ["ro"]="spatiulateralinainte",
   },
+  ["sidespaceinbetween"]={
+   ["en"]="sidespaceinbetween",
+   ["nl"]="zijtussenwit",
+  },
   ["spaceafterside"]={
    ["en"]="spaceafterside",
    ["nl"]="witnazij",

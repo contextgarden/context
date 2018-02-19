@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
+-- we can get too many captures (e.g. on largexml files) which makes me wonder
+-- if P(foo)/"" can't be simplfied to N(foo) i.e. some direct instruction to the
+-- lpeg virtual machine to ignore it
+
 -- lpeg 12 vs lpeg 10: slower compilation, similar parsing speed (i need to check
 -- if i can use new features like capture / 2 and .B (at first sight the xml
 -- parser is some 5% slower)
@@ -16,6 +20,10 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 
 -- move utf    -> l-unicode
 -- move string -> l-string or keep it here
+
+-- lpeg.B                                 : backward without consumption
+-- lpeg.F = getmetatable(lpeg.P(1)).__len : forward  without consumption
+
 
 lpeg = require("lpeg") -- does lpeg register itself global?
 

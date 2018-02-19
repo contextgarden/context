@@ -1168,6 +1168,7 @@
 		<cd:constant name='sidemethod' value='sidemethod'/>
 		<cd:constant name='sidespaceafter' value='spatiulateraldupa'/>
 		<cd:constant name='sidespacebefore' value='spatiulateralinainte'/>
+		<cd:constant name='sidespaceinbetween' value='sidespaceinbetween'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='semn'/>
 		<cd:constant name='simplecommand' value='simplecommand'/>

@@ -319,5 +319,17 @@
 \unexpanded\def\doifelsemarkedpage#1%
   {\clf_doifelsemarkedpage{#1}}
 
+%D Experimental:
+
+\newconstant\c_page_force_strut_depth_trace_mode
+
+\installtextracker
+  {otr.forcestrutdepth}
+  {\c_page_force_strut_depth_trace_mode\plusone}
+  {\c_page_force_strut_depth_trace_mode\zerocount}
+
+\installoutputroutine\forcestrutdepth
+  {\clf_forcestrutdepth\normalpagebox\strutdp\c_page_force_strut_depth_trace_mode
+   \unvbox\normalpagebox}
 
 \protect \endinput

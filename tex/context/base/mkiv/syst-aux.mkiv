@@ -1081,12 +1081,21 @@
    \fi
    \relax} % this one preserved the next {}
 
+% \def\syst_helpers_do_process_comma_list#1]#2%
+%   {\global\advance\commalevel \plusone
+%    \expandafter\def\csname\??nextcommalevel\the\commalevel\endcsname##1,%
+%      {#2{##1}\syst_helpers_do_process_comma_item}%
+%    \expandafter\syst_helpers_do_do_process_comma_item\gobbleoneargument#1,]\relax
+%    \global\advance\commalevel \minusone }
+
 \def\syst_helpers_do_process_comma_list#1]#2%
   {\global\advance\commalevel \plusone
    \expandafter\def\csname\??nextcommalevel\the\commalevel\endcsname##1,%
      {#2{##1}\syst_helpers_do_process_comma_item}%
-   \expandafter\syst_helpers_do_do_process_comma_item\gobbleoneargument#1,]\relax
+   \syst_helpers_do_do_process_comma_item_gobble#1,]\relax
    \global\advance\commalevel \minusone }
+
+\def\syst_helpers_do_do_process_comma_item_gobble#1{\syst_helpers_do_do_process_comma_item}
 
 %D One way of quitting a commalist halfway is:
 

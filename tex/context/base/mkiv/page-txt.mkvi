@@ -822,7 +822,7 @@
 
 \def\page_layouts_insert_elements
   {\ifcase\pageornamentstate
-     \page_layouts_place_elements_indeed
+     \page_layouts_place_elements_indeed % we could have a special flag for always ignored
    \fi}
 
 \def\page_layouts_place_elements_indeed

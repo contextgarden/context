@@ -125,7 +125,7 @@
 \installswitchcommandhandler \??layout {layout} \??layout
 
 \appendtoks
-    \doifnothing{\strictlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
+    \doifnothing{\directlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
 \to \everydefinelayout
 
 \appendtoks
@@ -959,7 +959,7 @@
   {\setgvalue{\??layoutalternative#1}{#2}}
 
 \def\page_boxes_construct_content_default#1#2#3% targetbox flusher box
-  {\setbox#1\vbox
+  {\setbox#1\vpack % was \vbox
      {\offinterlineskip
       \begingroup % needed ?
       \uselayoutstyleandcolor\c!style\c!color

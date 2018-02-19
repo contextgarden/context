@@ -2521,4 +2521,28 @@
 % line 3
 % \stoptyping
 
+%D Helper:
+
+\unexpanded\def\checkedblank[#1]%
+  {\edef\p_blank{#1}%
+   \ifx\p_blank\empty
+     % ignore
+   \else\ifx\p_blank\v!none
+     % ignore
+   \else
+     \blank[\p_blank]%
+   \fi\fi}
+
+% \unexpanded\def\applycheckedblankwith#1#2#3%
+%   {\edef\p_blank{#2}%
+%    \ifx\p_blank\empty
+%      % ignore
+%    \else\ifx\p_blank\v!none
+%      % ignore
+%    \else
+%      \edef\p_before{#1}%
+%      \edef\p_after {#3}%
+%      \blank[\ifx\p_before\empty\else\p_before,\fi\p_blank\ifx\p_after\empty\else,\p_after\fi]%
+%    \fi\fi}
+
 \protect \endinput

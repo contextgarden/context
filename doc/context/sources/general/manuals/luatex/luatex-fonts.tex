@@ -608,6 +608,18 @@ Finally, here is a plain \TEX\ input file with a virtual font demonstration:
 
 \typebuffer
 
+\section{The \type {vf} library}
+
+The \type {vf} library can be used when \LUA\ code, as defined in the \type
+{commands} of the font, is executed. The functions provided are similar as the
+commands: \type {char}, \type {down}, \type {fontid}, \type {image}, \type
+{node}, \type {nop}, \type {pop}, \type {push}, \type {right}, \type {rule},
+\type {special} and \type {pdf}. This library has been present for a while but
+not been advertised and tested much, if only because it's easy to define an
+invalid font (or mess up the \PDF\ stream). Keep in mind that the \LUA\ snippets
+are executed each time when a character is output.
+
+
 \section{The \type {font} library}
 
 The font library provides the interface into the internals of the font system,

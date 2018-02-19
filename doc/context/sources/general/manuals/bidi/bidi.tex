@@ -8,39 +8,37 @@
 
 \startbuffer[preamble-fonts]
 \definefontfallback
-  [Serif] [scheherazaderegular*arabic sa 1.5]
-  [arabic] [force=yes]
+  [Serif] [scheherazaderegular*arabic]
+  [arabic] [force=yes,rscale=1.5]
 \definefontfallback
-  [SerifBold] [scheherazadebold*arabic sa 1.5]
-  [arabic] [force=yes]
+  [SerifBold] [scheherazadebold*arabic]
+  [arabic] [force=yes,rscale=1.5]
 \definefontfallback
-  [SerifItalic] [scheherazaderegular*arabic sa 1.5]
-  [arabic] [force=yes]
+  [SerifItalic] [scheherazaderegular*arabic]
+  [arabic] [force=yes,rscale=1.5]
 \definefontfallback
-  [SerifBoldItalic] [scheherazadebold*arabic sa 1.5]
+  [SerifBoldItalic] [scheherazadebold*arabic]
+  [arabic] [force=yes,rscale=1.5]
+
+\definefontfallback
+  [Serif] [sileot*hebrew]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifBold] [sileot*hebrew]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifItalic] [sileot*hebrew]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifBoldItalic] [sileot*hebrew]
+  [hebrew] [force=yes]
+
+\definefontfallback
+  [Mono] [almfixed*none]
   [arabic] [force=yes]
 
 \definefontfallback
-  [Serif] [sileot*hebrew sa 1.0]
-  [hebrew] [force=yes]
-\definefontfallback
-  [SerifBold] [sileot*hebrew sa 1.0]
-  [hebrew] [force=yes]
-\definefontfallback
-  [SerifItalic] [sileot*hebrew sa 1.0]
-  [hebrew] [force=yes]
-\definefontfallback
-  [SerifBoldItalic] [sileot*hebrew sa 1.0]
-  [hebrew] [force=yes]
-
-\definefontfeature[fakemono][mode=node,fakemono=yes]
-
-% \definefontfallback
-%   [Mono] [scheherazaderegular*fakemono sa 1.5]
-%   [arabic] [force=yes,factor=1] % factor forces a monospace
-
-\definefontfallback
-  [Mono] [sileot*fakemono sa 1.0]
+  [Mono] [sileot*none]
   [hebrew] [force=yes,factor=1] % factor forces a monospace
 
 \setupbodyfont
@@ -77,6 +75,18 @@
 
 \setuphead
   [color=darkyellow]
+
+\setuphead
+  [chapter]
+  [style=\bfc]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bfa]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -115,7 +125,7 @@
     p := textext("l2r") xsized .9PaperWidth ;
     q := textext("r2l") xsized .9PaperWidth ;
     r := textext("a few tips") xsized .9PaperWidth ;
-    s := textext("hans\quad\quad hagen") xsized .5bbheight(p);
+    s := textext("\bf\ss hans\quad\space\quad hagen") xsized .5bbheight(p);
 
     p := p shifted - llcorner p ;
     q := q shifted - llcorner q ;
@@ -132,7 +142,7 @@
     draw p withcolor "lightgray" ;
     draw q withcolor "lightgray" ;
     draw r withcolor "middleblue" ;
-    draw s withcolor "middleblue" ;
+    draw s withcolor "lightgray" ;
 
 \stopMPpage
 
@@ -151,6 +161,15 @@ driven left or right of the road.
 \typebuffer
 
 \getbuffer
+
+Even someone not familiar with right to left typesetting can see what happens
+here, or not? In fact Luigi Scarso pointed out that the \type {fixed} reversed
+into {\righttoleft \type {fixed}} but not in the example where {\bf fixed}
+becomes {\righttoleft \bf fixed}. This signals an important property of the way
+the text gets processed: you input something, at some points font features get
+applied (like ligatures) and in the end the resulting glyph stream is reversed.
+By that time the combination of {\bf f}+{\bf i} has become {\bf fi}! So, be
+prepared for surprises.
 
 This manual is written by a left to right user so don't expect a manual on
 semitic typesetting. Also don't expect a (yet) complete manual. I'll add whatever
@@ -175,13 +194,17 @@ The sentence \quotation {I have no clue what this means.} is translated (by
 Google Translate) into \quotation {\ar \righttoleft ليس لدي أي فكرة عما يعنيه هذا.}
 which is then translated back to \quotation {I have no idea what this means.} so
 maybe arabic has no clue what a clue is. The suggested Arabic pronunciation is
-\quotation {\ar lays laday 'ayu fikrat eamaa yaenih hadha}. Hebrew also likes ideas
-more: \quotation {\hr \righttoleft אין לי מושג מה זה אומר}.
+\quotation {lays laday 'ayu fikrat eamaa yaenih hadha}. Hebrew also likes ideas
+more: \quotation {\he \righttoleft אין לי מושג מה זה אומר}.
 \stopbuffer
 
 \typebuffer
 
 \getbuffer
+
+According to Idris Hamid the Arabic should actually be this: \quotation {\ar
+لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا} and the transliteration \quotation {Laysa
+ladayya ayyu fikratin ʿammā yaʿnihi hādhā}.
 
 The \CONTEXT\ (or any \TEX) ecosystem deals with languages and fonts. Languages
 (that relate to scripts) have specific characteristics, like running from right
@@ -214,13 +237,13 @@ In addition we set up the languages:
 The following example demonstrates what the effects of these commands are:
 
 \startbuffer
-{ليس لدي أي فكرة عما يعنيه هذا.}
+{لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
 {אין לי מושג מה זה אומר.}
-{\righttoleft ليس لدي أي فكرة عما يعنيه هذا.}
+{\righttoleft لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
 {\righttoleft אין לי מושג מה זה אומר.}
-{\ar \righttoleft ليس لدي أي فكرة عما يعنيه هذا.}
+{\ar \righttoleft لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
 {\he \righttoleft אין לי מושג מה זה אומר.}
-{\ar ليس لدي أي فكرة عما يعنيه هذا.}
+{\ar لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
 {\he אין לי מושג מה זה אומר.}
 \stopbuffer
 
@@ -244,7 +267,7 @@ language related settings. It really helps if you properly tag your
 document content, as in:
 
 \starttyping
-{\ar ليس لدي أي فكرة عما يعنيه هذا.}
+{\ar لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
 {\he אין לי מושג מה זה אומר.}
 \stoptyping
 
@@ -442,10 +465,10 @@ class nodes. In the \LUA\ interface we still support the:
 
 \startitemize[packed]
 \startitem
-    \type {LTR} and \type {RTL} keywords for local par nodes
+    \type {TLT} and \type {TRT} keywords for local par nodes
 \stopitem
 \startitem
-    \type {+LTR}, \type {-LTR}, \type {+RTL} and \type {-RTL} keywords for
+    \type {+TLT}, \type {-TLT}, \type {+TRT} and \type {-TRT} keywords for
     direction nodes
 \stopitem
 \stopitemize

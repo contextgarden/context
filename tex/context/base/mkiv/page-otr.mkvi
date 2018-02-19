@@ -52,7 +52,7 @@
 \to \everyswitchoutputroutine
 
 \unexpanded\def\page_otr_specifics_preset#name%
-  {\edef\page_otr_specifics_command{\strictoutputroutineparameter{#name}}% no inheritance of commands
+  {\edef\page_otr_specifics_command{\directoutputroutineparameter{#name}}% no inheritance of commands
    \ifx\page_otr_specifics_command\empty
      \writestatus{\currentoutputroutine}{- \expandafter\strippedcsname\csname#name\endcsname}%
      \expandafter\let\csname#name\endcsname\relax
@@ -62,7 +62,7 @@
    \fi}
 
 \unexpanded\def\page_otr_specifics_preset_normal#name%
-  {\edef\page_otr_specifics_command{\strictoutputroutineparameter{#name}}% no inheritance of commands
+  {\edef\page_otr_specifics_command{\directoutputroutineparameter{#name}}% no inheritance of commands
    \ifx\page_otr_specifics_command\empty
      \expandafter\let\csname#name\endcsname\relax
    \else
@@ -70,7 +70,7 @@
    \fi}
 
 \unexpanded\def\page_otr_specifics_preset_traced#name%
-  {\edef\page_otr_specifics_command{\strictoutputroutineparameter{#name}}% no inheritance of commands
+  {\edef\page_otr_specifics_command{\directoutputroutineparameter{#name}}% no inheritance of commands
    \ifx\page_otr_specifics_command\empty
      \writestatus{\currentoutputroutine}{preset: - \expandafter\strippedcsname\csname#name\endcsname}%
      \expandafter\let\csname#name\endcsname\relax

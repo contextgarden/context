@@ -211,39 +211,22 @@
 %
 % \def\currenttest{oeps} \edef\hans{\detokenizedtestparameter{bagger}}\meaning\hans\par
 % \def\currenttest{oeps} \edef\hans{\detokenizedtestparameter{reggab}}\meaning\hans\par
+%
+% slower: \def#3##1{\csname\ifcsname#1#2:##1\endcsname\expandafter\csstring\lastnamedcs\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
+%
+% pre-expansion can be a bit faster but handly any effect on a normal run so let's go for
+% saving some memory
 
 \def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 
-\unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
-  {\ifx#2\relax\let#2\empty\fi                                             % it is hardly faster but produces less expansion tracing
-  %\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
+\unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8% inlining \csname*\endcsname is more efficient (#3 and #6 only)
+  {\ifx#2\relax\let#2\empty\fi                                           % it is hardly faster but produces less expansion tracing
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
-  %\def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
    \def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
    \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
- % \def#7##1{\mult_interfaces_detokenize{\csname#4{#1#2}{##1}\endcsname}}% compact version
- % \def#7##1{\mult_interfaces_detokenize{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}}%
-%% \def#8##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\s!empty\fi\endcsname}%
-   \def#8##1{\begincsname#1#2:##1\endcsname}%
-   \def#9##1{\csname#1#2:##1\endcsname}} % can go when we use \begincsname
-
-% pre-expansion can be a bit faster but handly any effect on a normal run so let's go for
-% saving some memory
-%
-% \unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
-%   {\ifx#2\relax\let#2\empty\fi                                             % it is hardly faster but produces less expansion tracing
-%   %\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
-%    \edef#3##1{\noexpand\csname\noexpand\ifcsname#1\noexpand#2:##1\endcsname#1\noexpand#2:##1\noexpand\else\noexpand\expandafter\noexpand#5\noexpand\csname#1\noexpand#2:\s!parent\endcsname{##1}\noexpand\fi\endcsname}%
-%    \edef#4##1##2{\noexpand\ifcsname##1:##2\endcsname##1:##2\noexpand\else\noexpand\expandafter\noexpand#5\noexpand\csname##1:\s!parent\endcsname{##2}\noexpand\fi}%
-%    \def #5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
-%    \edef#6##1##2{\noexpand\csname\noexpand\ifcsname#1##1:##2\endcsname#1##1:##2\noexpand\else\noexpand\expandafter\noexpand#5\noexpand\csname#1##1:\s!parent\endcsname{##2}\noexpand\fi\endcsname}%
-%    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
-%  % \def#7##1{\mult_interfaces_detokenize{\csname#4{#1#2}{##1}\endcsname}}% compact version
-%  % \def#7##1{\mult_interfaces_detokenize{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}}%
-%    \edef#8##1{\noexpand\csname\noexpand\ifcsname#1\noexpand#2:##1\endcsname#1\noexpand#2:##1\noexpand\else\s!empty\noexpand\fi\endcsname}%
-%    \edef#9##1{\noexpand\csname#1#2:##1\endcsname}}
+   \def#8##1{\begincsname#1#2:##1\endcsname}}
 
 \unexpanded\def\installparameterhandler#1#2%
   {\normalexpanded
@@ -255,13 +238,10 @@
         \expandafter\noexpand\csname do#2parentparameter\endcsname     % or : #2_parent_parameter
         \expandafter\noexpand\csname named#2parameter\endcsname
         \expandafter\noexpand\csname detokenized#2parameter\endcsname
-        \expandafter\noexpand\csname strict#2parameter\endcsname       % checked
-        \expandafter\noexpand\csname direct#2parameter\endcsname}}     % unchecked
+        \expandafter\noexpand\csname direct#2parameter\endcsname}} % strict#2parameter is gone
 
 \unexpanded\def\mult_interfaces_install_root_parameter_handler#1#2#3%
   {\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
-  %\def#3##1{\csname\ifcsname#1:##1\endcsname#1:##1\else\s!empty\fi\endcsname}}
-  %\def#3##1{\csname\ifcsname#1:##1\endcsname#1:##1\else\??empty\fi\endcsname}}
    \def#3##1{\begincsname#1:##1\endcsname}}
 
 \unexpanded\def\installrootparameterhandler#1#2%
@@ -630,7 +610,7 @@
   {\def#3##1{\begincsname#1##1\endcsname}%
    \def#4##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}%
  % \def#4##1{\mult_interfaces_detokenize{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}}%
-   \def#5##1{\csname#1##1\endcsname}}
+   \def#5##1{\begincsname#1##1\endcsname}}
 
 \unexpanded\def\installdirectparameterhandler#1#2%
   {\normalexpanded
@@ -780,13 +760,13 @@
 \newcount\c_mult_interfaces_n_of_namespaces
 
 %def\v_interfaces_prefix_template{\number    \c_mult_interfaces_n_of_namespaces>}
-\def\v_interfaces_prefix_template{\characters\c_mult_interfaces_n_of_namespaces>}
+%def\v_interfaces_prefix_template{\characters\c_mult_interfaces_n_of_namespaces>}
 
-\def\v_interfaces_prefix_template % consistently %03i>
-  {\ifnum\c_mult_interfaces_n_of_namespaces<\plusten00\else\ifnum\c_mult_interfaces_n_of_namespaces<\plushundred0\fi\fi
-   \number\c_mult_interfaces_n_of_namespaces>}
+%def\v_interfaces_prefix_template % consistently %03i>
+% {\ifnum\c_mult_interfaces_n_of_namespaces<\plusten00\else\ifnum\c_mult_interfaces_n_of_namespaces<\plushundred0\fi\fi
+%  \number\c_mult_interfaces_n_of_namespaces>}
 
-\def\v_interfaces_prefix_template % consistently %03i>
+\def\v_interfaces_prefix_template
   {\number\c_mult_interfaces_n_of_namespaces>}
 
 \unexpanded\def\installnamespace#1% for modules and users
@@ -822,9 +802,8 @@
 
 \letvalue\??dummy\empty
 
-%%         \def\dummyparameter      #1{\csname\??dummy\ifcsname\??dummy#1\endcsname#1\fi\endcsname}
            \def\dummyparameter      #1{\begincsname\??dummy#1\endcsname}
-           \def\directdummyparameter#1{\csname\??dummy#1\endcsname}
+           \def\directdummyparameter#1{\begincsname\??dummy#1\endcsname}
 \unexpanded\def\setdummyparameter   #1{\expandafter\def\csname\??dummy#1\endcsname}
 \unexpanded\def\letdummyparameter   #1{\expandafter\let\csname\??dummy#1\endcsname}
 

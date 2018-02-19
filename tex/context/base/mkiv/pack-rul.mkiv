@@ -1127,6 +1127,12 @@
 \let\delayedendstrut\relax
 \let\delayedstrut   \relax
 
+\let\localoffset\empty
+\let\localwidth \empty
+\let\localheight\empty
+\let\localformat\empty
+\let\localstrut \empty
+
 \unexpanded\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset
    \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%

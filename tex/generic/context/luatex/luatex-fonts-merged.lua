@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/14/18 22:56:43
+-- merge date  : 02/19/18 18:56:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -17291,9 +17291,10 @@ function readers.stat(f,fontdata,specification)
     local values={}
     setposition(f,tableoffset+axisoffset)
     for i=1,nofaxis do
+      local tag=readtag(f)
       axis[i]={
-        tag=readtag(f),
-        name=lower(extras[readushort(f)]),
+        tag=tag,
+        name=lower(extras[readushort(f)] or tag),
         ordering=readushort(f),
         variants={}
       }
@@ -17307,7 +17308,7 @@ function readers.stat(f,fontdata,specification)
       local format=readushort(f)
       local index=readushort(f)+1
       local flags=readushort(f)
-      local name=lower(extras[readushort(f)])
+      local name=lower(extras[readushort(f)] or "no name")
       local value=readfixed(f)
       local variant
       if format==1 then

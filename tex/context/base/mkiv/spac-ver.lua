@@ -53,6 +53,7 @@ local texgetdimen  = tex.getdimen
 local texset       = tex.set
 local texsetdimen  = tex.setdimen
 local texnest      = tex.nest
+local texgetbox    = tex.getbox
 
 local buildpage    = tex.triggerbuildpage
 
@@ -2005,20 +2006,50 @@ do
     directives.register("vspacing.resetprevdepth",function(v) reset = v end)
     trackers.register  ("vspacing.resetprevdepth",function(v) trace = v end)
 
+    -- use getid and getnext
+
     function vspacing.resetprevdepth()
         if reset then
             local head = texlists.hold_head
-            local skip = 0
-            while head and head.id == insert_code do
-                head = head.next
-                skip = skip + 1
-            end
             if head then
-                outer.prevdepth = 0
+                head = tonut(head)
+                local skip = 0
+                while head and getid(head) == insert_code do
+                    head = getnext(head)
+                    skip = skip + 1
+                end
+                if head then
+                    outer.prevdepth = 0
+                end
+                if trace then
+                    report("prevdepth %s at page %i, skipped %i, value %p",
+                        head and "reset" or "kept",texgetcount("realpageno"),skip,outer.prevdepth)
+                end
             end
-            if trace then
-                report("prevdepth %s at page %i, skipped %i, value %p",
-                    head and "reset" or "kept",texgetcount("realpageno"),skip,outer.prevdepth)
+        end
+    end
+
+    local trace = false
+
+    trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
+
+    function vspacing.forcestrutdepth(n,depth,trace_mode)
+        local box = texgetbox(n)
+        if box then
+            box = tonut(box)
+            local dp = getdepth(box)
+            if dp < depth then
+                local head = getlist(box)
+                if head then
+                    local tail = find_node_tail(head)
+                    if tail and getid(tail) == hlist_code then
+                        setdepth(tail,depth)
+                        outer.prevdepth = depth
+                        if trace or trace_mode > 0 then
+                            nuts.setvisual(tail,"depth")
+                        end
+                    end
+                end
             end
         end
     end
@@ -2039,6 +2070,13 @@ do
     implement {
         name      = "resetprevdepth",
         actions   = vspacing.resetprevdepth,
+        scope     = "private"
+    }
+
+    implement {
+        name      = "forcestrutdepth",
+        arguments = { "integer", "dimension", "integer" },
+        actions   = vspacing.forcestrutdepth,
         scope     = "private"
     }
 

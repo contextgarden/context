@@ -337,49 +337,115 @@ local addcasecraptoo = true -- experiment to let case matter a  bit (still fuzzy
 -- So, we assume either a lowercase name or a mixed case one but only one such case
 -- as having Foo fOo foo FoO FOo etc on the system is braindead in any sane project.
 
+-- local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
+--     local full    = path == "" and spec or (spec .. path .. '/')
+--     local dirs    = { }
+--     local nofdirs = 0
+--     local pattern = tolerant and lessweird or weird
+--     for name in directory(full) do
+--         if not lpegmatch(pattern,name) then
+--             local mode = attributes(full..name,"mode")
+--             if mode == "file" then
+--                 n = n + 1
+--                 local lower = lower(name)
+--                 local paths = files[lower]
+--                 if paths then
+--                     if onlyone then
+--                         -- forget about it
+--                     else
+--                         if name ~= lower then
+--                             local rl = remap[lower]
+--                             if not rl then
+--                                 remap[lower] = name
+--                                 r = r + 1
+--                             elseif trace_globbing and rl ~= name then
+--                                 report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+--                             end
+--                             if addcasecraptoo then
+--                                 local paths = files[name]
+--                                 if not paths then
+--                                     files[name] = path
+--                                 elseif type(paths) == "string" then
+--                                     files[name] = { paths, path }
+--                                 else
+--                                     paths[#paths+1] = path
+--                                 end
+--                             end
+--                         end
+--                         if type(paths) == "string" then
+--                             files[lower] = { paths, path }
+--                         else
+--                             paths[#paths+1] = path
+--                         end
+--                     end
+--                 else -- probably unique anyway
+--                     files[lower] = path
+--                     if name ~= lower then
+--                         local rl = remap[lower]
+--                         if not rl then
+--                             remap[lower] = name
+--                             r = r + 1
+--                         elseif trace_globbing and rl ~= name then
+--                             report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+--                         end
+--                     end
+--                 end
+--             elseif mode == "directory" then
+--                 m = m + 1
+--                 nofdirs = nofdirs + 1
+--                 if path ~= "" then
+--                     dirs[nofdirs] = path .. "/" .. name
+--                 else
+--                     dirs[nofdirs] = name
+--                 end
+--             end
+--         end
+--     end
+--     if nofdirs > 0 then
+--         sort(dirs)
+--         for i=1,nofdirs do
+--             files, remap, n, m, r = scan(files,remap,spec,dirs[i],n,m,r,onlyonce,tolerant)
+--         end
+--     end
+--     scancache[sub(full,1,-2)] = files
+--     return files, remap, n, m, r
+-- end
+
 local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
-    local full    = path == "" and spec or (spec .. path .. '/')
-    local dirs    = { }
-    local nofdirs = 0
-    local pattern = tolerant and lessweird or weird
+    local full     = path == "" and spec or (spec .. path .. '/')
+    local dirlist  = { }
+    local nofdirs  = 0
+    local pattern  = tolerant and lessweird or weird
+    local filelist = { }
+    local noffiles = 0
     for name in directory(full) do
         if not lpegmatch(pattern,name) then
             local mode = attributes(full..name,"mode")
             if mode == "file" then
                 n = n + 1
-                local lower = lower(name)
-                local paths = files[lower]
-                if paths then
-                    if onlyone then
-                        -- forget about it
-                    else
-                        if name ~= lower then
-                            local rl = remap[lower]
-                            if not rl then
-                                remap[lower] = name
-                                r = r + 1
-                            elseif trace_globbing and rl ~= name then
-                                report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
-                            end
-                            if addcasecraptoo then
-                                local paths = files[name]
-                                if not paths then
-                                    files[name] = path
-                                elseif type(paths) == "string" then
-                                    files[name] = { paths, path }
-                                else
-                                    paths[#paths+1] = path
-                                end
-                            end
-                        end
-                        if type(paths) == "string" then
-                            files[lower] = { paths, path }
-                        else
-                            paths[#paths+1] = path
-                        end
-                    end
-                else -- probably unique anyway
-                    files[lower] = path
+                noffiles = noffiles + 1
+                filelist[noffiles] = name
+            elseif mode == "directory" then
+                m = m + 1
+                nofdirs = nofdirs + 1
+                if path ~= "" then
+                    dirlist[nofdirs] = path .. "/" .. name
+                else
+                    dirlist[nofdirs] = name
+                end
+            end
+        end
+    end
+    if noffiles > 0 then
+        sort(filelist)
+        for i=1,noffiles do
+            local name  = filelist[i]
+            local lower = lower(name)
+            local paths = files[lower]
+            if paths then
+                if onlyone then
+                    -- forget about it
+                else
                     if name ~= lower then
                         local rl = remap[lower]
                         if not rl then
@@ -388,23 +454,41 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
                         elseif trace_globbing and rl ~= name then
                             report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
                         end
+                        if addcasecraptoo then
+                            local paths = files[name]
+                            if not paths then
+                                files[name] = path
+                            elseif type(paths) == "string" then
+                                files[name] = { paths, path }
+                            else
+                                paths[#paths+1] = path
+                            end
+                        end
+                    end
+                    if type(paths) == "string" then
+                        files[lower] = { paths, path }
+                    else
+                        paths[#paths+1] = path
                     end
                 end
-            elseif mode == "directory" then
-                m = m + 1
-                nofdirs = nofdirs + 1
-                if path ~= "" then
-                    dirs[nofdirs] = path .. "/" .. name
-                else
-                    dirs[nofdirs] = name
+            else -- probably unique anyway
+                files[lower] = path
+                if name ~= lower then
+                    local rl = remap[lower]
+                    if not rl then
+                        remap[lower] = name
+                        r = r + 1
+                    elseif trace_globbing and rl ~= name then
+                        report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+                    end
                 end
             end
         end
     end
     if nofdirs > 0 then
-        sort(dirs)
+        sort(dirlist)
         for i=1,nofdirs do
-            files, remap, n, m, r = scan(files,remap,spec,dirs[i],n,m,r,onlyonce,tolerant)
+            files, remap, n, m, r = scan(files,remap,spec,dirlist[i],n,m,r,onlyonce,tolerant)
         end
     end
     scancache[sub(full,1,-2)] = files
