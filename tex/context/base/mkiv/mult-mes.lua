@@ -498,6 +498,9 @@ return {
             en = "location %a changed to %a due to exporting",
             nl = "plaatsing %a vervangen door %a vanwege export",
         },
+        ["floatblocks:16"] = {
+            en = "anchor=orange, shift=red, box=green, dummy=blue, line=cyan, depth=magenta, prev=orange",
+        },
         ["floatblocks:1"] = {
             en = "%a is empty",
         },

@@ -822,14 +822,16 @@
     \forgetbothskips
 \to \everyforgetall
 
-\unexpanded\def\forgetparskip
-  {\s_spac_whitespace_parskip\zeropoint
-   \parskip\zeropoint
-   \let\v_spac_whitespace_current\v!none}
-
-\appendtoks
-    \forgetparskip
-\to \everyforgetall
+% in spac-ver.mkiv
+%
+% \unexpanded\def\forgetparskip
+%   {\s_spac_whitespace_parskip\zeropoint
+%    \parskip\zeropoint
+%    \let\v_spac_whitespace_current\v!none}
+%
+% \appendtoks
+%     \forgetparskip
+% \to \everyforgetall
 
 %D Tolerance (can also be set with align):
 

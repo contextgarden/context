@@ -154,7 +154,7 @@ function stacker.new(name)
     local function resolve_step(ti) -- keep track of changes outside function !
         -- todo: optimize for n=1 etc
         local result = nil
-        local noftop = #top
+        local noftop = top and #top or 0
         if ti > 0 then
             local current = list[ti]
             if current then

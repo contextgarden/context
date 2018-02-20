@@ -2033,16 +2033,37 @@ do
 
     trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
 
+--     function vspacing.forcestrutdepth(n,depth,trace_mode)
+--         local box = texgetbox(n)
+--         if box then
+--             box = tonut(box)
+--             local dp = getdepth(box)
+--             if dp < depth then
+--                 local head = getlist(box)
+--                 if head then
+--                     local tail = find_node_tail(head)
+--                     if tail and getid(tail) == hlist_code then
+--                         setdepth(tail,depth)
+--                         outer.prevdepth = depth
+--                         if trace or trace_mode > 0 then
+--                             nuts.setvisual(tail,"depth")
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--     end
+
     function vspacing.forcestrutdepth(n,depth,trace_mode)
         local box = texgetbox(n)
         if box then
             box = tonut(box)
-            local dp = getdepth(box)
-            if dp < depth then
-                local head = getlist(box)
-                if head then
-                    local tail = find_node_tail(head)
-                    if tail and getid(tail) == hlist_code then
+            local head = getlist(box)
+            if head then
+                local tail = find_node_tail(head)
+                if tail and getid(tail) == hlist_code then
+                    local dp = getdepth(tail)
+                    if dp < depth then
                         setdepth(tail,depth)
                         outer.prevdepth = depth
                         if trace or trace_mode > 0 then

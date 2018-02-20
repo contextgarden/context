@@ -27,7 +27,7 @@
 
 %D A complication is that we need to deal with spacing differently before and after
 %D the float. Also, whitespace can interfere as does the prevdepth. There is no
-%D real universal solotion.
+%D real universal solution.
 
 \newdimen       \d_page_sides_height       % includes the topskip
 \newdimen       \d_page_sides_width
@@ -36,7 +36,6 @@
 \newdimen       \d_page_sides_vsize_reset
 \newdimen       \d_page_sides_progress
 \newdimen       \d_page_sides_page_total
-\newdimen       \d_page_sides_saved_depth
 
 \newbox         \b_page_sides_bottom
 
@@ -68,9 +67,10 @@
 \newdimen       \d_page_sides_bottomtotal
 
 \setnewconstant \c_page_sides_method   \plusone
-\setnewconstant \c_page_sides_align    \zerocount
-\setnewconstant \c_page_sides_skipmode \zerocount
-\setnewconstant \c_page_sides_tolerance\zerocount
+
+\newconstant    \c_page_sides_align
+\newconstant    \c_page_sides_skipmode
+\newconstant    \c_page_sides_tolerance
 
 \d_page_sides_vsize_reset -\onepoint
 %d_page_sides_vsize_reset  \zeropoint % could be an option, needs testing
@@ -114,7 +114,7 @@
    \fi}
 
 \def\page_sides_floats_legend
-  {\writestatus\m!floatblocks{anchor: orange, shift: red, box: green, dummy: blue, depth: magenta}%
+  {\showmessage\m!floatblocks{16}\empty
    \glet\page_sides_floats_legend\relax}
 
 \installtextracker{floats.anchoring}
@@ -531,8 +531,6 @@
 \def\page_sides_place_float
   {\ifnum\c_page_sides_float_type=\plusfour \kern\d_page_sides_toptotal \fi
    \ifnum\c_page_sides_float_type=\plusfive \kern\d_page_sides_toptotal \fi
-%    \d_page_sides_saved_depth\prevdepth
-%    \nointerlineskip
    \ifgridsnapping
      \page_sides_place_float_grid
    \else
@@ -540,10 +538,9 @@
    \fi
    \par
    \kern-\d_page_sides_height
-\vskip-\parskip
+   \vskip-\parskip
    \penalty10001 % oeps, this will change
-   \normalbaselines
-}%   \prevdepth\d_page_sides_saved_depth}
+   \normalbaselines}
 
 \def\page_sides_place_float_normal
   {\page_sides_push_float_inline\firstofoneargument}
@@ -660,13 +657,9 @@
 
 \let\page_sides_inject_after\donothing
 
-% \def\page_sides_prepare_space
-%   {\inhibitblank} % hm, why here .. gets obscured anyway
-
 \def\page_sides_handle_float#1% grid (4) is rather experimental
   {\page_sides_check_skips
    \page_sides_inject_before
-%    \page_sides_prepare_space
    \page_sides_apply_horizontal_shift
    \page_sides_check_previous_float
    \page_sides_inject_dummy_lines
@@ -749,7 +742,6 @@
      \c_page_sides_n_of_hang\noflines
    \fi
    \ifnum\c_page_sides_n_of_hang>\zerocount
-     % new from here (needs test case, old code)
      \ifcase\c_page_sides_n_of_lines
      \else
        \ifcase\c_page_sides_lines_done
@@ -760,33 +752,28 @@
          \global\advance\c_page_sides_n_of_lines-\privatescratchcounter
        \fi
      \fi
-     % hm, when do we get the parshape branch? needs testing
      \ifnum\c_page_sides_n_of_lines>\zerocount
        \privatescratchtoks\emptytoks
        \privatescratchcounter\c_page_sides_n_of_lines
        \privatescratchdimen\dimexpr\hsize-\d_page_sides_width\relax
        \dorecurse\c_page_sides_n_of_lines
-        %{\appendtoks \zeropoint \hsize \to \privatescratchtoks}%
          {\toksapp\privatescratchtoks{\zeropoint\hsize}}%
        \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
          \advance\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
          \advance\privatescratchcounter\c_page_sides_n_of_hang
          \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
            {\ifnum\c_page_sides_float_type>\plusfour
-             %\appendtoks \zeropoint         \privatescratchdimen \to \privatescratchtoks
               \toksapp\privatescratchtoks{\zeropoint\privatescratchdimen}%
             \else
-             %\appendtoks \d_page_sides_width\privatescratchdimen \to \privatescratchtoks
               \toksapp\privatescratchtoks{\d_page_sides_width\privatescratchdimen}%
             \fi}%
        \fi
        \parshape
          \numexpr\privatescratchcounter+\plusone\relax
-         \the\privatescratchtoks  % \privatescratchcounter
-         \zeropoint \hsize % \plusone
+         \the\privatescratchtoks
+         \zeropoint \hsize
        \relax
      \else
-       % new till here
        \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
        \hangafter-\c_page_sides_n_of_hang
      \fi
@@ -819,34 +806,42 @@
   {\hpack to \availablehsize{\strut\hss}}
 
 \def\page_sides_inject_dummy_line_traced
-  {\ruledhpack to \availablehsize{\backgroundline[trace:b]{\page_sides_inject_dummy_line_normal}}}
+  {\ruledhpack to \availablehsize{\backgroundline[trace:c]{\page_sides_inject_dummy_line_normal}}}
 
 \def\page_sides_inject_dummy_lines % so always one
   {\ifconditional\c_page_sides_dummy_lines
      \par
      \page_sides_force_depth
-    %\checkedblank[\rootfloatparameter\c!sidespacebefore]%
      \begingroup
-     \privatescratchcounter\pageshrink
-     \divide\privatescratchcounter \lineheight % \baselineskip
-     \advance\privatescratchcounter\plusone
-     \offinterlineskip
-     \ifcase\privatescratchcounter\else
-       \dorecurse\privatescratchcounter
-         {\dontleavehmode
-          \iftracesidefloats
-            \page_sides_inject_dummy_line_traced
-          \else
-            \page_sides_inject_dummy_line_normal
-          \fi
-          \par}%
-     \vskip-\lineheight
-     \vskip-\strutdp
-%        \blank[-\v!line]%
-     \fi
+%      \privatescratchcounter\pageshrink
+%      \divide\privatescratchcounter \lineheight % \baselineskip
+%      \advance\privatescratchcounter\plusone
+%      \offinterlineskip
+%      \ifcase\privatescratchcounter\else
+%        \dorecurse\privatescratchcounter
+%          {\dontleavehmode
+%           \iftracesidefloats
+%             \page_sides_inject_dummy_line_traced
+%           \else
+%             \page_sides_inject_dummy_line_normal
+%           \fi
+%           \par}%
+%        \vskip-\lineheight
+%        \vskip-\strutdp
+%      \fi
+\privatescratchcounter\plusone
+\offinterlineskip
+\dontleavehmode
+  \iftracesidefloats
+    \page_sides_inject_dummy_line_traced
+  \else
+    \page_sides_inject_dummy_line_normal
+  \fi
+\par
+\vskip-\lineheight
+\vskip-\strutdp
      \endgroup
    \else\ifdim\d_page_sides_midskip>\zeropoint\else
-%      \vskip\parskip
      \ifdim\parskip>\zeropoint
        \blank[\v!white]%
      \fi
