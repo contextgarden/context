@@ -43,7 +43,7 @@ local handler = visualizers.newhandler {
 -- todo: unicode letters in control sequences (slow as we need to test the nature)
 
 local comment  = S("%")
-local name     = P("\\") * (patterns.letter + S("@!?_"))^1
+local name     = P("\\") * (patterns.letter + S("@!?_") + patterns.utf8two + patterns.utf8three + patterns.utf8four)^1
 local escape   = P("\\") * (patterns.anything - patterns.newline)^-1 -- else we get \n
 local group    = S("${}")
 local boundary = S('[]()<>#="')

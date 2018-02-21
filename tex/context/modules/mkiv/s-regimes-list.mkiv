@@ -1,0 +1,74 @@
+%D \module
+%D   [       file=s-regimes-list, % was: s-reg-01
+%D        version=2005.04.25,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Extra Regime Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D \macros
+%D   {showregime}
+%D
+%D This code is moved from the kernel to here.
+
+\startmodule[regimes-list]
+
+\startluacode
+
+moduledata.regimes        = moduledata.regimes        or { }
+moduledata.regimes.charts = moduledata.regimes.charts or { }
+
+local byte = string.byte
+
+function moduledata.regimes.charts.show(regime)
+    if regime and regime ~= "" then
+        local r = regimes.mapping[regime]
+        if r then
+            local chardata = characters.data
+            context.starttabulate { "|rT|rT|rT|cT|lT|lT|pT|" }
+            for k, v in table.sortedhash(r) do
+                local chr = chardata[v]
+                local num = byte(k)
+                local uni = utf.byte(v)
+                if chr then
+                    context.NC() context(num)
+                    context.NC() context("0x%02X",num)
+                    context.NC() context("%U",uni)
+                    context.NC() context.char(uni)
+                    context.NC() context(chr.contextname)
+                    context.NC() context(chr.category)
+                    context.NC() context(chr.description)
+                    context.NC() context.NR()
+                else
+                    -- can't happen
+                end
+            end
+            context.stoptabulate()
+        else
+            context("unknown regime %s",regime)
+        end
+    else
+        context("available regimes: %, t",regimes.list())
+    end
+end
+
+\stopluacode
+
+\installmodulecommandluasingle \showregime {moduledata.regimes.charts.show}
+
+\stopmodule
+
+\continueifinputfile{s-regimes-list.mkiv}
+
+\usemodule[art-01]
+
+\starttext
+
+    \showregime[8859-1]
+
+\stoptext

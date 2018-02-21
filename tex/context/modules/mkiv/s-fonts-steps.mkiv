@@ -1,5 +1,5 @@
 %D \module
-%D   [      file=s-fnt-20,
+%D   [      file=s-fonts-steps, % was s-fnt-20
 %D        version=2009.01.10,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=Tracing Feature Application (1),
@@ -13,6 +13,8 @@
 
 %D This file is used by Idris and me in the process of getting the
 %D best arabic fonts getting rendered best. As such it might change.
+
+\startmodule[fonts-steps]
 
 % \setvariables
 %   [otftracker]
@@ -146,7 +148,24 @@
     \stoptext
 \stopsetups
 
-\continueifinputfile{s-fnt-20.mkiv}
+%D For old times sake we keep this one:
+
+\unexpanded\def\ShowOtfTrackerSample#1%
+  {\doiffile{#1}
+     {\blank
+      \startlinecorrection
+      \vbox \bgroup
+        \forgetall
+        \setbox\scratchbox\hbox{\component #1 \relax}
+        \hbox{\copy\scratchbox\quad\lower\dp\scratchbox\hbox{\ruledhbox{\externalfigure[#1-volt.pdf][height=\htdp\scratchbox]}}}
+        \hbox{\strut\tttf#1}%
+      \egroup
+      \stoplinecorrection
+      \blank}}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-steps.mkiv}
 
 \usemodule[art-01]
 

@@ -27,8 +27,8 @@
 % --printformat           : 2UP, etc
 % --paperformat=spec      : paper*print or paperxprint
 %
-% example: context --extra=arrange --printformat=2UP --paperformat=A4*A3,landscape myfile
-%
+% example: context --extra=arrange --printformat=2UP --paperformat=A4*A3,landscape               myfile
+%          context --extra=arrange --printformat=xy  --paperformat=A4*A2           --nx=2 --ny=2 myfile
 % end help
 
 \input mtx-context-common.tex
@@ -79,6 +79,20 @@
     local printformat = document.arguments.printformat or ""
     if printformat == "" then
         printformat = "normal"
+    elseif string.find(printformat,"xy") then
+        if false then
+            context.setuplayout {
+                nx = document.arguments.nx or 1,
+                ny = document.arguments.ny or 1,
+            }
+            printformat = "XY,\\v!rotated"
+        else
+            context.setuppaper {
+                nx = document.arguments.nx or 1,
+                ny = document.arguments.ny or 1,
+            }
+            printformat = "XY"
+        end
     elseif string.find(printformat,".*up") then
         printformat = "2UP,\\v!rotated"
     elseif string.find(printformat,".*down") then
@@ -107,7 +121,7 @@
         local textwidth  = arguments.textwidth or "0cm"
         for i=1,noffiles do
             local filename = files[i]
-            if not string.find(filename,"^mtx%-context%-") then
+            if not string.find(file.basename(filename),"^mtx%-context%-") then
                 context.insertpages (
                     { filename },
                     { emptypages },

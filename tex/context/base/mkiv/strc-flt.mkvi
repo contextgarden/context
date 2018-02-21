@@ -740,17 +740,27 @@
 \newdimen\d_strc_floats_top
 \newdimen\d_strc_floats_bottom
 
+% \def\strc_floats_calculate_skip#target#skip%
+%   {\begingroup
+%    \edef\askedfloatskip{\rootfloatparameter#skip}%
+%    \ifx\askedfloatskip\empty
+%      \global#target\zeropoint
+%    \else\ifx\askedfloatskip\v!none
+%      \global#target\zeropoint
+%    \else
+%      \setbox\scratchbox\vbox{\whitespace\blank[\askedfloatskip]}% todo: move whitespace inside blank
+%      \global#target\ht\scratchbox
+%    \fi\fi
+%    \endgroup}
+
 \def\strc_floats_calculate_skip#target#skip%
   {\begingroup
-   \edef\askedfloatskip{\rootfloatparameter#skip}%
-   \ifx\askedfloatskip\empty
-     \global#target\zeropoint
-   \else\ifx\askedfloatskip\v!none
-     \global#target\zeropoint
-   \else
-     \setbox\scratchbox\vbox{\whitespace\blank[\askedfloatskip]}% todo: move whitespace inside blank
-     \global#target\ht\scratchbox
-   \fi\fi
+   \edef\p_blank{\rootfloatparameter#skip}%
+   \ifx\p_blank\v!nowhite
+     \edef\p_blank{-\v!white}%
+   \fi
+   \prerollblank[\p_blank]%
+   \global#target\prerolledblank
    \endgroup}
 
 \def\strc_floats_analyze_variables_two
@@ -780,9 +790,11 @@
    \ifconditional\c_strc_floats_par_float
      \global\d_strc_floats_top        \zeropoint
      \global\d_strc_floats_bottom     \zeropoint
-     \strc_floats_calculate_skip\d_page_sides_topskip     \c!sidespacebefore
-     \strc_floats_calculate_skip\d_page_sides_bottomskip  \c!sidespaceafter
-     \strc_floats_calculate_skip\d_page_sides_midskip     \c!sidespaceinbetween
+     \strc_floats_calculate_skip\d_page_sides_topskip   \c!sidespacebefore
+     \strc_floats_calculate_skip\d_page_sides_bottomskip\c!sidespaceafter
+     \strc_floats_calculate_skip\d_page_sides_midskip   \c!sidespaceinbetween
+     \strc_floats_calculate_skip\d_strc_floats_top      \c!spacebeforeside
+     \strc_floats_calculate_skip\d_strc_floats_bottom   \c!spaceafterside
    \else
      \global\d_page_sides_topskip     \zeropoint
      \global\d_page_sides_bottomskip  \zeropoint

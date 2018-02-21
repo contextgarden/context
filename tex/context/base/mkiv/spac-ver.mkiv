@@ -61,7 +61,7 @@
 
 \newif\iflocalinterlinespace
 
-\newskip\s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
+\newskip \s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
 
 \def\skipfactor    {.75}
 \def\skipgluefactor{.25}
@@ -2544,5 +2544,35 @@
 %      \edef\p_after {#3}%
 %      \blank[\ifx\p_before\empty\else\p_before,\fi\p_blank\ifx\p_after\empty\else,\p_after\fi]%
 %    \fi\fi}
+
+% \setupwhitespace[line]
+% \prerollblank[2*line]  \the\prerolledblank
+% \prerollblank[-2*line] \the\prerolledblank
+
+\newskip\prerolledblank
+
+\unexpanded\def\prerollblank[#1]%
+  {\begingroup
+   \edef\p_blank{#1}%
+   \ifx\p_blank\empty
+     \global\prerolledblank\zeropoint
+   \else\ifx\p_blank\v!none
+     \global\prerolledblank\zeropoint
+   \else
+     % don't mess with \arskip here!
+     \scratchskip\plusten\lineheight
+     \setbox\scratchbox\vbox
+       {\vskip\scratchskip
+        \kern\zeropoint
+        \blank[\p_blank]}%
+     % \dimexpr doesn't work well with skips
+     \advance\scratchskip-\ht\scratchbox
+     \global\prerolledblank-\scratchskip
+   \fi\fi
+   \endgroup}
+
+\newcount\c_spac_vspacing_ignore_parskip
+
+\unexpanded\def\ignoreparskip{\c_spac_vspacing_ignore_parskip\plusone}
 
 \protect \endinput

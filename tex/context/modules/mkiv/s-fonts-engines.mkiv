@@ -1,0 +1,196 @@
+%D \module
+%D   [      file=s-fonts-engines, % was: s-fnt-22
+%D        version=2017.06.21,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Compare engines and such,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is just for me when I wanted to check some husayni (by Idris)
+%D regression. Interesting is that fina should be disabled for hb (otherwise
+%D garbage) and that some substitutions are ignored in hb (1.1.3), so we can
+%D only compare some examples. Don't expect this style to be stable as I
+%D might change default features.
+
+\startmodule[fonts-engines]
+
+\usemodule[fonts-steps]
+\usemodule[fonts-plugins]
+
+\enabletrackers[fonts.reorderlookups]
+
+\startsetups otftracker-extra-context
+    \definedfont[\getvariable{otftracker}{font}*\getvariable{otftracker}{features} at \getvariable{otftracker}{size}]\relax
+    \setotfcompositiondirection{\getvariable{otftracker}{direction}}\relax
+    \getvariable{otftracker}{sample}\relax
+\stopsetups
+
+\startsetups otftracker-extra-context-reordered
+    \definedfont[\getvariable{otftracker}{font}*otftracker-context-reordered at \getvariable{otftracker}{size}]\relax
+    \setotfcompositiondirection{\getvariable{otftracker}{direction}}\relax
+    \getvariable{otftracker}{sample}\relax
+\stopsetups
+
+\startsetups otftracker-extra-harfbuzz
+    \definedfont[\getvariable{otftracker}{font}*otftracker-harfbuzz-native at \getvariable{otftracker}{size}]\relax
+    \setotfcompositiondirection{\getvariable{otftracker}{direction}}\relax
+    \getvariable{otftracker}{sample}\relax
+\stopsetups
+
+\startsetups otftracker-extra-uniscribe
+    \definedfont[\getvariable{otftracker}{font}*otftracker-harfbuzz-uniscribe at \getvariable{otftracker}{size}]\relax
+    \setotfcompositiondirection{\getvariable{otftracker}{direction}}\relax
+    \getvariable{otftracker}{sample}\relax
+\stopsetups
+
+\definecolor[otftracker-overlay-1][a=1,t=.5,b=1]
+\definecolor[otftracker-overlay-2][a=1,t=.5,g=1]
+\definecolor[otftracker-overlay-3][a=1,t=.5,r=1]
+
+% This is a sort of a check against xetex but with limited font trickery because we bypass
+% the normal font handling. It's no big deal for a test. The biggest problem is that we
+% run into default features and we don't know what is turned on by default. We also need
+% to disable tagging so that hb itself can do some (init/medi/fina) magic in setting
+% features.
+
+\startsetups otftracker-extra
+    \start
+        \blank
+        \definefontfeature
+          [otftracker-context-reordered]
+          [\getvariable{otftracker}{features}]
+          [reorderlookups=arab]
+        \definefontfeature
+          [otftracker-harfbuzz-uniscribe]
+          [\getvariable{otftracker}{features}]
+          [mode=plug,
+           features=harfbuzz,
+           shaper=uniscribe,
+         % stch=nothing,
+         % ccmp=nothing,
+         % locl=nothing,
+         % rlig=nothing,
+         % calt=nothing,
+         % mset=nothing,
+           fina=nothing, % looks like the libs does something special
+           init=nothing, % looks like the libs does something special
+           medi=nothing, % looks like the libs does something special
+           isol=nothing, % looks like the libs does something special
+         % method=binary,
+           script=arabic]
+        \definefontfeature
+          [otftracker-harfbuzz-native]
+          [\getvariable{otftracker}{features}]
+          [mode=plug,
+           features=harfbuzz,
+           shaper=native,
+         % stch=nothing,
+         % ccmp=nothing,
+         % locl=nothing,
+         % rlig=nothing,
+         % calt=nothing,
+         % mset=nothing,
+           fina=nothing, % looks like the libs does something special
+           init=nothing, % looks like the libs does something special
+           medi=nothing, % looks like the libs does something special
+           isol=nothing, % looks like the libs does something special
+           script=arabic]
+        \doifelsesomething {\getvariable{otftracker}{comment}} {
+            \def\ExtraComment{
+                \TB
+                \NC
+                    comment
+                \NC
+                    \vtop {
+                        \hsize\dimexpr\hsize-10em\relax
+                        \veryraggedright
+                        \getvariable{otftracker}{comment}
+                    }
+                \NC \NR
+            }
+        } {
+            \def\ExtraComment{}
+        }
+        \starttabulate[|lTB|l|]
+            \NC
+                context
+            \NC
+                \showglyphs \showfontkerns
+                \enabletrackers[otf.sample.silent]
+                \ruledhbox{\directsetup{otftracker-extra-context}}
+                \disabletrackers[otf.sample]
+            \NC \NR \TB \NC
+                reordered
+            \NC
+                \showglyphs \showfontkerns
+                \enabletrackers[otf.sample.silent]
+                \ruledhbox{\directsetup{otftracker-extra-context-reordered}}
+                \disabletrackers[otf.sample]
+            \NC \NR \TB \NC
+                harfbuzz
+            \NC
+                \showglyphs \showfontkerns
+                \enabletrackers[fonts.plugins.hb.colors]
+                \ruledhbox{\directsetup{otftracker-extra-harfbuzz}}
+                \disabletrackers[fonts.plugins.hb.colors]
+            \NC \NR \TB \NC
+                uniscribe
+            \NC
+                \showglyphs \showfontkerns
+                \enabletrackers[fonts.plugins.hb.colors]
+                \ruledhbox{\directsetup{otftracker-extra-uniscribe}}
+                \disabletrackers[fonts.plugins.hb.colors]
+            \NC \NR \TB \NC
+                context
+            \NC
+                \showglyphs \showfontkerns
+                \ruledhbox{\directsetup{otftracker-extra-context}}
+            \NC \NR \TB \NC
+                harfbuzz
+            \NC
+                \showglyphs \showfontkerns
+                \ruledhbox{\directsetup{otftracker-extra-harfbuzz}}
+            \NC \NR \TB \NC
+                uniscribe
+            \NC
+                \showglyphs \showfontkerns
+                \ruledhbox{\directsetup{otftracker-extra-uniscribe}}
+            \NC \NR \TB \NC
+                context harfbuzz
+            \NC
+                \showglyphs \showfontkerns
+                \hbox to \zeropoint {
+                    \ruledhbox{\color[otftracker-overlay-1]{\directsetup{otftracker-extra-harfbuzz}}}
+                    \hss
+                }
+                \ruledhbox{\color[otftracker-overlay-3]{\directsetup{otftracker-extra-context}}}
+            \NC \NR \TB \NC
+                uniscribe harfbuzz
+            \NC
+                \showglyphs \showfontkerns
+                \hbox to \zeropoint {
+                    \ruledhbox{\color[otftracker-overlay-1]{\directsetup{otftracker-extra-harfbuzz}}}
+                    \hss
+                }
+                \ruledhbox{\color[otftracker-overlay-2]{\directsetup{otftracker-extra-uniscribe}}}
+            \NC \NR \TB \NC
+                context uniscribe
+            \NC
+                \showglyphs \showfontkerns
+                \hbox to \zeropoint {
+                    \ruledhbox{\color[otftracker-overlay-1]{\directsetup{otftracker-extra-uniscribe}}}
+                    \hss
+                }
+                \ruledhbox{\color[otftracker-overlay-2]{\directsetup{otftracker-extra-context}}}
+            \NC \NR
+            \ExtraComment
+        \stoptabulate
+    \stop
+\stopsetups
+
+\stopmodule

@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 runtime.</p>
 --ldx]]--
 
+-- Todo: use regi-imp*.lua instead
+
 local commands, context = commands, context
 
 local utfchar = utf.char
@@ -134,6 +136,9 @@ end
 setmetatableindex(mapping,    loadregime)
 setmetatableindex(backmapping,loadreverse)
 
+regimes.mapping     = mapping
+regimes.backmapping = backmapping
+
 local function fromregime(regime,line)
     if line and #line > 0 then
         local map = mapping[regime and synonyms[regime] or regime or currentregime]
@@ -250,6 +255,22 @@ end
 
 regimes.push = push
 regimes.pop  = pop
+
+function regimes.list()
+    local name = resolvers.findfile(format("regi-ini.lua",regime)) or ""
+    local okay = { }
+    if name then
+        local list = dir.glob(file.join(file.dirname(name),"regi-*.lua"))
+        for i=1,#list do
+            local name = list[i]
+            if name ~= "regi-ini.lua" then
+                okay[#okay+1] = match(name,"regi%-(.-)%.lua")
+            end
+            table.sort(okay)
+        end
+    end
+    return okay
+end
 
 if sequencers then
 

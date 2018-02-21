@@ -309,7 +309,7 @@
 \letvalue{\??otfcompositiondir   1}\lefttoright
 
 \unexpanded\def\setotfcompositiondirection#1%
- {\getvalue{\??otfcompositiondir#1}}
+ {\begincsname\??otfcompositiondir#1\endcsname}
 
 \unexpanded\def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
   {\begingroup

@@ -1,0 +1,160 @@
+%D \module
+%D   [      file=s-fnt-01,
+%D        version=2006.10.10, % guess
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Listing Glyphs in Large Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is sort of obsolete as other moduels give nicer overviews.
+
+\startluacode
+    moduledata.fonts          = moduledata.fonts          or { }
+    moduledata.fonts.complete = moduledata.fonts.complete or { }
+
+    local fontdata = fonts.hashes.identifiers
+
+    local context = context
+    local escaped = context.escaped
+
+    function moduledata.fonts.complete.all()
+        local tfmdata = fontdata[true]
+        if tfmdata then
+            local NC, NR, HL, char, bold, tttf = context.NC, context.NR, context.HL, context.char, context.bold, context.tttf
+            local descriptions = tfmdata.descriptions or { }
+            local data = characters.data
+         -- context.setuptabulate { header = "repeat" }
+            context.starttabulatehead()
+                NC() bold("unicode")
+                NC() bold("visual")
+                NC() bold("index")
+                NC() bold("glyph")
+                NC() bold("adobe")
+                NC() bold("context")
+                NC() NR()
+            context.stoptabulatehead()
+            context.starttabulate { "|l|c|l|p|p|p|" }
+            for unicode, chr in fonts.iterators.characters(tfmdata) do
+                local des, dat = descriptions[unicode], data[unicode]
+                local index = chr.index or 0
+                local cname = (dat and dat.contextname) or ""
+                local aname = (dat and dat.adobename) or ""
+                local gname = (des and des.name) or ""
+                local mname = dat and dat.mathname
+                if type(mname) ~= "string" then
+                    mname = ""
+                end
+                local mspec = dat and dat.mathspec
+                if mspec then
+                    for m=1,#mspec do
+                        local n = mspec[m].name
+                        if n then
+                            if mname == "" then
+                                mname = n
+                            else
+                                mname = mname .. " " .. n
+                            end
+                        end
+                    end
+                end
+                if mname ~= "" then
+                    mname = "m: " .. mname
+                    if cname ~= "" then
+                        cname = cname .. " " .. mname
+                    else
+                        cname = mname
+                    end
+                end
+                NC() tttf() context("U+%05X",unicode)
+                NC()        char(unicode)
+                NC() tttf() context("%05X",index)
+                NC() if gname ~= "" then tttf() escaped(gname) end
+                NC() if aname ~= "" then tttf() context(aname) end
+                NC() if cname ~= "" then tttf() context(cname) end
+                NC() NR()
+            end
+            context.stoptabulate()
+        else
+            context("problems")
+        end
+    end
+
+    function moduledata.fonts.complete.glyphs()
+        local tfmdata = fontdata[true]
+        if tfmdata then
+            for unicode, chr in fonts.iterators.characters(tfmdata) do
+                context.showglyph(unicode)
+            end
+        end
+    end
+\stopluacode
+
+\unexpanded\def\ShowCompleteFont#1#2#3%
+  {\begingroup
+   \page
+   \font\TestFont=#1 at #2
+   \setuplayout[style=\TestFont]
+   \setupheadertexts[]
+   \setupfootertexts[#1 -- \pagenumber]
+   \setupfootertexts[pagenumber]
+   \setuplayout[width=middle,height=middle,topspace=1cm,backspace=1cm]
+   \TestFont
+   \nonknuthmode
+   \startcolumns[n=#3]
+   \TestFont
+   \ctxlua { moduledata.fonts.complete.all() }
+   \stopcolumns
+   \page
+   \endgroup}
+
+\unexpanded\def\ShowAllGlyphs#1#2#3%
+  {\begingroup
+   \page
+   \def\showglyph##1{\dontleavehmode\strut\char##1\relax\par}
+   \font\TestFontA=#1 at 12pt
+   \font\TestFontB=#1 at #2
+   \setuplayout[style=\TestFontA]
+   \setupheadertexts[]
+   \setupfootertexts[#1\space\endash\space\pagenumber]
+   \setuplayout[width=middle,height=middle,topspace=1cm,backspace=1cm,header=1cm,footer=2cm]
+   \TestFontB \setupinterlinespace[line=1.2\dimexpr#2\relax] \raggedcenter
+   \nonknuthmode
+   \startcolumns[n=#3]
+   \TestFontB
+   \ctxlua { moduledata.fonts.complete.glyphs() }
+   \stopcolumns
+   \page
+   \endgroup}
+
+\continueifinputfile{s-fonts-complete.mkiv}
+
+\starttext
+
+% \ShowCompleteFont{name:dejavusansmono}{10pt}{1}
+% \ShowCompleteFont{name:dejavuserif}{10pt}{2}
+% \ShowCompleteFont{name:officinasansbookitcregular}{10pt}{2}
+% \ShowCompleteFont{name:officinaserifbookitcregular}{10pt}{2}
+% \ShowCompleteFont{name:serpentineserifeflight}{10pt}{2}
+\ShowCompleteFont{name:lmroman10-regular}{10pt}{1}
+% \ShowCompleteFont{name:lmtypewriter10-regular}{10pt}{2}
+% \ShowCompleteFont{lt55485}{10pt}{2}
+% \ShowCompleteFont{lmr10}{10pt}{2}
+% \ShowCompleteFont{lbr}{10pt}{2}
+% \ShowCompleteFont{name:Cambria}{10pt}{2}
+% \ShowCompleteFont{name:CambriaMath}{10pt}{2}
+% \ShowCompleteFont{name:texgyrepagella-regular}{10pt}{2}
+% \ShowCompleteFont{name:texgyrechorus-mediumitalic}{10pt}{2}
+% \ShowAllGlyphs   {name:texgyrepagella-regular}    {48pt}{2}
+% \ShowAllGlyphs   {name:texgyrechorus-mediumitalic}{48pt}{2}
+% \ShowCompleteFont{name:euler10-regular}{10pt}{2}
+
+% \ShowCompleteFont{name:palatinosansinformalcombold}{20pt}{2}
+% \ShowCompleteFont{name:palatinonovaregular}{11pt}{2}
+% \ShowCompleteFont{pirat.ttf}{12pt}{1}
+
+\stoptext

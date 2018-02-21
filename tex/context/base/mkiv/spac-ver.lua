@@ -40,7 +40,6 @@ local todimen = string.todimen
 local formatters = string.formatters
 
 local nodes        =  nodes
-local node         =  node
 local trackers     =  trackers
 local attributes   =  attributes
 local context      =  context
@@ -52,6 +51,7 @@ local texgetcount  = tex.getcount
 local texgetdimen  = tex.getdimen
 local texset       = tex.set
 local texsetdimen  = tex.setdimen
+local texsetcount  = tex.setcount
 local texnest      = tex.nest
 local texgetbox    = tex.getbox
 
@@ -149,6 +149,7 @@ local find_node_tail      = nuts.tail
 local flush_node          = nuts.flush_node
 local traverse_nodes      = nuts.traverse
 local traverse_nodes_id   = nuts.traverse_id
+local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
 local remove_node         = nuts.remove
 local count_nodes         = nuts.countall
@@ -694,41 +695,45 @@ local function snap_topskip(current,method)
     return w, 0
 end
 
-local categories = allocate {
-     [0] = 'discard',
-     [1] = 'largest',
-     [2] = 'force'  ,
-     [3] = 'penalty',
-     [4] = 'add'    ,
-     [5] = 'disable',
-     [6] = 'nowhite',
-     [7] = 'goback',
-     [8] = 'together', -- not used (?)
-     [9] = 'overlay',
-    [10] = 'notopskip',
-}
+do
 
-vspacing.categories = categories
+    local categories = allocate {
+         [0] = 'discard',
+         [1] = 'largest',
+         [2] = 'force'  ,
+         [3] = 'penalty',
+         [4] = 'add'    ,
+         [5] = 'disable',
+         [6] = 'nowhite',
+         [7] = 'goback',
+         [8] = 'together', -- not used (?)
+         [9] = 'overlay',
+        [10] = 'notopskip',
+    }
 
-function vspacing.tocategories(str)
-    local t = { }
-    for s in gmatch(str,"[^, ]") do -- use lpeg instead
-        local n = tonumber(s)
-        if n then
-            t[categories[n]] = true
+    vspacing.categories = categories
+
+    function vspacing.tocategories(str)
+        local t = { }
+        for s in gmatch(str,"[^, ]") do -- use lpeg instead
+            local n = tonumber(s)
+            if n then
+                t[categories[n]] = true
+            else
+                t[b] = true
+            end
+        end
+        return t
+    end
+
+    function vspacing.tocategory(str) -- can be optimized
+        if type(str) == "string" then
+            return set.tonumber(vspacing.tocategories(str))
         else
-            t[b] = true
+            return set.tonumber({ [categories[str]] = true })
         end
     end
-    return t
-end
 
-function vspacing.tocategory(str) -- can be optimized
-    if type(str) == "string" then
-        return set.tonumber(vspacing.tocategories(str))
-    else
-        return set.tonumber({ [categories[str]] = true })
-    end
 end
 
 vspacingdata.map  = vspacingdata.map  or { } -- allocate ?
@@ -1888,72 +1893,84 @@ end
 -- tex.lists.page_head
 -- tex.lists.contrib_head
 
-local stackhead, stacktail, stackhack = nil, nil, false
+do
 
-local function report(message,where,lst)
-    if lst and where then
-        report_vspacing(message,where,count_nodes(lst,true),nodeidstostring(lst))
-    else
-        report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
-    end
-end
+    local stackhead, stacktail, stackhack = nil, nil, false
 
--- ugly code: we get partial lists (check if this stack is still okay) ... and we run
--- into temp nodes (sigh)
-
-function vspacing.pagehandler(newhead,where)
-    -- local newhead = texlists.contrib_head
-    if newhead then
-        newhead = tonut(newhead)
-        local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
-        local flush = false
-        stackhack = true -- todo: only when grid snapping once enabled
-        -- todo: fast check if head = tail
-        for n in traverse_nodes(newhead) do -- we could just look for glue nodes
-            local id = getid(n)
-            if id ~= glue_code then
-                flush = true
-            elseif getsubtype(n) == userskip_code then
-                if getattr(n,a_skipcategory) then
-                    stackhack = true
-                else
-                    flush = true
-                end
-            else
-                -- tricky
-            end
-        end
-        if flush then
-            if stackhead then
-                if trace_collect_vspacing then report("%s > appending %s nodes to stack (final): %s",where,newhead) end
-                setlink(stacktail,newhead)
-                newhead = stackhead
-                stackhead, stacktail = nil, nil
-            end
-            if stackhack then
-                stackhack = false
-                if trace_collect_vspacing then report("%s > processing %s nodes: %s",where,newhead) end
-             -- texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
-                newhead = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
-            else
-                if trace_collect_vspacing then report("%s > flushing %s nodes: %s",where,newhead) end
-             -- texlists.contrib_head = newhead
-            end
-            return tonode(newhead)
+    local function report(message,where,lst)
+        if lst and where then
+            report_vspacing(message,where,count_nodes(lst,true),nodeidstostring(lst))
         else
-            if stackhead then
-                if trace_collect_vspacing then report("%s > appending %s nodes to stack (intermediate): %s",where,newhead) end
-                setlink(stacktail,newhead)
-            else
-                if trace_collect_vspacing then report("%s > storing %s nodes in stack (initial): %s",where,newhead) end
-                stackhead = newhead
-            end
-            stacktail = newtail
-         -- texlists.contrib_head = nil
-         -- newhead = nil
+            report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
         end
     end
-    return nil
+
+    -- ugly code: we get partial lists (check if this stack is still okay) ... and we run
+    -- into temp nodes (sigh)
+
+    function vspacing.pagehandler(newhead,where)
+        -- local newhead = texlists.contrib_head
+        if newhead then
+            newhead = tonut(newhead)
+            local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
+            local flush = false
+            stackhack = true -- todo: only when grid snapping once enabled
+            -- todo: fast check if head = tail
+            for n in traverse_nodes(newhead) do -- we could just look for glue nodes
+                local id = getid(n)
+                if id ~= glue_code then
+                    flush = true
+                else
+                    local subtype = getsubtype(n)
+                    if subtype == userskip_code then
+                        if getattr(n,a_skipcategory) then
+                            stackhack = true
+                        else
+                            flush = true
+                        end
+                    elseif subtype == parskip_code then
+                        -- if where == new_graf then ... end
+                        if texgetcount("c_spac_vspacing_ignore_parskip") > 0 then
+                            texsetcount("c_spac_vspacing_ignore_parskip",0)
+                            setglue(n)
+                         -- maybe removenode
+                        end
+                    end
+                end
+            end
+            if flush then
+                if stackhead then
+                    if trace_collect_vspacing then report("%s > appending %s nodes to stack (final): %s",where,newhead) end
+                    setlink(stacktail,newhead)
+                    newhead = stackhead
+                    stackhead, stacktail = nil, nil
+                end
+                if stackhack then
+                    stackhack = false
+                    if trace_collect_vspacing then report("%s > processing %s nodes: %s",where,newhead) end
+                 -- texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
+                    newhead = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
+                else
+                    if trace_collect_vspacing then report("%s > flushing %s nodes: %s",where,newhead) end
+                 -- texlists.contrib_head = newhead
+                end
+                return tonode(newhead)
+            else
+                if stackhead then
+                    if trace_collect_vspacing then report("%s > appending %s nodes to stack (intermediate): %s",where,newhead) end
+                    setlink(stacktail,newhead)
+                else
+                    if trace_collect_vspacing then report("%s > storing %s nodes in stack (initial): %s",where,newhead) end
+                    stackhead = newhead
+                end
+                stacktail = newtail
+             -- texlists.contrib_head = nil
+             -- newhead = nil
+            end
+        end
+        return nil
+    end
+
 end
 
 do

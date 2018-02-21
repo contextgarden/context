@@ -221,27 +221,6 @@
    \let\localheadsetup  \strc_rendering_initialize_spacing % historic name
    \let\headsetupspacing\strc_rendering_initialize_spacing}
 
-
-\def\strc_rendering_initialize_hsize_local
-  {\global\d_strc_rendering_local_leftoffset \leftskip
-   \global\d_strc_rendering_local_rightoffset\rightskip
- % \forgetall
- % \leftskip \d_strc_rendering_local_leftoffset  % no stretch
- % \rightskip\d_strc_rendering_local_rightoffset % no stretch
- % \setlocalhsize
- % \hsize\localhsize
- % \forgetbothskips}
-   \scratchwidth\availablehsize
-   \scratchskip\parskip
-   \forgetall
-   \hsize\scratchwidth}
-
-\def\strc_rendering_initialize_hsize_global
-  {\global\d_strc_rendering_local_leftoffset \zeropoint
-   \global\d_strc_rendering_local_rightoffset\zeropoint
-   \scratchskip\parskip
-   \forgetall}
-
 \def\strc_rendering_initialize_interaction
   {\resetinteractionparameter\c!style
    \resetinteractionparameter\c!color
@@ -311,9 +290,32 @@
       \d_strc_rendering_hang_height\zeropoint
     \fi}
 
+\def\strc_rendering_initialize_hsize_local
+  {\global\d_strc_rendering_local_leftoffset \leftskip
+   \global\d_strc_rendering_local_rightoffset\rightskip
+ % \forgetall
+ % \leftskip \d_strc_rendering_local_leftoffset  % no stretch
+ % \rightskip\d_strc_rendering_local_rightoffset % no stretch
+ % \setlocalhsize
+ % \hsize\localhsize
+ % \forgetbothskips}
+   \scratchwidth\availablehsize
+   \forgetall
+   \hsize\scratchwidth}
+
+\def\strc_rendering_initialize_hsize_global
+  {\global\d_strc_rendering_local_leftoffset \zeropoint
+   \global\d_strc_rendering_local_rightoffset\zeropoint
+   \forgetall}
+
+% \def\strc_sectioning_stay_on_this_line
+%   {\directcheckedvspacing{-\v!line,\v!samepage,\v!nowhite}%
+%    \directcheckedvspacing\v!disable}
+%
+% we now use \ignoreparskip, so:
+
 \def\strc_sectioning_stay_on_this_line
-  {\vskip-\scratchskip % a real mess, this !
-   \directcheckedvspacing{\v!samepage,-\v!line,\v!nowhite}%
+  {\directcheckedvspacing{-\v!line,\v!samepage}%
    \directcheckedvspacing\v!disable}
 
 \def\strc_rendering_stop_placement
@@ -373,6 +375,7 @@
    \ifconditional\headisdisplay
      \useindentnextparameter\headparameter
    \else
+     \ignoreparskip
      \noindentation % recently added, was a bug
    \fi}
 
