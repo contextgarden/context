@@ -85,8 +85,12 @@ local action = false
 -- to tfmdata.properties ?
 
 local function onetimemessage(font,char,message) -- char == false returns table
-    local tfmdata  = fontdata[font]
-    local shared   = tfmdata.shared
+    local tfmdata = fontdata[font]
+    local shared  = tfmdata.shared
+    if not shared then
+        shared = { }
+        tfmdata.shared = shared
+    end
     local messages = shared.messages
     if not messages then
         messages = { }
@@ -355,7 +359,7 @@ local function getmissing(id)
         local t = { }
         for id, d in next, fontdata do
             local shared   = d.shared
-            local messages = shared.messages
+            local messages = shared and shared.messages
             if messages then
                 local filename = d.properties.filename
                 local tf = t[filename] or { }

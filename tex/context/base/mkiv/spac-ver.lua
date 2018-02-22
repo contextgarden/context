@@ -171,6 +171,7 @@ local new_rule            = nodepool.rule
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
+local penaltycodes        = nodes.penaltycodes
 
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
@@ -180,16 +181,19 @@ local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local localpar_code       = nodecodes.localpar
 
-local userskip_code              = skipcodes.userskip
-local lineskip_code              = skipcodes.lineskip
-local baselineskip_code          = skipcodes.baselineskip
-local parskip_code               = skipcodes.parskip
+local linebreak_code      = penaltycodes.linebreakpenalty
+
+local userskip_code       = skipcodes.userskip
+local lineskip_code       = skipcodes.lineskip
+local baselineskip_code   = skipcodes.baselineskip
+local parskip_code        = skipcodes.parskip
+local topskip_code        = skipcodes.topskip
+local splittopskip_code   = skipcodes.splittopskip
+
 local abovedisplayskip_code      = skipcodes.abovedisplayskip
 local belowdisplayskip_code      = skipcodes.belowdisplayskip
 local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
 local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
-local topskip_code               = skipcodes.topskip
-local splittopskip_code          = skipcodes.splittopskip
 
 local vspacing            = builders.vspacing or { }
 builders.vspacing         = vspacing
@@ -1249,8 +1253,6 @@ end
 -- topskip
 -- splittopskip
 
-local experiment = true directives.register("vspacing.experiment",function(v) experiment = v end)
-
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
         reset_tracing(head)
@@ -1558,7 +1560,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     glue_order, glue_data = 0, nil
                 elseif sc == disable or sc == enable then
                     local next = getnext(current)
-                    if not experiment or next then
+                    if next then
                         ignore_following = sc == disable
                         if trace then
                             trace_skip(sc == disable and "disable" or "enable",sc,so,sp,current)
@@ -1569,7 +1571,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     end
                 elseif sc == together then
                     local next = getnext(current)
-                    if not experiment or next then
+                    if next then
                         keep_together = true
                         if trace then
                             trace_skip("together",sc,so,sp,current)
@@ -1580,7 +1582,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     end
                 elseif sc == nowhite then
                     local next = getnext(current)
-                    if not experiment or next then
+                    if next then
                         ignore_whitespace = true
                         head, current = remove_node(head, current, true)
                     else
@@ -2016,32 +2018,76 @@ end
 do
 
     local outer  = texnest[0]
-    local reset  = true
-    local trace  = false
-    local report = logs.reporter("vspacing")
 
-    directives.register("vspacing.resetprevdepth",function(v) reset = v end)
-    trackers.register  ("vspacing.resetprevdepth",function(v) trace = v end)
+    local enabled = true
+    local count   = true
+    local trace   = false
+    local report  = logs.reporter("vspacing")
 
-    -- use getid and getnext
+    trackers.register("vspacing.synchronizepage",function(v)
+        trace = v
+    end)
 
-    function vspacing.resetprevdepth()
-        if reset then
-            local head = texlists.hold_head
+    directives.register("vspacing.synchronizepage",function(v)
+        if v == true or v == "count" then
+            enabled = true
+            count   = true
+        elseif v == "first" then
+            enabled = true
+            count   = false
+        else
+            enabled = false
+            count   = false
+        end
+    end)
+
+    function vspacing.synchronizepage()
+        if enabled then
+            local depth = -65536000
+            local lines = 0
+            local head  = texlists.contrib_head
             if head then
-                head = tonut(head)
-                local skip = 0
-                while head and getid(head) == insert_code do
-                    head = getnext(head)
-                    skip = skip + 1
+                local tail = find_node_tail(tonut(head))
+                while tail do
+                    local id = getid(tail)
+                    if id == hlist_code then
+                        if lines == 0 then
+                            depth = getdepth(tail)
+                        end
+                        lines = lines + 1
+                        if not count then
+                            break
+                        end
+                    elseif id == glue_code then
+                        local subtype = getsubtype(tail)
+                        if not (subtype == baselineskip_code or subtype == lineskip_code) then
+                            break
+                        elseif lines == 0 then
+                            -- go on
+                        elseif not count then
+                            break
+                        end
+                    elseif id == penalty_code then
+                        local subtype = getsubtype(tail)
+                        if subtype ~= linebreak_code then
+                            break
+                        elseif lines == 0 then
+                            -- go on
+                        elseif not count then
+                            break
+                        end
+                    else
+                        break
+                    end
+                    tail = getprev(tail)
                 end
-                if head then
-                    outer.prevdepth = 0
-                end
-                if trace then
-                    report("prevdepth %s at page %i, skipped %i, value %p",
-                        head and "reset" or "kept",texgetcount("realpageno"),skip,outer.prevdepth)
-                end
+            end
+            texset("prevdepth",depth)
+            texset("prevgraf",lines)
+            outer.prevdepth = depth
+            outer.prevgraf  = lines
+            if trace then
+                report("page %i, prevdepth %p, prevgraf %i",texgetcount("realpageno"),depth,lines)
             end
         end
     end
@@ -2049,27 +2095,6 @@ do
     local trace = false
 
     trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
-
---     function vspacing.forcestrutdepth(n,depth,trace_mode)
---         local box = texgetbox(n)
---         if box then
---             box = tonut(box)
---             local dp = getdepth(box)
---             if dp < depth then
---                 local head = getlist(box)
---                 if head then
---                     local tail = find_node_tail(head)
---                     if tail and getid(tail) == hlist_code then
---                         setdepth(tail,depth)
---                         outer.prevdepth = depth
---                         if trace or trace_mode > 0 then
---                             nuts.setvisual(tail,"depth")
---                         end
---                     end
---                 end
---             end
---         end
---     end
 
     function vspacing.forcestrutdepth(n,depth,trace_mode)
         local box = texgetbox(n)
@@ -2106,8 +2131,8 @@ do
     }
 
     implement {
-        name      = "resetprevdepth",
-        actions   = vspacing.resetprevdepth,
+        name      = "synchronizepage",
+        actions   = vspacing.synchronizepage,
         scope     = "private"
     }
 
@@ -2160,20 +2185,20 @@ do
         arguments = { "string", "string" }
     }
 
-    local remove_node    = nodes.remove
-    local find_node_tail = nodes.tail
-
-    interfaces.implement {
-        name    = "fakenextstrutline",
-        actions = function()
-            local head = texlists.page_head
-            if head then
-                local head = remove_node(head,find_node_tail(head),true)
-                texlists.page_head = head
-                buildpage()
-            end
-        end
-    }
+ -- local remove_node    = nodes.remove
+ -- local find_node_tail = nodes.tail
+ --
+ -- interfaces.implement {
+ --     name    = "fakenextstrutline",
+ --     actions = function()
+ --         local head = texlists.page_head
+ --         if head then
+ --             local head = remove_node(head,find_node_tail(head),true)
+ --             texlists.page_head = head
+ --             buildpage()
+ --         end
+ --     end
+ -- }
 
     interfaces.implement {
         name    = "removelastline",

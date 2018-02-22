@@ -332,4 +332,13 @@
   {\clf_forcestrutdepth\normalpagebox\strutdp\c_page_force_strut_depth_trace_mode
    \unvbox\normalpagebox}
 
+% maybe better:
+%
+% \installoutputroutine\doforcestrutdepth
+%   {\clf_forcestrutdepth\normalpagebox\strutdp\c_page_force_strut_depth_trace_mode
+%    \unvbox\normalpagebox}
+%
+% \unexpanded\def\forcestrutdepth
+%   {\par\ifvmode\ifinner\else\doforcestrutdepth\fi\fi}
+
 \protect \endinput

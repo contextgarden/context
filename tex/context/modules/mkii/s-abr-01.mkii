@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-abr-02,
+%D   [      file=s-abr-01,
 %D        version=1996.01.01,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=General Abbreviations 2,
+%D       subtitle=General Abbreviations 1,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,12 +11,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\usemodule[abr-01]
-
 \unprotect
 
-\setupsorting[logo][\c!style=\v!smallcaps]
+\setupsorting
+  [logo]
+  [\c!style=\v!capital]
 
-\setupcapitals[\c!title=\v!no]
+\setupcapitals
+  [\c!title=\v!no]
 
-\protect \endinput
+\protect
+
+\startmodule[abr-01]
+
+\usemodule[abbreviations-logos]
+\usemodule[abbreviations-extras]
+
+\stopmodule

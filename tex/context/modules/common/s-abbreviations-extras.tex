@@ -1,0 +1,56 @@
+%D \module
+%D   [       file=s-abbrevations-extras.tex, % was: s-abr-01
+%D        version=1996.01.01,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=General Abbreviated Extras,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[abbreviations-extras]
+
+\def\SystemSpecialA#1{$\langle\it#1\rangle$}
+\def\SystemSpecialB#1{{\tttf<#1>}}
+
+\unexpanded\def\CATCODE     {\SystemSpecialA{catcode}}
+\unexpanded\def\CATCODES    {\SystemSpecialA{catcodes}}
+\unexpanded\def\DIMENSION   {\SystemSpecialA{dimension}}
+\unexpanded\def\DIMENSIONS  {\SystemSpecialA{dimensions}}
+\unexpanded\def\COUNTER     {\SystemSpecialA{counter}}
+\unexpanded\def\COUNTERS    {\SystemSpecialA{counters}}
+\unexpanded\def\HBOX        {\SystemSpecialA{hbox}}
+\unexpanded\def\HBOXES      {\SystemSpecialA{hboxes}}
+\unexpanded\def\VBOX        {\SystemSpecialA{vbox}}
+\unexpanded\def\VBOXES      {\SystemSpecialA{vboxes}}
+\unexpanded\def\BOX         {\SystemSpecialA{box}}
+\unexpanded\def\BOXES       {\SystemSpecialA{boxes}}
+\unexpanded\def\TOKENLIST   {\SystemSpecialA{token list}}
+\unexpanded\def\TOKENLISTS  {\SystemSpecialA{token lists}}
+\unexpanded\def\NEWLINE     {\SystemSpecialA{newline}}
+\unexpanded\def\SKIP        {\SystemSpecialA{skip}}
+\unexpanded\def\SKIPS       {\SystemSpecialA{skips}}
+\unexpanded\def\MUSKIP      {\SystemSpecialA{muskip}}
+\unexpanded\def\MUSKIPS     {\SystemSpecialA{muskips}}
+\unexpanded\def\MARK        {\SystemSpecialA{mark}}
+\unexpanded\def\MARKS       {\SystemSpecialA{marks}}
+
+\unexpanded\def\SPACE       {\SystemSpecialB{space}}
+\unexpanded\def\EOF         {\SystemSpecialB{eof}}
+\unexpanded\def\TAB         {\SystemSpecialB{tab}}
+\unexpanded\def\NEWPAGE     {\SystemSpecialB{newpage}}
+\unexpanded\def\NEWLINE     {\SystemSpecialB{newline}}
+
+\unexpanded\def\LUWATEEKH   {لُواتيخ} % kh ī t ā w [u] l
+\unexpanded\def\luwateekh   {luwātīkh}
+
+\doifmodeelse {mkiv} {
+    \unexpanded\def\THANH{H\agrave n Th\ecircumflexacute\ Th\agrave nh}
+} {
+    \unexpanded\def\THANH{H\`an Th\^e\llap{\raise 0.5ex\hbox{\'{}}} Th\`anh}
+}
+
+\stopmodule

@@ -1,0 +1,64 @@
+%D \module
+%D   [       file=m-compatibility,
+%D        version=2018.02.21,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=ConTeXt Compatibility Layer,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D I fear that I will not keep up in this file so feel free to contribute to the
+%D following. The idea is nto to load this file but more to have some insight in
+%D how to control compatibility (to some extent).
+
+\writestatus{loading}{ConTeXt Compatibility Layer}
+
+%D The side float mechanism has been redone and is not space compatible. Hopefully
+%D it will become stable soon and after that we will not touch it unless we have a
+%D real bug. There might be more control options. The problem is that there are too
+%D many combinations of content before and after a side float possible.
+
+\ifnum\contextversionno<20180101\relax
+    % nothing here
+\fi
+
+%D Picking up the right last line depth is sort of tricky when we cross a page and
+%D have some left|-|over material. There can be a difference in space after a
+%D tabulate split over a page (or in fact each paragraph split with some weird depth
+%D property due to whatever circumstances.
+
+\ifnum\contextversionno<20180221\relax
+    \disabledirectives[vspacing.synchronizepage]
+\fi
+
+%D Some day we might default to the following which is a bit more conistent but
+%D not compatible.
+
+% \setdisplaymathspacemodel[4]
+%
+% \ifnum\contextversionno<20180221\relax
+%     \setdisplaymathspacemodel[3]
+% \fi
+
+%D Currently this is in \type {cont-loc.mkiv} but some day we might do:
+
+% \definemixedcolumns
+%   [\v!columns]
+%   % compatible with columns default :
+%   [\c!balance=\v!yes,
+%    \c!blank={\v!line,\v!fixed}]
+%
+% \unexpanded\def\setupcolumns
+%   {\setupmixedcolumns[\v!columns]}
+
+%D as well as:
+
+% \input page-cst.mkiv
+
+
+
+\endinput

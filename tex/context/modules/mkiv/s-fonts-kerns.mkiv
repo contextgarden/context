@@ -1,0 +1,215 @@
+%D \module
+%D   [      file=s-fonts-kerns,
+%D        version=2018.02.20, % was s-fnt-40 (given the kin dof code < 2010)
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Fonts Kerns,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is real old code but we keep it around for educational purposes. it's
+%D not that efficient and we have better ways.
+%D
+%D \starttyping
+%D \showfontkerns
+%D \stoptyping
+%D
+%D This one shows all kerns so it's s bit different and as we use it in the
+%D manual \unknown
+
+\startluacode
+
+    local nodecodes  = nodes.nodecodes
+
+    local disc_code  = nodecodes.disc
+    local kern_code  = nodecodes.kern
+    local glyph_code = nodecodes.glyph
+    local hlist_code = nodecodes.hlist
+
+ -- local function flatten(l)
+ --     while l do
+ --         local id = l.id
+ --         if id == disc_code then
+ --             local r = l.replace
+ --             if r then
+ --                 local p = l.prev
+ --                 local n = l.next
+ --                 if n and p and n.id == glyph_code and p.id == glyph_code then
+ --                     local s = node.slide(r)
+ --                     p.next = r
+ --                     n.prev = s
+ --                     r.prev = p
+ --                     s.next= n
+ --                     l.replace = nil
+ --                     node.free(l)
+ --                 end
+ --             end
+ --         elseif id == hlist_code then
+ --             flatten(l.list)
+ --         end
+ --         l = l.next
+ --     end
+ -- end
+
+    local function mark(l,c)
+        while l do
+            local id = l.id
+            if id == kern_code then
+                context.showkern(l.kern,c)
+            elseif id == disc_code then
+                mark(l.pre,2)
+                mark(l.post,3)
+                mark(l.replace,4)
+            elseif id == hlist_code then
+                mark(l.list,c)
+            end
+            l = l.next
+        end
+    end
+
+    local function collect(l)
+        local m = { }
+        while l do
+            local id = l.id
+            if id == hlist_code then
+                m[#m+1] = l
+            end
+            l = l.next
+        end
+        return m
+    end
+
+    local function inject(l,m,i)
+        local x = l
+        i = i or 0
+        while l do
+            local id = l.id
+            if id == kern_code then
+                i = i + 1
+                node.insert_before(x,l,node.copy(m[i]))
+            elseif id == disc_code then
+                i = inject(l.pre,m,i)
+                i = inject(l.post,m,i)
+                i = inject(l.replace,m,i)
+            elseif id == hlist_code then
+                i = inject(l.list,m,i)
+            end
+            l = l.next
+        end
+        return i
+    end
+
+    moduledata.fonts       = moduledata.fonts       or { }
+    moduledata.fonts.kerns = moduledata.fonts.kerns or { }
+
+    function moduledata.fonts.kerns._show_(n)
+        inject(tex.box[n].list,collect(tex.box[6].list))
+    end
+
+    function moduledata.fonts.kerns.show(n)
+        context("\\bgroup")
+        context("\\setbox6\\vbox\\bgroup\\forgetall")
+     -- flatten(tex.box[n].list)
+        mark(tex.box[n].list,1)
+        context("\\egroup")
+        context("\\ctxlua{moduledata.fonts.kerns._show_('%s')}",n)
+        context("\\egroup")
+    end
+
+\stopluacode
+
+\setupcolors[state=start]
+
+\definefont[VerySmall][Mono at 4pt]
+
+\definecolor[kern:0][s=.5]
+\definecolor[kern:1][b=.5]
+\definecolor[kern:2][r=.5]
+\definecolor[kern:3][g=.5]
+\definecolor[kern:4][r=.5,g=.5]
+
+\def\showkernwidthfactor{1}
+
+\newconditional\showkernstate
+\settrue       \showexplicitkerns
+
+\unexpanded\def\showkern#1#2%
+  {\begingroup
+   \dontcomplain
+   \setbox\scratchbox\hbox to \zeropoint \bgroup
+      \ifcase#2\or
+        \ifconditional\showkernstate
+          \color[kern:0]{\dovlwdhtdp\showkernwidthfactor{0.75}{0.5}}%
+          \global\setfalse\showkernstate
+          \raise.8\strutht
+        \else
+          \color[kern:0]{\dovlwdhtdp\showkernwidthfactor{1.05}{0.5}}%
+          \global\settrue\showkernstate
+          \raise1.1\strutht
+        \fi
+      \else\ifconditional\showexplicitkerns % if other kerns
+        \color[kern:0]{\dovlwdhtdp\showkernwidthfactor{0.75}{0.5}}%
+        \lower1.2\strutdp
+      \fi\fi
+      \hbox to 0pt{\hss\VerySmall\color[kern:#2]{\expandafter\withoutpt\the\dimexpr#1sp}\hss}%
+   \egroup
+   \smashbox\scratchbox
+   \box\scratchbox
+   \endgroup
+   \par}
+
+\newbox\KernBox
+
+\unexpanded\def\ShowKerns#1%
+  {\global\setfalse
+   \showkernstate\ctxlua{moduledata.fonts.kerns.show("#1")}}
+
+\unexpanded\def\ShowKernedVBox#1%
+  {\global\setfalse\showkernstate
+   \setbox\KernBox\vbox{#1}%
+   \ShowKerns{KernBox}%
+   \unvbox\KernBox}
+
+\unexpanded\def\ShowKernedHBox#1%
+  {\global\setfalse\showkernstate
+   \setbox\KernBox\hbox{#1}%
+   \ShowKerns{KernBox}%
+   \unhbox\KernBox}
+
+\continueifinputfile{s-fonts-kerns.mkiv}
+
+\setupinterlinespace[1.5] % \setfalse\showexplicitkerns
+
+\definefontfeature[default][default][mode=node] % ,script=latn]
+
+\starttext
+
+% \enabletrackers[otf.kerns]
+
+\setuplayout[width=middle,height=middle]
+
+\usetypescript[modern] \setupbodyfont[modern]
+\setbox\KernBox\vbox{\input knuth }  \ShowKerns{KernBox} \copy\KernBox \blank
+
+\ShowKernedHBox{Very often glyphs get very small spaces inserted horizontally.}
+
+\usetypescript[cambria] \setupbodyfont[cambria]
+\setbox\KernBox\vbox{\input knuth }  \ShowKerns{KernBox} \copy\KernBox \blank
+
+\ShowKernedHBox{Very often glyphs get very small spaces inserted horizontally.}
+
+\usetypescript[palatino] \setupbodyfont[palatino]
+\setbox\KernBox\vbox{\input knuth }  \ShowKerns{KernBox} \copy\KernBox \blank
+
+\ShowKernedHBox{Very often glyphs get very small spaces inserted horizontally.}
+
+\usetypescript[dejavu] \setupbodyfont[dejavu]
+\setbox\KernBox\vbox{\input knuth }  \ShowKerns{KernBox} \copy\KernBox \blank
+
+\ShowKernedHBox{Very often glyphs get very small spaces inserted horizontally.}
+
+\stoptext

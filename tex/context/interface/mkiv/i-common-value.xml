@@ -587,6 +587,7 @@
         <cd:constant type="tight"/>
         <cd:constant type="middle"/>
         <cd:constant type="frame"/>
+        <cd:constant type="depth"/>
         <cd:constant type="line"/>
         <cd:constant type="halfline"/>
         <cd:constant type="line" prefix="-" method="none"/>

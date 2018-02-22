@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-abr-03,
+%D   [      file= s-abbreviations-words, % was: s-abr-32
 %D        version=1998.08.10,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=General Abbreviations 3,
+%D       subtitle=General Abbreviations Words,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,12 +11,18 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\usemodule[abr-01]
-
 \unprotect
 
-\setupsorting[logo][\c!style=\v!WORD]
+\setupsorting
+  [logo]
+  [\c!style=\v!WORD]
 
 \protect
 
-\endinput
+\startmodule[abbreviations-words]
+
+\usemodule[abbreviations-logos]
+\usemodule[abbreviations-extras]
+
+\stopmodule
+

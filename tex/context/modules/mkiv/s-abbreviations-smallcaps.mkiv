@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-abr-04,
+%D   [      file= s-abbreviations-smallcaps, % was: s-abr-02
 %D        version=1996.01.01,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=General Abbreviations 2,
+%D       subtitle=General Abbreviations Smallcaps,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,14 +11,21 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\usemodule[abr-01]
-
 \unprotect
 
-% \definealternativestyle [\v!mixed]   [\font_style_pseudoMixedCapped] [\font_style_pseudoMixedCapped]
+\setupsorting
+  [logo]
+  [\c!style=\v!smallcaps]
 
-\setupsorting[logo][\c!style=\font_style_pseudoMixedCapped]
+\setupcapitals
+  [\c!title=\v!no]
 
-% \setupcapitals[\c!title=\v!no]
+\protect
 
-\protect \endinput
+\startmodule[abbreviations-smallcaps]
+
+\usemodule[abbreviations-logos]
+\usemodule[abbreviations-extras]
+
+\stopmodule
+

@@ -63,7 +63,11 @@ Other examples of macros that have optimized functions are \type {\par},
 
 \startsection[title=Steps]
 
-When you run the following code:
+% added and extended in sync with an article about a generic 'execute'
+% feature
+
+We already mentioned the stepper as a very special trick so let's give
+some more explanation here. When you run the following code:
 
 \setbox0\emptybox
 
@@ -197,7 +201,54 @@ which gives:
 
 A step returns control to \TEX\ immediately and after the \TEX\ code that it
 feeds back is expanded, returns to \LUA. There are some limitations due to the
-input stack but normally that us no real issue.
+input stack but normally that is no real issue.
+
+You can run the following code:
+
+\starttyping
+\definenumber[LineCounter][way=bypage]
+\starttext
+\startluacode
+for i=1,2000 do
+    context.incrementnumber { "LineCounter" }
+    context.getnumber { "LineCounter" }
+    context.par()
+end
+\stopluacode
+\stoptext
+\stoptyping
+
+You will notice however that the number is not right on each page. This is
+because \TEX\ doesn't know yet that there is no room on the page. The next will
+work better:
+
+\starttyping
+\definenumber[LineCounter][way=bypage]
+\starttext
+\startluacode
+context.stepwise(function()
+    for i=1,2000 do
+        context.testpage { 0 }
+        context.incrementnumber { "LineCounter" }
+        context.getnumber { "LineCounter" }
+        context.par()
+        context.step()
+    end
+end)
+\stopluacode
+\stoptext
+\starttyping
+
+Instead of the \type {testpage} function you can also play directly with
+registers, like:
+
+\starttyping
+if tex.pagegtotal + tex.count.lineheight > tex.pagetotal then
+\starttyping
+
+but often an already defined helper does a better job. Of course you will
+probably never need this kind of hacks anyway, if only because much more is going
+on and there are better ways then.
 
 \stopsection
 

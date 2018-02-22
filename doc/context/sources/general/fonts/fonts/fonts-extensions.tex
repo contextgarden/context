@@ -931,19 +931,16 @@ effect of expanded kerns is invisible. The used definitions are:
 \startplacefigure[reference=hz:natural,title={The two expansion methods compared.}]
     \showfontkerns
     \dontcomplain
-    \enabledirectives[fonts.injections.fontkern]
     \startcombination[1*3]
         {\ExtremeHzFont\ruledhpack{\startoverlay {\NoHzSample} {\HzSample    } \stopoverlay}} {no hz \& hz}
         {\ExtremeHzFont\ruledhpack{\startoverlay {\NoHzSample} {\FullHzSample} \stopoverlay}} {no hz \& full hz}
         {\ExtremeHzFont\ruledhpack{\startoverlay {\HzSample  } {\FullHzSample} \stopoverlay}} {hz \& full hz}
     \stopcombination
-    \disabledirectives[fonts.injections.fontkern]
 \stopplacefigure
 
 \startplacefigure[reference=hz:zoomed,title={The two expansion methods compared (zoomed in).}]
     \showfontkerns
     \dontcomplain
-    \enabledirectives[fonts.injections.fontkern]
     \startcombination[3*3]
 
         {\ExtremeHzFont
@@ -968,20 +965,13 @@ effect of expanded kerns is invisible. The used definitions are:
          \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\HzSample  } {\FullHzSample} \stopoverlay}} {minimal: hz \& full hz}
 
     \stopcombination
-    \disabledirectives[fonts.injections.fontkern]
 \stopplacefigure
 
-In \CONTEXT\ the \type {hz} alignment option only enables expansion of glyphs, while \type
-{fullhz} also applies it to kerns. However, in the examples here we had to explicitly enable
-font kerns in node mode:
-
-\starttyping
-\enabledirectives[fonts.injections.fontkern]
-\stoptyping
-
-It will be clear that you can just stick to using the \type {hz} directive (if
-you want expansion at all) because this directive is normally disabled and
-because most fonts are processed in node mode.
+In \CONTEXT\ the \type {hz} alignment option only enables expansion of glyphs,
+while \type {fullhz} also applies it to kerns. It will be clear that you can just
+stick to using the \type {hz} directive (if you want expansion at all) because
+this directive is normally disabled and because most fonts are processed in node
+mode.
 
 \stopsubsubject
 

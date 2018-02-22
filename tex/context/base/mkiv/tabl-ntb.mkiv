@@ -331,6 +331,20 @@
 \def\tabl_ntb_col_doif    #1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
 \def\tabl_ntb_col_doifnot #1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
 
+%D If we ever run into memory issues we can do:
+%
+% \def\tabl_ntb_let_tag#1#2#3%
+%   {\ifx#3\c_tabl_ntb_none\else
+%      \expandafter\let\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname#3%
+%    \fi}
+%
+% \def\tabl_ntb_get_tag#1#2%
+%   {\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname
+%      \lastnamedcs
+%    \else
+%      \c_tabl_ntb_none
+%    \fi}
+
 % not used
 %
 % \def\tabl_ntb_tag_state#1#2{\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname\zerocount\else\plusone\fi}
@@ -1493,18 +1507,18 @@
 \def\tabl_ntb_table_get_max_width
   {\scratchdimen\wd\scratchbox\relax}
 
-% first needs testing (in projects), see cont-loc for final version:
-%
-% \def\tabl_ntb_table_get_max_width_step
-%   {\advance\scratchdimen\tabl_ntb_get_wid\fastloopindex
-%    \advance\scratchdimen\tabl_ntb_get_dis\fastloopindex}
-%
-% \def\tabl_ntb_table_get_max_width
-%   {\scratchdimen\zeropoint
-%    \dofastloopcs\c_tabl_ntb_maximum_col\tabl_ntb_table_get_max_width_step
-%    \ifdim\scratchdimen<\wd\scratchbox\relax
-%      \scratchdimen\wd\scratchbox\relax
-%    \fi}
+% enable dper 2018-02-22
+
+\def\tabl_ntb_table_get_max_width_step
+  {\advance\scratchdimen\tabl_ntb_get_wid\fastloopindex
+   \advance\scratchdimen\tabl_ntb_get_dis\fastloopindex}
+
+\def\tabl_ntb_table_get_max_width
+  {\scratchdimen\zeropoint
+   \dofastloopcs\c_tabl_ntb_maximum_col\tabl_ntb_table_get_max_width_step
+   \ifdim\scratchdimen<\wd\scratchbox\relax
+     \scratchdimen\wd\scratchbox\relax
+   \fi}
 
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex

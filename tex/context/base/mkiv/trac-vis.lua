@@ -668,16 +668,14 @@ end
 
 local ruleddepth do
 
-    ruleddepth = function(current)
-        local depth = getdepth(current)
-        if depth ~= 0 then
-            local width = getwidth(current)
-            local rule  = new_rule(width,0,depth)
-            local kern  = new_kern(-width)
+    ruleddepth = function(current,wd,ht,dp)
+        local wd, ht, dp = getwhd(current)
+        if dp ~= 0 then
+            local rule = new_rule(wd,0,dp)
             setcolor(rule,c_depth)
             settransparency(rule,c_zero)
             setattr(rule,a_layer,l_depth)
-            setlist(current,new_hlist(setlink(rule,kern,getlist(current))))
+            setlist(current,setlink(rule,new_kern(-wd),getlist(current)))
         end
     end
 
@@ -712,7 +710,7 @@ local ruledbox do
             setboth(current)
             local linewidth = emwidth/fraction
             local size      = 2*linewidth
-            local baseline, baseskip
+         -- local baseline, baseskip
          -- if dp ~= 0 and ht ~= 0 then
          --     if wd > 20*linewidth then
          --         local targetsize = wd - size
@@ -859,11 +857,11 @@ local ruledglyph do
             local prev = previous
             setboth(current)
             local linewidth = emwidth/(2*fraction)
-            local baseline
             local info
             --
             -- original
             --
+         -- local baseline
          -- if (dp >= 0 and ht >= 0) or (dp <= 0 and ht <= 0) then
          --     baseline = new_rule(wd-2*linewidth,linewidth,0)
          -- end

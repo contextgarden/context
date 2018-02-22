@@ -13032,6 +13032,7 @@
       <cd:constant type="tight"/>
       <cd:constant type="middle"/>
       <cd:constant type="frame"/>
+      <cd:constant type="depth"/>
       <cd:constant type="line"/>
       <cd:constant type="halfline"/>
       <cd:constant method="none" prefix="-" type="line"/>
@@ -13146,6 +13147,7 @@
      <cd:constant type="tight"/>
      <cd:constant type="middle"/>
      <cd:constant type="frame"/>
+     <cd:constant type="depth"/>
      <cd:constant type="line"/>
      <cd:constant type="halfline"/>
      <cd:constant method="none" prefix="-" type="line"/>
@@ -13167,6 +13169,7 @@
      <cd:constant type="tight"/>
      <cd:constant type="middle"/>
      <cd:constant type="frame"/>
+     <cd:constant type="depth"/>
      <cd:constant type="line"/>
      <cd:constant type="halfline"/>
      <cd:constant method="none" prefix="-" type="line"/>
@@ -13183,6 +13186,7 @@
       <cd:constant type="tight"/>
       <cd:constant type="middle"/>
       <cd:constant type="frame"/>
+      <cd:constant type="depth"/>
       <cd:constant type="line"/>
       <cd:constant type="halfline"/>
       <cd:constant method="none" prefix="-" type="line"/>
@@ -13221,6 +13225,7 @@
      <cd:constant type="tight"/>
      <cd:constant type="middle"/>
      <cd:constant type="frame"/>
+     <cd:constant type="depth"/>
      <cd:constant type="line"/>
      <cd:constant type="halfline"/>
      <cd:constant method="none" prefix="-" type="line"/>

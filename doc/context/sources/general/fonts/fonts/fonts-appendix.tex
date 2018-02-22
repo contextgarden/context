@@ -456,7 +456,7 @@ to render this version. Because fonts might have changed in the meantime, some e
 might come out other than intended.
 
 \startluacode
-local list = table.load("fonts-mkiv-usedfonts.lua")
+local list = table.load("fonts-mkiv-usedfonts.lua") or { }
 
 local NC, NR = context.NC, context.NR
 
@@ -473,7 +473,6 @@ for i=1,#list do
         NC() context("version")   NC() context.type(version)   NC() NR()
     context.stoptabulate()
 end
-
 \stopluacode
 
 \stopsection

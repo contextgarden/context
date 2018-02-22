@@ -1,3 +1,5 @@
+% language=uk
+
 \environment math-layout
 
 \startcomponent math-spacing
@@ -686,6 +688,55 @@ We have
 \typebuffer[setup]
 
 \blank \start \getbuffer[setup,demo] \stop
+
+\stopsection
+
+\startsection[title=Choices]
+
+The next examples are generated using this macro:
+
+\startbuffer
+\starttexdefinition unexpanded Test#1#2
+
+    \begingroup
+
+    \showmakeup[depth]
+
+    \def\TestA{\dontleavehmode\ruledhbox{\dorecurse{8}{before }}}
+    \def\TestB{\dontleavehmode\ruledhbox{\dorecurse{8}{after }}}
+    \def\TestC{\dorecurse{18}{x+}x}
+
+    \setdisplaymathspacemodel[3]
+    \setupalign[flushleft]  1\space:\space\TestA \par
+    \startformula #2 \TestC \stopformula \par
+    \setupalign[flushleft]  2\space:\space\TestB \par
+
+    \setdisplaymathspacemodel[4]
+
+    \vskip#1\lineheight
+
+    \setupalign[flushright] \TestA\space:\space2 \par
+    \startformula #2 \TestC \stopformula \par
+    \setupalign[flushright] \TestB\space:\space2 \par
+
+    \endgroup
+
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer \getbuffer
+
+It demonstrates the often hard decisions that we have to make with regards to
+spacing. On the one hand we want to be adaptive, on the other hand we want to be
+consistent, for instance in the depth of lines. These examples overlay the two
+variants (which is of course font and style dependent).
+
+\Test{-4.70}{}                      \blank[2*line]
+\Test{-6.00}{\frac{1}{2}}           \blank[2*line]
+\Test{-6.55}{\frac{1}{\frac{1}{2}}}
+
+One side effect of these options is that at some point we need to choose a
+default and then easily forget about the other variants.
 
 \stopsection
 

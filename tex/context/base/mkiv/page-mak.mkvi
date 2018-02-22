@@ -201,6 +201,23 @@
    \emptyhbox
    \page}
 
+%D Probably obsolete (but used in one manual by Taco):
+
+\unexpanded\def\startcolumnmakeup % don't change
+  {\bgroup
+   \getrawnoflines\textheight % raw as we can have topskip
+   \setbox\scratchbox\vbox to \dimexpr\noflines\lineheight-\lineheight+\topskip\relax
+     \bgroup
+     \forgetall}
+
+\unexpanded\def\stopcolumnmakeup
+  {\egroup
+   \dp\scratchbox\zeropoint
+   \wd\scratchbox\textwidth
+   \box\scratchbox
+   \egroup
+   \page_otr_command_synchronize_hsize}
+
 %D The text surrounding the main body text can be influenced
 %D by setting their associated status variables. The
 %D connection between them is made by the following macro

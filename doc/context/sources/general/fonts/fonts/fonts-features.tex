@@ -2543,48 +2543,40 @@ unlikely to show up in future versions of the Latin Modern fonts.
 
 \stopsection
 
-\startsection[title=Discretionaries]
-
-% speed test:
+% \startsection[title=Discretionaries]
 %
-% \edef\tufte{\cldloadfile{tufte}}
-% \enabledirectives[otf.alwaysdisc]
-% \testfeatureonce{100}{\setbox0\hbox{\tufte \smallcaps \tufte}}\elapsedtime\par
-% \disabledirectives[otf.alwaysdisc]
-% \testfeatureonce{100}{\setbox0\hbox{\tufte \smallcaps \tufte}}\elapsedtime\par
-
-\startbuffer
-\definedfont[cambria*default]
-12\discretionary
-    {3} {4} {5}%
-67\par
-12{\oldstyle\discretionary
-    {3} {4} {5}}%
-67\par
-12\discretionary
-    {3{\oldstyle3}} {{\oldstyle4}4} {5{\oldstyle5}5}%
-67\par
-\stopbuffer
-
-The font handler has to do some magick to get features working with and across
-discretionaries. To some extend you can use font switches inside discretionaries
-but for sure border cases are not dealt with. This works:
-
-\startlinecorrection[blank]
-\startcombination[nx=4,ny=1,location=top]
-    {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {1}
-    {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\hsize1mm\getbuffer}} {2}
-    {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {3}
-    {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\hsize1mm\getbuffer}} {4}
-\stopcombination
-\stoplinecorrection
-
-The first two examples have \type {otf.alwaysdisk} enabled, the last two have it
-disabled.
-
-\typebuffer
-
-\stopsection
+% \startbuffer
+% \definedfont[cambria*default]
+% 12\discretionary
+%     {3} {4} {5}%
+% 67\par
+% 12{\oldstyle\discretionary
+%     {3} {4} {5}}%
+% 67\par
+% 12\discretionary
+%     {3{\oldstyle3}} {{\oldstyle4}4} {5{\oldstyle5}5}%
+% 67\par
+% \stopbuffer
+%
+% The font handler has to do some magick to get features working with and across
+% discretionaries. To some extend you can use font switches inside discretionaries
+% but for sure border cases are not dealt with. This works:
+%
+% \startlinecorrection[blank]
+% \startcombination[nx=4,ny=1,location=top]
+%     {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {1}
+%     {\framed[align=normal]{\enabledirectives [otf.alwaysdisc]\hsize1mm\getbuffer}} {2}
+%     {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\setupwhitespace[line]\getbuffer}} {3}
+%     {\framed[align=normal]{\disabledirectives[otf.alwaysdisc]\hsize1mm\getbuffer}} {4}
+% \stopcombination
+% \stoplinecorrection
+%
+% The first two examples have \type {otf.alwaysdisk} enabled, the last two have it
+% disabled.
+%
+% \typebuffer
+%
+% \stopsection
 
 \startsection[title=Some remarks]
 

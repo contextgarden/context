@@ -527,7 +527,6 @@
 
 \unexpanded\def\spac_lines_start_correction[#1]%
   {\edef\m_spac_lines_around{#1}%
-   % todo: play with \fakenextstrutline
    \spac_lines_action_around
    \d_spac_prevdepth\prevdepth
    \spac_lines_initialize_corrections
@@ -1309,7 +1308,7 @@
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
 
 \appendtoks
-    \ifvmode\clf_resetprevdepth\fi % a nasty hack (tested for a while now)
+    \ifvmode\clf_synchronizepage\fi % a nasty hack (tested for a while now)
 \to \everyafteroutput
 
 %D My own one:
@@ -2504,22 +2503,6 @@
 \to \everystarttext
 
 \prevdepth\zeropoint
-
-% not ok, so we need to figure out another way to fix this messy prevdepth-across-page issue
-% as encountered in forced blank skips (see lua code)
-%
-% \appendtoks
-%     \ifvmode\clf_resetprevdepth\fi
-% \to \everyafteroutput
-%
-% this should only happen when there is nothing left over (how to detemine that) .. testcase:
-%
-% \dorecurse{41}{line\par}
-% \starttyping
-% line 1
-% line 2
-% line 3
-% \stoptyping
 
 %D Helper:
 
