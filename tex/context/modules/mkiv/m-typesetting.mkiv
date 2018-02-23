@@ -99,6 +99,28 @@
     \stoplinecorrection
 \stoptexdefinition
 
+\starttexdefinition unexpanded FourPairs #1
+    \startlinecorrection[blank]
+        \startcombination[fourpages][2*2]
+                              {\typesetfile[#1.tex][page=1,width=\measure{firstpages}]}                    {1}
+            {\WhenValidPage{2}{\typesetfile[#1.tex][page=2,width=\measure{firstpages}]}} {\WhenValidPage{2}{2}}
+            {\WhenValidPage{3}{\typesetfile[#1.tex][page=3,width=\measure{firstpages}]}} {\WhenValidPage{3}{3}}
+            {\WhenValidPage{4}{\typesetfile[#1.tex][page=4,width=\measure{firstpages}]}} {\WhenValidPage{4}{4}}
+        \stopcombination
+    \stoplinecorrection
+\stoptexdefinition
+
+% \starttexdefinition unexpanded FourPagesTwo #1#2
+%     \startlinecorrection[blank]
+%         \startcombination[fourpages][4*1]
+%                               {\typesetfile[#1.tex][page=1,width=\measure{fourpages}]}                    {1}
+%             {\WhenValidPage{2}{\typesetfile[#1.tex][page=2,width=\measure{fourpages}]}} {\WhenValidPage{2}{2}}
+%                               {\typesetfile[#2.tex][page=1,width=\measure{fourpages}]}                    {1}
+%             {\WhenValidPage{2}{\typesetfile[#2.tex][page=2,width=\measure{fourpages}]}} {\WhenValidPage{2}{2}}
+%         \stopcombination
+%     \stoplinecorrection
+% \stoptexdefinition
+
 \starttexdefinition unexpanded FourSpread #1
     \startlinecorrection[blank]
         \startcombination[fourpages][4*1]

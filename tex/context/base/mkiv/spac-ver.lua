@@ -2017,8 +2017,7 @@ end
 
 do
 
-    local outer  = texnest[0]
-
+    local outer   = texnest[0]
     local enabled = true
     local count   = true
     local trace   = false
@@ -2041,53 +2040,84 @@ do
         end
     end)
 
+    -- hm, check the old one
+
+ -- function vspacing.synchronizepage()
+ --     if enabled then
+ --         local head = texlists.hold_head
+ --         local skip = 0
+ --         while head and head.id == insert_code do
+ --             head = head.next
+ --             skip = skip + 1
+ --         end
+ --         if head then
+ --             outer.prevdepth = 0
+ --         end
+ --         if trace then
+ --             report("prevdepth %s at page %i, skipped %i, value %p",
+ --                 head and "reset" or "kept",texgetcount("realpageno"),skip,outer.prevdepth)
+ --         end
+ --     end
+ -- end
+
+    local ignoredepth = -65536000
+
     function vspacing.synchronizepage()
         if enabled then
-            local depth = -65536000
-            local lines = 0
-            local head  = texlists.contrib_head
+            local newdepth = outer.prevdepth
+            local olddepth = newdepth
+            local oldlines = outer.prevgraf
+            local newlines = 0
+            local boxfound = false
+            local head     = texlists.contrib_head
             if head then
                 local tail = find_node_tail(tonut(head))
                 while tail do
                     local id = getid(tail)
                     if id == hlist_code then
-                        if lines == 0 then
-                            depth = getdepth(tail)
+                        if not boxfound then
+                            newdepth = getdepth(tail)
+                            boxfound = true
                         end
-                        lines = lines + 1
+                        newlines = newlines + 1
                         if not count then
                             break
                         end
+                    elseif id == vlist_code then
+                        if not boxfound then
+                            newdepth = getdepth(tail)
+                            boxfound = true
+                        end
+                        break
                     elseif id == glue_code then
                         local subtype = getsubtype(tail)
                         if not (subtype == baselineskip_code or subtype == lineskip_code) then
                             break
-                        elseif lines == 0 then
-                            -- go on
-                        elseif not count then
+                        elseif boxfound and not count then
                             break
                         end
                     elseif id == penalty_code then
-                        local subtype = getsubtype(tail)
-                        if subtype ~= linebreak_code then
-                            break
-                        elseif lines == 0 then
-                            -- go on
-                        elseif not count then
+                        if boxfound and not count then
                             break
                         end
                     else
+                        -- ins, mark, kern, rule, boundary, whatsit
                         break
                     end
                     tail = getprev(tail)
                 end
             end
-            texset("prevdepth",depth)
-            texset("prevgraf",lines)
-            outer.prevdepth = depth
-            outer.prevgraf  = lines
+            if boxfound then
+                -- what if newdepth ...
+            else
+                texset("prevdepth",ignoredepth)
+                outer.prevdepth = ignoredepth
+            end
+            texset("prevgraf", newlines)
+            outer.prevgraf = newlines
             if trace then
-                report("page %i, prevdepth %p, prevgraf %i",texgetcount("realpageno"),depth,lines)
+                report("page %i, prevdepth %p (last depth %p), prevgraf %i (from %i), %sboxes",
+                    texgetcount("realpageno"),olddepth,newdepth,oldlines,newlines,boxfound and "" or "no ")
             end
         end
     end

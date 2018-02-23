@@ -1168,6 +1168,7 @@
 		<cd:constant name='sidemethod' value='روش‌کنار'/>
 		<cd:constant name='sidespaceafter' value='فضای‌کناری‌بعد'/>
 		<cd:constant name='sidespacebefore' value='فضای‌کناری‌قبل'/>
+		<cd:constant name='sidespaceinbetween' value='sidespaceinbetween'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='علامت'/>
 		<cd:constant name='simplecommand' value='simplecommand'/>
