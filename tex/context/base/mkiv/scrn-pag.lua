@@ -41,6 +41,7 @@ implement {
             { "artoffset", "dimen" },
             { "trimoffset", "dimen" },
             { "copies", "integer" },
+            { "print", "string" }, -- , tohash
         }
     }
 }

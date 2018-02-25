@@ -25,11 +25,13 @@
 %D him when you run into problems. Bugs in this style can be sent to
 %D Hans.
 
-\usemodule
-  [abr-00]
+\showframe
 
-\setvariables
-   [document]
+\usemodule[abbreviations-words]
+
+\startmodule[modules-basics]
+
+\setupdocument
    [       file=\jobname,
            type=unknown,
         version={\currentdate[\v!year,{.},\v!month,{.},\v!day]},
@@ -120,6 +122,11 @@
     \setuppalet
       [module:\documentvariable{type}]
 
+    \setuptyping
+      [definition]
+      [lines=yes,
+       option=\documentvariable{type}]
+
     \startTEXpage
         \useMPgraphic{page}
     \stopTEXpage
@@ -181,20 +188,32 @@
     \endgroup
 \stoptexdefinition
 
-\definetyping [PL]  [\c!option=PL]
-\definetyping [JV]  [\c!option=JV]
-\definetyping [MP]  [\c!option=MP]
-\definetyping [TEX] [\c!option=TEX]
-\definetyping [LUA] [\c!option=LUA]
+% \definetyping [PL]  [\c!option=PL]
+% \definetyping [JV]  [\c!option=JV]
+% \definetyping [MP]  [\c!option=MP]
+% \definetyping [TEX] [\c!option=TEX]
+% \definetyping [LUA] [\c!option=LUA]
 
-\setuptyping [\v!typing]  [\c!margin=\v!standard]
-\setuptyping [\v!file]    [\c!margin=\v!standard]
-\setuptyping [definition] [\c!margin=0pt,\c!numbering=\v!line,\c!continue=\v!yes] % this continue wins
+\setuptyping
+  [\v!typing]
+  [\c!margin=\v!standard,
+   \c!lines=\v!yes]
+
+\setuptyping
+  [\v!file]
+  [\c!margin=\v!standard,
+   \c!lines=\v!yes]
+
+\setuptyping
+  [definition]
+  [\c!margin=0pt,
+   \c!numbering=\v!line,
+   \c!continue=\v!yes,
+   \c!lines=\v!yes]
 
 \setuplinenumbering
   [definition]
   [\c!style=\ttx,
-   \c!distance=\leftmargindistance,
    \c!align=\v!flushright]
 
 % This will be cleaned up.
@@ -206,7 +225,7 @@
       \else
         \index{#1{#2}}%
       \fi
-      #1{\doboundtext{#2}{\leftmarginwidth}{..}}}}
+      \dontleavehmode#1{\doboundtext{#2}{\leftmarginwidth}{..}}}}
 
 \unexpanded\def\modulemarginstuff#1#2% to be renamed
   {\processcommalist[#2]{\domodulemarginstuff#1}}
@@ -216,7 +235,7 @@
   [left]
   [stack=yes,
    hoffset=2em,
-   style=\ttxx]
+   style=\ttxx\setstrut]
 
 \unexpanded\def\macros  {\modulemarginstuff\tex  }
 \unexpanded\def\extras  {\modulemarginstuff\relax}
@@ -257,11 +276,11 @@
 
 % style (we use dejavu as it supports more characters)
 
-\switchtobodyfont
-  [dejavu-condensed,10pt] % preload
+\usebodyfont
+  [dejavu-condensed,9pt] % preload
 
 \setupbodyfont
-  [dejavu,10pt] % main font
+  [dejavu,9pt] % main font
 
 \mainlanguage
   [en]
@@ -379,13 +398,6 @@
 
 }
 
-% bonus
+\protect
 
-\usemodule
-  [abr-02]
-
-% another one
-
-\dontcomplain
-
-\protect \endinput
+\stopmodule

@@ -15,8 +15,9 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 -- referencing and references had to be tracked in multiple passes. Of
 -- course there are a couple of more changes.
 
-local next, tostring = next, tostring
+local next, tostring, type = next, tostring, type
 local format, gsub, formatters = string.format, string.gsub, string.formatters
+local flattened = table.flattened
 local texset, texget = tex.set, tex.get
 
 local backends, lpdf, nodes = backends, lpdf, nodes
@@ -364,6 +365,7 @@ local pagespecs = {
 
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
 local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
+local marked = false
 local copies = false
 
 function codeinjections.setupcanvas(specification)
@@ -381,6 +383,7 @@ function codeinjections.setupcanvas(specification)
     leftoffset  = specification.leftoffset or 0
     height      = specification.height     or texget("pageheight")
     width       = specification.width      or texget("pagewidth")
+    marked      = specification.print
     --
     copies      = specification.copies
     if copies and copies < 2 then
@@ -439,13 +442,23 @@ local function documentspecification()
     if mode then
         addtocatalog("PageMode",pdfconstant(mode))
     end
-    if fit or fixed or duplex or copies or paper then
+    local prints = nil
+    if marked then
+        local pages     = structures.pages
+        local marked    = pages.allmarked(marked)
+        local nofmarked = marked and #marked or 0
+        if nofmarked > 0 then
+            prints = pdfarray(flattened(pages.toranges(marked)))
+        end
+    end
+    if fit or fixed or duplex or copies or paper or marked then
         addtocatalog("ViewerPreferences",pdfdictionary {
             FitWindow         = fit    and true                or nil,
             PrintScaling      = fixed  and pdfconstant("None") or nil,
             Duplex            = duplex and pdfconstant(duplex) or nil,
             NumCopies         = copies and copies              or nil,
             PickTrayByPDFSize = paper  and true                or nil,
+            PrintPageRange    = prints                         or nil,
         })
     end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP

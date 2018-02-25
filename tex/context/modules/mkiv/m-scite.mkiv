@@ -57,11 +57,11 @@ buffers.scite = scite
 -- context output:
 
 local f_def_color = formatters["\\definecolor[slxc%s][h=%02X%02X%02X]%%"]
-local f_fore_none = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s#1}}%%"]
-local f_fore_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s\\bf#1}}%%"]
-local f_none_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\bf#1}}%%"]
-local f_none_none = formatters["\\unexpanded\\def\\slx%s#1{{#1}}%%"]
-local f_texstyled = formatters["\\slx%s{%s}"]
+local f_fore_none = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s#1}\\slxbreak}%%"]
+local f_fore_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s\\bf#1}\\slxbreak}%%"]
+local f_none_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\bf#1}\\slxbreak}%%"]
+local f_none_none = formatters["\\unexpanded\\def\\slx%s#1{{#1}\\slxbreak}%%"]
+local f_texstyled = formatters["\\slx%s{%s}\\slxbreak"]
 local f_hanging   = formatters["\\slxb{%r}%s\\slxe"] -- we need to round: lua 5.3
 
 local v_none      = interfaces.variables.none
@@ -448,6 +448,9 @@ visualizers.register("txt",   visualizer)
 \unexpanded\def\stopDisplayScite
   {\stoplines
    \endgroup}
+
+\unexpanded\def\slxbreak
+  {\allowbreak}
 
 \protect
 

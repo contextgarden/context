@@ -9863,6 +9863,10 @@ return {
    ["pe"]="شماره‌قبلی",
    ["ro"]="numarprecedent",
   },
+  ["print"]={
+   ["en"]="print",
+   ["nl"]="print",
+  },
   ["printable"]={
    ["cs"]="tisknutelne",
    ["de"]="druckbar",

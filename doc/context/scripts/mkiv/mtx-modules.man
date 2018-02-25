@@ -19,6 +19,9 @@ process source files (tex, mkii, mkiv, mp) to 'pdf' files
 .TP
 .B --prep
 use original name with suffix 'prep' appended
+.TP
+.B --direct
+use old method instead of extra
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

@@ -51,6 +51,9 @@
                 <cd:parameter name="copies">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="print">
+                    <cd:constant type="cd:list"/>
+                </cd:parameter>
                 <cd:parameter name="delay">
                     <cd:constant type="none" default="yes"/>
                     <cd:constant type="cd:number"/>

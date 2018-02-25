@@ -316,8 +316,17 @@
 \def\page_mark[#1][#2]%
   {\clf_markpage{#1}{#2}}
 
+\def\markedpages[#1]% expandable
+  {\clf_markedpages{#1}}
+
 \unexpanded\def\doifelsemarkedpage#1%
   {\clf_doifelsemarkedpage{#1}}
+
+\unexpanded\def\startmarkpages[#1]%
+  {\clf_startmarkpages{#1}}
+
+\unexpanded\def\stopmarkpages
+  {\clf_stopmarkpages}
 
 %D Experimental:
 

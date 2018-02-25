@@ -1,0 +1,166 @@
+%D \module
+%D   [       file=mtx-context-modules,
+%D        version=2018.02.24, % very old stuff, now also as extra
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Module TYpesetting,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a \TEXEXEC\ features that has been moved to \MKIV.
+
+% begin help
+%
+% usage: context --extra=listing [options] list-of-files
+%
+% end help
+
+\input mtx-context-common.tex
+
+\usemodule[scite]
+\usemodule[modules-basics]
+
+\dontcomplain
+
+\starttext
+
+\startluacode
+    local find, gsub, match, sub = string.find, string.gsub, string.match, string.sub
+    local formatters, strip, splitlines, is_empty = string.formatters, string.strip, string.splitlines, string.is_empty
+
+    local types = {
+            mkiv = "tex",
+            mkii = "tex",
+            cld  = "lua",
+            lfg  = "lua",
+            mpiv = "mp",
+            mpii = "mp",
+        }
+
+    local function process(inpname,filetype)
+        local data = io.loaddata(inpname)
+        if data and data ~= "" then
+            local result       = { }
+            local skiplevel    = 0
+            local indocument   = false
+            local indefinition = false
+            local started      = false
+            local settings     = formatters["type=%s"](filetype)
+            local preamble, n  = lpeg.match(lpeg.Cs((1-lpeg.patterns.newline^2)^1) * lpeg.Cp(),data)
+            local r            = 0
+            if preamble then
+                preamble = match(preamble,"\\module.-%[(.-)%]")
+                if preamble then
+                    preamble = gsub(preamble,"%%D *","")
+                    preamble = gsub(preamble,"%%(.-)[\n\r]","")
+                    preamble = gsub(preamble,"[\n\r]","")
+                    preamble = strip(preamble)
+                    settings = formatters["%s,%s"](settings,preamble)
+                    data = sub(data,n,#data)
+                end
+            end
+            local lines = splitlines(data)
+            r = r + 1 ; result[r] = formatters["\\startmoduledocumentation[%s]"](settings)
+            for i=1,#lines do
+                local line = lines[i]
+                if find(line,"^%%D ") or find(line,"^%%D$") then
+                    if skiplevel == 0 then
+                        local someline = #line < 3 and "" or sub(line,4,#line)
+                        if indocument then
+                            r = r + 1 ; result[r] = someline
+                        else
+                            if indefinition then
+                                r = r + 1 ; result[r] = "\\stopdefinition"
+                                indefinition = false
+                            end
+                            if not indocument then
+                                r = r + 1 ; result[r] = "\\startdocumentation"
+                            end
+                            r = r + 1 ; result[r] = someline
+                            indocument = true
+                        end
+                    end
+                elseif find(line,"^%%M ") or find(line,"^%%M$") then
+                    if skiplevel == 0 then
+                        local someline = (#line < 3 and "") or sub(line,4,#line)
+                        r = r + 1 ; result[r] = someline
+                    end
+                elseif find(line,"^%%S B") then
+                    skiplevel = skiplevel + 1
+                elseif find(line,"^%%S E") then
+                    skiplevel = skiplevel - 1
+                elseif find(line,"^%%") then
+                    -- nothing
+                elseif skiplevel == 0 then
+                    inlocaldocument = indocument
+                    inlocaldocument = false
+                    local someline = line
+                    if indocument then
+                        r = r + 1 ; result[r] = "\\stopdocumentation"
+                        indocument = false
+                    end
+                    if indefinition then
+                        if is_empty(someline) then
+                            r = r + 1 ; result[r] = "\\stopdefinition"
+                            indefinition = false
+                        else
+                            r = r + 1 ; result[r] = someline
+                        end
+                    elseif not is_empty(someline) then
+                        r = r + 1 ; result[r] = "\\startdefinition"
+                        indefinition = true
+                        if inlocaldocument then
+                            -- nothing
+                        else
+                            r = r + 1 ; result[r] = someline
+                        end
+                    end
+                end
+            end
+            if indocument then
+                r = r + 1 ; result[r] = "\\stopdocumentation"
+            end
+            if indefinition then
+                r = r + 1 ; result[r] = "\\stopdefinition"
+            end
+            r = r + 1 ; result[r] = "\\stopmoduledocumentation"
+            result = table.concat(result,"\r")
+            buffers.assign("module",result)
+            context.getbuffer { "module" }
+        end
+    end
+
+    local pattern = document.arguments.pattern
+
+    if pattern then
+        document.files = dir.glob(pattern)
+    end
+
+    local done  = false
+    local files = document.files
+
+    if #files > 0 then
+        if document.arguments.sort then
+            table.sort(files)
+        end
+        for i=1,#files do
+            local filename = files[i]
+            if not find(filename,"^mtx%-context%-") then
+                local suffix = file.extname(filename) or ""
+                process(filename,types[suffix] or suffix)
+                done = true
+            end
+        end
+    end
+
+    if not done then
+        context("no files given")
+    end
+
+\stopluacode
+
+\stoptext

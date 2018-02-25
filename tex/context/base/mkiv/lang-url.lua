@@ -194,7 +194,6 @@ local function action(hyphenatedurl,str,left,right,disc)
         end
     end
     list = concat(list)
-    print(list)
     context(list)
 end
 

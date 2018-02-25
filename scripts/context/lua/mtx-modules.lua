@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mtx-modules'] = {
     license   = "see context related readme files"
 }
 
+-- should be an extra
+
 scripts         = scripts         or { }
 scripts.modules = scripts.modules or { }
 
@@ -23,6 +25,7 @@ local helpinfo = [[
     <flag name="convert"><short>convert source files (tex, mkii, mkiv, mp) to 'ted' files</short></flag>
     <flag name="process"><short>process source files (tex, mkii, mkiv, mp) to 'pdf' files</short></flag>
     <flag name="prep"><short>use original name with suffix 'prep' appended</short></flag>
+    <flag name="direct"><short>use old method instead of extra</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -160,32 +163,51 @@ local function source_to_ted(inpname,outname,filetype)
     return true
 end
 
-local suffixes = table.tohash { 'tex','mkii','mkiv', 'mkvi', 'mp' }
+local suffixes = table.tohash { 'tex', 'mkii', 'mkiv', 'mkvi', 'mp', 'mpii', 'mpiv' }
 
 function scripts.modules.process(runtex)
     local processed = { }
-    local prep = environment.argument("prep")
-    local files = environment.files
-    for i=1,#files do
-        local shortname = files[i]
-        local suffix = file.suffix(shortname)
-        if suffixes[suffix] then
-            local longname
-            if prep then
-                longname = shortname .. ".prep"
-            else
-                longname = file.removesuffix(shortname) .. "-" .. suffix .. ".ted"
-            end
-            local done = source_to_ted(shortname,longname)
-            if done and runtex then
-                os.execute(format("mtxrun --script context --usemodule=mod-01 --purge %s",longname))
-                processed[#processed+1] = longname
+    local files     = environment.files
+    if environment.arguments.direct then
+        local prep = environment.argument("prep")
+        for i=1,#files do
+            local shortname = files[i]
+            local suffix    = file.suffix(shortname)
+            if suffixes[suffix] then
+                local longname
+                if prep then
+                    longname = shortname .. ".prep"
+                else
+                    longname = file.removesuffix(shortname) .. "-" .. suffix .. ".ted"
+                end
+                local done = source_to_ted(shortname,longname)
+                if done and runtex then
+                    local command = format("mtxrun --script context --usemodule=modules-basics --purge %s",longname)
+                    report()
+                    report("running: %s",command)
+                    report()
+                    os.execute(command)
+                    processed[#processed+1] = longname
+                end
             end
         end
+    else
+        for i=1,#files do
+            local name    = files[i]
+            local only    = file.nameonly(name)
+            local command = format("mtxrun --script context --extra=module --result=%s %s",only,name)
+            report()
+            report("running: %s",command)
+            report()
+            os.execute(command)
+            processed[#processed+1] = command
+        end
     end
-    for i=1,#processed do
-        local name = processed[i]
-        report("modules","processed: %s",name)
+    if #processed > 0 then
+        report()
+        for i=1,#processed do
+            report("processed: %s",processed[i])
+        end
     end
 end
 

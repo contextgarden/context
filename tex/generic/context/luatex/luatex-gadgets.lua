@@ -16,14 +16,13 @@ gadgets = gadgets or { } -- global namespace
 
 -- marking content for optional removal
 
-local marking   = { }
-gadgets.marking = marking
+local marking        = { }
+gadgets.marking      = marking
 
-local marksignal   = 5001 -- will be set in the tex module
-local lastmarked   = 0
-local marked       = { }
-local local_par    = 6
-local whatsit_node = 8
+local marksignal     = 5001 -- will be set in the tex module
+local lastmarked     = 0
+local marked         = { }
+local local_par_code = 9
 
 function marking.setsignal(n)
     marksignal = tonumber(n) or marksignal
@@ -53,9 +52,7 @@ function marking.remove(str)
             local first = last
             while true do
                 local prev = first.prev
-                if not prev
-                        or prev[marksignal] ~= attr
-                        or (prev.id == whatsit_node and prev.subtype == local_par) then
+                if not prev or prev[marksignal] ~= attr or prev.id == local_par_code then
                     break
                 else
                     first = prev
