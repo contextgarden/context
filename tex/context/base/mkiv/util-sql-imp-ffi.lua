@@ -146,6 +146,10 @@ local sql                    = utilities.sql
 ----- mysql                  = ffi.load(os.name == "windows" and "libmysql" or "libmysqlclient")
 local mysql                  = ffilib(os.name == "windows" and "libmysql" or "libmysqlclient")
 
+if not mysql then
+    report_state("unable to load library")
+end
+
 local nofretries             = 5
 local retrydelay             = 1
 
@@ -516,6 +520,8 @@ local tostring        = tostring
 local tonumber        = tonumber
 local booleanstring   = string.booleanstring
 
+local NULL            = ffi.cast("MYSQL_result *",0)
+
 %s
 
 return function(result)
@@ -533,7 +539,12 @@ return function(result)
         local cells = { }
         local row   = mysql_fetch_row(_result_)
         for j=1,noffields do
-            cells[j] = ffi_tostring(row[j-1])
+            local s = row[j-1]
+            if s == NULL then
+                cells[j] = ""
+            else
+                cells[j] = ffi_tostring(s)
+            end
         end
         target[%s] = {
             %s

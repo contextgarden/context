@@ -207,7 +207,7 @@ local function report_start(left,name)
          -- report_load("%s > %s",types[left],name or "?")
             report_load("type %a, name %a",types[left],name or "?")
         end
-    elseif find(name,"virtual://") then
+    elseif find(name,"virtual://",1,true) then
         insert(stack,false)
     else
         insert(stack,name)

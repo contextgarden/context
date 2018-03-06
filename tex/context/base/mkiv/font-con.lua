@@ -333,7 +333,7 @@ local psfake = 0
 local function fixedpsname(psname,fallback)
     local usedname = psname
     if psname and psname ~= "" then
-        if find(psname," ") then
+        if find(psname," ",1,true) then
             usedname = gsub(psname,"[%s]+","-")
         else
             -- we assume that the name is sane enough (we might sanitize completely some day)

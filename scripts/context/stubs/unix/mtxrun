@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 5478, stripped down to: 3018
+-- original size: 6090, stripped down to: 3527
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -174,9 +174,17 @@ if not FFISUPPORTED then
 elseif not ffi.number then
   ffi.number=tonumber
 end
-if not bit32 and utf8 then
+if not bit32 then
   bit32=require("l-bit32")
 end
+local loaded=package.loaded
+if not loaded["socket"] then loaded["socket"]=loaded["socket.core"] end
+if not loaded["mime"]  then loaded["mime"]=loaded["mime.core"]  end
+if not loaded["socket.http"] then loaded["socket.http"]=socket.http end
+if not loaded["socket.ftp"] then loaded["socket.ftp"]=socket.ftp end
+if not loaded["socket.smtp"] then loaded["socket.smtp"]=socket.smtp end
+if not loaded["socket.tp"]  then loaded["socket.tp"]=socket.tp  end
+if not loaded["socket.url"] then loaded["socket.url"]=socket.url end
 
 
 end -- of closure
@@ -332,7 +340,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-sandbox"] = package.loaded["l-sandbox"] or true
 
--- original size: 9667, stripped down to: 6678
+-- original size: 9678, stripped down to: 6688
 
 if not modules then modules={} end modules ['l-sandbox']={
   version=1.001,
@@ -345,7 +353,7 @@ local global=_G
 local next=next
 local unpack=unpack or table.unpack
 local type=type
-local tprint=texio.write_nl or print
+local tprint=texio and texio.write_nl or print
 local tostring=tostring
 local format=string.format 
 local concat=table.concat
@@ -1861,7 +1869,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40086, stripped down to: 23513
+-- original size: 40161, stripped down to: 23559
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1879,6 +1887,9 @@ local getinfo=debug.getinfo
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local floor=math.floor
 local stripper=patterns.stripper
+function table.getn(t)
+  return t and #t 
+end
 function table.strip(tab)
   local lst,l={},0
   for i=1,#tab do
@@ -3854,7 +3865,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 21090, stripped down to: 10074
+-- original size: 21616, stripped down to: 10359
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -4231,6 +4242,23 @@ function lfs.mkdirs(path)
     lfs.mkdir(full)
   end
 end
+function file.withinbase(path) 
+  local l=0
+  if not find(path,"^/") then
+    path="/"..path
+  end
+  for dir in gmatch(path,"/([^/]+)") do
+    if dir==".." then
+      l=l-1
+    elseif dir~="." then
+      l=l+1
+    end
+    if l<0 then
+      return false
+    end
+  end
+  return true
+end
 
 
 end -- of closure
@@ -4383,7 +4411,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-url"] = package.loaded["l-url"] or true
 
--- original size: 12543, stripped down to: 5731
+-- original size: 14755, stripped down to: 7236
 
 if not modules then modules={} end modules ['l-url']={
   version=1.001,
@@ -4397,21 +4425,48 @@ local concat=table.concat
 local tonumber,type,next=tonumber,type,next
 local P,C,R,S,Cs,Cc,Ct,Cf,Cg,V=lpeg.P,lpeg.C,lpeg.R,lpeg.S,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Cf,lpeg.Cg,lpeg.V
 local lpegmatch,lpegpatterns,replacer=lpeg.match,lpeg.patterns,lpeg.replacer
+local sortedhash=table.sortedhash
 url=url or {}
 local url=url
-local tochar=function(s) return char(tonumber(s,16)) end
+local unescapes={}
+local escapes={}
+setmetatable(unescapes,{ __index=function(t,k)
+  local v=char(tonumber(k,16))
+  t[k]=v
+  return v
+end })
+setmetatable(escapes,{ __index=function(t,k)
+  local v=format("%%%02X",byte(k))
+  t[k]=v
+  return v
+end })
 local colon=P(":")
 local qmark=P("?")
 local hash=P("#")
 local slash=P("/")
+local atsign=P("@")
 local percent=P("%")
 local endofstring=P(-1)
 local hexdigit=R("09","AF","af")
 local plus=P("+")
 local nothing=Cc("")
-local escapedchar=(percent*C(hexdigit*hexdigit))/tochar
+local okay=R("09","AZ","az")+S("-_.,:=+*~!'()@&$")
+local escapedchar=(percent*C(hexdigit*hexdigit))/unescapes
+local unescapedchar=P(1)/escapes
 local escaped=(plus/" ")+escapedchar 
 local noslash=P("/")/""
+local plustospace=P("+")/" "
+local decoder=Cs((
+          plustospace+escapedchar+P("\r\n")/"\n"+P(1)
+        )^0 )
+local encoder=Cs((
+          R("09","AZ","az")^1+S("-./_")^1+P(" ")/"+"+P("\n")/"\r\n"+unescapedchar
+        )^0 )
+lpegpatterns.urldecoder=decoder
+lpegpatterns.urlencoder=encoder
+function url.decode (str) return str and lpegmatch(decoder,str) or str end
+function url.encode (str) return str and lpegmatch(encoder,str) or str end
+function url.unescape(str) return str and lpegmatch(unescaper,str) or str end
 local schemestr=Cs((escaped+(1-colon-slash-qmark-hash))^2)
 local authoritystr=Cs((escaped+(1-   slash-qmark-hash))^0)
 local pathstr=Cs((escaped+(1-      qmark-hash))^0)
@@ -4426,13 +4481,7 @@ local validurl=scheme*authority*path*query*fragment
 local parser=Ct(validurl)
 lpegpatterns.url=validurl
 lpegpatterns.urlsplitter=parser
-local escapes={}
-setmetatable(escapes,{ __index=function(t,k)
-  local v=format("%%%02X",byte(k))
-  t[k]=v
-  return v
-end })
-local escaper=Cs((R("09","AZ","az")^1+P(" ")/"%%20"+S("-./_")^1+P(1)/escapes)^0) 
+local escaper=Cs((R("09","AZ","az")^1+P(" ")/"%%20"+S("-./_:")^1+P(1)/escapes)^0) 
 local unescaper=Cs((escapedchar+1)^0)
 local getcleaner=Cs((P("+++")/"%%2B"+P("+")/"%%20"+P(1))^1)
 lpegpatterns.urlunescaped=escapedchar
@@ -4462,12 +4511,15 @@ local barswapper=replacer("|",":")
 local backslashswapper=replacer("\\","/")
 local equal=P("=")
 local amp=P("&")
-local key=Cs(((escapedchar+1)-equal      )^0)
-local value=Cs(((escapedchar+1)-amp -endofstring)^0)
+local key=Cs(((plustospace+escapedchar+1)-equal       )^0)
+local value=Cs(((plustospace+escapedchar+1)-amp-endofstring)^0)
 local splitquery=Cf (Ct("")*P { "sequence",
   sequence=V("pair")*(amp*V("pair"))^0,
   pair=Cg(key*equal*value),
 },rawset)
+local userpart=(1-atsign-colon)^1
+local serverpart=(1-colon)^1
+local splitauthority=((Cs(userpart)*colon*Cs(userpart)+Cs(userpart)*Cc(nil))*atsign+Cc(nil)*Cc(nil))*Cs(serverpart)*(colon*(serverpart/tonumber)+Cc(nil))
 local function hashed(str) 
   if not str or str=="" then
     return {
@@ -4500,7 +4552,14 @@ local function hashed(str)
   end
   local authority=detailed[2]
   local path=detailed[3]
-  local filename=nil
+  local filename 
+  local username 
+  local password 
+  local host   
+  local port   
+  if authority~="" then
+    username,password,host,port=lpegmatch(splitauthority,authority)
+  end
   if authority=="" then
     filename=path
   elseif path=="" then
@@ -4518,6 +4577,8 @@ local function hashed(str)
     original=str,
     noscheme=false,
     filename=filename,
+    host=host,
+    port=port,
   }
 end
 url.split=split
@@ -4533,24 +4594,38 @@ function url.addscheme(str,scheme)
   end
 end
 function url.construct(hash) 
-  local fullurl,f={},0
-  local scheme,authority,path,query,fragment=hash.scheme,hash.authority,hash.path,hash.query,hash.fragment
+  local result,r={},0
+  local scheme=hash.scheme
+  local authority=hash.authority
+  local path=hash.path
+  local queries=hash.queries
+  local fragment=hash.fragment
   if scheme and scheme~="" then
-    f=f+1;fullurl[f]=scheme.."://"
+    r=r+1;result[r]=lpegmatch(escaper,scheme)
+    r=r+1;result[r]="://"
   end
   if authority and authority~="" then
-    f=f+1;fullurl[f]=authority
+    r=r+1;result[r]=lpegmatch(escaper,authority)
   end
   if path and path~="" then
-    f=f+1;fullurl[f]="/"..path
+    r=r+1;result[r]="/"
+    r=r+1;result[r]=lpegmatch(escaper,path)
   end
-  if query and query~="" then
-    f=f+1;fullurl[f]="?"..query
+  if queries then
+    local done=false
+    for k,v in sortedhash(queries) do
+      r=r+1;result[r]=done and "&" or "?"
+      r=r+1;result[r]=lpegmatch(escaper,k) 
+      r=r+1;result[r]="="
+      r=r+1;result[r]=lpegmatch(escaper,v) 
+      done=true
+    end
   end
   if fragment and fragment~="" then
-    f=f+1;fullurl[f]="#"..fragment
+    r=r+1;result[r]="#"
+    r=r+1;result[r]=lpegmatch(escaper,fragment)
   end
-  return lpegmatch(escaper,concat(fullurl))
+  return concat(result)
 end
 local pattern=Cs(slash^-1/""*R("az","AZ")*((S(":|")/":")+P(":"))*slash*P(1)^0)
 function url.filename(filename)
@@ -5166,7 +5241,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 39368, stripped down to: 17066
+-- original size: 40036, stripped down to: 17837
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -5182,8 +5257,6 @@ local type=type
 local char,byte,format,sub,gmatch=string.char,string.byte,string.format,string.sub,string.gmatch
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
-local floor=math.floor
-local rshift=bit32.rshift
 local lpegmatch=lpeg.match
 local patterns=lpeg.patterns
 local tabletopattern=lpeg.utfchartabletopattern
@@ -5207,29 +5280,59 @@ if not utf.char then
   utf.char=string.utfcharacter or (utf8 and utf8.char)
   if not utf.char then
     local char=string.char
-    function utf.char(n)
-      if n<0x80 then
-        return char(n)
-      elseif n<0x800 then
-        return char(
-          0xC0+rshift(n,6),
-          0x80+(n%0x40)
-        )
-      elseif n<0x10000 then
-        return char(
-          0xE0+rshift(n,12),
-          0x80+(rshift(n,6)%0x40),
-          0x80+(n%0x40)
-        )
-      elseif n<0x200000 then
-        return char(
-          0xF0+rshift(n,18),
-          0x80+(rshift(n,12)%0x40),
-          0x80+(rshift(n,6)%0x40),
-          0x80+(n%0x40)
-        )
-      else
-        return ""
+    if bit32 then
+      local rshift=bit32.rshift
+      function utf.char(n)
+        if n<0x80 then
+          return char(n)
+        elseif n<0x800 then
+          return char(
+            0xC0+rshift(n,6),
+            0x80+(n%0x40)
+          )
+        elseif n<0x10000 then
+          return char(
+            0xE0+rshift(n,12),
+            0x80+(rshift(n,6)%0x40),
+            0x80+(n%0x40)
+          )
+        elseif n<0x200000 then
+          return char(
+            0xF0+rshift(n,18),
+            0x80+(rshift(n,12)%0x40),
+            0x80+(rshift(n,6)%0x40),
+            0x80+(n%0x40)
+          )
+        else
+          return ""
+        end
+      end
+    else
+      local floor=math.floor
+      function utf.char(n)
+        if n<0x80 then
+          return char(n)
+        elseif n<0x800 then
+          return char(
+            0xC0+floor(n/0x40),
+            0x80+(n%0x40)
+          )
+        elseif n<0x10000 then
+          return char(
+            0xE0+floor(n/0x1000),
+            0x80+(floor(n/0x40)%0x40),
+            0x80+(n%0x40)
+          )
+        elseif n<0x200000 then
+          return char(
+            0xF0+floor(n/0x40000),
+            0x80+(floor(n/0x1000)%0x40),
+            0x80+(floor(n/0x40)%0x40),
+            0x80+(n%0x40)
+          )
+        else
+          return ""
+        end
       end
     end
   end
@@ -5790,21 +5893,23 @@ function utf.chrlen(u)
     (u<0xFC and 5) or
     (u<0xFE and 6) or 0
 end
-local extract=bit32.extract
-local char=string.char
-function unicode.toutf32string(n)
-  if n<=0xFF then
-    return
-      char(n).."\000\000\000"
-  elseif n<=0xFFFF then
-    return
-      char(extract(n,0,8))..char(extract(n,8,8)).."\000\000"
-  elseif n<=0xFFFFFF then
-    return
-      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8)).."\000"
-  else
-    return
-      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
+if bit32 then
+  local extract=bit32.extract
+  local char=string.char
+  function unicode.toutf32string(n)
+    if n<=0xFF then
+      return
+        char(n).."\000\000\000"
+    elseif n<=0xFFFF then
+      return
+        char(extract(n,0,8))..char(extract(n,8,8)).."\000\000"
+    elseif n<=0xFFFFFF then
+      return
+        char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8)).."\000"
+    else
+      return
+        char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
+    end
   end
 end
 local len=utf.len
@@ -7358,7 +7463,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7481, stripped down to: 5627
+-- original size: 7787, stripped down to: 5858
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7369,9 +7474,6 @@ if not modules then modules={} end modules ['util-fil']={
 }
 local byte=string.byte
 local char=string.char
-local extract=bit32.extract
-local rshift=bit32.rshift
-local band=bit32.band
 utilities=utilities or {}
 local files={}
 utilities.files=files
@@ -7541,14 +7643,18 @@ function files.readfixed4(f)
     return (0x100*a+b     )+(0x100*c+d)/0x10000
   end
 end
-function files.read2dot14(f)
-  local a,b=byte(f:read(2),1,2)
-  if a>=0x80 then
-    local n=-(0x100*a+b)
-    return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
-  else
-    local n=0x100*a+b
-    return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+if bit32 then
+  local extract=bit32.extract
+  local band=bit32.band
+  function files.read2dot14(f)
+    local a,b=byte(f:read(2),1,2)
+    if a>=0x80 then
+      local n=-(0x100*a+b)
+      return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    else
+      local n=0x100*a+b
+      return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    end
   end
 end
 function files.skipshort(f,n)
@@ -7557,11 +7663,22 @@ end
 function files.skiplong(f,n)
   f:read(4*(n or 1))
 end
-function files.writecardinal2(f,n)
-  local a=char(n%256)
-  n=rshift(n,8)
-  local b=char(n%256)
-  f:write(b,a)
+if bit32 then
+  local rshift=bit32.rshift
+  function files.writecardinal2(f,n)
+    local a=char(n%256)
+    n=rshift(n,8)
+    local b=char(n%256)
+    f:write(b,a)
+  end
+else
+  local floor=math.floor
+  function files.writecardinal2(f,n)
+    local a=char(n%256)
+    n=floor(n/256)
+    local b=char(n%256)
+    f:write(b,a)
+  end
 end
 function files.writecardinal4(f,n)
   local a=char(n%256)
@@ -10890,7 +11007,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 20388, stripped down to: 13919
+-- original size: 20393, stripped down to: 13924
 
 if not modules then modules={} end modules ['util-sbx']={
   version=1.001,
@@ -11272,7 +11389,7 @@ function sandbox.getrunner(name)
   return name and validrunners[name]
 end
 local function suspicious(str)
-  return (find(str,"[/\\]") or find(command,"%.%.")) and true or false
+  return (find(str,"[/\\]") or find(command,"..",1,true)) and true or false
 end
 local function binaryrunner(action,command,...)
   if validbinaries==false then
@@ -20294,7 +20411,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-aux"] = package.loaded["data-aux"] or true
 
--- original size: 2431, stripped down to: 1996
+-- original size: 2438, stripped down to: 2003
 
 if not modules then modules={} end modules ['data-aux']={
   version=1.001,
@@ -20330,7 +20447,7 @@ function resolvers.updatescript(oldname,newname)
         if trace_locating then
           report_scripts("old and new script are the same")
         end
-      elseif not find(newscript,scriptpath) then
+      elseif not find(newscript,scriptpath,1,true) then
         if trace_locating then
           report_scripts("new script should come from %a",scriptpath)
         end
@@ -21100,8 +21217,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 872817
--- stripped bytes    : 319315
+-- original bytes    : 877239
+-- stripped bytes    : 320368
 
 -- end library merge
 

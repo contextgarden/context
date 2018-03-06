@@ -182,7 +182,7 @@ function scripts.modules.process(runtex)
                 end
                 local done = source_to_ted(shortname,longname)
                 if done and runtex then
-                    local command = format("mtxrun --script context --usemodule=modules-basics --purge %s",longname)
+                    local command = format("mtxrun --script context --usemodule=module-basic --purge %s",longname)
                     report()
                     report("running: %s",command)
                     report()

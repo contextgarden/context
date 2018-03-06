@@ -390,8 +390,8 @@ local function doifelsecommon(a,b)
         end
         return
     end
-    local ba = find(a,",")
-    local bb = find(b,",")
+    local ba = find(a,",",1,true)
+    local bb = find(b,",",1,true)
     if ba and bb then
         local ha = hash[a]
         local hb = hash[b]
@@ -433,8 +433,8 @@ local function doifcommon(a,b)
         end
         return
     end
-    local ba = find(a,",")
-    local bb = find(b,",")
+    local ba = find(a,",",1,true)
+    local bb = find(b,",",1,true)
     if ba and bb then
         local ha = hash[a]
         local hb = hash[b]
@@ -476,8 +476,8 @@ local function doifnotcommon(a,b)
         end
         return
     end
-    local ba = find(a,",")
-    local bb = find(b,",")
+    local ba = find(a,",",1,true)
+    local bb = find(b,",",1,true)
     if ba and bb then
         local ha = hash[a]
         local hb = hash[b]
@@ -519,7 +519,7 @@ local function doifelseinset(a,b)
         end
         return
     end
-    local bb = find(b,",")
+    local bb = find(b,",",1,true)
     if bb then
         if hash[b][a] then
      -- if settings_to_set(b)[a] then
@@ -542,7 +542,7 @@ local function doifinset(a,b)
         end
         return
     end
-    local bb = find(b,",")
+    local bb = find(b,",",1,true)
     if bb then
        if hash[b][a] then
     -- if settings_to_set(b)[a] then
@@ -565,7 +565,7 @@ local function doifnotinset(a,b)
         end
         return
     end
-    local bb = find(b,",")
+    local bb = find(b,",",1,true)
     if bb then
         if hash[b][a] then
      -- if settings_to_set(b)[a] then

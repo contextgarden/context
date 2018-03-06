@@ -230,7 +230,20 @@ elseif not ffi.number then
     ffi.number = tonumber
 end
 
-if not bit32 and utf8 then
+if not bit32 then -- and utf8 then
  -- bit32 = load ( [[ -- replacement code with 5.3 syntax so that 5.2 doesn't bark on it ]] )
     bit32 = require("l-bit32")
 end
+
+-- We need this due a bug in luatex socket loading:
+
+local loaded = package.loaded
+
+if not loaded["socket"] then loaded["socket"] = loaded["socket.core"] end
+if not loaded["mime"]   then loaded["mime"]   = loaded["mime.core"]   end
+
+if not loaded["socket.http"] then loaded["socket.http"] = socket.http end
+if not loaded["socket.ftp"]  then loaded["socket.ftp"]  = socket.ftp  end
+if not loaded["socket.smtp"] then loaded["socket.smtp"] = socket.smtp end
+if not loaded["socket.tp"]   then loaded["socket.tp"]   = socket.tp   end
+if not loaded["socket.url"]  then loaded["socket.url"]  = socket.url  end

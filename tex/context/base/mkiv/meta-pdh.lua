@@ -100,7 +100,7 @@ function mptopdf.steps.strip() -- .3 per expr
         end
         local name, version = gmatch(preamble,"%%%%Creator: +(.-) +(.-) ")
         mptopdf.version = tostring(version or "0")
-        if find(preamble,"/hlw{0 dtransform") then
+        if find(preamble,"/hlw{0 dtransform",1,true) then
             mptopdf.shortcuts = true
         end
         -- the boundingbox specification needs to come before data, well, not really
@@ -589,7 +589,7 @@ do
     local captures_new = ( space + procset + preamble + verbose )^0
 
     function mptopdf.parsers.lpeg()
-        if find(mptopdf.data,"%%%%BeginResource: procset mpost") then
+        if find(mptopdf.data,"%%BeginResource: procset mpost",1,true) then
             lpegmatch(captures_new,mptopdf.data)
         else
             lpegmatch(captures_old,mptopdf.data)

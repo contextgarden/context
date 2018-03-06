@@ -1291,7 +1291,7 @@ local function collapse_bars(t)
 local d = false
 for i=1,m do
     local ti = t[i]
-    if type(ti) == "string" and find(ti,"\\left") then
+    if type(ti) == "string" and find(ti,"\\left",1,true) then
         d = true
         break
     end

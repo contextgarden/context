@@ -703,3 +703,25 @@ function lfs.mkdirs(path)
         lfs.mkdir(full)
     end
 end
+
+-- here is oen i ran into when messign around with xavante code (keppler project)
+-- where it's called in_base .. no gain in using lpeg here
+
+function file.withinbase(path) -- don't go beyond root
+    local l = 0
+    if not find(path,"^/") then
+        path = "/" .. path
+    end
+    for dir in gmatch(path,"/([^/]+)") do
+        if dir == ".." then
+            l = l - 1
+        elseif dir ~= "." then
+            l = l + 1
+        end
+        if l < 0 then
+            return false
+        end
+    end
+    return true
+end
+

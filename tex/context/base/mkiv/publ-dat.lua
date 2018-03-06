@@ -323,7 +323,7 @@ end
 function publications.parenttag(dataset,tag)
     if not dataset or not tag then
         report("error in specification, dataset %a, tag %a",dataset,tag)
-    elseif find(tag,"%+") then
+    elseif find(tag,"+",1,true) then
         local tags    = lpegmatch(p_splitter,tag)
         local parent  = tags[1]
         local current = datasets[dataset]

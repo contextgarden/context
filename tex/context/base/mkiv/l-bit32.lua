@@ -141,8 +141,10 @@ else
 
     -- hope for the best or fail
 
-    bit32 = require("bit32")
+ -- bit32 = require("bit32")
+
+    xpcall(function() local _, t = require("bit32") if t then bit32 = t end return end,function() end)
 
 end
 
-return bit32
+return bit32 or false

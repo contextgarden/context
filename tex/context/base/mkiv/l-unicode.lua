@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['l-unicode'] = {
     license   = "see context related readme files"
 }
 
+-- floor(b/256)  => rshift(b, 8)
+-- floor(b/1024) => rshift(b,10)
+
 -- in lua 5.3:
 
 -- utf8.char(···)         : concatinated
@@ -40,8 +43,6 @@ local type = type
 local char, byte, format, sub, gmatch = string.char, string.byte, string.format, string.sub, string.gmatch
 local concat = table.concat
 local P, C, R, Cs, Ct, Cmt, Cc, Carg, Cp = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg, lpeg.Cp
-local floor = math.floor
-local rshift = bit32.rshift
 
 local lpegmatch       = lpeg.match
 local patterns        = lpeg.patterns
@@ -80,56 +81,77 @@ if not utf.char then
 
         local char = string.char
 
-        function utf.char(n)
-            if n < 0x80 then
-                -- 0aaaaaaa : 0x80
-                return char(n)
-            elseif n < 0x800 then
-                -- 110bbbaa : 0xC0 : n >> 6
-                -- 10aaaaaa : 0x80 : n & 0x3F
---                 return char(
---                     0xC0 + floor(n/0x40),
---                     0x80 + (n % 0x40)
---                 )
-                return char(
-                    0xC0 + rshift(n,6),
-                    0x80 + (n % 0x40)
-                )
-            elseif n < 0x10000 then
-                -- 1110bbbb : 0xE0 :  n >> 12
-                -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
-                -- 10aaaaaa : 0x80 :  n        & 0x3F
---                 return char(
---                     0xE0 + floor(n/0x1000),
---                     0x80 + (floor(n/0x40) % 0x40),
---                     0x80 + (n % 0x40)
---                 )
-                return char(
-                    0xE0 + rshift(n,12),
-                    0x80 + (rshift(n,6) % 0x40),
-                    0x80 + (n % 0x40)
-                )
-            elseif n < 0x200000 then
-                -- 11110ccc : 0xF0 :  n >> 18
-                -- 10ccbbbb : 0x80 : (n >> 12) & 0x3F
-                -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
-                -- 10aaaaaa : 0x80 :  n        & 0x3F
-                -- dddd     : ccccc - 1
---                 return char(
---                     0xF0 +  floor(n/0x40000),
---                     0x80 + (floor(n/0x1000) % 0x40),
---                     0x80 + (floor(n/0x40) % 0x40),
---                     0x80 + (n % 0x40)
---                 )
-                return char(
-                    0xF0 +  rshift(n,18),
-                    0x80 + (rshift(n,12) % 0x40),
-                    0x80 + (rshift(n,6) % 0x40),
-                    0x80 + (n % 0x40)
-                )
-            else
-                return ""
+        if bit32 then
+
+            local rshift  = bit32.rshift
+
+            function utf.char(n)
+                if n < 0x80 then
+                    -- 0aaaaaaa : 0x80
+                    return char(n)
+                elseif n < 0x800 then
+                    -- 110bbbaa : 0xC0 : n >> 6
+                    -- 10aaaaaa : 0x80 : n & 0x3F
+                    return char(
+                        0xC0 + rshift(n,6),
+                        0x80 + (n % 0x40)
+                    )
+                elseif n < 0x10000 then
+                    -- 1110bbbb : 0xE0 :  n >> 12
+                    -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+                    -- 10aaaaaa : 0x80 :  n        & 0x3F
+                    return char(
+                        0xE0 + rshift(n,12),
+                        0x80 + (rshift(n,6) % 0x40),
+                        0x80 + (n % 0x40)
+                    )
+                elseif n < 0x200000 then
+                    -- 11110ccc : 0xF0 :  n >> 18
+                    -- 10ccbbbb : 0x80 : (n >> 12) & 0x3F
+                    -- 10bbbbaa : 0x80 : (n >>  6) & 0x3F
+                    -- 10aaaaaa : 0x80 :  n        & 0x3F
+                    -- dddd     : ccccc - 1
+                    return char(
+                        0xF0 +  rshift(n,18),
+                        0x80 + (rshift(n,12) % 0x40),
+                        0x80 + (rshift(n,6) % 0x40),
+                        0x80 + (n % 0x40)
+                    )
+                else
+                    return ""
+                end
             end
+
+        else
+
+            local floor = math.floor
+
+            function utf.char(n)
+                if n < 0x80 then
+                    return char(n)
+                elseif n < 0x800 then
+                    return char(
+                        0xC0 + floor(n/0x40),
+                        0x80 + (n % 0x40)
+                    )
+                elseif n < 0x10000 then
+                    return char(
+                        0xE0 + floor(n/0x1000),
+                        0x80 + (floor(n/0x40) % 0x40),
+                        0x80 + (n % 0x40)
+                    )
+                elseif n < 0x200000 then
+                    return char(
+                        0xF0 +  floor(n/0x40000),
+                        0x80 + (floor(n/0x1000) % 0x40),
+                        0x80 + (floor(n/0x40) % 0x40),
+                        0x80 + (n % 0x40)
+                    )
+                else
+                    return ""
+                end
+            end
+
         end
 
     end
@@ -1045,9 +1067,6 @@ function utf.utf32_to_utf8_t(t,endian)
     return endian and utf32_to_utf8_be_t(t) or utf32_to_utf8_le_t(t) or t
 end
 
--- floor(b/256)  => rshift(b, 8)
--- floor(b/1024) => rshift(b,10)
-
 local function little(b)
     if b < 0x10000 then
         return char(b%256,rshift(b,8))
@@ -1286,32 +1305,36 @@ end
 --
 -- local utf32 = table.setmetatableindex(function(t,k) local v = toutf32(k) t[k] = v return v end)
 
-local extract = bit32.extract
-local char    = string.char
+if bit32 then
 
-function unicode.toutf32string(n)
-    if n <= 0xFF then
-        return
-            char(n) ..
-            "\000\000\000"
-    elseif n <= 0xFFFF then
-        return
-            char(extract(n, 0,8)) ..
-            char(extract(n, 8,8)) ..
-            "\000\000"
-    elseif n <= 0xFFFFFF then
-        return
-            char(extract(n, 0,8)) ..
-            char(extract(n, 8,8)) ..
-            char(extract(n,16,8)) ..
-            "\000"
-    else
-        return
-            char(extract(n, 0,8)) ..
-            char(extract(n, 8,8)) ..
-            char(extract(n,16,8)) ..
-            char(extract(n,24,8))
+    local extract = bit32.extract
+    local char    = string.char
+
+    function unicode.toutf32string(n)
+        if n <= 0xFF then
+            return
+                char(n) ..
+                "\000\000\000"
+        elseif n <= 0xFFFF then
+            return
+                char(extract(n, 0,8)) ..
+                char(extract(n, 8,8)) ..
+                "\000\000"
+        elseif n <= 0xFFFFFF then
+            return
+                char(extract(n, 0,8)) ..
+                char(extract(n, 8,8)) ..
+                char(extract(n,16,8)) ..
+                "\000"
+        else
+            return
+                char(extract(n, 0,8)) ..
+                char(extract(n, 8,8)) ..
+                char(extract(n,16,8)) ..
+                char(extract(n,24,8))
+        end
     end
+
 end
 
 -- goodie:

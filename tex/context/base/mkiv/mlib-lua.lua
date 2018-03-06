@@ -242,7 +242,7 @@ local replacer = lpeg.replacer("@","%%")
 
 function mp.fprint(fmt,...)
     n = n + 1
-    if not find(fmt,"%%") then
+    if not find(fmt,"%",1,true) then
         fmt = lpegmatch(replacer,fmt)
     end
     buffer[n] = formatters[fmt](...)
@@ -251,7 +251,7 @@ end
 local function mpquoted(fmt,s,...)
     n = n + 1
     if s then
-        if not find(fmt,"%%") then
+        if not find(fmt,"%",1,true) then
             fmt = lpegmatch(replacer,fmt)
         end
      -- buffer[n] = '"' .. formatters[fmt](s,...) .. '"'

@@ -48,7 +48,7 @@ function moduledata.zwave.show_settings(pattern)
 
     end
 
-    if string.find(pattern,"%*") then
+    if string.find(pattern,"*",1,true) then
 
         local list = dir.glob(pattern)
         local last = nil

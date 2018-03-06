@@ -22,6 +22,10 @@ local floor = math.floor
 
 local stripper = patterns.stripper
 
+function table.getn(t)
+    return t and #t -- for very old times sake
+end
+
 function table.strip(tab)
     local lst, l = { }, 0
     for i=1,#tab do

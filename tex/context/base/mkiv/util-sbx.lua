@@ -462,7 +462,7 @@ function sandbox.getrunner(name)
 end
 
 local function suspicious(str)
-    return (find(str,"[/\\]") or find(command,"%.%.")) and true or false
+    return (find(str,"[/\\]") or find(command,"..",1,true)) and true or false
 end
 
 local function binaryrunner(action,command,...)

@@ -125,7 +125,7 @@ end
 
 local function exportwhites()
     return setmetatableindex(function(t,k)
-        local v = find(k,"white") and true or false
+        local v = find(k,"white",1,true) and true or false
         t[k] = v
         return v
     end)

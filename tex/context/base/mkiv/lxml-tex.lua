@@ -1443,7 +1443,7 @@ end
 local function command(collected,cmd,otherwise)
     local n = collected and #collected
     if n and n > 0 then
-        local wildcard = find(cmd,"%*")
+        local wildcard = find(cmd,"*",1,true)
         for c=1,n do -- maybe optimize for n=1
             local e = collected[c]
             local ix = e.ix
@@ -1467,7 +1467,7 @@ end
 
 -- local wildcards = setmetatableindex(function(t,k)
 --     local v = false
---     if find(k,"%*") then
+--     if find(k,"*",1,true) then
 --         v = setmetatableindex(function(t,kk)
 --             local v = gsub(k,"%*",kk)
 --             t[k] = v

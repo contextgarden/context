@@ -17,7 +17,7 @@ local global   = _G
 local next     = next
 local unpack   = unpack or table.unpack
 local type     = type
-local tprint   = texio.write_nl or print
+local tprint   = texio and texio.write_nl or print
 local tostring = tostring
 local format   = string.format -- no formatters yet
 local concat   = table.concat
@@ -310,3 +310,4 @@ if supported("lfs") then
     lfs.shortname         = register(lfs.shortname,        "lfs.shortname")
     lfs.symlinkattributes = register(lfs.symlinkattributes,"lfs.symlinkattributes")
 end
+

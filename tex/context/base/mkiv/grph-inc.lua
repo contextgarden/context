@@ -917,7 +917,6 @@ local function locate(request) -- name, format, cache
             askedname = path
         end
     else
-     -- local fname = methodhandler('finders',pathname .. "/" .. wantedfiles[k])
         local foundname = resolvers.findbinfile(askedname)
         if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
@@ -1809,7 +1808,7 @@ end
 local function bases_locate(askedlabel)
     for i=1,#bases_list do
         local entry = bases_list[i]
-        local t = bases_find(entry[1],askedlabel)
+        local t = bases_find(entry[1],askedlabel,1,true)
         if t then
             return t
         end

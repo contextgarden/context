@@ -38,7 +38,7 @@ function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per
                 if trace_locating then
                     report_scripts("old and new script are the same")
                 end
-            elseif not find(newscript,scriptpath) then
+            elseif not find(newscript,scriptpath,1,true) then
                 if trace_locating then
                     report_scripts("new script should come from %a",scriptpath)
                 end

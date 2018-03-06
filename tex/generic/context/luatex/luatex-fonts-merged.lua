@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/23/18 22:11:13
+-- merge date  : 03/06/18 14:59:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -120,9 +120,17 @@ if not FFISUPPORTED then
 elseif not ffi.number then
   ffi.number=tonumber
 end
-if not bit32 and utf8 then
+if not bit32 then
   bit32=require("l-bit32")
 end
+local loaded=package.loaded
+if not loaded["socket"] then loaded["socket"]=loaded["socket.core"] end
+if not loaded["mime"]  then loaded["mime"]=loaded["mime.core"]  end
+if not loaded["socket.http"] then loaded["socket.http"]=socket.http end
+if not loaded["socket.ftp"] then loaded["socket.ftp"]=socket.ftp end
+if not loaded["socket.smtp"] then loaded["socket.smtp"]=socket.smtp end
+if not loaded["socket.tp"]  then loaded["socket.tp"]=socket.tp  end
+if not loaded["socket.url"] then loaded["socket.url"]=socket.url end
 
 end -- closure
 
@@ -1072,6 +1080,9 @@ local getinfo=debug.getinfo
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local floor=math.floor
 local stripper=patterns.stripper
+function table.getn(t)
+  return t and #t 
+end
 function table.strip(tab)
   local lst,l={},0
   for i=1,#tab do
@@ -2847,6 +2858,23 @@ function lfs.mkdirs(path)
     lfs.mkdir(full)
   end
 end
+function file.withinbase(path) 
+  local l=0
+  if not find(path,"^/") then
+    path="/"..path
+  end
+  for dir in gmatch(path,"/([^/]+)") do
+    if dir==".." then
+      l=l-1
+    elseif dir~="." then
+      l=l+1
+    end
+    if l<0 then
+      return false
+    end
+  end
+  return true
+end
 
 end -- closure
 
@@ -3024,8 +3052,6 @@ local type=type
 local char,byte,format,sub,gmatch=string.char,string.byte,string.format,string.sub,string.gmatch
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
-local floor=math.floor
-local rshift=bit32.rshift
 local lpegmatch=lpeg.match
 local patterns=lpeg.patterns
 local tabletopattern=lpeg.utfchartabletopattern
@@ -3049,29 +3075,59 @@ if not utf.char then
   utf.char=string.utfcharacter or (utf8 and utf8.char)
   if not utf.char then
     local char=string.char
-    function utf.char(n)
-      if n<0x80 then
-        return char(n)
-      elseif n<0x800 then
-        return char(
-          0xC0+rshift(n,6),
-          0x80+(n%0x40)
-        )
-      elseif n<0x10000 then
-        return char(
-          0xE0+rshift(n,12),
-          0x80+(rshift(n,6)%0x40),
-          0x80+(n%0x40)
-        )
-      elseif n<0x200000 then
-        return char(
-          0xF0+rshift(n,18),
-          0x80+(rshift(n,12)%0x40),
-          0x80+(rshift(n,6)%0x40),
-          0x80+(n%0x40)
-        )
-      else
-        return ""
+    if bit32 then
+      local rshift=bit32.rshift
+      function utf.char(n)
+        if n<0x80 then
+          return char(n)
+        elseif n<0x800 then
+          return char(
+            0xC0+rshift(n,6),
+            0x80+(n%0x40)
+          )
+        elseif n<0x10000 then
+          return char(
+            0xE0+rshift(n,12),
+            0x80+(rshift(n,6)%0x40),
+            0x80+(n%0x40)
+          )
+        elseif n<0x200000 then
+          return char(
+            0xF0+rshift(n,18),
+            0x80+(rshift(n,12)%0x40),
+            0x80+(rshift(n,6)%0x40),
+            0x80+(n%0x40)
+          )
+        else
+          return ""
+        end
+      end
+    else
+      local floor=math.floor
+      function utf.char(n)
+        if n<0x80 then
+          return char(n)
+        elseif n<0x800 then
+          return char(
+            0xC0+floor(n/0x40),
+            0x80+(n%0x40)
+          )
+        elseif n<0x10000 then
+          return char(
+            0xE0+floor(n/0x1000),
+            0x80+(floor(n/0x40)%0x40),
+            0x80+(n%0x40)
+          )
+        elseif n<0x200000 then
+          return char(
+            0xF0+floor(n/0x40000),
+            0x80+(floor(n/0x1000)%0x40),
+            0x80+(floor(n/0x40)%0x40),
+            0x80+(n%0x40)
+          )
+        else
+          return ""
+        end
       end
     end
   end
@@ -3632,21 +3688,23 @@ function utf.chrlen(u)
     (u<0xFC and 5) or
     (u<0xFE and 6) or 0
 end
-local extract=bit32.extract
-local char=string.char
-function unicode.toutf32string(n)
-  if n<=0xFF then
-    return
-      char(n).."\000\000\000"
-  elseif n<=0xFFFF then
-    return
-      char(extract(n,0,8))..char(extract(n,8,8)).."\000\000"
-  elseif n<=0xFFFFFF then
-    return
-      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8)).."\000"
-  else
-    return
-      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
+if bit32 then
+  local extract=bit32.extract
+  local char=string.char
+  function unicode.toutf32string(n)
+    if n<=0xFF then
+      return
+        char(n).."\000\000\000"
+    elseif n<=0xFFFF then
+      return
+        char(extract(n,0,8))..char(extract(n,8,8)).."\000\000"
+    elseif n<=0xFFFFFF then
+      return
+        char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8)).."\000"
+    else
+      return
+        char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
+    end
   end
 end
 local len=utf.len
@@ -4481,9 +4539,6 @@ if not modules then modules={} end modules ['util-fil']={
 }
 local byte=string.byte
 local char=string.char
-local extract=bit32.extract
-local rshift=bit32.rshift
-local band=bit32.band
 utilities=utilities or {}
 local files={}
 utilities.files=files
@@ -4653,14 +4708,18 @@ function files.readfixed4(f)
     return (0x100*a+b     )+(0x100*c+d)/0x10000
   end
 end
-function files.read2dot14(f)
-  local a,b=byte(f:read(2),1,2)
-  if a>=0x80 then
-    local n=-(0x100*a+b)
-    return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
-  else
-    local n=0x100*a+b
-    return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+if bit32 then
+  local extract=bit32.extract
+  local band=bit32.band
+  function files.read2dot14(f)
+    local a,b=byte(f:read(2),1,2)
+    if a>=0x80 then
+      local n=-(0x100*a+b)
+      return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    else
+      local n=0x100*a+b
+      return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    end
   end
 end
 function files.skipshort(f,n)
@@ -4669,11 +4728,22 @@ end
 function files.skiplong(f,n)
   f:read(4*(n or 1))
 end
-function files.writecardinal2(f,n)
-  local a=char(n%256)
-  n=rshift(n,8)
-  local b=char(n%256)
-  f:write(b,a)
+if bit32 then
+  local rshift=bit32.rshift
+  function files.writecardinal2(f,n)
+    local a=char(n%256)
+    n=rshift(n,8)
+    local b=char(n%256)
+    f:write(b,a)
+  end
+else
+  local floor=math.floor
+  function files.writecardinal2(f,n)
+    local a=char(n%256)
+    n=floor(n/256)
+    local b=char(n%256)
+    f:write(b,a)
+  end
 end
 function files.writecardinal4(f,n)
   local a=char(n%256)
@@ -7976,7 +8046,7 @@ local psfake=0
 local function fixedpsname(psname,fallback)
   local usedname=psname
   if psname and psname~="" then
-    if find(psname," ") then
+    if find(psname," ",1,true) then
       usedname=gsub(psname,"[%s]+","-")
     else
     end
@@ -30052,7 +30122,7 @@ do
       report_pfb("no data in %a",filename)
       return
     end
-    if not (find(data,"!PS%-AdobeFont%-") or find(data,"%%!FontType1")) then
+    if not (find(data,"!PS-AdobeFont-",1,true) or find(data,"%!FontType1",1,true)) then
       report_pfb("no font in %a",filename)
       return
     end

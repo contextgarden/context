@@ -14,6 +14,8 @@ if not modules then modules = { } end modules ['font-syn'] = {
 -- old ff  loader: 140 sec
 -- new lua loader:   5 sec
 
+-- maybe find(...,strictname,1,true)
+
 local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, match, find, lower, upper = string.sub, string.gsub, string.match, string.find, string.lower, string.upper
 local concat, sort, fastcopy, tohash = table.concat, table.sort, table.fastcopy, table.tohash
@@ -394,11 +396,11 @@ filters.ttc = filters.otf
 --         local hash = { }
 --         local okay = false
 --         for line in f:lines() do -- slow but only a few lines at the beginning
---             if find(line,"dict begin") then
+--             if find(line,"dict begin",1,true) then
 --                 okay = true
 --             elseif not okay then
 --                 -- go on
---             elseif find(line,"currentdict end") then
+--             elseif find(line,"currentdict end",1,true) then
 --                 break
 --             else
 --                 local key, value = lpegmatch(p_entry,line)

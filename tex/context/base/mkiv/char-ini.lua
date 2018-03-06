@@ -1066,7 +1066,7 @@ setmetatableindex(descriptions, function(t,k)
     for u, c in next, data do
         local d = c.description
         if d then
-            if find(d," ") then
+            if find(d," ",1,true) then
                 d = gsub(d," ","")
             end
             d = lower(d)
@@ -1084,7 +1084,7 @@ setmetatableindex(synonyms, function(t,k)
     for u, c in next, data do
         local s = c.synonyms
         if s then
-            if find(s," ") then
+            if find(s," ",1,true) then
                 s = gsub(s," ","")
             end
          -- s = lower(s) -- is already lowercase

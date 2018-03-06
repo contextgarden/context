@@ -11,6 +11,7 @@ local concat = table.concat
 local tonumber, type, next = tonumber, type, next
 local P, C, R, S, Cs, Cc, Ct, Cf, Cg, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Cf, lpeg.Cg, lpeg.V
 local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replacer
+local sortedhash = table.sortedhash
 
 -- from wikipedia:
 --
@@ -32,22 +33,61 @@ local lpegmatch, lpegpatterns, replacer = lpeg.match, lpeg.patterns, lpeg.replac
 url       = url or { }
 local url = url
 
-local tochar      = function(s) return char(tonumber(s,16)) end
+local unescapes = { }
+local escapes   = { }
+
+setmetatable(unescapes, { __index = function(t,k)
+    local v = char(tonumber(k,16))
+    t[k] = v
+    return v
+end })
+
+setmetatable(escapes, { __index = function(t,k)
+    local v = format("%%%02X",byte(k))
+    t[k] = v
+    return v
+end })
+
+-- okay:
 
 local colon       = P(":")
 local qmark       = P("?")
 local hash        = P("#")
 local slash       = P("/")
+local atsign      = P("@")
 local percent     = P("%")
 local endofstring = P(-1)
-
 local hexdigit    = R("09","AF","af")
 local plus        = P("+")
 local nothing     = Cc("")
-local escapedchar = (percent * C(hexdigit * hexdigit)) / tochar
-local escaped     = (plus / " ") + escapedchar -- so no loc://foo++.tex
+local okay        = R("09","AZ","az") + S("-_.,:=+*~!'()@&$")
 
-local noslash     = P("/") / ""
+local escapedchar   = (percent * C(hexdigit * hexdigit)) / unescapes
+local unescapedchar = P(1) / escapes
+local escaped       = (plus / " ") + escapedchar -- so no loc://foo++.tex
+local noslash       = P("/") / ""
+local plustospace   = P("+")/" "
+
+local decoder = Cs( (
+                    plustospace
+                  + escapedchar
+                  + P("\r\n")/"\n"
+                  + P(1)
+                )^0 )
+local encoder = Cs( (
+                    R("09","AZ","az")^1
+                  + S("-./_")^1
+                  + P(" ")/"+"
+                  + P("\n")/"\r\n"
+                  + unescapedchar
+                )^0 )
+
+lpegpatterns.urldecoder = decoder
+lpegpatterns.urlencoder = encoder
+
+function url.decode  (str) return str and lpegmatch(decoder,  str) or str end
+function url.encode  (str) return str and lpegmatch(encoder,  str) or str end
+function url.unescape(str) return str and lpegmatch(unescaper,str) or str end
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
 -- we also assume that when we have a scheme, we also have an authority
@@ -73,17 +113,9 @@ local parser    = Ct(validurl)
 lpegpatterns.url         = validurl
 lpegpatterns.urlsplitter = parser
 
-local escapes = { }
-
-setmetatable(escapes, { __index = function(t,k)
-    local v = format("%%%02X",byte(k))
-    t[k] = v
-    return v
-end })
-
-local escaper    = Cs((R("09","AZ","az")^1 + P(" ")/"%%20" + S("-./_")^1 + P(1) / escapes)^0) -- space happens most
+local escaper    = Cs((R("09","AZ","az")^1 + P(" ")/"%%20" + S("-./_:")^1 + P(1) / escapes)^0) -- space happens most
 local unescaper  = Cs((escapedchar + 1)^0)
-local getcleaner = Cs((P("+++") / "%%2B" + P("+") / "%%20" + P(1))^1)
+local getcleaner = Cs((P("+++")/"%%2B" + P("+")/"%%20" + P(1))^1)
 
 lpegpatterns.urlunescaped  = escapedchar
 lpegpatterns.urlescaper    = escaper
@@ -134,8 +166,8 @@ local backslashswapper = replacer("\\","/")
 
 local equal = P("=")
 local amp   = P("&")
-local key   = Cs(((escapedchar+1)-equal            )^0)
-local value = Cs(((escapedchar+1)-amp  -endofstring)^0)
+local key   = Cs(((plustospace + escapedchar + 1) - equal              )^0)
+local value = Cs(((plustospace + escapedchar + 1) - amp   - endofstring)^0)
 
 local splitquery = Cf ( Ct("") * P { "sequence",
     sequence = V("pair") * (amp * V("pair"))^0,
@@ -143,6 +175,11 @@ local splitquery = Cf ( Ct("") * P { "sequence",
 }, rawset)
 
 -- hasher
+
+local userpart       = (1-atsign-colon)^1
+local serverpart     = (1-colon)^1
+local splitauthority = ((Cs(userpart) * colon * Cs(userpart) + Cs(userpart) * Cc(nil)) * atsign + Cc(nil) * Cc(nil))
+                     * Cs(serverpart) * (colon * (serverpart/tonumber) + Cc(nil))
 
 local function hashed(str) -- not yet ok (/test?test)
     if not str or str == "" then
@@ -177,12 +214,21 @@ local function hashed(str) -- not yet ok (/test?test)
     -- not always a filename but handy anyway
     local authority = detailed[2]
     local path      = detailed[3]
-    local filename  = nil
+    local filename  -- = nil
+    local username  -- = nil
+    local password  -- = nil
+    local host      -- = nil
+    local port      -- = nil
+    if authority ~= "" then
+        -- these can be invalid
+        username, password, host, port = lpegmatch(splitauthority,authority)
+    end
     if authority == "" then
         filename = path
     elseif path == "" then
         filename = ""
     else
+        -- this one can be can be invalid
         filename = authority .. "/" .. path
     end
     return {
@@ -195,6 +241,11 @@ local function hashed(str) -- not yet ok (/test?test)
         original  = str,
         noscheme  = false,
         filename  = filename,
+        --
+        host      = host,
+        port      = port,
+     -- usename   = username,
+     -- password  = password,
     }
 end
 
@@ -236,24 +287,38 @@ function url.addscheme(str,scheme) -- no authority
 end
 
 function url.construct(hash) -- dodo: we need to escape !
-    local fullurl, f = { }, 0
-    local scheme, authority, path, query, fragment = hash.scheme, hash.authority, hash.path, hash.query, hash.fragment
+    local result, r = { }, 0
+    local scheme    = hash.scheme
+    local authority = hash.authority
+    local path      = hash.path
+    local queries   = hash.queries
+    local fragment  = hash.fragment
     if scheme and scheme ~= "" then
-        f = f + 1 ; fullurl[f] = scheme .. "://"
+        r = r + 1 ; result[r] = lpegmatch(escaper,scheme)
+        r = r + 1 ; result[r] = "://"
     end
     if authority and authority ~= "" then
-        f = f + 1 ; fullurl[f] = authority
+        r = r + 1 ; result[r] = lpegmatch(escaper,authority)
     end
     if path and path ~= "" then
-        f = f + 1 ; fullurl[f] = "/" .. path
+        r = r + 1 ; result[r] = "/"
+        r = r + 1 ; result[r] = lpegmatch(escaper,path)
     end
-    if query and query ~= "" then
-        f = f + 1 ; fullurl[f] = "?".. query
+    if queries then
+        local done = false
+        for k, v in sortedhash(queries) do
+            r = r + 1 ; result[r] = done and "&" or "?"
+            r = r + 1 ; result[r] = lpegmatch(escaper,k) -- is this escaped
+            r = r + 1 ; result[r] = "="
+            r = r + 1 ; result[r] = lpegmatch(escaper,v) -- is this escaped
+            done = true
+        end
     end
     if fragment and fragment ~= "" then
-        f = f + 1 ; fullurl[f] = "#".. fragment
+        r = r + 1 ; result[r] = "#"
+        r = r + 1 ; result[r] = lpegmatch(escaper,fragment)
     end
-    return lpegmatch(escaper,concat(fullurl))
+    return concat(result)
 end
 
 local pattern = Cs(slash^-1/"" * R("az","AZ") * ((S(":|")/":") + P(":")) * slash * P(1)^0)

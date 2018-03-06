@@ -448,10 +448,13 @@ local function documentspecification()
         local marked    = pages.allmarked(marked)
         local nofmarked = marked and #marked or 0
         if nofmarked > 0 then
+            -- the spec is wrong in saying that numbering starts at 1 which of course makes
+            -- sense as most real documents start with page 0 .. sigh
+            for i=1,#marked do marked[i] = marked[i] - 1 end
             prints = pdfarray(flattened(pages.toranges(marked)))
         end
     end
-    if fit or fixed or duplex or copies or paper or marked then
+    if fit or fixed or duplex or copies or paper or prints then
         addtocatalog("ViewerPreferences",pdfdictionary {
             FitWindow         = fit    and true                or nil,
             PrintScaling      = fixed  and pdfconstant("None") or nil,

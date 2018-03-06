@@ -328,7 +328,7 @@ local ligaturemapping = allocate {
 -- }
 --
 -- function texcharacters.toutf(str,strip)
---     if not find(str,"\\") then
+--     if not find(str,"\\",1,true) then
 --         return str
 --     elseif strip then
 --         return lpegmatch(both_1,str)
@@ -380,7 +380,7 @@ end
 function texcharacters.toutf(str,strip)
     if str == "" then
         return str
-    elseif not find(str,"\\") then
+    elseif not find(str,"\\",1,true) then
         return str
  -- elseif strip then
     else

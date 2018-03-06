@@ -37,7 +37,7 @@ local function roottemplate(root)
         if template then
             return template
         else
-            if not find(rt,"|") then
+            if not find(rt,"|",1,true) then
                 rt = gsub(rt,",","|")
             end
             if not find(rt,"^|") then rt = "|" .. rt end

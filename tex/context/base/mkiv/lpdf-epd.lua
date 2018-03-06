@@ -873,7 +873,7 @@ function lpdf_epdf.contenttotext(document,list) -- maybe signal fonts
             local dy = abs(last_y - ty)
             if dy > linefactor*last_f then
                 if last > 0 then
-                    if find(text[last],softhyphen) then
+                    if find(text[last],softhyphen,1,true) then
                         -- ignore
                     else
                         last = last + 1

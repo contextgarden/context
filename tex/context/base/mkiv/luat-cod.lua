@@ -119,7 +119,7 @@ local targetpath = "."
 
 if LUATEXENGINE == nil then
     LUATEXENGINE = status.luatex_engine and string.lower(status.luatex_engine)
-                or (find(status.banner,"LuajitTeX") and "luajittex" or "luatex")
+                or (find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")
 end
 
 if LUATEXVERION == nil then

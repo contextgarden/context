@@ -332,12 +332,12 @@ local function s_attribute(list,collected,c,negate,str,what,value)
                         end
                     elseif what == 2 then
                         -- todo: lpeg
-                        if find(v,value) then
+                        if find(v,value) then -- value can be a pattern
                             ok = not negate
                         end
                     elseif what == 3 then
                         -- todo: lpeg
-                        if find(v," ") then
+                        if find(v," ",1,true) then
                             for s in gmatch(v,"[^ ]+") do
                                 if s == value then
                                     ok = not negate

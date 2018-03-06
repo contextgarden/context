@@ -185,7 +185,7 @@ do
             return
         end
 
-        if not (find(data,"!PS%-AdobeFont%-") or find(data,"%%!FontType1")) then
+        if not (find(data,"!PS-AdobeFont-",1,true) or find(data,"%!FontType1",1,true)) then
             report_pfb("no font in %a",filename)
             return
         end

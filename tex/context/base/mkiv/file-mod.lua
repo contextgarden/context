@@ -137,7 +137,7 @@ function environment.usemodules(prefix,askedname,truename)
             end
             if status then
                 -- ok, don't change
-            elseif find(truename,"%-") and usemodule(truename) then
+            elseif find(truename,"-",1,true) and usemodule(truename) then
                 -- assume a user namespace
                 report("using user prefixed file %a",truename)
                 status = 1

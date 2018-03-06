@@ -41,7 +41,10 @@ function pages.mark(name,list)
             local page = list[i]
             local sign = false
             if type(page) == "string" then
-                sign, page = match(page,"([%+%-])(%d+)")
+                local s, p = match(page,"([%+%-])(%d+)")
+                if s then
+                    sign, page = s, p
+                end
             end
             page = tonumber(page)
             if page then

@@ -1083,6 +1083,7 @@
 		<cd:constant name='preview' value='پیش‌دید'/>
 		<cd:constant name='previous' value='قبلی'/>
 		<cd:constant name='previousnumber' value='شماره‌قبلی'/>
+		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='قابل‌چاپ'/>
 		<cd:constant name='process' value='پردازش'/>
 		<cd:constant name='profile' value='profile'/>

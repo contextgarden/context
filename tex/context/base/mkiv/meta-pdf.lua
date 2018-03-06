@@ -531,7 +531,7 @@ local captures_old = ( space + verbose + preamble           )^0
 local captures_new = ( space + verbose + procset + preamble )^0
 
 local function parse(m_data)
-    if find(m_data,"%%%%BeginResource: procset mpost") then
+    if find(m_data,"%%BeginResource: procset mpost",1,true) then
      -- report_mptopdf("using sparse scanner, case 1")
         lpegmatch(captures_new,m_data)
     elseif find(m_data,"%%%%BeginProlog%s*%S+(.-)%%%%EndProlog") then
