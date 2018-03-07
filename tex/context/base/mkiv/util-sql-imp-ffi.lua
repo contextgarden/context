@@ -144,7 +144,8 @@ ffi.cdef [[
 
 local sql                    = utilities.sql
 ----- mysql                  = ffi.load(os.name == "windows" and "libmysql" or "libmysqlclient")
-local mysql                  = ffilib(os.name == "windows" and "libmysql" or "libmysqlclient")
+----- mysql                  = ffilib(os.name == "windows" and "libmysql" or "libmysqlclient")
+local mysql                  = ffilib(os.name == "windows" and "libmysql" or "libmysql")
 
 if not mysql then
     report_state("unable to load library")
@@ -508,7 +509,8 @@ local function execute(specification)
 end
 
 local wraptemplate = [[
-local mysql           = ffi.load(os.name == "windows" and "libmysql" or "libmysqlclient")
+----- mysql           = ffi.load(os.name == "windows" and "libmysql" or "libmysqlclient")
+local mysql           = ffi.load(os.name == "windows" and "libmysql" or "libmysql")
 
 local mysql_fetch_row = mysql.mysql_fetch_row
 local ffi_tostring    = ffi.string

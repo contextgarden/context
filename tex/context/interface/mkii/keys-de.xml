@@ -1083,6 +1083,7 @@
 		<cd:constant name='preview' value='vorschau'/>
 		<cd:constant name='previous' value='vorige'/>
 		<cd:constant name='previousnumber' value='vorigenummer'/>
+		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='druckbar'/>
 		<cd:constant name='process' value='process'/>
 		<cd:constant name='profile' value='profile'/>
@@ -1168,6 +1169,7 @@
 		<cd:constant name='sidemethod' value='sidemethod'/>
 		<cd:constant name='sidespaceafter' value='nebennachspatium'/>
 		<cd:constant name='sidespacebefore' value='nebenvorspatium'/>
+		<cd:constant name='sidespaceinbetween' value='sidespaceinbetween'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='zeichen'/>
 		<cd:constant name='simplecommand' value='simplecommand'/>
