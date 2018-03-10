@@ -44488,6 +44488,7 @@
      <cd:constant type="enable"/>
      <cd:constant type="disable"/>
      <cd:constant type="nowhite"/>
+     <cd:constant type="packed"/>
      <cd:constant type="back"/>
      <cd:constant type="overlay"/>
      <cd:constant type="always"/>

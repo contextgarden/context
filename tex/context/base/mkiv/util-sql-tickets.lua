@@ -18,6 +18,8 @@ local ostime, uuid, osfulltime = os.time, os.uuid, os.fulltime
 local random = math.random
 local concat = table.concat
 
+if not utilities.sql then require("util-sql") end
+
 local sql         = utilities.sql
 local tickets     = { }
 sql.tickets       = tickets
@@ -27,7 +29,6 @@ local report      = logs.reporter("sql","tickets")
 
 local serialize   = sql.serialize
 local deserialize = sql.deserialize
-local execute     = sql.execute
 
 tickets.newtoken  = sql.tokens.new
 
@@ -87,7 +88,9 @@ local template =[[
 ]]
 
 function tickets.createdb(presets,datatable)
+
     local db = checkeddb(presets,datatable)
+
     local data, keys = db.execute {
         template  = template,
         variables = {

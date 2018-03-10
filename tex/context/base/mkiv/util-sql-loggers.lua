@@ -78,6 +78,7 @@ local sqlite_template = [[
 function loggers.createdb(presets,datatable)
 
     local db = checkeddb(presets,datatable)
+
     db.execute {
         template  = (db.usedmethod == "sqlite" or db.usedmethod == "sqlffi") and sqlite_template or template,
         variables = {

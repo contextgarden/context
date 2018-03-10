@@ -1923,6 +1923,15 @@ function figures.getinfo(name,page)
     end
 end
 
+function figures.getpdfinfo(name,page,metadata)
+    -- not that useful but as we have it for detailed inclusion we can as
+    -- we expose it
+    if type(name) ~= "table" then
+        name = { name = name, page = page, metadata = metadata }
+    end
+    return codeinjections.getinfo(name)
+end
+
 -- interfacing
 
 implement {

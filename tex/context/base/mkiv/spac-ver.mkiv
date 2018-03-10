@@ -1956,6 +1956,7 @@
 
 \newconditional\c_space_vspacing_done
 \newconditional\c_space_vspacing_fixed
+\newconditional\c_space_ignore_parskip
 
 \appendtoks
     \s_spac_vspacing_temp\zeropoint
@@ -1977,6 +1978,9 @@
       \fi
     \relax
 \to \everyafterblankhandling
+
+\unexpanded\def\setblankpacked
+  {\settrue\c_space_ignore_parskip}
 
 \unexpanded\def\setblankcategory#1%
   {\settrue\c_space_vspacing_done
@@ -2016,6 +2020,7 @@
 \def\dostartblankhandling
   {\begingroup
    \setfalse\c_space_vspacing_done
+   \setfalse\c_space_ignore_parskip
    \the\everybeforeblankhandling}
 
 \unexpanded\def\stopblankhandling
@@ -2023,7 +2028,11 @@
    \ifconditional\c_space_vspacing_done
      \vskip\s_spac_vspacing_temp
    \fi
-   \endgroup}
+   \ifconditional\c_space_ignore_parskip
+     \endgroup\ignoreparskip
+   \else
+     \endgroup
+   \fi}
 
 \unexpanded\def\flushblankhandling
   {\the\everyafterblankhandling
@@ -2210,9 +2219,12 @@
 \definevspacing[\v!disable]   [category:5]
 \definevspacing[\v!nowhite]   [category:6]
 \definevspacing[\v!back]      [category:7]
-%               together      [category:8]
+\definevspacing[\v!packed]    [category:8]  % noparskip (kind of special)
 \definevspacing[\v!overlay]   [category:9]
 \definevspacing[\v!enable]    [category:10]
+
+%definevspacing[\v!noparskip] [category:8]
+%definevspacing[\v!notopskip] [category:11]
 
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]

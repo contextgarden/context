@@ -135,6 +135,8 @@ vardef mfun_node@#(suffix p)(expr i)(text t) =
     fi
 enddef ;
 
+newinternal node_loopback_yscale ; node_loopback_yscale := 1 ;
+
 % returns a path
 
 vardef fromtopaths@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
@@ -159,7 +161,7 @@ vardef fromtopaths@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
             save deviation ;
             deviation := if numeric d: d else: 0 fi ;
             r1 = if (point 0 of r0) = (point length r0 of r0) :
-                     (fullcircle rotated 180
+                     (fullcircle yscaled node_loopback_yscale rotated 180
                          if mfun_laboff@# <> origin :
                              rotated angle mfun_laboff@#
                              shifted     .5mfun_laboff@#

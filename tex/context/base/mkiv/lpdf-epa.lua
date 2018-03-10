@@ -14,6 +14,7 @@ local formatters = string.formatters
 local abs = math.abs
 local expandname = file.expandname
 local allocate = utilities.storage.allocate
+local isfile = lfs.isfile
 
 ----- lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
@@ -21,6 +22,8 @@ local trace_links    = false  trackers.register("figures.links",     function(v)
 local trace_outlines = false  trackers.register("figures.outliness", function(v) trace_outlines = v end)
 
 local report_link    = logs.reporter("backend","link")
+local report_comment = logs.reporter("backend","comment")
+local report_field   = logs.reporter("backend","field")
 local report_outline = logs.reporter("backend","outline")
 
 local epdf           = epdf
@@ -324,7 +327,7 @@ function codeinjections.getbookmarks(filename)
 
     local document = nil
 
-    if lfs.isfile(filename) then
+    if isfile(filename) then
         document = loadpdffile(filename)
     else
         report_outline("unknown file %a",filename)
@@ -464,6 +467,85 @@ function codeinjections.mergebookmarks(specification)
                     b.pageindex = specification.pageindex
                 end
             end
+        end
+    end
+end
+
+-- placeholders:
+
+function codeinjections.mergecomments(specification)
+    report_comment("unfinished experimental code, not used yet")
+end
+
+function codeinjections.mergefields(specification)
+    report_field("unfinished experimental code, not used yet")
+end
+
+-- A bit more than a placeholder but in the same perspective as
+-- inclusion of comments and fields:
+--
+-- getinfo{ filename = "tt.pdf", metadata = true }
+-- getinfo{ filename = "tt.pdf", page = 1, metadata = "xml" }
+-- getinfo("tt.pdf")
+
+function codeinjections.getinfo(specification)
+    if type(specification) == "string" then
+        specification = { filename = specification }
+    end
+    local filename = specification.filename
+    if type(filename) == "string" and isfile(filename) then
+        local pdffile = loadpdffile(filename)
+        if pdffile then
+            local pagenumber = specification.page or 1
+            local metadata   = specification.metadata
+            local catalog    = pdffile.Catalog
+            local info       = pdffile.Info
+            local pages      = pdffile.pages
+            local nofpages   = pages.n
+            if metadata then
+                local m = catalog.Metadata
+                if m then
+                    m = m()
+                    if metadata == "xml" then
+                        metadata = xml.convert(m)
+                    else
+                        metadata = m
+                    end
+                else
+                    metadata = nil
+                end
+            else
+                metadata = nil
+            end
+            if pagenumber > nofpages then
+                pagenumber = nofpages
+            end
+            local nobox = { 0, 0, 0, 0 }
+            local crop  = nobox
+            local media = nobox
+            local page  = pages[pagenumber]
+            if page then
+                crop    = page.CropBox or nobox
+                media   = page.MediaBox or crop or nobox
+                crop.n  = nil -- nicer
+                media.n = nil -- nicer
+            end
+            local bbox = crop or media or nobox
+            return {
+                filename     = filename,
+                pdfversion   = tonumber(catalog.Version),
+                nofpages     = nofpages,
+                title        = info.Title,
+                creator      = info.Creator,
+                producer     = info.Producer,
+                creationdate = info.CreationDate,
+                modification = info.ModDate,
+                metadata     = metadata,
+                width        = bbox[4] - bbox[2],
+                height       = bbox[3] - bbox[1],
+                cropbox      = { crop[1], crop[2], crop[3], crop[4] },      -- we need access
+                mediabox     = { media[1], media[2], media[3], media[4] } , -- we need access
+            }
         end
     end
 end

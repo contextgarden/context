@@ -27,7 +27,13 @@ logins.cooldowntime = logins.cooldowntime or 10 * 60
 logins.purgetime    = logins.purgetime    or  1 * 60 * 60
 logins.autopurge    = true
 
-local template_create = [[
+local function checkeddb(presets,datatable)
+    return sql.usedatabase(presets,datatable or presets.datatable or "logins")
+end
+
+logins.usedb = checkeddb
+
+local template = [[
 CREATE TABLE
     `logins`
     (
@@ -45,6 +51,42 @@ CREATE TABLE
     COLLATE=utf8_bin
     COMMENT='state: 0=unset 1=known 2=unknown'
 ]]
+
+function logins.createdb(presets,datatable)
+
+    local db = checkeddb(presets,datatable)
+
+    local data, keys = db.execute {
+        template  = template,
+        variables = {
+            basename = db.basename,
+        },
+    }
+
+    report_logins("datatable %a created in %a",db.name,db.base)
+
+    return db
+
+end
+
+local template =[[
+    DROP TABLE IF EXISTS %basename% ;
+]]
+
+function logins.deletedb(presets,datatable)
+
+    local db = checkeddb(presets,datatable)
+
+    local data, keys = db.execute {
+        template  = template,
+        variables = {
+            basename = db.basename,
+        },
+    }
+
+    report_logins("datatable %a removed in %a",db.name,db.base)
+
+end
 
 local states = {
     [0] = "unset",
@@ -105,58 +147,54 @@ local template_purge = [[
 
 local cache = { } setmetatable(cache, { __mode = 'v' })
 
-local function usercreate(presets)
-    sqlexecute {
-        template = template_create,
-        presets  = presets,
-    }
-end
+-- local function usercreate(presets)
+--     sqlexecute {
+--         template = template_create,
+--         presets  = presets,
+--     }
+-- end
 
-local function userunknown(presets,name)
+function logins.userunknown(db,name)
     local d = {
         name  = name,
         state = 2,
         time  = ostime(),
         n     = 0,
     }
-    sqlexecute {
+    db.execute {
         template  = template_update,
-        presets   = presets,
         variables = d,
     }
     cache[name] = d
     report_logins("user %a is registered as unknown",name)
 end
 
-local function userknown(presets,name)
+function logins.userknown(db,name)
     local d = {
         name  = name,
         state = 1,
         time  = ostime(),
         n     = 0,
     }
-    sqlexecute {
+    db.execute {
         template  = template_update,
-        presets   = presets,
         variables = d,
     }
     cache[name] = d
     report_logins("user %a is registered as known",name)
 end
 
-local function userreset(presets,name)
-    sqlexecute {
+function logins.userreset(db,name)
+    db.execute {
         template  = template_delete,
-        presets   = presets,
     }
     cache[name] = nil
     report_logins("user %a is reset",name)
 end
 
-local function userpurge(presets,delay)
-    sqlexecute {
+local function userpurge(db,delay)
+    db.execute {
         template  = template_purge,
-        presets   = presets,
         variables = {
             time  = ostime() - (delay or logins.purgetime),
         }
@@ -164,6 +202,8 @@ local function userpurge(presets,delay)
     cache = { }
     report_logins("users are purged")
 end
+
+logins.userpurge = userpurge
 
 local function verdict(okay,...)
     if not trace_logins then
@@ -178,11 +218,11 @@ end
 
 local lasttime  = 0
 
-local function userpermitted(presets,name)
+function logins.userpermitted(db,name)
     local currenttime = ostime()
     if logins.autopurge and (lasttime == 0 or (currenttime - lasttime > logins.purgetime)) then
         report_logins("automatic purge triggered")
-        userpurge(presets)
+        userpurge(db)
         lasttime = currenttime
     end
     local data = cache[name]
@@ -190,9 +230,8 @@ local function userpermitted(presets,name)
         report_logins("user %a is cached",name)
     else
         report_logins("user %a is fetched",name)
-        data = sqlexecute {
+        data = db.execute {
             template  = template_fetch,
-            presets   = presets,
             converter = converter_fetch,
             variables = {
                 name = name,
@@ -206,9 +245,8 @@ local function userpermitted(presets,name)
             time  = currenttime,
             n     = 1,
         }
-        sqlexecute {
+        db.execute {
             template  = template_insert,
-            presets   = presets,
             variables = d,
         }
         cache[name] = d
@@ -237,9 +275,8 @@ local function userpermitted(presets,name)
             time  = currenttime,
             n     = 1,
         }
-        sqlexecute {
+        db.execute {
             template  = template_update,
-            presets   = presets,
             variables = d,
         }
         cache[name] = d
@@ -251,9 +288,8 @@ local function userpermitted(presets,name)
             time  = currenttime,
             n     = n + 1,
         }
-        sqlexecute {
+        db.execute {
             template  = template_update,
-            presets   = presets,
             variables = d,
         }
         cache[name] = d
@@ -261,46 +297,4 @@ local function userpermitted(presets,name)
     end
 end
 
-logins.create    = usercreate
-logins.known     = userknown
-logins.unknown   = userunknown
-logins.reset     = userreset
-logins.purge     = userpurge
-logins.permitted = userpermitted
-
 return logins
-
--- --
-
--- sql.setmethod("client")
-
--- local presets = {
---     database = "test",
---     username = "root",
---     password = "something",
--- }
-
--- logins.cooldowntime = 2*60
--- logins.maxnoflogins = 3
-
--- sql.logins.purge(presets,0)
-
--- for i=1,6 do
---     print("")
---     sql.logins.permitted(presets,"hans")
---     sql.logins.permitted(presets,"kees")
---     sql.logins.permitted(presets,"ton")
---     if i == 1 then
---      -- sql.logins.unknown(presets,"hans")
---      -- sql.logins.known(presets,"kees")
---     end
--- end
-
--- if loginpermitted(presets,username) then
---     if validlogin(username,...) then
---      -- sql.logins.known(presets,username)
---     elseif unknownuser(username) then
---         sql.logins.unknown(presets,username)
---     end
--- end
-
