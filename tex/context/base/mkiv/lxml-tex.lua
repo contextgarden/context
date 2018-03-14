@@ -17,7 +17,7 @@ local lpegmatch = lpeg.match
 local P, S, C, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs
 local patterns = lpeg.patterns
 local setmetatableindex = table.setmetatableindex
-local formatters = string.formatters
+local formatters, strip = string.formatters, string.strip
 
 local tex, xml = tex, xml
 local lowerchars, upperchars, lettered = characters.lower, characters.upper, characters.lettered
@@ -60,6 +60,7 @@ local xmlpushmatch       = xml.pushmatch
 local xmlpopmatch        = xml.popmatch
 local xmlstring          = xml.string
 local xmlserializetotext = xml.serializetotext
+local xmlrename          = xml.rename
 
 local variables          = interfaces and interfaces.variables or { }
 
@@ -2579,3 +2580,20 @@ implement {
     actions   = lxml.applyselectors,
     arguments = "string"
 }
+
+-- bonus: see x-lmx-html.mkiv
+
+function texfinalizers.xml(collected,name,setup)
+    local root = collected[1]
+    if not root then
+        return
+    end
+    if not name or name == "" then
+        report_lxml("missing name in xml finalizer")
+        return
+    end
+    xmlrename(root,name)
+    name = "lmx:" .. name
+    buffers.assign(name,strip(xmltostring(root)))
+    context.xmlprocessbuffer(name,name,setup or (name..":setup"))
+end

@@ -12,9 +12,12 @@ local topattern, is_empty =  string.topattern, string.is_empty
 local P, S, C, R, Cb, Cg, Carg, Ct, Cc, Cf, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.Cb, lpeg.Cg, lpeg.Carg, lpeg.Ct, lpeg.Cc, lpeg.Cf, lpeg.Cs
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local sort = table.sort
+local setmetatableindex = table.setmetatableindex
 
 xml.css            = xml.css or { }
 local css          = xml.css
+
+local getid        = lxml.getid
 
 if not number.dimenfactors then
     require("util-dim.lua")
@@ -25,6 +28,9 @@ local bpf          = 1/dimenfactors.bp
 local cmf          = 1/dimenfactors.cm
 local mmf          = 1/dimenfactors.mm
 local inf          = 1/dimenfactors["in"]
+
+local whitespace   = lpegpatterns.whitespace
+local skipspace    = whitespace^0
 
 local percentage, exheight, emwidth, pixels
 
@@ -62,7 +68,7 @@ local validdimen = Cg(lpegpatterns.number,'a') * (
       + Cb('a')           * Carg(1) / pixels
     )
 
-local pattern = (validdimen * lpegpatterns.whitespace^0)^1
+local pattern = (validdimen * skipspace)^1
 
 -- todo: default if ""
 
@@ -645,9 +651,7 @@ end
 
 local P, R, S, C, Cs, Ct, Cc, Carg, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Carg, lpeg.match
 
-local whitespace         = lpegpatterns.whitespace
 local p_number           = lpegpatterns.integer / tonumber
-local p_space            = whitespace^0
 
 local p_key              = C((R("az","AZ","09") + S("_-"))^1)
 local p_left             = S("#.[],:()")
@@ -657,10 +661,10 @@ local p_value            = C((1-P("]"))^0)
 local p_unquoted         = (P('"')/"") * C((1-P('"'))^0) * (P('"')/"")
                          + (1-P("]"))^1
 local p_element          =          Ct( (
-                               P(">") * p_space * Cc(s_element_a) +
-                               P("+") * p_space * Cc(s_element_b) +
-                               P("~") * p_space * Cc(s_element_c) +
-                                                  Cc(s_element_d)
+                               P(">") * skipspace * Cc(s_element_a) +
+                               P("+") * skipspace * Cc(s_element_b) +
+                               P("~") * skipspace * Cc(s_element_c) +
+                                                    Cc(s_element_d)
                            ) * p_tag )
 local p_attribute        = P("[") * Ct(Cc(s_attribute) * p_key * (
                                P("=" ) * Cc(1) * Cs(           p_unquoted)
@@ -670,16 +674,16 @@ local p_attribute        = P("[") * Ct(Cc(s_attribute) * p_key * (
                              + P("~=") * Cc(3) * Cs(           p_unquoted)
                            )^0 * P("]"))
 
-local p_separator        = p_space * P(",") * p_space
+local p_separator        = skipspace * P(",") * skipspace
 
-local p_formula          = p_space * P("(")
-                         * p_space
+local p_formula          = skipspace * P("(")
+                         * skipspace
                          * (
-                                p_number * p_space * (C("n") * p_space * (p_number + Cc(0)))^-1
+                                p_number * skipspace * (C("n") * skipspace * (p_number + Cc(0)))^-1
                               + P("even") * Cc(0)  * Cc("n") * Cc(2)
                               + P("odd")  * Cc(-1) * Cc("n") * Cc(2)
                            )
-                         * p_space
+                         * skipspace
                          * P(")")
 
 local p_step             = P(".") * Ct(Cc(s_attribute) * Cc("class") * Cc(3) * p_tag)
@@ -699,13 +703,13 @@ local p_step             = P(".") * Ct(Cc(s_attribute) * Cc("class") * Cc(3) * p
                          + P(":empty")            * Ct(Cc(s_empty)            )
                          + P(":root")             * Ct(Cc(s_root)             )
 
-local p_not              = P(":not") * Cc(true) * p_space * P("(") * p_space * p_step * p_space * P(")")
-local p_yes              =             Cc(false)                   * p_space * p_step
+local p_not              = P(":not") * Cc(true) * skipspace * P("(") * skipspace * p_step * skipspace * P(")")
+local p_yes              =             Cc(false)                     * skipspace * p_step
 
-local p_stepper          = Ct((p_space * (p_not+p_yes))^1)
-local p_steps            = Ct((p_stepper * p_separator^0)^1) * p_space * (P(-1) + function() print("error") end)
+local p_stepper          = Ct((skipspace * (p_not+p_yes))^1)
+local p_steps            = Ct((p_stepper * p_separator^0)^1) * skipspace * (P(-1) + function() print("error") end)
 
-local cache = table.setmetatableindex(function(t,k)
+local cache = setmetatableindex(function(t,k)
     local v = lpegmatch(p_steps,k) or false
     t[k] = v
     return v
@@ -877,10 +881,115 @@ xml.applyselector= selector
 -- local s = [[ g:empty ]]
 -- local s = [[ g:root ]]
 
+-- local c = css.applyselector(xml.convert(t),s) for i=1,#c do print(xml.tostring(c[i])) end
+
 function css.applyselector(x,str)
     -- the wrapping needs checking so this is a placeholder
     return applyselector({ x },str)
 end
 
--- local c = css.applyselector(xml.convert(t),s) for i=1,#c do print(xml.tostring(c[i])) end
+-- -- Some helpers to map e.g. style attributes:
+--
+-- -- string based (2.52):
+--
+-- local match     = string.match
+-- local topattern = string.topattern
+--
+-- function css.stylevalue(root,name)
+--     local list = getid(root).at.style
+--     if list then
+--         local pattern = topattern(name) .. ":%s*([^;]+)"
+--         local value   = match(list,pattern)
+--         if value then
+--             context(value)
+--         end
+--     end
+-- end
+--
+-- -- string based, cached (2.28 / 2.17 interfaced):
+--
+-- local match     = string.match
+-- local topattern = string.topattern
+--
+-- local patterns = table.setmetatableindex(function(t,k)
+--     local v = topattern(k) .. ":%s*([^;]+)"
+--     t[k] = v
+--     return v
+-- end)
+--
+-- function css.stylevalue(root,name)
+--     local list = getid(root).at.style
+--     if list then
+--         local value   = match(list,patterns[name])
+--         if value then
+--             context(value)
+--         end
+--     end
+-- end
+--
+-- -- lpeg based (4.26):
+--
+-- the lpeg variant also removes trailing spaces and accepts spaces before a colon
 
+local ctx_sprint   = context.sprint
+local ctx_xmlvalue = context.xmlvalue
+
+local colon        = P(":")
+local semicolon    = P(";")
+local eos          = P(-1)
+local somevalue    = (1 - (skipspace * (semicolon + eos)))^1
+local someaction   = skipspace * colon * skipspace * (somevalue/ctx_sprint)
+
+-- function css.stylevalue(root,name)
+--     local list = getid(root).at.style
+--     if list then
+--         lpegmatch(P(name * someaction + 1)^0,list)
+--     end
+-- end
+
+-- -- cache patterns (2.13):
+
+local patterns= setmetatableindex(function(t,k)
+    local v = P(k * someaction + 1)^0
+    t[k] = v
+    return v
+end)
+
+function css.stylevalue(root,name)
+    local list = getid(root).at.style -- hard coded style
+    if list then
+        lpegmatch(patterns[name],list)
+    end
+end
+
+local somevalue  = (1 - whitespace - semicolon - eos)^1
+local someaction = skipspace * colon * (skipspace * Carg(1) * C(somevalue)/function(m,s)
+    ctx_xmlvalue(m,s,"") -- use one with two args
+end)^1
+
+local patterns= setmetatableindex(function(t,k)
+    local v = P(k * someaction + 1)^0
+    t[k] = v
+    return v
+end)
+
+function css.mappedstylevalue(root,map,name)
+    local list = getid(root).at.style -- hard coded style
+    if list then
+        lpegmatch(patterns[name],list,1,map)
+    end
+end
+
+-- -- faster interface (1.02):
+
+interfaces.implement {
+    name      = "xmlstylevalue",
+    actions   = css.stylevalue,
+    arguments = { "string", "string" },
+}
+
+interfaces.implement {
+    name      = "xmlmappedstylevalue",
+    actions   = css.mappedstylevalue,
+    arguments = { "string", "string", "string" },
+}

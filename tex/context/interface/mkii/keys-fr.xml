@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='fait'/>
 		<cd:variable name='february' value='fevrier'/>
+		<cd:variable name='field' value='field'/>
 		<cd:variable name='figure' value='figure'/>
 		<cd:variable name='figures' value='figures'/>
 		<cd:variable name='file' value='fichier'/>
@@ -855,6 +856,7 @@
 		<cd:constant name='headerstate' value='etatentete'/>
 		<cd:constant name='headlabel' value='etiquettetete'/>
 		<cd:constant name='headnumber' value='numerotete'/>
+		<cd:constant name='headseparator' value='headseparator'/>
 		<cd:constant name='headstyle' value='styletete'/>
 		<cd:constant name='height' value='hauteur'/>
 		<cd:constant name='hfactor' value='facteurhauteur'/>
@@ -1081,6 +1083,7 @@
 		<cd:constant name='preview' value='previsualisation'/>
 		<cd:constant name='previous' value='precedent'/>
 		<cd:constant name='previousnumber' value='numeroprecedent'/>
+		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='editable'/>
 		<cd:constant name='process' value='process'/>
 		<cd:constant name='profile' value='profile'/>
@@ -1166,8 +1169,10 @@
 		<cd:constant name='sidemethod' value='sidemethod'/>
 		<cd:constant name='sidespaceafter' value='espacelateralapres'/>
 		<cd:constant name='sidespacebefore' value='espacelateralavant'/>
+		<cd:constant name='sidespaceinbetween' value='sidespaceinbetween'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='signe'/>
+		<cd:constant name='simplecommand' value='simplecommand'/>
 		<cd:constant name='size' value='dimension'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>

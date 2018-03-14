@@ -61,8 +61,7 @@ CREATE TABLE IF NOT EXISTS %basename% (
     `data`   longtext,
     PRIMARY KEY (`id`),
     UNIQUE KEY `id_unique_key` (`id`)
-)
-DEFAULT CHARSET = utf8 ;
+) DEFAULT CHARSET = utf8 ;
 ]]
 
 local sqlite_template = [[
@@ -80,7 +79,7 @@ function loggers.createdb(presets,datatable)
     local db = checkeddb(presets,datatable)
 
     db.execute {
-        template  = (db.usedmethod == "sqlite" or db.usedmethod == "sqlffi") and sqlite_template or template,
+        template  = db.usedmethod == "sqlite" and sqlite_template or template,
         variables = {
             basename = db.basename,
         },

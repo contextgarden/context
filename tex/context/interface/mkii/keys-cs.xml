@@ -1083,6 +1083,7 @@
 		<cd:constant name='preview' value='nahled'/>
 		<cd:constant name='previous' value='predchozi'/>
 		<cd:constant name='previousnumber' value='predchozicislo'/>
+		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='tisknutelne'/>
 		<cd:constant name='process' value='process'/>
 		<cd:constant name='profile' value='profile'/>

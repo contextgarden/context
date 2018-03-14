@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['util-sql-imp-library'] = {
 -- we couldn't figure it out (some issue with adapting the table that is passes as first
 -- argument in the fetch routine. Apart from this it looks like the mysql binding has some
 -- efficiency issues (like creating a keys and types table for each row) but that could be
--- optimized. Anyhow, fecthing results can be done as follows:
+-- optimized. Anyhow, fetching results can be done as follows:
 
 -- local function collect_1(r)
 --     local t = { }

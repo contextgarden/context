@@ -646,7 +646,9 @@ end
 
 local format_q = function()
     n = n + 1
-    return format("(a%s and format('%%q',a%s) or '')",n,n) -- goodie: nil check (maybe separate lpeg, not faster)
+    -- lua 5.3 has a different q than lua 5.2 (which does a tostring on numbers)
+ -- return format("(a%s ~= nil and format('%%q',a%s) or '')",n,n)
+    return format("(a%s ~= nil and format('%%q',tostring(a%s)) or '')",n,n)
 end
 
 local format_Q = function() -- can be optimized
@@ -1000,7 +1002,7 @@ local builder = Cs { "start",
     ["o"] = (prefix_any * P("o")) / format_o, -- %o => regular %o (octal)
     --
     ["S"] = (prefix_any * P("S")) / format_S, -- %S => %s (tostring)
-    ["Q"] = (prefix_any * P("Q")) / format_S, -- %Q => %q (tostring)
+    ["Q"] = (prefix_any * P("Q")) / format_Q, -- %Q => %q (tostring)
     ["N"] = (prefix_any * P("N")) / format_N, -- %N => tonumber (strips leading zeros)
     ["k"] = (prefix_sub * P("k")) / format_k, -- %k => like f but with n.m
     ["c"] = (prefix_any * P("c")) / format_c, -- %c => utf character (extension to regular)

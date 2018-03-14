@@ -204,6 +204,7 @@ luatex.synctex           = synctex
 local enabled = false
 local paused  = 0
 local used    = false
+local never   = false
 
 -- get rid of overhead
 
@@ -673,7 +674,7 @@ function synctex.registerdisabler(f)
 end
 
 function synctex.enable()
-    if not enabled then
+    if not never and not enabled then
         enabled = true
         set_synctex_mode(3) -- we want details
         if not used then
@@ -712,13 +713,13 @@ local filename = nil
 
 function synctex.pause()
     paused = paused + 1
-    if paused == 1 and enabled then
+    if enabled and paused == 1 then
         set_synctex_mode(0)
     end
 end
 
 function synctex.resume()
-    if paused == 1 and enabled then
+    if enabled and paused == 1 then
         set_synctex_mode(3)
     end
     paused = paused - 1
@@ -735,37 +736,45 @@ statistics.register("synctex tracing",function()
     end
 end)
 
-interfaces.implement {
-    name      = "synctexblockfilename",
-    arguments = "string",
-    actions   = synctex.blockfilename,
-}
-
-interfaces.implement {
-    name      = "synctexsetfilename",
-    arguments = "string",
-    actions   = synctex.setfilename,
-}
-
-interfaces.implement {
-    name      = "synctexresetfilename",
-    actions   = synctex.resetfilename,
-}
+local implement = interfaces.implement
+local variables = interfaces.variables
 
 function synctex.setup(t)
-    if t.method == interfaces.variables.max then
+    if t.state == variables.never then
+        synctex.disable() -- just in case
+        never = true
+        return
+    end
+    if t.method == variables.max then
         collect = collect_max
     else
         collect = collect_min
     end
-    if t.state == interfaces.variables.start then
+    if t.state == variables.start then
         synctex.enable()
     else
         synctex.disable()
     end
 end
 
-interfaces.implement {
+implement {
+    name      = "synctexblockfilename",
+    arguments = "string",
+    actions   = synctex.blockfilename,
+}
+
+implement {
+    name      = "synctexsetfilename",
+    arguments = "string",
+    actions   = synctex.setfilename,
+}
+
+implement {
+    name      = "synctexresetfilename",
+    actions   = synctex.resetfilename,
+}
+
+implement {
     name      = "setupsynctex",
     actions   = synctex.setup,
     arguments = {
@@ -776,12 +785,12 @@ interfaces.implement {
     },
 }
 
-interfaces.implement {
+implement {
     name      = "synctexpause",
     actions   = synctex.pause,
 }
 
-interfaces.implement {
+implement {
     name      = "synctexresume",
     actions   = synctex.resume,
 }

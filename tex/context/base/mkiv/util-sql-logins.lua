@@ -34,22 +34,27 @@ end
 logins.usedb = checkeddb
 
 local template = [[
-CREATE TABLE
-    `logins`
-    (
-        `id` int(11) NOT NULL AUTO_INCREMENT,
-        `name` varchar(50) COLLATE utf8_bin NOT NULL,
-        `time` int(11) DEFAULT '0',
-        `n` int(11) DEFAULT '0',
-        `state` int(11) DEFAULT '0',
-        PRIMARY KEY (`id`),
-        UNIQUE KEY `id_UNIQUE` (`id`),
-        UNIQUE KEY `name_UNIQUE` (`name`)
-    )
-    ENGINE=InnoDB
-    DEFAULT CHARSET=utf8
-    COLLATE=utf8_bin
-    COMMENT='state: 0=unset 1=known 2=unknown'
+    CREATE TABLE IF NOT EXISTS %basename% (
+        `id`    int(11)     NOT NULL AUTO_INCREMENT,
+        `name`  varchar(50) NOT NULL,
+        `time`  int(11)     DEFAULT '0',
+        `n`     int(11)     DEFAULT '0',
+        `state` int(11)     DEFAULT '0',
+
+        PRIMARY KEY                  (`id`),
+        UNIQUE KEY `id_unique_index` (`id`),
+        UNIQUE KEY `name_unique_key` (`name`)
+    ) DEFAULT CHARSET = utf8 ;
+]]
+
+local sqlite_template = [[
+    CREATE TABLE IF NOT EXISTS %basename% (
+        `id`    INTEGER NOT NULL AUTO_INCREMENT,
+        `name`  TEXT    NOT NULL,
+        `time`  INTEGER DEFAULT '0',
+        `n`     INTEGER DEFAULT '0',
+        `state` INTEGER DEFAULT '0'
+    ) ;
 ]]
 
 function logins.createdb(presets,datatable)
@@ -57,7 +62,7 @@ function logins.createdb(presets,datatable)
     local db = checkeddb(presets,datatable)
 
     local data, keys = db.execute {
-        template  = template,
+        template  = db.usedmethod == "sqlite" and sqlite_template or template,
         variables = {
             basename = db.basename,
         },

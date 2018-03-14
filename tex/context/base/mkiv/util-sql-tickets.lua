@@ -67,7 +67,7 @@ end
 
 tickets.usedb = checkeddb
 
-local template =[[
+local template = [[
     CREATE TABLE IF NOT EXISTS %basename% (
         `id`        int(11)     NOT NULL AUTO_INCREMENT,
         `token`     varchar(50) NOT NULL,
@@ -83,8 +83,22 @@ local template =[[
         PRIMARY KEY                     (`id`),
         UNIQUE INDEX `id_unique_index`  (`id` ASC),
         KEY          `token_unique_key` (`token`)
-    )
-    DEFAULT CHARSET = utf8 ;
+    ) DEFAULT CHARSET = utf8 ;
+]]
+
+local sqlite_template = [[
+    CREATE TABLE IF NOT EXISTS %basename% (
+        `id`        TEXT NOT NULL AUTO_INCREMENT,
+        `token`     TEXT NOT NULL,
+        `subtoken`  INTEGER DEFAULT '0',
+        `created`   INTEGER DEFAULT '0',
+        `accessed`  INTEGER DEFAULT '0',
+        `category`  INTEGER DEFAULT '0',
+        `status`    INTEGER DEFAULT '0',
+        `usertoken` TEXT NOT NULL,
+        `data`      TEXT NOT NULL,
+        `comment`   TEXT NOT NULL
+    ) ;
 ]]
 
 function tickets.createdb(presets,datatable)
@@ -92,7 +106,7 @@ function tickets.createdb(presets,datatable)
     local db = checkeddb(presets,datatable)
 
     local data, keys = db.execute {
-        template  = template,
+        template  = db.usedmethod == "sqlite" and sqlite_template or template,
         variables = {
             basename = db.basename,
         },

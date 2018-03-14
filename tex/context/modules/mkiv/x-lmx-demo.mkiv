@@ -1,0 +1,143 @@
+% last page less markup
+
+\usemodule
+  [article]
+
+\setupbottomtexts
+   [\directsetup{document:comment}]
+
+\setuplayout
+  [bottom=1cm]
+
+\setupbottom
+  [style=\small\tt]
+
+\usemodule
+  [lmx-html]
+
+% \startxmlsetups exa:variables
+%
+%     \xmlfilter{#1}{/exa:variable/command(exa:variable)}
+%
+%     % todo: fontkerns
+%
+%     \xmldoif {#1} {/exa:variable[@name='bodyfont']} {
+%         \setupbodyfont
+%             [\xmltext{#1}{/exa:variable[@name='bodyfont']}]
+%     }
+%     \xmldoif {#1} {/exa:variable[@name='cutmarks' and text()='yes']} {
+%         \setuppapersize
+%             [A4]
+%             [oversized]
+%         \setuplayout
+%             [marking=on,
+%              location=middle]
+%     }
+%     \xmldoif {#1} {/exa:variable[@name='spelling' and text()='yes']} {
+%       % \loadspellchecklist[en][spell-en.txt]
+%       % \setupspellchecking[state=start,method=1]
+%     }
+%     \xmldoif {#1} {/exa:variable[@name='frame' and text()='yes']} {
+%         \showframe
+%     }
+%     \xmldoif {#1} {/exa:variable[@name='markup' and text()='yes']} {
+%         \showmakeup
+%     }
+%     \xmldoif {#1} {/exa:variable[@name='request' and text()='yes']} {
+%         \enablemode[showrequest]
+%     }
+%
+% \stopxmlsetups
+
+\startxmlsetups exa:variable:cutmarks
+    \xmldoif {#1} {.[text() = 'yes']} {
+        \setuppapersize
+            [A4]
+            [oversized]
+        \setuplayout
+            [marking=on,
+             location=middle]
+    }
+\stopxmlsetups
+
+\startxmlsetups exa:variable:bodyfont
+    \setupbodyfont
+        [\xmltext{#1}{.}]
+\stopxmlsetups
+
+\startxmlsetups exa:variable:frame
+    \xmldoif {#1} {.[text() = 'yes']} {
+        \showframe
+    }
+\stopxmlsetups
+
+\startxmlsetups exa:variable:markup
+    \xmldoif {#1} {.[text() = 'yes']} {
+        \showmakeup
+    }
+\stopxmlsetups
+
+\startxmlsetups exa:variable:request
+    \xmldoif {#1} {.[text() = 'yes']} {
+        \enablemode[showrequest]
+    }
+\stopxmlsetups
+
+\startxmlsetups exa:variable
+    \xmlsetup{#1}{exa:variable:\xmlatt{#1}{name}}
+\stopxmlsetups
+
+\startxmlsetups exa:variables
+    \xmlfilter{#1}{/exa:variable/command(exa:variable)}
+\stopxmlsetups
+
+\startsetups document:comment
+    \xmlfilter{main}{/exa:selection/exa:variables/exa:variable[@name='comment']/html()}
+\stopsetups
+
+\startxmlsetups exa:entry
+
+    \startchapter[title=\xmlatt{#1}{title}]
+        \samplefile{\xmlatt{#1}{id}}
+    \stopchapter
+
+\stopxmlsetups
+
+\startxmlsetups exa:selection
+
+    \xmlfirst{#1}{/exa:variables}
+
+    \starttitle[title={Contents}]
+        \placelist[chapter][criterium=all]
+    \stoptitle
+
+    \xmlfilter{#1}{/exa:selectors/exa:selector/exa:tree/exa:entry/exa:entry/command(exa:entry)}
+
+\stopxmlsetups
+
+\startxmlsetups xml:request
+    \xmlsetsetup {#1} {
+        exa:variables|exa:selection
+    } {exa:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:request}
+
+\starttext
+
+    \xmlprocess{main}{\inputfilename}{}
+
+    \page
+
+    \doifelsemode {showrequest} {
+
+        \usemodule[scite]
+
+        \start
+            \switchtobodyfont[small]
+            \scitefile[\inputfilename]
+        \stop
+
+    }
+
+\stoptext

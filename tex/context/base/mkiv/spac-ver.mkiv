@@ -2568,6 +2568,22 @@
 
 \newcount\c_spac_vspacing_ignore_parskip
 
+% \setupwhitespace[line]
+% \setuphead[subject][after={\blank[packed]},style=\bfb]
+% \subject{foo}
+% test \par
+% test \par
+% \blank[packed] % \ignoreparskip
+% test \par
+% test \par
+% \ignoreparskip
+% test \par
+% test \par
+% \setuphead[subject][after={\blank[nowhite]},style=\bfb]
+% \subject{foo}
+% test \par
+% test \par
+
 \unexpanded\def\ignoreparskip{\c_spac_vspacing_ignore_parskip\plusone}
 
 \protect \endinput

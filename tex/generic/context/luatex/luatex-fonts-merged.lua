@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/10/18 14:52:21
+-- merge date  : 03/14/18 18:07:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -126,6 +126,8 @@ end
 local loaded=package.loaded
 if not loaded["socket"] then loaded["socket"]=loaded["socket.core"] end
 if not loaded["mime"]  then loaded["mime"]=loaded["mime.core"]  end
+if not socket.mime then socket.mime=package.loaded["mime"] end
+if not loaded["socket.mime"] then loaded["socket.mime"]=socket.mime end
 if not loaded["socket.http"] then loaded["socket.http"]=socket.http end
 if not loaded["socket.ftp"] then loaded["socket.ftp"]=socket.ftp end
 if not loaded["socket.smtp"] then loaded["socket.smtp"]=socket.smtp end
@@ -4122,7 +4124,7 @@ local format_left=function(f)
 end
 local format_q=function()
   n=n+1
-  return format("(a%s and format('%%q',a%s) or '')",n,n) 
+  return format("(a%s ~= nil and format('%%q',tostring(a%s)) or '')",n,n)
 end
 local format_Q=function() 
   n=n+1
@@ -4393,7 +4395,7 @@ local builder=Cs { "start",
   ["X"]=(prefix_any*P("X"))/format_X,
   ["o"]=(prefix_any*P("o"))/format_o,
   ["S"]=(prefix_any*P("S"))/format_S,
-  ["Q"]=(prefix_any*P("Q"))/format_S,
+  ["Q"]=(prefix_any*P("Q"))/format_Q,
   ["N"]=(prefix_any*P("N"))/format_N,
   ["k"]=(prefix_sub*P("k"))/format_k,
   ["c"]=(prefix_any*P("c"))/format_c,

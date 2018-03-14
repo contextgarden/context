@@ -430,6 +430,9 @@ This is a rather special one. First we show a couple of definitions:
 
 \typebuffer \getbuffer
 
+When you don't want a dimension to change you leave an entry empty, so
+valid entries are for instance: \type {,3,} and \type {1,,}.
+
 As usual you apply such a feature as follows:
 
 \starttyping
@@ -475,7 +478,8 @@ A special case is the following:
 
 \typebuffer \getbuffer
 
-This will make the height and depth the same as the current strut height and depth:
+This will make the height and depth the same as the {\em current} strut height
+and depth:
 
 \startbuffer
 \ruledhbox{\definedfont[Serif*default,dimensions-e at  8pt]clipped}
@@ -488,6 +492,10 @@ This will make the height and depth the same as the current strut height and dep
 The dimensions are (in this case) limited:
 
 \startlinecorrection[blank] \dontleavehmode \hpack{\maincolor\inlinebuffer} \stoplinecorrection
+
+Another special case is \type {dimensions=mono} which will make an characters the
+fonts em|-|width. This is handy when you define font fallbacks where glyphs come
+from a non monospaced font.
 
 \stopsection
 

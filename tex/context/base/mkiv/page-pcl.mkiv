@@ -602,43 +602,25 @@
 %D \unknown
 
 \unexpanded\def\page_col_command_routine
-  {\ifconditional\c_page_sides_short
-     \page_sides_output_routine_yes_column
-   \else
-     \page_sides_output_routine_nop_column
-   \fi}
+  {\page_sides_output_routine}
 
-\let\page_sides_output_routine_nop_column\page_sides_output_routine_nop
-
-\def\page_sides_output_routine_yes_column % this might become the main one too
-  {\unvbox\normalpagebox % bah, and the discards?
-  %\page_col_column
-   \column % \page
- %
- % % do we really need the next code
- %
- % \setbox\b_page_sides_bottom\lastbox
- % \ifdim\wd\b_page_sides_bottom>\d_page_sides_hsize
- %   \penalty-201 % hm, i really need to write this from scatch
- %   \box\b_page_sides_bottom
- % \else\ifvoid\b_page_sides_bottom
- % \else
- %   \page_sides_restore_left_indent
- %   \ifdim\wd\b_page_sides_bottom<\d_page_sides_hsize
- %     \parskip\zeropoint
- %     %\noindent
- %     \ifinner\else
- %       \vadjust{\penalty\minusone}%
- %     \fi
- %     \global\advance\d_page_sides_hsize -\wd\b_page_sides_bottom
- %     \global\divide\d_page_sides_hsize \plustwo
- %     \hskip\d_page_sides_hsize % \kern
- %   \fi
- %   \box\b_page_sides_bottom
- %   \page_sides_restore_output_penalty
- % \fi\fi
-   % why was this \global\holdinginserts\zerocount
-   \global\setfalse\c_page_sides_short}
+% % not:
+%
+% \unexpanded\def\page_col_command_routine
+%   {\ifconditional\c_page_sides_short
+%      \page_sides_output_routine_yes_column
+%    \else
+%      \page_sides_output_routine_nop_column
+%    \fi}
+%
+% \let\page_sides_output_routine_nop_column\page_sides_output_routine
+%
+% \def\page_sides_output_routine_yes_column % this might become the main one too
+%   {\unvbox\normalpagebox % bah, and the discards?
+%   %\page_col_column
+%    \column % \page
+%    % why was this \global\holdinginserts\zerocount
+%    \global\setfalse\c_page_sides_short}
 
 \let\page_col_command_flush_all_floats\relax
 

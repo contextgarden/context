@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['buff-ver'] = {
 -- todo: update to match context scite lexing
 
 local type, next, rawset, rawget, setmetatable, getmetatable, tonumber = type, next, rawset, rawget, setmetatable, getmetatable, tonumber
-local format, lower, upper,match, find, sub = string.format, string.lower, string.upper, string.match, string.find, string.sub
+local lower, upper,match, find, sub = string.lower, string.upper, string.match, string.find, string.sub
 local splitlines = string.splitlines
 local concat = table.concat
 local C, P, R, S, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
@@ -239,12 +239,13 @@ function visualizers.load(name)
     name = lower(name)
     if rawget(specifications,name) == nil then
         name = lower(name)
-        local texname = findfile(format("buff-imp-%s.mkiv",name))
-        local luaname = findfile(format("buff-imp-%s.lua" ,name))
+        local impname = "buff-imp-"..name
+        local texname = findfile(addsuffix(impname,"mkiv"))
+        local luaname = findfile(addsuffix(impname,"lua"))
         if texname == "" or luaname == "" then
             -- assume a user specific file
             luaname = findfile(addsuffix(name,"mkiv"))
-            texname = findfile(addsuffix(name,"lua" ))
+            texname = findfile(addsuffix(name,"lua"))
         end
         if texname == "" or luaname == "" then
             if trace_visualize then

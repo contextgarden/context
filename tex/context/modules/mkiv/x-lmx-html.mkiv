@@ -1,0 +1,122 @@
+%D \module
+%D   [       file=x-lmx-html,
+%D        version=2018.03.10,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Simple LMX HTML rendering (from text fields),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is old code that we used in several places so it qualifies as a
+%D proper module. It is means for generating simple \HTML\ from filled
+%D in forms. It's not a general purpose \HTML\ rendering.
+
+\startmodule[lmx-html]
+
+\startxmlsetups lmx:html:setup
+    \xmlsetsetup{#1}{*}{lmx:html:*}
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups lmx:html:ul
+    \startitemize[packed]
+        \xmlflush{#1}
+    \stopitemize
+\stopxmlsetups
+
+\startxmlsetups lmx:html:ol
+    \startitemize[packed,n]
+        \xmlflush{#1}
+    \stopitemize
+\stopxmlsetups
+
+\startxmlsetups lmx:html:li
+    \startitem
+        \xmlflush{#1}
+    \stopitem
+\stopxmlsetups
+
+\startxmlsetups lmx:html:p
+    \xmlflush{#1}\par
+\stopxmlsetups
+
+\startxmlsetups lmx:html:br
+    \par
+\stopxmlsetups
+
+\startxmlsetups lmx:html:a
+    \dontleavehmode
+    \begingroup
+    \tttf
+    \xmldoifelsetext {#1} {.} {
+        \goto{\hyphenatedurl{\xmlflush{#1}}}[url(\xmlatt{#1}{href})]
+    } {
+        \goto{\hyphenatedurl{\xmlatt{#1}{href}}}[url(\xmlatt{#1}{href})]
+    }
+    \endgroup
+\stopxmlsetups
+
+\startxmlsetups lmx:html:em
+    \dontleavehmode
+    \begingroup\em\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\startxmlsetups lmx:html:b
+    \dontleavehmode
+    \begingroup\bf\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\startxmlsetups lmx:html:i
+    \dontleavehmode
+    \begingroup\it\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\startxmlsetups lmx:html:strong
+    \dontleavehmode
+    \begingroup\bf\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\startxmlsetups lmx:html:tt
+    \dontleavehmode
+    \begingroup\tt\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+% \startxmlsetups lmx:html:span
+%     \dontleavehmode
+%     \ctxcommand{doifelse(string.find([[ \xmlatt{#1}{style} ]],"underline"))} {
+%         \underbar{\xmlflush{#1}}
+%     } {
+%         \xmlflush{#1}
+%     }
+% \stopxmlsetups
+
+\xmlmapvalue{text-decoration}{underline}{\directsetbar{underbar}}
+\xmlmapvalue{text-decoration}{overline} {\directsetbar{overbar}}
+
+\startxmlsetups lmx:html:span
+    \dontleavehmode
+    \begingroup
+    \xmlcssmappedstylevalue{#1}{text-decoration}{text-decoration}
+    \xmlflush{#1}
+    \endgroup
+\stopxmlsetups
+
+\startxmlsetups lmx:html:html
+    \xmlflush{#1}% should not be needed but we self tag .. needs checking
+\stopxmlsetups
+
+\startluacode
+    local texfinalizers = xml.finalizers.tex
+
+    function texfinalizers.html(collected,setup)
+        texfinalizers.xml(collected,"html",setup)
+    end
+\stopluacode
+
+% \xmlfilter{...}{/.../html()}
+
+\stopmodule

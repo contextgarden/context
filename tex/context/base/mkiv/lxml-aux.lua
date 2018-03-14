@@ -1022,3 +1022,29 @@ function xml.totable(x,strip,flat)
         return convert(x,strip,flat)
     end
 end
+
+-- namespace, name, attributes
+-- name, attributes
+-- name
+
+function xml.rename(e,namespace,name,attributes)
+    if type(e) ~= "table" or not e.tg then
+        return
+    end
+    if type(name) == "table" then
+        attributes = name
+        name       = namespace
+        namespace  = ""
+    elseif type(name) ~= "string" then
+        attributes = { }
+        name       = namespace
+        namespace  = ""
+    end
+    if type(attributes) ~= "table" then
+        attributes = { }
+    end
+    e.ns = namespace
+    e.rn = namespace
+    e.tg = name
+    e.at = attributes
+end

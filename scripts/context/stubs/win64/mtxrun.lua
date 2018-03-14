@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6090, stripped down to: 3527
+-- original size: 6230, stripped down to: 3662
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -180,6 +180,8 @@ end
 local loaded=package.loaded
 if not loaded["socket"] then loaded["socket"]=loaded["socket.core"] end
 if not loaded["mime"]  then loaded["mime"]=loaded["mime.core"]  end
+if not socket.mime then socket.mime=package.loaded["mime"] end
+if not loaded["socket.mime"] then loaded["socket.mime"]=socket.mime end
 if not loaded["socket.http"] then loaded["socket.http"]=socket.http end
 if not loaded["socket.ftp"] then loaded["socket.ftp"]=socket.ftp end
 if not loaded["socket.smtp"] then loaded["socket.smtp"]=socket.smtp end
@@ -6035,7 +6037,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 38616, stripped down to: 21710
+-- original size: 38725, stripped down to: 21726
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6428,7 +6430,7 @@ local format_left=function(f)
 end
 local format_q=function()
   n=n+1
-  return format("(a%s and format('%%q',a%s) or '')",n,n) 
+  return format("(a%s ~= nil and format('%%q',tostring(a%s)) or '')",n,n)
 end
 local format_Q=function() 
   n=n+1
@@ -6699,7 +6701,7 @@ local builder=Cs { "start",
   ["X"]=(prefix_any*P("X"))/format_X,
   ["o"]=(prefix_any*P("o"))/format_o,
   ["S"]=(prefix_any*P("S"))/format_S,
-  ["Q"]=(prefix_any*P("Q"))/format_S,
+  ["Q"]=(prefix_any*P("Q"))/format_Q,
   ["N"]=(prefix_any*P("N"))/format_N,
   ["k"]=(prefix_sub*P("k"))/format_k,
   ["c"]=(prefix_any*P("c"))/format_c,
@@ -14703,7 +14705,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 30075, stripped down to: 21379
+-- original size: 30650, stripped down to: 21793
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -15571,6 +15573,27 @@ function xml.totable(x,strip,flat)
     return convert(x,strip,flat)
   end
 end
+function xml.rename(e,namespace,name,attributes)
+  if type(e)~="table" or not e.tg then
+    return
+  end
+  if type(name)=="table" then
+    attributes=name
+    name=namespace
+    namespace=""
+  elseif type(name)~="string" then
+    attributes={}
+    name=namespace
+    namespace=""
+  end
+  if type(attributes)~="table" then
+    attributes={}
+  end
+  e.ns=namespace
+  e.rn=namespace
+  e.tg=name
+  e.at=attributes
+end
 
 
 end -- of closure
@@ -16383,7 +16406,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 21319, stripped down to: 11325
+-- original size: 18105, stripped down to: 11207
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -16749,12 +16772,6 @@ function resolvers.get_from_content(content,path,name)
     return path,remap[used] or used
   else
     local name=path
-    if addcasecraptoo then
-      local path=files[name]
-      if path then
-        return path,name
-      end
-    end
     local used=lower(name)
     local path=files[used]
     if path then
@@ -21217,8 +21234,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 877239
--- stripped bytes    : 320368
+-- original bytes    : 874849
+-- stripped bytes    : 317531
 
 -- end library merge
 

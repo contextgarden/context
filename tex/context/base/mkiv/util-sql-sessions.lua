@@ -48,8 +48,16 @@ local template =[[
         `created`  int(11)           NOT NULL,
         `accessed` int(11)           NOT NULL,
         UNIQUE KEY `token_unique_key` (`token`)
-    )
-    DEFAULT CHARSET = utf8 ;
+    ) DEFAULT CHARSET = utf8 ;
+]]
+
+local sqlite_template =[[
+    CREATE TABLE IF NOT EXISTS %basename% (
+        `token`    TEXT NOT NULL,
+        `data`     TEXT NOT NULL,
+        `created`  INTEGER DEFAULT '0',
+        `accessed` INTEGER DEFAULT '0'
+    ) ;
 ]]
 
 function sessions.createdb(presets,datatable)
@@ -57,7 +65,7 @@ function sessions.createdb(presets,datatable)
     local db = checkeddb(presets,datatable)
 
     db.execute {
-        template  = template,
+        template  = db.usedmethod == "sqlite" and sqlite_template or template,
         variables = {
             basename = db.basename,
         },

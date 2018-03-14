@@ -10,47 +10,77 @@ if not modules then modules = { } end modules ['util-sql-users'] = {
 -- because it's easier to dirtribute this way. Eventually it will be documented
 -- and the related scripts will show up as well.
 
--- local sql = sql or (utilities and utilities.sql) or require("util-sql")
--- local md5 = md5  or require("md5")
-
 local sql = utilities.sql
 
-local format, upper, find, gsub, topattern = string.format, string.upper, string.find, string.gsub, string.topattern
-local sumhexa = md5.sumhexa
+local find, topattern = string.find, string.topattern
+local sumHEXA = md5.sumHEXA
 local toboolean = string.toboolean
+local lpegmatch = lpeg.match
 
-local sql   = utilities.sql
+local sql   = require("util-sql") -- utilities.sql
 local users = { }
 sql.users   = users
 
 local trace_sql = false  trackers.register("sql.users.trace", function(v) trace_sql = v end)
 local report    = logs.reporter("sql","users")
 
-local function encryptpassword(str)
+local split = lpeg.splitat(":")
+local valid = nil
+local hash  = function(s) return "MD5:" .. sumHEXA(s) end
+
+if LUAVERSION >= 5.3 then
+
+    local sha2    = require("util-sha")
+
+    local HASH224 = sha2.HASH224
+    local HASH256 = sha2.HASH256
+    local HASH384 = sha2.HASH384
+    local HASH512 = sha2.HASH512
+
+    valid = {
+        MD5    = hash,
+        SHA224 = function(s) return "SHA224:" .. HASH224(s) end,
+        SHA256 = function(s) return "SHA256:" .. HASH256(s) end,
+        SHA384 = function(s) return "SHA384:" .. HASH384(s) end,
+        SHA512 = function(s) return "SHA512:" .. HASH512(s) end,
+    }
+
+else
+
+    valid = {
+        MD5    = hash,
+        SHA224 = hash,
+        SHA256 = hash,
+        SHA384 = hash,
+        SHA512 = hash,
+    }
+
+end
+
+local function encryptpassword(str,how)
     if not str or str == "" then
         return ""
-    elseif find(str,"^MD5:") then
-        return str
-    else
-        return upper(format("MD5:%s",sumhexa(str)))
     end
+    local prefix, rest = lpegmatch(split,str)
+    if prefix and rest and valid[prefix] then
+        return str
+    end
+    return (how and valid[how] or valid.MD5)(str)
 end
 
 local function cleanuppassword(str)
-    return (gsub(str,"^MD5:",""))
+    local prefix, rest = lpegmatch(split,str)
+    if prefix and rest and valid[prefix] then
+        return rest
+    end
+    return str
 end
 
 local function samepasswords(one,two)
     if not one or not two then
         return false
     end
-    if not find(one,"^MD5:") then
-        one = encryptpassword(one)
-    end
-    if not find(two,"^MD5:") then
-        two = encryptpassword(two)
-    end
-    return one == two
+    return encryptpassword(one) == encryptpassword(two)
 end
 
 local function validaddress(address,addresses)
@@ -63,7 +93,6 @@ local function validaddress(address,addresses)
         return true, "no remote address check"
     end
 end
-
 
 users.encryptpassword = encryptpassword
 users.cleanuppassword = cleanuppassword
@@ -103,13 +132,23 @@ users.groupnumbers = groupnumbers
 -- password 'test':
 --
 -- INSERT insert into users (`name`,`password`,`group`,`enabled`) values ('...','MD5:098F6BCD4621D373CADE4E832627B4F6',1,1) ;
+--
+-- MD5:098F6BCD4621D373CADE4E832627B4F6
+-- SHA224:90A3ED9E32B2AAF4C61C410EB925426119E1A9DC53D4286ADE99A809
+-- SHA256:9F86D081884C7D659A2FEAA0C55AD015A3BF4F1B2B0B822CD15D6C15B0F00A08
+-- SHA384:768412320F7B0AA5812FCE428DC4706B3CAE50E02A64CAA16A782249BFE8EFC4B7EF1CCB126255D196047DFEDF17A0A9
+-- SHA512:EE26B0DD4AF7E749AA1A8EE3C10AE9923F618980772E473F8819A5D4940E0DB27AC185F8A0E1D5F84F88BC887FD67B143732C304CC5FA9AD8E6F57F50028A8FF
 
-local template =[[
+-- old values (a name can have utf and a password a long hash):
+--
+-- name 80, fullname 80, password 50
+
+local template = [[
     CREATE TABLE `users` (
         `id`       int(11)      NOT NULL AUTO_INCREMENT,
-        `name`     varchar(80)  NOT NULL,
-        `fullname` varchar(80)  NOT NULL,
-        `password` varchar(50)  DEFAULT NULL,
+        `name`     varchar(100) NOT NULL,
+        `fullname` varchar(100) NOT NULL,
+        `password` varchar(200) DEFAULT NULL,
         `group`    int(11)      NOT NULL,
         `enabled`  int(11)      DEFAULT '1',
         `email`    varchar(80)  DEFAULT NULL,
@@ -119,6 +158,21 @@ local template =[[
         PRIMARY KEY (`id`),
         UNIQUE KEY `name_unique` (`name`)
     ) DEFAULT CHARSET = utf8 ;
+]]
+
+local sqlite_template = [[
+    CREATE TABLE `users` (
+        `id`       INTEGER PRIMARY KEY AUTOINCREMENT,
+        `name`     TEXT NOT NULL,
+        `fullname` TEXT NOT NULL,
+        `password` TEXT DEFAULT NULL,
+        `group`    INTEGER NOT NULL,
+        `enabled`  INTEGER DEFAULT '1',
+        `email`    TEXT DEFAULT NULL,
+        `address`  TEXT DEFAULT NULL,
+        `theme`    TEXT DEFAULT NULL,
+        `data`     TEXT DEFAULT NULL
+    ) ;
 ]]
 
 local converter, fields = sql.makeconverter {
@@ -139,7 +193,7 @@ function users.createdb(presets,datatable)
     local db = checkeddb(presets,datatable)
 
     db.execute {
-        template  = template,
+        template  = db.usedmethod == "sqlite" and sqlite_template or template,
         variables = {
             basename = db.basename,
         },

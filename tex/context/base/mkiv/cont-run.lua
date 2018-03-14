@@ -180,12 +180,35 @@ local function processjob()
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
 
-    if arguments.synctex then
+    if arguments.nosynctex then
+        luatex.synctex.setup {
+            state  = interfaces.variables.never,
+        }
+    elseif arguments.synctex then
         luatex.synctex.setup {
             state  = interfaces.variables.start,
             method = interfaces.variables.max,
         }
     end
+
+ -- -- todo: move from mtx-context to here:
+ --
+ -- local timing = arguments.timing
+ -- if type(timing) == "string" then
+ --     context.usemodule { timing }
+ -- end
+ -- local nodates = arguments.nodates
+ -- if nodates then
+ --     context.enabledirectives { "backend.date=" .. (type(nodates) == "string" and nodates or "no") }
+ -- end
+ -- local trailerid = arguments.trailerid
+ -- if type(trailerid) == "string" then
+ --     context.enabledirectives { "backend.trailerid=" .. trailerid }
+ -- end
+ -- local profile = arguments.profile
+ -- if profile then
+ --     context.enabledirectives { "system.profile=" .. tonumber(profile) or 0 }
+ -- end
 
  -- -- already done in mtxrun / mtx-context, has to happen very early
  --

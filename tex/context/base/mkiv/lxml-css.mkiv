@@ -13,6 +13,8 @@
 
 \registerctxluafile{lxml-css}{}
 
+\unprotect
+
 \def\ctxmodulecss#1{\ctxlua{moduledata.css.#1}}
 
 % No stable interface yet.
@@ -23,7 +25,7 @@
 %     \else
 %       \edef\CellPadding{\cssgetsinglepadding{\xmlatt{#1}{cellpadding}}}
 %     \fi
-
+%
 % \starttexdefinition cssgetsinglepadding #1
 %    \ctxlua {
 %      context((moduledata.css.padding(
@@ -36,5 +38,39 @@
 %    }sp
 % \stoptexdefinition
 
-\endinput
+% \startxmlsetups html:settings
+%      \xmlsetsetup{#1}{p}{html:p}
+% \stopxmlsetups
+%
+% \xmlmapvalue{ctx-before}     {one}      {\page BEFORE\par}
+% \xmlmapvalue{ctx-after}      {two}      {\par AFTER\page}
+% \xmlmapvalue{text-decoration}{underline}{U}
+% \xmlmapvalue{text-decoration}{overline} {O}
+%
+% \startxmlsetups html:p
+%     \testfeatureonce{100000}{
+%         \edef\foo{\xmlcssstylevalue{#1}{ctx-before}\xmlcssstylevalue{#1}{ctx-after}}
+%     }
+%     \page {\tttf style="\xmlatt{#1}{style}"} : \elapsedtime\ s \page
+%     \xmlvalue{ctx-before}{\xmlcssstylevalue{#1}{ctx-before}}{}
+%     \xmlflush{#1}
+%     (\xmlcssstylevalue{#1}{text-decoration})
+%     (\xmlcssmappedstylevalue{#1}{text-decoration}{text-decoration})
+%     \xmlvalue{ctx-after} {\xmlcssstylevalue{#1}{ctx-after}}{}
+% \stopxmlsetups
+%
+% \startbuffer[temp]
+% <body>
+%      <p style='ctx-before: one; text-decoration: underline overline; ctx-after: two;'>foo 1</p>
+%      <p>foo 2</p>
+% </body>
+% \stopbuffer
+%
+% \xmlregistersetup{html:settings}
+% \xmlprocessbuffer{main}{temp}{}
+
+\let\xmlcssstylevalue      \clf_xmlstylevalue
+\let\xmlcssmappedstylevalue\clf_xmlmappedstylevalue
+
+\protect \endinput
 

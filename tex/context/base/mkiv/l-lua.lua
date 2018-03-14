@@ -242,6 +242,9 @@ local loaded = package.loaded
 if not loaded["socket"] then loaded["socket"] = loaded["socket.core"] end
 if not loaded["mime"]   then loaded["mime"]   = loaded["mime.core"]   end
 
+if not socket.mime then socket.mime = package.loaded["mime"] end
+
+if not loaded["socket.mime"] then loaded["socket.mime"] = socket.mime end
 if not loaded["socket.http"] then loaded["socket.http"] = socket.http end
 if not loaded["socket.ftp"]  then loaded["socket.ftp"]  = socket.ftp  end
 if not loaded["socket.smtp"] then loaded["socket.smtp"] = socket.smtp end
