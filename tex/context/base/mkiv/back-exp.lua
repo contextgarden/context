@@ -39,7 +39,7 @@ local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues = utf.char, utf.values
 local concat, insert, remove, merge, sort = table.concat, table.insert, table.remove, table.merge, table.sort
-local sortedhash = table.sortedhash
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local formatters = string.formatters
 local todimen = number.todimen
 local replacetemplate = utilities.templates.replace
@@ -74,6 +74,7 @@ local implement         = interfaces.implement
 local included          = backends.included
 
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_hash  = utilities.parsers.settings_to_hash
 
 local setmetatableindex = table.setmetatableindex
 local tasks             = nodes.tasks
@@ -1790,7 +1791,35 @@ do
         resolve(di,element,n,fulltag)
     end
 
-    extras.float = resolve
+    local floats = { }
+
+    function structurestags.setfloat(options,method)
+        floats[locatedtag("float")] = {
+            options = options,
+            method  = method,
+        }
+    end
+
+    function extras.float(di,element,n,fulltag)
+        local hash = floats[fulltag]
+        if hash then
+            local method  = hash.method
+            if not method or method == "" then
+                method = "here"
+            end
+            setattribute(di,"method",method)
+            local options = hash.options
+            if options and options ~= "" then
+                options = settings_to_hash(options)
+                options[method] = nil
+                options = concat(sortedkeys(options),",")
+                if #options > 0 then
+                    setattribute(di,"options",options)
+                end
+            end
+        end
+        resolve(di,element,n,fulltag)
+    end
 
     -- todo: internal is already hashed
 
@@ -3842,6 +3871,12 @@ implement {
     name      = "settagitem",
     actions   = structurestags.setitem,
     arguments = "string"
+}
+
+implement {
+    name      = "settagfloat",
+    actions   = structurestags.setfloat,
+    arguments = { "string", "string" }
 }
 
 implement {

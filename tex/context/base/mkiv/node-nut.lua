@@ -175,11 +175,11 @@ if not direct.getdirection then
     end
 
     direct.setdirection = function(n,d,c)
-            if d == 0 then if c == true then setdir("-TLT") elseif c == false then setdir("+TLT") else setdir("TLT") end
-        elseif d == 1 then if c == true then setdir("-TRT") elseif c == false then setdir("+TRT") else setdir("TRT") end
-        elseif d == 2 then if c == true then setdir("-LTL") elseif c == false then setdir("+LTL") else setdir("LTL") end
-        elseif d == 3 then if c == true then setdir("-RTT") elseif c == false then setdir("+RTT") else setdir("RTT") end
-        else               if c == true then setdir("-TLT") elseif c == false then setdir("+TLT") else setdir("TLT") end end
+            if d == 0 then if c == true then setdir(n,"-TLT") elseif c == false then setdir(n,"+TLT") else setdir(n,"TLT") end
+        elseif d == 1 then if c == true then setdir(n,"-TRT") elseif c == false then setdir(n,"+TRT") else setdir(n,"TRT") end
+        elseif d == 2 then if c == true then setdir(n,"-LTL") elseif c == false then setdir(n,"+LTL") else setdir(n,"LTL") end
+        elseif d == 3 then if c == true then setdir(n,"-RTT") elseif c == false then setdir(n,"+RTT") else setdir(n,"RTT") end
+        else               if c == true then setdir(n,"-TLT") elseif c == false then setdir(n,"+TLT") else setdir(n,"TLT") end end
     end
 
 end

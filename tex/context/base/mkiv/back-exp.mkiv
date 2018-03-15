@@ -228,6 +228,13 @@
 \to \everyenableelements
 
 \appendtoks
+    \unexpanded\def\dotagregisterfloat#1#2%
+      {\iftrialtypesetting\else
+         \clf_settagfloat{#1}{#2}\relax
+       \fi}%
+\to \everyenableelements
+
+\appendtoks
     \let\specialfixedspace    \explicitfixedspace
     \let\specialobeyedspace   \explicitobeyedspace
     \let\specialstretchedspace\explicitstretchedspace

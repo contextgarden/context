@@ -486,10 +486,15 @@
    \let\m_strc_floats_saved_userdata\empty
    \let\currentfloatcaption\currentfloat}
 
+\let\askedfloatmethod \empty
+\let\askedfloatoptions\empty
+
 \def\strc_floats_reset_variables
   {\global\emptyfloatcaptionfalse
    \global\nofloatcaptionfalse
-   \global\nofloatnumberfalse}
+   \global\nofloatnumberfalse
+   \global\let\askedfloatmethod \empty
+   \global\let\askedfloatoptions\empty}
 
 % place
 
@@ -520,22 +525,14 @@
     \setupfloat[\c!spacebefore=\v!none,\c!spaceafter=\v!none]%
 \to \c_floats_every_table_float
 
-\appendtoks
-    \showmessage\m!floatblocks{14}\v!here
-\to \everyinitializeexport
-
-\def\strc_floats_set_checked_location#location%
-  {\edef\floatlocation{#location}%
-   \ifexporting \ifx\floatlocation\v!here \else
-     \showmessage\m!floatblocks{15}{\floatlocation,\v!here}%
-     \let\floatlocation\v!here
-   \fi \fi}
+\ifdefined\dotagregisterfloat \else \let\dotagregisterfloat\gobbletwoarguments \fi
 
 \def\strc_floats_place_indeed[#location][#reference]#caption%
   {\strc_floats_reset_variables
-   \strc_floats_set_checked_location{#location}%
+   \xdef\askedfloatoptions{#location}%
+   \edef\floatlocation{#location}%
    \ifx\floatlocation\empty
-      \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
+     \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
    \fi
    \ifintable
      \the\c_floats_every_table_float
@@ -585,7 +582,7 @@
    \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
    \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
    \def\m_strc_floats_saved_userdata{#2}%
-   \strc_floats_set_checked_location{\floatcaptionparameter\c!location}%
+   \edef\floatlocation{\floatcaptionparameter\c!location}%
    \setfloatcaptionparameter\c!location{\savedfloatlocation}% not expanded
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}%
@@ -724,6 +721,7 @@
    \strc_floats_check_extra_actions
    \strc_floats_analyze_variables_two
    \strc_floats_place_packaged_boxes
+   \dotagregisterfloat\askedfloatoptions\askedfloatmethod
    \dostoptagged % tricky .... needs checking
    % we need to carry over the par because of side floats
    \global\d_page_sides_downshift \zeropoint
@@ -1082,11 +1080,6 @@
 
 \unexpanded\def\installfloatmovement#1#2{\setvalue{\??floatmovement#1}{#2}}
 
-% \def\strc_floats_move_down#setting%
-%   {\csname\??floatmovement
-%      \ifcsname\??floatmovement#setting\endcsname#setting\fi
-%    \endcsname}
-
 \def\strc_floats_move_down#setting%
   {\begincsname\??floatmovement#setting\endcsname}
 
@@ -1145,7 +1138,6 @@
       % already be set at this point
       \processcommacommand[\floatlocation]\strc_floats_check_extra_actions_step
       \ifx\extrafloatlocation\empty \else
-        % maybe not when exporting
         \edef\floatlocation{\extrafloatlocation,\floatlocation}%
         \setfloatmethodvariables\floatlocation
       \fi}}
@@ -1267,7 +1259,7 @@
    \global\floatwidth    \wd\floatbox
    \global\floatheight   \ht\floatbox % forget about the depth
    \global\floattextwidth\dimexpr\hsize-\floatwidth-\rootfloatparameter\c!margin\relax
-   \strc_floats_set_checked_location\floatlocationmethod% to be sure .. why
+   \edef\floatlocation{\floatlocationmethod}% to be sure .. why
    \doifelseinset\v!tall\floatlocationmethod
      {\floattextheight\dimexpr\pagegoal-\pagetotal-\bigskipamount\relax % ugly, this bigskip
       \ifdim\floattextheight>\textheight
@@ -2261,6 +2253,11 @@
      \ifx\forcedfloatmethod\empty \else
        \let\floatmethod\forcedfloatmethod
      \fi
+\let\askedfloatmethod\floatmethod
+\ifexporting \ifx\askedfloatmethod\v!here \else
+  \showmessage\m!floatblocks{15}{\askedfloatmethod,\v!here}%
+  \let\floatlocation\v!here
+\fi \fi
      % [] will go
      \edef\floatlocationmethod{\floatmethod,\floatlocation}%
      \csname\??floatmethods\currentoutputroutine:\floatmethod\endcsname

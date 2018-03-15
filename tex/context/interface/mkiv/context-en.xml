@@ -24278,6 +24278,7 @@
      <cd:constant method="factor" prefix="cd:number" type="middle"/>
      <cd:constant method="factor" prefix="cd:number" type="right"/>
      <cd:constant type="reset"/>
+     <cd:constant type="reverse"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -24294,6 +24295,7 @@
      <cd:constant method="factor" prefix="cd:number" type="middle"/>
      <cd:constant method="factor" prefix="cd:number" type="right"/>
      <cd:constant type="reset"/>
+     <cd:constant type="reverse"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -24320,6 +24322,7 @@
      <cd:constant method="factor" prefix="cd:number" type="middle"/>
      <cd:constant method="factor" prefix="cd:number" type="right"/>
      <cd:constant type="reset"/>
+     <cd:constant type="reverse"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -24336,6 +24339,7 @@
      <cd:constant method="factor" prefix="cd:number" type="middle"/>
      <cd:constant method="factor" prefix="cd:number" type="right"/>
      <cd:constant type="reset"/>
+     <cd:constant type="reverse"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>

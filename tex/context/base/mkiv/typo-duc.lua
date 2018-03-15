@@ -570,7 +570,6 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
     -- W4: make separators number
 -- if list.es or list.cs then
         -- skip
---     if false then
     if false then
         for i=start+1,limit-1 do
             local entry     = list[i]
@@ -1087,9 +1086,7 @@ local function process(head,direction,only_one)
     local list, size = build_list(head)
     local baselevel, pardir, dirfound = get_baselevel(head,list,size,direction) -- we always have an inline dir node in context
     if trace_details then
-        if not dirfound then
-            report_directions("no initial direction found, gambling")
-        end
+        report_directions("analyze: direction %a, baselevel %a",dirfound and pardir or "unknown",baselevel or 1)
         report_directions("before : %s",show_list(list,size,"original"))
     end
     resolve_explicit(list,size,baselevel)
