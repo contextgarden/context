@@ -34,12 +34,19 @@ if not nodes.properties then return end
 local next, rawget, tonumber = next, rawget, tonumber
 local fastcopy = table.fastcopy
 
-local registertracker = trackers.register
+local registertracker   = trackers.register
+local registerdirective = directives.register
 
 local trace_injections  = false  registertracker("fonts.injections",         function(v) trace_injections = v end)
 local trace_marks       = false  registertracker("fonts.injections.marks",   function(v) trace_marks      = v end)
 local trace_cursive     = false  registertracker("fonts.injections.cursive", function(v) trace_cursive    = v end)
 local trace_spaces      = false  registertracker("fonts.injections.spaces",  function(v) trace_spaces  = v end)
+
+-- local fix_cursive_marks = false
+--
+-- registerdirective("fonts.injections.fixcursivemarks", function(v)
+--     fix_cursive_marks = v
+-- end)
 
 local report_injections = logs.reporter("fonts","injections")
 local report_spaces     = logs.reporter("fonts","spaces")
@@ -1033,6 +1040,8 @@ local function inject_everything(head,where)
     local marks         = { }
     local nofmarks      = 0
     --
+ -- local applyfix      = hascursives and fix_cursive_marks
+    --
     -- move out
     --
     local function processmark(p,n,pn) -- p = basenode
@@ -1118,7 +1127,7 @@ local function inject_everything(head,where)
         end
     end
     -- begin of temp fix --
-    local base = nil -- bah, some arabic fonts have no mark anchoring
+ -- local base = nil -- bah, some arabic fonts have no mark anchoring
     -- end of temp fix --
     while current do
         local next = getnext(current)
@@ -1126,62 +1135,62 @@ local function inject_everything(head,where)
         if char then
             local p = rawget(properties,current)
             -- begin of temp fix --
-            if hascursives then
-                if not p then
-                    local m = fontmarks[getfont(current)]
-                    if m and m[char] then
-                        if base then
-                            p = { injections = { markbasenode = base } }
-                            nofmarks = nofmarks + 1
-                            marks[nofmarks] = current
-                            properties[current] = p
-                            hasmarks = true
-                        end
-                    else
-                        base = current
-                    end
-                end
-            end
+         -- if applyfix then
+         --     if not p then
+         --         local m = fontmarks[getfont(current)]
+         --         if m and m[char] then
+         --             if base then
+         --                 p = { injections = { markbasenode = base } }
+         --                 nofmarks = nofmarks + 1
+         --                 marks[nofmarks] = current
+         --                 properties[current] = p
+         --                 hasmarks = true
+         --             end
+         --         else
+         --             base = current
+         --         end
+         --     end
+         -- end
             -- end of temp fix
             if p then
                 local i = p.injections
                 -- begin of temp fix --
-                if hascursives then
-                    if not i then
-                        local m = fontmarks[getfont(current)]
-                        if m and m[char] then
-                            if base then
-                                i = { markbasenode = base }
-                                nofmarks = nofmarks + 1
-                                marks[nofmarks] = current
-                                p.injections = i
-                                hasmarks = true
-                            end
-                        else
-                            base = current
-                        end
-                    end
-                end
+             -- if applyfix then
+             --     if not i then
+             --         local m = fontmarks[getfont(current)]
+             --         if m and m[char] then
+             --             if base then
+             --                 i = { markbasenode = base }
+             --                 nofmarks = nofmarks + 1
+             --                 marks[nofmarks] = current
+             --                 p.injections = i
+             --                 hasmarks = true
+             --             end
+             --         else
+             --             base = current
+             --         end
+             --     end
+             -- end
                 -- end of temp fix --
                 if i then
                     local pm = i.markbasenode
                     -- begin of temp fix --
-                    if hascursives then
-                        if not pm then
-                            local m = fontmarks[getfont(current)]
-                            if m and m[char] then
-                                if base then
-                                    pm = base
-                                    i.markbasenode = pm
-                                    hasmarks = true
-                                end
-                            else
-                                base = current
-                            end
-                        else
-                            base = current
-                        end
-                    end
+                 -- if applyfix then
+                 --     if not pm then
+                 --         local m = fontmarks[getfont(current)]
+                 --         if m and m[char] then
+                 --             if base then
+                 --                 pm = base
+                 --                 i.markbasenode = pm
+                 --                 hasmarks = true
+                 --             end
+                 --         else
+                 --             base = current
+                 --         end
+                 --     else
+                 --         base = current
+                 --     end
+                 -- end
                     -- end of temp fix --
                     if pm then
                         nofmarks = nofmarks + 1
@@ -1326,9 +1335,11 @@ local function inject_everything(head,where)
             prevdisc  = nil
             prevglyph = current
         elseif char == false then
+         -- base = nil
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
+         -- base = nil
             pre, post, replace, pretail, posttail, replacetail = getdisc(current,true)
             local done = false
             if pre then
@@ -1460,9 +1471,9 @@ local function inject_everything(head,where)
             prevglyph = nil
             prevdisc  = current
         else
+         -- base      = nil
             prevglyph = nil
             prevdisc  = nil
-base = nil
         end
         prev    = current
         current = next

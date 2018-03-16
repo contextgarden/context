@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['page-ini'] = {
     license   = "see context related readme files"
 }
 
-local tonumber, rawget, type, next = tonumber, rawget, type, next
+local tonumber, rawget, rawset, type, next = tonumber, rawget, rawset, type, next
 local match = string.match
 local sort, tohash, insert, remove = table.sort, table.tohash, table.insert, table.remove
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
@@ -14,7 +14,7 @@ local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array,
 local texgetcount  = tex.getcount
 
 local context      = context
-local ctx_testcase = commands.testcase
+local ctx_doifelse = commands.doifelse
 
 local data         = table.setmetatableindex("table")
 local last         = 0
@@ -69,13 +69,14 @@ function pages.mark(name,list)
     end
 end
 
-function pages.marked(name)
+local function marked(name)
     local realpage = texgetcount("realpageno")
     for i=last,realpage-1 do
-        data[i] = nil
+        rawset(data,i,nil)
     end
     local pagedata = rawget(data,realpage)
-    return pagedata and pagedata[name]
+    print(pagedata and pagedata[name] and true or false)
+    return pagedata and pagedata[name] and true or false
 end
 
 local function toranges(marked)
@@ -96,8 +97,6 @@ local function toranges(marked)
     end
     return list
 end
-
-pages.toranges = toranges
 
 local function allmarked(list)
     if list then
@@ -139,6 +138,8 @@ local function allmarked(list)
     end
 end
 
+pages.marked    = marked
+pages.toranges  = toranges
 pages.allmarked = allmarked
 
 -- An alternative is to use an attribute and identify the state by parsing the node
@@ -170,7 +171,7 @@ interfaces.implement {
 interfaces.implement {
     name      = "doifelsemarkedpage",
     arguments = "string",
-    actions   = { marked, ctx_testcase }
+    actions   = { marked, ctx_doifelse }
 }
 
 interfaces.implement {

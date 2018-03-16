@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/15/18 15:27:14
+-- merge date  : 03/16/18 22:20:58
 
 do -- begin closure to overcome local limits and interference
 
@@ -21208,6 +21208,7 @@ if not nodes.properties then return end
 local next,rawget,tonumber=next,rawget,tonumber
 local fastcopy=table.fastcopy
 local registertracker=trackers.register
+local registerdirective=directives.register
 local trace_injections=false registertracker("fonts.injections",function(v) trace_injections=v end)
 local trace_marks=false registertracker("fonts.injections.marks",function(v) trace_marks=v end)
 local trace_cursive=false registertracker("fonts.injections.cursive",function(v) trace_cursive=v end)
@@ -22161,64 +22162,15 @@ local function inject_everything(head,where)
       showoffset(n,true)
     end
   end
-  local base=nil
   while current do
     local next=getnext(current)
     local char,id=ischar(current)
     if char then
       local p=rawget(properties,current)
-      if hascursives then
-        if not p then
-          local m=fontmarks[getfont(current)]
-          if m and m[char] then
-            if base then
-              p={ injections={ markbasenode=base } }
-              nofmarks=nofmarks+1
-              marks[nofmarks]=current
-              properties[current]=p
-              hasmarks=true
-            end
-          else
-            base=current
-          end
-        end
-      end
       if p then
         local i=p.injections
-        if hascursives then
-          if not i then
-            local m=fontmarks[getfont(current)]
-            if m and m[char] then
-              if base then
-                i={ markbasenode=base }
-                nofmarks=nofmarks+1
-                marks[nofmarks]=current
-                p.injections=i
-                hasmarks=true
-              end
-            else
-              base=current
-            end
-          end
-        end
         if i then
           local pm=i.markbasenode
-          if hascursives then
-            if not pm then
-              local m=fontmarks[getfont(current)]
-              if m and m[char] then
-                if base then
-                  pm=base
-                  i.markbasenode=pm
-                  hasmarks=true
-                end
-              else
-                base=current
-              end
-            else
-              base=current
-            end
-          end
           if pm then
             nofmarks=nofmarks+1
             marks[nofmarks]=current
@@ -22489,7 +22441,6 @@ local function inject_everything(head,where)
     else
       prevglyph=nil
       prevdisc=nil
-base=nil
     end
     prev=current
     current=next

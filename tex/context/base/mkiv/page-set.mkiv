@@ -1198,12 +1198,12 @@
   {\OTRSETcheckprefered
    \enoughcolumncellsfalse
    \donefalse
-   \dostepwiserecurse{#1}{#2}{#3#4}
+   \dostepwiserecurse{#1}{#2}{#31}
      {\ifdone
         \exitloop
       \else
         #4=\recurselevel
-        \dostepwiserecurse{#5}{#6}{#7#8}
+        \dostepwiserecurse{#5}{#6}{#71}
           {\ifdone
              \exitloop
            \else
