@@ -42,7 +42,7 @@ luautilities.suffixes = {
 
 -- environment.loadpreprocessedfile can be set to a preprocessor
 
-local function register(name)
+local function register(name) -- makes no sense runtime
     if tracestripping then
         report_lua("stripped bytecode from %a",name or "unknown")
     end
@@ -75,18 +75,12 @@ end
 function luautilities.loadedluacode(fullname,forcestrip,name,macros)
     -- quite subtle ... doing this wrong incidentally can give more bytes
     name = name or fullname
-    local code, message
     if macros then
         macros = lua.macros
     end
-    if macros and macros.enabled then
-     -- local c = io.loaddata(fullname) -- not yet available
-        local f = io.open(fullname,"rb") local c = f:read("*a") f:close()
-        local n = c and macros.resolvestring("--[["..fullname.."]] "..c)
-        if n and #n ~= #c then
-            report_lua("preprocessed file %a: %i => %i bytes",fullname,#c,#n)
-        end
-        code, message = load(n or c)
+    local code, message
+    if macros then
+        code, message = macros.loaded(fullname,true,false)
     else
         code, message = loadfile(fullname)
     end

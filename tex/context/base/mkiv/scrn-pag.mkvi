@@ -203,11 +203,16 @@
      paperheight \printpaperheight
    \relax}
 
-\def\scrn_canvas_synchronize_simple_indeed
+\def\scrn_canvas_synchronize_set#1#2%
   {\clf_setupcanvas
-     paperwidth  \printpaperwidth
-     paperheight \printpaperheight
-   \relax
+     paperwidth  \dimexpr#1\relax
+     paperheight \dimexpr#2\relax
+   \relax}
+
+\let\scrn_canvas_synchronize_reset\scrn_canvas_synchronize_only
+
+\def\scrn_canvas_synchronize_simple_indeed
+  {\scrn_canvas_synchronize_only
   %\global\let\scrn_canvas_synchronize_simple \relax
    \global\let\scrn_canvas_synchronize_complex\relax}
 

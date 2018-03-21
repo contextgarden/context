@@ -14,7 +14,8 @@ if not modules then modules = { } end modules ['l-macros'] = {
 local S, P, R, V, C, Cs, Cc, Ct, Carg = lpeg.S, lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg
 local lpegmatch = lpeg.match
 local concat = table.concat
-local next = next
+local format, sub = string.format, string.sub
+local next, load, type = next, load, type
 
 local newline       = S("\n\r")^1
 local continue      = P("\\") * newline
@@ -40,6 +41,15 @@ local patterns      = { }
 local definitions   = { }
 local resolve
 local subparser
+
+local report_lua = function(...)
+    if logs and logs.reporter then
+        report_lua = logs.reporter("system","lua")
+        report_lua(...)
+    else
+        print(format(...))
+    end
+end
 
 -- todo: zero case
 
@@ -159,6 +169,66 @@ end
 function macros.resolving()
     return next(patterns)
 end
+
+local function loaded(name,trace,detail)
+ -- local c = io.loaddata(fullname) -- not yet available
+    local f = io.open(name,"rb")
+    if not f then
+        return false, format("file '%s' not found",name)
+    end
+    local c = f:read("*a")
+    if not c then
+        return false, format("file '%s' is invalid",name)
+    end
+    f:close()
+    local n = lpegmatch(parser,c)
+    if trace then
+        if #n ~= #c then
+            report_lua("macros expanded in '%s' (%i => %i bytes)",name,#c,#n)
+            if detail then
+                report_lua()
+                report_lua(n)
+                report_lua()
+            end
+        elseif detail then
+            report_lua("no macros expanded in '%s'",name)
+        end
+    end
+    if #name > 30 then
+        n = "--[[" .. sub(name,-30) .. "]] " .. n
+    else
+        n = "--[[" ..     name      .. "]] " .. n
+    end
+    return load(n)
+end
+
+macros.loaded = loaded
+
+function required(name,trace)
+    local filename = file.addsuffix(name,"lua")
+    local fullname = resolvers and resolvers.find_file(filename) or filename
+    if not fullname or fullname == "" then
+        return false
+    end
+    local codeblob = package.loaded[fullname]
+    if codeblob then
+        return codeblob
+    end
+    local code, message = loaded(fullname,macros,trace,trace)
+    if type(code) == "function" then
+        code = code()
+    else
+        report_lua("error when loading '%s'",fullname)
+        return false, message
+    end
+    if code == nil then
+        code = false
+    end
+    package.loaded[fullname] = code
+    return code
+end
+
+macros.required = required
 
 -- local str = [[
 -- #define check(p,q) (p ~= 0) and (p > q)

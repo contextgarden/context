@@ -195,7 +195,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-macro"] = package.loaded["l-macro"] or true
 
--- original size: 6393, stripped down to: 3659
+-- original size: 8260, stripped down to: 5213
 
 if not modules then modules={} end modules ['l-macros']={
   version=1.001,
@@ -207,7 +207,8 @@ if not modules then modules={} end modules ['l-macros']={
 local S,P,R,V,C,Cs,Cc,Ct,Carg=lpeg.S,lpeg.P,lpeg.R,lpeg.V,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Carg
 local lpegmatch=lpeg.match
 local concat=table.concat
-local next=next
+local format,sub=string.format,string.sub
+local next,load,type=next,load,type
 local newline=S("\n\r")^1
 local continue=P("\\")*newline
 local spaces=S(" \t")+continue
@@ -228,6 +229,14 @@ local patterns={}
 local definitions={}
 local resolve
 local subparser
+local report_lua=function(...)
+  if logs and logs.reporter then
+    report_lua=logs.reporter("system","lua")
+    report_lua(...)
+  else
+    print(format(...))
+  end
+end
 resolve=C(C(name)*arguments^-1)/function(raw,s,a)
   local d=definitions[s]
   if d then
@@ -334,6 +343,61 @@ end
 function macros.resolving()
   return next(patterns)
 end
+local function loaded(name,trace,detail)
+  local f=io.open(name,"rb")
+  if not f then
+    return false,format("file '%s' not found",name)
+  end
+  local c=f:read("*a")
+  if not c then
+    return false,format("file '%s' is invalid",name)
+  end
+  f:close()
+  local n=lpegmatch(parser,c)
+  if trace then
+    if #n~=#c then
+      report_lua("macros expanded in '%s' (%i => %i bytes)",name,#c,#n)
+      if detail then
+        report_lua()
+        report_lua(n)
+        report_lua()
+      end
+    elseif detail then
+      report_lua("no macros expanded in '%s'",name)
+    end
+  end
+  if #name>30 then
+    n="--[["..sub(name,-30).."]] "..n
+  else
+    n="--[["..name.."]] "..n
+  end
+  return load(n)
+end
+macros.loaded=loaded
+function required(name,trace)
+  local filename=file.addsuffix(name,"lua")
+  local fullname=resolvers and resolvers.find_file(filename) or filename
+  if not fullname or fullname=="" then
+    return false
+  end
+  local codeblob=package.loaded[fullname]
+  if codeblob then
+    return codeblob
+  end
+  local code,message=loaded(fullname,macros,trace,trace)
+  if type(code)=="function" then
+    code=code()
+  else
+    report_lua("error when loading '%s'",fullname)
+    return false,message
+  end
+  if code==nil then
+    code=false
+  end
+  package.loaded[fullname]=code
+  return code
+end
+macros.required=required
 
 
 end -- of closure
@@ -609,7 +673,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 11564, stripped down to: 8625
+-- original size: 11562, stripped down to: 8625
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -620,10 +684,10 @@ if not modules then modules={} end modules ['l-package']={
 }
 local type=type
 local gsub,format,find=string.gsub,string.format,string.find
+local insert,remove=table.insert,table.remove
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
-local insert,remove=table.insert,table.remove
 local filejoin=file and file.join    or function(path,name)  return path.."/"..name end
 local isreadable=file and file.is_readable or function(name)    local f=io.open(name) if f then f:close() return true end end
 local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
@@ -1871,7 +1935,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40161, stripped down to: 23559
+-- original size: 40200, stripped down to: 23561
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2783,10 +2847,10 @@ function table.reversed(t)
     return tt
   end
 end
-function table.reverse(t)
+function table.reverse(t) 
   if t then
     local n=#t
-    for i=1,floor(n/2) do
+    for i=1,floor(n/2) do 
       local j=n-i+1
       t[i],t[j]=t[j],t[i]
     end
@@ -10427,7 +10491,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 6921, stripped down to: 4998
+-- original size: 6621, stripped down to: 4764
 
 if not modules then modules={} end modules ['util-lua']={
   version=1.001,
@@ -10463,7 +10527,7 @@ luautilities.suffixes={
   tua="tua",
   tuc="tuc",
 }
-local function register(name)
+local function register(name) 
   if tracestripping then
     report_lua("stripped bytecode from %a",name or "unknown")
   end
@@ -10491,17 +10555,12 @@ local function stupidcompile(luafile,lucfile,strip)
 end
 function luautilities.loadedluacode(fullname,forcestrip,name,macros)
   name=name or fullname
-  local code,message
   if macros then
     macros=lua.macros
   end
-  if macros and macros.enabled then
-    local f=io.open(fullname,"rb") local c=f:read("*a") f:close()
-    local n=c and macros.resolvestring("--[["..fullname.."]] "..c)
-    if n and #n~=#c then
-      report_lua("preprocessed file %a: %i => %i bytes",fullname,#c,#n)
-    end
-    code,message=load(n or c)
+  local code,message
+  if macros then
+    code,message=macros.loaded(fullname,true,false)
   else
     code,message=loadfile(fullname)
   end
@@ -21234,8 +21293,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 874849
--- stripped bytes    : 317531
+-- original bytes    : 876453
+-- stripped bytes    : 317813
 
 -- end library merge
 

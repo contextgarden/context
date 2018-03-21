@@ -671,15 +671,17 @@ local function manipulatedimensions(tfmdata,key,value)
                 local width  = newwidth  or oldwidth  or 0
                 local height = newheight or oldheight or 0
                 local depth  = newdepth  or olddepth  or 0
-                if oldwidth ~= width then
+                if oldwidth ~= width or oldheight ~= height or olddepth ~= depth then
                     -- Defining the tables in one step is more efficient
                     -- than adding fields later.
                     local private = getprivate(tfmdata)
+                    local newslot = { "slot", 1, private } -- { "slot", 0, private }
                     local new_c
-                    local commands = {
+                    local commands = oldwidth ~= width and {
                         { "right", (width - oldwidth) / 2 },
-                        { "slot", 1, private },
-                     -- { "slot", 0, private },
+                        newslot,
+                    } or {
+                        newslot,
                     }
                     if height > 0 then
                         if depth > 0 then

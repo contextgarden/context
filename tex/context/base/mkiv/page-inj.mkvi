@@ -32,6 +32,11 @@
 \let\page_boxes_flush_before\clf_flushpageinjectionsbefore
 \let\page_boxes_flush_after \clf_flushpageinjectionsafter
 
+\def\page_injections_flush_indeed
+  {\scrn_canvas_synchronize_set{\pageinjectionparameter\c!width}{\pageinjectionparameter\c!height}%
+   \invokepagehandler\v!normal{\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+   \scrn_canvas_synchronize_reset}
+
 \def\page_injections_flush_saved#name#parameters%
   {\begingroup
    \edef\currentpageinjection{#name}%
@@ -39,7 +44,7 @@
    \edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
    \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
    \page_injections_nextpage
-   \invokepagehandler\v!normal{\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+   \page_injections_flush_indeed
    \endgroup}
 
 \unexpanded\def\pageinjection
@@ -104,12 +109,23 @@
    \page_injections_place
    \endgroup}
 
+% \def\page_injections_place
+%   {\edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
+%    \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
+%    \page_injections_nextpage
+%    \ifx\currentpageinjectionalternative\v!none \else % increment counter but don’t generate output
+%      \invokepagehandler\v!normal{\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+%    \fi}
+
 \def\page_injections_place
   {\edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
    \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
    \page_injections_nextpage
    \ifx\currentpageinjectionalternative\v!none \else % increment counter but don’t generate output
-     \invokepagehandler\v!normal{\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+     \forgetparindent
+     \dontcomplain
+     \setconstant\shipoutfinalizemethod\zerocount
+     \page_injections_flush_indeed
    \fi}
 
 \def\page_injections_nextpage
