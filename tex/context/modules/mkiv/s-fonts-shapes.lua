@@ -109,12 +109,9 @@ local characters   = nil
 
 local function showglyphshape(specification)
     specification = interfaces.checkedspecification(specification)
-    local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
+    local id, cs  = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
     local tfmdata = fontdata[id]
-    local charnum = tonumber(specification.character)
-    if not charnum then
-        charnum = fonts.helpers.nametoslot(specification.character)
-    end
+    local charnum = tonumber(specification.character) or fonts.helpers.nametoslot(specification.character)
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local parameters   = tfmdata.parameters
@@ -133,64 +130,75 @@ local function showglyphshape(specification)
         context.startMPcode()
         context("numeric lw ; lw := .125bp ;")
         context("pickup pencircle scaled lw ;")
-        context('picture p ; p := image(draw textext.drt("\\getuvalue{%s}\\gray\\char%s");); draw p ;',cs,charnum)
+        if width < 0.01 then
+            -- catches zero width marks
+            context('picture p ; p := textext.drt("\\hskip5sp\\getuvalue{%s}\\gray\\char%s"); draw p ;',cs,charnum)
+        else
+            context('picture p ; p := textext.drt("\\getuvalue{%s}\\gray\\char%s"); draw p ;',cs,charnum)
+        end
         context('draw (%s,%s)--(%s,%s)--(%s,%s)--(%s,%s)--cycle withcolor green ;',llx,lly,urx,lly,urx,ury,llx,ury)
         context('draw (%s,%s)--(%s,%s) withcolor green ;',llx,0,urx,0)
         context('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
         context("defaultscale := 0.05 ; ")
         -- inefficient but non critical
-        local function slant_1(v,dx,dy,txt,xsign,ysign,loc,labloc)
-            if #v > 0 then
-                local l = { }
-                for kk, vv in ipairs(v) do
-                    local h, k = vv.height or 0, vv.kern or 0
-                    if h and k then
-                        l[#l+1] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+        local slant = {
+            function(v,dx,dy,txt,xsign,ysign,loc,labloc)
+                local n = #v
+                if n > 0 then
+                    local l = { }
+                    for i=1,n do
+                        local c = v[i]
+                        local h = c.height or 0
+                        local k = c.kern or 0
+                        l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+                    end
+                    context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
+--                     context("draw laddered (%s) withcolor .5white ;",table.concat(l,".."))
+                    context("draw laddered (%..t) withcolor .5white ;",l)
+                    context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
+                    for i=1,n do
+                        context("draw %s withcolor blue withpen pencircle scaled 2lw ;",l[i])
                     end
                 end
-                context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
-                context("draw laddered (%s) withcolor .5white ;",table.concat(l,".."))
-                context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
-                for k, v in ipairs(l) do
-                    context("draw %s withcolor blue withpen pencircle scaled 2lw ;",v)
-                end
-            end
-        end
-        local function slant_2(v,dx,dy,txt,xsign,ysign,loc,labloc)
-            if #v > 0 then
-                local l = { }
-                for kk, vv in ipairs(v) do
-                    local h, k = vv.height or 0, vv.kern or 0
-                    if h and k then
-                        l[#l+1] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+            end,
+            function(v,dx,dy,txt,xsign,ysign,loc,labloc)
+                local n = #v
+                if n > 0 then
+                    local l = { }
+                    for i=1,n do
+                        local c = v[i]
+                        local h = c.height or 0
+                        local k = c.kern or 0
+                        l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+                    end
+                    if loc == "top" then
+                        context('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[n])
+                    else
+                        context('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
+                    end
+                    for i=1,n do
+                        local c = v[i]
+                        local h = c.height or 0
+                        local k = c.kern or 0
+                        context('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[i])
                     end
                 end
-                if loc == "top" then
-                    context('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[#l])
-                else
-                    context('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
-                end
-                for kk, vv in ipairs(v) do
-                    local h, k = vv.height or 0, vv.kern or 0
-                    if h and k then
-                        context('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[kk])
-                    end
-                end
-            end
-        end
+            end,
+        }
         if math then
             local kerns = math.kerns
             if kerns then
-                for _, slant in ipairs { slant_1, slant_2 } do
-                    for k,v in pairs(kerns) do
+                for i=1,#slant do
+                    local s = slant[i]
+                    for k, v in next, kerns do
                         if k == "topright" then
-                            slant(v,width+italic,0,k,1,1,"top","ulft")
+                            s(v,width+italic,0,k,1,1,"top","ulft")
                         elseif k == "bottomright" then
-                            slant(v,width,0,k,1,1,"bot","lrt")
+                            s(v,width,0,k,1,1,"bot","lrt")
                         elseif k == "topleft" then
-                            slant(v,0,0,k,-1,1,"top","ulft")
+                            s(v,0,0,k,-1,1,"top","ulft")
                         elseif k == "bottomleft" then
-                            slant(v,0,0,k,-1,1,"bot","lrt")
+                            s(v,0,0,k,-1,1,"bot","lrt")
                         end
                     end
                 end
@@ -205,33 +213,34 @@ local function showglyphshape(specification)
         if anchors then
             local a = anchors.baselig
             if a then
-                for k, v in pairs(a) do
-                    for kk, vv in ipairs(v) do
-                        show(vv[1],vv[2],k .. ":" .. kk)
+                for k, v in next, a do
+                    for i=1,#v do
+                        local p = v[i]
+                        show(p[1],p[2],k .. ":" .. i)
                     end
                 end
             end
             local a = anchors.mark
             if a then
-                for k, v in pairs(a) do
+                for k, v in next, a do
                     show(v[1],v[2],k)
                 end
             end
             local a = anchors.basechar
             if a then
-                for k, v in pairs(a) do
+                for k, v in next, a do
                     show(v[1],v[2],k)
                 end
             end
             local ba = anchors.centry
             if a then
-                for k, v in pairs(a) do
+                for k, v in next, a do
                     show(v[1],v[2],k)
                 end
             end
             local a = anchors.cexit
             if a then
-                for k, v in pairs(a) do
+                for k, v in next, a do
                     show(v[1],v[2],k)
                 end
             end

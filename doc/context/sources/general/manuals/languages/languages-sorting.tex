@@ -230,6 +230,65 @@ This three entry index\jindex{ぱあ}\jindex{ぱー}\jindex{ぱぁ} should be so
 
 % ぱー $\prec$ ぱぁ $\prec$ ぱあ
 
+\startsection[title=Special usage]
+
+The following example demonstrates how you can trick the sorter into doing other
+things: \footnote {The \type {replacementlist} helper is the result of a request
+by John Grasty on the mailing list.}
+
+\startbuffer
+\startluacode
+    local list = {
+        -- old testament
+        "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua",
+        "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings",
+        "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job",
+        "Psalms", "Proverbs", "Ecclesiastes", "Canticles", "Isaiah", "Jeremiah",
+        "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah",
+        "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai",
+        "Zechariah", "Malachi",
+        -- new testament
+        "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians",
+        "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians",
+        "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus",
+        "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John",
+        "3 John", "Jude", "Revelation",
+    }
+
+    sorters.definitions["bible"] = {
+        replacements = sorters.replacementlist(list),
+    }
+\stopluacode
+
+\defineregister
+  [booksort]
+  [language=bible,
+   n=1,
+   indicator=no]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We use this as follows:
+
+\startbuffer
+One   \booksort{Genesis+5.2}
+Two   \booksort{Exodus+2}
+Three \booksort{Genesis+45}
+Four  \booksort{Philemon+2}
+Five  \booksort{John+45}
+Six   \booksort{1 John 1+45}
+Seven \booksort{2 John 2+45}
+
+\placeregister
+  [booksort]
+  [language=bible]
+\stopbuffer
+
+\stoptext
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

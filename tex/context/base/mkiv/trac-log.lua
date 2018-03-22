@@ -10,13 +10,20 @@ if not modules then modules = { } end modules ['trac-log'] = {
 -- terminal handler in lua then. Ok, maybe it's slower then, so a no-go.
 
 local next, type, select, print = next, type, select, print
-local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
 local format, gmatch, find = string.format, string.gmatch, string.find
 local concat, insert, remove = table.concat, table.insert, table.remove
 local topattern = string.topattern
 local utfchar = utf.char
 local datetime = os.date
 local openfile = io.open
+
+local runningtex = tex and (tex.jobname or tex.formatname)
+
+-- local write_nl = texio and texio.write_nl or print
+-- local write    = texio and texio.write    or io.write
+
+local write_nl = runningtex and texio and texio.write_nl or print
+local write    = runningtex and texio and texio.write    or io.write
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -108,7 +115,7 @@ local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog,
 -- we don't want this overhead for single messages (not that there are that
 -- many; we could have a special weak table)
 
-if tex and (tex.jobname or tex.formatname) then
+if runningtex then
 
     if texio.setescape then
         texio.setescape(0) -- or (false)

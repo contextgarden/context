@@ -374,6 +374,8 @@ local function get_array(object,document)
     end
 end
 
+-- todo: collect chunks
+
 local function streamaccess(s,_,what)
     if not what or what == "all" or what == "*all" then
         local t, n = { }, 0

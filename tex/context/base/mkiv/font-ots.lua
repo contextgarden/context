@@ -936,7 +936,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
                         elseif b then -- #b > 0
                             local x, y, w, h = setposition(2,snext,factor,rlmode,b,injection)
                             if trace_kerns then
-                                local startchar = getchar(snext)
+                                local startchar = getchar(start)
                                 logprocess("%s: shifting second of pair %s and %s by xy (%p,%p) and wh (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
                             end
                             start = snext -- cf spec

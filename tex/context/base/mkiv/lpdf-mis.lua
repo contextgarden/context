@@ -52,6 +52,8 @@ local addtoinfo            = lpdf.addtoinfo
 local addtopageattributes  = lpdf.addtopageattributes
 local addtonames           = lpdf.addtonames
 
+local pdfgetmetadata       = lpdf.getmetadata
+
 local variables            = interfaces.variables
 
 local v_stop               = variables.stop
@@ -189,6 +191,12 @@ local done = false  -- using "setupidentity = function() end" fails as the meani
 
 local function setupidentity()
     if not done then
+        local metadata = pdfgetmetadata()
+        local creator  = metadata.creator
+        local version  = metadata.contextversion
+        local time     = metadata.time
+        local jobname  = environment.jobname or tex.jobname or "unknown"
+        --
         local title = identity.title
         if not title or title == "" then
             title = tex.jobname
@@ -202,21 +210,16 @@ local function setupidentity()
         if author ~= "" then
             addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
         end
-     -- local creator = identity.creator or ""
-        local creator = "LuaTeX + ConTeXt MkIV" -- has to be the same in CreatorTool
-        if creator ~= "" then
-            addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
-        end
-        local currenttimestamp = lpdf.timestamp()
-        addtoinfo("CreationDate", pdfstring(formattedtimestamp(currenttimestamp)))
+        addtoinfo("Creator", pdfunicode(creator), creator)
+        addtoinfo("CreationDate", pdfstring(formattedtimestamp(time)))
         local date = identity.date or ""
-        local pdfdate = formattedtimestamp(date)
+        local pdfdate = date and formattedtimestamp(date)
         if pdfdate then
             addtoinfo("ModDate", pdfstring(pdfdate), date)
         else
             -- users should enter the date in 2010-01-19T23:27:50+01:00 format
             -- and if not provided that way we use the creation time instead
-            addtoinfo("ModDate", pdfstring(formattedtimestamp(currenttimestamp)), currenttimestamp)
+            addtoinfo("ModDate", pdfstring(formattedtimestamp(time)),time)
         end
         local keywords = identity.keywords or ""
         if keywords ~= "" then
@@ -226,11 +229,12 @@ local function setupidentity()
         local id = lpdf.id()
         addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
         --
-        addtoinfo("ConTeXt.Version", environment.version)
-        addtoinfo("ConTeXt.Time",    os.date("%Y-%m-%d %H:%M"))
-        addtoinfo("ConTeXt.Jobname", environment.jobname or tex.jobname)
-        addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
-        addtoinfo("ConTeXt.Support", "contextgarden.net")
+        addtoinfo("ConTeXt.Version",version)
+        addtoinfo("ConTeXt.Time",os.date("%Y-%m-%d %H:%M"))
+        addtoinfo("ConTeXt.Jobname",jobname)
+        addtoinfo("ConTeXt.Url","www.pragma-ade.com")
+        addtoinfo("ConTeXt.Support","contextgarden.net")
+        addtoinfo("TeX.Support","tug.org")
         --
         done = true
     else

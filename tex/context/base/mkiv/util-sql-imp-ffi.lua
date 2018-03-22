@@ -365,10 +365,10 @@ local function connect(session,specification)
 end
 
 local function error_in_connection(specification,action)
-    report_state("error in connection: [%s] %s@%s to %s:%s",
+    report_state("error in connection: [%s] user %s into %s at %s:%s",
             action or "unknown",
-            specification.database or "no database",
             specification.username or "no username",
+            specification.database or "no database",
             specification.host     or "no host",
             specification.port     or "no port"
         )

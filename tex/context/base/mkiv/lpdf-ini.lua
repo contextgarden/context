@@ -1082,10 +1082,28 @@ end
 
 do
 
+    -- It's a bit of a historical mess here.
+
+    local metadata  = nil
     local timestamp = backends.timestamp()
 
-    function lpdf.timestamp()
-        return timestamp
+    function lpdf.getmetadata()
+        if not metadata then
+            local contextversion      = environment.version
+            local luatexversion       = format("%1.2f",LUATEXVERSION)
+            local luatexfunctionality = tostring(LUATEXFUNCTIONALITY)
+            metadata = {
+                producer            = format("LuaTeX-%s",luatexversion),
+                creator             = format("LuaTeX %s %s + ConTeXt MkIV %s",luatexversion,luatexfunctionality,contextversion),
+                luatexversion       = luatexversion,
+                contextversion      = contextversion,
+                luatexfunctionality = luatexfunctionality,
+                luaversion          = tostring(LUAVERSION),
+                platform            = os.platform,
+                time                = timestamp,
+            }
+        end
+        return metadata
     end
 
     function lpdf.settime(n)
@@ -1095,6 +1113,9 @@ do
                 converters.settime(n)
                 timestamp = backends.timestamp()
             end
+        end
+        if metadata then
+            metadata.time = timestamp
         end
         return timestamp
     end
@@ -1107,10 +1128,11 @@ do
     end
 
     function lpdf.id(nodate)
+        local banner = environment.jobname or tex.jobname or "unknown"
         if nodate then
-            return tex.jobname
+            return banner
         else
-            return format("%s.%s",tex.jobname,timestamp)
+            return format("%s.%s",banner,timestamp)
         end
     end
 

@@ -9264,7 +9264,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 32737, stripped down to: 22946
+-- original size: 32923, stripped down to: 23011
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -9274,13 +9274,15 @@ if not modules then modules={} end modules ['trac-log']={
   license="see context related readme files"
 }
 local next,type,select,print=next,type,select,print
-local write_nl,write=texio and texio.write_nl or print,texio and texio.write or io.write
 local format,gmatch,find=string.format,string.gmatch,string.find
 local concat,insert,remove=table.concat,table.insert,table.remove
 local topattern=string.topattern
 local utfchar=utf.char
 local datetime=os.date
 local openfile=io.open
+local runningtex=tex and (tex.jobname or tex.formatname)
+local write_nl=runningtex and texio and texio.write_nl or print
+local write=runningtex and texio and texio.write  or io.write
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local settings_to_hash=utilities.parsers.settings_to_hash
@@ -9307,7 +9309,7 @@ local function ignore() end
 setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
 local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setprocessor,setformatters,newline
-if tex and (tex.jobname or tex.formatname) then
+if runningtex then
   if texio.setescape then
     texio.setescape(0) 
   end
@@ -21293,8 +21295,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 876453
--- stripped bytes    : 317813
+-- original bytes    : 876639
+-- stripped bytes    : 317934
 
 -- end library merge
 

@@ -53,14 +53,15 @@ have language etc properties that then can be used.</p>
 local gsub, find, rep, sub, sort, concat, tohash, format = string.gsub, string.find, string.rep, string.sub, table.sort, table.concat, table.tohash, string.format
 local utfbyte, utfchar, utfcharacters, utfvalues = utf.byte, utf.char, utf.characters, utf.values
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
-local P, Cs, R, S, lpegmatch = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.match
+local P, Cs, R, S, lpegmatch, lpegpatterns = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.match, lpeg.patterns
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 
-local trace_tests       = false  trackers.register("sorters.tests",   function(v) trace_tests   = v end)
-local trace_methods     = false  trackers.register("sorters.methods", function(v) trace_methods = v end)
-local trace_orders      = false  trackers.register("sorters.orders",  function(v) trace_orders  = v end)
+local trace_tests       = false  trackers.register("sorters.tests",        function(v) trace_tests        = v end)
+local trace_methods     = false  trackers.register("sorters.methods",      function(v) trace_methods      = v end)
+local trace_orders      = false  trackers.register("sorters.orders",       function(v) trace_orders       = v end)
+local trace_replacements= false  trackers.register("sorters.replacements", function(v) trace_replacements = v end)
 
 local report_sorters    = logs.reporter("languages","sorters")
 
@@ -523,13 +524,15 @@ local function prepare() -- todo: test \Ux{hex}
     return pattern
 end
 
-function sorters.strip(str) -- todo: only letters and such
+local function strip(str) -- todo: only letters and such
     if str and str ~= "" then
         return lpegmatch(pattern or prepare(),str)
     else
         return ""
     end
 end
+
+sorters.strip = strip
 
 local function firstofsplit(entry)
     -- numbers are left padded by spaces
@@ -553,15 +556,35 @@ sorters.firstofsplit = firstofsplit
 -- we know what combinations make sense we can optimize this
 
 function splitters.utf(str,checked) -- we could append m and u but this is cleaner, s is for tracing
-    if #replacements > 0 then
+    local nofreplacements = #replacements
+    if nofreplacements > 0 then
         -- todo make an lpeg for this
-        for k=1,#replacements do
-            local v = replacements[k]
-            local s = v[1]
-            if find(str,s) then
-                str = gsub(str,s,v[2])
+        local replacer = replacements.replacer
+        if not replacer then
+            local rep = { }
+            for i=1,nofreplacements do
+                local r = replacements[i]
+                rep[strip(r[1])] = strip(r[2])
             end
+            replacer = lpeg.utfchartabletopattern(rep)
+            replacer = Cs((replacer/rep + lpegpatterns.utf8character)^0)
+            replacements.replacer = replacer
         end
+        local rep = lpegmatch(replacer,str)
+        if rep and rep ~= str then
+            if trace_replacements then
+                report_sorters("original   : %s",str)
+                report_sorters("replacement: %s",rep)
+            end
+            str = rep
+        end
+     -- for k=1,#replacements do
+     --     local v = replacements[k]
+     --     local s = v[1]
+     --     if find(str,s) then
+     --         str = gsub(str,s,v[2])
+     --     end
+     -- end
     end
     local m_case, z_case, p_case, m_mapping, z_mapping, p_mapping, char, byte, n = { }, { }, { }, { }, { }, { }, { }, { }, 0
     local nm, nz, np = 0, 0, 0
@@ -796,4 +819,17 @@ function sorters.sort(entries,cmp)
             return cmp(a,b) == -1
         end)
     end
+end
+
+-- helper
+
+function sorters.replacementlist(list)
+    local replacements = { }
+    for i=1,#list do
+        replacements[i] = {
+            list[i],
+            utfchar(replacementoffset+i),
+        }
+    end
+    return replacements
 end
