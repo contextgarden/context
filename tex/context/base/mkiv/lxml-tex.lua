@@ -64,10 +64,11 @@ local xmlrename          = xml.rename
 
 local variables          = interfaces and interfaces.variables or { }
 
-local settings_to_hash   = utilities.parsers.settings_to_hash
-local settings_to_set    = utilities.parsers.settings_to_set
-local options_to_hash    = utilities.parsers.options_to_hash
-local options_to_array   = utilities.parsers.options_to_array
+local parsers            = utilities.parsers
+local settings_to_hash   = parsers.settings_to_hash
+local settings_to_set    = parsers.settings_to_set
+local options_to_hash    = parsers.options_to_hash
+local options_to_array   = parsers.options_to_array
 
 local insertbeforevalue  = utilities.tables.insertbeforevalue
 local insertaftervalue   = utilities.tables.insertaftervalue

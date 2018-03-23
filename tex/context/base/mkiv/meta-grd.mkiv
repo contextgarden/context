@@ -13,6 +13,8 @@
 
 \writestatus{loading}{MetaPost Graphics / Grids}
 
+\unprotect
+
 %D This used to be a \TEX\ method, and a rather old one too. We keep it around but
 %D in a more modern way.
 %D
@@ -31,85 +33,177 @@
 %D   {An example of a grid.}
 %D   {\getbuffer}
 
-\startuseMPgraphic{grid}{nx,ny,dx,dy,factor,scale,xstep,ystep,xoffset,yoffset,align}
+% \startuseMPgraphic{grid}{nx,ny,dx,dy,factor,scale,xstep,ystep,xoffset,yoffset,align,s:textcolor,s:rulecolor,rulethickness}
+%     begingroup ;
+%         save dx, dy, wd, ht, ox, oy, ax, ay ;
+%
+%         (dx,dy) = (\MPvar{dx},\MPvar{dy})*\MPvar{factor}*\MPvar{scale} ;
+%         (wd,ht) = (\MPvar{nx}*dx,\MPvar{ny}*dy) ;
+%         (ox,oy) = (\MPvar{xoffset},\MPvar{yoffset}) ;
+%         (ax,ay) = if \MPvar{align} = 1 : (dx,dy)/2 else : origin fi ;
+%
+%         draw image (
+%             for i=0 step dx until wd : draw (i,0) -- (i,ht) ; endfor ;
+%             for i=0 step dy until ht : draw (0,i) -- (wd,i) ; endfor ;
+%         )
+%             withpen pencircle scaled \MPvar{rulethickness}
+%             withcolor "\MPvar{rulecolor}" ;
+%         draw image (
+%             if \MPvar{xstep} > 0 :
+%                 for i=1 step \MPvar{xstep} until \MPvar{nx} :
+%                     draw thetextext.bot(decimal i,(i*dx-ax,-ox));
+%                 endfor ;
+%             fi ;
+%             if \MPvar{ystep} > 0 :
+%                 for i=1 step \MPvar{ystep} until \MPvar{ny} :
+%                     draw thetextext.lft(decimal i,(-oy,i*dy-ay)) ;
+%                 endfor ;
+%             fi ;
+%         )
+%             withcolor "\MPvar{color}" ;
+%     endgroup ;
+% \stopuseMPgraphic
+%
+% less tokens (not used often):
+%
+% \startuseMPgraphic{grid}{\c!nx,\c!ny,\c!dx,\c!dy,\c!factor,\c!scale,\c!xstep,\c!ystep,\c!xoffset,\c!yoffset,\c!align,s:\c!textcolor,s:\c!rulecolor,\c!rulethickness}
+%     begingroup ;
+%         save dx, dy, wd, ht, ox, oy, ax, ay ;
+%
+%         (dx,dy) = (\MPvar\c!dx,\MPvar\c!dy)*\MPvar\c!factor*\MPvar\c!scale ;
+%         (wd,ht) = (\MPvar\c!nx*dx,\MPvar\c!ny*dy) ;
+%         (ox,oy) = (\MPvar\c!xoffset,\MPvar\c!yoffset) ;
+%         (ax,ay) = if \MPvar\c!align = 1 : (\c!dx,\c!dy)/2 else : origin fi ;
+%
+%         draw image (
+%             for i=0 step dx until wd : draw (i,0) -- (i,ht) ; endfor ;
+%             for i=0 step dy until ht : draw (0,i) -- (wd,i) ; endfor ;
+%         )
+%             withpen pencircle scaled \MPvar\c!rulethickness\space
+%             withcolor "\MPvar\c!rulecolor" ;
+%         draw image (
+%             if \MPvar\c!xstep > 0 :
+%                 for i=1 step \MPvar\c!xstep until \MPvar\c!nx :
+%                     draw thetextext.bot(decimal i,(i*dx-ax,-ox));
+%                 endfor ;
+%             fi ;
+%             if \MPvar\c!ystep > 0 :
+%                 for i=1 step \MPvar\c!ystep until \MPvar\c!ny :
+%                     draw thetextext.lft(decimal i,(-oy,i*dy-ay)) ;
+%                 endfor ;
+%             fi ;
+%         )
+%             withcolor "\MPvar\c!color" ;
+%     endgroup ;
+% \stopuseMPgraphic
+%
+% \def\typo_grid_base[#1]%
+%   {\dontleavehmode
+%    \hbox\bgroup
+%    \getdummyparameters
+%      [\c!nx=10,\c!ny=10,\c!dx=.5,\c!dy=.5,\c!xstep=0,\c!ystep=0,%
+%       \c!unit=\s!cm,\c!scale=1,\c!factor=1,%
+%       \c!offset=.25ex,%
+%       \c!xoffset=\directdummyparameter\c!offset,%
+%       \c!yoffset=\directdummyparameter\c!offset,%
+%       \c!align=,%
+%       \c!color=\currentcolorname,%
+%       \c!rulecolor=\currentcolorname,%
+%       \c!rulethickness=\linewidth,%
+%       #1]%
+%    \usedummystyleandcolor\c!style\c!color
+%    \edef\p_align{\directdummyparameter\c!align}%
+%    \edef\p_unit {\directdummyparameter\c!unit}%
+%    \useMPgraphic
+%      {grid}%
+%      {nx=\directdummyparameter\c!nx,%
+%       ny=\directdummyparameter\c!ny,%
+%       dx=\directdummyparameter\c!dx\p_unit,%
+%       dy=\directdummyparameter\c!dy\p_unit,%
+%       factor=\directdummyparameter\c!factor,%
+%       scale=\directdummyparameter\c!scale,%
+%       xstep=\directdummyparameter\c!xstep,%
+%       ystep=\directdummyparameter\c!ystep,%
+%       xoffset=\directdummyparameter\c!xoffset,%
+%       yoffset=\directdummyparameter\c!yoffset,%
+%       color=\directdummyparameter\c!color,%
+%       rulecolor=\directdummyparameter\c!rulecolor,%
+%       rulethickness=\directdummyparameter\c!rulethickness,%
+%       align=\ifx\p_align\v!middle\!!plusone\else\!!zerocount\fi}%
+%    \egroup}
+%
+% even less tokens wasted (no need to clog the core with hardly
+% used code):
+
+\startuseMPgraphic{meta:grd:basegrid}
     begingroup ;
 
-        save nx, ny, dx, dy, wd, ht, xstep, ystep, xoffset, yoffset, align, xalign, yalign ;
+        save sc, dx, dy, wd, ht, ox, oy, ax, ay ;
 
-        numeric nx      ; nx      := \MPvar{nx} ;
-        numeric ny      ; ny      := \MPvar{ny} ;
-        numeric dx      ; dx      := \MPvar{factor} * \MPvar{scale} * \MPvar{dx} ;
-        numeric dy      ; dy      := \MPvar{factor} * \MPvar{scale} * \MPvar{dy} ;
-        numeric wd      ; wd      := nx * dx ;
-        numeric ht      ; ht      := ny * dy ;
-        numeric xstep   ; xstep   := \MPvar{xstep} ;
-        numeric ystep   ; ystep   := \MPvar{ystep} ;
-        numeric xoffset ; xoffset := \MPvar{xoffset} ;
-        numeric yoffset ; yoffset := \MPvar{yoffset} ;
-        numeric align   ; align   := \MPvar{align} ;
-        numeric xalign  ; xalign  := 0 ;
-        numeric yalign  ; yalign  := 0 ;
+        sc = \directdummyparameter\c!factor*\directdummyparameter\c!scale ;
+        dx = \MPdpar\directdummyparameter\c!dx*sc ;
+        dy = \MPdpar\directdummyparameter\c!dy*sc ;
+        wd = \directdummyparameter\c!nx*dx ;
+        ht = \directdummyparameter\c!ny*dy ;
+        ox = \MPdpar\directdummyparameter\c!xoffset\relax ;
+        oy = \MPdpar\directdummyparameter\c!yoffset\relax ;
 
-        if align = 1 :
-            xalign := dx/2 ;
-            yalign := dy/2 ;
+        if "\directdummyparameter\c!align" = "\v!middle" :
+            ax = \MPdpar\directdummyparameter\c!dx/2
+            ay = \MPdpar\directdummyparameter\c!dy/2
+        else :
+            ax = 0 ;
+            ay = 0 ;
         fi ;
 
-        for i=0 step dx until wd :
-            draw (i,0) -- (i,ht) ;
-        endfor ;
-        for i=0 step dy until ht :
-            draw (0,i) -- (wd,i) ;
-        endfor ;
+        draw image (
+            for i=0 step dx until wd : draw (i,0) -- (i,ht) ; endfor ;
+            for i=0 step dy until ht : draw (0,i) -- (wd,i) ; endfor ;
+        )
+            withpen pencircle scaled \MPdpar\directdummyparameter\c!rulethickness\space
+            withcolor "\directdummyparameter\c!rulecolor" ;
 
-        if xstep > 0 :
-            for i=1 step xstep until nx :
-                draw thetextext.bot(decimal i,(i*dx-xalign,-xoffset)) ;
-            endfor ;
-        fi ;
-        if ystep > 0 :
-            for i=1 step ystep until ny :
-                draw thetextext.lft(decimal i,(-yoffset,i*dy-yalign)) ;
-            endfor ;
-        fi ;
+        draw image (
+            if \directdummyparameter\c!xstep > 0 :
+                for i=1 step \directdummyparameter\c!xstep until \directdummyparameter\c!nx :
+                    draw thetextext.bot(decimal i,(i*dx-ax,oy));
+                endfor ;
+            fi ;
+            if \directdummyparameter\c!ystep > 0 :
+                for i=1 step \directdummyparameter\c!ystep until \directdummyparameter\c!ny :
+                    draw thetextext.lft(decimal i,(ox,i*dy-ay)) ;
+                endfor ;
+            fi ;
+        )
+            withcolor "\directdummyparameter\c!color" ;
 
     endgroup ;
 \stopuseMPgraphic
 
-\unprotect
+\def\typo_grid_base[#1]%
+  {\dontleavehmode
+   \hbox\bgroup
+   \getdummyparameters
+     [\c!nx=10,\c!ny=10,%
+      \c!dx=.5,\c!dy=.5,%
+      \c!xstep=0,\c!ystep=0,%
+      \c!unit=\s!cm,\c!scale=1,\c!factor=1,%
+      \c!offset=.25\exheight,%
+      \c!xoffset=\directdummyparameter\c!offset,%
+      \c!yoffset=\directdummyparameter\c!offset,%
+      \c!align=,%
+      \c!color=\currentcolorname,%
+      \c!rulecolor=\currentcolorname,%
+      \c!rulethickness=\linewidth,%
+      #1]%
+   \usedummystyleandcolor\c!style\c!color
+   \setexpandeddummyparameter\c!dx{\directdummyparameter\c!dx\directdummyparameter\c!unit}%
+   \setexpandeddummyparameter\c!dy{\directdummyparameter\c!dy\directdummyparameter\c!unit}%
+   \useMPgraphic{meta:grd:basegrid}%
+   \egroup}
 
 \unexpanded\def\basegrid
   {\dosingleempty\typo_grid_base}
-
-\def\typo_grid_base[#1]%
-  {\hbox\bgroup
-   \getdummyparameters
-     [\c!nx=10,\c!ny=10,\c!dx=.5,\c!dy=.5,\c!xstep=0,\c!ystep=0,%
-      \c!unit=\s!cm,\c!scale=1,\c!factor=1,%
-      \c!offset=.25ex,\c!xoffset=\directdummyparameter\c!offset,\c!yoffset=\directdummyparameter\c!offset,%
-      \c!align=,
-      #1]%
-   \usedummystyleandcolor\c!style\c!color
-   \edef\p_align{\directdummyparameter\c!align}%
-   \ifx\p_align\v!middle
-      \let\p_align\!!plusone
-   \else
-      \let\p_align\!!zerocount
-   \fi
-   \useMPgraphic
-    {grid}%
-    {nx=\directdummyparameter\c!nx,%
-     ny=\directdummyparameter\c!ny,%
-     dx=\directdummyparameter\c!dx\directdummyparameter\c!unit,%
-     dy=\directdummyparameter\c!dy\directdummyparameter\c!unit,%
-     factor=\directdummyparameter\c!factor,%
-     scale=\directdummyparameter\c!scale,%
-     xstep=\directdummyparameter\c!xstep,%
-     ystep=\directdummyparameter\c!ystep,%
-     xoffset=\directdummyparameter\c!xoffset,%
-     yoffset=\directdummyparameter\c!yoffset,%
-     align=\p_align}%
-  \egroup}
 
 \let\grid\basegrid
 

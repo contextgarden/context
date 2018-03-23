@@ -802,10 +802,11 @@
 
 \letvalue\??dummy\empty
 
-           \def\dummyparameter      #1{\begincsname\??dummy#1\endcsname}
-           \def\directdummyparameter#1{\begincsname\??dummy#1\endcsname}
-\unexpanded\def\setdummyparameter   #1{\expandafter\def\csname\??dummy#1\endcsname}
-\unexpanded\def\letdummyparameter   #1{\expandafter\let\csname\??dummy#1\endcsname}
+           \def\dummyparameter           #1{\begincsname\??dummy#1\endcsname}
+           \def\directdummyparameter     #1{\begincsname\??dummy#1\endcsname}
+\unexpanded\def\setdummyparameter        #1{\expandafter\def\csname\??dummy#1\endcsname}
+\unexpanded\def\setexpandeddummyparameter#1{\expandafter\edef\csname\??dummy#1\endcsname}
+\unexpanded\def\letdummyparameter        #1{\expandafter\let\csname\??dummy#1\endcsname}
 
 % \unexpanded\def\getdummyparameters
 %   {\mult_interfaces_get_parameters\??dummy}

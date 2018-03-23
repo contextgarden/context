@@ -11,78 +11,74 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This is just an example library not meant for production.
-
 % A few accents:
-
+%
 % / for cambria
 
 \startMPextensions
 
-    vardef math_stacker_overbracket_shape =
+    vardef math_stacker_bracket_shape(expr delta, rotate) =
         image (
             draw
                 (0,OverlayOffset) --
-                (0,OverlayHeight-OverlayOffset) --
-                (OverlayWidth,OverlayHeight-OverlayOffset) --
+                (0,delta-OverlayOffset) --
+                (OverlayWidth,delta-OverlayOffset) --
                 (OverlayWidth,OverlayOffset)
             withcolor
                 OverlayLineColor ;
             setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+            if rotate :
+                currentpicture := currentpicture rotated 180 ;
+            fi ;
         )
     enddef ;
-    vardef math_stacker_underbracket_shape =
-        math_stacker_overbracket_shape rotated 180
-    enddef ;
-    vardef math_stacker_overparent_shape =
+    vardef math_stacker_parent_shape(expr delta, rotate) =
         image (
             draw
                 (0,OverlayOffset) ...
-                (OverlayWidth/2,OverlayHeight-OverlayOffset) ...
+                (OverlayWidth/2,delta-OverlayOffset) ...
                 (OverlayWidth,OverlayOffset)
             withcolor
                 OverlayLineColor ;
             setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+            if rotate :
+                currentpicture := currentpicture rotated 180 ;
+            fi ;
         )
     enddef ;
-    vardef math_stacker_underparent_shape =
-        math_stacker_overparent_shape rotated 180
-    enddef ;
-    vardef math_stacker_overbrace_shape =
+    vardef math_stacker_brace_shape(expr delta, rotate) =
         image (
             draw
                 (0,OverlayOffset) ...
-                (OverlayWidth/4-OverlayOffset,OverlayHeight-OverlayOffset) ...
-                (OverlayWidth/2-OverlayOffset,OverlayHeight-OverlayOffset) ...
-                (OverlayWidth/2,OverlayHeight) &
-                (OverlayWidth/2,OverlayHeight) ...
-                (OverlayWidth/2+OverlayOffset,OverlayHeight-OverlayOffset) ...
-                (3OverlayWidth/4+OverlayOffset,OverlayHeight-OverlayOffset) ...
+                (OverlayWidth/4-OverlayOffset,delta-OverlayOffset) ...
+                (OverlayWidth/2-OverlayOffset,delta-OverlayOffset) ...
+                (OverlayWidth/2,delta) &
+                (OverlayWidth/2,delta) ...
+                (OverlayWidth/2+OverlayOffset,delta-OverlayOffset) ...
+                (3OverlayWidth/4+OverlayOffset,delta-OverlayOffset) ...
                 (OverlayWidth,OverlayOffset)
             withcolor
                 OverlayLineColor ;
             setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+            if rotate :
+                currentpicture := currentpicture rotated 180 ;
+            fi ;
         )
     enddef ;
-    vardef math_stacker_underbrace_shape =
-        math_stacker_overbrace_shape rotated 180
-    enddef ;
-    vardef math_stacker_overbar_shape =
+    vardef math_stacker_bar_shape(expr rotate) =
         image (
             draw
                 (0,OverlayOffset) -- (OverlayWidth,OverlayOffset)
             withcolor
                 OverlayLineColor ;
             setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+            if rotate :
+                currentpicture := currentpicture rotated 180 ;
+            fi ;
         )
     enddef ;
-    vardef math_stacker_underbar_shape =
-        math_stacker_overbar_shape rotated 180
-    enddef ;
-
     % arrows
-
-    vardef math_stacker_arrow_shape(expr axis, ex, em) =
+    vardef math_stacker_arrow_shape(expr axis, ex, em, rotate) =
         image (
             interim ahlength := ex/2;
             drawarrow
@@ -90,9 +86,12 @@
             withcolor
                 OverlayLineColor ;
             setbounds currentpicture to unitsquare xysized(OverlayWidth,ex) ;
+            if rotate :
+                currentpicture := currentpicture rotated 180 ;
+            fi ;
         )
     enddef ;
-    vardef math_stacker_leftrightarrow_shape(expr axis, ex, em) =
+    vardef math_stacker_leftrightarrow_shape(expr axis, ex, em, rotate) =
         image (
             interim ahlength := ex/2;
             drawdblarrow
@@ -100,9 +99,12 @@
             withcolor
                 OverlayLineColor ;
             setbounds currentpicture to unitsquare xysized(OverlayWidth,ex) ;
+            if rotate :
+                currentpicture := currentpicture rotated 180 ;
+            fi ;
         )
     enddef ;
-    vardef math_stacker_rightoverleftarrow_shape(expr axis, ex, em) =
+    vardef math_stacker_rightoverleftarrow_shape(expr axis, ex, em, rotate) =
         image (
             interim ahlength := ex/2;
             drawdoublearrows
@@ -110,13 +112,10 @@
             withcolor
                 OverlayLineColor ;
             setbounds currentpicture to unitsquare xysized(OverlayWidth,ex) ;
+            if rotate :
+                currentpicture := currentpicture rotated 180 ;
+            fi ;
         )
-    enddef ;
-    vardef math_stacker_leftarrow_shape(expr axis, ex, em) =
-        math_stacker_arrow_shape(axis,ex,em)
-    enddef ;
-    vardef math_stacker_rightarrow_shape(expr axis, ex, em) =
-        math_stacker_arrow_shape(axis,ex,em) rotated 180
     enddef ;
 
     % main handler
@@ -131,55 +130,55 @@
 \stopMPextensions
 
 \startuniqueMPgraphic{math:stacker:\number"FE3B4}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_overbracket_shape) ;
+    math_stacker_draw_accent(math_stacker_bracket_shape(OverlayHeight,false)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3B5}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_underbracket_shape) ;
+    math_stacker_draw_accent(math_stacker_bracket_shape(OverlayDepth,true)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DC}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_overparent_shape) ;
+    math_stacker_draw_accent(math_stacker_parent_shape(OverlayHeight,false)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DD}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_underparent_shape) ;
+    math_stacker_draw_accent(math_stacker_parent_shape(OverlayDepth,true)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DE}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_overbrace_shape) ;
+    math_stacker_draw_accent(math_stacker_brace_shape(OverlayHeight,false)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE3DF}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_underbrace_shape) ;
+    math_stacker_draw_accent(math_stacker_brace_shape(OverlayDepth,true)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE33E}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_overbar_shape) ;
+    math_stacker_draw_accent(math_stacker_bar_shape(false)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"FE33F}{axis,ex,em}
-    math_stacker_draw_accent(math_stacker_underbar_shape) ;
+    math_stacker_draw_accent(math_stacker_bar_shape(true)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"2190}{axis,ex,em}
-    math_stacker_draw_arrow(math_stacker_leftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_arrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"2192}{axis,ex,em}
-    math_stacker_draw_arrow(math_stacker_rightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_arrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},true)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"2194}{axis,ex,em}
-    math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"27F7}{axis,ex,em}
-    math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{math:stacker:\number"21C4}{axis,ex,em}
-    math_stacker_draw_arrow(math_stacker_rightoverleftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em})) ;
+    math_stacker_draw_arrow(math_stacker_rightoverleftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
 %D Radicals:
@@ -202,9 +201,46 @@
         withcolor OverlayLineColor ;
 \stopuniqueMPgraphic
 
-% \setupmathstackers
-%   [vfenced]
-%   [color=darkred,
-%    alternative=mp]
+\continueifinputfile{meta-imp-mat.mkiv}
 
-\endinput
+\setupmathstackers [both]   [color=darkred,alternative=mp]
+\setupmathstackers [top]    [color=darkred,alternative=mp]
+\setupmathstackers [bottom] [color=darkred,alternative=mp]
+
+\startTEXpage[offset=10pt]
+
+$
+    \overbracket   {a+b+c+d} \quad
+    \underbracket  {a+b+c+d} \quad
+    \doublebracket {a+b+c+d}
+$
+\blank[2*big]
+$
+    \overparent   {a+b+c+d} \quad
+    \underparent  {a+b+c+d} \quad
+    \doubleparent {a+b+c+d}
+$
+\blank[2*big]
+$
+    \overbrace   {a+b+c+d} \quad
+    \underbrace  {a+b+c+d} \quad
+    \doublebrace {a+b+c+d}
+$
+\blank[2*big]
+$
+    \overbar   {a+b+c+d} \quad
+    \underbar  {a+b+c+d} \quad
+    \doublebar {a+b+c+d}
+$
+\blank[2*big]
+$
+    \overleftarrow  {a+b+c+d} \quad
+    \overrightarrow {a+b+c+d}
+$
+\blank[2*big]
+$
+    \underleftarrow  {a+b+c+d} \quad
+    \underrightarrow {a+b+c+d}
+$
+
+\stopTEXpage

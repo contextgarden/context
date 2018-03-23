@@ -1481,6 +1481,12 @@
     \fi
 \to \everysetupMPgraphics
 
+%D Some more helpers (see \type {meta-grd.mkiv} for an example of usage):
+
+\def\MPdpar#1#2{\the\dimexpr#1#2\relax\empty}
+\def\MPnpar#1#2{\the\numexpr#1#2\relax\empty}
+\def\MPspar#1#2{"#1#2"}
+
 %D Done.
 
 \protect \endinput

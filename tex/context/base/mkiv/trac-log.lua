@@ -18,7 +18,6 @@ local datetime = os.date
 local openfile = io.open
 
 local runningtex = tex and (tex.jobname or tex.formatname)
-
 -- local write_nl = texio and texio.write_nl or print
 -- local write    = texio and texio.write    or io.write
 

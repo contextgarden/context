@@ -263,7 +263,8 @@ by John Grasty on the mailing list.}
 \defineregister
   [booksort]
   [language=bible,
-   n=1,
+   n=3,
+   criterium=text,
    indicator=no]
 \stopbuffer
 
@@ -284,6 +285,12 @@ Seven \booksort{2 John 2+45}
   [booksort]
   [language=bible]
 \stopbuffer
+
+\typebuffer
+
+which gives:
+
+\getbuffer
 
 \stoptext
 
