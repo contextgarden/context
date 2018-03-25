@@ -226,7 +226,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-map.lua')         -- for loading lum file (will be stripped)
 
         -- We use a bit simpler database because using the context one demands loading more helper
-        -- code and although it is more flexible (more wauys to resolve and so) it will never be
+        -- code and although it is more flexible (more ways to resolve and so) it will never be
         -- uses in plain/latex anyway, so let's stick to a simple approach.
 
         loadmodule('luatex-fonts-syn.lua')

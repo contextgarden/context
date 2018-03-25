@@ -420,7 +420,7 @@ end
 
 -- todo : copy without metatable
 
-local function copy(t, tables) -- taken from lua wiki, slightly adapted
+local function copy(t,tables) -- taken from lua wiki, slightly adapted
     tables = tables or { }
     local tcopy = { }
     if not tables[t] then
@@ -431,7 +431,7 @@ local function copy(t, tables) -- taken from lua wiki, slightly adapted
             if tables[i] then
                 i = tables[i]
             else
-                i = copy(i, tables)
+                i = copy(i,tables)
             end
         end
         if type(v) ~= "table" then
@@ -439,7 +439,7 @@ local function copy(t, tables) -- taken from lua wiki, slightly adapted
         elseif tables[v] then
             tcopy[i] = tables[v]
         else
-            tcopy[i] = copy(v, tables)
+            tcopy[i] = copy(v,tables)
         end
     end
     local mt = getmetatable(t)

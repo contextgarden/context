@@ -1935,7 +1935,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40200, stripped down to: 23561
+-- original size: 40197, stripped down to: 23561
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -6101,7 +6101,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 38725, stripped down to: 21726
+-- original size: 38699, stripped down to: 22142
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6115,13 +6115,15 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
 local load,dump=load,string.dump
-local tonumber,type,tostring,next=tonumber,type,tostring,next
+local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setmetatable
+local unpack,concat=table.unpack,table.concat
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local loadstripped=nil
-if LUAVERSION<5.2 then
+local oldfashioned=LUAVERSION<5.2
+if oldfashioned then
   loadstripped=function(str,shortcuts)
     return load(str)
   end
@@ -6393,7 +6395,7 @@ local template=[[
 return function(%s) return %s end
 ]]
 local preamble,environment="",{}
-if LUAVERSION<5.2 then
+if oldfashioned then
   preamble=[[
 local lpeg=lpeg
 local type=type
@@ -6440,7 +6442,7 @@ else
     sequenced=table.sequenced,
     formattednumber=number.formatted,
     sparseexponent=number.sparseexponent,
-    formattedfloat=number.formattedfloat
+    formattedfloat=number.formattedfloat,
   }
 end
 local arguments={ "a1" } 
@@ -6797,12 +6799,18 @@ local builder=Cs { "start",
   ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
-local direct=Cs (
-  P("%")*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*P(-1)/[[local format = string.format return function(str) return format("%0",str) end]]
-)
+local xx=setmetatable({},{ __index=function(t,k) local v=format("%02x",k) t[k]=v return v end })
+local XX=setmetatable({},{ __index=function(t,k) local v=format("%02X",k) t[k]=v return v end })
+local preset={
+  ["%02x"]=function(n) return xx[n] end,
+  ["%02X"]=function(n) return XX[n] end,
+}
+local direct=P("%")*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*P(-1)/[[local format = string.format return function(str) return format("%0",str) end]]
 local function make(t,str)
-  local f
-  local p
+  local f=preset[str]
+  if f then
+    return f
+  end
   local p=lpegmatch(direct,str)
   if p then
     f=loadstripped(p)()
@@ -6823,7 +6831,7 @@ local function use(t,fmt,...)
   return t[fmt](...)
 end
 strings.formatters={}
-if LUAVERSION<5.2 then
+if oldfashioned then
   function strings.formatters.new(noconcat)
     local t={ _type_="formatter",_connector_=noconcat and "," or "..",_extensions_={},_preamble_=preamble,_environment_={} }
     setmetatable(t,{ __index=make,__call=use })
@@ -6860,7 +6868,7 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-if LUAVERSION<5.2 then
+if oldfashioned then
   add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
   add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
   add(formatters,"lua",[[lpegmatch(luaescape,%s)]],"local luaescape = lpeg.patterns.luaescape")
@@ -21295,8 +21303,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 876638
--- stripped bytes    : 317933
+-- original bytes    : 876609
+-- stripped bytes    : 317488
 
 -- end library merge
 

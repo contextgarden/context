@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/23/18 13:13:05
+-- merge date  : 03/25/18 17:32:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -3745,13 +3745,15 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
 local load,dump=load,string.dump
-local tonumber,type,tostring,next=tonumber,type,tostring,next
+local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setmetatable
+local unpack,concat=table.unpack,table.concat
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local loadstripped=nil
-if LUAVERSION<5.2 then
+local oldfashioned=LUAVERSION<5.2
+if oldfashioned then
   loadstripped=function(str,shortcuts)
     return load(str)
   end
@@ -4023,7 +4025,7 @@ local template=[[
 return function(%s) return %s end
 ]]
 local preamble,environment="",{}
-if LUAVERSION<5.2 then
+if oldfashioned then
   preamble=[[
 local lpeg=lpeg
 local type=type
@@ -4070,7 +4072,7 @@ else
     sequenced=table.sequenced,
     formattednumber=number.formatted,
     sparseexponent=number.sparseexponent,
-    formattedfloat=number.formattedfloat
+    formattedfloat=number.formattedfloat,
   }
 end
 local arguments={ "a1" } 
@@ -4427,12 +4429,18 @@ local builder=Cs { "start",
   ["?"]=Cs(((1-P("%"))^1        )^1)/format_rest,
   ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
-local direct=Cs (
-  P("%")*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*P(-1)/[[local format = string.format return function(str) return format("%0",str) end]]
-)
+local xx=setmetatable({},{ __index=function(t,k) local v=format("%02x",k) t[k]=v return v end })
+local XX=setmetatable({},{ __index=function(t,k) local v=format("%02X",k) t[k]=v return v end })
+local preset={
+  ["%02x"]=function(n) return xx[n] end,
+  ["%02X"]=function(n) return XX[n] end,
+}
+local direct=P("%")*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*P(-1)/[[local format = string.format return function(str) return format("%0",str) end]]
 local function make(t,str)
-  local f
-  local p
+  local f=preset[str]
+  if f then
+    return f
+  end
   local p=lpegmatch(direct,str)
   if p then
     f=loadstripped(p)()
@@ -4453,7 +4461,7 @@ local function use(t,fmt,...)
   return t[fmt](...)
 end
 strings.formatters={}
-if LUAVERSION<5.2 then
+if oldfashioned then
   function strings.formatters.new(noconcat)
     local t={ _type_="formatter",_connector_=noconcat and "," or "..",_extensions_={},_preamble_=preamble,_environment_={} }
     setmetatable(t,{ __index=make,__call=use })
@@ -4490,7 +4498,7 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-if LUAVERSION<5.2 then
+if oldfashioned then
   add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
   add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
   add(formatters,"lua",[[lpegmatch(luaescape,%s)]],"local luaescape = lpeg.patterns.luaescape")
@@ -6274,6 +6282,17 @@ characters.classifiers={
  [2137]=5,
  [2138]=5,
  [2139]=5,
+ [2144]=2,
+ [2145]=4,
+ [2146]=2,
+ [2147]=2,
+ [2148]=2,
+ [2149]=2,
+ [2150]=4,
+ [2151]=3,
+ [2152]=2,
+ [2153]=3,
+ [2154]=3,
  [2208]=2,
  [2209]=2,
  [2210]=2,
@@ -6406,6 +6425,12 @@ characters.classifiers={
  [2765]=5,
  [2786]=5,
  [2787]=5,
+ [2810]=5,
+ [2811]=5,
+ [2812]=5,
+ [2813]=5,
+ [2814]=5,
+ [2815]=5,
  [2817]=5,
  [2876]=5,
  [2879]=5,
@@ -6443,7 +6468,10 @@ characters.classifiers={
  [3277]=5,
  [3298]=5,
  [3299]=5,
+ [3328]=5,
  [3329]=5,
+ [3387]=5,
+ [3388]=5,
  [3393]=5,
  [3394]=5,
  [3395]=5,
@@ -6940,6 +6968,10 @@ characters.classifiers={
  [7667]=5,
  [7668]=5,
  [7669]=5,
+ [7670]=5,
+ [7671]=5,
+ [7672]=5,
+ [7673]=5,
  [7675]=5,
  [7676]=5,
  [7677]=5,
@@ -7429,6 +7461,49 @@ characters.classifiers={
  [71465]=5,
  [71466]=5,
  [71467]=5,
+ [72193]=5,
+ [72194]=5,
+ [72195]=5,
+ [72196]=5,
+ [72197]=5,
+ [72198]=5,
+ [72201]=5,
+ [72202]=5,
+ [72243]=5,
+ [72244]=5,
+ [72245]=5,
+ [72246]=5,
+ [72247]=5,
+ [72248]=5,
+ [72251]=5,
+ [72252]=5,
+ [72253]=5,
+ [72254]=5,
+ [72263]=5,
+ [72273]=5,
+ [72274]=5,
+ [72275]=5,
+ [72276]=5,
+ [72277]=5,
+ [72278]=5,
+ [72281]=5,
+ [72282]=5,
+ [72283]=5,
+ [72330]=5,
+ [72331]=5,
+ [72332]=5,
+ [72333]=5,
+ [72334]=5,
+ [72335]=5,
+ [72336]=5,
+ [72337]=5,
+ [72338]=5,
+ [72339]=5,
+ [72340]=5,
+ [72341]=5,
+ [72342]=5,
+ [72344]=5,
+ [72345]=5,
  [72752]=5,
  [72753]=5,
  [72754]=5,
@@ -7476,6 +7551,23 @@ characters.classifiers={
  [72883]=5,
  [72885]=5,
  [72886]=5,
+ [73009]=5,
+ [73010]=5,
+ [73011]=5,
+ [73012]=5,
+ [73013]=5,
+ [73014]=5,
+ [73018]=5,
+ [73020]=5,
+ [73021]=5,
+ [73023]=5,
+ [73024]=5,
+ [73025]=5,
+ [73026]=5,
+ [73027]=5,
+ [73028]=5,
+ [73029]=5,
+ [73031]=5,
  [92912]=5,
  [92913]=5,
  [92914]=5,
@@ -7767,6 +7859,896 @@ characters.classifiers={
  [125257]=5,
  [125258]=5,
  [1042752]=5,
+}
+characters.indicgroups={
+ ["above_mark"]={
+ [2304]=true,
+ [2305]=true,
+ [2306]=true,
+ [2362]=true,
+ [2373]=true,
+ [2374]=true,
+ [2375]=true,
+ [2376]=true,
+ [2385]=true,
+ [2387]=true,
+ [2388]=true,
+ [2389]=true,
+ [2631]=true,
+ [2632]=true,
+ [2635]=true,
+ [2636]=true,
+ [2757]=true,
+ [2759]=true,
+ [2760]=true,
+ [2879]=true,
+ [3008]=true,
+ [3134]=true,
+ [3135]=true,
+ [3136]=true,
+ [3142]=true,
+ [3143]=true,
+ [3144]=true,
+ [3146]=true,
+ [3147]=true,
+ [3148]=true,
+ [3149]=true,
+ [3263]=true,
+ [3270]=true,
+ [3406]=true,
+ [43232]=true,
+ [43233]=true,
+ [43234]=true,
+ [43235]=true,
+ [43236]=true,
+ [43237]=true,
+ [43238]=true,
+ [43239]=true,
+ [43240]=true,
+ [43241]=true,
+ [43242]=true,
+ [43243]=true,
+ [43244]=true,
+ [43245]=true,
+ [43246]=true,
+ [43247]=true,
+ [43248]=true,
+ [43249]=true,
+ },
+ ["after_half"]={},
+ ["after_postscript"]={
+ [3248]=true,
+ },
+ ["after_subscript"]={
+ [2366]=true,
+ [2368]=true,
+ [2369]=true,
+ [2370]=true,
+ [2371]=true,
+ [2372]=true,
+ [2373]=true,
+ [2374]=true,
+ [2375]=true,
+ [2376]=true,
+ [2377]=true,
+ [2378]=true,
+ [2379]=true,
+ [2380]=true,
+ [2402]=true,
+ [2403]=true,
+ [3267]=true,
+ [3268]=true,
+ [3285]=true,
+ [3286]=true,
+ },
+ ["anudatta"]={
+ [2386]=true,
+ },
+ ["before_half"]={
+ [2367]=true,
+ },
+ ["before_postscript"]={
+ [2352]=true,
+ },
+ ["before_subscript"]={
+ [3262]=true,
+ [3263]=true,
+ [3265]=true,
+ [3266]=true,
+ [3270]=true,
+ [3276]=true,
+ [3298]=true,
+ [3299]=true,
+ },
+ ["below_mark"]={
+ [2364]=true,
+ [2369]=true,
+ [2370]=true,
+ [2371]=true,
+ [2372]=true,
+ [2381]=true,
+ [2386]=true,
+ [2390]=true,
+ [2391]=true,
+ [2402]=true,
+ [2403]=true,
+ [2492]=true,
+ [2497]=true,
+ [2498]=true,
+ [2499]=true,
+ [2500]=true,
+ [2509]=true,
+ [2620]=true,
+ [2625]=true,
+ [2626]=true,
+ [2637]=true,
+ [2748]=true,
+ [2753]=true,
+ [2754]=true,
+ [2755]=true,
+ [2756]=true,
+ [2765]=true,
+ [2876]=true,
+ [2881]=true,
+ [2882]=true,
+ [2883]=true,
+ [2884]=true,
+ [2893]=true,
+ [2914]=true,
+ [2915]=true,
+ [3009]=true,
+ [3010]=true,
+ [3021]=true,
+ [3170]=true,
+ [3171]=true,
+ [3260]=true,
+ [3298]=true,
+ [3299]=true,
+ [3426]=true,
+ [3427]=true,
+ },
+ ["consonant"]={
+ [2325]=true,
+ [2326]=true,
+ [2327]=true,
+ [2328]=true,
+ [2329]=true,
+ [2330]=true,
+ [2331]=true,
+ [2332]=true,
+ [2333]=true,
+ [2334]=true,
+ [2335]=true,
+ [2336]=true,
+ [2337]=true,
+ [2338]=true,
+ [2339]=true,
+ [2340]=true,
+ [2341]=true,
+ [2342]=true,
+ [2343]=true,
+ [2344]=true,
+ [2345]=true,
+ [2346]=true,
+ [2347]=true,
+ [2348]=true,
+ [2349]=true,
+ [2350]=true,
+ [2351]=true,
+ [2352]=true,
+ [2353]=true,
+ [2354]=true,
+ [2355]=true,
+ [2356]=true,
+ [2357]=true,
+ [2358]=true,
+ [2359]=true,
+ [2360]=true,
+ [2361]=true,
+ [2392]=true,
+ [2393]=true,
+ [2394]=true,
+ [2395]=true,
+ [2396]=true,
+ [2397]=true,
+ [2398]=true,
+ [2399]=true,
+ [2424]=true,
+ [2425]=true,
+ [2426]=true,
+ [2453]=true,
+ [2454]=true,
+ [2455]=true,
+ [2456]=true,
+ [2457]=true,
+ [2458]=true,
+ [2459]=true,
+ [2460]=true,
+ [2461]=true,
+ [2462]=true,
+ [2463]=true,
+ [2464]=true,
+ [2465]=true,
+ [2466]=true,
+ [2467]=true,
+ [2468]=true,
+ [2469]=true,
+ [2470]=true,
+ [2471]=true,
+ [2472]=true,
+ [2474]=true,
+ [2475]=true,
+ [2476]=true,
+ [2477]=true,
+ [2478]=true,
+ [2479]=true,
+ [2480]=true,
+ [2482]=true,
+ [2486]=true,
+ [2487]=true,
+ [2488]=true,
+ [2489]=true,
+ [2510]=true,
+ [2524]=true,
+ [2525]=true,
+ [2527]=true,
+ [2581]=true,
+ [2582]=true,
+ [2583]=true,
+ [2584]=true,
+ [2585]=true,
+ [2586]=true,
+ [2587]=true,
+ [2588]=true,
+ [2589]=true,
+ [2590]=true,
+ [2591]=true,
+ [2592]=true,
+ [2593]=true,
+ [2594]=true,
+ [2595]=true,
+ [2596]=true,
+ [2597]=true,
+ [2598]=true,
+ [2599]=true,
+ [2600]=true,
+ [2602]=true,
+ [2603]=true,
+ [2604]=true,
+ [2605]=true,
+ [2606]=true,
+ [2607]=true,
+ [2608]=true,
+ [2610]=true,
+ [2611]=true,
+ [2613]=true,
+ [2614]=true,
+ [2616]=true,
+ [2617]=true,
+ [2649]=true,
+ [2650]=true,
+ [2651]=true,
+ [2652]=true,
+ [2654]=true,
+ [2709]=true,
+ [2710]=true,
+ [2711]=true,
+ [2712]=true,
+ [2713]=true,
+ [2714]=true,
+ [2715]=true,
+ [2716]=true,
+ [2717]=true,
+ [2718]=true,
+ [2719]=true,
+ [2720]=true,
+ [2721]=true,
+ [2722]=true,
+ [2723]=true,
+ [2724]=true,
+ [2725]=true,
+ [2726]=true,
+ [2727]=true,
+ [2728]=true,
+ [2730]=true,
+ [2731]=true,
+ [2732]=true,
+ [2733]=true,
+ [2734]=true,
+ [2735]=true,
+ [2736]=true,
+ [2738]=true,
+ [2739]=true,
+ [2741]=true,
+ [2742]=true,
+ [2743]=true,
+ [2744]=true,
+ [2745]=true,
+ [2837]=true,
+ [2838]=true,
+ [2839]=true,
+ [2840]=true,
+ [2841]=true,
+ [2842]=true,
+ [2843]=true,
+ [2844]=true,
+ [2845]=true,
+ [2846]=true,
+ [2847]=true,
+ [2848]=true,
+ [2849]=true,
+ [2850]=true,
+ [2851]=true,
+ [2852]=true,
+ [2853]=true,
+ [2854]=true,
+ [2855]=true,
+ [2856]=true,
+ [2858]=true,
+ [2859]=true,
+ [2860]=true,
+ [2861]=true,
+ [2862]=true,
+ [2863]=true,
+ [2864]=true,
+ [2866]=true,
+ [2867]=true,
+ [2869]=true,
+ [2870]=true,
+ [2871]=true,
+ [2872]=true,
+ [2873]=true,
+ [2908]=true,
+ [2909]=true,
+ [2929]=true,
+ [2965]=true,
+ [2969]=true,
+ [2970]=true,
+ [2972]=true,
+ [2974]=true,
+ [2975]=true,
+ [2979]=true,
+ [2980]=true,
+ [2984]=true,
+ [2985]=true,
+ [2986]=true,
+ [2990]=true,
+ [2991]=true,
+ [2992]=true,
+ [2993]=true,
+ [2994]=true,
+ [2995]=true,
+ [2996]=true,
+ [2997]=true,
+ [2998]=true,
+ [2999]=true,
+ [3000]=true,
+ [3001]=true,
+ [3093]=true,
+ [3094]=true,
+ [3095]=true,
+ [3096]=true,
+ [3097]=true,
+ [3098]=true,
+ [3099]=true,
+ [3100]=true,
+ [3101]=true,
+ [3102]=true,
+ [3103]=true,
+ [3104]=true,
+ [3105]=true,
+ [3106]=true,
+ [3107]=true,
+ [3108]=true,
+ [3109]=true,
+ [3110]=true,
+ [3111]=true,
+ [3112]=true,
+ [3114]=true,
+ [3115]=true,
+ [3116]=true,
+ [3117]=true,
+ [3118]=true,
+ [3119]=true,
+ [3120]=true,
+ [3121]=true,
+ [3122]=true,
+ [3123]=true,
+ [3124]=true,
+ [3125]=true,
+ [3126]=true,
+ [3127]=true,
+ [3128]=true,
+ [3129]=true,
+ [3133]=true,
+ [3221]=true,
+ [3222]=true,
+ [3223]=true,
+ [3224]=true,
+ [3225]=true,
+ [3226]=true,
+ [3227]=true,
+ [3228]=true,
+ [3229]=true,
+ [3230]=true,
+ [3231]=true,
+ [3232]=true,
+ [3233]=true,
+ [3234]=true,
+ [3235]=true,
+ [3236]=true,
+ [3237]=true,
+ [3238]=true,
+ [3239]=true,
+ [3240]=true,
+ [3242]=true,
+ [3243]=true,
+ [3244]=true,
+ [3245]=true,
+ [3246]=true,
+ [3247]=true,
+ [3248]=true,
+ [3249]=true,
+ [3250]=true,
+ [3251]=true,
+ [3253]=true,
+ [3254]=true,
+ [3255]=true,
+ [3256]=true,
+ [3257]=true,
+ [3294]=true,
+ [3349]=true,
+ [3350]=true,
+ [3351]=true,
+ [3352]=true,
+ [3353]=true,
+ [3354]=true,
+ [3355]=true,
+ [3356]=true,
+ [3357]=true,
+ [3358]=true,
+ [3359]=true,
+ [3360]=true,
+ [3361]=true,
+ [3362]=true,
+ [3363]=true,
+ [3364]=true,
+ [3365]=true,
+ [3366]=true,
+ [3367]=true,
+ [3368]=true,
+ [3369]=true,
+ [3370]=true,
+ [3371]=true,
+ [3372]=true,
+ [3373]=true,
+ [3374]=true,
+ [3375]=true,
+ [3376]=true,
+ [3377]=true,
+ [3378]=true,
+ [3379]=true,
+ [3380]=true,
+ [3381]=true,
+ [3382]=true,
+ [3383]=true,
+ [3384]=true,
+ [3385]=true,
+ [3386]=true,
+ },
+ ["dependent_vowel"]={
+ [2362]=true,
+ [2363]=true,
+ [2366]=true,
+ [2367]=true,
+ [2368]=true,
+ [2369]=true,
+ [2370]=true,
+ [2371]=true,
+ [2372]=true,
+ [2373]=true,
+ [2374]=true,
+ [2375]=true,
+ [2376]=true,
+ [2377]=true,
+ [2378]=true,
+ [2379]=true,
+ [2380]=true,
+ [2382]=true,
+ [2383]=true,
+ [2389]=true,
+ [2390]=true,
+ [2391]=true,
+ [2402]=true,
+ [2403]=true,
+ [2494]=true,
+ [2495]=true,
+ [2496]=true,
+ [2497]=true,
+ [2498]=true,
+ [2499]=true,
+ [2500]=true,
+ [2503]=true,
+ [2504]=true,
+ [2622]=true,
+ [2623]=true,
+ [2624]=true,
+ [2625]=true,
+ [2626]=true,
+ [2631]=true,
+ [2632]=true,
+ [2635]=true,
+ [2636]=true,
+ [2750]=true,
+ [2751]=true,
+ [2752]=true,
+ [2753]=true,
+ [2754]=true,
+ [2755]=true,
+ [2756]=true,
+ [2757]=true,
+ [2759]=true,
+ [2760]=true,
+ [2761]=true,
+ [2763]=true,
+ [2764]=true,
+ [2878]=true,
+ [2879]=true,
+ [2880]=true,
+ [2881]=true,
+ [2882]=true,
+ [2883]=true,
+ [2884]=true,
+ [2887]=true,
+ [2888]=true,
+ [2891]=true,
+ [2892]=true,
+ [2914]=true,
+ [2915]=true,
+ [3006]=true,
+ [3007]=true,
+ [3008]=true,
+ [3009]=true,
+ [3010]=true,
+ [3014]=true,
+ [3015]=true,
+ [3016]=true,
+ [3018]=true,
+ [3019]=true,
+ [3020]=true,
+ [3134]=true,
+ [3135]=true,
+ [3136]=true,
+ [3137]=true,
+ [3138]=true,
+ [3139]=true,
+ [3140]=true,
+ [3142]=true,
+ [3143]=true,
+ [3144]=true,
+ [3146]=true,
+ [3147]=true,
+ [3148]=true,
+ [3170]=true,
+ [3171]=true,
+ [3262]=true,
+ [3263]=true,
+ [3264]=true,
+ [3265]=true,
+ [3266]=true,
+ [3267]=true,
+ [3268]=true,
+ [3270]=true,
+ [3271]=true,
+ [3272]=true,
+ [3274]=true,
+ [3275]=true,
+ [3276]=true,
+ [3298]=true,
+ [3299]=true,
+ [3390]=true,
+ [3391]=true,
+ [3392]=true,
+ [3393]=true,
+ [3394]=true,
+ [3395]=true,
+ [3396]=true,
+ [3398]=true,
+ [3399]=true,
+ [3400]=true,
+ [3402]=true,
+ [3403]=true,
+ [3404]=true,
+ [3415]=true,
+ [3426]=true,
+ [3427]=true,
+ },
+ ["halant"]={
+ [2381]=true,
+ [2509]=true,
+ [2637]=true,
+ [2765]=true,
+ [2893]=true,
+ [3021]=true,
+ [3149]=true,
+ [3277]=true,
+ [3405]=true,
+ },
+ ["independent_vowel"]={
+ [2308]=true,
+ [2309]=true,
+ [2310]=true,
+ [2311]=true,
+ [2312]=true,
+ [2313]=true,
+ [2314]=true,
+ [2315]=true,
+ [2316]=true,
+ [2317]=true,
+ [2318]=true,
+ [2319]=true,
+ [2320]=true,
+ [2321]=true,
+ [2322]=true,
+ [2323]=true,
+ [2324]=true,
+ [2400]=true,
+ [2401]=true,
+ [2418]=true,
+ [2419]=true,
+ [2420]=true,
+ [2421]=true,
+ [2422]=true,
+ [2423]=true,
+ [2437]=true,
+ [2438]=true,
+ [2439]=true,
+ [2440]=true,
+ [2441]=true,
+ [2442]=true,
+ [2443]=true,
+ [2444]=true,
+ [2447]=true,
+ [2448]=true,
+ [2451]=true,
+ [2452]=true,
+ [2528]=true,
+ [2529]=true,
+ [2530]=true,
+ [2531]=true,
+ [2565]=true,
+ [2566]=true,
+ [2567]=true,
+ [2568]=true,
+ [2569]=true,
+ [2570]=true,
+ [2575]=true,
+ [2576]=true,
+ [2579]=true,
+ [2580]=true,
+ [2693]=true,
+ [2694]=true,
+ [2695]=true,
+ [2696]=true,
+ [2697]=true,
+ [2698]=true,
+ [2699]=true,
+ [2700]=true,
+ [2701]=true,
+ [2703]=true,
+ [2704]=true,
+ [2705]=true,
+ [2707]=true,
+ [2708]=true,
+ [2784]=true,
+ [2785]=true,
+ [2786]=true,
+ [2787]=true,
+ [2821]=true,
+ [2822]=true,
+ [2823]=true,
+ [2824]=true,
+ [2825]=true,
+ [2826]=true,
+ [2827]=true,
+ [2828]=true,
+ [2831]=true,
+ [2832]=true,
+ [2835]=true,
+ [2836]=true,
+ [2912]=true,
+ [2913]=true,
+ [2949]=true,
+ [2950]=true,
+ [2951]=true,
+ [2952]=true,
+ [2953]=true,
+ [2954]=true,
+ [2958]=true,
+ [2959]=true,
+ [2960]=true,
+ [2962]=true,
+ [2963]=true,
+ [2964]=true,
+ [3077]=true,
+ [3078]=true,
+ [3079]=true,
+ [3080]=true,
+ [3081]=true,
+ [3082]=true,
+ [3083]=true,
+ [3084]=true,
+ [3086]=true,
+ [3087]=true,
+ [3088]=true,
+ [3090]=true,
+ [3091]=true,
+ [3092]=true,
+ [3168]=true,
+ [3169]=true,
+ [3205]=true,
+ [3206]=true,
+ [3207]=true,
+ [3208]=true,
+ [3209]=true,
+ [3210]=true,
+ [3211]=true,
+ [3212]=true,
+ [3214]=true,
+ [3215]=true,
+ [3216]=true,
+ [3218]=true,
+ [3219]=true,
+ [3220]=true,
+ [3296]=true,
+ [3297]=true,
+ [3333]=true,
+ [3334]=true,
+ [3335]=true,
+ [3336]=true,
+ [3337]=true,
+ [3338]=true,
+ [3339]=true,
+ [3340]=true,
+ [3342]=true,
+ [3343]=true,
+ [3344]=true,
+ [3346]=true,
+ [3347]=true,
+ [3348]=true,
+ [3423]=true,
+ [3424]=true,
+ [3425]=true,
+ },
+ ["nukta"]={
+ [2364]=true,
+ [2492]=true,
+ [2620]=true,
+ [2748]=true,
+ [2876]=true,
+ [3260]=true,
+ },
+ ["post_mark"]={
+ [2307]=true,
+ [2363]=true,
+ [2366]=true,
+ [2368]=true,
+ [2377]=true,
+ [2378]=true,
+ [2379]=true,
+ [2380]=true,
+ [2383]=true,
+ [2494]=true,
+ [2496]=true,
+ [2503]=true,
+ [2504]=true,
+ [2622]=true,
+ [2624]=true,
+ [2750]=true,
+ [2752]=true,
+ [2761]=true,
+ [2763]=true,
+ [2764]=true,
+ [2878]=true,
+ [2880]=true,
+ [3006]=true,
+ [3007]=true,
+ [3137]=true,
+ [3138]=true,
+ [3139]=true,
+ [3140]=true,
+ [3262]=true,
+ [3264]=true,
+ [3265]=true,
+ [3266]=true,
+ [3267]=true,
+ [3268]=true,
+ [3271]=true,
+ [3272]=true,
+ [3274]=true,
+ [3275]=true,
+ [3276]=true,
+ [3390]=true,
+ [3391]=true,
+ [3392]=true,
+ [3393]=true,
+ [3394]=true,
+ [3395]=true,
+ [3396]=true,
+ [3415]=true,
+ },
+ ["pre_mark"]={
+ [2367]=true,
+ [2382]=true,
+ [2495]=true,
+ [2623]=true,
+ [2751]=true,
+ [2887]=true,
+ [2888]=true,
+ [3014]=true,
+ [3015]=true,
+ [3016]=true,
+ [3398]=true,
+ [3399]=true,
+ [3400]=true,
+ },
+ ["ra"]={
+ [2352]=true,
+ [2480]=true,
+ [2608]=true,
+ [2736]=true,
+ [2864]=true,
+ [2992]=true,
+ [3120]=true,
+ [3248]=true,
+ [3376]=true,
+ },
+ ["stress_tone_mark"]={
+ [2385]=true,
+ [2386]=true,
+ [2387]=true,
+ [2388]=true,
+ [2507]=true,
+ [2508]=true,
+ [3277]=true,
+ [3405]=true,
+ },
+ ["twopart_mark"]={
+ [2891]={ 2887,2878 },
+ [2892]={ 2887,2903 },
+ [3018]={ 3014,3006 },
+ [3019]={ 3015,3006 },
+ [3020]={ 3014,3031 },
+ [3402]={ 3398,3390 },
+ [3403]={ 3399,3390 },
+ [3404]={ 3398,3415 },
+ },
+ ["vowel_modifier"]={
+ [2304]=true,
+ [2305]=true,
+ [2306]=true,
+ [2307]=true,
+ [3330]=true,
+ [3331]=true,
+ [43232]=true,
+ [43233]=true,
+ [43234]=true,
+ [43235]=true,
+ [43236]=true,
+ [43237]=true,
+ [43238]=true,
+ [43239]=true,
+ [43240]=true,
+ [43241]=true,
+ [43242]=true,
+ [43243]=true,
+ [43244]=true,
+ [43245]=true,
+ [43246]=true,
+ [43247]=true,
+ [43248]=true,
+ [43249]=true,
+ },
 }
 
 end -- closure
@@ -26683,140 +27665,105 @@ end
 local function processcharacters(head,font)
   return tonut(xprocesscharacters(tonode(head))) 
 end
-local consonant={
-  [0x0915]=true,[0x0916]=true,[0x0917]=true,[0x0918]=true,
-  [0x0919]=true,[0x091A]=true,[0x091B]=true,[0x091C]=true,
-  [0x091D]=true,[0x091E]=true,[0x091F]=true,[0x0920]=true,
-  [0x0921]=true,[0x0922]=true,[0x0923]=true,[0x0924]=true,
-  [0x0925]=true,[0x0926]=true,[0x0927]=true,[0x0928]=true,
-  [0x0929]=true,[0x092A]=true,[0x092B]=true,[0x092C]=true,
-  [0x092D]=true,[0x092E]=true,[0x092F]=true,[0x0930]=true,
-  [0x0931]=true,[0x0932]=true,[0x0933]=true,[0x0934]=true,
-  [0x0935]=true,[0x0936]=true,[0x0937]=true,[0x0938]=true,
-  [0x0939]=true,[0x0958]=true,[0x0959]=true,[0x095A]=true,
-  [0x095B]=true,[0x095C]=true,[0x095D]=true,[0x095E]=true,
-  [0x095F]=true,[0x0979]=true,[0x097A]=true,
-  [0x0C95]=true,[0x0C96]=true,[0x0C97]=true,[0x0C98]=true,
-  [0x0C99]=true,[0x0C9A]=true,[0x0C9B]=true,[0x0C9C]=true,
-  [0x0C9D]=true,[0x0C9E]=true,[0x0C9F]=true,[0x0CA0]=true,
-  [0x0CA1]=true,[0x0CA2]=true,[0x0CA3]=true,[0x0CA4]=true,
-  [0x0CA5]=true,[0x0CA6]=true,[0x0CA7]=true,[0x0CA8]=true,
-  [0x0CA9]=true,[0x0CAA]=true,[0x0CAB]=true,[0x0CAC]=true,
-  [0x0CAD]=true,[0x0CAE]=true,[0x0CAF]=true,[0x0CB0]=true,
-  [0x0CB1]=true,[0x0CB2]=true,[0x0CB3]=true,[0x0CB4]=true,
-  [0x0CB5]=true,[0x0CB6]=true,[0x0CB7]=true,[0x0CB8]=true,
-  [0x0CB9]=true,
-  [0x0CDE]=true,
-  [0x0D15]=true,[0x0D16]=true,[0x0D17]=true,[0x0D18]=true,
-  [0x0D19]=true,[0x0D1A]=true,[0x0D1B]=true,[0x0D1C]=true,
-  [0x0D1D]=true,[0x0D1E]=true,[0x0D1F]=true,[0x0D20]=true,
-  [0x0D21]=true,[0x0D22]=true,[0x0D23]=true,[0x0D24]=true,
-  [0x0D25]=true,[0x0D26]=true,[0x0D27]=true,[0x0D28]=true,
-  [0x0D29]=true,[0x0D2A]=true,[0x0D2B]=true,[0x0D2C]=true,
-  [0x0D2D]=true,[0x0D2E]=true,[0x0D2F]=true,[0x0D30]=true,
-  [0x0D31]=true,[0x0D32]=true,[0x0D33]=true,[0x0D34]=true,
-  [0x0D35]=true,[0x0D36]=true,[0x0D37]=true,[0x0D38]=true,
-  [0x0D39]=true,[0x0D3A]=true,
-}
-local independent_vowel={
-  [0x0904]=true,[0x0905]=true,[0x0906]=true,[0x0907]=true,
-  [0x0908]=true,[0x0909]=true,[0x090A]=true,[0x090B]=true,
-  [0x090C]=true,[0x090D]=true,[0x090E]=true,[0x090F]=true,
-  [0x0910]=true,[0x0911]=true,[0x0912]=true,[0x0913]=true,
-  [0x0914]=true,[0x0960]=true,[0x0961]=true,[0x0972]=true,
-  [0x0973]=true,[0x0974]=true,[0x0975]=true,[0x0976]=true,
-  [0x0977]=true,
-  [0x0C85]=true,[0x0C86]=true,[0x0C87]=true,[0x0C88]=true,
-  [0x0C89]=true,[0x0C8A]=true,[0x0C8B]=true,[0x0C8C]=true,
-  [0x0C8D]=true,[0x0C8E]=true,[0x0C8F]=true,[0x0C90]=true,
-  [0x0C91]=true,[0x0C92]=true,[0x0C93]=true,[0x0C94]=true,
-  [0x0D05]=true,[0x0D06]=true,[0x0D07]=true,[0x0D08]=true,
-  [0x0D09]=true,[0x0D0A]=true,[0x0D0B]=true,[0x0D0C]=true,
-  [0x0D0E]=true,[0x0D0F]=true,[0x0D10]=true,[0x0D12]=true,
-  [0x0D13]=true,[0x0D14]=true,
-}
-local dependent_vowel={
-  [0x093A]=true,[0x093B]=true,[0x093E]=true,[0x093F]=true,
-  [0x0940]=true,[0x0941]=true,[0x0942]=true,[0x0943]=true,
-  [0x0944]=true,[0x0945]=true,[0x0946]=true,[0x0947]=true,
-  [0x0948]=true,[0x0949]=true,[0x094A]=true,[0x094B]=true,
-  [0x094C]=true,[0x094E]=true,[0x094F]=true,[0x0955]=true,
-  [0x0956]=true,[0x0957]=true,[0x0962]=true,[0x0963]=true,
-  [0x0CBE]=true,[0x0CBF]=true,[0x0CC0]=true,[0x0CC1]=true,
-  [0x0CC2]=true,[0x0CC3]=true,[0x0CC4]=true,[0x0CC5]=true,
-  [0x0CC6]=true,[0x0CC7]=true,[0x0CC8]=true,[0x0CC9]=true,
-  [0x0CCA]=true,[0x0CCB]=true,[0x0CCC]=true,
-  [0x0D3E]=true,[0x0D3F]=true,[0x0D40]=true,[0x0D41]=true,
-  [0x0D42]=true,[0x0D43]=true,[0x0D44]=true,[0x0D46]=true,
-  [0x0D47]=true,[0x0D48]=true,[0x0D4A]=true,[0x0D4B]=true,
-  [0x0D4C]=true,[0x0D57]=true,
-}
-local vowel_modifier={
-  [0x0900]=true,[0x0901]=true,[0x0902]=true,[0x0903]=true,
-  [0xA8E0]=true,[0xA8E1]=true,[0xA8E2]=true,[0xA8E3]=true,
-  [0xA8E4]=true,[0xA8E5]=true,[0xA8E6]=true,[0xA8E7]=true,
-  [0xA8E8]=true,[0xA8E9]=true,[0xA8EA]=true,[0xA8EB]=true,
-  [0xA8EC]=true,[0xA8ED]=true,[0xA8EE]=true,[0xA8EF]=true,
-  [0xA8F0]=true,[0xA8F1]=true,
-  [0x0D02]=true,[0x0D03]=true,
-}
-local stress_tone_mark={
-  [0x0951]=true,[0x0952]=true,[0x0953]=true,[0x0954]=true,
-  [0x0CCD]=true,
-  [0x0D4D]=true,
-}
-local nukta={
-  [0x093C]=true,
-  [0x0CBC]=true,
-}
-local halant={
-  [0x094D]=true,
-  [0x0CCD]=true,
-  [0x0D4D]=true,
-}
-local ra={
-  [0x0930]=true,
-  [0x0CB0]=true,
-  [0x0D30]=true,
-}
-local c_anudatta=0x0952 
-local c_nbsp=0x00A0 
-local c_zwnj=0x200C 
-local c_zwj=0x200D 
-local zw_char={ 
-  [0x200C]=true,
-  [0x200D]=true,
-}
-local pre_mark={
-  [0x093F]=true,[0x094E]=true,
-  [0x0D46]=true,[0x0D47]=true,[0x0D48]=true,
-}
-local above_mark={
-  [0x0900]=true,[0x0901]=true,[0x0902]=true,[0x093A]=true,
-  [0x0945]=true,[0x0946]=true,[0x0947]=true,[0x0948]=true,
-  [0x0951]=true,[0x0953]=true,[0x0954]=true,[0x0955]=true,
-  [0xA8E0]=true,[0xA8E1]=true,[0xA8E2]=true,[0xA8E3]=true,
-  [0xA8E4]=true,[0xA8E5]=true,[0xA8E6]=true,[0xA8E7]=true,
-  [0xA8E8]=true,[0xA8E9]=true,[0xA8EA]=true,[0xA8EB]=true,
-  [0xA8EC]=true,[0xA8ED]=true,[0xA8EE]=true,[0xA8EF]=true,
-  [0xA8F0]=true,[0xA8F1]=true,
-  [0x0D4E]=true,
-}
-local below_mark={
-  [0x093C]=true,[0x0941]=true,[0x0942]=true,[0x0943]=true,
-  [0x0944]=true,[0x094D]=true,[0x0952]=true,[0x0956]=true,
-  [0x0957]=true,[0x0962]=true,[0x0963]=true,
-}
-local post_mark={
-  [0x0903]=true,[0x093B]=true,[0x093E]=true,[0x0940]=true,
-  [0x0949]=true,[0x094A]=true,[0x094B]=true,[0x094C]=true,
-  [0x094F]=true,
-}
-local twopart_mark={
-  [0x0D4A]={ 0x0D46,0x0D3E,},	
-  [0x0D4B]={ 0x0D47,0x0D3E,},	
-  [0x0D4C]={ 0x0D46,0x0D57,},	
-}
+local indicgroups=characters and characters.indicgroups
+if not indicgroups and characters then
+  local indic={
+    c={},
+    i={},
+    d={},
+    m={},
+    s={},
+    o={},
+  }
+  local indicmarks={
+    l={},
+    t={},
+    b={},
+    r={},
+    s={},
+  }
+  local indicclasses={
+    nukta={},
+    halant={},
+    ra={},
+    anudatta={},
+  }
+  local indicorders={
+    bp={},
+    ap={},
+    bs={},
+    as={},
+    bh={},
+    ah={},
+  }
+  for k,v in next,characters.data do
+    local i=v.indic
+    if i then
+      indic[i][k]=true
+      i=v.indicmark
+      if i then
+        if i=="s" then
+          local s=v.specials
+          indicmarks[i][k]={ s[2],s[3] }
+        else
+          indicmarks[i][k]=true
+        end
+      end
+      i=v.indicclass
+      if i then
+        indicclasses[i][k]=true
+      end
+      i=v.indicorder
+      if i then
+        indicorders[i][k]=true
+      end
+    end
+  end
+  indicgroups={
+    consonant=indic.c,
+    independent_vowel=indic.i,
+    dependent_vowel=indic.d,
+    vowel_modifier=indic.m,
+    stress_tone_mark=indic.s,
+    pre_mark=indicmarks.l,
+    above_mark=indicmarks.t,
+    below_mark=indicmarks.b,
+    post_mark=indicmarks.r,
+    twopart_mark=indicmarks.s,
+    nukta=indicclasses.nukta,
+    halant=indicclasses.halant,
+    ra=indicclasses.ra,
+    anudatta=indicclasses.anudatta,
+    before_postscript=indicorders.bp,
+    after_postscript=indicorders.ap,
+    before_half=indicorders.bh,
+    after_half=indicorders.ah,
+    before_subscript=indicorders.bs,
+    after_subscript=indicorders.as,
+  }
+  indic=nil
+  indicmarks=nil
+  indicclasses=nil
+  indicorders=nil
+  characters.indicgroups=indicgroups
+else
+  indicgroups=table.setmetatableindex("table")
+end
+local consonant=indicgroups.consonant
+local independent_vowel=indicgroups.independent_vowel
+local dependent_vowel=indicgroups.dependent_vowel
+local vowel_modifier=indicgroups.vowel_modifier
+local stress_tone_mark=indicgroups.stress_tone_mark
+local pre_mark=indicgroups.pre_mark
+local above_mark=indicgroups.above_mark
+local below_mark=indicgroups.below_mark
+local post_mark=indicgroups.post_mark
+local twopart_mark=indicgroups.twopart_mark
+local nukta=indicgroups.nukta
+local halant=indicgroups.halant
+local ra=indicgroups.ra
+local anudatta=indicgroups.anudatta
+local after_subscript=indicgroups.after_subscript
 local mark_four={} 
 for k,v in next,pre_mark  do mark_four[k]=pre_mark  end
 for k,v in next,above_mark do mark_four[k]=above_mark end
@@ -26826,38 +27773,12 @@ local mark_above_below_post={}
 for k,v in next,above_mark do mark_above_below_post[k]=above_mark end
 for k,v in next,below_mark do mark_above_below_post[k]=below_mark end
 for k,v in next,post_mark do mark_above_below_post[k]=post_mark end
-local reorder_class={
-  [0x0930]="before postscript",
-  [0x093F]="before half",
-  [0x0940]="after subscript",
-  [0x0941]="after subscript",
-  [0x0942]="after subscript",
-  [0x0943]="after subscript",
-  [0x0944]="after subscript",
-  [0x0945]="after subscript",
-  [0x0946]="after subscript",
-  [0x0947]="after subscript",
-  [0x0948]="after subscript",
-  [0x0949]="after subscript",
-  [0x094A]="after subscript",
-  [0x094B]="after subscript",
-  [0x094C]="after subscript",
-  [0x0962]="after subscript",
-  [0x0963]="after subscript",
-  [0x093E]="after subscript",
-  [0x0CB0]="after postscript",
-  [0x0CBF]="before subscript",
-  [0x0CC6]="before subscript",
-  [0x0CCC]="before subscript",
-  [0x0CBE]="before subscript",
-  [0x0CE2]="before subscript",
-  [0x0CE3]="before subscript",
-  [0x0CC1]="before subscript",
-  [0x0CC2]="before subscript",
-  [0x0CC3]="after subscript",
-  [0x0CC4]="after subscript",
-  [0x0CD5]="after subscript",
-  [0x0CD6]="after subscript",
+local c_nbsp=0x00A0
+local c_zwnj=0x200C
+local c_zwj=0x200D
+local zw_char={ 
+  [c_zwnj]=true,
+  [c_zwj ]=true,
 }
 local dflt_true={
   dflt=true
@@ -26870,10 +27791,6 @@ local deva_defaults={
   deva=dflt_true,
 }
 local false_flags={ false,false,false,false }
-local both_joiners_true={
-  [0x200C]=true,
-  [0x200D]=true,
-}
 local sequence_reorder_matras={
   features={ dv01=dev2_defaults },
   flags=false_flags,
@@ -26922,7 +27839,7 @@ local sequence_remove_joiners={
   nofsteps=1,
   steps={
     {
-      coverage=both_joiners_true,
+      coverage=zw_char,
     },
   }
 }
@@ -27178,9 +28095,9 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
               local tmp=next and getnext(next) or nil 
               local changestop=next==stop
               local tempcurrent=copy_node(next)
-							copyinjection(tempcurrent,next)
+              copyinjection(tempcurrent,next)
               local nextcurrent=copy_node(current)
-							copyinjection(nextcurrent,current) 
+              copyinjection(nextcurrent,current) 
               setlink(tempcurrent,nextcurrent)
               setprop(tempcurrent,a_state,s_blwf)
               tempcurrent=processcharacters(tempcurrent,font)
@@ -27188,7 +28105,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
               if getchar(next)==getchar(tempcurrent) then
                 flush_list(tempcurrent)
                 local n=copy_node(current)
-								copyinjection(n,current) 
+                copyinjection(n,current) 
                 setchar(current,dotted_circle)
                 head=insert_node_after(head,current,n)
               else
@@ -27523,7 +28440,7 @@ function handlers.devanagari_reorder_reph(head,start)
     while current do
       local char=ischar(current,startfont)
       if char and getprop(current,a_syllabe)==startattr then 
-        if not c and mark_above_below_post[char] and reorder_class[char]~="after subscript" then
+        if not c and mark_above_below_post[char] and after_subscript[char] then
           c=current
         end
         current=getnext(current)
@@ -27637,7 +28554,7 @@ function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replaceme
     setnext(prev)
   end
   if head==start then
-  	head=stop
+    head=stop
   end
   flush_list(start)
   return head,stop,true
@@ -27814,7 +28731,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
             if halant[getchar(current)] then
               setnext(getnext(current),tmp)
               local nc=copy_node(current)
-							copyinjection(nc,current)
+              copyinjection(nc,current)
               setchar(current,dotted_circle)
               head=insert_node_after(head,current,nc)
             else
@@ -28185,7 +29102,7 @@ local function analyze_next_chars_two(c,font)
   if not v then
     return c
   end
-  if v==c_anudatta then
+  if anudatta[v] then
     c=n
     n=getnext(c)
     if not n then
@@ -28282,7 +29199,7 @@ local function analyze_next_chars_two(c,font)
 end
 local function inject_syntax_error(head,current,mark)
   local signal=copy_node(current)
-	copyinjection(signal,current)
+  copyinjection(signal,current)
   if mark==pre_mark then 
     setchar(signal,dotted_circle)
   else
@@ -28297,14 +29214,14 @@ function methods.deva(head,font,attr)
   local done=false
   local nbspaces=0
   while current do
-		local char=ischar(current,font)
+    local char=ischar(current,font)
     if char then
       done=true
       local syllablestart=current
       local syllableend=nil
       local c=current
       local n=getnext(c)
-	    local first=char
+      local first=char
       if n and ra[first] then
         local second=ischar(n,font)
         if second and halant[second] then
@@ -28332,8 +29249,8 @@ function methods.deva(head,font,attr)
         end
       end
       if standalone then
-				local syllableend=analyze_next_chars_one(c,font,2)
-				current=getnext(syllableend)
+        local syllableend=analyze_next_chars_one(c,font,2)
+        current=getnext(syllableend)
         if syllablestart~=syllableend then
           head,current,nbspaces=deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
           current=getnext(current)
@@ -28495,7 +29412,7 @@ function methods.dev2(head,font,attr)
             local nextnextchar=ischar(n,font)
             if nextnextchar then
               c=n
-							char=nextnextchar
+              char=nextnextchar
             end
           end
         end

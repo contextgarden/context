@@ -12,7 +12,8 @@ local strings     = utilities.strings
 
 local format, gsub, rep, sub, find = string.format, string.gsub, string.rep, string.sub, string.find
 local load, dump = load, string.dump
-local tonumber, type, tostring, next = tonumber, type, tostring, next
+local tonumber, type, tostring, next, setmetatable = tonumber, type, tostring, next, setmetatable
+local unpack, concat = table.unpack, table.concat
 local unpack, concat = table.unpack, table.concat
 local P, V, C, S, R, Ct, Cs, Cp, Carg, Cc = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cs, lpeg.Cp, lpeg.Carg, lpeg.Cc
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
@@ -22,8 +23,9 @@ local utfchar, utfbyte, utflen = utf.char, utf.byte, utf.len
 ----- setmetatableindex = table.setmetatableindex
 
 local loadstripped = nil
+local oldfashioned = LUAVERSION < 5.2
 
-if LUAVERSION < 5.2 then
+if oldfashioned then
 
     loadstripped = function(str,shortcuts)
         return load(str)
@@ -524,7 +526,7 @@ return function(%s) return %s end
 
 local preamble, environment = "", { }
 
-if LUAVERSION < 5.2 then
+if oldfashioned then
 
     preamble = [[
 local lpeg=lpeg
@@ -574,7 +576,7 @@ else
         sequenced       = table.sequenced,
         formattednumber = number.formatted,
         sparseexponent  = number.sparseexponent,
-        formattedfloat  = number.formattedfloat
+        formattedfloat  = number.formattedfloat,
     }
 
 end
@@ -1044,42 +1046,31 @@ local builder = Cs { "start",
     ["!"] = Carg(2) * prefix_any * P("!") * C((1-P("!"))^1) * P("!") / format_extension,
 }
 
--- we can be clever and only alias what is needed
+-- We can be clever and only alias what is needed:
 
--- local direct = Cs (
---         P("%")/""
---       * Cc([[local format = string.format return function(str) return format("%]])
---       * (S("+- .") + R("09"))^0
---       * S("sqidfgGeExXo")
---       * Cc([[",str) end]])
---       * P(-1)
---     )
+local xx = setmetatable({ }, { __index = function(t,k) local v = format("%02x",k) t[k] = v return v end })
+local XX = setmetatable({ }, { __index = function(t,k) local v = format("%02X",k) t[k] = v return v end })
 
-local direct = Cs (
-    P("%")
-  * (S("+- .") + R("09"))^0
-  * S("sqidfgGeExXo")
-  * P(-1) / [[local format = string.format return function(str) return format("%0",str) end]]
-)
+local preset = {
+    ["%02x"] = function(n) return xx[n] end,
+    ["%02X"] = function(n) return XX[n] end,
+}
 
--- local direct = Cs (
---     P("%")
---   * (S("+- .") + R("09"))^0
---   * S("sqidfgGeExXo")
---   * (1-P("%"))^0
---   * P(-1) / [[local format = string.format return function(str) return format([==[%0]==],str) end]]
--- )
+local direct =
+    P("%") * (S("+- .") + R("09"))^0 * S("sqidfgGeExXo") * P(-1)
+  / [[local format = string.format return function(str) return format("%0",str) end]]
 
 local function make(t,str)
-    local f
-    local p
+    local f = preset[str]
+    if f then
+        return f
+    end
     local p = lpegmatch(direct,str)
     if p then
-     -- f = loadstripped(p)()
      -- print("builder 1 >",p)
         f = loadstripped(p)()
     else
-        n = 0
+        n = 0 -- used in patterns
      -- p = lpegmatch(builder,str,1,"..",t._extensions_) -- after this we know n
         p = lpegmatch(builder,str,1,t._connector_,t._extensions_) -- after this we know n
         if n > 0 then
@@ -1142,7 +1133,7 @@ strings.formatters = { }
 
 -- _connector_ is an experiment
 
-if LUAVERSION < 5.2 then
+if oldfashioned then
 
     function strings.formatters.new(noconcat)
         local t = { _type_ = "formatter", _connector_ = noconcat and "," or "..", _extensions_ = { }, _preamble_ = preamble, _environment_ = { } }
@@ -1202,7 +1193,7 @@ patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"
 -- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
 -- faster again when other q-escapables are found (the ones we don't need to escape)
 
-if LUAVERSION < 5.2 then
+if oldfashioned then
 
     add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
     add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")

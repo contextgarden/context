@@ -8,59 +8,75 @@ if not modules then modules = { } end modules ['font-osd'] = { -- script devanag
 
 -- A few remarks:
 --
--- This code is a partial rewrite of the code that deals with devanagari. The data and logic
--- is by Kai Eigner and based based on Microsoft's OpenType specifications for specific
--- scripts, but with a few improvements. More information can be found at:
+-- This code is a partial rewrite of the code that deals with devanagari. The data
+-- and logic is by Kai Eigner and based based on Microsoft's OpenType specifications
+-- for specific scripts, but with a few improvements. More information can be found
+-- at:
 --
 -- deva: http://www.microsoft.com/typography/OpenType%20Dev/devanagari/introO.mspx
 -- dev2: http://www.microsoft.com/typography/OpenType%20Dev/devanagari/intro.mspx
 --
--- Rajeesh Nambiar provided patches for the malayalam variant. Thanks to feedback from
--- the mailing list some aspects could be improved.
+-- Rajeesh Nambiar provided patches for the malayalam variant. Thanks to feedback
+-- from the mailing list some aspects could be improved.
 --
--- As I touched nearly all code, reshuffled it, optimized a lot, etc. etc. (imagine how
--- much can get messed up in over a week work) it could be that I introduced bugs. There
--- is more to gain (esp in the functions applied to a range) but I'll do that when
--- everything works as expected. Kai's original code is kept in font-odk.lua as a reference
--- so blame me (HH) for bugs. (We no longer ship that file as the code below has diverted
--- too much and in the meantime has more than doubled in size.)
+-- As I touched nearly all code, reshuffled it, optimized a lot, etc. etc. (imagine
+-- how much can get messed up in over a week work) it could be that I introduced
+-- bugs. There is more to gain (esp in the functions applied to a range) but I'll do
+-- that when everything works as expected. Kai's original code is kept in
+-- font-odk.lua as a reference so blame me (HH) for bugs. (We no longer ship that
+-- file as the code below has diverted too much and in the meantime has more than
+-- doubled in size.)
 --
--- Interesting is that Kai managed to write this on top of the existing otf handler. Only a
--- few extensions were needed, like a few more analyzing states and dealing with changed
--- head nodes in the core scanner as that only happens here. There's a lot going on here
--- and it's only because I touched nearly all code that I got a bit of a picture of what
--- happens. For in-depth knowledge one needs to consult Kai.
+-- Interesting is that Kai managed to write this on top of the existing otf handler.
+-- Only a few extensions were needed, like a few more analyzing states and dealing
+-- with changed head nodes in the core scanner as that only happens here. There's a
+-- lot going on here and it's only because I touched nearly all code that I got a
+-- bit of a picture of what happens. For in-depth knowledge one needs to consult
+-- Kai.
 --
--- The rewrite mostly deals with efficiency, both in terms of speed and code. We also made
--- sure that it suits generic use as well as use in ConTeXt. I removed some buglets but can
--- as well have messed up the logic by doing this. For this we keep the original around
--- as that serves as reference. Due to the lots of reshuffling glyphs quite some leaks
--- occur(red) but once I'm satisfied with the rewrite I'll weed them. I also integrated
--- initialization etc into the regular mechanisms.
+-- The rewrite mostly deals with efficiency, both in terms of speed and code. We
+-- also made sure that it suits generic use as well as use in ConTeXt. I removed
+-- some buglets but can as well have messed up the logic by doing this. For this we
+-- keep the original around as that serves as reference. Due to the lots of
+-- reshuffling glyphs quite some leaks occur(red) but once I'm satisfied with the
+-- rewrite I'll weed them. I also integrated initialization etc into the regular
+-- mechanisms.
 --
--- In the meantime, we're down from 25.5-3.5=22 seconds to 17.7-3.5=14.2 seconds for a 100
--- page sample (mid 2012) with both variants so it's worth the effort. Some more speedup is
--- to be expected. Due to the method chosen it will never be real fast. If I ever become a
--- power user I'll have a go at some further speed up. I will rename some functions (and
--- features) once we don't need to check the original code. We now use a special subset
--- sequence for use inside the analyzer (after all we could can store this in the dataset
--- and save redundant analysis).
+-- In the meantime, we're down from 25.5-3.5=22 seconds to 17.7-3.5=14.2 seconds for
+-- a 100 page sample (mid 2012) with both variants so it's worth the effort. Some
+-- more speedup is to be expected. Due to the method chosen it will never be real
+-- fast. If I ever become a power user I'll have a go at some further speed up. I
+-- will rename some functions (and features) once we don't need to check the
+-- original code. We now use a special subset sequence for use inside the analyzer
+-- (after all we could can store this in the dataset and save redundant analysis).
 --
--- I might go for an array approach with respect to attributes (and reshuffling). Easier.
+-- By now we have yet another incremental improved version. In the end I might
+-- rewrite the code.
 --
--- Some data will move to char-def.lua (some day).
---
--- By now we have yet another incremental improved version. In the end I might rewrite the
--- code.
-
 -- Hans Hagen, PRAGMA-ADE, Hasselt NL
---
--- We could have c_nukta, c_halant, c_ra is we know that they are never used mixed within
--- one script .. yes or no?
+
+-- Todo:
 --
 -- Matras: according to Microsoft typography specifications "up to one of each type:
 -- pre-, above-, below- or post- base", but that does not seem to be right. It could
 -- become an option.
+--
+-- Resources:
+--
+-- The tables that we had here are now generated from char-def.lua or in the case of
+-- generic usage loaded from luatex-basics-chr.lua. Still a couple of entries need
+-- to be added to char-def.lua but finally I moved the indic specific tables there.
+-- For generic usage one can create the relevant resources by running:
+--
+--     context luatex-basics-prepare.tex
+--
+-- and an overview with:
+--
+--     context --global s-fonts-basics.mkiv
+--
+-- For now we have defined: bengali, devanagari, gujarati, gurmukhi, kannada,
+-- malayalam, oriya, tamil and tolugu but not all are checked. Also, some of the
+-- code below might need to be adapted to the extra scripts.
 
 local insert, imerge, copy = table.insert, table.imerge, table.copy
 local next, type = next, type
@@ -161,219 +177,123 @@ end
 --     return head, true
 -- end
 
--- In due time there will be entries here for scripts like Bengali, Gujarati,
--- Gurmukhi, Kannada, Malayalam, Oriya, Tamil, Telugu. Feel free to provide the
--- code points.
-
 -- We can assume that script are not mixed in the source but if that is the case
 -- we might need to have consonants etc per script and initialize a local table
--- pointing to the right one.
+-- pointing to the right one. But not now.
 
--- new, to be checked:
---
--- U+00978 : DEVANAGARI LETTER MARWARI DDA
--- U+00980 : BENGALI ANJI
--- U+00C00 : TELUGU SIGN COMBINING CANDRABINDU ABOVE
--- U+00C34 : TELUGU LETTER LLLA
--- U+00C81 : KANNADA SIGN CANDRABINDU
--- U+00D01 : MALAYALAM SIGN CANDRABINDU
--- U+00DE6 : SINHALA LITH DIGIT ZERO
--- U+00DE7 : SINHALA LITH DIGIT ONE
--- U+00DE8 : SINHALA LITH DIGIT TWO
--- U+00DE9 : SINHALA LITH DIGIT THREE
--- U+00DEA : SINHALA LITH DIGIT FOUR
--- U+00DEB : SINHALA LITH DIGIT FIVE
--- U+00DEC : SINHALA LITH DIGIT SIX
--- U+00DED : SINHALA LITH DIGIT SEVEN
--- U+00DEE : SINHALA LITH DIGIT EIGHT
--- U+00DEF : SINHALA LITH DIGIT NINE
+local indicgroups = characters and characters.indicgroups
 
-local consonant = {
-    -- devanagari
-    [0x0915] = true, [0x0916] = true, [0x0917] = true, [0x0918] = true,
-    [0x0919] = true, [0x091A] = true, [0x091B] = true, [0x091C] = true,
-    [0x091D] = true, [0x091E] = true, [0x091F] = true, [0x0920] = true,
-    [0x0921] = true, [0x0922] = true, [0x0923] = true, [0x0924] = true,
-    [0x0925] = true, [0x0926] = true, [0x0927] = true, [0x0928] = true,
-    [0x0929] = true, [0x092A] = true, [0x092B] = true, [0x092C] = true,
-    [0x092D] = true, [0x092E] = true, [0x092F] = true, [0x0930] = true,
-    [0x0931] = true, [0x0932] = true, [0x0933] = true, [0x0934] = true,
-    [0x0935] = true, [0x0936] = true, [0x0937] = true, [0x0938] = true,
-    [0x0939] = true, [0x0958] = true, [0x0959] = true, [0x095A] = true,
-    [0x095B] = true, [0x095C] = true, [0x095D] = true, [0x095E] = true,
-    [0x095F] = true, [0x0979] = true, [0x097A] = true,
-    -- kannada
-    [0x0C95] = true, [0x0C96] = true, [0x0C97] = true, [0x0C98] = true,
-    [0x0C99] = true, [0x0C9A] = true, [0x0C9B] = true, [0x0C9C] = true,
-    [0x0C9D] = true, [0x0C9E] = true, [0x0C9F] = true, [0x0CA0] = true,
-    [0x0CA1] = true, [0x0CA2] = true, [0x0CA3] = true, [0x0CA4] = true,
-    [0x0CA5] = true, [0x0CA6] = true, [0x0CA7] = true, [0x0CA8] = true,
-    [0x0CA9] = true, [0x0CAA] = true, [0x0CAB] = true, [0x0CAC] = true,
-    [0x0CAD] = true, [0x0CAE] = true, [0x0CAF] = true, [0x0CB0] = true,
-    [0x0CB1] = true, [0x0CB2] = true, [0x0CB3] = true, [0x0CB4] = true,
-    [0x0CB5] = true, [0x0CB6] = true, [0x0CB7] = true, [0x0CB8] = true,
-    [0x0CB9] = true,
-    [0x0CDE] = true, -- obsolete
-    -- malayalam
-    [0x0D15] = true, [0x0D16] = true, [0x0D17] = true, [0x0D18] = true,
-    [0x0D19] = true, [0x0D1A] = true, [0x0D1B] = true, [0x0D1C] = true,
-    [0x0D1D] = true, [0x0D1E] = true, [0x0D1F] = true, [0x0D20] = true,
-    [0x0D21] = true, [0x0D22] = true, [0x0D23] = true, [0x0D24] = true,
-    [0x0D25] = true, [0x0D26] = true, [0x0D27] = true, [0x0D28] = true,
-    [0x0D29] = true, [0x0D2A] = true, [0x0D2B] = true, [0x0D2C] = true,
-    [0x0D2D] = true, [0x0D2E] = true, [0x0D2F] = true, [0x0D30] = true,
-    [0x0D31] = true, [0x0D32] = true, [0x0D33] = true, [0x0D34] = true,
-    [0x0D35] = true, [0x0D36] = true, [0x0D37] = true, [0x0D38] = true,
-    [0x0D39] = true, [0x0D3A] = true,
-}
+if not indicgroups and characters then
 
-local independent_vowel = {
-    -- devanagari
-    [0x0904] = true, [0x0905] = true, [0x0906] = true, [0x0907] = true,
-    [0x0908] = true, [0x0909] = true, [0x090A] = true, [0x090B] = true,
-    [0x090C] = true, [0x090D] = true, [0x090E] = true, [0x090F] = true,
-    [0x0910] = true, [0x0911] = true, [0x0912] = true, [0x0913] = true,
-    [0x0914] = true, [0x0960] = true, [0x0961] = true, [0x0972] = true,
-    [0x0973] = true, [0x0974] = true, [0x0975] = true, [0x0976] = true,
-    [0x0977] = true,
-    -- kannada
-    [0x0C85] = true, [0x0C86] = true, [0x0C87] = true, [0x0C88] = true,
-    [0x0C89] = true, [0x0C8A] = true, [0x0C8B] = true, [0x0C8C] = true,
-    [0x0C8D] = true, [0x0C8E] = true, [0x0C8F] = true, [0x0C90] = true,
-    [0x0C91] = true, [0x0C92] = true, [0x0C93] = true, [0x0C94] = true,
-    -- malayalam
-    [0x0D05] = true, [0x0D06] = true, [0x0D07] = true, [0x0D08] = true,
-    [0x0D09] = true, [0x0D0A] = true, [0x0D0B] = true, [0x0D0C] = true,
-    [0x0D0E] = true, [0x0D0F] = true, [0x0D10] = true, [0x0D12] = true,
-    [0x0D13] = true, [0x0D14] = true,
-}
+    local indic = {
+        c = { }, -- consonant
+        i = { }, -- independent vowel
+        d = { }, -- dependent vowel
+        m = { }, -- vowel modifier
+        s = { }, -- stress tone mark
+        o = { }, -- other
+    }
 
-local dependent_vowel = { -- matra
-    -- devanagari
-    [0x093A] = true, [0x093B] = true, [0x093E] = true, [0x093F] = true,
-    [0x0940] = true, [0x0941] = true, [0x0942] = true, [0x0943] = true,
-    [0x0944] = true, [0x0945] = true, [0x0946] = true, [0x0947] = true,
-    [0x0948] = true, [0x0949] = true, [0x094A] = true, [0x094B] = true,
-    [0x094C] = true, [0x094E] = true, [0x094F] = true, [0x0955] = true,
-    [0x0956] = true, [0x0957] = true, [0x0962] = true, [0x0963] = true,
-    -- kannada
-    [0x0CBE] = true, [0x0CBF] = true, [0x0CC0] = true, [0x0CC1] = true,
-    [0x0CC2] = true, [0x0CC3] = true, [0x0CC4] = true, [0x0CC5] = true,
-    [0x0CC6] = true, [0x0CC7] = true, [0x0CC8] = true, [0x0CC9] = true,
-    [0x0CCA] = true, [0x0CCB] = true, [0x0CCC] = true,
-    -- malayalam
-    [0x0D3E] = true, [0x0D3F] = true, [0x0D40] = true, [0x0D41] = true,
-    [0x0D42] = true, [0x0D43] = true, [0x0D44] = true, [0x0D46] = true,
-    [0x0D47] = true, [0x0D48] = true, [0x0D4A] = true, [0x0D4B] = true,
-    [0x0D4C] = true, [0x0D57] = true,
-}
+    local indicmarks   = {
+        l = { }, -- left   | pre_mark
+        t = { }, -- top    | above_mark
+        b = { }, -- bottom | below_mark
+        r = { }, -- right  | post_mark
+        s = { }, -- split  | twopart_mark
+    }
 
-local vowel_modifier = {
-    -- devanagari
-    [0x0900] = true, [0x0901] = true, [0x0902] = true, [0x0903] = true,
-    -- A8E0 - A8F1 are cantillation marks for the Samaveda and may not belong here.
-    [0xA8E0] = true, [0xA8E1] = true, [0xA8E2] = true, [0xA8E3] = true,
-    [0xA8E4] = true, [0xA8E5] = true, [0xA8E6] = true, [0xA8E7] = true,
-    [0xA8E8] = true, [0xA8E9] = true, [0xA8EA] = true, [0xA8EB] = true,
-    [0xA8EC] = true, [0xA8ED] = true, [0xA8EE] = true, [0xA8EF] = true,
-    [0xA8F0] = true, [0xA8F1] = true,
-    -- malayalam
-    [0x0D02] = true, [0x0D03] = true,
-}
+    local indicclasses = {
+        nukta    = { },
+        halant   = { },
+        ra       = { },
+        anudatta = { },
+    }
 
-local stress_tone_mark = {
-    [0x0951] = true, [0x0952] = true, [0x0953] = true, [0x0954] = true,
-    -- kannada
-    [0x0CCD] = true,
-    -- malayalam
-    [0x0D4D] = true,
-}
+    local indicorders = {
+        bp = { }, -- before_postscript
+        ap = { }, -- after_postscript
+        bs = { }, -- before_half
+        as = { }, -- after_half
+        bh = { }, -- before_subscript
+        ah = { }, -- after_subscript
+    }
 
-local nukta = {
-    -- devanagari
-    [0x093C] = true,
-    -- kannada:
-    [0x0CBC] = true,
-}
+    for k, v in next, characters.data do
+        local i = v.indic
+        if i then
+            indic[i][k] = true
+            i = v.indicmark
+            if i then
+                if i == "s" then
+                    local s = v.specials
+                    indicmarks[i][k] = { s[2], s[3] }
+                else
+                    indicmarks[i][k] = true
+                end
+            end
+            i = v.indicclass
+            if i then
+                indicclasses[i][k] = true
+            end
+            i = v.indicorder
+            if i then
+                indicorders[i][k] = true
+            end
+        end
+    end
 
-local halant = {
-    -- devanagari
-    [0x094D] = true,
-    -- kannada
-    [0x0CCD] = true,
-    -- malayalam
-    [0x0D4D] = true,
-}
+    indicgroups = {
+        consonant         = indic.c,
+        independent_vowel = indic.i,
+        dependent_vowel   = indic.d,
+        vowel_modifier    = indic.m,
+        stress_tone_mark  = indic.s,
+     -- other             = indic.o,
+        pre_mark          = indicmarks.l,
+        above_mark        = indicmarks.t,
+        below_mark        = indicmarks.b,
+        post_mark         = indicmarks.r,
+        twopart_mark      = indicmarks.s,
+        nukta             = indicclasses.nukta,
+        halant            = indicclasses.halant,
+        ra                = indicclasses.ra,
+        anudatta          = indicclasses.anudatta,
+        before_postscript = indicorders.bp,
+        after_postscript  = indicorders.ap,
+        before_half       = indicorders.bh,
+        after_half        = indicorders.ah,
+        before_subscript  = indicorders.bs,
+        after_subscript   = indicorders.as,
+    }
 
-local ra = {
-    -- devanagari
-    [0x0930] = true,
-    -- kannada
-    [0x0CB0] = true,
-    -- malayalam
-    [0x0D30] = true,
-}
+    indic        = nil
+    indicmarks   = nil
+    indicclasses = nil
+    indicorders  = nil
 
-local c_anudatta = 0x0952 -- used to be tables
-local c_nbsp     = 0x00A0 -- used to be tables
-local c_zwnj     = 0x200C -- used to be tables
-local c_zwj      = 0x200D -- used to be tables
+    characters.indicgroups = indicgroups
 
-local zw_char = { -- could also be inlined
-    [0x200C] = true,
-    [0x200D] = true,
-}
+else
 
--- 0C82 anusvara
--- 0C83 visarga
--- 0CBD avagraha
--- 0CD5 length mark
--- 0CD6 ai length mark
--- 0CE0 letter ll
--- 0CE1 letter rr
--- 0CE2 vowel sign l
--- 0CE2 vowel sign ll
--- 0CF1 sign
--- 0CF2 sign
--- OCE6 - OCEF digits
+    indicgroups = table.setmetatableindex("table")
 
-local pre_mark = {
-    [0x093F] = true, [0x094E] = true,
-    -- malayalam
-    [0x0D46] = true, [0x0D47] = true, [0x0D48] = true,
-}
+end
 
-local above_mark = {
-    [0x0900] = true, [0x0901] = true, [0x0902] = true, [0x093A] = true,
-    [0x0945] = true, [0x0946] = true, [0x0947] = true, [0x0948] = true,
-    [0x0951] = true, [0x0953] = true, [0x0954] = true, [0x0955] = true,
-    [0xA8E0] = true, [0xA8E1] = true, [0xA8E2] = true, [0xA8E3] = true,
-    [0xA8E4] = true, [0xA8E5] = true, [0xA8E6] = true, [0xA8E7] = true,
-    [0xA8E8] = true, [0xA8E9] = true, [0xA8EA] = true, [0xA8EB] = true,
-    [0xA8EC] = true, [0xA8ED] = true, [0xA8EE] = true, [0xA8EF] = true,
-    [0xA8F0] = true, [0xA8F1] = true,
-    -- malayalam
-    [0x0D4E] = true,
-}
-
-local below_mark = {
-    [0x093C] = true, [0x0941] = true, [0x0942] = true, [0x0943] = true,
-    [0x0944] = true, [0x094D] = true, [0x0952] = true, [0x0956] = true,
-    [0x0957] = true, [0x0962] = true, [0x0963] = true,
-}
-
-local post_mark = {
-    [0x0903] = true, [0x093B] = true, [0x093E] = true, [0x0940] = true,
-    [0x0949] = true, [0x094A] = true, [0x094B] = true, [0x094C] = true,
-    [0x094F] = true,
-}
-
-local twopart_mark = {
-    -- malayalam
-    [0x0D4A] = { 0x0D46, 0x0D3E, },	-- ൊ
-    [0x0D4B] = { 0x0D47, 0x0D3E, },	-- ോ
-    [0x0D4C] = { 0x0D46, 0x0D57, },	-- ൌ
-}
+local consonant         = indicgroups.consonant
+local independent_vowel = indicgroups.independent_vowel
+local dependent_vowel   = indicgroups.dependent_vowel
+local vowel_modifier    = indicgroups.vowel_modifier
+local stress_tone_mark  = indicgroups.stress_tone_mark
+local pre_mark          = indicgroups.pre_mark
+local above_mark        = indicgroups.above_mark
+local below_mark        = indicgroups.below_mark
+local post_mark         = indicgroups.post_mark
+local twopart_mark      = indicgroups.twopart_mark
+local nukta             = indicgroups.nukta
+local halant            = indicgroups.halant
+local ra                = indicgroups.ra
+local anudatta          = indicgroups.anudatta
+local after_subscript   = indicgroups.after_subscript
 
 local mark_four = { } -- As we access these frequently an extra hash is used.
 
@@ -392,45 +312,17 @@ for k, v in next, post_mark  do mark_above_below_post[k] = post_mark  end
 -- for ConTeXt this kind of data is kept elsewhere so eventually we might move
 -- tables to someplace else.
 
-local reorder_class = {
-    -- devanagari
-    [0x0930] = "before postscript",
-    [0x093F] = "before half",
-    [0x0940] = "after subscript",
-    [0x0941] = "after subscript",
-    [0x0942] = "after subscript",
-    [0x0943] = "after subscript",
-    [0x0944] = "after subscript",
-    [0x0945] = "after subscript",
-    [0x0946] = "after subscript",
-    [0x0947] = "after subscript",
-    [0x0948] = "after subscript",
-    [0x0949] = "after subscript",
-    [0x094A] = "after subscript",
-    [0x094B] = "after subscript",
-    [0x094C] = "after subscript",
-    [0x0962] = "after subscript",
-    [0x0963] = "after subscript",
-    [0x093E] = "after subscript",
-    -- kannada:
-    [0x0CB0] = "after postscript", -- todo in code below
-    [0x0CBF] = "before subscript", -- todo in code below
-    [0x0CC6] = "before subscript", -- todo in code below
-    [0x0CCC] = "before subscript", -- todo in code below
-    [0x0CBE] = "before subscript", -- todo in code below
-    [0x0CE2] = "before subscript", -- todo in code below
-    [0x0CE3] = "before subscript", -- todo in code below
-    [0x0CC1] = "before subscript", -- todo in code below
-    [0x0CC2] = "before subscript", -- todo in code below
-    [0x0CC3] = "after subscript",
-    [0x0CC4] = "after subscript",
-    [0x0CD5] = "after subscript",
-    [0x0CD6] = "after subscript",
-    -- malayalam
-}
-
 -- We use some pseudo features as we need to manipulate the nodelist based
 -- on information in the font as well as already applied features.
+
+local c_nbsp = 0x00A0
+local c_zwnj = 0x200C
+local c_zwj  = 0x200D
+
+local zw_char = { -- both_joiners_true
+    [c_zwnj] = true,
+    [c_zwj ] = true,
+}
 
 local dflt_true = {
     dflt = true
@@ -446,11 +338,6 @@ local deva_defaults = {
 }
 
 local false_flags = { false, false, false, false }
-
-local both_joiners_true = {
-    [0x200C] = true,
-    [0x200D] = true,
-}
 
 local sequence_reorder_matras = {
     features  = { dv01 = dev2_defaults },
@@ -503,7 +390,7 @@ local sequence_remove_joiners = {
     nofsteps  = 1,
     steps     = {
         {
-           coverage = both_joiners_true,
+           coverage = zw_char, -- both_joiners_true
         },
     }
 }
@@ -802,9 +689,9 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                             local tmp = next and getnext(next) or nil -- needs checking
                             local changestop = next == stop
                             local tempcurrent = copy_node(next)
-							copyinjection(tempcurrent,next)
+                            copyinjection(tempcurrent,next)
                             local nextcurrent = copy_node(current)
-							copyinjection(nextcurrent,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
+                            copyinjection(nextcurrent,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
                             setlink(tempcurrent,nextcurrent)
                             setprop(tempcurrent,a_state,s_blwf)
                             tempcurrent = processcharacters(tempcurrent,font)
@@ -812,7 +699,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                             if getchar(next) == getchar(tempcurrent) then
                                 flush_list(tempcurrent)
                                 local n = copy_node(current)
-								copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
+                                copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
                                 setchar(current,dotted_circle)
                                 head = insert_node_after(head, current, n)
                             else
@@ -1218,7 +1105,7 @@ function handlers.devanagari_reorder_reph(head,start)
         while current do
             local char = ischar(current,startfont)
             if char and getprop(current,a_syllabe) == startattr then -- step 5
-                if not c and mark_above_below_post[char] and reorder_class[char] ~= "after subscript" then
+                if not c and mark_above_below_post[char] and after_subscript[char] then
                     c = current
                 end
                 current = getnext(current)
@@ -1358,7 +1245,7 @@ function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replaceme
         setnext(prev)
     end
     if head == start then
-    	head = stop
+        head = stop
     end
     flush_list(start)
     return head, stop, true
@@ -1559,7 +1446,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         if halant[getchar(current)] then
                             setnext(getnext(current),tmp)
                             local nc = copy_node(current)
-							copyinjection(nc,current)
+                            copyinjection(nc,current)
                             setchar(current,dotted_circle)
                             head = insert_node_after(head,current,nc)
                         else
@@ -1957,7 +1844,7 @@ local function analyze_next_chars_two(c,font)
     if not v then
         return c
     end
-    if v == c_anudatta then
+    if anudatta[v] then
         c = n
         n = getnext(c)
         if not n then
@@ -2058,7 +1945,7 @@ end
 
 local function inject_syntax_error(head,current,mark)
     local signal = copy_node(current)
-	copyinjection(signal,current)
+    copyinjection(signal,current)
     if mark == pre_mark then -- THIS IS WRONG: pre_mark is a table
         setchar(signal,dotted_circle)
     else
@@ -2077,14 +1964,14 @@ function methods.deva(head,font,attr)
     local done     = false
     local nbspaces = 0
     while current do
-		local char = ischar(current,font)
+        local char = ischar(current,font)
         if char then
             done = true
             local syllablestart = current
             local syllableend   = nil
             local c = current
             local n = getnext(c)
-	        local first = char
+            local first = char
             if n and ra[first] then
                 local second = ischar(n,font)
                 if second and halant[second] then
@@ -2116,8 +2003,8 @@ function methods.deva(head,font,attr)
             end
             if standalone then
                 -- stand alone cluster (at the start of the word only): #[Ra+H]+NBSP+[N]+[<[<ZWJ|ZWNJ>]+H+C>]+[{M}+[N]+[H]]+[SM]+[(VD)]
-				local syllableend = analyze_next_chars_one(c,font,2)
-				current = getnext(syllableend)
+                local syllableend = analyze_next_chars_one(c,font,2)
+                current = getnext(syllableend)
                 if syllablestart ~= syllableend then
                     head, current, nbspaces = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
                     current = getnext(current)
@@ -2296,7 +2183,7 @@ function methods.dev2(head,font,attr)
                         local nextnextchar = ischar(n,font)
                         if nextnextchar then
                             c = n
-							char = nextnextchar
+                            char = nextnextchar
                         end
                     end
                 end

@@ -188,6 +188,8 @@ update.platforms = {
     ["linux-64"]       = "linux-64",
     ["linux64"]        = "linux-64",
     --
+    ["linuxmusl-64"]   = "linuxmusl-64",
+    --
     ["linux-armhf"]    = "linux-armhf",
     --
     ["freebsd"]        = "freebsd",

@@ -1,0 +1,162 @@
+%D \module
+%D   [      file=s-fnt-01,
+%D        version=2006.10.10, % guess
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Listing Glyphs in Large Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is just a check for \type {luatex-basics-prepare}.
+
+\usemodule[article]
+
+\setupbodyfont[9pt]
+
+\starttext
+
+\definefontfeature
+  [boundingbox]
+  [boundingbox=yes]
+
+\definefont
+  [TestFont]
+  [file:arialuni.ttf*boundingbox]
+
+\startluacode
+
+local data = characters.data
+
+local indicscripts = table.sorted {
+    "devanagari",
+    "kannada",
+    "malayalam",
+    "tamil",
+    "bengali",
+    "gurmukhi",
+    "gujarati",
+    "oriya",
+    "telugu",
+}
+
+local arabicscripts = table.sorted {
+    "arabic",
+    "syriac",
+    "mandiac",
+    "nko",
+}
+
+local allindic  = true
+local allarabic = true
+
+for i=1,#indicscripts do
+    local script = indicscripts[i]
+    local first, last = characters.blockrange(script)
+    context.starttitle { title = script }
+    context.starttabulate { "|Tc|Tc|Tc|Tc|Tc|Tc|Tc|Tp|" }
+        context.FL()
+        context.BC() context("unicode")
+        context.BC() context("glyph")
+        context.BC() context("category")
+        context.BC() context("indic")
+        context.BC() context("mark")
+        context.BC() context("class")
+        context.BC() context("order")
+        context.BC() context("description")
+        context.NC() context.NR()
+        context.ML()
+        for i=first,last do
+            local d = data[i]
+            if d and d.unicodeslot then
+                local indic       = d.indic
+                local category    = d.category or "?"
+                local description = d.description
+                if not indic then
+                    context.NC() context("\\red %U",i)
+                    context.NC() context("\\red\\showstruts\\strut\\TestFont %c",i)
+                    context.NC() context("\\red %s",category)
+                    context.NC()
+                    context.NC()
+                    context.NC()
+                    context.NC()
+                    context.NC() context(description)
+                    context.NC() context.NR()
+                else
+                    local indicclass = d.indicclass
+                    local indicmark  = d.indicmark
+                    local indicorder = d.indicorder
+                    if allindic or indic == "d" or indicmark or indicclass or indicorder then
+                        context.NC() context("%U",i)
+                        context.NC() context("\\showstruts\\strut\\TestFont %c",i)
+                        context.NC() context(category)
+                        context.NC() context(indic or "?")
+                        context.NC() context(indicmark or "")
+                        context.NC() context(indicclass or "")
+                        context.NC() context(indicorder or "")
+                        context.NC() context(description)
+                        context.NC() context.NR()
+                    end
+                end
+            end
+        end
+        context.LL()
+    context.stoptabulate()
+    context.stoptitle()
+end
+
+for i=1,#arabicscripts do
+    local script = arabicscripts[i]
+    local first, last = characters.blockrange(script)
+    context.starttitle { title = script }
+    context.starttabulate { "|Tc|Tc|Tc|Tc|Tp|" }
+        context.FL()
+        context.BC() context("unicode")
+        context.BC() context("glyph")
+        context.BC() context("category")
+        context.BC() context("arabic")
+        context.BC() context("description")
+        context.NC() context.NR()
+        context.ML()
+        for i=first,last do
+            local d = data[i]
+            if d and d.unicodeslot then
+                local arabic      = d.arabic
+                local category    = d.category or ""
+                local description = d.description or ""
+                if arabic then
+                    context.NC() context("%U",i)
+                    context.NC() context("\\showstruts\\strut\\TestFont %c",i)
+                    context.NC() context(category)
+                    context.NC() context(arabic)
+                    context.NC() context(description)
+                    context.NC() context.NR()
+                elseif allarabic then
+                    context.NC() context("\\red %U",i)
+                    context.NC() context("\\red\\showstruts\\strut\\TestFont %c",i)
+                    context.NC() context("\\red %s",category)
+                    context.NC()
+                    context.NC() context("\\red %s",description)
+                    context.NC() context.NR()
+                end
+            end
+        end
+        context.LL()
+    context.stoptabulate()
+    context.stoptitle()
+end
+
+-- local olddata  = io.loaddata("char-def.lua")
+-- local preamble = string.gsub(olddata,"characters%.data%s*=%s*%{.*","")
+
+-- local newdata = table.serialize(data,"characters.data", { hexify = true, noquotes = true })
+-- local newdata = string.gsub(newdata,"%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}","variants_emoji")
+
+-- io.savedata("char-def-new.lua",newdata)
+
+\stopluacode
+
+\stoptext

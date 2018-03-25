@@ -248,11 +248,11 @@ local function warning(current,what)
 end
 
 local mappers = allocate {
-    l = s_init,  -- left
-    d = s_medi,  -- double
-    c = s_medi,  -- joiner
-    r = s_fina,  -- right
-    u = s_isol,  -- nonjoiner
+    l = s_init, -- left
+    d = s_medi, -- double
+    c = s_medi, -- joiner
+    r = s_fina, -- right
+    u = s_isol, -- nonjoiner
 }
 
 -- we can also use this trick for devanagari

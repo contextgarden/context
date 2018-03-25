@@ -60,7 +60,6 @@ case "$system" in
 	FreeBSD|freebsd)
 		case "$cpu" in
 			i*86) platform="freebsd" ;;
-			x86_64) platform="freebsd" ;; # no special binaries are available yet
 			amd64) platform="freebsd-amd64" ;;
 			*) platform="unknown" ;;
 		esac ;;
@@ -71,15 +70,14 @@ case "$system" in
 			#x86_64|amd64) platform="kfreebsd-amd64" ;;
 			*) platform="unknown" ;;
 		esac ;;
-	# cygwin
 	# OpenBSD
-	OpenBSD|freebsd)
+	OpenBSD)
 		case "$cpu" in
 			i*86) platform="openbsd" ;;
-			x86_64) platform="openbsd" ;; # no special binaries are available yet
 			amd64) platform="openbsd-amd64" ;;
 			*) platform="unknown" ;;
 		esac ;;
+	# cygwin
 	CYGWIN*)
 		case "$cpu" in
 			i*86) platform="cygwin" ;;

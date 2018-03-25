@@ -192,8 +192,8 @@ local function tounicode(unicode)
 end
 
 -- no real gain on runs
---
--- local hash = setmetatableindex(function(t,u)
+
+-- local hash = table.setmetatableindex(function(t,u)
 --     local v
 --     if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
 --         v = f_single(u)
@@ -209,7 +209,7 @@ end
 --     if type(unicode) == "table" then
 --         local t = { }
 --         for l=1,#unicode do
---             t[l] = hash[u]
+--             t[l] = hash[unicode[l]]
 --         end
 --         return concat(t)
 --     else

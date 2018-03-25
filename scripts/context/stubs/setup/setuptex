@@ -22,59 +22,91 @@ system=`uname -s`
 cpu=`uname -m`
 
 case "$system" in
-    # linux
-    Linux)
-        case "$cpu" in
-            i*86) platform="linux" ;;
-            x86_64|ia64) platform="linux-64" ;;
-            # a little bit of cheating with ppc64 (won't work on Gentoo)
-            ppc|ppc64) platform="linux-ppc" ;;
-            *) platform="unknown" ;;
-        esac ;;
-    # Mac OS X
-    Darwin)
-        case "$cpu" in
-            i*86) platform="osx-intel" ;;
-            x86_64) platform="osx-64" ;;
-            ppc*|powerpc|power*|Power*) platform="osx-ppc" ;;
-            *) platform="unknown" ;;
-        esac ;;
-    # FreeBSD
-    FreeBSD|freebsd)
-        case "$cpu" in
-            i*86) platform="freebsd" ;;
-            x86_64) platform="freebsd" ;;
-            amd64) platform="freebsd-amd64" ;;
-            *) platform="unknown" ;;
-        esac ;;
-    # kFreeBSD (Debian)
-    GNU/kFreeBSD)
-        case "$cpu" in
-            i*86) platform="kfreebsd-i386" ;;
-            x86_64|amd64) platform="kfreebsd-amd64" ;;
-            *) platform="unknown" ;;
-        esac ;;
-    # MSYS2|MSYS_NT-10.0)
-        case "$cpu" in
-            i*86) platform="win32" ;;
-            x86_64) platform="win64" ;;
-            *) platform="unknown" ;;
-        esac ;;
-    # cygwin
-    CYGWIN)
-        case "$cpu" in
-            i*86) platform="cygwin" ;;
-            x86_64|ia64) platform="cygwin-64" ;;
-            *) platform="unknown" ;;
-        esac ;;
-    # SunOS/Solaris
-    SunOS)
-        case "$cpu" in
-            sparc) platform="solaris-sparc" ;;
-            i86pc) platform="solaris-intel" ;;
-            *) platform="unknown" ;;
-        esac ;;
-    *) platform="unknown"
+	# linux
+	Linux)
+		case "$cpu" in
+			i*86) platform="linux" ;;
+			x86_64|ia64) platform="linux-64" ;;
+
+			# a little bit of cheating with ppc64 (won't work on Gentoo)
+			ppc|ppc64) platform="linux-ppc" ;;
+
+			# we currently support just mipsel, but Debian is lying (reports mips64)
+			# we need more hacks to fix the situation, this is just a temporary solution
+			mips|mips64|mipsel|mips64el) platform="linux-mipsel" ;;
+
+			armv7l) platform="linux-armhf"
+				# machine id output by uname(1) is insufficent to determine whether this
+				# is a soft or hard float system so we check ourselves.
+				# a) binutils, this should work almost everywhere
+				if $(which readelf >/dev/null 2>&1); then
+					readelf -A /proc/self/exe | grep -q '^ \+Tag_ABI_VFP_args'
+					if [ ! $? ]; then
+						platform="linux-armel"
+					fi
+				# b) debian-specific fallback
+				elif $(which dpkg >/dev/null 2>&1); then
+					if [ "$(dpkg --print-architecture)" = armel ]; then
+						platform="linux-armel"
+					fi
+				fi
+				# else go with hard fp
+				;;
+
+			*) platform="unknown" ;;
+		esac ;;
+	# Mac OS X
+	Darwin)
+		case "$cpu" in
+			i*86) platform="osx-intel" ;;
+			x86_64) platform="osx-64" ;;
+			ppc*|powerpc|power*|Power*) platform="osx-ppc" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	# FreeBSD
+	FreeBSD|freebsd)
+		case "$cpu" in
+			i*86) platform="freebsd" ;;
+			x86_64) platform="freebsd" ;;
+			amd64) platform="freebsd-amd64" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	# OpenBSD
+	OpenBSD)
+		case "$cpu" in
+			i*86) platform="openbsd" ;;
+			amd64) platform="openbsd-amd64" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	# kFreeBSD (Debian)
+	GNU/kFreeBSD)
+		case "$cpu" in
+			i*86) platform="kfreebsd-i386" ;;
+			x86_64|amd64) platform="kfreebsd-amd64" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	# MSYS2
+	MSYS_NT-10.0)
+		case "$cpu" in
+			i*86) platform="win32" ;;
+			x86_64) platform="win64" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	# cygwin
+	CYGWIN)
+		case "$cpu" in
+			i*86) platform="cygwin" ;;
+			x86_64|ia64) platform="cygwin-64" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	# SunOS/Solaris
+	SunOS)
+		case "$cpu" in
+			sparc) platform="solaris-sparc" ;;
+			i86pc) platform="solaris-intel" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	*) platform="unknown"
 esac
 
 # temporary fix for Snow Leopard
@@ -91,6 +123,9 @@ fi
 if test "$platform" = "unknown" ; then
 	echo "Error: your system \"$system $cpu\" is not supported yet."
 	echo "Please report to the ConTeXt mailing-list (ntg-context@ntg.nl)"
+elif test "$platform" = "linux-ppc" ; then
+	echo "Error: support for your system \"$platform\" has been dropped."
+	echo "Please ask on to the ConTeXt mailing-list if you still need it (ntg-context@ntg.nl)"
 fi
 
 #

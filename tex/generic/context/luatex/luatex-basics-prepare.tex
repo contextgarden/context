@@ -15,6 +15,8 @@
 %D is needed because we don't want to load the (mostly not used in generic) data
 %D files.
 
+%D Indicorder is not yet filled in completely.
+
 \startluacode
 
 -- dofile("t:/sources/char-ini.lua")
@@ -43,6 +45,7 @@ local first_mandiac, last_mandiac = characters.blockrange("mandiac")
 local first_nko,     last_nko     = characters.blockrange("nko")
 
 local classifiers = { }
+local indicgroups = characters.indicgroups
 
 for k, c in next, chardata do
     if k > 0 then
@@ -78,11 +81,14 @@ characters.blockrange = { }
 
 %s
 
+%s
+
 -- done
 ]] ]
 
 io.savedata("luatex-basics-chr.lua",template(
-    table.serialize(classifiers,"characters.classifiers")
+    table.serialize(classifiers,"characters.classifiers"),
+    table.serialize(indicgroups,"characters.indicgroups")
 ))
 
 \stopluacode
