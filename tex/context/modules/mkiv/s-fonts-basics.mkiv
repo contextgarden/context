@@ -52,6 +52,17 @@ local arabicscripts = table.sorted {
 
 local allindic  = true
 local allarabic = true
+local dotted    = utf.char(0x25CC)
+
+local left = table.setmetatableindex (
+    { r = dotted, b = dotted, t = dotted, s = dotted },
+    function(t,k) local v = "" if k then t[k] = v end return v end
+)
+
+local right = table.setmetatableindex (
+    { l = dotted },
+    function(t,k) local v = "" if k then t[k] = v end return v end
+)
 
 for i=1,#indicscripts do
     local script = indicscripts[i]
@@ -90,8 +101,10 @@ for i=1,#indicscripts do
                     local indicmark  = d.indicmark
                     local indicorder = d.indicorder
                     if allindic or indic == "d" or indicmark or indicclass or indicorder then
+                        local l = left [indicmark]
+                        local r = right[indicmark]
                         context.NC() context("%U",i)
-                        context.NC() context("\\showstruts\\strut\\TestFont %c",i)
+                        context.NC() context("\\showstruts\\strut\\TestFont %s%c%s",l,i,r)
                         context.NC() context(category)
                         context.NC() context(indic or "?")
                         context.NC() context(indicmark or "")

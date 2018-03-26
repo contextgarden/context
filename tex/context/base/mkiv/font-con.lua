@@ -492,6 +492,15 @@ function constructors.scale(tfmdata,specification)
     else
         target.slant = 0
     end
+    -- effects
+    local mode = parameters.mode or 0
+    if mode ~= 0 then
+        target.mode = mode
+    end
+    local width = parameters.width or 0
+    if width ~= 0 then
+        target.width = width
+    end
     --
     targetparameters.factor       = delta
     targetparameters.hfactor      = hdelta
@@ -925,6 +934,14 @@ function constructors.finalize(tfmdata)
         parameters.size = tfmdata.size
     end
     --
+    if not parameters.mode then
+        parameters.mode = 0
+    end
+    --
+    if not parameters.width then
+        parameters.width = 0
+    end
+    --
     if not parameters.extendfactor then
         parameters.extendfactor = tfmdata.extend or 0
     end
@@ -1023,6 +1040,8 @@ function constructors.finalize(tfmdata)
     tfmdata.step             = nil
     tfmdata.extend           = nil
     tfmdata.slant            = nil
+    tfmdata.mode             = nil
+    tfmdata.width            = nil
     tfmdata.units            = nil
     tfmdata.units_per_em     = nil
     --

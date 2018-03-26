@@ -191,67 +191,145 @@
   [semitic-simple]
   [script=hebr]
 
-% \definefont [DevaOne] [file:chandas.ttf*devanagari-one at 12pt]
-% \definefont [DevaTwo] [file:kokila.ttf*devanagari-two  at 18pt]
+% indic
 
 \definefontfeature
-  [devanagari-one]
+  [indic-common]
   [mode=node,
    language=dflt,
-   script=deva,
+   % localized
+   locl=yes,
+   % positioning
+   kern=yes,
+   dist=yes,
+   % above/below base marks
+   abvm=yes,
+   blwm=yes,
+   % basic shaping
    nukt=yes,
    akhn=yes,
    rphf=yes,
-   blwf=yes,
-   half=yes,
-   vatu=yes,
+   % presentation
    pres=yes,
    abvs=yes,
    blws=yes,
    psts=yes,
    haln=yes,
-   abvm=yes,
-   blwm=yes,
-   dist=yes]
+   calt=yes]
 
 \definefontfeature
-  [devanagari-two]
   [devanagari-one]
-  [script=dev2,
-   locl=yes,
-   pref=yes,
+  [indic-common]
+  [script=deva,
+   % basic shaping
    rkrf=yes,
-   pstf=yes,
-   cjct=yes,
-   init=yes,
-   calt=yes,
-   kern=yes]
-
-\definefontfeature
-  [malayalam-one]
-  [mode=node,
-   language=dflt,
-   script=mlym,
-   akhn=yes,
    blwf=yes,
    half=yes,
-   pres=yes,
-   blws=yes,
-   psts=yes,
-   haln=no]
+   vatu=yes,
+   cjct=yes]
 
 \definefontfeature
-  [malayalam-two]
+  [bengali-one]
+  [indic-common]
+  [script=beng,
+   % basic shaping
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   vatu=yes,
+   cjct=yes,
+   % presentation
+   init=yes]
+
+\definefontfeature
+  [gujarati-one]
+  [indic-common]
+  [script=gujr,
+   % basic shaping
+   rkrf=yes,
+   blwf=yes,
+   half=yes,
+   vatu=yes,
+   cjct=yes]
+
+\definefontfeature
+  [gurmukhi-one]
+  [indic-common]
+  [script=guru,
+   % basic shaping
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   vatu=yes,
+   cjct=yes]
+
+\definefontfeature
+  [kannada-one]
+  [indic-common]
+  [script=knda,
+   % basic shaping
+   pref=yes,
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature
   [malayalam-one]
-  [script=mlm2]
+  [indic-common]
+  [script=mlym,
+   % basic shaping
+   pref=yes,
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature
+  [oriya-one]
+  [indic-common]
+  [script=orya,
+   % basic shaping
+   blwf=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature
+  [tamil-one]
+  [indic-common]
+  [script=taml,
+   % basic shaping
+   pref=yes,
+   half=yes]
+
+\definefontfeature
+  [telugu-one]
+  [indic-common]
+  [script=telu,
+   % basic shaping
+   pref=yes,
+   blwf=yes,
+   half=yes,
+   pstf=yes,
+   cjct=yes]
+
+\definefontfeature [devanagari-two] [devanagari-one] [script=dev2]
+\definefontfeature [bengali-two]    [bengali-one]    [script=bng2]
+\definefontfeature [gujarati-two]   [gujarati-one]   [script=gjr2]
+\definefontfeature [gurmukhi-two]   [gurmukhi-one]   [script=gur2]
+\definefontfeature [kannada-two]    [kannada-one]    [script=knd2]
+\definefontfeature [malayalam-two]  [malayalam-one]  [script=mlm2]
+\definefontfeature [oriya-two]      [oriya-one]      [script=ory2]
+\definefontfeature [tamil-two]      [tamil-one]      [script=tml2]
+\definefontfeature [telugu-two]     [telugu-one]     [script=tel2]
+
+% cjk
 
 \definefontfeature
   [jamoforms]
   [ljmo=yes,
    tjmo=yes,
    vjmo=yes]
-
-% cjk
 
 % \definefontfeature
 %   [japanese]

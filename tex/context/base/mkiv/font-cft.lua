@@ -266,6 +266,8 @@ do
             },
             slantfactor   = t_float,
             extendfactor  = t_float,
+            mode          = t_cardinal,
+            width         = t_scale,
             factor        = t_float,
             hfactor       = t_float,
             vfactor       = t_float,

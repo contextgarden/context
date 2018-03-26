@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/25/18 17:32:09
+-- merge date  : 03/26/18 19:41:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -7883,6 +7883,7 @@ characters.indicgroups={
  [2760]=true,
  [2879]=true,
  [3008]=true,
+ [3021]=true,
  [3134]=true,
  [3135]=true,
  [3136]=true,
@@ -7916,8 +7917,54 @@ characters.indicgroups={
  [43249]=true,
  },
  ["after_half"]={},
+ ["after_main"]={
+ [2864]=true,
+ [2879]=true,
+ [2902]=true,
+ [3376]=true,
+ },
  ["after_postscript"]={
+ [2433]=true,
+ [2494]=true,
+ [2496]=true,
+ [2519]=true,
+ [2561]=true,
+ [2562]=true,
+ [2622]=true,
+ [2624]=true,
+ [2625]=true,
+ [2626]=true,
+ [2672]=true,
+ [2673]=true,
+ [2750]=true,
+ [2752]=true,
+ [2753]=true,
+ [2754]=true,
+ [2755]=true,
+ [2756]=true,
+ [2761]=true,
+ [2763]=true,
+ [2764]=true,
+ [2786]=true,
+ [2787]=true,
+ [2878]=true,
+ [2880]=true,
+ [2903]=true,
+ [2992]=true,
+ [3006]=true,
+ [3007]=true,
+ [3009]=true,
+ [3010]=true,
+ [3031]=true,
+ [3120]=true,
  [3248]=true,
+ [3390]=true,
+ [3391]=true,
+ [3392]=true,
+ [3393]=true,
+ [3394]=true,
+ [3395]=true,
+ [3415]=true,
  },
  ["after_subscript"]={
  [2366]=true,
@@ -7936,6 +7983,27 @@ characters.indicgroups={
  [2380]=true,
  [2402]=true,
  [2403]=true,
+ [2480]=true,
+ [2497]=true,
+ [2498]=true,
+ [2499]=true,
+ [2500]=true,
+ [2530]=true,
+ [2531]=true,
+ [2544]=true,
+ [2631]=true,
+ [2632]=true,
+ [2635]=true,
+ [2636]=true,
+ [2757]=true,
+ [2759]=true,
+ [2760]=true,
+ [2881]=true,
+ [2882]=true,
+ [2883]=true,
+ [3008]=true,
+ [3139]=true,
+ [3140]=true,
  [3267]=true,
  [3268]=true,
  [3285]=true,
@@ -7946,11 +8014,41 @@ characters.indicgroups={
  },
  ["before_half"]={
  [2367]=true,
+ [2382]=true,
+ [2495]=true,
+ [2503]=true,
+ [2504]=true,
+ [2623]=true,
+ [2751]=true,
+ [2887]=true,
+ },
+ ["before_main"]={
+ [3014]=true,
+ [3015]=true,
+ [3016]=true,
+ [3398]=true,
+ [3399]=true,
+ [3400]=true,
  },
  ["before_postscript"]={
  [2352]=true,
+ [2736]=true,
  },
  ["before_subscript"]={
+ [2608]=true,
+ [2817]=true,
+ [3134]=true,
+ [3135]=true,
+ [3136]=true,
+ [3137]=true,
+ [3138]=true,
+ [3142]=true,
+ [3143]=true,
+ [3146]=true,
+ [3147]=true,
+ [3148]=true,
+ [3157]=true,
+ [3158]=true,
  [3262]=true,
  [3263]=true,
  [3265]=true,
@@ -7998,7 +8096,6 @@ characters.indicgroups={
  [2915]=true,
  [3009]=true,
  [3010]=true,
- [3021]=true,
  [3170]=true,
  [3171]=true,
  [3260]=true,
@@ -9149,6 +9246,14 @@ function constructors.scale(tfmdata,specification)
   else
     target.slant=0
   end
+  local mode=parameters.mode or 0
+  if mode~=0 then
+    target.mode=mode
+  end
+  local width=parameters.width or 0
+  if width~=0 then
+    target.width=width
+  end
   targetparameters.factor=delta
   targetparameters.hfactor=hdelta
   targetparameters.vfactor=vdelta
@@ -9527,6 +9632,12 @@ function constructors.finalize(tfmdata)
   if not parameters.size then
     parameters.size=tfmdata.size
   end
+  if not parameters.mode then
+    parameters.mode=0
+  end
+  if not parameters.width then
+    parameters.width=0
+  end
   if not parameters.extendfactor then
     parameters.extendfactor=tfmdata.extend or 0
   end
@@ -9609,6 +9720,8 @@ function constructors.finalize(tfmdata)
   tfmdata.step=nil
   tfmdata.extend=nil
   tfmdata.slant=nil
+  tfmdata.mode=nil
+  tfmdata.width=nil
   tfmdata.units=nil
   tfmdata.units_per_em=nil
   tfmdata.cache=nil
@@ -27600,7 +27713,7 @@ if not modules then modules={} end modules ['font-osd']={
 }
 local insert,imerge,copy=table.insert,table.imerge,table.copy
 local next,type=next,type
-local report_devanagari=logs.reporter("otf","devanagari")
+local report=logs.reporter("otf","devanagari")
 fonts=fonts          or {}
 fonts.analyzers=fonts.analyzers     or {}
 fonts.analyzers.methods=fonts.analyzers.methods or { node={ otf={} } }
@@ -27637,6 +27750,9 @@ local fontdata=fonts.hashes.identifiers
 local a_state=attributes.private('state')
 local a_syllabe=attributes.private('syllabe')
 local dotted_circle=0x25CC
+local c_nbsp=0x00A0
+local c_zwnj=0x200C
+local c_zwj=0x200D
 local states=fonts.analyzers.states 
 local s_rphf=states.rphf
 local s_half=states.half
@@ -27695,6 +27811,8 @@ if not indicgroups and characters then
     as={},
     bh={},
     ah={},
+    bm={},
+    am={},
   }
   for k,v in next,characters.data do
     local i=v.indic
@@ -27740,6 +27858,8 @@ if not indicgroups and characters then
     after_half=indicorders.ah,
     before_subscript=indicorders.bs,
     after_subscript=indicorders.as,
+    before_main=indicorders.bm,
+    after_main=indicorders.am,
   }
   indic=nil
   indicmarks=nil
@@ -27763,19 +27883,25 @@ local nukta=indicgroups.nukta
 local halant=indicgroups.halant
 local ra=indicgroups.ra
 local anudatta=indicgroups.anudatta
+local before_postscript=indicgroups.before_postscript
+local after_postscript=indicgroups.after_postscript
+local before_half=indicgroups.before_half
+local after_half=indicgroups.after_half
+local before_subscript=indicgroups.before_subscript
 local after_subscript=indicgroups.after_subscript
-local mark_four={} 
-for k,v in next,pre_mark  do mark_four[k]=pre_mark  end
-for k,v in next,above_mark do mark_four[k]=above_mark end
-for k,v in next,below_mark do mark_four[k]=below_mark end
-for k,v in next,post_mark do mark_four[k]=post_mark end
-local mark_above_below_post={}
-for k,v in next,above_mark do mark_above_below_post[k]=above_mark end
-for k,v in next,below_mark do mark_above_below_post[k]=below_mark end
-for k,v in next,post_mark do mark_above_below_post[k]=post_mark end
-local c_nbsp=0x00A0
-local c_zwnj=0x200C
-local c_zwj=0x200D
+local before_main=indicgroups.before_main
+local after_main=indicgroups.after_main
+local mark_four=table.merged (
+  pre_mark,
+  above_mark,
+  below_mark,
+  post_mark
+)
+local mark_above_below_post=table.merged (
+  above_mark,
+  below_mark,
+  post_mark
+)
 local zw_char={ 
   [c_zwnj]=true,
   [c_zwj ]=true,
@@ -27783,16 +27909,16 @@ local zw_char={
 local dflt_true={
   dflt=true
 }
-local dev2_defaults={
+local two_defaults={
   dev2=dflt_true,
 }
-local deva_defaults={
+local one_defaults={
   dev2=dflt_true,
   deva=dflt_true,
 }
 local false_flags={ false,false,false,false }
 local sequence_reorder_matras={
-  features={ dv01=dev2_defaults },
+  features={ dv01=two_defaults },
   flags=false_flags,
   name="dv01_reorder_matras",
   order={ "dv01" },
@@ -27805,7 +27931,7 @@ local sequence_reorder_matras={
   }
 }
 local sequence_reorder_reph={
-  features={ dv02=dev2_defaults },
+  features={ dv02=two_defaults },
   flags=false_flags,
   name="dv02_reorder_reph",
   order={ "dv02" },
@@ -27818,7 +27944,7 @@ local sequence_reorder_reph={
   }
 }
 local sequence_reorder_pre_base_reordering_consonants={
-  features={ dv03=dev2_defaults },
+  features={ dv03=two_defaults },
   flags=false_flags,
   name="dv03_reorder_pre_base_reordering_consonants",
   order={ "dv03" },
@@ -27831,7 +27957,7 @@ local sequence_reorder_pre_base_reordering_consonants={
   }
 }
 local sequence_remove_joiners={
-  features={ dv04=deva_defaults },
+  features={ dv04=one_defaults },
   flags=false_flags,
   name="dv04_remove_joiners",
   order={ "dv04" },
@@ -27844,35 +27970,68 @@ local sequence_remove_joiners={
   }
 }
 local basic_shaping_forms={
-  nukt=true,
+  init=true,
+  abvs=true,
   akhn=true,
-  rphf=true,
-  pref=true,
-  rkrf=true,
   blwf=true,
-  half=true,
-  pstf=true,
-  vatu=true,
+  calt=true,
   cjct=true,
+  half=true,
+  haln=true,
+  nukt=true,
+  pref=true,
+  pres=true,
+  pstf=true,
+  psts=true,
+  rkrf=true,
+  rphf=true,
+  vatu=true,
 }
 local valid={
+  abvs=true,
   akhn=true,
-  rphf=true,
-  pref=true,
-  half=true,
   blwf=true,
-  pstf=true,
+  calt=true,
+  cjct=true,
+  half=true,
+  haln=true,
+  nukt=true,
+  pref=true,
   pres=true,
+  pstf=true,
+  psts=true,
+  rkrf=true,
+  rphf=true,
+  vatu=true,
+  pres=true,
+  abvs=true,
   blws=true,
   psts=true,
+  haln=true,
+  calt=true,
 }
+local scripts={}
+local scripts_one={ "deva","mlym","beng","gujr","guru","knda","orya","taml","telu" }
+local scripts_two={ "dev2","mlm2","bng2","gjr2","gur2","knd2","ory2","tml2","tel2" }
+local nofscripts=#scripts_one
+for i=1,nofscripts do
+  local one=scripts_one[i]
+  local two=scripts_two[i]
+  scripts[one]=true
+  scripts[two]=true
+  two_defaults[one]=dflt_true
+  one_defaults[one]=dflt_true
+  one_defaults[two]=dflt_true
+end
+local function valid_one(s) for i=1,nofscripts do if s[scripts_one[i]] then return true end end end
+local function valid_two(s) for i=1,nofscripts do if s[scripts_two[i]] then return true end end end
 local function initializedevanagi(tfmdata)
   local script,language=otf.scriptandlanguage(tfmdata,attr) 
-  if script=="deva" or script=="dev2" or script=="mlym" or script=="mlm2" then
+  if scripts[script] then
     local resources=tfmdata.resources
     local devanagari=resources.devanagari
     if not devanagari then
-      report_devanagari("adding devanagari features to font")
+      report("adding devanagari features to font")
       local gsubfeatures=resources.features.gsub
       local sequences=resources.sequences
       local sharedfeatures=tfmdata.shared.features
@@ -27888,10 +28047,10 @@ local function initializedevanagi(tfmdata)
         end
       end
       local insertindex=lastmatch+1
-      gsubfeatures["dv01"]=dev2_defaults 
-      gsubfeatures["dv02"]=dev2_defaults 
-      gsubfeatures["dv03"]=dev2_defaults 
-      gsubfeatures["dv04"]=deva_defaults
+      gsubfeatures["dv01"]=two_defaults 
+      gsubfeatures["dv02"]=two_defaults 
+      gsubfeatures["dv03"]=two_defaults 
+      gsubfeatures["dv04"]=one_defaults
       local reorder_pre_base_reordering_consonants=copy(sequence_reorder_pre_base_reordering_consonants)
       local reorder_reph=copy(sequence_reorder_reph)
       local reorder_matras=copy(sequence_reorder_matras)
@@ -27939,8 +28098,8 @@ local function initializedevanagi(tfmdata)
             end
           end
         end
-        for kind,spec in next,features do 
-          if spec.dev2 and valid[kind] then
+        for kind,spec in next,features do
+          if valid[kind] and valid_two(spec)then
             for i=1,nofsteps do
               local step=steps[i]
               local coverage=step.coverage
@@ -27964,7 +28123,9 @@ local function initializedevanagi(tfmdata)
                     end
                   end
                 end
-                seqsubset[#seqsubset+1]={ kind,coverage,reph }
+if reph then
+  seqsubset[#seqsubset+1]={ kind,coverage,reph }
+end
               end
             end
           end
@@ -28009,8 +28170,14 @@ local function initializedevanagi(tfmdata)
         sharedfeatures["pstf"]=true
         sharedfeatures["pref"]=true
         sharedfeatures["dv03"]=true 
-        gsubfeatures ["dv03"]=dev2_defaults 
+        gsubfeatures ["dv03"]=two_defaults 
         insert(sequences,insertindex,sequence_reorder_pre_base_reordering_consonants)
+      elseif script=="taml" then
+        sharedfeatures["dv04"]=true 
+sharedfeatures["pstf"]=true
+      elseif script=="tml2" then
+      else
+        report("todo: enable the right features for script %a",script)
       end
     end
   end
@@ -28023,7 +28190,7 @@ registerotffeature {
     node=initializedevanagi,
   },
 }
-local function deva_initialize(font,attr) 
+local function initialize_one(font,attr) 
   local tfmdata=fontdata[font]
   local datasets=otf.dataset(tfmdata,font,attr) 
   local devanagaridata=datasets.devanagari
@@ -28051,8 +28218,8 @@ local function deva_initialize(font,attr)
   end
   return devanagaridata.reph,devanagaridata.vattu,devanagaridata.blwfcache
 end
-local function deva_reorder(head,start,stop,font,attr,nbspaces)
-  local reph,vattu,blwfcache=deva_initialize(font,attr) 
+local function reorder_one(head,start,stop,font,attr,nbspaces)
+  local reph,vattu,blwfcache=initialize_one(font,attr) 
   local current=start
   local n=getnext(start)
   local base=nil
@@ -28083,40 +28250,40 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
       lastcons=current
       current=getnext(current)
       if current~=stop then
-        if nukta[getchar(current)] then
+        local char=getchar(current)
+        if nukta[char] then
           current=getnext(current)
+          char=getchar(current)
         end
-        if getchar(current)==c_zwj then
-          if current~=stop then
-            local next=getnext(current)
-            if next~=stop and halant[getchar(next)] then
-              current=next
-              next=getnext(current)
-              local tmp=next and getnext(next) or nil 
-              local changestop=next==stop
-              local tempcurrent=copy_node(next)
-              copyinjection(tempcurrent,next)
-              local nextcurrent=copy_node(current)
-              copyinjection(nextcurrent,current) 
-              setlink(tempcurrent,nextcurrent)
-              setprop(tempcurrent,a_state,s_blwf)
-              tempcurrent=processcharacters(tempcurrent,font)
-              setprop(tempcurrent,a_state,unsetvalue)
-              if getchar(next)==getchar(tempcurrent) then
-                flush_list(tempcurrent)
-                local n=copy_node(current)
-                copyinjection(n,current) 
-                setchar(current,dotted_circle)
-                head=insert_node_after(head,current,n)
-              else
-                setchar(current,getchar(tempcurrent)) 
-                local freenode=getnext(current)
-                setlink(current,tmp)
-                flush_node(freenode)
-                flush_list(tempcurrent)
-                if changestop then
-                  stop=current
-                end
+        if char==c_zwj and current~=stop then
+          local next=getnext(current)
+          if next~=stop and halant[getchar(next)] then
+            current=next
+            next=getnext(current)
+            local tmp=next and getnext(next) or nil 
+            local changestop=next==stop
+            local tempcurrent=copy_node(next)
+            copyinjection(tempcurrent,next)
+            local nextcurrent=copy_node(current)
+            copyinjection(nextcurrent,current) 
+            setlink(tempcurrent,nextcurrent)
+            setprop(tempcurrent,a_state,s_blwf)
+            tempcurrent=processcharacters(tempcurrent,font)
+            setprop(tempcurrent,a_state,unsetvalue)
+            if getchar(next)==getchar(tempcurrent) then
+              flush_list(tempcurrent)
+              local n=copy_node(current)
+              copyinjection(n,current) 
+              setchar(current,dotted_circle)
+              head=insert_node_after(head,current,n)
+            else
+              setchar(current,getchar(tempcurrent)) 
+              local freenode=getnext(current)
+              setlink(current,tmp)
+              flush_node(freenode)
+              flush_list(tempcurrent)
+              if changestop then
+                stop=current
               end
             end
           end
@@ -28389,9 +28556,11 @@ function handlers.devanagari_reorder_reph(head,start)
   local startprev=nil
   local startfont=getfont(start)
   local startattr=getprop(start,a_syllabe)
+  ::step_1::
+  ::step_2::
   while current do
     local char=ischar(current,startfont)
-    if char and getprop(current,a_syllabe)==startattr then 
+    if char and getprop(current,a_syllabe)==startattr then
       if halant[char] and not getprop(current,a_state) then
         local next=getnext(current)
         if next then
@@ -28414,11 +28583,13 @@ function handlers.devanagari_reorder_reph(head,start)
       break
     end
   end
+  ::step_3::
+  ::step_4::
   if not startnext then
     current=getnext(start)
     while current do
       local char=ischar(current,startfont)
-      if char and getprop(current,a_syllabe)==startattr then 
+      if char and getprop(current,a_syllabe)==startattr then
         if getprop(current,a_state)==s_pstf then 
           startnext=getnext(start)
           head=remove_node(head,start)
@@ -28434,12 +28605,13 @@ function handlers.devanagari_reorder_reph(head,start)
       end
     end
   end
+  ::step_5::
   if not startnext then
     current=getnext(start)
     local c=nil
     while current do
       local char=ischar(current,startfont)
-      if char and getprop(current,a_syllabe)==startattr then 
+      if char and getprop(current,a_syllabe)==startattr then
         if not c and mark_above_below_post[char] and after_subscript[char] then
           c=current
         end
@@ -28457,12 +28629,13 @@ function handlers.devanagari_reorder_reph(head,start)
       startattr=getprop(start,a_syllabe)
     end
   end
+  ::step_6::
   if not startnext then
     current=start
     local next=getnext(current)
     while next do
       local nextchar=ischar(next,startfont)
-      if nextchar and getprop(next,a_syllabe)==startattr then 
+      if nextchar and getprop(next,a_syllabe)==startattr then
         current=next
         next=getnext(current)
       else
@@ -28559,7 +28732,7 @@ function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replaceme
   flush_list(start)
   return head,stop,true
 end
-local function dev2_initialize(font,attr)
+local function initialize_two(font,attr)
   local devanagari=fontdata[font].resources.devanagari
   if devanagari then
     return devanagari.seqsubset or {},devanagari.reorderreph or {}
@@ -28567,8 +28740,8 @@ local function dev2_initialize(font,attr)
     return {},{}
   end
 end
-local function dev2_reorder(head,start,stop,font,attr,nbspaces) 
-  local seqsubset,reorderreph=dev2_initialize(font,attr)
+local function reorder_two(head,start,stop,font,attr,nbspaces) 
+  local seqsubset,reorderreph=initialize_two(font,attr)
   local reph=false 
   local halfpos=nil
   local basepos=nil
@@ -28593,8 +28766,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
             if found[n] then  
               local afternext=next~=stop and getnext(next)
               if afternext and zw_char[getchar(afternext)] then 
-                current=next
-                current=getnext(current)
+                current=afternext 
               elseif current==start then
                 setprop(current,a_state,s_rphf)
                 current=next
@@ -29197,17 +29369,18 @@ local function analyze_next_chars_two(c,font)
     return c
   end
 end
-local function inject_syntax_error(head,current,mark)
+local show_syntax_errors=false
+local function inject_syntax_error(head,current,char)
   local signal=copy_node(current)
   copyinjection(signal,current)
-  if mark==pre_mark then 
+  if pre_mark[char] then
     setchar(signal,dotted_circle)
   else
     setchar(current,dotted_circle)
   end
   return insert_node_after(head,current,signal)
 end
-function methods.deva(head,font,attr)
+local function method_one(head,font,attr)
   head=tonut(head)
   local current=head
   local start=true
@@ -29252,7 +29425,7 @@ function methods.deva(head,font,attr)
         local syllableend=analyze_next_chars_one(c,font,2)
         current=getnext(syllableend)
         if syllablestart~=syllableend then
-          head,current,nbspaces=deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
+          head,current,nbspaces=reorder_one(head,syllablestart,syllableend,font,attr,nbspaces)
           current=getnext(current)
         end
       else
@@ -29349,7 +29522,7 @@ function methods.deva(head,font,attr)
             end
           end
           if syllablestart~=syllableend then
-            head,current,nbspaces=deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
+            head,current,nbspaces=reorder_one(head,syllablestart,syllableend,font,attr,nbspaces)
             current=getnext(current)
           end
         elseif independent_vowel[char] then
@@ -29370,9 +29543,11 @@ function methods.deva(head,font,attr)
             end
           end
         else
-          local mark=mark_four[char]
-          if mark then
-            head,current=inject_syntax_error(head,current,mark)
+          if show_syntax_errors then
+            local mark=mark_four[char]
+            if mark then
+              head,current=inject_syntax_error(head,current,char)
+            end
           end
           current=getnext(current)
         end
@@ -29385,10 +29560,9 @@ function methods.deva(head,font,attr)
   if nbspaces>0 then
     head=replace_all_nbsp(head)
   end
-  head=tonode(head)
-  return head,done
+  return tonode(head),done
 end
-function methods.dev2(head,font,attr)
+local function method_two(head,font,attr)
   head=tonut(head)
   local current=head
   local start=true
@@ -29451,14 +29625,14 @@ function methods.dev2(head,font,attr)
       end
     end
     if syllableend and syllablestart~=syllableend then
-      head,current,nbspaces=dev2_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
+      head,current,nbspaces=reorder_two(head,syllablestart,syllableend,font,attr,nbspaces)
     end
-    if not syllableend then
+    if not syllableend and show_syntax_errors then
       local char=ischar(current,font)
       if char and not getprop(current,a_state) then
         local mark=mark_four[char]
         if mark then
-          head,current=inject_syntax_error(head,current,mark)
+          head,current=inject_syntax_error(head,current,char)
         end
       end
     end
@@ -29468,11 +29642,12 @@ function methods.dev2(head,font,attr)
   if nbspaces>0 then
     head=replace_all_nbsp(head)
   end
-  head=tonode(head)
-  return head,done
+  return tonode(head),done
 end
-methods.mlym=methods.deva
-methods.mlm2=methods.dev2
+for i=1,nofscripts do
+  methods[scripts_one[i]]=method_one
+  methods[scripts_two[i]]=method_two
+end
 
 end -- closure
 

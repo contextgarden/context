@@ -30,9 +30,10 @@ of neutral.</p>
 local handlers           = fonts.handlers
 local hashes             = fonts.hashes
 local otf                = handlers.otf
+local afm                = handlers.afm
 
-local registerotffeature = handlers.otf.features.register
-local registerafmfeature = handlers.afm.features.register
+local registerotffeature = otf.features.register
+local registerafmfeature = afm.features.register
 
 local fontdata           = hashes.identifiers
 local fontproperties     = hashes.properties
@@ -1708,3 +1709,59 @@ do
     }
 
 end
+
+-- maybe useful
+
+local function initializeoutline(tfmdata,value)
+    value = tonumber(value)
+    if not value then
+        value =  0
+    else
+        value = tonumber(value) or 0
+    end
+    if value then
+        value = value * 1000
+    end
+    tfmdata.parameters.mode  = 1
+    tfmdata.parameters.width = value
+end
+
+local outline_specification = {
+    name        = "outline",
+    description = "outline glyphs",
+    initializers = {
+        base = initializeoutline,
+        node = initializeoutline,
+    }
+}
+
+registerotffeature(outline_specification)
+registerafmfeature(outline_specification)
+
+-- definitely ugly
+
+local function initializebolden(tfmdata,value)
+    value = tonumber(value)
+    if not value then
+        value =  0
+    else
+        value = tonumber(value) or 0
+    end
+    if value then
+        value = value * 1000
+    end
+    tfmdata.parameters.mode  = 2
+    tfmdata.parameters.width = value
+end
+
+local bolden_specification = {
+    name        = "bolden",
+    description = "bolden glyphs",
+    initializers = {
+        base = initializebolden,
+        node = initializebolden,
+    }
+}
+
+registerotffeature(bolden_specification)
+registerafmfeature(bolden_specification)

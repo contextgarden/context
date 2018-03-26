@@ -1,0 +1,104 @@
+%D \module
+%D   [      file=s-fonts-overlay,
+%D        version=2018.03.25,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Glyph Similarity,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin info
+%
+% title   : overlay glyphs in fonts
+%
+% comment : show glyphs in two fonts
+% status  : experimental, used for font feature development
+%
+% end info
+
+%D This module is for Luigi/Idris as part of the Husayni development where the
+%D gpos pair, single, mark and cursive features are just linear transformations.
+
+\startmodule[fonts-coverage]
+
+\unprotect
+
+\definecolor[ColorOne][r=1,t=.5,a=1]
+\definecolor[ColorTwo][b=1,t=.5,a=1]
+
+\startluacode
+    moduledata.fonts         = moduledata.fonts         or { }
+    moduledata.fonts.overlay = moduledata.fonts.overlay or { }
+
+    function moduledata.fonts.overlay(id)
+        for k, v in table.sortedhash(fonts.hashes.identifiers[id or true].characters) do
+            context.showoverlayedglyphs(k)
+        end
+    end
+\stopluacode
+
+\starttexdefinition unexpanded showoverlayedglyphs#1
+    \startTEXpage[offset=.25\scratchdimentwo,height=10\scratchdimentwo,width=4\scratchdimenone]
+        \ruledhbox to \hsize\bgroup
+            \hss
+            \FontOne\setstrut\strut
+            \startoverlay
+                {\ColorOne\ruledhbox{\FontOne\char#1}}
+                {\ColorTwo\ruledhbox{\FontTwo\char#1}}
+            \stopoverlay
+            \hss
+        \egroup
+        \vfill
+        \dontleavehmode
+        \hbox to \hsize\bgroup
+            \hss
+            \infofont0x\uchexnumbers{#1}
+            \hss
+       \egroup
+   \stopTEXpage
+\stoptexdefinition
+
+\starttexdefinition unexpanded showoverlayedfonts[#1]
+    \start
+        \getdummyparameters[\c!list=,#1]
+        \doifsomething {\dummyparameter\c!list} {
+            \page
+            \getfromcommacommand[\dummyparameter\c!list][1]\let\NameOne\commalistelement
+            \getfromcommacommand[\dummyparameter\c!list][2]\let\NameTwo\commalistelement
+            \definefont[FontOne][\NameOne]
+            \definefont[FontTwo][\NameTwo]
+            \FontOne\expandafter\edef\expandafter\OneID\expandafter{\number\fontid\font}%
+            \FontTwo\expandafter\edef\expandafter\TwoID\expandafter{\number\fontid\font}%
+            \scratchdimenone\emwidth
+            \scratchdimentwo\exheight
+            \ctxlua{moduledata.fonts.overlay(\OneID)}%
+            \page
+          % \startTEXpage[offset=.25\scratchdimentwo,height=10\scratchdimentwo,width=4\scratchdimenone]
+          %     \vfill
+          %     \hbox to \hsize{\ColorOne\infofont\hss\OneN\hss}
+          %     \vfill
+          %     \hbox to \hsize{\ColorTwo\infofont\hss\TwoN\hss}
+          %     \vfill
+          % \stopTEXpage
+          % \page
+        }
+    \stop
+\stoptexdefinition
+
+\protect
+
+\stopmodule
+
+\continueifinputfile{s-fonts-overlay.mkiv}
+
+\starttext
+
+    \showoverlayedfonts
+      [list={file:husayni-script-regular.ttf @ 48.0pt,
+             file:husayni-note-bold.ttf      @ 34.2pt}] % 34.18726pt
+
+\stoptext
