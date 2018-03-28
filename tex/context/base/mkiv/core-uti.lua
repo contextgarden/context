@@ -436,7 +436,7 @@ end
 implement {
     name      = "savevariable",
     actions   = job.variables.save,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

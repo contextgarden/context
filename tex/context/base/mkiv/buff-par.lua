@@ -203,7 +203,7 @@ end
 implement {
     name      = "defineparallel",
     actions   = parallel.define,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
@@ -236,11 +236,11 @@ implement {
 implement {
     name      = "resetparallel",
     actions   = parallel.reset,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifelseparallel",
     actions   = { parallel.hassomecontent, commands.doifelse } ,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }

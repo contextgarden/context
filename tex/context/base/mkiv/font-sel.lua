@@ -943,5 +943,5 @@ implement {
 implement {
     name      = "definefontfamilypreset",
     actions   = selectfont.definefontfamilypreset,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }

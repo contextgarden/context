@@ -847,7 +847,7 @@ end
 
 interfaces.implement {
     name      = "overloaduppercase",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(c,u)
         overload(c,u,"uccode","uccodes")
     end
@@ -855,7 +855,7 @@ interfaces.implement {
 
 interfaces.implement {
     name      = "overloadlowercase",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(c,u)
         overload(c,u,"lccode","lccodes")
     end

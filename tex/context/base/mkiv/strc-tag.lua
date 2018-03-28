@@ -464,7 +464,7 @@ local starttag = tags.start
 implement {
     name      = "starttag",
     actions   = starttag,
-    arguments = { "string" }
+    arguments = "string",
 }
 
 implement {
@@ -476,26 +476,25 @@ implement {
     name      = "starttag_u",
     scope     = "private",
     actions   = function(tag,userdata) starttag(tag,{ userdata = userdata }) end,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "starttag_d",
     scope     = "private",
     actions   = function(tag,detail) starttag(tag,{ detail = detail }) end,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "starttag_c",
     scope     = "private",
     actions   = function(tag,detail,parents) starttag(tag,{ detail = detail, parents = parents }) end,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
-implement { name = "settagaspect",     actions = tags.setaspect,   arguments = { "string", "string" } }
-
-implement { name = "settagproperty",   actions = tags.setproperty, arguments = { "string", "string", "string" } }
+implement { name = "settagaspect",     actions = tags.setaspect,   arguments = "2 strings" }
+implement { name = "settagproperty",   actions = tags.setproperty, arguments = "3 strings" }
 implement { name = "settagproperty_b", actions = tags.setproperty, arguments = { "string", "'backend'", "string" }, scope = "private" }
 implement { name = "settagproperty_n", actions = tags.setproperty, arguments = { "string", "'nature'",  "string" }, scope = "private" }
 
@@ -505,7 +504,7 @@ implement {
     name      = "setelementuserproperties",
     scope     = "private",
     actions   = tags.setuserproperties,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
@@ -517,5 +516,5 @@ implement {
 implement {
     name      = "settaggedmetadata",
     actions   = tags.registermetadata,
-    arguments = "string"
+    arguments = "string",
 }

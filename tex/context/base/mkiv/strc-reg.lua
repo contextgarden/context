@@ -428,13 +428,13 @@ registers.setmethod        = defineregister -- and we might have a difference so
 implement {
     name      = "defineregister",
     actions   = defineregister,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "setregistermethod",
     actions   = defineregister, -- duplicate use
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 
@@ -643,13 +643,13 @@ end
 implement {
     name      = "enhanceregister",
     actions   = registers.enhance,
-    arguments = { "string", "integer" }
+    arguments = { "string", "integer" },
 }
 
 implement {
     name      = "extendregister",
     actions   = registers.extend,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

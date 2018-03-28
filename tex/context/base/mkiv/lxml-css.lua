@@ -985,11 +985,11 @@ end
 interfaces.implement {
     name      = "xmlstylevalue",
     actions   = css.stylevalue,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 interfaces.implement {
     name      = "xmlmappedstylevalue",
     actions   = css.mappedstylevalue,
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
 }

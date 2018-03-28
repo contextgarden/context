@@ -973,7 +973,7 @@ implement {
 implement {
     name      = "setscript",
     actions   = scripts.set,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
 implement {

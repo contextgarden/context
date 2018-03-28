@@ -159,7 +159,7 @@ end
 
 interfaces.implement {
     name      = "definenamespace",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = namespaces.define
 }
 

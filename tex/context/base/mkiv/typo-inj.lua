@@ -91,8 +91,8 @@ end
 
 implement { name = "resetinjector",         actions = injectors.reset, arguments = "string" }
 implement { name = "showinjector",          actions = injectors.show,  arguments = "string" }
-implement { name = "setinjector",           actions = injectors.set,   arguments = { "string", "string", "string" } }
+implement { name = "setinjector",           actions = injectors.set,   arguments = "3 strings" }
 implement { name = "markinjector",          actions = injectors.mark,  arguments = "string" }
-implement { name = "checkinjector",         actions = injectors.check, arguments = { "string", "string" } }
+implement { name = "checkinjector",         actions = injectors.check, arguments = "2 strings" }
 --------- { name = "checkpreviousinjector", actions = injectors.check, arguments = { "string", tokens.constant(v_previous) } }
 --------- { name = "checknextinjector",     actions = injectors.check, arguments = { "string", tokens.constant(v_next) } }

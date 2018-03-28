@@ -366,11 +366,11 @@ implement {
 implement {
     name      = "addreplacements",
     actions   = replacements.add,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
 implement {
     name      = "addreplacementslist",
     actions   = replacements.addlist,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }

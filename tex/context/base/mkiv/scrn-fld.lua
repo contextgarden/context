@@ -66,7 +66,7 @@ implement {
 implement {
     name      = "definefieldset",
     actions   = defineset,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

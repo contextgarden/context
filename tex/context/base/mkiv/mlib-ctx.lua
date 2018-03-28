@@ -87,7 +87,7 @@ end
 implement {
     name      = "setmpextensions",
     actions   = metapost.setextensions,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
@@ -172,7 +172,7 @@ implement {
 
 implement {
     name      = "mprunset",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(name,connector)
         local value = metapost.variables[name]
         if value ~= nil then

@@ -214,7 +214,7 @@ end
 implement {
     name      = "sethyphenatedurlcharacters",
     actions   = urls.setcharacters,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

@@ -420,6 +420,6 @@ implement {
 
 implement {
     name      = "loadspellchecklist",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = words.load
 }

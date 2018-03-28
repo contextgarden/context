@@ -1,0 +1,69 @@
+%D \module
+%D   [       file=type-imp-modernlatin,
+%D        version=2018.03.25,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Modern Latin Modern,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[modernlatin]
+
+    \definefontfeature[lm-rm-regular][effect={width=0.15,delta=1.00}]
+    \definefontfeature[lm-rm-bold]   [effect={width=0.30,delta=1.00}]
+    \definefontfeature[lm-ss-regular][effect={width=0.10,delta=1.00}]
+    \definefontfeature[lm-ss-bold]   [effect={width=0.20,delta=1.00}]
+    \definefontfeature[lm-tt-regular][effect={width=0.20,delta=1.00}]
+    \definefontfeature[lm-tt-bold]   [effect={width=0.30,delta=1.00}]
+
+    \starttypescript [\s!serif] [modern-latin]
+      % \loadfontgoodies[lm]
+        \definefontsynonym [Serif]           [\s!file:lmroman10-regular]      [\s!features={\s!default,lm-rm-regular}]
+        \definefontsynonym [SerifItalic]     [\s!file:lmroman10-italic]       [\s!features={\s!default,lm-rm-regular}]
+        \definefontsynonym [SerifSlanted]    [\s!file:lmromanslant10-regular] [\s!features={\s!default,lm-rm-regular}]
+        \definefontsynonym [SerifBold]       [\s!file:lmroman10-regular]      [\s!features={\s!default,lm-rm-bold}]
+        \definefontsynonym [SerifBoldItalic] [\s!file:lmroman10-italic]       [\s!features={\s!default,lm-rm-bold}]
+        \definefontsynonym [SerifBoldSlanted][\s!file:lmromanslant10-regular] [\s!features={\s!default,lm-rm-bold}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [modern-latin]
+      % \loadfontgoodies[lm]
+        \definefontsynonym [Sans]           [\s!file:lmsans10-regular] [\s!features={\s!default,lm-ss-regular}]
+        \definefontsynonym [SansItalic]     [\s!file:lmsans10-oblique] [\s!features={\s!default,lm-ss-regular}]
+        \definefontsynonym [SansSlanted]    [\s!file:lmsans10-oblique] [\s!features={\s!default,lm-ss-regular}]
+        \definefontsynonym [SansBold]       [\s!file:lmsans10-regular] [\s!features={\s!default,lm-ss-bold}]
+        \definefontsynonym [SansBoldItalic] [\s!file:lmsans10-oblique] [\s!features={\s!default,lm-ss-bold}]
+        \definefontsynonym [SansBoldSlanted][\s!file:lmsans10-oblique] [\s!features={\s!default,lm-ss-bold}]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [modern-latin]
+      % \loadfontgoodies[lm]
+        \definefontsynonym [Mono]           [\s!file:lmmono10-regular]      [\s!features={\s!default,lm-tt-regular}]
+        \definefontsynonym [MonoItalic]     [\s!file:lmmono10-italic]       [\s!features={\s!default,lm-tt-regular}]
+        \definefontsynonym [MonoSlanted]    [\s!file:lmmonoslant10-regular] [\s!features={\s!default,lm-tt-regular}]
+        \definefontsynonym [MonoBold]       [\s!file:lmmono10-regular]      [\s!features={\s!default,lm-tt-bold}]
+        \definefontsynonym [MonoBoldItalic] [\s!file:lmmono10-italic]       [\s!features={\s!default,lm-tt-bold}]
+        \definefontsynonym [MonoBoldSlanted][\s!file:lmmonoslant10-regular] [\s!features={\s!default,lm-tt-bold}]
+    \stoptypescript
+
+    \starttypescript [\s!math] [modern-latin]
+        \loadfontgoodies[lm]
+        \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math,mathextra},\s!goodies=lm]
+        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math,mathextra},\s!goodies=lm]
+    \stoptypescript
+
+    \starttypescript [modern-latin]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern-latin] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern-latin] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern-latin] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern-latin] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

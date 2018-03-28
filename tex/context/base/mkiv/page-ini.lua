@@ -164,7 +164,7 @@ end)
 
 interfaces.implement {
     name      = "markpage",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = pages.mark
 }
 

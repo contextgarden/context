@@ -160,7 +160,7 @@ implement {
 
 implement {
     name      = "usezipfile",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(name,tree)
         if tree and tree ~= "" then
             resolvers.usezipfile(formatters["zip:///%s?tree=%s"](name,tree))
@@ -923,13 +923,13 @@ end
 implement {
     name      = "setdocumentargument",
     actions   = document.setargument,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {
     name      = "setdocumentdefaultargument",
     actions   = document.setdefaultargument,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {
@@ -941,7 +941,7 @@ implement {
 implement {
     name      = "getdocumentargument",
     actions   = { document.getargument, context },
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {

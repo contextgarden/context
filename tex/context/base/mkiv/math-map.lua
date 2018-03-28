@@ -651,7 +651,7 @@ end
 
 implement {
     name      = "setmathattribute",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(alphabet,style)
         local data = alphabets[alphabet] or regular
         data = data[style] or data.tf

@@ -1058,12 +1058,12 @@ implement {
 implement {
     name      = "synccolorclone",
     actions   = synccolorclone,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {
     name      = "setcolormodel",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(model,weight)
         texsetattribute(a_colormodel,setcolormodel(model,weight))
     end
@@ -1072,7 +1072,7 @@ implement {
 implement {
     name      = "setpagecolormodel",
     actions   = colors.setpagecolormodel,
-    arguments = { "string" },
+    arguments = "string",
 }
 
 implement {
@@ -1110,13 +1110,13 @@ implement {
     actions   = function(main)
         colors.main = main
     end,
-    arguments = { "integer" }
+    arguments = "integer"
 }
 
 implement {
     name      = "definetransparency",
     actions   = definetransparency,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {

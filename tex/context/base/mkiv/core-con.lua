@@ -644,7 +644,7 @@ end
 implement {
     name      = "defineconversion",
     actions   = converters.define,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
@@ -685,7 +685,7 @@ end
 implement {
     name      = "doifelseconverter",
     actions   = { valid, commands.doifelse },
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
@@ -1398,7 +1398,7 @@ end
 
 implement {
     name      = "currentdate",
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
     actions   = function(pattern,default,language)
         currentdate(
             pattern  == "" and default or pattern,

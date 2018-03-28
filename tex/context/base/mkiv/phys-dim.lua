@@ -966,4 +966,4 @@ implement { name = "digits_normal",  actions = makedigits,   arguments = "string
 implement { name = "digits_reverse", actions = makedigits,   arguments = { "string", true } }
 implement { name = "unit_normal",    actions = makeunit,     arguments = "string"}
 implement { name = "unit_reverse",   actions = makeunit,     arguments = { "string", true } }
-implement { name = "registerunit",   actions = registerunit, arguments = { "string", "string" } }
+implement { name = "registerunit",   actions = registerunit, arguments = "2 strings" }

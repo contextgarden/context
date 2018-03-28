@@ -975,7 +975,7 @@ publications.sortmethods.authoryear = {
 
 implement {
     name      = "btxremapauthor",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(k,v)
         local a  = { splitauthor(k,true) }
         local s1 = sequentialhash(a)

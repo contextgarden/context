@@ -1271,13 +1271,13 @@ interfaces.implement {
 interfaces.implement {
     name      = "preparecolumnsetflush",
     actions   = columnsets.prepareflush,
-    arguments = { "string" },
+    arguments = "string",
 }
 
 interfaces.implement {
     name      = "finishcolumnsetflush",
     actions   = columnsets.finishflush,
-    arguments = { "string" },
+    arguments = "string",
 }
 
 interfaces.implement {
@@ -1289,13 +1289,13 @@ interfaces.implement {
 interfaces.implement {
     name      = "setvsizecolumnset",
     actions   = columnsets.setvsize,
-    arguments = { "string" },
+    arguments = "string",
 }
 
 interfaces.implement {
     name      = "sethsizecolumnset",
     actions   = columnsets.sethsize,
-    arguments = { "string" },
+    arguments = "string",
 }
 
 interfaces.implement {
@@ -1423,7 +1423,7 @@ interfaces.implement {
 interfaces.implement {
     name      = "columnsetgoto",
     actions   = columnsets["goto"],
-    arguments = { "string" , "string" },
+    arguments = "2 strings",
 }
 
 interfaces.implement {

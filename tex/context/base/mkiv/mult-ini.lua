@@ -346,7 +346,7 @@ end
 interfaces.implement {
     name      = "setuserinterface",
     actions   = interfaces.setuserinterface,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 interfaces.cachedsetups = interfaces.cachedsetups or { }
@@ -387,30 +387,30 @@ function interfaces.message(str)
 end
 
 implement { name = "registernamespace",    actions = interfaces.registernamespace, arguments = { "integer", "string" } }
-implement { name = "setinterfaceconstant", actions = interfaces.setconstant,       arguments = { "string", "string" } }
-implement { name = "setinterfacevariable", actions = interfaces.setvariable,       arguments = { "string", "string" } }
-implement { name = "setinterfaceelement",  actions = interfaces.setelement,        arguments = { "string", "string" } }
-implement { name = "setinterfacemessage",  actions = interfaces.setmessage,        arguments = { "string", "string", "string" } }
-implement { name = "setinterfacemessages", actions = interfaces.setmessages,       arguments = { "string", "string" } }
-implement { name = "showmessage",          actions = interfaces.showmessage,       arguments = { "string", "string", "string" } }
+implement { name = "setinterfaceconstant", actions = interfaces.setconstant,       arguments = "2 strings" }
+implement { name = "setinterfacevariable", actions = interfaces.setvariable,       arguments = "2 strings" }
+implement { name = "setinterfaceelement",  actions = interfaces.setelement,        arguments = "2 strings" }
+implement { name = "setinterfacemessage",  actions = interfaces.setmessage,        arguments = "3 strings" }
+implement { name = "setinterfacemessages", actions = interfaces.setmessages,       arguments = "2 strings" }
+implement { name = "showmessage",          actions = interfaces.showmessage,       arguments = "3 strings" }
 
 implement {
     name      = "doifelsemessage",
     actions   = { interfaces.doifelsemessage, commands.doifelse },
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {
     name      = "getmessage",
     actions   = { interfaces.getmessage, context },
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
 }
 
 implement {
     name      = "writestatus",
     overload  = true,
     actions   = interfaces.writestatus,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {

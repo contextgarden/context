@@ -170,7 +170,7 @@ end
 
 implement {
     name      = "defineattribute",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = { attributes.define, context }
 }
 

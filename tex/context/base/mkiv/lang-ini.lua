@@ -612,7 +612,7 @@ end)
 implement {
     name      = "languagenumber",
     actions   = { languages.getnumber, context },
-    arguments = { "string", "string", "string", "string" }
+    arguments = "4 strings"
 }
 
 implement {
@@ -623,25 +623,25 @@ implement {
 implement {
     name      = "definelanguage",
     actions   = languages.define,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {
     name      = "setlanguagesynonym",
     actions   = languages.setsynonym,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {
     name      = "unloadlanguage",
     actions   = languages.unload,
-    arguments = { "string" }
+    arguments = "string"
 }
 
 implement {
     name      = "setlanguageexceptions",
     actions   = languages.setexceptions,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {

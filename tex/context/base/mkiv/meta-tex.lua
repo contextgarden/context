@@ -117,13 +117,13 @@ do
     implement {
         name      = "metapostformatted",
         actions   = metapost.svformat,
-        arguments = { "string", "string" }
+        arguments = "2 strings",
     }
 
     implement {
         name      = "metapostgraphformat",
         actions   = metapost.nvformat,
-        arguments = { "string", "string" }
+        arguments = "2 strings",
     }
 
     if LUAVERSION < 5.2  then

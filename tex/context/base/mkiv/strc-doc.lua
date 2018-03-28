@@ -1029,11 +1029,11 @@ implement { name = "structurecatcodedget",       actions = sections.structuredat
 implement { name = "structuregivencatcodedget",  actions = sections.structuredata, arguments = { false, "string", false, "integer" } }
 implement { name = "structureautocatcodedget",   actions = sections.structuredata, arguments = { false, "string", false, "string" } }
 
-implement { name = "namedstructurevariable",     actions = sections.structuredata, arguments = { "string", "string" }  }
-implement { name = "namedstructureuservariable", actions = sections.userdata,      arguments = { "string", "string" }  }
+implement { name = "namedstructurevariable",     actions = sections.structuredata, arguments = "2 strings" }
+implement { name = "namedstructureuservariable", actions = sections.userdata,      arguments = "2 strings" }
 
-implement { name = "setstructurelevel",          actions = sections.setlevel,        arguments = { "string", "string" } }
-implement { name = "getstructurelevel",          actions = sections.getcurrentlevel, arguments = { "string" } }
+implement { name = "setstructurelevel",          actions = sections.setlevel,        arguments = "2 strings" }
+implement { name = "getstructurelevel",          actions = sections.getcurrentlevel, arguments = "string" }
 implement { name = "setstructurenumber",         actions = sections.setnumber,       arguments = { "integer", "string" } } -- string as we support +-
 implement { name = "getstructurenumber",         actions = sections.getnumber,       arguments = { "integer" } }
 implement { name = "getsomestructurenumber",     actions = sections.getnumber,       arguments = { "integer", "string" } }

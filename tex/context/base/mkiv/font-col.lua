@@ -363,13 +363,13 @@ end
 implement {
     name      = "fontcollectiondefine",
     actions   = collections.define,
-    arguments = { "string", "string", "string", "string" }
+    arguments = "4 strings",
 }
 
 implement {
     name      = "fontcollectionreset",
     actions   = collections.reset,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

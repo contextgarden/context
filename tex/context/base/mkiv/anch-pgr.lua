@@ -222,7 +222,7 @@ end
 interfaces.implement {
     name      = "registerbackground",
     actions   = registerbackground,
-    arguments = { "string" }
+    arguments = "string",
 }
 
 -- optimized already but we can assume a cycle i.e. prune the last point and then

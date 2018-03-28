@@ -61,7 +61,7 @@ local ctx_doifelse = commands.doifelse
 
 implement {
     name      = "doifelsefirstchar",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(str,chr)
         ctx_doifelse(lpegmatch(pattern,str) == chr)
     end
@@ -69,7 +69,7 @@ implement {
 
 implement {
     name      = "getsubstring",
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
     actions   = function(str,first,last)
         context(utfsub(str,tonumber(first),tonumber(last)))
     end
@@ -581,42 +581,42 @@ end
 implement {
     name      = "doifelsecommon",
     actions   = doifelsecommon,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifcommon",
     actions   = doifcommon,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifnotcommon",
     actions   = doifnotcommon,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifelseinset",
     actions   = doifelseinset,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifinset",
     actions   = doifinset,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifnotinset",
     actions   = doifnotinset,
-    arguments = { "string", "string" },
+    arguments = "2 strings",
 }
 
 -- implement {
 --     name      = "stringcompare",
---     arguments = { "string", "string" },
+--     arguments = "2 strings",
 --     actions   = function(a,b)
 --         context((a == b and 0) or (a > b and 1) or -1)
 --     end
@@ -624,7 +624,7 @@ implement {
 --
 -- implement {
 --     name      = "doifelsestringafter",
---     arguments = { "string", "string" },
+--     arguments = "2 strings",
 --     actions   = function(a,b)
 --         ctx_doifelse((a == b and 0) or (a > b and 1) or -1)
 --     end
@@ -632,7 +632,7 @@ implement {
 --
 -- implement {
 --     name      = "doifelsestringbefore",
---     arguments = { "string", "string" },
+--     arguments = "2 strings",
 --     actions   = function(a,b)
 --         ctx_doifelse((a == b and 0) or (a < b and -1) or 1)
 --     end
@@ -640,7 +640,7 @@ implement {
 
 -- implement { -- not faster than addtocommalist
 --     name      = "additemtolist", -- unique
---     arguments = { "string", "string" },
+--     arguments = "2 strings",
 --     actions   = function(l,s)
 --         if l == "" or s == l then
 --          -- s = s

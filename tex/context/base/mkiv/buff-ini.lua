@@ -492,7 +492,7 @@ end
 implement {
     name      = "savebuffer",
     actions   = savebuffer,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
 -- we can consider adding a size to avoid unlikely clashes

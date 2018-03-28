@@ -648,7 +648,7 @@ local findallused do
 
     implement {
         name      = "btxdoifelsematches",
-        arguments = { "string", "string", "string" },
+        arguments = "3 strings",
         actions   = function(dataset,tag,expression)
             local find = publications.finder(dataset,expression)
             local okay = false
@@ -1009,30 +1009,28 @@ function publications.lastofrange(dataset,tag,name)
     end
 end
 
-local three_strings = { "string", "string", "string" }
-
 implement {
     name      = "btxsingularorplural",
     actions   = { publications.singularorplural, ctx_doifelse },
-    arguments = three_strings
+    arguments = "3 strings"
 }
 
 implement {
     name      = "btxoneorrange",
     actions   = { publications.oneorrange, function(b) if b == nil then ctx_gobbletwoarguments() else ctx_doifelse(b) end end },
-    arguments = three_strings
+    arguments = "3 strings"
 }
 
 implement {
     name      = "btxfirstofrange",
     actions   = { publications.firstofrange, context },
-    arguments = three_strings
+    arguments = "3 strings"
 }
 
 implement {
     name      = "btxlastofrange",
     actions   = { publications.lastofrange, context },
-    arguments = three_strings
+    arguments = "3 strings"
 }
 
 -- basic loading
@@ -1237,13 +1235,13 @@ end
 
 implement {
     name      = "btxaddentry",
+    arguments = "3 strings",
     actions   = function(name,settings,content)
         local dataset = datasets[name]
         if dataset then
             publications.addtexentry(dataset,settings,content)
         end
     end,
-    arguments = { "string",  "string",  "string" }
 }
 
 function publications.checkeddataset(name,default)
@@ -1260,12 +1258,13 @@ end
 
 implement {
     name      = "btxsetdataset",
+    arguments = "2 strings",
     actions   = { publications.checkeddataset, context },
-    arguments = { "string", "string"}
 }
 
 implement {
     name      = "btxsetentry",
+    arguments = "2 strings",
     actions   = function(name,tag)
         local dataset = rawget(datasets,name)
         if dataset then
@@ -1278,7 +1277,6 @@ implement {
             report("unknown dataset %a",name)
         end
     end,
-    arguments = { "string", "string" },
 }
 
 -- rendering of fields
@@ -1558,19 +1556,19 @@ do
 
     publications.okay = okay
 
-    implement { name = "btxfield",     actions = btxfield,  arguments = { "string", "string", "string" } }
-    implement { name = "btxdetail",    actions = btxdetail, arguments = { "string", "string", "string" } }
-    implement { name = "btxflush",     actions = btxflush,  arguments = { "string", "string", "string" } }
-    implement { name = "btxdirect",    actions = btxdirect, arguments = { "string", "string", "string" } }
+    implement { name = "btxfield",     actions = btxfield,  arguments = "3 strings" }
+    implement { name = "btxdetail",    actions = btxdetail, arguments = "3 strings" }
+    implement { name = "btxflush",     actions = btxflush,  arguments = "3 strings" }
+    implement { name = "btxdirect",    actions = btxdirect, arguments = "3 strings" }
 
     implement { name = "btxfieldname", actions = { get, context }, arguments = { "string", "string", "string", false, false } }
     implement { name = "btxfieldtype", actions = { get, context }, arguments = { "string", "string", "string", true,  false } }
     implement { name = "btxfoundname", actions = { get, context }, arguments = { "string", "string", "string", false, true  } }
     implement { name = "btxfoundtype", actions = { get, context }, arguments = { "string", "string", "string", true,  true  } }
 
-    implement { name = "btxdoifelse",  actions = { okay, ctx_doifelse }, arguments = { "string", "string", "string" } }
-    implement { name = "btxdoif",      actions = { okay, ctx_doif     }, arguments = { "string", "string", "string" } }
-    implement { name = "btxdoifnot",   actions = { okay, ctx_doifnot  }, arguments = { "string", "string", "string" } }
+    implement { name = "btxdoifelse",  actions = { okay, ctx_doifelse }, arguments = "3 strings" }
+    implement { name = "btxdoif",      actions = { okay, ctx_doif     }, arguments = "3 strings" }
+    implement { name = "btxdoifnot",   actions = { okay, ctx_doifnot  }, arguments = "3 strings" }
 
 end
 
@@ -2041,8 +2039,8 @@ do
 
     implement {
         name      = "btxflushpages",
+        arguments = "2 strings",
         actions   = btxflushpages,
-        arguments = { "string", "string" }
     }
 
     local function identical(a,b)
@@ -2277,20 +2275,20 @@ do
 
     implement {
         name      = "btxuservariable",
+        arguments = "2 strings",
         actions   = { getuserdata, context },
-        arguments = { "string", "string" }
     }
 
     implement {
         name      = "btxdoifelseuservariable",
+        arguments = "2 strings",
         actions   = { getuserdata, ctx_doifelse },
-        arguments = { "string", "string" }
     }
 
  -- implement {
  --     name      = "btxresolvelistreference",
+ --     arguments = "2 strings",
  --     actions   = lists.resolve,
- --     arguments = { "string", "string" }
  -- }
 
     implement {
@@ -2315,32 +2313,32 @@ do
 
     implement {
         name      = "btxpreparelistentries",
+        arguments = "string",
         actions   = lists.prepareentries,
-        arguments = { "string" },
     }
 
     implement {
         name      = "btxfetchlistentries",
+        arguments = "string",
         actions   = lists.fetchentries,
-        arguments = { "string" },
     }
 
     implement {
         name      = "btxflushlistentry",
+        arguments = "2 strings",
         actions   = lists.flushentry,
-        arguments = { "string", "integer" }
     }
 
     implement {
         name      = "btxflushlisttag",
+        arguments = "2 strings",
         actions   = lists.flushtag,
-        arguments = { "string", "integer" }
     }
 
     implement {
         name      = "btxflushlistcombi",
+        arguments = "2 strings",
         actions   = lists.flushcombi,
-        arguments = { "string", "string" }
     }
 
     implement {
@@ -2351,8 +2349,8 @@ do
 
     implement {
         name      = "btxdoifelsecombiinlist",
+        arguments = "2 strings",
         actions   = { lists.combiinlist, ctx_doifelse },
-        arguments = { "string", "string" }
     }
 
 end
@@ -3374,8 +3372,8 @@ do
 
     implement {
         name      = "btxlistvariant",
+        arguments = "5 strings",
         actions   = btxlistvariant,
-        arguments = { "string", "string", "string", "string", "string" } -- not integer here
     }
 
     function listvariants.default(dataset,block,tag,variant)
@@ -3440,7 +3438,7 @@ do
 
     implement {
         name      = "checkinterfacechain",
-        arguments = { "string", "string" },
+        arguments = "2 strings",
         actions   = function(str,command)
             local chain = lpegmatch(splitter,str)
             if #chain > 0 then

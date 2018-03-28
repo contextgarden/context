@@ -980,7 +980,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
     implement {
         name      = "registerhyphenationexception",
         actions   = traditional.registerexception,
-        arguments = { "string",  "string" }
+        arguments = "2 strings",
     }
 
     -- This is a relative large function with local variables and local functions. A previous
@@ -1725,7 +1725,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
     implement {
         name      = "showhyphenationtrace",
         actions   = hyphenators.showhyphenationtrace,
-        arguments = { "string", "string" }
+        arguments = "2 strings",
     }
 
     function nodes.stripdiscretionaries(head)

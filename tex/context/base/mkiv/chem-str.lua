@@ -808,7 +808,7 @@ implement {
 implement {
     name      = "definechemical",
     actions   = chemistry.define,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
 implement {
@@ -843,7 +843,7 @@ implement {
 implement {
     name      = "chemicalcomponent",
     actions   = chemistry.component,
-    arguments = { "string", "string", "string", "string" }
+    arguments = "4 strings",
 }
 
 -- todo: top / bottom

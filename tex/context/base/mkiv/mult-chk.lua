@@ -52,13 +52,13 @@ end
 implement {
     name      = "setvalidinterfacekeys",
     actions   = interfaces.setvalidkeys,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {
     name      = "addvalidinterfacekeys",
     actions   = interfaces.addvalidkeys,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 -- weird code, looks incomplete ... probably an experiment
@@ -89,5 +89,5 @@ end
 implement {
     name      = "getcheckedinterfaceparameters",
     actions   = interfaces.getcheckedparameters,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings"
 }

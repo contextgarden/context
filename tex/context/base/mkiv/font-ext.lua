@@ -182,7 +182,7 @@ fonts.goodies.register("expansions",  function(...) return fonts.goodies.report(
 
 implement {
     name      = "setupfontexpansion",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
 }
 
@@ -493,7 +493,7 @@ fonts.goodies.register("protrusions", function(...) return fonts.goodies.report(
 
 implement {
     name      = "setupfontprotrusion",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
 }
 
@@ -673,8 +673,6 @@ local function manipulatedimensions(tfmdata,key,value)
                 local height = newheight or oldheight or 0
                 local depth  = newdepth  or olddepth  or 0
                 if oldwidth ~= width or oldheight ~= height or olddepth ~= depth then
-                    -- Defining the tables in one step is more efficient
-                    -- than adding fields later.
                     local private = getprivate(tfmdata)
                     local newslot = { "slot", 1, private } -- { "slot", 0, private }
                     local new_c
@@ -721,19 +719,19 @@ local function manipulatedimensions(tfmdata,key,value)
             for k, v in next, additions do
                 characters[k] = v
             end
-        elseif height > 0 and depth > 0 then
-            for unicode, old_c in next, characters do
-                old_c.height = height
-                old_c.depth  = depth
-            end
-        elseif height > 0 then
-            for unicode, old_c in next, characters do
-                old_c.height = height
-            end
-        elseif depth > 0 then
-            for unicode, old_c in next, characters do
-                old_c.depth = depth
-            end
+     -- elseif height > 0 and depth > 0 then
+     --     for unicode, old_c in next, characters do
+     --         old_c.height = height
+     --         old_c.depth  = depth
+     --     end
+     -- elseif height > 0 then
+     --     for unicode, old_c in next, characters do
+     --         old_c.height = height
+     --     end
+     -- elseif depth > 0 then
+     --     for unicode, old_c in next, characters do
+     --         old_c.depth = depth
+     --     end
         end
     end
 end
@@ -1740,28 +1738,117 @@ registerafmfeature(outline_specification)
 
 -- definitely ugly
 
-local function initializebolden(tfmdata,value)
-    value = tonumber(value)
-    if not value then
-        value =  0
-    else
-        value = tonumber(value) or 0
-    end
-    if value then
-        value = value * 1000
-    end
-    tfmdata.parameters.mode  = 2
-    tfmdata.parameters.width = value
-end
+local report_effect = logs.reporter("fonts","effect")
+local trace_effect  = false
 
-local bolden_specification = {
-    name        = "bolden",
-    description = "bolden glyphs",
-    initializers = {
-        base = initializebolden,
-        node = initializebolden,
-    }
+trackers.register("fonts.effect", function(v) trace_effect = v end)
+
+local effects = {
+    inner  = 0,
+    outer  = 1,
+    both   = 2,
+    hidden = 3,
 }
 
-registerotffeature(bolden_specification)
-registerafmfeature(bolden_specification)
+local function initializeeffect(tfmdata,value)
+    local spec
+    if type(value) == "number" then
+        spec = { width = value }
+    else
+        spec = settings_to_hash(value)
+    end
+    local effect = spec.effect or "both"
+    local width  = tonumber(spec.width) or 0
+    local mode   = effects[effect]
+    if not mode then
+        report_effect("invalid effect %a",effect)
+    elseif width == 0 and effect == "inner" then
+        report_effect("invalid width %a for effect %a",width,effect)
+    else
+        local parameters = tfmdata.parameters
+        local properties = tfmdata.properties
+        parameters.mode   = mode
+        parameters.width  = width * 1000
+        local factor  = tonumber(spec.factor) or 0
+        local hfactor = tonumber(spec.vfactor) or factor
+        local vfactor = tonumber(spec.hfactor) or factor
+        local delta   = tonumber(spec.delta) or 1
+        local wdelta  = tonumber(spec.wdelta) or delta
+        local hdelta  = tonumber(spec.hdelta) or delta
+        local ddelta  = tonumber(spec.ddelta) or hdelta
+        properties.effect = {
+            effect  = effect,
+            width   = width,
+            factor  = factor,
+            hfactor = hfactor,
+            vfactor = vfactor,
+            wdelta  = wdelta,
+            hdelta  = hdelta,
+            ddelta  = ddelta,
+        }
+    end
+end
+
+local function manipulateeffect(tfmdata)
+    local effect = tfmdata.properties.effect
+    if effect then
+        local characters = tfmdata.characters
+        local parameters = tfmdata.parameters
+        local multiplier = effect.width * 100
+        local wdelta = effect.wdelta * parameters.hfactor * multiplier
+        local hdelta = effect.hdelta * parameters.vfactor * multiplier
+        local ddelta = effect.ddelta * parameters.vfactor * multiplier
+        local hshift = wdelta / 2
+        local factor  = (1 + effect.factor)  * parameters.factor
+        local hfactor = (1 + effect.hfactor) * parameters.hfactor
+        local vfactor = (1 + effect.vfactor) * parameters.vfactor
+        for unicode, old_c in next, characters do
+            local oldwidth  = old_c.width
+            local oldheight = old_c.height
+            local olddepth  = old_c.depth
+            if oldwidth and oldwidth > 0 then
+                old_c.width = oldwidth + wdelta
+                old_c.commands = {
+                    { "right", hshift },
+                    { "char", unicode },
+                }
+            end
+            if oldheight and oldheight > 0 then
+                old_c.height = oldheight + hdelta
+            end
+            if olddepth and olddepth > 0 then
+                old_c.depth = olddepth + ddelta
+            end
+        end
+        parameters.factor  = factor
+        parameters.hfactor = hfactor
+        parameters.vfactor = vfactor
+        if trace_effect then
+            report_effect("applying effect")
+            report_effect("  effect  : %s", effect.effect)
+            report_effect("  width   : %s => %s", effect.width,  multiplier)
+            report_effect("  factor  : %s => %s", effect.factor, factor )
+            report_effect("  hfactor : %s => %s", effect.hfactor,hfactor)
+            report_effect("  vfactor : %s => %s", effect.vfactor,vfactor)
+            report_effect("  wdelta  : %s => %s", effect.wdelta, wdelta)
+            report_effect("  hdelta  : %s => %s", effect.hdelta, hdelta)
+            report_effect("  ddelta  : %s => %s", effect.ddelta, ddelta)
+        end
+    end
+end
+
+local effect_specification = {
+    name        = "effect",
+    description = "apply effects to glyphs",
+    initializers = {
+        base = initializeeffect,
+        node = initializeeffect,
+    },
+    manipulators = {
+        base = manipulateeffect,
+        node = manipulateeffect,
+    },
+}
+
+registerotffeature(effect_specification)
+registerafmfeature(effect_specification)

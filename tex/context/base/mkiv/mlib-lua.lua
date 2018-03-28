@@ -696,7 +696,7 @@ do
 
     interfaces.implement {
         name      = "getMPstored",
-        arguments = { "string", "string" },
+        arguments = "2 strings",
         actions   = function(name,key)
             context(stores[name][key])
         end

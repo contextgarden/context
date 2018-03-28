@@ -2249,7 +2249,7 @@ end
 implement {
     name      = "definetypeface",
     actions   = fonts.definetypeface,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 function fonts.current() -- todo: also handle name
@@ -2442,13 +2442,13 @@ do
 
     implement {
         name      = "definefontfeature",
-        arguments = { "string", "string", "string" },
+        arguments = "3 strings",
         actions   = presetcontext
     }
 
     implement {
         name      = "adaptfontfeature",
-        arguments = { "string", "string" },
+        arguments = "2 strings",
         actions   = adaptcontext
     }
 
@@ -2919,7 +2919,7 @@ do
 
  -- implement {
  --     name      = "definefontcolorpalette",
- --     arguments = { "string", "string" },
+ --     arguments = "2 strings",
  --     actions   = function(name,set)
  --         set = settings_to_array(set)
  --         for i=1,#set do
@@ -2938,7 +2938,7 @@ do
 
     implement {
         name      = "definefontcolorpalette",
-        arguments = { "string", "string" },
+        arguments = "2 strings",
         actions   = function(name,set)
             otf.registerpalette(name,settings_to_array(set))
         end

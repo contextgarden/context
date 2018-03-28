@@ -101,7 +101,7 @@ interfaces.implement {
 interfaces.implement {
     name      = "luathread",
     actions   = runthread,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 -- local scanners = interfaces.scanners
@@ -177,7 +177,7 @@ lua.registername = registername
 
 implement {
     name      = "registernamedlua",
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
     actions   = function(name,message,csname)
         if csname and csname ~= "" then
             implement {

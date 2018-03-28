@@ -84,7 +84,7 @@ end)
 
 implement {
     name      = "systemlog",
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
     actions   = function(whereto,category,text)
         logs.system(whereto,"context",tex.jobname,category,text)
     end,

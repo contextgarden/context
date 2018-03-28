@@ -45,7 +45,7 @@
     \startTEXpage[offset=.25\scratchdimentwo,height=10\scratchdimentwo,width=4\scratchdimenone]
         \ruledhbox to \hsize\bgroup
             \hss
-            \FontOne\setstrut\strut
+            \FontOne\setstrut\strut\showglyphs
             \startoverlay
                 {\ColorOne\ruledhbox{\FontOne\char#1}}
                 {\ColorTwo\ruledhbox{\FontTwo\char#1}}
@@ -97,8 +97,11 @@
 
 \starttext
 
+%     \showoverlayedfonts
+%       [list={file:husayni-script-regular.ttf @ 48.0pt,
+%              file:husayni-note-bold.ttf      @ 34.2pt}] % 34.18726pt
+
     \showoverlayedfonts
-      [list={file:husayni-script-regular.ttf @ 48.0pt,
-             file:husayni-note-bold.ttf      @ 34.2pt}] % 34.18726pt
+      [list={Serif,SerifBold}]
 
 \stoptext

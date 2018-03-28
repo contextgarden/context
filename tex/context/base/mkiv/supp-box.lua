@@ -562,7 +562,7 @@ do
 
     implement {
         name      = "directboxfromcache",
-        arguments = { "string", "string" },
+        arguments = "2 strings",
         actions   = { boxes.direct, context },
      -- actions   = function(category,name) local b = boxes.direct(category,name) if b then context(b) end end,
     }
@@ -582,13 +582,13 @@ do
 
     implement {
         name      = "doifelseboxincache",
-        arguments = { "string", "string" },
+        arguments = "2 strings",
         actions   = { boxes.found, doifelse },
     }
 
     implement {
         name      = "resetboxesincache",
-        arguments = { "string" },
+        arguments = "string",
         actions   = boxes.reset,
     }
 

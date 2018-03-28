@@ -355,19 +355,19 @@ references.setcomponent    = setcomponent
 implement {
     name      = "setnextreferenceorder",
     actions   = setnextorder,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "setnextinternalreference",
     actions   = setnextinternal,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "currentreferenceorder",
     actions = { currentorder, context },
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 function references.set(data)
@@ -432,7 +432,7 @@ end
 implement {
     name      = "enhancereference",
     actions   = references.enhance,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 -- -- -- related to strc-ini.lua -- -- --
@@ -633,7 +633,7 @@ implement {
 implement {
     name      = "useurl",
     actions   = urls.define,
-    arguments = { "string", "string", "string", "string" }
+    arguments = "4 strings",
 }
 
 implement {
@@ -684,7 +684,7 @@ implement {
 implement {
     name      = "usefile",
     actions   = files.define,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings"
 }
 
 implement {
@@ -774,7 +774,7 @@ end
 implement {
     name      = "defineprogram",
     actions   = programs.define,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
 local function getprogram(name)
@@ -863,13 +863,13 @@ end
 implement {
     name      = "definereference",
     actions   = references.define,
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
 implement {
     name      = "resetreference",
     actions   = references.reset,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 setmetatableindex(defined,"table")

@@ -288,7 +288,7 @@ end
 implement {
     name      = "renderingvar",
     actions   = { renderings.var, context },
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

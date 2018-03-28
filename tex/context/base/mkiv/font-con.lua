@@ -508,6 +508,8 @@ function constructors.scale(tfmdata,specification)
     targetparameters.size         = scaledpoints
     targetparameters.units        = units
     targetparameters.scaledpoints = askedscaledpoints
+    targetparameters.mode         = mode
+    targetparameters.width        = width
     --
     local isvirtual        = properties.virtualized or tfmdata.type == "virtual"
     local hasquality       = parameters.expansion or parameters.protrusion
@@ -884,12 +886,15 @@ function constructors.scale(tfmdata,specification)
     --
     constructors.aftercopyingcharacters(target,tfmdata)
     --
-    constructors.trytosharefont(target,tfmdata)
+   constructors.trytosharefont(target,tfmdata)
     --
     -- catch inconsistencies
     --
     local vfonts = target.fonts
-    if isvirtual then
+--     if isvirtual then
+if isvirtual or target.type == "virtual" or properties.virtualized then
+        properties.virtualized = true
+target.type = "virtual"
         if not vfonts or #vfonts == 0 then
             target.fonts = { { id = 0 } }
         end

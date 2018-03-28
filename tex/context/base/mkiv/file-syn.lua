@@ -60,11 +60,11 @@ implement {
 implement {
     name      = "definefilesynonym",
     actions   = environment.definefilesynonym,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }
 
 implement {
     name      = "definefilefallback",
     actions   = environment,definefilefallback,
-    arguments = { "string", "string" }
+    arguments = "2 strings"
 }

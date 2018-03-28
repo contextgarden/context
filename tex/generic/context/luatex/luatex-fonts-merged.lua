@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/26/18 19:41:48
+-- merge date  : 03/28/18 22:13:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -9260,6 +9260,8 @@ function constructors.scale(tfmdata,specification)
   targetparameters.size=scaledpoints
   targetparameters.units=units
   targetparameters.scaledpoints=askedscaledpoints
+  targetparameters.mode=mode
+  targetparameters.width=width
   local isvirtual=properties.virtualized or tfmdata.type=="virtual"
   local hasquality=parameters.expansion or parameters.protrusion
   local hasitalics=properties.hasitalics
@@ -9595,7 +9597,9 @@ function constructors.scale(tfmdata,specification)
   constructors.aftercopyingcharacters(target,tfmdata)
   constructors.trytosharefont(target,tfmdata)
   local vfonts=target.fonts
-  if isvirtual then
+if isvirtual or target.type=="virtual" or properties.virtualized then
+    properties.virtualized=true
+target.type="virtual"
     if not vfonts or #vfonts==0 then
       target.fonts={ { id=0 } }
     end

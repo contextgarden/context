@@ -2180,7 +2180,7 @@ do
         name      = "vspacingdefine",
         actions   = vspacing.setmap,
         scope     = "private",
-        arguments = { "string", "string" }
+        arguments = "2 strings",
     }
 
     implement {
@@ -2208,7 +2208,7 @@ do
         name      = "definesnapmethod",
         actions   = vspacing.definesnapmethod,
         scope     = "private",
-        arguments = { "string", "string" }
+        arguments = "2 strings",
     }
 
  -- local remove_node    = nodes.remove

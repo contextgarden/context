@@ -269,7 +269,7 @@ if interfaces then -- eventually this goes to char-ctx.lua
     interfaces.implement {
         name      = "addgrapheme",
         actions   = utffilters.addgrapheme,
-        arguments = { "string", "string", "string" }
+        arguments = "3 strings",
     }
 
 end

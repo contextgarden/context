@@ -96,13 +96,13 @@ jobobjects.page   = getobjectpage
 -- implement {
 --     name      = "objectnumber",
 --     actions   = { getobjectnumber, context },
---     arguments = { "string", "string" },
+--     arguments = "2 strings",
 -- }
 --
 -- implement {
 --     name      = "objectpage",
 --     actions   = { getobjectpage, context },
---     arguments = { "string", "string" },
+--     arguments = "2 strings",
 -- }
 --
 -- implement {
@@ -212,13 +212,13 @@ implement {
 
 implement {
     name      = "restoreobject",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = objects.restore,
 }
 
 implement {
     name      = "doifelseobject",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(ns,id)
         ctx_doifelse(data[ns][id])
      -- ctx_doifelse(objects.reference(ns,id))
@@ -227,7 +227,7 @@ implement {
 
 implement {
     name      = "doifelseobjectreference",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(ns,id)
      -- ctx_doifelse(data[ns][id])
         ctx_doifelse(objects.reference(ns,id))
@@ -252,7 +252,7 @@ implement {
 
 implement {
     name      = "getobjectdimensions",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(ns,id)
         local object = data[ns][id]
         local w, h, d, o = 0, 0, 0, 0

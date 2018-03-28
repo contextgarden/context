@@ -157,6 +157,6 @@ end
 -- interface
 
 implement { name = "definestructureblock",   actions = blocks.define,   arguments = "string" }
-implement { name = "savestructureblock",     actions = blocks.save,     arguments = { "string", "string" ,"string" } }
-implement { name = "selectstructureblock",   actions = blocks.select,   arguments = { "string", "string" ,"string", "string" } }
-implement { name = "setstructureblockstate", actions = blocks.setstate, arguments = { "string", "string" ,"string" } }
+implement { name = "savestructureblock",     actions = blocks.save,     arguments = "3 strings" }
+implement { name = "selectstructureblock",   actions = blocks.select,   arguments = "4 strings" }
+implement { name = "setstructureblockstate", actions = blocks.setstate, arguments = "3 strings" }

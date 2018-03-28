@@ -192,9 +192,9 @@ implement {
 }
 
 implement {
-    name    = "datasetvariable",
-    actions = datasetvariable,
-    arguments = { "string", "string", "string" }
+    name      = "datasetvariable",
+    actions   = datasetvariable,
+    arguments = "3 strings",
 }
 
 --[[ldx--
@@ -305,11 +305,11 @@ implement {
 implement {
     name      = "pagestaterealpage",
     actions   = pagestaterealpage,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "setpagestaterealpageno",
     actions   = setpagestaterealpageno,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }

@@ -151,7 +151,7 @@ notes.getstate        = getstate
 implement {
     name      = "setnotestate",
     actions   = setstate,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
@@ -199,8 +199,8 @@ function notes.restore(tag,forcedstate)
     end
 end
 
-implement { name = "savenote",    actions = notes.save,    arguments = { "string", "string" } }
-implement { name = "restorenote", actions = notes.restore, arguments = { "string", "string" } }
+implement { name = "savenote",    actions = notes.save,    arguments = "2 strings" }
+implement { name = "restorenote", actions = notes.restore, arguments = "2 strings" }
 
 local function hascontent(tag)
     local ok = notestates[tag]
@@ -420,7 +420,7 @@ implement {
 implement {
     name      = "flushnotes",
     actions   = flushnotes,
-    arguments = { "string", "string",  "string" }
+    arguments = "3 strings",
 }
 
 function notes.resetpostponed()

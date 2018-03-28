@@ -1159,7 +1159,7 @@ implement { name = "listsize",       actions = { lists.size, context } }
 implement { name = "listlocation",   actions = { lists.location, context }, arguments = "integer" }
 implement { name = "listlabel",      actions = { lists.label, context }, arguments = { "integer", "string" } }
 implement { name = "listrealpage",   actions = { lists.realpage, context }, arguments = { "string", "integer" } }
-implement { name = "listgroupindex", actions = { lists.groupindex, context }, arguments = { "string", "string" } }
+implement { name = "listgroupindex", actions = { lists.groupindex, context }, arguments = "2 strings", }
 
 implement {
     name    = "currentsectiontolist",

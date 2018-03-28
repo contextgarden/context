@@ -487,7 +487,7 @@ function figures.setpaths(locationset,pathlist)
     end
 end
 
-implement { name = "setfigurepaths", actions = figures.setpaths, arguments = { "string", "string" } }
+implement { name = "setfigurepaths", actions = figures.setpaths, arguments = "2 strings" }
 
 -- check conversions and handle it here
 
@@ -2014,7 +2014,7 @@ local ctx_doexternalfigurerepeat = context.doexternalfigurerepeat
 
 implement {
     name      = "figure_register_page",
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
     actions   = function(a,b,c)
         registered[#registered+1] = { a, b, c }
         context(#registered)

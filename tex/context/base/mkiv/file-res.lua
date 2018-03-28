@@ -161,7 +161,7 @@ local implement = interfaces.implement
 implement {
     name      = "getreadfilename",
     actions   = { getreadfilename, context },
-    arguments = { "string", "string", "string" }
+    arguments = "3 strings",
 }
 
 implement {

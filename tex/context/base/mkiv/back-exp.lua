@@ -3876,7 +3876,7 @@ implement {
 implement {
     name      = "settagfloat",
     actions   = structurestags.setfloat,
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

@@ -259,23 +259,23 @@ end
 
 -- todo: local higher up
 
-implement { name = "registerusedsynonym",  actions = synonyms.registerused,  arguments = { "string", "string" } }
-implement { name = "registershownsynonym", actions = synonyms.registershown, arguments = { "string", "string" } }
-implement { name = "synonymmeaning",       actions = synonyms.meaning,       arguments = { "string", "string" } }
-implement { name = "synonymname",          actions = synonyms.synonym,       arguments = { "string", "string" } }
+implement { name = "registerusedsynonym",  actions = synonyms.registerused,  arguments = "2 strings" }
+implement { name = "registershownsynonym", actions = synonyms.registershown, arguments = "2 strings" }
+implement { name = "synonymmeaning",       actions = synonyms.meaning,       arguments = "2 strings" }
+implement { name = "synonymname",          actions = synonyms.synonym,       arguments = "2 strings" }
 implement { name = "resetusedsynonyms",    actions = synonyms.resetused,     arguments = "string" }
 implement { name = "resetshownsynonyms",   actions = synonyms.resetshown,    arguments = "string" }
 
 implement {
     name      = "doifelsesynonymused",
     actions   = { synonyms.isused, commands.doifelse },
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifelsesynonymshown",
     actions   = { synonyms.isshown, commands.doifelse },
-    arguments = { "string", "string" }
+    arguments = "2 strings",
 }
 
 implement {

@@ -469,7 +469,7 @@ lxml.addindex = addindex
 
 implement {
     name      = "xmladdindex",
-    arguments = { "string" },
+    arguments = "string",
     actions   = addindex,
 }
 
@@ -821,7 +821,7 @@ local k_parser = class * spaces * key * spaces * rest --value
 
 implement {
     name      = "xmlinstalldirective",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(name,csname)
         if csname then
             local keyvalueparser  = k_parser / context[csname]
@@ -1989,6 +1989,37 @@ do
     function lxml.lastatt()
         contextsprint(notcatcodes,att)
     end
+
+    local ctx_doif     = commands.doif
+    local ctx_doifnot  = commands.doifnot
+    local ctx_doifelse = commands.doifelse
+
+    implement {
+        name      = "xmldoifatt",
+        arguments = "3 strings",
+        actions = function(id,l,v)
+            local e = getid(id)
+            ctx_doif(e and e.at[k] == v or false)
+        end
+    }
+
+    implement {
+        name      = "xmldoifnotatt",
+        arguments = "3 strings",
+        actions = function(id,l,v)
+            local e = getid(id)
+            ctx_doifnot(e and e.at[k] == v or false)
+        end
+    }
+
+    implement {
+        name      = "xmldoifelseatt",
+        arguments = "3 strings",
+        actions = function(id,l,v)
+            local e = getid(id)
+            ctx_doifelse(e and e.at[k] == v or false)
+        end
+    }
 
 end
 
