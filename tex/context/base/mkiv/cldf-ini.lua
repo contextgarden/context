@@ -319,7 +319,43 @@ local interfacescanners = setmetatablenewindex(function(t,k,v)
     rawset(t,k,v)
 end)
 
+function interfaces.registerscanner(name,action,protected,public,call)
+    if storedscanners[name] then
+     -- report_cld("warning: scanner %a is already set",k)
+     -- os.exit()
+        -- \scan_<k> is already in the format
+     -- report_cld("using interface scanner: %s",k)
+    else
+        storedscanners[name] = true
+--         if protected then
+--          -- report_cld("installing expandable interface scanner: %s",k)
+--             if public then
+--                 context("\\installprotectedctxscanner{%s}{interfaces.scanners.%s}",name,name)
+--             else
+--                 context("\\installprotectedctxscanner{clf_%s}{interfaces.scanners.%s}",name,name)
+--             end
+--         else
+--          -- report_cld("installing protected interface scanner: %s",k)
+--             if public then
+--                 context("\\installctxscanner{%s}{interfaces.scanners.%s}",name,name)
+--             else
+--                 context("\\installctxscanner{clf_%s}{interfaces.scanners.%s}",name,name)
+--             end
+--         end
+         -- report_cld("installing interface scanner: %s",k)
+            context("\\install%sctxscanner%s{%s%s}{interfaces.scanners.%s}",
+                protected and "protected" or "",
+                call      and "call"      or "",
+                public    and ""          or "clf_",
+                name,
+                name
+            )
+    end
+    rawset(interfacescanners,name,action)
+end
+
 interfaces.scanners = storage.mark(interfacescanners)
+interfaces._ = interfaces.scanners
 
 context.functions = {
     register   = registerfunction,

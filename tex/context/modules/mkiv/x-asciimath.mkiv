@@ -182,6 +182,23 @@
     {\the\everyasciimath
      \clf_justasciimath{\detokenize\expandafter{\normalexpanded{#1}}}}}
 
+% \unexpanded\def\xmlasciimath
+%   {\clf_xmlasciimath}
+
+\unexpanded\def\xmlasciimath
+  {\doifnextoptionalelse\xmlasciimath_yes\xmlasciimath_nop}
+
+\def\xmlasciimath_yes[#1]#2%
+  {\mathematics
+    [#1]%
+    {\the\everyasciimath%
+     \clf_xmlasciimath{#2}}}
+
+\def\xmlasciimath_nop#1%
+  {\mathematics
+    {\the\everyasciimath
+     \clf_xmlasciimath{#1}}}
+
 \unexpanded\def\ctxmoduleasciimath#1%
   {\ctxlua{moduledata.asciimath.#1}}
 

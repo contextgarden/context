@@ -1744,10 +1744,12 @@ local trace_effect  = false
 trackers.register("fonts.effect", function(v) trace_effect = v end)
 
 local effects = {
-    inner  = 0,
-    outer  = 1,
-    both   = 2,
-    hidden = 3,
+    inner   = 0,
+    normal  = 0,
+    outer   = 1,
+    outline = 1,
+    both    = 2,
+    hidden  = 3,
 }
 
 local function initializeeffect(tfmdata,value)
@@ -1762,7 +1764,7 @@ local function initializeeffect(tfmdata,value)
     local mode   = effects[effect]
     if not mode then
         report_effect("invalid effect %a",effect)
-    elseif width == 0 and effect == "inner" then
+    elseif width == 0 and mode == 0 then
         report_effect("invalid width %a for effect %a",width,effect)
     else
         local parameters = tfmdata.parameters

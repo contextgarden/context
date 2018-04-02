@@ -58,6 +58,7 @@ end
 
 local scan_toks       = token.scan_toks
 local scan_string     = token.scan_string
+local scan_argument   = token.scan_argument
 local scan_int        = token.scan_int
 local scan_code       = token.scan_code
 local scan_dimen      = token.scan_dimen
@@ -241,6 +242,7 @@ tokens.scanners = { -- these expand
     integer   = scan_int,
     count     = scan_int,
     string    = scan_string,
+    argument  = scan_argument,
     code      = scan_code,
     word      = scan_word,
     number    = scan_number,

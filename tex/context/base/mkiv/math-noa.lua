@@ -100,6 +100,7 @@ local setchar              = nuts.setchar
 local setfam               = nuts.setfam
 local setsubtype           = nuts.setsubtype
 local setattr              = nuts.setattr
+local setattrlist          = nuts.setattrlist
 
 local getfield             = nuts.getfield
 local getnext              = nuts.getnext
@@ -809,6 +810,8 @@ do
             setfield(d,"small_fam",fam)
             flush_node(sym)
         end
+        setattrlist(d,char)
+        setattrlist(f,char)
         setsubtype(f,what)
         setfield(f,"delim",d)
         setfield(f,"class",-1) -- tex itself does this, so not fenceclasses[what]

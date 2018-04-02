@@ -282,6 +282,7 @@ return {
   "lpcode",
   "luaescapestring",
   "luafunction",
+  "luafunctioncall",
   "luatexbanner",
   "luatexrevision",
   "luatexversion",

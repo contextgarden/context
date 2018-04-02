@@ -10165,7 +10165,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8284, stripped down to: 5698
+-- original size: 8097, stripped down to: 5534
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -10279,10 +10279,7 @@ function statistics.show()
     register("control sequences",function()
       return format("%s of %s + %s",status.cs_count,status.hash_size,status.hash_extra)
     end)
-    register("callbacks",function()
-      local total,indirect=status.callbacks or 0,status.indirect_callbacks or 0
-      return format("%s direct, %s indirect, %s total",total-indirect,indirect,total)
-    end)
+    register("callbacks",statistics.callbacks)
     if TEXENGINE=="luajittex" and JITSUPPORTED then
       local jitstatus=jit.status
       if jitstatus then
@@ -15671,7 +15668,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-xml"] = package.loaded["lxml-xml"] or true
 
--- original size: 10412, stripped down to: 7669
+-- original size: 11096, stripped down to: 8243
 
 if not modules then modules={} end modules ['lxml-xml']={
   version=1.001,
@@ -15690,6 +15687,9 @@ local xmltostring=xml.tostring
 local xmlserialize=xml.serialize
 local xmlcollected=xml.collected
 local xmlnewhandlers=xml.newhandlers
+local reparsedentity=xml.reparsedentitylpeg  
+local unescapedentity=xml.unescapedentitylpeg
+local parsedentity=reparsedentity
 local function first(collected) 
   return collected and collected[1]
 end
@@ -15970,6 +15970,24 @@ function xml.text(id,pattern)
     return xmltotext(id) or ""
   else
     return ""
+  end
+end
+function xml.pure(id,pattern)
+  if pattern then
+    local collected=xmlfilter(id,pattern)
+    if collected and #collected>0 then
+      parsedentity=unescapedentity
+      local s=collected and #collected>0 and xmltotext(collected[1]) or ""
+      parsedentity=reparsedentity
+      return s
+    else
+      return ""
+    end
+  else
+    parsedentity=unescapedentity
+    local s=xmltotext(id) or ""
+    parsedentity=reparsedentity
+    return s
   end
 end
 xml.content=text
@@ -21303,8 +21321,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 876609
--- stripped bytes    : 317488
+-- original bytes    : 877106
+-- stripped bytes    : 317575
 
 -- end library merge
 

@@ -177,10 +177,7 @@ function statistics.show()
         register("control sequences", function()
             return format("%s of %s + %s", status.cs_count, status.hash_size,status.hash_extra)
         end)
-        register("callbacks", function()
-            local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
-            return format("%s direct, %s indirect, %s total", total-indirect, indirect, total)
-        end)
+        register("callbacks", statistics.callbacks)
         if TEXENGINE == "luajittex" and JITSUPPORTED then
             local jitstatus = jit.status
             if jitstatus then

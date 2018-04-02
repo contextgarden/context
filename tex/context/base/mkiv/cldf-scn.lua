@@ -22,6 +22,7 @@ local f_command   = formatters["local action = tokens._action\n%\nt\nreturn func
 local interfaces  = interfaces
 local commands    = commands
 local scanners    = interfaces.scanners
+local register    = interfaces.registerscanner
 
 local compile     = tokens.compile or function() end
 
@@ -71,7 +72,8 @@ function interfaces.implement(specification)
     if scanners[name] and not specification.overload then
         report("warning: 'scanners.%s' is redefined",name)
     end
-    scanners[name] = scanner
+--     scanners[name] = scanner
+    register(name,scanner,specification.protected,specification.public,specification.call)
     if private then
         return
     end

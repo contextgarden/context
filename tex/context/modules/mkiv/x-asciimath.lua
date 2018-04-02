@@ -50,8 +50,11 @@ local formatters   = string.formatters
 local entities     = characters.entities or { }
 
 local xmltext      = xml.text
+local xmlpure      = xml.pure
 local xmlinclusion = xml.inclusion
 local xmlcollected = xml.collected
+
+local lxmlgetid    = lxml.getid
 
 -- todo: use private unicodes as temporary slots ... easier to compare
 
@@ -2089,6 +2092,14 @@ interfaces.implement {
     arguments = { "string", true },
 }
 
+interfaces.implement {
+    name      = "xmlasciimath",
+    actions   = function(id)
+        convert(xmlpure(lxmlgetid(id)))
+    end,
+    arguments = "string"
+}
+
 local ctx_typebuffer  = context.typebuffer
 local ctx_mathematics = context.mathematics
 local ctx_color       = context.color
@@ -2192,7 +2203,7 @@ end
 
 function show.filter(id,element)
     collected, indexed, ignored = { }, { }, { }
-    asciimath.filter(lxml.getid(id),element or "am",collected,indexed)
+    asciimath.filter(lxmlgetid(id),element or "am",collected,indexed)
 end
 
 function show.max()

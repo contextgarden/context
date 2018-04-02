@@ -737,8 +737,9 @@
 
 \def\page_sides_wrapup
   {% we need to do this aftergroup
-   \ignoreparskip \aftergroup\ignoreparskip
-   \ignorespaces  \aftergroup\ignorespaces
+   \aftergroup\par
+   \aftergroup\ignoreparskip
+   \aftergroup\ignorespaces
    }
 
 \def\page_sides_check_floats_indeed

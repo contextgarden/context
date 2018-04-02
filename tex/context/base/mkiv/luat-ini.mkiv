@@ -265,15 +265,51 @@
 % \def\syst_helpers_checked_stripped_csname#1%
 %   {\if\noexpand#1\letterbackslash\else#1\fi}
 
-\normalprotected\def\installctxfunction#1#2%
+\normalprotected\def\installctxfunction#1#2% expandable
   {\edef\m_syst_name{\csstring#1}%
    \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxfunction("#2",true)}\relax
    \expandafter\xdef\csname\m_syst_name\endcsname{\noexpand\luafunction\csname\??luafunction\m_syst_name\endcsname}}
 
-\normalprotected\def\installctxscanner#1#2%
+\normalprotected\def\installctxscanner#1#2% expandable
   {\edef\m_syst_name{\csstring#1}%
    \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxscanner("\m_syst_name","#2",true)}\relax
    \expandafter\xdef\csname\m_syst_name\endcsname{\noexpand\luafunction\csname\??luafunction\m_syst_name\endcsname}}
+
+\normalprotected\def\installprotectedctxfunction#1#2% protected
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxfunction("#2",true)}\relax
+   \expandafter\xdef\csname\m_syst_name\endcsname{\noexpand\luafunction\csname\??luafunction\m_syst_name\endcsname}}
+
+\normalprotected\def\installprotectedctxscanner#1#2% protected
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxscanner("\m_syst_name","#2",true)}\relax
+   \expandafter\xdef\csname\m_syst_name\endcsname{\noexpand\luafunction\csname\??luafunction\m_syst_name\endcsname}}
+
+% not yet used
+
+\ifdefined\luafunctioncall \else
+    \protected\def\luafunctioncall{\luafunctioncall}
+\fi
+
+\normalprotected\def\installctxfunctioncall#1#2%
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxfunction("#2",true)}\relax
+   \expandafter\xdef\csname\m_syst_name\endcsname{\luafunctioncall\csname\??luafunction\m_syst_name\endcsname}}
+
+\normalprotected\def\installctxscannercall#1#2%
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxscanner("\m_syst_name","#2",true)}\relax
+   \expandafter\xdef\csname\m_syst_name\endcsname{\luafunctioncall\csname\??luafunction\m_syst_name\endcsname}}
+
+\normalprotected\def\installprotectedctxfunctioncall#1#2%
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxfunction("#2",true)}\relax
+   \normalprotected\expandafter\xdef\csname\m_syst_name\endcsname{\luafunctioncall\csname\??luafunction\m_syst_name\endcsname}}
+
+\normalprotected\def\installprotectedctxscannercall#1#2%
+  {\edef\m_syst_name{\csstring#1}%
+   \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\ctxcommand{ctxscanner("\m_syst_name","#2",true)}\relax
+   \normalprotected\expandafter\xdef\csname\m_syst_name\endcsname{\luafunctioncall\csname\??luafunction\m_syst_name\endcsname}}
 
 \normalprotected\def\resetctxscanner#1%
   {\edef\m_syst_name{\csstring#1}%

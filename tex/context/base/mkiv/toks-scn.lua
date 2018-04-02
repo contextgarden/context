@@ -21,6 +21,7 @@ local scanners       = tokens.scanners
 local tokenbits      = tokens.bits
 
 local scanstring     = scanners.string
+local scanargument   = scanners.argument
 local scaninteger    = scanners.integer
 local scannumber     = scanners.number
 local scankeyword    = scanners.keyword

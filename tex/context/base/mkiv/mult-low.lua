@@ -402,7 +402,12 @@ return {
         "obeylualines", "obeyluatokens",
         "startluacode", "stopluacode", "startlua", "stoplua",
         "startctxfunction","stopctxfunction","ctxfunction",
-        "startctxfunctiondefinition","stopctxfunctiondefinition", "installctxfunction",
+        "startctxfunctiondefinition","stopctxfunctiondefinition",
+        "installctxfunction", "installctxfunctioncall",
+        "installprotectedctxfunction", "installprotectedctxfunctioncall",
+        "installctxscanner", "installctxscannercall",
+        "resetctxscanner",
+        "installprotectedctxscanner", "installprotectedctxscannercall",
         "cldprocessfile", "cldloadfile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
