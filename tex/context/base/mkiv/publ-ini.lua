@@ -2325,13 +2325,13 @@ do
 
     implement {
         name      = "btxflushlistentry",
-        arguments = "2 strings",
+        arguments = { "string", "integer" },
         actions   = lists.flushentry,
     }
 
     implement {
         name      = "btxflushlisttag",
-        arguments = "2 strings",
+        arguments = { "string", "integer" },
         actions   = lists.flushtag,
     }
 
