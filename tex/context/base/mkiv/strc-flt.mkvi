@@ -148,7 +148,7 @@
    \c!textmethod=\ifgridsnapping2\else0\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
    \c!sidemethod=\ifgridsnapping2\else1\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
    \c!indentnext=\v!no,
-   \c!margin=1\emwidth,
+   \c!margin=\emwidth,
    \c!method=1,
    \c!cache=\v!yes, % when no, then intermediate flush
    \c!leftmargin=\zeropoint,  % displacement in 'normal floats'
@@ -734,7 +734,6 @@
 
 % nicer is a bunch of states and one loop that sets those states
 
-\newdimen\d_strc_floats_margin
 \newdimen\d_strc_floats_top
 \newdimen\d_strc_floats_bottom
 
@@ -776,13 +775,13 @@
    \global\c_page_sides_tolerance   \zerocount
    \global\c_page_sides_skipmode    \zerocount
    \global\c_strc_floats_rotation   \zerocount
-   \global\d_strc_floats_margin     \rootfloatparameter\c!margin
-   \global\d_page_sides_leftshift   \floatparameter    \c!leftmargindistance
-   \global\d_page_sides_rightshift  \floatparameter    \c!rightmargindistance
-   \global\d_page_sides_topoffset   \floatparameter    \c!topoffset
-   \global\d_page_sides_bottomoffset\floatparameter    \c!bottomoffset
-   \global\c_page_sides_method      \floatparameter    \c!sidemethod
-   \global\c_page_one_float_method  \floatparameter    \c!textmethod
+   \global\d_page_sides_margin      \floatparameter\c!margin
+   \global\d_page_sides_leftshift   \floatparameter\c!leftmargindistance
+   \global\d_page_sides_rightshift  \floatparameter\c!rightmargindistance
+   \global\d_page_sides_topoffset   \floatparameter\c!topoffset
+   \global\d_page_sides_bottomoffset\floatparameter\c!bottomoffset
+   \global\c_page_sides_method      \floatparameter\c!sidemethod
+   \global\c_page_one_float_method  \floatparameter\c!textmethod
    \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
    \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
    \ifconditional\c_strc_floats_par_float

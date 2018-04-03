@@ -1716,7 +1716,7 @@ def mfun_with_arrow_picture (text t) =
     for i within mfun_arrow_picture :
         if istextext(i) :
             draw i
-        else : 
+        else :
             mfun_arrow_count := mfun_arrow_count + 1 ;
             mfun_arrow_path := pathpart i ;
             t

@@ -481,28 +481,68 @@
    #1{\box\floatbox}%
    \doifinset\v!tall\floatlocationmethod\page_sides_flush_floats_after_par}
 
-\def\page_one_place_float_left       {\page_one_place_float_side_indeed\page_sides_process_float_left\presetindentation}
-\def\page_one_place_float_right      {\page_one_place_float_side_indeed\page_sides_process_float_right}
-\def\page_one_place_float_leftmargin {\page_one_place_float_side_indeed\page_sides_process_float_leftmargin}
-\def\page_one_place_float_rightmargin{\page_one_place_float_side_indeed\page_sides_process_float_rightmargin}
-\def\page_one_place_float_leftedge   {\page_one_place_float_side_indeed\page_sides_process_float_leftedge}
-\def\page_one_place_float_rightedge  {\page_one_place_float_side_indeed\page_sides_process_float_rightedge}
-\def\page_one_place_float_inmargin   {\page_one_place_float_side_indeed\page_sides_process_float_cutspace}
-\def\page_one_place_float_backspace  {\page_one_place_float_side_indeed\page_sides_process_float_backspace}
-\def\page_one_place_float_cutspace   {\page_one_place_float_side_indeed\page_sides_process_float_cutspace}
+\def\page_one_place_float_left
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_left
+   \presetindentation}
 
-%def\page_one_place_float_margin     {\page_one_place_float_side_indeed\page_sides_process_float_margin\nonoindentation} % wil be overloaded
-\def\page_one_place_float_margin     {\page_margin_blocks_process_float}
+\def\page_one_place_float_right
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_right}
+
+\def\page_one_place_float_margin
+  {\page_margin_blocks_process_float
+   \nonoindentation} % new, due to popular request
+
+\def\page_one_place_float_leftmargin
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_leftmargin
+   \nonoindentation} % new, due to popular request
+
+\def\page_one_place_float_rightmargin
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_rightmargin
+   \nonoindentation} % new, due to popular request
+
+\def\page_one_place_float_leftedge
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_leftedge}
+
+\def\page_one_place_float_rightedge
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_rightedge}
+
+\def\page_one_place_float_inmargin
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_cutspace}
+
+\def\page_one_place_float_backspace
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_backspace}
+
+\def\page_one_place_float_cutspace
+  {\page_one_place_float_side_indeed
+   \page_sides_process_float_cutspace}
 
 \def\page_one_place_float_page       {\page_floats_save_page_float     \s!page     \floatlocationmethod}
 \def\page_one_place_float_leftpage   {\page_floats_save_page_float     \s!leftpage \floatlocationmethod}
 \def\page_one_place_float_rightpage  {\page_floats_save_page_float     \s!rightpage\floatlocationmethod}
 \def\page_one_place_float_somewhere  {\page_floats_save_somewhere_float\s!somewhere\floatlocationmethod}
 
-\def\page_one_place_float_here       {\page_one_place_float_otherwise_here}
-\def\page_one_place_float_auto       {\page_one_place_float_otherwise}
-\def\page_one_place_float_top        {\page_one_place_float_otherwise\nonoindentation}
-\def\page_one_place_float_bottom     {\page_one_place_float_otherwise}
+\def\page_one_place_float_here
+  {\page_one_place_float_otherwise_here}
+
+\def\page_one_place_float_auto
+  {\page_one_place_float_otherwise
+   \nonoindentation} % new, due to popular request
+
+\def\page_one_place_float_top
+  {\page_one_place_float_otherwise
+   \nonoindentation}
+
+\def\page_one_place_float_bottom
+  {\page_one_place_float_otherwise
+   \nonoindentation} % new, due to popular request
 
 \def\page_one_place_float_otherwise
   {\doifelseinset\v!here\floatlocationmethod

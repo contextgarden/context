@@ -1081,6 +1081,7 @@ local function make(t,str)
             f = function() return str end
         end
     end
+ -- if jit then jit.on(f,true) end
     t[str] = f
     return f
 end

@@ -32,6 +32,7 @@
 %D Earth, sophisticated Massive Attack video clips, impressive Davie504 movies
 %D and so on).
 
+\newdimen       \d_page_sides_margin
 \newdimen       \d_page_sides_height       % includes the topskip
 \newdimen       \d_page_sides_width
 \newdimen       \d_page_sides_hsize
@@ -113,7 +114,7 @@
    \or % high
    \or % low
    \or % fit
-     \global\d_strc_floats_margin\zeropoint
+     \global\d_page_sides_margin\zeropoint
    \fi}
 
 \def\page_sides_apply_horizontal_shift
@@ -668,7 +669,7 @@
    \else\ifnum\c_page_sides_float_type>\plusfive
      \global\d_page_sides_width\zeropoint
    \else
-     \global\d_page_sides_width\dimexpr\wd\floatbox+\d_strc_floats_margin\relax
+     \global\d_page_sides_width\dimexpr\wd\floatbox+\d_page_sides_margin\relax
    \fi\fi
    \ifdim\d_page_sides_width<\zeropoint
      \global\d_page_sides_width\zeropoint

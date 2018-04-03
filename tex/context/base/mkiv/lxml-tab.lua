@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 -- maybe when letter -> utf, else name .. then we need an option to the serializer .. a bit
 -- of work so we delay this till we cleanup
 
-local trace_entities = false  trackers  .register("xml.entities",    function(v) trace_entities = v end)
+local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
 local report_xml = logs and logs.reporter("xml","core") or function(...) print(string.format(...)) end
 
@@ -968,6 +968,25 @@ local function publicentity(k,v,n)
     end
     entities[k] = v
 end
+local function entityfile(pattern,k,v,n)
+    if n then
+        local okay, data
+        if resolvers then
+            okay, data = resolvers.loadbinfile(n)
+        else
+            data = io.loaddata(n)
+            okay = data and data ~= ""
+        end
+        if okay then
+            if trace_entities then
+                report_xml("loading public entities %a as %a from %a",k,v,n)
+            end
+            lpegmatch(pattern,data)
+            return
+        end
+    end
+    report_xml("ignoring public entities %a as %a from %a",k,v,n)
+end
 
 local function install(spacenewline,spacing,anything)
 
@@ -1003,7 +1022,7 @@ local function install(spacenewline,spacing,anything)
 
     local attribute        = (somespace * name * optionalspace * equal * optionalspace * attributevalue) / add_attribute
 
---     local attributes       = (attribute + somespace^-1 * (((1-endofattributes)^1)/attribute_specification_error))^0
+ -- local attributes       = (attribute + somespace^-1 * (((1-endofattributes)^1)/attribute_specification_error))^0
     local attributes       = (attribute + somespace^-1 * (((anything-endofattributes)^1)/attribute_specification_error))^0
 
     local parsedtext       = text_parsed   -- / add_text
@@ -1041,9 +1060,14 @@ local function install(spacenewline,spacing,anything)
 
     local weirdentitytype  = P("%") * (somespace * doctypename * somespace * value) / weirdentity
     local normalentitytype = (doctypename * somespace * value) / normalentity
-    local publicentitytype = (doctypename * somespace * P("PUBLIC") * somespace * value)/publicentity
+    local publicentitytype = (doctypename * somespace * P("PUBLIC") * somespace * value) / publicentity
+
     local systementitytype = (doctypename * somespace * P("SYSTEM") * somespace * value * somespace * P("NDATA") * somespace * doctypename)/systementity
     local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (systementitytype + publicentitytype + normalentitytype + weirdentitytype) * optionalspace * close
+
+    local publicentityfile = (doctypename * somespace * P("PUBLIC") * somespace * value * (somespace * value)^0) / function(...)
+        entityfile(entitydoctype,...)
+    end
 
     local function weirdresolve(s)
         lpegmatch(entitydoctype,parameters[s])
@@ -1065,7 +1089,11 @@ local function install(spacenewline,spacing,anything)
     local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
     local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset
     local simpledoctype    = (anything-close)^1 -- * balanced^0
-    local somedoctype      = C((somespace * (publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
+    local somedoctype      = C((somespace * (
+
+publicentityfile +
+
+    publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
 
     local instruction      = (spacing * begininstruction * someinstruction * endinstruction) / function(...) add_special("@pi@",...) end
     local comment          = (spacing * begincomment     * somecomment     * endcomment    ) / function(...) add_special("@cm@",...) end
@@ -1294,7 +1322,7 @@ a filename or a file handle.</p>
 function xml.load(filename,settings)
     local data = ""
     if type(filename) == "string" then
-     -- local data = io.loaddata(filename) - -todo: check type in io.loaddata
+     -- local data = io.loaddata(filename) -- todo: check type in io.loaddata
         local f = io.open(filename,'r') -- why not 'rb'
         if f then
             data = f:read("*all") -- io.readall(f) ... only makes sense for large files

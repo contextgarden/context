@@ -153,15 +153,16 @@ function table.tocsv(t,specification)
             fields = sortedkeys(t[1])
         end
         local separator = specification.separator or ","
+        local noffields = #fields
         if specification.preamble == true then
-            for f=1,#fields do
+            for f=1,noffields do
                 r[f] = lpegmatch(escape,tostring(fields[f]))
             end
             result[1] = concat(r,separator)
         end
         for i=1,#t do
             local ti = t[i]
-            for f=1,#fields do
+            for f=1,noffields do
                 local field = ti[fields[f]]
                 if type(field) == "string" then
                     r[f] = lpegmatch(escape,field)
@@ -215,30 +216,31 @@ end
 local nspaces = utilities.strings.newrepeater(" ")
 
 local function toxml(t,d,result,step)
+    local r = #result
     for k, v in sortedpairs(t) do
         local s = nspaces[d] -- inlining this is somewhat faster but gives more formatters
         local tk = type(k)
         local tv = type(v)
         if tv == "table" then
             if tk == "number" then
-                result[#result+1] = formatters["%s<entry n='%s'>"](s,k)
+                r = r + 1 result[r] = formatters["%s<entry n='%s'>"](s,k)
                 toxml(v,d+step,result,step)
-                result[#result+1] = formatters["%s</entry>"](s,k)
+                r = r + 1 result[r] = formatters["%s</entry>"](s,k)
             else
-                result[#result+1] = formatters["%s<%s>"](s,k)
+                r = r + 1 result[r] = formatters["%s<%s>"](s,k)
                 toxml(v,d+step,result,step)
-                result[#result+1] = formatters["%s</%s>"](s,k)
+                r = r + 1 result[r] = formatters["%s</%s>"](s,k)
             end
         elseif tv == "string" then
             if tk == "number" then
-                result[#result+1] = formatters["%s<entry n='%s'>%!xml!</entry>"](s,k,v,k)
+                r = r + 1 result[r] = formatters["%s<entry n='%s'>%!xml!</entry>"](s,k,v,k)
             else
-                result[#result+1] = formatters["%s<%s>%!xml!</%s>"](s,k,v,k)
+                r = r + 1 result[r] = formatters["%s<%s>%!xml!</%s>"](s,k,v,k)
             end
         elseif tk == "number" then
-            result[#result+1] = formatters["%s<entry n='%s'>%S</entry>"](s,k,v,k)
+            r = r + 1 result[r] = formatters["%s<entry n='%s'>%S</entry>"](s,k,v,k)
         else
-            result[#result+1] = formatters["%s<%s>%S</%s>"](s,k,v,k)
+            r = r + 1 result[r] = formatters["%s<%s>%S</%s>"](s,k,v,k)
         end
     end
 end

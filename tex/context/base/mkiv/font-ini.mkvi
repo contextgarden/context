@@ -2510,13 +2510,31 @@
 %    \popmacro\fontclass
 %    \ifx\fontclass\empty\else\setupbodyfont\relax\fi}
 
+% \unexpanded\def\usebodyfont[#1]%
+%   {\pushmacro\fontclass
+%    \font_helpers_set_font\zerocount{#1}%
+%    \popmacro\fontclass
+%    \ifx\fontclass\empty \else
+%      \font_basics_setupbodyfont_nop
+%    \fi}
+
 \unexpanded\def\usebodyfont[#1]%
-  {\pushmacro\fontclass
-   \font_helpers_set_font\zerocount{#1}%
-   \popmacro\fontclass
-   \ifx\fontclass\empty \else
-     \font_basics_setupbodyfont_nop
+  {\ifx\fontclass\empty
+     \setupbodyfont[#1]%
+   \else
+     \switchtobodyfont[#1]%
+     \fullrestoreglobalbodyfont
    \fi}
+
+\unexpanded\def\showbodyfontstate
+  {\dontleavehmode
+   \start
+   \infofont
+   [fontclass: \fontclass,\space
+    fontbody:  \fontbody ,\space
+    fontface:  \fontface ,\space
+    fontsize:  \fontsize ]%
+   \stop}
 
 %D Handy for manuals:
 

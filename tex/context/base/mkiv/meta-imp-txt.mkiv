@@ -287,7 +287,6 @@
    \dontcomplain
    \setbox\scratchbox\hbox{\addff{mp:tp}#2}%
    \ctxlua{mp.follow_initialize(\number\scratchbox)}%
-   \stopluacode
    \startMPcode
      \includeMPgraphic{followtokens} ;
      mfun_follow_draw(\number#1) ;
@@ -295,8 +294,8 @@
    \ctxlua{mp.follow_reset()}%
    \egroup}
 
-\unexpanded\def\followtokens        {\dofollowtokens1}
-\unexpanded\def\followtokenscentered{\dofollowtokens0}
+\unexpanded\def\followtokens        {\dofollowtokens\plusone}
+\unexpanded\def\followtokenscentered{\dofollowtokens\zerocount}
 
 % stretched variant:
 %

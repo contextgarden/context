@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Tracing Info}
 
-% this needs a real cleanup .. will be a more detailed list
+% This needs a real cleanup .. will be a more detailed list.
 
 \unprotect
 
@@ -23,6 +23,7 @@
 \newtoks\everysetupversion
 
 \let\currentversioninfo\empty
+\let\currentversiontext\empty
 
 \unexpanded\def\setupversion
   {\dosingleargument\page_info_setup}
@@ -33,8 +34,13 @@
 
 \def\page_info_setup[#1]%
   {\the\everyresetversion
-   \ifcsname\??layoutinfo#1\endcsname
-     \edef\currentversioninfo{#1}%
+   \doifelseassignment{#1}%
+     {\getdummyparameters[\c!alternative=,\c!text=,#1]%
+      \edef\currentversioninfo{\dummyparameter\c!alternative}%
+      \edef\currentversiontext{\dummyparameter\c!text}}%
+     {\edef\currentversioninfo{#1}%
+      \let \currentversiontext\empty}%
+   \ifcsname\??layoutinfo\currentversioninfo\endcsname
      \let\page_info_add_to_box\page_info_add_to_box_indeed
    \else
      \let\currentversioninfo\empty
@@ -43,33 +49,46 @@
    \the\everysetupversion}
 
 \unexpanded\def\page_info_place_info % at the bottom of the page
-  {\csname\??layoutinfo\currentversioninfo\endcsname}
+  {\begincsname\??layoutinfo\currentversioninfo\endcsname}
 
 \unexpanded\def\installversioninfo#1#2%
   {\setvalue{\??layoutinfo#1}{#2}}
 
 \unexpanded\def\includeversioninfo#1%
-  {\csname\??layoutinfo#1\endcsname}
+  {\begincsname\??layoutinfo#1\endcsname}
+
+\installversioninfo\v!final
+  {\let\currentversioninfo\empty
+   \let\page_info_add_to_box\gobbleoneargument}
 
 \installversioninfo\v!concept
   {\vskip6\points
    \hbox to \makeupwidth
      {\infofont
-      \v!concept:\space\currentdate
+      \rlap{\v!concept:\space\currentdate}%
       \hss
-      \page_adapts_status_info}}
+      \currentversiontext
+      \hss
+      \llap{\page_adapts_status_info}}}
 
 \installversioninfo\v!file
   {\vskip6\points
    \hbox to \makeupwidth
      {\infofont
-      \getmessage\m!system{27}:\space\currentdate\space
+      \getmessage\m!system{27}:\space\currentdate\quad
       \donefalse
-      \ifx\currentproject  \empty \else \space\v!project  :\space\currentproject  \space \donetrue \fi
-      \ifx\currentproduct  \empty \else \space\v!product  :\space\currentproduct  \space \donetrue \fi
-      \ifx\currentcomponent\empty \else \space\v!component:\space\currentcomponent\space \donetrue \fi
-      \ifdone                     \else \space\v!file     :\space\jobname         \space           \fi
+      \doif\currentproject\currentproduct{\doif\currentproduct\currentcomponent\donetrue}%
+      \ifdone
+        \donefalse
+      \else
+        \ifx\currentproject  \empty \else \space\v!project  :\space\currentproject  \space \donetrue \fi
+        \ifx\currentproduct  \empty \else \space\v!product  :\space\currentproduct  \space \donetrue \fi
+        \ifx\currentcomponent\empty \else \space\v!component:\space\currentcomponent\space \donetrue \fi
+      \fi
+        \ifdone                     \else \space\v!file     :\space\jobname         \space           \fi
       \hss
+      \currentversiontext
+      \quad
       \page_adapts_status_info}}
 
 \installversioninfo\v!temporary
