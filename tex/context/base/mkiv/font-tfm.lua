@@ -21,6 +21,7 @@ local setmetatableindex        = table.setmetatableindex
 
 local fonts                    = fonts
 local handlers                 = fonts.handlers
+local helpers                  = fonts.helpers
 local readers                  = fonts.readers
 local constructors             = fonts.constructors
 local encodings                = fonts.encodings
@@ -38,6 +39,8 @@ local registertfmfeature       = tfmfeatures.register
 
 local tfmenhancers             = constructors.enhancers.tfm
 local registertfmenhancer      = tfmenhancers.register
+
+local charcommand              = helpers.commands.char
 
 constructors.resolvevirtualtoo = false -- wil be set in font-ctx.lua
 
@@ -465,7 +468,7 @@ do
                 if backmap then
                     original.index     = backmap[name]
                 else -- probably bitmap
-                    original.commands = { parentfont, { "char", index } }
+                    original.commands = { parentfont, charcommand[index] } -- or "slot"
                     original.oindex   = index
                 end
                 done[name] = true

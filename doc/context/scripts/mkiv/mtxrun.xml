@@ -39,7 +39,7 @@
    </subcategory>
    <subcategory>
     <flag name="edit"><short>launch editor with found file</short></flag>
-    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>)</short></flag>
+    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>,<ref name="list"/>)</short></flag>
    </subcategory>
    <subcategory>
     <flag name="timedrun"><short>run a script and time its run</short></flag>

@@ -690,7 +690,7 @@ local function writer(parent,command,...) -- already optimized before call
  -- for i=1,#t do
  --     local ti = t[i]
     for i=1,select("#",...) do
-        local ti = (select(i,...))
+        local ti = select(i,...)
         if direct then
             local typ = type(ti)
             if typ == "string" or typ == "number" then
@@ -798,7 +798,7 @@ end
 -- local function prtwriter(command,...) -- already optimized before call
 --     flush(prtcatcodes,command)
 --     for i=1,select("#",...) do
---         local ti = (select(i,...))
+--         local ti = select(i,...)
 --         if ti == nil then
 --             -- nothing
 --         elseif ti == "" then
@@ -1179,7 +1179,7 @@ do
         -- snippets
         for i=1,select("#",...) do
             nofcollected = nofcollected + 1
-            collected[nofcollected] = (select(i,...))
+            collected[nofcollected] = select(i,...)
         end
     end
 
@@ -1187,7 +1187,7 @@ do
     --     -- lines
     --     for i=1,select("#",...) do
     --         n = n + 1
-    --         t[n] = (select(i,...))
+    --         t[n] = select(i,...)
     --         n = n + 1
     --         t[n] = "\r"
     --     end

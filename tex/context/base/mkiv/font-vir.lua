@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['font-vir'] = {
 --
 -- vf.rule vf.special vf.right vf.push vf.down vf.char vf.node vf.fontid vf.pop vf.image vf.nop
 
-local next = next
+local next, setmetatable, getmetatable = next, setmetatable, getmetatable
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -66,11 +66,7 @@ local combinations = { }
 local combiner     = { }
 local whatever     = allocate()
 local helpers      = allocate()
-local predefined   = allocate {
-    dummy   = { "comment" },
-    push    = { "push" },
-    pop     = { "pop" },
-}
+local predefined   = fonts.helpers.commands
 
 methods.variants   = variants -- todo .. wrong namespace
 vf.combinations    = combinations

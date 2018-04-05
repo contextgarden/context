@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 -- Todo: make a proper 'next id' mechanism (register etc) or wait till 'true'
 -- in virtual fonts indices is implemented.
 
-local context, commands = context, commands
+local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, tonumber
 
 local format, gmatch, match, find, lower, upper, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.upper, string.gsub, string.byte, string.topattern
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
@@ -23,9 +23,10 @@ local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
 local basename = file.basename
 
-local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, tonumber
 local utfchar, utfbyte = utf.char, utf.byte
 local round = math.round
+
+local context, commands = context, commands
 
 local P, S, C, Cc, Cf, Cg, Ct, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.match
 
@@ -65,6 +66,8 @@ local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local currentfont         = font.current
 local definefont          = font.define
+
+local getprivateslot      = helpers.getprivateslot
 
 local cleanname           = names.cleanname
 
@@ -2708,9 +2711,13 @@ implement {
     arguments = "string",
 }
 
-local list = storage.shared.bodyfontsizes or { }
+local sharedstorage = storage.shared
 
-storage.shared.bodyfontsizes = list
+local list    = sharedstorage.bodyfontsizes        or { }
+local unknown = sharedstorage.unknownbodyfontsizes or { }
+
+sharedstorage.bodyfontsizes        = list
+sharedstorage.unknownbodyfontsizes = unknown
 
 implement {
     name      = "registerbodyfontsize",
@@ -2718,6 +2725,17 @@ implement {
     actions   = function(size)
         list[size] = true
     end
+}
+
+interfaces.implement {
+    name      = "registerunknownbodysize",
+    arguments = "string",
+    actions   = function(size)
+        if not unknown[size] then
+            interfaces.showmessage("fonts",14,size)
+        end
+        unknown[size] = true
+    end,
 }
 
 implement {
@@ -2873,6 +2891,12 @@ end
 
 -- for the font manual
 
+statistics.register("body font sizes", function()
+    if next(unknown) then
+        return formatters["defined: % t, undefined: % t"](sortedkeys(list),sortedkeys(unknown))
+    end
+end)
+
 statistics.register("used fonts",function()
     if trace_usage then
         local filename = file.nameonly(environment.jobname) .. "-fonts-usage.lua"
@@ -3018,79 +3042,178 @@ end
 
 -- for the moment here (and not in font-con.lua):
 
-local identical     = table.identical
-local copy          = table.copy
-local fontdata      = fonts.hashes.identifiers
-local addcharacters = font.addcharacters
+do
 
--- This helper is mostly meant to add last-resort (virtual) characters
--- or runtime generated fonts (so we forget about features and such). It
--- will probably take a while before it get used.
+    local identical     = table.identical
+    local copy          = table.copy
+    local fontdata      = fonts.hashes.identifiers
+    local addcharacters = font.addcharacters
 
-local trace_adding  = false
-local report_adding = logs.reporter("fonts","add characters")
+    -- This helper is mostly meant to add last-resort (virtual) characters
+    -- or runtime generated fonts (so we forget about features and such). It
+    -- will probably take a while before it get used.
 
-trackers.register("fonts.addcharacters",function(v) trace_adding = v end)
+    local trace_adding  = false
+    local report_adding = logs.reporter("fonts","add characters")
 
-if addcharacters then
+    trackers.register("fonts.addcharacters",function(v) trace_adding = v end)
 
-    function fonts.constructors.addcharacters(id,list)
-        local newchar = list.characters
-        if newchar then
-            local data    = fontdata[id]
-            local newfont = list.fonts
-            local oldchar = data.characters
-            local oldfont = data.fonts
-            addcharacters(id, {
-                characters = newchar,
-                fonts      = newfont,
-                nomath     = not data.properties.hasmath,
-            })
-            -- this is just for tracing, as the assignment only uses the fonts list
-            -- and doesn't store it otherwise
-            if newfont then
-                if oldfont then
-                    local oldn = #oldfont
-                    local newn = #newfont
-                    for n=1,newn do
-                        local ok = false
-                        local nf = newfont[n]
-                        for o=1,oldn do
-                            if identical(nf,oldfont[o]) then
-                                ok = true
-                                break
+    if addcharacters then
+
+        function fonts.constructors.addcharacters(id,list)
+            local newchar = list.characters
+            if newchar then
+                local data    = fontdata[id]
+                local newfont = list.fonts
+                local oldchar = data.characters
+                local oldfont = data.fonts
+                addcharacters(id, {
+                    characters = newchar,
+                    fonts      = newfont,
+                    nomath     = not data.properties.hasmath,
+                })
+                -- this is just for tracing, as the assignment only uses the fonts list
+                -- and doesn't store it otherwise
+                if newfont then
+                    if oldfont then
+                        local oldn = #oldfont
+                        local newn = #newfont
+                        for n=1,newn do
+                            local ok = false
+                            local nf = newfont[n]
+                            for o=1,oldn do
+                                if identical(nf,oldfont[o]) then
+                                    ok = true
+                                    break
+                                end
+                            end
+                            if not ok then
+                                oldn = oldn + 1
+                                oldfont[oldn] = newfont[i]
                             end
                         end
-                        if not ok then
-                            oldn = oldn + 1
-                            oldfont[oldn] = newfont[i]
-                        end
+                    else
+                        data.fonts = newfont
                     end
-                else
-                    data.fonts = newfont
+                end
+                -- this is because we need to know what goes on and also might
+                -- want to access character data
+                for u, c in next, newchar do
+                    if trace_adding then
+                        report_adding("adding character %U to font %!font:name!",u,id)
+                    end
+                    oldchar[u] = c
                 end
             end
-            -- this is because we need to know what goes on and also might
-            -- want to access character data
-            for u, c in next, newchar do
-                if trace_adding then
-                    report_adding("adding character %U to font %!font:name!",u,id)
-                end
-                oldchar[u] = c
+        end
+
+    else
+        function fonts.constructors.addcharacters(id,list)
+            report_adding("adding characters to %!font:name! is not yet supported",id)
+        end
+    end
+
+    implement {
+        name      = "addfontpath",
+        arguments = "string",
+        actions   = function(list)
+            names.addruntimepath(settings_to_array(list))
+        end
+    }
+
+end
+
+-- moved here
+
+do
+
+    local family_font    = node.family_font
+    local new_glyph      = nodes.pool.glyph
+    local fontproperties = fonts.hashes.properties
+
+    local function getprivateslot(id,name)
+        if not name then
+            name = id
+            id   = currentfont()
+        end
+        local properties = fontproperties[id]
+        local privates   = properties and properties.privates
+        return privates and privates[name]
+    end
+
+    local function getprivatenode(tfmdata,name)
+        if type(tfmdata) == "number" then
+            tfmdata = fontdata[tfmdata]
+        end
+        local properties = tfmdata.properties
+        local font = properties.id
+        local slot = getprivateslot(font,name)
+        if slot then
+            -- todo: set current attribibutes
+            local char   = tfmdata.characters[slot]
+            local tonode = char.tonode
+            if tonode then
+                return tonode(font,char)
+            else
+                return new_glyph(font,slot)
             end
         end
     end
 
-else
-    function fonts.constructors.addcharacters(id,list)
-        report_adding("adding characters to %!font:name! is not yet supported",id)
+    local function getprivatecharornode(tfmdata,name)
+        if type(tfmdata) == "number" then
+            tfmdata = fontdata[tfmdata]
+        end
+        local properties = tfmdata.properties
+        local font = properties.id
+        local slot = getprivateslot(font,name)
+        if slot then
+            -- todo: set current attributes
+            local char   = tfmdata.characters[slot]
+            local tonode = char.tonode
+            if tonode then
+                return "node", tonode(tfmdata,char)
+            else
+                return "char", slot
+            end
+        end
     end
-end
 
-implement {
-    name      = "addfontpath",
-    arguments = "string",
-    actions   = function(list)
-        names.addruntimepath(settings_to_array(list))
-    end
-}
+    helpers.getprivateslot       = getprivateslot
+    helpers.getprivatenode       = getprivatenode
+    helpers.getprivatecharornode = getprivatecharornode
+
+    implement {
+        name      = "getprivatechar",
+        arguments = "string",
+        actions   = function(name)
+            local p = getprivateslot(name)
+            if p then
+                context(utfchar(p))
+            end
+        end
+    }
+
+    implement {
+        name      = "getprivatemathchar",
+        arguments = "string",
+        actions   = function(name)
+            local p = getprivateslot(family_font(0),name)
+            if p then
+                context(utfchar(p))
+            end
+        end
+    }
+
+    implement {
+        name      = "getprivateslot",
+        arguments = "string",
+        actions   = function(name)
+            local p = getprivateslot(name)
+            if p then
+                context(p)
+            end
+        end
+    }
+
+end

@@ -1,16 +1,5 @@
 #!/usr/bin/env texlua
 
--- for k, v in next, _G.string do
---     local tv = type(v)
---     if tv == "table" then
---         for kk, vv in next, v do
---             print(k,kk,vv)
---         end
---     else
---         print(tv,k,v)
---     end
--- end
-
 if not modules then modules = { } end modules ['mtxrun'] = {
     version   = 1.001,
     comment   = "runner, lua replacement for texmfstart.rb",
@@ -992,7 +981,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38582, stripped down to: 20518
+-- original size: 39305, stripped down to: 21144
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1616,7 +1605,7 @@ local function make2(t,rest)
   end
   return p
 end
-function lpeg.utfchartabletopattern(list,insensitive) 
+local function utfchartabletopattern(list,insensitive) 
   local tree={}
   local n=#list
   if n==0 then
@@ -1688,6 +1677,13 @@ function lpeg.utfchartabletopattern(list,insensitive)
     end
   end
   return (insensitive and make2 or make1)(tree)
+end
+lpeg.utfchartabletopattern=utfchartabletopattern
+function lpeg.utfreplacer(list,insensitive)
+  local pattern=Cs((utfchartabletopattern(list,insensitive)/list+utf8character)^0)
+  return function(str)
+    return lpegmatch(pattern,str) or str
+  end
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -1782,6 +1778,21 @@ function string.tobytes(s)
   else
     return lpegmatch(hextobytes,s)
   end
+end
+local patterns={} 
+local function containsws(what)
+  local p=patterns[what]
+  if not p then
+    local p1=P(what)*(whitespace+P(-1))*Cc(true)
+    local p2=whitespace*P(p1)
+    p=P(p1)+P(1-p2)^0*p2+Cc(false)
+    patterns[what]=p
+  end
+  return p
+end
+lpeg.containsws=containsws
+function string.containsws(str,what)
+  return lpegmatch(patterns[what] or containsws(what),str)
 end
 
 
@@ -3663,7 +3674,7 @@ end
 local launchers={
   windows="start %s",
   macosx="open %s",
-  unix="$BROWSER %s &> /dev/null &",
+  unix="xdg-open %s &> /dev/null &",
 }
 function os.launch(str)
   execute(format(launchers[os.name] or launchers.unix,str))
@@ -13571,7 +13582,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 53301, stripped down to: 32477
+-- original size: 53326, stripped down to: 32477
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -21346,8 +21357,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 877962
--- stripped bytes    : 317771
+-- original bytes    : 878710
+-- stripped bytes    : 317893
 
 -- end library merge
 
@@ -21623,7 +21634,7 @@ local helpinfo = [[
    </subcategory>
    <subcategory>
     <flag name="edit"><short>launch editor with found file</short></flag>
-    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>)</short></flag>
+    <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>,<ref name="list"/>)</short></flag>
    </subcategory>
    <subcategory>
     <flag name="timedrun"><short>run a script and time its run</short></flag>
@@ -22022,9 +22033,9 @@ function resolvers.launch(str)
 end
 
 function runners.launch_file(filename)
-    trackers.enable("resolvers.locating")
     local allresults = environment.arguments["all"]
-    local pattern = environment.arguments["pattern"]
+    local pattern    = environment.arguments["pattern"]
+    local listonly   = environment.arguments["list"]
     if not pattern or pattern == "" then
         pattern = filename
     end
@@ -22039,14 +22050,32 @@ function runners.launch_file(filename)
             t = resolvers.findfiles("*/" .. pattern .. "*",nil,allresults)
         end
         if t and #t > 0 then
-            if allresults then
-                for _, v in pairs(t) do
-                    report("launching %s", v)
-                    resolvers.launch(v)
+            for i=1,#t do
+                local name = t[i]
+                if listonly then
+                    report("% 3i:  %-30s %s",i,file.basename(name),file.dirname(name))
+                else
+                    report("launching: %s",name)
+                    resolvers.launch(name)
+                    if not allresults then
+                        break
+                    end
                 end
-            else
-                report("launching %s", t[1])
-                resolvers.launch(t[1])
+            end
+            if listonly then
+                io.write("\n")
+                io.write("\n[select number]\n\n>> ")
+                local answer = tonumber(io.read())
+                if answer then
+                    io.write("\n")
+                    local name = t[answer]
+                    if name then
+                        report("launching: %s",name)
+                        resolvers.launch(name)
+                    else
+                        report("invalid number")
+                    end
+                end
             end
         else
             report("no match for %s", pattern)
@@ -22188,22 +22217,22 @@ function runners.execute_ctx_script(filename,...)
                     local scriptbase = match(scriptname,".*mtx%-([^%-]-)%.lua")
                     if scriptbase then
                         local data = io.loaddata(scriptname)
-local application = match(data,"local application.-=.-(%{.-%})")
-if application then
-    application = loadstring("return " .. application)
-    if application then
-        application = application()
-        local banner = application.banner
-        if banner then
-            local description, version = match(banner,"^(.-) ([%d.]+)$")
-            if description then
-                valid[#valid+1] = { scriptbase, version, description }
-            else
-                valid[#valid+1] = { scriptbase, "", banner }
-            end
-        end
-    end
-end
+                        local application = match(data,"local application.-=.-(%{.-%})")
+                        if application then
+                            application = loadstring("return " .. application)
+                            if application then
+                                application = application()
+                                local banner = application.banner
+                                if banner then
+                                    local description, version = match(banner,"^(.-) ([%d.]+)$")
+                                    if description then
+                                        valid[#valid+1] = { scriptbase, version, description }
+                                    else
+                                        valid[#valid+1] = { scriptbase, "", banner }
+                                    end
+                                end
+                            end
+                        end
                     end
                 end
                 if #valid > 0 then

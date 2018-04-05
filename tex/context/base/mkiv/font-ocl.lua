@@ -13,13 +13,20 @@ local round, max = math.round, math.round
 local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 
-local formatters = string.formatters
-local tounicode  = fonts.mappings.tounicode
+local formatters   = string.formatters
+local tounicode    = fonts.mappings.tounicode
 
-local otf        = fonts.handlers.otf
+local helpers      = fonts.helpers
 
-local f_color    = formatters["%.3f %.3f %.3f rg"]
-local f_gray     = formatters["%.3f g"]
+local charcommand  = helpers.commands.char
+local rightcommand = helpers.commands.right
+local leftcommand  = helpers.commands.left
+local downcommand  = helpers.commands.down
+
+local otf          = fonts.handlers.otf
+
+local f_color      = formatters["%.3f %.3f %.3f rg"]
+local f_gray       = formatters["%.3f g"]
 
 if context then
 
@@ -136,7 +143,7 @@ end
 -- -- only shows the first glyph in acrobat and nothing more. No problem with other
 -- -- renderers.
 --
--- local function initializecolr(tfmdata,kind,value) -- hm, always value
+-- local function initialize(tfmdata,kind,value) -- hm, always value
 --     if value then
 --         local resources = tfmdata.resources
 --         local palettes  = resources.colorpalettes
@@ -161,23 +168,12 @@ end
 --             tfmdata.fonts = {
 --                 { id = 0 }
 --             }
---             local widths = setmetatableindex(function(t,k)
---                 local v = { "right", -k }
---                 t[k] = v
---                 return v
---             end)
 --             --
 --             local getactualtext = otf.getactualtext
 --             local default       = colorvalues[#colorvalues]
 --             local b, e          = getactualtext(tounicode(0xFFFD))
 --             local actualb       = { "pdf", "page", b } -- saves tables
 --             local actuale       = { "pdf", "page", e } -- saves tables
---             --
---             local cache = setmetatableindex(function(t,k)
---                 local v = { "char", k } -- could he a weak shared hash
---                 t[k] = v
---                 return v
---             end)
 --             --
 --             for unicode, character in next, characters do
 --                 local description = descriptions[unicode]
@@ -187,7 +183,7 @@ end
 --                         local u = description.unicode or characters[unicode].unicode
 --                         local w = character.width or 0
 --                         local s = #colorlist
---                         local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
+--                         local goback = w ~= 0 and leftcommand[w] or nil -- needs checking: are widths the same
 --                         local t = {
 --                             start,
 --                             not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
@@ -202,7 +198,7 @@ end
 --                                 n = n + 1 t[n] = v
 --                                 l = v
 --                             end
---                             n = n + 1 t[n] = cache[entry.slot]
+--                             n = n + 1 t[n] = charcommand[entry.slot]
 --                             if s > 1 and i < s and goback then
 --                                 n = n + 1 t[n] = goback
 --                             end
@@ -221,7 +217,7 @@ end
 -- -- Here we have no color change in BT .. ET and  more q Q pairs but even then acrobat
 -- -- fails displaying the overlays correctly. Other renderers do it right.
 
-local function initializecolr(tfmdata,kind,value) -- hm, always value
+local function initialize(tfmdata,kind,value) -- hm, always value
     if value then
         local resources = tfmdata.resources
         local palettes  = resources.colorpalettes
@@ -246,23 +242,12 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             tfmdata.fonts = {
                 { id = 0 }
             }
-            local widths = setmetatableindex(function(t,k)
-                local v = { "right", -k }
-                t[k] = v
-                return v
-            end)
             --
             local getactualtext = otf.getactualtext
             local default       = colorvalues[#colorvalues]
             local b, e          = getactualtext(tounicode(0xFFFD))
             local actualb       = { "pdf", "page", b } -- saves tables
             local actuale       = { "pdf", "page", e } -- saves tables
-            --
-            local cache = setmetatableindex(function(t,k)
-                local v = { "char", k } -- could he a weak shared hash
-                t[k] = v
-                return v
-            end)
             --
             for unicode, character in next, characters do
                 local description = descriptions[unicode]
@@ -272,7 +257,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                         local u = description.unicode or characters[unicode].unicode
                         local w = character.width or 0
                         local s = #colorlist
-                        local goback = w ~= 0 and widths[w] or nil -- needs checking: are widths the same
+                        local goback = w ~= 0 and leftcommand[w] or nil -- needs checking: are widths the same
                         local t = {
                             start, -- really needed
                             not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
@@ -292,7 +277,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                                 n = n + 1 t[n] = v
                                 l = v
                             end
-                            n = n + 1 t[n] = cache[entry.slot]
+                            n = n + 1 t[n] = charcommand[entry.slot]
                             if s > 1 and i < s and goback then
                                 n = n + 1 t[n] = goback
                             end
@@ -314,8 +299,8 @@ fonts.handlers.otf.features.register {
     name         = "colr",
     description  = "color glyphs",
     manipulators = {
-        base = initializecolr,
-        node = initializecolr,
+        base = initialize,
+        node = initialize,
     }
 }
 
@@ -436,8 +421,8 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
                     local dp = character.depth  or 0
                     character.commands = {
                         not unicode and actualb or { "pdf", "page", (getactualtext(unicode)) },
-                        { "down", dp + dy * hfactor },
-                        { "right", dx * hfactor },
+                        downcommand[dp + dy * hfactor],
+                        rightcommand[dx * hfactor],
                      -- setcode and { "lua", setcode } or nop,
                         { "image", { filename = name, width = wd, height = ht, depth = dp } },
                      -- nilcode and { "lua", nilcode } or nop,

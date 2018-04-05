@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mtx-pdf'] = {
 }
 
 local tonumber = tonumber
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local utfchar = utf.char
 local concat = table.concat
 local setmetatableindex, sortedhash, sortedkeys = table.setmetatableindex, table.sortedhash, table.sortedkeys
@@ -25,8 +25,14 @@ local helpinfo = [[
    <subcategory>
     <flag name="info"><short>show some info about the given file</short></flag>
     <flag name="metadata"><short>show metadata xml blob</short></flag>
+    <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
     <flag name="linearize"><short>linearize given file</short></flag>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script pdf --info foo.pdf</command></example>
+    <example><command>mtxrun --script pdf --metadata foo.pdf</command></example>
+    <example><command>mtxrun --script pdf --metadata --pretty foo.pdf</command></example>
    </subcategory>
   </category>
  </flags>
@@ -94,13 +100,17 @@ function scripts.pdf.info(filename)
     end
 end
 
-function scripts.pdf.metadata(filename)
+function scripts.pdf.metadata(filename,pretty)
     local pdffile = loadpdffile(filename)
     if pdffile then
         local catalog  = pdffile.Catalog
         local metadata = catalog.Metadata
         if metadata then
-            report("metadata > \n\n%s\n",metadata())
+            metadata = metadata()
+            if pretty then
+                metadata = gsub(metadata,"\r","\n")
+            end
+            report("metadata > \n\n%s\n",metadata)
         else
             report("no metadata")
         end

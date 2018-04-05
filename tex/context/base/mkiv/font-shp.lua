@@ -338,7 +338,7 @@ local function segmentstopdf(segments,factor,bt,et)
     end
 end
 
-local function addvariableshapes(tfmdata,key,value)
+local function initialize(tfmdata,key,value)
     if value then
         local shapes = otf.loadoutlinedata(tfmdata)
         if not shapes then
@@ -354,7 +354,9 @@ local function addvariableshapes(tfmdata,key,value)
         local factor     = hfactor / 65536
         local getactualtext = otf.getactualtext
         for unicode, char in next, characters do
-            if not char.commands then
+            if char.commands then
+                -- can't happen as we're doing this before other messing around
+            else
                 local shape = glyphs[char.index]
                 if shape then
                     local segments = shape.segments
@@ -375,8 +377,8 @@ otf.features.register {
     name        = "variableshapes", -- enforced for now
     description = "variable shapes",
     manipulators = {
-        base = addvariableshapes,
-        node = addvariableshapes,
+        base = initialize,
+        node = initialize,
     }
 }
 

@@ -81,7 +81,7 @@ show current operating system, processor, etc
 launch editor with found file
 .TP
 .B --launch
-launch files like manuals, assumes os support (--all)
+launch files like manuals, assumes os support (--all,--list)
 .TP
 .B --timedrun
 run a script and time its run

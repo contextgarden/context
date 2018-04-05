@@ -14,38 +14,38 @@ local next = next
 <p>This is very experimental code!</p>
 --ldx]]--
 
-local trace_combining_visualize = false  trackers.register("fonts.composing.visualize", function(v) trace_combining_visualize = v end)
-local trace_combining_define    = false  trackers.register("fonts.composing.define",    function(v) trace_combining_define    = v end)
+local trace_visualize    = false  trackers.register("fonts.composing.visualize", function(v) trace_visualize = v end)
+local trace_define       = false  trackers.register("fonts.composing.define",    function(v) trace_define    = v end)
 
-trackers.register("fonts.combining",     "fonts.composing.define") -- for old times sake (and manuals)
-trackers.register("fonts.combining.all", "fonts.composing.*")      -- for old times sake (and manuals)
-
-local report_combining   = logs.reporter("fonts","combining")
-
-local force_combining    = false -- just for demo purposes (see mk)
+local report             = logs.reporter("fonts","combining")
 
 local allocate           = utilities.storage.allocate
 
 local fonts              = fonts
 local handlers           = fonts.handlers
 local constructors       = fonts.constructors
+local helpers            = fonts.helpers
 
 local otf                = handlers.otf
 local afm                = handlers.afm
 local registerotffeature = otf.features.register
 local registerafmfeature = afm.features.register
 
+local addotffeature      = otf.addfeature
+
 local unicodecharacters  = characters.data
 local unicodefallbacks   = characters.fallbacks
 
-local vf                 = handlers.vf
-local commands           = vf.combiner.commands
-local push               = vf.predefined.push
-local pop                = vf.predefined.pop
+local vfcommands         = helpers.commands
+local charcommand        = vfcommands.char
+local rightcommand       = vfcommands.right
+local downcommand        = vfcommands.down
+local upcommand          = vfcommands.up
+local push               = vfcommands.push
+local pop                = vfcommands.pop
 
-local force_composed     = false
-local cache              = { }  -- we could make these weak
-local fraction           = 0.15 -- 30 units for lucida
+local force_combining    = false -- just for demo purposes (see mk)
+local fraction           = 0.15  -- 30 units for lucida
 
 -- todo: we also need to update the feature hashes ... i'll do that when i'm in the mood
 -- and/or when i need it
@@ -65,15 +65,15 @@ local function composecharacters(tfmdata)
         local italicfactor = parameters.italicfactor or 0
         local vfspecials   = backends.tables.vfspecials --brr
         local red, green, blue, black
-        if trace_combining_visualize then
+        if trace_visualize then
             red   = vfspecials.startcolor("red")
             green = vfspecials.startcolor("green")
             blue  = vfspecials.startcolor("blue")
             black = vfspecials.stopcolor
         end
         local compose = fonts.goodies.getcompositions(tfmdata)
-        if compose and trace_combining_visualize then
-            report_combining("using compose information from goodies file")
+        if compose and trace_visualize then
+            report("using compose information from goodies file")
         end
         local done = false
         for i, c in next, unicodecharacters do -- loop over all characters ... not that efficient but a specials hash takes memory
@@ -105,24 +105,12 @@ local function composecharacters(tfmdata)
                                 acc = unicodefallbacks[acc]
                                 charsacc = acc and characters[acc]
                             end
-                            local chr_t = cache[chr]
-                            if not chr_t then
-                             -- chr_t = { "slot", 1, chr }
-                             -- chr_t = { "slot", 0, chr }
-                                chr_t = { "char", chr }
-                                cache[chr] = chr_t
-                            end
+                            local chr_t = charcommand[chr]
                             if charsacc then
-                                if trace_combining_define then
-                                    report_combining("composed %C, base %C, accent %C",i,chr,acc)
+                                if trace_define then
+                                    report("composed %C, base %C, accent %C",i,chr,acc)
                                 end
-                                local acc_t = cache[acc]
-                                if not acc_t then
-                                 -- acc_t = { "slot", 1, acc }
-                                 -- acc_t = { "slot", 0, acc }
-                                    acc_t = { "char", acc }
-                                    cache[acc] = acc_t
-                                end
+                                local acc_t = charcommand[acc]
                                 local cb = descriptions[chr].boundingbox
                                 local ab = descriptions[acc].boundingbox
                                 -- todo: adapt height
@@ -148,26 +136,30 @@ local function composecharacters(tfmdata)
                                                     local ay = a_anchor.y or 0
                                                     local dx = cx - ax
                                                     local dy = cy - ay
-                                                    if trace_combining_define then
-                                                        report_combining("building %C from %C and %C",i,chr,acc)
-                                                        report_combining("  boundingbox:")
-                                                        report_combining("    chr: %3i %3i %3i %3i",unpack(cb))
-                                                        report_combining("    acc: %3i %3i %3i %3i",unpack(ab))
-                                                        report_combining("  anchors:")
-                                                        report_combining("    chr: %3i %3i",cx,cy)
-                                                        report_combining("    acc: %3i %3i",ax,ay)
-                                                        report_combining("  delta:")
-                                                        report_combining("    %s: %3i %3i",i_anchored,dx,dy)
+                                                    if trace_define then
+                                                        report("building %C from %C and %C",i,chr,acc)
+                                                        report("  boundingbox:")
+                                                        report("    chr: %3i %3i %3i %3i",unpack(cb))
+                                                        report("    acc: %3i %3i %3i %3i",unpack(ab))
+                                                        report("  anchors:")
+                                                        report("    chr: %3i %3i",cx,cy)
+                                                        report("    acc: %3i %3i",ax,ay)
+                                                        report("  delta:")
+                                                        report("    %s: %3i %3i",i_anchored,dx,dy)
                                                     end
-                                                    if trace_combining_visualize then
-                                                        t.commands = { push, {"right", scale*dx}, {"down",-scale*dy}, green, acc_t, black, pop, chr_t }
-                                                     -- t.commands = {
-                                                     --     push, {"right", scale*cx}, {"down", -scale*cy}, red,   {"rule",10000,10000,10000}, pop,
-                                                     --     push, {"right", scale*ax}, {"down", -scale*ay}, blue,  {"rule",10000,10000,10000}, pop,
-                                                     --     push, {"right", scale*dx}, {"down", -scale*dy}, green, acc_t, black,               pop, chr_t
-                                                     -- }
+                                                    local right = rightcommand[scale*dx]
+                                                    local down  = upcommand[scale*dy]
+                                                    if trace_visualize then
+                                                        t.commands = {
+                                                            push, right, down,
+                                                            green, acc_t, black,
+                                                            pop, chr_t,
+                                                        }
                                                     else
-                                                        t.commands = { push, {"right", scale*dx}, {"down",-scale*dy},        acc_t,        pop, chr_t }
+                                                        t.commands = {
+                                                            push, right, down,
+                                                            acc_t, pop, chr_t,
+                                                        }
                                                     end
                                                     done = true
                                                 end
@@ -179,10 +171,17 @@ local function composecharacters(tfmdata)
                                         local dx = (c_urx - a_urx - a_llx + c_llx)/2
                                         local dd = (c_urx - c_llx)*italicfactor
                                         if a_ury < 0  then
-                                            if trace_combining_visualize then
-                                                t.commands = { push, {"right", dx-dd}, red, acc_t, black, pop, chr_t }
+                                            local right = rightcommand[dx-dd]
+                                            if trace_visualize then
+                                                t.commands = {
+                                                    push, right, red, acc_t,
+                                                    black, pop, chr_t,
+                                                }
                                             else
-                                                t.commands = { push, {"right", dx-dd},      acc_t,        pop, chr_t }
+                                                t.commands = {
+                                                    push, right, acc_t, pop,
+                                                    chr_t,
+                                                }
                                             end
                                         elseif c_ury > a_lly then -- messy test
                                             local dy
@@ -214,27 +213,46 @@ local function composecharacters(tfmdata)
                                             else
                                                 dy = - deltaxheight + extraxheight
                                             end
-                                            if trace_combining_visualize then
-                                                t.commands = { push, { "right", dx+dd }, { "down", dy }, green, acc_t, black, pop, chr_t }
+                                            local right = rightcommand[dx+dd]
+                                            local down  = downcommand[dy]
+                                            if trace_visualize then
+                                                t.commands = {
+                                                    push, right, down, green,
+                                                    acc_t, black, pop, chr_t,
+                                                }
                                             else
-                                                t.commands = { push, { "right", dx+dd }, { "down", dy },        acc_t,        pop, chr_t }
+                                                t.commands = {
+                                                    push, right, down, acc_t,
+                                                    pop, chr_t,
+                                                }
                                             end
                                         else
-                                            if trace_combining_visualize then
-                                                t.commands = { push, { "right", dx+dd },                 blue,  acc_t, black, pop, chr_t }
+                                            local right = rightcommand[dx+dd]
+                                            if trace_visualize then
+                                                t.commands = {
+                                                    push, right, blue, acc_t,
+                                                    black, pop, chr_t,
+                                                }
                                             else
-                                                t.commands = { push, { "right", dx+dd },                        acc_t,        pop, chr_t }
+                                                t.commands = {
+                                                    push, right, acc_t, pop,
+                                                    chr_t,
+                                                }
                                             end
                                         end
                                     end
                                 else
-                                    t.commands = { chr_t } -- else index mess
+                                    t.commands = {
+                                        chr_t, -- else index mess
+                                    }
                                 end
                             else
-                                if trace_combining_define then
-                                    report_combining("%C becomes simplified %C",i,chr)
+                                if trace_define then
+                                    report("%C becomes simplified %C",i,chr)
                                 end
-                                t.commands = { chr_t } -- else index mess
+                                t.commands = {
+                                    chr_t, -- else index mess
+                                }
                             end
                             done = true
                             characters[i] = t
@@ -254,7 +272,7 @@ local function composecharacters(tfmdata)
     end
 end
 
-local compose_specification = {
+local specification = {
     name        = "compose",
     description = "additional composed characters",
     manipulators = {
@@ -263,75 +281,71 @@ local compose_specification = {
     }
 }
 
-registerotffeature(compose_specification)
-registerafmfeature(compose_specification)
+registerotffeature(specification)
+registerafmfeature(specification)
 
-vf.helpers.composecharacters = composecharacters
-
--- This installs the builder into the regular virtual font builder,
--- which only makes sense as demo.
-
-commands["compose.trace.enable"] = function()
-    trace_combining_visualize = true
-end
-
-commands["compose.trace.disable"] = function()
-    trace_combining_visualize = false
-end
-
-commands["compose.force.enable"] = function()
-    force_combining = true
-end
-
-commands["compose.force.disable"] = function()
-    force_combining = false
-end
-
-commands["compose.trace.set"] = function(g,v)
-    if v[2] == nil then
-        trace_combining_visualize = true
-    else
-        trace_combining_visualize = v[2]
-    end
-end
-
-commands["compose.apply"] = function(g,v)
-    composecharacters(g)
-end
-
--- vf builder
-
--- { "pdf", "origin", "q " .. s .. " 0 0 " .. s .. " 0 0 cm" },
--- { "pdf", "origin", "q 1 0 0 1 " .. -w .. " " .. -h .. " cm" },
--- { "pdf", "origin", "/Fm\XX\space Do" },
--- { "pdf", "origin", "Q" },
--- { "pdf", "origin", "Q" },
-
--- new and experimental
-
-local everywhere = { ["*"] = { ["*"] = true } } -- or: { ["*"] = { "*" } }
-local noflags    = { }
-
-local char_specification = {
+addotffeature {
+    name     = "char-ligatures",
     type     = "ligature",
-    features = everywhere,
     data     = characters.splits.char,
     order    = { "char-ligatures" },
-    flags    = noflags,
     prepend  = true,
 }
 
-local compat_specification = {
+addotffeature {
+    name     = "compat-ligatures",
     type     = "ligature",
-    features = everywhere,
     data     = characters.splits.compat,
     order    = { "compat-ligatures" },
-    flags    = noflags,
     prepend  = true,
 }
 
-otf.addfeature("char-ligatures",  char_specification)   -- xlig (extra)
-otf.addfeature("compat-ligatures",compat_specification) -- plig (pseudo)
+registerotffeature {
+    name        = 'char-ligatures',
+    description = 'unicode char specials to ligatures',
+}
 
-registerotffeature { name = 'char-ligatures',   description = 'unicode char specials to ligatures' }
-registerotffeature { name = 'compat-ligatures', description = 'unicode compat specials to ligatures' }
+registerotffeature {
+    name        = 'compat-ligatures',
+    description = 'unicode compat specials to ligatures',
+}
+
+do
+
+    -- This installs the builder into the regular virtual font builder,
+    -- which only makes sense as demo.
+
+    local vf       = handlers.vf
+    local commands = vf.combiner.commands
+
+    vf.helpers.composecharacters = composecharacters
+
+    commands["compose.trace.enable"] = function()
+        trace_visualize = true
+    end
+
+    commands["compose.trace.disable"] = function()
+        trace_visualize = false
+    end
+
+    commands["compose.force.enable"] = function()
+        force_combining = true
+    end
+
+    commands["compose.force.disable"] = function()
+        force_combining = false
+    end
+
+    commands["compose.trace.set"] = function(g,v)
+        if v[2] == nil then
+            trace_visualize = true
+        else
+            trace_visualize = v[2]
+        end
+    end
+
+    commands["compose.apply"] = function(g,v)
+        composecharacters(g)
+    end
+
+end

@@ -1727,7 +1727,8 @@
      \font_helpers_process_style_list{\font_helpers_define_unknown_check_definitions{#body}}%
      \ifconditional\c_font_defining_state
        \ifconditional\c_font_defining_environment_state\else
-         \showmessage\m!fonts{14}{#body}% main
+        %\showmessage\m!fonts{14}{#body}% main
+         \clf_registerunknownbodysize{#body}%
        \fi
        \setfalse\c_font_defining_state
        \font_helpers_register_fontbody{#body}%
@@ -1740,13 +1741,6 @@
        \fi
      \fi
    \fi}
-
-% \def\font_helpers_define_unknown_check_sizes#body#relativesize%
-%   {\ifcsname\??fontenvironments\s!default#relativesize\endcsname % fontclass ?
-%      % how \lastnamedcs here
-%      \expandafter\normalizebodyfontsize\csname\??fontenvironments#body#relativesize\endcsname{\csname\??fontenvironments\s!default#relativesize\endcsname\dimexpr#body\relax}%
-%      \settrue\c_font_defining_state
-%    \fi}
 
 \def\font_helpers_define_unknown_check_sizes#body#relativesize%
   {\ifcsname\??fontenvironments\s!default#relativesize\endcsname % fontclass ?

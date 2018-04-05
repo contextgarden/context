@@ -45671,6 +45671,45 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldoifatt">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:resolve name="cd:string"/>
+    <cd:resolve name="cd:string"/>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldoifnotatt">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:resolve name="cd:string"/>
+    <cd:resolve name="cd:string"/>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldoifelseatt">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:node"/>
+    </cd:keywords>
+    <cd:resolve name="cd:string"/>
+    <cd:resolve name="cd:string"/>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="xml" file="lxml-ini.mkiv" level="style" name="xmldoifselfempty">
    <cd:arguments>
     <cd:keywords delimiters="braces">

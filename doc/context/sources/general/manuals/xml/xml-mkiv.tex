@@ -1502,6 +1502,23 @@ and an \cmdinternal {cd:lpath} as second:
     {cd:false} otherwise
 \stopxmlcmd
 
+\startxmlcmd {\cmdbasicsetup{xmldoifatt}}
+    expands to \cmdinternal {cd:true} when the attribute matching \cmdinternal
+    {cd:node} and the name given as second argument matches the third argument
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifnotatt}}
+    expands to \cmdinternal {cd:true} when the attribute matching \cmdinternal
+    {cd:node} and the name given as second argument differs from the third
+    argument
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifelseatt}}
+    expands to \cmdinternal {cd:true} when the attribute matching \cmdinternal
+    {cd:node} and the name given as second argument matches the third argument
+    and to \cmdinternal {cd:false} otherwise
+\stopxmlcmd
+
 \startxmlcmd {\cmdbasicsetup{xmldoifelseempty}}
     expands to \cmdinternal {cd:true} when the node matching \cmdinternal
     {cd:lpath} at node \cmdinternal {cd:node} is empty and to \cmdinternal

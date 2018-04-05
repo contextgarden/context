@@ -163,7 +163,7 @@ local n_setlink         = node.setlink or -- always
         -- not that fast but not used often anyway
         local h = nil
         for i=1,select("#",...) do
-            local n = (select(i,...))
+            local n = select(i,...)
             if not n then
                 -- go on
             elseif h then

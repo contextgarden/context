@@ -193,11 +193,15 @@ local defaultdestination = pdfarray { 0, pdf_fit }
 -- fit is default (see lpdf-nod)
 
 local destinations = { } -- to be used soon
+local reported     = setmetatableindex("table")
 
 local function pdfregisterdestination(name,reference)
     local d = destinations[name]
     if d then
-        report_destinations("ignoring duplicate destination %a with reference %a",name,reference)
+        if not reported[name][reference] then
+            report_destinations("ignoring duplicate destination %a with reference %a",name,reference)
+            reported[name][reference] = true
+        end
     else
         destinations[name] = reference
     end
@@ -872,15 +876,17 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
+local reported = { }
+
 function specials.internal(var,actions) -- better resolve in strc-ref
     local i = tonumber(var.operation)
     local v = i and references.internals[i]
-    if not v then
-        -- error
-        report_references("no internal reference %a",i or "<unset>")
-    else
+    if v then
         flaginternals[i] = true
         return pdflinkinternal(i,v.references.realpage)
+    elseif not reported[i] then
+        report_references("no internal reference %a",i or "<unset>")
+        reported[i] = true
     end
 end
 

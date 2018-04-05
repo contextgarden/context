@@ -1076,10 +1076,8 @@ registerotffeature {
     description = 'block certain ligatures',
 }
 
-local settings_to_array = utilities.parsers and utilities.parsers.settings_to_array
-                       or function(s) return string.split(s,",") end -- for generic
-
-local splitter = lpeg.splitat(":")
+local settings_to_array = utilities.parsers.settings_to_array
+local splitter          = lpeg.splitat(":")
 
 local function blockligatures(str)
 

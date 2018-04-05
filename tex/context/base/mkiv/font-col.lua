@@ -47,21 +47,21 @@ collections.definitions  = definitions
 local vectors            = collections.vectors or { }
 collections.vectors      = vectors
 
-local fonthashes         = fonts.hashes
-local fonthelpers        = fonts.helpers
+local helpers            = fonts.helpers
+local charcommand        = helpers.commands.char
+local rightcommand       = helpers.commands.right
+local addprivate         = helpers.addprivate
+local hasprivate         = helpers.hasprivate
+local fontpatternhassize = helpers.fontpatternhassize
 
-local fontdata           = fonthashes.identifiers
-local fontquads          = fonthashes.quads
-local chardata           = fonthashes.characters
-local propdata           = fonthashes.properties
-
-local addprivate         = fonthelpers.addprivate
-local hasprivate         = fonthelpers.hasprivate
+local hashes             = fonts.hashes
+local fontdata           = hashes.identifiers
+local fontquads          = hashes.quads
+local chardata           = hashes.characters
+local propdata           = hashes.properties
 
 local currentfont        = font.current
 local addcharacters      = font.addcharacters
-
-local fontpatternhassize = fonts.helpers.fontpatternhassize
 
 local implement          = interfaces.implement
 
@@ -284,13 +284,16 @@ local function monoslot(font,char,parent,factor)
         local width      = factor * fontquads[parent]
         local character  = characters[char]
         if character then
+            -- runtime patching of the font (can only be new characters)
+            -- instead of messing with existing dimensions
             local data = {
+                -- no features so a simple copy
                 width    = width,
                 height   = character.height,
                 depth    = character.depth,
                 commands = {
-                    { "right", (width - character.width or 0)/2 },
-                    { "slot", 0, char }
+                    rightcommand[(width - character.width or 0)/2],
+                    charcommand[char],
                 }
             }
             local u = addprivate(tfmdata, privatename, data)

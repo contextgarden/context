@@ -11,85 +11,51 @@ if context then
     os.exit()
 end
 
-local fonts       = fonts
-local otffeatures = fonts.constructors.features.otf
-local getprivate  = fonts.constructors.getprivate
+local byte = string.byte
 
--- A few generic extensions.
+local fonts              = fonts
+local handlers           = fonts.handlers
+local otf                = handlers.otf
+local afm                = handlers.afm
+local registerotffeature = otf.features.register
+local registerafmfeature = afm.features.register
 
-local function initializeitlc(tfmdata,value)
-    if value then
-        -- the magic 40 and it formula come from Dohyun Kim but we might need another guess
-        local parameters = tfmdata.parameters
-        local italicangle = parameters.italicangle
-        if italicangle and italicangle ~= 0 then
-            local properties = tfmdata.properties
-            local factor = tonumber(value) or 1
-            properties.hasitalics = true
-            properties.autoitalicamount = factor * (parameters.uwidth or 40)/2
-        end
-    end
-end
+-- extra generic stuff
 
-otffeatures.register {
-    name        = "itlc",
-    description = "italic correction",
-    initializers = {
-        base = initializeitlc,
-        node = initializeitlc,
-    }
-}
+function fonts.loggers.onetimemessage() end
 
--- slant and extend
+-- done elsewhere
+--
+-- loadmodule('font-ext-imp-italic.lua')
+-- loadmodule('font-ext-imp-effect.lua')
+-- loadmodule('luatex-fonts-lig.lua')
 
-local function initializeslant(tfmdata,value)
-    value = tonumber(value)
-    if not value then
-        value =  0
-    elseif value >  1 then
-        value =  1
-    elseif value < -1 then
-        value = -1
-    end
-    tfmdata.parameters.slantfactor = value
-end
-
-otffeatures.register {
-    name        = "slant",
-    description = "slant glyphs",
-    initializers = {
-        base = initializeslant,
-        node = initializeslant,
-    }
-}
-
-local function initializeextend(tfmdata,value)
-    value = tonumber(value)
-    if not value then
-        value =  0
-    elseif value >  10 then
-        value =  10
-    elseif value < -10 then
-        value = -10
-    end
-    tfmdata.parameters.extendfactor = value
-end
-
-otffeatures.register {
-    name        = "extend",
-    description = "scale glyphs horizontally",
-    initializers = {
-        base = initializeextend,
-        node = initializeextend,
-    }
-}
-
--- expansion and protrusion
+-- protrusion (simplified version)
 
 fonts.protrusions        = fonts.protrusions        or { }
 fonts.protrusions.setups = fonts.protrusions.setups or { }
+local setups             = fonts.protrusions.setups
 
-local setups = fonts.protrusions.setups
+setups['default'] = { -- demo vector
+
+    factor   = 1,
+    left     = 1,
+    right    = 1,
+
+    [0x002C] = { 0, 1    }, -- comma
+    [0x002E] = { 0, 1    }, -- period
+    [0x003A] = { 0, 1    }, -- colon
+    [0x003B] = { 0, 1    }, -- semicolon
+    [0x002D] = { 0, 1    }, -- hyphen
+    [0x2013] = { 0, 0.50 }, -- endash
+    [0x2014] = { 0, 0.33 }, -- emdash
+    [0x3001] = { 0, 1    }, -- ideographic comma      、
+    [0x3002] = { 0, 1    }, -- ideographic full stop  。
+    [0x060C] = { 0, 1    }, -- arabic comma           ،
+    [0x061B] = { 0, 1    }, -- arabic semicolon       ؛
+    [0x06D4] = { 0, 1    }, -- arabic full stop       ۔
+
+}
 
 local function initializeprotrusion(tfmdata,value)
     if value then
@@ -112,7 +78,7 @@ local function initializeprotrusion(tfmdata,value)
     end
 end
 
-otffeatures.register {
+local specification = {
     name        = "protrusion",
     description = "shift characters into the left and or right margin",
     initializers = {
@@ -121,10 +87,32 @@ otffeatures.register {
     }
 }
 
-fonts.expansions         = fonts.expansions        or { }
-fonts.expansions.setups  = fonts.expansions.setups or { }
+registerotffeature(specification)
+registerafmfeature(specification)
 
-local setups = fonts.expansions.setups
+-- expansion (simplified version)
+
+fonts.expansions        = fonts.expansions        or { }
+fonts.expansions.setups = fonts.expansions.setups or { }
+local setups            = fonts.expansions.setups
+
+setups['default'] = { -- demo vector
+
+    stretch     = 2,
+    shrink      = 2,
+    step        = .5,
+    factor      = 1,
+
+    [byte('A')] = 0.5, [byte('B')] = 0.7, [byte('C')] = 0.7, [byte('D')] = 0.5, [byte('E')] = 0.7,
+    [byte('F')] = 0.7, [byte('G')] = 0.5, [byte('H')] = 0.7, [byte('K')] = 0.7, [byte('M')] = 0.7,
+    [byte('N')] = 0.7, [byte('O')] = 0.5, [byte('P')] = 0.7, [byte('Q')] = 0.5, [byte('R')] = 0.7,
+    [byte('S')] = 0.7, [byte('U')] = 0.7, [byte('W')] = 0.7, [byte('Z')] = 0.7,
+    [byte('a')] = 0.7, [byte('b')] = 0.7, [byte('c')] = 0.7, [byte('d')] = 0.7, [byte('e')] = 0.7,
+    [byte('g')] = 0.7, [byte('h')] = 0.7, [byte('k')] = 0.7, [byte('m')] = 0.7, [byte('n')] = 0.7,
+    [byte('o')] = 0.7, [byte('p')] = 0.7, [byte('q')] = 0.7, [byte('s')] = 0.7, [byte('u')] = 0.7,
+    [byte('w')] = 0.7, [byte('z')] = 0.7,
+    [byte('2')] = 0.7, [byte('3')] = 0.7, [byte('6')] = 0.7, [byte('8')] = 0.7, [byte('9')] = 0.7,
+}
 
 local function initializeexpansion(tfmdata,value)
     if value then
@@ -149,7 +137,7 @@ local function initializeexpansion(tfmdata,value)
     end
 end
 
-otffeatures.register {
+local specification = {
     name        = "expansion",
     description = "apply hz optimization",
     initializers = {
@@ -158,51 +146,12 @@ otffeatures.register {
     }
 }
 
--- left over
+registerotffeature(specification)
+registerafmfeature(specification)
 
-function fonts.loggers.onetimemessage() end
+-- normalizer (generic only)
 
--- example vectors
-
-local byte = string.byte
-
-fonts.expansions.setups['default'] = {
-
-    stretch = 2, shrink = 2, step = .5, factor = 1,
-
-    [byte('A')] = 0.5, [byte('B')] = 0.7, [byte('C')] = 0.7, [byte('D')] = 0.5, [byte('E')] = 0.7,
-    [byte('F')] = 0.7, [byte('G')] = 0.5, [byte('H')] = 0.7, [byte('K')] = 0.7, [byte('M')] = 0.7,
-    [byte('N')] = 0.7, [byte('O')] = 0.5, [byte('P')] = 0.7, [byte('Q')] = 0.5, [byte('R')] = 0.7,
-    [byte('S')] = 0.7, [byte('U')] = 0.7, [byte('W')] = 0.7, [byte('Z')] = 0.7,
-    [byte('a')] = 0.7, [byte('b')] = 0.7, [byte('c')] = 0.7, [byte('d')] = 0.7, [byte('e')] = 0.7,
-    [byte('g')] = 0.7, [byte('h')] = 0.7, [byte('k')] = 0.7, [byte('m')] = 0.7, [byte('n')] = 0.7,
-    [byte('o')] = 0.7, [byte('p')] = 0.7, [byte('q')] = 0.7, [byte('s')] = 0.7, [byte('u')] = 0.7,
-    [byte('w')] = 0.7, [byte('z')] = 0.7,
-    [byte('2')] = 0.7, [byte('3')] = 0.7, [byte('6')] = 0.7, [byte('8')] = 0.7, [byte('9')] = 0.7,
-}
-
-fonts.protrusions.setups['default'] = {
-
-    factor = 1, left = 1, right = 1,
-
-    [0x002C] = { 0, 1    }, -- comma
-    [0x002E] = { 0, 1    }, -- period
-    [0x003A] = { 0, 1    }, -- colon
-    [0x003B] = { 0, 1    }, -- semicolon
-    [0x002D] = { 0, 1    }, -- hyphen
-    [0x2013] = { 0, 0.50 }, -- endash
-    [0x2014] = { 0, 0.33 }, -- emdash
-    [0x3001] = { 0, 1    }, -- ideographic comma      、
-    [0x3002] = { 0, 1    }, -- ideographic full stop  。
-    [0x060C] = { 0, 1    }, -- arabic comma           ،
-    [0x061B] = { 0, 1    }, -- arabic semicolon       ؛
-    [0x06D4] = { 0, 1    }, -- arabic full stop       ۔
-
-}
-
--- normalizer
-
-fonts.handlers.otf.features.normalize = function(t)
+otf.features.normalize = function(t)
     if t.rand then
         t.rand = "random"
     end
@@ -230,6 +179,8 @@ end
 --      [110] = 109, -- n
 --  }
 
+-- reencoding (generic only)
+
 fonts.encodings             = fonts.encodings or { }
 local reencodings           = { }
 fonts.encodings.reencodings = reencodings
@@ -254,7 +205,7 @@ local function specialreencode(tfmdata,value)
     end
 end
 
-local function reencode(tfmdata,value)
+local function initialize(tfmdata,value)
     tfmdata.postprocessors = tfmdata.postprocessors or { }
     table.insert(tfmdata.postprocessors,
         function(tfmdata)
@@ -263,65 +214,28 @@ local function reencode(tfmdata,value)
     )
 end
 
-otffeatures.register {
+registerotffeature {
     name         = "reencode",
     description  = "reencode characters",
     manipulators = {
-        base = reencode,
-        node = reencode,
+        base = initialize,
+        node = initialize,
     }
 }
 
-local function ignore(tfmdata,key,value)
+-- math stuff (generic only)
+
+local function initialize(tfmdata,key,value)
     if value then
         tfmdata.mathparameters = nil
     end
 end
 
-otffeatures.register {
+registerotffeature {
     name         = "ignoremathconstants",
     description  = "ignore math constants table",
     initializers = {
-        base = ignore,
-        node = ignore,
-    }
-}
-
-local setmetatableindex = table.setmetatableindex
-
-local function additalictowidth(tfmdata,key,value)
-    local characters = tfmdata.characters
-    local additions  = { }
-    for unicode, old_c in next, characters do
-        -- maybe check for math
-        local oldwidth  = old_c.width
-        local olditalic = old_c.italic
-        if olditalic and olditalic ~= 0 then
-            local private = getprivate(tfmdata)
-            local new_c = {
-                width    = oldwidth + olditalic,
-                height   = old_c.height,
-                depth    = old_c.depth,
-                commands = {
-                    { "slot", 1, private },
-                    { "right", olditalic },
-                },
-            }
-            setmetatableindex(new_c,old_c)
-            characters[unicode] = new_c
-            additions[private]  = old_c
-        end
-    end
-    for k, v in next, additions do
-        characters[k] = v
-    end
-end
-
-otffeatures.register {
-    name        = "italicwidths",
-    description = "add italic to width",
-    manipulators = {
-        base = additalictowidth,
-     -- node = additalictowidth, -- only makes sense for math
+        base = initialize,
+        node = initialize,
     }
 }

@@ -26,12 +26,17 @@
 
 % the otf font loader:
 
+% helpers
+
+
 \registerctxluafile{font-otr}{optimize} % opentype fontloader
 \registerctxluafile{font-web}{}         % opentype fontloader
 \registerctxluafile{font-cff}{optimize} % quadratic outlines
 \registerctxluafile{font-ttf}{optimize} % cubic outlines
 \registerctxluafile{font-dsp}{optimize} % ... for this one
 \registerctxluafile{font-hsh}{}         % hashes used by context
+\registerctxluafile{font-vfc}{}
+\registerctxluafile{font-prv}{}         % needs hashes
 \registerctxluafile{font-nod}{}
 \registerctxluafile{font-oti}{}         % otf initialization
 \registerctxluafile{font-ott}{}         % otf tables (first)
@@ -87,7 +92,19 @@
 \registerctxluafile{font-def}{}
 \registerctxluafile{font-ctx}{} % after def as it overloads
 
-\registerctxluafile{font-ext}{}
+% extensions, order matters
+
+\registerctxluafile{font-imp-reorder}{}
+\registerctxluafile{font-imp-properties}{}
+\registerctxluafile{font-imp-unicode}{}
+\registerctxluafile{font-imp-math}{}
+\registerctxluafile{font-imp-notused}{}
+\registerctxluafile{font-imp-effect}{}
+\registerctxluafile{font-imp-quality}{}
+\registerctxluafile{font-imp-italic}{}
+\registerctxluafile{font-imp-dimensions}{}
+\registerctxluafile{font-imp-tracing}{} % comes last!
+
 \registerctxluafile{font-fbk}{}
 
 \registerctxluafile{font-aux}{}

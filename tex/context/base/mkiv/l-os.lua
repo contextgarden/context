@@ -156,7 +156,7 @@ end
 local launchers = {
     windows = "start %s",
     macosx  = "open %s",
-    unix    = "$BROWSER %s &> /dev/null &",
+    unix    = "xdg-open %s &> /dev/null &",
 }
 
 function os.launch(str)

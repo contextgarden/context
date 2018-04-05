@@ -17,6 +17,9 @@ show some info about the given file
 .B --metadata
 show metadata xml blob
 .TP
+.B --pretty
+replace newlines in metadata
+.TP
 .B --fonts
 show used fonts (--detail)
 .TP

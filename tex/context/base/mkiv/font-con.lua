@@ -499,7 +499,7 @@ function constructors.scale(tfmdata,specification)
     end
     local width = parameters.width or 0
     if width ~= 0 then
-        target.width = width
+        target.width = width * delta * 1000 / 655360
     end
     --
     targetparameters.factor       = delta

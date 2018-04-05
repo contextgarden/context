@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/04/18 00:51:15
+-- merge date  : 04/05/18 20:01:56
 
 do -- begin closure to overcome local limits and interference
 
@@ -760,7 +760,7 @@ local function make2(t,rest)
   end
   return p
 end
-function lpeg.utfchartabletopattern(list,insensitive) 
+local function utfchartabletopattern(list,insensitive) 
   local tree={}
   local n=#list
   if n==0 then
@@ -832,6 +832,13 @@ function lpeg.utfchartabletopattern(list,insensitive)
     end
   end
   return (insensitive and make2 or make1)(tree)
+end
+lpeg.utfchartabletopattern=utfchartabletopattern
+function lpeg.utfreplacer(list,insensitive)
+  local pattern=Cs((utfchartabletopattern(list,insensitive)/list+utf8character)^0)
+  return function(str)
+    return lpegmatch(pattern,str) or str
+  end
 end
 patterns.containseol=lpeg.finder(eol)
 local function nextstep(n,step,result)
@@ -926,6 +933,21 @@ function string.tobytes(s)
   else
     return lpegmatch(hextobytes,s)
   end
+end
+local patterns={} 
+local function containsws(what)
+  local p=patterns[what]
+  if not p then
+    local p1=P(what)*(whitespace+P(-1))*Cc(true)
+    local p2=whitespace*P(p1)
+    p=P(p1)+P(1-p2)^0*p2+Cc(false)
+    patterns[what]=p
+  end
+  return p
+end
+lpeg.containsws=containsws
+function string.containsws(str,what)
+  return lpegmatch(patterns[what] or containsws(what),str)
 end
 
 end -- closure
@@ -4864,13 +4886,17 @@ callbacks={
     return callback.register(n,f)
   end,
 }
-utilities=utilities or {} utilities.storage={
+utilities=utilities or {}
+utilities.storage=utilities.storage or {
   allocate=function(t)
     return t or {}
   end,
   mark=function(t)
     return t or {}
   end,
+}
+utilities.parsers=utilities.parsers or {
+  settings_to_array=function(s) return string.split(s,",") end,
 }
 characters=characters or {
   data={}
@@ -9252,7 +9278,7 @@ function constructors.scale(tfmdata,specification)
   end
   local width=parameters.width or 0
   if width~=0 then
-    target.width=width
+    target.width=width*delta*1000/655360
   end
   targetparameters.factor=delta
   targetparameters.hfactor=hdelta
@@ -10884,6 +10910,83 @@ end
 function fonts.names.ignoredfile(filename) 
   return false 
 end
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['font-vfc']={
+  version=1.001,
+  comment="companion to font-ini.mkiv and hand-ini.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local select=select
+local insert=table.insert
+local fonts=fonts
+local helpers=fonts.helpers
+local setmetatableindex=table.setmetatableindex
+local push={ "push" }
+local pop={ "pop" }
+local dummy={ "comment" }
+function helpers.prependcommands(commands,...)
+  insert(commands,1,push)
+  for i=select("#",...),1,-1 do
+    local s=select(i,...)
+    if s then
+      insert(commands,1,s)
+    end
+  end
+  insert(commands,pop)
+  return commands
+end
+function helpers.appendcommands(commands,...)
+  insert(commands,1,push)
+  insert(commands,pop)
+  for i=1,select("#",...) do
+    local s=select(i,...)
+    if s then
+      insert(commands,s)
+    end
+  end
+  return commands
+end
+local char=setmetatableindex(function(t,k)  
+  local v={ "char",k }
+  t[k]=v
+  return v
+end)
+local right=setmetatableindex(function(t,k) 
+  local v={ "right",k }
+  t[k]=v
+  return v
+end)
+local left=setmetatableindex(function(t,k)  
+  local v={ "right",-k }
+  t[k]=v
+  return v
+end)
+local down=setmetatableindex(function(t,k)  
+  local v={ "down",k }
+  t[k]=v
+  return v
+end)
+local up=setmetatableindex(function(t,k)   
+  local v={ "down",-k }
+  t[k]=v
+  return v
+end)
+helpers.commands=utilities.storage.allocate {
+  char=char,
+  right=right,
+  left=left,
+  down=down,
+  up=up,
+  push=push,
+  pop=pop,
+  dummy=dummy,
+}
 
 end -- closure
 
@@ -22373,6 +22476,8 @@ do if not fontkern then
     setkern(n,k)
     return n
   end
+end end
+do if not italickern then 
   local thekern=nuts.new("kern",3) 
   local setkern=nuts.setkern
   local copy_node=nuts.copy_node
@@ -29670,6 +29775,11 @@ local sortedkeys,sortedhash=table.sortedkeys,table.sortedhash
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
+local helpers=fonts.helpers
+local charcommand=helpers.commands.char
+local rightcommand=helpers.commands.right
+local leftcommand=helpers.commands.left
+local downcommand=helpers.commands.down
 local otf=fonts.handlers.otf
 local f_color=formatters["%.3f %.3f %.3f rg"]
 local f_gray=formatters["%.3f g"]
@@ -29758,7 +29868,7 @@ local pop={ "pdf","page","Q" }
 if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY<6472 then
   start={ "nop" }
 end
-local function initializecolr(tfmdata,kind,value) 
+local function initialize(tfmdata,kind,value) 
   if value then
     local resources=tfmdata.resources
     local palettes=resources.colorpalettes
@@ -29780,21 +29890,11 @@ local function initializecolr(tfmdata,kind,value)
       tfmdata.fonts={
         { id=0 }
       }
-      local widths=setmetatableindex(function(t,k)
-        local v={ "right",-k }
-        t[k]=v
-        return v
-      end)
       local getactualtext=otf.getactualtext
       local default=colorvalues[#colorvalues]
       local b,e=getactualtext(tounicode(0xFFFD))
       local actualb={ "pdf","page",b } 
       local actuale={ "pdf","page",e }
-      local cache=setmetatableindex(function(t,k)
-        local v={ "char",k } 
-        t[k]=v
-        return v
-      end)
       for unicode,character in next,characters do
         local description=descriptions[unicode]
         if description then
@@ -29803,7 +29903,7 @@ local function initializecolr(tfmdata,kind,value)
             local u=description.unicode or characters[unicode].unicode
             local w=character.width or 0
             local s=#colorlist
-            local goback=w~=0 and widths[w] or nil 
+            local goback=w~=0 and leftcommand[w] or nil 
             local t={
               start,
               not u and actualb or { "pdf","page",(getactualtext(tounicode(u))) }
@@ -29823,7 +29923,7 @@ local function initializecolr(tfmdata,kind,value)
                 n=n+1 t[n]=v
                 l=v
               end
-              n=n+1 t[n]=cache[entry.slot]
+              n=n+1 t[n]=charcommand[entry.slot]
               if s>1 and i<s and goback then
                 n=n+1 t[n]=goback
               end
@@ -29843,8 +29943,8 @@ fonts.handlers.otf.features.register {
   name="colr",
   description="color glyphs",
   manipulators={
-    base=initializecolr,
-    node=initializecolr,
+    base=initialize,
+    node=initialize,
   }
 }
 do
@@ -29908,8 +30008,8 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
           local dp=character.depth or 0
           character.commands={
             not unicode and actualb or { "pdf","page",(getactualtext(unicode)) },
-            { "down",dp+dy*hfactor },
-            { "right",dx*hfactor },
+            downcommand[dp+dy*hfactor],
+            rightcommand[dx*hfactor],
             { "image",{ filename=name,width=wd,height=ht,depth=dp } },
             actuale,
           }
@@ -30990,8 +31090,7 @@ registerotffeature {
   name='blockligatures',
   description='block certain ligatures',
 }
-local settings_to_array=utilities.parsers and utilities.parsers.settings_to_array
-            or function(s) return string.split(s,",") end 
+local settings_to_array=utilities.parsers.settings_to_array
 local splitter=lpeg.splitat(":")
 local function blockligatures(str)
   local t=settings_to_array(str)
@@ -32296,6 +32395,7 @@ local findbinfile=resolvers.findbinfile
 local setmetatableindex=table.setmetatableindex
 local fonts=fonts
 local handlers=fonts.handlers
+local helpers=fonts.helpers
 local readers=fonts.readers
 local constructors=fonts.constructors
 local encodings=fonts.encodings
@@ -32309,6 +32409,7 @@ local tfmfeatures=constructors.features.tfm
 local registertfmfeature=tfmfeatures.register
 local tfmenhancers=constructors.enhancers.tfm
 local registertfmenhancer=tfmenhancers.register
+local charcommand=helpers.commands.char
 constructors.resolvevirtualtoo=false 
 fonts.formats.tfm="type1" 
 fonts.formats.ofm="type1"
@@ -32572,7 +32673,7 @@ do
         if backmap then
           original.index=backmap[name]
         else 
-          original.commands={ parentfont,{ "char",index } }
+          original.commands={ parentfont,charcommand[index] } 
           original.oindex=index
         end
         done[name]=true
@@ -33327,70 +33428,34 @@ if context then
   texio.write_nl("fatal error: this module is not for context")
   os.exit()
 end
+local byte=string.byte
 local fonts=fonts
-local otffeatures=fonts.constructors.features.otf
-local getprivate=fonts.constructors.getprivate
-local function initializeitlc(tfmdata,value)
-  if value then
-    local parameters=tfmdata.parameters
-    local italicangle=parameters.italicangle
-    if italicangle and italicangle~=0 then
-      local properties=tfmdata.properties
-      local factor=tonumber(value) or 1
-      properties.hasitalics=true
-      properties.autoitalicamount=factor*(parameters.uwidth or 40)/2
-    end
-  end
-end
-otffeatures.register {
-  name="itlc",
-  description="italic correction",
-  initializers={
-    base=initializeitlc,
-    node=initializeitlc,
-  }
-}
-local function initializeslant(tfmdata,value)
-  value=tonumber(value)
-  if not value then
-    value=0
-  elseif value>1 then
-    value=1
-  elseif value<-1 then
-    value=-1
-  end
-  tfmdata.parameters.slantfactor=value
-end
-otffeatures.register {
-  name="slant",
-  description="slant glyphs",
-  initializers={
-    base=initializeslant,
-    node=initializeslant,
-  }
-}
-local function initializeextend(tfmdata,value)
-  value=tonumber(value)
-  if not value then
-    value=0
-  elseif value>10 then
-    value=10
-  elseif value<-10 then
-    value=-10
-  end
-  tfmdata.parameters.extendfactor=value
-end
-otffeatures.register {
-  name="extend",
-  description="scale glyphs horizontally",
-  initializers={
-    base=initializeextend,
-    node=initializeextend,
-  }
-}
+local handlers=fonts.handlers
+local otf=handlers.otf
+local afm=handlers.afm
+local registerotffeature=otf.features.register
+local registerafmfeature=afm.features.register
+function fonts.loggers.onetimemessage() end
 fonts.protrusions=fonts.protrusions    or {}
 fonts.protrusions.setups=fonts.protrusions.setups or {}
 local setups=fonts.protrusions.setups
+setups['default']={ 
+  factor=1,
+  left=1,
+  right=1,
+  [0x002C]={ 0,1  },
+  [0x002E]={ 0,1  },
+  [0x003A]={ 0,1  },
+  [0x003B]={ 0,1  },
+  [0x002D]={ 0,1  },
+  [0x2013]={ 0,0.50 },
+  [0x2014]={ 0,0.33 },
+  [0x3001]={ 0,1  },
+  [0x3002]={ 0,1  },
+  [0x060C]={ 0,1  },
+  [0x061B]={ 0,1  },
+  [0x06D4]={ 0,1  },
+}
 local function initializeprotrusion(tfmdata,value)
   if value then
     local setup=setups[value]
@@ -33411,7 +33476,7 @@ local function initializeprotrusion(tfmdata,value)
     end
   end
 end
-otffeatures.register {
+local specification={
   name="protrusion",
   description="shift characters into the left and or right margin",
   initializers={
@@ -33419,9 +33484,26 @@ otffeatures.register {
     node=initializeprotrusion,
   }
 }
+registerotffeature(specification)
+registerafmfeature(specification)
 fonts.expansions=fonts.expansions    or {}
 fonts.expansions.setups=fonts.expansions.setups or {}
 local setups=fonts.expansions.setups
+setups['default']={ 
+  stretch=2,
+  shrink=2,
+  step=.5,
+  factor=1,
+  [byte('A')]=0.5,[byte('B')]=0.7,[byte('C')]=0.7,[byte('D')]=0.5,[byte('E')]=0.7,
+  [byte('F')]=0.7,[byte('G')]=0.5,[byte('H')]=0.7,[byte('K')]=0.7,[byte('M')]=0.7,
+  [byte('N')]=0.7,[byte('O')]=0.5,[byte('P')]=0.7,[byte('Q')]=0.5,[byte('R')]=0.7,
+  [byte('S')]=0.7,[byte('U')]=0.7,[byte('W')]=0.7,[byte('Z')]=0.7,
+  [byte('a')]=0.7,[byte('b')]=0.7,[byte('c')]=0.7,[byte('d')]=0.7,[byte('e')]=0.7,
+  [byte('g')]=0.7,[byte('h')]=0.7,[byte('k')]=0.7,[byte('m')]=0.7,[byte('n')]=0.7,
+  [byte('o')]=0.7,[byte('p')]=0.7,[byte('q')]=0.7,[byte('s')]=0.7,[byte('u')]=0.7,
+  [byte('w')]=0.7,[byte('z')]=0.7,
+  [byte('2')]=0.7,[byte('3')]=0.7,[byte('6')]=0.7,[byte('8')]=0.7,[byte('9')]=0.7,
+}
 local function initializeexpansion(tfmdata,value)
   if value then
     local setup=setups[value]
@@ -33444,7 +33526,7 @@ local function initializeexpansion(tfmdata,value)
     end
   end
 end
-otffeatures.register {
+local specification={
   name="expansion",
   description="apply hz optimization",
   initializers={
@@ -33452,36 +33534,9 @@ otffeatures.register {
     node=initializeexpansion,
   }
 }
-function fonts.loggers.onetimemessage() end
-local byte=string.byte
-fonts.expansions.setups['default']={
-  stretch=2,shrink=2,step=.5,factor=1,
-  [byte('A')]=0.5,[byte('B')]=0.7,[byte('C')]=0.7,[byte('D')]=0.5,[byte('E')]=0.7,
-  [byte('F')]=0.7,[byte('G')]=0.5,[byte('H')]=0.7,[byte('K')]=0.7,[byte('M')]=0.7,
-  [byte('N')]=0.7,[byte('O')]=0.5,[byte('P')]=0.7,[byte('Q')]=0.5,[byte('R')]=0.7,
-  [byte('S')]=0.7,[byte('U')]=0.7,[byte('W')]=0.7,[byte('Z')]=0.7,
-  [byte('a')]=0.7,[byte('b')]=0.7,[byte('c')]=0.7,[byte('d')]=0.7,[byte('e')]=0.7,
-  [byte('g')]=0.7,[byte('h')]=0.7,[byte('k')]=0.7,[byte('m')]=0.7,[byte('n')]=0.7,
-  [byte('o')]=0.7,[byte('p')]=0.7,[byte('q')]=0.7,[byte('s')]=0.7,[byte('u')]=0.7,
-  [byte('w')]=0.7,[byte('z')]=0.7,
-  [byte('2')]=0.7,[byte('3')]=0.7,[byte('6')]=0.7,[byte('8')]=0.7,[byte('9')]=0.7,
-}
-fonts.protrusions.setups['default']={
-  factor=1,left=1,right=1,
-  [0x002C]={ 0,1  },
-  [0x002E]={ 0,1  },
-  [0x003A]={ 0,1  },
-  [0x003B]={ 0,1  },
-  [0x002D]={ 0,1  },
-  [0x2013]={ 0,0.50 },
-  [0x2014]={ 0,0.33 },
-  [0x3001]={ 0,1  },
-  [0x3002]={ 0,1  },
-  [0x060C]={ 0,1  },
-  [0x061B]={ 0,1  },
-  [0x06D4]={ 0,1  },
-}
-fonts.handlers.otf.features.normalize=function(t)
+registerotffeature(specification)
+registerafmfeature(specification)
+otf.features.normalize=function(t)
   if t.rand then
     t.rand="random"
   end
@@ -33515,7 +33570,7 @@ local function specialreencode(tfmdata,value)
     return string.format("reencoded:%s",value)
   end
 end
-local function reencode(tfmdata,value)
+local function initialize(tfmdata,value)
   tfmdata.postprocessors=tfmdata.postprocessors or {}
   table.insert(tfmdata.postprocessors,
     function(tfmdata)
@@ -33523,61 +33578,355 @@ local function reencode(tfmdata,value)
     end
   )
 end
-otffeatures.register {
+registerotffeature {
   name="reencode",
   description="reencode characters",
   manipulators={
-    base=reencode,
-    node=reencode,
+    base=initialize,
+    node=initialize,
   }
 }
-local function ignore(tfmdata,key,value)
+local function initialize(tfmdata,key,value)
   if value then
     tfmdata.mathparameters=nil
   end
 end
-otffeatures.register {
+registerotffeature {
   name="ignoremathconstants",
   description="ignore math constants table",
   initializers={
-    base=ignore,
-    node=ignore,
+    base=initialize,
+    node=initialize,
   }
 }
-local setmetatableindex=table.setmetatableindex
-local function additalictowidth(tfmdata,key,value)
-  local characters=tfmdata.characters
-  local additions={}
-  for unicode,old_c in next,characters do
-    local oldwidth=old_c.width
-    local olditalic=old_c.italic
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['font-imp-italic']={
+  version=1.001,
+  comment="companion to font-ini.mkiv and hand-ini.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local next=next
+local fonts=fonts
+local handlers=fonts.handlers
+local registerotffeature=handlers.otf.features.register
+local registerafmfeature=handlers.afm.features.register
+local function initialize(tfmdata,key,value)
+  for unicode,character in next,tfmdata.characters do
+    local olditalic=character.italic
     if olditalic and olditalic~=0 then
-      local private=getprivate(tfmdata)
-      local new_c={
-        width=oldwidth+olditalic,
-        height=old_c.height,
-        depth=old_c.depth,
-        commands={
-          { "slot",1,private },
-          { "right",olditalic },
-        },
-      }
-      setmetatableindex(new_c,old_c)
-      characters[unicode]=new_c
-      additions[private]=old_c
+      character.width=character.width+olditalic
+      character.italic=0
     end
   end
-  for k,v in next,additions do
-    characters[k]=v
-  end
 end
-otffeatures.register {
+local specification={
   name="italicwidths",
   description="add italic to width",
   manipulators={
-    base=additalictowidth,
+    base=initialize,
+    node=initialize,
   }
 }
+registerotffeature(specification)
+registerafmfeature(specification)
+local function initialize(tfmdata,value) 
+  if value then
+    local parameters=tfmdata.parameters
+    local italicangle=parameters.italicangle
+    if italicangle and italicangle~=0 then
+      local properties=tfmdata.properties
+      local factor=tonumber(value) or 1
+      properties.hasitalics=true
+      properties.autoitalicamount=factor*(parameters.uwidth or 40)/2
+    end
+  end
+end
+local specification={
+  name="itlc",
+  description="italic correction",
+  initializers={
+    base=initialize,
+    node=initialize,
+  }
+}
+registerotffeature(specification)
+registerafmfeature(specification)
+if context then
+  local function initialize(tfmdata,value) 
+    tfmdata.properties.textitalics=toboolean(value)
+  end
+  local specification={
+    name="textitalics",
+    description="use alternative text italic correction",
+    initializers={
+      base=initialize,
+      node=initialize,
+    }
+  }
+  registerotffeature(specification)
+  registerafmfeature(specification)
+end
+if context then
+end
+if context then
+  local letter=characters.is_letter
+  local always=true
+  local function collapseitalics(tfmdata,key,value)
+    local threshold=value==true and 100 or tonumber(value)
+    if threshold and threshold>0 then
+      if threshold>100 then
+        threshold=100
+      end
+      for unicode,data in next,tfmdata.characters do
+        if always or letter[unicode] or letter[data.unicode] then
+          local italic=data.italic
+          if italic and italic~=0 then
+            local width=data.width
+            if width and width~=0 then
+              local delta=threshold*italic/100
+              data.width=width+delta
+              data.italic=italic-delta
+            end
+          end
+        end
+      end
+    end
+  end
+  local dimensions_specification={
+    name="collapseitalics",
+    description="collapse italics",
+    manipulators={
+      base=collapseitalics,
+      node=collapseitalics,
+    }
+  }
+  registerotffeature(dimensions_specification)
+  registerafmfeature(dimensions_specification)
+end
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['font-imp-effect']={
+  version=1.001,
+  comment="companion to font-ini.mkiv and hand-ini.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local next,type,tonumber=next,type,tonumber
+local fonts=fonts
+local handlers=fonts.handlers
+local registerotffeature=handlers.otf.features.register
+local registerafmfeature=handlers.afm.features.register
+local settings_to_array=utilities.parsers.settings_to_array
+local helpers=fonts.helpers
+local prependcommands=helpers.prependcommands
+local charcommand=helpers.commands.char
+local rightcommand=helpers.commands.right
+local report_effect=logs.reporter("fonts","effect")
+local report_extend=logs.reporter("fonts","extend")
+local report_slant=logs.reporter("fonts","slant")
+local trace=false
+trackers.register("fonts.effect",function(v) trace=v end)
+trackers.register("fonts.slant",function(v) trace=v end)
+trackers.register("fonts.extend",function(v) trace=v end)
+local function initialize(tfmdata,value)
+  value=tonumber(value)
+  if not value then
+    value=0
+  elseif value>1 then
+    value=1
+  elseif value<-1 then
+    value=-1
+  end
+  if trace then
+    report_slant("applying %0.3f",value)
+  end
+  tfmdata.parameters.slantfactor=value
+end
+local specification={
+  name="slant",
+  description="slant glyphs",
+  initializers={
+    base=initialize,
+    node=initialize,
+  }
+}
+registerotffeature(specification)
+registerafmfeature(specification)
+local function initialize(tfmdata,value)
+  value=tonumber(value)
+  if not value then
+    value=0
+  elseif value>10 then
+    value=10
+  elseif value<-10 then
+    value=-10
+  end
+  if trace then
+    report_slant("applying %0.3f",value)
+  end
+  tfmdata.parameters.extendfactor=value
+end
+local specification={
+  name="extend",
+  description="scale glyphs horizontally",
+  initializers={
+    base=initialize,
+    node=initialize,
+  }
+}
+registerotffeature(specification)
+registerafmfeature(specification)
+local effects={
+  inner=0,
+  normal=0,
+  outer=1,
+  outline=1,
+  both=2,
+  hidden=3,
+}
+local function initializeeffect(tfmdata,value)
+  local spec
+  if type(value)=="number" then
+    spec={ width=value }
+  else
+    spec=settings_to_hash(value)
+  end
+  local effect=spec.effect or "both"
+  local width=tonumber(spec.width) or 0
+  local mode=effects[effect]
+  if not mode then
+    report_effect("invalid effect %a",effect)
+  elseif width==0 and mode==0 then
+    report_effect("invalid width %a for effect %a",width,effect)
+  else
+    local parameters=tfmdata.parameters
+    local properties=tfmdata.properties
+    parameters.mode=mode
+    parameters.width=width*1000
+    local factor=tonumber(spec.factor) or 0
+    local hfactor=tonumber(spec.vfactor) or factor
+    local vfactor=tonumber(spec.hfactor) or factor
+    local delta=tonumber(spec.delta) or 1
+    local wdelta=tonumber(spec.wdelta) or delta
+    local hdelta=tonumber(spec.hdelta) or delta
+    local ddelta=tonumber(spec.ddelta) or hdelta
+    properties.effect={
+      effect=effect,
+      width=width,
+      factor=factor,
+      hfactor=hfactor,
+      vfactor=vfactor,
+      wdelta=wdelta,
+      hdelta=hdelta,
+      ddelta=ddelta,
+    }
+  end
+end
+local function manipulateeffect(tfmdata)
+  local effect=tfmdata.properties.effect
+  if effect then
+    local characters=tfmdata.characters
+    local parameters=tfmdata.parameters
+    local multiplier=effect.width*100
+    local wdelta=effect.wdelta*parameters.hfactor*multiplier
+    local hdelta=effect.hdelta*parameters.vfactor*multiplier
+    local ddelta=effect.ddelta*parameters.vfactor*multiplier
+    local hshift=wdelta/2
+    local factor=(1+effect.factor)*parameters.factor
+    local hfactor=(1+effect.hfactor)*parameters.hfactor
+    local vfactor=(1+effect.vfactor)*parameters.vfactor
+    for unicode,character in next,characters do
+      local oldwidth=character.width
+      local oldheight=character.height
+      local olddepth=character.depth
+      if oldwidth and oldwidth>0 then
+        character.width=oldwidth+wdelta
+        local commands=character.commands
+        local hshift=rightcommand[hshift]
+        if commands then
+          prependcommands (commands,
+            hshift
+          )
+        else
+          character.commands={
+            hshift,
+            charcommand[unicode],
+          }
+        end
+      end
+      if oldheight and oldheight>0 then
+        character.height=oldheight+hdelta
+      end
+      if olddepth and olddepth>0 then
+        character.depth=olddepth+ddelta
+      end
+    end
+    parameters.factor=factor
+    parameters.hfactor=hfactor
+    parameters.vfactor=vfactor
+    if trace then
+      report_effect("applying")
+      report_effect("  effect  : %s",effect.effect)
+      report_effect("  width   : %s => %s",effect.width,multiplier)
+      report_effect("  factor  : %s => %s",effect.factor,factor )
+      report_effect("  hfactor : %s => %s",effect.hfactor,hfactor)
+      report_effect("  vfactor : %s => %s",effect.vfactor,vfactor)
+      report_effect("  wdelta  : %s => %s",effect.wdelta,wdelta)
+      report_effect("  hdelta  : %s => %s",effect.hdelta,hdelta)
+      report_effect("  ddelta  : %s => %s",effect.ddelta,ddelta)
+    end
+  end
+end
+local specification={
+  name="effect",
+  description="apply effects to glyphs",
+  initializers={
+    base=initializeeffect,
+    node=initializeeffect,
+  },
+  manipulators={
+    base=manipulateeffect,
+    node=manipulateeffect,
+  },
+}
+registerotffeature(specification)
+registerafmfeature(specification)
+local function initializeoutline(tfmdata,value)
+  value=tonumber(value)
+  if not value then
+    value=0
+  else
+    value=tonumber(value) or 0
+  end
+  local parameters=tfmdata.parameters
+  local properties=tfmdata.properties
+  parameters.mode=effects.outline
+  parameters.width=value*1000
+  properties.effect={
+    effect=effect,
+    width=width,
+  }
+end
+local specification={
+  name="outline",
+  description="outline glyphs",
+  initializers={
+    base=initializeoutline,
+    node=initializeoutline,
+  }
+}
+registerotffeature(specification)
+registerafmfeature(specification)
 
 end -- closure
 
@@ -35649,6 +35998,7 @@ fonts.handlers.otf.addfeature {
  ["prepend"]=true,
  ["type"]="ligature",
 }
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference

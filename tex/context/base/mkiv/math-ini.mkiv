@@ -1273,9 +1273,13 @@
 
 %D Memory saver:
 
+\def\math_basics_check_compact
+  {\doifelse{\mathematicsparameter\c!compact}\v!yes
+     \enabledirectives\disabledirectives[math.virtual.optional]}
+
 \appendtoks
     \ifx\currentmathematics\empty
-        \doifelse{\mathematicsparameter\c!compact}\v!yes\enabledirectives\disabledirectives[math.virtual.optional]%
+        \math_basics_check_compact % less tracing
     \fi
 \to \everysetupmathematics
 
@@ -1311,18 +1315,31 @@
 %D \HL
 %D \stoptabulate
 
+% We will use proper constants when we go numbers instead of XXX.
+
 \newconditional\c_math_right_to_left
 
+\installcorenamespace{mathaligndirection}
+
+\setvalue{\??mathaligndirection           r2l}{\settrue\c_math_right_to_left}
+\setvalue{\??mathaligndirection\v!righttoleft}{\settrue\c_math_right_to_left}
+
 \appendtoks
-    \doifelse{\mathematicsparameter\c!align}{r2l}\settrue\setfalse\c_math_right_to_left
+    \ifcsname\??mathaligndirection\mathematicsparameter\c!align\endcsname
+      \lastnamedcs
+    \else
+      \setfalse\c_math_right_to_left
+    \fi
 \to \everyswitchmathematics
 
 \unexpanded\def\math_basics_synchronize_direction
   {\mathdir T\ifconditional\c_math_right_to_left R\else L\fi T}
 
+% Not \everymathematics as it comes too late and I'm not in the mood for a mixed mode
+% kludge now (should be a property of beginmath nodes and passed to callbacks).
+
 \appendtoks
     \math_basics_synchronize_direction
-%to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now (should be a property of beginmath nodes and passed to callbacks)
 \to \everyswitchmathematics
 
 % experimental (needed for an article)
@@ -1336,11 +1353,6 @@
 
 \letvalue{\??mathbidi\v!yes}\math_bidi_enable
 \letvalue{\??mathbidi\v!no }\math_bidi_disable
-
-% \appendtoks
-%     \edef\p_bidi{\mathematicsparameter\c!bidi}%
-%     \csname\??mathbidi\ifcsname\??mathbidi\p_bidi\endcsname\p_bidi\else\v!no\fi\endcsname
-% \to \everysetupmathematics
 
 \appendtoks
     \edef\p_bidi{\mathematicsparameter\c!bidi}% still needed ?

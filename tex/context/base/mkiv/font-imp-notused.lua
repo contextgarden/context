@@ -1,0 +1,166 @@
+if not modules then modules = { } end modules ['font-imp-notused'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv and hand-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- local next = next
+-- local utfbyte = utf.byte
+--
+-- local fonts              = fonts
+--
+-- local handlers           = fonts.handlers
+-- local otf                = handlers.otf
+-- local afm                = handlers.afm
+--
+-- local registerotffeature = otf.features.register
+-- local registerafmfeature = afm.features.register
+
+-- local function initialize(tfmdata)
+--     local resources    = tfmdata.resources
+--     local gposfeatures = resources.features.gpos
+--     local characters   = tfmdata.characters
+--     local descriptions = tfmdata.descriptions
+--     local sequences    = resources.sequences
+--     local coverage     = { }
+--     local units        = tfmdata.shared.rawdata.metadata.units
+--     for k, v in next, characters do
+--         local w = descriptions[k].width
+--         local d = units - w
+--         coverage[k] = { -d/2, 0, units, 0 }
+--     end
+--     local f = { dflt = { dflt = true } }
+--     local s = #sequences + 1
+--     local t = {
+--         features = { fakemono = f },
+--         flags    = { false, false, false, false },
+--         index    = s,
+--         name     = "p_s_" .. s,
+--         nofsteps = 1,
+--         order    = { "fakemono" },
+--         skiphash = false,
+--         type     = "gpos_single",
+--         steps    = {
+--             {
+--                 format   = "single",
+--                 coverage = coverage,
+--             }
+--         }
+--     }
+--     gposfeatures["fakemono"] = f
+--     sequences[s] = t
+-- end
+--
+-- registerotffeature {
+--     name         = "fakemono",
+--     description  = "fake monospaced",
+--     initializers = {
+--         node     = initialize,
+--     },
+-- }
+
+-- -- for notosans but not general
+--
+-- local v_local = interfaces and interfaces.variables and interfaces.variables["local"] or "local"
+--
+-- local function initialize(tfmdata,key,value)
+--     local characters = tfmdata.characters
+--     local parameters = tfmdata.parameters
+--     local oldchar    = 32
+--     local newchar    = 32
+--     if value == "locl" or value == v_local then
+--         newchar = fonts.handlers.otf.getsubstitution(tfmdata,oldchar,"locl",true) or oldchar
+--     elseif value == true then
+--         -- use normal space
+--     elseif value then
+--         newchar = utfbyte(value)
+--     else
+--         return
+--     end
+--     local newchar  = newchar and characters[newchar]
+--     local newspace = newchar and newchar.width
+--     if newspace > 0 then
+--         parameters.space         = newspace
+--         parameters.space_stretch = newspace/2
+--         parameters.space_shrink  = newspace/3
+--         parameters.extra_space   = parameters.space_shrink
+--     end
+-- end
+--
+-- registerotffeature {
+--     name        = 'space', -- true|false|locl|character
+--     description = 'space settings',
+--     manipulators = {
+--         base = initialize,
+--         node = initialize,
+--     }
+-- }
+
+-- -- historic stuff, move from font-ota (handled differently, typo-rep)
+--
+-- local delete_node = nodes.delete
+-- local fontdata    = fonts.hashes.identifiers
+--
+-- local nodecodes  = nodes.nodecodes
+-- local glyph_code = nodecodes.glyph
+--
+-- local strippables = allocate()
+-- fonts.strippables = strippables
+--
+-- strippables.joiners = table.tohash {
+--     0x200C, -- zwnj
+--     0x200D, -- zwj
+-- }
+--
+-- strippables.all = table.tohash {
+--     0x000AD, 0x017B4, 0x017B5, 0x0200B, 0x0200C, 0x0200D, 0x0200E, 0x0200F, 0x0202A, 0x0202B,
+--     0x0202C, 0x0202D, 0x0202E, 0x02060, 0x02061, 0x02062, 0x02063, 0x0206A, 0x0206B, 0x0206C,
+--     0x0206D, 0x0206E, 0x0206F, 0x0FEFF, 0x1D173, 0x1D174, 0x1D175, 0x1D176, 0x1D177, 0x1D178,
+--     0x1D179, 0x1D17A, 0xE0001, 0xE0020, 0xE0021, 0xE0022, 0xE0023, 0xE0024, 0xE0025, 0xE0026,
+--     0xE0027, 0xE0028, 0xE0029, 0xE002A, 0xE002B, 0xE002C, 0xE002D, 0xE002E, 0xE002F, 0xE0030,
+--     0xE0031, 0xE0032, 0xE0033, 0xE0034, 0xE0035, 0xE0036, 0xE0037, 0xE0038, 0xE0039, 0xE003A,
+--     0xE003B, 0xE003C, 0xE003D, 0xE003E, 0xE003F, 0xE0040, 0xE0041, 0xE0042, 0xE0043, 0xE0044,
+--     0xE0045, 0xE0046, 0xE0047, 0xE0048, 0xE0049, 0xE004A, 0xE004B, 0xE004C, 0xE004D, 0xE004E,
+--     0xE004F, 0xE0050, 0xE0051, 0xE0052, 0xE0053, 0xE0054, 0xE0055, 0xE0056, 0xE0057, 0xE0058,
+--     0xE0059, 0xE005A, 0xE005B, 0xE005C, 0xE005D, 0xE005E, 0xE005F, 0xE0060, 0xE0061, 0xE0062,
+--     0xE0063, 0xE0064, 0xE0065, 0xE0066, 0xE0067, 0xE0068, 0xE0069, 0xE006A, 0xE006B, 0xE006C,
+--     0xE006D, 0xE006E, 0xE006F, 0xE0070, 0xE0071, 0xE0072, 0xE0073, 0xE0074, 0xE0075, 0xE0076,
+--     0xE0077, 0xE0078, 0xE0079, 0xE007A, 0xE007B, 0xE007C, 0xE007D, 0xE007E, 0xE007F,
+-- }
+--
+-- strippables[true] = strippables.joiners
+--
+-- local function processformatters(head,font)
+--     local subset = fontdata[font].shared.features.formatters
+--     local vector = subset and strippables[subset]
+--     if vector then
+--         local current, done = head, false
+--         while current do
+--             if current.id == glyph_code and current.subtype<256 and current.font == font then
+--                 local char = current.char
+--                 if vector[char] then
+--                     head, current = delete_node(head,current)
+--                     done = true
+--                 else
+--                     current = current.next
+--                 end
+--             else
+--                 current = current.next
+--             end
+--         end
+--         return head, done
+--     else
+--         return head, false
+--     end
+-- end
+--
+-- registerotffeature {
+--     name        = "formatters",
+--     description = "hide formatting characters",
+--     methods = {
+--         base = processformatters,
+--         node = processformatters,
+--     }
+-- }

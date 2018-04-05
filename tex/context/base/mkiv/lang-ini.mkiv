@@ -548,7 +548,12 @@
 % this will move to core-spa !
 
 \appendtoks
-   \doifelse{\languageparameter\c!spacing}\v!broad\nonfrenchspacing\frenchspacing
+    \edef\p_spacing{\languageparameter\c!spacing}%
+    \ifx\p_spacing\v!broad
+      \nonfrenchspacing
+    \else
+      \frenchspacing
+    \fi
 \to \everylanguage
 
 % \mainlanguage[nl] \setuplanguage[nl][lefthyphen=,righthyphen=?]

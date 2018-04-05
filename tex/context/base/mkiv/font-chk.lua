@@ -196,7 +196,10 @@ local variants = allocate {
     { tag = "yellow",  r = .6, g = .6, b =  0 },
 }
 
-local pdf_blob = "pdf: q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
+-- bah .. low level pdf ... should be a rule or plugged in
+
+----- pdf_blob = "pdf: q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
+local pdf_blob = "q %.6F 0 0 %.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j 1 J 0.05 w %s Q"
 
 local cache = { } -- saves some tables but not that impressive
 
@@ -235,8 +238,8 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
                         width    = size*fake.width,
                         height   = size*fake.height,
                         depth    = size*fake.depth,
-                        -- bah .. low level pdf ... should be a rule or plugged in
-                        commands = { { "special", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
+                     -- commands = { { "special", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
+                        commands = { { "pdf", formatters[pdf_blob](scale,scale,r,g,b,r,g,b,fake.code) } }
                     }
                     cache[hash] = char
                 end

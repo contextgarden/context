@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['lxml-css'] = {
     license   = "see context related readme files"
 }
 
-local tonumber, rawset, type = tonumber, rawset, type
+local tonumber, rawset, type, select = tonumber, rawset, type, select
 local lower, format, find, gmatch = string.lower, string.format, string.find, string.gmatch
 local topattern, is_empty =  string.topattern, string.is_empty
 local P, S, C, R, Cb, Cg, Carg, Ct, Cc, Cf, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.Cb, lpeg.Cg, lpeg.Carg, lpeg.Ct, lpeg.Cc, lpeg.Cf, lpeg.Cs
@@ -118,24 +118,33 @@ css.padding   = padding
 
 -- print(padding("0",pixel,hsize,exheight,emwidth))
 
--- local currentfont = font.current
--- local texget      = tex.get
--- local hashes      = fonts.hashes
--- local quads       = hashes.quads
--- local xheights    = hashes.xheights
---
--- local function padding(str)
---     local font     = currentfont()
---     local exheight = xheights[font]
---     local emwidth  = quads[font]
---     local hsize    = texget("hsize")/100
---     local pixel    = emwidth/100
---     return padding(str,pixel,hsize,exheight,emwidth)
--- end
---
--- function css.simplepadding(str)
---     context("%ssp",padding(str,pixel,hsize,exheight,emwidth))
--- end
+local context = context
+
+if context then
+
+    local currentfont = font.current
+    local texget      = tex.get
+    local hashes      = fonts.hashes
+    local quads       = hashes.quads
+    local xheights    = hashes.xheights
+
+    local function todimension(str)
+        local font     = currentfont()
+        local exheight = xheights[font]
+        local emwidth  = quads[font]
+        local hsize    = texget("hsize")/100
+        local pixel    = emwidth/100
+        return dimension(str,pixel,hsize,exheight,emwidth)
+    end
+
+    css.todimension = todimension
+
+    function context.cssdimension(str)
+     -- context("%ssp",todimension(str))
+        context(todimension(str) .. "sp")
+    end
+
+end
 
 local pattern = Cf( Ct("") * (
     Cg(
@@ -993,3 +1002,91 @@ interfaces.implement {
     actions   = css.mappedstylevalue,
     arguments = "3 strings",
 }
+
+-- more (for mm)
+
+local containsws    = string.containsws
+local classsplitter = lpeg.tsplitat(whitespace^1)
+
+function xml.functions.classes(e,class) -- cache
+    if class then
+        local at = e.at
+        local data = at[class] or at.class
+        if data then
+            return lpegmatch(classsplitter,data) or { }
+        end
+    end
+    return { }
+end
+
+-- function xml.functions.hasclass(e,class,name)
+--     if class then
+--         local at = e.at
+--         local data = at[class] or at.class
+--         if data then
+--             return data == name or containsws(data,name)
+--         end
+--     end
+--     return false
+-- end
+--
+-- function xml.expressions.hasclass(attribute,name)
+--     if attribute then
+--         return attribute == name or containsws(attribute,name)
+--     end
+--     return false
+-- end
+
+function xml.functions.hasclass(e,class,name,more,...)
+    if class and name then
+        local at = e.at
+        local data = at[class] or at.class
+        if not data or data == "" then
+            return false
+        end
+        if data == name or data == more then
+            return true
+        end
+        if containsws(data,name) then
+            return true
+        end
+        if not more then
+            return false
+        end
+        if containsws(data,more) then
+            return true
+        end
+        for i=1,select("#",...) do
+            if containsws(data,select(i,...)) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function xml.expressions.hasclass(data,name,more,...)
+    if data then
+        if not data or data == "" then
+            return false
+        end
+        if data == name or data == more then
+            return true
+        end
+        if containsws(data,name) then
+            return true
+        end
+        if not more then
+            return false
+        end
+        if containsws(data,more) then
+            return true
+        end
+        for i=1,select("#",...) do
+            if containsws(data,select(i,...)) then
+                return true
+            end
+        end
+    end
+    return false
+end

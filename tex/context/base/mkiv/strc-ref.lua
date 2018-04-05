@@ -137,6 +137,7 @@ storage.register("structures/references/defined", references.defined, "structure
 
 local initializers = { }
 local finalizers   = { }
+local somefound    = false -- so we don't report missing when we have a fresh start
 
 function references.registerinitializer(func) -- we could use a token register instead
     initializers[#initializers+1] = func
@@ -162,6 +163,7 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
             end
         end
     end
+    somefound = next(collected)
 end
 
 local function finalizer()
@@ -370,6 +372,8 @@ implement {
     arguments = "2 strings",
 }
 
+local reported = setmetatableindex("table")
+
 function references.set(data)
     local references = data.references
     local reference  = references.reference
@@ -388,10 +392,16 @@ function references.set(data)
         if ref == "" then
             -- skip
         elseif check_duplicates and pd[ref] then
-            if prefix and prefix ~= "" then
-                report_references("redundant reference %a in namespace %a",ref,prefix)
-            else
-                report_references("redundant reference %a",ref)
+            if not prefix then
+                prefix = ""
+            end
+            if not reported[prefix][ref] then
+                if prefix ~= "" then
+                    report_references("redundant reference %a in namespace %a",ref,prefix)
+                else
+                    report_references("redundant reference %a",ref)
+                end
+                reported[prefix][ref] = true
             end
         else
             n = n + 1
@@ -1004,9 +1014,9 @@ local function loadexternalreferences(name,utilitydata)
         local pages    = struc.pages.collected      -- pagenumber data
         -- a bit weird one, as we don't have the externals in the collected
         for prefix, set in next, external do
-if prefix == "" then
-    prefix = name -- this can clash!
-end
+            if prefix == "" then
+                prefix = name -- this can clash!
+            end
             for reference, data in next, set do
                 if trace_importing then
                     report_importing("registering %a reference, kind %a, name %a, prefix %a, reference %a",
@@ -1034,9 +1044,9 @@ end
                     if kind and realpage then
                         references.pagedata = pages[realpage]
                         local prefix = references.prefix or ""
-if prefix == "" then
-    prefix = name -- this can clash!
-end
+                        if prefix == "" then
+                            prefix = name -- this can clash!
+                        end
                         local target = external[prefix]
                         if not target then
                             target = { }
@@ -1847,7 +1857,9 @@ function references.valid(prefix,reference,specification)
         local str = f_valid(prefix,reference)
         local u = unknowns[str]
         if not u then
-            interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
+            if somefound then
+                interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
+            end
             unknowns[str] = 1
             nofunknowns = nofunknowns + 1
         else

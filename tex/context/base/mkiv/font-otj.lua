@@ -128,6 +128,10 @@ do if not fontkern then -- generic
         return n
     end
 
+end end
+
+do if not italickern then -- generic
+
     local thekern   = nuts.new("kern",3) -- italiccorrection
     local setkern   = nuts.setkern
     local copy_node = nuts.copy_node

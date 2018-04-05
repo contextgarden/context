@@ -169,13 +169,16 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
 
     else
 
-        -- The following helpers are a bit overkill but I don't want to mess up context code for the
-        -- sake of general generality. Around version 1.0 there will be an official api defined.
+        -- The following helpers are a bit overkill but I don't want to mess up
+        -- context code for the sake of general generality. Around version 1.0
+        -- there will be an official api defined.
         --
-        -- So, I will strip these libraries and see what is really needed so that we don't have this
-        -- overhead in the generic modules. The next section is only there for the packager, so stick
-        -- to using luatex-fonts with luatex-fonts-merged.lua and forget about the rest. The following
-        -- list might change without prior notice (for instance because we shuffled code around).
+        -- So, I will strip these libraries and see what is really needed so that
+        -- we don't have this overhead in the generic modules. The next section
+        -- is only there for the packager, so stick to using luatex-fonts with
+        -- luatex-fonts-merged.lua and forget about the rest. The following list
+        -- might change without prior notice (for instance because we shuffled
+        -- code around).
 
         loadmodule("l-lua.lua")
         loadmodule("l-lpeg.lua")
@@ -193,18 +196,19 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule("util-str.lua")
         loadmodule("util-fil.lua")
 
-        -- The following modules contain code that is either not used at all outside context or will
-        -- fail when enabled due to lack of other modules.
+        -- The following modules contain code that is either not used at all
+        -- outside context or will fail when enabled due to lack of other
+        -- modules.
 
-        -- First we load a few helper modules. This is about the miminum needed to let the font modules
-        -- do their work. Don't depend on their functions as we might strip them in future versions of
-        -- this generic variant.
+        -- First we load a few helper modules. This is about the miminum needed
+        -- to let the font modules do their work. Don't depend on their functions
+        -- as we might strip them in future versions of this generic variant.
 
         loadmodule('luatex-basics-gen.lua')
         loadmodule('data-con.lua')
 
-        -- We do need some basic node support. The code in there is not for general use as it might
-        -- change.
+        -- We do need some basic node support. The code in there is not for
+        -- general use as it might change.
 
         loadmodule('luatex-basics-nod.lua')
 
@@ -212,24 +216,32 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
 
         loadmodule('luatex-basics-chr.lua')
 
-        -- Now come the font modules that deal with traditional tex fonts as well as open type fonts.
+        -- Now come the font modules that deal with traditional tex fonts as well
+        -- as open type fonts.
         --
-        -- The font database file (if used at all) must be put someplace visible for kpse and is not
-        -- shared with context. The mtx-fonts script can be used to generate this file (using the
-        -- --reload --force --simple option).
+        -- The font database file (if used at all) must be put someplace visible
+        -- for kpse and is not shared with context. The mtx-fonts script can be
+        -- used to generate this file (using the --reload --force --simple option).
 
         loadmodule('font-ini.lua')
         loadmodule('luatex-fonts-mis.lua')
         loadmodule('font-con.lua')
-        loadmodule('luatex-fonts-enc.lua') -- will load font-age on demand
+        loadmodule('luatex-fonts-enc.lua')
         loadmodule('font-cid.lua')
-        loadmodule('font-map.lua')         -- for loading lum file (will be stripped)
+        loadmodule('font-map.lua')
 
-        -- We use a bit simpler database because using the context one demands loading more helper
-        -- code and although it is more flexible (more ways to resolve and so) it will never be
-        -- uses in plain/latex anyway, so let's stick to a simple approach.
+        -- We use a bit simpler database because using the context one demands
+        -- loading more helper code and although it is more flexible (more ways
+        -- to resolve and so) it will never be uses in plain/latex anyway, so
+        -- let's stick to a simple approach.
 
         loadmodule('luatex-fonts-syn.lua')
+
+        -- We need some helpers.
+
+        loadmodule('font-vfc.lua')
+
+        -- This is the bulk of opentype code.
 
         loadmodule('font-oti.lua')
         loadmodule('font-otr.lua')
@@ -243,29 +255,37 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-ota.lua')
         loadmodule('font-ots.lua')
         loadmodule('font-osd.lua')
-        loadmodule('font-ocl.lua') -- svg needs 0.97 (for fix in memstreams)
+        loadmodule('font-ocl.lua')
         loadmodule('font-otc.lua')
 
-        -- type one code
+        -- The code for type one fonts.
 
-        loadmodule('font-onr.lua') -- was font-afm.lua
-        loadmodule('font-one.lua') -- was font-afm.lua
+        loadmodule('font-onr.lua')
+        loadmodule('font-one.lua')
         loadmodule('font-afk.lua')
 
-        -- traditional code
+        -- And for traditional TeX fonts.
 
         loadmodule('font-tfm.lua')
 
-        -- common code
+        -- Some common code.
 
         loadmodule('font-lua.lua')
         loadmodule('font-def.lua')
-        loadmodule('font-xtx.lua')         -- xetex compatible specifiers (plain/latex only)
-        loadmodule('luatex-fonts-ext.lua') -- some extensions
-        loadmodule('luatex-fonts-lig.lua') -- and another one
 
-        -- We need to plug into a callback and the following module implements the handlers. Actual
-        -- plugging in happens later.
+        -- We support xetex compatible specifiers (plain/latex only).
+
+        loadmodule('font-xtx.lua')
+
+        -- Here come some additional features.
+
+        loadmodule('luatex-fonts-ext.lua')
+        loadmodule('font-imp-italic.lua')
+        loadmodule('font-imp-effect.lua')
+        loadmodule('luatex-fonts-lig.lua')
+
+        -- We need to plug into a callback and the following module implements the
+        -- handlers. Actual plugging in happens later.
 
         loadmodule('font-gbn.lua')
 

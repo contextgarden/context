@@ -69,13 +69,19 @@ callbacks = {
 
 }
 
-utilities = utilities or { } utilities.storage = {
+utilities = utilities or { }
+
+utilities.storage = utilities.storage or {
     allocate = function(t)
         return t or { }
     end,
     mark     = function(t)
         return t or { }
     end,
+}
+
+utilities.parsers = utilities.parsers or {
+    settings_to_array = function(s) return string.split(s,",") end,
 }
 
 characters = characters or {

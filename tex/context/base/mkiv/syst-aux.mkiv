@@ -491,8 +491,6 @@
 %D \type {\def} comes into action. This way the space after \type {\:} becomes a
 %D delimiter of the longer named \type {\reinspectnextcharacter}.
 
-% try: \expandafter\def\firstofoneargument{\syst_helpers_reinspect_next_character} {...}
-
 \let\next\:
 
 \def\:{\let\blankspace= }  \:
@@ -513,6 +511,31 @@
 \expandafter\def\: {\futurelet\nexttoken\syst_helpers_ignore_spacing}
 
 \let\:\next
+
+%D This is much nicer and works too:
+
+% \def\firstofoneargument#1{#1}
+%
+% \expandafter\let\firstofoneargument{\blankspace= }
+%
+% \expandafter\def\firstofoneargument{\syst_helpers_reinspect_next_character
+%   } {\let\if_next_blank_space_token\iftrue
+%      \futurelet\nexttoken\syst_helpers_inspect_next_character}
+%
+% \expandafter\def\firstofoneargument{\syst_helpers_reinspect_next_optional_character
+%   } {\let\if_next_blank_space_token\iftrue
+%      \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+%
+% \expandafter\def\firstofoneargument{\syst_helpers_reinspect_next_bgroup_character
+%   } {\let\if_next_blank_space_token\iftrue
+%      \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
+%
+% \expandafter\def\firstofoneargument{\syst_helpers_reinspect_next_parenthesis_character
+%   } {\let\if_next_blank_space_token\iftrue
+%      \futurelet\nexttoken\syst_helpers_inspect_next_parenthesis_character}
+%
+% \expandafter\def\firstofoneargument{\syst_helpers_ignore_spacing_blankspace
+%   } {\futurelet\nexttoken\syst_helpers_ignore_spacing}
 
 %D \macros
 %D   {setvalue,setgvalue,setevalue,setxvalue,

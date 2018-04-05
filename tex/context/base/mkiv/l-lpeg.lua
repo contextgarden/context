@@ -944,7 +944,7 @@ local function make2(t,rest) -- only ascii
     return p
 end
 
-function lpeg.utfchartabletopattern(list,insensitive) -- goes to util-lpg
+local function utfchartabletopattern(list,insensitive) -- goes to util-lpg
     local tree = { }
     local n = #list
     if n == 0 then
@@ -1021,6 +1021,16 @@ function lpeg.utfchartabletopattern(list,insensitive) -- goes to util-lpg
  -- inspect(tree)
     return (insensitive and make2 or make1)(tree)
 end
+
+lpeg.utfchartabletopattern = utfchartabletopattern
+
+function lpeg.utfreplacer(list,insensitive)
+    local pattern = Cs((utfchartabletopattern(list,insensitive)/list + utf8character)^0)
+    return function(str)
+        return lpegmatch(pattern,str) or str
+    end
+end
+
 
 -- local t = { "start", "stoep", "staart", "paard" }
 -- local p = lpeg.Cs((lpeg.utfchartabletopattern(t)/string.upper + 1)^1)
@@ -1209,3 +1219,22 @@ end
 -- local h = "ADFE0345"
 -- local b = lpegmatch(patterns.hextobytes,h)
 -- print(h,b,string.tohex(b),string.toHEX(b))
+
+local patterns = { } -- can be made weak
+
+local function containsws(what)
+    local p = patterns[what]
+    if not p then
+        local p1 = P(what) * (whitespace + P(-1)) * Cc(true)
+        local p2 = whitespace * P(p1)
+        p = P(p1) + P(1-p2)^0 * p2 + Cc(false)
+        patterns[what] = p
+    end
+    return p
+end
+
+lpeg.containsws = containsws
+
+function string.containsws(str,what)
+    return lpegmatch(patterns[what] or containsws(what),str)
+end
