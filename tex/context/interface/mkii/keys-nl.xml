@@ -188,6 +188,7 @@
 		<cd:variable name='extremestretch' value='extremestretch'/>
 		<cd:variable name='fact' value='gegeven'/>
 		<cd:variable name='february' value='februari'/>
+		<cd:variable name='field' value='veld'/>
 		<cd:variable name='figure' value='figuur'/>
 		<cd:variable name='figures' value='figuren'/>
 		<cd:variable name='file' value='file'/>
@@ -800,7 +801,7 @@
 		<cd:constant name='family' value='soort'/>
 		<cd:constant name='features' value='features'/>
 		<cd:constant name='fences' value='fences'/>
-		<cd:constant name='field' value='field'/>
+		<cd:constant name='field' value='veld'/>
 		<cd:constant name='fieldbackgroundcolor' value='veldachtergrondkleur'/>
 		<cd:constant name='fieldframecolor' value='veldkaderkleur'/>
 		<cd:constant name='fieldlayer' value='veldlaag'/>
@@ -855,6 +856,7 @@
 		<cd:constant name='headerstate' value='hoofdstatus'/>
 		<cd:constant name='headlabel' value='koplabel'/>
 		<cd:constant name='headnumber' value='kopnummer'/>
+		<cd:constant name='headseparator' value='kopscheider'/>
 		<cd:constant name='headstyle' value='kopletter'/>
 		<cd:constant name='height' value='hoogte'/>
 		<cd:constant name='hfactor' value='hfactor'/>
@@ -1081,6 +1083,7 @@
 		<cd:constant name='preview' value='preview'/>
 		<cd:constant name='previous' value='vorige'/>
 		<cd:constant name='previousnumber' value='vorigenummer'/>
+		<cd:constant name='print' value='print'/>
 		<cd:constant name='printable' value='printbaar'/>
 		<cd:constant name='process' value='proces'/>
 		<cd:constant name='profile' value='profile'/>
@@ -1166,8 +1169,10 @@
 		<cd:constant name='sidemethod' value='zijmethode'/>
 		<cd:constant name='sidespaceafter' value='zijnawit'/>
 		<cd:constant name='sidespacebefore' value='zijvoorwit'/>
+		<cd:constant name='sidespaceinbetween' value='zijtussenwit'/>
 		<cd:constant name='sidethreshold' value='sidethreshold'/>
 		<cd:constant name='sign' value='teken'/>
+		<cd:constant name='simplecommand' value='simpelcommando'/>
 		<cd:constant name='size' value='formaat'/>
 		<cd:constant name='slantedfeatures' value='slantedfeatures'/>
 		<cd:constant name='slantedfont' value='slantedfont'/>

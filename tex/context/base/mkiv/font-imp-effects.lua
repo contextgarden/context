@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-imp-effect'] = {
+if not modules then modules = { } end modules ['font-imp-effects'] = {
     version   = 1.001,
     comment   = "companion to font-ini.mkiv and hand-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -14,7 +14,7 @@ local handlers           = fonts.handlers
 local registerotffeature = handlers.otf.features.register
 local registerafmfeature = handlers.afm.features.register
 
-local settings_to_array  = utilities.parsers.settings_to_array
+local settings_to_hash   = utilities.parsers.settings_to_hash
 
 local helpers            = fonts.helpers
 local prependcommands    = helpers.prependcommands

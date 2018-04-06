@@ -280,8 +280,10 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         -- Here come some additional features.
 
         loadmodule('luatex-fonts-ext.lua')
-        loadmodule('font-imp-italic.lua')
-        loadmodule('font-imp-effect.lua')
+        loadmodule('font-imp-tex.lua')
+        loadmodule('font-imp-ligatures.lua')
+        loadmodule('font-imp-italics.lua')
+        loadmodule('font-imp-effects.lua')
         loadmodule('luatex-fonts-lig.lua')
 
         -- We need to plug into a callback and the following module implements the

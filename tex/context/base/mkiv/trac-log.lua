@@ -758,7 +758,7 @@ if tex then
     local report      = logs.reporter("pages") -- not needed but saves checking when we grep for it
     local texgetcount = tex and tex.getcount
 
-    local real, user, sub
+    local real, user, sub = 0, 0, 0
 
     function logs.start_page_number()
         real = texgetcount("realpageno")
@@ -766,47 +766,35 @@ if tex then
         sub  = texgetcount("subpageno")
     end
 
-    local timing    = false
-    local starttime = nil
-    local lasttime  = nil
+    local timing   = false
+    local lasttime = nil
 
     trackers.register("pages.timing", function(v) -- only for myself (diagnostics)
-        starttime = os.clock() -- todo: use other timer
-        timing    = true
+        timing = ""
     end)
 
     function logs.stop_page_number() -- the first page can includes the initialization so we omit this in average
         if timing then
-            local elapsed, average
-            local stoptime = os.clock()
+            local elapsed = statistics.currenttime(statistics)
+            local average, page
             if not lasttime or real < 2 then
-                elapsed   = stoptime
-                average   = stoptime
-                starttime = stoptime
+                average = elapsed
+                page    = elapsed
             else
-                elapsed  = stoptime - lasttime
-                average  = (stoptime - starttime) / (real - 1)
+                average = elapsed / (real - 1)
+                page    = elapsed - lasttime
             end
-            lasttime = stoptime
-            if real <= 0 then
-                report("flushing page, time %0.04f / %0.04f",elapsed,average)
-            elseif user <= 0 then
-                report("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
-            elseif sub <= 0 then
-                report("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
-            else
-                report("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
-            end
+            lasttime = elapsed
+            timing   = formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
+        end
+        if real <= 0 then
+            report("flushing page%s",timing)
+        elseif user <= 0 then
+            report("flushing realpage %s%s",real,timing)
+        elseif sub <= 0 then
+            report("flushing realpage %s, userpage %s%s",real,user,timing)
         else
-            if real <= 0 then
-                report("flushing page")
-            elseif user <= 0 then
-                report("flushing realpage %s",real)
-            elseif sub <= 0 then
-                report("flushing realpage %s, userpage %s",real,user)
-            else
-                report("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-            end
+            report("flushing realpage %s, userpage %s, subpage %s%s",real,user,sub,timing)
         end
         logs.flush()
     end

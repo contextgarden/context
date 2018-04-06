@@ -45676,8 +45676,8 @@
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:node"/>
     </cd:keywords>
-    <cd:resolve name="cd:string"/>
-    <cd:resolve name="cd:string"/>
+    <cd:string/>
+    <cd:string/>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:true"/>
     </cd:keywords>
@@ -45688,8 +45688,8 @@
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:node"/>
     </cd:keywords>
-    <cd:resolve name="cd:string"/>
-    <cd:resolve name="cd:string"/>
+    <cd:string/>
+    <cd:string/>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:true"/>
     </cd:keywords>
@@ -45700,8 +45700,8 @@
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:node"/>
     </cd:keywords>
-    <cd:resolve name="cd:string"/>
-    <cd:resolve name="cd:string"/>
+    <cd:string/>
+    <cd:string/>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:true"/>
     </cd:keywords>

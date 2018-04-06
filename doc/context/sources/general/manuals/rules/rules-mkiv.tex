@@ -307,7 +307,7 @@ or: \inlinebuffer\ Here we just shift words but you can shift more than that
 although I haven't yet seen a useful example of that:
 
 \startbuffer
-We can \shiftup {\input{tufte}} whole paragraphs if we really want.
+We can \shiftup {\samplefile{tufte}} whole paragraphs if we really want.
 \stopbuffer
 
 \typebuffer
@@ -352,7 +352,7 @@ an educational feature.
    color=darkred]
 
 \startlinefiller[filler-1]
-    \input ward
+    \samplefile{ward}
 \stoplinefiller
 \stopbuffer
 
@@ -366,7 +366,7 @@ paragraph.
 \startbuffer
 \startalign[flushleft,broad]
     \startlinefiller[filler-1]
-        \input ward
+        \samplefile{ward}
     \stoplinefiller
 \stopalign
 \stopbuffer
@@ -386,7 +386,7 @@ a \type {middle} alignment:
 \startbuffer
 \startalign[middle]
     \startlinefiller[filler-1]
-        \input ward
+        \samplefile{ward}
     \stoplinefiller
 \stopalign
 \stopbuffer
@@ -397,7 +397,7 @@ a \type {middle} alignment:
 \startalign[middle]
     \startnarrower
         \startlinefiller[filler-1]
-            \input ward
+            \samplefile{ward}
         \stoplinefiller
     \stopnarrower
 \stopalign
@@ -418,7 +418,7 @@ to the margins if you like:
 \startalign[middle]
     \startnarrower
         \startlinefiller[filler-1][scope=global]
-            \input ward
+            \samplefile{ward}
         \stoplinefiller
     \stopnarrower
 \stopalign
@@ -436,7 +436,7 @@ You can also use a \type {left} or \type {right} scope, as in:
 \startalign[middle]
     \startnarrower
         \startlinefiller[filler-1][scope=right]
-            \input ward
+            \samplefile{ward}
         \stoplinefiller
     \stopnarrower
 \stopalign
@@ -452,7 +452,7 @@ Only the right rules extend into the margins.
 \startalign[middle]
     \startnarrower
         \startlinefiller[filler-1][scope=right,location=right]
-            \input ward
+            \samplefile{ward}
         \stoplinefiller
     \stopnarrower
 \stopalign
@@ -498,7 +498,7 @@ The previous example now looks like:
 \startalign[middle,r2l]
     \startnarrower[4*middle]
         \startlinefiller[filler-1]  [scope=global]
-            \input ward
+            \samplefile{ward}
         \stoplinefiller
     \stopnarrower
 \stopalign
@@ -534,7 +534,7 @@ use a latin script example for convenience.
 %     \startlinefiller[filler-1] [scope=global,align=middle]
 %         \parindent   100pt
 %         \parfillskip 100pt
-%         \input ward
+%         \samplefile{ward}
 %     \stoplinefiller
 % \stopnarrower
 % \stopbuffer
@@ -544,7 +544,7 @@ use a latin script example for convenience.
     \startlinefiller[filler-1] [scope=global,align={middle,r2l}]
         \parindent   100pt
         \parfillskip 100pt
-        \input ward
+        \samplefile{ward}
     \stoplinefiller
 \stopnarrower
 \stopbuffer
@@ -784,11 +784,11 @@ command:
 \stoptyping
 
 \startbuffer
-\input ward \hiddenbar               {\color[red]{invisible}}
-\input ward \hiddenbar          {\quad\color[red]{invisible}\quad}
-\input ward \hiddenbar{\quad\quad\quad\color[red]{invisible}\quad\quad\quad}
-\input ward \hiddenbar               {\color[red]{invisible}\quad\quad\quad\quad\quad\quad}
-\input ward
+\samplefile{ward}\hiddenbar               {\color[red]{invisible}}
+\samplefile{ward}\hiddenbar          {\quad\color[red]{invisible}\quad}
+\samplefile{ward}\hiddenbar{\quad\quad\quad\color[red]{invisible}\quad\quad\quad}
+\samplefile{ward}\hiddenbar               {\color[red]{invisible}\quad\quad\quad\quad\quad\quad}
+\samplefile{ward}
 \stopbuffer
 
 \getbuffer
@@ -807,8 +807,8 @@ the spacing is kept at a linebreak:
   [left={\quads[3]},
    right={\quads[3]}]
 
-\widehiddenbar{invisible} \input weisman
-\widehiddenbar{invisible} \input weisman
+\widehiddenbar{invisible} \samplefile{weisman}
+\widehiddenbar{invisible} \samplefile{weisman}
 \widehiddenbar{invisible}
 \stopbuffer
 

@@ -8320,7 +8320,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 22956, stripped down to: 16106
+-- original size: 22960, stripped down to: 16094
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -8382,7 +8382,7 @@ lpegpatterns.nestedparents=nestedparents
 lpegpatterns.nested=nestedbraces 
 lpegpatterns.argument=argument   
 lpegpatterns.content=content    
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comma))^0)
+local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+(1-comma))^0)
 local key=C((1-equal-comma)^1)
 local pattern_a=(space+comma)^0*(key*equal*value+key*C(""))
 local pattern_c=(space+comma)^0*(key*equal*value)
@@ -8462,7 +8462,7 @@ function parsers.settings_to_hash_strict(str,existing)
   end
 end
 local separator=comma*space^0
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-comma))^0)
+local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+(1-comma))^0)
 local pattern=spaces*Ct(value*(separator*value)^0)
 patterns.settings_to_array=pattern
 function parsers.settings_to_array(str,strict)
@@ -8497,7 +8497,7 @@ function parsers.settings_to_numbers(str)
   end
   return str
 end
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+nestedbrackets+nestedparents+(1-comma))^0)
+local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+nestedbrackets+nestedparents+(1-comma))^0)
 local pattern=spaces*Ct(value*(separator*value)^0)
 function parsers.settings_to_array_obey_fences(str)
   return lpegmatch(pattern,str)
@@ -8512,7 +8512,7 @@ function parsers.groupedsplitat(symbol,withaction)
   if not pattern then
     local symbols=S(symbol)
     local separator=space^0*symbols*space^0
-    local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+(1-(space^0*(symbols+P(-1)))))^0)
+    local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+(1-(space^0*(symbols+P(-1)))))^0)
     if withaction then
       local withvalue=Carg(1)*value/function(f,s) return f(s) end
       pattern=spaces*withvalue*(separator*withvalue)^0
@@ -9285,7 +9285,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 32922, stripped down to: 23011
+-- original size: 32361, stripped down to: 22577
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -9882,51 +9882,39 @@ end)
 if tex then
   local report=logs.reporter("pages") 
   local texgetcount=tex and tex.getcount
-  local real,user,sub
+  local real,user,sub=0,0,0
   function logs.start_page_number()
     real=texgetcount("realpageno")
     user=texgetcount("userpageno")
     sub=texgetcount("subpageno")
   end
   local timing=false
-  local starttime=nil
   local lasttime=nil
   trackers.register("pages.timing",function(v) 
-    starttime=os.clock() 
-    timing=true
+    timing=""
   end)
   function logs.stop_page_number() 
     if timing then
-      local elapsed,average
-      local stoptime=os.clock()
+      local elapsed=statistics.currenttime(statistics)
+      local average,page
       if not lasttime or real<2 then
-        elapsed=stoptime
-        average=stoptime
-        starttime=stoptime
+        average=elapsed
+        page=elapsed
       else
-        elapsed=stoptime-lasttime
-        average=(stoptime-starttime)/(real-1)
+        average=elapsed/(real-1)
+        page=elapsed-lasttime
       end
-      lasttime=stoptime
-      if real<=0 then
-        report("flushing page, time %0.04f / %0.04f",elapsed,average)
-      elseif user<=0 then
-        report("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
-      elseif sub<=0 then
-        report("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
-      else
-        report("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
-      end
+      lasttime=elapsed
+      timing=formatters[", total %0.03f, page %0.03f, average %0.03f"](elapsed,page,average)
+    end
+    if real<=0 then
+      report("flushing page%s",timing)
+    elseif user<=0 then
+      report("flushing realpage %s%s",real,timing)
+    elseif sub<=0 then
+      report("flushing realpage %s, userpage %s%s",real,user,timing)
     else
-      if real<=0 then
-        report("flushing page")
-      elseif user<=0 then
-        report("flushing realpage %s",real)
-      elseif sub<=0 then
-        report("flushing realpage %s, userpage %s",real,user)
-      else
-        report("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
-      end
+      report("flushing realpage %s, userpage %s, subpage %s%s",real,user,sub,timing)
     end
     logs.flush()
   end
@@ -10178,7 +10166,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8097, stripped down to: 5534
+-- original size: 8610, stripped down to: 5942
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -10250,6 +10238,22 @@ local function elapsed(instance)
     return timer and seconds(timer.loadtime) or 0
   end
 end
+local function currenttime(instance)
+  if type(instance)=="number" then
+    return instance
+  else
+    local timer=timers[instance or "notimer"]
+    local it=timer.timing
+    if it>1 then
+    else
+      local starttime=timer.starttime
+      if starttime and starttime>0 then
+        return seconds(timer.loadtime+ticks()-starttime)
+      end
+    end
+    return 0
+  end
+end
 local function elapsedtime(instance)
   return format("%0.3f",elapsed(instance))
 end
@@ -10265,6 +10269,7 @@ statistics.hastiming=hastiming
 statistics.resettiming=resettiming
 statistics.starttiming=starttiming
 statistics.stoptiming=stoptiming
+statistics.currenttime=currenttime
 statistics.elapsed=elapsed
 statistics.elapsedtime=elapsedtime
 statistics.elapsedindeed=elapsedindeed
@@ -21357,8 +21362,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 878710
--- stripped bytes    : 317893
+-- original bytes    : 878666
+-- stripped bytes    : 317887
 
 -- end library merge
 

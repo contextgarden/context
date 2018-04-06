@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-imp-italic'] = {
+if not modules then modules = { } end modules ['font-imp-italics'] = {
     version   = 1.001,
     comment   = "companion to font-ini.mkiv and hand-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

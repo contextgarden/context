@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/05/18 20:01:56
+-- merge date  : 04/06/18 14:04:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -4838,13 +4838,17 @@ if context then
   texio.write_nl("fatal error: this module is not for context")
   os.exit()
 end
+local match,gmatch,gsub,lower=string.match,string.gmatch,string.gsub,string.lower
+local formatters,split,format,dump=string.formatters,string.split,string.format,string.dump
+local loadfile,type=loadfile,type
+local setmetatable,getmetatable,collectgarbage=setmetatable,getmetatable,collectgarbage
 local dummyfunction=function()
 end
 local dummyreporter=function(c)
   return function(f,...)
     local r=texio.reporter or texio.write_nl
     if f then
-      r(c.." : "..string.formatters(f,...))
+      r(c.." : "..formatters(f,...))
     else
       r("")
     end
@@ -4896,7 +4900,16 @@ utilities.storage=utilities.storage or {
   end,
 }
 utilities.parsers=utilities.parsers or {
-  settings_to_array=function(s) return string.split(s,",") end,
+  settings_to_array=function(s)
+    return split(s,",")
+  end,
+  settings_to_hash=function(s)
+    local t={}
+    for k,v in gmatch(s,"([^%s,]+)=([^%s,]+)") do
+      t[k]=v
+    end
+    return t
+  end,
 }
 characters=characters or {
   data={}
@@ -4914,14 +4927,14 @@ local remapper={
   enc="enc files",
 }
 function resolvers.findfile(name,fileformat)
-  name=string.gsub(name,"\\","/")
+  name=gsub(name,"\\","/")
   if not fileformat or fileformat=="" then
     fileformat=file.suffix(name)
     if fileformat=="" then
       fileformat="tex"
     end
   end
-  fileformat=string.lower(fileformat)
+  fileformat=lower(fileformat)
   fileformat=remapper[fileformat] or fileformat
   local found=kpse.find_file(name,fileformat)
   if not found or found=="" then
@@ -4967,13 +4980,13 @@ do
   if cachepaths=="" then
     cachepaths="."
   end
-  cachepaths=string.split(cachepaths,os.type=="windows" and ";" or ":")
+  cachepaths=split(cachepaths,os.type=="windows" and ";" or ":")
   for i=1,#cachepaths do
     local cachepath=cachepaths[i]
     if not lfs.isdir(cachepath) then
       lfs.mkdirs(cachepath) 
       if lfs.isdir(cachepath) then
-        texio.write(string.format("(created cache path: %s)",cachepath))
+        texio.write(format("(created cache path: %s)",cachepath))
       end
     end
     if file.is_writable(cachepath) then
@@ -4996,10 +5009,10 @@ do
     texio.write_nl("quiting: fix your readable cache path")
     os.exit()
   elseif #readables==1 and readables[1]==writable then
-    texio.write(string.format("(using cache: %s)",writable))
+    texio.write(format("(using cache: %s)",writable))
   else
-    texio.write(string.format("(using write cache: %s)",writable))
-    texio.write(string.format("(using read cache: %s)",table.concat(readables," ")))
+    texio.write(format("(using write cache: %s)",writable))
+    texio.write(format("(using read cache: %s)",table.concat(readables," ")))
   end
 end
 function caches.getwritablepath(category,subcategory)
@@ -5031,27 +5044,27 @@ function caches.loaddata(readables,name,writable)
     local loader=false
     local luaname,lucname=makefullname(path,name)
     if lfs.isfile(lucname) then
-      texio.write(string.format("(load luc: %s)",lucname))
+      texio.write(format("(load luc: %s)",lucname))
       loader=loadfile(lucname)
     end
     if not loader and lfs.isfile(luaname) then
       local luacrap,lucname=makefullname(writable,name)
-      texio.write(string.format("(compiling luc: %s)",lucname))
+      texio.write(format("(compiling luc: %s)",lucname))
       if lfs.isfile(lucname) then
         loader=loadfile(lucname)
       end
       caches.compile(data,luaname,lucname)
       if lfs.isfile(lucname) then
-        texio.write(string.format("(load luc: %s)",lucname))
+        texio.write(format("(load luc: %s)",lucname))
         loader=loadfile(lucname)
       else
-        texio.write(string.format("(loading failed: %s)",lucname))
+        texio.write(format("(loading failed: %s)",lucname))
       end
       if not loader then
-        texio.write(string.format("(load lua: %s)",luaname))
+        texio.write(format("(load lua: %s)",luaname))
         loader=loadfile(luaname)
       else
-        texio.write(string.format("(loading failed: %s)",luaname))
+        texio.write(format("(loading failed: %s)",luaname))
       end
     end
     if loader then
@@ -5065,11 +5078,11 @@ end
 function caches.savedata(path,name,data)
   local luaname,lucname=makefullname(path,name)
   if luaname then
-    texio.write(string.format("(save: %s)",luaname))
+    texio.write(format("(save: %s)",luaname))
     table.tofile(luaname,data,true)
     if lucname and type(caches.compile)=="function" then
       os.remove(lucname) 
-      texio.write(string.format("(save: %s)",lucname))
+      texio.write(format("(save: %s)",lucname))
       caches.compile(data,luaname,lucname)
     end
   end
@@ -5084,7 +5097,7 @@ function caches.compile(data,luaname,lucname)
     if f then
       local s=loadstring(d)
       if s then
-        f:write(string.dump(s,true))
+        f:write(dump(s,true))
       end
       f:close()
     end
@@ -5108,7 +5121,7 @@ end
 arguments={}
 if arg then
   for i=1,#arg do
-    local k,v=string.match(arg[i],"^%-%-([^=]+)=?(.-)$")
+    local k,v=match(arg[i],"^%-%-([^=]+)=?(.-)$")
     if k and v then
       arguments[k]=v
     end
@@ -30227,11 +30240,10 @@ if not modules then modules={} end modules ['font-otc']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local format,insert,sortedkeys,tohash=string.format,table.insert,table.sortedkeys,table.tohash
+local insert,sortedkeys,sortedhash,tohash=table.insert,table.sortedkeys,table.sortedhash,table.tohash
 local type,next=type,next
 local lpegmatch=lpeg.match
-local utfbyte,utflen,utfsplit=utf.byte,utf.len,utf.split
-local match=string.match
+local utfbyte,utflen=utf.byte,utf.len
 local sortedhash=table.sortedhash
 local trace_loading=false trackers.register("otf.loading",function(v) trace_loading=v end)
 local report_otf=logs.reporter("fonts","otf loading")
@@ -30957,196 +30969,6 @@ local function enhance(data,filename,raw)
 end
 otf.enhancers.enhance=enhance
 otf.enhancers.register("check extra features",enhance)
-local tlig={
-  [0x2013]={ 0x002D,0x002D },
-  [0x2014]={ 0x002D,0x002D,0x002D },
-}
-local tlig_specification={
-  type="ligature",
-  features=everywhere,
-  data=tlig,
-  order={ "tlig" },
-  flags=noflags,
-  prepend=true,
-}
-otf.addfeature("tlig",tlig_specification)
-registerotffeature {
-  name='tlig',
-  description='tex ligatures',
-}
-local trep={
-  [0x0027]=0x2019,
-}
-local trep_specification={
-  type="substitution",
-  features=everywhere,
-  data=trep,
-  order={ "trep" },
-  flags=noflags,
-  prepend=true,
-}
-otf.addfeature("trep",trep_specification)
-registerotffeature {
-  name='trep',
-  description='tex replacements',
-}
-local anum_arabic={
-  [0x0030]=0x0660,
-  [0x0031]=0x0661,
-  [0x0032]=0x0662,
-  [0x0033]=0x0663,
-  [0x0034]=0x0664,
-  [0x0035]=0x0665,
-  [0x0036]=0x0666,
-  [0x0037]=0x0667,
-  [0x0038]=0x0668,
-  [0x0039]=0x0669,
-}
-local anum_persian={
-  [0x0030]=0x06F0,
-  [0x0031]=0x06F1,
-  [0x0032]=0x06F2,
-  [0x0033]=0x06F3,
-  [0x0034]=0x06F4,
-  [0x0035]=0x06F5,
-  [0x0036]=0x06F6,
-  [0x0037]=0x06F7,
-  [0x0038]=0x06F8,
-  [0x0039]=0x06F9,
-}
-local function valid(data)
-  local features=data.resources.features
-  if features then
-    for k,v in next,features do
-      for k,v in next,v do
-        if v.arab then
-          return true
-        end
-      end
-    end
-  end
-end
-local anum_specification={
-  {
-    type="substitution",
-    features={ arab={ urd=true,dflt=true } },
-    order={ "anum" },
-    data=anum_arabic,
-    flags=noflags,
-    valid=valid,
-  },
-  {
-    type="substitution",
-    features={ arab={ urd=true } },
-    order={ "anum" },
-    data=anum_persian,
-    flags=noflags,
-    valid=valid,
-  },
-}
-otf.addfeature("anum",anum_specification) 
-registerotffeature {
-  name='anum',
-  description='arabic digits',
-}
-local lookups={}
-local protect={}
-local revert={}
-local zwjchar=0x200C
-local zwj={ zwjchar }
-otf.addfeature {
-  name="blockligatures",
-  type="chainsubstitution",
-  nocheck=true,
-  prepend=true,
-  future=true,
-  lookups={
-    {
-      type="multiple",
-      data=lookups,
-    },
-  },
-  data={
-    rules=protect,
-  }
-}
-otf.addfeature {
-  name="blockligatures",
-  type="chainsubstitution",
-  nocheck=true,
-  append=true,
-  overload=false,
-  lookups={
-    {
-      type="ligature",
-      data=lookups,
-    },
-  },
-  data={
-    rules=revert,
-  }
-}
-registerotffeature {
-  name='blockligatures',
-  description='block certain ligatures',
-}
-local settings_to_array=utilities.parsers.settings_to_array
-local splitter=lpeg.splitat(":")
-local function blockligatures(str)
-  local t=settings_to_array(str)
-  for i=1,#t do
-    local ti=t[i]
-    local before,current,after=lpegmatch(splitter,ti)
-    if current and after then
-      if before then
-        before=utfsplit(before)
-        for i=1,#before do
-          before[i]={ before[i] }
-        end
-      end
-      if current then
-        current=utfsplit(current)
-      end
-      if after then
-        after=utfsplit(after)
-        for i=1,#after do
-          after[i]={ after[i] }
-        end
-      end
-    else
-      before=nil
-      current=utfsplit(ti)
-      after=nil
-    end
-    if #current>1 then
-      local one=current[1]
-      local two=current[2]
-      lookups[one]={ one,zwjchar }
-      local one={ one }
-      local two={ two }
-      local new=#protect+1
-      protect[new]={
-        before=before,
-        current={ one,two },
-        after=after,
-        lookups={ 1 },
-      }
-      revert[new]={
-        current={ one,zwj },
-        after={ two },
-        lookups={ 1 },
-      }
-    end
-  end
-end
-otf.helpers.blockligatures=blockligatures
-if context then
-  interfaces.implement {
-    name="blockligatures",
-    arguments="string",
-    actions=blockligatures,
-  }
-end
 
 end -- closure
 
@@ -33604,7 +33426,224 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-imp-italic']={
+if not modules then modules={} end modules ['font-imp-tex']={
+  version=1.001,
+  comment="companion to font-ini.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local next=next
+local fonts=fonts
+local otf=fonts.handlers.otf
+local registerotffeature=otf.features.register
+local addotffeature=otf.addfeature
+local specification={
+  type="ligature",
+  order={ "tlig" },
+  prepend=true,
+  data={
+    [0x2013]={ 0x002D,0x002D },
+    [0x2014]={ 0x002D,0x002D,0x002D },
+  },
+}
+addotffeature("tlig",specification)
+registerotffeature {
+  name="tlig",
+  description="tex ligatures",
+}
+local specification={
+  type="substitution",
+  order={ "trep" },
+  prepend=true,
+  data={
+    [0x0027]=0x2019,
+  },
+}
+addotffeature("trep",specification)
+registerotffeature {
+  name="trep",
+  description="tex replacements",
+}
+local anum_arabic={
+  [0x0030]=0x0660,
+  [0x0031]=0x0661,
+  [0x0032]=0x0662,
+  [0x0033]=0x0663,
+  [0x0034]=0x0664,
+  [0x0035]=0x0665,
+  [0x0036]=0x0666,
+  [0x0037]=0x0667,
+  [0x0038]=0x0668,
+  [0x0039]=0x0669,
+}
+local anum_persian={
+  [0x0030]=0x06F0,
+  [0x0031]=0x06F1,
+  [0x0032]=0x06F2,
+  [0x0033]=0x06F3,
+  [0x0034]=0x06F4,
+  [0x0035]=0x06F5,
+  [0x0036]=0x06F6,
+  [0x0037]=0x06F7,
+  [0x0038]=0x06F8,
+  [0x0039]=0x06F9,
+}
+local function valid(data)
+  local features=data.resources.features
+  if features then
+    for k,v in next,features do
+      for k,v in next,v do
+        if v.arab then
+          return true
+        end
+      end
+    end
+  end
+end
+local specification={
+  {
+    type="substitution",
+    features={ arab={ urd=true,dflt=true } },
+    order={ "anum" },
+    data=anum_arabic,
+    valid=valid,
+  },
+  {
+    type="substitution",
+    features={ arab={ urd=true } },
+    order={ "anum" },
+    data=anum_persian,
+    valid=valid,
+  },
+}
+addotffeature("anum",specification)
+registerotffeature {
+  name="anum",
+  description="arabic digits",
+}
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['font-imp-ligatures']={
+  version=1.001,
+  comment="companion to font-ini.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local lpegmatch=lpeg.match
+local utfsplit=utf.split
+local settings_to_array=utilities.parsers.settings_to_array
+local fonts=fonts
+local otf=fonts.handlers.otf
+local registerotffeature=otf.features.register
+local addotffeature=otf.addfeature
+local lookups={}
+local protect={}
+local revert={}
+local zwjchar=0x200C
+local zwj={ zwjchar }
+addotffeature {
+  name="blockligatures",
+  type="chainsubstitution",
+  nocheck=true,
+  prepend=true,
+  future=true,
+  lookups={
+    {
+      type="multiple",
+      data=lookups,
+    },
+  },
+  data={
+    rules=protect,
+  }
+}
+addotffeature {
+  name="blockligatures",
+  type="chainsubstitution",
+  nocheck=true,
+  append=true,
+  overload=false,
+  lookups={
+    {
+      type="ligature",
+      data=lookups,
+    },
+  },
+  data={
+    rules=revert,
+  }
+}
+registerotffeature {
+  name='blockligatures',
+  description='block certain ligatures',
+}
+local splitter=lpeg.splitat(":")
+local function blockligatures(str)
+  local t=settings_to_array(str)
+  for i=1,#t do
+    local ti=t[i]
+    local before,current,after=lpegmatch(splitter,ti)
+    if current and after then
+      if before then
+        before=utfsplit(before)
+        for i=1,#before do
+          before[i]={ before[i] }
+        end
+      end
+      if current then
+        current=utfsplit(current)
+      end
+      if after then
+        after=utfsplit(after)
+        for i=1,#after do
+          after[i]={ after[i] }
+        end
+      end
+    else
+      before=nil
+      current=utfsplit(ti)
+      after=nil
+    end
+    if #current>1 then
+      local one=current[1]
+      local two=current[2]
+      lookups[one]={ one,zwjchar }
+      local one={ one }
+      local two={ two }
+      local new=#protect+1
+      protect[new]={
+        before=before,
+        current={ one,two },
+        after=after,
+        lookups={ 1 },
+      }
+      revert[new]={
+        current={ one,zwj },
+        after={ two },
+        lookups={ 1 },
+      }
+    end
+  end
+end
+otf.helpers.blockligatures=blockligatures
+if context then
+  interfaces.implement {
+    name="blockligatures",
+    arguments="string",
+    actions=blockligatures,
+  }
+end
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['font-imp-italics']={
   version=1.001,
   comment="companion to font-ini.mkiv and hand-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -33714,7 +33753,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-imp-effect']={
+if not modules then modules={} end modules ['font-imp-effects']={
   version=1.001,
   comment="companion to font-ini.mkiv and hand-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -33726,7 +33765,7 @@ local fonts=fonts
 local handlers=fonts.handlers
 local registerotffeature=handlers.otf.features.register
 local registerafmfeature=handlers.afm.features.register
-local settings_to_array=utilities.parsers.settings_to_array
+local settings_to_hash=utilities.parsers.settings_to_hash
 local helpers=fonts.helpers
 local prependcommands=helpers.prependcommands
 local charcommand=helpers.commands.char

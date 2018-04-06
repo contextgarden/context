@@ -72,7 +72,8 @@ lpegpatterns.nested        = nestedbraces  -- no capture
 lpegpatterns.argument      = argument      -- argument after e.g. =
 lpegpatterns.content       = content       -- rest after e.g =
 
-local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace) + C((nestedbraces + (1-comma))^0)
+local value     = lbrace * C((nobrace + nestedbraces)^0) * rbrace
+                + C((nestedbraces + (1-comma))^0)
 
 local key       = C((1-equal-comma)^1)
 local pattern_a = (space+comma)^0 * (key * equal * value + key * C(""))
@@ -165,7 +166,7 @@ function parsers.settings_to_hash_strict(str,existing)
 end
 
 local separator = comma * space^0
-local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+local value     = lbrace * C((nobrace + nestedbraces)^0) * rbrace
                 + C((nestedbraces + (1-comma))^0)
 local pattern   = spaces * Ct(value*(separator*value)^0)
 
@@ -210,7 +211,7 @@ function parsers.settings_to_numbers(str)
     return str
 end
 
-local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+local value     = lbrace * C((nobrace + nestedbraces)^0) * rbrace
                 + C((nestedbraces + nestedbrackets + nestedparents + (1-comma))^0)
 local pattern   = spaces * Ct(value*(separator*value)^0)
 
@@ -242,7 +243,7 @@ function parsers.groupedsplitat(symbol,withaction)
     if not pattern then
         local symbols   = S(symbol)
         local separator = space^0 * symbols * space^0
-        local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
+        local value     = lbrace * C((nobrace + nestedbraces)^0) * rbrace
                         + C((nestedbraces + (1-(space^0*(symbols+P(-1)))))^0)
         if withaction then
             local withvalue = Carg(1) * value / function(f,s) return f(s) end

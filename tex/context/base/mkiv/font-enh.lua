@@ -115,7 +115,7 @@ local registerotffeature = otffeatures.register
 
 ----- tosixteen = fonts.mappings.tounicode16
 
-local function initializeunicoding(tfmdata)
+local function initialize(tfmdata)
     local goodies   = tfmdata.goodies
     local newcoding = nil
     for i=1,#goodies do
@@ -165,18 +165,14 @@ local function initializeunicoding(tfmdata)
     end
 end
 
-local unicoding_specification = {
+local specification = {
     name        = "unicoding",
     description = "adapt unicode table",
     initializers = {
-        base = initializeunicoding,
-        node = initializeunicoding,
+        base = initialize,
+        node = initialize,
     },
- -- manipulators = {
- --     base = finalizeunicoding,
- --     node = finalizeunicoding,
- -- }
 }
 
-registerotffeature(unicoding_specification)
-registerafmfeature(unicoding_specification)
+registerotffeature(specification)
+registerafmfeature(specification)

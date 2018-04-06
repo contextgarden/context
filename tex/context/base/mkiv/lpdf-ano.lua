@@ -508,7 +508,7 @@ local function pdflinkpage(page)
 end
 
 local function pdflinkinternal(internal,page)
-    local method = references.innermethod
+ -- local method = references.innermethod
     if internal then
         flaginternals[internal] = true -- for bookmarks and so
         local used = usedinternals[internal]
@@ -879,14 +879,17 @@ runners["special operation with arguments"] = runners["special"]
 local reported = { }
 
 function specials.internal(var,actions) -- better resolve in strc-ref
-    local i = tonumber(var.operation)
+    local o = var.operation
+    local i = o and tonumber(o)
     local v = i and references.internals[i]
     if v then
-        flaginternals[i] = true
+        flaginternals[i] = true -- also done in pdflinkinternal
         return pdflinkinternal(i,v.references.realpage)
-    elseif not reported[i] then
-        report_references("no internal reference %a",i or "<unset>")
-        reported[i] = true
+    end
+    local v = i or o or "<unset>"
+    if not reported[v] then
+        report_references("no internal reference %a",v)
+        reported[v] = true
     end
 end
 
@@ -952,19 +955,18 @@ end
 
 -- sections
 
--- function specials.section(var,actions)
---     local sectionname = var.operation
---     local destination = var.arguments
---     local internal    = structures.sections.internalreference(sectionname,destination)
---     if internal then
---         var.special   = "internal"
---         var.operation = internal
---         var.arguments = nil
---         specials.internal(var,actions)
---     end
--- end
-
-specials.section = specials.internal -- specials.section just need to have a value as it's checked
+function specials.section(var,actions)
+    -- a bit duplicate
+    local sectionname = var.arguments
+    local destination = var.operation
+    local internal    = structures.sections.internalreference(sectionname,destination)
+    if internal then
+        var.special   = "internal"
+        var.operation = internal
+        var.arguments = nil
+        return specials.internal(var,actions)
+    end
+end
 
 -- todo, do this in references namespace ordered instead (this is an experiment)
 

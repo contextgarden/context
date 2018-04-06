@@ -393,7 +393,6 @@ checkers.getmissing = getmissing
 do
 
     local reported = true
-    local tracked  = false
 
     callback.register("glyph_not_found",function(font,char)
         if font > 0 then
@@ -411,7 +410,6 @@ do
     trackers.register("fonts.missing", function(v)
         if v then
             enableaction("processors","fonts.checkers.missing")
-            tracked = true
         else
             disableaction("processors","fonts.checkers.missing")
         end
@@ -422,27 +420,25 @@ do
     end)
 
     logs.registerfinalactions(function()
---         if tracked then
-            local collected, details = getmissing()
-            if next(collected) then
+        local collected, details = getmissing()
+        if next(collected) then
+            for filename, list in sortedhash(details) do
+                logs.startfilelogging(report,"missing characters",filename)
+                for u, v in sortedhash(list) do
+                    report("%4i  %U  %c  %s",v,u,u,chardata[u].description)
+                end
+                logs.stopfilelogging()
+            end
+            if logs.loggingerrors() then
                 for filename, list in sortedhash(details) do
-                    logs.startfilelogging(report,"missing characters",filename)
+                    logs.starterrorlogging(report,"missing characters",filename)
                     for u, v in sortedhash(list) do
                         report("%4i  %U  %c  %s",v,u,u,chardata[u].description)
                     end
-                    logs.stopfilelogging()
-                end
-                if logs.loggingerrors() then
-                    for filename, list in sortedhash(details) do
-                        logs.starterrorlogging(report,"missing characters",filename)
-                        for u, v in sortedhash(list) do
-                            report("%4i  %U  %c  %s",v,u,u,chardata[u].description)
-                        end
-                        logs.stoperrorlogging()
-                    end
+                    logs.stoperrorlogging()
                 end
             end
---         end
+        end
     end)
 
 end

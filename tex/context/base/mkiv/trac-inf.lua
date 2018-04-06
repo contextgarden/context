@@ -123,6 +123,24 @@ local function elapsed(instance)
     end
 end
 
+local function currenttime(instance)
+    if type(instance) == "number" then
+        return instance
+    else
+        local timer = timers[instance or "notimer"]
+        local it = timer.timing
+        if it > 1 then
+            -- whatever
+        else
+            local starttime = timer.starttime
+            if starttime and starttime > 0 then
+                return seconds(timer.loadtime + ticks() - starttime)
+            end
+        end
+        return 0
+    end
+end
+
 local function elapsedtime(instance)
     return format("%0.3f",elapsed(instance))
 end
@@ -141,6 +159,7 @@ statistics.hastiming      = hastiming
 statistics.resettiming    = resettiming
 statistics.starttiming    = starttiming
 statistics.stoptiming     = stoptiming
+statistics.currenttime    = currenttime
 statistics.elapsed        = elapsed
 statistics.elapsedtime    = elapsedtime
 statistics.elapsedindeed  = elapsedindeed
@@ -229,7 +248,7 @@ end
 
 function statistics.runtime()
     stoptiming(statistics)
- --  stoptiming(statistics) -- somehow we can start the timer twice, but where
+ -- stoptiming(statistics) -- somehow we can start the timer twice, but where
     return statistics.formatruntime(elapsedtime(statistics))
 end
 
