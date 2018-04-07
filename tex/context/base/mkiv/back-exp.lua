@@ -118,6 +118,7 @@ local tonut             = nuts.tonut
 local getnext           = nuts.getnext
 local getsubtype        = nuts.getsubtype
 local getfont           = nuts.getfont
+local getchar           = nuts.getchar
 local getdisc           = nuts.getdisc
 local getcomponents     = nuts.getcomponents
 local getlist           = nuts.getlist
@@ -167,7 +168,7 @@ local currentparagraph  = nil
 
 local noftextblocks     = 0
 
-local hyphencode        = 0xAD
+----- hyphencode        = 0xAD
 local hyphen            = utfchar(0xAD) -- todo: also emdash etc
 local tagsplitter       = structurestags.patterns.splitter
 ----- colonsplitter     = lpeg.splitat(":")
@@ -2748,9 +2749,12 @@ end
 
 local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
     local p
-    for n in traverse_nodes(head) do
-        local c, id = isglyph(n) -- 14: image, 8: literal (mp)
-        if c then
+--     for n in traverse_nodes(head) do
+--         local c, id = isglyph(n) -- 14: image, 8: literal (mp)
+--         if c then
+    for n, id in traverse_nodes(head) do
+        if id == glyph_code then
+            local c  = getchar(n)
             local at = getattr(n,a_tagged) or pat
             if not at then
              -- we need to tag the pagebody stuff as being valid skippable
@@ -2855,7 +2859,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
         elseif id == disc_code then -- probably too late
             local pre, post, replace = getdisc(n)
             if keephyphens then
-                if pre and not getnext(pre) and isglyph(pre) == hyphencode then
+                if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
                     nofcurrentcontent = nofcurrentcontent + 1
                     currentcontent[nofcurrentcontent] = hyphen
                 end

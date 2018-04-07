@@ -79,7 +79,6 @@ local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
 local flush_node_list  = nuts.flush_list
 local traverse_nodes   = nuts.traverse
------ traverse_id      = nuts.traverse_id
 local protect_glyphs   = nuts.protect_glyphs
 
 local nodepool         = nuts.pool
@@ -392,8 +391,7 @@ function step_tracers.codes(i,command,space)
         if w then
             context.startcolor(colors[what])
             context("%s:",what)
-            for c in traverse_nodes(w) do
-                local id = getid(c)
+            for c, id in traverse_nodes(w) do
                 if id == glyph_code then
                     showchar(c)
                 else
@@ -501,9 +499,12 @@ local threshold = 65536 -- 1pt
 
 local function toutf(list,result,nofresult,stopcriterium,nostrip)
     if list then
-        for n in traverse_nodes(tonut(list)) do
-            local c, id = isglyph(n)
-            if c then
+--         for n in traverse_nodes(tonut(list)) do
+--             local c, id = isglyph(n)
+--             if c then
+        for n, id in traverse_nodes(tonut(list)) do
+            if id == glyph_code then
+                local c = getchar(n)
                 local components = getcomponents(n)
                 if components then
                     result, nofresult = toutf(components,result,nofresult,false,true)

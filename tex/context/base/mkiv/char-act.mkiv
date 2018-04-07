@@ -44,11 +44,14 @@
 \unexpanded\def\controlspace{\hbox{\asciispacechar}}               % rather tex, we need the unicode value
 \unexpanded\def\normalspaces{\catcode\spaceasciicode\spacecatcode}
 
-\bgroup
-    \catcode\spaceasciicode\activecatcode
-    \unexpanded\gdef\obeyspaces{\catcode\spaceasciicode\activecatcode\def {\obeyedspace}}
-    \unexpanded\gdef\setcontrolspaces{\catcode\spaceasciicode\activecatcode\def {\controlspace}}
-\egroup
+% \bgroup
+%     \catcode\spaceasciicode\activecatcode
+%     \unexpanded\gdef\obeyspaces      {\catcode\spaceasciicode\activecatcode\def {\obeyedspace }}
+%     \unexpanded\gdef\setcontrolspaces{\catcode\spaceasciicode\activecatcode\def {\controlspace}}
+% \egroup
+
+\unexpanded\def\obeyspaces      {\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\obeyedspace }
+\unexpanded\def\setcontrolspaces{\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\controlspace}
 
 %D \macros
 %D   {obeytabs, obeylines, obeypages,ignoretabs, ignorelines, ignorepages}
@@ -59,17 +62,28 @@
 %D \NEWPAGE\ character locally, we redefine the meaning of
 %D this (often already) active character.
 
-\expandafter\def\activeformfeedtoken{\par}
+% \expandafter\def\activeformfeedtoken{\par}
+
+\letcharcode\formfeedasciicode\par
 
 %D The following indirect definitions enable us to implement
 %D all kind of \type{\obeyed} handlers.
 
-\unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedtab }}
-\unexpanded\def\obeylines  {\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedline}}
-\unexpanded\def\obeypages  {\catcode\formfeedasciicode \activecatcode\expandafter\def\activeformfeedtoken {\obeyedpage}}
+% \unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedtab }}
+% \unexpanded\def\obeylines  {\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedline}}
+% \unexpanded\def\obeypages  {\catcode\formfeedasciicode \activecatcode\expandafter\def\activeformfeedtoken {\obeyedpage}}
 
-\unexpanded\def\ignoretabs {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedspace}}
-\unexpanded\def\ignorelines{\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedspace}}
+% \unexpanded\def\ignoretabs {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedspace}}
+% \unexpanded\def\ignorelines{\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedspace}}
+% \unexpanded\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
+% \unexpanded\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
+
+\unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \obeyedtab }
+\unexpanded\def\obeylines  {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\obeyedline}
+\unexpanded\def\obeypages  {\catcode\formfeedasciicode \activecatcode\letcharcode\formfeedasciicode \obeyedpage}
+
+\unexpanded\def\ignoretabs {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \obeyedspace}
+\unexpanded\def\ignorelines{\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\obeyedspace}
 \unexpanded\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
 \unexpanded\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 

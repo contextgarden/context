@@ -23,58 +23,110 @@
 %D \MKII\ file. There is some overlap in code with \MKII\ but we take that
 %D for granted. Also, in \MKIV\ less active characters are used.
 
-\setnewconstant\escapecatcode             0
-\setnewconstant\begingroupcatcode         1
-\setnewconstant\endgroupcatcode           2
-\setnewconstant\mathshiftcatcode          3
-\setnewconstant\alignmentcatcode          4
-\setnewconstant\endoflinecatcode          5
-\setnewconstant\parametercatcode          6
-\setnewconstant\superscriptcatcode        7
-\setnewconstant\subscriptcatcode          8
-\setnewconstant\ignorecatcode             9
-\setnewconstant\spacecatcode             10
-\setnewconstant\lettercatcode            11
-\setnewconstant\othercatcode             12  % finally obsolete: \let\other \othercatcode
-\setnewconstant\activecatcode            13  % finally obsolete: \let\active\activecatcode
-\setnewconstant\commentcatcode           14
-\setnewconstant\invalidcatcode           15
+% \normalprotected\def\setnewconstantfromchar#1%
+%   {\expandafter\ifdefined\expandafter#1\expandafter
+%         \let\expandafter#1\expandafter\undefined\expandafter\fi\expandafter
+%         \newcount\expandafter#1\expandafter#1\the#1\relax}
+%
+% \normalprotected\def\setnewconstantfromchar#1%
+%   {\begingroup
+%    \scratchcounter#1%
+%    \edef\!!stringa{\meaning#1}%
+%    \chardef#1\scratchcounter
+%    \edef\!!stringb{\meaning#1}%
+%    \normalexpanded{\endgroup
+%      \ifx\!!stringa\!!stringb
+%        \let#1\noexpand\undefined
+%        \newcount#1%
+%      \fi
+%      #1\the\scratchcounter\relax}}
+%
+% \normalprotected\def\setnewconstantfromchar#1%
+%   {\begingroup
+%    \edef\!!stringa{\meaning#1}%
+%    \expandafter\chardef\expandafter#1\the#1%
+%    \edef\!!stringb{\meaning#1}%
+%    \normalexpanded{\endgroup
+%      \ifx\!!stringa\!!stringb
+%        \let#1\noexpand\undefined
+%        \newcount#1%
+%      \fi
+%      #1\the#1\relax}}
+%
+% \normalprotected\def\setnewconstantfromchar#1%
+%   {\scratchcounter#1\let#1\undefined\newcount#1#1\scratchcounter}
 
-\setnewconstant\tabasciicode              9
-\setnewconstant\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
-\setnewconstant\formfeedasciicode        12
-\setnewconstant\endoflineasciicode       13  % somewhat messy but this can be the active \par
-\setnewconstant\endoffileasciicode       26
-\setnewconstant\spaceasciicode           32
-\setnewconstant\exclamationmarkasciicode 33 % ! used in namespace protection
-\setnewconstant\doublequoteasciicode     34 % "
-\setnewconstant\hashasciicode            35
-\setnewconstant\dollarasciicode          36
-\setnewconstant\commentasciicode         37
-\setnewconstant\ampersandasciicode       38
-\setnewconstant\singlequoteasciicode     39 % '
-\setnewconstant\primeasciicode           39 % '
-\setnewconstant\hyphenasciicode          45
-\setnewconstant\forwardslashasciicode    47 % /
-\setnewconstant\colonasciicode           58
-\setnewconstant\lessthanasciicode        60 % < used as alternative verbatim {
-\setnewconstant\morethanasciicode        62 % > used as alternative verbatim }
-\setnewconstant\questionmarkasciicode    63 % ? used in namespace protection
-\setnewconstant\atsignasciicode          64 % @ used in namespace protection
-\setnewconstant\backslashasciicode       92 % `\\
-\setnewconstant\circumflexasciicode      94
-\setnewconstant\underscoreasciicode      95
-\setnewconstant\leftbraceasciicode      123 % `\{
-\setnewconstant\barasciicode            124 % `\|
-\setnewconstant\rightbraceasciicode     125 % `\}
-\setnewconstant\tildeasciicode          126 % `\~
-\setnewconstant\delasciicode            127
+\def\promote#1{\scratchcounter#1\let#1\undefined\newcount#1#1\scratchcounter}
+
+\promote\escapecatcode
+\promote\begingroupcatcode
+\promote\endgroupcatcode
+\promote\mathshiftcatcode
+\promote\alignmentcatcode
+\promote\endoflinecatcode
+\promote\parametercatcode
+\promote\superscriptcatcode
+\promote\subscriptcatcode
+\promote\ignorecatcode
+\promote\spacecatcode
+\promote\lettercatcode
+\promote\othercatcode
+\promote\activecatcode
+\promote\commentcatcode
+\promote\invalidcatcode
+
+\promote\tabasciicode
+\promote\newlineasciicode
+\promote\formfeedasciicode
+\promote\endoflineasciicode
+\promote\endoffileasciicode
+\promote\spaceasciicode
+\promote\exclamationmarkasciicode
+\promote\doublequoteasciicode
+\promote\hashasciicode
+\promote\dollarasciicode
+\promote\commentasciicode
+\promote\ampersandasciicode
+\promote\singlequoteasciicode
+\promote\primeasciicode
+\promote\hyphenasciicode
+\promote\forwardslashasciicode
+\promote\colonasciicode
+\promote\lessthanasciicode
+\promote\morethanasciicode
+\promote\questionmarkasciicode
+\promote\atsignasciicode
+\promote\backslashasciicode
+\promote\circumflexasciicode
+\promote\underscoreasciicode
+\promote\leftbraceasciicode
+\promote\barasciicode
+\promote\rightbraceasciicode
+\promote\tildeasciicode
+\promote\delasciicode
+
+\let\promote\undefined
+
+% \begingroup
+%
+%     \catcode\tabasciicode      \activecatcode
+%     \catcode\formfeedasciicode \activecatcode
+%     \catcode\endoflineasciicode\activecatcode
+%
+%     \letcharcode\tabasciicode      \relax
+%     \letcharcode\newlineasciicode  \relax
+%     \letcharcode\formfeedasciicode \relax
+%     \letcharcode\endoflineasciicode\relax
+%
+%     \xdef\activetabtoken      {\Uchar\tabasciicode      } % \gdef\activetabtoken      {^^I}
+%     \xdef\outputnewlinechar   {\Uchar\newlineasciicode  } % \gdef\outputnewlinechar   {^^J}
+%     \xdef\activeformfeedtoken {\Uchar\formfeedasciicode } % \gdef\activeformfeedtoken {^^L}
+%     \xdef\activeendoflinetoken{\Uchar\endoflineasciicode} % \gdef\activeendoflinetoken{^^M}
+%
+% \endgroup
 
 \begingroup
-    \catcode \tabasciicode       \activecatcode  \gdef\activetabtoken      {^^I}
-                                                 \gdef\outputnewlinechar   {^^J}
-    \catcode \formfeedasciicode  \activecatcode  \gdef\activeformfeedtoken {^^L}
-    \catcode \endoflineasciicode \activecatcode  \gdef\activeendoflinetoken{^^M}
+    \letcharcode\newlineasciicode\relax \xdef\outputnewlinechar{\Uchar\newlineasciicode}
 \endgroup
 
 % \endlinechar = \endoflineasciicode % appended to input lines
@@ -82,10 +134,17 @@
 
 % rather special and used in writing to file: \let\par\outputnewlinechar
 
+% \normalprotected\def\initializenewlinechar % operating system dependent
+%   {\begingroup
+%    \newlinechar\newlineasciicode
+%    \xdef\outputnewlinechar{^^J}%
+%    \endgroup}
+
 \normalprotected\def\initializenewlinechar % operating system dependent
   {\begingroup
+   \letcharcode\newlineasciicode\relax
    \newlinechar\newlineasciicode
-   \xdef\outputnewlinechar{^^J}%
+   \xdef\outputnewlinechar{\Uchar\newlineasciicode}%
    \endgroup}
 
 %D We predefine some prefixes ahead of syst-aux and mult-sys.

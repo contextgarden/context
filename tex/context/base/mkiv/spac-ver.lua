@@ -290,8 +290,7 @@ local function validvbox(parentid,list)
             end
         end
         local done = nil
-        for n in traverse_nodes(list) do
-            local id = getid(n)
+        for n, id in traverse_nodes(list) do
             if id == vlist_code or id == hlist_code then
                 if done then
                     return nil
@@ -326,8 +325,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
                 return false
             end
         end
-        for n in traverse_nodes(list) do
-            local id = getid(n)
+        for n, id in traverse_nodes(list) do
             if id == hlist_code or id == vlist_code then
              -- local a = getattr(n,a_snapmethod)
              -- if not a then
@@ -1917,8 +1915,7 @@ do
             local flush = false
             stackhack = true -- todo: only when grid snapping once enabled
             -- todo: fast check if head = tail
-            for n in traverse_nodes(newhead) do -- we could just look for glue nodes
-                local id = getid(n)
+            for n, id in traverse_nodes(newhead) do -- we could just look for glue nodes
                 if id ~= glue_code then
                     flush = true
                 else

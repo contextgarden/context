@@ -184,6 +184,26 @@ if not direct.getdirection then
 
 end
 
+if LUATEXFUNCTIONALITY < 6694 then
+
+    local getnext = direct.getnext
+    local getid   = direct.getid
+
+    local function iterate(h,n)
+        if n then
+            local n = getnext(n)
+            return n, getid(n)
+        elseif h then
+            return h, getid(h), getnext(h)
+        end
+    end
+
+    function direct.traverse(h)
+        return iterate, h
+    end
+
+end
+
 local nuts                 = nodes.nuts
 
 nuts.tostring              = direct.tostring

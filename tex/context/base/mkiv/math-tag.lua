@@ -287,8 +287,7 @@ else
                                 local cache = { } -- we can have nested unboxed mess so best local to runner
                                 local keep = nil
                              -- local keep = { } -- win case we might need to move keep outside
-                                for n in traverse_nodes(list) do
-                                    local id = getid(n)
+                                for n, id in traverse_nodes(list) do
                                     local mth = id == math_code and getsubtype(n)
                                     if mth == 0 then
                                      -- insert(keep,text)

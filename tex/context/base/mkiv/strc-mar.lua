@@ -116,8 +116,7 @@ end
 -- identify range
 
 local function sweep(head,first,last)
-    for n in traverse(head) do
-        local id = getid(n)
+    for n, id in traverse(head) do
         if id == glyph_code then
             local a = getattr(n,a_marks)
             if not a then

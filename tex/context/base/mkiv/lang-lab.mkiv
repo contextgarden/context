@@ -277,10 +277,16 @@
 \def\lang_labels_text_prefix_copy_pair[#1=#2]%
   {\lang_labels_text_prefix_copy_pair_indeed{#1}[#2,,]}
 
+% \def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
+%   {\expandafter\let
+%      \csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\expandafter\endcsname
+%      \csname\??label\currenttextprefixclass:\currenttextprefixtag:#2\endcsname}
+%
+% this delays the aliasing so that we can switch maillanguage in between
+
 \def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
-  {\expandafter\let
-     \csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\expandafter\endcsname
-     \csname\??label\currenttextprefixclass:\currenttextprefixtag:#2\endcsname}
+  {\expandafter\edef\csname\??label\currenttextprefixclass:#1\endcsname
+     {{\noexpand\csname\??label\currenttextprefixclass:\noexpand\reallanguagetag\noexpand\currentmainlanguage:#2\endcsname}{}}}
 
 \definelabelclass [head]      [0] % titles
 \definelabelclass [label]     [0] % texts

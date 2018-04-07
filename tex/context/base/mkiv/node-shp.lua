@@ -192,8 +192,7 @@ local function count(head,data,subcategory)
     -- no components, pre, post, replace .. can maybe an option .. but
     -- we use this for optimization so it makes sense to look the the
     -- main node only
-    for n in traverse_nodes(tonut(head)) do
-        local id = getid(n)
+    for n, id in traverse_nodes(tonut(head)) do
         local dn = data[nodecodes[id]] -- we could use id and then later convert to nodecodes
         dn[subcategory] = dn[subcategory] + 1
         if id == hlist_code or id == vlist_code then

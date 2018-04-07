@@ -274,28 +274,4 @@
 
 \def\getbufferdata[#1]{\buff_get_stored_indeed{#1}}
 
-%D This is a weird one, moved from cont-new. Do we really need it? If not
-%D it will go away.
-
-\bgroup \permitcircumflexescape
-
-\obeylines % don't remove %'s !
-
-\gdef\collapsedspace#1%
-  {\ifx#1^^M%
-     \expandafter\collapsedspace
-   \else
-     \space
-     \expandafter#1%
-   \fi}
-
-\unexpanded\gdef\collapsespaces
-  {\prependtoksonce\relax\to\everyeof%
-   \ignorelines%
-   \ignoretabs%
-   \let\obeyedspace\collapsedspace%
-   \obeyspaces}
-
-\egroup
-
 \protect \endinput

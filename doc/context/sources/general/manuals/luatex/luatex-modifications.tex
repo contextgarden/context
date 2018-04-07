@@ -1068,22 +1068,15 @@ by setting \type {\breakafterdirmode} to~\type {1}. The following table shows th
 difference. Watch your spaces.
 
 \def\ShowSome#1{%
-    \BC
-        \type{#1}
+    \BC \type{#1}
+    \NC \breakafterdirmode\zerocount\hsize\zeropoint#1
     \NC
-        \breakafterdirmode = 0
-        \hsize 0pt
-        #1
-    \NC
-    \NC
-        \breakafterdirmode = 1
-        \hsize 0pt
-        #1
+    \NC \breakafterdirmode\plusone\hsize\zeropoint#1
     \NC
     \NC \NR \HL
 }
 
-\starttabulate[|l|Tp(0pt)|w(5em)|Tp(0pt)|p|]
+\starttabulate[|lp(10em)|Tp(1pt)|w(5em)|Tp(1pt)|w(5em)|]
     \HL
     \BC \type{\breakafterdirmode}
     \BC \type{0}

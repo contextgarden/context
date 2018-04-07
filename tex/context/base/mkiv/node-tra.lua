@@ -198,8 +198,7 @@ function nodes.idstostring(head,tail)
     local t       = { }
     local last_id = nil
     local last_n  = 0
-    for n in traverse_nodes(head,tail) do -- hm, does not stop at tail
-        local id = getid(n)
+    for n, id in traverse_nodes(head,tail) do -- hm, does not stop at tail
         if id == whatsit_code then
             id = whatcodes[getsubtype(n)]
         else
@@ -354,8 +353,7 @@ local what = { [0] = "unknown", "line", "box", "indent", "row", "cell" }
 local function showboxes(n,symbol,depth)
     depth  = depth  or 0
     symbol = symbol or "."
-    for n in traverse_nodes(tonut(n)) do
-        local id = getid(n)
+    for n, id in traverse_nodes(tonut(n)) do
         if id == hlist_code or id == vlist_code then
             local s = getsubtype(n)
             report_nodes(rep(symbol,depth) .. what[s] or s)

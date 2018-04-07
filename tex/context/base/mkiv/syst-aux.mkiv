@@ -3206,17 +3206,25 @@
 %D Apart from the prefixes, a few more \type{\expandafters}
 %D are needed:
 
-\unexpanded\def\newif#1%
-  {\privatescratchcounter\escapechar
-   \escapechar\minusone
-   \expandafter\expandafter\expandafter
-     \redoglobal\expandafter\expandafter\expandafter
-       \edef\@if#1{true}{\let\noexpand#1\noexpand\iftrue}%
-   \expandafter\expandafter\expandafter
-     \redoglobal\expandafter\expandafter\expandafter
-       \edef\@if#1{false}{\let\noexpand#1\noexpand\iffalse}%
-   \dodoglobal\@if#1{false}%
-   \escapechar\privatescratchcounter}
+% \unexpanded\def\newif#1% uses the original plain \@if
+%   {\privatescratchcounter\escapechar
+%    \escapechar\minusone
+%    \expandafter\expandafter\expandafter
+%      \redoglobal\expandafter\expandafter\expandafter
+%        \edef\@if#1{true}{\let\noexpand#1\noexpand\iftrue}%
+%    \expandafter\expandafter\expandafter
+%      \redoglobal\expandafter\expandafter\expandafter
+%        \edef\@if#1{false}{\let\noexpand#1\noexpand\iffalse}%
+%    \dodoglobal\@if#1{false}%
+%    \escapechar\privatescratchcounter}
+
+\normalprotected\def\newif#1% see syst-ini.mkiv
+  {\let\new_if_saved\newif
+   \let\newif\new_if_check
+   \expandafter\redoglobal\expandafter\def\csname\expandafter\newif\csstring#1true\endcsname {\let#1\iftrue }%
+   \expandafter\redoglobal\expandafter\def\csname\expandafter\newif\csstring#1false\endcsname{\let#1\iffalse}%
+   \dodoglobal\csname\expandafter\newif\csstring#1false\endcsname
+   \let\newif\new_if_saved}
 
 %D Also new:
 

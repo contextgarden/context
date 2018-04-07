@@ -62,6 +62,26 @@ end
 -- statistics.tracefunction(node,       "node",       "getfield","setfield")
 -- statistics.tracefunction(node.direct,"node.direct","getfield","setfield")
 
+if LUATEXFUNCTIONALITY < 6694 then
+
+    local getnext = node.getnext
+    local getid   = node.getid
+
+    local function iterate(h,n)
+        if n then
+            local n = getnext(n)
+            return n, getid(n)
+        elseif h then
+            return h, getid(h), getnext(h)
+        end
+    end
+
+    function node.traverse(h)
+        return iterate, h
+    end
+
+end
+
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 

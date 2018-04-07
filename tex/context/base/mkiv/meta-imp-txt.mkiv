@@ -203,6 +203,7 @@
 
 \startluacode
     local nodecodes = nodes.nodecodes
+    local kerncodes = nodes.kerncodes
 
     local visible_code = {
         [nodecodes.glyph] = true,
@@ -212,54 +213,39 @@
         [nodecodes.rule]  = true,
     }
 
-    local disc_code = nodecodes.disc
-    local kern_code = nodecodes.kern
-
-    local c_userkern = nodes.kerncodes.userkern
+    local kern_code  = nodecodes.kern
+    local c_userkern = kerncodes.userkern
     local a_fontkern = attributes.private("fontkern")
 
     local n = nil
     local s = 0
 
     function mp.follow_reset()
-        r = nil
+        n = nil
         s = 0
     end
 
     function mp.follow_initialize(b)
-        if not r then
-            local l = tex.takebox(b).list
-            n = { }
-            s = 0
-            while l do
-                local c = l
-                l = l.next
-                local id = c.id
-                if visible_code[id] then
-                    s = s + 1
-                    n[s] = c
-                    c.prev = nil
-                    c.next = nil
-                elseif id == kern_code then
-                    if c.subtype == c_userkern and not c[a_fontkern] then
+        if not n then
+            local head = tex.takebox(b).list
+            if head then
+                n = { }
+                s = 0
+                head = node.flatten_discretionaries(head)
+                local current = head
+                while current do
+                    local id = current.id
+                    if visible_code[id] then
                         s = s + 1
-                        n[s] = c
-                        c.prev = nil
+                        head, current, n[s] = nodes.remove(head,current)
+                    elseif id == kern_code and current.subtype == c_userkern and not current[a_fontkern] then
+                        s = s + 1
+                        head, current, n[s] = nodes.remove(head,current)
                     else
-                        n[s].next = c
-                        c.prev = n[s]
-                    end
-                    c.next = nil
-                elseif id == disc_code then
-                    local r = c.replace
-                    while r do
-                        s = s + 1
-                        n[s] = r
-                        r = r.next
-                        r.prev = nil
-                        r.next = nil
+                        current = current.next
                     end
                 end
+                nodes.flush_list(head)
             end
         end
     end

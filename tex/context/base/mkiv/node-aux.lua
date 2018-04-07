@@ -154,9 +154,8 @@ function nodes.repackhlist(list,...)
 end
 
 local function set_attributes(head,attr,value)
-    for n in traverse_nodes(head) do
+    for n, id in traverse_nodes(head) do
         setattr(n,attr,value)
-        local id = getid(n)
         if id == hlist_node or id == vlist_node then
             set_attributes(getlist(n),attr,value)
         end
@@ -164,11 +163,10 @@ local function set_attributes(head,attr,value)
 end
 
 local function set_unset_attributes(head,attr,value)
-    for n in traverse_nodes(head) do
+    for n, id in traverse_nodes(head) do
         if not getattr(n,attr) then
             setattr(n,attr,value)
         end
-        local id = getid(n)
         if id == hlist_code or id == vlist_code then
             set_unset_attributes(getlist(n),attr,value)
         end
@@ -176,9 +174,8 @@ local function set_unset_attributes(head,attr,value)
 end
 
 local function unset_attributes(head,attr)
-    for n in traverse_nodes(head) do
+    for n, id in traverse_nodes(head) do
         setattr(n,attr,unsetvalue)
-        local id = getid(n)
         if id == hlist_code or id == vlist_code then
             unset_attributes(getlist(n),attr)
         end
@@ -431,8 +428,7 @@ nodes.link = function(list,currentfont,currentattr,head,tail)
 end
 
 local function locate(start,wantedid,wantedsubtype)
-    for n in traverse_nodes(start) do
-        local id = getid(n)
+    for n, id in traverse_nodes(start) do
         if id == wantedid then
             if not wantedsubtype or getsubtype(n) == wantedsubtype then
                 return n

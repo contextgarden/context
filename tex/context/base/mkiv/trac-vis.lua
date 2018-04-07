@@ -1433,8 +1433,7 @@ do
     }
 
     local function markfonts(list)
-        for n in traverse_nodes(list) do
-            local id = getid(n)
+        for n, id in traverse_nodes(list) do
             if id == glyph_code then
                 local font = getfont(n)
                 local okay = used[font]

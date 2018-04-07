@@ -324,11 +324,10 @@ function nodeinjections.addtags(head)
     local last   = nil
     local ranges = { }
     local range  = nil
-	local head   = tonut(head)
+    local head   = tonut(head)
 
     local function collectranges(head,list)
-        for n in traverse_nodes(head) do
-            local id = getid(n)
+        for n, id in traverse_nodes(head) do
             if id == glyph_code then
                 -- maybe also disc
                 local at = getattr(n,a_tagged)
@@ -472,8 +471,7 @@ end
 --     local last, ranges, range = nil, { }, nil
 --
 --     local function collectranges(head,list)
---         for n in traverse_nodes(head) do
---             local id = getid(n) -- 14: image, 8: literal (mp)
+--         for n, id in traverse_nodes(head) do
 --             if id == glyph_code then
 --                 local at = getattr(n,a_tagged)
 --                 if not at then

@@ -38,7 +38,10 @@
 % \setupsynctex[state=start,method=max] % adds 5 pct overhead
 
 \environment luatex-style
+% \environment luatex-book
 \environment luatex-logos
+
+% \switchtobodyfont[small]
 
 \startmode[export]
 
@@ -47,14 +50,13 @@
 
 \stopmode
 
-\dontcomplain
-
 \startdocument
   [status=experimental,
    version=1.08.0]
 
 \startnotmode[*export]
     \component luatex-titlepage
+    \component luatex-firstpage
 \stopnotmode
 
 \startmode[*export]
