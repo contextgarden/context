@@ -38,6 +38,7 @@ input "mp-func.mpiv" ; % under construction
 input "mp-node.mpiv" ; % relatively small so preloaded
 input "mp-apos.mpiv" ;
 input "mp-abck.mpiv" ;
+input "mp-blob.mpiv" ;
 
 string metafunversion ; metafunversion =
     "metafun iv"                        & " " &

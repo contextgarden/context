@@ -541,6 +541,8 @@ local function sxsy(wd,ht,dp) -- helper for text
     return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
+metapost.sxsy = sxsy
+
 -- for stock mp we need to declare the booleans first
 
 local no_first_run = "boolean mfun_first_run ; mfun_first_run := false ;"
@@ -906,14 +908,7 @@ end
 
 function metapost.resetplugins(t) -- intialize plugins, before figure
     if top.plugmode then
-
         outercolormodel = colors.currentmodel() -- currently overloads the one set at the tex end
-
-        -- plugins can have been added
-        resetter  = resetteractions.runner
-        analyzer  = analyzeractions.runner
-        processor = processoractions.runner
-        -- let's apply one runner
         resetter(t)
     end
 end
@@ -966,6 +961,8 @@ local function cm(object)
     end
     return 1, 0, 0, 1, 0, 0 -- weird case
 end
+
+metapost.cm = cm
 
 -- color
 
@@ -1591,7 +1588,6 @@ function mp.get_outline_text(index) -- maybe we need a more private namespace
     mp.print(outlinetexts[index] or "draw origin;")
 end
 
-
 -- definitions
 
 appendaction(resetteractions, "system",ot_reset)
@@ -1616,17 +1612,20 @@ appendaction(processoractions,"system",tr_process) -- last, as color can be rese
 
 appendaction(processoractions,"system",la_process)
 
--- function metapost.installplugin(reset,analyze,process)
---     if reset then
---         appendaction(resetteractions,"system",reset)
---     end
---     if analyze then
---         appendaction(analyzeractions,"system",analyze)
---     end
---     if process then
---         appendaction(processoractions,"system",process)
---     end
--- end
+function metapost.installplugin(reset,analyze,process)
+    if reset then
+        appendaction(resetteractions,"system",reset)
+    end
+    if analyze then
+        appendaction(analyzeractions,"system",analyze)
+    end
+    if process then
+        appendaction(processoractions,"system",process)
+    end
+    resetter  = resetteractions .runner
+    analyzer  = analyzeractions .runner
+    processor = processoractions.runner
+end
 
 -- we're nice and set them already
 

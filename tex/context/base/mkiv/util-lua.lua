@@ -198,12 +198,12 @@ function luautilities.checkmemory(previous,threshold,trace) -- threshold in MB
             collectgarbage("collect")
             local afterwards = collectgarbage("count")
             if trace or tracememory then
-                report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB, afterwards %i MB",
+                report_mem("previous %r MB, current %r MB, delta %r MB, threshold %r MB, afterwards %r MB",
                     previous/1024,current/1024,delta/1024,threshold,afterwards)
             end
             return afterwards
         elseif trace or tracememory then
-            report_mem("previous %i MB, current %i MB, delta %i MB, threshold %i MB",
+            report_mem("previous %r MB, current %r MB, delta %r MB, threshold %r MB",
                 previous/1024,current/1024,delta/1024,threshold)
         end
     end

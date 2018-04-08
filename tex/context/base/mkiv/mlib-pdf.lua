@@ -430,7 +430,7 @@ function metapost.flush(result,flusher,askedfig)
                         startfigure(properties.number,llx,lly,urx,ury,"begin",figure)
                         result[#result+1] = "q"
                         if objects then
-                            resetplugins(result) -- we should move the colorinitializer here
+--                             resetplugins(result) -- we should move the colorinitializer here
                             local savedpath = nil
                             local savedhtap = nil
                             for o=1,#objects do
@@ -640,6 +640,7 @@ function metapost.flush(result,flusher,askedfig)
                 end
             end
             metapost.comment = nocomment
+            resetplugins(result) -- we should move the colorinitializer here
         end
     end
 end

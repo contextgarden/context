@@ -62,11 +62,16 @@ end
 
 local f_code      = formatters["%s return mp._f_()"]
 
-local f_numeric   = formatters["%.16f"]
-local f_integer   = formatters["%i"]
-local f_pair      = formatters["(%.16f,%.16f)"]
-local f_triplet   = formatters["(%.16f,%.16f,%.16f)"]
-local f_quadruple = formatters["(%.16f,%.16f,%.16f,%.16f)"]
+local f_numeric      = formatters["%.16f"]
+local f_integer      = formatters["%i"]
+local f_pair         = formatters["(%.16f,%.16f)"]
+local f_triplet      = formatters["(%.16f,%.16f,%.16f)"]
+local f_quadruple    = formatters["(%.16f,%.16f,%.16f,%.16f)"]
+
+local f_points       = formatters["%p"]
+local f_pair_pt      = formatters["(%p,%p)"]
+local f_triplet_pt   = formatters["(%p,%p,%p)"]
+local f_quadruple_pt = formatters["(%p,%p,%p,%p)"]
 
 local function mpprint(...) -- we can optimize for n=1
     for i=1,select("#",...) do
@@ -156,12 +161,26 @@ function mp.integer(i)
     buffer[n] = i or "0"
 end
 
+function mp.points(i)
+    n = n + 1
+    buffer[n] = i and f_points(i) or "0pt"
+end
+
 function mp.pair(x,y)
     n = n + 1
     if type(x) == "table" then
         buffer[n] = f_pair(x[1],x[2])
     else
         buffer[n] = f_pair(x,y)
+    end
+end
+
+function mp.pairpoints(x,y)
+    n = n + 1
+    if type(x) == "table" then
+        buffer[n] = f_pair_pt(x[1],x[2])
+    else
+        buffer[n] = f_pair_pt(x,y)
     end
 end
 
@@ -174,6 +193,15 @@ function mp.triplet(x,y,z)
     end
 end
 
+function mp.tripletpoints(x,y,z)
+    n = n + 1
+    if type(x) == "table" then
+        buffer[n] = f_triplet_pt(x[1],x[2],x[3])
+    else
+        buffer[n] = f_triplet_pt(x,y,z)
+    end
+end
+
 function mp.quadruple(w,x,y,z)
     n = n + 1
     if type(w) == "table" then
@@ -183,7 +211,16 @@ function mp.quadruple(w,x,y,z)
     end
 end
 
-function mp.path(t,connector,cycle)
+function mp.quadruplepoints(w,x,y,z)
+    n = n + 1
+    if type(w) == "table" then
+        buffer[n] = f_quadruple_pt(w[1],w[2],w[3],w[4])
+    else
+        buffer[n] = f_quadruple_pt(w,x,y,z)
+    end
+end
+
+local function mppath(f,t,connector,cycle)
     if type(t) == "table" then
         local tn = #t
         if tn > 0 then
@@ -194,11 +231,11 @@ function mp.path(t,connector,cycle)
                 connector = "--"
             end
             local ti = t[1]
-            n = n + 1 ; buffer[n] = f_pair(ti[1],ti[2])
+            n = n + 1 ; buffer[n] = f(ti[1],ti[2])
             for i=2,tn do
                 local ti = t[i]
                 n = n + 1 ; buffer[n] = connector
-                n = n + 1 ; buffer[n] = f_pair(ti[1],ti[2])
+                n = n + 1 ; buffer[n] = f(ti[1],ti[2])
             end
             if cycle then
                 n = n + 1 ; buffer[n] = connector
@@ -206,6 +243,14 @@ function mp.path(t,connector,cycle)
             end
         end
     end
+end
+
+function mp.path(...)
+    mppath(f_pair,...)
+end
+
+function mp.pathpoints(...)
+    mppath(f_pair_pt,...)
 end
 
 function mp.size(t)
