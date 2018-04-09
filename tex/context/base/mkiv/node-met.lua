@@ -62,7 +62,7 @@ end
 -- statistics.tracefunction(node,       "node",       "getfield","setfield")
 -- statistics.tracefunction(node.direct,"node.direct","getfield","setfield")
 
-if LUATEXFUNCTIONALITY < 6694 then
+if LUATEXFUNCTIONALITY < 6695 then
 
     local getnext = node.getnext
     local getid   = node.getid

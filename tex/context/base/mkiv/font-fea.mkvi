@@ -368,10 +368,18 @@
 % \doifelsecurrentfonthasfeature{crap}{YES}{NO}
 % \doifelsecurrentfonthasfeature{kern}{YES}{NO}
 
-\def\doifelsecurrentfonthasfeature#feature%
+\def\doifelsecurrentfonthasfeature#feature% expandable
   {\clf_doifelsecurrentfonthasfeature{#feature}}
 
 \let\doifcurrentfonthasfeatureelse\doifelsecurrentfonthasfeature
+
+\def\doifelsefontfeature#feature% expandable
+  {\clf_doifelsefontfeature{#feature}}
+
+\let\doiffontfeatureelse\doifelsefontfeature
+
+\def\doifunknownfontfeature#feature% expandable
+  {\clf_doifunknownfontfeature{#feature}}
 
 % new:
 

@@ -14,7 +14,8 @@ local helpers           = fonts.helpers
 
 local setmetatableindex = table.setmetatableindex
 
--- helpers dealing with virtual fonts
+-- Helpers dealing with virtual fonts: beware, these are final values so
+-- don't change the content of tables gotten this way!
 
 local push  = { "push" }
 local pop   = { "pop" }
@@ -44,31 +45,34 @@ function helpers.appendcommands(commands,...)
     return commands
 end
 
-local char = setmetatableindex(function(t,k)   -- todo: weak
+-- todo: maybe weak
+-- todo: maybe indirect so that we can't change them
+
+local char = setmetatableindex(function(t,k)
     local v = { "char", k }
     t[k] = v
     return v
 end)
 
-local right = setmetatableindex(function(t,k)  -- todo: weak
+local right = setmetatableindex(function(t,k)
     local v = { "right", k }
     t[k] = v
     return v
 end)
 
-local left = setmetatableindex(function(t,k)   -- todo: weak
+local left = setmetatableindex(function(t,k)
     local v = { "right", -k }
     t[k] = v
     return v
 end)
 
-local down = setmetatableindex(function(t,k)   -- todo: weak
+local down = setmetatableindex(function(t,k)
     local v = { "down", k }
     t[k] = v
     return v
 end)
 
-local up = setmetatableindex(function(t,k)     -- todo: weak
+local up = setmetatableindex(function(t,k)
     local v = { "down", -k }
     t[k] = v
     return v

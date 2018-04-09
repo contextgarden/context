@@ -20,6 +20,8 @@
     % microsoft: cambria.ttc cambriab.ttf cambriai.ttf cambriaz.ttf
     % ascender : cambmath.ttf cambria.ttf cambriab.ttf cambriai.ttf cambriaz.ttf
 
+    \doifunknownfontfeature {\definefontfeature[cambria-math-bold][effect={width=0.30,delta=1.00}]}
+
     \starttypescript [\s!math,\s!serif] [cambria,cambria-x,cambria-y]
         % whatever matches
         \definefontsynonym [CambriaMath]  [\s!name:cambriamath]
@@ -42,15 +44,18 @@
 
     \starttypescript [\s!math] [cambria,cambria-m,cambria-a] [\s!name]
         \loadfontgoodies[cambria-math]
-        \definefontsynonym [\s!MathRoman] [CambriaMath] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=cambria-math]
+        \definefontsynonym [\s!MathRoman]     [CambriaMath] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=cambria-math]
+        \definefontsynonym [\s!MathRomanBold] [CambriaMath] [\s!features={\s!math\mathsizesuffix,cambria-math-bold,mathextra},\s!goodies=cambria-math]
     \stoptypescript
     \starttypescript [\s!math] [cambria-x] [\s!name]
         \loadfontgoodies[cambria-math]
-        \definefontsynonym [\s!MathRoman] [CambriaMath] [\s!features={\s!math,mathextra},\s!goodies=cambria-math]
+        \definefontsynonym [\s!MathRoman]     [CambriaMath] [\s!features={\s!math,mathextra},\s!goodies=cambria-math]
+        \definefontsynonym [\s!MathRomanBold] [CambriaMath] [\s!features={\s!math,cambria-math-bold,mathextra},\s!goodies=cambria-math]
     \stoptypescript
     \starttypescript [\s!math] [cambria-y] [\s!name]
         \loadfontgoodies[cambria-math]
-        \definefontsynonym [\s!MathRoman] [CambriaMath] [\s!features={\s!math-nostack\mathsizesuffix,mathextra},\s!goodies=cambria-math]
+        \definefontsynonym [\s!MathRoman]     [CambriaMath] [\s!features={\s!math-nostack\mathsizesuffix,mathextra},\s!goodies=cambria-math]
+        \definefontsynonym [\s!MathRomanBold] [CambriaMath] [\s!features={\s!math-nostack\mathsizesuffix,cambria-math-bold,mathextra},\s!goodies=cambria-math]
     \stoptypescript
 
     \starttypescript [\s!serif] [cambria,cambria-m,cambria-a] [\s!name]

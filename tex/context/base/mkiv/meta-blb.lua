@@ -203,8 +203,11 @@ metapost.installplugin(reset,analyze,process)
 local nodecodes       = nodes.nodecodes
 local kerncodes       = nodes.kerncodes
 
+local glue_code       = nodecodes.glue
 local kern_code       = nodecodes.kern
 local c_userkern      = kerncodes.userkern
+local c_fontkern      = kerncodes.fontkern
+local c_italickern    = kerncodes.italickern
 local a_fontkern      = attributes.private("fontkern")
 
 local takebox         = tex.takebox
@@ -227,6 +230,8 @@ local function initialize(category,box)
     local wrap = takebox(box)
     if wrap then
         local head = wrap.list
+        local tail = nil
+        local temp = nil
         if head then
             local n = { }
             local s = 0
@@ -235,11 +240,25 @@ local function initialize(category,box)
             while current do
                 local id = current.id
                 if visible_code[id] then
+                    head, current, tail = remove_node(head,current)
                     s = s + 1
-                    head, current, n[s] = remove_node(head,current)
-                elseif id == kern_code and current.subtype == c_userkern and not current[a_fontkern] then
+                    n[s] = tail
+                elseif id == kern_code then
+                    local subtype = current.subtype
+                    if subtype == c_fontkern or subtype == italickern then -- or current[a_fontkern]
+                        head, current, temp = remove_node(head,current)
+                        tail.next = temp
+                        temp.prev = tail
+                        tail = temp
+                    else
+                        head, current, temp = remove_node(head,current)
+                        s = s + 1
+                        n[s] = temp
+                    end
+                elseif id == glue_code then
+                    head, current, temp = remove_node(head,current)
                     s = s + 1
-                    head, current, n[s] = remove_node(head,current)
+                    n[s] = temp
                 else
                     current = current.next
                 end

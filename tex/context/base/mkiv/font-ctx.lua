@@ -2400,9 +2400,12 @@ do
         return f and (f.gpos[n] or f.gsub[n])
     end
 
+    local ctx_doifelse = commands.doifelse
+    local ctx_doif     = commands.doif
+
     implement {
         name      = "doifelsecurrentfonthasfeature",
-        actions   = { constructors.currentfonthasfeature, commands.doifelse },
+        actions   = { constructors.currentfonthasfeature, ctx_doifelse },
         arguments = "string"
     }
 
@@ -2446,8 +2449,21 @@ do
     implement {
         name      = "definefontfeature",
         arguments = "3 strings",
-        actions   = presetcontext
+        actions   = presetcontext,
     }
+
+    implement {
+        name      = "doifelsefontfeature",
+        arguments = "string",
+        actions   = function(name) ctx_doifelse(contextnumber(name) > 1) end,
+    }
+
+    implement {
+        name      = "doifunknownfontfeature",
+        arguments = "string",
+        actions   = function(name) ctx_doif(contextnumber(name) == 0) end,
+    }
+
 
     implement {
         name      = "adaptfontfeature",

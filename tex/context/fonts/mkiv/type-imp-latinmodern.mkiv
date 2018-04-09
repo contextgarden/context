@@ -28,6 +28,8 @@
 
 \starttypescriptcollection[latinmodern]
 
+    \doifunknownfontfeature {\definefontfeature[lm-math-bold] [effect={width=0.30,delta=1.00}]}
+
     \starttypescript [\s!serif] [simple] [\s!name]
         \definefontsynonym [\s!Simple] [\s!file:lmmonoproplt10-regular] [\s!features=\s!default]
     \stoptypescript
@@ -180,7 +182,7 @@
     \starttypescript [\s!math] [modern,latin-modern]
         \loadfontgoodies[lm]
         \definefontsynonym [LMMathRoman-Regular] [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math,mathextra},\s!goodies=lm]
-        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math,mathextra},\s!goodies=lm]
+        \definefontsynonym [LMMathRoman-Bold]    [\v!file:latinmodern-math-regular.otf] [\s!features={\s!math\mathsizesuffix,lm-math-bold,lm-math,mathextra},\s!goodies=lm]
     \stoptypescript
 
     \starttypescript [modern-designsize-virtual]

@@ -184,7 +184,7 @@ if not direct.getdirection then
 
 end
 
-if LUATEXFUNCTIONALITY < 6694 then
+if LUATEXFUNCTIONALITY < 6695 then
 
     local getnext = direct.getnext
     local getid   = direct.getid

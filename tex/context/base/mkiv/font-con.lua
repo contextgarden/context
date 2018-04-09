@@ -98,6 +98,24 @@ function constructors.getprivate(tfmdata)
     return private
 end
 
+function constructors.setmathparameter(tfmdata,name,value)
+    local m = tfmdata.mathparameters
+    local c = tfmdata.MathConstants
+    if m then
+        m[name] = value
+    end
+    if c and c ~= m then
+        c[name] = value
+    end
+end
+
+function constructors.getmathparameter(tfmdata,name)
+    local p = tfmdata.mathparameters or tfmdata.MathConstants
+    if p then
+        return p[name]
+    end
+end
+
 --[[ldx--
 <p>Beware, the boundingbox is passed as reference so we may not overwrite it
 in the process; numbers are of course copies. Here 65536 equals 1pt. (Due to

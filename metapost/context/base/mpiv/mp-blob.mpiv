@@ -42,9 +42,10 @@ enddef ;
 
 % An example of usage:
 
-newinternal followtextalternative ; followtextalternative := 1 ;
-newinternal tracingfollowtext     ; tracingfollowtext     := 0 ;
-newinternal autoscalefollowtext   ; autoscalefollowtext   := 1 ;
+newinternal followtextalternative   ; followtextalternative   := 1 ;
+newinternal tracingfollowtext       ; tracingfollowtext       := 0 ;
+newinternal autoscaleupfollowtext   ; autoscaleupfollowtext   := 2 ;
+newinternal autoscaledownfollowtext ; autoscaledownfollowtext := 0 ;
 
 vardef followtext(expr txt, pth) =
     draw image (
@@ -62,7 +63,7 @@ vardef followtext(expr txt, pth) =
             picture pic[] ;
             len[0] := 0 ;
             n := lua.mp.blob_size(mfun_blob_n) ;
-            sc := 1 ;
+            sc := 0 ;
             for i=1 upto n :
                 pic[i] := mfun_inject_blob(i) ;
                 pic[i] := pic[i] shifted - llcorner pic[i] ;
@@ -73,8 +74,9 @@ vardef followtext(expr txt, pth) =
                 al := len[n] ;
                 pat := origin -- (al,0) ;
             fi ;
-            if al < len[n]:
-                sc := len[n]/al ;
+            if ((al < len[n]) and (autoscaleupfollowtext   > 0)) or
+               ((al > len[n]) and (autoscaledownfollowtext > 0)) :
+                sc := len[n] /al ;
                 pat := pat scaled sc ;
                 al := arclength pat ;
             fi ;
@@ -101,7 +103,8 @@ vardef followtext(expr txt, pth) =
                     draw ap withpen pencircle scaled .50pt withcolor green ;
                 fi ;
             endfor ;
-            if (autoscalefollowtext = 1) and (sc <> 1) :
+            if ((autoscaleupfollowtext = 2) or (autoscaledownfollowtext = 2)) and
+               (sc <> 0) and (sc <> 1):
                 currentpicture := currentpicture scaled (1/sc) ;
             fi ;
             if tracingfollowtext = 1 :

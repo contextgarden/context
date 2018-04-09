@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-imp-effects'] = {
     license   = "see context related readme files"
 }
 
+-- todo: pickup from goodies: if type(effect) then ...
+
 local next, type, tonumber = next, type, tonumber
 
 local fonts              = fonts
@@ -20,6 +22,11 @@ local helpers            = fonts.helpers
 local prependcommands    = helpers.prependcommands
 local charcommand        = helpers.commands.char
 local rightcommand       = helpers.commands.right
+local dummycommand       = helpers.commands.dummy
+
+----- constructors       = fonts.constructors
+----- getmathparameter   = constructors.getmathparameter
+----- setmathparameter   = constructors.setmathparameter
 
 local report_effect      = logs.reporter("fonts","effect")
 local report_extend      = logs.reporter("fonts","extend")
@@ -114,8 +121,8 @@ local function initializeeffect(tfmdata,value)
         parameters.mode  = mode
         parameters.width = width * 1000
         local factor  = tonumber(spec.factor) or 0
-        local hfactor = tonumber(spec.vfactor) or factor
-        local vfactor = tonumber(spec.hfactor) or factor
+        local hfactor = tonumber(spec.hfactor) or factor
+        local vfactor = tonumber(spec.vfactor) or factor
         local delta   = tonumber(spec.delta) or 1
         local wdelta  = tonumber(spec.wdelta) or delta
         local hdelta  = tonumber(spec.hdelta) or delta
@@ -133,16 +140,87 @@ local function initializeeffect(tfmdata,value)
     end
 end
 
+local rules = {
+    "RadicalRuleThickness",
+    "OverbarRuleThickness",
+    "FractionRuleThickness",
+    "UnderbarRuleThickness",
+}
+
+local function setmathparameters(tfmdata,characters,mathparameters,delta)
+    if delta > 0 then
+        for i=1,#rules do
+            local name  = rules[i]
+            local value = mathparameters[name]
+            if value then
+                mathparameters[name] = value + delta
+            end
+        end
+    end
+end
+
+local function setmathcharacters(tfmdata,characters,mathparameters,wdelta,hdelta,ddelta)
+
+    local function wdpatch(char,wsnap)
+        if wsnap ~= 0 then
+     --     local commands = char.commands
+     --     if commands then
+     --         local command = commands[1]
+     --         if command and command[1] == "right" then
+     --             commands[1] = rightcommand[command[2]-snap]
+     --         end
+     --     end
+            char.width = char.width - wsnap
+        end
+    end
+
+    local function htpatch(char,hsnap)
+        if hsnap ~= 0 then
+            local height = char.height
+            if height then
+                char.height = height - hsnap
+            end
+        end
+    end
+
+    local character = characters[0x221A]
+
+    if character then
+        local char  = character
+        local next  = character.next
+        local hsnap = hdelta/2
+        local wsnap = wdelta/2
+        wdpatch(char,wsnap)
+        htpatch(char,hsnap)
+        while next do
+            char = characters[next]
+            wdpatch(char,wsnap)
+            htpatch(char,hsnap)
+            next = char.next
+        end
+        if char then
+            local v = char.vert_variants
+            if v then
+                local top = v[#v]
+                if top then
+                    htpatch(characters[top.glyph],hsnap)
+                end
+            end
+        end
+    end
+end
+
 local function manipulateeffect(tfmdata)
     local effect = tfmdata.properties.effect
     if effect then
-        local characters = tfmdata.characters
-        local parameters = tfmdata.parameters
+        local characters     = tfmdata.characters
+        local parameters     = tfmdata.parameters
+        local mathparameters = tfmdata.mathparameters
         local multiplier = effect.width * 100
         local wdelta = effect.wdelta * parameters.hfactor * multiplier
         local hdelta = effect.hdelta * parameters.vfactor * multiplier
         local ddelta = effect.ddelta * parameters.vfactor * multiplier
-        local hshift = wdelta / 2
+        local hshift = wdelta -- / 2
         local factor  = (1 + effect.factor)  * parameters.factor
         local hfactor = (1 + effect.hfactor) * parameters.hfactor
         local vfactor = (1 + effect.vfactor) * parameters.vfactor
@@ -171,6 +249,10 @@ local function manipulateeffect(tfmdata)
             if olddepth and olddepth > 0 then
                 character.depth = olddepth + ddelta
             end
+        end
+        if mathparameters then
+            setmathparameters(tfmdata,characters,mathparameters,hdelta)
+            setmathcharacters(tfmdata,characters,mathparameters,wdelta,hdelta,ddelta)
         end
         parameters.factor  = factor
         parameters.hfactor = hfactor

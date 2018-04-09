@@ -15,6 +15,8 @@
 
 \starttypescriptcollection[dejavu]
 
+    \doifunknownfontfeature {\definefontfeature [dejavu-math-bold] [effect={width=0.30,delta=1.00}]}
+
     \starttypescript [\s!serif] [dejavu] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]           [\s!name:dejavuserif]           [\s!features=\s!default,\s!fallbacks=\s!Serif]
@@ -41,7 +43,8 @@
 
     \starttypescript [\s!math][dejavu][\s!name]
         \loadfontgoodies[dejavu-math]
-        \definefontsynonym[\s!MathRoman][file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=dejavu-math]
+        \definefontsynonym[\s!MathRoman]    [file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=dejavu-math]
+        \definefontsynonym[\s!MathRomanBold][file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,dejavu-math-bold,mathextra},\s!goodies=schola-math]
     \stoptypescript
 
     \starttypescript[dejavu]
