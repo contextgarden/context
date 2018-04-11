@@ -2480,10 +2480,13 @@
 
 % I need to decide:
 %
-%mathscriptboxmode\zerocount % no kerning
-%mathscriptboxmode\plusone   % lists
-\mathscriptboxmode\plustwo   % lists and boxes
-%mathscriptboxmode\plusthree % lists and boxes with \boundary=1 (also for testing and demo)
+%mathscriptboxmode \zerocount % no kerning
+%mathscriptboxmode \plusone   % lists
+\mathscriptboxmode \plustwo   % lists and boxes
+\mathscriptcharmode\plusone   % lists and boxes
+%mathscriptboxmode \plusthree % lists and boxes with \boundary=1 (also for testing and demo)
+
+\mathrulethicknessmode\plusone
 
 \unexpanded\def\mathtext  {\mathortext{\math_text_choice_font\relax}\hbox}
 \unexpanded\def\mathword  {\mathortext{\math_text_choice_word\relax}\hbox}

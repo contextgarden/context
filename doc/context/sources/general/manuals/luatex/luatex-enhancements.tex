@@ -341,9 +341,10 @@ say:
 \stoptyping
 
 Then \LUA\ line comments can be used, since \TEX\ does not replace line endings
-with spaces.
+with spaces. Of course such an approach depends on the macro package that you
+use.
 
-Likewise, the \syntax {<16-bit number>} designates a name of a \LUA\ chunk and is
+The \syntax {<16-bit number>} designates a name of a \LUA\ chunk and is
 taken from the \type {lua.name} array (see the documentation of the \type {lua}
 table further in this manual). When a chunk name starts with a \type {@} it will
 be displayed as a file name. This is a side effect of the way \LUA\ implements
@@ -397,9 +398,6 @@ can break up \LUATEX\ pretty bad. If you are not careful while working with the
 node list interface, you may even end up with assertion errors from within the
 \TEX\ portion of the executable.
 
-The behaviour documented in the above subsection is considered stable in the sense
-that there will not be backward-incompatible changes any more.
-
 \subsection{\type {\latelua}}
 
 Contrary to \type {\directlua}, \type {\latelua} stores \LUA\ code in a whatsit
@@ -449,9 +447,9 @@ is easier to keep the code in a separate file and load it using \LUA's
 The \type {\directlua} commands involves tokenization of its argument (after
 picking up an optional name or number specification). The tokenlist is then
 converted into a string and given to \LUA\ to turn into a function that is
-called. The overhead is rather small but when you use this primitive hundreds of
-thousands of times, it can become noticeable. For this reason there is a variant
-call available: \type {\luafunction}. This command is used as follows:
+called. The overhead is rather small but when you have millions of calls it can
+have some impact. For this reason there is a variant call available: \type
+{\luafunction}. This command is used as follows:
 
 \starttyping
 \directlua {
@@ -555,30 +553,26 @@ raised.
 
 \subsection{\type {\suppressfontnotfounderror}}
 
-\startsyntax
-\suppressfontnotfounderror = 1
-\stopsyntax
-
 If this integer parameter is non|-|zero, then \LUATEX\ will not complain about
 font metrics that are not found. Instead it will silently skip the font
 assignment, making the requested csname for the font \type {\ifx} equal to \type
 {\nullfont}, so that it can be tested against that without bothering the user.
 
-\subsection{\type {\suppresslongerror}}
-
 \startsyntax
-\suppresslongerror = 1
+\suppressfontnotfounderror = 1
 \stopsyntax
+
+\subsection{\type {\suppresslongerror}}
 
 If this integer parameter is non|-|zero, then \LUATEX\ will not complain about
 \type {\par} commands encountered in contexts where that is normally prohibited
 (most prominently in the arguments of non-long macros).
 
-\subsection{\type {\suppressifcsnameerror}}
-
 \startsyntax
-\suppressifcsnameerror = 1
+\suppresslongerror = 1
 \stopsyntax
+
+\subsection{\type {\suppressifcsnameerror}}
 
 If this integer parameter is non|-|zero, then \LUATEX\ will not complain about
 non-expandable commands appearing in the middle of a \type {\ifcsname} expansion.
@@ -587,15 +581,19 @@ an \type {\endcsname} command. If the input expansion is unbalanced with respect
 to \type {\csname} \ldots \type {\endcsname} pairs, the \LUATEX\ process may hang
 indefinitely.
 
-\subsection{\type {\suppressoutererror}}
-
 \startsyntax
-\suppressoutererror = 1
+\suppressifcsnameerror = 1
 \stopsyntax
+
+\subsection{\type {\suppressoutererror}}
 
 If this new integer parameter is non|-|zero, then \LUATEX\ will not complain
 about \type {\outer} commands encountered in contexts where that is normally
 prohibited.
+
+\startsyntax
+\suppressoutererror = 1
+\stopsyntax
 
 \subsection{\type {\suppressmathparerror}}
 
@@ -617,11 +615,11 @@ a $
 
 When set to a non|-|zero value the following command will not issue an error:
 
-\starttyping
+\startsyntax
 \suppressprimitiveerror = 1
 
 \primitive\notaprimitive
-\stoptyping
+\stopsyntax
 
 \section {Math}
 

@@ -28,7 +28,7 @@
 
 \starttypescriptcollection[latinmodern]
 
-    \doifunknownfontfeature {\definefontfeature[lm-math-bold] [effect={width=0.30,delta=1.00}]}
+    \doifunknownfontfeature {lm-math-bold} {\definefontfeature[lm-math-bold][boldened]}
 
     \starttypescript [\s!serif] [simple] [\s!name]
         \definefontsynonym [\s!Simple] [\s!file:lmmonoproplt10-regular] [\s!features=\s!default]

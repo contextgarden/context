@@ -15,7 +15,7 @@
 
 \starttypescriptcollection[dejavu]
 
-    \doifunknownfontfeature {\definefontfeature [dejavu-math-bold] [effect={width=0.30,delta=1.00}]}
+    \doifunknownfontfeature {dejavu-math-bold} {\definefontfeature[dejavu-math-bold][boldened]}
 
     \starttypescript [\s!serif] [dejavu] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]

@@ -7,22 +7,23 @@ if not modules then modules = { } end modules ['math-ext'] = {
 }
 
 local rawget = rawget
-
-local trace_virtual = false trackers.register("math.virtual", function(v) trace_virtual = v end)
-
 local basename = file.basename
+local sortedhash  = table.sortedhash
 
-local mathematics = mathematics
-local characters  = characters
+local mathematics     = mathematics
+local extras          = mathematics.extras or { }
+mathematics.extras    = extras
 
-local report_math = logs.reporter("mathematics")
+local characters      = characters
+local chardata        = characters.data
+local mathpairs       = characters.mathpairs
 
-mathematics.extras = mathematics.extras or { }
-local extras       = mathematics.extras
+local trace_virtual   = false
+local report_math     = logs.reporter("mathematics")
 
-local mathplus     = { }
-local chardata     = characters.data
-local mathpairs    = characters.mathpairs
+trackers.register("math.virtual", function(v) trace_virtual = v end)
+
+local mathplus        = { }
 
 -- todo: store them and skip storage if already stored
 -- todo: make a char-ctx.lua (or is this already side effect of save in format)
@@ -47,7 +48,7 @@ function extras.copy(target,original)
     local characters = target.characters
     local properties = target.properties
     local parameters = target.parameters
-    for unicode in table.sortedhash(mathplus) do
+    for unicode in sortedhash(mathplus) do
         local extradesc  = chardata[unicode]
         local nextinsize = extradesc.nextinsize
         if nextinsize then

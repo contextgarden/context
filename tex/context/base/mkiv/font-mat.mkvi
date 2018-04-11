@@ -425,13 +425,16 @@
 
 \ifdefined\mathdefault \else \let\mathdefault\relax \fi
 
+\newconditional\c_math_bold
+
 \unexpanded\def\mr % math regular
   {\ifmmode
      \font_helpers_synchronize_math_family_mr
    \else
      \font_helpers_set_current_font_alternative\s!mr
    \fi
-   \mathdefault}
+   \mathdefault
+   \setfalse\c_math_bold}
 
 \unexpanded\def\mb % math bold
   {\ifmmode
@@ -439,10 +442,15 @@
    \else
      \font_helpers_set_current_font_alternative\s!mb
    \fi
-   \mathdefault}
+   \mathdefault
+   \settrue\c_math_bold}
 
 \appendtoks
     \font_helpers_synchronize_math_family % auto bold
+\to \everymathematics
+
+\appendtoks
+    \ifconditional\c_math_bold\mb\fi
 \to \everymathematics
 
 %D \macros

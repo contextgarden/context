@@ -143,16 +143,6 @@ nodes.tonut               = tonut
 
 -- helpers
 
-if not direct.getfam then -- LUATEXVERSION < 1.070
-
-    local getfield = direct.getfield
-    local setfield = direct.setfield
-
-    direct.getfam = function(n)   return getfield(n,"small_fam")   end
-    direct.setfam = function(n,f)        setfield(n,"small_fam",f) end
-
-end
-
 if not direct.getdirection then
 
     local getdir = direct.getdir

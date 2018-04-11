@@ -20,10 +20,22 @@ local sortedhash        = table.sortedhash
 local fallbacks         = { }
 mathematics.fallbacks   = fallbacks
 
+local helpers           = fonts.helpers
+local prependcommands   = helpers.prependcommands
+local charcommand       = helpers.commands.char
+local leftcommand       = helpers.commands.left
+local rightcommand      = helpers.commands.right
+local upcommand         = helpers.commands.up
+local downcommand       = helpers.commands.down
+local dummycommand      = helpers.commands.dummy
+local popcommand        = helpers.commands.pop
+local pushcommand       = helpers.commands.push
+
 local virtualcharacters = { }
 
-local identifiers       = fonts.hashes.identifiers
-local lastmathids       = fonts.hashes.lastmathids
+local hashes            = fonts.hashes
+local identifiers       = hashes.identifiers
+local lastmathids       = hashes.lastmathids
 
 -- we need a trick (todo): if we define scriptscript, script and text in
 -- that order we could use their id's .. i.e. we could always add a font
@@ -151,22 +163,21 @@ local function reference(index,char)
     if index then
         return { "slot", index, char }
     else
-        return { "char", char }
+        return charcommand[char]
     end
 end
 
-local function raised(data,down)
-    local replacement = data.replacement
-    local character   = data.scriptdata.characters[replacement]
+local function raised(data,replacement,down)
+    local character = data.scriptdata.characters[replacement]
     if character then
+        local size = data.size
         return {
             width    = character.width,
             height   = character.height,
             depth    = character.depth,
             commands = {
-                { "down", down and data.size/4 or -data.size/2 }, -- maybe exheight
+                down and downcommand[size/4] or upcommand[size/2],
                 reference(data.scriptindex,replacement)
-             -- { "slot", data.scriptindex or 0, char } -- hm, data.mathrelation.scriptindex
             }
         }
     end
@@ -177,33 +188,18 @@ end
 -- virtualcharacters[0x208A] = 0x2212
 -- virtualcharacters[0x208B] = 0x002B
 
-virtualcharacters[0x207A] = function(data)
-    data.replacement = 0x002B
-    return raised(data)
-end
-
-virtualcharacters[0x207B] = function(data)
-    data.replacement = 0x2212
-    return raised(data)
-end
-
-virtualcharacters[0x208A] = function(data)
-    data.replacement = 0x002B
-    return raised(data,true)
-end
-
-virtualcharacters[0x208B] = function(data)
-    data.replacement = 0x2212
-    return raised(data,true)
-end
+virtualcharacters[0x207A] = function(data) return raised(data,0x002B)      end
+virtualcharacters[0x207B] = function(data) return raised(data,0x2212)      end
+virtualcharacters[0x208A] = function(data) return raised(data,0x002B,true) end
+virtualcharacters[0x208B] = function(data) return raised(data,0x2212,true) end
 
 -- local function repeated(data,char,n,fraction)
 --     local character = data.characters[char]
 --     if character then
 --         local width = character.width
 --         local delta = width - character.italic -- width * fraction
---         local c = { "char", char }
---         local r = { "right", right }
+--         local c = charcommand[char]
+--         local r = rightcommand[right]
 --         local commands = { }
 --         for i=1,n-1 do
 --             width = width + delta
@@ -234,14 +230,9 @@ addextra(0xFE350) -- MATHEMATICAL DOUBLE ARROW LEFT END
 addextra(0xFE351) -- MATHEMATICAL DOUBLE ARROW MIDDLE PART
 addextra(0xFE352) -- MATHEMATICAL DOUBLE ARROW RIGHT END
 
-local push       = { "push" }
-local pop        = { "pop" }
-local leftarrow  = { "char", 0x2190 }
-local relbar     = { "char", 0x2212 }
-local rightarrow = { "char", 0x2192 }
--- local leftarrow  = { "slot", 0, 0x2190 }
--- local relbar     = { "slot", 0, 0x2212 }
--- local rightarrow = { "slot", 0, 0x2192 }
+local leftarrow  = charcommand[0x2190]
+local relbar     = charcommand[0x2212]
+local rightarrow = charcommand[0x2192]
 
 virtualcharacters[0xFE350] = function(data)
  -- return combined(data,0x2190,0x2212) -- leftarrow relbar
@@ -254,11 +245,11 @@ virtualcharacters[0xFE350] = function(data)
             height   = size,
             depth    = size,
             commands = {
-                push,
-                { "down", size/2 },
+                pushcommand,
+                downcommand[size/2],
                 leftarrow,
-                pop,
-                { "down", -size/2 },
+                popcommand,
+                upcommand[size/2],
                 relbar,
             }
         }
@@ -275,11 +266,11 @@ virtualcharacters[0xFE351] = function(data)
             height   = size,
             depth    = size,
             commands = {
-                push,
-                { "down", size/2 },
+                pushcommand,
+                downcommand[size/2],
                 relbar,
-                pop,
-                { "down", -size/2 },
+                popcommand,
+                upcommand[size/2],
                 relbar,
             }
         }
@@ -297,12 +288,12 @@ virtualcharacters[0xFE352] = function(data)
             height   = size,
             depth    = size,
             commands = {
-                push,
-                { "down", size/2 },
+                pushcommand,
+                downcommand[size/2],
                 relbar,
-                pop,
-                { "right", chartwo.width - charone.width },
-                { "down", -size/2 },
+                popcommand,
+                rightcommand[chartwo.width - charone.width],
+                upcommand[size/2],
                 rightarrow,
             }
         }
@@ -325,10 +316,11 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
             height = height or 0
             depth  = depth  or 0
         end
-        local correction = swap and { "down", (olddata.height or 0) - height } or { "down", olddata.height + (offset or 0)}
+        local correction = swap and
+            downcommand[(olddata.height or 0) - height]
+         or downcommand[olddata.height + (offset or 0)]
         local newdata = {
-            commands = { correction, { "slot", 1, oldchr } },
-         -- commands = { correction, { "slot", 0, oldchr } },
+            commands = { correction, charcommand[oldchr] },
             width    = olddata.width,
             height   = height,
             depth    = depth,
@@ -340,14 +332,12 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
             local oldnextdata = characters[nextglyph]
             if oldnextdata then
                 local newnextdata = {
-                    commands = { correction, { "slot", 1, nextglyph } },
-                 -- commands = { correction, { "slot", 0, nextglyph } },
+                    commands = { correction, charcommand[nextglyph] },
                     width    = oldnextdata.width,
                     height   = height,
                     depth    = depth,
                 }
---                 local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
-                local newnextglyph = addprivate(target,nil,newnextdata)
+                local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
                 newdata.next = newnextglyph
                 local nextnextglyph = oldnextdata.next
                 if nextnextglyph == nextglyph then
@@ -372,14 +362,12 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
                 local olddata = characters[oldglyph]
                 if olddata then
                     local newdata = {
-                        commands = { correction, { "slot", 1, oldglyph } },
-                     -- commands = { correction, { "slot", 0, oldglyph } },
+                        commands = { correction, charcommand[oldglyph] },
                         width    = olddata.width,
                         height   = height,
                         depth    = depth,
                     }
---                     hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
-                    hvi.glyph = addprivate(target,nil,newdata)
+                    hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
                 else
                     report_fallbacks("error in fallback: no valid horiz_variants, slot %X, index %i",oldglyph,i)
                 end
@@ -394,14 +382,14 @@ end
 virtualcharacters[0x203E] = function(data)
     local target = data.target
     local height, depth = 0, 0
---     local mathparameters = target.mathparameters
---     if mathparameters then
---         height = mathparameters.OverbarVerticalGap
---         depth  = mathparameters.UnderbarVerticalGap
---     else
+ -- local mathparameters = target.mathparameters
+ -- if mathparameters then
+ --     height = mathparameters.OverbarVerticalGap
+ --     depth  = mathparameters.UnderbarVerticalGap
+ -- else
         height = target.parameters.xheight/4
         depth  = height
---     end
+ -- end
     return accent_to_extensible(target,0x203E,data.original,0x0305,height,depth,nil,nil,0x203E)
 end
 
@@ -431,7 +419,7 @@ local function spacefraction(data,fraction)
     local width = fraction * data.target.parameters.space
     return {
         width    = width,
-        commands = { { "right", width } }
+        commands = { rightcommand[width] }
     }
 end
 
@@ -439,7 +427,7 @@ local function charfraction(data,char)
     local width = data.target.characters[char].width
     return {
         width    = width,
-        commands = { { "right", width } }
+        commands = { rightcommand[width] }
     }
 end
 
@@ -447,7 +435,7 @@ local function quadfraction(data,fraction)
     local width = fraction * data.target.parameters.quad
     return {
         width    = width,
-        commands = { { "right", width } }
+        commands = { rightcommand[width] }
     }
 end
 
@@ -527,9 +515,8 @@ local function smashed(data,unicode,optional)
         local shift  = oldchar.height - height
         local newchar = {
             commands = {
-                { "down", shift },
-                { "slot", 0, unicode },
---                 { "char", unicode },
+                downcommand[shift],
+                charcommand[unicode],
             },
             height = height,
             width  = oldchar.width,
@@ -607,11 +594,11 @@ local function actuarian(data)
         width     = basewidth + 4 * linewidth,
         unicode   = 0x20E7,
         commands  = {
-            { "right", 2 * linewidth },
-            { "down", - baseheight - 3 * linewidth },
+            rightcommand[2 * linewidth],
+            downcommand[- baseheight - 3 * linewidth],
             { "rule", linewidth, basewidth + 4 * linewidth },
-            { "right", -linewidth },
-            { "down", baseheight + 4 * linewidth },
+            leftcommand[linewidth],
+            downcommand[baseheight + 4 * linewidth],
             { "rule", baseheight + 5 * linewidth, linewidth },
         },
     }
@@ -629,11 +616,11 @@ local function equals(data,unicode,snippet,advance,n) -- mathpair needs them
         unicode   = unicode,
         width     = n*basechar.width + (n-1)*advance,
         commands  = {
-            { "char", snippet },
-            { "right", advance },
-            { "char", snippet },
-            n > 2 and { "right", advance } or nil,
-            n > 2 and { "char", snippet } or nil,
+            charcommand[snippet],
+            rightcommand[advance],
+            charcommand[snippet],
+            n > 2 and rightcommand[advance] or nil,
+            n > 2 and charcommand[snippet] or nil,
         },
     }
 end
@@ -657,11 +644,11 @@ virtualcharacters[0x2980] = function(data) return equals(data,0x2980,0x007C,-1/8
 --         height    = height,         -- we cheat (no time now)
 --         depth     = depth,          -- we cheat (no time now)
 --         commands  = {
---             { "down", - height/2 }, -- sort of works
---             { "char", 0x003D },
---             { "right", -width },
---             { "down", height },     -- sort of works
---             { "char", 0x003D },
+--             upcommand[height/2], -- sort of works
+--             charcommand[0x003D],
+--             leftcommand[width],
+--             downcommand[height],     -- sort of works
+--             charcommand[0x003D],
 --         },
 --     }
 -- end

@@ -22,6 +22,7 @@ local helpers            = fonts.helpers
 local prependcommands    = helpers.prependcommands
 local charcommand        = helpers.commands.char
 local rightcommand       = helpers.commands.right
+local upcommand          = helpers.commands.up
 local dummycommand       = helpers.commands.dummy
 
 ----- constructors       = fonts.constructors
@@ -29,16 +30,18 @@ local dummycommand       = helpers.commands.dummy
 ----- setmathparameter   = constructors.setmathparameter
 
 local report_effect      = logs.reporter("fonts","effect")
-local report_extend      = logs.reporter("fonts","extend")
 local report_slant       = logs.reporter("fonts","slant")
+local report_extend      = logs.reporter("fonts","extend")
+local report_squeeze     = logs.reporter("fonts","squeeze")
 
 local trace              = false
 
 trackers.register("fonts.effect", function(v) trace = v end)
 trackers.register("fonts.slant",  function(v) trace = v end)
 trackers.register("fonts.extend", function(v) trace = v end)
+trackers.register("fonts.squeeze",function(v) trace = v end)
 
-local function initialize(tfmdata,value)
+local function initializeslant(tfmdata,value)
     value = tonumber(value)
     if not value then
         value =  0
@@ -57,15 +60,15 @@ local specification = {
     name        = "slant",
     description = "slant glyphs",
     initializers = {
-        base = initialize,
-        node = initialize,
+        base = initializeslant,
+        node = initializeslant,
     }
 }
 
 registerotffeature(specification)
 registerafmfeature(specification)
 
-local function initialize(tfmdata,value)
+local function initializeextend(tfmdata,value)
     value = tonumber(value)
     if not value then
         value =  0
@@ -75,7 +78,7 @@ local function initialize(tfmdata,value)
         value = -10
     end
     if trace then
-        report_slant("applying %0.3f",value)
+        report_extend("applying %0.3f",value)
     end
     tfmdata.parameters.extendfactor = value
 end
@@ -84,8 +87,35 @@ local specification = {
     name        = "extend",
     description = "scale glyphs horizontally",
     initializers = {
-        base = initialize,
-        node = initialize,
+        base = initializeextend,
+        node = initializeextend,
+    }
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)
+
+local function initializesqueeze(tfmdata,value)
+    value = tonumber(value)
+    if not value then
+        value =  0
+    elseif value >  10 then
+        value =  10
+    elseif value < -10 then
+        value = -10
+    end
+    if trace then
+        report_squeeze("applying %0.3f",value)
+    end
+    tfmdata.parameters.squeezefactor = value
+end
+
+local specification = {
+    name        = "squeeze",
+    description = "scale glyphs vertically",
+    initializers = {
+        base = initializesqueeze,
+        node = initializesqueeze,
     }
 }
 
@@ -120,13 +150,36 @@ local function initializeeffect(tfmdata,value)
         local properties = tfmdata.properties
         parameters.mode  = mode
         parameters.width = width * 1000
-        local factor  = tonumber(spec.factor) or 0
+        if spec.auto then
+            local squeeze = 1 - width/20
+            local average = (1 - squeeze) * width * 100
+            spec.squeeze  = squeeze
+            spec.extend   = 1 + width/2
+            spec.wdelta   = average
+            spec.hdelta   = average/2
+            spec.ddelta   = average/2
+            spec.vshift   = average/2
+        end
+        local factor  = tonumber(spec.factor)  or 0
         local hfactor = tonumber(spec.hfactor) or factor
         local vfactor = tonumber(spec.vfactor) or factor
-        local delta   = tonumber(spec.delta) or 1
-        local wdelta  = tonumber(spec.wdelta) or delta
-        local hdelta  = tonumber(spec.hdelta) or delta
-        local ddelta  = tonumber(spec.ddelta) or hdelta
+        local delta   = tonumber(spec.delta)   or 1
+        local wdelta  = tonumber(spec.wdelta)  or delta
+        local hdelta  = tonumber(spec.hdelta)  or delta
+        local ddelta  = tonumber(spec.ddelta)  or hdelta
+        local vshift  = tonumber(spec.vshift)  or 0
+        local slant   = spec.slant
+        local extend  = spec.extend
+        local squeeze = spec.squeeze
+        if slant then
+            initializeslant(tfmdata,slant)
+        end
+        if extend then
+            initializeextend(tfmdata,extend)
+        end
+        if squeeze then
+            initializesqueeze(tfmdata,squeeze)
+        end
         properties.effect = {
             effect  = effect,
             width   = width,
@@ -136,6 +189,10 @@ local function initializeeffect(tfmdata,value)
             wdelta  = wdelta,
             hdelta  = hdelta,
             ddelta  = ddelta,
+            vshift  = vshift,
+            slant   = tfmdata.parameters.slantfactor,
+            extend  = tfmdata.parameters.extendfactor,
+            squeeze = tfmdata.parameters.squeezefactor,
         }
     end
 end
@@ -147,38 +204,39 @@ local rules = {
     "UnderbarRuleThickness",
 }
 
-local function setmathparameters(tfmdata,characters,mathparameters,delta)
-    if delta > 0 then
+-- local commands = char.commands
+-- if commands then
+--     local command = commands[1]
+--     if command and command[1] == "right" then
+--         commands[1] = rightcommand[command[2]-snap]
+--     end
+-- end
+
+local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze)
+    if delta ~= 0 then
         for i=1,#rules do
             local name  = rules[i]
             local value = mathparameters[name]
             if value then
-                mathparameters[name] = value + delta
+               mathparameters[name] = (squeeze or 1) * (value + dx)
             end
         end
     end
 end
 
-local function setmathcharacters(tfmdata,characters,mathparameters,wdelta,hdelta,ddelta)
+local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
 
-    local function wdpatch(char,wsnap)
+    local function wdpatch(char)
         if wsnap ~= 0 then
-     --     local commands = char.commands
-     --     if commands then
-     --         local command = commands[1]
-     --         if command and command[1] == "right" then
-     --             commands[1] = rightcommand[command[2]-snap]
-     --         end
-     --     end
-            char.width = char.width - wsnap
+            char.width  = char.width + wdelta/2
         end
     end
 
-    local function htpatch(char,hsnap)
+    local function htpatch(char)
         if hsnap ~= 0 then
             local height = char.height
             if height then
-                char.height = height - hsnap
+                char.height = char.height + 2 * dy
             end
         end
     end
@@ -186,16 +244,14 @@ local function setmathcharacters(tfmdata,characters,mathparameters,wdelta,hdelta
     local character = characters[0x221A]
 
     if character then
-        local char  = character
-        local next  = character.next
-        local hsnap = hdelta/2
-        local wsnap = wdelta/2
-        wdpatch(char,wsnap)
-        htpatch(char,hsnap)
+        local char = character
+        local next = character.next
+        wdpatch(char)
+        htpatch(char)
         while next do
             char = characters[next]
-            wdpatch(char,wsnap)
-            htpatch(char,hsnap)
+            wdpatch(char)
+            htpatch(char)
             next = char.next
         end
         if char then
@@ -203,7 +259,7 @@ local function setmathcharacters(tfmdata,characters,mathparameters,wdelta,hdelta
             if v then
                 local top = v[#v]
                 if top then
-                    htpatch(characters[top.glyph],hsnap)
+                    htpatch(characters[top.glyph])
                 end
             end
         end
@@ -216,14 +272,22 @@ local function manipulateeffect(tfmdata)
         local characters     = tfmdata.characters
         local parameters     = tfmdata.parameters
         local mathparameters = tfmdata.mathparameters
-        local multiplier = effect.width * 100
-        local wdelta = effect.wdelta * parameters.hfactor * multiplier
-        local hdelta = effect.hdelta * parameters.vfactor * multiplier
-        local ddelta = effect.ddelta * parameters.vfactor * multiplier
-        local hshift = wdelta -- / 2
-        local factor  = (1 + effect.factor)  * parameters.factor
-        local hfactor = (1 + effect.hfactor) * parameters.hfactor
-        local vfactor = (1 + effect.vfactor) * parameters.vfactor
+        local multiplier     = effect.width * 100
+        local factor         = parameters.factor
+        local hfactor        = parameters.hfactor
+        local vfactor        = parameters.vfactor
+        local wdelta         = effect.wdelta * hfactor * multiplier
+        local hdelta         = effect.hdelta * vfactor * multiplier
+        local ddelta         = effect.ddelta * vfactor * multiplier
+        local vshift         = effect.vshift * vfactor * multiplier
+        local squeeze        = effect.squeeze
+        local hshift         = wdelta -- / 2
+        local dx             = multiplier * vfactor
+        local dy             = vshift
+        local factor         = (1 + effect.factor)  * factor
+        local hfactor        = (1 + effect.hfactor) * hfactor
+        local vfactor        = (1 + effect.vfactor) * vfactor
+        local vshift         = vshift ~= 0 and upcommand[vshift] or false
         for unicode, character in next, characters do
             local oldwidth  = character.width
             local oldheight = character.height
@@ -232,15 +296,30 @@ local function manipulateeffect(tfmdata)
                 character.width = oldwidth + wdelta
                 local commands = character.commands
                 local hshift   = rightcommand[hshift]
-                if commands then
-                    prependcommands ( commands,
-                        hshift
-                    )
+                if vshift then
+                    if commands then
+                        prependcommands ( commands,
+                            hshift,
+                            vshift
+                        )
+                    else
+                        character.commands = {
+                            hshift,
+                            vshift,
+                            charcommand[unicode]
+                        }
+                    end
                 else
-                    character.commands = {
-                        hshift,
-                        charcommand[unicode],
-                    }
+                    if commands then
+                        prependcommands ( commands,
+                            hshift
+                        )
+                    else
+                        character.commands = {
+                            hshift,
+                            charcommand[unicode]
+                        }
+                    end
                 end
             end
             if oldheight and oldheight > 0 then
@@ -251,8 +330,8 @@ local function manipulateeffect(tfmdata)
             end
         end
         if mathparameters then
-            setmathparameters(tfmdata,characters,mathparameters,hdelta)
-            setmathcharacters(tfmdata,characters,mathparameters,wdelta,hdelta,ddelta)
+            setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze)
+            setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze,wdelta,hdelta,ddelta)
         end
         parameters.factor  = factor
         parameters.hfactor = hfactor

@@ -13,14 +13,14 @@
 
 \starttypescriptcollection[modernlatin]
 
-    \doifunknownfontfeature {\definefontfeature[lm-serif-regular][effect={width=0.15,delta=1.00}]}
-    \doifunknownfontfeature {\definefontfeature[lm-serif-bold]   [effect={width=0.30,delta=1.00}]}
-    \doifunknownfontfeature {\definefontfeature[lm-sans-regular] [effect={width=0.10,delta=1.00}]}
-    \doifunknownfontfeature {\definefontfeature[lm-sans-bold]    [effect={width=0.20,delta=1.00}]}
-    \doifunknownfontfeature {\definefontfeature[lm-mono-regular] [effect={width=0.20,delta=1.00}]}
-    \doifunknownfontfeature {\definefontfeature[lm-mono-bold]    [effect={width=0.30,delta=1.00}]}
-    \doifunknownfontfeature {\definefontfeature[lm-math-regular] [effect={width=0.15,delta=1.00}]}
-    \doifunknownfontfeature {\definefontfeature[lm-math-bold]    [effect={width=0.40,delta=1.00}]}
+    \doifunknownfontfeature {lm-serif-regular} {\definefontfeature[lm-serif-regular][boldened-15]}
+    \doifunknownfontfeature {lm-serif-bold}    {\definefontfeature[lm-serif-bold]   [boldened-30]}
+    \doifunknownfontfeature {lm-sans-regular}  {\definefontfeature[lm-sans-regular] [boldened-10]}
+    \doifunknownfontfeature {lm-sans-bold}     {\definefontfeature[lm-sans-bold]    [boldened-20]}
+    \doifunknownfontfeature {lm-mono-regular}  {\definefontfeature[lm-mono-regular] [boldened-20]}
+    \doifunknownfontfeature {lm-mono-bold}     {\definefontfeature[lm-mono-bold]    [boldened-30]}
+    \doifunknownfontfeature {lm-math-regular}  {\definefontfeature[lm-math-regular] [boldened-15]}
+    \doifunknownfontfeature {lm-math-bold}     {\definefontfeature[lm-math-bold]    [boldened-30]}
 
     \starttypescript [\s!serif] [modern-latin]
       % \loadfontgoodies[lm]

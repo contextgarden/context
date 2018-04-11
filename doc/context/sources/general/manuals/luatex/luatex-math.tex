@@ -637,7 +637,7 @@ example.
 This kind of parameters relate to the fact that italic correction in \OPENTYPE\
 math is bound to fuzzy rules. So, control is the solution.
 
-\section{Script boxes}
+\section{Script and kerning}
 
 If you want typeset text in math macro packages often provide something \type
 {\text} which obeys the script sizes. As the definition can be anything there is
@@ -685,6 +685,9 @@ italics, while other fonts can lack kerns.
     \NC cambria  \NC \Show{1}{0}{cambria}  \NC\Show{1}{1}{cambria}  \NC \Show{2}{1}{cambria}  \NC \Show{2}{2}{cambria}  \NC \Show{3}{3}{cambria}  \NC \NR
     \NC dejavu   \NC \Show{1}{0}{dejavu}   \NC\Show{1}{1}{dejavu}   \NC \Show{2}{1}{dejavu}   \NC \Show{2}{2}{dejavu}   \NC \Show{3}{3}{dejavu}   \NC \NR
 \stoptabulate
+
+Kerning between a character subscript is controlled by \type {\mathscriptcharmode}
+which also defaults to~1.
 
 \section{Unscaled fences}
 

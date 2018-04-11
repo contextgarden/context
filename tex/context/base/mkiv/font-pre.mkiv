@@ -452,9 +452,37 @@
   [slanted]
   [slant=.2]
 
+% \definefontfeature
+%   [boldened]
+%   [extend=1.2]
+
+%D Neat:
+
+% By eye:
+%
+% \definefontfeature[boldened-10][effect={width=0.10,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.125,extend=1.025,squeeze=0.99250}]
+% \definefontfeature[boldened-15][effect={width=0.15,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.250,extend=1.050,squeeze=0.98750}]
+% \definefontfeature[boldened-20][effect={width=0.20,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.375,extend=1.075,squeeze=0.98125}]
+% \definefontfeature[boldened-30][effect={width=0.30,delta=1.0,hdelta=0.500,ddelta=0.150,vshift=0.500,extend=1.100,squeeze=0.97500}]
+%
+% By calculation:
+%
+% \definefontfeature[boldened-10][effect={width=0.10,delta=1.0,hdelta=0.02500,ddelta=0.02500,vshift=0.02500,extend=1.050,squeeze=0.99500}]
+% \definefontfeature[boldened-15][effect={width=0.15,delta=1.0,hdelta=0.05625,ddelta=0.05625,vshift=0.05625,extend=1.075,squeeze=0.99250}]
+% \definefontfeature[boldened-20][effect={width=0.20,delta=1.0,hdelta=0.10000,ddelta=0.10000,vshift=0.10000,extend=1.100,squeeze=0.99000}]
+% \definefontfeature[boldened-30][effect={width=0.30,delta=1.0,hdelta=0.22500,ddelta=0.22500,vshift=0.22500,extend=1.150,squeeze=0.98500}]
+%
+% So we can do this:
+
+\definefontfeature[boldened-10][effect={width=0.10,auto=yes}]
+\definefontfeature[boldened-15][effect={width=0.15,auto=yes}]
+\definefontfeature[boldened-20][effect={width=0.20,auto=yes}]
+\definefontfeature[boldened-25][effect={width=0.25,auto=yes}]
+\definefontfeature[boldened-30][effect={width=0.30,auto=yes}]
+
 \definefontfeature
   [boldened]
-  [extend=1.2]
+  [boldened-30]
 
 %D Emoji:
 

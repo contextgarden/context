@@ -101,6 +101,7 @@ local setfam               = nuts.setfam
 local setsubtype           = nuts.setsubtype
 local setattr              = nuts.setattr
 local setattrlist          = nuts.setattrlist
+local setwidth             = nuts.setwidth
 
 local getfield             = nuts.getfield
 local getnext              = nuts.getnext
@@ -211,6 +212,7 @@ local right_fence_code     = fencecodes.right
 -- local sf = setfield local st = setmetatableindex("number") setfield = function(n,f,v) st[f] = st[f] + 1        sf(n,f,v) end mathematics.SETFIELD = st
 
 local function process(start,what,n,parent)
+
     if n then
         n = n + 1
     else
@@ -456,6 +458,34 @@ do
         "pseudobold",
     }
 
+    families[math_fraction] = function(pointer,what,n,parent)
+        local a = getattr(pointer,a_mathfamily)
+        if a and a >= 0 then
+            if a > 0 then
+                setattr(pointer,a_mathfamily,0)
+                if a > 5 then
+                    a = a - 3
+                end
+            end
+            setfam(pointer,a)
+        end
+        processnested(pointer,families,n+1)
+    end
+
+    families[math_noad] = function(pointer,what,n,parent)
+        local a = getattr(pointer,a_mathfamily)
+        if a and a >= 0 then
+            if a > 0 then
+                setattr(pointer,a_mathfamily,0)
+                if a > 5 then
+                    a = a - 3
+                end
+            end
+            setfam(pointer,a)
+        end
+        processnested(pointer,families,n+1)
+    end
+
     families[math_char] = function(pointer)
         if getfam(pointer) == 0 then
             local a = getattr(pointer,a_mathfamily)
@@ -501,7 +531,6 @@ do
             end
         end
     end
-
     families[math_delim] = function(pointer)
         if getfield(pointer,"small_fam") == 0 then
             local a = getattr(pointer,a_mathfamily)
