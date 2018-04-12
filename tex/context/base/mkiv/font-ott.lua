@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ["font-ott"] = {
 }
 
 local type, next, tonumber, tostring, rawget, rawset = type, next, tonumber, tostring, rawget, rawset
-local gsub, lower, format, match = string.gsub, string.lower, string.format, string.match
+local gsub, lower, format, match, gmatch, find = string.gsub, string.lower, string.format, string.match, string.gmatch, string.find
+local sequenced = table.sequenced
 local is_boolean = string.is_boolean
 
 local setmetatableindex    = table.setmetatableindex
@@ -1098,9 +1099,9 @@ function otffeatures.normalize(features)
                 h.script = rawget(verbosescripts,v) or (scripts[v] and v) or "dflt" -- auto adds
             elseif k == "axis" then
                 h[k] = normalizedaxis(value)
-if not callbacks.supported.glyph_stream_provider then
-    h.variableshapes = true -- for the moment
-end
+                if not callbacks.supported.glyph_stream_provider then
+                    h.variableshapes = true -- for the moment
+                end
             else
                 local uk = usedfeatures[key]
                 local uv = uk[value]
@@ -1113,10 +1114,23 @@ end
                     elseif type(value) == "string" then
                         local b = is_boolean(value)
                         if type(b) == "nil" then
+                         -- we do this elsewhere
+                         --
+                         -- if find(value,"=") then
+                         --     local t = { }
+                         --     for k, v in gmatch(value,"([^%s,=]+)%s*=%s*([^%s,=]+)") do
+                         --         t[k] = tonumber(v) or v
+                         --     end
+                         --     if next(t) then
+                         --         value = sequenced(t,",")
+                         --     end
+                         -- end
                             uv = lower(value)
                         else
                             uv = b
                         end
+                    elseif type(value) == "table" then
+                        uv = sequenced(t,",")
                     else
                         uv = value
                     end

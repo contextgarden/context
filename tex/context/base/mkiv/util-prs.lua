@@ -31,6 +31,7 @@ utilities.parsers.hashes = hashes
 local digit       = R("09")
 local space       = P(' ')
 local equal       = P("=")
+local colon       = P(":")
 local comma       = P(",")
 local lbrace      = P("{")
 local rbrace      = P("}")
@@ -78,6 +79,7 @@ local value     = lbrace * C((nobrace + nestedbraces)^0) * rbrace
 local key       = C((1-equal-comma)^1)
 local pattern_a = (space+comma)^0 * (key * equal * value + key * C(""))
 local pattern_c = (space+comma)^0 * (key * equal * value)
+local pattern_d = (space+comma)^0 * (key * (equal+colon) * value + key * C(""))
 
 local key       = C((1-space-equal-comma)^1)
 local pattern_b = spaces * comma^0 * spaces * (key * ((spaces * equal * spaces * value) + C("")))
@@ -93,10 +95,12 @@ end
 local pattern_a_s = (pattern_a/set)^1
 local pattern_b_s = (pattern_b/set)^1
 local pattern_c_s = (pattern_c/set)^1
+local pattern_d_s = (pattern_d/set)^1
 
 patterns.settings_to_hash_a = pattern_a_s
 patterns.settings_to_hash_b = pattern_b_s
 patterns.settings_to_hash_c = pattern_c_s
+patterns.settings_to_hash_d = pattern_d_s
 
 function parsers.make_settings_to_hash_pattern(set,how)
     if how == "strict" then
@@ -123,6 +127,18 @@ function parsers.settings_to_hash(str,existing)
     else
         hash = existing or { }
         lpegmatch(pattern_a_s,str)
+        return hash
+    end
+end
+
+function parsers.settings_to_hash_colon_too(str)
+    if not str or str == "" then
+        return { }
+    elseif type(str) == "table" then
+        return str
+    else
+        hash = { }
+        lpegmatch(pattern_d_s,str)
         return hash
     end
 end

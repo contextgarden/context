@@ -44488,6 +44488,8 @@
   <cd:command file="trc-vis.mkiv" level="document" name="showglyphs"/>
   <cd:command file="trc-vis.mkiv" level="document" name="showfontkerns"/>
   <cd:command file="trc-vis.mkiv" level="document" name="showfontitalics"/>
+  <cd:command file="trc-vis.mkiv" level="document" name="showglyphdata"/>
+  <cd:command file="trc-vis.mkiv" level="document" name="showfontexpansion"/>
   <cd:command file="trc-vis.mkiv" level="system" name="setvisualizerfont">
    <cd:arguments>
     <cd:keywords optional="yes">

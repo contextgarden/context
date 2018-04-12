@@ -68,7 +68,7 @@ local reversed = table.reversed
 local sort = table.sort
 local insert = table.insert
 local round = math.round
-local lpegmatch = lpeg.match
+local settings_to_hash_colon_too = table.settings_to_hash_colon_too
 
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
@@ -300,30 +300,16 @@ end)
 
 -- wght:400,wdth:100,ital:1
 
--- local names = table.setmetatableindex ( {
---     weight = "wght",
---     width  = "wdth",
---     italic = "ital",
--- }, "self")
-
--- todo: spaces in name but not before :
-
-local pattern = lpeg.Cf (
-    lpeg.Ct("") *
-    lpeg.Cg (
-      --(lpeg.R("az")^1/names) * lpeg.S(" :") *
-        lpeg.C((lpeg.R("az","09")+lpeg.P(" "))^1) * lpeg.S(" :=") *
-        (lpeg.patterns.number/tonumber) * lpeg.S(" ,")^0
-    )^1, rawset
-)
+local function axistofactors(str)
+    local t = settings_to_hash_colon_too(str)
+    for k, v in next, t do
+        t[k] = tonumber(v) or v -- this also normalizes numbers itself
+    end
+    return t
+end
 
 local hash = table.setmetatableindex(function(t,k)
-    local v = lpegmatch(pattern,k)
-    local t = { }
-    for k, v in sortedhash(v) do
-        t[#t+1] = k .. "=" .. v
-    end
-    v = concat(t,",")
+    local v = sequenced(axistofactors(k),",")
     t[k] = v
     return v
 end)
@@ -341,7 +327,7 @@ function helpers.normalizedaxis(str)
 end
 
 local function axistofactors(str)
-    return lpegmatch(pattern,str)
+    return settings_to_hash_colon_too(str)
 end
 
 -- contradicting spec ... (signs) so i'll check it and fix it once we have

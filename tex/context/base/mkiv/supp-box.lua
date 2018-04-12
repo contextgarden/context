@@ -55,6 +55,7 @@ local setdisc         = nuts.setdisc
 local setwidth        = nuts.setwidth
 local setheight       = nuts.setheight
 local setdepth        = nuts.setdepth
+local setshift        = nuts.setshift
 
 local flush_node      = nuts.flush_node
 local flush_list      = nuts.flush_list
@@ -599,6 +600,12 @@ do
             -- list dimensions returns 3 value but we take the first
             context(head and list_dimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
         end
+    }
+
+    interfaces.implement {
+        name      = "shiftbox",
+        arguments = { "integer", "dimension" },
+        actions   = function(n,d) setshift(getbox(n),d) end,
     }
 
 end

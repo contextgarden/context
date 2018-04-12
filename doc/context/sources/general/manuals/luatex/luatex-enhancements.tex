@@ -623,25 +623,11 @@ When set to a non|-|zero value the following command will not issue an error:
 
 \section {Math}
 
-\subsection{Extensions}
-
-We will cover math in its own chapter because not only the font subsystem and
-spacing model have been enhanced (thereby introducing many new primitives) but
-also because some more control has been added to existing functionality.
-
-\subsection{\type {\matheqnogapstep}}
-
-By default \TEX\ will add one quad between the equation and the number. This is
-hard coded. A new primitive can control this:
-
-\startsyntax
-\matheqnogapstep = 1000
-\stopsyntax
-
-Because a math quad from the math text font is used instead of a dimension, we
-use a step to control the size. A value of zero will suppress the gap. The step
-is divided by 1000 which is the usual way to mimmick floating point factors in
-\TEX.
+We will cover math extensions in its own chapter because not only the font
+subsystem and spacing model have been enhanced (thereby introducing many new
+primitives) but also because some more control has been added to existing
+functionality. Much of this relates to the differences approaches of traditional
+\TEX\ fonts and \OPENTYPE\ math.
 
 \section{Fonts}
 
@@ -776,10 +762,8 @@ a relaxed equivalent when there is no such name. It is equivalent to
 \stoptyping
 
 The advantage is that it saves a lookup (don't expect much speedup) but more
-important is that it avoids using the \type {\if}.
-
-The \type {\lastnamedcs} is one that should be used with care. The above
-example could be written as:
+important is that it avoids using the \type {\if} test. The \type {\lastnamedcs}
+is one that should be used with care. The above example could be written as:
 
 \starttyping
 \ifcsname foo\endcsname
@@ -803,8 +787,7 @@ immediate command.
 
 \subsection{\type{\letcharcode}}
 
-This primitive is still experimental but can be used to assign a meaning to an active
-character, as in:
+This primitive can be used to assign a meaning to an active character, as in:
 
 \starttyping
 \def\foo{bar} \letcharcode123=\foo
@@ -817,13 +800,13 @@ This can be a bit nicer that using the uppercase tricks (using the property of
 
 \subsection{\type {\outputbox}}
 
-\startsyntax
-\outputbox = 65535
-\stopsyntax
-
-This new integer parameter allows you to alter the number of the box that will be
+This integer parameter allows you to alter the number of the box that will be
 used to store the page sent to the output routine. Its default value is 255, and
 the acceptable range is from 0 to 65535.
+
+\startsyntax
+\outputbox = 12345
+\stopsyntax
 
 \subsection{\type {\vpack}, \type {\hpack} and \type {\tpack}}
 
@@ -916,7 +899,8 @@ This has the same effect but the subtype is now~1 and the value~123 is stored.
 The traditional ligature builder still sees this as a cancel boundary directive
 but at the \LUA\ end you can implement different behaviour. The added benefit of
 passing this value is a side effect of the generalization. The subtypes~2 and~3
-are used to control protrusion and word boundaries in hyphenation.
+are used to control protrusion and word boundaries in hyphenation and have
+related primitives.
 
 \section{Control and debugging}
 
@@ -925,7 +909,7 @@ are used to control protrusion and word boundaries in hyphenation.
 If \type {\tracingonline} is larger than~2, the node list display will also print
 the node number of the nodes.
 
-\subsection{\type {\outputmode} and \type {\draftmode}}
+\subsection{\type {\outputmode}}
 
 The \type {\outputmode} variable tells \LUATEX\ what it has to produce:
 
@@ -934,8 +918,10 @@ The \type {\outputmode} variable tells \LUATEX\ what it has to produce:
 \NC \type {1} \NC \PDF\ code \NC \NR
 \stoptabulate
 
+\subsection{\type {\draftmode}}
+
 The value of the \type {\draftmode} counter signals the backend if it should
-output less. The \PDF\ backend accepts a value of~$1$, while the \DVI\ backend
+output less. The \PDF\ backend accepts a value of~1, while the \DVI\ backend
 ignores the value.
 
 \section {Files}

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/11/18 17:27:18
+-- merge date  : 04/12/18 14:30:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -2008,7 +2008,7 @@ function table.reverse(t)
     return t
   end
 end
-function table.sequenced(t,sep,simple) 
+local function sequenced(t,sep,simple)
   if not t then
     return ""
   end
@@ -2027,16 +2027,25 @@ function table.sequenced(t,sep,simple)
           s[n]=k
         elseif v and v~="" then
           n=n+1
-          s[n]=k.."="..tostring(v)
+          if type(v)=="table" then
+            s[n]=k.."={"..sequenced(v,sep,simple).."}"
+          else
+            s[n]=k.."="..tostring(v)
+          end
         end
       else
         n=n+1
-        s[n]=k.."="..tostring(v)
+        if type(v)=="table" then
+          s[n]=k.."={"..sequenced(v,sep,simple).."}"
+        else
+          s[n]=k.."="..tostring(v)
+        end
       end
     end
   end
   return concat(s,sep or " | ")
 end
+table.sequenced=sequenced
 function table.print(t,...)
   if type(t)~="table" then
     print(tostring(t))
@@ -4905,7 +4914,14 @@ utilities.parsers=utilities.parsers or {
   end,
   settings_to_hash=function(s)
     local t={}
-    for k,v in gmatch(s,"([^%s,]+)=([^%s,]+)") do
+    for k,v in gmatch(s,"([^%s,=]+)=([^%s,]+)") do
+      t[k]=v
+    end
+    return t
+  end,
+  settings_to_hash_colon_too=function(s)
+    local t={}
+    for k,v in gmatch(s,"([^%s,=:]+)[=:]([^%s,]+)") do
       t[k]=v
     end
     return t
@@ -5115,6 +5131,15 @@ function table.setmetatableindex(t,f)
     m.__index=f
   else
     setmetatable(t,{ __index=f })
+  end
+  return t
+end
+function table.makeweak(t)
+  local m=getmetatable(t)
+  if m then
+    m.__mode="v"
+  else
+    setmetatable(t,{ __mode="v" })
   end
   return t
 end
@@ -9830,7 +9855,17 @@ hashmethods.normal=function(list)
     elseif k=="number" or k=="features" then
     else
       n=n+1
-      s[n]=k..'='..tostring(v)
+      if type(v)=="table" then
+        local t={}
+        local m=0
+        for k,v in next,v do
+          m=m+1
+          t[m]=k..'='..tostring(v)
+        end
+        s[n]=k..'={'..concat(t,",").."}"
+      else
+        s[n]=k..'='..tostring(v)
+      end
     end
   end
   if n>0 then
@@ -10567,26 +10602,34 @@ local function tounicode16sequence(unicodes)
   end
   return concat(t)
 end
-local function tounicode(unicode)
+local unknown=f_single(0xFFFD)
+local hash=table.setmetatableindex(function(t,k)
+  local v
+  if k>=0x00E000 and k<=0x00F8FF then
+    v=unknown
+  elseif k>=0x0F0000 and k<=0x0FFFFF then
+    v=unknown
+  elseif k>=0x100000 and k<=0x10FFFF then
+    v=unknown
+  elseif k<0xD7FF or (k>0xDFFF and k<=0xFFFF) then
+    v=f_single(k)
+  else
+    v=k-0x10000
+    v=f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
+  end
+  t[k]=v
+  return v
+end)
+table.makeweak(hash)
+local function tounicode(unicode,name)
   if type(unicode)=="table" then
     local t={}
     for l=1,#unicode do
-      local u=unicode[l]
-      if u<0xD7FF or (u>0xDFFF and u<=0xFFFF) then
-        t[l]=f_single(u)
-      else
-        u=u-0x10000
-        t[l]=f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
-      end
+      t[l]=hash[unicode[l]]
     end
     return concat(t)
   else
-    if unicode<0xD7FF or (unicode>0xDFFF and unicode<=0xFFFF) then
-      return f_single(unicode)
-    else
-      unicode=unicode-0x10000
-      return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
-    end
+    return hash[unicode]
   end
 end
 local function fromunicode16(str)
@@ -10967,6 +11010,7 @@ local insert=table.insert
 local fonts=fonts
 local helpers=fonts.helpers
 local setmetatableindex=table.setmetatableindex
+local makeweak=table.makeweak
 local push={ "push" }
 local pop={ "pop" }
 local dummy={ "comment" }
@@ -15896,7 +15940,7 @@ local reversed=table.reversed
 local sort=table.sort
 local insert=table.insert
 local round=math.round
-local lpegmatch=lpeg.match
+local settings_to_hash_colon_too=table.settings_to_hash_colon_too
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local sortedkeys=table.sortedkeys
@@ -16036,18 +16080,15 @@ local lookupflags=setmetatableindex(function(t,k)
   t[k]=v
   return v
 end)
-local pattern=lpeg.Cf (
-  lpeg.Ct("")*lpeg.Cg (
-    lpeg.C((lpeg.R("az","09")+lpeg.P(" "))^1)*lpeg.S(" :=")*(lpeg.patterns.number/tonumber)*lpeg.S(" ,")^0
-  )^1,rawset
-)
-local hash=table.setmetatableindex(function(t,k)
-  local v=lpegmatch(pattern,k)
-  local t={}
-  for k,v in sortedhash(v) do
-    t[#t+1]=k.."="..v
+local function axistofactors(str)
+  local t=settings_to_hash_colon_too(str)
+  for k,v in next,t do
+    t[k]=tonumber(v) or v 
   end
-  v=concat(t,",")
+  return t
+end
+local hash=table.setmetatableindex(function(t,k)
+  local v=sequenced(axistofactors(k),",")
   t[k]=v
   return v
 end)
@@ -16060,7 +16101,7 @@ function helpers.normalizedaxis(str)
   return hash[str] or str
 end
 local function axistofactors(str)
-  return lpegmatch(pattern,str)
+  return settings_to_hash_colon_too(str)
 end
 local function getaxisscale(segments,minimum,default,maximum,user)
   if not minimum or not default or not maximum then
@@ -33788,11 +33829,12 @@ if not modules then modules={} end modules ['font-imp-effects']={
   license="see context related readme files"
 }
 local next,type,tonumber=next,type,tonumber
+local is_boolean=string.is_boolean
 local fonts=fonts
 local handlers=fonts.handlers
 local registerotffeature=handlers.otf.features.register
 local registerafmfeature=handlers.afm.features.register
-local settings_to_hash=utilities.parsers.settings_to_hash
+local settings_to_hash=utilities.parsers.settings_to_hash_colon_too
 local helpers=fonts.helpers
 local prependcommands=helpers.prependcommands
 local charcommand=helpers.commands.char
@@ -33907,7 +33949,7 @@ local function initializeeffect(tfmdata,value)
     local properties=tfmdata.properties
     parameters.mode=mode
     parameters.width=width*1000
-    if spec.auto then
+    if is_boolean(spec.auto)==true then
       local squeeze=1-width/20
       local average=(1-squeeze)*width*100
       spec.squeeze=squeeze

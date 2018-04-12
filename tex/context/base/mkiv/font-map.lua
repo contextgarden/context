@@ -168,54 +168,83 @@ local function tounicode16sequence(unicodes)
     return concat(t)
 end
 
-local function tounicode(unicode)
-    if type(unicode) == "table" then
-        local t = { }
-        for l=1,#unicode do
-            local u = unicode[l]
-            if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
-                t[l] = f_single(u)
-            else
-                u = u - 0x10000
-                t[l] = f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
-            end
-        end
-        return concat(t)
-    else
-        if unicode < 0xD7FF or (unicode > 0xDFFF and unicode <= 0xFFFF) then
-            return f_single(unicode)
-        else
-            unicode = unicode - 0x10000
-            return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
-        end
-    end
-end
-
--- no real gain on runs
-
--- local hash = table.setmetatableindex(function(t,u)
---     local v
---     if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
---         v = f_single(u)
---     else
---         u = u - 0x10000
---         v = f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
---     end
---     t[u] = v
---     return v
--- end)
---
--- local function tounicode(unicode,name)
+-- local function tounicode(unicode)
 --     if type(unicode) == "table" then
 --         local t = { }
 --         for l=1,#unicode do
---             t[l] = hash[unicode[l]]
+--             local u = unicode[l]
+--             if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
+--                 t[l] = f_single(u)
+--             else
+--                 u = u - 0x10000
+--                 t[l] = f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
+--             end
 --         end
 --         return concat(t)
 --     else
---         return hash[unicode]
+--         if unicode < 0xD7FF or (unicode > 0xDFFF and unicode <= 0xFFFF) then
+--             return f_single(unicode)
+--         else
+--             unicode = unicode - 0x10000
+--             return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
+--         end
 --     end
 -- end
+
+local unknown = f_single(0xFFFD)
+
+-- local function tounicode(unicode)
+--     if type(unicode) == "table" then
+--         local t = { }
+--         for l=1,#unicode do
+--             t[l] = tounicode(unicode[l])
+--         end
+--         return concat(t)
+--     elseif unicode >= 0x00E000 and unicode <= 0x00F8FF then
+--         return unknown
+--     elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFF then
+--         return unknown
+--     elseif unicode >= 0x100000 and unicode <=  0x10FFFF then
+--         return unknown
+--     elseif unicode < 0xD7FF or (unicode > 0xDFFF and unicode <= 0xFFFF) then
+--         return f_single(unicode)
+--     else
+--         unicode = unicode - 0x10000
+--         return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
+--     end
+-- end
+
+local hash = table.setmetatableindex(function(t,k)
+    local v
+    if k >= 0x00E000 and k <= 0x00F8FF then
+        v = unknown
+    elseif k >= 0x0F0000 and k <= 0x0FFFFF then
+        v = unknown
+    elseif k >= 0x100000 and k <= 0x10FFFF then
+        v = unknown
+    elseif k < 0xD7FF or (k > 0xDFFF and k <= 0xFFFF) then
+        v = f_single(k)
+    else
+        v = k - 0x10000
+        v = f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
+    end
+    t[k] = v
+    return v
+end)
+
+table.makeweak(hash)
+
+local function tounicode(unicode,name)
+    if type(unicode) == "table" then
+        local t = { }
+        for l=1,#unicode do
+            t[l] = hash[unicode[l]]
+        end
+        return concat(t)
+    else
+        return hash[unicode]
+    end
+end
 
 local function fromunicode16(str)
     if #str == 4 then

@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['font-imp-effects'] = {
 -- todo: pickup from goodies: if type(effect) then ...
 
 local next, type, tonumber = next, type, tonumber
+local is_boolean = string.is_boolean
 
 local fonts              = fonts
 
@@ -16,7 +17,7 @@ local handlers           = fonts.handlers
 local registerotffeature = handlers.otf.features.register
 local registerafmfeature = handlers.afm.features.register
 
-local settings_to_hash   = utilities.parsers.settings_to_hash
+local settings_to_hash   = utilities.parsers.settings_to_hash_colon_too
 
 local helpers            = fonts.helpers
 local prependcommands    = helpers.prependcommands
@@ -150,7 +151,7 @@ local function initializeeffect(tfmdata,value)
         local properties = tfmdata.properties
         parameters.mode  = mode
         parameters.width = width * 1000
-        if spec.auto then
+        if is_boolean(spec.auto) == true then
             local squeeze = 1 - width/20
             local average = (1 - squeeze) * width * 100
             spec.squeeze  = squeeze

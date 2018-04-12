@@ -1236,7 +1236,7 @@ function table.reverse(t) -- check with 5.3 ?
     end
 end
 
-function table.sequenced(t,sep,simple) -- hash only
+local function sequenced(t,sep,simple)
     if not t then
         return ""
     end
@@ -1257,16 +1257,26 @@ function table.sequenced(t,sep,simple) -- hash only
                     s[n] = k
                 elseif v and v~= "" then
                     n = n + 1
-                    s[n] = k .. "=" .. tostring(v)
+                    if type(v) == "table" then
+                        s[n] = k .. "={" .. sequenced(v,sep,simple) .. "}"
+                    else
+                        s[n] = k .. "=" .. tostring(v)
+                    end
                 end
             else
                 n = n + 1
-                s[n] = k .. "=" .. tostring(v)
+                if type(v) == "table" then
+                    s[n] = k .. "={" .. sequenced(v,sep,simple) .. "}"
+                else
+                    s[n] = k .. "=" .. tostring(v)
+                end
             end
         end
     end
     return concat(s,sep or " | ")
 end
+
+table.sequenced = sequenced
 
 function table.print(t,...)
     if type(t) ~= "table" then

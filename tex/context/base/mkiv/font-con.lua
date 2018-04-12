@@ -1128,7 +1128,18 @@ hashmethods.normal = function(list)
             -- no need to add to hash (maybe we need a skip list)
         else
             n = n + 1
-            s[n] = k .. '=' .. tostring(v)
+            if type(v) == "table" then
+                -- table.sequenced
+                local t = { }
+                local m = 0
+                for k, v in next, v do
+                    m = m + 1
+                    t[m] = k .. '=' .. tostring(v)
+                end
+                s[n] = k .. '={' .. concat(t,",") .. "}"
+            else
+                s[n] = k .. '=' .. tostring(v)
+            end
         end
     end
     if n > 0 then

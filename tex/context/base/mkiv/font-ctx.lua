@@ -17,7 +17,8 @@ local tostring, next, type, rawget, tonumber = tostring, next, type, rawget, ton
 local format, gmatch, match, find, lower, upper, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.upper, string.gsub, string.byte, string.topattern
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
-local settings_to_hash, hash_to_string, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string, utilities.parsers.settings_to_array
+local parsers = utilities.parsers
+local settings_to_hash, settings_to_hash_colon_too, hash_to_string, settings_to_array = parsers.settings_to_hash, parsers.settings_to_hash_colon_too, parsers.hash_to_string, parsers.settings_to_array
 local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
@@ -475,36 +476,40 @@ registerotffeature {
 --     },
 -- }
 
-local beforecopyingcharacters = sequencers.new {
-    name      = "beforecopyingcharacters",
-    arguments = "target,original",
-}
+do
 
-appendgroup(beforecopyingcharacters,"before") -- user
-appendgroup(beforecopyingcharacters,"system") -- private
-appendgroup(beforecopyingcharacters,"after" ) -- user
+    local beforecopyingcharacters = sequencers.new {
+        name      = "beforecopyingcharacters",
+        arguments = "target,original",
+    }
 
-function constructors.beforecopyingcharacters(original,target)
-    local runner = beforecopyingcharacters.runner
-    if runner then
-        runner(original,target)
+    appendgroup(beforecopyingcharacters,"before") -- user
+    appendgroup(beforecopyingcharacters,"system") -- private
+    appendgroup(beforecopyingcharacters,"after" ) -- user
+
+    function constructors.beforecopyingcharacters(original,target)
+        local runner = beforecopyingcharacters.runner
+        if runner then
+            runner(original,target)
+        end
     end
-end
 
-local aftercopyingcharacters = sequencers.new {
-    name      = "aftercopyingcharacters",
-    arguments = "target,original",
-}
+    local aftercopyingcharacters = sequencers.new {
+        name      = "aftercopyingcharacters",
+        arguments = "target,original",
+    }
 
-appendgroup(aftercopyingcharacters,"before") -- user
-appendgroup(aftercopyingcharacters,"system") -- private
-appendgroup(aftercopyingcharacters,"after" ) -- user
+    appendgroup(aftercopyingcharacters,"before") -- user
+    appendgroup(aftercopyingcharacters,"system") -- private
+    appendgroup(aftercopyingcharacters,"after" ) -- user
 
-function constructors.aftercopyingcharacters(original,target)
-    local runner = aftercopyingcharacters.runner
-    if runner then
-        runner(original,target)
+    function constructors.aftercopyingcharacters(original,target)
+        local runner = aftercopyingcharacters.runner
+        if runner then
+            runner(original,target)
+        end
     end
+
 end
 
 --[[ldx--
@@ -578,6 +583,15 @@ local function presetcontext(name,parent,features) -- will go to con and shared
         features = { }
     elseif type(features) == "string" then
         features = normalize_features(settings_to_hash(features))
+        for key, value in next, features do
+            if type(value) == "string" and find(value,"=") then
+                local t = settings_to_hash(value)
+                if next(t) then
+--                     features[key] = sequenced(normalize_features(t),",")
+                    features[key] = t -- sequenced(normalize_features(t),",")
+                end
+            end
+        end
     else
         features = normalize_features(features)
     end
@@ -587,8 +601,8 @@ local function presetcontext(name,parent,features) -- will go to con and shared
             local s = setups[p]
             if s then
                 for k, v in next, s do
--- no, as then we cannot overload: e.g. math,mathextra
--- reverted, so we only take from parent when not set
+                    -- no, as then we cannot overload: e.g. math,mathextra
+                    -- reverted, so we only take from parent when not set
                     if features[k] == nil then
                         features[k] = v
                     end
@@ -1302,7 +1316,6 @@ do  -- else too many locals
     local busy = false
 
     scanners.definefont_two = function()
-
         local global          = scanboolean() -- \ifx\fontclass\empty\s!false\else\s!true\fi
         local cs              = scanstring () -- {#csname}%
         local str             = scanstring () -- \somefontfile
@@ -1414,6 +1427,7 @@ do  -- else too many locals
                 specification.fallbacks = fontfallbacks
             end
         end
+        --
         local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
         --
         local lastfontid = 0

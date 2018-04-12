@@ -1946,7 +1946,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40197, stripped down to: 23561
+-- original size: 40547, stripped down to: 23820
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2868,7 +2868,7 @@ function table.reverse(t)
     return t
   end
 end
-function table.sequenced(t,sep,simple) 
+local function sequenced(t,sep,simple)
   if not t then
     return ""
   end
@@ -2887,16 +2887,25 @@ function table.sequenced(t,sep,simple)
           s[n]=k
         elseif v and v~="" then
           n=n+1
-          s[n]=k.."="..tostring(v)
+          if type(v)=="table" then
+            s[n]=k.."={"..sequenced(v,sep,simple).."}"
+          else
+            s[n]=k.."="..tostring(v)
+          end
         end
       else
         n=n+1
-        s[n]=k.."="..tostring(v)
+        if type(v)=="table" then
+          s[n]=k.."={"..sequenced(v,sep,simple).."}"
+        else
+          s[n]=k.."="..tostring(v)
+        end
       end
     end
   end
   return concat(s,sep or " | ")
 end
+table.sequenced=sequenced
 function table.print(t,...)
   if type(t)~="table" then
     print(tostring(t))
@@ -8161,7 +8170,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 6449, stripped down to: 3069
+-- original size: 6619, stripped down to: 3214
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -8312,6 +8321,15 @@ function table.getmetatablekey(t,key,value)
   local m=getmetatable(t)
   return m and m[key]
 end
+function table.makeweak(t)
+  local m=getmetatable(t)
+  if m then
+    m.__mode="v"
+  else
+    setmetatable(t,{ __mode="v" })
+  end
+  return t
+end
 
 
 end -- of closure
@@ -8320,7 +8338,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 22960, stripped down to: 16094
+-- original size: 23400, stripped down to: 16473
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -8349,6 +8367,7 @@ utilities.parsers.hashes=hashes
 local digit=R("09")
 local space=P(' ')
 local equal=P("=")
+local colon=P(":")
 local comma=P(",")
 local lbrace=P("{")
 local rbrace=P("}")
@@ -8386,6 +8405,7 @@ local value=lbrace*C((nobrace+nestedbraces)^0)*rbrace+C((nestedbraces+(1-comma))
 local key=C((1-equal-comma)^1)
 local pattern_a=(space+comma)^0*(key*equal*value+key*C(""))
 local pattern_c=(space+comma)^0*(key*equal*value)
+local pattern_d=(space+comma)^0*(key*(equal+colon)*value+key*C(""))
 local key=C((1-space-equal-comma)^1)
 local pattern_b=spaces*comma^0*spaces*(key*((spaces*equal*spaces*value)+C("")))
 local hash={}
@@ -8395,9 +8415,11 @@ end
 local pattern_a_s=(pattern_a/set)^1
 local pattern_b_s=(pattern_b/set)^1
 local pattern_c_s=(pattern_c/set)^1
+local pattern_d_s=(pattern_d/set)^1
 patterns.settings_to_hash_a=pattern_a_s
 patterns.settings_to_hash_b=pattern_b_s
 patterns.settings_to_hash_c=pattern_c_s
+patterns.settings_to_hash_d=pattern_d_s
 function parsers.make_settings_to_hash_pattern(set,how)
   if how=="strict" then
     return (pattern_c/set)^1
@@ -8422,6 +8444,17 @@ function parsers.settings_to_hash(str,existing)
   else
     hash=existing or {}
     lpegmatch(pattern_a_s,str)
+    return hash
+  end
+end
+function parsers.settings_to_hash_colon_too(str)
+  if not str or str=="" then
+    return {}
+  elseif type(str)=="table" then
+    return str
+  else
+    hash={}
+    lpegmatch(pattern_d_s,str)
     return hash
   end
 end
@@ -21362,8 +21395,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 878666
--- stripped bytes    : 317887
+-- original bytes    : 879626
+-- stripped bytes    : 318064
 
 -- end library merge
 

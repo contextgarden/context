@@ -13,6 +13,7 @@ local fonts             = fonts
 local helpers           = fonts.helpers
 
 local setmetatableindex = table.setmetatableindex
+local makeweak          = table.makeweak
 
 -- Helpers dealing with virtual fonts: beware, these are final values so
 -- don't change the content of tables gotten this way!
@@ -77,6 +78,12 @@ local up = setmetatableindex(function(t,k)
     t[k] = v
     return v
 end)
+
+-- makeweak(char)
+-- makeweak(right)
+-- makeweak(left)
+-- makeweak(up)
+-- makeweak(down)
 
 helpers.commands = utilities.storage.allocate {
     char  = char,

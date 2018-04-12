@@ -197,8 +197,8 @@ return {
         --
         "hglue", "vglue", "hfillneg", "vfillneg", "hfilllneg", "vfilllneg",
         --
-        "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",
-        "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",
+        "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilll", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",  "normalhfilllneg",
+        "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilll", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",  "normalvfilllneg",
         "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter", "ruledmbox",
         "ruledhpack", "ruledvpack", "ruledtpack",
         "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",

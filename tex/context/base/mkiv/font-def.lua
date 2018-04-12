@@ -377,6 +377,7 @@ function definers.loadfont(specification)
     -- todo: also hash by instance / factors
     local tfmdata = loadedfonts[hash] -- hashes by size !
     if not tfmdata then
+        -- normally context will not end up here often (if so there is an issue somewhere)
         local forced = specification.forced or ""
         if forced ~= "" then
             local reader = readers[lower(forced)] -- normally forced is already lowered

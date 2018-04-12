@@ -148,6 +148,10 @@
 
     <cd:command name="showfontitalics" level="document" file="trc-vis.mkiv"/>
 
+    <cd:command name="showglyphdata" level="document" file="trc-vis.mkiv"/>
+
+    <cd:command name="showfontexpansion" level="document" file="trc-vis.mkiv"/>
+
     <cd:command name="setvisualizerfont" level="system" file="trc-vis.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-font-optional"/>

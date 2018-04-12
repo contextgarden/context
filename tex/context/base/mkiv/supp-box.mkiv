@@ -2974,6 +2974,11 @@
 % \unexpanded\def\tightvbox{\dowithnextbox{\dp\nextbox\zeropoint\box\nextbox}\vbox}
 % \unexpanded\def\tightvtop{\dowithnextbox{\ht\nextbox\zeropoint\box\nextbox}\vtop}
 
+%D This one keeps dimensions and sets the shift field (and so it's more for testing
+%D than for real usage):
+
+\unexpanded\def\shiftbox{\clf_shiftbox}
+
 \protect \endinput
 
 % a bit of test code:

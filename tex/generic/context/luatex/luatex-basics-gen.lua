@@ -96,7 +96,14 @@ utilities.parsers = utilities.parsers or {
     end,
     settings_to_hash  = function(s)
         local t = { }
-        for k, v in gmatch(s,"([^%s,]+)=([^%s,]+)") do
+        for k, v in gmatch(s,"([^%s,=]+)=([^%s,]+)") do
+            t[k] = v
+        end
+        return t
+    end,
+    settings_to_hash_colon_too  = function(s)
+        local t = { }
+        for k, v in gmatch(s,"([^%s,=:]+)[=:]([^%s,]+)") do
             t[k] = v
         end
         return t
@@ -366,6 +373,17 @@ function table.setmetatableindex(t,f)
     end
     return t
 end
+
+function table.makeweak(t)
+    local m = getmetatable(t)
+    if m then
+        m.__mode = "v"
+    else
+        setmetatable(t,{ __mode = "v" })
+    end
+    return t
+end
+
 
 -- helper for plain:
 

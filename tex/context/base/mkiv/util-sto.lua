@@ -196,6 +196,16 @@ function table.getmetatablekey(t,key,value)
     return m and m[key]
 end
 
+function table.makeweak(t)
+    local m = getmetatable(t)
+    if m then
+        m.__mode = "v"
+    else
+        setmetatable(t,{ __mode = "v" })
+    end
+    return t
+end
+
 -- Problem: we have no __next (which is ok as it would probably slow down lua) so
 -- we cannot loop over the keys.
 
