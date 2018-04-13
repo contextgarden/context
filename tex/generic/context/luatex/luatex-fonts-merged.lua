@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/12/18 14:30:24
+-- merge date  : 04/13/18 14:53:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -2534,24 +2534,22 @@ local lpegmatch=lpeg.match
 local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
 local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
-local tricky=S("/\\")*P(-1)
 local attributes=lfs.attributes
+function lfs.isdir(name)
+  return attributes(name,"mode")=="directory"
+end
+function lfs.isfile(name)
+  local a=attributes(name,"mode")
+  return a=="file" or a=="link" or nil
+end
+function lfs.isfound(name)
+  local a=attributes(name,"mode")
+  return (a=="file" or a=="link") and name or nil
+end
 if sandbox then
   sandbox.redefine(lfs.isfile,"lfs.isfile")
   sandbox.redefine(lfs.isdir,"lfs.isdir")
-end
-function lfs.isdir(name)
-  if lpegmatch(tricky,name) then
-    return attributes(name,"mode")=="directory"
-  else
-    return attributes(name.."/.","mode")=="directory"
-  end
-end
-function lfs.isfile(name)
-  return attributes(name,"mode")=="file"
-end
-function lfs.isfound(name)
-  return attributes(name,"mode")=="file" and name or nil
+  sandbox.redefine(lfs.isfound,"lfs.isfound")
 end
 local colon=P(":")
 local period=P(".")
@@ -2907,6 +2905,10 @@ function file.withinbase(path)
     end
   end
   return true
+end
+local symlinkattributes=lfs.symlinkattributes
+function lfs.readlink(name)
+  return symlinkattributes(name,"target") or nil
 end
 
 end -- closure

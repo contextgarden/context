@@ -45,19 +45,18 @@
 % \definespecial\dosetexecuteJScode
 % ...
 
-%D This module deals with referencing. In \CONTEXT\ referencing is one of
-%D the core features, although at a first glance probably nobody will
-%D notice. This is good, because referencing should be as hidden as possible.
+%D This module deals with referencing. In \CONTEXT\ referencing is one of the core
+%D features, although at a first glance probably nobody will notice. This is good,
+%D because referencing should be as hidden as possible.
 %D
-%D Before we start implementing functionality we provide a way to set
-%D up this mechanism.
+%D Before we start implementing functionality we provide a way to set up this
+%D mechanism.
 %D
 %D \showsetup{setupreferencing}
 %D
-%D In interactive documents verbose references don't always
-%D make sense (what is a page number in an unnumbered
-%D document). By setting the \type{interaction} variable, one
-%D can influences the way interactive references are set.
+%D In interactive documents verbose references don't always make sense (what is a
+%D page number in an unnumbered document). By setting the \type{interaction}
+%D variable, one can influences the way interactive references are set.
 
 \let\referenceprefix\empty
 
@@ -122,9 +121,8 @@
      \dosetdirectpagereference\m_strc_references_asked
    \fi}
 
-%D Actually there is not much difference between a text and a
-%D full reference, but it's the concept that counts. The low
-%D level implementation is:
+%D Actually there is not much difference between a text and a full reference, but
+%D it's the concept that counts. The low level implementation is:
 
 \newcount\lastreferenceattribute
 \newcount\lastdestinationattribute
@@ -134,8 +132,8 @@
 
 \let\dofinishreference\strc_references_finish % used at lua end
 
-% This is somewhat tricky: we want to keep the reference with the following word but
-% that word should also hyphenate. We need to find a better way.
+%D This is somewhat tricky: we want to keep the reference with the following word but
+%D that word should also hyphenate. We need to find a better way.
 
 % 0 = nothing
 % 1 = bind to following word
@@ -502,34 +500,31 @@
 %D \macros
 %D   {everyreference}
 %D
-%D For rather tricky purposes, one can assign sanitizing
-%D macros to \type{\everyreference} (no longer that relevant).
+%D For rather tricky purposes, one can assign sanitizing macros to \type
+%D {\everyreference} (no longer that relevant).
 
 \newevery \everyreference \relax
 
-%D This is really needed, since for instance Polish has a
-%D different alphabet and needs accented entries in registers.
+%D This is really needed, since for instance Polish has a different alphabet and
+%D needs accented entries in registers.
 
 \appendtoks
     \cleanupfeatures
 \to \everyreference
 
-%D We did not yet discuss prefixing. Especially in interactive
-%D documents, it's not always easy to keep track of duplicate
-%D references. The prefix mechanism, which we will describe
-%D later on, solves this problem. By (automatically) adding a
-%D prefix one keeps references local, but the global ones in
-%D view. To enable this feature, we explictly split the prefix
-%D from the reference.
+%D We did not yet discuss prefixing. Especially in interactive documents, it's not
+%D always easy to keep track of duplicate references. The prefix mechanism, which we
+%D will describe later on, solves this problem. By (automatically) adding a prefix
+%D one keeps references local, but the global ones in view. To enable this feature,
+%D we explictly split the prefix from the reference.
 
 \let\referenceprefix\empty
 
-%D For a long time the only way to access an external file was
-%D to use the file prefix (\type {somefile::}. However, when
-%D you split up a document, redefining the references may be
-%D such a pain, that another approach is feasible. By setting
-%D the \type {autofile} variable to \type {yes} or \type
-%D {page}, you can access the reference directly.
+%D For a long time the only way to access an external file was to use the file
+%D prefix (\type {somefile::}. However, when you split up a document, redefining the
+%D references may be such a pain, that another approach is feasible. By setting the
+%D \type {autofile} variable to \type {yes} or \type {page}, you can access the
+%D reference directly.
 %D
 %D \starttabulate[||||]
 %D \NC filename::tag \NC page(filename::pnum) \NC tag     \NC\NR
@@ -540,9 +535,9 @@
 
 \unexpanded\def\usereferences[#filename]{} % obsolete
 
-%D As mentioned we will also use the cross reference mechanism
-%D for navigational purposes. The main reason for this is that
-%D we want to treat both categories alike:
+%D As mentioned we will also use the cross reference mechanism for navigational
+%D purposes. The main reason for this is that we want to treat both categories
+%D alike:
 %D
 %D \starttyping
 %D \goto{go back}[PreviousJump]
@@ -553,15 +548,13 @@
 %D \type{colofon page} reference is, apart from hyperlinking, a
 %D rather normal reference.
 %D
-%D We already saw that cross refences are written to and read
-%D from a file. The pure navigational ones don't need to be
-%D written to file, but both for fast processing and
-%D transparant integration, they are saved internally as a sort
-%D of reference. We can easily distinguish such system
-%D references from real cross reference ones by their tag.
+%D We already saw that cross refences are written to and read from a file. The pure
+%D navigational ones don't need to be written to file, but both for fast processing
+%D and transparant integration, they are saved internally as a sort of reference. We
+%D can easily distinguish such system references from real cross reference ones by
+%D their tag.
 %D
-%D We also use the odd/even characteristic to determine the
-%D page state.
+%D We also use the odd/even characteristic to determine the page state.
 
 \let\currentrealreference      \empty
 \let\currentpagereference      \empty
@@ -576,11 +569,10 @@
 %
 % 0 = no page ref, 1=same page, 2=before, 3=after
 
-%D Cross references appear as numbers (figure~1.1, chapter~2)
-%D or pagenumbers (page~2, page 3--2), and are called with
-%D \type{\in} and \type{\at}. In interactive documents we also
-%D have \type{\goto}, \type{\button} and alike. These are more
-%D versatile and look like:
+%D Cross references appear as numbers (figure~1.1, chapter~2) or pagenumbers
+%D (page~2, page 3--2), and are called with \type {\in} and \type {\at}. In
+%D interactive documents we also have \type {\goto}, \type {\button} and alike.
+%D These are more versatile and look like:
 %D
 %D \starttyping
 %D \goto[reference]
@@ -592,23 +584,19 @@
 %D \goto[action{argument}]
 %D \stoptyping
 %D
-%D The first one is a normal reference, the second and third
-%D are references to a file or \URL. The brace delimited
-%D references for instance refer to a \JAVASCRIPT. The last
-%D example shows that we can pass arguments to the actions.
+%D The first one is a normal reference, the second and third are references to a
+%D file or \URL. The brace delimited references for instance refer to a \JAVASCRIPT.
+%D The last example shows that we can pass arguments to the actions.
 %D
-%D Now we've come to the testing step. As we can see below,
-%D this macro does bit more than testing: it also resolves
-%D the reference. This means that whenever we test for the
-%D existance of a reference at an outer level, we have all the
-%D relevant properties of that reference avaliable inside the
-%D true branche~(\type{#2}).
+%D Now we've come to the testing step. As we can see below, this macro does bit more
+%D than testing: it also resolves the reference. This means that whenever we test
+%D for the existance of a reference at an outer level, we have all the relevant
+%D properties of that reference avaliable inside the true branche~(\type {#2}).
 %D
-%D The prefix has to do with localizing references. When a
-%D prefix is set, looking for a reference comes to looking for
-%D the prefixed one, and when not found, looking for the non
-%D prefixed one. Consider for instance the prefix set to
-%D \type{sidetrack}.
+%D The prefix has to do with localizing references. When a prefix is set, looking
+%D for a reference comes to looking for the prefixed one, and when not found,
+%D looking for the non prefixed one. Consider for instance the prefix set to \type
+%D {sidetrack}.
 %D
 %D \starttyping
 %D \pagereference[important]
@@ -625,17 +613,15 @@
 %D ...{sidetrack}{important}...
 %D \stoptyping
 %D
-%D Now when we call for \type{unimportant}, we will indeed get
-%D the pagenumber associated to this reference. But when we
-%D call for \type{important}, while the prefix is still set, we
-%D will get the pagenumber bound to the prefixed one.
+%D Now when we call for \type{unimportant}, we will indeed get the pagenumber
+%D associated to this reference. But when we call for \type{important}, while the
+%D prefix is still set, we will get the pagenumber bound to the prefixed one.
 %D
 %D {\em Some day, when processing time and memory are no longer
 %D performance factors, we will introduce multi||level
 %D prefixes.}
 %D
-%D Before we start analyzing, I introduce a general
-%D definition macro. Consider:
+%D Before we start analyzing, I introduce a general definition macro. Consider:
 %D
 %D \starttyping
 %D \goto{do}[JS(My_Script{"test",123}),titlepage]
@@ -652,8 +638,7 @@
 %D
 %D \showsetup{definereference}
 %D
-%D We can trace references by setting the next switch to
-%D true.
+%D We can trace references by setting the next switch to true.
 
 \unexpanded\def\definereference
   {\dodoubleempty\strc_references_define_reference}
@@ -673,23 +658,22 @@
 %D \goto{somewhere}[JS(somescript),nextpage,JS(anotherscript)]
 %D \stoptyping
 %D
-%D Actually supporting chains is up to the special driver. Here
-%D we only provide the hooks.
+%D Actually supporting chains is up to the special driver. Here we only provide the
+%D hooks.
 
 %D \macros
 %D   {highlighthyperlinks}
 %D
-%D The next switch can be used to make user hyperlinks are
-%D not highlighted when clicked on.
+%D The next switch can be used to make user hyperlinks are not highlighted when
+%D clicked on.
 
 \newconditional\highlighthyperlinks \settrue\highlighthyperlinks
 
 %D \macros
 %D   {gotonewwindow}
 %D
-%D To make the {\em goto previous jump} feature more
-%D convenient when using more than one file, it makes sense
-%D to force the viewer to open a new window for each file
+%D To make the {\em goto previous jump} feature more convenient when using more than
+%D one file, it makes sense to force the viewer to open a new window for each file
 %D opened.
 
 \newconditional\gotonewwindow \setfalse\gotonewwindow
@@ -708,13 +692,11 @@
 
 \let\doifreferencefoundelse \doifelsereferencefound
 
-%D The tester only splits the reference in components but does
-%D not look into them. The following macro does a preroll and
-%D determines for instance the current real reference pagenumber.
-%D The \type {\currentrealreference} macro does the same so unless
-%D one wants to use the pagestate the next macro seldom needs to
-%D be called.
-
+%D The tester only splits the reference in components but does not look into them.
+%D The following macro does a preroll and determines for instance the current real
+%D reference pagenumber. The \type {\currentrealreference} macro does the same so
+%D unless one wants to use the pagestate the next macro seldom needs to be called.
+%D
 %D The inner case is simple. Only two cases have to be taken
 %D care of:
 %D
@@ -723,8 +705,8 @@
 %D \goto{some text}[prefix:reference]
 %D \stoptyping
 %D
-%D References to other files however are treated strict or
-%D tolerant, depending on their loading and availability:
+%D References to other files however are treated strict or tolerant, depending on
+%D their loading and availability:
 %D
 %D \starttyping
 %D \useexternaldocument[somefile][filename][a nice description]
@@ -734,72 +716,61 @@
 %D \goto{unchecked reference}[anotherfile::reference]
 %D \stoptyping
 %D
-%D An unknown reference is reported on the screen, in the log
-%D file and, when enabled, in the left margin of the text.
+%D An unknown reference is reported on the screen, in the log file and, when
+%D enabled, in the left margin of the text.
 
 \let\unknownreference\gobbleoneargument
 
-%D When a reference is not found, we typeset a placeholder
-%D (two glyphs are often enough to represent the reference
-%D text).
+%D When a reference is not found, we typeset a placeholder (two glyphs are often
+%D enough to represent the reference text).
 
 \def\dummyreference{{\tttf ??}}
 \def\emptyreference{{\tttf !!}}
 
-%D To prevent repetitive messages concerning a reference
-%D being defined, we set such an unknown reference to an empty
-%D one after the first encounter.
-
-%D Apart from cross references supplied by the user, \CONTEXT\
-%D generates cross references itself. Most of them are not
-%D saved as a reference, but stored with their source, for
-%D instance a list or an index entry. Such automatically
-%D generated, for the user invisible, references are called
-%D {\em internal references}. The user supplied ones are
-%D labeled as {\em external references}.
+%D To prevent repetitive messages concerning a reference being defined, we set such
+%D an unknown reference to an empty one after the first encounter.
 %D
-%D A second important characteristic is that when we want to
-%D support different backends (viewers), we need to support
-%D named destinations as well as page numbers. I invite readers
-%D to take a glance at the special driver modules to understand
-%D the fine points of this. As a result we will deal with {\em
-%D locations} as well as {\em real page numbers}. We explictly
-%D call this pagenumber a real one, because it is independant
-%D of the page numbering scheme used in the document.
+%D Apart from cross references supplied by the user, \CONTEXT\ generates cross
+%D references itself. Most of them are not saved as a reference, but stored with
+%D their source, for instance a list or an index entry. Such automatically
+%D generated, for the user invisible, references are called {\em internal
+%D references}. The user supplied ones are labeled as {\em external references}.
 %D
-%D One of the reasons for \CONTEXT\ being the first \TEX\ base
-%D macropackage to support sophisticated interactive \PDF\
-%D files, lays in the mere fact that real page numbers are
-%D available in most two pass data, like references, list data
-%D and index entries.
+%D A second important characteristic is that when we want to support different
+%D backends (viewers), we need to support named destinations as well as page
+%D numbers. I invite readers to take a glance at the special driver modules to
+%D understand the fine points of this. As a result we will deal with {\em locations}
+%D as well as {\em real page numbers}. We explictly call this pagenumber a real one,
+%D because it is independant of the page numbering scheme used in the document.
 %D
-%D We will speak of \type{thisis...} when we are marking a
-%D location, and \type{goto...} when we point to such a
-%D location. The latter one can be seen as a hyperlink to the
-%D former one. In the next macros one we use constructs like:
+%D One of the reasons for \CONTEXT\ being the first \TEX\ base macropackage to
+%D support sophisticated interactive \PDF\ files, lays in the mere fact that real
+%D page numbers are available in most two pass data, like references, list data and
+%D index entries.
+%D
+%D We will speak of \type {thisis...} when we are marking a location, and
+%D \type {goto...} when we point to such a location. The latter one can be seen as a
+%D hyperlink to the former one. In the next macros one we use constructs like:
 %D
 %D \starttyping
 %D \dostart...
 %D \dostop...
 %D \stoptyping
 %D
-%D Such macros are used to invoke the relevant specials from
-%D the special driver modules (see \type{spec-ini}). The flag
-%D \type{\iflocation} signals if we're in interactive mode.
+%D The flag \type {\iflocation} signals if we're in interactive mode.
 
 \ifdefined\buttonheight \else \newdimen\buttonheight \fi
 \ifdefined\buttonwidth  \else \newdimen\buttonwidth  \fi
 
-%D Internal references can best be set using the next few
-%D macros. Setting such references to unique values is
-%D completely up to the macros that call them.
+%D Internal references can best be set using the next few macros. Setting such
+%D references to unique values is completely up to the macros that call them.
 %D
 %D \starttyping
 %D \thisissomeinternal{tag}{identifier}
 %D \gotosomeinternal  {tag}{identifier}{pagenumber}{text}
 %D \stoptyping
-
-%D We could do this in lua ...
+%D
+%D We could do this in \LUA\ \unknown
 
 \newif   \iflocation
 \newcount\locationcount
@@ -845,12 +816,10 @@
 \def\gotonextinternal#text#target%
   {\directgoto{#text}[internal(#target)]}
 
-%D In this module we define three system references: one for
-%D handling navigational, viewer specific, commands, another
-%D for jumping to special pages, like the first or last one,
-%D and a third reference for linking tree like lists, like
-%D tables of contents. The latter two adapt themselves to the
-%D current state.
+%D In this module we define three system references: one for handling navigational,
+%D viewer specific, commands, another for jumping to special pages, like the first
+%D or last one, and a third reference for linking tree like lists, like tables of
+%D contents. The latter two adapt themselves to the current state.
 %D
 %D An example of an action is:
 %D
@@ -863,11 +832,10 @@
 %D \starttyping
 %D \goto{some text}[\v!action(PreviousJump]
 %D \stoptyping
-
-%D One can also activate an automatic prefix mechanism. By
-%D setting the \type{\prefix} variable to \type{+}, the prefix
-%D is incremented, when set to \type{-} or empty, the prefix is
-%D reset. Other values become the prefix.
+%D
+%D One can also activate an automatic prefix mechanism. By setting the
+%D \type {\prefix} variable to \type {+}, the prefix is incremented, when set to
+%D \type {-} or empty, the prefix is reset. Other values become the prefix.
 
 \newcount\prefixcounter
 
@@ -891,13 +859,6 @@
 
 \unexpanded\def\setupglobalreferenceprefix[#prefix]%
   {\xdef\referenceprefix{#prefix}}
-
-% \unexpanded\def\pushreferenceprefix#prefix%
-%   {\pushmacro\referenceprefix
-%    \xdef\referenceprefix{#prefix}} % global
-
-% \unexpanded\def\popreferenceprefix
-%   {\popmacro\referenceprefix}
 
 \unexpanded\def\globalpushreferenceprefix#prefix%
   {\xdef\referenceprefix{\clf_pushreferenceprefix{#prefix}}}
@@ -935,16 +896,14 @@
     \setupreferenceprefix[\referencingparameter\c!prefix]
 \to \everysetupreferencing
 
-%D We can typeset a reference using \type{\in}, \type{\at} and
-%D \type{\about} and goto specific locations using
-%D \type{\goto}. The last one does not make that much sense in
-%D a paper document. To complicate things, \PLAIN\ \TEX\ also
-%D implements an \type {\in} but fortunately that one only
-%D makes sense in math mode.
+%D We can typeset a reference using \type {\in}, \type {\at} and \type {\about} and
+%D goto specific locations using \type {\goto}. The last one does not make that much
+%D sense in a paper document. To complicate things, \PLAIN\ \TEX\ also implements an
+%D \type {\in} but fortunately that one only makes sense in math mode.
 %D
-%D Typesetting the reference is a bit more complicated than one
-%D would at first sight expect. This is due to the fact that we
-%D distinguish three (five) alternative calls:
+%D Typesetting the reference is a bit more complicated than one would at first sight
+%D expect. This is due to the fact that we distinguish three (five) alternative
+%D calls:
 %D
 %D \placefigure
 %D   [here][three calls]
@@ -971,25 +930,11 @@
 %D \getbuffer
 %D \stoplines
 %D
-%D The dual \type{{}} results in a split reference. In a
-%D document meant for paper, one is tempted to use the last
-%D (most straightforward) alternative. When a document is also
-%D meant voor electronic distribution, the former alternatives
-%D have preference, because everything between the \type{\in}
-%D and~\type{[} becomes active (and when asked for, typeset
-%D in a different color and typeface).
-
-% \unexpanded\def\in   {\mathortext\donormalmathin   \strc_references_in}
-% \unexpanded\def\at   {\mathortext\donormalmathat   \strc_references_at}
-% \unexpanded\def\about{\mathortext\donormalmathabout\strc_references_about}
-% \unexpanded\def\from {\mathortext\donormalmathfrom \strc_references_from}
-% \unexpanded\def\over {\mathortext\donormalmathover \strc_references_about}
-
-% \definecommand in    {\strc_references_in}
-% \definecommand at    {\strc_references_at}
-% \definecommand about {\strc_references_about}
-% \definecommand from  {\strc_references_from}
-% \definecommand over  {\strc_references_about} % needed here, else math problems
+%D The dual \type {{}} results in a split reference. In a document meant for paper,
+%D one is tempted to use the last (most straightforward) alternative. When a
+%D document is also meant voor electronic distribution, the former alternatives have
+%D preference, because everything between the \type {\in} and~\type {[} becomes
+%D active (and when asked for, typeset in a different color and typeface).
 
 \appendtoks
     \ifdefined\in    \let\normalmathin   \in    \unexpanded\def\in   {\mathortext\normalmathin   \strc_references_in   } \else \let\in   \strc_references_in    \fi
@@ -1009,8 +954,7 @@
 \def\currentreferencedefault {\clf_filterreference{default}}
 \def\currentreferencerealpage{\clf_filterreference{realpage}}
 
-%D The most straightforward way of retrieving references is
-%D using \type{\ref}.
+%D The most straightforward way of retrieving references is using \type {\ref}.
 
 \unexpanded\def\getreference % checking, unexpanded
   {\dodoubleargument\strc_references_get_reference}
@@ -1040,12 +984,11 @@
    \referencingparameter\c!right
    \endgroup}
 
-%D The previously discussed setup macro lets us specify the
-%D representation of references. A symbol reference does not
-%D show the specific data, like the number of a figure, but
-%D shows one of: \hbox {$^\goforwardcharacter$
-%D $^\gobackwardcharacter$ $^\gonowherecharacter$}, depending
-%D on the direction to go.
+%D The previously discussed setup macro lets us specify the representation of
+%D references. A symbol reference does not show the specific data, like the number
+%D of a figure, but shows one of: \hbox {$^\goforwardcharacter$
+%D $^\gobackwardcharacter$ $^\gonowherecharacter$}, depending on the direction to
+%D go.
 %D
 %D \starttyping
 %D ... \somewhere{backward text}{forward text}[someref] ...
@@ -1242,15 +1185,6 @@
 \setvalue{\??referencinginteraction\v!symbol}%
   {\referencesymbol}
 
-% \def\referencesequence
-%   {\csname\??referencinginteraction
-%      \ifcsname\??referencinginteraction\referencingparameter\c!interaction\endcsname
-%        \referencingparameter\c!interaction
-%      \else
-%        \v!all
-%      \fi
-%    \endcsname}
-
 \def\referencesequence
   {\ifcsname\??referencinginteraction\referencingparameter\c!interaction\endcsname
      \expandafter\lastnamedcs
@@ -1311,9 +1245,8 @@
 %D \macros
 %D   {definereferenceformat}
 %D
-%D The next few macros were made for for David Arnold and Taco
-%D Hoekwater. They can be used for predefining reference
-%D texts, and thereby stimulate efficiency.
+%D The next few macros were made for for David Arnold and Taco Hoekwater. They can
+%D be used for predefining reference texts, and thereby stimulate efficiency.
 %D
 %D \starttyping
 %D \definereferenceformat[informula]  [left=(,right=),text=formula]
@@ -1328,11 +1261,11 @@
 %D the \informulas [b] \andformula [for:c]
 %D \stoptyping
 %D
-%D Instead of a text, one can specify a label, which should
-%D be defined with \type {\setuplabeltext}.
+%D Instead of a text, one can specify a label, which should be defined with \type
+%D {\setuplabeltext}.
 %D
-%D Watch out: the second argument is somewhat special and mostly
-%D meant for a suffix to a number:
+%D Watch out: the second argument is somewhat special and mostly meant for a suffix
+%D to a number:
 %D
 %D \startbuffer
 %D \definereferenceformat [intesta] [left=(,right=),text=Whatever~]
@@ -1437,21 +1370,18 @@
 %
 % \definereferenceformat[hellup][text=Hellup ,setups=referenceformat:numberplustext]
 
-%D In interactive documents going to a specific location is not
-%D bound to cross references. The \type{\goto} commands can be
-%D used to let users access another part of the document. In
-%D this respect, interactive tables of contents and registers
-%D can be considered goto's. Because in fact a \type{\goto} is
-%D just a reference without reference specific data, the
-%D previous macros are implemented using the goto
-%D functionality.
+%D In interactive documents going to a specific location is not bound to cross
+%D references. The \type {\goto} commands can be used to let users access another
+%D part of the document. In this respect, interactive tables of contents and
+%D registers can be considered goto's. Because in fact a \type {\goto} is just a
+%D reference without reference specific data, the previous macros are implemented
+%D using the goto functionality.
 %D
 %D \showsetup{goto}
 %D
-%D One important characteristic is that the first argument of
-%D \type{\goto} (and therefore \type{\at} and \type{\in} is
-%D split at spaces. This means that, although hyphenation is
-%D prevented, long references can cross line endings.
+%D One important characteristic is that the first argument of \type {\goto} (and
+%D therefore \type {\at} and \type {\in} is split at spaces. This means that,
+%D although hyphenation is prevented, long references can cross line endings.
 
 % \starttext
 %     \setupinteraction[state=start]
@@ -1744,17 +1674,15 @@
      {\box\scratchbox}%
    \endgroup}
 
-%D An reference to another document can be specified as a file
-%D or as an \URL. Both are handled by the same mechanism and
-%D can be issued by saying something like:
+%D An reference to another document can be specified as a file or as an \URL. Both
+%D are handled by the same mechanism and can be issued by saying something like:
 %D
 %D \starttyping
 %D \goto[dictionary::the letter a]
 %D \stoptyping
 %D
-%D One can imagine that many references to such a dictionary
-%D are made, so in most cases such a document reference in an
-%D indirect one.
+%D One can imagine that many references to such a dictionary are made, so in most
+%D cases such a document reference in an indirect one.
 %D
 %D \showsetup{useexternaldocument}
 %D
@@ -1766,8 +1694,8 @@
 %D   [The Famous English Dictionary]
 %D \stoptyping
 %D
-%D The next macro implements these relations, and also take
-%D care of loading the document specific references.
+%D The next macro implements these relations, and also take care of loading the
+%D document specific references.
 %D
 %D The \URL\ alternative takes four arguments:
 %D
@@ -1789,9 +1717,8 @@
 %D \useURL [id] [url]
 %D \stoptyping
 %D
-%D This time we don't load the references when no file is
-%D specified. This is logical when one keeps in mind that a
-%D valid \URL\ can also be a mail address.
+%D This time we don't load the references when no file is specified. This is logical
+%D when one keeps in mind that a valid \URL\ can also be a mail address.
 
 \unexpanded\def\useurl {\doquadrupleempty\strc_references_use_url }  % so that they can be used in expanded arguments
 \unexpanded\def\usefile{\dotripleargument\strc_references_use_file}  % so that they can be used in expanded arguments
@@ -1814,8 +1741,7 @@
 %D \macros
 %D   {url,setupurl}
 %D
-%D We also have: \type{\url} for directly calling the
-%D description. So we can say:
+%D We also have: \type {\url} for directly calling the description. So we can say:
 %D
 %D \starttyping
 %D \useURL [one] [http://www.test.nl]
@@ -1843,8 +1769,8 @@
    \hyphenatedurl{\clf_geturl{#label}}%
    \endgroup}
 
-%D This macro is hooked into a support macro, and thereby
-%D \URL's break ok, according to the setting of a switch,
+%D This macro is hooked into a support macro, and thereby \URL's break ok, according
+%D to the setting of a switch,
 %D
 %D \startbuffer
 %D \useURL
@@ -1858,9 +1784,8 @@
 %D
 %D \getbuffer
 
-%D When defining the external source of information, one can
-%D also specify a suitable name (the last argument). This name
-%D can be called upon with:
+%D When defining the external source of information, one can also specify a suitable
+%D name (the last argument). This name can be called upon with:
 %D
 %D \showsetup{from}
 %D
@@ -1895,9 +1820,8 @@
 %D \goto{some text}[identifier::location]
 %D \stoptyping
 
-%D A special case of references are those to programs. These,
-%D very system dependant references are implemented by abusing
-%D some of the previous macros.
+%D A special case of references are those to programs. These, very system dependant
+%D references are implemented by abusing some of the previous macros.
 %D
 %D \showsetup{setupprograms}
 %D \showsetup{defineprogram}
@@ -1925,8 +1849,7 @@
    \clf_getprogram{#name}%
    \endgroup}
 
-%D As we can see, we directly use the special reference
-%D mechanism, which means that
+%D As we can see, we directly use the special reference mechanism, which means that
 %D
 %D \starttyping
 %D \goto{some text}[program(name{args})]
@@ -1934,11 +1857,10 @@
 %D
 %D is valid.
 
-%D The next macro provides access to the actual pagenumbers.
-%D When documenting and sanitizing the original reference
-%D macros, I decided to keep the present meaning as well as to
-%D make this meaning available as a special reference method.
-%D So now one can use:
+%D The next macro provides access to the actual pagenumbers. When documenting and
+%D sanitizing the original reference macros, I decided to keep the present meaning
+%D as well as to make this meaning available as a special reference method. So now
+%D one can use:
 %D
 %D \starttyping
 %D \gotopage{some text}[location]
@@ -1967,8 +1889,7 @@
 \def\gotopage#text[#target]%
   {\goto{#text}[\v!page(#target)]}
 
-%D The previous definitions are somewhat obsolete so we don't
-%D use it here.
+%D The previous definitions are somewhat obsolete so we don't use it here.
 
 %D We can cross link documents by using:
 %D
@@ -1980,16 +1901,14 @@
 %D \coupledocument[print][somefile][chapter,section]
 %D \stoptyping
 %D
-%D After which when applicable, we have available the
-%D references:
+%D After which when applicable, we have available the references:
 %D
 %D \starttyping
 %D \goto{print version}[print::chapter]
 %D \stoptyping
 %D
-%D and alike. The title placement definition macros have a
-%D key \type{file}, which is interpreted as the file to jump
-%D to, that is, when one clicks on the title.
+%D and alike. The title placement definition macros have a key \type {file}, which
+%D is interpreted as the file to jump to, that is, when one clicks on the title.
 
 \def\coupledocument
   {\doquadrupleempty\strc_references_couple_document}
@@ -2002,8 +1921,8 @@
 %D \macros
 %D   {dotextprefix}
 %D
-%D In previous macros we used \type {\dotextprefix} to
-%D generate a space between a label and a number.
+%D In previous macros we used \type {\dotextprefix} to generate a space between
+%D a label and a number.
 %D
 %D \starttyping
 %D \dotextprefix{text}
@@ -2026,9 +1945,8 @@
    \fi
    \endgroup}
 
-%D In the next settings we see some variables that were not
-%D used here and that concern the way the pagenumbers refered
-%D to are typeset.
+%D In the next settings we see some variables that were not used here and that
+%D concern the way the pagenumbers refered to are typeset.
 
 \setupreferencing
   [\c!state=\v!start,

@@ -234,10 +234,12 @@ elseif os.type == "windows" then
     -- PROCESSOR_ARCHITECTURE : binary platform
     -- PROCESSOR_ARCHITEW6432 : OS platform
 
+    -- mswin-64 is now win64
+
     function resolvers.platform(t,k)
-        local platform, architecture = "", os.getenv("PROCESSOR_ARCHITECTURE") or ""
+        local architecture = os.getenv("PROCESSOR_ARCHITECTURE") or ""
+        local platform     = ""
         if find(architecture,"AMD64",1,true) then
-         -- platform = "mswin-64"
             platform = "win64"
         else
             platform = "mswin"
@@ -251,13 +253,17 @@ elseif name == "linux" then
 
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
-        local platform, architecture = "", os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-        if find(architecture,"x86_64",1,true) then
-            platform = "linux-64"
+        local architecture = os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        local platform     = os.getenv("MTX_PLATFORM")
+        local musl         = find(os.selfdir or "","linuxmusl")
+        if platform ~= "" then
+            -- we're done
+        elseif find(architecture,"x86_64",1,true) then
+            platform = musl and "linuxmusl" or "linux-64"
         elseif find(architecture,"ppc",1,true) then
             platform = "linux-ppc"
         else
-            platform = "linux"
+            platform = musl and "linuxmusl" or "linux"
         end
         os.setenv("MTX_PLATFORM",platform)
         os.platform = platform
@@ -277,11 +283,13 @@ elseif name == "macosx" then
       ]]--
 
     function resolvers.platform(t,k)
-     -- local platform, architecture = "", os.getenv("HOSTTYPE") or ""
+     -- local platform     = ""
+     -- local architecture = os.getenv("HOSTTYPE") or ""
      -- if architecture == "" then
      --     architecture = resultof("echo $HOSTTYPE") or ""
      -- end
-        local platform, architecture = "", resultof("echo $HOSTTYPE") or ""
+        local architecture = resultof("echo $HOSTTYPE") or ""
+        local platform     = ""
         if architecture == "" then
          -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
             platform = "osx-intel"
@@ -300,7 +308,8 @@ elseif name == "macosx" then
 elseif name == "sunos" then
 
     function resolvers.platform(t,k)
-        local platform, architecture = "", resultof("uname -m") or ""
+        local architecture = resultof("uname -m") or ""
+        local platform     = ""
         if find(architecture,"sparc",1,true) then
             platform = "solaris-sparc"
         else -- if architecture == 'i86pc'
@@ -314,7 +323,8 @@ elseif name == "sunos" then
 elseif name == "freebsd" then
 
     function resolvers.platform(t,k)
-        local platform, architecture = "", resultof("uname -m") or ""
+        local architecture = resultof("uname -m") or ""
+        local platform     = ""
         if find(architecture,"amd64",1,true) then
             platform = "freebsd-amd64"
         else
@@ -329,7 +339,8 @@ elseif name == "kfreebsd" then
 
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
-        local platform, architecture = "", os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        local architecture = os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        local platform     = ""
         if find(architecture,"x86_64",1,true) then
             platform = "kfreebsd-amd64"
         else

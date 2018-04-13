@@ -3576,7 +3576,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16268, stripped down to: 9246
+-- original size: 16586, stripped down to: 9456
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3715,7 +3715,8 @@ if platform~="" then
   os.platform=platform
 elseif os.type=="windows" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("PROCESSOR_ARCHITECTURE") or ""
+    local architecture=os.getenv("PROCESSOR_ARCHITECTURE") or ""
+    local platform=""
     if find(architecture,"AMD64",1,true) then
       platform="win64"
     else
@@ -3727,13 +3728,16 @@ elseif os.type=="windows" then
   end
 elseif name=="linux" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-    if find(architecture,"x86_64",1,true) then
-      platform="linux-64"
+    local architecture=os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+    local platform=os.getenv("MTX_PLATFORM")
+    local musl=find(os.selfdir or "","linuxmusl")
+    if platform~="" then
+    elseif find(architecture,"x86_64",1,true) then
+      platform=musl and "linuxmusl" or "linux-64"
     elseif find(architecture,"ppc",1,true) then
       platform="linux-ppc"
     else
-      platform="linux"
+      platform=musl and "linuxmusl" or "linux"
     end
     os.setenv("MTX_PLATFORM",platform)
     os.platform=platform
@@ -3741,7 +3745,8 @@ elseif name=="linux" then
   end
 elseif name=="macosx" then
   function resolvers.platform(t,k)
-    local platform,architecture="",resultof("echo $HOSTTYPE") or ""
+    local architecture=resultof("echo $HOSTTYPE") or ""
+    local platform=""
     if architecture=="" then
       platform="osx-intel"
     elseif find(architecture,"i386",1,true) then
@@ -3757,7 +3762,8 @@ elseif name=="macosx" then
   end
 elseif name=="sunos" then
   function resolvers.platform(t,k)
-    local platform,architecture="",resultof("uname -m") or ""
+    local architecture=resultof("uname -m") or ""
+    local platform=""
     if find(architecture,"sparc",1,true) then
       platform="solaris-sparc"
     else 
@@ -3769,7 +3775,8 @@ elseif name=="sunos" then
   end
 elseif name=="freebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",resultof("uname -m") or ""
+    local architecture=resultof("uname -m") or ""
+    local platform=""
     if find(architecture,"amd64",1,true) then
       platform="freebsd-amd64"
     else
@@ -3781,7 +3788,8 @@ elseif name=="freebsd" then
   end
 elseif name=="kfreebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+    local architecture=os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+    local platform=""
     if find(architecture,"x86_64",1,true) then
       platform="kfreebsd-amd64"
     else
@@ -3951,7 +3959,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 21616, stripped down to: 10359
+-- original size: 21804, stripped down to: 10461
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3971,24 +3979,22 @@ local lpegmatch=lpeg.match
 local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
 local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
-local tricky=S("/\\")*P(-1)
 local attributes=lfs.attributes
+function lfs.isdir(name)
+  return attributes(name,"mode")=="directory"
+end
+function lfs.isfile(name)
+  local a=attributes(name,"mode")
+  return a=="file" or a=="link" or nil
+end
+function lfs.isfound(name)
+  local a=attributes(name,"mode")
+  return (a=="file" or a=="link") and name or nil
+end
 if sandbox then
   sandbox.redefine(lfs.isfile,"lfs.isfile")
   sandbox.redefine(lfs.isdir,"lfs.isdir")
-end
-function lfs.isdir(name)
-  if lpegmatch(tricky,name) then
-    return attributes(name,"mode")=="directory"
-  else
-    return attributes(name.."/.","mode")=="directory"
-  end
-end
-function lfs.isfile(name)
-  return attributes(name,"mode")=="file"
-end
-function lfs.isfound(name)
-  return attributes(name,"mode")=="file" and name or nil
+  sandbox.redefine(lfs.isfound,"lfs.isfound")
 end
 local colon=P(":")
 local period=P(".")
@@ -4344,6 +4350,10 @@ function file.withinbase(path)
     end
   end
   return true
+end
+local symlinkattributes=lfs.symlinkattributes
+function lfs.readlink(name)
+  return symlinkattributes(name,"target") or nil
 end
 
 
@@ -21395,8 +21405,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 879626
--- stripped bytes    : 318064
+-- original bytes    : 880132
+-- stripped bytes    : 318258
 
 -- end library merge
 

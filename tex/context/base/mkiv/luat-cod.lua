@@ -187,6 +187,21 @@ end
 -- a kpse error when disabled. This is an engine issue that will
 -- be sorted out in due time.
 
+if not lfs.isfile then
+
+    local attributes = lfs.attributes
+
+    function lfs.isdir(name)
+        return attributes(name,"mode") == "directory"
+    end
+
+    function lfs.isfile(name)
+        local a = attributes(name,"mode")
+        return a == "file" or a == "link" or nil
+    end
+
+end
+
 local isfile = lfs.isfile
 
 local function source_file(name)

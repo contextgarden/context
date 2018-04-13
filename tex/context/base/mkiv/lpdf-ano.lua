@@ -106,6 +106,31 @@ local pdf_fit                 = pdfconstant("Fit")
 local pdf_named               = pdfconstant("Named")
 
 local autoprefix              = "#"
+local usedautoprefixes        = { }
+
+local function registerautoprefix(name)
+    local internal = autoprefix .. name
+    if usedautoprefixes[internal] == nil then
+        usedautoprefixes[internal] = false
+    end
+    return internal
+end
+
+local function useautoprefix(name)
+    local internal = autoprefix .. name
+    usedautoprefixes[internal] = true
+end
+
+local function checkautoprefixes(destinations)
+    for k, v in next, usedautoprefixes do
+        if not v then
+            if trace_destinations then
+                report_destinations("flushing unused autoprefix %a",k)
+            end
+            destinations[k] = nil
+        end
+    end
+end
 
 -- Bah, I hate this kind of features .. anyway, as we have delayed resolving we
 -- only support a document-wide setup and it has to be set before the first one
@@ -226,6 +251,7 @@ end)
 
 local function pdfnametree(destinations)
     local slices = { }
+    checkautoprefixes(destinations)
     local sorted = table.sortedkeys(destinations)
     local size   = #sorted
 
@@ -296,7 +322,6 @@ end
 local function pdfdestinationspecification()
     if next(destinations) then -- safeguard
         local r = pdfnametree(destinations)
-     -- pdfaddtocatalog("Dests",r)
         pdfaddtonames("Dests",r)
         if not log_destinations then
             destinations = nil
@@ -463,7 +488,7 @@ function nodeinjections.destination(width,height,depth,names,view)
             elseif type(name) == "number" then
                 local used = usedinternals[name]
                 usedviews[name] = view
-                names[n] = autoprefix .. name
+                names[n] = registerautoprefix(name)
                 doview = true
             else
                 usedviews[name] = view
@@ -483,10 +508,9 @@ function nodeinjections.destination(width,height,depth,names,view)
                     local used = usedinternals[name]
                     if used and used ~= defaultview then
                         usedviews[name] = view
-                        names[n] = autoprefix .. name
+                        names[n] = registerautoprefix(name)
                         doview = true
                     else
-                     -- names[n] = autoprefix .. name
                         names[n] = false
                     end
                 end
@@ -516,7 +540,7 @@ local function pdflinkinternal(internal,page)
             return pagereferences[page]
         else
             if type(internal) ~= "string" then
-                internal = autoprefix .. internal
+                internal = useautoprefix(internal)
             end
             return pdfdictionary {
                 S = pdf_goto,

@@ -1997,7 +1997,7 @@ do
     implement {
         name      = "xmldoifatt",
         arguments = "3 strings",
-        actions = function(id,l,v)
+        actions = function(id,k,v)
             local e = getid(id)
             ctx_doif(e and e.at[k] == v or false)
         end
@@ -2006,7 +2006,7 @@ do
     implement {
         name      = "xmldoifnotatt",
         arguments = "3 strings",
-        actions = function(id,l,v)
+        actions = function(id,k,v)
             local e = getid(id)
             ctx_doifnot(e and e.at[k] == v or false)
         end
@@ -2015,7 +2015,7 @@ do
     implement {
         name      = "xmldoifelseatt",
         arguments = "3 strings",
-        actions = function(id,l,v)
+        actions = function(id,k,v)
             local e = getid(id)
             ctx_doifelse(e and e.at[k] == v or false)
         end

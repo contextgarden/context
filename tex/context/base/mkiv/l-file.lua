@@ -69,35 +69,34 @@ local lpegmatch = lpeg.match
 local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
 local checkedsplit = string.checkedsplit
 
--- local patterns = file.patterns or { }
--- file.patterns  = patterns
-
 local P, R, S, C, Cs, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Ct
 
 -- better this way:
 
-local tricky     = S("/\\") * P(-1)
+----- tricky     = S("/\\") * P(-1)
 local attributes = lfs.attributes
+
+function lfs.isdir(name)
+ -- if not lpegmatch(tricky,name) then
+ --     name = name .. "/."
+ -- end
+    return attributes(name,"mode") == "directory"
+end
+
+function lfs.isfile(name)
+    local a = attributes(name,"mode")
+    return a == "file" or a == "link" or nil
+end
+
+function lfs.isfound(name)
+    local a = attributes(name,"mode")
+    return (a == "file" or a == "link") and name or nil
+end
 
 if sandbox then
     sandbox.redefine(lfs.isfile,"lfs.isfile")
     sandbox.redefine(lfs.isdir, "lfs.isdir")
-end
-
-function lfs.isdir(name)
-    if lpegmatch(tricky,name) then
-        return attributes(name,"mode") == "directory"
-    else
-        return attributes(name.."/.","mode") == "directory"
-    end
-end
-
-function lfs.isfile(name)
-    return attributes(name,"mode") == "file"
-end
-
-function lfs.isfound(name)
-    return attributes(name,"mode") == "file" and name or nil
+    sandbox.redefine(lfs.isfound, "lfs.isfound")
 end
 
 local colon     = P(":")
@@ -725,3 +724,10 @@ function file.withinbase(path) -- don't go beyond root
     return true
 end
 
+-- not used in context but was in luatex once:
+
+local symlinkattributes = lfs.symlinkattributes
+
+function lfs.readlink(name)
+    return symlinkattributes(name,"target") or nil
+end

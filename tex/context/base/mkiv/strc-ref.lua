@@ -1999,7 +1999,7 @@ local function setinternalreference(specification)
         -- ugly .. later we decide to ignore it when we have a real one
         -- but for testing we might want to see them all
         if internal then
-            if innermethod ~= v_name then -- so page and auto
+            if innermethod ~= v_name then -- innermethod == v_auto
              -- we don't want too many #1 #2 #3 etc
                 tn = tn + 1
                 t[tn] = internal -- when number it's internal
