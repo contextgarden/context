@@ -119,6 +119,7 @@ end
 local function useautoprefix(name)
     local internal = autoprefix .. name
     usedautoprefixes[internal] = true
+    return internal
 end
 
 local function checkautoprefixes(destinations)

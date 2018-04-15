@@ -302,10 +302,10 @@ end
 -- kind: 0=single 1=first of pair, 2=second of pair
 
 function injections.setposition(kind,current,factor,rlmode,spec,injection)
-    local x = factor*spec[1]
-    local y = factor*spec[2]
-    local w = factor*spec[3]
-    local h = factor*spec[4]
+    local x = factor * (spec[1] or 0)
+    local y = factor * (spec[2] or 0)
+    local w = factor * (spec[3] or 0)
+    local h = factor * (spec[4] or 0)
     if x ~= 0 or w ~= 0 or y ~= 0 or h ~= 0 then -- okay?
         local yoffset   = y - h
         local leftkern  = x      -- both kerns are set in a pair kern compared

@@ -146,6 +146,8 @@
      {\node_rules_set{#1}\barparameter\c!left}%
      {\relax\barparameter\c!right}}
 
+% store in properties
+
 \unexpanded\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
   {\edef\currentbar{#1}%
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
@@ -570,5 +572,36 @@
   %\c!threshold=.25\emwidth,
    \c!distance=.25\emwidth,
    \c!rulethickness=.25\exheight]
+
+%D Bonus:
+%D
+%D \starttyping
+%D \startuseMPgraphic{foo}
+%D     fill unitsquare
+%D         xyscaled (RuleWidth,RuleHeight+RuleDepth) enlarged (ExHeight/4,ExHeight/8)
+%D         shifted  (-ExHeight/8,ExHeight/16)
+%D         withcolor RuleColor ;
+%D \stopuseMPgraphic
+%D
+%D \definelinefiller[foo][mp=foo,color=darkred]
+%D
+%D \linefillerhbox[foo]{OEPS}
+%D \stoptyping
+
+\unexpanded\def\node_backgrounds_filler_box#1#2[#3]%
+  {\bgroup
+   \clf_enablebackgroundboxes
+   \dowithnextbox{%
+     \node_linefiller_set{#3}%
+     #1%
+        attr \backgroundattribute \plusone
+        attr \linefillerattribute \the\attribute\linefillerattribute
+       {\box\nextbox}%
+     \egroup}%
+   #2}
+
+\unexpanded\def\linefillerhbox{\node_backgrounds_filler_box\hpack\hbox}
+\unexpanded\def\linefillervbox{\node_backgrounds_filler_box\vpack\vbox}
+\unexpanded\def\linefillervtop{\node_backgrounds_filler_box\tpack\vtop}
 
 \protect \endinput

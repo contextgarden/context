@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/13/18 14:53:48
+-- merge date  : 04/15/18 23:11:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -22705,10 +22705,10 @@ function injections.setcursive(start,nxt,factor,rlmode,exit,entry,tfmstart,tfmne
   return dx,dy,nofregisteredcursives
 end
 function injections.setposition(kind,current,factor,rlmode,spec,injection)
-  local x=factor*spec[1]
-  local y=factor*spec[2]
-  local w=factor*spec[3]
-  local h=factor*spec[4]
+  local x=factor*(spec[1] or 0)
+  local y=factor*(spec[2] or 0)
+  local w=factor*(spec[3] or 0)
+  local h=factor*(spec[4] or 0)
   if x~=0 or w~=0 or y~=0 or h~=0 then 
     local yoffset=y-h
     local leftkern=x   
@@ -24743,7 +24743,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
   end
   return head,base
 end
-local function multiple_glyphs(head,start,multiple,skiphash,what) 
+local function multiple_glyphs(head,start,multiple,skiphash,what,stop) 
   local nofmultiples=#multiple
   if nofmultiples>0 then
     resetinjection(start)
@@ -25278,6 +25278,13 @@ local function getmapping(dataset,sequence,currentlookup)
     return mapping
   end
 end
+function chainprocs.gsub_remove(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+  if trace_chains then
+    logprocess("%s: removing character %s",cref(dataset,sequence,chainindex),gref(getchar(start)))
+  end
+  head,start=remove_node(head,start,true)
+  return head,getprev(start),true
+end
 function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
   local mapping=currentlookup.mapping
   if mapping==nil then
@@ -25368,7 +25375,7 @@ function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup
       if trace_multiples then
         logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
       end
-      return multiple_glyphs(head,start,replacement,skiphash,dataset[1])
+      return multiple_glyphs(head,start,replacement,skiphash,dataset[1],stop)
     end
   end
   return head,start,false
@@ -25880,6 +25887,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
               logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
             end
           end
+        else
         end
         i=i+1
         if i>size or not start then
@@ -30058,7 +30066,7 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
   local hfactor=parameters.hfactor
   properties.virtualized=true
   tfmdata.fonts={
-    { id=0 }
+    { id=0 } 
   }
   local getactualtext=otf.getactualtext
   local storepdfdata=otf.storepdfdata
@@ -30726,6 +30734,8 @@ local function addfeature(data,feature,specifications)
                 if not subtype then
                   subtype=lookup.type
                 end
+              elseif v==0 then
+                lookups[k]={ { type="gsub_remove" } }
               else
                 lookups[k]=false 
               end

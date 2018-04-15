@@ -267,6 +267,12 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
     end
 end
 
+-- local show_effect = { "lua", function(f,c)
+--     report_effect("font id %i, char %C",f,c)
+-- end }
+--
+-- local show_effect = { "lua", "print('!')" }
+
 local function manipulateeffect(tfmdata)
     local effect = tfmdata.properties.effect
     if effect then
@@ -293,6 +299,7 @@ local function manipulateeffect(tfmdata)
             local oldwidth  = character.width
             local oldheight = character.height
             local olddepth  = character.depth
+
             if oldwidth and oldwidth > 0 then
                 character.width = oldwidth + wdelta
                 local commands = character.commands
@@ -300,11 +307,13 @@ local function manipulateeffect(tfmdata)
                 if vshift then
                     if commands then
                         prependcommands ( commands,
+-- show_effect,
                             hshift,
                             vshift
                         )
                     else
                         character.commands = {
+-- show_effect,
                             hshift,
                             vshift,
                             charcommand[unicode]
@@ -313,10 +322,12 @@ local function manipulateeffect(tfmdata)
                 else
                     if commands then
                         prependcommands ( commands,
+-- show_effect,
                             hshift
                         )
                     else
                         character.commands = {
+-- show_effect,
                             hshift,
                             charcommand[unicode]
                         }

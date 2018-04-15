@@ -110,7 +110,7 @@
  % \c!stopper=,
    \c!suffixseparator=, % currently rather hard coded
    \c!suffix=\floatcaptionsuffix,
-   \c!distance=\emwidth,
+   \c!distance=\emwidth, % plus .5\emwidth minus .25\emwidth
    \c!conversion=\v!numbers,
    \c!maxwidth=\hsize,
    \c!command=]
@@ -505,10 +505,13 @@
 \let\floatlocationmethod\empty
 
 \def\strc_floats_analyze_location
-  {% moved here, will do more
+  {% more will be moved here
    \let\floatlabel \empty
    \let\floatcolumn\empty
    \let\floatrow   \empty
+   %
+   \edef\floatcaptionlocation{\floatcaptionparameter\c!location}%
+   %
    \setfloatmethodvariables\floatlocation}
 
 \unexpanded\def\strc_floats_place#tag%
@@ -571,25 +574,49 @@
    \strc_floats_set_current_tag{#tag}%
    \dodoubleempty\strc_floats_start_place_indeed}
 
+%D We abuse the settings to pick up some float parameters too which makes it
+%D messy.
+
 \def\strc_floats_start_place_indeed[#settings][#userdata]%
   {\strc_floats_reset_variables
-   \edef\savedfloatlocation{\floatcaptionparameter\c!location}%
+   % save
+   \edef\m_location    {\floatcaptionparameter\c!location}%
+   \edef\m_topoffset   {\floatcaptionparameter\c!topoffset}%
+   \edef\m_bottomoffset{\floatcaptionparameter\c!bottomoffset}%
+   \edef\m_freeregion  {\floatcaptionparameter\c!freeregion}%
+   % preset
+   \letfloatcaptionparameter        \c!location     \empty
    \setexpandedfloatcaptionparameter\c!topoffset   {\floatparameter\c!topoffset}%
    \setexpandedfloatcaptionparameter\c!bottomoffset{\floatparameter\c!bottomoffset}%
    \setexpandedfloatcaptionparameter\c!freeregion  {\floatparameter\c!freeregion}%
-   \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
-   \setexpandedfloatparameter\c!topoffset   {\floatcaptionparameter\c!topoffset}%
-   \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
-   \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
-   \def\m_strc_floats_saved_userdata{#2}%
+   \letfloatcaptionparameter        \c!reference    \empty
+   \letfloatcaptionparameter        \c!title        \empty
+   \letfloatcaptionparameter        \c!marking      \empty
+   \letfloatcaptionparameter        \c!list         \empty
+   \letfloatcaptionparameter        \c!bookmark     \empty
+   % pickup
+   \setupcurrentfloatcaption[#settings]%
+   \ifsecondargument
+     \setupcurrentfloatuserdata[#userdata]%
+     \def\m_strc_floats_saved_userdata{#userdata}%
+   \else
+     \let\m_strc_floats_saved_userdata\empty
+   \fi
+   % check
    \edef\floatlocation{\floatcaptionparameter\c!location}%
-   \setfloatcaptionparameter\c!location{\savedfloatlocation}% not expanded
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}%
    \fi
-   \ifsecondargument
-     \setupcurrentfloatuserdata[#userdata]%
-   \fi
+   % inherit
+   \setexpandedfloatparameter\c!topoffset   {\floatcaptionparameter\c!topoffset}%
+   \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
+   \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
+   % restore
+   \letfloatcaptionparameter\c!location    \m_location
+   \letfloatcaptionparameter\c!topoffset   \m_topoffset
+   \letfloatcaptionparameter\c!bottomoffset\m_bottomoffset
+   \letfloatcaptionparameter\c!freeregion  \m_freeregion
+   %
    \strc_floats_analyze_location
    \doifelseinset\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal
    \bgroup
@@ -1191,11 +1218,11 @@
   {\global\setbox\floatbox\hpack to \scratchwidth
      {\doifnotinset\v!right\floatlocation\hss
       \box\floatbox
-      \doifnotinset\v!left \floatlocation\hss}}
+      \doifnotinset\v!left\floatlocation\hss}}
 
-\def\strc_floats_realign_floatbox_horizontal_two
+\def\strc_floats_realign_floatbox_horizontal_two % why is this
   {\global\setbox\floatbox\hpack to \scratchwidth
-     {\doifnot{\floatparameter\c!location}\v!left \hss
+     {\doifnot{\floatparameter\c!location}\v!left\hss
       \box\floatbox
       \doifnot{\floatparameter\c!location}\v!right\hss}}
 
@@ -1336,7 +1363,7 @@
 %
 % \def\strc_floats_align_content_indeed
 %   {\alignstrutmode\zerocount
-%    \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+%    \doifnotcommon\floatcaptionlocation{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
 %      {\shiftalignedline
 %         {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
 %         {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
@@ -1371,7 +1398,7 @@
 \def\strc_floats_align_content_indeed
   {\alignstrutmode\zerocount
    \ifx\forcedfloatmethod\v!local \else
-     \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+     \doifnotcommon\floatcaptionlocation{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
        {\strc_floats_shift_indeed\floatparameter}%
      \expandafter\strc_floats_align_indeed
    \fi}
@@ -1462,23 +1489,21 @@
       \fi\fi
       \strc_floats_align_content{\copy\b_strc_floats_content}}}
 
+
 \def\strc_floats_prepare_page_caption
-  {\edef\p_strc_floats_caption_location{\floatcaptionparameter\c!location}%
-   \edef\p_strc_floats_caption_width   {\floatcaptionparameter\c!width}%
+  {\edef\p_strc_floats_caption_width   {\floatcaptionparameter\c!width}%
    \edef\p_strc_floats_caption_minwidth{\floatcaptionparameter\c!minwidth}%
    \edef\p_strc_floats_caption_align   {\floatcaptionparameter\c!align}%
    \dostarttagged\t!floatcaption\empty
-   \ifx\p_strc_floats_caption_location\v!top
-     \strc_floats_prepare_page_caption_top_bottom
-   \else\ifx\p_strc_floats_caption_location\v!bottom
-     \strc_floats_prepare_page_caption_top_bottom
-   \else\ifx\p_strc_floats_caption_width\v!fit
-     \strc_floats_prepare_side_auto_caption
-   \else\ifx\p_strc_floats_caption_width\v!max
-     \strc_floats_prepare_side_auto_caption
-   \else
-     \strc_floats_prepare_side_width_caption
-   \fi\fi\fi\fi
+   \doifcommonelse\floatcaptionlocation{\v!top,\v!bottom}
+      {\strc_floats_prepare_page_caption_top_bottom}
+      {\ifx\p_strc_floats_caption_width\v!fit
+         \strc_floats_prepare_side_auto_caption
+       \else\ifx\p_strc_floats_caption_width\v!max
+         \strc_floats_prepare_side_auto_caption
+       \else
+         \strc_floats_prepare_side_width_caption
+      \fi\fi}%
    \dostoptagged}
 
 \def\strc_floats_prepare_page_caption_top_bottom
@@ -1508,7 +1533,11 @@
   \fi}
 
 \def\strc_floats_caption_set_align
-  {\normalexpanded{\setupalign[\v!reset,\p_strc_floats_caption_align]}}
+  {\edef\m_align{\v!reset\ifx\p_strc_floats_caption_align\empty\else,\fi\p_strc_floats_caption_align}%
+   \doifinset\v!tolerant    \floatcaptionlocation{\edef\m_align{\m_align,\v!tolerant}}%
+   \doifinset\v!verytolerant\floatcaptionlocation{\edef\m_align{\m_align,\v!verytolerant}}%
+   \doifinset\v!stretch     \floatcaptionlocation{\edef\m_align{\m_align,\v!stretch}}%
+   \setupalign[\m_align]}
 
 \def\strc_floats_prepare_side_auto_caption
   {\scratchdimen\dimexpr\hsize-\wd\b_strc_floats_content-\floatparameter\c!margin\relax
@@ -1640,7 +1669,7 @@
   {\ifconditional\c_strc_floats_par_float \hbox \else \expandafter \strc_floats_align_content \fi % skip, no pack
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \box\b_strc_floats_content
-      \doifnotinset\v!hang{\floatcaptionparameter\c!location}
+      \doifnotinset\v!hang\floatcaptionlocation
         {\dotfskip{\floatcaptionparameter\c!distance}}%
       \vbox to\d_strc_float_temp_height{#1}}}
 
@@ -1648,7 +1677,7 @@
   {\ifconditional\c_strc_floats_par_float \hbox \else \expandafter \strc_floats_align_content \fi % skip, no pack
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \vbox to\d_strc_float_temp_height{#1}%
-      \doifnotinset\v!hang{\floatcaptionparameter\c!location}
+      \doifnotinset\v!hang\floatcaptionlocation
         {\dotfskip{\floatcaptionparameter\c!distance}}%
       \box\b_strc_floats_content}}
 
@@ -1718,7 +1747,7 @@
 
 \def\strc_floats_build_box_next % beware, we first check on left/rightmargin because there can be left/right also
   {\let\next\strc_floats_build_box_next_left
-   \processallactionsinset[\floatcaptionparameter\c!location]
+   \processallactionsinset[\floatcaptionlocation]
      [ \v!outermargin=>\let\next\strc_floats_build_box_next_outer_margin,
        \v!innermargin=>\let\next\strc_floats_build_box_next_inner_margin,
         \v!leftmargin=>\let\next\strc_floats_build_box_next_left_margin,
@@ -1736,7 +1765,7 @@
      \let\next\strc_floats_build_box_high
    \else
      \let\next\strc_floats_build_box_middle
-     \processallactionsinset[\floatcaptionparameter\c!location]
+     \processallactionsinset[\floatcaptionlocation]
        [   \v!low=>\let\next\strc_floats_build_box_low,
         \v!middle=>\let\next\strc_floats_build_box_middle,
           \v!high=>\let\next\strc_floats_build_box_high]%
@@ -1749,14 +1778,13 @@
 \def\strc_floats_flush_left_caption_hang
   {\hsmash{\llap{\box\b_strc_floats_caption\dotfskip{\floatcaptionparameter\c!distance}}}}
 
-\def\strc_floats_flush_caption_hang % expanded can go
-  {\edef\p_strc_floats_caption_location{\floatcaptionparameter\c!location}%
-   \doifelseinset\v!righthanging\p_strc_floats_caption_location
+\def\strc_floats_flush_caption_hang
+  {\doifelseinset\v!righthanging\floatcaptionlocation
      {\strc_floats_flush_right_caption_hang}
-     {\doifelseinset\v!lefthanging\p_strc_floats_caption_location
+     {\doifelseinset\v!lefthanging\floatcaptionlocation
         {\strc_floats_flush_left_caption_hang}
-        {\doifelseinset\v!hang\p_strc_floats_caption_location
-           {\doifelseinset\v!outer\p_strc_floats_caption_location
+        {\doifelseinset\v!hang\floatcaptionlocation
+           {\doifelseinset\v!outer\floatcaptionlocation
               {\doifelserightpagefloat{\strc_floats_flush_right_caption_hang}{\strc_floats_flush_left_caption_hang}}
               {\doifelseinset\v!right\floatcaptiondirectives
                  {\strc_floats_flush_right_caption_hang}
@@ -1834,6 +1862,7 @@
   {\dp\b_strc_floats_caption\strutdepth
    \setbox\scratchbox\vbox
      {\d_strc_float_temp_width\wd\b_strc_floats_content
+      \hsize\d_strc_float_temp_width
       \ifconditional\c_strc_floats_par_float
         \strc_floats_locate_side_float{\box\b_strc_floats_caption}%
         \vss\strc_floats_between_stack
@@ -1845,12 +1874,13 @@
         \strc_floats_align_content{\box\b_strc_floats_content}%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
-   \vbox to \noflines\lineheight{\unvbox\scratchbox}} % \vpack ?
+   \vpack to \noflines\lineheight{\unvbox\scratchbox}}
 
 \def\strc_floats_build_box_bottom_stack_grid
   {\dp\b_strc_floats_caption\strutdepth
    \setbox\scratchbox\vbox
      {\d_strc_float_temp_width\wd\b_strc_floats_content
+      \hsize\d_strc_float_temp_width
       \ifconditional\c_strc_floats_par_float
         \hpack{\box\b_strc_floats_content}%
         \vss\strc_floats_between_stack
@@ -1862,7 +1892,7 @@
         \strc_floats_locate_text_float{\box\b_strc_floats_caption}%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
-   \vbox to \noflines\lineheight{\unvbox\scratchbox}} % \vpack ?
+   \vpack to \noflines\lineheight{\unvbox\scratchbox}}
 
 \def\strc_floats_build_box_top_stack_stretch
   {\dp\b_strc_floats_caption\strutdepth
@@ -1872,6 +1902,7 @@
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight % pack ?
      {\d_strc_float_temp_width\wd\b_strc_floats_content
+      \hsize\d_strc_float_temp_width
       \ifconditional\c_strc_floats_par_float
         \strc_floats_locate_side_float{\box\b_strc_floats_caption}%
         \vss\strc_floats_between_stack\vss
@@ -1885,16 +1916,17 @@
 
 \def\strc_floats_build_box_bottom_stack_stretch
   {\dp\b_strc_floats_caption\strutdepth
-   \setbox\scratchbox\vbox % pack ?
-     {\strc_floats_align_content{\copy\b_strc_floats_content  }%
+   \setbox\scratchbox\vpack
+     {\strc_floats_align_content{\copy\b_strc_floats_content}%
       \strc_floats_align_caption{\copy\b_strc_floats_caption}}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight
      {\d_strc_float_temp_width\wd\b_strc_floats_content
+      \hsize\d_strc_float_temp_width
       \ifconditional\c_strc_floats_par_float
         \hpack{\box\b_strc_floats_content}%
         \vss\strc_floats_between_stack\vss
-        \strc_floats_locate_side_float{\box\b_strc_floats_caption}
+        \strc_floats_locate_side_float{\box\b_strc_floats_caption}%
       \else
         \page_otr_command_set_float_hsize
         \strc_floats_align_content{\box\b_strc_floats_content}%
@@ -1906,14 +1938,14 @@
   {\let\next\strc_floats_build_box_top_stack_normal
    \processfirstactioninset[\floatcaptionparameter\c!location]
      [   \v!grid=>\let\next\strc_floats_build_box_top_stack_grid,
-      \v!stretch=>\let\next\strc_floats_build_box_top_stack_stretch]%
+        \v!lines=>\let\next\strc_floats_build_box_top_stack_stretch]% was \v!grid but interfered
    \next}
 
 \def\strc_floats_build_box_bottom
   {\let\next\strc_floats_build_box_bottom_stack_normal
    \processfirstactioninset[\floatcaptionparameter\c!location]
      [   \v!grid=>\let\next\strc_floats_build_box_bottom_stack_grid,
-      \v!stretch=>\let\next\strc_floats_build_box_bottom_stack_stretch]%
+        \v!lines=>\let\next\strc_floats_build_box_bottom_stack_stretch]% was \v!grid but interfered
    \next}
 
 \def\strc_floats_relocate_caption_right#1{\strc_floats_align_caption{\hbox to \d_strc_float_temp_width{\hss#1}}}
@@ -1930,7 +1962,8 @@
       \ifconditional\c_floats_store_minimal_package
         \strc_floats_build_box_separate_make
       \else
-        \let\floatcaptionarrangement\s!default
+      % \let\floatcaptionarrangement\s!default
+        \let\floatcaptionarrangement\v!bottom % for Alan
         \processcommacommand[\floatcaptionparameter\c!location]\strc_floats_build_box_step
         \ifcsname\??floatbuilder\floatcaptionarrangement\endcsname
           \lastnamedcs
@@ -2105,8 +2138,9 @@
 
 \def\strc_floats_prepare_side_caption_fit % or center when smaller
   {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
-    \setbox\b_strc_floats_caption\vbox
+     \setbox\b_strc_floats_caption\vbox
        {\forgetall % needed?
+        \strc_floats_caption_set_align
         \hsize\wd\b_strc_floats_content
         \strc_floats_make_complete_caption}%
    \else

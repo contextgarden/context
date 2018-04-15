@@ -1,7 +1,6 @@
 % language=uk
 
 \environment luatex-style
-\environment luatex-logos
 
 \startcomponent luatex-languages
 
@@ -108,10 +107,10 @@ immediately, not at the end of the current partial paragraph.
 
 Typeset boxes now always have their language information embedded in the nodes
 themselves, so there is no longer a possible dependency on the surrounding
-language settings. In \TEX82, a mid-paragraph statement like \type {\unhbox0} would
-process the box using the current paragraph language unless there was a
-\type {\setlanguage} issued inside the box. In \LUATEX, all language variables are
-already frozen.
+language settings. In \TEX82, a mid|-|paragraph statement like \type {\unhbox0}
+would process the box using the current paragraph language unless there was a
+\type {\setlanguage} issued inside the box. In \LUATEX, all language variables
+are already frozen.
 
 In traditional \TEX\ the process of hyphenation is driven by \type {lccode}s. In
 \LUATEX\ we made this dependency less strong. There are several strategies
@@ -195,6 +194,7 @@ indicate a start or end. You can omit the last set from the test by setting
 \type {\hyphenationbounds} to a non|-|zero value:
 
 \starttabulate[|l|l|]
+\DB value    \BC behaviour \NC \NR
 \NC \type{0} \NC not strict \NC \NR
 \NC \type{1} \NC strict start \NC \NR
 \NC \type{2} \NC strict end \NC \NR
@@ -204,6 +204,7 @@ indicate a start or end. You can omit the last set from the test by setting
 The word start is determined as follows:
 
 \starttabulate[|l|l|]
+\DB node      \BC behaviour \NC \NR
 \BC boundary  \NC yes when wordboundary \NC \NR
 \BC hlist     \NC when hyphenationbounds 1 or 3 \NC \NR
 \BC vlist     \NC when hyphenationbounds 1 or 3 \NC \NR
@@ -219,6 +220,7 @@ The word start is determined as follows:
 The word end is determined as follows:
 
 \starttabulate[|l|l|]
+\DB node      \BC behaviour \NC \NR
 \BC boundary  \NC yes \NC \NR
 \BC glyph     \NC yes when different language \NC \NR
 \BC glue      \NC yes \NC \NR
@@ -487,8 +489,7 @@ The first parameter has the following consequences for automatic discs (the ones
 resulting from an \type {\exhyphenchar}:
 
 \starttabulate[|c|l|l|]
-\BC mode     \BC automatic disc \type{-}         \BC explicit disc \type{\-}         \NC \NR
-\HL
+\DB mode     \BC automatic disc \type{-}         \BC explicit disc \type{\-}         \NC \NR
 \NC \type{0} \NC \type {\exhyphenpenalty}        \NC \type {\exhyphenpenalty}        \NC \NR
 \NC \type{1} \NC \type {\hyphenpenalty}          \NC \type {\hyphenpenalty}          \NC \NR
 \NC \type{2} \NC \type {\exhyphenpenalty}        \NC \type {\hyphenpenalty}          \NC \NR
@@ -535,14 +536,14 @@ provided:
 \stopitem
 \stopitemize
 
-The expanded argument is first converted back to a space-separated string while
+The expanded argument is first converted back to a space|-|separated string while
 dropping the internal command names. This string is then converted into a
 dictionary by a routine that creates key|-|value pairs by converting the other
 listed items. It is important to note that the keys in an exception dictionary
 can always be generated from the values. Here are a few examples:
 
 \starttabulate[|l|l|l|]
-\BC value                  \BC implied key (input) \NC effect \NC\NR
+\DB value                  \BC implied key (input) \BC effect \NC\NR
 \NC \type {ta-ble}         \NC table               \NC \type {ta\-ble} ($=$ \type {ta\discretionary{-}{}{}ble}) \NC\NR
 \NC \type {ba{k-}{}{c}ken} \NC backen              \NC \type {ba\discretionary{k-}{}{c}ken} \NC\NR
 \stoptabulate
@@ -573,6 +574,45 @@ hyphenation heavily depended on font encodings. This is no longer true in
 \LUATEX, and the corresponding primitive is basically ignored. Because we now
 have \type {hjcode}, the case relate codes can be used exclusively for \type
 {\uppercase} and \type {\lowercase}.
+
+The three curly brace pair pattern in an exception can be somewhat unexpected so
+we will try to explain it by example. The pattern \type {foo{}{}{x}bar} pattern
+creates a lookup \type {fooxbar} and the pattern \type {foo{}{}{}bar} creates
+\type {foobar}. Then, when a hit happens there is a replacement text (\type {x})
+or none. Because we introduced penalties in discretionary nodes, the exception
+syntax now also can take a penalty specification. The value between square brackets
+is a multiplier for \type {\exceptionpenalty}. Here we have set it to 10000 so
+effectively we get 30000 in the example.
+
+\def\ShowSample#1#2%
+  {\startlinecorrection[blank]
+   \hyphenation{#1}%
+   \exceptionpenalty=10000
+   \bTABLE[foregroundstyle=type]
+     \bTR
+       \bTD[align=middle,nx=4] \type{#1} \eTD
+     \eTR
+     \bTR
+       \bTD[align=middle] \type{10em} \eTD
+       \bTD[align=middle] \type {3em} \eTD
+       \bTD[align=middle] \type {0em} \eTD
+       \bTD[align=middle] \type {6em} \eTD
+     \eTR
+     \bTR
+       \bTD[width=10em]\vtop{\hsize 10em 123 #2 123\par}\eTD
+       \bTD[width=10em]\vtop{\hsize  3em 123 #2 123\par}\eTD
+       \bTD[width=10em]\vtop{\hsize  0em 123 #2 123\par}\eTD
+       \bTD[width=10em]\vtop{\setupalign[verytolerant,stretch]\rmtf\hsize 6em 123 #2 #2 #2 #2 123\par}\eTD
+     \eTR
+   \eTABLE
+   \stoplinecorrection}
+
+\ShowSample{x{a-}{-b}{}x{a-}{-b}{}x{a-}{-b}{}x{a-}{-b}{}xx}{xxxxxx}
+\ShowSample{x{a-}{-b}{}x{a-}{-b}{}[3]x{a-}{-b}{}[1]x{a-}{-b}{}xx}{xxxxxx}
+
+\ShowSample{z{a-}{-b}{z}{a-}{-b}{z}{a-}{-b}{z}{a-}{-b}{z}z}{zzzzzz}
+\ShowSample{z{a-}{-b}{z}{a-}{-b}{z}[3]{a-}{-b}{z}[1]{a-}{-b}{z}z}{zzzzzz}
+
 
 \section{Applying hyphenation}
 
@@ -735,7 +775,7 @@ the top-level discretionary that resulted from the first hyphenation point.
 Here is that nested solution again, in a different representation:
 
 \starttabulate[|l|c|c|c|c|c|c|]
-\NC         \BC pre           \BC     \BC post      \BC       \BC replace       \BC       \NC \NR
+\DB         \BC pre           \BC     \BC post      \BC       \BC replace       \BC       \NC \NR
 \NC topdisc \NC \type {f-}    \NC (1) \NC           \NC sub 1 \NC               \NC sub 2 \NC \NR
 \NC sub 1   \NC \type {f-}    \NC (2) \NC \type {i} \NC (3)   \NC \type {<fi>}  \NC (4)   \NC \NR
 \NC sub 2   \NC \type {<ff>-} \NC (5) \NC \type {i} \NC (6)   \NC \type {<ffi>} \NC (7)   \NC \NR
@@ -771,7 +811,7 @@ The mapping of the seven list fields to the six fields in this discretionary nod
 pair is as follows:
 
 \starttabulate[|l|c|c|]
-\BC field                 \BC description   \NC       \NC \NR
+\DB field                 \BC description   \NC       \NC \NR
 \NC \type {disc1.pre}     \NC \type {f-}    \NC (1)   \NC \NR
 \NC \type {disc1.post}    \NC \type {<fi>}  \NC (4)   \NC \NR
 \NC \type {disc1.replace} \NC \type {<ffi>} \NC (7)   \NC \NR

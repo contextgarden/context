@@ -116,6 +116,7 @@
     <cd:interfacefile filename="i-language.xml"/>
     <cd:interfacefile filename="i-layer.xml"/>
     <cd:interfacefile filename="i-layout.xml"/>
+    <cd:interfacefile filename="i-linefiller.xml"/>
     <cd:interfacefile filename="i-linenumber.xml"/>
     <cd:interfacefile filename="i-lines.xml"/>
     <cd:interfacefile filename="i-linetable.xml"/>

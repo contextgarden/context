@@ -1,7 +1,6 @@
 % language=uk
 
 \environment luatex-style
-\environment luatex-logos
 
 \startcomponent luatex-math
 
@@ -16,15 +15,15 @@ make it easier to use \OPENTYPE\ math fonts. And finally, there are some
 extensions that have been proposed or considered in the past that are now added
 to the engine.
 
-\section{The current math style}
+\section{Math styles}
+
+\subsection{\type {\mathstyle}}
 
 It is possible to discover the math style that will be used for a formula in an
 expandable fashion (while the math list is still being read). To make this
 possible, \LUATEX\ adds the new primitive: \type {\mathstyle}. This is a \quote
 {convert command} like e.g. \type {\romannumeral}: its value can only be read,
 not set.
-
-\subsection{\type {\mathstyle}}
 
 The returned value is between 0 and 7 (in math mode), or $-1$ (all other modes).
 For easy testing, the eight math style commands have been altered so that the can
@@ -168,7 +167,8 @@ The input for such primitives would look like this:
 The altered \TEX82 primitives are:
 
 \starttabulate[|l|l|r|c|l|r|]
-\BC primitive         \BC min \BC max    \BC \kern 2em \BC min \BC max    \NC \NR
+\DB primitive         \BC min \BC max    \BC \kern 2em \BC min \BC max    \NC \NR
+\TB[small,samepage]
 \NC \type {\mathcode} \NC 0   \NC 10FFFF \NC =         \NC 0   \NC 8000   \NC \NR
 \NC \type {\delcode}  \NC 0   \NC 10FFFF \NC =         \NC 0   \NC FFFFFF \NC \NR
 \stoptabulate
@@ -176,7 +176,8 @@ The altered \TEX82 primitives are:
 The unaltered ones are:
 
 \starttabulate[|l|l|r|]
-\BC primitive            \BC min \BC max     \NC \NR
+\DB primitive            \BC min \BC max     \NC \NR
+\TB[small,samepage]
 \NC \type {\mathchardef} \NC 0   \NC    8000 \NC \NR
 \NC \type {\mathchar}    \NC 0   \NC    7FFF \NC \NR
 \NC \type {\mathaccent}  \NC 0   \NC    7FFF \NC \NR
@@ -193,7 +194,7 @@ The following new primitives are compatible with \XETEX:
 % somewhat fuzzy:
 
 \starttabulate[|l|l|r|c|l|r|]
-\BC primitive                               \BC min       \BC max                          \BC \kern 2em \BC min       \BC max                        \NC \NR
+\DB primitive                               \BC min       \BC max                          \BC \kern 2em \BC min       \BC max                        \NC \NR
 \NC \type {\Umathchardef}                   \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}}   \NC           \NC           \NC                            \NC \NR
 \NC \type {\Umathcharnumdef}\rlap{\high{5}} \NC -80000000 \NC    7FFFFFFF\rlap{\high{3}}   \NC           \NC           \NC                            \NC \NR
 \NC \type {\Umathcode}                      \NC 0         \NC      10FFFF                  \NC =         \NC 0+0+0     \NC 7+FF+10FFFF\rlap{\high{1}} \NC \NR
@@ -239,12 +240,13 @@ New primitives that exist in \LUATEX\ only (all of these will be explained
 in following sections):
 
 \starttabulate[|l|l|]
-\BC primitive                \BC value range (in hex) \NC \NR
-\NC \type {\Uroot}           \NC 0+0--FF+10FFFF$^2$   \NC \NR
-\NC \type {\Uoverdelimiter}  \NC 0+0--FF+10FFFF$^2$   \NC \NR
-\NC \type {\Uunderdelimiter} \NC 0+0--FF+10FFFF$^2$   \NC \NR
-\NC \type {\Udelimiterover}  \NC 0+0--FF+10FFFF$^2$   \NC \NR
-\NC \type {\Udelimiterunder} \NC 0+0--FF+10FFFF$^2$   \NC \NR
+\DB primitive                \BC value range (in hex) \NC \NR
+\TB[small,samepage]
+\NC \type {\Uroot}           \NC 0 + 0--FF + 10FFFF   \NC \NR
+\NC \type {\Uoverdelimiter}  \NC 0 + 0--FF + 10FFFF   \NC \NR
+\NC \type {\Uunderdelimiter} \NC 0 + 0--FF + 10FFFF   \NC \NR
+\NC \type {\Udelimiterover}  \NC 0 + 0--FF + 10FFFF   \NC \NR
+\NC \type {\Udelimiterunder} \NC 0 + 0--FF + 10FFFF   \NC \NR
 \stoptabulate
 
 \section{Cramped math styles}
@@ -336,7 +338,8 @@ now accessible via primitive commands. In fact, refactoring of the math engine
 has resulted in many more parameters than were accessible before.
 
 \starttabulate
-\BC primitive name                   \BC description \NC \NR
+\DB primitive name                   \BC description \NC \NR
+\TB[small,samepage]
 \NC \type {\Umathquad}               \NC the width of 18 mu's \NC \NR
 \NC \type {\Umathaxis}               \NC height of the vertical center axis of
                                          the math formula above the baseline \NC \NR
@@ -448,7 +451,8 @@ dimension parameter. For math fonts, this should be set to zero.
    \NC \tx #3 \NC #4 \NC \NR}
 
 \starttabulate[|l|l|]
-\BC variable / style \BC tfm / opentype \NC \NR
+\DB variable / style \BC tfm / opentype \NC \NR
+\TB[small,samepage]
 \MathLine{\Umathaxis}               {}   {}                     {AxisHeight}                              {axis_height}
 \MathLine{\Umathoperatorsize}       {6}  {D, D'}                {DisplayOperatorMinHeight}                {\emdash}
 \MathLine{\Umathfractiondelsize}    {9}  {D, D'}                {FractionDelimiterDisplayStyleSize}       {delim1}
@@ -1158,16 +1162,17 @@ get the length of the last line, the following will often work too:
 \type {^}, \type {_}, \type {$}, and \type {$$}:
 
 \starttabulate[|l|l|]
-\BC primitive                  \BC explanation \NC \NR
-\NC \type {\Usuperscript}      \NC Duplicates the functionality of \type {^} \NC \NR
-\NC \type {\Usubscript}        \NC Duplicates the functionality of \type {_} \NC \NR
-\NC \type {\Ustartmath}        \NC Duplicates the functionality of \type {$}, % $
+\DB primitive                  \BC explanation \NC \NR
+\TB[small,samepage]
+\NC \type {\Usuperscript}      \NC duplicates the functionality of \type {^} \NC \NR
+\NC \type {\Usubscript}        \NC duplicates the functionality of \type {_} \NC \NR
+\NC \type {\Ustartmath}        \NC duplicates the functionality of \type {$}, % $
                                    when used in non-math mode. \NC \NR
-\NC \type {\Ustopmath}         \NC Duplicates the functionality of \type {$}, % $
+\NC \type {\Ustopmath}         \NC duplicates the functionality of \type {$}, % $
                                    when used in inline math mode. \NC \NR
-\NC \type {\Ustartdisplaymath} \NC Duplicates the functionality of \type {$$}, % $$
+\NC \type {\Ustartdisplaymath} \NC duplicates the functionality of \type {$$}, % $$
                                    when used in non-math mode. \NC \NR
-\NC \type {\Ustopdisplaymath}  \NC Duplicates the functionality of \type {$$}, % $$
+\NC \type {\Ustopdisplaymath}  \NC duplicates the functionality of \type {$$}, % $$
                                    when used in display math mode. \NC \NR
 \stoptabulate
 
@@ -1228,9 +1233,8 @@ with zero being the default behaviour.
 \typebuffer \getbuffer
 
 \starttabulate[|c|c|c|pl|]
-\HL
-\BC mode \BC \type {x$x$x} \BC \type {x $x$ x} \BC effect \NC \NR
-\HL
+\DB mode \BC x\$x\$x \BC x \$x\$ x \BC effect \NC \NR
+\TB[small,samepage]
 \OneLiner{0}{obey \type {\mathsurround} when \type {\mathsurroundskip} is 0pt}
 \OneLiner{1}{only add skip to the left}
 \OneLiner{2}{only add skip to the right}
@@ -1239,7 +1243,6 @@ with zero being the default behaviour.
 \OneLiner{5}{disable all spacing around math}
 \OneLiner{6}{only apply \type {\mathsurroundskip} when also spacing}
 \OneLiner{7}{only apply \type {\mathsurroundskip} when no spacing}
-\HL
 \stoptabulate
 
 \stop
@@ -1336,8 +1339,9 @@ effects.
 \def\SampleMath#1%
   {$\mathscriptsmode#1\mathupright CH_2 + CH^+_2 + CH^2_2$}
 
-\starttabulate[|c|c|c|l|]
-\BC mode \BC down          \BC up            \BC                \NC \NR
+\starttabulate[|c|c|c|p|]
+\DB mode \BC down          \BC up            \BC example        \NC \NR
+\TB[small,samepage]
 \NC 0    \NC dynamic       \NC dynamic       \NC \SampleMath{0} \NC \NR
 \NC 1    \NC $d$           \NC $u$           \NC \SampleMath{1} \NC \NR
 \NC 2    \NC $s$           \NC $u$           \NC \SampleMath{2} \NC \NR

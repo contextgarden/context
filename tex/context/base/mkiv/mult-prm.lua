@@ -244,6 +244,7 @@ return {
   "efcode",
   "etoksapp",
   "etokspre",
+  "exceptionpenalty",
   "expanded",
   "expandglyphsinfont",
   "explicitdiscretionary",

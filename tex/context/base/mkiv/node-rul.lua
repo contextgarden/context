@@ -473,15 +473,53 @@ local function linefiller(current,data,width,location)
             direction = getdir(current),
         })
     else
-        local linefiller = new_rule(width,height,depth)
+        local rule = new_rule(width,height,depth)
         if ca then
-            setattr(linefiller,a_colorspace,ma)
-            setattr(linefiller,a_color,ca)
+            setattr(rule,a_colorspace,ma)
+            setattr(rule,a_color,ca)
         end
         if ta then
-            setattr(linefiller,a_transparency,ta)
+            setattr(rule,a_transparency,ta)
         end
-        return linefiller
+        return rule
+    end
+end
+
+function nodes.linefillers.filler(current,data,width,height,depth)
+    if width and width > 0 then
+        local height = height or data.height or 0
+        local depth  = depth  or data.depth  or 0
+        if (height + depth) ~= 0 then
+            local mp = data.mp
+            local ma = data.ma
+            local ca = data.ca
+            local ta = data.ta
+            if mp and mp ~= "" then
+                return tonut(userrule {
+                    width     = width,
+                    height    = height,
+                    depth     = depth,
+                    type      = "mp",
+                    line      = data.rulethickness,
+                    data      = mp,
+                    ma        = ma,
+                    ca        = ca,
+                    ta        = ta,
+                    option    = location,
+                    direction = getdir(current),
+                })
+            else
+                local rule = new_rule(width,height,depth)
+                if ca then
+                    setattr(rule,a_colorspace,ma)
+                    setattr(rule,a_color,ca)
+                end
+                if ta then
+                    setattr(rule,a_transparency,ta)
+                end
+                return rule
+            end
+        end
     end
 end
 

@@ -158,6 +158,7 @@
 \newtoks         \t_tabl_tabulate_dummy
 \newtoks         \t_tabl_tabulate_every_row
 \newtoks         \t_tabl_tabulate_every_after_row
+\newtoks         \t_tabl_tabulate_every_real_row
 
 \newtoks         \t_tabl_tabulate_initializers_first
 \newtoks         \t_tabl_tabulate_initializers_second
@@ -174,6 +175,7 @@
 \newcount        \c_tabl_tabulate_totalnoflines
 \newcount        \c_tabl_tabulate_minusnoflines
 \newcount        \c_tabl_tabulate_align
+\newcount        \c_tabl_tabulate_nofrealrows
 
 \newcount        \c_tabl_tabulate_nofcolumns            % set at the lua end by parser
 \newcount        \c_tabl_tabulate_has_rule_spec_first   % set at the lua end by parser (for the moment a count)
@@ -249,6 +251,18 @@
 \installcorenamespace{tabulatehead}
 \installcorenamespace{tabulatefoot}
 \installcorenamespace{tabulatenext}
+
+\prependtoks
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+\to \t_tabl_tabulate_initializers_first
+
+\prependtoks
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+\to \t_tabl_tabulate_initializers_second
+
+\prependtoks
+   \global\advance\c_tabl_tabulate_nofrealrows\plusone
+\to \t_tabl_tabulate_every_real_row
 
 \def\b_tabl_tabulate_current#1%
   {\csname\??tabulatebox\number#1\endcsname} % beware, a synonym
@@ -2403,7 +2417,7 @@
    \dostarttaggedchained\t!tabulate\empty\??tabulation
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
-   \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+   \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
  % \toksapp\everycr{\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
@@ -2728,5 +2742,244 @@
 \unexpanded\def\tabulaterowbold{\tabl_tabulate_compact_row\bold}
 \unexpanded\def\tabulaterowtype{\tabl_tabulate_compact_row\type}
 \unexpanded\def\tabulaterowtyp {\tabl_tabulate_compact_row\typ}
+
+%D Here we plug in a row background feature. As we only have support for
+%D \type {frame=name} we can use these variables.
+%D
+%D \starttyping
+%D \startuseMPgraphic{foo}
+%D     fill unitsquare
+%D         xyscaled (RuleWidth,RuleHeight+RuleDepth) enlarged (ExHeight/4,ExHeight/8)
+%D         randomized ExHeight
+%D         shifted  (-ExHeight/8,ExHeight/16)
+%D         withcolor RuleColor ;
+%D \stopuseMPgraphic
+%D
+%D \setuptabulate % wel only have frame=name so we can use these:
+%D   [background=foo,
+%D    backgroundcolor=darkred,
+%D    foregroundcolor=white]
+%D
+%D \definelinefiller[foo][mp=foo,color=darkgreen]
+%D \definelinefiller[bar][mp=foo,color=darkred]
+%D
+%D \starttabulate[|||]
+%D     \DB foo \BC bar \BC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate[|||]
+%D     \PB foo \BC bar \BC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate[|||]
+%D     \FB[bar] foo \BC bar \BC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \startnarrower
+%D     \starttabulate[|||]
+%D         \DB foo \DB bar \BC \NR
+%D         \NC foo \NC bar \NC \NR
+%D         \NC foo \NC bar \NC \NR
+%D         \NC foo \NC bar \NC \NR
+%D         \NC foo \NC bar \NC \NR
+%D     \stoptabulate
+%D \stopnarrower
+%D
+%D \starttabulate[|||]
+%D     \BC          foo \BC bar \BC \NR
+%D     \NL[magenta] foo \NC bar \NC \NR
+%D     \NL[yellow]  foo \NC bar \NC \NR
+%D     \NL[cyan]    foo \NC bar \NC \NR
+%D     \NL[gray]    foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate
+%D     \NL[red]     foo \NC bar \NC \NR
+%D     \NL[green]   foo \NL[red] bar \NC \NR
+%D     \NC          foo \NC bar \NC \NR
+%D     \NL[blue]    foo \NC \input tufte  \NC \NR
+%D     \NL[gray]    foo \NC bar \NC \NR
+%D     \NL[yellow]  foo \NC bar \NC \NR
+%D \stoptabulate
+%D \stoptyping
+
+% \setuptabulate
+%   [\c!background=,
+%    \c!backgroundcolor=,
+%    \c!foregroundcolor=,
+%    \c!foregroundstyle=]
+
+\let\m_table_current_row_background              \empty
+\let\m_table_current_row_background_default      \empty
+\let\m_table_current_row_background_filler       \empty
+\let\m_table_current_row_background_defaultfiller\empty
+
+\unexpanded\def\tabl_register_row_background#1%
+  {\xdef\m_table_current_row_background{#1}}
+
+\unexpanded\def\tabl_register_row_background_filler#1%
+  {\xdef\m_table_current_row_background_filler{#1}}
+
+\unexpanded\def\tabl_synchronize_row_background
+  {\iftrialtypesetting\else
+     \ifx\m_table_current_row_background_filler\empty
+       \ifx\m_table_current_row_background\empty
+         % nothing
+       \else
+         \tabl_synchronize_row_background_indeed\m_table_current_row_background
+       \fi
+     \else
+       \tabl_synchronize_row_background_filler_indeed\m_table_current_row_background_filler
+     \fi
+   \fi}
+
+\unexpanded\def\tabl_synchronize_row_background_indeed#1%
+  {\begingroup
+   \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
+   \directcolor[#1]%
+   \setbox\scratchbox\hpack{}%
+   \clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
+   \endgroup}
+
+\unexpanded\def\tabl_synchronize_row_background_filler_indeed#1%
+  {\begingroup
+   \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
+   \node_linefiller_set{#1}%
+   \setbox\scratchbox\hpack{}%
+   \clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
+   \endgroup}
+
+\appendtoks
+    \glet\m_table_current_row_background\empty
+    \glet\m_table_current_row_background_filler\empty
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+    \clf_resetbackgroundrowdata
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \glet\m_table_current_row_background\empty
+    \glet\m_table_current_row_background_filler\empty
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+    \clf_resetbackgroundrowdata
+\to \t_tabl_tabulate_initializers_second
+
+\appendtoks
+    \tabl_synchronize_row_background
+\to \t_tabl_tabulate_every_real_row
+
+\appendtoks
+    \glet\m_table_current_row_background\empty
+    \glet\m_table_current_row_background_filler\empty
+\to \t_tabl_tabulate_every_after_row
+
+\unexpanded\def\tabl_tabulate_NL_first[#1]%
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background{#1}%
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_ND_first
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background\m_table_current_row_background_default
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_LB_first[#1]%
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background{#1}%
+   \fi
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_DB_first
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background\m_table_current_row_background_default
+   \fi
+   \let\fontstyle\globalfontstyle
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_NF_first[#1]%
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler{#1}%
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_NP_first
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler\m_table_current_row_background_default_filler
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_FB_first[#1]%
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler{#1}%
+   \fi
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_PB_first
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler\m_table_current_row_background_default_filler
+   \fi
+   \let\fontstyle\globalfontstyle
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_BC_first % overloaded
+  {\tabl_tabulate_column_normal\plusone\zerocount
+   \let\fontstyle\globalfontstyle
+   \ifx\m_table_current_row_background\empty
+     \ifx\m_table_current_row_background_filler\empty
+       \usetabulationstyleandcolor\c!headstyle\c!headcolor
+     \else
+       \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+     \fi
+   \else
+     \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \fi}
+
+\appendtoks
+    \let\NL\tabl_tabulate_NL_first  % NC = NC with Line
+    \let\ND\tabl_tabulate_ND_first  % NC = NC with Default Line
+    \let\LB\tabl_tabulate_LB_first  % BC = BC with Line
+    \let\DB\tabl_tabulate_DB_first  % BC = BC with Default Line
+    \let\NF\tabl_tabulate_NF_first  % NF = NC with Filler
+    \let\NP\tabl_tabulate_NP_first  % NP = NC with Predefined Fller
+    \let\FB\tabl_tabulate_FB_first  % FB = BC with Filler
+    \let\PB\tabl_tabulate_PB_first  % PB = BC with Predefined Fller
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+   \edef\m_table_current_row_background_default       {\tabulateparameter\c!backgroundcolor}%
+   \edef\m_table_current_row_background_default_filler{\tabulateparameter\c!background}%
+\to \everytabulate
+
+
+\setuptabulate
+  [\c!headcolor=,
+   \c!headstyle=\bf,
+   \c!foregroundcolor=,
+   \c!foregroundstyle=\tabulationparameter\c!headstyle]
 
 \protect \endinput

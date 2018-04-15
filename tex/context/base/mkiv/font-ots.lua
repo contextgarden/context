@@ -623,7 +623,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     return head, base
 end
 
-local function multiple_glyphs(head,start,multiple,skiphash,what) -- what to do with skiphash matches here
+local function multiple_glyphs(head,start,multiple,skiphash,what,stop) -- what to do with skiphash matches here
     local nofmultiples = #multiple
     if nofmultiples > 0 then
         resetinjection(start)
@@ -1270,6 +1270,14 @@ local function getmapping(dataset,sequence,currentlookup)
     end
 end
 
+function chainprocs.gsub_remove(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
+    if trace_chains then
+        logprocess("%s: removing character %s",cref(dataset,sequence,chainindex),gref(getchar(start)))
+    end
+    head, start = remove_node(head,start,true)
+    return head, getprev(start), true
+end
+
 function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,rlmode,skiphash,chainindex)
     local mapping = currentlookup.mapping
     if mapping == nil then
@@ -1380,7 +1388,7 @@ function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup
             if trace_multiples then
                 logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
             end
-            return multiple_glyphs(head,start,replacement,skiphash,dataset[1])
+            return multiple_glyphs(head,start,replacement,skiphash,dataset[1],stop)
         end
     end
     return head, start, false
@@ -1986,6 +1994,9 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck)
                             logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
                         end
                     end
+                else
+                    -- we skip but we could also delete as option .. what does an empty lookup actually mean
+                    -- in opentype ... anyway, we could map it onto gsub_remove if needed
                 end
                 i = i + 1
                 if i > size or not start then

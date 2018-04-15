@@ -466,6 +466,8 @@ local function addfeature(data,feature,specifications)
                                 if not subtype then
                                     subtype = lookup.type
                                 end
+                            elseif v == 0 then
+                                lookups[k] = { { type = "gsub_remove" } }
                             else
                                 lookups[k] = false -- { false } -- new
                             end

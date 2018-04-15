@@ -385,7 +385,7 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
     properties.virtualized = true
     --
     tfmdata.fonts = {
-        { id = 0 }
+        { id = 0 } -- not really needed
     }
         --
     local getactualtext = otf.getactualtext

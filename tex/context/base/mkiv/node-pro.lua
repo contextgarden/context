@@ -126,8 +126,8 @@ do
 
     do
 
-        local setfield = nodes.setfield
-        local hpack    = nodes.hpack
+        local setboth = nodes.setboth
+        local hpack   = nodes.hpack
 
         function nodes.fullhpack(head,...)
             local ok = hpack_filter(head)
@@ -135,8 +135,7 @@ do
                 ok = head
             end
             local hp, b = hpack(ok,...)
-            setfield(hp,"prev",nil)
-            setfield(hp,"next",nil)
+            setboth(hp)
             return hp, b
         end
 
@@ -195,7 +194,7 @@ do
         end
     end
 
-    callbacks.register('post_linebreak_filter', processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
+    callbacks.register("post_linebreak_filter", processors.post_linebreak_filter,"all kind of horizontal manipulations (after par break)")
 
 end
 
@@ -229,7 +228,7 @@ do
         end
     end
 
-    callbacks.register('contribute_filter', processors.contribute_filter,"things done with lines")
+    callbacks.register("contribute_filter", processors.contribute_filter,"things done with lines")
 
 end
 

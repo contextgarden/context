@@ -2,8 +2,6 @@
 
 % todo: use \useMPlibrary[lua]
 
-\usemodule[abr-02]
-
 \setuplayout
   [height=middle,
    width=middle,
@@ -31,8 +29,23 @@
   [each]
   [packed]
 
+\setupitemize
+  [each]
+  [headcolor=maincolor,
+   symbolcolor=maincolor,
+   color=maincolor]
+
 \setupwhitespace
   [medium]
+
+\setuptabulate
+  [headstyle=bold,
+   foregroundcolor=white,
+   foregroundstyle=\ss\bfx\WORD,
+   backgroundcolor=maincolor]
+
+\setupcaptions
+  [headcolor=darkblue]
 
 \startluacode
     local skipped = table.tohash { 'id', 'subtype', 'next', 'prev' }
@@ -388,5 +401,7 @@
 \normalexpanded{\definemeasure[spreadwidth][\measure{paperwidth}]}
 
 \dontcomplain
+
+\environment luatex-logos
 
 \stopenvironment

@@ -253,6 +253,7 @@
                     <cd:constant type="low"/>
                     <cd:constant type="high"/>
                     <cd:constant type="grid"/>
+                    <cd:constant type="lines"/>
                     <cd:constant type="overlay"/>
                     <cd:constant type="inner"/>
                     <cd:constant type="outer"/>

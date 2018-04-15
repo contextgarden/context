@@ -109,7 +109,6 @@ def RuleColor = %color% enddef ;
             direction       = p.direction or "TLT",
             h               = h * bpfactor,
             v               = v * bpfactor,
-
         }
         if not initialized then
             initialized = true

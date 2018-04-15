@@ -10153,6 +10153,7 @@
       <cd:constant type="low"/>
       <cd:constant type="high"/>
       <cd:constant type="grid"/>
+      <cd:constant type="lines"/>
       <cd:constant type="overlay"/>
       <cd:constant type="inner"/>
       <cd:constant type="outer"/>
@@ -19370,6 +19371,83 @@
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:false"/>
     </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
+ <cd:interface file="i-linefiller.xml">
+  <cd:command file="node-rul.mkiv" name="definelinefiller">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setuplinefiller"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="node-rul.mkiv" name="setuplinefiller">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:parameter name="location">
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant default="yes" type="both"/>
+     </cd:parameter>
+     <cd:parameter name="scope">
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant default="yes" type="local"/>
+      <cd:constant type="global"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="height">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="depth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="threshold">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rulethickness">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="textstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="textcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:inherit name="setupalign"/>
+     </cd:parameter>
+     <cd:parameter name="mp">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="node-rul.mkiv" name="filler">
+   <cd:arguments>
+    <cd:content/>
    </cd:arguments>
   </cd:command>
  </cd:interface>
