@@ -348,12 +348,13 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     else
         local tx = d.text
         if tx then
-            tx = copy_list(tx)
+            local l = copy_list(tx)
             if d["repeat"] == v_yes then
-                tx = new_leader(w,tx)
+                l = new_leader(w,l)
+setattrlist(l,tx)
             end
-            local r = hpack_nodes(tx,w,"exactly")
-            inject(r,w,ht,dp)
+            l = hpack_nodes(l,w,"exactly")
+            inject(l,w,ht,dp)
         else
             for i=1,level do
                 local ht =  (offset+(i-1)*dy)*e + rulethickness - m

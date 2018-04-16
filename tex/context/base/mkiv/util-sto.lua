@@ -197,6 +197,9 @@ function table.getmetatablekey(t,key,value)
 end
 
 function table.makeweak(t)
+    if not t then
+        t = { }
+    end
     local m = getmetatable(t)
     if m then
         m.__mode = "v"

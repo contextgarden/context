@@ -1327,6 +1327,7 @@
    \edef\p_bodyfont     {\tabulationparameter\c!bodyfont}
    \edef\p_indenting    {\tabulationparameter\c!indenting}%
    \edef\p_keeptogether {\tabulationparameter\c!keeptogether}%
+   \edef\p_blank        {\tabulationparameter\c!blank}%
    %
    \ifx\p_keeptogether\v!no
      \settrue \c_tabl_tabulate_tolerant_break
@@ -1338,6 +1339,8 @@
    %
    \settrue\c_tabl_tabulate_split
    \csname\??tabulatesplit\tabulationparameter\c!split\endcsname
+   %
+   \let\m_tabl_tabulate_blank_default\p_blank
    %
    \d_tabl_tabulate_unit\tabulationparameter\c!unit
    \d_tabl_tabulate_margin\tabulationparameter\c!margin
@@ -1385,6 +1388,7 @@
 \let\m_tabl_tabulate_vrule_color_local  \empty
 \let\m_tabl_tabulate_vrule_color_default\empty % used local
 \let\m_tabl_tabulate_hrule_color_default\empty % used local
+\let\m_tabl_tabulate_blank_default      \empty
 
 \appendtoks
     \global\let\m_tabl_tabulate_color_previous      \empty
@@ -2518,9 +2522,11 @@
 \def\tabl_tabulate_TB_indeed[#1]%
   {\iffirstargument
      \blank[#1]
-   \else
+   \else\ifx\m_tabl_tabulate_blank_default\empty
      \blank
-   \fi
+   \else
+     \blank[\m_tabl_tabulate_blank_default]%
+   \fi\fi
    \stoptabulatenoalign}
 
 % to be tested:
@@ -2960,14 +2966,14 @@
    \fi}
 
 \appendtoks
-    \let\NL\tabl_tabulate_NL_first  % NC = NC with Line
-    \let\ND\tabl_tabulate_ND_first  % NC = NC with Default Line
-    \let\LB\tabl_tabulate_LB_first  % BC = BC with Line
-    \let\DB\tabl_tabulate_DB_first  % BC = BC with Default Line
-    \let\NF\tabl_tabulate_NF_first  % NF = NC with Filler
-    \let\NP\tabl_tabulate_NP_first  % NP = NC with Predefined Fller
-    \let\FB\tabl_tabulate_FB_first  % FB = BC with Filler
-    \let\PB\tabl_tabulate_PB_first  % PB = BC with Predefined Fller
+    \let\NL\tabl_tabulate_NL_first  % NC with Line
+    \let\ND\tabl_tabulate_ND_first  % NC with Default Line
+    \let\LB\tabl_tabulate_LB_first  % BC with Line
+    \let\DB\tabl_tabulate_DB_first  % BC with Default Line
+    \let\NF\tabl_tabulate_NF_first  % NC with Filler
+    \let\NP\tabl_tabulate_NP_first  % NC with Predefined Filler
+    \let\FB\tabl_tabulate_FB_first  % BC with Filler
+    \let\PB\tabl_tabulate_PB_first  % BC with Predefined Filler
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
@@ -2975,10 +2981,10 @@
    \edef\m_table_current_row_background_default_filler{\tabulateparameter\c!background}%
 \to \everytabulate
 
-
 \setuptabulate
   [\c!headcolor=,
    \c!headstyle=\bf,
+   \c!backgroundcolor=\tabulationparameter\c!rulecolor,
    \c!foregroundcolor=,
    \c!foregroundstyle=\tabulationparameter\c!headstyle]
 

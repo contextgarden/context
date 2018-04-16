@@ -41508,6 +41508,68 @@
       <cd:constant type="grid"/>
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="blank">
+      <cd:constant type="preference"/>
+      <cd:constant type="samepage"/>
+      <cd:constant type="max"/>
+      <cd:constant type="force"/>
+      <cd:constant type="enable"/>
+      <cd:constant type="disable"/>
+      <cd:constant type="nowhite"/>
+      <cd:constant type="packed"/>
+      <cd:constant type="back"/>
+      <cd:constant type="overlay"/>
+      <cd:constant type="always"/>
+      <cd:constant type="weak"/>
+      <cd:constant type="strong"/>
+      <cd:constant type="default"/>
+      <cd:constant type="before"/>
+      <cd:constant type="inbetween"/>
+      <cd:constant type="after"/>
+      <cd:constant type="fixed"/>
+      <cd:constant type="flexible"/>
+      <cd:constant type="none"/>
+      <cd:constant type="small"/>
+      <cd:constant type="medium"/>
+      <cd:constant type="big"/>
+      <cd:constant type="line"/>
+      <cd:constant type="halfline"/>
+      <cd:constant type="quarterline"/>
+      <cd:constant type="formula"/>
+      <cd:constant type="white"/>
+      <cd:constant type="height"/>
+      <cd:constant type="depth"/>
+      <cd:constant type="standard"/>
+      <cd:constant method="factor" prefix="cd:number" type="small"/>
+      <cd:constant method="factor" prefix="cd:number" type="medium"/>
+      <cd:constant method="factor" prefix="cd:number" type="big"/>
+      <cd:constant method="factor" prefix="cd:number" type="line"/>
+      <cd:constant method="factor" prefix="cd:number" type="halfline"/>
+      <cd:constant method="factor" prefix="cd:number" type="quarterline"/>
+      <cd:constant method="factor" prefix="cd:number" type="formula"/>
+      <cd:constant method="factor" prefix="cd:number" type="white"/>
+      <cd:constant method="factor" prefix="cd:number" type="height"/>
+      <cd:constant method="factor" prefix="cd:number" type="depth"/>
+      <cd:constant method="range" prefix="category" type="cd:number"/>
+      <cd:constant method="range" prefix="order" type="cd:number"/>
+      <cd:constant method="range" prefix="penalty" type="cd:number"/>
+      <cd:constant type="cd:dimension"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="headstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="backgroundcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="foregroundcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="foregroundstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
      <cd:parameter name="align">
       <cd:constant type="left"/>
       <cd:constant type="middle"/>
@@ -44684,6 +44746,7 @@
      <cd:constant type="enable"/>
      <cd:constant type="disable"/>
      <cd:constant type="nowhite"/>
+     <cd:constant type="packed"/>
      <cd:constant type="back"/>
      <cd:constant type="overlay"/>
      <cd:constant type="always"/>

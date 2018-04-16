@@ -56,6 +56,7 @@ local new_rule          = nodepool.rule
 local new_kern          = nodepool.kern
 
 local privateattributes = attributes.private
+local unsetvalue        = attributes.unsetvalue
 
 local linefillers       = nodes.linefillers
 
@@ -134,6 +135,7 @@ local function add_backgrounds(head)
                 if list then
                     setlist(current,list)
                 end
+                setattr(current,a_background,unsetvalue) -- or property
             end
         end
     end
@@ -161,6 +163,7 @@ local function add_alignbackgrounds(head)
                                     if list then
                                         setlist(current,list)
                                     end
+                                    setattr(template,a_alignbackground,unsetvalue) -- or property
                                 end
                                 break
                             end

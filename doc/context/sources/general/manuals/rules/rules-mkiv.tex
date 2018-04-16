@@ -257,8 +257,10 @@ A running box is seen as text. As you (probably) expect, a nested ornamental
 rule is supported as well:
 
 \startbuffer
-\underbars{We see this \high{\tfxx\underdot{®}} symbol \runninghbox to 1cm{\hss} often.}
-\underbar {We see this \high{\tfxx\underdot{®}} symbol \runninghbox to 1cm{\hss} often.}
+\underbars
+  {We see this \high{\tfxx\underdot{®}} symbol \runninghbox to 1cm{\hss} often.}
+\underbar
+  {We see this \high{\tfxx\underdot{®}} symbol \runninghbox to 1cm{\hss} often.}
 \stopbuffer
 
 \typebuffer
@@ -268,6 +270,30 @@ This time we get (you might need a magnifier to see it):
 \startlines
 \getbuffer
 \stoplines
+
+We end this section with an extreme example:
+
+\startbuffer
+\definebar
+  [xbarone]
+  [text=\lower\exheight\hbox{\darkred \infofont +},
+   repeat=yes]
+\definebar
+  [xbartwo]
+  [text=\lower\exheight\hbox{\darkblue\infofont +},
+   repeat=yes,
+   continue=yes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+Klein    : \xbarone{\samplefile   {klein}\removeunwantedspaces}\par
+Sapolsky : \xbartwo{\samplefile{sapolsky}\removeunwantedspaces}\par
+\stopbuffer
+
+\typebuffer \getbuffer
+
 
 \stopsubject
 
@@ -623,9 +649,11 @@ primitive here, so we follow the \TEX\ conventions of keywords.
 
 \startbuffer
 \ruledhbox\bgroup
-    \darkgray \frule width 100mm height 10mm depth 8mm radius 2mm line 2pt type fill\relax
+    \darkgray
+    \frule width 100mm height 10mm depth 8mm radius 2mm line 2pt type fill\relax
     \hskip-100mm
-    \darkred  \frule width 100mm height 10mm depth 8mm radius 2mm line 2pt\relax
+    \darkred
+    \frule width 100mm height 10mm depth 8mm radius 2mm line 2pt\relax
     \hskip-100mm
     \hbox to 100mm{\white \bold \hfill some handy word with frames\hfill}%
 \egroup
@@ -815,6 +843,145 @@ the spacing is kept at a linebreak:
 \typebuffer
 
 \getbuffer
+
+\stopsubject
+
+\startsubject[title=Tabulate]
+
+The previously discussed mechanism is also available in the tabulate mechanism.
+We start with simple backgrounds:
+
+\startbuffer
+\starttabulate
+    \NL[darkred]    foo \NC bar \NC \NR
+    \NL[darkgreen]  foo \NC bar \NC \NR
+    \NL[darkblue]   foo \NC \samplefile{tufte} \NC \NR
+    \NL[darkgray]   foo \NC bar \NC \NR
+    \NL[darkyellow] foo \NC bar \NC \NR
+    \LL
+\stoptabulate
+\stopbuffer
+
+\typebuffer
+
+This comes out as:
+
+{\startcolor[white]\getbuffer\stopcolor}
+
+There are several two character commands that deal with this:
+
+\starttabulate[|c|c|l|]
+\BC command    \BC related to \BC effect \NC
+\NC \type{\NL} \NC \type{\NC} \NC Normal with Line \NC \NR
+\NC \type{\ND} \NC \type{\NC} \NC Normal with Default Line \NC \NR
+\NC \type{\LB} \NC \type{\BC} \NC Bold   with Line \NC \NR
+\NC \type{\DB} \NC \type{\BC} \NC Bold   with Default Line \NC \NR
+\NC \type{\NF} \NC \type{\NC} \NC Normal with Filler \NC \NR
+\NC \type{\NP} \NC \type{\NC} \NC Normal with Predefined Filler \NC \NR
+\NC \type{\FB} \NC \type{\BC} \NC Bold   with Filler \NC \NR
+\NC \type{\PB} \NC \type{\BC} \NC Bold   with Predefined Filler \NC \NR
+\stoptabulate
+
+Before we show more, we set up tabulate:
+
+\startbuffer[setup]
+\setuptabulate
+  [blank={small,samepage},
+   headstyle=bold,
+   rulecolor=darkred,
+   rulethickness=1pt,
+   background=foo,
+   backgroundcolor=darkred,
+   foregroundcolor=white]
+\stopbuffer
+
+\typebuffer[setup]
+
+This time we don't set colors in the table itself:
+
+\startbuffer
+\starttabulate[|l|l|]
+    \DB foos        \BC bars            \BC \NR
+    \TB
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+    \LL
+\stoptabulate
+\stopbuffer
+
+\typebuffer {\getbuffer[setup]\getbuffer}
+
+Instead of coming up with a separate mechanism for hooking in \METAPOST\ we
+use the linefiller mechanism. We use these graphics:
+
+\startbuffer
+\startuseMPgraphic{foo}
+  fill unitsquare
+    xyscaled (RuleWidth,RuleHeight+RuleDepth) enlarged (ExHeight/4,ExHeight/8)
+    shifted  (-ExHeight/8,ExHeight/16)
+    withcolor RuleColor ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{bar}
+  fill unitsquare
+    xyscaled (RuleWidth,RuleHeight+RuleDepth) enlarged (ExHeight/4,ExHeight/8)
+    shifted  (-ExHeight/8,ExHeight/16)
+    randomized ExHeight
+    withcolor RuleColor ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+With these fillers:
+
+\startbuffer
+\definelinefiller[foo][mp=foo,color=darkgreen]
+\definelinefiller[bar][mp=bar,color=darkred]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+An example of usage is:
+
+\startbuffer
+\linefillerhbox[foo] to 12cm{\hss\strut\white\bf FOO\hss} \blank
+\linefillerhbox[bar] to 10cm{\hss\strut\white\bf BAR\hss} \blank
+\linefillerhbox[foo] to  9cm{\hss\strut\white\bf FOO\hss} \blank
+\linefillerhbox[bar] to 14cm{\hss\strut\white\bf BAR\hss}
+\stopbuffer
+
+\typebuffer \blank \getbuffer \blank
+
+We can rely on the default:
+
+\startbuffer
+\starttabulate[|||]
+    \PB foo         \BC bars            \BC \NR
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+    \NC foo foo foo \NC bar bar bar bar \NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer \start\getbuffer[setup]\getbuffer\stop
+
+or be explicit:
+
+\startbuffer
+\starttabulate[|||]
+    \FB[bar] foos        \BC bars            \BC \NR
+    \NC      foo foo foo \NC bar bar bar bar \NC \NR
+    \NC      foo foo foo \NC bar bar bar bar \NC \NR
+    \NC      foo foo foo \NC bar bar bar bar \NC \NR
+    \NC      foo foo foo \NC bar bar bar bar \NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer \start\getbuffer[setup]\getbuffer\stop
 
 \stopsubject
 

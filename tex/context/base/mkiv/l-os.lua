@@ -254,7 +254,7 @@ elseif name == "linux" then
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
         local architecture = os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-        local platform     = os.getenv("MTX_PLATFORM")
+        local platform     = os.getenv("MTX_PLATFORM") or ""
         local musl         = find(os.selfdir or "","linuxmusl")
         if platform ~= "" then
             -- we're done

@@ -359,35 +359,36 @@ end
 --     endfor ;
 -- \stopMPpage
 
-local cache, n = { }, 0 -- todo: when > n then reset cache or make weak
+local runs = 0
+
+function metapost.nofscriptruns()
+    return runs
+end
+
+-- local cache = table.makeweak()
+--
+-- f = cache[code]
+-- if not f then
+--     f = loadstring(f_code(code))
+--     if f then
+--         cache[code] = f
+--     elseif be_tolerant then
+--         f = loadstring(code)
+--         if f then
+--             cache[code] = f
+--         end
+--     end
+-- end
 
 function metapost.runscript(code)
     local trace = trace_enabled and trace_luarun
     if trace then
         report_luarun("code: %s",code)
     end
-    local f
-    if n > 100 then
-        cache = nil -- forget about caching
-        f = loadstring(f_code(code))
-        if not f and be_tolerant then
-            f = loadstring(code)
-        end
-    else
-        f = cache[code]
-        if not f then
-            f = loadstring(f_code(code))
-            if f then
-                n = n + 1
-                cache[code] = f
-            elseif be_tolerant then
-                f = loadstring(code)
-                if f then
-                    n = n + 1
-                    cache[code] = f
-                end
-            end
-        end
+    runs = runs + 1
+    local f = loadstring(f_code(code))
+    if not f and be_tolerant then
+        f = loadstring(code)
     end
     if f then
         local result = f()

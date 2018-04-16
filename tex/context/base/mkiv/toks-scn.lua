@@ -254,6 +254,8 @@ local presets = {
     ["8 strings"] = { "string", "string", "string", "string", "string", "string", "string", "string" },
 }
 
+tokens.presets = presets
+
 function tokens.compile(specification)
     local f = { }
     local n = 0
@@ -319,7 +321,7 @@ function tokens.compile(specification)
             return c
         end
     end
-    local p = t and presets[t]
+    local p = t and presets[t] -- already done in implement
     if p then
         t = p
     end

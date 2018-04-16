@@ -38,6 +38,21 @@
                     <cd:constant type="grid"/>
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="blank">
+                    <cd:resolve name="value-blank"/>
+                </cd:parameter>
+                <cd:parameter name="headstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="foregroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="foregroundstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
                 <cd:parameter name="align">
                     <cd:constant type="left"/>
                     <cd:constant type="middle"/>

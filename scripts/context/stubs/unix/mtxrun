@@ -3576,7 +3576,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16586, stripped down to: 9456
+-- original size: 16592, stripped down to: 9462
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3729,7 +3729,7 @@ elseif os.type=="windows" then
 elseif name=="linux" then
   function resolvers.platform(t,k)
     local architecture=os.getenv("HOSTTYPE") or resultof("uname -m") or ""
-    local platform=os.getenv("MTX_PLATFORM")
+    local platform=os.getenv("MTX_PLATFORM") or ""
     local musl=find(os.selfdir or "","linuxmusl")
     if platform~="" then
     elseif find(architecture,"x86_64",1,true) then
@@ -6131,7 +6131,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 38734, stripped down to: 22142
+-- original size: 39663, stripped down to: 22608
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6341,21 +6341,35 @@ function number.signed(i)
 end
 local digit=patterns.digit
 local period=patterns.period
-local three=digit*digit*digit
+local two=digit*digit
+local three=two*digit
+local prefix=(Carg(1)*three)^1
 local splitter=Cs (
-  (((1-(three^1*period))^1+C(three))*(Carg(1)*three)^1+C((1-period)^1))*(P(1)/""*Carg(2))*C(2)
+  (((1-(three^1*period))^1+C(three))*prefix+C((1-period)^1))*(P(1)/""*Carg(2))*C(2)
+)
+local splitter3=Cs (
+  three*prefix*P(-1)+two*prefix*P(-1)+digit*prefix*P(-1)+three+two+digit
 )
 patterns.formattednumber=splitter
 function number.formatted(n,sep1,sep2)
-  local s=type(s)=="string" and n or format("%0.2f",n)
-  if sep1==true then
-    return lpegmatch(splitter,s,1,".",",")
-  elseif sep1=="." then
-    return lpegmatch(splitter,s,1,sep1,sep2 or ",")
-  elseif sep1=="," then
-    return lpegmatch(splitter,s,1,sep1,sep2 or ".")
+  if sep1==false then
+    if type(n)=="number" then
+      n=tostring(n)
+    end
+    return lpegmatch(splitter3,n,1,sep2 or ".")
   else
-    return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
+    if type(n)=="number" then
+      n=format("%0.2f",n)
+    end
+    if sep1==true then
+      return lpegmatch(splitter,n,1,".",",")
+    elseif sep1=="." then
+      return lpegmatch(splitter,n,1,sep1,sep2 or ",")
+    elseif sep1=="," then
+      return lpegmatch(splitter,n,1,sep1,sep2 or ".")
+    else
+      return lpegmatch(splitter,n,1,sep1 or ",",sep2 or ".")
+    end
   end
 end
 local p=Cs(
@@ -6714,14 +6728,22 @@ local format_m=function(f)
   if not f or f=="" then
     f=","
   end
-  return format([[formattednumber(a%s,%q,".")]],n,f)
+  if f=="0" then
+    return format([[formattednumber(a%s,false)]],n)
+  else
+    return format([[formattednumber(a%s,%q,".")]],n,f)
+  end
 end
 local format_M=function(f)
   n=n+1
   if not f or f=="" then
     f="."
   end
-  return format([[formattednumber(a%s,%q,",")]],n,f)
+  if f=="0" then
+    return format([[formattednumber(a%s,false)]],n)
+  else
+    return format([[formattednumber(a%s,%q,",")]],n,f)
+  end
 end
 local format_z=function(f)
   n=n+(tonumber(f) or 1)
@@ -6818,8 +6840,8 @@ local builder=Cs { "start",
   ["W"]=(prefix_any*P("W"))/format_W,
   ["j"]=(prefix_any*P("j"))/format_j,
   ["J"]=(prefix_any*P("J"))/format_J,
-  ["m"]=(prefix_tab*P("m"))/format_m,
-  ["M"]=(prefix_tab*P("M"))/format_M,
+  ["m"]=(prefix_any*P("m"))/format_m,
+  ["M"]=(prefix_any*P("M"))/format_M,
   ["z"]=(prefix_any*P("z"))/format_z,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,
@@ -8180,7 +8202,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 6619, stripped down to: 3214
+-- original size: 6661, stripped down to: 3245
 
 if not modules then modules={} end modules ['util-sto']={
   version=1.001,
@@ -8332,6 +8354,9 @@ function table.getmetatablekey(t,key,value)
   return m and m[key]
 end
 function table.makeweak(t)
+  if not t then
+    t={}
+  end
   local m=getmetatable(t)
   if m then
     m.__mode="v"
@@ -21405,8 +21430,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 880132
--- stripped bytes    : 318258
+-- original bytes    : 881109
+-- stripped bytes    : 318732
 
 -- end library merge
 

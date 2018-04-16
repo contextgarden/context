@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/15/18 23:11:48
+-- merge date  : 04/16/18 22:59:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -3974,21 +3974,35 @@ function number.signed(i)
 end
 local digit=patterns.digit
 local period=patterns.period
-local three=digit*digit*digit
+local two=digit*digit
+local three=two*digit
+local prefix=(Carg(1)*three)^1
 local splitter=Cs (
-  (((1-(three^1*period))^1+C(three))*(Carg(1)*three)^1+C((1-period)^1))*(P(1)/""*Carg(2))*C(2)
+  (((1-(three^1*period))^1+C(three))*prefix+C((1-period)^1))*(P(1)/""*Carg(2))*C(2)
+)
+local splitter3=Cs (
+  three*prefix*P(-1)+two*prefix*P(-1)+digit*prefix*P(-1)+three+two+digit
 )
 patterns.formattednumber=splitter
 function number.formatted(n,sep1,sep2)
-  local s=type(s)=="string" and n or format("%0.2f",n)
-  if sep1==true then
-    return lpegmatch(splitter,s,1,".",",")
-  elseif sep1=="." then
-    return lpegmatch(splitter,s,1,sep1,sep2 or ",")
-  elseif sep1=="," then
-    return lpegmatch(splitter,s,1,sep1,sep2 or ".")
+  if sep1==false then
+    if type(n)=="number" then
+      n=tostring(n)
+    end
+    return lpegmatch(splitter3,n,1,sep2 or ".")
   else
-    return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
+    if type(n)=="number" then
+      n=format("%0.2f",n)
+    end
+    if sep1==true then
+      return lpegmatch(splitter,n,1,".",",")
+    elseif sep1=="." then
+      return lpegmatch(splitter,n,1,sep1,sep2 or ",")
+    elseif sep1=="," then
+      return lpegmatch(splitter,n,1,sep1,sep2 or ".")
+    else
+      return lpegmatch(splitter,n,1,sep1 or ",",sep2 or ".")
+    end
   end
 end
 local p=Cs(
@@ -4347,14 +4361,22 @@ local format_m=function(f)
   if not f or f=="" then
     f=","
   end
-  return format([[formattednumber(a%s,%q,".")]],n,f)
+  if f=="0" then
+    return format([[formattednumber(a%s,false)]],n)
+  else
+    return format([[formattednumber(a%s,%q,".")]],n,f)
+  end
 end
 local format_M=function(f)
   n=n+1
   if not f or f=="" then
     f="."
   end
-  return format([[formattednumber(a%s,%q,",")]],n,f)
+  if f=="0" then
+    return format([[formattednumber(a%s,false)]],n)
+  else
+    return format([[formattednumber(a%s,%q,",")]],n,f)
+  end
 end
 local format_z=function(f)
   n=n+(tonumber(f) or 1)
@@ -4451,8 +4473,8 @@ local builder=Cs { "start",
   ["W"]=(prefix_any*P("W"))/format_W,
   ["j"]=(prefix_any*P("j"))/format_j,
   ["J"]=(prefix_any*P("J"))/format_J,
-  ["m"]=(prefix_tab*P("m"))/format_m,
-  ["M"]=(prefix_tab*P("M"))/format_M,
+  ["m"]=(prefix_any*P("m"))/format_m,
+  ["M"]=(prefix_any*P("M"))/format_M,
   ["z"]=(prefix_any*P("z"))/format_z,
   ["a"]=(prefix_any*P("a"))/format_a,
   ["A"]=(prefix_any*P("A"))/format_A,

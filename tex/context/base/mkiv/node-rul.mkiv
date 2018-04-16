@@ -592,10 +592,10 @@
   {\bgroup
    \clf_enablebackgroundboxes
    \dowithnextbox{%
-     \node_linefiller_set{#3}%
+     \node_linefiller_set{#3}% already sets the attribute
      #1%
         attr \backgroundattribute \plusone
-        attr \linefillerattribute \the\attribute\linefillerattribute
+      % attr \linefillerattribute \the\attribute\linefillerattribute
        {\box\nextbox}%
      \egroup}%
    #2}

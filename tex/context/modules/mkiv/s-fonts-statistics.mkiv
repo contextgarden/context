@@ -1,0 +1,80 @@
+%D \module
+%D   [      file=s-fonts-statistics,
+%D        version=2018.03.21, % guess
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Listing font statistics,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[fonts-statistics]
+
+\startluacode
+
+moduledata.fonts            = moduledata.fonts            or { }
+moduledata.fonts.statistics = moduledata.fonts.statistics or { }
+
+local context = context
+local ctx_NC, ctx_BC, ctx_NR = context.NC, context.BC, context.NR
+
+function moduledata.fonts.statistics.showusage()
+    local t = table.load(tex.jobname.."-fonts-usage.lua")
+    if t then
+        local totalinstances = 0
+        local totalfilesize  = 0
+        local totalfilenames = #t
+        if totalfilenames > 0 then
+            context.starttabulate { "|r|r|c||" }
+                context.FL()
+                ctx_BC() context("used")
+                ctx_BC() context("filesize")
+                ctx_BC() context("version")
+                ctx_BC() context("filename")
+                ctx_NR()
+                context.ML()
+                for i=1,#t do
+                    local ti = t[i]
+                    local version   = tonumber(string.match(ti.version or "","^.-([%d%.]+)"))
+                    local instances = ti.instances or 1
+                    local filename  = file.basename(ti.filename) or "unknown"
+                    local filesize  = ti.size or 0
+                    totalinstances  = totalinstances + instances
+                    totalfilesize   = totalfilesize + filesize
+                    ctx_NC() context(instances)
+                    ctx_NC() context("%0m",filesize)
+                    ctx_NC() if version then context("%0.3f",version) end
+                    ctx_NC() context.type(filename)
+                    ctx_NR()
+                end
+                context.LL()
+                ctx_BC() context(totalinstances)
+                ctx_BC() context("%0m",totalfilesize)
+                ctx_BC() context()
+                ctx_BC() context("%i files loaded",totalfilenames)
+                ctx_NR()
+            context.stoptabulate()
+        end
+    end
+end
+
+\stopluacode
+
+\installmodulecommandluasingle \showfontusage {moduledata.fonts.statistics.showusage}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-statistics.mkiv}
+
+\enabletrackers[fonts.usage]
+
+\starttext
+
+    \input klein
+
+    \showfontusage
+
+\stoptext

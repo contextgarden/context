@@ -47,8 +47,8 @@ newinternal tracingfollowtext       ; tracingfollowtext       := 0 ;
 newinternal autoscaleupfollowtext   ; autoscaleupfollowtext   := 2 ;
 newinternal autoscaledownfollowtext ; autoscaledownfollowtext := 0 ;
 
-vardef followtext(expr txt, pth) =
-    draw image (
+vardef followtext(expr pth, txt) =
+    image (
         mfun_blob_n := mfun_blob_n + 1 ;
         if mfun_trial_run :
             draw fullcircle scaled 100bp
@@ -114,5 +114,5 @@ vardef followtext(expr txt, pth) =
                 withprescript "ft_stage=final"
                 withprescript "ft_category=" & decimal mfun_blob_n ;
         fi ;
-    ) ;
+    )
 enddef ;

@@ -24,52 +24,7 @@
     <cd:command name="vspacing" level="system" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
-                <cd:constant type="preference"/>
-                <cd:constant type="samepage"/>
-                <cd:constant type="max"/>
-                <cd:constant type="force"/>
-                <cd:constant type="enable"/>
-                <cd:constant type="disable"/>
-                <cd:constant type="nowhite"/>
-                <cd:constant type="packed"/>
-                <cd:constant type="back"/>
-                <cd:constant type="overlay"/>
-                <cd:constant type="always"/>
-                <cd:constant type="weak"/>
-                <cd:constant type="strong"/>
-                <cd:constant type="default"/>
-                <cd:constant type="before"/>
-                <cd:constant type="inbetween"/>
-                <cd:constant type="after"/>
-                <cd:constant type="fixed"/>
-                <cd:constant type="flexible"/>
-                <cd:constant type="none"/>
-                <cd:constant type="small"/>
-                <cd:constant type="medium"/>
-                <cd:constant type="big"/>
-                <cd:constant type="line"/>
-                <cd:constant type="halfline"/>
-                <cd:constant type="quarterline"/>
-                <cd:constant type="formula"/>
-                <cd:constant type="white"/>
-                <cd:constant type="height"/>
-                <cd:constant type="depth"/>
-                <cd:constant type="standard"/>
-                <cd:constant type="small" prefix="cd:number" method="factor"/>
-                <cd:constant type="medium" prefix="cd:number" method="factor"/>
-                <cd:constant type="big" prefix="cd:number" method="factor"/>
-                <cd:constant type="line" prefix="cd:number" method="factor"/>
-                <cd:constant type="halfline" prefix="cd:number" method="factor"/>
-                <cd:constant type="quarterline" prefix="cd:number" method="factor"/>
-                <cd:constant type="formula" prefix="cd:number" method="factor"/>
-                <cd:constant type="white" prefix="cd:number" method="factor"/>
-                <cd:constant type="height" prefix="cd:number" method="factor"/>
-                <cd:constant type="depth" prefix="cd:number" method="factor"/>
-                <cd:constant type="cd:number" prefix="category" method="range"/>
-                <cd:constant type="cd:number" prefix="order" method="range"/>
-                <cd:constant type="cd:number" prefix="penalty" method="range"/>
-                <cd:constant type="cd:dimension"/>
-                <cd:constant type="cd:name"/>
+                <cd:resolve name="value-blank"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>
@@ -121,51 +76,7 @@
     <cd:command name="blank" level="document" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
-                <cd:constant type="preference"/>
-                <cd:constant type="samepage"/>
-                <cd:constant type="max"/>
-                <cd:constant type="force"/>
-                <cd:constant type="enable"/>
-                <cd:constant type="disable"/>
-                <cd:constant type="nowhite"/>
-                <cd:constant type="back"/>
-                <cd:constant type="overlay"/>
-                <cd:constant type="always"/>
-                <cd:constant type="weak"/>
-                <cd:constant type="strong"/>
-                <cd:constant type="default"/>
-                <cd:constant type="before"/>
-                <cd:constant type="inbetween"/>
-                <cd:constant type="after"/>
-                <cd:constant type="fixed"/>
-                <cd:constant type="flexible"/>
-                <cd:constant type="none"/>
-                <cd:constant type="small"/>
-                <cd:constant type="medium"/>
-                <cd:constant type="big"/>
-                <cd:constant type="line"/>
-                <cd:constant type="halfline"/>
-                <cd:constant type="quarterline"/>
-                <cd:constant type="formula"/>
-                <cd:constant type="white"/>
-                <cd:constant type="height"/>
-                <cd:constant type="depth"/>
-                <cd:constant type="standard"/>
-                <cd:constant type="small" prefix="cd:number" method="factor"/>
-                <cd:constant type="medium" prefix="cd:number" method="factor"/>
-                <cd:constant type="big" prefix="cd:number" method="factor"/>
-                <cd:constant type="line" prefix="cd:number" method="factor"/>
-                <cd:constant type="halfline" prefix="cd:number" method="factor"/>
-                <cd:constant type="quarterline" prefix="cd:number" method="factor"/>
-                <cd:constant type="formula" prefix="cd:number" method="factor"/>
-                <cd:constant type="white" prefix="cd:number" method="factor"/>
-                <cd:constant type="height" prefix="cd:number" method="factor"/>
-                <cd:constant type="depth" prefix="cd:number" method="factor"/>
-                <cd:constant type="cd:number" prefix="category" method="range"/>
-                <cd:constant type="cd:number" prefix="order" method="range"/>
-                <cd:constant type="cd:number" prefix="penalty" method="range"/>
-                <cd:constant type="cd:dimension"/>
-                <cd:constant type="cd:name"/>
+                    <cd:resolve name="value-blank"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>

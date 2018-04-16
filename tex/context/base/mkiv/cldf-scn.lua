@@ -25,6 +25,7 @@ local scanners    = interfaces.scanners
 local register    = interfaces.registerscanner
 
 local compile     = tokens.compile or function() end
+local presets     = tokens.presets
 
 local dummy       = function() end
 
@@ -46,6 +47,10 @@ function interfaces.implement(specification)
     end
     if name == "" then
         name = nil
+    end
+    local p = arguments and presets[arguments]
+    if p then
+        arguments = p
     end
     local scanner
     local resetter = onlyonce and name and commands.ctxresetter(name)
