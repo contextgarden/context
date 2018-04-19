@@ -49,6 +49,7 @@ local setattrlist        = nuts.setattrlist
 local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
+local setfield           = nuts.setfield
 
 local flushlist          = nuts.flush_list
 local effective_glue     = nuts.effective_glue
@@ -351,7 +352,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             local l = copy_list(tx)
             if d["repeat"] == v_yes then
                 l = new_leader(w,l)
-setattrlist(l,tx)
+                setattrlist(l,tx)
             end
             l = hpack_nodes(l,w,"exactly")
             inject(l,w,ht,dp)
@@ -746,4 +747,39 @@ implement {
     name     = "enablelinefillers",
     onlyonce = true,
     actions  = nodes.linefillers.enable
+}
+
+-- We add a bonus feature here:
+
+local new_rule = nodes.pool.rule
+
+interfaces.implement {
+    name      = "autorule",
+    arguments = {
+        {
+            { "width", "dimension" },
+            { "height", "dimension" },
+            { "depth", "dimension" },
+            { "left", "dimension" },
+            { "right", "dimension" },
+        },
+    },
+    actions   = function(t)
+        local l = t.left
+        local r = t.right
+        local n = new_rule(
+            t.width,
+            t.height,
+            t.depth
+        )
+        if LUATEXFUNCTIONALITY >= 6710 then
+            if l then
+                n.left  = l
+            end
+            if r then
+                n.right = r
+            end
+        end
+        context(n)
+    end
 }

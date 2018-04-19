@@ -165,6 +165,8 @@ return {
         "then",
         "begcsname",
         --
+        "autorule",
+        --
         "strippedcsname","checkedstrippedcsname",
         --
         "firstargumentfalse", "firstargumenttrue",

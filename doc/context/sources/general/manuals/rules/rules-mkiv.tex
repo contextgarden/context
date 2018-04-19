@@ -879,7 +879,8 @@ There are several two character commands that deal with this:
 \NC \type{\NF} \NC \type{\NC} \NC Normal with Filler \NC \NR
 \NC \type{\NP} \NC \type{\NC} \NC Normal with Predefined Filler \NC \NR
 \NC \type{\FB} \NC \type{\BC} \NC Bold   with Filler \NC \NR
-\NC \type{\PB} \NC \type{\BC} \NC Bold   with Predefined Filler \NC \NR
+\NC \type{\NA} \NC \type{\NC} \NC Normal with Auto Toggled Line \NC \NR
+\NC \type{\BA} \NC \type{\BC} \NC Bold   with Auto Toggled Line \NC \NR
 \stoptabulate
 
 Before we show more, we set up tabulate:
@@ -982,6 +983,26 @@ or be explicit:
 \stopbuffer
 
 \typebuffer \start\getbuffer[setup]\getbuffer\stop
+
+The auto variants will switch between colors:
+
+\startbuffer
+\setuptabulate[backgroundcolor:1=darkred]
+\setuptabulate[backgroundcolor:2=darkgreen]
+\setuptabulate[backgroundcolor:3=darkblue]
+
+\starttabulate[|||]
+    \BA foo foo foo \BC bar bar bar bar \NC \NR
+    \BA foo foo foo \BC bar bar bar bar \NC \NR
+    \BA foo foo foo \BC bar bar bar bar \NC \NR
+    \BA foo foo foo \BC bar bar bar bar \NC \NR
+    \BA foo foo foo \BC bar bar bar bar \NC \NR
+    \BA foo foo foo \BC bar bar bar bar \NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer \start\getbuffer[setup]\getbuffer\stop
+
 
 \stopsubject
 

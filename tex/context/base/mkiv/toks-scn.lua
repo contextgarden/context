@@ -106,7 +106,40 @@ local function scanconditional()
     return nil
 end
 
+local function scantable(t,data)
+    if not data then
+        data = { }
+    end
+    local wrapped = scanopen()
+    while true do
+        local key = scanword()
+        if key then
+            local get = t[key]
+            if get then
+                data[key] = get()
+            else
+                -- catch all we can get
+            end
+        else
+            break
+        end
+    end
+    if wrapped then
+        scanclose()
+    end
+    return data
+end
+
+function tokens.constant(s)
+    if type(s) == "string" then
+        return "'" .. s .. "'"
+    else
+        return s
+    end
+end
+
 scanners.list        = scanlist
+scanners.table       = scantable
 scanners.conditional = scanconditional
 
 local shortcuts = {
@@ -118,6 +151,7 @@ local shortcuts = {
     scanstring      = scanstring,
     scaninteger     = scaninteger,
     scannumber      = scannumber,
+    scantable       = scantable,
     scankeyword     = scankeyword,
     scankeywordcs   = scankeywordcs,
     scanword        = scanword,
@@ -462,35 +496,3 @@ end
 -- }
 --
 -- os.exit()
-
-function tokens.scantable(t,data)
-    if not data then
-        data = { }
-    end
-    local wrapped = scanopen()
-    while true do
-        local key = scanword()
-        if key then
-            local get = t[key]
-            if get then
-                data[key] = get()
-            else
-                -- catch all we can get
-            end
-        else
-            break
-        end
-    end
-    if wrapped then
-        scanclose()
-    end
-    return data
-end
-
-function tokens.constant(s)
-    if type(s) == "string" then
-        return "'" .. s .. "'"
-    else
-        return s
-    end
-end

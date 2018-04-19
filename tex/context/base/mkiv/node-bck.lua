@@ -38,11 +38,13 @@ local getattr           = nuts.getattr
 local getsubtype        = nuts.getsubtype
 local getwhd            = nuts.getwhd
 local getwidth          = nuts.getwidth
+local getprop           = nuts.getprop
 
 local setattr           = nuts.setattr
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
 local setattributelist  = nuts.setattributelist
+local setprop           = nuts.setprop
 
 local takebox           = nuts.takebox
 local findtail          = nuts.tail
@@ -68,8 +70,19 @@ local a_alignbackground = privateattributes("alignbackground")
 local a_linefiller      = privateattributes("linefiller")
 local a_ruled           = privateattributes("ruled")
 
--- actually we can be more clever now: we can store cells and row data
--- and apply it
+local trace_alignment   = false
+local report_alignment  = logs.reported("backgrounds","alignment")
+
+trackers.register("backgrounds.alignments",function(v) trace_alignment = v end)
+
+-- We can't use listbuilders with where=alignment because at that stage we have
+-- unset boxes. Also, post_linebreak is unsuitable for nested processing as we
+-- get the same stuff many times (wrapped again and again).
+--
+-- After many experiments with different callbacks the shipout is still the best
+-- place but then we need to store some settings longer or save them with the node.
+-- For color only we can get away with it with an extra attribute flagging a row
+-- but for more complex stuff we can better do as we do here now.
 
 local function colored_a(current,list,template,id)
     local width, height, depth = getwhd(current)
@@ -118,86 +131,112 @@ local function colored_b(current,list,template,id,indent)
     end
 end
 
-local function add_backgrounds(head)
-    for current, id in traverse(head) do
-        if id == hlist_code or id == vlist_code then
+local templates  = { }
+local currentrow = 0
+local enabled    = false
+local alignments = false
+
+local function add_alignbackgrounds(head,list)
+    for current in traverse_id(hlist_code,list) do
+        if getsubtype(current) == cell_code then
             local list = getlist(current)
             if list then
-                local head = add_backgrounds(list)
-                if head then
-                    setlist(current,head)
-                    list = head
+                for template in traverse_id(hlist_code,list) do
+                    local background = getattr(template,a_alignbackground)
+                    if background then
+                        local list = colored_a(current,list,template)
+                        if list then
+                            setlist(current,list)
+                        end
+                        setattr(template,a_alignbackground,unsetvalue) -- or property
+                    end
+                    break
                 end
-            end
-            local background = getattr(current,a_background)
-            if background then
-                local list = colored_a(current,list,current,id)
-                if list then
-                    setlist(current,list)
-                end
-                setattr(current,a_background,unsetvalue) -- or property
             end
         end
     end
-    return head, true
+    local template = getprop(head,"alignmentchecked")
+    if template then
+        list = colored_b(head,list,template[1],hlist_code,template[2])
+        flush_node_list(template)
+        templates[currentrow] = false
+        return list
+    end
 end
 
--- We use a fake hlist with proper attributes.
-
-local templates  = { }
-local currentrow = 0
-
-local function add_alignbackgrounds(head)
-    for current in traverse_id(hlist_code,head) do -- what is valign?
-        if getsubtype(current) == alignment_code then
-            local list = getlist(current)
-            if list then
-                for current in traverse_id(hlist_code,list) do
-                    if getsubtype(current) == cell_code then
-                        local list = getlist(current)
-                        if list then
-                            for template in traverse_id(hlist_code,list) do
-                                local background = getattr(template,a_alignbackground)
-                                if background then
-                                    local list = colored_a(current,list,template)
-                                    if list then
-                                        setlist(current,list)
-                                    end
-                                    setattr(template,a_alignbackground,unsetvalue) -- or property
-                                end
-                                break
-                            end
+local function add_backgrounds(head,id,list)
+    if list then
+        for current, id in traverse(list) do
+            if id == hlist_code or id == vlist_code then
+                local list = getlist(current)
+                if list then
+                    if alignments and getsubtype(current) == alignment_code then
+                        local l = add_alignbackgrounds(current,list)
+                        if l then
+                            list = l
+                            setlist(current,list)
                         end
+                    end
+                    local l = add_backgrounds(current,id,list)
+                    if l then
+                        list = l
+                        setlist(current,l)
                     end
                 end
             end
-            currentrow = currentrow + 1
-            local template = templates[currentrow]
-            if template then
-                local list = colored_b(current,list,template[1],hlist_code,template[2])
-                if list then
-                    setlist(current,list)
+        end
+    end
+    if id == hlist_code or id == vlist_code then
+        local background = getattr(head,a_background)
+        if background then
+            list = colored_a(head,list,head,id)
+            -- not needed
+            setattr(head,a_background,unsetvalue) -- or property
+            return list
+        end
+    end
+end
+
+function nodes.handlers.backgrounds(head)
+    local h = tonut(head)
+    add_backgrounds(h,getid(h),getlist(h))
+    return head, true
+end
+
+function nodes.handlers.backgroundspage(head,where)
+    if head and where == "alignment" then
+        local head = tonut(head)
+        for n in traverse_id(hlist_code,head) do
+            local p = getprop(n,"alignmentchecked")
+            if not p and getsubtype(n) == alignment_code then
+                currentrow = currentrow + 1
+                local template = templates[currentrow]
+                if trace_alignment then
+                    report_alignment("%03i %s %s",currentrow,"page",template and "+" or "-")
                 end
-                flush_node_list(template)
-                templates[currentrow] = false
+                setprop(n,"alignmentchecked",template)
             end
         end
     end
     return head, true
 end
 
-function nodes.handlers.backgrounds(head,where)
-    local head, done = add_backgrounds(tonut(head))
-    return tonode(head), done
-end
-
-function nodes.handlers.alignbackgrounds(head,where)
-    if where == "alignment" and head then
-        local head, done = add_alignbackgrounds(tonut(head))
-        return tonode(head), done
-    else
-        return head, false
+function nodes.handlers.backgroundsvbox(head,where)
+    if head and where == "vbox" then
+        local head = tonut(head)
+        for n in traverse_id(hlist_code,getlist(head)) do
+            local p = getprop(n,"alignmentchecked")
+            if not p and getsubtype(n) == alignment_code then
+                currentrow = currentrow + 1
+                local template = templates[currentrow]
+                if trace_alignment then
+                    report_alignment("%03i %s %s",currentrow,"vbox",template and "+" or "-")
+                end
+                setprop(n,"alignmentchecked",template)
+            end
+        end
     end
+    return head, true
 end
 
 -- interfaces.implement {
@@ -209,21 +248,29 @@ end
 --
 -- doing it in the shipout works as well but this is nicer
 
+local function enable(alignmentstoo)
+    if not enabled then
+        enabled = true
+        enableaction("shipouts","nodes.handlers.backgrounds")
+    end
+    if not alignments and alignmentstoo then
+        alignments = true
+        enableaction("vboxbuilders","nodes.handlers.backgroundsvbox")
+        enableaction("mvlbuilders", "nodes.handlers.backgroundspage")
+    end
+end
+
 interfaces.implement {
     name      = "enablebackgroundboxes",
     onlyonce  = true,
-    actions   = function()
-        enableaction("mvlbuilders", "nodes.handlers.backgrounds")
-        enableaction("vboxbuilders","nodes.handlers.backgrounds")
-    end,
+    actions   = enable,
 }
 
 interfaces.implement {
     name      = "enablebackgroundalign",
     onlyonce  = true,
     actions   = function()
-        enableaction("mvlbuilders", "nodes.handlers.alignbackgrounds")
-        enableaction("vboxbuilders","nodes.handlers.alignbackgrounds")
+        enable(true)
     end,
 }
 
@@ -231,7 +278,12 @@ interfaces.implement {
     name      = "setbackgroundrowdata",
     arguments = { "integer", "integer", "dimension" },
     actions   = function(row,box,indent)
-        templates[row] = { takebox(box), indent }
+        row = row -1 -- better here than in tex
+        if box == 0 then
+            templates[row] = false
+        else
+            templates[row] = { takebox(box), indent }
+        end
     end,
 }
 

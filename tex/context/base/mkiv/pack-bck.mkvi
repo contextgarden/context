@@ -245,18 +245,42 @@
 %D \macros
 %D   {backgroundline}
 
-\unexpanded\def\backgroundline[#color]%
-  {\dontleavehmode
-   \dowithnextbox{\pack_backgrounds_add_to_nextbox{#color}}\hbox}
+% \unexpanded\def\backgroundline[#color]%
+%   {\dontleavehmode
+%    \dowithnextbox{\pack_backgrounds_add_to_nextbox{#color}}\hbox}
+%
+% \unexpanded\def\pack_backgrounds_add_to_nextbox#color% handy helper
+%   {\hpack
+%      {\dousecolorparameter{#color}%
+%       \vrule
+%         \??width \nextboxwd
+%         \??height\nextboxht
+%         \??depth \nextboxdp
+%       \hskip-\nextboxwd
+%       \flushnextbox}}
 
-\unexpanded\def\pack_backgrounds_add_to_nextbox#color% handy helper
-  {\hbox
-     {\dousecolorparameter{#color}%
-      \vrule
-        \!!width \nextboxwd
-        \!!height\nextboxht
-        \!!depth \nextboxdp
-      \hskip-\nextboxwd
-      \flushnextbox}}
+%D We implement this elsewhere avoiding the rule.
+
+% \unexpanded\def\backgroundline
+%   {\dontleavehmode
+%    \pack_backgrounds_add_to_nextbox\hbox\hpack}
+%
+% \unexpanded\def\pack_backgrounds_add_to_nextbox#box#pack[#color]%
+%   {\dontleavehmode
+%    \dowithnextbox{\pack_backgrounds_add_to_nextbox_indeed#pack{#color}}#box}
+%
+% \unexpanded\def\pack_backgrounds_add_to_nextbox_indeed#pack#color% handy helper
+%   {#pack%
+%      {\dousecolorparameter{#color}%
+%       \vrule
+%         \??width \nextboxwd
+%         \??height\nextboxht
+%         \??depth \nextboxdp
+%       \hskip-\nextboxwd
+%       \flushnextbox}}
+%
+% \unexpanded\def\backgroundhbox{\pack_backgrounds_add_to_nextbox\hbox\hpack}
+% \unexpanded\def\backgroundvtop{\pack_backgrounds_add_to_nextbox\vtop\tpack}
+% \unexpanded\def\backgroundvbox{\pack_backgrounds_add_to_nextbox\vbox\vpack}
 
 \protect \endinput

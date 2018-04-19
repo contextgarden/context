@@ -20,17 +20,18 @@ use locals to refer to them when compiling the chain.</p>
 local gsub, concat, gmatch = string.gsub, table.concat, string.gmatch
 local type, load = type, load
 
-utilities            = utilities or { }
-local tables         = utilities.tables
-local allocate       = utilities.storage.allocate
+utilities               = utilities or { }
+local tables            = utilities.tables
+local allocate          = utilities.storage.allocate
 
-local formatters     = string.formatters
+local formatters        = string.formatters
+local replacer          = utilities.templates.replacer
 
-local sequencers     = { }
-utilities.sequencers = sequencers
+local sequencers        = { }
+utilities.sequencers    = sequencers
 
-local functions      = allocate()
-sequencers.functions = functions
+local functions         = allocate()
+sequencers.functions    = functions
 
 local removevalue       = tables.removevalue
 local replacevalue      = tables.replacevalue
@@ -66,6 +67,7 @@ function sequencers.new(t) -- was reset
     }
     if t then
         s.arguments    = t.arguments
+        s.templates    = t.templates
         s.returnvalues = t.returnvalues
         s.results      = t.results
         local name     = t.name
@@ -253,7 +255,6 @@ local function construct(t)
             t.compiled = formatters["%s\nreturn function(%s)\n%s\nend"](variables,arguments,calls)
         end
     end
--- print(t.compiled)
     return t.compiled -- also stored so that we can trace
 end
 
@@ -276,7 +277,6 @@ compile = function(t,compiler,n) -- already referred to in sequencers.new
     if compiled == "" then
         runner = false
     else
--- inspect(compiled)
         runner = compiled and load(compiled)() -- we can use loadstripped here
     end
     t.runner = runner
@@ -313,7 +313,7 @@ return function()
   return false, false
 end]]
 
-function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug into tostring
+local function nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug into tostring
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
     local nostate = t.nostate
     local vars, calls, args, n = { }, { }, nil, 0
@@ -362,5 +362,58 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
     end
     local processor = #calls > 0 and formatters[nostate and template_yes_nostate or template_yes_state](concat(vars,"\n"),args,concat(calls,"\n")) or template_nop
  -- print(processor)
+    return processor
+end
+
+function sequencers.nodeprocessor(t,nofarguments)
+    local kind = type(nofarguments)
+    if kind == "number" then
+        return nodeprocessor(t,nofarguments)
+    elseif kind ~= "table" then
+        return
+    end
+    --
+    local templates = nofarguments
+    local process   = templates.process
+    local step      = templates.step
+    --
+    if not process or not step then
+        return ""
+    end
+    --
+    local construct = replacer(process)
+    local newaction = replacer(step)
+    local calls     = { }
+    local aliases   = { }
+    local n         = 0
+    --
+    local list  = t.list
+    local order = t.order
+    local kind  = t.kind
+    local gskip = t.gskip
+    local askip = t.askip
+    --
+    for i=1,#order do
+        local group = order[i]
+        if not gskip[group] then
+            local actions = list[group]
+            for i=1,#actions do
+                local action = actions[i]
+                if not askip[action] then
+                    local localized = localize(action)
+                    n = n + 1
+                    aliases[n] = formatters["local %s = %s"](localized,action)
+                    calls[n]   = newaction { action = localized }
+                end
+            end
+        end
+    end
+    if n == 0 then
+        return templates.default or construct { }
+    end
+    local processor = construct {
+        localize = concat(aliases,"\n"),
+        actions  = concat(calls,"\n"),
+    }
     return processor
 end

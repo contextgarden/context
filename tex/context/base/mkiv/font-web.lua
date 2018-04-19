@@ -23,17 +23,29 @@ local streamwriter   = readers and readers.streamwriter or utilities.files
 local readstring     = streamreader.readstring
 local readcardinal2  = streamreader.readcardinal2
 local readcardinal4  = streamreader.readcardinal4
+local getsize        = streamreader.getsize
+local setposition    = streamreader.setposition
+local getposition    = streamreader.getposition
 
 local writestring    = streamwriter.writestring
 local writecardinal4 = streamwriter.writecardinal4
 local writecardinal2 = streamwriter.writecardinal2
 local writebyte      = streamwriter.writebyte
 
-local getsize        = streamreader.getsize
-local setposition    = streamreader.setposition
-local getposition    = streamreader.getposition
-
 local decompress     = zlib.decompress
+
+directives.register("fonts.streamreader",function()
+
+    streamreader  = utilities.streams
+
+    readstring    = streamreader.readstring
+    readcardinal2 = streamreader.readcardinal2
+    readcardinal4 = streamreader.readcardinal4
+    getsize       = streamreader.getsize
+    setposition   = streamreader.setposition
+    getposition   = streamreader.getposition
+
+end)
 
 local infotags = {
     ["os/2"] = true,

@@ -54,10 +54,12 @@ storage.register("builders/paragraphs/constructors/names",   names,   "builders.
 storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.paragraphs.constructors.numbers")
 
 local trace_page_builder = false  trackers.register("builders.page", function(v) trace_page_builder = v end)
+local trace_vbox_builder = false  trackers.register("builders.vbox", function(v) trace_vbox_builder = v end)
 local trace_post_builder = false  trackers.register("builders.post", function(v) trace_post_builder = v end)
 
-local report_par_builder  = logs.reporter("builders","par")
 local report_page_builder = logs.reporter("builders","page")
+local report_vbox_builder = logs.reporter("builders","vbox")
+local report_par_builder  = logs.reporter("builders","par")
 
 local mainconstructor = nil -- not stored in format
 local nofconstructors = 0
@@ -193,7 +195,7 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
-        if trace_vpacking then
+        if trace_vbox_builder then
             local before = count_nodes(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
             local after = count_nodes(head)
@@ -258,9 +260,53 @@ function builders.buildpage_filter(groupcode)
     end
 end
 
-registercallback('vpack_filter',      builders.vpack_filter,      "vertical spacing etc")
-registercallback('buildpage_filter',  builders.buildpage_filter,  "vertical spacing etc (mvl)")
-----------------('contribute_filter', builders.contribute_filter, "adding content to lists")
+------------------------
+
+-- do
+--
+--     local nuts       = nodes.nuts
+--     local tonut      = nodes.tonut
+--     local tonode     = nuts.tonode
+--     local getglue    = tex.getglue
+--     local getwhd     = nuts.getwhd
+--     local new_b_skip = nuts.pool.baselineskip
+--     local new_l_skip = nuts.pool.lineskip
+--     local find_tail  = nuts.tail
+--     local setlink    = nuts.setlink
+--
+--     function nodes.setprevdepth(box,prevdepth) -- this will become a helper
+--         local head = tonut(box)
+--         local wd, ht, dp = getwhd(head)
+--         if prevdepth > -65536000 then
+--             local b_width, b_stretch, b_shrink = getglue("baselineskip")
+--             local l_width, l_stretch, l_shrink = getglue("lineskip")
+--             local correction = b_width - prevdepth - (mirrored and dp or ht)
+--             if correction < l_width then
+--                 head = setlink(new_l_skip(l_width,l_stretch,l_shrink),head)
+--             else
+--                 head = setlink(new_b_skip(correction,b_stretch,b_shrink),head)
+--             end
+--         end
+--         return tonode(head), mirrored and ht or dp
+--     end
+--
+-- end
+--
+-- local setprevdepth  = nodes.setprevdepth
+-- local appendactions = nodes.tasks.actions("listbuilders")
+--
+-- function builders.append_filter(box,location,prevdepth,mirrored)
+--     starttiming(builders)
+--     box, prevdepth = appendactions(box,location,prevdepth,mirrored)
+--     box, prevdepth = setprevdepth(box,prevdepth)
+--     stoptiming(builders)
+--     return box, prevdepth
+-- end
+
+registercallback('vpack_filter',          builders.vpack_filter,      "vertical spacing etc")
+registercallback('buildpage_filter',      builders.buildpage_filter,  "vertical spacing etc (mvl)")
+----------------("append_to_vlist_filter",builders.append_filter,     "add content to the vlist")
+----------------('contribute_filter',     builders.contribute_filter, "adding content to lists")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)
@@ -387,3 +433,4 @@ end)
 --     end,
 --     "experimental prevdepth checking"
 -- )
+

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/16/18 22:59:40
+-- merge date  : 04/19/18 15:53:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -11298,6 +11298,29 @@ local readoffset=readushort
 function streamreader.readtag(f)
   return lower(stripstring(readstring(f,4)))
 end
+directives.register("fonts.streamreader",function()
+  streamreader=utilities.streams
+  openfile=streamreader.open
+  closefile=streamreader.close
+  setposition=streamreader.setposition
+  skipshort=streamreader.skipshort
+  readbytes=streamreader.readbytes
+  readstring=streamreader.readstring
+  readbyte=streamreader.readcardinal1
+  readushort=streamreader.readcardinal2
+  readuint=streamreader.readcardinal3
+  readulong=streamreader.readcardinal4
+  readshort=streamreader.readinteger2
+  readlong=streamreader.readinteger4
+  readfixed=streamreader.readfixed4
+  read2dot14=streamreader.read2dot14
+  readfword=readshort
+  readufword=readushort
+  readoffset=readushort
+  function streamreader.readtag(f)
+    return lower(stripstring(readstring(f,4)))
+  end
+end)
 local function readlongdatetime(f)
   local a,b,c,d,e,f,g,h=readbytes(f,8)
   return 0x100000000*d+0x1000000*e+0x10000*f+0x100*g+h
@@ -13038,6 +13061,17 @@ local readulong=streamreader.readcardinal4
 local setposition=streamreader.setposition
 local getposition=streamreader.getposition
 local readbytetable=streamreader.readbytetable
+directives.register("fonts.streamreader",function()
+  streamreader=utilities.streams
+  readstring=streamreader.readstring
+  readbyte=streamreader.readcardinal1
+  readushort=streamreader.readcardinal2
+  readuint=streamreader.readcardinal3
+  readulong=streamreader.readcardinal4
+  setposition=streamreader.setposition
+  getposition=streamreader.getposition
+  readbytetable=streamreader.readbytetable
+end)
 local setmetatableindex=table.setmetatableindex
 local trace_charstrings=false trackers.register("fonts.cff.charstrings",function(v) trace_charstrings=v end)
 local report=logs.reporter("otf reader","cff")
@@ -14893,6 +14927,19 @@ local readchar=streamreader.readinteger1
 local readshort=streamreader.readinteger2  
 local read2dot14=streamreader.read2dot14   
 local readinteger=streamreader.readinteger1
+directives.register("fonts.streamreader",function()
+  streamreader=utilities.streams
+  setposition=streamreader.setposition
+  getposition=streamreader.getposition
+  skipbytes=streamreader.skip
+  readbyte=streamreader.readcardinal1
+  readushort=streamreader.readcardinal2
+  readulong=streamreader.readcardinal4
+  readchar=streamreader.readinteger1
+  readshort=streamreader.readinteger2
+  read2dot14=streamreader.read2dot14
+  readinteger=streamreader.readinteger1
+end)
 local helpers=readers.helpers
 local gotodatatable=helpers.gotodatatable
 local function mergecomposites(glyphs,shapes)
@@ -15988,6 +16035,25 @@ local skipbytes=streamreader.skip
 local readfword=readshort
 local readbytetable=streamreader.readbytetable
 local readbyte=streamreader.readbyte
+directives.register("fonts.streamreader",function()
+  streamreader=utilities.streams
+  setposition=streamreader.setposition
+  getposition=streamreader.getposition
+  readushort=streamreader.readcardinal2
+  readulong=streamreader.readcardinal4
+  readinteger=streamreader.readinteger1
+  readshort=streamreader.readinteger2
+  readstring=streamreader.readstring
+  readtag=streamreader.readtag
+  readbytes=streamreader.readbytes
+  readfixed=streamreader.readfixed4
+  read2dot14=streamreader.read2dot14
+  skipshort=streamreader.skipshort
+  skipbytes=streamreader.skip
+  readfword=readshort
+  readbytetable=streamreader.readbytetable
+  readbyte=streamreader.readbyte
+end)
 local gsubhandlers={}
 local gposhandlers={}
 readers.gsubhandlers=gsubhandlers
@@ -28088,8 +28154,6 @@ if not indicgroups and characters then
   indicclasses=nil
   indicorders=nil
   characters.indicgroups=indicgroups
-else
-  indicgroups=table.setmetatableindex("table")
 end
 local consonant=indicgroups.consonant
 local independent_vowel=indicgroups.independent_vowel
@@ -28192,19 +28256,13 @@ local sequence_remove_joiners={
   }
 }
 local basic_shaping_forms={
-  init=true,
-  abvs=true,
   akhn=true,
   blwf=true,
-  calt=true,
   cjct=true,
   half=true,
-  haln=true,
   nukt=true,
   pref=true,
-  pres=true,
   pstf=true,
-  psts=true,
   rkrf=true,
   rphf=true,
   vatu=true,
@@ -28345,9 +28403,7 @@ local function initializedevanagi(tfmdata)
                     end
                   end
                 end
-if reph then
-  seqsubset[#seqsubset+1]={ kind,coverage,reph }
-end
+                seqsubset[#seqsubset+1]={ kind,coverage,reph }
               end
             end
           end
@@ -28412,6 +28468,17 @@ registerotffeature {
     node=initializedevanagi,
   },
 }
+local show_syntax_errors=false
+local function inject_syntax_error(head,current,char)
+  local signal=copy_node(current)
+  copyinjection(signal,current)
+  if pre_mark[char] then
+    setchar(signal,dotted_circle)
+  else
+    setchar(current,dotted_circle)
+  end
+  return insert_node_after(head,current,signal)
+end
 local function initialize_one(font,attr) 
   local tfmdata=fontdata[font]
   local datasets=otf.dataset(tfmdata,font,attr) 
@@ -28494,10 +28561,9 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
             setprop(tempcurrent,a_state,unsetvalue)
             if getchar(next)==getchar(tempcurrent) then
               flush_list(tempcurrent)
-              local n=copy_node(current)
-              copyinjection(n,current) 
-              setchar(current,dotted_circle)
-              head=insert_node_after(head,current,n)
+              if show_syntax_errors then
+                head,current=inject_syntax_error(head,current,char)
+              end
             else
               setchar(current,getchar(tempcurrent)) 
               local freenode=getnext(current)
@@ -28834,7 +28900,7 @@ function handlers.devanagari_reorder_reph(head,start)
     while current do
       local char=ischar(current,startfont)
       if char and getprop(current,a_syllabe)==startattr then
-        if not c and mark_above_below_post[char] and after_subscript[char] then
+        if not c and mark_above_below_post[char] and not after_subscript[char] then
           c=current
         end
         current=getnext(current)
@@ -29124,10 +29190,9 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
             setprop(current,a_state,unsetvalue)
             if halant[getchar(current)] then
               setnext(getnext(current),tmp)
-              local nc=copy_node(current)
-              copyinjection(nc,current)
-              setchar(current,dotted_circle)
-              head=insert_node_after(head,current,nc)
+              if show_syntax_errors then
+                head,current=inject_syntax_error(head,current,char)
+              end
             else
               setnext(current,tmp) 
               if changestop then
@@ -29590,17 +29655,6 @@ local function analyze_next_chars_two(c,font)
   else
     return c
   end
-end
-local show_syntax_errors=false
-local function inject_syntax_error(head,current,char)
-  local signal=copy_node(current)
-  copyinjection(signal,current)
-  if pre_mark[char] then
-    setchar(signal,dotted_circle)
-  else
-    setchar(current,dotted_circle)
-  end
-  return insert_node_after(head,current,signal)
 end
 local function method_one(head,font,attr)
   head=tonut(head)

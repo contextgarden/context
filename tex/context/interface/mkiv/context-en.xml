@@ -2975,6 +2975,10 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="strip">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>

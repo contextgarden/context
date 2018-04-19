@@ -78,7 +78,7 @@ appendaction("shipouts",     "normalizers", "nodes.rules.handler")              
 appendaction("shipouts",     "normalizers", "nodes.shifts.handler")                              -- disabled
 appendaction("shipouts",     "normalizers", "structures.tags.handler")                           -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
-------------("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
+appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
 ------------("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.rubies.attach")                         -- disabled
 
@@ -132,11 +132,8 @@ appendaction("finalizers",   "lists",       "nodes.linefillers.handler")
 appendaction("contributers", "normalizers", "nodes.handlers.flattenline")
 appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds")
 
-appendaction("mvlbuilders",  "normalizers", "nodes.handlers.alignbackgrounds")
-appendaction("vboxbuilders", "normalizers", "nodes.handlers.alignbackgrounds")
-
-appendaction("mvlbuilders",  "normalizers", "nodes.handlers.backgrounds")
-appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgrounds")
+appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox")
+appendaction("mvlbuilders",  "normalizers", "nodes.handlers.backgroundspage")
 
 appendaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler")                 -- disabled
 appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")
@@ -203,9 +200,9 @@ disableaction("shipouts",    "attributes.viewerlayers.handler")
 disableaction("shipouts",    "structures.tags.handler")
 disableaction("shipouts",    "nodes.visualizers.handler")
 disableaction("shipouts",    "nodes.handlers.accessibility")
--------------("shipouts",    "nodes.handlers.backgrounds")
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")
+disableaction("shipouts",    "nodes.handlers.backgrounds")
 -------------("shipouts",    "nodes.handlers.export")
 disableaction("shipouts",    "typesetters.rubies.attach")
 
@@ -219,6 +216,9 @@ disableaction("finalizers",  "nodes.linefillers.handler")
 disableaction("contributers","nodes.handlers.flattenline")
 disableaction("contributers","nodes.handlers.textbackgrounds")
 
+disableaction("vboxbuilders","nodes.handlers.backgroundsvbox")
+disableaction("mvlbuilders", "nodes.handlers.backgroundspage")
+
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
@@ -229,12 +229,6 @@ disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "noads.handlers.autofences")
 disableaction("math",        "noads.handlers.makeup")
 disableaction("math",        "typesetters.directions.processmath")
-
-disableaction("mvlbuilders",  "nodes.handlers.backgrounds")
-disableaction("vboxbuilders", "nodes.handlers.backgrounds")
-
-disableaction("mvlbuilders",  "nodes.handlers.alignbackgrounds")
-disableaction("vboxbuilders", "nodes.handlers.alignbackgrounds")
 
 disableaction("mvlbuilders", "typesetters.margins.globalhandler")
 disableaction("mvlbuilders", "nodes.handlers.migrate")

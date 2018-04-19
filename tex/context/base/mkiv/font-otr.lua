@@ -126,6 +126,34 @@ function streamreader.readtag(f)
     return lower(stripstring(readstring(f,4)))
 end
 
+directives.register("fonts.streamreader",function()
+
+    streamreader = utilities.streams
+
+    openfile     = streamreader.open
+    closefile    = streamreader.close
+    setposition  = streamreader.setposition
+    skipshort    = streamreader.skipshort
+    readbytes    = streamreader.readbytes
+    readstring   = streamreader.readstring
+    readbyte     = streamreader.readcardinal1
+    readushort   = streamreader.readcardinal2
+    readuint     = streamreader.readcardinal3
+    readulong    = streamreader.readcardinal4
+    readshort    = streamreader.readinteger2
+    readlong     = streamreader.readinteger4
+    readfixed    = streamreader.readfixed4
+    read2dot14   = streamreader.read2dot14
+    readfword    = readshort
+    readufword   = readushort
+    readoffset   = readushort
+
+    function streamreader.readtag(f)
+        return lower(stripstring(readstring(f,4)))
+    end
+
+end)
+
 -- date represented in number of seconds since 12:00 midnight, January 1, 1904. The value is represented as a
 -- signed 64-bit integer
 

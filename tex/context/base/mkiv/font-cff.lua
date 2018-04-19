@@ -47,6 +47,21 @@ local setposition       = streamreader.setposition
 local getposition       = streamreader.getposition
 local readbytetable     = streamreader.readbytetable
 
+directives.register("fonts.streamreader",function()
+
+    streamreader  = utilities.streams
+
+    readstring    = streamreader.readstring
+    readbyte      = streamreader.readcardinal1
+    readushort    = streamreader.readcardinal2
+    readuint      = streamreader.readcardinal3
+    readulong     = streamreader.readcardinal4
+    setposition   = streamreader.setposition
+    getposition   = streamreader.getposition
+    readbytetable = streamreader.readbytetable
+
+end)
+
 local setmetatableindex = table.setmetatableindex
 
 local trace_charstrings = false trackers.register("fonts.cff.charstrings",function(v) trace_charstrings = v end)

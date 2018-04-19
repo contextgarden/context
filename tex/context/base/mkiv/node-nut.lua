@@ -780,8 +780,22 @@ nuts.theprop = function(n)
     return p
 end
 
-nodes.setprop = nodes.setproperty
-nodes.getprop = nodes.getproperty
+nuts.isdone = function(n,k)
+    local p = propertydata[n]
+    if not p then
+        propertydata[n] = { [k] = true }
+        return false
+    end
+    local v = p[k]
+    if v == nil then
+        propertydata[n] = { [k] = true }
+        return false
+    end
+    return v
+end
+
+-- nodes.setprop = nodes.setproperty
+-- nodes.getprop = nodes.getproperty
 
 function nuts.copy_properties(source,target,what)
     local newprops = propertydata[source]

@@ -52,19 +52,20 @@ end
 
 function tasks.new(specification) -- was: name,arguments,list
     local name      = specification.name
-    local arguments = specification.arguments or 0
     local sequence  = specification.sequence
     if name and sequence then
         local tasklist = newsequencer {
             -- we can move more to the sequencer now .. todo
         }
         tasksdata[name] = {
+            name      = name,
             list      = tasklist,
             runner    = false,
-            arguments = arguments,
-         -- sequence  = sequence,
             frozen    = { },
-            processor = specification.processor or nodeprocessor
+            processor = specification.processor or nodeprocessor,
+            -- could be metatable but best freeze it
+            arguments = specification.arguments or 0,
+            templates = specification.templates,
         }
         for l=1,#sequence do
             appendgroup(tasklist,sequence[l])
@@ -219,6 +220,22 @@ end)
 function tasks.actions(name) -- we optimize for the number or arguments (no ...)
     local data = tasksdata[name]
     if data then
+        local t = data.templates
+        if t then
+            return function(...)
+                total = total + 1 -- will go away
+                local runner = data.runner
+                if not runner then
+                    created = created + 1
+--                     if trace_tasks then
+                        report_tasks("creating runner %a",name)
+--                     end
+                    runner = compile(data.list,data.processor,t)
+                    data.runner = runner
+                end
+                return runner(...)
+            end
+        end
         local n = data.arguments or 0
         if n == 0 then
             return function(head)
@@ -452,3 +469,32 @@ tasks.new {
     }
 }
 
+-- for now quite useless (too fuzzy0
+--
+-- tasks.new {
+--     name            = "listbuilders",
+--     processor       = nodeprocessor,
+--     sequence        = {
+--         "before",      -- for users
+--         "normalizers",
+--         "after",       -- for users
+--     },
+--     templates       = {
+-- -- we don't need a default
+--         default = [[
+-- return function(box,location,prevdepth)
+--     return box, prevdepth
+-- end
+--         ]],
+--         process = [[
+-- %localize%
+-- return function(box,location,prevdepth,mirrored)
+--     %actions%
+--     return box, prevdepth
+-- end
+--         ]],
+--         step = [[
+-- box, prevdepth = %action%(box,location,prevdepth,mirrored)
+--         ]],
+--     },
+-- }

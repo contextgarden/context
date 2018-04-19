@@ -16,8 +16,6 @@
 %D This is first attempt to replacing backgrounds in a few tables
 %D mechanisms. When used more frequently, we can store the color
 %D spec in the attribute.
-%D
-%D Maybe move some to the bar handler.
 
 \unprotect
 
@@ -74,6 +72,9 @@
 \unexpanded\def\backgroundvbox{\node_backgrounds_boxes_add\vbox}
 \unexpanded\def\backgroundvtop{\node_backgrounds_boxes_add\vtop}
 
+\unexpanded\def\backgroundline{\dontleavehmode
+                               \node_backgrounds_boxes_add\hbox}
+
 % \def\node_backgrounds_boxes_add#1[#2]%
 %   {\begingroup
 %    \clf_enablebackgroundboxes
@@ -89,19 +90,5 @@
 \def\node_backgrounds_boxes_add#1[#2]%
   {\clf_enablebackgroundboxes
    #1\backgroundcolorattr{#2}}
-
-% less argument carry over:
-%
-% \def\node_backgrounds_boxes_add#1[#2]%
-%   {\clf_enablebackgroundboxes#1%
-%    \ifcsname\??colorattribute\currentcolorprefix#2\endcsname
-%      \thebackgroundcolorattr{\currentcolorprefix#2}%
-%    \else\ifcsname\??colorattribute#2\endcsname
-%      \thebackgroundcolorattr{#2}%
-%    \fi\fi}
-
-% \def\backgroundvbox[#1]{\vbox \backgroundcolorattr{#1}}
-% \def\backgroundvtop[#1]{\vtop \backgroundcolorattr{#1}}
-% \def\backgroundhbox[#1]{\hbox \backgroundcolorattr{#1}}
 
 \protect \endinput

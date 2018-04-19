@@ -293,10 +293,6 @@ if not indicgroups and characters then
 
     characters.indicgroups = indicgroups
 
-else
-
-    indicgroups = table.setmetatableindex("table")
-
 end
 
 local consonant         = indicgroups.consonant
@@ -422,19 +418,19 @@ local sequence_remove_joiners = {
 -- as it might depends on the font. Not that it's a bottleneck.
 
 local basic_shaping_forms =  {
-    init = true, -- new
-    abvs = true, -- new
+ -- init = true, -- new
+ -- abvs = true, -- new
     akhn = true,
     blwf = true,
-    calt = true, -- new
+ -- calt = true, -- new
     cjct = true,
     half = true,
-    haln = true, -- new
+ -- haln = true, -- new
     nukt = true,
     pref = true,
-    pres = true, -- new
+ -- pres = true, -- new
     pstf = true,
-    psts = true, -- new
+ -- psts = true, -- new
     rkrf = true,
     rphf = true,
     vatu = true,
@@ -605,9 +601,7 @@ local function initializedevanagi(tfmdata)
                                         end
                                     end
                                 end
-if reph then
-    seqsubset[#seqsubset+1] = { kind, coverage, reph }
-end
+                                seqsubset[#seqsubset+1] = { kind, coverage, reph }
                             end
                         end
                     end
@@ -690,6 +684,19 @@ registerotffeature {
         node     = initializedevanagi,
     },
 }
+
+local show_syntax_errors = false
+
+local function inject_syntax_error(head,current,char)
+    local signal = copy_node(current)
+    copyinjection(signal,current)
+    if pre_mark[char] then
+        setchar(signal,dotted_circle)
+    else
+        setchar(current,dotted_circle)
+    end
+    return insert_node_after(head,current,signal)
+end
 
 -- hm, this is applied to one character:
 
@@ -793,10 +800,9 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
                         setprop(tempcurrent,a_state,unsetvalue)
                         if getchar(next) == getchar(tempcurrent) then
                             flush_list(tempcurrent)
-                            local n = copy_node(current)
-                            copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
-                            setchar(current,dotted_circle)
-                            head = insert_node_after(head, current, n)
+                            if show_syntax_errors then
+                                head, current = inject_syntax_error(head,current,char)
+                            end
                         else
                             setchar(current,getchar(tempcurrent)) -- we assumes that the result of blwf consists of one node
                             local freenode = getnext(current)
@@ -1217,7 +1223,7 @@ function handlers.devanagari_reorder_reph(head,start)
         while current do
             local char = ischar(current,startfont)
             if char and getprop(current,a_syllabe) == startattr then
-                if not c and mark_above_below_post[char] and after_subscript[char] then
+                if not c and mark_above_below_post[char] and not after_subscript[char] then
                     c = current
                 end
                 current = getnext(current)
@@ -1560,10 +1566,9 @@ local function reorder_two(head,start,stop,font,attr,nbspaces) -- maybe do a pas
                         setprop(current,a_state,unsetvalue)
                         if halant[getchar(current)] then
                             setnext(getnext(current),tmp)
-                            local nc = copy_node(current)
-                            copyinjection(nc,current)
-                            setchar(current,dotted_circle)
-                            head = insert_node_after(head,current,nc)
+                            if show_syntax_errors then
+                                head, current = inject_syntax_error(head,current,char)
+                            end
                         else
                             setnext(current,tmp) -- assumes that result of pref, blwf, or pstf consists of one node
                             if changestop then
@@ -2056,19 +2061,6 @@ local function analyze_next_chars_two(c,font)
     else
         return c
     end
-end
-
-local show_syntax_errors = false
-
-local function inject_syntax_error(head,current,char)
-    local signal = copy_node(current)
-    copyinjection(signal,current)
-    if pre_mark[char] then
-        setchar(signal,dotted_circle)
-    else
-        setchar(current,dotted_circle)
-    end
-    return insert_node_after(head,current,signal)
 end
 
 -- It looks like these two analyzers were written independently but they share

@@ -44,8 +44,12 @@
 % \def\buff_start_indeed#1#2#3#4#5% \donothing needed ! #5=undent)
 %   {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}\plusone}}
 
+% \def\buff_start_indeed#1#2#3#4%
+%   {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}\plusone}}
+
 \def\buff_start_indeed#1#2#3#4%
-  {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}\plusone}}
+  {\edef\p_strip{\namedbufferparameter{#1}\c!strip}% for aditya
+   \normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}\ifx\p_strip\v!no\zerocount\else\plusone\fi}}
 
 \unexpanded\def\grabbufferdata % was: \dostartbuffer
   {\begingroup % (4)
@@ -155,7 +159,7 @@
     \setexpandedbufferparameter\c!number{\number\c_buff_n_of_defined}%
     \edef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
     \setuevalue{\e!start\currentbuffer}{\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
-    \setuevalue{\e!get\currentbuffer  }{\buff_get_stored{\currentbuffer}{\currentdefinedbuffer}}%
+    \setuevalue{\e!get  \currentbuffer}{\buff_get_stored   {\currentbuffer}{\currentdefinedbuffer}}%
 \to \everydefinebuffer
 
 \unexpanded\def\buff_start_defined

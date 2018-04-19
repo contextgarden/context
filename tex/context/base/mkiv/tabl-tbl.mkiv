@@ -176,6 +176,7 @@
 \newcount        \c_tabl_tabulate_minusnoflines
 \newcount        \c_tabl_tabulate_align
 \newcount        \c_tabl_tabulate_nofrealrows
+\newcount        \c_tabl_tabulate_autocolor
 
 \newcount        \c_tabl_tabulate_nofcolumns            % set at the lua end by parser
 \newcount        \c_tabl_tabulate_has_rule_spec_first   % set at the lua end by parser (for the moment a count)
@@ -1643,10 +1644,11 @@
    #1}
 
 \def\tabl_tabulate_hrule_inject_normal
-  {\hrule
-     \s!height.5\d_tabl_tabulate_hrulethickness_local
-     \s!depth .5\d_tabl_tabulate_hrulethickness_local
-     \relax}
+  {\autorule
+     \s!height .5\d_tabl_tabulate_hrulethickness_local
+     \s!depth  .5\d_tabl_tabulate_hrulethickness_local
+     \s!left     \d_tabl_tabulate_indent
+   \relax}
 
 \def\tabl_tabulate_hrule_inject_colored
   {\dousecolorparameter\currenttabulationlocalhrulecolor
@@ -2831,6 +2833,7 @@
 \let\m_table_current_row_background_default      \empty
 \let\m_table_current_row_background_filler       \empty
 \let\m_table_current_row_background_defaultfiller\empty
+\let\m_table_current_row_background_auto         \empty
 
 \unexpanded\def\tabl_register_row_background#1%
   {\xdef\m_table_current_row_background{#1}}
@@ -2843,6 +2846,7 @@
      \ifx\m_table_current_row_background_filler\empty
        \ifx\m_table_current_row_background\empty
          % nothing
+         \tabl_synchronize_row_background_dummy
        \else
          \tabl_synchronize_row_background_indeed\m_table_current_row_background
        \fi
@@ -2851,26 +2855,41 @@
      \fi
    \fi}
 
+\unexpanded\def\tabl_synchronize_row_background_dummy
+  {\iftrialtypesetting\else
+     \begingroup
+    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\zerocount\zeropoint
+     \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\zerocount\zeropoint
+     \endgroup
+   \fi}
+
 \unexpanded\def\tabl_synchronize_row_background_indeed#1%
-  {\begingroup
-   \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
-   \directcolor[#1]%
-   \setbox\scratchbox\hpack{}%
-   \clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
-   \endgroup}
+  {\iftrialtypesetting\else
+     \begingroup
+     \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
+     \dousecolorparameter{#1}%
+     \setbox\scratchbox\hpack{}%
+    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
+     \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\scratchbox\d_tabl_tabulate_indent
+     \endgroup
+   \fi}
 
 \unexpanded\def\tabl_synchronize_row_background_filler_indeed#1%
-  {\begingroup
-   \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
-   \node_linefiller_set{#1}%
-   \setbox\scratchbox\hpack{}%
-   \clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
-   \endgroup}
+  {\iftrialtypesetting\else
+     \begingroup
+     \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
+     \node_linefiller_set{#1}%
+     \setbox\scratchbox\hpack{}%
+    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
+     \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\scratchbox\d_tabl_tabulate_indent
+     \endgroup
+   \fi}
 
 \appendtoks
     \glet\m_table_current_row_background\empty
     \glet\m_table_current_row_background_filler\empty
     \global\c_tabl_tabulate_nofrealrows\zerocount
+    \global\c_tabl_tabulate_autocolor\zerocount
     \clf_resetbackgroundrowdata
 \to \t_tabl_tabulate_initializers_first
 
@@ -2878,6 +2897,7 @@
     \glet\m_table_current_row_background\empty
     \glet\m_table_current_row_background_filler\empty
     \global\c_tabl_tabulate_nofrealrows\zerocount
+    \global\c_tabl_tabulate_autocolor\zerocount
     \clf_resetbackgroundrowdata
 \to \t_tabl_tabulate_initializers_second
 
@@ -2965,6 +2985,37 @@
      \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
    \fi}
 
+\unexpanded\def\tabl_tabulate_A_first
+  {\global\advance\c_tabl_tabulate_autocolor\plusone
+   \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
+   \ifx\m_table_current_row_background_auto\empty
+     \global\c_tabl_tabulate_autocolor\plusone
+     \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
+   \fi
+   \ifx\m_table_current_row_background_auto\empty
+     \let\m_table_current_row_background_auto\empty % \m_table_current_row_background_default
+   \fi
+   \tabl_register_row_background{\m_table_current_row_background_auto}}
+
+\unexpanded\def\tabl_tabulate_NA_first
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \iftrialtypesetting\else
+     \ifcase\c_tabl_tabulate_column\or
+       \tabl_tabulate_A_first
+     \fi
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_BA_first
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \iftrialtypesetting\else
+     \ifcase\c_tabl_tabulate_column\or
+       \tabl_tabulate_A_first
+     \fi
+   \fi
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
 \appendtoks
     \let\NL\tabl_tabulate_NL_first  % NC with Line
     \let\ND\tabl_tabulate_ND_first  % NC with Default Line
@@ -2974,11 +3025,14 @@
     \let\NP\tabl_tabulate_NP_first  % NC with Predefined Filler
     \let\FB\tabl_tabulate_FB_first  % BC with Filler
     \let\PB\tabl_tabulate_PB_first  % BC with Predefined Filler
+    \let\NA\tabl_tabulate_NA_first  % NC with Auto Line
+    \let\BA\tabl_tabulate_BA_first  % NC with Auto Line
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
    \edef\m_table_current_row_background_default       {\tabulateparameter\c!backgroundcolor}%
    \edef\m_table_current_row_background_default_filler{\tabulateparameter\c!background}%
+   \let \m_table_current_row_background_auto           \empty
 \to \everytabulate
 
 \setuptabulate

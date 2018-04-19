@@ -97,6 +97,29 @@ local readfword         = readshort
 local readbytetable     = streamreader.readbytetable
 local readbyte          = streamreader.readbyte
 
+directives.register("fonts.streamreader",function()
+
+    streamreader  = utilities.streams
+
+    setposition   = streamreader.setposition
+    getposition   = streamreader.getposition
+    readushort    = streamreader.readcardinal2
+    readulong     = streamreader.readcardinal4
+    readinteger   = streamreader.readinteger1
+    readshort     = streamreader.readinteger2
+    readstring    = streamreader.readstring
+    readtag       = streamreader.readtag
+    readbytes     = streamreader.readbytes
+    readfixed     = streamreader.readfixed4
+    read2dot14    = streamreader.read2dot14
+    skipshort     = streamreader.skipshort
+    skipbytes     = streamreader.skip
+    readfword     = readshort
+    readbytetable = streamreader.readbytetable
+    readbyte      = streamreader.readbyte
+
+end)
+
 local gsubhandlers      = { }
 local gposhandlers      = { }
 

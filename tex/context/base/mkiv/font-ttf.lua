@@ -56,6 +56,23 @@ local readshort     = streamreader.readinteger2   -- 16-bit   signed integer
 local read2dot14    = streamreader.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
 local readinteger   = streamreader.readinteger1
 
+directives.register("fonts.streamreader",function()
+
+    streamreader = utilities.streams
+
+    setposition  = streamreader.setposition
+    getposition  = streamreader.getposition
+    skipbytes    = streamreader.skip
+    readbyte     = streamreader.readcardinal1
+    readushort   = streamreader.readcardinal2
+    readulong    = streamreader.readcardinal4
+    readchar     = streamreader.readinteger1
+    readshort    = streamreader.readinteger2
+    read2dot14   = streamreader.read2dot14
+    readinteger  = streamreader.readinteger1
+
+end)
+
 local helpers       = readers.helpers
 local gotodatatable = helpers.gotodatatable
 

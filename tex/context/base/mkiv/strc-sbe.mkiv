@@ -45,7 +45,7 @@
 
 \def\strc_sectionblock_define[#1][#2][#3]% singular plural settings
   {\strc_sectionblock_define_normal[#1][#3]%
-   \expandafter\newif\csname if#2\endcsname % obsolete
+  %\expandafter\newif\csname if#2\endcsname % obsolete
    \strc_sectionblock_set_environment{#1}\empty
    \setuvalue{\e!start#2}{\startsectionblock[#1]}%
    \setuvalue{\e!stop #2}{\stopsectionblock}}
@@ -98,7 +98,7 @@
    \clf_pushsectionblock{#1}
      bookmark {\sectionblockparameter\c!bookmark}%
    \relax
-   \csname #1true\endcsname % obsolete
+  %\csname #1true\endcsname % obsolete
    \setsystemmode\currentsectionblock
    \the\everybeforesectionblock\relax
    \showmessage\m!structures1\currentsectionblock}
