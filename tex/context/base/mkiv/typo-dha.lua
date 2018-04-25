@@ -46,8 +46,6 @@ local trace_directions   = false  trackers.register("typesetters.directions.defa
 local report_directions  = logs.reporter("typesetting","text directions")
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -136,7 +134,7 @@ end
 
 local function process(start)
 
-    local head     = tonut(start) -- we have a global head
+    local head     = start
     local current  = head
     local autodir  = 0
     local embedded = 0
@@ -443,7 +441,7 @@ local function process(start)
         end
     end
 
-    return tonode(head), done
+    return head
 
 end
 

@@ -57,8 +57,9 @@ local flush_list       = nuts.flush_list
 local count_nodes      = nuts.countall
 local used_nodes       = nuts.usedlist
 
-local traverse_by_id   = nuts.traverse_id
-local traverse_nodes   = nuts.traverse
+local nextnode         = nuts.traversers.node
+local nextglyph        = nuts.traversers.glyph
+
 local d_tostring       = nuts.tostring
 
 local nutpool          = nuts.pool
@@ -90,7 +91,7 @@ function nodes.showlist(head, message)
     if message then
         report_nodes(message)
     end
-    for n in traverse_nodes(tonut(head)) do
+    for n in nextnode, tonut(head) do
         report_nodes(d_tostring(n))
     end
 end
@@ -98,7 +99,7 @@ end
 function nodes.handlers.checkglyphs(head,message)
     local h = tonut(head)
     local t = { }
-    for g in traverse_by_id(glyph_code,h) do
+    for g in nextglyph, h do
         t[#t+1] = formatters["%U:%s"](getchar(g),getsubtype(g))
     end
     if #t > 0 then
@@ -114,8 +115,8 @@ end
 function nodes.handlers.checkforleaks(sparse)
     local l = { }
     local q = used_nodes()
-    for p in traverse_nodes(q) do
-        local s = table.serialize(nodes.astable(p,sparse),nodecodes[getid(p)])
+    for p, id in nextnode, q do
+        local s = table.serialize(nodes.astable(p,sparse),nodecodes[id])
         l[s] = (l[s] or 0) + 1
     end
     flush_list(q)
@@ -180,13 +181,13 @@ end
 nodes.tosequence = tosequence
 nuts .tosequence = tosequence
 
-function nodes.report(t,done)
-    report_nodes("output %a, changed %a, %s nodes",status.output_active,done,count_nodes(tonut(t)))
+function nodes.report(t)
+    report_nodes("output %a, %s nodes",status.output_active,count_nodes(t))
 end
 
 function nodes.packlist(head)
     local t = { }
-    for n in traverse_nodes(tonut(head)) do
+    for n in nextnode, tonut(head) do
         t[#t+1] = d_tostring(n)
     end
     return t
@@ -198,9 +199,9 @@ function nodes.idstostring(head,tail)
     local t       = { }
     local last_id = nil
     local last_n  = 0
-    for n, id in traverse_nodes(head,tail) do -- hm, does not stop at tail
+    for n, id, subtype in nextnode, head do
         if id == whatsit_code then
-            id = whatcodes[getsubtype(n)]
+            id = whatcodes[subtype]
         else
             id = nodecodes[id]
         end
@@ -353,10 +354,9 @@ local what = { [0] = "unknown", "line", "box", "indent", "row", "cell" }
 local function showboxes(n,symbol,depth)
     depth  = depth  or 0
     symbol = symbol or "."
-    for n, id in traverse_nodes(tonut(n)) do
+    for n, id, subtype in nextnode, tonut(n) do
         if id == hlist_code or id == vlist_code then
-            local s = getsubtype(n)
-            report_nodes(rep(symbol,depth) .. what[s] or s)
+            report_nodes(rep(symbol,depth) .. what[subtype] or subtype)
             showboxes(getlist(n),symbol,depth+1)
         end
     end

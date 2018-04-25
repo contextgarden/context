@@ -343,17 +343,17 @@
 %D These will become obsolete:
 
 \unexpanded\def\startmessages #1 library: #2 %
-  {\bgroup
+  {\begingroup
    \ifcsname\m!prefix!#2\endcsname\else\setgvalue{\m!prefix!#2}{#2}\fi
-   \catcode\endoflineasciicode\activecatcode
+   \catcode\endoflineasciicode\othercatcode
    \doifelseinset{#1}{\currentresponses,all}\mult_messages_start_yes\mult_messages_start_nop{#2}}
 
 \def\mult_messages_start_yes#1#2\stopmessages
   {\clf_setinterfacemessages{#1}{#2}%
-   \egroup}
+   \endgroup}
 
 \def\mult_messages_start_nop#1#2\stopmessages
-  {\egroup}
+  {\endgroup}
 
 \let\stopmessages\relax
 

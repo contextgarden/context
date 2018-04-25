@@ -10,6 +10,9 @@ local type = type
 
 local formatters       = string.formatters
 
+local nodecodes        = nodes.nodecodes
+local whatsit_code     = nodecodes.whatsit
+
 local whatsitcodes     = nodes.whatsitcodes
 local nodeinjections   = backends.nodeinjections
 
@@ -26,16 +29,16 @@ local register         = nodepool.register
 
 local literalvalues    = nodes.literalvalues
 
-local pdforiginliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdforiginliteral,"mode",literalvalues.origin)
-local pdfpageliteral   = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfpageliteral,  "mode",literalvalues.page)
-local pdfdirectliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfdirectliteral,"mode",literalvalues.direct)
-local pdfrawliteral    = register(new_node("whatsit", whatsitcodes.pdfliteral))  setfield(pdfrawliteral,   "mode",literalvalues.raw)
+local pdforiginliteral = register(new_node(whatsit_code, whatsitcodes.pdfliteral))  setfield(pdforiginliteral,"mode",literalvalues.origin)
+local pdfpageliteral   = register(new_node(whatsit_code, whatsitcodes.pdfliteral))  setfield(pdfpageliteral,  "mode",literalvalues.page)
+local pdfdirectliteral = register(new_node(whatsit_code, whatsitcodes.pdfliteral))  setfield(pdfdirectliteral,"mode",literalvalues.direct)
+local pdfrawliteral    = register(new_node(whatsit_code, whatsitcodes.pdfliteral))  setfield(pdfrawliteral,   "mode",literalvalues.raw)
 
-local pdfsave          = register(new_node("whatsit", whatsitcodes.pdfsave))
-local pdfrestore       = register(new_node("whatsit", whatsitcodes.pdfrestore))
-local pdfsetmatrix     = register(new_node("whatsit", whatsitcodes.pdfsetmatrix))
------ pdfdest          = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
------ pdfannot         = register(new_node("whatsit", whatsitcodes.pdfannot))
+local pdfsave          = register(new_node(whatsit_code, whatsitcodes.pdfsave))
+local pdfrestore       = register(new_node(whatsit_code, whatsitcodes.pdfrestore))
+local pdfsetmatrix     = register(new_node(whatsit_code, whatsitcodes.pdfsetmatrix))
+----- pdfdest          = register(new_node(whatsit_code, whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
+----- pdfannot         = register(new_node(whatsit_code, whatsitcodes.pdfannot))
 
 local variables = interfaces.variables
 

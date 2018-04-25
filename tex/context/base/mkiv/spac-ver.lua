@@ -116,7 +116,6 @@ local a_snapmethod        = attributes.private('snapmethod')
 local a_snapvbox          = attributes.private('snapvbox')
 
 local nuts                = nodes.nuts
-local tonode              = nuts.tonode
 local tonut               = nuts.tonut
 
 local getnext             = nuts.getnext
@@ -147,15 +146,16 @@ local getdepth            = nuts.getdepth
 
 local find_node_tail      = nuts.tail
 local flush_node          = nuts.flush_node
-local traverse_nodes      = nuts.traverse
-local traverse_nodes_id   = nuts.traverse_id
 local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
 local remove_node         = nuts.remove
 local count_nodes         = nuts.countall
 local hpack_node          = nuts.hpack
 local vpack_node          = nuts.vpack
------ writable_spec       = nuts.writable_spec
+
+local nextnode            = nuts.traversers.node
+local nexthlist           = nuts.traversers.hlist
+
 local nodereference       = nuts.reference
 
 local theprop             = nuts.theprop
@@ -290,7 +290,7 @@ local function validvbox(parentid,list)
             end
         end
         local done = nil
-        for n, id in traverse_nodes(list) do
+        for n, id in nextnode, list do
             if id == vlist_code or id == hlist_code then
                 if done then
                     return nil
@@ -325,7 +325,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
                 return false
             end
         end
-        for n, id in traverse_nodes(list) do
+        for n, id in nextnode, list do
             if id == hlist_code or id == vlist_code then
              -- local a = getattr(n,a_snapmethod)
              -- if not a then
@@ -534,7 +534,7 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         if thebox and id == vlist_code then
             local list = getlist(thebox)
             local lw, lh, ld
-            for n in traverse_nodes_id(hlist_code,list) do
+            for n in nexthlist, list do
                 lw, lh, ld = getwhd(n)
                 break
             end
@@ -570,7 +570,7 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         if thebox and id == vlist_code then
             local list = getlist(thebox)
             local lw, lh, ld
-            for n in traverse_nodes_id(hlist_code,list) do
+            for n in nexthlist, list do
                 lw, lh, ld = getwhd(n)
             end
             if lh then
@@ -1879,7 +1879,7 @@ do
                 trace_info("head has been changed from %a to %a",nodecodes[getid(oldhead)],nodecodes[getid(head)])
             end
         end
-        return head, true
+        return head
     end
 
     -- alignment after_output end box new_graf vmode_par hmode_par insert penalty before_display after_display
@@ -1910,29 +1910,25 @@ do
     function vspacing.pagehandler(newhead,where)
         -- local newhead = texlists.contrib_head
         if newhead then
-            newhead = tonut(newhead)
             local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
             local flush = false
             stackhack = true -- todo: only when grid snapping once enabled
             -- todo: fast check if head = tail
-            for n, id in traverse_nodes(newhead) do -- we could just look for glue nodes
+            for n, id, subtype in nextnode, newhead do -- we could just look for glue nodes
                 if id ~= glue_code then
                     flush = true
-                else
-                    local subtype = getsubtype(n)
-                    if subtype == userskip_code then
-                        if getattr(n,a_skipcategory) then
-                            stackhack = true
-                        else
-                            flush = true
-                        end
-                    elseif subtype == parskip_code then
-                        -- if where == new_graf then ... end
-                        if texgetcount("c_spac_vspacing_ignore_parskip") > 0 then
---                             texsetcount("c_spac_vspacing_ignore_parskip",0)
-                            setglue(n)
-                         -- maybe removenode
-                        end
+                elseif subtype == userskip_code then
+                    if getattr(n,a_skipcategory) then
+                        stackhack = true
+                    else
+                        flush = true
+                    end
+                elseif subtype == parskip_code then
+                    -- if where == new_graf then ... end
+                    if texgetcount("c_spac_vspacing_ignore_parskip") > 0 then
+                     -- texsetcount("c_spac_vspacing_ignore_parskip",0)
+                        setglue(n)
+                     -- maybe removenode
                     end
                 end
             end
@@ -1953,7 +1949,7 @@ do
                     if trace_collect_vspacing then report("%s > flushing %s nodes: %s",where,newhead) end
                  -- texlists.contrib_head = newhead
                 end
-                return tonode(newhead)
+                return newhead
             else
                 if stackhead then
                     if trace_collect_vspacing then report("%s > appending %s nodes to stack (intermediate): %s",where,newhead) end
@@ -1977,11 +1973,10 @@ do
     }
 
     function vspacing.vboxhandler(head,where)
-        if head and not ignore[where] then
-            local h = tonut(head)
-            if getnext(h) then -- what if a one liner and snapping?
-                h = collapser(h,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
-                return tonode(h)
+        if head and not ignore[where] and getnext(head) then
+            if getnext(head) then -- what if a one liner and snapping?
+                head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
+                return head
             end
         end
         return head

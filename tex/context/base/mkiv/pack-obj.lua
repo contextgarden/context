@@ -26,10 +26,7 @@ local new_latelua     = nuts.pool.latelua
 
 local settexdimen     = tokens.setters.dimen
 
-local gettexbox       = tokens.getters.box
-local settexbox       = tokens.setters.box
-local gettexdimen     = tokens.getters.dimen
-local gettexcount     = tokens.getters.count
+local getcount        = tex.getcount
 
 local implement       = interfaces.implement
 local setmacro        = interfaces.setmacro
@@ -129,7 +126,7 @@ local objects = objects
 
 function objects.register(ns,id,b,referenced,offset,mode)
     objects.n = objects.n + 1
-    nodes.handlers.finalize(gettexbox(b),"object")
+    nodes.handlers.finalizebox(b)
     if mode == 0 then
         -- tex
         data[ns][id] = {
@@ -160,7 +157,7 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
         if status then
             local list = getlist(hbox)
             local page = new_latelua(function()
-                saveobject(ns .. "::" .. id,index,gettexcount("realpageno"))
+                saveobject(ns .. "::" .. id,index,getcount("realpageno"))
             end)
             setlink(list,page)
         end
@@ -191,7 +188,7 @@ function objects.reference(ns,id)
 end
 
 function objects.page(ns,id)
-    return getobjectpage(ns .."::" .. id,gettexcount("realpageno"))
+    return getobjectpage(ns .."::" .. id,getcount("realpageno"))
 end
 
 function objects.found(ns,id)

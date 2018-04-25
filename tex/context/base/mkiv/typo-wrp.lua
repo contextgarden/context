@@ -16,8 +16,6 @@ local parfill_skip_code = nodes.gluecodes.parfillskip
 local user_penalty_code = nodes.penaltycodes.userpenalty
 
 local nuts              = nodes.nuts
-local tonut             = nodes.tonut
-local tonode            = nodes.tonode
 
 local find_node_tail    = nuts.tail
 local getprev           = nuts.getprev
@@ -51,22 +49,20 @@ local function remove_dangling_crlf(head,tail)
                         report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)
                     end
                     remove(head,tail,true)
-                    return head, tail, true
+                    return head, tail
                 end
             end
         end
     end
-    return head, tail, false
+    return head, tail
 end
 
 function wrappers.handler(head)
-    local head = tonut(head)
     if head then
         local tail = find_node_tail(head)
-        local done = false
-        head, tail, done = remove_dangling_crlf(head,tail) -- will be action chain
+        head, tail = remove_dangling_crlf(head,tail) -- will be action chain
     end
-    return head, true
+    return head
 end
 
 interfaces.implement {

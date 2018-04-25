@@ -147,21 +147,22 @@ nutpool.register  = register_node -- could be register_nut
 
 -- so far
 
-local disc              = register_nut(new_nut("disc"))
-local kern              = register_nut(new_nut("kern",kerncodes.userkern))
-local fontkern          = register_nut(new_nut("kern",kerncodes.fontkern))
-local italickern        = register_nut(new_nut("kern",kerncodes.italiccorrection))
-local penalty           = register_nut(new_nut("penalty"))
-local glue              = register_nut(new_nut("glue")) -- glue.spec = nil
-local glue_spec         = register_nut(new_nut("glue_spec"))
-local glyph             = register_nut(new_nut("glyph",0))
+local disc              = register_nut(new_nut(nodecodes.disc))
+local kern              = register_nut(new_nut(nodecodes.kern,kerncodes.userkern))
+local fontkern          = register_nut(new_nut(nodecodes.kern,kerncodes.fontkern))
+local italickern        = register_nut(new_nut(nodecodes.kern,kerncodes.italiccorrection))
+local penalty           = register_nut(new_nut(nodecodes.penalty))
+local glue              = register_nut(new_nut(nodecodes.glue)) -- glue.spec = nil
+local glue_spec         = register_nut(new_nut(nodecodes.gluespec))
+local glyph             = register_nut(new_nut(nodecodes.glyph,0))
 
-local textdir           = register_nut(new_nut("dir"))
 
-local latelua           = register_nut(new_nut("whatsit",whatsitcodes.latelua))
-local special           = register_nut(new_nut("whatsit",whatsitcodes.special))
+local textdir           = register_nut(new_nut(nodecodes.dir))
 
-local user_node         = new_nut("whatsit",whatsitcodes.userdefined)
+local latelua           = register_nut(new_nut(nodecodes.whatsit,whatsitcodes.latelua))
+local special           = register_nut(new_nut(nodecodes.whatsit,whatsitcodes.special))
+
+local user_node         = new_nut(nodecodes.whatsit,whatsitcodes.userdefined)
 
 local user_number       = register_nut(copy_nut(user_node)) setfield(user_number,    "type",usercodes.number)
 local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.node)
@@ -170,40 +171,40 @@ local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens
 ----- user_lua          = register_nut(copy_nut(user_node)) setfield(user_lua,       "type",usercodes.lua) -- in > 0.95
 local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attribute)
 
-local left_margin_kern  = register_nut(new_nut("margin_kern",0))
-local right_margin_kern = register_nut(new_nut("margin_kern",1))
+local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
+local right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
 
-local lineskip          = register_nut(new_nut("glue",skipcodes.lineskip))
-local baselineskip      = register_nut(new_nut("glue",skipcodes.baselineskip))
-local leftskip          = register_nut(new_nut("glue",skipcodes.leftskip))
-local rightskip         = register_nut(new_nut("glue",skipcodes.rightskip))
+local lineskip          = register_nut(new_nut(nodecodes.glue,skipcodes.lineskip))
+local baselineskip      = register_nut(new_nut(nodecodes.glue,skipcodes.baselineskip))
+local leftskip          = register_nut(new_nut(nodecodes.glue,skipcodes.leftskip))
+local rightskip         = register_nut(new_nut(nodecodes.glue,skipcodes.rightskip))
 
-local temp              = register_nut(new_nut("temp",0))
+local temp              = register_nut(new_nut(nodecodes.temp,0))
 
-local noad              = register_nut(new_nut("noad"))
-local delimiter         = register_nut(new_nut("delim"))
-local fence             = register_nut(new_nut("fence"))
-local submlist          = register_nut(new_nut("sub_mlist"))
-local accent            = register_nut(new_nut("accent"))
-local radical           = register_nut(new_nut("radical"))
-local fraction          = register_nut(new_nut("fraction"))
-local subbox            = register_nut(new_nut("sub_box"))
-local mathchar          = register_nut(new_nut("math_char"))
-local mathtextchar      = register_nut(new_nut("math_text_char"))
-local choice            = register_nut(new_nut("choice"))
+local noad              = register_nut(new_nut(nodecodes.noad))
+local delimiter         = register_nut(new_nut(nodecodes.delim))
+local fence             = register_nut(new_nut(nodecodes.fence))
+local submlist          = register_nut(new_nut(nodecodes.submlist))
+local accent            = register_nut(new_nut(nodecodes.accent))
+local radical           = register_nut(new_nut(nodecodes.radical))
+local fraction          = register_nut(new_nut(nodecodes.fraction))
+local subbox            = register_nut(new_nut(nodecodes.subbox))
+local mathchar          = register_nut(new_nut(nodecodes.mathchar))
+local mathtextchar      = register_nut(new_nut(nodecodes.mathtextchar))
+local choice            = register_nut(new_nut(nodecodes.choice))
 
-local boundary          = register_nut(new_nut("boundary",boundarycodes.user))
-local wordboundary      = register_nut(new_nut("boundary",boundarycodes.word))
+local boundary          = register_nut(new_nut(nodecodes.boundary,boundarycodes.user))
+local wordboundary      = register_nut(new_nut(nodecodes.boundary,boundarycodes.word))
 
 local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
 
 -- the dir field needs to be set otherwise crash:
 
-local rule              = register_nut(new_nut("rule"))                  setdir(rule, "TLT")
-local emptyrule         = register_nut(new_nut("rule",rulecodes.empty))  setdir(rule, "TLT")
-local userrule          = register_nut(new_nut("rule",rulecodes.user))   setdir(rule, "TLT")
-local hlist             = register_nut(new_nut("hlist"))                 setdir(hlist,"TLT")
-local vlist             = register_nut(new_nut("vlist"))                 setdir(vlist,"TLT")
+local rule              = register_nut(new_nut(nodecodes.rule))                  setdir(rule, "TLT")
+local emptyrule         = register_nut(new_nut(nodecodes.rule,rulecodes.empty))  setdir(rule, "TLT")
+local userrule          = register_nut(new_nut(nodecodes.rule,rulecodes.user))   setdir(rule, "TLT")
+local hlist             = register_nut(new_nut(nodecodes.hlist))                 setdir(hlist,"TLT")
+local vlist             = register_nut(new_nut(nodecodes.vlist))                 setdir(vlist,"TLT")
 
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
@@ -572,8 +573,9 @@ end
 -- housekeeping
 
 local function cleanup(nofboxes) -- todo
-    if nodes.tracers.steppers then -- to be resolved
-        nodes.tracers.steppers.reset() -- todo: make a registration subsystem
+    local tracers = nodes.tracers
+    if tracers and tracers.steppers then -- to be resolved
+        tracers.steppers.reset() -- todo: make a registration subsystem
     end
     local nl = 0
     local nr = nofreserved
@@ -624,3 +626,45 @@ statistics.register("node memory usage", function() -- comes after cleanup !
 end)
 
 lua.registerfinalizer(cleanup, "cleanup reserved nodes")
+
+-- experiment
+
+do
+
+    local glyph       = tonode(glyph)
+    local traverse_id = nodes.traverse_id
+
+    local traversers  = table.setmetatableindex(function(t,k)
+        local v = traverse_id(type(k) == "number" and k or nodecodes[k],glyph)
+        t[k] = v
+        return v
+    end)
+
+                                traversers.node  = nodes.traverse      (glyph)
+                                traversers.char  = nodes.traverse_char (glyph)
+    if nuts.traverse_glyph then traversers.glyph = nodes.traverse_glyph(glyph) end
+    if nuts.traverse_list  then traversers.list  = nodes.traverse_list (glyph) end
+
+    nodes.traversers = traversers
+
+end
+
+do
+
+    local glyph       = glyph
+    local traverse_id = nuts.traverse_id
+
+    local traversers  = table.setmetatableindex(function(t,k)
+        local v = traverse_id(type(k) == "number" and k or nodecodes[k],glyph)
+        t[k] = v
+        return v
+    end)
+
+                                traversers.node  = nuts.traverse      (glyph)
+                                traversers.char  = nuts.traverse_char (glyph)
+    if nuts.traverse_glyph then traversers.glyph = nuts.traverse_glyph(glyph) end
+    if nuts.traverse_list  then traversers.list  = nuts.traverse_list (glyph) end
+
+    nuts.traversers = traversers
+
+end

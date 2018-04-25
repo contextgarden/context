@@ -40,8 +40,6 @@ local hlist_code      = nodecodes.hlist
 local vlist_code      = nodecodes.vlist
 
 local nuts            = nodes.nuts
-local tonut           = nodes.tonut
-local tonode          = nodes.tonode
 
 local getid           = nuts.getid
 local getprev         = nuts.getprev
@@ -164,7 +162,6 @@ local colors = {
 local found = 0
 
 function typesetters.marksuspects(head)
-    local head     = tonut(head)
     local current  = head
     local lastdone = nil
     while current do
@@ -254,7 +251,7 @@ function typesetters.marksuspects(head)
             current = getnext(current)
         end
     end
-    return tonode(head), found > 0
+    return head
 end
 
 local function showsuspects(head)
@@ -289,9 +286,9 @@ end
 
 function typesetters.showsuspects(head)
     if found > 0 then
-        return tonode(showsuspects(tonut(head))), true
+        return showsuspects(head)
     else
-        return head, false
+        return head
     end
 end
 

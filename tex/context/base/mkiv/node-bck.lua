@@ -27,9 +27,6 @@ local cell_code         = listcodes.cell
 local nuts              = nodes.nuts
 local nodepool          = nuts.pool
 
-local tonode            = nuts.tonode
-local tonut             = nuts.tonut
-
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getid             = nuts.getid
@@ -49,13 +46,15 @@ local setprop           = nuts.setprop
 local takebox           = nuts.takebox
 local findtail          = nuts.tail
 
-local traverse          = nuts.traverse
-local traverse_id       = nuts.traverse_id
+local nextnode          = nuts.traversers.node
+local nexthlist         = nuts.traversers.hlist
+local nextlist          = nuts.traversers.list
 
 local flush_node_list   = nuts.flush_list
 
 local new_rule          = nodepool.rule
 local new_kern          = nodepool.kern
+local new_hlist         = nodepool.hlist
 
 local privateattributes = attributes.private
 local unsetvalue        = attributes.unsetvalue
@@ -84,6 +83,8 @@ trackers.register("backgrounds.alignments",function(v) trace_alignment = v end)
 -- For color only we can get away with it with an extra attribute flagging a row
 -- but for more complex stuff we can better do as we do here now.
 
+local overshoot = math.floor(65781/5) -- could be an option per table (just also store it)
+
 local function colored_a(current,list,template,id)
     local width, height, depth = getwhd(current)
     local total = height + depth
@@ -101,8 +102,8 @@ local function colored_a(current,list,template,id)
         if not rule then
             rule = new_rule(width,height,depth)
         end
-        local back = new_kern(-((id == vlist_code and total) or width))
         setattributelist(rule,template)
+        local back = new_kern(-((id == vlist_code and total) or width))
         return setlink(rule,back,list)
     end
 end
@@ -123,11 +124,16 @@ local function colored_b(current,list,template,id,indent)
         end
         --
         if not rule then
-            rule = new_rule(width-indent,height,depth)
+            rule = new_rule(width-indent,height+overshoot,depth+overshoot)
             setattributelist(rule,template)
         end
-        local back = new_kern(-((id == vlist_code and total) or width))
-        return setlink(fore,rule,back,list)
+        if overshoot == 0 then
+            local back = new_kern(-((id == vlist_code and total) or width))
+            return setlink(fore,rule,back,list)
+        else
+            rule = new_hlist(rule)
+            return setlink(fore,rule,list)
+        end
     end
 end
 
@@ -137,11 +143,11 @@ local enabled    = false
 local alignments = false
 
 local function add_alignbackgrounds(head,list)
-    for current in traverse_id(hlist_code,list) do
+    for current in nexthlist, list do
         if getsubtype(current) == cell_code then
             local list = getlist(current)
             if list then
-                for template in traverse_id(hlist_code,list) do
+                for template in nexthlist, list do
                     local background = getattr(template,a_alignbackground)
                     if background then
                         local list = colored_a(current,list,template)
@@ -166,11 +172,11 @@ end
 
 local function add_backgrounds(head,id,list)
     if list then
-        for current, id in traverse(list) do
+        for current, id, subtype in nextnode, list do
             if id == hlist_code or id == vlist_code then
                 local list = getlist(current)
                 if list then
-                    if alignments and getsubtype(current) == alignment_code then
+                    if alignments and subtype == alignment_code then
                         local l = add_alignbackgrounds(current,list)
                         if l then
                             list = l
@@ -197,16 +203,75 @@ local function add_backgrounds(head,id,list)
     end
 end
 
+if LUATEXVERSION >= 1.090 then
+
+ -- local function add_alignbackgrounds(head,list)
+    add_alignbackgrounds = function(head,list)
+        for current, id, subtype, list in nextlist, list do
+            if list and id == hlist_code and subtype == cell_code then
+                for template in nexthlist, list do
+                    local background = getattr(template,a_alignbackground)
+                    if background then
+                        local list = colored_a(current,list,template)
+                        if list then
+                            setlist(current,list)
+                        end
+                        setattr(template,a_alignbackground,unsetvalue) -- or property
+                    end
+                    break
+                end
+            end
+        end
+        local template = getprop(head,"alignmentchecked")
+        if template then
+            list = colored_b(head,list,template[1],hlist_code,template[2])
+            flush_node_list(template)
+            templates[currentrow] = false
+            return list
+        end
+    end
+
+ -- local function add_backgrounds(head,id,list)
+    add_backgrounds = function(head,id,list)
+        if list then
+        for current, id, subtype, list in nextlist, list do
+                if list then
+                    if alignments and subtype == alignment_code then
+                        local l = add_alignbackgrounds(current,list)
+                        if l then
+                            list = l
+                            setlist(current,list)
+                        end
+                    end
+                    local l = add_backgrounds(current,id,list)
+                    if l then
+                        list = l
+                        setlist(current,l)
+                    end
+                end
+            end
+        end
+        if id == hlist_code or id == vlist_code then
+            local background = getattr(head,a_background)
+            if background then
+                list = colored_a(head,list,head,id)
+                -- not needed
+                setattr(head,a_background,unsetvalue) -- or property
+                return list
+            end
+        end
+    end
+
+end
+
 function nodes.handlers.backgrounds(head)
-    local h = tonut(head)
-    add_backgrounds(h,getid(h),getlist(h))
-    return head, true
+    add_backgrounds(head,getid(head),getlist(head))
+    return head
 end
 
 function nodes.handlers.backgroundspage(head,where)
     if head and where == "alignment" then
-        local head = tonut(head)
-        for n in traverse_id(hlist_code,head) do
+        for n in nexthlist, head do
             local p = getprop(n,"alignmentchecked")
             if not p and getsubtype(n) == alignment_code then
                 currentrow = currentrow + 1
@@ -218,25 +283,27 @@ function nodes.handlers.backgroundspage(head,where)
             end
         end
     end
-    return head, true
+    return head
 end
 
 function nodes.handlers.backgroundsvbox(head,where)
     if head and where == "vbox" then
-        local head = tonut(head)
-        for n in traverse_id(hlist_code,getlist(head)) do
-            local p = getprop(n,"alignmentchecked")
-            if not p and getsubtype(n) == alignment_code then
-                currentrow = currentrow + 1
-                local template = templates[currentrow]
-                if trace_alignment then
-                    report_alignment("%03i %s %s",currentrow,"vbox",template and "+" or "-")
+        local list = getlist(head)
+        if list then
+            for n in nexthlist, list do
+                local p = getprop(n,"alignmentchecked")
+                if not p and getsubtype(n) == alignment_code then
+                    currentrow = currentrow + 1
+                    local template = templates[currentrow]
+                    if trace_alignment then
+                        report_alignment("%03i %s %s",currentrow,"vbox",template and "+" or "-")
+                    end
+                    setprop(n,"alignmentchecked",template)
                 end
-                setprop(n,"alignmentchecked",template)
             end
         end
     end
-    return head, true
+    return head
 end
 
 -- interfaces.implement {

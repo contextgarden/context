@@ -21,8 +21,6 @@ local nodes           = nodes
 local enableaction    = nodes.tasks.enableaction
 
 local nuts            = nodes.nuts
-local tonut           = nuts.tonut
-local tonode          = nuts.tonode
 
 local getnext         = nuts.getnext
 local getchar         = nuts.getchar
@@ -81,9 +79,8 @@ local function process(what,head,current,char)
     return head, current
 end
 
-function nodes.handlers.stripping(head)
-    head = tonut(head)
-    local current, done = head, false
+function nodes.handlers.stripping(head) -- use loop
+    local current = head
     while current do
         local char, id = isglyph(current)
         if char then
@@ -93,7 +90,6 @@ function nodes.handlers.stripping(head)
                 local what = glyphs[char]
                 if what then
                     head, current = process(what,head,current,char)
-                    done = true
                 else -- handling of spacing etc has to be done elsewhere
                     current = getnext(current)
                 end
@@ -104,7 +100,7 @@ function nodes.handlers.stripping(head)
             current = getnext(current)
         end
     end
-    return tonode(head), done
+    return head
 end
 
 local enabled = false

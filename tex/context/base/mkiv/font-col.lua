@@ -19,15 +19,14 @@ local fastcopy = table.fastcopy
 local formatters = string.formatters
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
 
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 
 local setfont            = nuts.setfont
 
-local traverse_id        = nuts.traverse_id
-local traverse_char      = nuts.traverse_char
+----- traverse_char      = nuts.traverse_char
+local nextchar           = nuts.traversers.char
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -311,8 +310,7 @@ local function monoslot(font,char,parent,factor)
 end
 
 function collections.process(head) -- this way we keep feature processing
-    local done = false
-    for n in traverse_char(tonut(head)) do
+    for n in nextchar, head do
         local font   = getfont(n)
         local vector = vectors[font]
         if vector then
@@ -329,7 +327,6 @@ function collections.process(head) -- this way we keep feature processing
                     )
                 end
                 setfont(n,newfont,newchar)
-                done = true
             else
                 local fakemono = vector.factor
                 if trace_collecting then
@@ -342,11 +339,48 @@ function collections.process(head) -- this way we keep feature processing
                 else
                     setfont(n,vect)
                 end
-                done = true
             end
         end
     end
-    return head, done
+    return head
+end
+
+if LUATEXVERSION >= 1.090 then
+
+    function collections.process(head) -- this way we keep feature processing
+        for n, char, font in nextchar, head do
+            local vector = vectors[font]
+            if vector then
+                local vect = vector[char]
+                if not vect then
+                    -- keep it
+                elseif type(vect) == "table" then
+                    local newfont = vect[1]
+                    local newchar = vect[2]
+                    if trace_collecting then
+                        report_fonts("remapping character %C in font %a to character %C in font %a%s",
+                            char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
+                        )
+                    end
+                    setfont(n,newfont,newchar)
+                else
+                    local fakemono = vector.factor
+                    if trace_collecting then
+                        report_fonts("remapping font %a to %a for character %C%s",
+                            font,vect,char,not chardata[vect][char] and " (missing)" or ""
+                        )
+                    end
+                    if fakemono then
+                        setfont(n,vect,monoslot(vect,char,font,fakemono))
+                    else
+                        setfont(n,vect)
+                    end
+                end
+            end
+        end
+        return head
+    end
+
 end
 
 function collections.found(font,char) -- this way we keep feature processing

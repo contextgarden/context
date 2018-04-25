@@ -55,8 +55,6 @@ local mirrordata          = characters.mirrors
 local textclassdata       = characters.textclasses
 
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
-local tonode              = nuts.tonode
 
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -930,7 +928,6 @@ end
 local function apply_to_list(list,size,head,pardir)
     local index   = 1
     local current = head
-    local done    = false
     if trace_list then
         report_directions("start run")
     end
@@ -973,7 +970,6 @@ local function apply_to_list(list,size,head,pardir)
              -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
-                done = true
             end
         elseif begindir then
             if id == localpar_code then
@@ -983,7 +979,6 @@ local function apply_to_list(list,size,head,pardir)
              -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
-                done = true
             end
         end
         if begindir then
@@ -991,7 +986,6 @@ local function apply_to_list(list,size,head,pardir)
             setprop(d,"directions",true)
          -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
-            done = true
         end
         local skip = entry.skip
         if skip and skip > 0 then
@@ -1005,14 +999,12 @@ local function apply_to_list(list,size,head,pardir)
             setprop(d,"directions",true)
          -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
-            done = true
         end
         if not entry.remove then
             current = getnext(current)
         elseif remove_controls then
             -- X9
             head, current = remove_node(head,current,true)
-            done = true
         else
             current = getnext(current)
         end
@@ -1021,11 +1013,10 @@ local function apply_to_list(list,size,head,pardir)
     if trace_list then
         report_directions("stop run")
     end
-    return head, done
+    return head
 end
 
 local function process(head)
-    head = tonut(head)
     -- for the moment a whole paragraph property
     local attr = getattr(head,a_directions)
     local analyze_fences = getfences(attr)
@@ -1045,8 +1036,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    local head, done = apply_to_list(list,size,head,pardir)
-    return tonode(head), done
+    return apply_to_list(list,size,head,pardir)
 end
 
 directions.installhandler(interfaces.variables.two,process)

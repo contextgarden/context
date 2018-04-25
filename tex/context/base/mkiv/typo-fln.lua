@@ -30,7 +30,6 @@ local context            = context
 local implement          = interfaces.implement
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
 local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
@@ -38,7 +37,6 @@ local getprev            = nuts.getprev
 local getboth            = nuts.getboth
 local setboth            = nuts.setboth
 local getid              = nuts.getid
-local getsubtype         = nuts.getsubtype
 local getwidth           = nuts.getwidth
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
@@ -58,7 +56,9 @@ local glue_code          = nodecodes.glue
 
 local spaceskip_code     = nodes.gluecodes.spaceskip
 
-local traverse_id        = nuts.traverse_id
+local nextglyph          = nuts.traversers.glyph
+local nextdisc           = nuts.traversers.disc
+
 local flush_node_list    = nuts.flush_list
 local flush_node         = nuts.flush_node
 local copy_node_list     = nuts.copy_list
@@ -136,7 +136,7 @@ actions[v_line] = function(head,setting)
     local linebreaks = { }
 
     local function set(head)
-        for g in traverse_id(glyph_code,head) do
+        for g in nextglyph, head do
             if dynamic > 0 then
                 setattr(g,0,dynamic)
             end
@@ -146,7 +146,7 @@ actions[v_line] = function(head,setting)
 
     set(temp)
 
-    for g in traverse_id(disc_code,temp) do
+    for g in nextdisc, temp do
         local pre, post, replace = getdisc(g)
         if pre then
             set(pre)
@@ -173,14 +173,12 @@ actions[v_line] = function(head,setting)
 
         local function list_dimensions(list,start)
             local temp = copy_node_list(list,start)
-            temp = tonode(temp)
             temp = nodes.handlers.characters(temp)
             temp = nodes.injections.handler(temp)
          -- temp = typesetters.fontkerns.handler(temp) -- maybe when enabled
-         -- nodes.handlers.protectglyphs(temp)         -- not needed as we discard
+         --        nodes.handlers.protectglyphs(temp)  -- not needed as we discard
          -- temp = typesetters.spacings.handler(temp)  -- maybe when enabled
          -- temp = typesetters.kerns.handler(temp)     -- maybe when enabled
-            temp = tonut(temp)
             temp = hpack_node_list(temp)
             local width = getwidth(temp)
             flush_node_list(temp)
@@ -264,7 +262,7 @@ actions[v_line] = function(head,setting)
                 if linebreak == n then
                     local p, n = getboth(start)
                     if pre then
-                        for current in traverse_id(glyph_code,pre) do
+                        for current in nextglyph, pre do
                             update(current)
                         end
                         setlink(pretail,n)
@@ -284,7 +282,7 @@ actions[v_line] = function(head,setting)
                 else
                     local p, n = getboth(start)
                     if replace then
-                        for current in traverse_id(glyph_code,replace) do
+                        for current in nextglyph, replace do
                             update(current)
                         end
                         setlink(replacetail,n)
@@ -314,7 +312,7 @@ actions[v_line] = function(head,setting)
         end
     end
 
-    return head, true
+    return head
 end
 
 actions[v_word] = function(head,setting)
@@ -359,13 +357,12 @@ actions[v_word] = function(head,setting)
         end
         start = getnext(start)
     end
-    return head, true
+    return head
 end
 
 actions[v_default] = actions[v_line]
 
 function firstlines.handler(head)
-    head = tonut(head)
     local start = head
     local attr  = nil
     while start do
@@ -388,11 +385,10 @@ function firstlines.handler(head)
             if trace_firstlines then
                 report_firstlines("processing firstlines, alternative %a",alternative)
             end
-            local head, done = action(head,settings)
-            return tonode(head), done
+            return action(head,settings)
         end
     end
-    return tonode(head), false
+    return head
 end
 
 -- goodie
@@ -401,7 +397,7 @@ local function applytofirstcharacter(box,what)
     local tbox = getbox(box) -- assumes hlist
     local list = getlist(tbox)
     local done = nil
-    for n in traverse_id(glyph_code,list) do
+    for n in nextglyph, list do
         list = remove_node(list,n)
         done = n
         break

@@ -33,8 +33,6 @@ local v_auto          = variables.auto
 
 local nuts            = nodes.nuts
 
-local tonut           = nodes.tonut
-local tonode          = nodes.tonode
 local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getattr         = nuts.getattr
@@ -53,7 +51,9 @@ local setwidth        = nuts.setwidth
 local hpack           = nuts.hpack
 local insert_after    = nuts.insert_after
 local takebox         = nuts.takebox
-local traverse_id     = nuts.traverse_id
+
+local nexthlist       = nuts.traversers.hlist
+local nextvlist       = nuts.traversers.vlist
 
 local nodecodes       = nodes.nodecodes
 local glyph_code      = nodecodes.glyph
@@ -194,7 +194,6 @@ do
 end
 
 function rubies.check(head)
-    local head    = tonut(head)
     local current = head
     local start   = nil
     local stop    = nil
@@ -260,7 +259,7 @@ function rubies.check(head)
     if found then
         flush("flush 5")
     end
-    return tonode(head), true
+    return head, true
 end
 
 local attach
@@ -371,20 +370,17 @@ local function whatever(current)
     end
 end
 
-attach = function(head)
-    for current in traverse_id(hlist_code,head) do
+attach = function(head) -- traverse_list
+    for current in nexthlist, head do
         whatever(current)
     end
-    for current in traverse_id(vlist_code,head) do
+    for current in nextvlist, head do
         whatever(current)
     end
-    return head, true
+    return head
 end
 
-function rubies.attach(head)
-    local h, d = attach(tonut(head))
-    return tonode(h), d
-end
+rubies.attach = attach
 
 -- for now there is no need to be compact
 

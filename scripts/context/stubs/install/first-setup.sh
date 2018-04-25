@@ -17,9 +17,23 @@ cpu=`uname -m`
 case "$system" in
 	# linux
 	Linux)
+		if command -v ldd >/dev/null && ldd --version 2>&1 | grep -E '^musl' >/dev/null
+		then
+			libc=musl
+		else
+			libc=glibc
+		fi
 		case "$cpu" in
-			i*86) platform="linux" ;;
-			x86_64|ia64) platform="linux-64" ;;
+			i*86)
+				case "$libc" in
+					glibc) platform="linux" ;;
+					musl) platform="linuxmusl" ;;
+				esac ;;
+			x86_64|ia64)
+				case "$libc" in
+					glibc) platform="linux-64" ;;
+					musl) platform="linuxmusl-64" ;;
+				esac ;;
 
 			# a little bit of cheating with ppc64 (won't work on Gentoo)
 			ppc|ppc64) platform="linux-ppc" ;;
@@ -138,8 +152,8 @@ fi
 # download or update the distribution
 # you may remove the --context=beta switch if you want to use "current"
 # you can use --engine=luatex if you want just mkiv
-env PATH="$PWD/bin:$CONTEXTROOT/texmf-$platform/bin:$PATH" \
-./bin/mtxrun --script ./bin/mtx-update.lua --force --update --make --context=beta --platform=$platform --texroot="$CONTEXTROOT" $@
+env PATH="$PWD/bin:$CONTEXTROOT/texmf-$platform/bin:$PATH" MTX_PLATFORM="$platform" \
+./bin/mtxrun --script ./bin/mtx-update.lua --force --update --make --context=beta --platform="$platform" --texroot="$CONTEXTROOT" $@
 
 echo
 echo "When you want to use context, you need to initialize the tree by typing:"

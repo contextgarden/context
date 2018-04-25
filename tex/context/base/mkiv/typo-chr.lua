@@ -17,16 +17,13 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 -- local nuts           = nodes.nuts
 -- local pool           = nuts.pool
 --
--- local tonut          = nuts.tonut
--- local tonode         = nuts.tonode
 -- local getid          = nuts.getid
 -- local getprev        = nuts.getprev
--- local getsubtype     = nuts.getsubtype
 -- local getchar        = nuts.getchar
 -- local getfield       = nuts.getfield
 --
 -- local remove_node    = nuts.remove
--- local traverse_by_id = nuts.traverse_id
+-- local nextwhatsit    = nuts.traversers.whatsit
 --
 -- local signal         = pool.userids.signal
 --
@@ -36,10 +33,8 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 --     removepunctuation = function(head,n)
 --         local prev = getprev(n)
 --         if prev then
---             if getid(prev) == glyph_code then
---                 if is_punctuation[getchar(prev)] then
---                     head = remove_node(head,prev,true)
---                 end
+--             if getid(prev) == glyph_code and is_punctuation[getchar(prev)] then
+--                 head = remove_node(head,prev,true)
 --             end
 --         end
 --         return head
@@ -51,23 +46,18 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 -- typesetters.signals = { }
 --
 -- function typesetters.signals.handler(head)
---     local h = tonut(head)
 --     local done = false
---     for n in traverse_by_id(whatsit_code,h) do
---         if getsubtype(n) == user_code and getfield(n,"user_id") == signal and getfield(n,"type") == 115 then
+--     for n, subtype in nextwhatsit, head do
+--         if subtype == user_code and getfield(n,"user_id") == signal and getfield(n,"type") == 115 then
 --             local action = actions[getfield(n,"value")]
 --             if action then
---                 h = action(h,n)
+--                 head = action(h,n)
 --             end
---             h = remove_node(h,n,true)
+--             head = remove_node(head,n,true)
 --             done = true
 --         end
 --     end
---     if done then
---         return tonode(h), true
---     else
---         return head
---     end
+--     return head, done
 -- end
 --
 -- local enabled = false

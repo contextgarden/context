@@ -62,7 +62,6 @@ local nuts               = nodes.nuts
 local nodepool           = nuts.pool
 
 local tonode             = nuts.tonode
-local tonut              = nuts.tonut
 
 local hpack_nodes        = nuts.hpack
 local traverse_id        = nuts.traverse_id
@@ -113,7 +112,7 @@ local texgetcount        = tex.getcount
 local texget             = tex.get
 
 local isleftpage         = layouts.status.isleftpage
-local registertogether   = builders.paragraphs.registertogether -- tonode
+local registertogether   = builders.paragraphs.registertogether
 
 local paragraphs         = typesetters.paragraphs
 local addtoline          = paragraphs.addtoline
@@ -812,9 +811,8 @@ local function handler(scope,head,group)
         if trace_margindata then
             report_margindata("flushing stage one, stored %s, scope %s, delayed %s, group %a",nofstored,scope,nofdelayed,group)
         end
-        head = tonut(head)
         local current = head
-        local done = false
+        local done    = false -- for tracing only
         while current do
             local id = getid(current)
             if (id == vlist_code or id == hlist_code) and getprop(current,"margindata") == nil then
@@ -839,11 +837,9 @@ local function handler(scope,head,group)
                 report_margindata("flushing stage one, nothing done, %s left",nofstored)
             end
         end
-resetstacked()
-        return tonode(head), done
-    else
-        return head, false
+        resetstacked()
     end
+    return head
 end
 
 local trialtypesetting = context.trialtypesetting
@@ -854,7 +850,7 @@ local trialtypesetting = context.trialtypesetting
 function margins.localhandler(head,group) -- sometimes group is "" which is weird
 
     if trialtypesetting() then
-        return head, false
+        return head
     end
 
     local inhibit = conditionals.inhibitmargindata
@@ -862,15 +858,15 @@ function margins.localhandler(head,group) -- sometimes group is "" which is weir
         if trace_margingroup then
             report_margindata("ignored 3, group %a, stored %s, inhibit %a",group,nofstored,inhibit)
         end
-        return head, false
-    elseif nofstored > 0 then
-        return handler(v_local,head,group)
-    else
-        if trace_margingroup then
-            report_margindata("ignored 4, group %a, stored %s, inhibit %a",group,nofstored,inhibit)
-        end
-        return head, false
+        return head
     end
+    if nofstored > 0 then
+        return handler(v_local,head,group)
+    end
+    if trace_margingroup then
+        report_margindata("ignored 4, group %a, stored %s, inhibit %a",group,nofstored,inhibit)
+    end
+    return head
 end
 
 function margins.globalhandler(head,group) -- check group
@@ -884,7 +880,7 @@ function margins.globalhandler(head,group) -- check group
         if trace_margingroup then
             report_margindata("ignored 1, group %a, stored %s, inhibit %a",group,nofstored,inhibit)
         end
-        return head, false
+        return head
     elseif group == "hmode_par" then
         return handler(v_global,head,group)
     elseif group == "vmode_par" then              -- experiment (for alignments)
@@ -899,22 +895,20 @@ function margins.globalhandler(head,group) -- check group
         if trace_margingroup then
             report_margindata("ignored 2, group %a, stored %s, inhibit %a",group,nofstored,inhibit)
         end
-        return head, false
+        return head
     end
 end
 
 local function finalhandler(head)
     if nofdelayed > 0 then
         local current = head
-        local done = false
-        while current and nofdelayed > 0 do
+        while current and nofdelayed > 0 do -- traverse_list
             local id = getid(current)
             if id == hlist_code then -- only lines?
                 local a = getprop(current,"margindata")
                 if not a then
                     finalhandler(getlist(current))
                 elseif realigned(current,a) then
-                    done = true
                     if nofdelayed == 0 then
                         return head, true
                     end
@@ -924,10 +918,8 @@ local function finalhandler(head)
             end
             current = getnext(current)
         end
-        return head, done
-    else
-        return head, false
     end
+    return head
 end
 
 function margins.finalhandler(head)
@@ -935,16 +927,12 @@ function margins.finalhandler(head)
         if trace_margindata then
             report_margindata("flushing stage two, instore: %s, delayed: %s",nofstored,nofdelayed)
         end
-        head = tonut(head)
-        local head, done = finalhandler(head)
---         resetstacked(true)
-resetstacked(nofdelayed==0)
-        head = tonode(head)
-        return head, done
+        head = finalhandler(head)
+        resetstacked(nofdelayed==0)
     else
         resetstacked()
-        return head, false
     end
+    return head
 end
 
 -- Somehow the vbox builder (in combinations) gets pretty confused and decides to

@@ -34,7 +34,6 @@ local v_number             = variables.number
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
-local tonode               = nuts.tonode
 
 local getnext              = nuts.getnext
 local getprev              = nuts.getprev
@@ -50,7 +49,7 @@ local setchar              = nuts.setchar
 
 local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after
-local traverse_list_by_id  = nuts.traverse_id
+local nextglyph            = nuts.traversers.glyph
 local list_dimensions      = nuts.dimensions
 local first_glyph          = nuts.first_glyph
 
@@ -171,23 +170,22 @@ local function traced_kern(w)
     return tracedrule(w,nil,nil,"darkgray")
 end
 
-function characteralign.handler(originalhead,where)
+function characteralign.handler(head,where)
     if not datasets then
-        return originalhead, false
+        return head
     end
-    local head = tonut(originalhead)
  -- local first = first_glyph(head) -- we could do that once
     local first
-    for n in traverse_list_by_id(glyph_code,head) do
+    for n in nextglyph, head do
         first = n
         break
     end
     if not first then
-        return originalhead, false
+        return head
     end
     local a = getattr(first,a_characteralign)
     if not a or a == 0 then
-        return originalhead, false
+        return head
     end
     local column    = div(a,0xFFFF)
     local row       = a % 0xFFFF
@@ -336,7 +334,7 @@ function characteralign.handler(originalhead,where)
                 before = before,
                 after  = after,
             }
-            return tonode(head), true
+            return head, true
         end
         if not dataset.collected then
          -- print("[maxbefore] [maxafter]")
@@ -404,5 +402,5 @@ function characteralign.handler(originalhead,where)
             insert_node_after(head,c,new_kern(maxafter))
         end
     end
-    return tonode(head), true
+    return head
 end

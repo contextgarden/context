@@ -60,7 +60,6 @@ local a_mathbidi         = attributes.private('mathbidi')
 
 local function processmath(head)
     local current = head
-    local done    = false
     local start   = nil
     local stop    = nil
     local function capsulate()
@@ -69,7 +68,6 @@ local function processmath(head)
         if trace_directions then
             report_directions("reversed: %s",nodes.listtoutf(start,false,false,stop))
         end
-        done  = true
         start = false
         stop  = nil
     end
@@ -100,7 +98,6 @@ local function processmath(head)
                             if trace_directions then
                                 report_directions("mirrored: %C to %C",char,mirror)
                             end
-                            done = true
                         end
                     end
                 end
@@ -108,11 +105,8 @@ local function processmath(head)
         elseif not start then
             -- nothing
             if id == hlist_code or id == vlist_code then
-                local list, d = processmath(getlist(current))
+                local list = processmath(getlist(current))
                 setlist(current,list)
-                if d then
-                    done = true
-                end
             end
         elseif start == stop then
             start = nil
@@ -121,11 +115,8 @@ local function processmath(head)
             -- math can pack things into hlists .. we need to make sure we don't process
             -- too often: needs checking
             if id == hlist_code or id == vlist_code then
-                local list, d = processmath(getlist(current))
+                local list = processmath(getlist(current))
                 setlist(current,list)
-                if d then
-                    done = true
-                end
             end
         end
         current = getnext(current)
@@ -137,21 +128,18 @@ local function processmath(head)
     else
         capsulate()
     end
-    return head, done
+    return head
 end
 
 local enabled = false
 
 function directions.processmath(head) -- style, penalties
     if enabled then
-        local h = tonut(head)
-        local a = getattr(h,a_mathbidi)
+        local a = getattr(head,a_mathbidi)
         if a and a > 0 then
-            local head, done = processmath(h)
-            return tonode(head), done
+            return processmath(head)
         end
     end
-    return head, false
 end
 
 function directions.setmath(n)

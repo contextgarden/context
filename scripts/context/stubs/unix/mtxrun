@@ -1946,7 +1946,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40547, stripped down to: 23820
+-- original size: 40782, stripped down to: 23986
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2871,12 +2871,19 @@ end
 local function sequenced(t,sep,simple)
   if not t then
     return ""
+  elseif type(t)=="string" then
+    return t 
   end
   local n=#t
   local s={}
   if n>0 then
     for i=1,n do
-      s[i]=tostring(t[i])
+      local v=t[i]
+      if type(v)=="table" then
+        s[i]="{"..sequenced(v,sep,simple).."}"
+      else
+        s[i]=tostring(t[i])
+      end
     end
   else
     n=0
@@ -21430,8 +21437,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 881109
--- stripped bytes    : 318732
+-- original bytes    : 881344
+-- stripped bytes    : 318801
 
 -- end library merge
 

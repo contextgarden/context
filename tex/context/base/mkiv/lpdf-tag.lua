@@ -51,8 +51,6 @@ local a_tagged            = attributes.private('tagged')
 local a_image             = attributes.private('image')
 
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
-local tonode              = nuts.tonode
 
 local nodepool            = nuts.pool
 local pdfpageliteral      = nodepool.pdfpageliteral
@@ -68,8 +66,9 @@ local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 
 local copy_node           = nuts.copy
-local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
+
+local nextnode            = nuts.traversers.node
 
 local structure_stack     = { }
 local structure_kids      = pdfarray()
@@ -324,10 +323,9 @@ function nodeinjections.addtags(head)
     local last   = nil
     local ranges = { }
     local range  = nil
-    local head   = tonut(head)
 
     local function collectranges(head,list)
-        for n, id in traverse_nodes(head) do
+        for n, id in nextnode, head do
             if id == glyph_code then
                 -- maybe also disc
                 local at = getattr(n,a_tagged)
@@ -441,17 +439,17 @@ function nodeinjections.addtags(head)
             setlink(stop,literal)
         end
 
---         if literal then
---             if list and getlist(list) == start then
---                 setlink(literal,start)
---                 setlist(list,literal)
---             else
---                 setlink(getprev(start),literal,start)
---             end
---             -- use insert instead:
---             local literal = copy_node(EMCliteral)
---             setlink(stop,literal,getnext(stop))
---         end
+     -- if literal then
+     --     if list and getlist(list) == start then
+     --         setlink(literal,start)
+     --         setlist(list,literal)
+     --     else
+     --         setlink(getprev(start),literal,start)
+     --     end
+     --     -- use insert instead:
+     --     local literal = copy_node(EMCliteral)
+     --     setlink(stop,literal,getnext(stop))
+     -- end
 
         top    = taglist
         noftop = noftags
@@ -459,8 +457,7 @@ function nodeinjections.addtags(head)
 
     finishpage()
 
-    head = tonode(head)
-    return head, true
+    return head
 
 end
 
@@ -471,7 +468,7 @@ end
 --     local last, ranges, range = nil, { }, nil
 --
 --     local function collectranges(head,list)
---         for n, id in traverse_nodes(head) do
+--         for n, id in nextnode, head do
 --             if id == glyph_code then
 --                 local at = getattr(n,a_tagged)
 --                 if not at then
@@ -503,7 +500,6 @@ end
 --
 --     initializepage()
 --
--- 	head = tonut(head)
 --     collectranges(head)
 --
 --     if trace_tags then
@@ -610,8 +606,7 @@ end
 --
 --     finishpage()
 --
---     head = tonode(head)
---     return head, true
+--     return head
 --
 -- end
 

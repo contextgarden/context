@@ -172,23 +172,23 @@ languages.expanders = expanders
 ----- expand_explicit    = expanders and expanders[explicit_code]
 ----- expand_automatic   = expanders and expanders[automatic_code]
 
-if LUATEXVERSION < 1.005 then -- not loaded any more
-
-    expanded = function(head)
-        local done = hyphenate(head)
-        if done then
-            for d in traverse_id(disc_code,tonut(head)) do
-                local s = getsubtype(d)
-                if s ~= discretionary_code then
-                    expanders[s](d,template)
-                    done = true
-                end
-            end
-        end
-        return head, done
-    end
-
-end
+-- if LUATEXVERSION < 1.005 then -- not loaded any more
+--
+--     expanded = function(head)
+--         local done = hyphenate(head)
+--         if done then
+--             for d in traverse_id(disc_code,head) do
+--                 local s = getsubtype(d)
+--                 if s ~= discretionary_code then
+--                     expanders[s](d,template)
+--                     done = true
+--                 end
+--             end
+--         end
+--         return head, done
+--     end
+--
+-- end
 
 --                 if id == disc_code then
 --                     if expanded then

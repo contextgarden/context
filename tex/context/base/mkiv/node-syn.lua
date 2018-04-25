@@ -126,8 +126,6 @@ local report_system = logs.reporter("system")
 local tex                = tex
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getid              = nuts.getid
 local getlist            = nuts.getlist
@@ -623,16 +621,10 @@ end
 collect = collect_max
 
 function synctex.collect(head,where)
-    if enabled then
-        if where == "object" then
-            return head, false
-        else
-            local h = tonut(head)
-            h = collect(h,h)
-            return tonode(h), true
-        end
+    if enabled and where ~= "object" then
+        return collect(head,head)
     else
-        return head, false
+        return head
     end
 end
 
@@ -678,7 +670,7 @@ function synctex.enable()
         enabled = true
         set_synctex_mode(3) -- we want details
         if not used then
-            nodes.tasks.appendaction("shipouts", "after", "luatex.synctex.collect")
+            nodes.tasks.enableaction("shipouts","luatex.synctex.collect")
             report_system("synctex functionality is enabled, expect 5-10 pct runtime overhead!")
             used = true
         end

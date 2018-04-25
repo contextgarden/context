@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/19/18 15:53:45
+-- merge date  : 04/25/18 13:25:03
 
 do -- begin closure to overcome local limits and interference
 
@@ -2011,12 +2011,19 @@ end
 local function sequenced(t,sep,simple)
   if not t then
     return ""
+  elseif type(t)=="string" then
+    return t 
   end
   local n=#t
   local s={}
   if n>0 then
     for i=1,n do
-      s[i]=tostring(t[i])
+      local v=t[i]
+      if type(v)=="table" then
+        s[i]="{"..sequenced(v,sep,simple).."}"
+      else
+        s[i]=tostring(t[i])
+      end
     end
   else
     n=0
@@ -5527,6 +5534,7 @@ nuts.end_of_math=direct.end_of_math
 nuts.traverse=direct.traverse
 nuts.traverse_id=direct.traverse_id
 nuts.traverse_char=direct.traverse_char
+nuts.traverse_glyph=direct.traverse_glyph
 nuts.ligaturing=direct.ligaturing
 nuts.kerning=direct.kerning
 nuts.new=direct.new
@@ -5693,6 +5701,17 @@ if not nuts.uses_font then
     end
     return false
   end
+end
+do
+  local dummy=tonut(node.new("glyph"))
+  nuts.traversers={
+    glyph=nuts.traverse_id(nodecodes.glyph,dummy),
+    glue=nuts.traverse_id(nodecodes.glue,dummy),
+    disc=nuts.traverse_id(nodecodes.disc,dummy),
+    boundary=nuts.traverse_id(nodecodes.boundary,dummy),
+    char=nuts.traverse_char(dummy),
+    node=nuts.traverse(dummy),
+  }
 end
 
 end -- closure
@@ -9570,10 +9589,13 @@ function constructors.scale(tfmdata,specification)
           local t={}
           for i=1,#vv do
             local vvi=vv[i]
-            t[i]={
-              ["start"]=(vvi["start"]  or 0)*vdelta,
-              ["end"]=(vvi["end"]   or 0)*vdelta,
-              ["advance"]=(vvi["advance"] or 0)*vdelta,
+            local s=vvi["start"]  or 0
+            local e=vvi["end"]   or 0
+            local a=vvi["advance"] or 0
+            t[i]={ 
+              ["start"]=s==0 and 0 or s*vdelta,
+              ["end"]=e==0 and 0 or e*vdelta,
+              ["advance"]=a==0 and 0 or a*vdelta,
               ["extender"]=vvi["extender"],
               ["glyph"]=vvi["glyph"],
             }
@@ -9585,10 +9607,13 @@ function constructors.scale(tfmdata,specification)
             local t={}
             for i=1,#hv do
               local hvi=hv[i]
-              t[i]={
-                ["start"]=(hvi["start"]  or 0)*hdelta,
-                ["end"]=(hvi["end"]   or 0)*hdelta,
-                ["advance"]=(hvi["advance"] or 0)*hdelta,
+              local s=hvi["start"]  or 0
+              local e=hvi["end"]   or 0
+              local a=hvi["advance"] or 0
+              t[i]={ 
+                ["start"]=s==0 and 0 or s*hdelta,
+                ["end"]=e==0 and 0 or e*hdelta,
+                ["advance"]=a==0 and 0 or a*hdelta,
                 ["extender"]=hvi["extender"],
                 ["glyph"]=hvi["glyph"],
               }
@@ -9699,7 +9724,6 @@ function constructors.scale(tfmdata,specification)
         else
           chr.commands=vc
         end
-        chr.index=nil
       end
     end
     targetcharacters[unicode]=chr
@@ -11061,7 +11085,7 @@ function helpers.appendcommands(commands,...)
   return commands
 end
 local char=setmetatableindex(function(t,k)
-  local v={ "char",k }
+  local v={ "slot",0,k }
   t[k]=v
   return v
 end)
@@ -16011,11 +16035,12 @@ local reversed=table.reversed
 local sort=table.sort
 local insert=table.insert
 local round=math.round
-local settings_to_hash_colon_too=table.settings_to_hash_colon_too
+local settings_to_hash=utilities.parsers.settings_to_hash_colon_too
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local sortedkeys=table.sortedkeys
 local sortedhash=table.sortedhash
+local sequenced=table.sequenced
 local report=logs.reporter("otf reader")
 local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
@@ -16171,7 +16196,7 @@ local lookupflags=setmetatableindex(function(t,k)
   return v
 end)
 local function axistofactors(str)
-  local t=settings_to_hash_colon_too(str)
+  local t=settings_to_hash(str)
   for k,v in next,t do
     t[k]=tonumber(v) or v 
   end
@@ -16189,9 +16214,6 @@ end
 helpers.cleanname=cleanname
 function helpers.normalizedaxis(str)
   return hash[str] or str
-end
-local function axistofactors(str)
-  return settings_to_hash_colon_too(str)
 end
 local function getaxisscale(segments,minimum,default,maximum,user)
   if not minimum or not default or not maximum then
@@ -22624,8 +22646,8 @@ local setkern=nuts.setkern
 local setlink=nuts.setlink
 local setwidth=nuts.setwidth
 local getwidth=nuts.getwidth
-local traverse_id=nuts.traverse_id
-local traverse_char=nuts.traverse_char
+local nextchar=nuts.traversers.char
+local nextglue=nuts.traversers.glue
 local insert_node_before=nuts.insert_before
 local insert_node_after=nuts.insert_after
 local properties=nodes.properties.data
@@ -23033,7 +23055,7 @@ local function show(n,what,nested,symbol)
 end
 local function showsub(n,what,where)
   report_injections("begin subrun: %s",where)
-  for n in traverse_char(n) do
+  for n in nextchar,n do
     showchar(n,where)
     show(n,what,where," ")
   end
@@ -23092,7 +23114,6 @@ local function show_result(head)
   report_injections()
 end
 local function inject_kerns_only(head,where)
-  head=tonut(head)
   if trace_injections then
     trace(head,"kerns")
   end
@@ -23161,7 +23182,7 @@ local function inject_kerns_only(head,where)
       pre,post,replace,pretail,posttail,replacetail=getdisc(current,true)
       local done=false
       if pre then
-        for n in traverse_char(pre) do
+        for n in nextchar,pre do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.preinjections
@@ -23176,7 +23197,7 @@ local function inject_kerns_only(head,where)
         end
       end
       if post then
-        for n in traverse_char(post) do
+        for n in nextchar,post do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.postinjections
@@ -23191,7 +23212,7 @@ local function inject_kerns_only(head,where)
         end
       end
       if replace then
-        for n in traverse_char(replace) do
+        for n in nextchar,replace do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.replaceinjections
@@ -23223,10 +23244,9 @@ local function inject_kerns_only(head,where)
   if trace_injections then
     show_result(head)
   end
-  return tonode(head),true
+  return head
 end
 local function inject_positions_only(head,where)
-  head=tonut(head)
   if trace_injections then
     trace(head,"positions")
   end
@@ -23324,7 +23344,7 @@ local function inject_positions_only(head,where)
       pre,post,replace,pretail,posttail,replacetail=getdisc(current,true)
       local done=false
       if pre then
-        for n in traverse_char(pre) do
+        for n in nextchar,pre do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.preinjections
@@ -23348,7 +23368,7 @@ local function inject_positions_only(head,where)
         end
       end
       if post then
-        for n in traverse_char(post) do
+        for n in nextchar,post do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.postinjections
@@ -23372,7 +23392,7 @@ local function inject_positions_only(head,where)
         end
       end
       if replace then
-        for n in traverse_char(replace) do
+        for n in nextchar,replace do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.replaceinjections
@@ -23443,7 +23463,7 @@ local function inject_positions_only(head,where)
   if trace_injections then
     show_result(head)
   end
-  return tonode(head),true
+  return head
 end
 local function showoffset(n,flag)
   local x,y=getoffsets(n)
@@ -23452,7 +23472,6 @@ local function showoffset(n,flag)
   end
 end
 local function inject_everything(head,where)
-  head=tonut(head)
   if trace_injections then
     trace(head,"everything")
   end
@@ -23691,7 +23710,7 @@ local function inject_everything(head,where)
       pre,post,replace,pretail,posttail,replacetail=getdisc(current,true)
       local done=false
       if pre then
-        for n in traverse_char(pre) do
+        for n in nextchar,pre do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.preinjections
@@ -23721,7 +23740,7 @@ local function inject_everything(head,where)
         end
       end
       if post then
-        for n in traverse_char(post) do
+        for n in nextchar,post do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.postinjections
@@ -23751,7 +23770,7 @@ local function inject_everything(head,where)
         end
       end
       if replace then
-        for n in traverse_char(replace) do
+        for n in nextchar,replace do
           local p=rawget(properties,n)
           if p then
             local i=p.injections or p.replaceinjections
@@ -23852,7 +23871,7 @@ local function inject_everything(head,where)
   if trace_injections then
     show_result(head)
   end
-  return tonode(head),true
+  return head
 end
 local triggers=false
 function nodes.injections.setspacekerns(font,sequence)
@@ -23899,7 +23918,7 @@ function injections.installgetspaceboth(gb)
 end
 local function injectspaces(head)
   if not triggers then
-    return head,false
+    return head
   end
   local lastfont=nil
   local spacekerns=nil
@@ -23909,7 +23928,6 @@ local function injectspaces(head)
   local threshold=0
   local leftkern=false
   local rightkern=false
-  local nuthead=tonut(head)
   local function updatefont(font,trig)
     leftkerns=trig.left
     rightkerns=trig.right
@@ -23917,7 +23935,7 @@ local function injectspaces(head)
     threshold,
     factor=getthreshold(font)
   end
-  for n in traverse_id(glue_code,nuthead) do
+  for n in nextglue,head do
     local prev,next=getspaceboth(n)
     local prevchar=prev and ischar(prev)
     local nextchar=next and ischar(next)
@@ -23955,12 +23973,8 @@ local function injectspaces(head)
             if trace_spaces then
               report_spaces("%C [%p + %p + %p] %C",prevchar,lnew,old,rnew,nextchar)
             end
-            local h=insert_node_before(nuthead,n,italickern(lnew))
-            if h==nuthead then
-              head=tonode(h)
-              nuthead=h
-            end
-            insert_node_after(nuthead,n,italickern(rnew))
+            head=insert_node_before(head,n,italickern(lnew))
+            insert_node_after(head,n,italickern(rnew))
           else
             local new=old+(leftkern+rightkern)*factor
             if trace_spaces then
@@ -23975,7 +23989,7 @@ local function injectspaces(head)
             if trace_spaces then
               report_spaces("%C [%p + %p]",prevchar,old,new)
             end
-            insert_node_after(nuthead,n,italickern(new)) 
+            insert_node_after(head,n,italickern(new)) 
           else
             local new=old+leftkern*factor
             if trace_spaces then
@@ -23994,7 +24008,7 @@ local function injectspaces(head)
           if trace_spaces then
             report_spaces("%C [%p + %p]",nextchar,old,new)
           end
-          insert_node_after(nuthead,n,italickern(new))
+          insert_node_after(head,n,italickern(new))
         else
           local new=old+rightkern*factor
           if trace_spaces then
@@ -24007,7 +24021,7 @@ local function injectspaces(head)
     end
   end
   triggers=false
-  return head,true
+  return head
 end
 function injections.handler(head,where)
   if triggers then
@@ -24029,7 +24043,7 @@ function injections.handler(head,where)
     end
     return inject_kerns_only(head,where)
   else
-    return head,false
+    return head
   end
 end
 
@@ -24066,7 +24080,6 @@ local getfont=nuts.getfont
 local getsubtype=nuts.getsubtype
 local getchar=nuts.getchar
 local ischar=nuts.is_char
-local traverse_id=nuts.traverse_id
 local end_of_math=nuts.end_of_math
 local nodecodes=nodes.nodecodes
 local disc_code=nodecodes.disc
@@ -24475,8 +24488,6 @@ registertracker("otf.actions","otf.substitutions","otf.positions")
 registertracker("otf.sample","otf.steps","otf.substitutions","otf.positions","otf.analyzing")
 registertracker("otf.sample.silent","otf.steps=silent","otf.substitutions","otf.positions","otf.analyzing")
 local nuts=nodes.nuts
-local tonode=nuts.tonode
-local tonut=nuts.tonut
 local getfield=nuts.getfield
 local getnext=nuts.getnext
 local setnext=nuts.setnext
@@ -24511,7 +24522,6 @@ local find_node_tail=nuts.tail
 local flush_node_list=nuts.flush_list
 local flush_node=nuts.flush_node
 local end_of_math=nuts.end_of_math
-local traverse_nodes=nuts.traverse
 local set_components=nuts.set_components
 local take_components=nuts.take_components
 local count_components=nuts.count_components
@@ -24519,6 +24529,7 @@ local copy_no_components=nuts.copy_no_components
 local copy_only_glyphs=nuts.copy_only_glyphs
 local setmetatable=setmetatable
 local setmetatableindex=table.setmetatableindex
+local nextnode=nuts.traversers.node
 local nodecodes=nodes.nodecodes
 local glyphcodes=nodes.glyphcodes
 local disccodes=nodes.disccodes
@@ -27183,7 +27194,7 @@ local function k_run_single(sub,injection,last,font,attr,lookupcache,step,datase
     a=getattr(sub,0)
   end
   if not a or (a==attr) then
-    for n in traverse_nodes(sub) do 
+    for n in nextnode,sub do 
       if n==last then
         break
       end
@@ -27336,7 +27347,7 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
     a=getattr(sub,0)
   end
   if not a or (a==attr) then
-    for n in traverse_nodes(sub) do 
+    for n in nextnode,sub do 
       if n==last then
         break
       end
@@ -27436,12 +27447,10 @@ do
       nesting=nesting-1
       return head,false
     end
-    local head=tonut(head)
     if trace_steps then
       checkstep(head)
     end
     local initialrl=direction=="TRT" and -1 or 0
-    local done=false
     local datasets=otfdataset(tfmdata,font,attr)
     local dirstack={} 
     sweephead={}
@@ -27459,10 +27468,7 @@ do
       local nofsteps=sequence.nofsteps
       local skiphash=sequence.skiphash
       if not steps then
-        local h,ok=handler(head,dataset,sequence,initialrl,font,attr) 
-        if ok then
-          done=true
-        end
+        local h,ok=handler(head,dataset,sequence,initialrl,font,attr)
         if h and h~=head then
           head=h
         end
@@ -27488,7 +27494,6 @@ do
                     local ok
                     head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                     if ok then
-                      done=true
                       break
                     end
                   end
@@ -27531,9 +27536,6 @@ do
                   if a then
                     local ok
                     head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
-                    if ok then
-                      done=true
-                    end
                     if start then
                       start=getnext(start)
                     end
@@ -27555,9 +27557,6 @@ do
                   start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                 else
                   start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-                end
-                if ok then
-                  done=true
                 end
               else
                 start=getnext(start)
@@ -27599,7 +27598,6 @@ do
                         local ok
                         head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                         if ok then
-                          done=true
                           break
                         elseif not start then
                           break
@@ -27628,9 +27626,6 @@ do
                 else
                   start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                 end
-                if ok then
-                  done=true
-                end
               else
                 start=getnext(start)
               end
@@ -27651,8 +27646,7 @@ do
       end
     end
     nesting=nesting-1
-    head=tonode(head)
-    return head,done
+    return head
   end
   function otf.datasetpositionprocessor(head,font,direction,dataset)
     currentfont=font
@@ -27673,7 +27667,6 @@ do
     local handler=handlers[typ] 
     local steps=sequence.steps
     local nofsteps=sequence.nofsteps
-    local head=tonut(head)
     local done=false
     local dirstack={} 
     local start=head
@@ -27725,7 +27718,7 @@ do
         start=getnext(start)
       end
     end
-    return tonode(head) 
+    return head
   end
 end
 local plugins={}
@@ -28011,8 +28004,6 @@ local methods=fonts.analyzers.methods
 local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
 local nuts=nodes.nuts
-local tonode=nuts.tonode
-local tonut=nuts.tonut
 local getnext=nuts.getnext
 local getprev=nuts.getprev
 local getboth=nuts.getboth
@@ -28054,20 +28045,24 @@ replace_all_nbsp=function(head)
   end
   return replace_all_nbsp(head)
 end
-local xprocesscharacters=nil
+local processcharacters=nil
 if context then
-  xprocesscharacters=function(head,font)
-    xprocesscharacters=nodes.handlers.characters
-    return xprocesscharacters(head,font)
+  local fontprocesses=fonts.hashes.processes
+  function processcharacters(head,font)
+    local processors=fontprocesses[font]
+    for i=1,#processors do
+      head=processors[i](head,font,0)
+    end
+    return head
   end
 else
-  xprocesscharacters=function(head,font)
-    xprocesscharacters=nodes.handlers.nodepass 
-    return xprocesscharacters(head,font)
+  function processcharacters(head,font)
+    local processors=fontdata[font].shared.processes
+    for i=1,#processors do
+      head=processors[i](head,font,0)
+    end
+    return head
   end
-end
-local function processcharacters(head,font)
-  return tonut(xprocesscharacters(tonode(head))) 
 end
 local indicgroups=characters and characters.indicgroups
 if not indicgroups and characters then
@@ -29657,7 +29652,6 @@ local function analyze_next_chars_two(c,font)
   end
 end
 local function method_one(head,font,attr)
-  head=tonut(head)
   local current=head
   local start=true
   local done=false
@@ -29836,10 +29830,9 @@ local function method_one(head,font,attr)
   if nbspaces>0 then
     head=replace_all_nbsp(head)
   end
-  return tonode(head),done
+  return head,done
 end
 local function method_two(head,font,attr)
-  head=tonut(head)
   local current=head
   local start=true
   local done=false
@@ -29918,7 +29911,7 @@ local function method_two(head,font,attr)
   if nbspaces>0 then
     head=replace_all_nbsp(head)
   end
-  return tonode(head),done
+  return head,done
 end
 for i=1,nofscripts do
   methods[scripts_one[i]]=method_one
@@ -33926,8 +33919,10 @@ local settings_to_hash=utilities.parsers.settings_to_hash_colon_too
 local helpers=fonts.helpers
 local prependcommands=helpers.prependcommands
 local charcommand=helpers.commands.char
+local leftcommand=helpers.commands.left
 local rightcommand=helpers.commands.right
 local upcommand=helpers.commands.up
+local downcommand=helpers.commands.down
 local dummycommand=helpers.commands.dummy
 local report_effect=logs.reporter("fonts","effect")
 local report_slant=logs.reporter("fonts","slant")
@@ -34115,7 +34110,7 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
     end
   end
   local character=characters[0x221A]
-  if character then
+  if character and character.next then
     local char=character
     local next=character.next
     wdpatch(char)
@@ -34131,7 +34126,8 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
       if v then
         local top=v[#v]
         if top then
-          htpatch(characters[top.glyph])
+          local char=characters[top.glyph]
+          htpatch(char)
         end
       end
     end
@@ -34152,7 +34148,7 @@ local function manipulateeffect(tfmdata)
     local ddelta=effect.ddelta*vfactor*multiplier
     local vshift=effect.vshift*vfactor*multiplier
     local squeeze=effect.squeeze
-    local hshift=wdelta 
+    local hshift=wdelta/2
     local dx=multiplier*vfactor
     local dy=vshift
     local factor=(1+effect.factor)*factor
@@ -36369,8 +36365,8 @@ local setlink=nuts.setlink
 local setprev=nuts.setprev
 local n_ligaturing=node.ligaturing
 local n_kerning=node.kerning
-local ligaturing=nuts.ligaturing
-local kerning=nuts.kerning
+local d_ligaturing=nuts.ligaturing
+local d_kerning=nuts.kerning
 local basemodepass=true
 local function l_warning() texio.write_nl("warning: node.ligaturing called directly") l_warning=nil end
 local function k_warning() texio.write_nl("warning: node.kerning called directly")  k_warning=nil end
@@ -36386,13 +36382,24 @@ function node.kerning(...)
   end
   return n_kerning(...)
 end
+function nuts.ligaturing(...)
+  if basemodepass and l_warning then
+    l_warning()
+  end
+  return d_ligaturing(...)
+end
+function nuts.kerning(...)
+  if basemodepass and k_warning then
+    k_warning()
+  end
+  return d_kerning(...)
+end
 function nodes.handlers.setbasemodepass(v)
   basemodepass=v
 end
-function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
+local function nodepass(head,groupcode,size,packtype,direction)
   local fontdata=fonts.hashes.identifiers
   if fontdata then
-    local nuthead=tonut(head)
     local usedfonts={}
     local basefonts={}
     local prevfont=nil
@@ -36400,7 +36407,7 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
     local variants=nil
     local redundant=nil
     local nofused=0
-    for n in traverse_id(glyph_code,nuthead) do
+    for n in traverse_id(glyph_code,head) do
       local font=getfont(n)
       if font~=prevfont then
         if basefont then
@@ -36461,8 +36468,8 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
       for i=1,#redundant do
         local r=redundant[i]
         local p,n=getboth(r)
-        if r==nuthead then
-          nuthead=n
+        if r==head then
+          head=n
           setprev(n)
         else
           setlink(p,n)
@@ -36481,7 +36488,7 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
         flush_node(r)
       end
     end
-    for d in traverse_id(disc_code,nuthead) do
+    for d in traverse_id(disc_code,head) do
       local _,_,r=getdisc(d)
       if r then
         for n in traverse_id(glyph_code,r) do
@@ -36519,16 +36526,16 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
         local start=range[1]
         local stop=range[2]
         if start then
-          local front=nuthead==start
+          local front=head==start
           local prev,next
           if stop then
             next=getnext(stop)
-            start,stop=ligaturing(start,stop)
-            start,stop=kerning(start,stop)
+            start,stop=d_ligaturing(start,stop)
+            start,stop=d_kerning(start,stop)
           else
             prev=getprev(start)
-            start=ligaturing(start)
-            start=kerning(start)
+            start=d_ligaturing(start)
+            start=d_kerning(start)
           end
           if prev then
             setlink(prev,start)
@@ -36536,40 +36543,57 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
           if next then
             setlink(stop,next)
           end
-          if front and nuthead~=start then
-            head=tonode(start)
+          if front and head~=start then
+            head=start
           end
         end
       end
     end
-    return head,true
-  else
-    return head,false
+  end
+  return head
+end
+local function basepass(head)
+  if basemodepass then
+    head=d_ligaturing(head)
+    head=d_kerning(head)
+  end
+  return head
+end
+local injectpass=nodes.injections.handler
+local protectpass=nodes.handlers.protectglyphs
+function nodes.handlers.nodepass(head,...)
+  if head then
+    return tonode(nodepass(tonut(head),...))
   end
 end
 function nodes.handlers.basepass(head)
-  if basemodepass then
-    head=n_ligaturing(head)
-    head=n_kerning(head)
+  if head then
+    return tonode(basepass(tonut(head)))
   end
-  return head,true
 end
-local nodepass=nodes.handlers.nodepass
-local basepass=nodes.handlers.basepass
-local injectpass=nodes.injections.handler
-local protectpass=nodes.handlers.protectglyphs
+function nodes.handlers.injectpass(head)
+  if head then
+    return tonode(injectpass(tonut(head)))
+  end
+end
+function nodes.handlers.protectpass(head)
+  if head then
+    protectpass(tonut(head))
+    return head
+  end
+end
 function nodes.simple_font_handler(head,groupcode,size,packtype,direction)
   if head then
+    head=tonut(head)
     head=nodepass(head,groupcode,size,packtype,direction)
     head=injectpass(head)
     if not basemodepass then
       head=basepass(head)
     end
     protectpass(head)
-    return head,true
-  else
-    return head,false
+    head=tonode(head)
   end
+  return head
 end
 
 end -- closure

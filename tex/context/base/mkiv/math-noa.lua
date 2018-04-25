@@ -88,7 +88,6 @@ local a_exportstatus       = privateattribute("exportstatus")
 local nuts                 = nodes.nuts
 local nodepool             = nuts.pool
 local tonut                = nuts.tonut
-local tonode               = nuts.tonode
 local nutstring            = nuts.tostring
 
 local setfield             = nuts.setfield
@@ -299,7 +298,7 @@ local function process(start,what,n,parent)
         start = getnext(start)
     end
     if not parent then
-        return initial, true -- only first level -- for now
+        return initial -- only first level -- for now
     end
 end
 
@@ -376,15 +375,14 @@ local function processstep(current,process,n,id)
 end
 
 local function processnoads(head,actions,banner)
-    local h, d
     if trace_processing then
         report_processing("start %a",banner)
-        h, d = process(tonut(head),actions)
+        head = process(head,actions)
         report_processing("stop %a",banner)
     else
-        h, d = process(tonut(head),actions)
+        head = process(head,actions)
     end
-    return h and tonode(h) or head, d == nil and true or d
+    return head
 end
 
 noads.process       = processnoads
@@ -1038,7 +1036,7 @@ do
     function handlers.autofences(head,style,penalties)
         if enabled then -- tex.modes.c_math_fences_auto
          -- inspect(nodes.totree(head))
-            processfences(tonut(head),1)
+            processfences(head,1)
          -- inspect(nodes.totree(head))
         end
     end
@@ -1136,7 +1134,6 @@ do
 
     function handlers.unscript(head,style,penalties)
         processnoads(head,unscript,"unscript")
-    --  processnoads(head,checkers,"checkers")
         return true
     end
 
@@ -2177,7 +2174,7 @@ end
 -- just for me
 
 function handlers.showtree(head,style,penalties)
-    inspect(nodes.totree(head))
+    inspect(nodes.totree(tonut(head)))
 end
 
 registertracker("math.showtree",function(v)
@@ -2192,7 +2189,7 @@ do
     local visual       = false
 
     function handlers.makeup(head)
-        applyvisuals(tonut(head),visual)
+        applyvisuals(head,visual)
     end
 
     registertracker("math.makeup",function(v)
@@ -2213,7 +2210,7 @@ do
  -- end)
 
     function builders.kernel.mlist_to_hlist(head,style,penalties)
-        return mlist_to_hlist(head,style,force_penalties or penalties), true
+        return mlist_to_hlist(head,style,force_penalties or penalties)
     end
 
     implement {
@@ -2226,41 +2223,15 @@ do
 
 end
 
--- function builders.kernel.mlist_to_hlist(head,style,penalties)
---     print("!!!!!!! BEFORE",penalties)
---     for n in node.traverse(head) do print(n) end
---     print("!!!!!!!")
---     head = mlist_to_hlist(head,style,penalties)
---     print("!!!!!!! AFTER")
---     for n in node.traverse(head) do print(n) end
---     print("!!!!!!!")
---     return head, true
--- end
-
-tasks.new {
-    name      = "math",
-    arguments = 2,
-    processor = utilities.sequencers.nodeprocessor,
-    sequence  = {
-        "before",
-        "normalizers",
-        "builders",
-        "after",
-    },
-}
-
-tasks.freezegroup("math", "normalizers") -- experimental
-tasks.freezegroup("math", "builders")    -- experimental
-
 local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
 function processors.mlist_to_hlist(head,style,penalties)
     starttiming(noads)
-    local head, done = actions(head,style,penalties)
+    head = actions(head,style,penalties)
     stoptiming(noads)
-    return head, done
+    return head
 end
 
 callbacks.register('mlist_to_hlist',processors.mlist_to_hlist,"preprocessing math list")

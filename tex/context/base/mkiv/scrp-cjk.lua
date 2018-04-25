@@ -15,14 +15,12 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 -- line would have to be a hard coded ones.
 
 local nuts               = nodes.nuts
-local tonut              = nodes.tonut
-local tonode             = nodes.tonode
 
 local insert_node_after  = nuts.insert_after
 local insert_node_before = nuts.insert_before
 local copy_node          = nuts.copy
 local remove_node        = nuts.remove
-local traverse_id        = nuts.traverse_id
+local nextglyph          = nuts.traversers.glyph
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -509,9 +507,8 @@ scripts.installmethod {
 }
 
 function scripts.decomposehangul(head)
-    local head = tonut(head)
     local done = false
-    for current in traverse_id(glyph_code,head) do
+    for current in nextglyph, head do
         local lead_consonant, medial_vowel, tail_consonant = decomposed(getchar(current))
         if lead_consonant then
             setchar(current,lead_consonant)
@@ -526,7 +523,7 @@ function scripts.decomposehangul(head)
             done = true
         end
     end
-    return tonode(head), done
+    return head, done
 end
 
 -- nodes.tasks.prependaction("processors","normalizers","scripts.decomposehangul")

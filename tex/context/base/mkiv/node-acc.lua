@@ -28,8 +28,9 @@ local setsubtype         = nuts.setsubtype
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 
------ traverse_nodes     = nuts.traverse
-local traverse_id        = nuts.traverse_id
+local nextglyph          = nuts.traversers.glyph
+local nextnode           = nuts.traversers.node
+
 ----- copy_node          = nuts.copy
 local insert_after       = nuts.insert_after
 local copy_no_components = nuts.copy_no_components
@@ -77,12 +78,11 @@ local function injectspaces(head)
         p = n
         n = getnext(n)
     end
-    return head, true -- always done anyway
+    return head
 end
 
 nodes.handlers.accessibility = function(head)
-    local head, done = injectspaces(tonut(head))
-    return tonode(head), done
+    return injectspaces(head)
 end
 
 statistics.register("inserted spaces in output",function()
@@ -99,7 +99,7 @@ end)
 --
 -- local function compact(n)
 --     local t = { }
---     for n in traverse_id(glyph_code,n) do
+--     for n in nextglyph, n do
 --         t[#t+1] = utfchar(getchar(n)) -- check for unicode
 --     end
 --     return concat(t,"")
@@ -107,8 +107,7 @@ end)
 --
 -- local function injectspans(head)
 --     local done = false
---     for n in traverse_nodes(tonuts(head)) do
---         local id = getid(n)
+--     for n, id in nextnode, tonuts(head) do
 --         if id == disc then
 --             local r = getfield(n,"replace")
 --             local p = getfield(n,"pre")
@@ -138,8 +137,7 @@ end)
 --
 -- local function injectspans(head)
 --     local done = false
---     for n in traverse_nodes(tonut(head)) do
---         local id = getid(n)
+--     for n, id in nextnode, tonut(head) do
 --         if id == disc then
 --             local a = getattr(n,a_hyphenated)
 --             if a then

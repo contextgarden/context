@@ -23,6 +23,12 @@ local mathematics      = mathematics
 local texsetdimen      = tex.setdimen
 local abs              = math.abs
 
+local helpers          = fonts.helpers
+local upcommand        = helpers.commands.up
+local rightcommand     = helpers.commands.right
+local charcommand      = helpers.commands.char
+local prependcommands  = helpers.prependcommands
+
 local sequencers       = utilities.sequencers
 local appendgroup      = sequencers.appendgroup
 local appendaction     = sequencers.appendaction
@@ -237,7 +243,6 @@ function mathematics.overloaddimensions(target,original,set)
                 local factor       = parameters.factor
                 local hfactor      = parameters.hfactor
                 local vfactor      = parameters.vfactor
-                local addprivate   = fonts.helpers.addprivate
                 -- to be sure
                 target.type = "virtual"
                 target.properties.virtualized = true
@@ -257,7 +262,8 @@ function mathematics.overloaddimensions(target,original,set)
                             local height = data.height
                             local depth  = data.depth
                             if trace_defining and (width or height or depth) then
-                                report_math("overloading dimensions of %C, width %a, height %a, depth %a",unicode,width,height,depth)
+                                report_math("overloading dimensions of %C, width %p, height %p, depth %p",
+                                    unicode,width or 0,height or 0,depth or 0)
                             end
                             if width  then character.width  = width  * hfactor end
                             if height then character.height = height * vfactor end
@@ -270,25 +276,26 @@ function mathematics.overloaddimensions(target,original,set)
                                 if d then
                                     xoffset         = - d.boundingbox[1] * hfactor
                                     character.width = character.width + xoffset
-                                    xoffset = { "right", xoffset }
+                                    xoffset         = rightcommand[xoffset]
+                                else
+                                    xoffset = nil
                                 end
-                            elseif xoffset then
-                                xoffset = { "right", xoffset * hfactor }
+                            elseif xoffset and xoffset ~= 0 then
+                                xoffset = rightcommand[xoffset * hfactor]
+                            else
+                                xoffset = nil
                             end
-                            if yoffset then
-                                yoffset = { "down", -yoffset * vfactor }
+                            if yoffset and yoffset ~= 0 then
+                                yoffset = upcommand[yoffset * vfactor]
+                            else
+                                yoffset = nil
                             end
                             if xoffset or yoffset then
-                                if character.commands then
-                                    if yoffset then
-                                        insert(character.commands,1,yoffset)
-                                    end
-                                    if xoffset then
-                                        insert(character.commands,1,xoffset)
-                                    end
+                                local commands = characters.commands
+                                if commands then
+                                    prependcommands(commands,yoffset,xoffset)
                                 else
-                                 -- local slot = { "slot", 1, addprivate(target,nil,fastcopy(character)) }
-                                    local slot = { "slot", 0, addprivate(target,nil,fastcopy(character)) }
+                                    local slot = charcommand[unicode]
                                     if xoffset and yoffset then
                                         character.commands = { xoffset, yoffset, slot }
                                     elseif xoffset then
@@ -297,7 +304,6 @@ function mathematics.overloaddimensions(target,original,set)
                                         character.commands = { yoffset, slot }
                                     end
                                 end
-                                character.index = nil
                             end
                         elseif trace_defining then
                             report_math("no overloading dimensions of %C, not in font",unicode)

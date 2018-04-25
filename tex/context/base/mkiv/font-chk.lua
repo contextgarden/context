@@ -66,14 +66,15 @@ local hpack_node           = node.hpack
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
-local tonode               = nuts.tonode
 
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
 
 local setchar              = nuts.setchar
 
-local traverse_id          = nuts.traverse_id
+----- traverse_id          = nuts.traverse_id
+local nextglyph            = nuts.traversers.glyph
+
 local remove_node          = nuts.remove
 local insert_node_after    = nuts.insert_after
 
@@ -281,7 +282,7 @@ end
 
 local function placeholder(font,char)
     local tfmdata  = fontdata[font]
-    local category = chardata[char].category
+    local category = chardata[char].category or "unknown"
     local fakechar = mapping[category]
     local slot     = getprivateslot(font,fakechar)
     if not slot then
@@ -295,15 +296,14 @@ checkers.placeholder = placeholder
 
 function checkers.missing(head)
     local lastfont, characters, found = nil, nil, nil
-    head = tonut(head)
-    for n in traverse_id(glyph_code,head) do -- faster than while loop so we delay removal
+    for n in nextglyph, head do -- faster than while loop so we delay removal
         local font = getfont(n)
         local char = getchar(n)
         if font ~= lastfont then
             characters = fontcharacters[font]
             lastfont   = font
         end
-        if font > 0 and not characters[char] and is_character[chardata[char].category] then
+        if font > 0 and not characters[char] and is_character[chardata[char].category or "unknown"] then
             if action == "remove" then
                 onetimemessage(font,char,"missing (will be deleted)")
             elseif action == "replace" then
@@ -340,7 +340,7 @@ function checkers.missing(head)
     else
         -- maye write a report to the log
     end
-    return tonode(head), false
+    return head
 end
 
 local relevant = {

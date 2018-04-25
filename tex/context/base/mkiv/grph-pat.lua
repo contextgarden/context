@@ -37,7 +37,7 @@ interfaces.implement {
         if not name or name == "" then
             return
         end
-        nodes.handlers.finalize(box,"object")
+        nodes.handlers.finalizebox(number)
         names[name] = lpdf.registerpattern {
             number  = number,
             width   = specification.width  or  box.width,

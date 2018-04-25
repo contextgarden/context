@@ -73,7 +73,7 @@ local parfillskip_code  = gluecodes.parfillskip
 local tonut             = nodes.tonut
 local tonode            = nodes.tonode
 
-local traverse_id       = nuts.traverse_id
+local nexthlist         = nuts.traversers.hlist
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 local find_tail         = nuts.tail
@@ -252,7 +252,7 @@ function paragraphs.normalize(head,islocal)
     if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
         local last = nil -- a nut
         local done = false
-        for line in traverse_id(hlist_code,tonut(head)) do
+        for line in nexthlist, head do -- LUATEXVERSION >= 1.090
             if getsubtype(line) == line_code and not getprop(line,"line") then
                 if done then
                     last = line
@@ -280,7 +280,7 @@ function paragraphs.normalize(head,islocal)
         end
     end
     -- normalizer
-    for line in traverse_id(hlist_code,tonut(head)) do
+    for line in nexthlist, head do -- LUATEXVERSION >= 1.090
         if getsubtype(line) == line_code and not getprop(line,"line") then
             normalize(line)
             if done then

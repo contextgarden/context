@@ -31,7 +31,6 @@ local numbers         = languages.numbers
 local registered      = languages.registered
 
 local nuts            = nodes.nuts
-local tonut           = nuts.tonut
 
 ----- getfield        = nuts.getfield
 local getnext         = nuts.getnext
@@ -43,8 +42,8 @@ local setattr         = nuts.setattr
 local getlang         = nuts.getlang
 local ischar          = nuts.ischar
 
-local traverse_nodes  = nuts.traverse
------ traverse_ids    = nuts.traverse_id
+local nextnode        = nuts.traversers.node
+----- nextglyph       = nuts.traversers.glyph
 
 local wordsdata       = words.data
 local chardata        = characters.data
@@ -145,14 +144,13 @@ end
 -- there is an n=1 problem somewhere in nested boxes
 
 local function mark_words(head,whenfound) -- can be optimized and shared
-    local current, language, done = tonut(head), nil, nil, 0, false
+    local current, language = head, nil, nil, 0
     local str, s, nds, n = { }, 0, { }, 0 -- n could also be a table, saves calls
     local function action()
         if s > 0 then
             local word = concat(str,"",1,s)
             local mark = whenfound(language,word)
             if mark then
-                done = true
                 for i=1,n do
                     mark(nds[i])
                 end
@@ -198,7 +196,7 @@ local function mark_words(head,whenfound) -- can be optimized and shared
      --             n = n + 1
      --             nds[n] = current
      --             --
-     --             for current in traverse_ids(glyph_code,r) do
+     --             for current in nextglyph, r do
      --                 local code = getchar(current)
      --                 n = n + 1
      --                 nds[n] = current
@@ -217,7 +215,7 @@ local function mark_words(head,whenfound) -- can be optimized and shared
     if s > 0 then
         action()
     end
-    return head, done
+    return head
 end
 
 local methods  = { }
@@ -285,7 +283,7 @@ local function sweep(language,str)
 end
 
 methods[1] = function(head)
-    for n in traverse_nodes(head) do
+    for n in nextnode, head do
         setattr(n,a_color,unsetvalue) -- hm, not that selective (reset color)
     end
     return mark_words(head,sweep)
@@ -380,7 +378,7 @@ local function sweep(language,str)
 end
 
 methods[3] = function(head)
-    for n in traverse_nodes(head) do
+    for n in nextnode, head do
         setattr(n,a_color,unsetvalue)
     end
     return mark_words(head,sweep)

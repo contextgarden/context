@@ -79,6 +79,9 @@ local aglunicodes         = nil -- delayed loading
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
+----- traverse_char       = nuts.traverse_char
+local nextchar            = nuts.traversers.char
+
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getprop             = nuts.getprop
@@ -583,12 +586,11 @@ local function presetcontext(name,parent,features) -- will go to con and shared
         features = { }
     elseif type(features) == "string" then
         features = normalize_features(settings_to_hash(features))
-        for key, value in next, features do
-            if type(value) == "string" and find(value,"=") then
-                local t = settings_to_hash(value)
+            for key, value in next, features do
+            if type(value) == "string" and find(value,"[=:]") then
+                local t = settings_to_hash_colon_too(value)
                 if next(t) then
---                     features[key] = sequenced(normalize_features(t),",")
-                    features[key] = t -- sequenced(normalize_features(t),",")
+                    features[key] = sequenced(normalize_features(t),",")
                 end
             end
         end
@@ -2635,8 +2637,6 @@ do
 
     local unsetvalue      = attributes.unsetvalue
 
-    local traverse_char   = nuts.traverse_char
-
     local a_color         = attributes.private('color')
     local a_colormodel    = attributes.private('colormodel')
     local a_state         = attributes.private('state')
@@ -2660,11 +2660,14 @@ do
         [states.pstf] = "font:5",
     }
 
+    -- todo: traversers
+    -- todo: check attr_list so that we can use the same .. helper: setcolorattr
+
     local function markstates(head)
         if head then
             head = tonut(head)
             local model = getattr(head,a_colormodel) or 1
-            for glyph in traverse_char(head) do
+            for glyph in nextchar, head do
                 local a = getprop(glyph,a_state)
                 if a then
                     local name = colornames[a]
@@ -2715,7 +2718,7 @@ do
 
 
     function methods.nocolor(head,font,attr)
-        for n in traverse_char(head) do
+        for n in nextchar, head do
             if not font or getfont(n) == font then
                 setattr(n,a_color,unsetvalue)
             end
@@ -3245,5 +3248,111 @@ do
             end
         end
     }
+
+end
+
+-- handy, for now here:
+
+function fonts.helpers.collectanchors(tfmdata)
+
+    local resources = tfmdata.resources -- todo: use shared
+
+    if not resources or resources.anchors then
+        return resources.anchors
+    end
+
+    local anchors = { }
+
+    local function set(unicode,target,class,anchor)
+        local a = anchors[unicode]
+        if not a then
+            anchors[unicode] = { [target] = { anchor } }
+            return
+        end
+        local t = a[target]
+        if not t then
+            a[target] = { anchor }
+            return
+        end
+        local x, y = anchor[1], anchor[2]
+        for k, v in next, t do
+            if v[1] == x and v[2] == y then
+                return
+            end
+        end
+        t[#t+1] = anchor
+    end
+
+    local function getanchors(steps,target)
+        for i=1,#steps do
+            local step     = steps[i]
+            local coverage = step.coverage
+            for unicode, data in next, coverage do
+                local class  = data[1]
+                local anchor = data[2]
+                if anchor[1] ~= 0 or anchor[2] ~= 0 then
+                    set(unicode,target,class,anchor)
+                end
+            end
+        end
+    end
+
+    local function getcursives(steps)
+        for i=1,#steps do
+            local step     = steps[i]
+            local coverage = step.coverage
+            for unicode, data in next, coverage do
+                local class  = data[1]
+                local en = data[2]
+                local ex = data[3]
+                if en then
+                    set(unicode,"entry",class,en)
+                end
+                if ex then
+                    set(unicode,"exit", class,ex)
+                end
+            end
+        end
+    end
+
+    local function collect(list)
+        if list then
+            for i=1,#list do
+                local entry = list[i]
+                local steps = entry.steps
+                local kind  = entry.type
+                if kind == "gpos_mark2mark" then
+                    getanchors(steps,"mark")
+                elseif kind == "gpos_mark2base" then
+                    getanchors(steps,"base")
+                elseif kind == "gpos_mark2ligature" then
+                    getanchors(steps,"ligature")
+                elseif kind == "gpos_cursive" then
+                    getcursives(steps)
+                end
+            end
+        end
+    end
+
+    collect(resources.sequences)
+    collect(resources.sublookups)
+
+    local function sorter(a,b)
+        if a[1] == b[1] then
+            return a[2] < b[2]
+        else
+            return a[1] < b[1]
+        end
+    end
+
+    for unicode, old in next, anchors do
+        for target, list in next, old do
+            sort(list,sorter)
+        end
+    end
+
+    resources.anchors = anchors
+
+    return anchors
 
 end

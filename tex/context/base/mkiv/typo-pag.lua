@@ -26,7 +26,6 @@ local unsetvalue          = attributes.unsetvalue
 local a_keeptogether      = attributes.private("keeptogether")
 
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
 
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
@@ -187,8 +186,8 @@ end
 -- also look at first non glue/kern node e.g for a dropped caps
 
 function parbuilders.keeptogether(head)
-    local done = false
-    local current = tonut(head)
+    local done    = false
+    local current = head
     while current do
         if getid(current) == hlist_code then
             local a = takeattr(current,a_keeptogether)

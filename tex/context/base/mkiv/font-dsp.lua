@@ -68,12 +68,13 @@ local reversed = table.reversed
 local sort = table.sort
 local insert = table.insert
 local round = math.round
-local settings_to_hash_colon_too = table.settings_to_hash_colon_too
 
+local settings_to_hash  = utilities.parsers.settings_to_hash_colon_too
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
 local sortedkeys        = table.sortedkeys
 local sortedhash        = table.sortedhash
+local sequenced         = table.sequenced
 
 local report            = logs.reporter("otf reader")
 
@@ -324,7 +325,7 @@ end)
 -- wght:400,wdth:100,ital:1
 
 local function axistofactors(str)
-    local t = settings_to_hash_colon_too(str)
+    local t = settings_to_hash(str)
     for k, v in next, t do
         t[k] = tonumber(v) or v -- this also normalizes numbers itself
     end
@@ -347,10 +348,6 @@ helpers.cleanname = cleanname
 
 function helpers.normalizedaxis(str)
     return hash[str] or str
-end
-
-local function axistofactors(str)
-    return settings_to_hash_colon_too(str)
 end
 
 -- contradicting spec ... (signs) so i'll check it and fix it once we have

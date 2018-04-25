@@ -29,7 +29,8 @@ local newrule           = nodepool.rule
 local newglue           = nodepool.glue
 
 local insert_node_after = nuts.insert_after
-local traverse_by_id    = nuts.traverse_id
+
+local nextglyph         = nuts.traversers.glyph
 
 local tonut             = nodes.tonut
 local tonode            = nodes.tonode
@@ -129,7 +130,7 @@ end
 
 local function getlanguage(head,l,left,right)
     local t = { }
-    for n in traverse_by_id(glyph_code,tonut(head)) do
+    for n in nextglyph, tonut(head) do
         t[n] = {
             getlang(n),
             getfield(n,"left"),
@@ -148,7 +149,7 @@ function moduledata.languages.hyphenation.showhyphens(head)
         local marked = { }
         local cached = { }
         -- somehow assigning -1 fails
-        for n in traverse_by_id(glyph_code,tonut(head)) do
+        for n in nextglyph, tonut(head) do
             cached[n] = {
                 getlang(n),
                 getfield(n,"left"),

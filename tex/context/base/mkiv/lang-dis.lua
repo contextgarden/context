@@ -17,9 +17,6 @@ local nuts               = nodes.nuts
 local enableaction       = tasks.enableaction
 local setaction          = tasks.setaction
 
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
-
 local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -40,9 +37,10 @@ local isglyph            = nuts.isglyph
 
 local copy_node          = nuts.copy
 local remove_node        = nuts.remove
-local traverse_id        = nuts.traverse_id
 local flush_list         = nuts.flush_list
 local flush_node         = nuts.flush_node
+
+local nextdisc           = nuts.traversers.disc
 
 local new_disc           = nuts.pool.disc
 
@@ -69,7 +67,7 @@ local check_regular      = true
 local setlistcolor = nodes.tracers.colors.setlist
 
 function languages.visualizediscretionaries(head)
-    for d in traverse_id(disc_code,tonut(head)) do
+    for d in nextdisc, head do
         if getattr(d,a_visualize) then
             local pre, post, replace = getdisc(d)
             if pre then
@@ -83,6 +81,7 @@ function languages.visualizediscretionaries(head)
             end
         end
     end
+    return head
 end
 
 local enabled = false
@@ -129,13 +128,9 @@ end
 
 local wiped = 0
 
-local flatten_discretionaries = node.flatten_discretionaries -- todo in nodes
+local flatten_discretionaries = nuts.flatten_discretionaries -- todo in nodes
 
-if flatten_discretionaries then
-
-    -- This is not that much faster than the lua variant simply because there is
-    -- seldom a replace list but it fits in the picture. See luatex-todo.w for the
-    -- code.
+-- if flatten_discretionaries then
 
     function languages.flatten(head)
         local h, n = flatten_discretionaries(head)
@@ -143,45 +138,44 @@ if flatten_discretionaries then
         return h, n > 0
     end
 
-else
-
-    local function wipe(head,delayed)
-        local p, n = getboth(delayed)
-        local _, _, h, _, _, t = getdisc(delayed,true)
-        if p or n then
-            if h then
-                setlink(p,h)
-                setlink(t,n)
-                setfield(delayed,"replace")
-            else
-                setlink(p,n)
-            end
-        end
-        if head == delayed then
-            head = h
-        end
-        wiped = wiped + 1
-        flush_node(delayed)
-        return head
-    end
-
-    function languages.flatten(head)
-        local nuthead = tonut(head)
-        local delayed = nil
-        for d in traverse_id(disc_code,nuthead) do
-            if delayed then
-                nuthead = wipe(nuthead,delayed)
-            end
-            delayed = d
-        end
-        if delayed then
-            return tonode(wipe(nuthead,delayed)), true
-        else
-            return head, false
-        end
-    end
-
-end
+-- else
+--
+--     local function wipe(head,delayed)
+--         local p, n = getboth(delayed)
+--         local _, _, h, _, _, t = getdisc(delayed,true)
+--         if p or n then
+--             if h then
+--                 setlink(p,h)
+--                 setlink(t,n)
+--                 setfield(delayed,"replace")
+--             else
+--                 setlink(p,n)
+--             end
+--         end
+--         if head == delayed then
+--             head = h
+--         end
+--         wiped = wiped + 1
+--         flush_node(delayed)
+--         return head
+--     end
+--
+--     function languages.flatten(head)
+--         local delayed = nil
+--         for d in nextdisc, head do
+--             if delayed then
+--                 head = wipe(head,delayed)
+--             end
+--             delayed = d
+--         end
+--         if delayed then
+--             return wipe(head,delayed), true
+--         else
+--             return head, false
+--         end
+--     end
+--
+-- end
 
 function languages.nofflattened()
     return wiped -- handy for testing
@@ -198,7 +192,7 @@ function nodes.handlers.flatten(head,where)
     if head and (where == "box" or where == "adjusted_hbox") then
         return flatten(head)
     end
-    return true
+    return head
 end
 
 directives.register("hyphenator.flatten",function(v)

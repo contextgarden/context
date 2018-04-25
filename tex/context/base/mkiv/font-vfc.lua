@@ -50,7 +50,8 @@ end
 -- todo: maybe indirect so that we can't change them
 
 local char = setmetatableindex(function(t,k)
-    local v = { "char", k }
+ -- local v = { "char", k }
+    local v = { "slot", 0, k }
     t[k] = v
     return v
 end)

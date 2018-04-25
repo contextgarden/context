@@ -253,6 +253,9 @@ end)
 local function pdfnametree(destinations)
     local slices = { }
     checkautoprefixes(destinations)
+    if not next(destinations) then
+        return
+    end
     local sorted = table.sortedkeys(destinations)
     local size   = #sorted
 
@@ -285,18 +288,22 @@ local function pdfnametree(destinations)
         }
     end
     local function collectkids(slices,first,last)
-        local k = pdfarray()
-        local d = pdfdictionary {
-            Kids   = k,
-            Limits = pdfarray {
-                slices[first].limits[1],
-                slices[last ].limits[2],
-            },
-        }
-        for i=first,last do
-            k[#k+1] = slices[i].reference
+        local f = slices[first]
+        local l = slices[last]
+        if f and l then
+            local k = pdfarray()
+            local d = pdfdictionary {
+                Kids   = k,
+                Limits = pdfarray {
+                    f.limits[1],
+                    l.limits[2],
+                },
+            }
+            for i=first,last do
+                k[#k+1] = slices[i].reference
+            end
+            return d
         end
-        return d
     end
     if #slices == 1 then
         return slices[1].reference
@@ -307,14 +314,24 @@ local function pdfnametree(destinations)
                 local size = #slices
                 for i=1,size,maxslice do
                     local kids = collectkids(slices,i,min(i+maxslice-1,size))
-                    temp[#temp+1] = {
-                        reference = pdfreference(pdfflushobject(kids)),
-                        limits    = kids.Limits,
-                    }
+                    if kids then
+                        temp[#temp+1] = {
+                            reference = pdfreference(pdfflushobject(kids)),
+                            limits    = kids.Limits,
+                        }
+                    else
+                        -- error
+                    end
                 end
                 slices = temp
             else
-                return pdfreference(pdfflushobject(collectkids(slices,1,#slices)))
+                local kids = collectkids(slices,1,#slices)
+                if kids then
+                    return pdfreference(pdfflushobject(kids))
+                else
+                    -- error
+                    return
+                end
             end
         end
     end
@@ -323,7 +340,9 @@ end
 local function pdfdestinationspecification()
     if next(destinations) then -- safeguard
         local r = pdfnametree(destinations)
-        pdfaddtonames("Dests",r)
+        if r then
+            pdfaddtonames("Dests",r)
+        end
         if not log_destinations then
             destinations = nil
         end
@@ -786,7 +805,9 @@ pdfregisterannotation = lpdf.registerannotation
 function lpdf.annotationspecification()
     if annotations then
         local r = pdfdelayedobject(tostring(annotations)) -- delayed so okay in latelua
-        pdfaddtopageattributes("Annots",pdfreference(r))
+        if r then
+            pdfaddtopageattributes("Annots",pdfreference(r))
+        end
         annotations = nil
     end
 end
@@ -1179,11 +1200,12 @@ local function build(levels,start,parent,method,nested)
             local variant   = "unknown"
             if reftype == "table" then
                 -- we're okay
-                variant = "list"
-                block   = reference.block
+                variant  = "list"
+                block    = reference.block
+                realpage = reference.realpage
             elseif reftype == "string" then
                 local resolved = references.identify("",reference)
-                local realpage = resolved and structures.references.setreferencerealpage(resolved) or 0
+                realpage = resolved and structures.references.setreferencerealpage(resolved) or 0
                 if realpage > 0 then
                     variant   = "realpage"
                     realpage  = realpage
@@ -1284,7 +1306,6 @@ end
 
 function codeinjections.addbookmarks(levels,method)
     if levels and #levels > 0 then
--- inspect(levels)
         local parent = pdfreserveobject()
         local _, m, first, last = build(levels,1,pdfreference(parent),method or "internal",false)
         local dict = pdfdictionary {

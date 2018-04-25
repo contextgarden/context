@@ -264,19 +264,18 @@ end
 
 -- do
 --
---     local nuts       = nodes.nuts
---     local tonut      = nodes.tonut
---     local tonode     = nuts.tonode
---     local getglue    = tex.getglue
---     local getwhd     = nuts.getwhd
---     local new_b_skip = nuts.pool.baselineskip
---     local new_l_skip = nuts.pool.lineskip
---     local find_tail  = nuts.tail
---     local setlink    = nuts.setlink
+--     local nuts        = nodes.nuts
+--     local getglue     = tex.getglue
+--     local getwhd      = nuts.getwhd
+--     local new_b_skip  = nuts.pool.baselineskip
+--     local new_l_skip  = nuts.pool.lineskip
+--     local find_tail   = nuts.tail
+--     local setlink     = nuts.setlink
+--     local is_mirrored = nodes.is_mirrored
 --
---     function nodes.setprevdepth(box,prevdepth) -- this will become a helper
---         local head = tonut(box)
+--     function nuts.setprevdepth(head,prevdepth) -- this will become a helper
 --         local wd, ht, dp = getwhd(head)
+--         local mirrored = false -- getid(box) == hlist_code and is_mirrored(getdir(box)) -- never mirrored
 --         if prevdepth > -65536000 then
 --             local b_width, b_stretch, b_shrink = getglue("baselineskip")
 --             local l_width, l_stretch, l_shrink = getglue("lineskip")
@@ -287,7 +286,16 @@ end
 --                 head = setlink(new_b_skip(correction,b_stretch,b_shrink),head)
 --             end
 --         end
---         return tonode(head), mirrored and ht or dp
+--         return head, mirrored and ht or dp
+--     end
+--
+--     function nodes.setprevdepth(box,prevdepth)
+--         local h, p = nodes.prepend_prevdepth(box,prevdepth)
+--         if h then
+--             return h, p
+--         else
+--             return head, prevdepth
+--         end
 --     end
 --
 -- end

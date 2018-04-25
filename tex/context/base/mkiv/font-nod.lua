@@ -32,6 +32,10 @@ nodes.tasks            = tasks
 local handlers         = nodes.handlers or { }
 nodes.handlers         = handlers
 
+local nuts             = nodes.nuts
+local tonut            = nuts.tonut
+local tonode           = nuts.tonode
+
 local injections       = nodes.injections or { }
 nodes.injections       = injections
 
@@ -51,10 +55,6 @@ local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
 local dir_code         = nodecodes.dir
 local localpar_code    = nodecodes.localpar
-
-local nuts             = nodes.nuts
-local tonut            = nuts.tonut
-local tonode           = nuts.tonode
 
 local getfield         = nuts.getfield
 local getnext          = nuts.getnext
@@ -78,8 +78,10 @@ local setsubtype       = nuts.setsubtype
 local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
 local flush_node_list  = nuts.flush_list
-local traverse_nodes   = nuts.traverse
 local protect_glyphs   = nuts.protect_glyphs
+
+local nextnode         = nuts.traversers.node
+local nextglyph        = nuts.traversers.glyph
 
 local nodepool         = nuts.pool
 local new_glyph        = nodepool.glyph
@@ -101,7 +103,7 @@ local properties = nodes.properties.data
 -- direct.set_properties_mode(true,true)  -- default
 
 local function freeze(h,where)
-    for n in traverse_nodes(tonut(h)) do -- todo: disc but not traced anyway
+    for n in nextnode, h do -- todo: disc but not traced anyway
         local p = properties[n]
         if p then
             local i = p.injections         if i then p.injections        = fastcopy(i) end
@@ -114,7 +116,6 @@ local function freeze(h,where)
 end
 
 function char_tracers.collect(head,list,tag,n)
-    head = tonut(head)
     n = n or 0
     local ok, fn = false, nil
     while head do
@@ -137,17 +138,17 @@ function char_tracers.collect(head,list,tag,n)
             -- skip
          -- local pre, post, replace = getdisc(head)
          -- if replace then
-         --     for n in traverse_id(glyph_code,replace) do
+         --     for n in nextglyph, replace do
          --         l[#l+1] = { c, f }
          --     end
          -- end
          -- if pre then
-         --     for n in traverse_id(glyph_code,pre) do
+         --     for n in nextglyph, pre do
          --         l[#l+1] = { c, f }
          --     end
          -- end
          -- if post then
-         --     for n in traverse_id(glyph_code,post) do
+         --     for n in nextglyph, post do
          --         l[#l+1] = { c, f }
          --     end
          -- end
@@ -220,12 +221,12 @@ function char_tracers.start()
     function handlers.characters(head)
         local n = #list
         char_tracers.collect(head,list,'before',n)
-        local h, d = npc(tonode(head)) -- for the moment tonode
+        head = npc(head) -- for the moment tonode
         char_tracers.collect(head,list,'after',n)
         if #list > n then
             list[#list+1] = { }
         end
-        return h, d
+        return head
     end
     function char_tracers.stop()
         tracers.list['characters'] = list
@@ -391,7 +392,7 @@ function step_tracers.codes(i,command,space)
         if w then
             context.startcolor(colors[what])
             context("%s:",what)
-            for c, id in traverse_nodes(w) do
+            for c, id in nextnode, w do
                 if id == glyph_code then
                     showchar(c)
                 else
@@ -451,13 +452,12 @@ end
 function step_tracers.check(head)
     if collecting then
         step_tracers.reset()
-        local h = tonut(head)
-        local n = copy_node_list(h)
+        local n = copy_node_list(head)
         freeze(n,"check")
-        injections.keepcounts(n) -- one-time
+        injections.keepcounts() -- one-time
         local l = injections.handler(n,"trace")
         if l then -- hm, can be false
-            n = tonut(l)
+            n = l
         end
         protect_glyphs(n)
         collection[1] = n
@@ -468,13 +468,12 @@ function step_tracers.register(head)
     if collecting then
         local nc = #collection+1
         if messages[nc] then
-            local h = tonut(head)
-            local n = copy_node_list(h)
+            local n = copy_node_list(head)
             freeze(n,"register")
-            injections.keepcounts(n) -- one-time
+            injections.keepcounts() -- one-time
             local l = injections.handler(n,"trace")
             if l then -- hm, can be false
-                n = tonut(l)
+                n = l
             end
             protect_glyphs(n)
             collection[nc] = n
@@ -499,10 +498,7 @@ local threshold = 65536 -- 1pt
 
 local function toutf(list,result,nofresult,stopcriterium,nostrip)
     if list then
---         for n in traverse_nodes(tonut(list)) do
---             local c, id = isglyph(n)
---             if c then
-        for n, id in traverse_nodes(tonut(list)) do
+        for n, id in nextnode, tonut(list) do
             if id == glyph_code then
                 local c = getchar(n)
                 local components = getcomponents(n)

@@ -22,8 +22,10 @@ local settings_to_hash   = utilities.parsers.settings_to_hash_colon_too
 local helpers            = fonts.helpers
 local prependcommands    = helpers.prependcommands
 local charcommand        = helpers.commands.char
+local leftcommand        = helpers.commands.left
 local rightcommand       = helpers.commands.right
 local upcommand          = helpers.commands.up
+local downcommand        = helpers.commands.down
 local dummycommand       = helpers.commands.dummy
 
 ----- constructors       = fonts.constructors
@@ -244,7 +246,8 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
 
     local character = characters[0x221A]
 
-    if character then
+    if character and character.next then
+-- print("base char",0x221A,table.sequenced(character))
         local char = character
         local next = character.next
         wdpatch(char)
@@ -253,6 +256,7 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
             char = characters[next]
             wdpatch(char)
             htpatch(char)
+-- print("next char",next,table.sequenced(char))
             next = char.next
         end
         if char then
@@ -260,7 +264,9 @@ local function setmathcharacters(tfmdata,characters,mathparameters,dx,dy,squeeze
             if v then
                 local top = v[#v]
                 if top then
-                    htpatch(characters[top.glyph])
+                    local char = characters[top.glyph]
+-- print("top char",top.glyph,table.sequenced(char))
+                    htpatch(char)
                 end
             end
         end
@@ -269,8 +275,9 @@ end
 
 -- local show_effect = { "lua", function(f,c)
 --     report_effect("font id %i, char %C",f,c)
+--     inspect(fonts.hashes.characters[f][c])
 -- end }
---
+
 -- local show_effect = { "lua", "print('!')" }
 
 local function manipulateeffect(tfmdata)
@@ -288,7 +295,7 @@ local function manipulateeffect(tfmdata)
         local ddelta         = effect.ddelta * vfactor * multiplier
         local vshift         = effect.vshift * vfactor * multiplier
         local squeeze        = effect.squeeze
-        local hshift         = wdelta -- / 2
+        local hshift         = wdelta / 2
         local dx             = multiplier * vfactor
         local dy             = vshift
         local factor         = (1 + effect.factor)  * factor
@@ -299,7 +306,6 @@ local function manipulateeffect(tfmdata)
             local oldwidth  = character.width
             local oldheight = character.height
             local olddepth  = character.depth
-
             if oldwidth and oldwidth > 0 then
                 character.width = oldwidth + wdelta
                 local commands = character.commands
@@ -335,10 +341,10 @@ local function manipulateeffect(tfmdata)
                 end
             end
             if oldheight and oldheight > 0 then
-                character.height = oldheight + hdelta
+               character.height = oldheight + hdelta
             end
             if olddepth and olddepth > 0 then
-                character.depth = olddepth + ddelta
+               character.depth = olddepth + ddelta
             end
         end
         if mathparameters then

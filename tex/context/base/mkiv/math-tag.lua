@@ -38,7 +38,8 @@ local getsub              = nuts.getsub
 local getsup              = nuts.getsup
 
 local set_attributes      = nuts.setattributes
-local traverse_nodes      = nuts.traverse
+
+local nextnode            = nuts.traversers.node
 
 local nodecodes           = nodes.nodecodes
 
@@ -248,101 +249,101 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             elseif id == math_box_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on math_box_code and see what ends up in there
                 local attr = getattr(start,a_tagged)
-if not attr then
-    -- just skip
-else
-                local specification = taglist[attr]
-                if specification then
-                    local tag = specification.tagname
-                    if tag == "formulacaption" then
-                        -- skip
-                    elseif tag == "mstacker" then
-                        local list = getlist(start)
-                        if list then
-                            process(list)
-                        end
-                    else
-                        if tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
-                            tag = "mtext"
-                        end
-                        local text = start_tagged(tag)
-                        setattr(start,a_tagged,text)
-                        local list = getlist(start)
-                        if not list then
-                            -- empty list
-                        elseif not attr then
-                            -- box comes from strange place
-                            set_attributes(list,a_tagged,text) -- only the first node ?
+                if not attr then
+                    -- just skip
+                else
+                    local specification = taglist[attr]
+                    if specification then
+                        local tag = specification.tagname
+                        if tag == "formulacaption" then
+                            -- skip
+                        elseif tag == "mstacker" then
+                            local list = getlist(start)
+                            if list then
+                                process(list)
+                            end
                         else
-                            -- Beware, the first node in list is the actual list so we definitely
-                            -- need to nest. This approach is a hack, maybe I'll make a proper
-                            -- nesting feature to deal with this at another level. Here we just
-                            -- fake structure by enforcing the inner one.
-                            --
-                            -- todo: have a local list with local tags that then get appended
-                            --
-                            local tagdata = specification.taglist
-                            local common = #tagdata + 1
-                            local function runner(list,depth) -- quite inefficient
-                                local cache = { } -- we can have nested unboxed mess so best local to runner
-                                local keep = nil
-                             -- local keep = { } -- win case we might need to move keep outside
-                                for n, id in traverse_nodes(list) do
-                                    local mth = id == math_code and getsubtype(n)
-                                    if mth == 0 then
-                                     -- insert(keep,text)
-                                        keep = text
-                                        text = start_tagged("mrow")
-                                        common = common + 1
-                                    end
-                                    local aa = getattr(n,a_tagged)
-                                    if aa then
-                                        local ac = cache[aa]
-                                        if not ac then
-                                            local tagdata = taglist[aa].taglist
-                                            local extra = #tagdata
-                                            if common <= extra then
-                                                for i=common,extra do
-                                                    ac = restart_tagged(tagdata[i]) -- can be made faster
-                                                end
-                                                for i=common,extra do
-                                                    stop_tagged() -- can be made faster
-                                                end
-                                            else
-                                                ac = text
-                                            end
-                                            cache[aa] = ac
+                            if tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
+                                tag = "mtext"
+                            end
+                            local text = start_tagged(tag)
+                            setattr(start,a_tagged,text)
+                            local list = getlist(start)
+                            if not list then
+                                -- empty list
+                            elseif not attr then
+                                -- box comes from strange place
+                                set_attributes(list,a_tagged,text) -- only the first node ?
+                            else
+                                -- Beware, the first node in list is the actual list so we definitely
+                                -- need to nest. This approach is a hack, maybe I'll make a proper
+                                -- nesting feature to deal with this at another level. Here we just
+                                -- fake structure by enforcing the inner one.
+                                --
+                                -- todo: have a local list with local tags that then get appended
+                                --
+                                local tagdata = specification.taglist
+                                local common = #tagdata + 1
+                                local function runner(list,depth) -- quite inefficient
+                                    local cache = { } -- we can have nested unboxed mess so best local to runner
+                                    local keep = nil
+                                 -- local keep = { } -- win case we might need to move keep outside
+                                    for n, id, subtype in nextnode, list do
+                                        local mth = id == math_code and subtype
+                                        if mth == 0 then -- hm left_code
+                                         -- insert(keep,text)
+                                            keep = text
+                                            text = start_tagged("mrow")
+                                            common = common + 1
                                         end
-                                        setattr(n,a_tagged,ac)
-                                    else
-                                        setattr(n,a_tagged,text)
-                                    end
+                                        local aa = getattr(n,a_tagged)
+                                        if aa then
+                                            local ac = cache[aa]
+                                            if not ac then
+                                                local tagdata = taglist[aa].taglist
+                                                local extra = #tagdata
+                                                if common <= extra then
+                                                    for i=common,extra do
+                                                        ac = restart_tagged(tagdata[i]) -- can be made faster
+                                                    end
+                                                    for i=common,extra do
+                                                        stop_tagged() -- can be made faster
+                                                    end
+                                                else
+                                                    ac = text
+                                                end
+                                                cache[aa] = ac
+                                            end
+                                            setattr(n,a_tagged,ac)
+                                        else
+                                            setattr(n,a_tagged,text)
+                                        end
 
-                                    if id == hlist_code or id == vlist_code then
-                                        runner(getlist(n),depth+1)
-                                    elseif id == glyph_code then
-                                        -- this should not be needed (todo: use tounicode info)
-                                        runner(getcomponents(n),depth+1)
-                                    elseif id == disc_code then
-                                        local pre, post, replace = getdisc(n)
-                                        runner(pre,depth+1)     -- idem
-                                        runner(post,depth+1)    -- idem
-                                        runner(replace,depth+1) -- idem
-                                    end
-                                    if mth == 1 then
-                                        stop_tagged()
-                                     -- text = remove(keep)
-                                        text = keep
-                                        common = common - 1
+                                        if id == hlist_code or id == vlist_code then
+                                            runner(getlist(n),depth+1)
+                                        elseif id == glyph_code then
+                                            -- this should not be needed (todo: use tounicode info)
+                                            runner(getcomponents(n),depth+1)
+                                        elseif id == disc_code then
+                                            local pre, post, replace = getdisc(n)
+                                            runner(pre,depth+1)     -- idem
+                                            runner(post,depth+1)    -- idem
+                                            runner(replace,depth+1) -- idem
+                                        end
+                                        if mth == 1 then
+                                            stop_tagged()
+                                         -- text = remove(keep)
+                                            text = keep
+                                            common = common - 1
+                                        end
                                     end
                                 end
+                                runner(list,0)
                             end
-                            runner(list,0)
+                            stop_tagged()
                         end
-                        stop_tagged()
                     end
                 end
-end
             elseif id == math_sub_code then -- normally a hbox
                 local list = getlist(start)
                 if list then
@@ -551,12 +552,10 @@ end
 end
 
 function noads.handlers.tags(head,style,penalties)
-    head = tonut(head)
     local v_mode = getattr(head,a_mathmode)
     local v_math = start_tagged("math", { mode = v_mode == 1 and "display" or "inline" })
     setattr(head,a_tagged,start_tagged("mrow"))
     process(head)
     stop_tagged()
     stop_tagged()
-    return true
 end

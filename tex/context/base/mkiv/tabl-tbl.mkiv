@@ -622,18 +622,18 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_preskip#1%
-  {\doifelsenumber{#1}
-     {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }
+  {\doifelsenumber{#1}%
+     {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_posskip#1%
-  {\doifelsenumber{#1}
-     {\s_tabl_tabulate_post#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }
+  {\doifelsenumber{#1}%
+     {\s_tabl_tabulate_post#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_post.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_preposskip#1%
-  {\doifelsenumber{#1}
-     {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }
+  {\doifelsenumber{#1}%
+     {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_setups#1%
@@ -1293,7 +1293,7 @@
    \fi\fi}
 
 \def\tabl_tabulate_outside_after_indeed
-  {\tabulationparameter\c!after}%
+  {\tabulationparameter\c!after}
 
 \def\tabl_tabulate_outside_inbetween_indeed
   {\doifempty{\tabulationparameter\c!after}

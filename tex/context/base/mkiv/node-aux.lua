@@ -51,8 +51,10 @@ local setprev            = nuts.setprev
 local setcomponents      = nuts.setcomponents
 local setattrlist        = nuts.setattrlist
 
-local traverse_nodes     = nuts.traverse
-local traverse_id        = nuts.traverse_id
+----- traverse_nodes     = nuts.traverse
+----- traverse_id        = nuts.traverse_id
+local nextnode           = nuts.traversers.node
+local nextglyph          = nuts.traversers.glyph
 local flush_node         = nuts.flush
 local flush_list         = nuts.flush_list
 local hpack_nodes        = nuts.hpack
@@ -154,7 +156,7 @@ function nodes.repackhlist(list,...)
 end
 
 local function set_attributes(head,attr,value)
-    for n, id in traverse_nodes(head) do
+    for n, id in nextnode, head do
         setattr(n,attr,value)
         if id == hlist_node or id == vlist_node then
             set_attributes(getlist(n),attr,value)
@@ -163,7 +165,7 @@ local function set_attributes(head,attr,value)
 end
 
 local function set_unset_attributes(head,attr,value)
-    for n, id in traverse_nodes(head) do
+    for n, id in nextnode, head do
         if not getattr(n,attr) then
             setattr(n,attr,value)
         end
@@ -174,7 +176,7 @@ local function set_unset_attributes(head,attr,value)
 end
 
 local function unset_attributes(head,attr)
-    for n, id in traverse_nodes(head) do
+    for n, id in nextnode, head do
         setattr(n,attr,unsetvalue)
         if id == hlist_code or id == vlist_code then
             unset_attributes(getlist(n),attr)
@@ -285,7 +287,7 @@ function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
     if untagged then
         return first_glyph(n)
     else
-        for g in traverse_id(glyph_code,n) do
+        for g in nextglyph ,n do
             return g
         end
     end
@@ -294,7 +296,7 @@ end
 local function firstcharinbox(n)
     local l = getlist(getbox(n))
     if l then
-        for g in traverse_id(glyph_code,l) do
+        for g in nextglyph, l do
             return getchar(g)
         end
     end
@@ -428,9 +430,9 @@ nodes.link = function(list,currentfont,currentattr,head,tail)
 end
 
 local function locate(start,wantedid,wantedsubtype)
-    for n, id in traverse_nodes(start) do
+    for n, id, subtype in nextnode, start do
         if id == wantedid then
-            if not wantedsubtype or getsubtype(n) == wantedsubtype then
+            if not wantedsubtype or subtype == wantedsubtype then
                 return n
             end
         elseif id == hlist_code or id == vlist_code then
@@ -553,7 +555,7 @@ function nuts.count_components(n,marks)
     if components then
         if marks then
             local i = 0
-            for g in traverse_id(glyph_code,components) do
+            for g in nextglyph, components do
                 if not marks[getchar(g)] then
                     i = i + 1
                 end
@@ -592,7 +594,7 @@ end
 function nuts.copy_only_glyphs(current)
     local head     = nil
     local previous = nil
-    for n in traverse_id(glyph_code,current) do
+    for n in nextglyph, current do
         n = copy_node(n)
         if head then
             setlink(previous,n)

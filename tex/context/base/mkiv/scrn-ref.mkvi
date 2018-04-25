@@ -83,15 +83,15 @@
 
 %D delayed ...
 
-\def\scrn_reference_enable_references
-  {\ifproductionrun
-     \clf_enableinteraction % only once anyway
-     \glet\scrn_reference_enable_references\relax
-   \fi}
-
-\appendtoks
-    \scrn_reference_enable_references
-\to \everysetupinteraction
+% \def\scrn_reference_enable_references
+%   {\ifproductionrun
+%      \clf_enableinteraction % only once anyway
+%      \glet\scrn_reference_enable_references\relax
+%    \fi}
+%
+% \appendtoks
+%     \scrn_reference_enable_references
+% \to \everysetupinteraction
 
 \setupinteraction % start fit page and reset form
   [\c!openaction=,

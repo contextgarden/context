@@ -18,226 +18,130 @@ if not modules then modules = { } end modules ['task-ini'] = {
 -- not apply the font handler, we can remove all checks for subtypes 255
 
 local tasks           = nodes.tasks
-local prependaction   = tasks.prependaction
 local appendaction    = tasks.appendaction
 local disableaction   = tasks.disableaction
 local enableaction    = tasks.enableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
-appendaction("processors",   "normalizers", "languages.replacements.handler")                    -- disabled
+appendaction("processors",   "before",      "nodes.properties.attach",                          nil, "nut",    "enabled"   )
 
-appendaction("processors",   "normalizers", "typesetters.wrappers.handler")                      -- disabled
-appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
-appendaction("processors",   "normalizers", "fonts.collections.process")                         -- disabled
-appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
+appendaction("processors",   "normalizers", "typesetters.periodkerns.handler",                  nil, "nut",    "disabled"  )
+appendaction("processors",   "normalizers", "languages.replacements.handler",                   nil, "nut",    "disabled"  )
+appendaction("processors",   "normalizers", "typesetters.wrappers.handler",                     nil, "nut",    "disabled"  )
+appendaction("processors",   "normalizers", "typesetters.characters.handler",                   nil, "nut",    "enabled"   )
+appendaction("processors",   "normalizers", "fonts.collections.process",                        nil, "nut",    "disabled"  )
+appendaction("processors",   "normalizers", "fonts.checkers.missing",                           nil, "nut",    "disabled"  )
 
-appendaction("processors",   "characters",  "scripts.autofontfeature.handler")
-appendaction("processors",   "characters",  "scripts.splitters.handler")                         -- disabled
-appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
-appendaction("processors",   "characters",  "typesetters.directions.handler")                    -- disabled
-appendaction("processors",   "characters",  "typesetters.cases.handler")                         -- disabled
-appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
-appendaction("processors",   "characters",  "scripts.injectors.handler")                         -- disabled
+appendaction("processors",   "characters",  "scripts.autofontfeature.handler",                  nil, "nut",    "disabled"  )
+appendaction("processors",   "characters",  "scripts.splitters.handler",                        nil, "nut",    "disabled"  )
+appendaction("processors",   "characters",  "typesetters.cleaners.handler",                     nil, "nut",    "disabled"  )
+appendaction("processors",   "characters",  "typesetters.directions.handler",                   nil, "nut",    "disabled"  )
+appendaction("processors",   "characters",  "typesetters.cases.handler",                        nil, "nut",    "disabled"  )
+appendaction("processors",   "characters",  "typesetters.breakpoints.handler",                  nil, "nut",    "disabled"  )
+appendaction("processors",   "characters",  "scripts.injectors.handler",                        nil, "nut",    "disabled"  )
 
-------------("processors",   "words",       "languages.replacements.handler")                    -- disabled
-appendaction("processors",   "words",       "languages.words.check")                             -- disabled  -- might move up, no disc check needed then
-appendaction("processors",   "words",       "languages.hyphenators.handler")                     -- always on
-appendaction("processors",   "words",       "typesetters.initials.handler")                      -- disabled  -- might move up
-appendaction("processors",   "words",       "typesetters.firstlines.handler")                    -- disabled
+appendaction("processors",   "words",       "languages.words.check",                            nil, "nut",    "disabled"  )
+appendaction("processors",   "words",       "languages.hyphenators.handler",                    nil, "nut",    "enabled"   )
+appendaction("processors",   "words",       "typesetters.initials.handler",                     nil, "nut",    "disabled"  )
+appendaction("processors",   "words",       "typesetters.firstlines.handler",                   nil, "nut",    "disabled"  )
 
-appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
-appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
-appendaction("processors",   "fonts",       "nodes.injections.handler")
-appendaction("processors",   "fonts",       "typesetters.fontkerns.handler")
-appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
-appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- not always on (could be selective: if only node mode)
-appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- not always on (could be selective: if only node mode)
-appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
-------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
-appendaction("processors",   "fonts",       "nodes.handlers.flatten")
+appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split",    nil, "nut",    "disabled"  )
+appendaction("processors",   "fonts",       "nodes.handlers.characters",                        nil, "nut",    "enabled"   )
+appendaction("processors",   "fonts",       "nodes.injections.handler",                         nil, "nut",    "enabled"   )
+appendaction("processors",   "fonts",       "typesetters.fontkerns.handler",                    nil, "nut",    "disabled"  )
+appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs",                     nil, "nonut",  "enabled"   )
+appendaction("processors",   "fonts",       "builders.kernel.ligaturing",                       nil, "nut",    "disabled"  )
+appendaction("processors",   "fonts",       "builders.kernel.kerning",                          nil, "nut",    "disabled"  )
+appendaction("processors",   "fonts",       "nodes.handlers.stripping",                         nil, "nut",    "disabled"  )
+appendaction("processors",   "fonts",       "nodes.handlers.flatten",                           nil, "nut",    "disabled"  )
+appendaction("processors",   "fonts",       "fonts.goodies.colorschemes.coloring",              nil, "nut",    "disabled"  )
 
-appendaction("processors",   "lists",       "typesetters.rubies.check")                          -- disabled (maybe someplace else)
-appendaction("processors",   "lists",       "typesetters.characteralign.handler")                -- disabled (we need to to this after otf appliance)
-appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
-appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
-appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
-appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
-appendaction("processors",   "lists",       "languages.visualizediscretionaries")                -- disabled
+appendaction("processors",   "lists",       "typesetters.rubies.check",                         nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.characteralign.handler",               nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.spacings.handler",                     nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.kerns.handler",                        nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.digits.handler",                       nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.italics.handler",                      nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "languages.visualizediscretionaries",               nil, "nut",    "disabled"  )
 
-appendaction("processors",   "after",       "typesetters.marksuspects")
+appendaction("processors",   "after",       "typesetters.marksuspects",                         nil, "nut",    "disabled"  )
 
-appendaction("shipouts",     "normalizers", "typesetters.showsuspects")
-appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
-------------("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
-appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
-appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")                    -- disabled
-appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
-appendaction("shipouts",     "normalizers", "nodes.destinations.handler")                        -- disabled
-appendaction("shipouts",     "normalizers", "nodes.rules.handler")                               -- disabled
-appendaction("shipouts",     "normalizers", "nodes.shifts.handler")                              -- disabled
-appendaction("shipouts",     "normalizers", "structures.tags.handler")                           -- disabled
-appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
-appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
-------------("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
-appendaction("shipouts",     "normalizers", "typesetters.rubies.attach")                         -- disabled
+appendaction("shipouts",     "normalizers", "typesetters.showsuspects",                         nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler",                 nil, "nut",    "disabled"  )
+------------("shipouts",     "normalizers", "nodes.handlers.cleanuppage",                       nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace",              nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "typesetters.alignments.handler",                   nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "nodes.references.handler",                         nil, "nut",    "production")
+appendaction("shipouts",     "normalizers", "nodes.destinations.handler",                       nil, "nut",    "production")
+appendaction("shipouts",     "normalizers", "nodes.rules.handler",                              nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "nodes.shifts.handler",                             nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "structures.tags.handler",                          nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility",                     nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "typesetters.rubies.attach",                        nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "nodes.properties.delayed",                         nil, "nut",    "production")
+appendaction("shipouts",     "normalizers", "backends.pdf.nodeinjections.finalizepage",         nil, "nut",    "production")
 
-appendaction("shipouts",     "finishers",   "nodes.visualizers.handler")                         -- disabled
-appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
-appendaction("shipouts",     "finishers",   "attributes.transparencies.handler")                 -- disabled
-appendaction("shipouts",     "finishers",   "attributes.colorintents.handler")                   -- disabled
-appendaction("shipouts",     "finishers",   "attributes.negatives.handler")                      -- disabled
-appendaction("shipouts",     "finishers",   "attributes.effects.handler")                        -- disabled
-appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")                   -- disabled
+appendaction("shipouts",     "finishers",   "nodes.visualizers.handler",                        nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "attributes.colors.handler",                        nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "attributes.transparencies.handler",                nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "attributes.colorintents.handler",                  nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "attributes.negatives.handler",                     nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "attributes.effects.handler",                       nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler",                  nil, "nut",    "disabled"  )
 
---maybe integrate relocate and families
+appendaction("shipouts",     "wrapup",      "nodes.handlers.export",                            nil, "nut",    "disabled"  )  -- always last
+appendaction("shipouts",     "wrapup",      "luatex.synctex.collect",                           nil, "nut",    "disabled"  )
 
-appendaction("math",         "normalizers", "noads.handlers.showtree",  nil, "nohead")
 
-appendaction("math",         "normalizers", "noads.handlers.unscript",  nil, "nohead")           -- always on (maybe disabled)
-appendaction("math",         "normalizers", "noads.handlers.variants",  nil, "nohead")           -- always on
-appendaction("math",         "normalizers", "noads.handlers.relocate",  nil, "nohead")           -- always on
-appendaction("math",         "normalizers", "noads.handlers.families",  nil, "nohead")           -- always on
+appendaction("math",         "normalizers", "noads.handlers.showtree",                          nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.unscript",                          nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.variants",                          nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.relocate",                          nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.families",                          nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.render",                            nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.collapse",                          nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.fixscripts",                        nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.domains",                           nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.autofences",                        nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.resize",                            nil, "nonut",  "enabled"   )
+------------("math",         "normalizers", "noads.handlers.respace",                           nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.alternates",                        nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.tags",                              nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.italics",                           nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.kernpairs",                         nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.classes",                           nil, "nonut",  "disabled"  )
 
-appendaction("math",         "normalizers", "noads.handlers.render",    nil, "nohead")           -- always on
-appendaction("math",         "normalizers", "noads.handlers.collapse",  nil, "nohead")           -- disabled
-appendaction("math",         "normalizers", "noads.handlers.fixscripts",nil, "nohead") -- * first-- always on
-appendaction("math",         "normalizers", "noads.handlers.domains",   nil, "nohead") -- * last -- disabled
-appendaction("math",         "normalizers", "noads.handlers.autofences",nil, "nohead")           -- disabled
-appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "nohead")           -- always on
-------------("math",         "normalizers", "noads.handlers.respace",   nil, "nohead")           -- always on
-appendaction("math",         "normalizers", "noads.handlers.alternates",nil, "nohead")           -- always on
-appendaction("math",         "normalizers", "noads.handlers.tags",      nil, "nohead")           -- disabled
-appendaction("math",         "normalizers", "noads.handlers.italics",   nil, "nohead")           -- disabled
-appendaction("math",         "normalizers", "noads.handlers.kernpairs", nil, "nohead")           -- disabled
-appendaction("math",         "normalizers", "noads.handlers.classes",   nil, "nohead")           -- disabled
+appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist",                   nil, "node",   "enabled"   )  -- mandate
+appendaction("math",         "builders",    "typesetters.directions.processmath",               nil, "nut",    "disabled"  )
+appendaction("math",         "builders",    "noads.handlers.makeup",                            nil, "nonut",  "disabled"  )
+appendaction("math",         "builders",    "noads.handlers.align",                             nil, "nonut",  "enabled"   )
 
-appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
-------------("math",         "builders",    "noads.handlers.italics",   nil, "nohead")           -- disabled
-appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
-appendaction("math",         "builders",    "noads.handlers.makeup",    nil, "nohead")           -- disabled (has to happen last)
-appendaction("math",         "builders",    "noads.handlers.align",     nil, "nohead")
+appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize",                 nil, "nut",    "disabled"  )
+appendaction("finalizers",   "lists",       "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )
+appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether",                 nil, "nut",    "disabled"  )
+appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize", nil, "nut",    "disabled"  )
+appendaction("finalizers",   "lists",       "builders.paragraphs.tag",                          nil, "nut",    "disabled"  )
+appendaction("finalizers",   "lists",       "nodes.linefillers.handler",                        nil, "nut",    "disabled"  )
 
-appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize")                  -- moved here
-appendaction("finalizers",   "lists",       "typesetters.margins.localhandler")                  -- disabled
-appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
-------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
-appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
-appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
+appendaction("contributers", "normalizers", "nodes.handlers.flattenline",                       nil, "nut",    "disabled"  )
+appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds",                   nil, "nut",    "disabled"  )
 
--- the next can also be in contributers normalizers (when we remove the loop in the handler)
+appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox",                   nil, "nut",    "disabled"  )
+--------("vboxbuilders", "normalizers", "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )
+appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler",                    nil, "nut",    "enabled"   )
+appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler",                   nil, "nut",    "disabled"  )
+appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )
 
-appendaction("finalizers",   "lists",       "nodes.linefillers.handler")
+appendaction("mvlbuilders",  "normalizers", "nodes.handlers.backgroundspage",                   nil, "nut",    "disabled"  )
+appendaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler",                nil, "nut",    "disabled"  )
+appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate",                           nil, "nut",    "disabled"  )
+appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler",                    nil, "nut",    "enabled"   )
+appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler",                   nil, "nut",    "disabled"  )
+appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )
 
-appendaction("contributers", "normalizers", "nodes.handlers.flattenline")
-appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds")
-
-appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox")
-appendaction("mvlbuilders",  "normalizers", "nodes.handlers.backgroundspage")
-
-appendaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler")                 -- disabled
-appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")
-
-appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
-appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler")                    -- here !
-
-------------("vboxbuilders", "normalizers", "typesetters.margins.localhandler")
-appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")
-appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler")                    -- here !
-
--- experimental too
-
-appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler")
-appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler")
-
--- rather special (this might get hardcoded):
-
-prependaction("processors",  "before",      "nodes.properties.attach")  -- enabled but optimized for quick abort
-appendaction ("shipouts",    "normalizers", "nodes.properties.delayed") -- enabled but optimized for quick abort
-
--- speedup: only kick in when used
-
-disableaction("processors",  "typesetters.wrappers.handler")
-disableaction("processors",  "languages.replacements.handler")
-disableaction("processors",  "typesetters.characteralign.handler")
-disableaction("processors",  "scripts.autofontfeature.handler")
-disableaction("processors",  "scripts.splitters.handler")
-disableaction("processors",  "scripts.injectors.handler") -- was enabled
-disableaction("processors",  "fonts.collections.process")
-disableaction("processors",  "fonts.checkers.missing")
-disableaction("processors",  "chars.handle_breakpoints")
-disableaction("processors",  "typesetters.cleaners.handler")
-disableaction("processors",  "typesetters.cases.handler")
-disableaction("processors",  "typesetters.digits.handler")
-disableaction("processors",  "typesetters.breakpoints.handler")
-disableaction("processors",  "typesetters.directions.handler")
-disableaction("processors",  "languages.words.check")
-disableaction("processors",  "typesetters.initials.handler")
-disableaction("processors",  "typesetters.firstlines.handler")
-disableaction("processors",  "typesetters.spacings.handler")
-disableaction("processors",  "typesetters.kerns.handler")
-disableaction("processors",  "typesetters.italics.handler")
-disableaction("processors",  "languages.visualizediscretionaries")
-disableaction("processors",  "nodes.handlers.stripping")
-disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
-disableaction("processors",  "typesetters.rubies.check")
-disableaction("processors",  "typesetters.fontkerns.handler")
-disableaction("processors",  "nodes.handlers.flatten")
-disableaction("processors",  "typesetters.marksuspects")
-
-disableaction("shipouts",    "typesetters.showsuspects")
-disableaction("shipouts",    "typesetters.margins.finalhandler")
-disableaction("shipouts",    "builders.paragraphs.expansion.trace")
-disableaction("shipouts",    "typesetters.alignments.handler")
-disableaction("shipouts",    "nodes.rules.handler")
-disableaction("shipouts",    "nodes.shifts.handler")
-disableaction("shipouts",    "attributes.colors.handler")
-disableaction("shipouts",    "attributes.transparencies.handler")
-disableaction("shipouts",    "attributes.colorintents.handler")
-disableaction("shipouts",    "attributes.effects.handler")
-disableaction("shipouts",    "attributes.negatives.handler")
-disableaction("shipouts",    "attributes.viewerlayers.handler")
-disableaction("shipouts",    "structures.tags.handler")
-disableaction("shipouts",    "nodes.visualizers.handler")
-disableaction("shipouts",    "nodes.handlers.accessibility")
-disableaction("shipouts",    "nodes.references.handler")
-disableaction("shipouts",    "nodes.destinations.handler")
-disableaction("shipouts",    "nodes.handlers.backgrounds")
--------------("shipouts",    "nodes.handlers.export")
-disableaction("shipouts",    "typesetters.rubies.attach")
-
-disableaction("finalizers",  "typesetters.margins.localhandler")
-disableaction("finalizers",  "builders.paragraphs.keeptogether")
-disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
--------------("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
-disableaction("finalizers",  "builders.paragraphs.tag")
-disableaction("finalizers",  "nodes.linefillers.handler")
-
-disableaction("contributers","nodes.handlers.flattenline")
-disableaction("contributers","nodes.handlers.textbackgrounds")
-
-disableaction("vboxbuilders","nodes.handlers.backgroundsvbox")
-disableaction("mvlbuilders", "nodes.handlers.backgroundspage")
-
-disableaction("math",        "noads.handlers.showtree")
-disableaction("math",        "noads.handlers.tags")
-disableaction("math",        "noads.handlers.italics")
-disableaction("math",        "noads.handlers.collapse")
-disableaction("math",        "noads.handlers.kernpairs")
-disableaction("math",        "noads.handlers.domains")
-disableaction("math",        "noads.handlers.classes")
-disableaction("math",        "noads.handlers.autofences")
-disableaction("math",        "noads.handlers.makeup")
-disableaction("math",        "typesetters.directions.processmath")
-
-disableaction("mvlbuilders", "typesetters.margins.globalhandler")
-disableaction("mvlbuilders", "nodes.handlers.migrate")
-disableaction("mvlbuilders", "typesetters.checkers.handler")
-disableaction("mvlbuilders", "builders.profiling.pagehandler")
-
--------------("vboxbuilders","typesetters.margins.localhandler")
-disableaction("vboxbuilders","typesetters.checkers.handler")
-disableaction("vboxbuilders","builders.profiling.vboxhandler")
+-- some protection
 
 freezecallbacks("find_.*_file", "find file using resolver")
 freezecallbacks("read_.*_file", "read file at once")
@@ -255,8 +159,12 @@ freezegroup("finalizers",   "normalizers")
 freezegroup("finalizers",   "fonts")
 freezegroup("finalizers",   "lists")
 
+freezegroup("math",         "normalizers")
+freezegroup("math",         "builders")
+
 freezegroup("shipouts",     "normalizers")
 freezegroup("shipouts",     "finishers")
+freezegroup("shipouts",     "wrapup")
 
 freezegroup("mvlbuilders",  "normalizers")
 freezegroup("vboxbuilders", "normalizers")
@@ -269,13 +177,10 @@ freezegroup("math",         "builders")
 
 -- new: disabled here
 
-disableaction("processors", "builders.kernel.ligaturing")
-disableaction("processors", "builders.kernel.kerning")
-
 directives.register("nodes.basepass", function(v)
     if v then
-         enableaction("processors", "builders.kernel.ligaturing")
-         enableaction("processors", "builders.kernel.kerning")
+         enableaction("processors",  "builders.kernel.ligaturing")
+         enableaction("processors",  "builders.kernel.kerning")
     else
          disableaction("processors", "builders.kernel.ligaturing")
          disableaction("processors", "builders.kernel.kerning")

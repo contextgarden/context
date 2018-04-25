@@ -768,12 +768,15 @@ function constructors.scale(tfmdata,specification)
                     local t = { }
                     for i=1,#vv do
                         local vvi = vv[i]
-                        t[i] = {
-                            ["start"]    = (vvi["start"]   or 0)*vdelta,
-                            ["end"]      = (vvi["end"]     or 0)*vdelta,
-                            ["advance"]  = (vvi["advance"] or 0)*vdelta,
-                            ["extender"] =  vvi["extender"],
-                            ["glyph"]    =  vvi["glyph"],
+                        local s = vvi["start"]   or 0
+                        local e = vvi["end"]     or 0
+                        local a = vvi["advance"] or 0
+                        t[i] = { -- zero check nicer for 5.3
+                            ["start"]    = s == 0 and 0 or s * vdelta,
+                            ["end"]      = e == 0 and 0 or e * vdelta,
+                            ["advance"]  = a == 0 and 0 or a * vdelta,
+                            ["extender"] = vvi["extender"],
+                            ["glyph"]    = vvi["glyph"],
                         }
                     end
                     chr.vert_variants = t
@@ -783,12 +786,15 @@ function constructors.scale(tfmdata,specification)
                         local t = { }
                         for i=1,#hv do
                             local hvi = hv[i]
-                            t[i] = {
-                                ["start"]    = (hvi["start"]   or 0)*hdelta,
-                                ["end"]      = (hvi["end"]     or 0)*hdelta,
-                                ["advance"]  = (hvi["advance"] or 0)*hdelta,
-                                ["extender"] =  hvi["extender"],
-                                ["glyph"]    =  hvi["glyph"],
+                            local s = hvi["start"]   or 0
+                            local e = hvi["end"]     or 0
+                            local a = hvi["advance"] or 0
+                            t[i] = { -- zero check nicer for 5.3
+                                ["start"]    = s == 0 and 0 or s * hdelta,
+                                ["end"]      = e == 0 and 0 or e * hdelta,
+                                ["advance"]  = a == 0 and 0 or a * hdelta,
+                                ["extender"] = hvi["extender"],
+                                ["glyph"]    = hvi["glyph"],
                             }
                         end
                         chr.horiz_variants = t
@@ -902,7 +908,7 @@ function constructors.scale(tfmdata,specification)
                 else
                     chr.commands = vc
                 end
-                chr.index = nil
+             -- chr.index = nil
             end
         end
         targetcharacters[unicode] = chr
@@ -912,7 +918,7 @@ function constructors.scale(tfmdata,specification)
     --
     constructors.aftercopyingcharacters(target,tfmdata)
     --
-   constructors.trytosharefont(target,tfmdata)
+    constructors.trytosharefont(target,tfmdata)
     --
     -- catch inconsistencies
     --

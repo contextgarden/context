@@ -63,22 +63,27 @@
 
 \newbox        \shipoutscratchbox
 
-\setnewconstant\shipoutfinalizemethod\plusone % this will be default (we will have two finalizers)
+\setnewconstant\shipoutfinalizemethod\plusone
 
-\unexpanded\def\installshipoutmethod#1#2%                   % a handler takes one argument: something to be boxed
+\unexpanded\def\shipoutrange#1#2%
+  {\begingroup
+   \scratchtoks\emptytoks
+   \dostepwiserecurse{#1}{\numexpr#2-\plusone\relax}\plusone{\etoksapp\scratchtoks{##1,}}%
+   \xdef\pagestoshipout{\the\scratchtoks,\number#2}%
+   \doglobal\appendtoks
+     \ifnum\realpageno>\numexpr#2+\plusone\relax
+       \global\everypar{\normalend}%
+     \fi
+   \to\everyaftershipout
+   \endgroup}
+
+\unexpanded\def\installshipoutmethod#1#2%      % a handler takes one argument: something to be boxed
   {\setgvalue{\??shipoutmethod#1}##1{#2{##1}}} % and shipped out (don't depend on the exact package)
 
 \let\installpagehandler\installshipoutmethod % will go
 
 \unexpanded\def\invokepagehandler#1%
   {\expandnamespacevalue\??shipoutmethod{#1}\v!normal}
-
-% \def\page_shipouts_handle
-%   {\csname\??shipoutmethod\ifcsname\??shipoutmethod\v_page_target_method\endcsname
-%      \v_page_target_method
-%    \else
-%      \v!none
-%    \fi\endcsname}
 
 \def\page_shipouts_handle
   {\ifcsname\??shipoutmethod\v_page_target_method\endcsname
@@ -112,12 +117,14 @@
      \page_boxes_flush_before
    \fi
    \the\everybeforeshipout
-   \ifcase\shipoutfinalizemethod
+   \ifcase\shipoutfinalizemethod % not nice ... needs thinking
      \page_shipouts_handle{#1}%
    \else
-     \setbox\shipoutscratchbox\hpack{#1}% just in case there are objects there, hook for testing (will go away)
-     \finalizeshipoutbox\shipoutscratchbox
-     \page_shipouts_handle{\box\shipoutscratchbox}%
+     \setbox\shipoutscratchbox\hpack
+       {#1}% just in case there are objects there, hook for testing (will go away)
+     \page_shipouts_handle
+       {\finalizeshipoutbox\shipoutscratchbox
+        \box\shipoutscratchbox}%
    \fi
    \setnextrealpageno       % so this comes before \everyaftershipout so in fact:
    \the\everyaftershipout   % at this point we're already on the next realpage
@@ -127,11 +134,12 @@
 
 \def\page_shipouts_ignore#1%
   {\begingroup
-   \message
-     {[\ifarrangingpages arranged \fi page
+   \writestatus\m!system
+     {\ifarrangingpages arranged \fi page
        \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
-       not flushed]}%
-   \setbox\scratchbox\hpack{#1}%
+       not flushed}%
+ % \setbox\scratchbox\hpack
+ %   {#1}% no finalize
    \deadcycles\zerocount
    \endgroup}
 
@@ -173,7 +181,8 @@
      \normalexpanded{\doifelseinset{\the\shippedoutpages}{\pagestoshipout}}\donetrue\donefalse
    \fi
    \ifdone
-     \setbox\shipoutscratchbox\hpack{#1}%
+     \setbox\shipoutscratchbox\hpack
+       {#1}% finalizes
      \ifcase\shipoutfinalizemethod
        \finalizeshipoutbox\shipoutscratchbox
      \fi
@@ -190,13 +199,14 @@
    \fi}
 
 \def\page_shipouts_arrange#1%
-  {% \global\advance\shippedoutpages\plusone
-   \begingroup
-   \setbox\scratchbox\hpack
+  {\begingroup
+   \setbox\shipoutscratchbox\hpack
+     {#1}% finalizes
+   \setbox\shipoutscratchbox\hpack
      {\page_otr_flush_every_stuff
       \page_otr_flush_special_content
       \box\shipoutscratchbox}%
-   \pusharrangedpage\scratchbox
+   \pusharrangedpage\shipoutscratchbox
    \deadcycles\zerocount
    \endgroup}
 

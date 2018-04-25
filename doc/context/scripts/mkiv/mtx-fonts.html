@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!-- compare with lmx framework variant -->
+
+<!--
+    filename : context-base.xml
+    comment  : companion to mtx-server-ctx-startup.tex
+    author   : Hans Hagen, PRAGMA-ADE, Hasselt NL
+    copyright: PRAGMA ADE / ConTeXt Development Team
+    license  : see context related readme files
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <title>ConTeXt Font Database Management 0.21</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                <style type="text/css">
+            body { color: #FFFFFF; background-color: #808080; font-family: optima, verdana, futura, "lucida sans", arial, geneva, helvetica, sans; font-size: 12px; line-height: 18px; } a:link, a:active, a:visited { color: #FFFFFF; } a.dir-view:link, a.dir-view:active, a.dir-view:visited { color: #FFFFFF; text-decoration: underline; } .valid { color: #00FF00; } .invalid { color: #FF0000; } .invisible { visibility: hidden; } button, .commonlink, .smallbutton { font-weight: bold; font-size: 12px; text-decoration: none; color: #000000; border-color: #7F7F7F; border-style: solid; border-width: .125ex; background-color: #FFFFFF; padding: .5ex; } .smallbutton { width: 1em; } a.commonlink:link, a.commonlink:active, a.commonlink:visited, a.smalllink:link, a.smalllink:active, a.smalllink:visited { font-weight: bold; font-size: 12px; text-decoration: none; color: #000000; } h1, .title { font-style: normal; font-weight: normal; font-size: 18px; line-height: 18px; margin-bottom: 20px; } h2, .subtitle { font-style: normal; font-weight: normal; font-size: 12px; margin-top: 18px; margin-bottom: 18px; } table { line-height: 18px; font-size: 12px; margin: 0; } th { font-weight: bold; text-align: left; padding-bottom: 6px; } .tc { font-weight: bold; text-align: left; } p, li { max-width: 60em; } .empty-line { margin-top: 4px; } .more-room { margin-right: 1.5em; } .much-more-room { margin-right: 3em; } #main { position: absolute; left: 10%; top: 10%; right: 10%; bottom: 10%; z-index: 2; width: 80%; height: 80%; padding: 0%; margin: 0%; overflow: auto; border-style: none; border-width: 0; background-color: #3F3F3F; } #main-settings { margin: 12px; x_max-width: 60em; line-height: 18px; font-size: 12px; } #left { position: absolute; top : 10%; left: 0%; bottom: 0%; right: 90%; z-index: 1; width: 10%; height: 90%; padding: 0%; margin: 0%; font-size: 16px; border-style: none; border-width: 0; background-color: #4F6F6F; } #right { position: absolute; top : 0%; left: 90%; bottom: 10%; right: 0%; z-index: 1; width: 10%; height: 90%; padding: 0%; margin: 0%; font-size: 16px; border-style: none; border-width: 0; background-color: #4F6F6F; _margin-left: -15px; } #bottom { position: absolute; left: 10%; right: 0%; top: 90%; bottom: 0%; z-index: 1; width: 90%; height: 10%; padding: 0%; margin: 0%; font-size: 16px; border-style: none; border-width: 0; background-color: #6F6F8F; } #top { position: absolute; left: 0%; right: 10%; top: 0%; bottom: 90%; z-index: 1; width: 90%; height: 10%; padding: 0%; margin: 0%; font-size: 16px; border-style: none; border-width: 0; background-color: #6F6F8F; } #top-one { position: absolute; bottom: 50%; width: 100%; buggedheight: 100%; } #top-two { position: relative; margin-bottom: -9px; margin-left: 12px; margin-right: 12px; line-height: 18px; text-align: right; vertical-align: middle; } #bottom-one { position: absolute; bottom: 50%; width: 100%; buggedheight: 100%; } #bottom-two { position: relative; margin-bottom: -9px; margin-left: 12px; margin-right: 12px; line-height: 18px; text-align: left; vertical-align: middle; } #left-one { position: absolute; width: 100%; buggedheight: 100%; } #left-two { position: relative; margin-top: 12px; line-height: 18px; text-align: center; vertical-align: top; } #right-one { display: table; height: 100%; width: 100%; } #right-two { display: table-row; height: 100%; width: 100%; } #right-three { display: table-cell; width: 100%; vertical-align: bottom; _position: absolute; _top: 100%; } #right-four { text-align: center; margin-bottom: 2ex; _position: relative; _top: -100%; } #more-top { position: absolute; top: 0%; left: 90%; bottom: 90%; right: 0%; z-index: 3; width: 10%; height: 10%; padding: 0%; margin: 0%; border-style: none; border-width: 0; } #more-top-settings { text-align: center; } #more-right-settings { margin-right: 12px; margin-left: 12px; line-height: 18px; font-size: 10px; text-align: center; } #right-safari { _display: table; width: 100%; height: 100%; } 
+        </style>
+        <style type="text/css">
+                    </style>
+                    </head>
+        <body>
+            <div id="top">            <div id="top-one">
+                <div id="top-two">ConTeXt Font Database Management 0.21 </div>
+            </div>
+        </div>
+        <div id="bottom">            <div id="bottom-one">
+                <div id="bottom-two">wiki: http://contextgarden.net | mail: ntg-context@ntg.nl | website: http://www.pragma-ade.nl</div>
+            </div>
+        </div>
+        <div id="left"></div>
+        <div id="right"></div>
+        <div id="main">
+            <div id='main-settings'>
+                <h1>Command line options</h1>
+<table>
+    <tr><th style="width: 10em">flag</th><th style="width: 8em">value</th><th>description</th></tr>
+        <tr><th/><td/><td/></tr>
+        <tr><th>--convert</th><td></td><td>save open type font in raw table</td></tr>
+        <tr><th>--unpack</th><td></td><td>save a tma file in a more readable format</td></tr>
+        <tr><th/><td/><td/></tr>
+        <tr><th>--reload</th><td></td><td>generate new font database (use --force when in doubt)</td></tr>
+        <tr><th>--reload</th><td></td><td>--simple:generate luatex-fonts-names.lua (not for context!)</td></tr>
+        <tr><th/><td/><td/></tr>
+        <tr><th>--list</th><td></td><td>--name: list installed fonts, filter by name [--pattern]</td></tr>
+        <tr><th>--list</th><td></td><td>--spec: list installed fonts, filter by spec [--filter]</td></tr>
+        <tr><th>--list</th><td></td><td>--file: list installed fonts, filter by file [--pattern]</td></tr>
+        <tr><th/><td/><td/></tr>
+        <tr><th>--pattern</th><td>str</td><td>filter files using pattern</td></tr>
+        <tr><th>--filter</th><td>list</td><td>key-value pairs</td></tr>
+        <tr><th>--all</th><td></td><td>show all found instances (combined with other flags)</td></tr>
+        <tr><th>--info</th><td></td><td>give more details</td></tr>
+        <tr><th>--trackers</th><td>list</td><td>enable trackers</td></tr>
+        <tr><th>--statistics</th><td></td><td>some info about the database</td></tr>
+        <tr><th>--names</th><td></td><td>use name instead of unicodes</td></tr>
+        <tr><th>--cache</th><td>str</td><td>use specific cache (otl or otf)</td></tr>
+    </table>
+<br/>
+<h1>Examples</h1>
+<tt>mtxrun --script font --list somename (== --pattern=*somename*)</tt>
+<br/><br/><tt>mtxrun --script font --list --name somename</tt>
+<br/><tt>mtxrun --script font --list --name --pattern=*somename*</tt>
+<br/><br/><tt>mtxrun --script font --list --spec somename</tt>
+<br/><tt>mtxrun --script font --list --spec somename-bold-italic</tt>
+<br/><tt>mtxrun --script font --list --spec --pattern=*somename*</tt>
+<br/><tt>mtxrun --script font --list --spec --filter="fontname=somename"</tt>
+<br/><tt>mtxrun --script font --list --spec --filter="familyname=somename,weight=bold,style=italic,width=condensed"</tt>
+<br/><tt>mtxrun --script font --list --spec --filter="familyname=crap*,weight=bold,style=italic"</tt>
+<br/><br/><tt>mtxrun --script font --list --all</tt>
+<br/><tt>mtxrun --script font --list --file somename</tt>
+<br/><tt>mtxrun --script font --list --file --all somename</tt>
+<br/><tt>mtxrun --script font --list --file --pattern=*somename*</tt>
+<br/><br/><tt>mtxrun --script font --convert texgyrepagella-regular.otf</tt>
+<br/><tt>mtxrun --script font --convert --names texgyrepagella-regular.otf</tt>
+<br/><br/>            </div>
+        </div>
+        </body>
+</html>

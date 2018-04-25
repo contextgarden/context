@@ -168,21 +168,21 @@ local stoptiming  = statistics.stoptiming
 function directions.handler(head,_,_,_,direction)
     local only_one = not getnext(head)
     if only_one and not one_too then
-        return head, false
+        return head
     end
     local attr = getattr(head,a_directions)
     if not attr or attr == 0 then
-        return head, false
+        return head
     end
     local method  = getmethod(attr)
     local handler = handlers[method]
     if not handler then
-        return head, false
+        return head
     end
     starttiming(directions)
-    local head, done = handler(head,direction,only_one)
+    head = handler(head,direction,only_one)
     stoptiming(directions)
-    return head, done
+    return head
 end
 
 statistics.register("text directions", function()

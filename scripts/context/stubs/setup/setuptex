@@ -24,9 +24,23 @@ cpu=`uname -m`
 case "$system" in
 	# linux
 	Linux)
+		if command -v ldd >/dev/null && ldd --version 2>&1 | grep -E '^musl' >/dev/null
+		then
+			libc=musl
+		else
+			libc=glibc
+		fi
 		case "$cpu" in
-			i*86) platform="linux" ;;
-			x86_64|ia64) platform="linux-64" ;;
+			i*86)
+				case "$libc" in
+					glibc) platform="linux" ;;
+					musl) platform="linuxmusl" ;;
+				esac ;;
+			x86_64|ia64)
+				case "$libc" in
+					glibc) platform="linux-64" ;;
+					musl) platform="linuxmusl-64" ;;
+				esac ;;
 
 			# a little bit of cheating with ppc64 (won't work on Gentoo)
 			ppc|ppc64) platform="linux-ppc" ;;

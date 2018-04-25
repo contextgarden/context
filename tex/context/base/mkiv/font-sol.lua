@@ -54,8 +54,6 @@ local settings_to_hash   = utilities.parsers.settings_to_hash
 local tasks              = nodes.tasks
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getfield           = nuts.getfield
 local getnext            = nuts.getnext
@@ -78,12 +76,14 @@ local find_node_tail     = nuts.tail
 local flush_node         = nuts.flush_node
 local flush_node_list    = nuts.flush_list
 local copy_node_list     = nuts.copy_list
-local traverse_nodes     = nuts.traverse
-local traverse_ids       = nuts.traverse_id
 local hpack_nodes        = nuts.hpack
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local protect_glyphs     = nuts.protect_glyphs
+
+local nextnode           = nuts.traversers.next
+local nexthlist          = nuts.traversers.hlist
+local nextwhatsit        = nuts.traversers.whatsit
 
 local repack_hlist       = nuts.repackhlist
 
@@ -237,7 +237,6 @@ local function convert(featuresets,name,list)
                 fs = contextsetups[feature]
                 fn = fs and fs.number
             end
--- inspect(fs)
             if fn then
                 nofnumbers = nofnumbers + 1
                 numbers[nofnumbers] = fn
@@ -345,9 +344,7 @@ directives.register("builders.paragraphs.solutions.splitters.encapsulate", funct
 end)
 
 function splitters.split(head)
-    -- quite fast
-    head = tonut(head)
-    local current, done, rlmode, start, stop, attribute = head, false, false, nil, nil, 0
+    local current, rlmode, start, stop, attribute = head, false, nil, nil, 0
     cache, max_less, max_more = { }, 0, 0
     local function flush() -- we can move this
         local font = getfont(start)
@@ -393,7 +390,7 @@ function splitters.split(head)
         local m = #solution.more
         if l > max_less then max_less = l end
         if m > max_more then max_more = m end
-        start, stop, done = nil, nil, true
+        start, stop = nil, nil
     end
     while current do -- also ischar
         local next = getnext(current)
@@ -439,14 +436,14 @@ function splitters.split(head)
     end
     nofparagraphs = nofparagraphs + 1
     nofwords = nofwords + #cache
-    return tonode(head), done
+    return head
 end
 
 local function collect_words(list) -- can be made faster for attributes
     local words, w, word = { }, 0, nil
     if encapsulate then
-        for current in traverse_ids(whatsit_code,list) do
-            if getsubtype(current) == userdefined_code then -- hm
+        for current, subtype in nextwhatsit, list do
+            if subtype == userdefined_code then -- hm
                 local user_id = getfield(current,"user_id")
                 if user_id == splitter_one then
                     word = { getfield(current,"value"), current, current }
@@ -584,21 +581,20 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 noftries = noftries + 1
                 local first = copy_node_list(original)
                 if not trace_colors then
-                    for n in traverse_nodes(first) do -- maybe fast force so no attr needed
+                    for n in nextnode, first do -- maybe fast force so no attr needed
                         setattr(n,0,featurenumber) -- this forces dynamics
                     end
                 elseif set == "less" then
-                    for n in traverse_nodes(first) do
+                    for n in nextnode, first do
                         setnodecolor(n,"font:isol") -- yellow
                         setattr(n,0,featurenumber)
                     end
                 else
-                    for n in traverse_nodes(first) do
+                    for n in nextnode, first do
                         setnodecolor(n,"font:medi") -- green
                         setattr(n,0,featurenumber)
                     end
                 end
-first = tonode(first)
                 local font = found.font
                 local setdynamics = setfontdynamics[font]
                 if setdynamics then
@@ -610,7 +606,6 @@ first = tonode(first)
                     report_solutions("fatal error, no dynamics for font %a",font)
                 end
                 first = inject_kerns(first)
-first = tonut(first)
                 if getid(first) == whatsit_code then
                     local temp = first
                     first = getnext(first)
@@ -753,7 +748,7 @@ function splitters.optimize(head)
     if trace_optimize then
         report_optimizers("preroll %a, variant %a, criterium %a, cache size %a",preroll,variant,criterium,nc)
     end
-    for current in traverse_ids(hlist_code,tonut(head)) do
+    for current in nexthlist, head do
         line = line + 1
         local sign  = getfield(current,"glue_sign")
         local dir   = getdir(current)

@@ -1,0 +1,1284 @@
+% language=uk
+
+% 284 instances, 234 shared in backend, 126 common vectors, 108 common hashes, load time 1.343 seconds
+
+%setupversion[alternative=concept,text={not corrected yet}]
+\setupversion[alternative=file,text={not corrected yet}]
+
+\definebodyfontenvironment[24pt]
+
+\usemodule[fonts-effects]
+
+\startcomponent onandon-modern
+
+\environment onandon-environment
+
+\startchapter[title={Modern Latin}]
+
+\startsection[title={Introduction}]
+
+In \CONTEXT, already in \MKII, we have a feature tagged \quote {effects} that can
+be used to render a font in outline or bolder versions. It uses some low level
+\PDF\ directives to accomplish this and it works quite well. When a user on the
+\CONTEXT\ list asked if we could also provide it as a font feature in the
+repertoire of additional features in \CONTEXT, I was a bit reluctant to provide
+that because it operates at another level than the glyph stream. Also, such a
+feature can be abused and result in a bad looking document. However, by adding a
+few simple options to the \LUATEX\ engine such a feature could actually be
+achieved rather easy: it was trivial to implement given that we can influence
+font handling at the \LUA\ end. In retrospect extended and pseudo slanted fonts
+could be done this way too but there we have some historic ballast. Also, the
+backend now handles such transformations very efficient because they are combined
+with font scaling. Anyway, by adding this feature in spite of possible
+objections, I could do some more advanced experiments.
+
+In the following pages I will demonstrate how we support effects as a feature in
+\CONTEXT. Instead of simply applying some magic \PDF\ text operators in the
+backend a more integrated approach is used. The difference with the normal effect
+mechanism is that where the one described here is bound to a font instance while
+the normal mechanism operates on the glyph stream.
+
+\stopsection
+
+\startsection[title={The basics}]
+
+\definefontsynonym[DemoSerif][file:lmroman10-regular]
+
+Let's start with a basic boldening example. First we demonstrate a regular Latin
+Modern sample (using \type {ward.tex}):
+
+\startnarrower
+    \definedfont[DemoSerif*default]
+    \samplefile{ward}
+\stopnarrower
+
+This font looks rather thin (light). Next we define an effect or \type {0.2} and
+typeset the same sample:
+
+\startbuffer
+\definefontfeature
+  [effect-1]
+  [effect=.2]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startnarrower
+    \definedfont[DemoSerif*default,effect-1]
+    \samplefile{ward}
+\stopnarrower
+
+This simple call gives reasonable default results. But you can have more control
+than this. The previous examples use the following properties:
+
+{\definedfont[DemoSerif*default,effect-1] \showfonteffect}
+
+\startbuffer
+\definefontfeature
+  [effect-2]
+  [effect={width=.3}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startnarrower
+    \definedfont[DemoSerif*default,effect-2]
+    \samplefile{ward}
+\stopnarrower
+
+This time we use:
+
+{\definedfont[DemoSerif*default,effect-2] \showfonteffect}
+
+\startbuffer
+\definefontfeature
+  [effect-3]
+  [effect={width=.3,delta=0.4}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startnarrower
+    \showfontkerns
+    \definedfont[DemoSerif*default,effect-3]
+    \samplefile{ward}
+\stopnarrower
+
+We have now tweaked one more property and show the fontkerns in order to see what
+happens with them:
+
+{\definedfont[DemoSerif*default,effect-3] \showfonteffect}
+
+\startbuffer
+\definefontfeature
+  [effect-4]
+  [effect={width=.3,delta=0.4,factor=0.3}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startnarrower
+    \showfontkerns
+    \definedfont[DemoSerif*default,effect-4]
+    \samplefile{ward}
+\stopnarrower
+
+An additional parameter \type {factor} will influence the way (for instance)
+kerns get affected:
+
+{\definedfont[DemoSerif*effect-4] \showfonteffect}
+
+\stopsection
+
+\startsection[title=Outlines]
+
+There are four effects. Normally a font is rendered with effect \type {inner}.
+The \type {outer} effect just draws the outlines while \type {both} gives a
+rather fat result. The \type {hidden} effect hides the text.
+
+\startbuffer
+\definefontfeature
+  [effect-5]
+  [effect={width=0.2,delta=0.4,factor=0.3,effect=inner}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startnarrower
+    \showfontkerns
+    \definedfont[DemoSerif*default,effect-5]
+    \samplefile{ward}
+\stopnarrower
+
+An inner effect is rather useless unless you want to use the other properties of
+this mechanism.
+
+\startbuffer
+\definefontfeature
+  [effect-6]
+  [effect={width=.2,delta=0.4,factor=0.3,effect=outer}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startnarrower
+    \showfontkerns
+    \definedfont[DemoSerif*default,effect-6]
+    \samplefile{ward}
+\stopnarrower
+
+\startbuffer
+\definefontfeature
+  [effect-7]
+  [effect={width=.2,delta=0.4,factor=0.3,effect=both}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startnarrower
+    \showfontkerns
+    \definedfont[DemoSerif*default,effect-7]
+    \samplefile{ward}
+\stopnarrower
+
+\startbuffer
+\definefontfeature
+  [effect-8]
+  [effect={width=.2,delta=0.4,factor=0.3,effect=hidden},
+   boundingbox=yes] % to show something
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We also show the boundingboxes of the glyphs here so that you can see what you're
+missing. Actually this text is still there and you can select it in the viewer.
+
+\startnarrower
+    \showfontkerns
+    \showglyphs
+    \definedfont[DemoSerif*default,effect-8]
+    \samplefile{ward}
+\stopnarrower
+
+\stopsection
+
+\startsection[title=The logic]
+
+In order to support this I had to make some choices. The calculations involved
+are best explained in terms of \CONTEXT\ font machinery.
+
+\startformula
+    \Delta _{\text{wd}}  = \text{effect}   _{\text{wdelta}}
+                    \times \text{parameter}_{\text{hfactor}}
+                    \times \text{effect}   _{\text{width}}
+                    \times 100
+\stopformula
+
+\startformula
+    \Delta _{\text{ht}}  = \text{effect}   _{\text{hdelta}}
+                    \times \text{parameter}_{\text{vfactor}}
+                    \times \text{effect}   _{\text{width}}
+                    \times 100
+\stopformula
+
+\startformula
+    \Delta _{\text{dp}}  = \text{effect}   _{\text{ddelta}}
+                    \times \text{parameter}_{\text{vfactor}}
+                    \times \text{effect}   _{\text{width}}
+                    \times 100
+\stopformula
+
+The factors in the parameter namespace are adapted according to:
+
+\startformula
+    \Delta _{\text{factor}} = \text{effect}    _{\text{factor}}
+                       \times \text{parameters}_{\text{factor}}
+\stopformula
+
+\startformula
+    \Delta _{\text{hfactor}} = \text{effect}    _{\text{hfactor}}
+                        \times \text{parameters}_{\text{hfactor}}
+\stopformula
+
+\startformula
+    \Delta _{\text{vfactor}} = \text{effect}    _{\text{vfactor}}
+                        \times \text{parameters}_{\text{vfactor}}
+\stopformula
+
+The horizontal and vertical scaling factors default to the normal factor that
+defaults to zero so by default we have no additional scaling of for instance
+kerns. The width (wd), height (ht) and depth (dp) of a glyph are adapted in
+relation to the line width. A glyph is shifted in its bounding box by half the
+width correction. The delta defaults to one.
+
+\stopsection
+
+\startsection[title=About features]
+
+This kind of boldening has limitations especially because some fonts use
+positioning features that closely relate to the visual font properties. Let's
+give some examples. The most common positioning is kerning. Take for instance
+these shapes:
+
+\startlinecorrection
+\startMPcode
+    def SampleShapes(expr dx, offset, pw, k) =
+        picture p ; p := image (
+            draw               fullcircle scaled 1cm ;
+            draw               fullsquare scaled 1cm  shifted (dx+k,0) ;
+            draw point 8   of (fullcircle scaled 1cm)                  withcolor white ;
+            draw point 3.5 of (fullsquare scaled 1cm) shifted (dx+k,0) withcolor white ;
+        ) shifted (offset,0) ;
+        draw p withpen pencircle scaled pw ;
+        draw boundingbox p withcolor white ;
+    enddef ;
+    SampleShapes(15mm,  0mm,1mm,0mm) ;
+    SampleShapes(15mm, 40mm,2mm,0mm) ;
+    SampleShapes(17mm, 80mm,2mm,0mm) ;
+\stopMPcode
+\stoplinecorrection
+
+The first one is that we start with. The circle and square have a line width of
+one unit and a distance (kern) of five units. The second pair has a line width of
+two units and the same distance while the third pair has a distance of seven
+units. So, in the last case we have just increased the kern with a value relative
+to the increase of line width.
+
+\startlinecorrection
+\startMPcode
+    SampleShapes(15mm,  0mm,1mm,0mm) ;
+    SampleShapes(15mm, 40mm,2mm,2mm) ;
+    SampleShapes(17mm, 80mm,2mm,2mm) ;
+\stopMPcode
+\stoplinecorrection
+
+In this example we have done the same but we started with a distance of zero. You
+can consider this a kind of anchoring. This happens in for instance cursive
+scripts where entry and exit points are used to connect shapes. In a latin script
+you can think of a poor|-|mans attachment of a cedilla or ogonek. But what to do
+with for instance an accent on top of a character? In that case we could do the
+same as with kerning. However, when we mix styles we would like to have a
+consistent height so maybe there scaling is not a good idea. This is why we can
+set the factors and deltas explictly for vertical and horizontal movements.
+However, this will only work well when a font is consistent in how it applies
+these movements. In this case, if could recognize cursive anchoring (the last
+pair in the example) we could compensate for it.
+
+\startMPinclusions
+    def SampleShapes(expr dx, offset, pw, k) =
+        picture p ; p := image (
+            draw               fullcircle scaled 1cm ;
+            draw               fullsquare scaled 1cm  shifted (dx+k,0) ;
+            draw point 8   of (fullcircle scaled 1cm)                  withcolor white ;
+            draw point 3.5 of (fullsquare scaled 1cm) shifted (dx+k,0) withcolor white ;
+        ) shifted (offset,0) ;
+        draw p withpen pencircle scaled pw ;
+        draw boundingbox p withcolor white ;
+    enddef ;
+\stopMPinclusions
+
+\startlinecorrection
+\startMPcode
+    SampleShapes(10mm,  0mm,1mm,0mm) ;
+    SampleShapes(10mm, 40mm,1mm,1mm) ;
+    SampleShapes(10mm, 80mm,2mm,0mm) ;
+    SampleShapes(10mm,120mm,2mm,2mm) ;
+\stopMPcode
+\stoplinecorrection
+
+So, an interesting extension to the positioning part of the font handler could be
+to influence all the scaling factors: anchors, cursives, single and pair wise
+positioning in both directions (so eight independent factors). Technically this
+is no big deal so I might give it a go when I have a need for it.
+
+\stopsection
+
+\startsection[title=Some (extreme) examples]
+
+The last decade buying a font has become a bit of a nightmare simply because you
+have to choose the weights that you need. It's the business model to not stick to
+four shapes in a few weights but offer a whole range and each of course costs
+money.
+
+Latin Modern is based on Computer Modern and is meant for high resolution rendering.
+The design of the font is such that you can create instances but in practice that
+isn't done. One property that let the font stand out is its bold which runs rather
+wide. However, how about cooking up a variant? For this we will use a series of
+definitions:
+
+\startbuffer
+\definefontfeature[effect-2-0-0]
+  [effect={width=0.2,delta=0}]
+\definefontfeature[effect-2-3-0]
+  [effect={width=0.2,delta=0.3}]
+\definefontfeature[effect-2-6-0]
+  [effect={width=0.2,delta=0.6}]
+\definefontfeature[effect-4-0-0]
+  [effect={width=0.4,delta=0}]
+\definefontfeature[effect-4-3-0]
+  [effect={width=0.4,delta=0.3}]
+\definefontfeature[effect-4-6-0]
+  [effect={width=0.4,delta=0.6}]
+\definefontfeature[effect-8-0-0]
+  [effect={width=0.8,delta=0}]
+\definefontfeature[effect-8-3-0]
+  [effect={width=0.8,delta=0.3}]
+\definefontfeature[effect-8-6-0]
+  [effect={width=0.8,delta=0.6}]
+\definefontfeature[effect-8-6-2]
+  [effect={width=0.8,delta=0.6,factor=0.2}]
+\definefontfeature[effect-8-6-4]
+  [effect={width=0.8,delta=0.6,factor=0.4}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+And a helper macro:
+
+\startbuffer
+\starttexdefinition ShowOneSample #1#2#3#4
+ %\testpage[5]
+ %\startsubsubsubject[title=\type{#1}]
+  \start
+    \definedfont[#2*#3 @ 10pt]
+    \setupinterlinespace
+    \startlinecorrection
+        \showglyphs \showfontkerns
+        \scale[sx=#4,sy=#4]{effective n\"ots}
+    \stoplinecorrection
+    \blank[samepage]
+    \dontcomplain
+    \showfontkerns
+    \margintext{\tt\txx\maincolor#1}
+    \samplefile{ward}
+    \par
+  \stop
+ %\stopsubsubsubject
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\starttexdefinition ShowSamples #1
+  \startsubsubject[title=#1]
+    \start
+        \ShowOneSample{no effect}                       {#1}{default}             {5}
+        \ShowOneSample{width=0.2\\delta=0}              {#1}{default,effect-2-0-0}{5}
+        \ShowOneSample{width=0.2\\delta=0.3}            {#1}{default,effect-2-3-0}{5}
+        \ShowOneSample{width=0.2\\delta=0.6}            {#1}{default,effect-2-6-0}{5}
+        \ShowOneSample{width=0.4\\delta=0}              {#1}{default,effect-4-0-0}{5}
+        \ShowOneSample{width=0.4\\delta=0.3}            {#1}{default,effect-4-3-0}{5}
+        \ShowOneSample{width=0.4\\delta=0.6}            {#1}{default,effect-4-6-0}{5}
+        \ShowOneSample{width=0.8\\delta=0}              {#1}{default,effect-8-0-0}{5}
+        \ShowOneSample{width=0.8\\delta=0.3}            {#1}{default,effect-8-3-0}{5}
+        \ShowOneSample{width=0.8\\delta=0.6}            {#1}{default,effect-8-6-0}{5}
+        \ShowOneSample{width=0.8\\delta=0.6\\factor=0.2}{#1}{default,effect-8-6-2}{5}
+        \ShowOneSample{width=0.8\\delta=0.6\\factor=0.4}{#1}{default,effect-8-6-4}{5}
+    \stop
+  \stopsubsubject
+\stoptexdefinition
+
+We show some extremes, using the font used in this document. so don't complain
+about beauty here.
+
+\texdefinition{ShowSamples}{Serif}
+\texdefinition{ShowSamples}{SerifBold}
+\texdefinition{ShowSamples}{SerifItalic}
+\texdefinition{ShowSamples}{SerifBoldItalic}
+\texdefinition{ShowSamples}{Sans}
+
+\start
+    \setupalign[flushleft,broad,nothyphenated,verytolerant]
+    \texdefinition{ShowSamples}{Mono}
+\stop
+
+\stopsection
+
+\startsection[title=Pitfall]
+
+The quality of the result depends on how the font is made. For instance,
+ligatures can be whole shapes, replaced glyphs and|/|or repositioned
+glyphs, or whatever the designer thinks reasonable. In \in {figure}
+[fig:ligature-effects-mess] this is demonstrated. We use the following
+feature sets:
+
+\startbuffer
+\definefontfeature
+  [demo-1]
+  [default]
+  [hlig=yes]
+
+\definefontfeature
+  [demo-2]
+  [demo-1]
+  [effect=0.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startplacefigure[title={The effects on ligatures.},reference=fig:ligature-effects-mess]
+    \startcombination[1*3]
+        { \scale [scale=5000] {
+            \definedfont[texgyrepagellaregular*demo-1]fist effe
+            \par
+            \definedfont[texgyrepagellaregular*demo-2]fist effe
+        } } {
+            texgyre pagella regular
+        } { \scale [scale=5000] {
+            \definedfont[cambria*demo-1]fist effe
+            \par
+            \definedfont[cambria*demo-2]fist effe
+        } } {
+            cambria
+        } { \scale [scale=5000] {
+            \definedfont[ebgaramond12regular*demo-1]fist effe
+            \par
+            \definedfont[ebgaramond12regular*demo-2]fist effe
+        } } {
+            ebgaramond 12 regular
+        }
+    \stopcombination
+\stopplacefigure
+
+Normally the artifacts (as in the fi ligature in ebgaramond as of 2018) will go
+unnoticed at small sized. Also, when the user has a low res display, printer or
+when the publishers is one of those who print a scanned \PDF\ the reader might
+not notice it at all. Most readers don't even know what to look at.
+
+\stopsection
+
+\startsection[title=A modern Modern]
+
+So how can we make an effective set of Latin Modern that fits in todays look and
+feel. Of course this is a very subjective experiment but we've seen experiments
+with these fonts before (like these cm super collections). Here is an example of
+a typescript definition:
+
+\starttyping
+\starttypescriptcollection[modernlatin]
+
+  \definefontfeature[lm-rm-regular][effect={width=0.15,delta=1.00}]
+  \definefontfeature[lm-rm-bold]   [effect={width=0.30,delta=1.00}]
+  \definefontfeature[lm-ss-regular][effect={width=0.10,delta=1.00}]
+  \definefontfeature[lm-ss-bold]   [effect={width=0.20,delta=1.00}]
+  \definefontfeature[lm-tt-regular][effect={width=0.15,delta=1.00}]
+  \definefontfeature[lm-tt-bold]   [effect={width=0.30,delta=1.00}]
+  \definefontfeature[lm-mm-regular][effect={width=0.15,delta=1.00}]
+  \definefontfeature[lm-mm-bold]   [effect={width=0.30,delta=1.00}]
+
+  \starttypescript [serif] [modern-latin]
+    \definefontsynonym
+      [Serif] [file:lmroman10-regular]
+      [features={default,lm-rm-regular}]
+    \definefontsynonym
+      [SerifItalic] [file:lmroman10-italic]
+      [features={default,lm-rm-regular}]
+    \definefontsynonym
+      [SerifSlanted] [file:lmromanslant10-regular]
+      [features={default,lm-rm-regular}]
+    \definefontsynonym
+      [SerifBold] [file:lmroman10-regular]
+      [features={default,lm-rm-bold}]
+    \definefontsynonym
+      [SerifBoldItalic] [file:lmroman10-italic]
+      [features={default,lm-rm-bold}]
+    \definefontsynonym
+      [SerifBoldSlanted] [file:lmromanslant10-regular]
+      [features={default,lm-rm-bold}]
+  \stoptypescript
+
+  \starttypescript [sans] [modern-latin]
+    \definefontsynonym
+      [Sans] [file:lmsans10-regular]
+      [features={default,lm-ss-regular}]
+    \definefontsynonym
+      [SansItalic] [file:lmsans10-oblique]
+      [features={default,lm-ss-regular}]
+    \definefontsynonym
+      [SansSlanted] [file:lmsans10-oblique]
+      [features={default,lm-ss-regular}]
+    \definefontsynonym
+      [SansBold] [file:lmsans10-regular]
+      [features={default,lm-ss-bold}]
+    \definefontsynonym
+      [SansBoldItalic] [file:lmsans10-oblique]
+      [features={default,lm-ss-bold}]
+    \definefontsynonym
+      [SansBoldSlanted] [file:lmsans10-oblique]
+      [features={default,lm-ss-bold}]
+  \stoptypescript
+
+  \starttypescript [mono] [modern-latin]
+    \definefontsynonym
+      [Mono] [file:lmmono10-regular]
+      [features={default,lm-tt-regular}]
+    \definefontsynonym
+      [MonoItalic] [file:lmmono10-italic]
+      [features={default,lm-tt-regular}]
+    \definefontsynonym
+      [MonoSlanted] [file:lmmonoslant10-regular]
+      [features={default,lm-tt-regular}]
+    \definefontsynonym
+      [MonoBold] [file:lmmono10-regular]
+      [features={default,lm-tt-bold}]
+    \definefontsynonym
+      [MonoBoldItalic] [file:lmmono10-italic]
+      [features={default,lm-tt-bold}]
+    \definefontsynonym
+      [MonoBoldSlanted] [file:lmmonoslant10-regular]
+      [features={default,lm-tt-bold}]
+  \stoptypescript
+
+  \starttypescript [math] [modern-latin]
+    \loadfontgoodies[lm]
+    \definefontsynonym
+      [MathRoman] [file:latinmodern-math-regular.otf]
+      [features={math\mathsizesuffix,lm-mm-regular,mathextra},
+       goodies=lm]
+    \definefontsynonym
+      [MathRomanBold] [file:latinmodern-math-regular.otf]
+      [features={math\mathsizesuffix,lm-mm-bold,mathextra},
+       goodies=lm]
+  \stoptypescript
+
+  \starttypescript [modern-latin]
+    \definetypeface [\typescriptone]
+      [rm] [serif] [modern-latin] [default]
+    \definetypeface [\typescriptone]
+      [ss] [sans]  [modern-latin] [default]
+    \definetypeface [\typescriptone]
+      [tt] [mono]  [modern-latin] [default]
+    \definetypeface [\typescriptone]
+      [mm] [math]  [modern-latin] [default]
+    \quittypescriptscanning
+  \stoptypescript
+
+\stoptypescriptcollection
+\stoptyping
+
+We show some more samples now for which we use\type {zapf.tex}.
+
+\startbuffer
+    {\tf\samplefile{zapf}}\blank {\bf\samplefile{zapf}}\blank
+    {\it\samplefile{zapf}}\blank {\bi\samplefile{zapf}}\blank
+    {\sl\samplefile{zapf}}\blank {\bs\samplefile{zapf}}\blank
+\stopbuffer
+
+\startsubsubsubject[title={\type{\switchtobodyfont[modern-latin,rm,10pt]}}]
+    \start
+        \switchtobodyfont[modern-latin,rm,10pt]
+        \getbuffer
+    \stop
+\stopsubsubsubject
+
+\startsubsubsubject[title={\type{\switchtobodyfont[modern-latin,ss,10pt]}}]
+    \start
+        \switchtobodyfont[modern-latin,ss,10pt]
+        \getbuffer
+    \stop
+\stopsubsubsubject
+
+\startsubsubsubject[title={\type{\switchtobodyfont[modern-latin,tt,10pt]}}]
+    \start
+        \switchtobodyfont[modern-latin,tt,10pt]
+        \setupalign[flushleft,broad,nothyphenated,verytolerant]
+        \getbuffer
+    \stop
+\stopsubsubsubject
+
+\stopsection
+
+\startsection[title=Finetuning]
+
+In practice we only need to compensate the width but can leave the height
+and depth untouched. In the following examples we see the normal bold next
+to the regular as well as the boldened version. For this we will use a couple
+of definitions:
+
+\startbuffer
+\definefontfeature[lm-bald][effect={width=0.25,effect=both}]
+\definefontfeature[pg-bald][effect={width=0.25,effect=both}]
+\definefontfeature[dj-bald][effect={width=0.35,effect=both}]
+
+\definefontfeature
+  [lm-bold]
+  [effect={width=0.25,hdelta=0,ddelta=0,effect=both},
+   extend=1.10]
+
+\definefontfeature
+  [pg-bold]
+  [effect={width=0.25,hdelta=0,ddelta=0,effect=both},
+   extend=1.00]
+
+\definefontfeature
+  [dj-bold]
+  [effect={width=0.35,hdelta=0,ddelta=0,effect=both},
+   extend=1.05]
+
+\definefont[lmbald][Serif*default,lm-bald sa d]
+\definefont[pgbald][Serif*default,pg-bald sa d]
+\definefont[djbald][Serif*default,dj-bald sa d]
+
+\definefont[lmbold][Serif*default,lm-bold sa d]
+\definefont[pgbold][Serif*default,pg-bold sa d]
+\definefont[djbold][Serif*default,dj-bold sa d]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can combine the extend and effect features to get a bold running as wide as a
+normal bold. We limit the height and depth so that we can use regular and bold in
+the same sentence. It's all a matter of taste, but some control is there.
+
+\starttabulate[|l|l|l|l|]
+\NC
+    \BC
+    \tt modern  \BC
+    \tt pagella \BC
+    \tt dejavu  \NC
+\NR
+\NC
+    \type{\tfd} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\tfd    ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\tfd    ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\tfd    ABC}\NC
+\NR
+\NC
+    \type{\..bald} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\lmbald ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\pgbald ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\djbald ABC}\NC
+\NR
+\NC
+    \type{\bfd} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\bfd    ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\bfd    ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\bfd    ABC}\NC
+\NR
+\NC
+    \type{\..bold} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\lmbold ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\pgbold ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\djbold ABC}\NC
+\NR
+\stoptabulate
+
+Let's take another go at Pagella. We define a few features, colors
+and fonts first:
+
+\startbuffer
+\definefontfeature
+  [pg-fake-1]
+  [effect={width=0.25,effect=both}]
+
+\definefontfeature
+  [pg-fake-2]
+  [effect={width=0.25,hdelta=0,ddelta=0,effect=both}]
+
+\definefont[pgregular]  [Serif*default]
+\definefont[pgbold]     [SerifBold*default]
+\definefont[pgfakebolda][Serif*default,pg-fake-1]
+\definefont[pgfakeboldb][Serif*default,pg-fake-2]
+
+\definecolor[color-pgregular]  [t=.5,a=1,r=.6]
+\definecolor[color-pgbold]     [t=.5,a=1,g=.6]
+\definecolor[color-pgfakebolda][t=.5,a=1,b=.6]
+\definecolor[color-pgfakeboldb][t=.5,a=1,r=.6,g=.6]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When we apply these we get the results of \in {figure} [fig:pagella-compared]
+while we show the same overlayed in \in {figure} [fig:pagella-overlayed]. As you
+can see, the difference in real bold and fake bold is subtle: the inner shape of
+the \quote {o} differs. Also note that the position of the accents doesn't change
+in the vertical direction but moves along with the width.
+
+\def\SampleWord{\^o\"ep\c s}
+
+\startplacefigure[title={Four pagella style variants compared.},reference=fig:pagella-compared]
+    \startcombination[2*2]
+        {
+            \scale [scale=7500] {
+                \ruledhbox{\showglyphs\pgregular   \SampleWord}
+            }
+        } {
+            regular (red)
+        } {
+            \scale [scale=7500] {
+                \ruledhbox{\showglyphs\pgbold      \SampleWord}
+            }
+        } {
+            bold (green)
+        } {
+            \scale [scale=7500] {
+                \ruledhbox{\showglyphs\pgfakebolda \SampleWord}
+            }
+        } {
+            fakebolda (blue)
+        } {
+            \scale [scale=7500] {
+                \ruledhbox{\showglyphs\pgfakeboldb \SampleWord}
+            }
+        } {
+            fakeboldb (yellow)
+        }
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[title={Four pagella style variants overlayed.},reference=fig:pagella-overlayed]
+    \startcombination[2*3]
+        {
+            \scale [scale=7500] {
+                \startoverlay
+                    {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                    {\color[color-pgbold]     {\pgbold      \SampleWord}}
+                \stopoverlay
+            }
+        } {
+            bold over regular
+        } {
+            \scale [scale=7500] {
+                \startoverlay
+                    {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                    {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+                \stopoverlay
+            }
+        } {
+            fakebolda over regular
+        } {
+            \scale [scale=7500] {
+                \startoverlay
+                    {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                    {\color[color-pgfakebolda]{\pgfakeboldb \SampleWord}}
+                \stopoverlay
+            }
+        } {
+            fakeboldb over regular
+        } {
+            \scale [scale=7500] {
+                \startoverlay
+                    {\color[color-pgbold]     {\pgbold      \SampleWord}}
+                    {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+                \stopoverlay
+            }
+        } {
+            fakeboldb over bold
+        } {
+            \scale [scale=7500] {
+                \startoverlay
+                    {\color[color-pgfakebolda]{\pgfakebolda \SampleWord}}
+                    {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+                \stopoverlay
+            }
+        } {
+             fakeboldb over fakebolda
+        } {
+            \scale [scale=7500] {
+                \startoverlay
+                    {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                    {\color[color-pgbold]     {\pgbold      \SampleWord}}
+                    {\color[color-pgfakebolda]{\pgfakebolda \SampleWord}}
+                    {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+                \stopoverlay
+            }
+        } {
+             all four overlayed
+        }
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=The code]
+
+The amount of code involved is not that large and is a nice illustration of what
+\LUATEX\ provides (I have omitted a few lines of tracing and error reporting).
+The only thing added to the font scaler elsewhere is that we pass the \type
+{mode} and \type {width} parameters to \TEX\ so that they get used in the backend
+to inject the few operators needed.
+
+\starttyping
+local effects = {
+  inner  = 0,
+  outer  = 1,
+  both   = 2,
+  hidden = 3,
+}
+
+local function initialize(tfmdata,value)
+  local spec
+  if type(value) == "number" then
+      spec = { width = value }
+  else
+      spec = utilities.parsers.settings_to_hash(value)
+  end
+  local effect = spec.effect or "both"
+  local width  = tonumber(spec.width) or 0
+  local mode   = effects[effect]
+  if mode then
+    local factor  = tonumber(spec.factor)  or 0
+    local hfactor = tonumber(spec.vfactor) or factor
+    local vfactor = tonumber(spec.hfactor) or factor
+    local delta   = tonumber(spec.delta)   or 1
+    local wdelta  = tonumber(spec.wdelta)  or delta
+    local hdelta  = tonumber(spec.hdelta)  or delta
+    local ddelta  = tonumber(spec.ddelta)  or hdelta
+    tfmdata.parameters.mode   = mode
+    tfmdata.parameters.width  = width * 1000
+    tfmdata.properties.effect = {
+      effect  = effect, width   = width,
+      wdelta  = wdelta, factor  = factor,
+      hdelta  = hdelta, hfactor = hfactor,
+      ddelta  = ddelta, vfactor = vfactor,
+    }
+  end
+end
+
+local function manipulate(tfmdata)
+  local effect = tfmdata.properties.effect
+  if effect then
+    local characters = tfmdata.characters
+    local parameters = tfmdata.parameters
+    local multiplier = effect.width * 100
+    local wdelta = effect.wdelta * parameters.hfactor * multiplier
+    local hdelta = effect.hdelta * parameters.vfactor * multiplier
+    local ddelta = effect.ddelta * parameters.vfactor * multiplier
+    local hshift = wdelta / 2
+    local factor  = (1 + effect.factor)  * parameters.factor
+    local hfactor = (1 + effect.hfactor) * parameters.hfactor
+    local vfactor = (1 + effect.vfactor) * parameters.vfactor
+    for unicode, char in next, characters do
+      local oldwidth  = char.width
+      local oldheight = char.height
+      local olddepth  = char.depth
+      if oldwidth and oldwidth > 0 then
+        char.width = oldwidth + wdelta
+        char.commands = {
+          { "right", hshift },
+          { "char", unicode },
+        }
+      end
+      if oldheight and oldheight > 0 then
+        char.height = oldheight + hdelta
+      end
+      if olddepth and olddepth > 0 then
+        char.depth = olddepth + ddelta
+      end
+    end
+    parameters.factor  = factor
+    parameters.hfactor = hfactor
+    parameters.vfactor = vfactor
+  end
+end
+
+local specification = {
+  name        = "effect",
+  description = "apply effects to glyphs",
+  initializers = {
+     base = initialize,
+     node = initialize,
+  },
+  manipulators = {
+    base = manipulate,
+    node = manipulate,
+  },
+}
+
+fonts.handlers.otf.features.register(specification)
+fonts.handlers.afm.features.register(specification)
+\stoptyping
+
+The real code is slightly more complex because we want to stack virtual features
+properly but the principle is the same.
+
+\stopsection
+
+\startsection[title=Arabic]
+
+It is tempting to test effects with arabic but we need to keep in mind that for
+that we should add some more support in the \CONTEXT\ font handler. Let's define
+some features.
+
+\startbuffer
+\definefontfeature
+  [bolden-arabic-1]
+  [effect={width=0.4}]
+
+\definefontfeature
+  [bolden-arabic-2]
+  [effect={width=0.4,effect=outer}]
+
+\definefontfeature
+  [bolden-arabic-3]
+  [effect={width=0.5,wdelta=0.5,ddelta=.2,hdelta=.2,factor=.1}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+
+\setupalign
+  [righttoleft]
+
+\setupinterlinespace
+  [1.5]
+
+\start
+  \definedfont[arabictest*arabic,bolden-arabic-1 @ 30pt]
+  \samplefile{khatt-ar}\par
+  \definedfont[arabictest*arabic,bolden-arabic-2 @ 30pt]
+  \samplefile{khatt-ar}\par
+  \definedfont[arabictest*arabic,bolden-arabic-3 @ 30pt]
+  \samplefile{khatt-ar}\par
+\stop
+\stopbuffer
+
+With \MICROSOFT\ Arabtype the \type {khatt-ar.tex} looks as follows:
+
+\typebuffer \start \definefontsynonym[arabictest][arabtype] \getbuffer\stop
+
+And with Idris' Husayni we get:
+
+\typebuffer \start \definefontsynonym[arabictest][husayni]  \getbuffer\stop
+
+Actually, quite okay are the following. We don't over do bold here and to get
+a distinction we make the original thinner.
+
+\startbuffer
+\definefontfeature[effect-ar-thin] [effect={width=0.01,effect=inner}]
+\definefontfeature[effect-ar-thick][effect={width=0.20,extend=1.05}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\start
+  \setupalign
+    [righttoleft]
+
+  \setupinterlinespace
+    [1.5]
+
+  \definedfont[husayni*arabic,effect-ar-thin  @ 30pt]
+  \samplefile{khatt-ar}\par
+  \definedfont[husayni*arabic,effect-ar-thick @ 30pt]
+  \samplefile{khatt-ar}\par
+\stop
+
+The results are acceptable at small sizes but at larger sizes you will start to
+see kerning, anchoring and cursive artifacts. The outline examples show that the
+amount of overlap differs per font and the more overlap we have the better
+boldening will work.
+
+\startMPinclusions
+    def DrawShapes(expr how) =
+        def SampleShapes(expr offset, pw, xc, xs, xt, yc, ys, yt, txt, more) =
+            numeric l ; l := pw * mm ;
+            picture p ; p := image (
+                draw fullcircle   scaled 10 ;
+                draw fullcircle   scaled  3 shifted (-3+xc  ,8+yc) withcolor "darkred" ;
+                draw fullsquare   scaled  3 shifted ( 6+xs  ,7+ys) withcolor "darkblue";
+                draw fulltriangle scaled  4 shifted ( 6+xt+5,6+yt) withcolor "darkgreen";
+            ) shifted (offset,0) scaled mm ;
+            draw p
+                withpen pencircle
+                    if how = 2 :
+                        xscaled l yscaled (l/2) rotated 30 ;
+                    else :
+                        scaled l ;
+                    fi ;
+            draw boundingbox p
+                withcolor "darkyellow" ;
+            draw textext(txt)
+                shifted (xpart center p, -8mm) ;
+            draw textext(more)
+                shifted (xpart center p, -11mm) ;
+        enddef ;
+        SampleShapes(  0,1, 0,0,0, 0,   0,   0,  "\tinyfont \setstrut \strut original",   "\tinyfont \setstrut \strut ") ;
+        SampleShapes( 25,2, 0,0,0, 0,   0,   0,  "\tinyfont \setstrut \strut instance",   "\tinyfont \setstrut \strut ") ;
+        SampleShapes( 50,2,-1,1,0, 0,   0,   0,  "\tinyfont \setstrut \strut mark",       "\tinyfont \setstrut \strut x only") ;
+        SampleShapes( 75,2,-1,1,1, 0,   0,   0,  "\tinyfont \setstrut \strut mark + mkmk","\tinyfont \setstrut \strut x only") ;
+        SampleShapes(100,2,-1,1,1, 1,   1,   1,  "\tinyfont \setstrut \strut mark + mkmk","\tinyfont \setstrut \strut x and y") ;
+        SampleShapes(125,2,-1,2,2,-1/2,-1/2,-1/2,"\tinyfont \setstrut \strut mark + mkmk","\tinyfont \setstrut \strut x and -y") ;
+    enddef ;
+\stopMPinclusions
+
+In arabic (and sometimes latin) fonts the marks (or accents in latin) are
+attached to base shapes and normally one will use the \type {mark} to anchor a
+mark to a base character or specific component of a ligature. The \type {mkmk}
+feature is then used to anchor marks to other marks. Consider the following
+example.
+
+\startlinecorrection
+\scale
+  [width=\textwidth]
+  {\startMPcode DrawShapes(1) ; \stopMPcode}
+\stoplinecorrection
+
+We start with \type {original}: a base shape with three marks: the red circle and
+blue square anchor to the base and the green triangle anchors to the blue square.
+When we bolden, the shapes will start touching. In the case of latin scripts,
+it's normal to keep the accents on the same height so this is why the third
+picture only shifts in the horizontal direction. The fourth picture demonstrates
+that we need to compensate the two bound marks. One can decide to move the lot up
+as in the fifth picture but that is no option here.
+
+Matters can be even more complex when a non circular pen is introduced. In that
+case a transformation from one font to another using the transformed \OPENTYPE\
+positioning logic (values) is even more tricky and unless one knows the
+properties (and usage) of a mark it makes no sense at all. Actually the sixths
+variant is probably nicer here but there we actually move the marks down!
+
+\startlinecorrection
+\scale
+  [width=\textwidth]
+  {\startMPcode DrawShapes(2) ; \stopMPcode}
+\stoplinecorrection
+
+For effects this means that when it gets applied to such a font, only small
+values work out well.
+
+\stopsection
+
+\startsection[title=Math]
+
+Math is dubious as there is all kind of positioning involved. Future versions
+might deal with this, although bolder math (math itself has bold, so actually
+we're talking of bold with some heavy) is needed for titling. If we keep that
+in mind we can actually just bolden math and probably most will come out
+reasonable well. One of the potential troublemakers is the radical (root) sign
+that can be bound to a rule. Bumping the rules is no big deal and patching the
+relevant radical properties neither, so indeed we can do:
+
+\startbuffer[mathblob]
+2\times\sqrt{\frac{\sqrt{\frac{\sqrt{2}}{\sqrt{2}}}}
+  {\sqrt{\frac{\sqrt{2}}{\sqrt{2}}}}}
+\stopbuffer
+
+\startbuffer
+\switchtobodyfont [modernlatin,17.3pt]
+$
+  \mr \darkblue  \getbuffer[mathblob] \quad
+  \mb \darkgreen \getbuffer[mathblob]
+$
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+Where the \type {mathblob} buffer is:
+
+\typebuffer[mathblob]
+
+Here you also see a fraction rule that has been bumped. In display mode we
+get:
+
+\startbuffer
+\switchtobodyfont[modernlatin,17.3pt]
+\startformula
+  \mr \darkblue  \getbuffer[mathblob] \quad
+  \mb \darkgreen \getbuffer[mathblob]
+\stopformula
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+Extensibles behave well too:
+
+\startbuffer
+\switchtobodyfont [modernlatin,17.3pt]
+\dostepwiserecurse {1} {30} {5} {
+  $
+    \mr \sqrt{\blackrule[width=2mm,height=#1mm,color=darkblue]}
+    \quad
+    \mb \sqrt{\blackrule[width=2mm,height=#1mm,color=darkgreen]}
+  $
+}
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+\definecolor[colormr] [t=.5,a=1,b=.6]
+\definecolor[colormb] [t=.5,a=1,g=.6]
+
+In \in {figure} [fig:regular-over-bold] we overlay regular and bold. The result
+doesn't look that bad after all, does it? It took however a bit of experimenting
+and a fix in \LUATEX: pickup the value from the font instead of the currently
+used (but frozen) math parameter.
+
+\startplacefigure[title={Modern Latin regular over bold.},reference=fig:regular-over-bold]
+\switchtobodyfont[modernlatin,17.3pt]
+\scale[width=.25\textwidth]{\startoverlay
+    {\color[colormb]{$\mb\sqrt{\frac{1}{x}}$}}
+    {\color[colormr]{$   \sqrt{\frac{1}{x}}$}}
+\stopoverlay}
+\stopplacefigure
+
+In case you wonder how currently normal Latin Modern bold looks, here we go:
+
+\startbuffer
+\switchtobodyfont[latinmodern,17.3pt]
+\startformula
+  \mr \darkblue  \getbuffer[mathblob] \quad
+  \mb \darkgreen \getbuffer[mathblob]
+\stopformula
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+\unexpanded\def\ShowMathSample#1%
+  {\switchtobodyfont[#1,14.4pt]%
+   \mathematics{%
+    \mr \darkblue  \getbuffer[mathblob] \quad
+    \mb \darkgreen \getbuffer[mathblob]
+   }}
+
+\unexpanded\def\ShowMathCaption#1%
+  {\switchtobodyfont[#1]%
+   #1:
+   $
+   {\mr2\enspace \scriptstyle2\enspace \scriptscriptstyle2}
+   \enspace
+   {\mb2\enspace \scriptstyle2\enspace \scriptscriptstyle2}
+   $}
+
+\startcombination[3*2]
+    {\ShowMathSample {dejavu}} {\ShowMathCaption{dejavu}}
+    {\ShowMathSample{pagella}} {\ShowMathCaption{pagella}}
+    {\ShowMathSample {termes}} {\ShowMathCaption{termes}}
+    {\ShowMathSample  {bonum}} {\ShowMathCaption{bonum}}
+    {\ShowMathSample {schola}} {\ShowMathCaption{schola}}
+    {\ShowMathSample{cambria}} {\ShowMathCaption{cambria}}
+\stopcombination
+
+I must admit that I cheat a bit. In order to get a better looking pseudo math
+we need to extend the shapes horizontally as well as squeeze them a bit vertically.
+So, the real effect definitions more look like this:
+
+\starttyping
+\definefontfeature
+  [boldened-30]
+  [effect={width=0.3,extend=1.15,squeeze=0.985,%
+     delta=1,hdelta=0.225,ddelta=0.225,vshift=0.225}]
+\stoptyping
+
+and because we can calculate the funny values sort of automatically, this gets
+simplified to:
+
+\starttyping
+\definefontfeature
+  [boldened-30]
+  [effect={width=0.30,auto=yes}]
+\stoptyping
+
+We leave it to your imagination to figure out what happens behind the screens.
+Just think of some virtual font magic combined with the engine supported \type
+{extend} and \type {squeeze} function. And because we already support bold math
+in \CONTEXT, you will get it when you are doing bold titling.
+
+\startbuffer
+\def\MathSample
+  {\overbrace{2 +
+     \sqrt{\frac{\sqrt{\frac{\sqrt{2}}{\sqrt{2}}}}
+       {\sqrt{\frac{\sqrt{\underbar{2}}}{\sqrt{\overbar{2}}}}}}}}
+
+\definehead
+  [mysubject]
+  [subject]
+
+\setuphead
+  [mysubject]
+  [style=\tfc,
+   color=darkblue,
+   before=\blank,
+   after=\blank]
+
+\mysubject{Regular\quad$\MathSample\quad\mb\MathSample$}
+
+\setuphead
+  [mysubject]
+  [style=\bfc,
+   color=darkred]
+
+\mysubject{Bold   \quad$\MathSample\quad\mb\MathSample$}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Of course one can argue about the right values for boldening and compensation if
+dimensions so don't expect the current predefined related features to be frozen
+yet.
+
+For sure this mechanism will create more fonts than normal but fortunately it
+can use the low level optimizations for sharing instances so in the end the
+overhead is not that large. This chapter uses 36 different fonts, creates 270
+font instances (different scaling and properties) of which 220 are shared in the
+backend. The load time is 5 seconds in \LUATEX\ and 1.2 seconds in \LUAJITTEX\ on
+a somewhat old laptop with a i7-3840QM processor running 64 bit \MSWINDOWS. Of
+course we load a lot of bodyfonts at different sizes so in a normal run the extra
+loading is limited to just a couple of extra instances for math (normally 3, one
+for each math size).
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+So what can we conclude? When we started with \LUATEX, right from the start
+\CONTEXT\ supported true \UNICODE\ math by using virtual \UNICODE\ math fonts.
+One of the objectives of the \TEX Gyre project is to come up with a robust
+complete set of math fonts, text fonts with a bunch of useful symbols, and
+finally a subset bold math font for titling. Now we have real \OPENTYPE\ math
+fonts, although they are still somewhat experimental. Because we're impatient, we
+now provide bold math by using effects but the future will learn to what extent
+the real bold math fonts will differ and be more pleasant to look at. After all,
+what we describe he is just an experiment that got a bit out of hands.
+
+% And if you wonder if this kind of messing with fonts is okay? Well, you don't
+% know what specs we sometimes get (and then ignore).
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['font-osd'] = { -- script devanag
     license   = "see context related readme files"
 }
 
+
+-- we need to check nbsphash (context only)
+
 -- A few remarks:
 --
 -- This code is a partial rewrite of the code that deals with devanagari. The data
@@ -96,8 +99,6 @@ local otffeatures        = fonts.constructors.features.otf
 local registerotffeature = otffeatures.register
 
 local nuts               = nodes.nuts
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -152,46 +153,26 @@ replace_all_nbsp = function(head) -- delayed definition
     return replace_all_nbsp(head)
 end
 
-local xprocesscharacters = nil
+local processcharacters = nil
 
 if context then
-    xprocesscharacters = function(head,font)
-        xprocesscharacters = nodes.handlers.characters
-        return xprocesscharacters(head,font)
+    local fontprocesses = fonts.hashes.processes
+    function processcharacters(head,font)
+        local processors = fontprocesses[font]
+        for i=1,#processors do
+            head = processors[i](head,font,0)
+        end
+        return head
     end
 else
-    xprocesscharacters = function(head,font)
-        xprocesscharacters = nodes.handlers.nodepass -- generic
-        return xprocesscharacters(head,font)
+    function processcharacters(head,font)
+        local processors = fontdata[font].shared.processes
+        for i=1,#processors do
+            head = processors[i](head,font,0)
+        end
+        return head
     end
 end
-
-local function processcharacters(head,font)
-    return tonut(xprocesscharacters(tonode(head))) -- can be more efficient in context, just direct call
-end
-
--- to be tested:
---
--- local processcharacters = nil
---
--- if context then
---     local fontprocesses = fonts.hashes.processes
---     function processcharacters(head,font)
---         local processors = fontprocesses[font]
---         for i=1,#processors do
---             head = processors[i](head,font,0)
---         end
---         return head, true
---     end
--- else
---     function processcharacters(head,font)
---         local processors = fontdata[font].shared.processes
---         for i=1,#processors do
---             head = processors[i](head,font,0)
---         end
---         return head, true
---     end
--- end
 
 -- We can assume that script are not mixed in the source but if that is the case
 -- we might need to have consonants etc per script and initialize a local table
@@ -2067,7 +2048,6 @@ end
 -- a lot. Common code has been synced.
 
 local function method_one(head,font,attr)
-    head           = tonut(head)
     local current  = head
     local start    = true
     local done     = false
@@ -2262,14 +2242,13 @@ local function method_one(head,font,attr)
         head = replace_all_nbsp(head)
     end
 
-    return tonode(head), done
+    return head, done
 end
 
 -- there is a good change that when we run into one with subtype < 256 that the rest is also done
 -- so maybe we can omit this check (it's pretty hard to get glyphs in the stream out of the blue)
 
 local function method_two(head,font,attr)
-    head           = tonut(head)
     local current  = head
     local start    = true
     local done     = false
@@ -2358,7 +2337,7 @@ local function method_two(head,font,attr)
         head = replace_all_nbsp(head)
     end
 
-    return tonode(head), done
+    return head, done
 end
 
 for i=1,nofscripts do

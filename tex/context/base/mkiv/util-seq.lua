@@ -27,6 +27,15 @@ local allocate          = utilities.storage.allocate
 local formatters        = string.formatters
 local replacer          = utilities.templates.replacer
 
+local trace_used        = false
+local trace_detail      = false
+local report            = logs.reporter("sequencer")
+local usedcount         = 0
+local usednames         = { }
+
+trackers.register("sequencers.used",  function(v) trace_used   = true end)
+trackers.register("sequencers.detail",function(v) trace_detail = true end)
+
 local sequencers        = { }
 utilities.sequencers    = sequencers
 
@@ -37,6 +46,8 @@ local removevalue       = tables.removevalue
 local replacevalue      = tables.replacevalue
 local insertaftervalue  = tables.insertaftervalue
 local insertbeforevalue = tables.insertbeforevalue
+
+local usedsequences     = { }
 
 local function validaction(action)
     if type(action) == "string" then
@@ -211,9 +222,19 @@ local function localize(str)
 end
 
 local function construct(t)
-    local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
-    local arguments, returnvalues, results = t.arguments or "...", t.returnvalues, t.results
-    local variables, calls, n = { }, { }, 0
+    local list         = t.list
+    local order        = t.order
+    local kind         = t.kind
+    local gskip        = t.gskip
+    local askip        = t.askip
+    local name         = t.name or "?"
+    local arguments    = t.arguments or "..."
+    local returnvalues = t.returnvalues
+    local results      = t.results
+    local variables    = { }
+    local calls        = { }
+    local n            = 0
+    usedcount          = usedcount + 1
     for i=1,#order do
         local group = order[i]
         if not gskip[group] then
@@ -221,6 +242,11 @@ local function construct(t)
             for i=1,#actions do
                 local action = actions[i]
                 if not askip[action] then
+                    if trace_used then
+                        local action = tostring(action)
+                        report("%02i: category %a, group %a, action %a",usedcount,name,group,action)
+                        usednames[action] = true
+                    end
                     local localized
                     if type(action) == "function" then
                         local name = localize(tostring(action))
@@ -261,17 +287,16 @@ end
 sequencers.tostring = construct
 sequencers.localize = localize
 
-compile = function(t,compiler,n) -- already referred to in sequencers.new
+compile = function(t,compiler,...) -- already referred to in sequencers.new
     local compiled
     if not t or type(t) == "string" then
-        -- weird ... t.compiled = t .. so
         return false
     end
     if compiler then
-        compiled = compiler(t,n)
+        compiled = compiler(t,...)
         t.compiled = compiled
     else
-        compiled = construct(t,n)
+        compiled = construct(t,...)
     end
     local runner
     if compiled == "" then
@@ -285,114 +310,46 @@ end
 
 sequencers.compile = compile
 
--- we used to deal with tail as well but now that the lists are always
--- double linked and the kernel function no longer expect tail as
--- argument we stick to head and done (done can probably also go
--- as luatex deals with return values efficiently now .. in the
--- past there was some copying involved, but no longer)
-
--- todo: use sequencer (can have arguments and returnvalues etc now)
-
-local template_yes_state = [[
-%s
-return function(head%s)
-  local ok, done = false, false
-%s
-  return head, done
-end]]
-
-local template_yes_nostate = [[
-%s
-return function(head%s)
-%s
-  return head, true
-end]]
-
-local template_nop = [[
-return function()
-  return false, false
-end]]
-
-local function nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug into tostring
-    local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
-    local nostate = t.nostate
-    local vars, calls, args, n = { }, { }, nil, 0
-    if nofarguments == 0 then
-        args = ""
-    elseif nofarguments == 1 then
-        args = ",one"
-    elseif nofarguments == 2 then
-        args = ",one,two"
-    elseif nofarguments == 3 then -- from here on probably slower than ...
-        args = ",one,two,three"
-    elseif nofarguments == 4 then
-        args = ",one,two,three,four"
-    elseif nofarguments == 5 then
-        args = ",one,two,three,four,five"
-    else
-        args = ",..."
-    end
-    for i=1,#order do
-        local group = order[i]
-        if not gskip[group] then
-            local actions = list[group]
-            for i=1,#actions do
-                local action = actions[i]
-                if not askip[action] then
-                    local localized = localize(action)
-                    n = n + 1
-                    vars[n] = formatters["local %s = %s"](localized,action)
-                    -- only difference with tostring is kind and rets (why no return)
-                    if nostate then
-                        if kind[action] == "nohead" then
-                            calls[n] = formatters["         %s(head%s)"](localized,args)
-                        else
-                            calls[n] = formatters["  head = %s(head%s)"](localized,args)
-                        end
-                    else
-                        if kind[action] == "nohead" then
-                            calls[n] = formatters["        ok = %s(head%s) if ok then done = true end"](localized,args)
-                        else
-                            calls[n] = formatters["  head, ok = %s(head%s) if ok then done = true end"](localized,args)
-                        end
-                    end
-                end
-            end
-        end
-    end
-    local processor = #calls > 0 and formatters[nostate and template_yes_nostate or template_yes_state](concat(vars,"\n"),args,concat(calls,"\n")) or template_nop
- -- print(processor)
-    return processor
-end
-
 function sequencers.nodeprocessor(t,nofarguments)
-    local kind = type(nofarguments)
-    if kind == "number" then
-        return nodeprocessor(t,nofarguments)
-    elseif kind ~= "table" then
-        return
-    end
     --
     local templates = nofarguments
-    local process   = templates.process
-    local step      = templates.step
     --
-    if not process or not step then
+    if type(templates) ~= "table" then
         return ""
     end
     --
-    local construct = replacer(process)
-    local newaction = replacer(step)
+    local replacers = { }
+    for k, v in next, templates do
+        replacers[k] = replacer(v)
+    end
+    --
+    local construct = replacers.process
+    local step      = replacers.step
+    if not construct or not step then
+        return ""
+    end
+    --
     local calls     = { }
     local aliases   = { }
-    local n         = 0
+    local ncalls    = 0
+    local naliases  = 0
+    local f_alias   = formatters["local %s = %s"]
     --
     local list  = t.list
     local order = t.order
     local kind  = t.kind
     local gskip = t.gskip
     local askip = t.askip
+    local name  = t.name or "?"
+    local steps = 0
+    usedcount   = usedcount + 1
     --
+    if trace_detail then
+        naliases = naliases + 1
+        aliases[naliases] = formatters["local report = logs.reporter('sequencer',%q)"](name)
+        ncalls = ncalls + 1
+        calls[ncalls] = [[report("start")]]
+    end
     for i=1,#order do
         local group = order[i]
         if not gskip[group] then
@@ -400,20 +357,48 @@ function sequencers.nodeprocessor(t,nofarguments)
             for i=1,#actions do
                 local action = actions[i]
                 if not askip[action] then
+                    steps = steps + 1
+                    if trace_used or trace_detail then
+                        local action = tostring(action)
+                        report("%02i: category %a, group %a, action %a",usedcount,name,group,action)
+                        usednames[action] = true
+                    end
+                    if trace_detail then
+                        ncalls = ncalls + 1
+                        calls[ncalls] = formatters[ [[report("  step %a, action %a")]] ](steps,tostring(action))
+                    end
                     local localized = localize(action)
-                    n = n + 1
-                    aliases[n] = formatters["local %s = %s"](localized,action)
-                    calls[n]   = newaction { action = localized }
+                    local onestep   = replacers[kind[action]] or step
+                    naliases = naliases + 1
+                    ncalls   = ncalls + 1
+                    aliases[naliases] = f_alias(localized,action)
+                    calls  [ncalls]   = onestep { action = localized }
                 end
             end
         end
     end
-    if n == 0 then
-        return templates.default or construct { }
+    local processor
+    if steps == 0 then
+        processor = templates.default or construct { }
+    else
+        if trace_detail then
+            ncalls = ncalls + 1
+            calls[ncalls] = [[report("stop")]]
+        end
+        processor = construct {
+            localize = concat(aliases,"\n"),
+            actions  = concat(calls,"\n"),
+        }
     end
-    local processor = construct {
-        localize = concat(aliases,"\n"),
-        actions  = concat(calls,"\n"),
-    }
+
+ -- processor = "print('running : " .. (t.name or "?") .. "')\n" .. processor
+ -- print(processor)
+
     return processor
 end
+
+statistics.register("used sequences",function()
+    if next(usednames) then
+        return table.concat(table.sortedkeys(usednames)," ")
+    end
+end)

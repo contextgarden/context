@@ -31,7 +31,6 @@ local enableaction    = nodes.tasks.enableaction
 local texsetattribute = tex.setattribute
 
 local nuts            = nodes.nuts
-local tonut           = nuts.tonut
 
 local getchar         = nuts.getchar
 local getattr         = nuts.getattr
@@ -39,7 +38,7 @@ local setattr         = nuts.setattr
 
 local setchar         = nuts.setchar
 
-local traverse_id     = nuts.traverse_id
+local nextglyph       = nuts.traversers.glyph
 
 local unsetvalue      = attributes.unsetvalue
 
@@ -58,8 +57,8 @@ local resetter = { -- this will become an entry in char-def
 -- cleaning comes first.
 
 function cleaners.handler(head)
-    local inline, done = false, false
-    for n in traverse_id(glyph_code,tonut(head)) do
+    local inline = false
+    for n in nextglyph, head do
         local char = getchar(n)
         if resetter[char] then
             inline = false
@@ -71,7 +70,6 @@ function cleaners.handler(head)
                     -- some day, not much change that \SS ends up here
                 else
                     setchar(n,upper)
-                    done = true
                     if trace_autocase then
                         report_autocase("")
                     end
@@ -80,7 +78,35 @@ function cleaners.handler(head)
             inline = true
         end
     end
-    return head, done
+    return head
+end
+
+if LUATEXVERSION >= 1.090 then
+
+    function cleaners.handler(head)
+        local inline = false
+        for n, font, char in nextglyph, head do
+            if resetter[char] then
+                inline = false
+            elseif not inline then
+                local a = getattr(n,a_cleaner)
+                if a == 1 then -- currently only one cleaner so no need to be fancy
+                    local upper = uccodes[char]
+                    if type(upper) == "table" then
+                        -- some day, not much change that \SS ends up here
+                    else
+                        setchar(n,upper)
+                        if trace_autocase then
+                            report_autocase("")
+                        end
+                    end
+                end
+                inline = true
+            end
+        end
+        return head
+    end
+
 end
 
 -- see typo-cap for a more advanced settings handler .. not needed now

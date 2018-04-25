@@ -905,12 +905,11 @@ if not callbacks.register("finish_pdfpage", lpdf.finalizepage) then
         return head, true
     end
 
-    nodes.tasks.appendaction("shipouts","normalizers","backends.pdf.nodeinjections.finalizepage")
+    nodes.tasks.enableaction("shipouts","backends.pdf.nodeinjections.finalizepage")
 
 end
 
 callbacks.register("finish_pdffile", lpdf.finalizedocument)
-
 
 do
 
@@ -1127,12 +1126,12 @@ do
         return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
     end
 
-    function lpdf.id(nodate)
+    function lpdf.id(date)
         local banner = environment.jobname or tex.jobname or "unknown"
-        if nodate then
+        if not date then
             return banner
         else
-            return format("%s.%s",banner,timestamp)
+            return format("%s | %s",banner,timestamp)
         end
     end
 

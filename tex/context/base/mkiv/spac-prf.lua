@@ -639,7 +639,7 @@ end
 
 local function profilelist(line,mvl)
 
-    local current       = tonut(line)
+    local current       = line
 
     local top           = nil
     local bot           = nil
@@ -899,9 +899,8 @@ end
 --
 -- function profiling.vboxhandler(head,where)
 --     if head and not ignore[where] then
---         local h = tonut(head)
---         if getnext(h) then
---             profilelist(h)
+--         if getnext(head) then
+--             profilelist(head)
 --         end
 --     end
 --     return head
@@ -911,7 +910,7 @@ function profiling.pagehandler(head)
     if head then
         profilelist(head,true)
     end
-    return head, true
+    return head
 end
 
 interfaces.implement {

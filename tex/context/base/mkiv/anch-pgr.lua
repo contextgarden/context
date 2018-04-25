@@ -61,8 +61,6 @@ local pdfgetpos         = pdf.getpos  -- why not a generic name !
 local a_textbackground  = attributes.private("textbackground")
 
 local nuts              = nodes.nuts
-local tonut             = nodes.tonut
-local tonode            = nodes.tonode
 
 local new_latelua       = nuts.pool.latelua
 local new_rule          = nuts.pool.rule
@@ -82,7 +80,7 @@ local localpar_code     = nodecodes.localpar
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 
-local processranges     = nodes.processranges
+local processranges     = nuts.processranges
 
 local unsetvalue        = attributes.unsetvalue
 
@@ -213,10 +211,8 @@ end
 
 nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
     -- todo enable action in register
-    head = tonut(head)
     index = index + 1
-    local head, done = processranges(a_textbackground,flush,head,parent)
-    return tonode(head), done
+    return processranges(a_textbackground,flush,head,parent)
 end
 
 interfaces.implement {

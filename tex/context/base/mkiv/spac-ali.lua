@@ -63,9 +63,8 @@ local nofrealigned     = 0
 -- raggedright     0           0         fil
 -- raggedcenter    0 +         0 +        -
 
-local function handler(head,leftpage,realpageno)
+local function handler(head,leftpage,realpageno) -- traverse_list
     local current = head
-    local done = false
     while current do
         local id = getid(current)
         if id == hlist_code then
@@ -102,7 +101,6 @@ local function handler(head,leftpage,realpageno)
                         elseif trace_realign then
                             report_realign("invalid flushing, align %a, page %a, realpage %a",align,pageno,realpageno)
                         end
-                        done = true
                         nofrealigned = nofrealigned + 1
                     end
                 end
@@ -113,14 +111,11 @@ local function handler(head,leftpage,realpageno)
         end
         current = getnext(current)
     end
-    return head, done
+    return head
 end
 
 function alignments.handler(head)
-    local leftpage = isleftpage()
-    local realpageno = texgetcount("realpageno")
-    local head, done = handler(tonut(head),leftpage,realpageno)
-    return tonode(head), done
+    return handler(head,isleftpage(),texgetcount("realpageno"))
 end
 
 local enabled = false

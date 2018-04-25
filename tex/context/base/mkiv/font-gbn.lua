@@ -47,8 +47,8 @@ local setprev     = nuts.setprev
 local n_ligaturing = node.ligaturing
 local n_kerning    = node.kerning
 
-local ligaturing   = nuts.ligaturing
-local kerning      = nuts.kerning
+local d_ligaturing = nuts.ligaturing
+local d_kerning    = nuts.kerning
 
 local basemodepass = true
 
@@ -69,15 +69,30 @@ function node.kerning(...)
     return n_kerning(...)
 end
 
+function nuts.ligaturing(...)
+    if basemodepass and l_warning then
+        l_warning()
+    end
+    return d_ligaturing(...)
+end
+
+function nuts.kerning(...)
+    if basemodepass and k_warning then
+        k_warning()
+    end
+    return d_kerning(...)
+end
+
+-- direct.ligaturing = nuts.ligaturing
+-- direct.kerning    = nuts.kerning
+
 function nodes.handlers.setbasemodepass(v)
     basemodepass = v
 end
 
--------- nodes.handlers.nodepass(head)
-function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
+local function nodepass(head,groupcode,size,packtype,direction)
     local fontdata = fonts.hashes.identifiers
     if fontdata then
-        local nuthead   = tonut(head)
         local usedfonts = { }
         local basefonts = { }
         local prevfont  = nil
@@ -85,7 +100,7 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
         local variants  = nil
         local redundant = nil
         local nofused   = 0
-        for n in traverse_id(glyph_code,nuthead) do
+        for n in traverse_id(glyph_code,head) do
             local font = getfont(n)
             if font ~= prevfont then
                 if basefont then
@@ -147,8 +162,8 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
             for i=1,#redundant do
                 local r = redundant[i]
                 local p, n = getboth(r)
-                if r == nuthead then
-                    nuthead = n
+                if r == head then
+                    head = n
                     setprev(n)
                 else
                     setlink(p,n)
@@ -167,7 +182,7 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
                 flush_node(r)
             end
         end
-        for d in traverse_id(disc_code,nuthead) do
+        for d in traverse_id(disc_code,head) do
             local _, _, r = getdisc(d)
             if r then
                 for n in traverse_id(glyph_code,r) do
@@ -205,16 +220,16 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
                 local start = range[1]
                 local stop  = range[2]
                 if start then
-                    local front = nuthead == start
+                    local front = head == start
                     local prev, next
                     if stop then
                         next = getnext(stop)
-                        start, stop = ligaturing(start,stop)
-                        start, stop = kerning(start,stop)
+                        start, stop = d_ligaturing(start,stop)
+                        start, stop = d_kerning(start,stop)
                     else
                         prev  = getprev(start)
-                        start = ligaturing(start)
-                        start = kerning(start)
+                        start = d_ligaturing(start)
+                        start = d_kerning(start)
                     end
                     if prev then
                         setlink(prev,start)
@@ -222,41 +237,65 @@ function nodes.handlers.nodepass(head,groupcode,size,packtype,direction)
                     if next then
                         setlink(stop,next)
                     end
-                    if front and nuthead ~= start then
-                        head = tonode(start)
+                    if front and head ~= start then
+                        head = start
                     end
                 end
             end
         end
-        return head, true
-    else
-        return head, false
+    end
+    return head
+end
+
+local function basepass(head)
+    if basemodepass then
+        head = d_ligaturing(head)
+        head = d_kerning(head)
+    end
+    return head
+end
+
+local injectpass  = nodes.injections.handler
+local protectpass = nodes.handlers.protectglyphs
+
+-- This is the only official public interface and this one can be hooked into a callback (chain) and
+-- everything else can change!@ Functione being visibel doesn't mean that it's part of the api.
+
+function nodes.handlers.nodepass(head,...)
+    if head then
+        return tonode(nodepass(tonut(head),...))
     end
 end
 
 function nodes.handlers.basepass(head)
-    if basemodepass then
-        head = n_ligaturing(head)
-        head = n_kerning(head)
+    if head then
+        return tonode(basepass(tonut(head)))
     end
-    return head, true
 end
 
-local nodepass    = nodes.handlers.nodepass
-local basepass    = nodes.handlers.basepass
-local injectpass  = nodes.injections.handler
-local protectpass = nodes.handlers.protectglyphs
+function nodes.handlers.injectpass(head)
+    if head then
+        return tonode(injectpass(tonut(head)))
+    end
+end
+
+function nodes.handlers.protectpass(head)
+    if head then
+        protectpass(tonut(head))
+        return head
+    end
+end
 
 function nodes.simple_font_handler(head,groupcode,size,packtype,direction)
     if head then
+        head = tonut(head)
         head = nodepass(head,groupcode,size,packtype,direction)
         head = injectpass(head)
         if not basemodepass then
             head = basepass(head)
         end
         protectpass(head)
-        return head, true
-    else
-        return head, false
+        head = tonode(head)
     end
+    return head
 end

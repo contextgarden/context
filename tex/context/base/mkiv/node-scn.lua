@@ -12,8 +12,6 @@ local attributes         = attributes
 local nodes              = nodes
 
 local nuts               = nodes.nuts
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -97,7 +95,7 @@ local function striprange(first,last) -- todo: dir
     return first, last
 end
 
-nodes.striprange = striprange
+nuts.striprange = striprange
 
 -- todo: order and maybe other dimensions
 
@@ -228,17 +226,11 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
     end
 end
 
-nodes.processwords = function(attribute,data,flush,head,parent) -- we have hlistdir and local dir
-    head = tonut(head)
-    if parent then
-        parent = tonut(parent)
-    end
-    local head, done = processwords(attribute,data,flush,head,parent)
-    return tonode(head), done
+nuts.processwords = function(attribute,data,flush,head,parent) -- we have hlistdir and local dir
+    return processwords(attribute,data,flush,head,parent)
 end
 
 -- works on lines !
-
 -- todo: stack because skip can change when nested
 
 local function processranges(attribute,flush,head,parent,depth,skip)
@@ -319,11 +311,6 @@ local function processranges(attribute,flush,head,parent,depth,skip)
     end
 end
 
-nodes.processranges = function(attribute,flush,head,parent) -- we have hlistdir and local dir
-    head = tonut(head)
-    if parent then
-        parent = tonut(parent)
-    end
-    local head, done = processranges(attribute,flush,head,parent,0)
-    return tonode(head), done
+nuts.processranges = function(attribute,flush,head,parent) -- we have hlistdir and local dir
+    return processranges(attribute,flush,head,parent,0)
 end

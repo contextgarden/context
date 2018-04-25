@@ -20,8 +20,6 @@ local report_digits = logs.reporter("typesetting","digits")
 local nodes, node = nodes, node
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -111,23 +109,21 @@ actions[1] = function(head,start,attr)
                     attr%100,div(attr,100),char,unic,newwidth-oldwidth)
             end
             head, start = nodes.aligned(head,start,start,newwidth,"middle")
-            return head, start, true
+            return head, start
         end
     end
-    return head, start, false
+    return head, start
 end
 
 function digits.handler(head)
-    head = tonut(head)
-    local done, current, ok = false, head, false
+    local current = head
     while current do
         if getid(current) == glyph_code then
             local attr = takeattr(current,a_digits)
             if attr and attr > 0 then
                 local action = actions[attr%100] -- map back to low number
                 if action then
-                    head, current, ok = action(head,current,attr)
-                    done = done and ok
+                    head, current = action(head,current,attr)
                 elseif trace_digits then
                     report_digits("unknown digit trigger %a",attr)
                 end
@@ -137,7 +133,7 @@ function digits.handler(head)
             current = getnext(current)
         end
     end
-    return tonode(head), done
+    return head
 end
 
 local m, enabled = 0, false -- a trick to make neighbouring ranges work

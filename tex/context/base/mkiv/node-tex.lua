@@ -10,9 +10,11 @@ builders         = builders        or { }
 local kernel     = builders.kernel or { }
 builders.kernel  = kernel
 
+local nuts       = nodes.nuts
+
 local hyphenate  = lang.hyphenate
-local ligaturing = node.ligaturing
-local kerning    = node.kerning
+local ligaturing = nuts.ligaturing
+local kerning    = nuts.kerning
 
 kernel.originals = {
     hyphenate  = hyphenate,
@@ -21,18 +23,18 @@ kernel.originals = {
 }
 
 function kernel.hyphenation(head)
-    local done = hyphenate(head)
-    return head, done
+    hyphenate(head)
+    return head
 end
 
 function kernel.ligaturing(head)
-    local head, tail, done = ligaturing(head) -- we return 3 values indeed
-    return head, done
+    local head, tail = ligaturing(head)
+    return head
 end
 
 function kernel.kerning(head)
-    local head, tail, done = kerning(head) -- we return 3 values indeed
-    return head, done
+    local head, tail = kerning(head)
+    return head
 end
 
 callbacks.register('hyphenate' , false, "normal hyphenation routine, called elsewhere")

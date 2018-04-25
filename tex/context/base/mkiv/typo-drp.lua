@@ -28,14 +28,11 @@ local enableaction      = tasks.enableaction
 local disableaction     = tasks.disableaction
 
 local nuts              = nodes.nuts
-local tonut             = nuts.tonut
-local tonode            = nuts.tonode
 
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getchar           = nuts.getchar
 local getid             = nuts.getid
-local getsubtype        = nuts.getsubtype
 local getattr           = nuts.getattr
 local getwhd            = nuts.getwhd
 
@@ -59,8 +56,9 @@ local new_kern          = nodepool.kern
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 local remove_node       = nuts.remove
-local traverse_id       = nuts.traverse_id
-local traverse          = nuts.traverse
+
+local nextnode          = nuts.traversers.node
+local nextglyph         = nuts.traversers.glyph
 
 local variables         = interfaces.variables
 local v_default         = variables.default
@@ -139,7 +137,6 @@ interfaces.implement {
 -- a page so this has a low priority
 
 actions[v_default] = function(head,setting)
-    local done = false
     local id   = getid(head)
     if id == localpar_code then
         -- begin of par
@@ -173,7 +170,7 @@ actions[v_default] = function(head,setting)
             -- 1 char | n chars | skip first quote | ignore punct | keep punct
             --
             if getattr(first,a_initial) then
-                for current in traverse(getnext(first)) do
+                for current in nextnode, getnext(first) do
                     if getattr(current,a_initial) then
                         last = current
                     else
@@ -189,10 +186,10 @@ actions[v_default] = function(head,setting)
                         local next = getnext(first)
                         if not next then
                             -- don't start with a quote or so
-                            return head, false
+                            return head
                         end
                         last = nil
-                        for current in traverse_id(glyph_code,next) do
+                        for current in nextglyph, next do
                             head, first = remove_node(head,first,true)
                             first = current
                             last = first
@@ -200,21 +197,21 @@ actions[v_default] = function(head,setting)
                         end
                         if not last then
                             -- no following glyph or so
-                            return head, false
+                            return head
                         end
                     else
                         -- keep quote etc with initial
                         local next = getnext(first)
                         if not next then
                             -- don't start with a quote or so
-                            return head, false
+                            return head
                         end
-                        for current in traverse_id(glyph_code,next) do
+                        for current in nextglyph, next do
                             last = current
                             break
                         end
                         if last == first then
-                            return head, false
+                            return head
                         end
                     end
                 elseif kind == "pf" then
@@ -225,7 +222,7 @@ actions[v_default] = function(head,setting)
                 -- maybe also: get all A. B. etc
                 local next = getnext(first)
                 if next then
-                    for current in traverse_id(glyph_code,next) do
+                    for current in nextglyph, next do
                         local char = getchar(current)
                         local kind = category(char)
                         if kind == "po" then
@@ -241,7 +238,7 @@ actions[v_default] = function(head,setting)
                     end
                 end
             else
-                for current in traverse_id(glyph_code,first) do
+                for current in nextglyph, first do
                     last = current
                     if length <= 1 then
                         break
@@ -265,12 +262,12 @@ actions[v_default] = function(head,setting)
                     end
 -- apply font
 
--- local g = nodes.copy(tonode(current))
+-- local g = nuts.copy(current)
 -- g.subtype = 0
 -- nodes.handlers.characters(g)
 -- nodes.handlers.protectglyphs(g)
 -- setchar(current,g.char)
--- nodes.flush_node(g)
+-- nuts.flush_node(g)
 
                     -- can be a helper
                     if ca and ca > 0 then
@@ -319,7 +316,7 @@ actions[v_default] = function(head,setting)
             end
             --
             local hoffset = width + hoffset + distance + (indent and parindent or 0)
-            for current in traverse_id(glyph_code,first) do
+            for current in nextglyph, first do
                 setoffsets(current,-hoffset,-voffset) -- no longer - height here
                 if current == last then
                     break
@@ -347,14 +344,12 @@ actions[v_default] = function(head,setting)
             if indent then
                 insert_after(first,first,new_kern(-parindent))
             end
-            done = true
         end
     end
-    return head, done
+    return head
 end
 
 function initials.handler(head)
-    head = tonut(head)
     local start = head
     local attr  = nil
     while start do
@@ -377,9 +372,8 @@ function initials.handler(head)
             if trace_initials then
                 report_initials("processing initials, alternative %a",alternative)
             end
-            local head, done = action(head,settings)
-            return tonode(head), done
+            return action(head,settings)
         end
     end
-    return tonode(head), false
+    return head
 end

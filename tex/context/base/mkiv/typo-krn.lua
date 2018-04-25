@@ -21,9 +21,6 @@ local enableaction       = nodes.tasks.enableaction
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
 
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
-
 -- check what is used
 
 local find_node_tail     = nuts.tail
@@ -364,9 +361,7 @@ local function closest_bound(b,get)
 end
 
 function kerns.handler(head)
-    local head         = tonut(head)
     local start        = head
-    local done         = false
     local lastfont     = nil
     local keepligature = kerns.keepligature
     local keeptogether = kerns.keeptogether
@@ -418,7 +413,6 @@ function kerns.handler(head)
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
                             setkern(prev,getkern(prev) + quaddata[font]*krn,userkern_code)
-                            done = true
                         end
                     end
                 elseif previd == glyph_code then
@@ -430,11 +424,9 @@ function kerns.handler(head)
                             local kerns = data and data.kerns
                             local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
                             insert_node_before(head,start,kern_injector(fillup,kern))
-                            done = true
                         end
                     else
                         insert_node_before(head,start,kern_injector(fillup,quaddata[font]*krn))
-                        done = true
                     end
                 end
                 prev     = start
@@ -514,7 +506,6 @@ function kerns.handler(head)
                 end
                 if indeed then
                     setdisc(start,pre,post,replace)
-                    done = true
                 end
                 bound = false
             elseif id == kern_code then
@@ -536,7 +527,6 @@ function kerns.handler(head)
                          -- shrink_order  = 1 ?
                         end
                         setglue(start,w,stretch,shrink,stretch_order,shrink_order)
-                        done = true
                     end
                 end
                 bound = false
@@ -547,12 +537,10 @@ function kerns.handler(head)
                     local b, f = closest_bound(start,getprev)
                     if b then
                         insert_node_before(head,start,kern_injector(fillup,quaddata[f]*krn))
-                        done = true
                     end
                     local b, f = closest_bound(start,getnext)
                     if b then
                         insert_node_after(head,start,kern_injector(fillup,quaddata[f]*krn))
-                        done = true
                     end
                 end
                 bound = false
@@ -573,7 +561,7 @@ function kerns.handler(head)
             start = getnext(start)
         end
     end
-    return tonode(head), done
+    return head
 end
 
 local enabled = false

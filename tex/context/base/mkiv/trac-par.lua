@@ -125,7 +125,7 @@ end
 builders.paragraphs.expansion = builders.paragraphs.expansion or { }
 
 function builders.paragraphs.expansion.trace(head)
-    colorize(tonut(head),true)
+    colorize(head,true)
     return head
 end
 

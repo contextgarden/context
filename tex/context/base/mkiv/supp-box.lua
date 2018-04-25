@@ -62,9 +62,11 @@ local flush_list      = nuts.flush_list
 local copy_node       = nuts.copy
 local copy_list       = nuts.copy_list
 local find_tail       = nuts.tail
-local traverse_id     = nuts.traverse_id
 local list_dimensions = nuts.dimensions
 local hpack           = nuts.hpack
+
+local nextdisc        = nuts.traversers.disc
+local nexthlist       = nuts.traversers.hlist
 
 local listtoutf       = nodes.listtoutf
 
@@ -128,7 +130,7 @@ implement {
 
 -- local function hyphenatedhack(head,pre)
 --     pre = tonut(pre)
---     for n in traverse_id(disc_code,tonut(head)) do
+--     for n in nextdisc, tonut(head) do
 --         local hyphen = getfield(n,"pre")
 --         if hyphen then
 --             flush_list(hyphen)
@@ -422,7 +424,7 @@ local function firstdirinbox(n)
     if b then
         local l = getlist(b)
         if l then
-            for h in traverse_id(hlist_code,l) do
+            for h in nexthlist, l do
                 return getdir(h)
             end
         end

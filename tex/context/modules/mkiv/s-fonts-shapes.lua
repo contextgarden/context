@@ -107,219 +107,176 @@ end
 local descriptions = nil
 local characters   = nil
 
+
 local function showglyphshape(specification)
-    specification = interfaces.checkedspecification(specification)
-    local id, cs  = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
-    local tfmdata = fontdata[id]
-    local charnum = tonumber(specification.character) or fonts.helpers.nametoslot(specification.character)
-    local characters   = tfmdata.characters
-    local descriptions = tfmdata.descriptions
-    local parameters   = tfmdata.parameters
-    local c = characters[charnum]
-    local d = descriptions[charnum]
-    if d then
-        local factor = (parameters.size/parameters.units)*((7200/7227)/65536)
-        local llx, lly, urx, ury = unpack(d.boundingbox)
-        llx, lly, urx, ury = llx*factor, lly*factor, urx*factor, ury*factor
-        local width, italic = (d.width or 0)*factor, (d.italic or 0)*factor
-        local top_accent, bot_accent = (d.top_accent or 0)*factor, (d.bot_accent or 0)*factor
-        local anchors, math = d.anchors, d.math
-        context.start()
-        context.dontleavehmode()
-        context.obeyMPboxdepth()
-        context.startMPcode()
-        context("numeric lw ; lw := .125bp ;")
-        context("pickup pencircle scaled lw ;")
-        if width < 0.01 then
-            -- catches zero width marks
-            context('picture p ; p := textext.drt("\\hskip5sp\\getuvalue{%s}\\gray\\char%s"); draw p ;',cs,charnum)
-        else
-            context('picture p ; p := textext.drt("\\getuvalue{%s}\\gray\\char%s"); draw p ;',cs,charnum)
-        end
-        context('draw (%s,%s)--(%s,%s)--(%s,%s)--(%s,%s)--cycle withcolor green ;',llx,lly,urx,lly,urx,ury,llx,ury)
-        context('draw (%s,%s)--(%s,%s) withcolor green ;',llx,0,urx,0)
-        context('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
-        context("defaultscale := 0.05 ; ")
-        -- inefficient but non critical
-        local slant = {
-            function(v,dx,dy,txt,xsign,ysign,loc,labloc)
-                local n = #v
-                if n > 0 then
-                    local l = { }
-                    for i=1,n do
-                        local c = v[i]
-                        local h = c.height or 0
-                        local k = c.kern or 0
-                        l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+    --
+    local specification = interfaces.checkedspecification(specification)
+    local id, cs        = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
+    local tfmdata       = fontdata[id]
+    local characters    = tfmdata.characters
+    local descriptions  = tfmdata.descriptions
+    local parameters    = tfmdata.parameters
+    local anchors       = fonts.helpers.collectanchors(tfmdata)
+
+    local function showonecharacter(unicode)
+        local c = characters  [unicode]
+        local d = descriptions[unicode]
+        if c and d then
+            local factor = (parameters.size/parameters.units)*((7200/7227)/65536)
+            local llx, lly, urx, ury = unpack(d.boundingbox)
+            llx, lly, urx, ury = llx*factor, lly*factor, urx*factor, ury*factor
+            local width = (d.width or 0)*factor
+            context.start()
+            context.dontleavehmode()
+            context.obeyMPboxdepth()
+            context.startMPcode()
+            context("numeric lw ; lw := .125bp ;")
+            context("pickup pencircle scaled lw ;")
+            if width < 0.01 then
+                -- catches zero width marks
+                context('picture p ; p := textext.drt("\\hskip5sp\\getuvalue{%s}\\gray\\char%s"); draw p ;',cs,unicode)
+            else
+                context('picture p ; p := textext.drt("\\getuvalue{%s}\\gray\\char%s"); draw p ;',cs,unicode)
+            end
+            context('draw (%s,%s)--(%s,%s)--(%s,%s)--(%s,%s)--cycle withcolor green ;',llx,lly,urx,lly,urx,ury,llx,ury)
+            context('draw (%s,%s)--(%s,%s) withcolor green ;',llx,0,urx,0)
+            context('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
+            context("defaultscale := 0.05 ; ")
+            -- inefficient but non critical
+            local slant = {
+                function(v,dx,dy,txt,xsign,ysign,loc,labloc)
+                    local n = #v
+                    if n > 0 then
+                        local l = { }
+                        for i=1,n do
+                            local c = v[i]
+                            local h = c.height or 0
+                            local k = c.kern or 0
+                            l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+                        end
+                        context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
+                        context("draw laddered (%..t) withcolor .5white ;",l)
+                        context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
+                        for i=1,n do
+                            context("draw %s withcolor blue withpen pencircle scaled 2lw ;",l[i])
+                        end
                     end
-                    context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
---                     context("draw laddered (%s) withcolor .5white ;",table.concat(l,".."))
-                    context("draw laddered (%..t) withcolor .5white ;",l)
-                    context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
-                    for i=1,n do
-                        context("draw %s withcolor blue withpen pencircle scaled 2lw ;",l[i])
+                end,
+                function(v,dx,dy,txt,xsign,ysign,loc,labloc)
+                    local n = #v
+                    if n > 0 then
+                        local l = { }
+                        for i=1,n do
+                            local c = v[i]
+                            local h = c.height or 0
+                            local k = c.kern or 0
+                            l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
+                        end
+                        if loc == "top" then
+                            context('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[n])
+                        else
+                            context('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
+                        end
+                        for i=1,n do
+                            local c = v[i]
+                            local h = c.height or 0
+                            local k = c.kern or 0
+                            context('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[i])
+                        end
                     end
-                end
-            end,
-            function(v,dx,dy,txt,xsign,ysign,loc,labloc)
-                local n = #v
-                if n > 0 then
-                    local l = { }
-                    for i=1,n do
-                        local c = v[i]
-                        local h = c.height or 0
-                        local k = c.kern or 0
-                        l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
-                    end
-                    if loc == "top" then
-                        context('label.%s("\\type{%s}",%s shifted (0,-1bp)) ;',loc,txt,l[n])
-                    else
-                        context('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
-                    end
-                    for i=1,n do
-                        local c = v[i]
-                        local h = c.height or 0
-                        local k = c.kern or 0
-                        context('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[i])
-                    end
-                end
-            end,
-        }
-        if math then
-            local kerns = math.kerns
-            if kerns then
-                for i=1,#slant do
-                    local s = slant[i]
-                    for k, v in next, kerns do
-                        if k == "topright" then
-                            s(v,width+italic,0,k,1,1,"top","ulft")
-                        elseif k == "bottomright" then
-                            s(v,width,0,k,1,1,"bot","lrt")
-                        elseif k == "topleft" then
-                            s(v,0,0,k,-1,1,"top","ulft")
-                        elseif k == "bottomleft" then
-                            s(v,0,0,k,-1,1,"bot","lrt")
+                end,
+            }
+            --
+            local math = d.math
+            if math then
+                local kerns = math.kerns
+                if kerns then
+                    for i=1,#slant do
+                        local s = slant[i]
+                        for k, v in next, kerns do
+                            if k == "topright" then
+                             -- s(v,width+italic,0,k,1,1,"top","ulft")
+                                s(v,width,0,k,1,1,"top","ulft")
+                            elseif k == "bottomright" then
+                                s(v,width,0,k,1,1,"bot","lrt")
+                            elseif k == "topleft" then
+                                s(v,0,0,k,-1,1,"top","ulft")
+                            elseif k == "bottomleft" then
+                                s(v,0,0,k,-1,1,"bot","lrt")
+                            end
                         end
                     end
                 end
+                local accent = math.accent
+                if accent and accent ~= 0 then
+                    local a = accent * factor
+                    context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',a,ury,a,ury)
+                    context('label.bot("\\type{%s}",(%s,%s+1bp));',"accent",a,ury)
+                    context('label.top("%s",(%s,%s-1bp));',math.accent,a,ury)
+                end
             end
-        end
-        local function show(x,y,txt)
-            local xx, yy = x*factor, y*factor
-            context("draw (%s,%s) withcolor blue withpen pencircle scaled 2lw ;",xx,yy)
-            context('label.top("\\type{%s}",(%s,%s-2bp)) ;',txt,xx,yy)
-            context('label.bot("(%s,%s)",(%s,%s+2bp)) ;',x,y,xx,yy)
-        end
-        if anchors then
-            local a = anchors.baselig
-            if a then
-                for k, v in next, a do
-                    for i=1,#v do
-                        local p = v[i]
-                        show(p[1],p[2],k .. ":" .. i)
+            --
+            local anchordata = anchors[unicode]
+            if anchordata then
+                local function show(txt,list)
+                    if list then
+                        for i=1,#list do
+                            local li = list[i]
+                            local x, y = li[1], li[2]
+                            local xx, yy = x*factor, y*factor
+                            context("draw (%s,%s) withcolor blue withpen pencircle scaled 2lw ;",xx,yy)
+                            context('label.top("\\infofont %s",(%s,%s-2.75bp)) ;',txt .. i,xx,yy)
+                            context('label.bot("\\infofont (%s,%s)",(%s,%s+2.75bp)) ;',x,y,xx,yy)
+                        end
                     end
                 end
+                --
+                show("b",anchordata.base)
+                show("m",anchordata.mark)
+                show("l",anchordata.ligature)
+                show("e",anchordata.entry)
+                show("x",anchordata.exit)
             end
-            local a = anchors.mark
-            if a then
-                for k, v in next, a do
-                    show(v[1],v[2],k)
-                end
+            --
+            local italic = d.italic
+            if italic and italic ~= 0 then
+                local i = italic * factor
+                context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue ;',width,ury,width,ury)
+                context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue ;',width+i,ury,width+i,ury)
+                context('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue ;',width,ury,width+i,ury)
+                context('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,ury)
+                context('label.rt("%s",(%s-2bp,%s-1bp));',italic,width+i,ury)
             end
-            local a = anchors.basechar
-            if a then
-                for k, v in next, a do
-                    show(v[1],v[2],k)
-                end
-            end
-            local ba = anchors.centry
-            if a then
-                for k, v in next, a do
-                    show(v[1],v[2],k)
-                end
-            end
-            local a = anchors.cexit
-            if a then
-                for k, v in next, a do
-                    show(v[1],v[2],k)
-                end
-            end
+            context('draw origin withcolor red withpen pencircle scaled 2lw;')
+            context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
+            context("currentpicture := currentpicture scaled 8 ;")
+            context.stopMPcode()
+            context.stop()
         end
-        if italic ~= 0 then
-            context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue ;',width,ury,width,ury)
-            context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue ;',width+italic,ury,width+italic,ury)
-            context('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue ;',width,ury,width+italic,ury)
-            context('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,ury)
-            context('label.rt("%s",(%s-2bp,%s-1bp));',d.italic,width+italic,ury)
-        end
-        if top_accent ~= 0 then
-            context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,ury)
-            context('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,ury)
-            context('label.top("%s",(%s,%s-1bp));',d.top_accent,top_accent,ury)
-        end
-        if bot_accent ~= 0 then
-            context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,lly)
-            context('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,ury)
-            context('label.bot("%s",(%s,%s+1bp));',d.bot_accent,bot_accent,lly)
-        end
-        context('draw origin withcolor red withpen pencircle scaled 2lw;')
-        context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
-        context("currentpicture := currentpicture scaled 8 ;")
-        context.stopMPcode()
-        context.stop()
- -- elseif c then
- --     lastdata, lastunicode = nil, nil
- --     local factor = (7200/7227)/65536
- --     context.startMPcode()
- --     context("pickup pencircle scaled .25bp ; ")
- --     context('picture p ; p := image(draw textext.drt("\\gray\\char%s");); draw p ;',charnum)
- --     context('draw boundingbox p withcolor .2white withpen pencircle scaled .065bp ;')
- --     context("defaultscale := 0.05 ; ")
- --     local italic, top_accent, bot_accent = (c.italic or 0)*factor, (c.top_accent or 0)*factor, (c.bot_accent or 0)*factor
- --     local width, height, depth = (c.width or 0)*factor, (c.height or 0)*factor, (c.depth or 0)*factor
- --     local ury = height
- --     if italic ~= 0 then
- --         context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width,ury,width,ury)
- --         context('draw (%s,%s-1bp)--(%s,%s-0.5bp) withcolor blue;',width+italic,ury,width+italic,ury)
- --         context('draw (%s,%s-1bp)--(%s,%s-1bp) withcolor blue;',width,ury,width+italic,height)
- --         context('label.lft("\\type{%s}",(%s+2bp,%s-1bp));',"italic",width,height)
- --         context('label.rt("%6.3f bp",(%s-2bp,%s-1bp));',italic,width+italic,height)
- --     end
- --     if top_accent ~= 0 then
- --         context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',top_accent,ury,top_accent,height)
- --         context('label.bot("\\type{%s}",(%s,%s+1bp));',"top_accent",top_accent,height)
- --         context('label.top("%6.3f bp",(%s,%s-1bp));',top_accent,top_accent,height)
- --     end
- --     if bot_accent ~= 0 then
- --         context('draw (%s,%s+1bp)--(%s,%s-1bp) withcolor blue;',bot_accent,lly,bot_accent,height)
- --         context('label.top("\\type{%s}",(%s,%s-1bp));',"bot_accent",top_accent,height)
- --         context('label.bot("%6.3f bp",(%s,%s+1bp));',bot_accent,bot_accent,height)
- --     end
- --     context('draw origin withcolor red withpen pencircle scaled 1bp;')
- --     context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
- --     context("currentpicture := currentpicture scaled 8 ;")
- --     context.stopMPcode()
+    end
+
+    local unicode = tonumber(specification.character) or
+                    fonts.helpers.nametoslot(specification.character)
+
+    if unicode then
+        showonecharacter(unicode)
     else
- --     lastdata, lastunicode = nil, nil
- --     context("no such shape: 0x%05X",charnum)
-    end
-end
-
-moduledata.fonts.shapes.showglyphshape = showglyphshape
-
-function moduledata.fonts.shapes.showallglypshapes(specification)
-    specification = interfaces.checkedspecification(specification)
-    local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
-    local descriptions = fontdata[id].descriptions
-    for unicode, description in fonts.iterators.descriptions(tfmdata) do
-        if unicode >= 0x110000 then
-            break
+        context.modulefontsstartshowglyphshapes()
+        for unicode, description in fonts.iterators.descriptions(tfmdata) do
+            if unicode >= 0x110000 then
+                break
+            end
+            context.modulefontsstartshowglyphshape(unicode,description.name or "",description.index or 0)
+                showonecharacter(unicode)
+            context.modulefontsstopshowglyphshape()
         end
-        context.modulefontsstartshowglyphshape(unicode,description.name or "",description.index or 0)
-        showglyphshape { number = id, character = unicode }
-        context.modulefontsstopshowglyphshape()
+        context.modulefontsstopshowglyphshapes()
     end
+
 end
+
+moduledata.fonts.shapes.showglyphshape    = showglyphshape
+moduledata.fonts.shapes.showallglypshapes = showglyphshape
 
 function moduledata.fonts.shapes.showlastglyphshapefield(unicode,name)
     if not descriptions then

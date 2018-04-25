@@ -79,8 +79,9 @@ local getdepth           = nuts.getdepth
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
 
-local traverse_id        = nuts.traverse_id
-local traverse           = nuts.traverse
+local nexthlist          = nuts.traversers.hlist
+local nextvlist          = nuts.traversers.vlist
+
 local copy_node          = nuts.copy
 ----- hpack_nodes        = nuts.hpack
 local is_display_math    = nuts.is_display_math
@@ -283,7 +284,7 @@ end
 
 local function listisnumbered(list)
     if list then
-        for n in traverse_id(hlist_code,list) do
+        for n in nexthlist, list do -- LUATEXVERSION >= 1.090
             if getsubtype(n) == line_code then
                 local a = getattr(n,a_linenumber)
                 if a then
@@ -383,7 +384,7 @@ function boxed.stage_one(n,nested)
     local skip   = false
 
     local function check()
-        for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
+        for n in nexthlist, list do -- LUATEXVERSION >= 1.090
             local subtype = getsubtype(n)
             if subtype ~= line_code then
                 -- go on
@@ -450,7 +451,7 @@ function boxed.stage_one(n,nested)
         if not list then
             return
         end
-        for n in traverse_id(vlist_code,list) do
+        for n in nextvlist, list do -- LUATEXVERSION >= 1.090
             local p = properties[n]
             if p and p.columngap then
                 if trace_numbers then
@@ -473,7 +474,7 @@ function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
         local t, tn = { }, 0
-        for l in traverse_id(hlist_code,getlist(getbox(m))) do
+        for l in nexthlist, getlist(getbox(m)) do -- LUATEXVERSION >= 1.090
             tn = tn + 1
             t[tn] = copy_node(l) -- use take_box instead
         end

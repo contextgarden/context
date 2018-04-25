@@ -89,12 +89,11 @@ local function locate(head,first,last,ni,nm)
 end
 
 function nodes.handlers.migrate(head,where)
-    local done = false
     if head then
         if trace_migrations then
             report_nodes("migration sweep %a",where)
         end
-        local current = tonut(head)
+        local current = head
         while current do
             local id = getid(current)
             -- inserts_too is a temp hack, we should only do them when it concerns
@@ -124,13 +123,12 @@ function nodes.handlers.migrate(head,where)
                         setlink(last,n)
                     end
                     setlink(current,first)
-                    done = true
                     current = last
                 end
             end
             current = getnext(next)
         end
-        return head, done
+        return head
     end
 end
 

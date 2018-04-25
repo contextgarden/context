@@ -1239,13 +1239,20 @@ end
 local function sequenced(t,sep,simple)
     if not t then
         return ""
+    elseif type(t) == "string" then
+        return t -- handy fallback
     end
     local n = #t
     local s = { }
     if n > 0 then
         -- indexed
         for i=1,n do
-            s[i] = tostring(t[i])
+            local v = t[i]
+            if type(v) == "table" then
+                s[i] = "{" .. sequenced(v,sep,simple) .. "}"
+            else
+                s[i] = tostring(t[i])
+            end
         end
     else
         -- hashed

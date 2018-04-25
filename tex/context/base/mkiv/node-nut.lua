@@ -176,15 +176,16 @@ end
 
 if LUATEXFUNCTIONALITY < 6695 then
 
-    local getnext = direct.getnext
-    local getid   = direct.getid
+    local getnext    = direct.getnext
+    local getid      = direct.getid
+    local getsubtype = direct.getsubtype
 
     local function iterate(h,n)
         if n then
             local n = getnext(n)
-            return n, getid(n)
+            return n, getid(n), getsubtype(n)
         elseif h then
-            return h, getid(h), getnext(h)
+            return h, getid(h), getsubtype(h)
         end
     end
 
@@ -194,66 +195,69 @@ if LUATEXFUNCTIONALITY < 6695 then
 
 end
 
-local nuts                 = nodes.nuts
+local nuts                   = nodes.nuts
 
-nuts.tostring              = direct.tostring
-nuts.copy                  = direct.copy
-nuts.copy_node             = direct.copy
-nuts.copy_list             = direct.copy_list
-nuts.delete                = direct.delete
-nuts.dimensions            = direct.dimensions
-nuts.rangedimensions       = direct.rangedimensions
-nuts.end_of_math           = direct.end_of_math
-nuts.flush                 = direct.flush_node
-nuts.flush_node            = direct.flush_node
-nuts.flush_list            = direct.flush_list
-nuts.free                  = direct.free
-nuts.insert_after          = direct.insert_after
-nuts.insert_before         = direct.insert_before
-nuts.hpack                 = direct.hpack
-nuts.new                   = direct.new
-nuts.tail                  = direct.tail
-nuts.traverse              = direct.traverse
-nuts.traverse_id           = direct.traverse_id
-nuts.traverse_char         = direct.traverse_char
-nuts.slide                 = direct.slide
-nuts.writable_spec         = direct.writable_spec
-nuts.vpack                 = direct.vpack
-nuts.is_node               = direct.is_node
-nuts.is_direct             = direct.is_direct
-nuts.is_nut                = direct.is_direct
-nuts.first_glyph           = direct.first_glyph
-nuts.has_glyph             = direct.has_glyph or direct.first_glyph
-nuts.count                 = direct.count
-nuts.length                = direct.length
-nuts.find_attribute        = direct.find_attribute
-nuts.unset_attribute       = direct.unset_attribute
+nuts.tostring                = direct.tostring
+nuts.copy                    = direct.copy
+nuts.copy_node               = direct.copy
+nuts.copy_list               = direct.copy_list
+nuts.delete                  = direct.delete
+nuts.dimensions              = direct.dimensions
+nuts.rangedimensions         = direct.rangedimensions
+nuts.end_of_math             = direct.end_of_math
+nuts.flush                   = direct.flush_node
+nuts.flush_node              = direct.flush_node
+nuts.flush_list              = direct.flush_list
+nuts.free                    = direct.free
+nuts.insert_after            = direct.insert_after
+nuts.insert_before           = direct.insert_before
+nuts.hpack                   = direct.hpack
+nuts.new                     = direct.new
+nuts.tail                    = direct.tail
+nuts.traverse                = direct.traverse
+nuts.traverse_id             = direct.traverse_id
+nuts.traverse_char           = direct.traverse_char
+nuts.traverse_glyph          = direct.traverse_glyph
+nuts.traverse_list           = direct.traverse_list
+nuts.slide                   = direct.slide
+nuts.writable_spec           = direct.writable_spec
+nuts.vpack                   = direct.vpack
+nuts.is_node                 = direct.is_node
+nuts.is_direct               = direct.is_direct
+nuts.is_nut                  = direct.is_direct
+nuts.first_glyph             = direct.first_glyph
+nuts.has_glyph               = direct.has_glyph or direct.first_glyph
+nuts.count                   = direct.count
+nuts.length                  = direct.length
+nuts.find_attribute          = direct.find_attribute
+nuts.unset_attribute         = direct.unset_attribute
 
-nuts.current_attr          = direct.current_attr
-nuts.has_field             = direct.has_field
-nuts.last_node             = direct.last_node
-nuts.usedlist              = direct.usedlist
-nuts.protrusion_skippable  = direct.protrusion_skippable
-nuts.check_discretionaries = direct.check_discretionaries
-nuts.write                 = direct.write
+nuts.current_attr            = direct.current_attr
+nuts.has_field               = direct.has_field
+nuts.last_node               = direct.last_node
+nuts.usedlist                = direct.usedlist
+nuts.protrusion_skippable    = direct.protrusion_skippable
+nuts.check_discretionaries   = direct.check_discretionaries
+nuts.write                   = direct.write
 
-nuts.has_attribute         = direct.has_attribute
-nuts.set_attribute         = direct.set_attribute
-nuts.unset_attribute       = direct.unset_attribute
+nuts.has_attribute           = direct.has_attribute
+nuts.set_attribute           = direct.set_attribute
+nuts.unset_attribute         = direct.unset_attribute
 
-nuts.protect_glyph         = direct.protect_glyph
-nuts.protect_glyphs        = direct.protect_glyphs
-nuts.unprotect_glyph       = direct.unprotect_glyph
-nuts.unprotect_glyphs      = direct.unprotect_glyphs
-nuts.ligaturing            = direct.ligaturing
-nuts.kerning               = direct.kerning
+nuts.protect_glyph           = direct.protect_glyph
+nuts.protect_glyphs          = direct.protect_glyphs
+nuts.unprotect_glyph         = direct.unprotect_glyph
+nuts.unprotect_glyphs        = direct.unprotect_glyphs
+nuts.ligaturing              = direct.ligaturing
+nuts.kerning                 = direct.kerning
+nuts.flatten_discretionaries = direct.flatten_discretionaries
 
 if not direct.mlist_to_hlist then -- needed
 
     local n_mlist_to_hlist = node.mlist_to_hlist
 
     function nuts.mlist_to_hlist(head)
-        return tonode(n_mlist_to_hlist(tonut(head)))
+        return n_mlist_to_hlist(tonut(head))
     end
 
 end

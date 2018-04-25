@@ -55,6 +55,7 @@ function tasks.new(specification) -- was: name,arguments,list
     local sequence  = specification.sequence
     if name and sequence then
         local tasklist = newsequencer {
+            name = name
             -- we can move more to the sequencer now .. todo
         }
         tasksdata[name] = {
@@ -171,18 +172,26 @@ function tasks.disablegroup(name,group)
     end
 end
 
-function tasks.appendaction(name,group,action,where,kind)
+function tasks.appendaction(name,group,action,where,kind,state)
     local data = validgroup(name,"append action")
     if data then
-        appendaction(data.list,group,action,where,kind)
+        local list = data.list
+        appendaction(list,group,action,where,kind)
+        if state == "disabled" or (state == "production" and environment.initex) then
+            disableaction(list,action)
+        end
         data.runner = false
     end
 end
 
-function tasks.prependaction(name,group,action,where,kind)
+function tasks.prependaction(name,group,action,where,kind,state)
     local data = validgroup(name,"prepend action")
     if data then
-        prependaction(data.list,group,action,where,kind)
+        local list = data.list
+        prependaction(list,group,action,where,kind)
+        if state == "disabled" or (state == "production" and environment.initex) then
+            disableaction(list,action)
+        end
         data.runner = false
     end
 end
@@ -222,123 +231,23 @@ function tasks.actions(name) -- we optimize for the number or arguments (no ...)
     if data then
         local t = data.templates
         if t then
+            t.name = data.name
             return function(...)
                 total = total + 1 -- will go away
                 local runner = data.runner
                 if not runner then
                     created = created + 1
---                     if trace_tasks then
+                    if trace_tasks then
                         report_tasks("creating runner %a",name)
---                     end
+                    end
                     runner = compile(data.list,data.processor,t)
                     data.runner = runner
                 end
                 return runner(...)
             end
         end
-        local n = data.arguments or 0
-        if n == 0 then
-            return function(head)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a",name)
-                    end
-                    runner = compile(data.list,data.processor,0)
-                    data.runner = runner
-                end
-                return runner(head)
-            end
-        elseif n == 1 then
-            return function(head,one)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a with %s extra arguments",name,1)
-                    end
-                    runner = compile(data.list,data.processor,1)
-                    data.runner = runner
-                end
-                return runner(head,one)
-            end
-        elseif n == 2 then
-            return function(head,one,two)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a with %s extra arguments",name,2)
-                    end
-                    runner = compile(data.list,data.processor,2)
-                    data.runner = runner
-                end
-                return runner(head,one,two)
-            end
-        elseif n == 3 then
-            return function(head,one,two,three)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a with %s extra arguments",name,3)
-                    end
-                    runner = compile(data.list,data.processor,3)
-                    data.runner = runner
-                end
-                return runner(head,one,two,three)
-            end
-        elseif n == 4 then
-            return function(head,one,two,three,four)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a with %s extra arguments",name,4)
-                    end
-                    runner = compile(data.list,data.processor,4)
-                    data.runner = runner
-                end
-                return runner(head,one,two,three,four)
-            end
-        elseif n == 5 then
-            return function(head,one,two,three,four,five)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a with %s extra arguments",name,5)
-                    end
-                    runner = compile(data.list,data.processor,5)
-                    data.runner = runner
-                end
-                return runner(head,one,two,three,four,five)
-            end
-        else
-            return function(head,...)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a with %s extra arguments",name,n)
-                    end
-                    runner = compile(data.list,data.processor,"n")
-                    data.runner = runner
-                end
-                return runner(head,...)
-            end
-        end
-    else
-        return nil
     end
+    return nil
 end
 
 function tasks.table(name) --maybe move this to task-deb.lua
@@ -368,12 +277,119 @@ function tasks.table(name) --maybe move this to task-deb.lua
     end
 end
 
--- this will move
+-- -- shipouts -- --
+
+-- the shipout handlers acts on boxes so we don't need to return something
+-- and also don't need to keep the state (done)
+
+tasks.new {
+    name      = "shipouts",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- users
+        "normalizers", -- system
+        "finishers",   -- system
+        "after",       -- users
+        "wrapup",      -- system
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead))))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead))
+]],
+
+nonut = [[
+    %action%(nuthead)
+]],
+
+    }
+}
+
+-- -- finalizers -- --
+
+tasks.new {
+    name      = "finalizers",
+    sequence  = {
+        "before",      -- for users
+        "normalizers",
+        "fonts",
+        "lists",
+        "after",       -- for users
+    },
+    processor = nodeprocessor,
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,groupcode)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),groupcode)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,groupcode)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),groupcode)
+]],
+
+nonut = [[
+    %action%(nuthead,groupcode)
+]],
+
+    }
+}
+
+-- -- processors -- --
 
 tasks.new {
     name      = "processors",
-    arguments = 5, -- often only the first is used, and the last three are only passed in hpack filter
---  arguments = 2,
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
@@ -383,56 +399,297 @@ tasks.new {
         "fonts",
         "lists",
         "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,groupcode,size,packtype,direction,attributes)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,groupcode,size,packtype,direction,attributes)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)
+]],
+
+nonut = [[
+    %action%(nuthead,groupcode,size,packtype,direction,attributes)
+]],
+
     }
 }
 
 tasks.new {
     name      = "finalizers",
-    arguments = 1,
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
---      "characters",
---      "finishers",
         "fonts",
         "lists",
         "after",       -- for users
-    }
-}
+    },
+    templates = {
 
-tasks.new {
-    name      = "shipouts",
-    arguments = 1,
- -- nostate   = true, -- maybe but only for main ones so little gain
-    processor = nodeprocessor,
-    sequence  = {
-        "before",      -- for users
-        "normalizers",
-        "finishers",
-        "after",       -- for users
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead))))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead))
+]],
+
+nonut = [[
+    %action%(nuthead)
+]],
+
     }
 }
 
 tasks.new {
     name      = "mvlbuilders",
-    arguments = 1,
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
         "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,groupcode)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),groupcode)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,groupcode)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),groupcode)
+]],
+
+nonut = [[
+    %action%(nuthead,groupcode)
+]],
+
     }
 }
 
 tasks.new {
     name      = "vboxbuilders",
-    arguments = 5,
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
         "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,groupcode,size,packtype,maxdepth,direction)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)
+]],
+
+nonut = [[
+    %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+]],
+
+    }
+
+}
+
+tasks.new {
+    name      = "contributers",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,groupcode,line)
+    local nuthead = tonut(head)
+    local nutline = tonut(line)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),groupcode,line)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,groupcode,nutline)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),groupcode,line)
+]],
+
+nonut = [[
+    %action%(nuthead,groupcode,nutline)
+]],
+
+    }
+}
+
+-- -- math -- --
+
+tasks.new {
+    name      = "math",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",
+        "normalizers",
+        "builders",
+        "after",
+    },
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,style,penalties)
+    local nuthead = tonut(head)
+
+%actions%
+    return tonode(nuthead)
+end
+]],
+
+step = [[
+    nuthead = tonut((%action%(tonode(nuthead),style,penalties)))
+]],
+
+nut  = [[
+    nuthead = %action%(nuthead,style,penalties)
+]],
+
+nohead = [[
+    %action%(tonode(nuthead),style,penalties)
+]],
+
+nonut = [[
+    %action%(nuthead,style,penalties)
+]],
+
     }
 }
 
@@ -458,18 +715,7 @@ tasks.new {
 --     }
 -- }
 
-tasks.new {
-    name      = "contributers",
-    arguments = 2, -- [head] where parent
-    processor = nodeprocessor,
-    sequence  = {
-        "before",      -- for users
-        "normalizers",
-        "after",       -- for users
-    }
-}
-
--- for now quite useless (too fuzzy0
+-- for now quite useless (too fuzzy)
 --
 -- tasks.new {
 --     name            = "listbuilders",

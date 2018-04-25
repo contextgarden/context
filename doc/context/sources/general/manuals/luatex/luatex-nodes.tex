@@ -455,7 +455,7 @@ considers some input to be text.
 \stoptabulate
 
 The \type {width}, \type {height} and \type {depth} values are read|-|only. The
-\type {expansion_factor} is assigned in the parbuilder and used in the backend.
+\type {expansion_factor} is assigned in the par builder and used in the backend.
 
 A warning: never assign a node list to the components field unless you are sure
 its internal link structure is correct, otherwise an error may be result. Valid
@@ -1309,13 +1309,11 @@ actually a node, and it has the field.
     node.new(<number> id, <number> subtype)
 \stopfunctioncall
 
-Creates a new node. All of the new node's fields are initialized to either zero
-or \type {nil} except for \type {id} and \type {subtype} (if supplied). If you
-want to create a new whatsit, then the second argument is required, otherwise it
-need not be present. As with all node functions, this function creates a node on
-the \TEX\ level.
-
-This function accepts string \type {id} and \type {subtype} values as well.
+The \type {new} function creates a new node. All its fields are initialized to
+either zero or \type {nil} except for \type {id} and \type {subtype}. Instead of
+numbers you can also use strings (names). If you create a new \nod {whatsit} node
+the second argument is required. As with all node functions, this function
+creates a node at the \TEX\ level.
 
 \subsubsection{\type {node.free} and \type {node.flush_node}}
 
@@ -1601,7 +1599,7 @@ This function also accept string \type {id}'s.
 \subsubsection{\type {node.traverse}}
 
 \startfunctioncall
-<node> t =
+<node> t, id, subtype =
     node.traverse(<node> n)
 \stopfunctioncall
 
@@ -1647,7 +1645,7 @@ If the above is unclear to you, see the section \quote {For Statement} in the
 \subsubsection{\type {node.traverse_id}}
 
 \startfunctioncall
-<node> t =
+<node> t, subtype =
     node.traverse_id(<number> id, <node> n)
 \stopfunctioncall
 
@@ -1674,13 +1672,35 @@ See the previous section for details. The change is in the local function \type
 
 \subsubsection{\type {node.traverse_char}}
 
-This iterators loops over the glyph nodes in a list. Only nodes with a subtype
-less than 256 are seen.
+This iterator loops over the \node {glyph} nodes in a list. Only nodes with a
+subtype less than 256 are seen.
 
 \startfunctioncall
-<node> n =
+<node> n, font, char =
     node.traverse_char(<node> n)
 \stopfunctioncall
+
+\subsubsection{\type {node.traverse_glyph}}
+
+This iterator loops over a list and returns the list and filters all glyphs:
+
+\startfunctioncall
+<node> n, font, char =
+    node.traverse_glyph(<node> n)
+\stopfunctioncall
+
+\subsubsection{\type {node.traverse_list}}
+
+This iterator loops over the \nod {hlist} and \nod {vlist} nodes in a list.
+
+\startfunctioncall
+<node> n, id, subtype, list =
+    node.traverse_list(<node> n)
+\stopfunctioncall
+
+The four return values can save some time compared to fetching these fields but
+in practice you seldom need them all. So consider it a (side effect of
+experimental) convenience.
 
 \subsubsection{\type {node.has_glyph}}
 

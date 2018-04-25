@@ -68,8 +68,6 @@ local directiondata       = characters.directions
 local mirrordata          = characters.mirrors
 
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
-local tonode              = nuts.tonode
 
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -730,7 +728,6 @@ end
 local function apply_to_list(list,size,head,pardir)
     local index   = 1
     local current = head
-    local done    = false
     while current do
         if index > size then
             report_directions("fatal error, size mismatch")
@@ -760,7 +757,6 @@ local function apply_to_list(list,size,head,pardir)
              -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
-                done = true
             end
         elseif begindir then
             if id == localpar_code then
@@ -770,7 +766,6 @@ local function apply_to_list(list,size,head,pardir)
              -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
-                done = true
             end
         end
         if begindir then
@@ -778,7 +773,6 @@ local function apply_to_list(list,size,head,pardir)
             setprop(d,"directions",true)
          -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
-            done = true
         end
         local skip = entry.skip
         if skip and skip > 0 then
@@ -792,24 +786,21 @@ local function apply_to_list(list,size,head,pardir)
             setprop(d,"directions",true)
          -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
-            done = true
         end
         if not entry.remove then
             current = getnext(current)
         elseif remove_controls then
             -- X9
             head, current = remove_node(head,current,true)
-            done = true
         else
             current = getnext(current)
         end
         index = index + 1
     end
-    return head, done
+    return head
 end
 
 local function process(head)
-    head = tonut(head)
     local list, size = build_list(head)
     local baselevel, pardir, dirfound = get_baselevel(head,list,size) -- we always have an inline dir node in context
     if not dirfound and trace_details then
@@ -825,8 +816,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    local head, done = apply_to_list(list,size,head,pardir)
-    return tonode(head), done
+    return apply_to_list(list,size,head,pardir)
 end
 
 directions.installhandler(interfaces.variables.one,process)

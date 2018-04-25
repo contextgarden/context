@@ -30,7 +30,7 @@
 \startsetups module:showallglyphshapes:start
 
     \unexpanded\def\modulefontsstartshowglyphshape##1##2##3{
-        \startTEXpage[\c!offset=\exheight]
+        \startTEXpage[\c!offset=\exheight,\c!frame=\v!on]
         \edef\lastshownglyphshapefieldunicode{##1}%
         \edef\lastshownglyphshapefieldname   {##2}%
         \edef\lastshownglyphshapefieldindex  {##3}%
@@ -57,6 +57,15 @@
     }
 
 \stopsetups
+
+\startsetups module:showallglyphshapes:stop
+
+    % nothing
+
+\stopsetups
+
+\unexpanded\def\modulefontsstartshowglyphshapes{\setups[module:showallglyphshapes:start]}
+\unexpanded\def\modulefontsstopshowglyphshapes {\setups[module:showallglyphshapes:stop]}
 
 \protect
 
@@ -109,10 +118,12 @@
 %     \startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{50bp}{0x1D45D}\stopTEXpage
 %     \page
 
-\startTEXpage[offset=0pt]\ShowGlyphShape{file:husayninotebold.ttf}{50bp}{0xF034A}\stopTEXpage
-\startTEXpage[offset=0pt]\ShowGlyphShape{file:husayninotebold.ttf}{50bp}{0x006DD}\stopTEXpage
+% \startTEXpage[offset=0pt]\ShowGlyphShape{file:husayninotebold.ttf}{50bp}{0xF034A}\stopTEXpage
+% \startTEXpage[offset=0pt]\ShowGlyphShape{file:husayninotebold.ttf}{50bp}{0x006DD}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{file:arabtype.ttf}{50bp}{0x0FCA1}\stopTEXpage
 
 % \showallglyphshapes[name=name:cambria-math,size=100bp]
+% \showallglyphshapes[name=name:arabtype,size=100bp]
 % \showallglyphshapes[name=file:husayninotebold.ttf,size=100bp]
 % \showallglyphshapes[name=name:dejavuserif,size=100bp]
 

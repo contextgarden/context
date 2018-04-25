@@ -69,8 +69,6 @@ local getpenalty          = nuts.getpenalty
 local getwidth            = nuts.getwidth
 local getheight           = nuts.getheight
 local getdepth            = nuts.getdepth
-local traverse_id         = nuts.traverse_id
-local traverse            = nuts.traverse
 
 local theprop             = nuts.theprop
 
@@ -828,23 +826,6 @@ local function report_deltas(result,str)
     end
     report_state("%s, cycles %s, deltas % | t",str,result.cycle or 1,t)
 end
-
--- local function xxcollectinserts(h)
---     local skips, total, order = 0, 0, 0
---     print(h)
---     if h then
--- h = getlist(h)
--- for n in traverse(h) do
---     print(tonode(n))
--- end
---         for n in traverse_id(insert_code,h) do
---             order = order + 1
---             total = total + getheight(n)
---             skips = skips + structures.notes.check_spacing(getsubtype(n),order)
---         end
---     end
---     return skips, total
--- end
 
 local function setsplit(specification)
     splitruns = splitruns + 1

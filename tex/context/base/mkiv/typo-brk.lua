@@ -23,7 +23,6 @@ local settings_to_array  = utilities.parsers.settings_to_array
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -241,10 +240,9 @@ end
 
 function breakpoints.handler(head)
     local done    = false
-    local nead    = tonut(head)
     local attr    = nil
     local map     = nil
-    local current = nead
+    local current = head
     while current do
         local char, id = isglyph(current)
         if char then
@@ -313,7 +311,7 @@ function breakpoints.handler(head)
         end
     end
     if not done then
-        return head, false
+        return head
     end
     -- we have hits
     local numbers = languages.numbers
@@ -383,13 +381,13 @@ function breakpoints.handler(head)
                 if nright == cright then
                     local method = methods[smap.type]
                     if method then
-                        nead, start = method(nead,start,stop,smap,kern)
+                        head, start = method(head,start,stop,smap,kern)
                     end
                 end
 --             end
         end
     end
-    return tonode(nead), true
+    return head
 end
 
 local enabled = false

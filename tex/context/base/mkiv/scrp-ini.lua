@@ -52,8 +52,6 @@ local enableaction      = nodes.tasks.enableaction
 local disableaction     = nodes.tasks.disableaction
 
 local nuts              = nodes.nuts
-local tonut             = nuts.tonut
-local tonode            = nuts.tonode
 
 local getnext           = nuts.getnext
 local getchar           = nuts.getchar
@@ -65,8 +63,11 @@ local isglyph           = nuts.isglyph
 
 local insert_node_after = nuts.insert_after
 local first_glyph       = nuts.first_glyph
-local traverse_id       = nuts.traverse_id
-local traverse_char     = nuts.traverse_char
+
+----- traverse_id       = nuts.traverse_id
+----- traverse_char     = nuts.traverse_char
+local nextglyph         = nuts.traversers.glyph
+local nextchar          = nuts.traversers.char
 
 local nodepool          = nuts.pool
 
@@ -417,7 +418,7 @@ scripts.categorytonumber = categorytonumber
 scripts.numbertocategory = numbertocategory
 
 local function colorize(start,stop)
-    for n in traverse_id(glyph_code,start) do
+    for n in nextglyph, start do
         local kind = numbertocategory[getattr(n,a_scriptstatus)]
         if kind then
             local ac = scriptcolors[kind]
@@ -450,13 +451,12 @@ end
 -- we can have a fonts.hashes.originals
 
 function scripts.injectors.handler(head)
-    head = tonut(head)
     local start = first_glyph(head) -- we already have glyphs here (subtype 1)
     if not start then
-        return tonode(head), false
+        return head
     else
         local last_a, normal_process, lastfont, originals = nil, nil, nil, nil
-        local done, first, last, ok = false, nil, nil, false
+        local first, last, ok = nil, nil, false
         while start do
             local char, id = isglyph(start)
             if char then
@@ -473,7 +473,7 @@ function scripts.injectors.handler(head)
                                 else
                                     normal_process(head,first,last)
                                 end
-                                ok, done = false, true
+                                ok = false
                             end
                             first, last = nil, nil
                         end
@@ -517,7 +517,7 @@ function scripts.injectors.handler(head)
                                 else
                                     normal_process(head,first,last)
                                 end
-                                ok, done = false, true
+                                ok = false
                             end
                             first, last = nil, nil
                         end
@@ -532,7 +532,7 @@ function scripts.injectors.handler(head)
                         else
                             normal_process(head,first,last)
                         end
-                        ok, done = false, true
+                        ok = false
                     end
                     first, last = nil, nil
                 end
@@ -554,7 +554,7 @@ function scripts.injectors.handler(head)
                     else
                         normal_process(head,first,last)
                     end
-                    first, last, ok, done = nil, nil, false, true
+                    first, last, ok = nil, nil, false
                 elseif first then
                     first, last = nil, nil
                 end
@@ -570,16 +570,15 @@ function scripts.injectors.handler(head)
             else
                 normal_process(head,first,last)
             end
-            done = true
         end
-        return tonode(head), done
+        return head
     end
 end
 
 -- kind of experimental .. might move to it's own module
 
 -- function scripts.splitters.handler(head)
---     return head, false
+--     return head
 -- end
 
 local function addwords(tree,data)
@@ -759,9 +758,7 @@ end
 local tree, attr, proc
 
 function splitters.handler(head) -- todo: also first_glyph test
-    head = tonut(head)
     local current = head
-    local done = false
     while current do
         if getid(current) == glyph_code then
             local a = getattr(current,a_scriptsplitting)
@@ -792,7 +789,6 @@ function splitters.handler(head) -- todo: also first_glyph test
                                         end
                                     end
                                     head, current = proc(handler,head,current,last,1)
-                                    done = true
                                 else
                                     if trace_splitdetail then
                                         -- could be punctuation
@@ -803,7 +799,6 @@ function splitters.handler(head) -- todo: also first_glyph test
                                         end
                                     end
                                     head, current = proc(handler,head,current,last,2)
-                                    done = true
                                 end
                             end
                         end
@@ -813,7 +808,7 @@ function splitters.handler(head) -- todo: also first_glyph test
         end
         current = getnext(current)
     end
-    return tonode(head), done
+    return head
 end
 
 local function marker(head,current,font,color) -- could become: nodes.tracers.marker
@@ -907,7 +902,7 @@ setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
 -- playing nice
 
 function autofontfeature.handler(head)
-    for n in traverse_char(tonut(head)) do
+    for n in nextchar, head do
      -- if getattr(n,a_scriptinjection) then
      --     -- already tagged by script feature, maybe some day adapt
      -- else
@@ -949,6 +944,53 @@ function autofontfeature.handler(head)
      -- end
     end
     return head
+end
+
+if LUATEXVERSION >= 1.090 then
+
+    function autofontfeature.handler(head)
+        for n, font, char in nextchar, head do
+         -- if getattr(n,a_scriptinjection) then
+         --     -- already tagged by script feature, maybe some day adapt
+         -- else
+                local script = otfscripts[char]
+                if script then
+                    local dynamic = getattr(n,0) or 0
+                    if dynamic > 0 then
+                        local slot = cache_yes[font]
+                        local attr = slot[script]
+                        if not attr then
+                            attr = mergecontext(dynamic,name,2)
+                            slot[script] = attr
+                            if trace_scripts then
+                                report_scripts("script: %s, trigger %C, dynamic: %a, variant: %a",script,char,attr,"extended")
+                            end
+                        end
+                        if attr ~= 0 then
+                            n[0] = attr
+                            -- maybe set scriptinjection when associated
+                        end
+                    else
+                        local slot = cache_nop[font]
+                        local attr = slot[script]
+                        if not attr then
+                            attr = registercontext(font,script,2)
+                            slot[script] = attr
+                            if trace_scripts then
+                                report_scripts("script: %s, trigger %C, dynamic: %s, variant: %a",script,char,attr,"normal")
+                            end
+                        end
+                        if attr ~= 0 then
+                            setattr(n,0,attr)
+                            -- maybe set scriptinjection when associated
+                        end
+                    end
+                end
+         -- end
+        end
+        return head
+    end
+
 end
 
 function autofontfeature.enable()

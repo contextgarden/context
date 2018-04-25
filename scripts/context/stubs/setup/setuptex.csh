@@ -82,6 +82,19 @@ switch ( $system )
         set platform="unknown"
     endsw
     breaksw
+  # OpenBSD
+  case OpenBSD:
+    switch ( $cpu )
+      case i*86:
+        set platform="openbsd"
+        breaksw
+      case amd64:
+        set platform="openbsd-amd64"
+        breaksw
+      default:
+        set platform="unknown"
+    endsw
+    breaksw
   # cygwin
   case CYGWIN:
     switch ( $cpu )

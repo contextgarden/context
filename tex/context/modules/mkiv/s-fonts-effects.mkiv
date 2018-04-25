@@ -1,0 +1,59 @@
+%D \module
+%D   [      file=s-fonts-basics, % was s-fnt-01,
+%D        version=2006.10.10, % guess
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Listing Glyphs in Large Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is just a check for \type {luatex-basics-prepare}.
+
+\startmodule[fonts-effects]
+
+\startluacode
+moduledata.fonts         = moduledata.fonts         or { }
+moduledata.fonts.effects = moduledata.fonts.effects or { }
+
+function moduledata.fonts.effects.showfonteffect()
+    local effect = fonts.hashes.properties[true].effect
+    if effect then
+        local context = context
+        local BC, NC, EQ, NR = context.BC, context.NC, context.EQ, context.NR
+        context.starttabulate { "||||||||" }
+            BC() context("id")      EQ() context(font.current())
+            BC() context("factor")  EQ() context(effect.factor)
+            BC() context("wdelta")  EQ() context(effect.wdelta)
+            NC() NR()
+            BC() context("effect")  EQ() context(effect.effect)
+            BC() context("hfactor") EQ() context(effect.hfactor)
+            BC() context("hdelta")  EQ() context(effect.hdelta)
+            NC() NR()
+            BC() context("width")   EQ() context(effect.width)
+            BC() context("vfactor") EQ() context(effect.vfactor)
+            BC() context("ddelta")  EQ() context(effect.ddelta)
+            NC() NR()
+        context.stoptabulate()
+    end
+end
+\stopluacode
+
+\installmodulecommandluasingle \showfonteffect {moduledata.fonts.effects.showfonteffect}
+
+\stopmodule
+
+\continueifinputfile{s-fonts-effects.mkiv}
+
+\usemodule[art-01]
+
+\starttext
+
+    \definedfont[Serif*default,boldened] An example.
+
+    \showfonteffect
+
+\stopmodule

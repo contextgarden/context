@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-fonts</entry>
+  <entry name="detail">ConTeXt Font Database Management</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="convert"><short>save open type font in raw table</short></flag>
+    <flag name="unpack"><short>save a tma file in a more readable format</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="reload"><short>generate new font database (use <ref name="force"/> when in doubt)</short></flag>
+    <flag name="reload"><short><ref name="simple"/>:generate luatex-fonts-names.lua (not for context!)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="list"><short><ref name="name"/>: list installed fonts, filter by name [<ref name="pattern"/>]</short></flag>
+    <flag name="list"><short><ref name="spec"/>: list installed fonts, filter by spec [<ref name="filter"/>]</short></flag>
+    <flag name="list"><short><ref name="file"/>: list installed fonts, filter by file [<ref name="pattern"/>]</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern" value="str"><short>filter files using pattern</short></flag>
+    <flag name="filter" value="list"><short>key-value pairs</short></flag>
+    <flag name="all"><short>show all found instances (combined with other flags)</short></flag>
+    <flag name="info"><short>give more details</short></flag>
+    <flag name="trackers" value="list"><short>enable trackers</short></flag>
+    <flag name="statistics"><short>some info about the database</short></flag>
+    <flag name="names"><short>use name instead of unicodes</short></flag>
+    <flag name="cache" value="str"><short>use specific cache (otl or otf)</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script font --list somename (== --pattern=*somename*)</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --list --name somename</command></example>
+    <example><command>mtxrun --script font --list --name --pattern=*somename*</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --list --spec somename</command></example>
+    <example><command>mtxrun --script font --list --spec somename-bold-italic</command></example>
+    <example><command>mtxrun --script font --list --spec --pattern=*somename*</command></example>
+    <example><command>mtxrun --script font --list --spec --filter="fontname=somename"</command></example>
+    <example><command>mtxrun --script font --list --spec --filter="familyname=somename,weight=bold,style=italic,width=condensed"</command></example>
+    <example><command>mtxrun --script font --list --spec --filter="familyname=crap*,weight=bold,style=italic"</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --list --all</command></example>
+    <example><command>mtxrun --script font --list --file somename</command></example>
+    <example><command>mtxrun --script font --list --file --all somename</command></example>
+    <example><command>mtxrun --script font --list --file --pattern=*somename*</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --convert texgyrepagella-regular.otf</command></example>
+    <example><command>mtxrun --script font --convert --names texgyrepagella-regular.otf</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

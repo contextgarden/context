@@ -176,8 +176,6 @@ registertracker("otf.sample",        "otf.steps","otf.substitutions","otf.positi
 registertracker("otf.sample.silent", "otf.steps=silent","otf.substitutions","otf.positions","otf.analyzing")
 
 local nuts               = nodes.nuts
-local tonode             = nuts.tonode
-local tonut              = nuts.tonut
 
 local getfield           = nuts.getfield
 local getnext            = nuts.getnext
@@ -215,7 +213,7 @@ local find_node_tail     = nuts.tail
 local flush_node_list    = nuts.flush_list
 local flush_node         = nuts.flush_node
 local end_of_math        = nuts.end_of_math
-local traverse_nodes     = nuts.traverse
+----- traverse_nodes     = nuts.traverse
 ----- traverse_id        = nuts.traverse_id
 local set_components     = nuts.set_components
 local take_components    = nuts.take_components
@@ -225,6 +223,8 @@ local copy_only_glyphs   = nuts.copy_only_glyphs
 
 local setmetatable       = setmetatable
 local setmetatableindex  = table.setmetatableindex
+
+local nextnode           = nuts.traversers.node
 
 ----- zwnj               = 0x200C
 ----- zwj                = 0x200D
@@ -3430,7 +3430,7 @@ local function k_run_single(sub,injection,last,font,attr,lookupcache,step,datase
         a = getattr(sub,0)
     end
     if not a or (a == attr) then
-        for n in traverse_nodes(sub) do -- only gpos
+        for n in nextnode, sub do -- only gpos
             if n == last then
                 break
             end
@@ -3595,7 +3595,7 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
         a = getattr(sub,0)
     end
     if not a or (a == attr) then
-        for n in traverse_nodes(sub) do -- only gpos
+        for n in nextnode, sub do -- only gpos
             if n == last then
                 break
             end
@@ -3843,8 +3843,6 @@ do
         --     attr = false
         -- end
 
-        local head = tonut(head)
-
         if trace_steps then
             checkstep(head)
         end
@@ -3852,8 +3850,7 @@ do
         local initialrl = direction == "TRT" and -1 or 0
      -- local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
 
-        local done      = false
-     -- local datasets  = otf.dataset(tfmdata,font,attr)
+     -- local done      = false
         local datasets  = otfdataset(tfmdata,font,attr)
         local dirstack  = { } -- could move outside function but we can have local runs
         sweephead       = { }
@@ -3883,9 +3880,9 @@ do
                 -- are not frozen as we might extend or change this. Is this used at all apart from some
                 -- experiments?
                 local h, ok = handler(head,dataset,sequence,initialrl,font,attr) -- less arguments now
-                if ok then
-                    done = true
-                end
+             -- if ok then
+             --     done = true
+             -- end
                 if h and h ~= head then
                     head = h
                 end
@@ -3918,7 +3915,7 @@ do
                                         local ok
                                         head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                                         if ok then
-                                            done = true
+                                         -- done = true
                                             break
                                         end
                                     end
@@ -3961,9 +3958,9 @@ do
                                     if a then
                                         local ok
                                         head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
-                                        if ok then
-                                            done = true
-                                        end
+                                     -- if ok then
+                                     --     done = true
+                                     -- end
                                         if start then
                                             start = getnext(start)
                                         end
@@ -3987,9 +3984,9 @@ do
                                 else
                                     start, ok = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                                 end
-                                if ok then
-                                    done = true
-                                end
+                             -- if ok then
+                             --     done = true
+                             -- end
                             else
                                 start = getnext(start)
                             end
@@ -4033,7 +4030,7 @@ do
                                                 local ok
                                                 head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                                                 if ok then
-                                                    done = true
+                                                 -- done = true
                                                     break
                                                 elseif not start then
                                                     -- don't ask why ... shouldn't happen
@@ -4064,9 +4061,9 @@ do
                                 else
                                     start, ok = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                                 end
-                                if ok then
-                                    done = true
-                                end
+                             -- if ok then
+                             --     done = true
+                             -- end
                             else
                                 start = getnext(start)
                             end
@@ -4090,12 +4087,12 @@ do
         end
 
         nesting = nesting - 1
-        head    = tonode(head)
 
-        return head, done
+     -- return head, done
+        return head
     end
 
-    -- This is not an official helpoer and used for tracing experiments. It can be changed as I like
+    -- This is not an official helper and used for tracing experiments. It can be changed as I like
     -- at any moment. At some point it might be used in a module that can help font development.
 
     function otf.datasetpositionprocessor(head,font,direction,dataset)
@@ -4129,7 +4126,6 @@ do
         local steps     = sequence.steps
         local nofsteps  = sequence.nofsteps
 
-        local head      = tonut(head)
         local done      = false
         local dirstack  = { } -- could move outside function but we can have local runs
         local start     = head
@@ -4192,7 +4188,7 @@ do
             end
         end
 
-        return tonode(head) -- , matches
+        return head
     end
 
     -- end of experiment

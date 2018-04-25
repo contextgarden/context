@@ -129,9 +129,8 @@ local isglyph           = nuts.isglyph
 local getkern           = nuts.getkern
 local getwidth          = nuts.getwidth
 
-
-local traverse_id       = nuts.traverse_id
-local traverse_nodes    = nuts.traverse
+local nexthlist         = nuts.traversers.hlist
+local nextnode          = nuts.traversers.node
 
 local references        = structures.references
 local structurestags    = structures.tags
@@ -2749,10 +2748,7 @@ end
 
 local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
     local p
---     for n in traverse_nodes(head) do
---         local c, id = isglyph(n) -- 14: image, 8: literal (mp)
---         if c then
-    for n, id in traverse_nodes(head) do
+    for n, id in nextnode, head do
         if id == glyph_code then
             local c  = getchar(n)
             local at = getattr(n,a_tagged) or pat
@@ -3073,12 +3069,12 @@ function nodes.handlers.export(head) -- hooks into the page builder
         report_export("%w<!-- stop flushing page -->",currentdepth)
     end
     stoptiming(treehash)
-    return head, true
+    return head
 end
 
-function builders.paragraphs.tag(head)
+function builders.paragraphs.tag(head) -- traverse_list
     noftextblocks = noftextblocks + 1
-    for n in traverse_id(hlist_code,tonut(head)) do
+    for n in nexthlist, head do
         local subtype = getsubtype(n)
         if subtype == line_code then
             setattr(n,a_textblock,noftextblocks)
@@ -3087,6 +3083,22 @@ function builders.paragraphs.tag(head)
         end
     end
     return false
+end
+
+if LUATEXVERSION >= 1.090 then
+
+    function builders.paragraphs.tag(head) -- traverse_list
+        noftextblocks = noftextblocks + 1
+        for n, subtype in nexthlist, head do
+            if subtype == line_code then
+                setattr(n,a_textblock,noftextblocks)
+            elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
+                setattr(n,a_textblock,0)
+            end
+        end
+        return false
+    end
+
 end
 
 do
@@ -3795,19 +3807,14 @@ local htmltemplate = [[
         stoptiming(treehash)
     end
 
-    local appendaction = nodes.tasks.appendaction
     local enableaction = nodes.tasks.enableaction
 
     function structurestags.initializeexport()
         if not exporting then
             report_export("enabling export to xml")
-         -- not yet known in task-ini
-            appendaction("shipouts","normalizers", "nodes.handlers.export")
-         -- enableaction("shipouts","nodes.handlers.export")
+            enableaction("shipouts","nodes.handlers.export")
             enableaction("shipouts","nodes.handlers.accessibility")
             enableaction("math",    "noads.handlers.tags")
-         -- appendaction("finalizers","lists","builders.paragraphs.tag")
-         -- enableaction("finalizers","builders.paragraphs.tag")
             luatex.registerstopactions(structurestags.finishexport)
             exporting = true
         end

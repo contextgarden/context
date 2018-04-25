@@ -57,11 +57,12 @@ local insert_node_after  = nuts.insert_after
 local insert_node_before = nuts.insert_before
 local find_tail          = nuts.tail
 local setglue            = nuts.setglue
-local traverse_id        = nuts.traverse_id
 local list_dimensions    = nuts.rangedimensions
 local hpack_nodes        = nuts.hpack
 local current_attr       = nuts.current_attr
 local copy_list          = nuts.copy_list
+
+local nexthlist          = nuts.traversers.hlist
 
 local nodecodes          = nodes.nodecodes
 local rulecodes          = nodes.rulecodes
@@ -122,8 +123,8 @@ local setmetatableindex  = table.setmetatableindex
 
 --
 
-local striprange         = nodes.striprange
-local processwords       = nodes.processwords
+local striprange         = nuts.striprange
+local processwords       = nuts.processwords
 
 --
 
@@ -332,7 +333,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         end
     end
     if mp and mp ~= "" then
-        local r = userrule {
+        local r = usernutrule {
             width  = w,
             height = ht,
             depth  = dp,
@@ -345,7 +346,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             ca     = color,
             ta     = transparency,
         }
-        inject(tonut(r),w,ht,dp)
+        inject(r,w,ht,dp)
     else
         local tx = d.text
         if tx then
@@ -375,10 +376,8 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     return head
 end
 
-local process = nodes.processwords
-
 rules.handler = function(head)
-    return process(a_ruled,data,flush_ruled,head)
+    return processwords(a_ruled,data,flush_ruled,head)
 end
 
 function rules.enable()
@@ -431,9 +430,9 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     return head
 end
 
-local process = nodes.processwords
-
-nodes.shifts.handler = function(head) return process(a_shifted,data,flush_shifted,head) end
+nodes.shifts.handler = function(head)
+    return processwords(a_shifted,data,flush_shifted,head)
+end
 
 function nodes.shifts.enable()
     enableaction("shipouts","nodes.shifts.handler")
@@ -461,7 +460,7 @@ local function linefiller(current,data,width,location)
     local ca     = data.ca
     local ta     = data.ta
     if mp and mp ~= "" then
-        return tonut(userrule {
+        return usernutrule {
             width     = width,
             height    = height,
             depth     = depth,
@@ -473,7 +472,7 @@ local function linefiller(current,data,width,location)
             ta        = ta,
             option    = location,
             direction = getdir(current),
-        })
+        }
     else
         local rule = new_rule(width,height,depth)
         if ca then
@@ -497,7 +496,7 @@ function nodes.linefillers.filler(current,data,width,height,depth)
             local ca = data.ca
             local ta = data.ta
             if mp and mp ~= "" then
-                return tonut(userrule {
+                return usernutrule {
                     width     = width,
                     height    = height,
                     depth     = depth,
@@ -509,7 +508,7 @@ function nodes.linefillers.filler(current,data,width,height,depth)
                     ta        = ta,
                     option    = location,
                     direction = getdir(current),
-                })
+                }
             else
                 local rule = new_rule(width,height,depth)
                 if ca then
@@ -535,9 +534,8 @@ local function find_attr(head,attr)
     end
 end
 
-function nodes.linefillers.handler(head)
--- local current = tonut(head) -- when we hook into the contributers
-    for current in traverse_id(hlist_code,tonut(head)) do
+function nodes.linefillers.handler(head) -- traverse_list
+    for current in nexthlist, head do -- LUATEXVERSION >= 1.090
         if getsubtype(current) == line_code then
             local list = getlist(current)
             if list then
@@ -661,6 +659,132 @@ function nodes.linefillers.handler(head)
     return head
 end
 
+if LUATEXVERSION >= 1.090  then
+
+    function nodes.linefillers.handler(head) -- traverse_list
+        for current, subtype, list in nexthlist, head do -- LUATEXVERSION >= 1.090
+            if list and subtype == line_code then
+                -- why doesn't leftskip take the attributes
+                -- or list[linefiller] or maybe first match (maybe we need a fast helper for that)
+                local a = getattr(current,a_linefiller)
+                if a then
+                    local class = a % 1000
+                    local data  = data[class]
+                    if data then
+                        local location   = data.location
+                        local scope      = data.scope
+                        local distance   = data.distance
+                        local threshold  = data.threshold
+                        local leftlocal  = false
+                        local rightlocal = false
+                        --
+                        if scope == v_right then
+                            leftlocal = true
+                        elseif scope == v_left then
+                            rightlocal = true
+                        elseif scope == v_local then
+                            leftlocal  = true
+                            rightlocal = true
+                        end
+                        --
+                        if location == v_left or location == v_both then
+                            local lskip = nil -- leftskip
+                            local iskip = nil -- indentation
+                            local head  = list
+                            while head do
+                                local id = getid(head)
+                                if id == glue_code then
+                                    if getsubtype(head) == leftskip_code then
+                                        lskip = head
+                                    else
+                                        break
+                                    end
+                                elseif id == localpar_code or id == dir_code then
+                                    -- go on
+                                elseif id == hlist_code then
+                                    if getsubtype(head) == indent_code then
+                                        iskip = head
+                                    end
+                                    break
+                                else
+                                    break
+                                end
+                                head = getnext(head)
+                            end
+                            if head then
+                                local indentation = iskip and getwidth(iskip) or 0
+                                local leftfixed   = lskip and getwidth(lskip) or 0
+                                local lefttotal   = lskip and effective_glue(lskip,current) or 0
+                                local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
+                                if width > threshold then
+                                    if iskip then
+                                        setwidth(iskip,0)
+                                    end
+                                    if lskip then
+                                        setglue(lskip,leftlocal and getwidth(lskip) or nil)
+                                        if distance > 0 then
+                                            insert_node_after(list,lskip,new_kern(distance))
+                                        end
+                                        insert_node_after(list,lskip,linefiller(current,data,width,"left"))
+                                    else
+                                        insert_node_before(list,head,linefiller(current,data,width,"left"))
+                                        if distance > 0 then
+                                            insert_node_before(list,head,new_kern(distance))
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        --
+                        if location == v_right or location == v_both then
+                            local pskip = nil -- parfillskip
+                            local rskip = nil -- rightskip
+                            local tail  = find_tail(list)
+                            while tail and getid(tail) == glue_code do
+                                local subtype = getsubtype(tail)
+                                if subtype == rightskip_code then
+                                    rskip = tail
+                                elseif subtype == parfillskip_code then
+                                    pskip = tail
+                                else
+                                    break
+                                end
+                                tail = getprev(tail)
+                            end
+                            if tail then
+                                local rightfixed = rskip and getwidth(rskip) or 0
+                                local righttotal = rskip and effective_glue(rskip,current) or 0
+                                local parfixed   = pskip and getwidth(pskip) or 0
+                                local partotal   = pskip and effective_glue(pskip,current) or 0
+                                local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
+                                if width > threshold then
+                                    if pskip then
+                                        setglue(pskip)
+                                    end
+                                    if rskip then
+                                        setglue(rskip,rightlocal and getwidth(rskip) or nil)
+                                        if distance > 0 then
+                                            insert_node_before(list,rskip,new_kern(distance))
+                                        end
+                                        insert_node_before(list,rskip,linefiller(current,data,width,"right"))
+                                    else
+                                        insert_node_after(list,tail,linefiller(current,data,width,"right"))
+                                        if distance > 0 then
+                                            insert_node_after(list,tail,new_kern(distance))
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return head
+    end
+
+end
+
 local enable = false
 
 function nodes.linefillers.enable()
@@ -751,8 +875,6 @@ implement {
 
 -- We add a bonus feature here:
 
-local new_rule = nodes.pool.rule
-
 interfaces.implement {
     name      = "autorule",
     arguments = {
@@ -772,14 +894,15 @@ interfaces.implement {
             t.height,
             t.depth
         )
+        setattrlist(n,current_attr())
         if LUATEXFUNCTIONALITY >= 6710 then
             if l then
-                n.left  = l
+                setfield(n,"left",l)
             end
             if r then
-                n.right = r
+                etfield(n,"right",r)
             end
         end
-        context(n)
+        context(tonode(n))
     end
 }

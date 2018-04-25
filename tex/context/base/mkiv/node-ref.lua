@@ -404,8 +404,8 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             end
             local list = getlist(current)
             if list then
-                local h, ok
-                h, ok, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
+                local h
+                h, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
                 if h ~= current then
                     setlist(current,h)
                 end
@@ -441,47 +441,8 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
     if reference and (done[reference] or 0) == 0 then
         head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
     end
-    return head, true, pardir, txtdir
+    return head, pardir, txtdir
 end
-
--- local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) -- singular  !
---     if not pardir then
---         pardir = "==="
---     end
---     if not texdir then
---         txtdir = "==="
---     end
---     local current = head
---     while current do
---         local id = getid(current)
---         if id == hlist_code or id == vlist_code then
---             local r = getattr(current,attribute)
---             if r and not done[r] then
---                 done[r] = true
---                 inject_list(id,current,r,make,stack,pardir,txtdir)
---             end
---             local list = getlist(current)
---             if list then
---                 local h = inject_area(list,attribute,make,stack,done,current,pardir,txtdir)
---                 if h ~= current then
---                     setlist(current,h)
---                 end
---             end
---         elseif id == dir_code then
---             txtdir = getdir(current)
---         elseif id == localpar_code then
---             pardir = getdir(current)
---         else
---             local r = getattr(current,attribute)
---             if r and not done[r] then
---                 done[r] = true
---                 head, current = inject_range(head,current,current,r,make,stack,parent,pardir,txtdir)
---             end
---         end
---         current = getnext(current)
---     end
---     return head, true
--- end
 
 -- tracing: todo: use predefined colors
 
@@ -672,11 +633,9 @@ end
 
 function nodes.references.handler(head)
     if head and topofstack > 0 then
-        local head = tonut(head)
-        local head, done = inject_areas(head,attribute,makereference,stack,done)
-        return tonode(head), done
+        return (inject_areas(head,attribute,makereference,stack,done))
     else
-        return head, false
+        return head
     end
 end
 
@@ -783,21 +742,12 @@ local function makedestination(width,height,depth,reference)
     end
 end
 
--- function nodes.destinations.handler(head)
---     if head and topofstack > 0 then
---         return inject_area(head,attribute,makedestination,stack,done) -- singular
---     else
---         return head, false
---     end
--- end
 
 function nodes.destinations.handler(head)
     if head and topofstack > 0 then
-        local head = tonut(head)
-        local head, done = inject_areas(head,attribute,makedestination,stack,done)
-        return tonode(head), done
+        return (inject_areas(head,attribute,makedestination,stack,done))
     else
-        return head, false
+        return head
     end
 end
 
@@ -907,15 +857,3 @@ statistics.register("interactive elements", function()
         return nil
     end
 end)
-
-function references.enableinteraction()
-    enableaction("shipouts","nodes.references.handler")
-    enableaction("shipouts","nodes.destinations.handler")
-    function references.enableinteraction() end
-end
-
-implement {
-    name     = "enableinteraction",
-    actions  = references.enableinteraction,
-    onlyonce = true
-}

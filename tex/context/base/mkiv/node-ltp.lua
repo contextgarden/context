@@ -191,7 +191,6 @@ local parameters           = fonthashes.parameters
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
-local tonode               = nuts.tonode
 
 local getfield             = nuts.getfield
 local getid                = nuts.getid
@@ -2148,8 +2147,6 @@ local dcolor = { [0] = "red", "green", "blue", "magenta", "cyan", "gray" }
 local temp_head = new_temp()
 
 function constructors.methods.basic(head,d)
-    head = tonut(head)
-
     if trace_basic then
         report_parbuilders("starting at %a",head)
     end
@@ -2455,7 +2452,7 @@ function constructors.methods.basic(head,d)
                 par.best_line = par.best_bet.line_number
                 local asked_looseness = par.looseness
                 if asked_looseness == 0 then
-                    return tonode(wrap_up(par))
+                    return wrap_up(par)
                 end
                 local r = n_active
                 local actual_looseness = 0
@@ -2478,7 +2475,7 @@ function constructors.methods.basic(head,d)
                 until r == p_active
                 par.best_line = par.best_bet.line_number
                 if actual_looseness == asked_looseness or par.final_pass then
-                    return tonode(wrap_up(par))
+                    return wrap_up(par)
                 end
             end
         end
@@ -2498,7 +2495,7 @@ function constructors.methods.basic(head,d)
             par.final_pass         = true
         end
     end
-    return tonode(wrap_up(par))
+    return wrap_up(par)
 end
 
 -- standard tex logging .. will be adapted ..

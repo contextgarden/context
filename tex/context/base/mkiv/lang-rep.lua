@@ -42,8 +42,6 @@ local report_replacement = logs.reporter("languages","replacements")
 local glyph_code         = nodes.nodecodes.glyph
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -217,9 +215,7 @@ local function tonodes(list,template)
 end
 
 function replacements.handler(head)
-    head = tonut(head)
     local current  = head
-    local done     = false
     local overload = attributes.applyoverloads
     while current do
         if getid(current) == glyph_code then
@@ -327,14 +323,13 @@ function replacements.handler(head)
                     if overload then
                         overload(final,getnext(precurrent),getprev(current))
                     end
-                    done = true
                 end
             end
         end
         -- we're one ahead now but we need to because we handle words
         current = getnext(current)
     end
-    return tonode(head), done
+    return head
 end
 
 local enabled = false

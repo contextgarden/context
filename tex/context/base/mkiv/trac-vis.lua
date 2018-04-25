@@ -74,10 +74,11 @@ local copy_list           = nuts.copy_list
 local flush_node_list     = nuts.flush_list
 local insert_node_before  = nuts.insert_before
 local insert_node_after   = nuts.insert_after
-local traverse_nodes      = nuts.traverse
 local apply_to_nodes      = nuts.apply
 local find_tail           = nuts.tail
 local effectiveglue       = nuts.effective_glue
+
+local nextnode            = nuts.traversers.node
 
 local hpack_string        = nuts.typesetters.tohpack
 
@@ -1198,6 +1199,8 @@ do
     local listcodes           = nodes.listcodes
     local line_code           = listcodes.line
 
+    local cache
+
     local function visualize(head,vertical,forced,parent)
         local trace_hbox           = false
         local trace_vbox           = false
@@ -1225,6 +1228,58 @@ do
         local prev_trace_fontkern  = nil
         local prev_trace_italic    = nil
         local prev_trace_expansion = nil
+
+     -- local function setthem(t,k)
+     --     local v_trace_hbox          = band(k,     1) ~= 0
+     --     local v_trace_vbox          = band(k,     2) ~= 0
+     --     local v_trace_vtop          = band(k,     4) ~= 0
+     --     local v_trace_kern          = band(k,     8) ~= 0
+     --     local v_trace_glue          = band(k,    16) ~= 0
+     --     local v_trace_penalty       = band(k,    32) ~= 0
+     --     local v_trace_fontkern      = band(k,    64) ~= 0
+     --     local v_trace_strut         = band(k,   128) ~= 0
+     --     local v_trace_whatsit       = band(k,   256) ~= 0
+     --     local v_trace_glyph         = band(k,   512) ~= 0
+     --     local v_trace_simple        = band(k,  1024) ~= 0
+     --     local v_trace_user          = band(k,  2048) ~= 0
+     --     local v_trace_math          = band(k,  4096) ~= 0
+     --     local v_trace_italic        = band(k,  8192) ~= 0
+     --     local v_trace_origin        = band(k, 16384) ~= 0
+     --     local v_trace_discretionary = band(k, 32768) ~= 0
+     --     local v_trace_expansion     = band(k, 65536) ~= 0
+     --     local v_trace_line          = band(k,131072) ~= 0
+     --     local v_trace_space         = band(k,262144) ~= 0
+     --     local v_trace_depth         = band(k,524288) ~= 0
+     --     local v = function()
+     --         trace_hbox          = v_trace_hbox
+     --         trace_vbox          = v_trace_vbox
+     --         trace_vtop          = v_trace_vtop
+     --         trace_kern          = v_trace_kern
+     --         trace_glue          = v_trace_glue
+     --         trace_penalty       = v_trace_penalty
+     --         trace_fontkern      = v_trace_fontkern
+     --         trace_strut         = v_trace_strut
+     --         trace_whatsit       = v_trace_whatsit
+     --         trace_glyph         = v_trace_glyph
+     --         trace_simple        = v_trace_simple
+     --         trace_user          = v_trace_user
+     --         trace_math          = v_trace_math
+     --         trace_italic        = v_trace_italic
+     --         trace_origin        = v_trace_origin
+     --         trace_discretionary = v_trace_discretionary
+     --         trace_expansion     = v_trace_expansion
+     --         trace_line          = v_trace_line
+     --         trace_space         = v_trace_space
+     --         trace_depth         = v_trace_depth
+     --     end
+     --     t[k] = v
+     --     return v
+     -- end
+     --
+     -- if not cache then
+     --     cache = setmetatableindex(setthem)
+     -- end
+
         while current do
             local id = getid(current)
             local a = forced or getattr(current,a_visual) or unsetvalue
@@ -1254,6 +1309,7 @@ do
                     trace_space         = false
                     trace_depth         = false
                 else -- dead slow:
+                 -- cache[a]()
                     trace_hbox          = band(a,     1) ~= 0
                     trace_vbox          = band(a,     2) ~= 0
                     trace_vtop          = band(a,     4) ~= 0
@@ -1390,9 +1446,9 @@ do
     local function handler(head)
         if usedfont then
             starttiming(visualizers)
-            head = visualize(tonut(head),true)
+            head = visualize(head,true)
             stoptiming(visualizers)
-            return tonode(head), true
+            return head, true
         else
             return head, false
         end
@@ -1433,7 +1489,7 @@ do
     }
 
     local function markfonts(list)
-        for n, id in traverse_nodes(list) do
+        for n, id in nextnode, list do
             if id == glyph_code then
                 local font = getfont(n)
                 local okay = used[font]

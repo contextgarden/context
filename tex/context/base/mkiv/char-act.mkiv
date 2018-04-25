@@ -78,12 +78,17 @@
 % \unexpanded\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
 % \unexpanded\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 
-\unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \obeyedtab }
-\unexpanded\def\obeylines  {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\obeyedline}
-\unexpanded\def\obeypages  {\catcode\formfeedasciicode \activecatcode\letcharcode\formfeedasciicode \obeyedpage}
+\def\_obeyed_space_{\obeyedspace}
+\def\_obeyed_tab_  {\obeyedtab}
+\def\_obeyed_line_ {\obeyedline}
+\def\_obeyed_page_ {\obeyedpage}
 
-\unexpanded\def\ignoretabs {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \obeyedspace}
-\unexpanded\def\ignorelines{\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\obeyedspace}
+\unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \_obeyed_tab_ }
+\unexpanded\def\obeylines  {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\_obeyed_line_}
+\unexpanded\def\obeypages  {\catcode\formfeedasciicode \activecatcode\letcharcode\formfeedasciicode \_obeyed_page_}
+
+\unexpanded\def\ignoretabs {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \_obeyed_space_}
+\unexpanded\def\ignorelines{\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\_obeyed_space_}
 \unexpanded\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
 \unexpanded\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 
