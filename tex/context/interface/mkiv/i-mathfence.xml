@@ -43,6 +43,9 @@
                 <cd:parameter name="method">
                     <cd:constant type="auto"/>
                 </cd:parameter>
+                <cd:parameter name="size">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
                 <cd:parameter name="factor">
                     <cd:constant type="none"/>
                     <cd:constant type="auto"/>

@@ -101,6 +101,8 @@ local setsubtype           = nuts.setsubtype
 local setattr              = nuts.setattr
 local setattrlist          = nuts.setattrlist
 local setwidth             = nuts.setwidth
+local setheight            = nuts.setheight
+local setdepth             = nuts.setdepth
 
 local getfield             = nuts.getfield
 local getnext              = nuts.getnext
@@ -113,6 +115,9 @@ local getfont              = nuts.getfont
 local getfam               = nuts.getfam
 local getattr              = nuts.getattr
 local getlist              = nuts.getlist
+local getwidth             = nuts.getwidth
+local getheight            = nuts.getheight
+local getdepth             = nuts.getdepth
 
 local getnucleus           = nuts.getnucleus
 local getsub               = nuts.getsub
@@ -774,39 +779,37 @@ do
                 local method, size = div(a,100), a % 100
                 setattr(pointer,a_mathsize,0)
                 local delimiter = getfield(pointer,"delim")
-                local chr = getfield(delimiter,"small_char")
+                local chr = getchar(delimiter)
                 if chr > 0 then
-                    local fam = getfield(delimiter,"small_fam")
+                    local fam = getfam(delimiter)
                     local id = font_of_family(fam)
                     if id > 0 then
-                        setfield(delimiter,"small_char",mathematics.big(fontdata[id],chr,size,method))
+                        local data = fontdata[id]
+                        local char = mathematics.big(data,chr,size,method)
+                        local ht   = getfield(pointer,"height")
+                     -- local ht   = getheight(pointer) -- LUATEXVERSION >= 1.090
+                        local dp   = getfield(pointer,"depth")
+                     -- local dp   = getdepth(pointer) -- LUATEXVERSION >= 1.090
+                        if ht == 1 or dp == 1 then -- 1 scaled point is a signal
+                            local chardata = data.characters[char]
+                            if ht == 1 then
+                                setfield(pointer,"height",chardata.height)
+                             -- setheight(pointer,chardata.height) -- LUATEXVERSION >= 1.090
+                            end
+                            if dp == 1 then
+                                setfield(pointer,"depth",chardata.depth)
+                             -- setdepth(pointer,chardata.depth) -- LUATEXVERSION >= 1.090
+                            end
+                        end
+                        if trace_fences then
+                            report_fences("replacing %C by %C using method %a and size %a",chr,char,method,size)
+                        end
+                        setchar(delimiter,char)
                     end
                 end
             end
         end
     end
-
-    -- will become:
-
-    -- resize[math_fence] = function(pointer)
-    --     local subtype = getsubtype(pointer)
-    --     if subtype == left_fence_code or subtype == right_fence_code then
-    --         local a = getattr(pointer,a_mathsize)
-    --         if a and a > 0 then
-    --             local method, size = div(a,100), a % 100
-    --             setattr(pointer,a_mathsize,0)
-    --             local delimiter = getfield(pointer,"delim")
-    --             local chr = getchar(delimiter)
-    --             if chr > 0 then
-    --                 local fam = getfam(delimiter)
-    --                 local id = font_of_family(fam)
-    --                 if id > 0 then
-    --                     setchar(delimiter,mathematics.big(fontdata[id],chr,size,method))
-    --                 end
-    --             end
-    --         end
-    --     end
-    -- end
 
     function handlers.resize(head,style,penalties)
         processnoads(head,resize,"resize")

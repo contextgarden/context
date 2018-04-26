@@ -53,7 +53,7 @@ return {
         "shadedinto", "withshadecolors",
         "withshadedomain", "withshademethod", "withshadefactor", "withshadevector",
         "withshadecenter", "withshadedirection", "withshaderadius", "withshadetransform",
-        "withshadestep", "withshadefraction",
+        "withshadestep", "withshadefraction", "withshadeorigin", "shownshadevector", "shownshadeorigin",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",
         "drawfill", "undrawfill",
         "inverted", "uncolored", "softened", "grayed", "greyed",

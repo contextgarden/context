@@ -65,14 +65,19 @@
 
 % we need the direct use of \Udelimiter because of { etc
 
-\newconditional\c_math_fenced_mirror \settrue\c_math_fenced_mirror
+\newconditional\c_math_fenced_mirror \settrue \c_math_fenced_mirror
+\newconditional\c_math_fenced_sized  \setfalse\c_math_fenced_sized
 
 \unexpanded\def\math_fenced_inject#1#2#3#4%
   {\ifx#1\empty
      #2.%
    \else
      \edef\p_mathclass{\mathfenceparameter\c!mathclass}%
-     \edef\p_factor{\mathfenceparameter\c!factor}%
+     \ifconditional\c_math_fenced_sized
+       \let\p_factor\v!fixed
+     \else
+       \edef\p_factor{\mathfenceparameter\c!factor}%
+     \fi
      \ifx\p_factor\empty
        \ifx\p_mathclass\empty
          #2%
@@ -97,7 +102,11 @@
        \s!axis
      % #2%
      \else
-       \scratchdimen\dimexpr\p_factor\bodyfontsize/2\relax
+       \ifx\p_factor\v!fixed
+          \scratchdimen\scaledpoint
+       \else
+          \scratchdimen\dimexpr\p_factor\bodyfontsize/2\relax
+       \fi
        #3%
        \s!height\scratchdimen
        \s!depth\scratchdimen
@@ -121,16 +130,14 @@
         \mathfenceparameter\c!left
       \fi}%
    \math_fenced_color_push
- % \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\relax\fi
    \math_fenced_inject\p_left\normalleft\Uleft\plusfour
    \math_fenced_color_pop}
 
 \def\math_fenced_middle
   {\edef\p_middle
-    {\mathfenceparameter\c!middle}%
+     {\mathfenceparameter\c!middle}%
    \mskip\thinmuskip
    \math_fenced_color_push
- % \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi
    \math_fenced_inject\p_middle\normalmiddle\Umiddle\plusfour
    \math_fenced_color_pop
    \mskip\thinmuskip}
@@ -147,7 +154,6 @@
         \mathfenceparameter\c!right
       \fi}%
    \math_fenced_color_push
- % \normalright \ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\relax\fi
    \math_fenced_inject\p_right\normalright\Uright\plusfive
    \math_fenced_color_pop}
 
@@ -194,15 +200,59 @@
    \edef\currentmathfence{#1}%
    \dosingleempty\math_fenced_fenced_indeed}
 
-\unexpanded\def\math_fenced_fenced_indeed[#1]#2%
+\def\math_fenced_force_size#1#2%
+  {\attribute\mathsizeattribute\numexpr#1*\plushundred+#2\relax}
+
+% \unexpanded\def\math_fenced_fenced_indeed[#1]#2%
+%   {\iffirstargument\setupcurrentmathfence[#1]\fi
+%    \math_fenced_fenced_common
+%    \edef\p_size{\mathfenceparameter\c!size}%
+%    \ifx\p_size\empty
+%       \setfalse\c_math_fenced_sized
+%    \else
+%       \settrue\c_math_fenced_sized
+%       \math_fenced_force_size\bigmathdelimitervariant\p_size
+%    \fi
+%    \math_fenced_left
+%    #2%
+%    \math_fenced_right
+%    \stopusemathstyleparameter
+%    \endgroup
+%    \advance\c_math_fenced_nesting\minusone}
+
+\unexpanded\def\math_fenced_fenced_indeed[#1]%
   {\iffirstargument\setupcurrentmathfence[#1]\fi
    \math_fenced_fenced_common
-   \math_fenced_left
-   #2%
-   \math_fenced_right
-   \stopusemathstyleparameter
+   \edef\p_size{\mathfenceparameter\c!size}%
+   \ifx\p_size\empty
+     \expandafter\math_fenced_fenced_indeed_adapt
+   \else
+     \expandafter\math_fenced_fenced_indeed_fixed
+   \fi}
+
+\unexpanded\def\math_fenced_fenced_indeed_finish
+  {\stopusemathstyleparameter
    \endgroup
    \advance\c_math_fenced_nesting\minusone}
+
+\unexpanded\def\math_fenced_fenced_indeed_fixed#1%
+  {\math_fenced_force_size\bigmathdelimitervariant\p_size
+   \settrue\c_math_fenced_sized
+   \math_fenced_left
+   \setfalse\c_math_fenced_sized
+   #1%
+   \settrue\c_math_fenced_sized
+   \math_fenced_right
+   \setfalse\c_math_fenced_sized
+   \math_fenced_fenced_indeed_finish}
+
+\unexpanded\def\math_fenced_fenced_indeed_adapt#1%
+  {\setfalse\c_math_fenced_sized
+   \math_fenced_left
+   #1%
+   \setfalse\c_math_fenced_sized
+   \math_fenced_right
+   \math_fenced_fenced_indeed_finish}
 
 \appendtoks
     \let\fenced\math_fenced_fenced
@@ -591,7 +641,7 @@
         \ifcase\bigmathdelimitermethod
           \math_fenced_step#2\relax
         \or
-          \attribute\mathsizeattribute\numexpr\bigmathdelimitervariant*\plushundred+#1\relax
+          \math_fenced_force_size\bigmathdelimitervariant{#1}\relax
           \math_fenced_step#2\relax
         \else
           \math_fenced_step#2{\vpack to\csname\??mathbig\number#1\endcsname\bodyfontsize{}}%
@@ -621,7 +671,7 @@
 
 \unexpanded\def\mathdelimiterstep#1#2%
   {\begingroup
-   \attribute\mathsizeattribute\numexpr\plushundred+#1\relax
+   \math_fenced_force_size\plusone{#1}%
    \math_fenced_step#2\relax
    \endgroup}
 

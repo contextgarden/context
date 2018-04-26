@@ -43,6 +43,7 @@ local texsetattribute     = tex.setattribute
 local texgetattribute     = tex.getattribute
 local texgetcount         = tex.getcount
 local texgettoks          = tex.gettoks
+local texgetmacro         = tokens.getters.macro
 
 local a_color             = attributes.private('color')
 local a_transparency      = attributes.private('transparency')
@@ -698,7 +699,8 @@ local paletnamespace  = getnamespace("colorpalet")
 
 local function namedcolorattributes(name)
     local space  = texgetattribute(a_colormodel)
-    local prefix = texgettoks("t_colo_prefix")
+    ----- prefix = texgettoks("t_colo_prefix")
+    local prefix = texgetmacro("currentcolorprefix")
     local color
     if prefix ~= "" then
         color = valid[prefix..name]

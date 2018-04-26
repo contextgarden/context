@@ -60,7 +60,7 @@ function mp._f_()
     end
 end
 
-local f_code      = formatters["%s return mp._f_()"]
+local f_code         = formatters["%s return mp._f_()"]
 
 local f_numeric      = formatters["%.16f"]
 local f_integer      = formatters["%i"]
@@ -127,6 +127,8 @@ local function mpvprint(...) -- variable print
         end
     end
 end
+
+mp.cleaned = function(s) return lpegmatch(p,s) or s end
 
 mp.print  = mpprint
 mp.vprint = mpvprint

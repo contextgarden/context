@@ -96,6 +96,7 @@ local fastcopy            = table.fastcopy
 local nodecodes           = nodes.nodecodes
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
+local glyph_code          = nodecodes.glyph
 
 local nuts                = nodes.nuts or { }
 nodes.nuts                = nuts
@@ -174,18 +175,25 @@ if not direct.getdirection then
 
 end
 
-if LUATEXFUNCTIONALITY < 6695 then
+if not node.direct.traverse_glyph or not node.direct.traverse_list then
 
-    local getnext    = direct.getnext
-    local getid      = direct.getid
-    local getsubtype = direct.getsubtype
+    logs.report("system","using fake node list traversers")
+
+    local getnext    = node.direct.getnext
+    local getid      = node.direct.getid
+    local getsubtype = node.direct.getsubtype
+    local getchar    = node.direct.getchar
+    local getfont    = node.direct.getfont
+    local getlist    = node.direct.getlist
 
     local function iterate(h,n)
         if n then
-            local n = getnext(n)
+            n = getnext(n)
+        else
+            n = h
+        end
+        if n then
             return n, getid(n), getsubtype(n)
-        elseif h then
-            return h, getid(h), getsubtype(h)
         end
     end
 
@@ -193,64 +201,140 @@ if LUATEXFUNCTIONALITY < 6695 then
         return iterate, h
     end
 
+    function node.direct.traverse_id(id,h)
+        local function iterate(h,n)
+            if n then
+                n = getnext(n)
+            else
+                n = h
+            end
+            while n do
+                if getid(n) == id then
+                    return n, getsubtype(n)
+                else
+                    n = getnext(n)
+                end
+            end
+        end
+        return iterate, h
+    end
+
+    local function iterate(h,n)
+        if n then
+            n = getnext(n)
+        else
+            n = h
+        end
+        while n do
+            if getid(n) == glyph_code then
+                return n, getfont(n), getchar(n)
+            else
+                n = getnext(n)
+            end
+        end
+    end
+
+    function node.direct.traverse_glyph(h)
+        return iterate, h
+    end
+
+    local function iterate(h,n)
+        if n then
+            n = getnext(n)
+        else
+            n = h
+        end
+        while n do
+            if getid(n) == glyph_code and subtype(n) < 256 then
+                return n, getfont(n), getchar(n)
+            else
+                n = getnext(n)
+            end
+        end
+    end
+
+    function node.direct.traverse_char(h)
+        return iterate, h
+    end
+
+    local function iterate(h,n)
+        if n then
+            n = getnext(n)
+        else
+            n = h
+        end
+        while n do
+            local id = getid(n)
+            if id == hlist_code or id == vlist_code then
+                return n, id, getsubtype(n), getlist(n)
+            else
+                n = getnext(n)
+            end
+        end
+    end
+
+    function node.direct.traverse_list(h)
+        return iterate, h
+    end
+
 end
 
 local nuts                   = nodes.nuts
 
-nuts.tostring                = direct.tostring
+nuts.check_discretionaries   = direct.check_discretionaries
 nuts.copy                    = direct.copy
-nuts.copy_node               = direct.copy
 nuts.copy_list               = direct.copy_list
+nuts.copy_node               = direct.copy
+nuts.count                   = direct.count
+nuts.current_attr            = direct.current_attr
 nuts.delete                  = direct.delete
 nuts.dimensions              = direct.dimensions
-nuts.rangedimensions         = direct.rangedimensions
 nuts.end_of_math             = direct.end_of_math
+nuts.find_attribute          = direct.find_attribute
+nuts.first_glyph             = direct.first_glyph
+nuts.flatten_discretionaries = direct.flatten_discretionaries
 nuts.flush                   = direct.flush_node
-nuts.flush_node              = direct.flush_node
 nuts.flush_list              = direct.flush_list
+nuts.flush_node              = direct.flush_node
 nuts.free                    = direct.free
+nuts.get_synctex_fields      = direct.get_synctex_fields
+nuts.has_attribute           = direct.has_attribute
+nuts.has_field               = direct.has_field
+nuts.has_glyph               = direct.has_glyph or direct.first_glyph
+nuts.hpack                   = direct.hpack
 nuts.insert_after            = direct.insert_after
 nuts.insert_before           = direct.insert_before
-nuts.hpack                   = direct.hpack
-nuts.new                     = direct.new
-nuts.tail                    = direct.tail
-nuts.traverse                = direct.traverse
-nuts.traverse_id             = direct.traverse_id
-nuts.traverse_char           = direct.traverse_char
-nuts.traverse_glyph          = direct.traverse_glyph
-nuts.traverse_list           = direct.traverse_list
-nuts.slide                   = direct.slide
-nuts.writable_spec           = direct.writable_spec
-nuts.vpack                   = direct.vpack
-nuts.is_node                 = direct.is_node
 nuts.is_direct               = direct.is_direct
+nuts.is_node                 = direct.is_node
 nuts.is_nut                  = direct.is_direct
-nuts.first_glyph             = direct.first_glyph
-nuts.has_glyph               = direct.has_glyph or direct.first_glyph
-nuts.count                   = direct.count
-nuts.length                  = direct.length
-nuts.find_attribute          = direct.find_attribute
-nuts.unset_attribute         = direct.unset_attribute
-
-nuts.current_attr            = direct.current_attr
-nuts.has_field               = direct.has_field
+nuts.kerning                 = direct.kerning
 nuts.last_node               = direct.last_node
-nuts.usedlist                = direct.usedlist
-nuts.protrusion_skippable    = direct.protrusion_skippable
-nuts.check_discretionaries   = direct.check_discretionaries
-nuts.write                   = direct.write
-
-nuts.has_attribute           = direct.has_attribute
-nuts.set_attribute           = direct.set_attribute
-nuts.unset_attribute         = direct.unset_attribute
-
+nuts.length                  = direct.length
+nuts.ligaturing              = direct.ligaturing
+nuts.new                     = direct.new
 nuts.protect_glyph           = direct.protect_glyph
 nuts.protect_glyphs          = direct.protect_glyphs
+nuts.protrusion_skippable    = direct.protrusion_skippable
+nuts.rangedimensions         = direct.rangedimensions
+nuts.set_attribute           = direct.set_attribute
+nuts.set_synctex_fields      = direct.set_synctex_fields
+nuts.slide                   = direct.slide
+nuts.tail                    = direct.tail
+nuts.tostring                = direct.tostring
+nuts.traverse                = direct.traverse
+nuts.traverse_char           = direct.traverse_char
+nuts.traverse_glyph          = direct.traverse_glyph
+nuts.traverse_id             = direct.traverse_id
+nuts.traverse_list           = direct.traverse_list
 nuts.unprotect_glyph         = direct.unprotect_glyph
 nuts.unprotect_glyphs        = direct.unprotect_glyphs
-nuts.ligaturing              = direct.ligaturing
-nuts.kerning                 = direct.kerning
-nuts.flatten_discretionaries = direct.flatten_discretionaries
+nuts.unset_attribute         = direct.unset_attribute
+nuts.unset_attribute         = direct.unset_attribute
+nuts.usedlist                = direct.usedlist
+nuts.uses_font               = direct.uses_font
+nuts.vpack                   = direct.vpack
+nuts.writable_spec           = direct.writable_spec
+nuts.write                   = direct.write
 
 if not direct.mlist_to_hlist then -- needed
 
@@ -829,115 +913,3 @@ function nuts.copy_properties(source,target,what)
     return newprops -- for checking
 end
 
--- here:
-
-nuts.get_synctex_fields = direct.get_synctex_fields
-nuts.set_synctex_fields = direct.set_synctex_fields
-
--- for now
-
-nodes.uses_font = nodes.uses_font
-nuts.uses_font  = direct.uses_font
-
-if not nuts.uses_font then
-
-    local glyph_code  = nodecodes.glyph
-    local getdisc     = nuts.getdisc
-    local getfont     = nuts.getfont
-    local traverse_id = nuts.traverse_id
-    local tonut       = nodes.tonut
-
-    function nuts.uses_font(n,font)
-        local pre, post, replace = getdisc(n)
-        if pre then
-            -- traverse_char
-            for n in traverse_id(glyph_code,pre) do
-                if getfont(n) == font then
-                    return true
-                end
-            end
-        end
-        if post then
-            for n in traverse_id(glyph_code,post) do
-                if getfont(n) == font then
-                    return true
-                end
-            end
-        end
-        if replace then
-            for n in traverse_id(glyph_code,replace) do
-                if getfont(n) == font then
-                    return true
-                end
-            end
-        end
-        return false
-    end
-
-    function nodes.uses_font(n,font)
-        return nuts.uses_font(tonut(n),font)
-    end
-
-end
-
--- for the moment (pre 6380)
-
-if not nuts.unprotect_glyph then
-
-    local protect_glyph    = nuts.protect_glyph
-    local protect_glyphs   = nuts.protect_glyphs
-    local unprotect_glyph  = nuts.unprotect_glyph
-    local unprotect_glyphs = nuts.unprotect_glyphs
-
-    local getnext          = nuts.getnext
-    local setnext          = nuts.setnext
-
-    function nuts.protectglyphs(first,last)
-        if first == last then
-            return protect_glyph(first)
-        elseif last then
-            local nxt = getnext(last)
-            setnext(last)
-            local f, b = protect_glyphs(first)
-            setnext(last,nxt)
-            return f, b
-        else
-            return protect_glyphs(first)
-        end
-    end
-
-    function nuts.unprotectglyphs(first,last)
-        if first == last then
-            return unprotect_glyph(first)
-        elseif last then
-            local nxt = getnext(last)
-            setnext(last)
-            local f, b = unprotect_glyphs(first)
-            setnext(last,nxt)
-            return f, b
-        else
-            return unprotect_glyphs(first)
-        end
-    end
-
-end
-
-if LUATEXFUNCTIONALITY < 6384 then -- LUATEXVERSION < 1.070
-
-    local getfield = nuts.getfield
-    local setfield = nuts.setfield
-
-    function nuts.getboxglue(n,glue_set,glue_order,glue_sign)
-        return
-            getfield(n,"glue_set"),
-            getfield(n,"glue_order"),
-            getfield(n,"glue_sign")
-    end
-
-    function nuts.setboxglue(n,glue_set,glue_order,glue_sign)
-        setfield(n,"glue_set",  glue_set   or 0)
-        setfield(n,"glue_order",glue_order or 0)
-        setfield(n,"glue_sign", glue_sign  or 0)
-    end
-
-end

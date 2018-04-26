@@ -410,7 +410,7 @@ return {
         "installctxscanner", "installctxscannercall",
         "resetctxscanner",
         "installprotectedctxscanner", "installprotectedctxscannercall",
-        "cldprocessfile", "cldloadfile", "cldcontext", "cldcommand",
+        "cldprocessfile", "cldloadfile", "cldloadviafile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
         "lastlinewidth",

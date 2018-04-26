@@ -592,22 +592,22 @@
 %    \the\everysetuppalet
 %    \colo_helpers_initialize_maintextcolor}
 
-\newtoks\t_colo_prefix % used in mp interface
+% \newtoks\t_colo_prefix % used in mp interface
 
 \def\colo_palets_setup[#1]%
   {\edef\currentcolorpalet{#1}%
    \ifx\currentcolorpalet\empty
      % seems to be a reset
      \let\currentcolorprefix\empty
-   \t_colo_prefix\emptytoks
+    %\t_colo_prefix\emptytoks
    \else\ifcsname\??paletlist\currentcolorpalet\endcsname
      \edef\currentcolorprefix{#1:}%
-     \t_colo_prefix\expandafter{\currentcolorprefix}%
+    %\t_colo_prefix\expandafter{\currentcolorprefix}%
    \else
      \colo_helpers_show_message\m!colors7\currentcolorpalet
      \let\currentcolorpalet\empty
      \let\currentcolorprefix\empty
-     \t_colo_prefix\emptytoks
+    %\t_colo_prefix\emptytoks
    \fi\fi
    \the\everysetuppalet
    \colo_helpers_initialize_maintextcolor}

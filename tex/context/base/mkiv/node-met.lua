@@ -117,6 +117,7 @@ nodes.vpack                   = node.vpack
 nodes.fields                  = node.fields
 nodes.is_node                 = node.is_node
 nodes.setglue                 = node.setglue
+nodes.uses_font               = node.uses_font
 
 nodes.first_glyph             = node.first_glyph
 nodes.has_glyph               = node.has_glyph or node.first_glyph

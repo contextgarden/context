@@ -641,7 +641,7 @@ function mathematics.big(tfmdata,unicode,n,method)
                     end
                 end
             end
-        else
+        elseif method == 3 then
             local size = 1.33^n
             if method == 4 then
                 size = tfmdata.parameters.size * size

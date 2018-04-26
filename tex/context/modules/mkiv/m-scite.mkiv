@@ -332,6 +332,7 @@ visualizers.register("sql",   visualizer)
   {\scitespaceskip\interwordspace % \fontcharwd\font`0\relax % brrrrr
    \let\slxb\gobbleoneargument
    \let\slxe\space
+   \let\slxbreak\relax
    \let\installscitecommandsinline\relax}
 
 \unexpanded\def\installscitecommandsdisplay
@@ -342,10 +343,12 @@ visualizers.register("sql",   visualizer)
 
 \clf_sciteinstallcommands
 
-\installscitecommandsinline
+\let\slxb    \gobbleoneargument
+\let\slxe    \space
+\let\slxbreak\relax
 
-\let\slxS\buff_scite_slxs
-\let\slxF\buff_scite_slxf
+\let\slxS    \buff_scite_slxs
+\let\slxF    \buff_scite_slxf
 
 \def\module_scite_inherit_typing
   {\buff_verbatim_initialize_typing_one

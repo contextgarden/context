@@ -1224,34 +1224,39 @@ do
         end
     end
 
-end
+    local findtexfile = resolvers.findtexfile
+    local findfile    = resolvers.findfile
 
---
-
-function context.runfile(filename)
-    local foundname = resolvers.findtexfile(file.addsuffix(filename,"cld")) or ""
-    if foundname ~= "" then
-        local ok = dofile(foundname)
-        if type(ok) == "function" then
-            if trace_cld then
-                report_context("begin of file %a (function call)",foundname)
+    function context.runfile(filename)
+        local foundname = findtexfile(file.addsuffix(filename,"cld")) or ""
+        if foundname ~= "" then
+            local ok = dofile(foundname)
+            if type(ok) == "function" then
+                if trace_cld then
+                    report_context("begin of file %a (function call)",foundname)
+                end
+                ok()
+                if trace_cld then
+                    report_context("end of file %a (function call)",foundname)
+                end
+            elseif ok then
+                report_context("file %a is processed and returns true",foundname)
+            else
+                report_context("file %a is processed and returns nothing",foundname)
             end
-            ok()
-            if trace_cld then
-                report_context("end of file %a (function call)",foundname)
-            end
-        elseif ok then
-            report_context("file %a is processed and returns true",foundname)
         else
-            report_context("file %a is processed and returns nothing",foundname)
+            report_context("unknown file %a",filename)
         end
-    else
-        report_context("unknown file %a",filename)
     end
-end
 
-function context.loadfile(filename)
-    context(stripstring(loaddata(resolvers.findfile(filename))))
+    function context.loadfile(filename)
+        context(stripstring(loaddata(findfile(filename))))
+    end
+
+    function context.loadviafile(filename)
+        viafile(stripstring(loaddata(findfile(filename))))
+    end
+
 end
 
 -- some functions

@@ -249,7 +249,7 @@
         userdata {\detokenize{#3}}% will be converted to table at the lua end
    \relax
    \xdef\currentstructurelistnumber{\clf_currentsectiontolist}%
-   % \currentstructuresynchronize has to be called someplace, since it introduces a node
+ % \currentstructuresynchronize has to be called someplace, since it introduces a node
    \setstructuresynchronization\currentstructurelistnumber
    \endgroup}
 
@@ -755,6 +755,9 @@
      \setfalse\headshownumber
    \fi}
 
+% Beware, we do need some node for anchoring marks and normally a zwnj will
+% do but it interferes so we deal with it at the \LUA\ end.
+
 \newtoks\everyheadsynchronization
 
 \appendtoks
@@ -762,8 +765,8 @@
 \to \everyheadsynchronization
 
 \unexpanded\def\theheadsynchonization
-  {\the\everyheadsynchronization
-   \currentstructuresynchronize}
+  {% no, interferes: \signalcharacter
+   \the\everyheadsynchronization}
 
 % BEWARE: \marking[section]{my text} does not work as we use list indices instead
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
@@ -983,8 +986,8 @@
 \unexpanded\def\strc_rendering_place_head_section % see hidden below
   {\global\setbox\b_sectioning_delayed\hpack\bgroup
      \setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
-     \hpack\headreferenceattributes{}%
-     \currentstructuresynchronize
+     \hpack\headreferenceattributes{}% also does the mark
+     \theheadsynchonization
    \egroup}
 
 \unexpanded\def\strc_rendering_place_head_hidden % maybe trialtypesetting check
@@ -994,7 +997,7 @@
      {\noexpand\letgvalue{\??hiddenheadsync\currenthead}\relax
       \noexpand\setmarking[\currentheadcoupling]{li::\currentstructurelistnumber}%
       \hpack\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
-      \currentstructuresynchronize}} % and it's a node anyway
+      \theheadsynchonization}} % and it's a node anyway
 
 \def\synchronizehead           #1{\csname\??hiddenheadsync#1\endcsname}
 \def\theheadreferenceattributes#1{\csname\??hiddenheadattr#1\endcsname}
