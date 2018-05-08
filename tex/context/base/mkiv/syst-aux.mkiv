@@ -345,6 +345,18 @@
 \let\doifnextoptionalelse  \doifelsenextoptional
 \let\doifnextoptionalcselse\doifelsenextoptionalcs
 
+% fails on assignments
+%
+% \unexpanded\def\doifelsenextoptional      {\afterassignment\doifelsenextoptional_n  \def\m_syst_action_yes}
+%            \def\doifelsenextoptional_n    {\afterassignment\doifelsenextoptional_n_n\def\m_syst_action_nop}
+%            \def\doifelsenextoptional_n_n  {\let\if_next_blank_space_token\iffalse
+%                                            \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+%
+% \unexpanded\def\doifelsenextoptionalcs    {\afterassignment\doifelsenextoptionalcs_n  \let\m_syst_action_yes}
+%            \def\doifelsenextoptionalcs_n  {\afterassignment\doifelsenextoptionalcs_n_n\let\m_syst_action_nop}
+%            \def\doifelsenextoptionalcs_n_n{\let\if_next_blank_space_token\iffalse
+%                                            \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+
 \def\syst_helpers_inspect_next_optional_character
   {\ifx\nexttoken\blankspace
      \expandafter\syst_helpers_reinspect_next_optional_character
@@ -727,6 +739,23 @@
    \else
      \expandafter\secondoftwoarguments
    \fi}
+
+%D Slightly faster on longer arguments (0.179 downto 0.141):
+%D
+%D \testfeatureonce{100000}{\doifelse{aaaaaaaaaaaaaaa}{bbbbbbbbbbbbbbb}\relax\relax}
+
+% \unexpanded\def\doifelse
+%   {\afterassignment\doifelse_n\edef\m_syst_string_one}
+%
+% \unexpanded\def\doifelse_n
+%   {\afterassignment\doifelse_n_n\edef\m_syst_string_two}
+%
+% \unexpanded\def\doifelse_n_n
+%   {\ifx\m_syst_string_one\m_syst_string_two
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
 
 %D \macros
 %D   {doifempty,doifemptyelse,doifnotempty}

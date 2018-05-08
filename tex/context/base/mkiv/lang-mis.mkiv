@@ -202,8 +202,8 @@
 
 \setnewconstant\discretionarymode\plusone
 
-\unexpanded\def\ignorediscretionaries
-  {\discretionarymode\zerocount}
+\unexpanded\def\ignorediscretionaries{\discretionarymode\zerocount}
+\unexpanded\def\obeydiscretionaries  {\discretionarymode\plusone}
 
 \def\lang_discretionaries_command
   {% if direct if, we need \relax for lookahead in math mode

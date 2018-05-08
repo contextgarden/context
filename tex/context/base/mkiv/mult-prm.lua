@@ -261,6 +261,8 @@ return {
   "ifincsname",
   "ifprimitive",
   "ignoreligaturesinfont",
+  "immediateassignment",
+  "immediateassigned",
   "initcatcodetable",
   "insertht",
   "lastnamedcs",

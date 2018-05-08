@@ -1875,7 +1875,7 @@ function resolvers.booleanvariable(str,default)
 end
 
 function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, can be a nice iterator instead
-    local hashes   = instance.hashes
+    local hashes = instance.hashes
     for i=1,#hashes do
         local hash     = hashes[i]
         local blobtype = hash.type

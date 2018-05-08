@@ -180,6 +180,10 @@
 \def\mult_check_for_assignment_indeed#1=#2#3\_end_
   {\if#2@\assignmentfalse\else\assignmenttrue\fi}
 
+\def\mult_check_for_assignment_indeed_begin_#1=#2#3\_end_
+  {\if#2@}
+
+
 \def\mult_check_for_assignment#1%
   {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=@@\_end_}
 
@@ -389,6 +393,43 @@
       \the#7%
       \let#4#9}}
 
+% \unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9% why is \expanded still needed in clones
+%   {\ifx#4\relax\let#4\empty\fi                                          % see \defineregister
+%    \unexpanded\def#2{\dotripleempty#5}%
+%    \newtoks#6%
+%    \newtoks#7%
+%    \unexpanded\def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
+%      {\let#9#4%
+%       \edef#4{##1}%
+%       \ifthirdargument
+%         \the#6% predefine
+%         \edef#8{##2}%
+%         \mult_check_for_parent{#1}{#3}#4#8%
+%         \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+%         \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
+%         \mult_interfaces_get_parameters{#1#4:}[##3]%
+%       \else\ifsecondargument
+%         \the#6% predefine
+%         \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##2}=@@\_end_
+%           \edef#8{##2}%
+%           \mult_check_for_parent{#1}{#3}#4#8%
+%           \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+%           \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
+%         \else
+%           \let#8\empty
+%           \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
+%           \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
+%           \mult_interfaces_get_parameters{#1#4:}[##2]%
+%         \fi
+%       \else
+%         \the#6% predefine
+%         \let#8\empty
+%         \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
+%         \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
+%       \fi\fi
+%       \the#7%
+%       \let#4#9}}
+
 \unexpanded\def\installdefinehandler#1#2#3%
   {\normalexpanded
      {\mult_interfaces_install_define_handler
@@ -466,7 +507,7 @@
         \let#3#7%
       \else\iffirstargument
         % \mult_check_for_assignment{##1}%
-          \expandafter\mult_check_for_assignment_indeed\detokenize{##1}=@@\_end_
+        \expandafter\mult_check_for_assignment_indeed\detokenize{##1}=@@\_end_
         \ifassignment
           % \setuplayout[key=value]
           \let#7#3%
@@ -495,6 +536,54 @@
       \fi\fi
       #2\zerocount % mode is always zero at the end
       \the#9}}
+
+% \unexpanded\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7#8#9%
+%   {\newtoks#5%
+%    \newconstant#2%
+%    \newtoks#8%
+%    \newtoks#9%
+%    \ifx#6\relax\let#6\empty\fi
+%    \unexpanded\def#4[##1][##2]% maybe helper
+%      {\ifsecondargument % no commalist here
+%         % \setuplayout[whatever][key=value]
+%         \let#7#3%
+%         \let#6#3%
+%         \edef#3{##1}%
+%         #2\doingrootsetupnamed
+%         \mult_interfaces_get_parameters{#1#3:}[##2]%
+%         \the#5%
+%         \ifx#3#6\the#8\fi % only switchsetups if previous == current
+%         \let#3#7%
+%       \else\iffirstargument
+%         % \mult_check_for_assignment{##1}%
+%         \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=@@\_end_
+%           % \setuplayout[whatever]
+%           \let#6#3%   % previous becomes current
+%           \edef#3{##1}% this will catch reset so one needs to test for it
+%           #2\doingrootsetnamed
+%           \the#5%     % we can check for previous vs current
+%           \the#8% switchsetups
+%         \else
+%           % \setuplayout[key=value]
+%           \let#7#3%
+%           \let#6#3%
+%           \let#3\empty
+%           #2\doingrootsetuproot
+%           \mult_interfaces_get_parameters{#1:}[##1]%
+%           \the#5%
+%           \the#8% switchsetups
+%           \let#3#7%
+%         \fi
+%       \else
+%         % \setuplayout
+%         \let#6#3%      % previous becomes current
+%         \let#3\empty   % current becomes empty
+%         #2\doingrootsetroot
+%         \the#5%
+%         \the#8% switchsetups
+%       \fi\fi
+%       #2\zerocount % mode is always zero at the end
+%       \the#9}}
 
 \unexpanded\def\installswitchsetuphandler#1#2%
   {\normalexpanded

@@ -347,12 +347,15 @@
 
 % Bonus:
 
-\installcorenamespace{samplefile}
+% \installcorenamespace{samplefile}
+%
+% \unexpanded\def\samplefile#1%
+%   {\ifcsname\??samplefile#1\endcsname \else
+%      \setxvalue{\??samplefile#1}{\cldloadfile{#1}}%
+%    \fi
+%    \lastnamedcs}
 
 \unexpanded\def\samplefile#1%
-  {\ifcsname\??samplefile#1\endcsname \else
-     \setxvalue{\??samplefile#1}{\cldloadfile{#1}}%
-   \fi
-   \lastnamedcs}
+  {\clf_samplefile{#1}}
 
 \protect \endinput

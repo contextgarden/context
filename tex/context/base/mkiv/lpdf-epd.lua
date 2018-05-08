@@ -67,13 +67,27 @@ local xref             = registry["epdf.XRef"]
 local catalog          = registry["epdf.Catalog"]
 local pdfdoc           = registry["epdf.PDFDoc"]
 
+if not (object and dictionary and array and xref and catalog and pdfdoc) then
+    logs.report("fatal error","invalid pdf inclusion library (%s)",1)
+    os.exit()
+end
+
 local openPDF          = epdf.open
+
+local getMajorVersion  = pdfdoc.getPDFMajorVersion
+local getMinorVersion  = pdfdoc.getPDFMinorVersion
+local getXRef          = pdfdoc.getXRef
+local getRawCatalog    = pdfdoc.getCatalog
+
+if not (openPDF and getMajorVersion and getMinorVersion and getXRef and getRawCatalog) then
+    logs.report("fatal error","invalid pdf inclusion library (%s)",2)
+    os.exit()
+end
 
 local getDict          = object.getDict
 local getArray         = object.getArray
 local getReal          = object.getReal
 local getInt           = object.getInt
-local getNum           = object.getNum
 local getString        = object.getString
 local getBool          = object.getBool
 local getName          = object.getName
@@ -81,38 +95,59 @@ local getRef           = object.getRef
 local getRefNum        = object.getRefNum
 
 local getType          = object.getType
-local getTypeName      = object.getTypeName
+
+if not (getDict and getArray and getReal and getInt and getString and getBool and getName and getRef and getRefNum and getType) then
+    logs.report("fatal error","invalid pdf inclusion library (%s)",3)
+    os.exit()
+end
 
 local streamReset      = object.streamReset
 local streamGetDict    = object.streamGetDict
 local streamGetChar    = object.streamGetChar
+
+if not (streamReset and streamGetDict and streamGetChar) then
+    logs.report("fatal error","invalid pdf inclusion library (%s)",3)
+    os.exit()
+end
 
 local dictGetLength    = dictionary.getLength
 local dictGetVal       = dictionary.getVal
 local dictGetValNF     = dictionary.getValNF
 local dictGetKey       = dictionary.getKey
 
+if not (dictGetLength and dictGetVal and dictGetValNF and dictGetKey) then
+    logs.report("fatal error","invalid pdf inclusion library (%s)",4)
+    os.exit()
+end
+
 local arrayGetLength   = array.getLength
 local arrayGetNF       = array.getNF
 local arrayGet         = array.get
+
+if not (arrayGetLength and arrayGetNF and arrayGet) then
+    logs.report("fatal error","invalid pdf inclusion library (%s)",5)
+    os.exit()
+end
 
 -- these are kind of weird as they can't be accessed by (root) object
 
 local getNumPages      = catalog.getNumPages
 local getPageRef       = catalog.getPageRef
 
-local getXRef          = pdfdoc.getXRef
-local getRawCatalog    = pdfdoc.getCatalog
-
 local fetch            = xref.fetch
 local getCatalog       = xref.getCatalog
 local getDocInfo       = xref.getDocInfo
+
+if not (getNumPages and getPageRef and fetch and getCatalog and getDocInfo) then
+    logs.report("fatal error","invalid pdf inclusion library (%s)",6)
+    os.exit()
+end
 
 -- we're done with library shortcuts
 
 local report_epdf      = logs.reporter("epdf")
 
-local typenames      = { [0] =
+local typenames        = { [0] =
   "boolean",
   "integer",
   "real",
@@ -245,6 +280,42 @@ local function prepare(document,d,t,n,k,mt,flags)
     return t[k]
 end
 
+    local function prepare(document,d,t,n,k,mt,flags)
+        for i=1,n do
+            local v = dictGetValNF(d,i)
+            if v then
+                local key  = dictGetKey(d,i)
+                local kind = getType(v)
+                if kind == ref_code then
+                    local objnum = getRefNum(v)
+                    local cached = document.__cache__[objnum]
+                    if not cached then
+                        local v = dictGetVal(d,i)
+                        local kind = getType(v)
+                        cached = checked_access[kind](v,document,objnum,mt)
+                        if cached then
+                            document.__cache__[objnum] = cached
+                            document.__xrefs__[cached] = objnum
+                        end
+                    end
+                    t[key] = cached
+                else
+                    local v, flag = checked_access[kind](v,document)
+                    t[key] = v
+                    if flag and flags then
+                        flags[key] = flag -- flags
+                    end
+                end
+            end
+        end
+        if mt then
+            setmetatable(t,mt)
+        else
+            getmetatable(t).__index = nil
+        end
+        return t[k]
+    end
+
 local function some_dictionary(d,document)
     local n = d and dictGetLength(d) or 0
     if n > 0 then
@@ -325,6 +396,37 @@ local function prepare(document,a,t,n,k)
         return t[k]
     end
 end
+
+    local function prepare(document,a,t,n,k)
+        for i=1,n do
+            local v = arrayGetNF(a,i)
+            if v then
+                local kind = getType(v)
+                if kind == ref_code then
+                    local objnum = getRefNum(v)
+                    local cached = document.__cache__[objnum]
+                    if not cached then
+                        local v = arrayGet(a,i)
+                        local kind = getType(v)
+                        cached = checked_access[kind](v,document,objnum)
+                        document.__cache__[objnum] = cached
+                        document.__xrefs__[cached] = objnum
+                    end
+                    t[i] = cached
+                else
+                    t[i] = checked_access[kind](v,document)
+                end
+            end
+        end
+        local m = getmetatable(t)
+        if m then
+            m.__index = nil
+            m.__len   = nil
+        end
+        if k then
+            return t[k]
+        end
+    end
 
 local function some_array(a,document)
     local n = a and arrayGetLength(a) or 0
@@ -562,16 +664,19 @@ end
 -- with but it won't win a beauty contest.
 
 local function getpages(document,Catalog)
-    local __data__   = document.__data__
-    local __xrefs__  = document.__xrefs__
-    local __cache__  = document.__cache__
-    local __xref__   = document.__xref__
+    local __data__     = document.__data__
+    local __xrefs__    = document.__xrefs__
+    local __cache__    = document.__cache__
+    local __xref__     = document.__xref__
     --
-    local rawcatalog = getRawCatalog(__data__)
-    local nofpages   = getNumPages(rawcatalog)
+    local rawcatalog   = getRawCatalog(__data__)
+    local nofpages     = getNumPages(rawcatalog)
     --
-    local pages      = { }
-    local metatable  = { __index = Catalog.Pages } -- somewhat empty
+    local majorversion = getMajorVersion(__data__)
+    local minorversion = getMinorVersion(__data__)
+    --
+    local pages        = { }
+    local metatable    = { __index = Catalog.Pages } -- somewhat empty
     --
     for pagenumber=1,nofpages do
         local pagereference = getPageRef(rawcatalog,pagenumber).num
@@ -590,7 +695,10 @@ local function getpages(document,Catalog)
     --
     pages.n = nofpages
     --
-    document.pages = pages
+    document.pages        = pages
+    document.majorversion = majorversion
+    document.minorversion = minorversion
+    --
     return pages
 end
 
@@ -836,7 +944,7 @@ function lpdf_epdf.getpagecontent(document,pagenumber)
 
 end
 
--- This is also an experiment. When I really neet it I can improve it, fo rinstance
+-- This is also an experiment. When I really need it I can improve it, for instance
 -- with proper position calculating. It might be usefull for some search or so.
 
 local softhyphen = utfchar(0xAD) .. "$"

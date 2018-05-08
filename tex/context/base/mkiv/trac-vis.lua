@@ -189,7 +189,8 @@ end
 
 -- we can preset a bunch of bits
 
-local userrule -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
+local userrule    -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
+local outlinerule -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 
 local function enable()
     if not usedfont then
@@ -233,6 +234,9 @@ local function enable()
     --
     if not userrule then
        userrule = nuts.rules.userrule
+    end
+    if not outlinerule then
+       outlinerule = nuts.pool.outlinerule
     end
 end
 
@@ -762,7 +766,7 @@ local ruledbox do
             --
             local info = setlink(
                 this and copy_list(this) or nil,
-                userrule {
+                (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
                     width  = wd,
                     height = ht,
                     depth  = dp,
@@ -773,7 +777,7 @@ local ruledbox do
             )
             --
             setlisttransparency(info,c_text)
-            info = new_hlist(info)
+--             info = new_hlist(info)
             --
             setattr(info,a_layer,layer)
             if vertical then
@@ -896,7 +900,7 @@ local ruledglyph do
             -- userrules:
             --
             info = setlink(
-                userrule {
+                (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
                     width  = wd,
                     height = ht,
                     depth  = dp,

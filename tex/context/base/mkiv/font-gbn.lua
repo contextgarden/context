@@ -255,8 +255,8 @@ local function basepass(head)
     return head
 end
 
+local protectpass = node.direct.protect_glyphs
 local injectpass  = nodes.injections.handler
-local protectpass = nodes.handlers.protectglyphs
 
 -- This is the only official public interface and this one can be hooked into a callback (chain) and
 -- everything else can change!@ Functione being visibel doesn't mean that it's part of the api.

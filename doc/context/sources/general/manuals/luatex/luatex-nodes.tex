@@ -167,18 +167,19 @@ also use rules to store reuseable objects and images. User nodes are invisible
 and can be intercepted by a callback.
 
 \starttabulate[|l|l|p|]
-\DB field          \BC type   \BC explanation \NC \NR
+\DB field            \BC type   \BC explanation \NC \NR
 \TB
-\NC \type{subtype} \NC number \NC \showsubtypes {rule} \NC \NR
-\NC \type{attr}    \NC node   \NC list of attributes \NC \NR
-\NC \type{width}   \NC number \NC the width of the rule where the special value
-                                  $-1073741824$ is used for \quote {running} glue dimensions \NC \NR
-\NC \type{height}  \NC number \NC the height of the rule (can be negative) \NC \NR
-\NC \type{depth}   \NC number \NC the depth of the rule (can be negative) \NC \NR
-\NC \type{left}    \NC number \NC shift at the left end (also subtracted from width) \NC \NR
-\NC \type{right}   \NC number \NC (subtracted from width) \NC \NR
-\NC \type{dir}     \NC string \NC the direction of this rule, see~\in[dirnodes] \NC \NR
-\NC \type{index}   \NC number \NC an optional index that can be referred to \NC \NR
+\NC \type{subtype}   \NC number \NC \showsubtypes {rule} \NC \NR
+\NC \type{attr}      \NC node   \NC list of attributes \NC \NR
+\NC \type{width}     \NC number \NC the width of the rule where the special value
+                                    $-1073741824$ is used for \quote {running} glue dimensions \NC \NR
+\NC \type{height}    \NC number \NC the height of the rule (can be negative) \NC \NR
+\NC \type{depth}     \NC number \NC the depth of the rule (can be negative) \NC \NR
+\NC \type{left}      \NC number \NC shift at the left end (also subtracted from width) \NC \NR
+\NC \type{right}     \NC number \NC (subtracted from width) \NC \NR
+\NC \type{dir}       \NC string \NC the direction of this rule, see~\in[dirnodes] \NC \NR
+\NC \type{index}     \NC number \NC an optional index that can be referred to \NC \NR
+\NC \type{transform} \NC number \NC an private variable (also used to specify outline width) \NC \NR
 \LL
 \stoptabulate
 
@@ -192,7 +193,9 @@ the auto settings also happen in the backend). For a vertical rule \type {left}
 affects the height and \type {right} affects the depth. There is no matching
 interface at the \TEX\ end (although we can have more keywords for rules it would
 complicate matters and introduce a speed penalty.) However, you can just
-construct a rule node with \LUA\ and write it to the \TEX\ input.
+construct a rule node with \LUA\ and write it to the \TEX\ input. The \type
+{outline} subtype is just a convenient variant and the \type {transform} field
+specifies the width of the outline.
 
 \subsubsection{\nod {ins} nodes}
 

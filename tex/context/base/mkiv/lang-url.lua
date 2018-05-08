@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['lang-url'] = {
 
 local utfcharacters, utfvalues, utfbyte, utfchar = utf.characters, utf.values, utf.byte, utf.char
 local min, max = math.min, math.max
-local concat = table.concat
 
 local context   = context
 
@@ -77,9 +76,10 @@ urls.righthyphenmin = 3
 urls.discretionary  = nil
 urls.packslashes    = false
 
-directives.register("hyphenators.urls.packslashes",function(v)
-    urls.packslashes = v
-end)
+directives.register("hyphenators.urls.packslashes",function(v) urls.packslashes = v end)
+
+local trace  = false   trackers.register("hyphenators.urls",function(v) trace = v end)
+local report = logs.reporter("hyphenators","urls")
 
 -- local ctx_a = context.a
 -- local ctx_b = context.b
@@ -153,8 +153,10 @@ local function action(hyphenatedurl,str,left,right,disc)
     local pack   = urls.packslashes
     local length = 0
     local list   = utf.split(str)
+    local size   = #list
+    local prev   = nil
 
-    for i=1,#list do
+    for i=1,size do
         local what = nil
         local dodi = false
         local char = list[i]
@@ -162,7 +164,7 @@ local function action(hyphenatedurl,str,left,right,disc)
         char       = mapping[char] or char
         if char == disc then
             dodi = true
-        elseif pack and char == "/" and list[i+1] == "/" then
+        elseif pack and char == "/" and (list[i+1] == "/" or prev == "/") then
             what = "c"
         else
             local how = characters[char]
@@ -192,9 +194,13 @@ local function action(hyphenatedurl,str,left,right,disc)
         else
             list[i] = "\\" .. what .. "{" .. utfbyte(char) .. "}"
         end
+        prev = char
     end
-    list = concat(list)
-    context(list)
+    if trace then
+        report("old : %s",str)
+        report("new : %t",list)
+    end
+    context("%t",list)
 end
 
 -- urls.action = function(_,...) action(...) end -- sort of obsolete

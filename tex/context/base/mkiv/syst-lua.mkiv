@@ -19,6 +19,42 @@
 \def\expdoif    #1#2{\clf_doifsame    {#1}{#2}}
 \def\expdoifnot #1#2{\clf_doifnotsame {#1}{#2}}
 
+%D Here is variant using a brainwave of the 12\high{+} hour \quotation {Long Road
+%D Out of Eden}\footnote {Eden being Backo\TeX\ 2018, where the virtues of the \type
+%D {\expanded} primitive were mentioned in talks.} trip. For now I don't really see
+%D other useful applications.
+
+\ifdefined\immediateassignment
+
+    \def\expandeddoif#1#2%
+      {\immediateassignment\edef\m_syst_string_one{#1}%
+       \immediateassignment\edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
+
+    \def\expandeddoifnot#1#2%
+      {\immediateassignment\edef\m_syst_string_one{#1}%
+       \immediateassignment\edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \def\expandeddoifelse#1#2%
+      {\immediateassignment\edef\m_syst_string_one{#1}%
+       \immediateassignment\edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+\fi
+
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
 

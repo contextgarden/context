@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/26/18 23:01:43
+-- merge date  : 05/08/18 16:22:08
 
 do -- begin closure to overcome local limits and interference
 
@@ -5357,8 +5357,8 @@ nodes.disccodes=disccodes
 local flush_node=node.flush_node
 local remove_node=node.remove
 local traverse_id=node.traverse_id
-nodes.handlers.protectglyphs=node.protect_glyphs
-nodes.handlers.unprotectglyphs=node.unprotect_glyphs
+nodes.handlers.protectglyphs=node.protect_glyphs  
+nodes.handlers.unprotectglyphs=node.unprotect_glyphs 
 local math_code=nodecodes.math
 local end_of_math=node.end_of_math
 function node.end_of_math(n)
@@ -36559,8 +36559,8 @@ local function basepass(head)
   end
   return head
 end
+local protectpass=node.direct.protect_glyphs
 local injectpass=nodes.injections.handler
-local protectpass=nodes.handlers.protectglyphs
 function nodes.handlers.nodepass(head,...)
   if head then
     return tonode(nodepass(tonut(head),...))

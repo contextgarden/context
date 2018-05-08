@@ -75,8 +75,8 @@ local flush_node   = node.flush_node
 local remove_node  = node.remove
 local traverse_id  = node.traverse_id
 
-nodes.handlers.protectglyphs   = node.protect_glyphs
-nodes.handlers.unprotectglyphs = node.unprotect_glyphs
+nodes.handlers.protectglyphs   = node.protect_glyphs   -- beware: nodes!
+nodes.handlers.unprotectglyphs = node.unprotect_glyphs -- beware: nodes!
 
 local math_code   = nodecodes.math
 local end_of_math = node.end_of_math

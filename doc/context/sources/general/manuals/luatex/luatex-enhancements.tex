@@ -503,6 +503,33 @@ in the following example the number \type {8} gets typeset.
 The \lpr {luafunctioncall} primitive does the same but is unexpandable, for
 instance in an \prm {edef}.
 
+\subsection{\lpr {luabytecode} and \lpr {luabytecodecall}}
+
+Analogue to the function callers discussed in the previous section we have byte
+code callers. Again the call variant is unexpandable.
+
+\starttyping
+\directlua {
+    lua.bytecode[9998] = function(s)
+        tex.sprint(s*token.scan_int())
+    end
+    lua.bytecode[5555] = function(s)
+        tex.sprint(s*token.scan_dimen())
+    end
+}
+\stoptyping
+
+This works with:
+
+\starttyping
+\luabytecode    9998 5  \luabytecode    5555 5sp
+\luabytecodecall9998 5  \luabytecodecall5555 5sp
+\stoptyping
+
+The variable \type {s} in the code is the number of the byte code register that
+can be used for diagnostic purposes. The advantage of bytecode registers over
+function calls is that they are stored in the format (but without upvalues).
+
 \section {Alignments}
 
 \subsection{\lpr {alignmark} and \lpr {aligntab}}
@@ -1037,6 +1064,137 @@ extension is that a csname not always makes sense. The zero case is the default.
 You can now open upto 127 files with \prm {openout}. When no file is open
 writes will go to the console and log. As a consequence a system command is
 no longer possible but one can use \type {os.execute} to do the same.
+
+\subsection{\lpr {expanded}, \lpr {immediateassignment}, \lpr {immediateassigned}}
+
+\topicindex {expansion}
+
+The \lpr {expanded} primitive takes a token list and expands it content which can
+come in handy: it avoids a tricky mix of \prm {expandafter} and \prm {noexpand}.
+You can compare it with what happens inside the body of an \prm {edef}. But this
+kind of expansion it still doesn't expand some primitive operations.
+
+\startbuffer
+\newcount\NumberOfCalls
+
+\def\TestMe{\advance\NumberOfCalls1 }
+
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+The result is a macro that has the not expanded code in its body:
+
+\getbuffer
+
+Instead we can define \tex {TestMe} in a way that expands the assignment
+immediately. You need of course to be aware of preventing look ahead interference
+by using a space or \tex {relax} (often an expression works better as it doesn't
+leave an \tex {relax}).
+
+\startbuffer
+\def\TestMe{\immediateassignment\advance\NumberOfCalls1 }
+
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+This time the counter gets updates and we don't see interference in the
+resulting \tex {Tested} macro:
+
+\getbuffer
+
+Here is a somewhat silly example of expanded comparison:
+
+\startbuffer
+\def\expandeddoifelse#1#2#3#4%
+  {\immediateassignment\edef\tempa{#1}%
+   \immediateassignment\edef\tempb{#2}%
+   \ifx\tempa\tempb
+     \immediateassignment\def\next{#3}%
+   \else
+     \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+
+\edef\Tested
+  {(\expandeddoifelse{abc}{def}{yes}{nop}/%
+    \expandeddoifelse{abc}{abc}{yes}{nop})}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+It gives:
+
+\getbuffer
+
+A variant is:
+
+\starttyping
+\def\expandeddoifelse#1#2#3#4%
+  {\immediateassigned{
+     \edef\tempa{#1}%
+     \edef\tempb{#2}%
+   }%
+   \ifx\tempa\tempb
+     \immediateassignment\def\next{#3}%
+   \else
+     \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+\stoptyping
+
+The possible error messages are the same as using assignments in preambles of
+alignments and after the \prm {accent} command. The supported assignments are the
+so called prefixed commands (except box assignments).
+
+\subsection{\lpr {ifcondition}}
+
+\topicindex {conditions}
+
+This is a somewhat special one. When you write macros conditions need to be
+properly balanced in order to let \TEX's fast branch skipping work well. This new
+primitive is basically a no||op flagged as a condition so that the scanner can
+recognize it as an if|-|test. However, when a real test takes place the work is
+done by what follows, in the next example \tex {something}.
+
+\starttyping
+\unexpanded\def\something#1#2%
+  {\edef\tempa{#1}%
+   \edef\tempb{#2}
+   \ifx\tempa\tempb}
+
+\ifcondition\something{a}{b}%
+    \ifcondition\something{a}{a}%
+        true 1
+    \else
+        false 1
+    \fi
+\else
+    \ifcondition\something{a}{a}%
+        true 2
+    \else
+        false 2
+    \fi
+\fi
+\stoptyping
+
+If you are familiar with \METAPOST, this is a bit like \type {vardef} where the macro
+has a return value. Here the return value is a test.
+
+\stopsection
 
 \stopchapter
 

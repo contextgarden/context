@@ -645,7 +645,10 @@ local function gettexbuffer(name)
     end
 end
 
-buffers.run = runbuffer
+buffers.get          = getbuffer
+buffers.getmkiv      = getbuffermkiv
+buffers.gettexbuffer = gettexbuffer
+buffers.run          = runbuffer
 
 implement { name = "getbufferctxlua", actions = loadcontent,   arguments = "string" }
 implement { name = "getbuffer",       actions = getbuffer,     arguments = "string" }
@@ -708,3 +711,18 @@ do
     end
 
 end
+
+-- moved here:
+
+function buffers.samplefile(name)
+    if not buffers.exists(name) then
+        buffers.assign(name,io.loaddata(resolvers.findfile(name)))
+    end
+    buffers.get(name)
+end
+
+implement {
+    name      = "samplefile", -- bad name, maybe rename to injectbuffercontent
+    actions   = buffers.samplefile,
+    arguments = "string"
+}

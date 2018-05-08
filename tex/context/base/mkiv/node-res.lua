@@ -200,11 +200,11 @@ local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,glueco
 
 -- the dir field needs to be set otherwise crash:
 
-local rule              = register_nut(new_nut(nodecodes.rule))                  setdir(rule, "TLT")
-local emptyrule         = register_nut(new_nut(nodecodes.rule,rulecodes.empty))  setdir(rule, "TLT")
-local userrule          = register_nut(new_nut(nodecodes.rule,rulecodes.user))   setdir(rule, "TLT")
-local hlist             = register_nut(new_nut(nodecodes.hlist))                 setdir(hlist,"TLT")
-local vlist             = register_nut(new_nut(nodecodes.vlist))                 setdir(vlist,"TLT")
+local rule              = register_nut(new_nut(nodecodes.rule))                   setdir(rule, "TLT")
+local emptyrule         = register_nut(new_nut(nodecodes.rule,rulecodes.empty))   setdir(rule, "TLT")
+local userrule          = register_nut(new_nut(nodecodes.rule,rulecodes.user))    setdir(rule, "TLT")
+local hlist             = register_nut(new_nut(nodecodes.hlist))                  setdir(hlist,"TLT")
+local vlist             = register_nut(new_nut(nodecodes.vlist))                  setdir(vlist,"TLT")
 
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
@@ -387,6 +387,26 @@ function nutpool.userrule(width,height,depth,dir) -- w/h/d == nil will let them 
         setdir(n,dir)
     end
     return n
+end
+
+if LUATEXFUNCTIONALITY > 6738 then
+
+    local outlinerule = register_nut(new_nut(nodecodes.rule,rulecodes.outline)) setdir(rule, "TLT")
+
+    function nutpool.outlinerule(width,height,depth,line,dir) -- w/h/d == nil will let them adapt
+        local n = copy_nut(outlinerule)
+        if width or height or depth then
+            setwhd(n,width,height,depth)
+        end
+        if line then
+            setfield(n,"transform",line)
+        end
+        if dir then
+            setdir(n,dir)
+        end
+        return n
+    end
+
 end
 
 function nutpool.leader(width,list)
