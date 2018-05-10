@@ -409,7 +409,7 @@ function step_tracers.codes(i,command,space)
         if id == glyph_code then
             showchar(c)
         elseif id == dir_code or id == localpar_code then
-            context("[%s]",getdir(c))
+            context("[%s]",getdir(c) or "unset")
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)
             if pre or post or replace then

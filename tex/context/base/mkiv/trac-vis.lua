@@ -705,7 +705,7 @@ local ruledbox do
         local wd, ht, dp = getwhd(current)
         if wd ~= 0 then
             local shift = getshift(current)
-            local dir   = getdir(current)
+         -- local dir   = getdir(current)
          -- if dir == "LTL" or dir == "RRT" then
          --     wd, ht, dp = ht + dp, wd, 0
          -- end
@@ -777,7 +777,7 @@ local ruledbox do
             )
             --
             setlisttransparency(info,c_text)
---             info = new_hlist(info)
+         -- info = new_hlist(info)
             --
             setattr(info,a_layer,layer)
             if vertical then
@@ -854,10 +854,10 @@ local ruledglyph do
      -- local wd = chardata[getfont(current)][getchar(current)].width
         if wd ~= 0 then
             local wd, ht, dp = getwhd(current)
-    --         local dir = getdir(current)
-    -- if dir == "LTL" or dir = "RTT" then
-    --     wd, ht, dp = ht + dp, wd, 0
-    -- end
+         -- local dir = getdir(current)
+         -- if dir == "LTL" or dir = "RTT" then
+         --     wd, ht, dp = ht + dp, wd, 0
+         -- end
             local next = getnext(current)
             local prev = previous
             setboth(current)

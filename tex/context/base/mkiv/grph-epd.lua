@@ -8,18 +8,18 @@ if not modules then modules = { } end modules ['grph-epd'] = {
 
 local variables = interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash
+local codeinjections = backends.pdf.codeinjections
 
--- todo: page, name, file, url
+local trace  = false  trackers.register("figures.merging", function(v) trace = v end)
 
--- I have some experimental code for including comments and fields but it's
--- unfinished and not included as it was just a proof of concept to get some idea
--- about what is needed and possible. But the placeholders are here already.
-
-local codeinjections = backends.codeinjections
+local report = logs.reporter("backend","merging")
 
 local function mergegoodies(optionlist)
     local options = settings_to_hash(optionlist)
     local all     = options[variables.all] or options[variables.yes]
+    if next(options) then
+        report("% t",table.sortedkeys(options))
+    end
     if all or options[variables.reference] then
         codeinjections.mergereferences()
     end

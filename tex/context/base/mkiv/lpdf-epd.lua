@@ -32,7 +32,7 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- already was unicode).
 
 local setmetatable, rawset, rawget, type, next = setmetatable, rawset, rawget, type, next
-local tostring, tonumber = tostring, tonumber
+local tostring, tonumber, unpack = tostring, tonumber, unpack
 local lower, match, char, byte, find = string.lower, string.match, string.char, string.byte, string.find
 local abs = math.abs
 local concat = table.concat
@@ -104,6 +104,7 @@ end
 local streamReset      = object.streamReset
 local streamGetDict    = object.streamGetDict
 local streamGetChar    = object.streamGetChar
+local streamGetAll     = object.streamGetAll
 
 if not (streamReset and streamGetDict and streamGetChar) then
     logs.report("fatal error","invalid pdf inclusion library (%s)",3)
@@ -243,55 +244,12 @@ local function prepare(document,d,t,n,k,mt,flags)
             local kind = getType(v)
             if kind == null_code then
                 -- ignore
-            else
+            elseif kind then
                 local key = dictGetKey(d,i)
-                if kind then
-                    if r and getType(r) == ref_code then
-                        local objnum = getRefNum(r)
-                        local cached = document.__cache__[objnum]
-                        if not cached then
-                            cached = checked_access[kind](v,document,objnum,mt)
-                            if cached then
-                                document.__cache__[objnum] = cached
-                                document.__xrefs__[cached] = objnum
-                            end
-                        end
-                        t[key] = cached
-                    else
-                        local v, flag = checked_access[kind](v,document)
-                        t[key] = v
-                        if flag and flags then
-                            flags[key] = flag -- flags
-                        end
-                    end
-                else
-                    report_epdf("warning: nil value for key %a in dictionary",key)
-                end
-            end
-        else
-            fatal_error("error: invalid value at index %a in dictionary of %a",i,document.filename)
-        end
-    end
-    if mt then
-        setmetatable(t,mt)
-    else
-        getmetatable(t).__index = nil
-    end
-    return t[k]
-end
-
-    local function prepare(document,d,t,n,k,mt,flags)
-        for i=1,n do
-            local v = dictGetValNF(d,i)
-            if v then
-                local key  = dictGetKey(d,i)
-                local kind = getType(v)
-                if kind == ref_code then
-                    local objnum = getRefNum(v)
+                if r and getType(r) == ref_code then
+                    local objnum = getRefNum(r)
                     local cached = document.__cache__[objnum]
                     if not cached then
-                        local v = dictGetVal(d,i)
-                        local kind = getType(v)
                         cached = checked_access[kind](v,document,objnum,mt)
                         if cached then
                             document.__cache__[objnum] = cached
@@ -306,15 +264,56 @@ end
                         flags[key] = flag -- flags
                     end
                 end
+            else
+                report_epdf("warning: nil value for key %a in dictionary",key)
             end
-        end
-        if mt then
-            setmetatable(t,mt)
         else
-            getmetatable(t).__index = nil
+            fatal_error("error: invalid value at index %a in dictionary of %a",i,document.filename)
         end
-        return t[k]
     end
+    if mt then
+        setmetatable(t,mt)
+    else
+        getmetatable(t).__index = nil
+    end
+    return t[k]
+end
+
+--     local function prepare(document,d,t,n,k,mt,flags)
+--         for i=1,n do
+--             local v = dictGetValNF(d,i)
+--             if v then
+--                 local key  = dictGetKey(d,i)
+--                 local kind = getType(v)
+--                 if kind == ref_code then
+--                     local objnum = getRefNum(v)
+--                     local cached = document.__cache__[objnum]
+--                     if not cached then
+--                         local v = dictGetVal(d,i)
+--                         local kind = getType(v)
+--                         cached = checked_access[kind](v,document,objnum,mt)
+--                         if cached then
+--                             document.__cache__[objnum] = cached
+--                             document.__xrefs__[cached] = objnum
+--                         end
+--                     end
+--                     t[key] = cached
+--                 else
+--                     local v, flag = checked_access[kind](v,document)
+--                     t[key] = v
+--                     if flag and flags then
+--                         flags[key] = flag -- flags
+--                     end
+--                 end
+--             end
+--         end
+--         if mt then
+--             setmetatable(t,mt)
+--         else
+--             getmetatable(t).__index = nil
+--         end
+--         return t[k]
+--     end
 
 local function some_dictionary(d,document)
     local n = d and dictGetLength(d) or 0
@@ -397,36 +396,36 @@ local function prepare(document,a,t,n,k)
     end
 end
 
-    local function prepare(document,a,t,n,k)
-        for i=1,n do
-            local v = arrayGetNF(a,i)
-            if v then
-                local kind = getType(v)
-                if kind == ref_code then
-                    local objnum = getRefNum(v)
-                    local cached = document.__cache__[objnum]
-                    if not cached then
-                        local v = arrayGet(a,i)
-                        local kind = getType(v)
-                        cached = checked_access[kind](v,document,objnum)
-                        document.__cache__[objnum] = cached
-                        document.__xrefs__[cached] = objnum
-                    end
-                    t[i] = cached
-                else
-                    t[i] = checked_access[kind](v,document)
-                end
-            end
-        end
-        local m = getmetatable(t)
-        if m then
-            m.__index = nil
-            m.__len   = nil
-        end
-        if k then
-            return t[k]
-        end
-    end
+--     local function prepare(document,a,t,n,k)
+--         for i=1,n do
+--             local v = arrayGetNF(a,i)
+--             if v then
+--                 local kind = getType(v)
+--                 if kind == ref_code then
+--                     local objnum = getRefNum(v)
+--                     local cached = document.__cache__[objnum]
+--                     if not cached then
+--                         local v = arrayGet(a,i)
+--                         local kind = getType(v)
+--                         cached = checked_access[kind](v,document,objnum)
+--                         document.__cache__[objnum] = cached
+--                         document.__xrefs__[cached] = objnum
+--                     end
+--                     t[i] = cached
+--                 else
+--                     t[i] = checked_access[kind](v,document)
+--                 end
+--             end
+--         end
+--         local m = getmetatable(t)
+--         if m then
+--             m.__index = nil
+--             m.__len   = nil
+--         end
+--         if k then
+--             return t[k]
+--         end
+--     end
 
 local function some_array(a,document)
     local n = a and arrayGetLength(a) or 0
@@ -478,22 +477,49 @@ end
 
 -- todo: collect chunks
 
+-- local function streamaccess(s,_,what)
+--     if not what or what == "all" or what == "*all" then
+--         local t, n = { }, 0
+--         streamReset(s)
+--         while true do
+--             local c = streamGetChar(s)
+--             if c < 0 then
+--                 break
+--             else
+--                 n = n + 1
+--                 t[n] = char(c)
+--             end
+--         end
+--         return concat(t,"",1,n)
+--     end
+-- end
+
 local function streamaccess(s,_,what)
     if not what or what == "all" or what == "*all" then
-        local t, n = { }, 0
         streamReset(s)
-        while true do
-            local c = streamGetChar(s)
-            if c < 0 then
-                break
-            else
-                n = n + 1
-                t[n] = char(c)
+        if streamGetAll then
+            return streamGetAll(s)
+        else
+            local t, b, n = { }, { }, 0
+            while true do
+                local c = streamGetChar(s)
+                if c < 0 then
+                    break
+                else
+                    n = n + 1
+                    b[n] = c
+                end
+                if n == 2000 then
+                    t[#t+1] = char(unpack(b,1,n))
+                    n = 1
+                end
             end
+            t[#t+1] = char(unpack(b,1,n))
+            return concat(t)
         end
-        return concat(t)
     end
 end
+
 
 local function get_stream(d,document)
     if d then
@@ -685,6 +711,7 @@ local function getpages(document,Catalog)
         if pagedata then
          -- rawset(pagedata,"number",pagenumber)
             pagedata.number          = pagenumber
+            pagedata.object          = pageobject
             pages[pagenumber]        = pagedata
             __xrefs__[pagedata]      = pagereference
             __cache__[pagereference] = pagedata
@@ -745,6 +772,8 @@ function lpdf_epdf.load(filename)
             document.Catalog = some_dictionary(getDict(getCatalog(__xref__)),document)
             document.Info    = some_dictionary(getDict(getDocInfo(__xref__)),document)
             setmetatableindex(document,resolve)
+            --
+            document.nofpages = getNumPages(getRawCatalog(__data__))
         else
             document = false
         end
@@ -843,14 +872,14 @@ local fromunicode = (
     P(1)
 )^1  * Carg(1)
 
-local function analyzefonts(document,resources) -- unfinished
+local function analyzefonts(document,resources) -- unfinished, see mtx-pdf for better code
     local fonts = document.__fonts__
     if resources then
         local fontlist = resources.Font
         if fontlist then
             for id, data in expanded(fontlist) do
                 if not fonts[id] then
-                    --  a quck hack ... I will look into it more detail if I find a real
+                    --  a quick hack ... I will look into it more detail if I find a real
                     -- -application for it
                     local tounicode = data.ToUnicode()
                     if tounicode then
@@ -1033,3 +1062,252 @@ end
 --     local destination = document.__data__:findDest(name)
 --     return destination and destination.number
 -- end
+
+-- This is experimental code that we need for testing the transition from
+-- poppler to a new lightweight library. Don't rely on this code to remain
+-- as it is now. Interesting is that performance of this variant is the same
+-- as the natural page includer.
+
+if img then do
+
+    local copydictionary       = nil
+    local copyarray            = nil
+
+    local ref_code             = typenumbers.ref
+    local boolean_code         = typenumbers.boolean
+    local integer_code         = typenumbers.integer
+    local real_code            = typenumbers.real
+    local string_code          = typenumbers.string
+    local name_code            = typenumbers.name
+    local null_code            = typenumbers.null
+    local array_code           = typenumbers.array
+    local dictionary_code      = typenumbers.dictionary
+    local stream_code          = typenumbers.stream
+    local cmd_code             = typenumbers.cmd
+
+    local pdfreserveobject     = lpdf.reserveobject
+    local pdfflushobject       = lpdf.flushobject
+    local pdfflushstreamobject = lpdf.flushstreamobject
+    local pdfreference         = lpdf.reference
+    local pdfconstant          = lpdf.constant
+    local pdfarray             = lpdf.array
+    local pdfdictionary        = lpdf.dictionary
+    local pdfunicode           = lpdf.unicode
+    local pdfstring            = lpdf.string
+    local pdfnull              = lpdf.null
+
+    local report               = logs.reporter("backend","xobjects")
+
+    local factor               = 65536 / (7200/7227) -- 1/number.dimenfactors.bp
+
+    local newimage             = img.new
+
+    local function scaledbbox(b)
+        return { b[1]*factor, b[2]*factor, b[3]*factor, b[4]*factor }
+    end
+
+    local function copyobject(xref,copied,kind,r,v)
+        if kind == null_code then
+            return pdfnull()
+        elseif r and getType(r) == ref_code then
+            local objnum = getRefNum(r)
+            local r = copied[objnum]
+            if r then
+             -- report("%s object %i is reused",kind,objnum)
+            else
+                local o
+                r = pdfreserveobject()
+                copied[objnum] = r
+                if kind == array_code then
+                    local a = copyarray(xref,copied,fetch(xref,objnum,0))
+                    pdfflushobject(r,tostring(a))
+                elseif kind == dictionary_code then
+                    local d = copydictionary(xref,copied,fetch(xref,objnum,0))
+                    pdfflushobject(r,tostring(d))
+                elseif kind == stream_code then
+                    local f = fetch(xref,objnum,0)
+                    local d = copydictionary(xref,copied,f)
+                    --
+                    local t, n = { }, 0
+                    streamReset(f)
+                    while true do
+                        local c = streamGetChar(f)
+                        if c < 0 then
+                            break
+                        else
+                            n = n + 1
+                            t[n] = char(c)
+                        end
+                    end
+                    local s = concat(t)
+                    --
+                    pdfflushstreamobject(s,d,true,r)
+                else
+                    report("reference not done: %s", kind)
+                end
+            end
+            return pdfreference(r)
+        elseif kind == array_code then
+            return copyarray(xref,copied,v)
+        elseif kind == dictionary_code then
+            return copydictionary(xref,copied,v)
+        elseif kind == integer_code then
+            return getInt(v)
+        elseif kind == real_code then
+            return getReal(v)
+        elseif kind == name_code then
+            return pdfconstant(getName(v))
+        elseif kind == string_code then
+            local s = getString(v)
+            if not s or s == "" then
+                return ""
+            end
+            local u = lpegmatch(u_pattern,s)
+            if u then
+                return pdfunicode(s)
+            end
+            return pdfstring(s)
+        elseif kind == boolean_code then
+            return getBool(v)
+        elseif kind == stream_code then
+            return getStream(v)
+        else
+            report("object not done: %s", kind)
+        end
+    end
+
+    copyarray = function (xref,copied,object)
+        local a = getArray(object)
+        local n = a and arrayGetLength(a) or 0
+        if n > 0 then
+            local target = pdfarray()
+            for i=1,n do
+                local v = arrayGet(a,i)
+                if v then
+                    local kind = getType(v)
+                    local r    = arrayGetNF(a,i)
+                    target[i]  = copyobject(xref,copied,kind,r,v)
+                end
+            end
+            return target
+        end
+    end
+
+    copydictionary = function (xref,copied,object)
+        local d = getDict(object)
+        local n = d and dictGetLength(d) or 0
+        if n > 0 then
+            local target = pdfdictionary()
+            for i=1,n do
+                local v = dictGetVal(d,i)
+                if v then
+                    local kind  = getType(v)
+                    local key   = dictGetKey(d,i)
+                    local r     = dictGetValNF(d,i)
+                    target[key] = copyobject(xref,copied,kind,r,v)
+                end
+            end
+            return target
+        end
+    end
+
+    local function copy_resources(pdfdoc,xref,copied,pagedata)
+        local object = pagedata.object
+        if object then
+            local d = getDict(object)
+            local n = d and dictGetLength(d) or 0
+            for i=1,n do
+                local k = dictGetKey(d,i)
+                if v and k == "Resources" then
+                    local v    = dictGetVal(d,i)
+                    local kind = getType(v)
+                    local r    = dictGetValNF(d,i)
+                    return copyobject(xref,copied,kind,r,v)
+                end
+            end
+        end
+    end
+
+    local function openpdf(filename)
+        local pdfdoc = lpdf_epdf.load(filename)
+        if pdfdoc then
+            pdfdoc.__copied__ = { }
+            pdfdoc.filename   = filename
+            return pdfdoc
+        end
+    end
+
+    local function closepdf(pdfdoc)
+        if pdfdoc then
+            lpdf_epdf.unload(pdfdoc.filename)
+        end
+    end
+
+    local function querypdf(pdfdoc,pagenumber)
+        if pdfdoc then
+            if not pagenumber then
+                pagenumber = 1
+            end
+            local root = pdfdoc.Catalog
+            local page = pdfdoc.pages[pagenumber]
+            if page then
+                local mediabox = page.MediaBox or { 0, 0, 0, 0 }
+                local cropbox  = page.CropBox or mediabox
+                return {
+                    filename    = pdfdoc.filename,
+                    pagenumber  = pagenumber,
+                    nofpages    = pdfdoc.nofpages,
+                    boundingbox = scaledbbox(cropbox),
+                    cropbox     = cropbox,
+                    mediabox    = mediabox,
+                    bleedbox    = page.BleedBox or cropbox,
+                    artbox      = page.ArtBox or cropbox,
+                }
+            end
+        end
+    end
+
+    local function copypage(pdfdoc,pagenumber,attributes)
+        if pdfdoc then
+            local root     = pdfdoc.Catalog
+            local page     = pdfdoc.pages[pagenumber or 1]
+            local pageinfo = querypdf(pdfdoc,pagenumber)
+            local contents = page.Contents
+            local xref     = pdfdoc.__xref__
+            local copied   = pdfdoc.__copied__
+            --
+            local xobject  = pdfdictionary {
+                Type           = pdfconstant("XObject"),
+                Subtype        = pdfconstant("Form"),
+             -- image attributes
+                FormType       = 1,
+                BBox           = pageinfo.cropbox,
+             -- MetaData       = copy(xref,copied,root,"MetaData"),
+             -- Group          = copy(xref,copied,page,"Group"),
+             -- LastModified   = copy(xref,copied,page,"LastModified"),
+             -- Metadata       = copy(xref,copied,page,"Metadata"),
+             -- PieceInfo      = copy(xref,copied,page,"PieceInfo"),
+                Resources      = copy_resources(pdfdoc,xref,copied,page),
+             -- SeparationInfo = copy(xref,copied,page,"SeparationInfo"),
+            }
+            if attributes then
+                for k, v in next, expand(attributes) do
+                    page[k] = v -- maybe nested
+                end
+            end
+            return newimage {
+                bbox   = pageinfo.boundingbox,
+                stream = contents(),
+                attr   = xobject(),
+            }
+        end
+    end
+
+    lpdf_epdf.image = {
+        open  = openpdf,
+        close = closepdf,
+        query = querypdf,
+        copy  = copypage,
+    }
+
+end end

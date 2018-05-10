@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/08/18 16:22:08
+-- merge date  : 05/10/18 13:02:57
 
 do -- begin closure to overcome local limits and interference
 
@@ -4331,6 +4331,10 @@ local format_L=function()
   n=n+1
   return format("(a%s and 'TRUE' or 'FALSE')",n)
 end
+local format_n=function() 
+  n=n+1
+  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
+end
 local format_N=function() 
   n=n+1
   return format("tostring(tonumber(a%s) or a%s)",n,n)
@@ -4431,6 +4435,7 @@ local builder=Cs { "start",
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")+V("C")+V("S") 
 +V("Q") 
++V("n") 
 +V("N") 
 +V("k")
 +V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("b")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
@@ -4460,6 +4465,7 @@ local builder=Cs { "start",
   ["o"]=(prefix_any*P("o"))/format_o,
   ["S"]=(prefix_any*P("S"))/format_S,
   ["Q"]=(prefix_any*P("Q"))/format_Q,
+  ["n"]=(prefix_any*P("n"))/format_n,
   ["N"]=(prefix_any*P("N"))/format_N,
   ["k"]=(prefix_sub*P("k"))/format_k,
   ["c"]=(prefix_any*P("c"))/format_c,

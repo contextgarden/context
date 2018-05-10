@@ -119,17 +119,33 @@ function scripts.pdf.metadata(filename,pretty)
     end
 end
 
+local expand = lpdf.epdf.expand
+
 local function getfonts(pdffile)
     local usedfonts = { }
-    for i=1,pdffile.pages.n do
-        local page = pdffile.pages[i]
-        local fontlist = page.Resources.Font
-        if fontlist then
-            for k, v in next, lpdf.epdf.expand(fontlist) do
-                usedfonts[k] = lpdf.epdf.expand(v)
+
+    local function collect(where,tag)
+        local resources = where.Resources
+        if resources then
+            local fontlist = resources.Font
+            if fontlist then
+                for k, v in next, expand(fontlist) do
+                    usedfonts[tag and (tag .. "." .. k) or k] = expand(v,k)
+                end
+            end
+            local objects = resources.XObject
+            if objects then
+                for k, v in next, expand(objects) do
+                    collect(v,tag and (tag .. "." .. k) or k)
+                end
             end
         end
     end
+
+    for i=1,pdffile.pages.n do
+        collect(pdffile.pages[i])
+    end
+
     return usedfonts
 end
 
@@ -137,7 +153,8 @@ local function getunicodes(font)
     local cid = font.ToUnicode
     if cid then
         cid = cid()
-        local counts = { }
+        local counts  = { }
+        local indices = { }
      -- for s in gmatch(cid,"begincodespacerange%s*(.-)%s*endcodespacerange") do
      --     for a, b in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
      --         print(a,b)
@@ -153,18 +170,20 @@ local function getunicodes(font)
                 for i=first,last do
                     local c = i + offset
                     counts[c] = counts[c] + 1
+                    indices[i] = true
                 end
             end
         end
         for s in gmatch(cid,"beginbfchar%s*(.-)%s*endbfchar") do
             for old, new in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
+                indices[old] = true
                 for n in gmatch(new,"....") do
                     local c = tonumber(n,16)
                     counts[c] = counts[c] + 1
                 end
             end
         end
-        return counts
+        return counts, indices
     end
 end
 
@@ -173,11 +192,17 @@ function scripts.pdf.fonts(filename)
     if pdffile then
         local usedfonts = getfonts(pdffile)
         local found     = { }
+        local common    = table.setmetatableindex("table")
         for k, v in table.sortedhash(usedfonts) do
-            local counts = getunicodes(v)
-            local codes = { }
-            local chars = { }
-            local freqs = { }
+            local basefont = v.BaseFont
+            local encoding = v.Encoding
+            local subtype  = v.Subtype
+            local unicode  = v.ToUnicode
+            local counts,
+                  indices  = getunicodes(v)
+            local codes    = { }
+            local chars    = { }
+            local freqs    = { }
             if counts then
                 codes = sortedkeys(counts)
                 for i=1,#codes do
@@ -186,30 +211,42 @@ function scripts.pdf.fonts(filename)
                     chars[i] = c
                     freqs[i] = format("U+%05X  %s  %s",k,counts[k] > 1 and "+" or " ", c)
                 end
+                if basefont and unicode then
+                    local b = gsub(basefont,"^.*%+","")
+                    local c = common[b]
+                    for k in next, indices do
+                        c[k] = true
+                    end
+                end
                 for i=1,#codes do
                     codes[i] = format("U+%05X",codes[i])
                 end
             end
             found[k] = {
-                basefont = v.BaseFont or "no basefont",
-                encoding = v.Encoding or "no encoding",
-                subtype  = v.Subtype or "no subtype",
-                unicode  = v.ToUnicode and "unicode" or "no unicode",
+                basefont = basefont or "no basefont",
+                encoding = encoding or "no encoding",
+                subtype  = subtype or "no subtype",
+                unicode  = tounicode and "unicode" or "no unicode",
                 chars    = chars,
                 codes    = codes,
                 freqs    = freqs,
             }
         end
 
-        if environment.argument("detail") then
+        if environment.argument("detail") or environment.argument("details") then
             for k, v in sortedhash(found) do
-                report("id         : %s",k)
-                report("basefont   : %s",v.basefont)
-                report("encoding   : %s",v.encoding)
-                report("subtype    : %s",v.subtype)
-                report("unicode    : %s",v.unicode)
-                report("characters : %s", concat(v.chars," "))
-                report("codepoints : %s", concat(v.codes," "))
+                report("id         : %s",  k)
+                report("basefont   : %s",  v.basefont)
+                report("encoding   : %s",  v.encoding)
+                report("subtype    : %s",  v.subtype)
+                report("unicode    : %s",  v.unicode)
+                report("characters : % t", v.chars)
+                report("codepoints : % t", v.codes)
+                report("")
+            end
+            for k, v in sortedhash(common) do
+                report("basefont   : %s",k)
+                report("indices    : % t", sortedkeys(v))
                 report("")
             end
         else

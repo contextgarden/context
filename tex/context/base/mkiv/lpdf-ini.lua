@@ -362,8 +362,10 @@ local f_key_dictionary = formatters["/%s << % t >>"]
 local f_dictionary     = formatters["<< % t >>"]
 local f_key_array      = formatters["/%s [ % t ]"]
 local f_array          = formatters["[ % t ]"]
-local f_key_number     = formatters["/%s %F"]
-local f_tonumber       = formatters["%F"]
+----- f_key_number     = formatters["/%s %F"]
+local f_key_number     = formatters["/%s %n"]
+----- f_tonumber       = formatters["%F"]
+local f_tonumber       = formatters["%n"]
 
 local tostring_a, tostring_d
 
@@ -734,12 +736,13 @@ function lpdf.flushobject(name,data)
 end
 
 
-function lpdf.flushstreamobject(data,dict,compressed) -- default compressed
+function lpdf.flushstreamobject(data,dict,compressed,objnum) -- default compressed
     if trace_objects then
         report_objects("flushing stream object of %s bytes",#data)
     end
     local dtype = type(dict)
     return pdfdeferredobject {
+        objnum        = objnum,
         immediate     = true,
         compresslevel = compressed == false and 0 or nil,
         type          = "stream",
@@ -748,12 +751,13 @@ function lpdf.flushstreamobject(data,dict,compressed) -- default compressed
     }
 end
 
-function lpdf.flushstreamfileobject(filename,dict,compressed) -- default compressed
+function lpdf.flushstreamfileobject(filename,dict,compressed,objnum) -- default compressed
     if trace_objects then
         report_objects("flushing stream file object %a",filename)
     end
     local dtype = type(dict)
     return pdfdeferredobject {
+        objnum        = objnum,
         immediate     = true,
         compresslevel = compressed == false and 0 or nil,
         type          = "stream",

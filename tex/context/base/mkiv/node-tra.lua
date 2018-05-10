@@ -156,7 +156,12 @@ local function tosequence(start,stop,compact)
                     t[#t+1] = nodecodes[id]
                 end
             elseif id == dir_code or id == localpar_code then
-                t[#t+1] = "[" .. getdir(start) .. "]"
+                local d = getdir(start)
+                if d then
+                    t[#t+1] = "[" .. d .. "]"
+                else
+                    t[#t+1] = "[]"
+                end
             elseif compact then
                 t[#t+1] = "[]"
             else

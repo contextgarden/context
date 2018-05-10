@@ -18,10 +18,10 @@ local allocate = utilities.storage.allocate
 local bor, band = bit32.bor, bit32.band
 local isfile = lfs.isfile
 
-local trace_links       = false  trackers.register("figures.links",     function(v) trace_links    = v end)
-local trace_comments    = false  trackers.register("figures.comments",  function(v) trace_comments = v end)
-local trace_fields      = false  trackers.register("figures.fields",    function(v) trace_fields   = v end)
-local trace_outlines    = false  trackers.register("figures.outliness", function(v) trace_outlines = v end)
+local trace_links       = false  trackers.register("figures.links",    function(v) trace_links    = v end)
+local trace_comments    = false  trackers.register("figures.comments", function(v) trace_comments = v end)
+local trace_fields      = false  trackers.register("figures.fields",   function(v) trace_fields   = v end)
+local trace_outlines    = false  trackers.register("figures.outlines", function(v) trace_outlines = v end)
 
 local report_link       = logs.reporter("backend","link")
 local report_comment    = logs.reporter("backend","comment")

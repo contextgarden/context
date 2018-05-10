@@ -869,7 +869,12 @@ local format_L = function()
     return format("(a%s and 'TRUE' or 'FALSE')",n)
 end
 
-local format_N = function() -- strips leading zeros
+local format_n = function() -- strips leading and trailing zeros and removes .0
+    n = n + 1
+    return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
+end
+
+local format_N = function() -- strips leading and trailing zeros (also accepst string)
     n = n + 1
     return format("tostring(tonumber(a%s) or a%s)",n,n)
 end
@@ -999,6 +1004,7 @@ local builder = Cs { "start",
               + V("C")
               + V("S") -- new
               + V("Q") -- new
+              + V("n") -- new
               + V("N") -- new
               + V("k") -- new
               --
@@ -1042,7 +1048,8 @@ local builder = Cs { "start",
     --
     ["S"] = (prefix_any * P("S")) / format_S, -- %S => %s (tostring)
     ["Q"] = (prefix_any * P("Q")) / format_Q, -- %Q => %q (tostring)
-    ["N"] = (prefix_any * P("N")) / format_N, -- %N => tonumber (strips leading zeros)
+    ["n"] = (prefix_any * P("n")) / format_n, -- %n => tonumber (strips leading and trailing zeros, as well as .0, expects number)
+    ["N"] = (prefix_any * P("N")) / format_N, -- %N => tonumber (strips leading and trailing zeros, also takes string)
     ["k"] = (prefix_sub * P("k")) / format_k, -- %k => like f but with n.m
     ["c"] = (prefix_any * P("c")) / format_c, -- %c => utf character (extension to regular)
     ["C"] = (prefix_any * P("C")) / format_C, -- %c => U+.... utf character
