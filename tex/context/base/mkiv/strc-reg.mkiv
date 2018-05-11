@@ -835,10 +835,12 @@
 \unexpanded\def\startregisterpages
   {\begingroup
    \dostarttagged\t!registerpages\empty
-   \useregisterstyleandcolor\c!pagestyle\c!pagecolor}
+   \useregisterstyleandcolor\c!pagestyle\c!pagecolor
+   \registerparameter\c!pageleft}
 
 \unexpanded\def\stopregisterpages
-  {\dostoptagged
+  {\registerparameter\c!pageright
+   \dostoptagged
    \endgroup}
 
 \unexpanded\def\startregisterseewords

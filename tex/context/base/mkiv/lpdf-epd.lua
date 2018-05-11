@@ -494,32 +494,35 @@ end
 --     end
 -- end
 
-local function streamaccess(s,_,what)
-    if not what or what == "all" or what == "*all" then
-        streamReset(s)
-        if streamGetAll then
-            return streamGetAll(s)
-        else
-            local t, b, n = { }, { }, 0
-            while true do
-                local c = streamGetChar(s)
-                if c < 0 then
-                    break
-                else
-                    n = n + 1
-                    b[n] = c
-                end
-                if n == 2000 then
-                    t[#t+1] = char(unpack(b,1,n))
-                    n = 1
-                end
+local function getstream(s)
+    streamReset(s)
+    if streamGetAll then
+        return streamGetAll(s)
+    else
+        local t, b, n = { }, { }, 0
+        while true do
+            local c = streamGetChar(s)
+            if c < 0 then
+                break
+            else
+                n = n + 1
+                b[n] = c
             end
-            t[#t+1] = char(unpack(b,1,n))
-            return concat(t)
+            if n == 2000 then
+                t[#t+1] = char(unpack(b,1,n))
+                n = 1
+            end
         end
+        t[#t+1] = char(unpack(b,1,n))
+        return concat(t)
     end
 end
 
+local function streamaccess(s,_,what)
+    if not what or what == "all" or what == "*all" then
+        return getstream(s)
+    end
+end
 
 local function get_stream(d,document)
     if d then
@@ -1126,20 +1129,13 @@ if img then do
                     pdfflushobject(r,tostring(d))
                 elseif kind == stream_code then
                     local f = fetch(xref,objnum,0)
-                    local d = copydictionary(xref,copied,f)
+                    local d = copydictionary(xref,copied,false,streamGetDict(f))
+                    local s = getstream(f)
                     --
-                    local t, n = { }, 0
-                    streamReset(f)
-                    while true do
-                        local c = streamGetChar(f)
-                        if c < 0 then
-                            break
-                        else
-                            n = n + 1
-                            t[n] = char(c)
-                        end
-                    end
-                    local s = concat(t)
+                    d.Filter      = nil
+                    d.Length      = nil
+                    d.DecodeParms = nil
+                    d.DL          = nil
                     --
                     pdfflushstreamobject(s,d,true,r)
                 else
@@ -1170,6 +1166,7 @@ if img then do
         elseif kind == boolean_code then
             return getBool(v)
         elseif kind == stream_code then
+            -- hm ...
             return getStream(v)
         else
             report("object not done: %s", kind)
@@ -1193,8 +1190,8 @@ if img then do
         end
     end
 
-    copydictionary = function (xref,copied,object)
-        local d = getDict(object)
+    copydictionary = function (xref,copied,object,d)
+        local d = d or getDict(object)
         local n = d and dictGetLength(d) or 0
         if n > 0 then
             local target = pdfdictionary()
@@ -1231,7 +1228,7 @@ if img then do
     local function openpdf(filename)
         local pdfdoc = lpdf_epdf.load(filename)
         if pdfdoc then
-            pdfdoc.__copied__ = { }
+            pdfdoc.__copied__ = pdfdoc.__copied__ or { }
             pdfdoc.filename   = filename
             return pdfdoc
         end
@@ -1261,6 +1258,7 @@ if img then do
                     cropbox     = cropbox,
                     mediabox    = mediabox,
                     bleedbox    = page.BleedBox or cropbox,
+                    trimbox     = page.TrimBox or cropbox,
                     artbox      = page.ArtBox or cropbox,
                 }
             end

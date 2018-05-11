@@ -3554,3 +3554,32 @@ enddef ;
 vardef tocycle(suffix p)(text t) =
     topath(p,t) t cycle
 enddef ;
+
+% reimplemented to support paths and pictures
+
+def drawdot expr p =
+    if pair p :
+        addto currentpicture doublepath p
+            withpen currentpen _op_
+    elseif path p :
+        draw image (
+            for i=0 upto length p :
+                addto currentpicture doublepath point i of p
+                    withpen currentpen _op_ ;
+            endfor ;
+        )
+    elseif picture p :
+        draw image (
+            save pp ; path pp ;
+            for i within p :
+                if stroked i or filled i :
+                    pp := pathpart i ;
+                    for j=0 upto length pp :
+                        addto currentpicture doublepath point j of pp
+                            withpen currentpen _op_ ;
+                    endfor ;
+                fi ;
+            endfor ;
+        )
+    fi
+enddef ;

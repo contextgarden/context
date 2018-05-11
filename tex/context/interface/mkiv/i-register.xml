@@ -162,6 +162,12 @@
                 <cd:parameter name="pagecolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="pageleft">
+                    <cd:resolve name="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="pageright">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
@@ -544,7 +550,7 @@
             </cd:keywords>
             <cd:index list="yes"/>
         </cd:arguments>
-    </cd:command>        
+    </cd:command>
 
     <cd:command name="stopregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>

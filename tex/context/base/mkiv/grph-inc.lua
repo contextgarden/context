@@ -1371,6 +1371,7 @@ function checkers.generic(data)
     local conversion = dr.conversion
     local resolution = dr.resolution
     local arguments  = dr.arguments
+    local scanimage  = dr.scanimage or scanimage
     if not conversion or conversion == "" then
         conversion = "default"
     end
@@ -1471,6 +1472,8 @@ function includers.generic(data)
  --     width    = dr.width,
  --     height   = dr.height,
  -- }
+    local copyimage  = dr.copyimage  or copyimage
+    local cloneimage = dr.cloneimage or cloneimage
     if figure == nil then
         figure = ds.private
         if figure then
@@ -2038,3 +2041,73 @@ implement {
         end
     end
 }
+
+-- This is an experiment. The following method uses Lua to handle the embedding
+-- using the epdf library. This feature will be used when we make the transition
+-- from the pre 1.10 epdf library (using an unsuported low level poppler api) to a
+-- new (lightweight, small and statically compiled) library. More on that later.
+--
+-- The method implemented below has the same performance as the hard coded inclusion
+-- but opens up some possibilities (like merhing fonts) that I will look into some
+-- day.
+
+local function pdf_checker(data)
+    local request = data.request
+    local used    = data.used
+    if request and used and not request.scanimage then
+        local openpdf  = lpdf.epdf.image.open
+        ----- closepdf = lpdf.epdf.image.close
+        local querypdf = lpdf.epdf.image.query
+        local copypage = lpdf.epdf.image.copy
+        request.scanimage = function(t)
+            local pdfdoc = openpdf(t.filename)
+            if pdfdoc then
+                used.pdfdoc = pdfdoc
+                -- nofpages
+            end
+            local info = querypdf(pdfdoc,request.page)
+            local bbox = info.boundingbox
+            return {
+                filename    = filename,
+             -- page        = 1,
+                pages       = pdfdoc.nofpages,
+                width       = bbox[3] - bbox[1],
+                height      = bbox[4] - bbox[2],
+                depth       = 0,
+                colordepth  = 0,
+                xres        = 0,
+                yres        = 0,
+                xsize       = 0,
+                ysize       = 0,
+                rotation    = 0,
+                orientation = 0,
+            }
+        end
+        request.copyimage = function(t)
+            return copypage(used.pdfdoc,request.page)
+        end
+    end
+    return checkers.generic(data)
+end
+
+directives.register("graphics.pdf.uselua",function(v)
+    if v then
+        report("%s Lua based PDF inclusion","enabling")
+        checkers.pdf = pdf_checker
+    else
+        report("%s Lua based PDF inclusion","disabling")
+        checkers.pdf = nil
+    end
+end)
+
+-- directives.enable("graphics.pdf.uselua")
+--
+-- local filename = "luatex.pdf"
+--
+-- for i=1,240 do
+--     context(function()
+--         context.startTEXpage()
+--         context.externalfigure( { filename }, { page = i } )
+--         context.stopTEXpage()
+--     end)
+-- end
