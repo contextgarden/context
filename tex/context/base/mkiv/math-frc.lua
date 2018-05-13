@@ -28,8 +28,8 @@ end)
 local ctx_normalatop = context.normalatop
 local ctx_normalover = context.normalover
 
-local function mathfraction(how,left,right,width) -- of course we could use the scanners directly here which
-    if how == v_no then                           -- is faster but also less abstract ... maybe some day
+local function mathfraction(how,left,right,width)
+    if how == v_no then
         if left == 0x002E and right == 0x002E then
             ctx_normalatop()
         else

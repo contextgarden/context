@@ -1,0 +1,912 @@
+% language=uk
+
+\definecolor[red]    [r=.6]
+\definecolor[green]  [g=.6]
+\definecolor[blue]   [b=.6]
+
+\definecolor[cyan]   [g=.6,b=.6]
+\definecolor[magenta][r=.6,b=.6]
+\definecolor[yellow] [r=.6,g=.6]
+
+\usemodule[abbreviations-smallcaps]
+\usemodule[scite]
+\usemodule[scite]
+
+\setuptyping[option=TEX]
+\setuptype[option=TEX]
+
+\dontcomplain
+
+\usebodyfont [modern]
+\usebodyfont[pagella]
+\usebodyfont [dejavu]
+
+\setuppapersize[S6]
+
+\definebodyfontenvironment[24pt]
+
+\definecolor[maincolor][r=.6]
+\definecolor[maintrans][r=.6,t=.5,a=1]
+\definecolor[moretrans][g=.6,t=.5,a=1]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   margin=0cm,
+   header=0cm,
+   footer=0cm,
+   topspace=1cm,
+   bottomspace=1cm,
+   backspace=1cm]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=darkgray]
+
+\setupbackgrounds
+  [text][text]
+  [background=color,
+   backgroundoffset=5mm,
+   backgroundcolor=middlegray]
+
+\definefontfeature[bbox][boundingbox=frame]
+
+\definefont
+  [LargeFont]
+  [SansBold*default,boldened-20,bbox @ 40pt]
+
+\definefont
+  [SmallFont]
+  [SansBold*default,boldened-20 @ 20pt]
+
+\definefont
+  [HeadFont]
+  [SansBold*default,boldened-30 @ 30pt]
+
+\setupbodyfont
+  [modernlatin,14.4pt]
+
+\setuphead
+  [title]
+  [style=\HeadFont,
+   color=maincolor,
+   align=middle]
+
+\definefontsynonym[BenchMark][lmroman10regular]
+
+\starttext
+
+\startstandardmakeup[footerstate=start]
+    \LargeFont \maincolor \setupalign[middle]
+    \vfil
+    \dontleavehmode\scale[width=.6\textwidth]{\setstrut\strut Modern}
+    \vfil
+    \dontleavehmode\scale[width=.8\textwidth]{\setstrut\strut Latin}
+    \vfil
+    \vfil
+    \SmallFont \darkgray Bacho\TeX\ 2018\enspace\emdash\enspace Hans Hagen
+\stopstandardmakeup
+
+\starttitle[title=Why oh why]
+
+\startitemize
+\startitem
+    In \CONTEXT\ we have a mechanism to apply effects to a glyph stream.
+\stopitem
+\startitem
+    An active user on the \CONTEXT\ mailing list wondered if that could be
+    applied to specific fonts.
+\stopitem
+\startitem
+    The particular interest concerned the possibility to bolden fonts.
+\stopitem
+\startitem
+    I don't really like effects and not all fonts are suitable for it.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=What are effects]
+
+Normal effects are implemented using the \quote {effects} mechanism, which
+already dates way back in \MKII\ times and of course is also available for
+\MKIV.
+
+\defineeffect [inner]   [alternative=inner,rulethickness=1.25pt]
+\defineeffect [outer]   [alternative=outer,rulethickness=1.25pt]
+\defineeffect [both]    [alternative=both, rulethickness=1.25pt]
+\defineeffect [normal]  [alternative=normal]
+
+\starttyping
+\defineeffect
+  [outer]
+  [alternative=outer,
+   rulethickness=1.25pt]
+
+effect \starteffect[outer]effect\stopeffect
+\stoptyping
+
+\startlinecorrection
+
+    \definefont[DemoFont][BenchMark*default @ 70pt]
+
+    \scale[width=\textwidth]{\startcombination[3*2]
+      {\DemoFont\setstrut\strut\starteffect               [inner]effect\stopeffect}
+      {\startoverlay
+          {\DemoFont\setstrut\strut\maintrans \starteffect[inner]effect\stopeffect}
+          {\DemoFont\setstrut\strut\moretrans                    effect}
+       \stopoverlay}
+      {\DemoFont\setstrut\strut\starteffect               [outer]effect\stopeffect}
+      {\startoverlay
+          {\DemoFont\setstrut\strut\maintrans \starteffect[outer]effect\stopeffect}
+          {\DemoFont\setstrut\strut\moretrans                    effect}
+       \stopoverlay}
+      {\DemoFont\setstrut\strut\starteffect                [both]effect\stopeffect}
+      {\startoverlay
+          {\DemoFont\setstrut\strut\maintrans \starteffect [both]effect\stopeffect}
+          {\DemoFont\setstrut\strut\moretrans                    effect}
+       \stopoverlay}
+      {\startoverlay
+          {\DemoFont\setstrut\strut\moretrans                    effect}
+          {\DemoFont\setstrut\strut\maintrans \starteffect[inner]effect\stopeffect}
+       \stopoverlay}
+      {\tttf inner}
+      {\startoverlay
+          {\DemoFont\setstrut\strut\moretrans                    effect}
+          {\DemoFont\setstrut\strut\maintrans \starteffect[outer]effect\stopeffect}
+       \stopoverlay}
+      {\tttf outer}
+      {\startoverlay
+          {\DemoFont\setstrut\strut\moretrans                    effect}
+          {\DemoFont\setstrut\strut\maintrans \starteffect [both]effect\stopeffect}
+       \stopoverlay}
+      {\tttf both}
+    \stopcombination}
+
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=How tricky is this]
+
+\startitemize
+\startitem
+    Of course the only way to deal with this nicely is by using runtime created
+    virtual fonts.
+\stopitem
+\startitem
+    So called \PDF\ literals can interfere badly with font switches at the \PDF\
+    level and are therefore very inefficient.
+\stopitem
+\startitem
+    In order to properly support effects at the font level, we need to be able to
+    inject the right \PDF\ code in a more clever way.
+\stopitem
+\startitem
+    Two new keys were added to the font file definition table: \type{width} and
+    \type {mode}. When set these inject a \PDF\ line width operation and trigger the
+    right rendering mode (backend).
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=What interface do we need]
+
+\startbuffer
+\definefontfeature[effect-1][effect={width=0.8}]
+\definefontfeature[bbox]    [boundingbox=frame]
+
+\definefont
+  [EffectiveFont]
+  [BenchMark*default,effect-1,bbox @ 12pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[2*big]
+\scale[width=\textwidth]{\backgroundline[maincolor]{\EffectiveFont effective}}
+\stoplinecorrection
+
+\page
+
+\startbuffer
+\definefontfeature[effect-2][effect={width=1.1,wdelta=1.20}]
+\definefontfeature[effect-3][effect={width=1.1,wdelta=1.80}]
+
+\definefont
+  [EffectiveFontA]
+  [BenchMark*default,effect-2 @ 12pt]
+
+\definefont
+  [EffectiveFontB]
+  [BenchMark*default,effect-3 @ 12pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\scale[width=\textwidth]{\darkgray\showglyphs \EffectiveFontA effect \EffectiveFontB effect}
+
+\stoptitle
+
+\starttitle[title=Can we do better]
+
+\startitemize
+\startitem
+    This is still not good enough so next came playing with extended shapes. This is an
+    old feature inherited from \POSTSCRIPT\ times and \PDFTEX.
+\stopitem
+\startitem
+    The \LUATEX\ backend is very efficient with this kind of trickery and combines
+    it with font scaling.
+\stopitem
+\startitem
+    It was trivial to add a similar scaling in the vertical direction.
+\stopitem
+\stopitemize
+
+\page
+
+\startbuffer
+\definefontfeature[effect-4]
+  [effect={width=0.5,wdelta=1.5}]
+
+\definefontfeature[effect-5]
+  [effect={width=0.5,wdelta=1.5,extend=1.2}]
+
+\definefont
+  [EffectiveFontA]
+  [BenchMark*default,effect-4 @ 12pt]
+
+\definefont
+  [EffectiveFontB]
+  [BenchMark*default,effect-5 @ 12pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[2*big]
+\scale[width=\textwidth]{\darkgray\showglyphs \EffectiveFontA effect \EffectiveFontB effect}
+\stoplinecorrection
+
+\page
+
+\startbuffer
+\definefontfeature[effect-6]
+  [effect={width=0.5,wdelta=1.50}]
+
+\definefontfeature[effect-7]
+  [effect={width=0.5,wdelta=1.50,squeeze=1.2}]
+
+\definefont
+  [EffectiveFontA]
+  [BenchMark*default,effect-6 @ 12pt]
+
+\definefont
+  [EffectiveFontB]
+  [BenchMark*default,effect-7 @ 12pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection[2*big]
+\scale[width=\textwidth]{\darkgray\showglyphs \EffectiveFontA effect \EffectiveFontB effect}
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=How about math]
+
+\startitemize
+\startitem
+    I never really needed this kind of trickery but it might be handy for
+    bold math in titles.
+\stopitem
+\startitem
+    But math is kind of special as it has extensibles, uses rules and is controlled
+    by math parameters.
+\stopitem
+\startitem
+    Math parameters are global for a formula so that doesn't work out well for mixed
+    families using fonts with different design parameters.
+\stopitem
+\stopitemize
+
+\page
+
+\starttyping
+\switchtobodyfont[modern]
+
+$\sqrt{\frac{\frac{1}{a}}{\frac{2}{b}}}$
+
+\switchtobodyfont[modernlatin]
+
+$\mr \sqrt{\frac{\frac{1}{a}}{\frac{2}{b}}}$
+$\mb \sqrt{\frac{\frac{1}{a}}{\frac{2}{b}}}$
+\stoptyping
+
+\startlinecorrection
+\startcombination[3*1]
+    {\maincolor\switchtobodyfont     [modern]\scale[height=.25\textwidth]{$\sqrt{\frac{\frac{1}{a}}{\frac{2}{b}}}$}} {\tttf latinmodern}
+    {\maincolor\switchtobodyfont[modernlatin]\scale[height=.25\textwidth]{$\sqrt{\frac{\frac{1}{a}}{\frac{2}{b}}}$}} {\tttf modernlatin}
+    {\maincolor\switchtobodyfont[modernlatin]\scale[height=.25\textwidth]{$\sqrt{\frac{\frac{1}{a}}{\frac{2}{b}}}$}} {\tttf modernlatin}
+\stopcombination
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=Is it useful]
+
+\startitemize
+\startitem
+    \start \definedfont[BenchMark*default]%
+    For reading on a different medium than paper a bit bolder font often
+    works better. This is a normal Latin Modern.\stop
+\stopitem
+\startitem
+    Here we use the \type {modernlatin} For reading on a different medium than
+    paper a bit bolder font often works better.
+\stopitem
+\startitem
+    In my opinion a slightly bolder Latin Modern looks a bit more modern, but
+    that's of course just an opinion.
+\stopitem
+\startitem
+    I'm not sure if and when I will use this new trickery; maybe to compensate the
+    lack of bold math fonts.
+\stopitem
+\startitem
+    Performance wise there is no penalty. File don't get larger. Rendering seems to
+    be somewhat slower.
+\stopitem
+\startitem
+    In the end it's probably just another example of feature creep or \TEX\ hobbyism.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Kerning]
+
+\startMPinclusions
+    def SampleShapes(expr dx, offset, pw, k) =
+        picture p ; p := image (
+            draw               fullcircle scaled 1cm                   withcolor "maincolor" ;
+            draw               fullsquare scaled 1cm  shifted (dx+k,0) withcolor "maincolor" ;
+            draw point 8   of (fullcircle scaled 1cm)                  withcolor white ;
+            draw point 3.5 of (fullsquare scaled 1cm) shifted (dx+k,0) withcolor white ;
+        ) shifted (offset,0) ;
+        draw p withpen pencircle scaled pw ;
+        draw boundingbox p withcolor white ;
+    enddef ;
+\stopMPinclusions
+
+\startitemize
+\startitem
+    To what extent do we need to compensate dimensions in order to get the kerning
+    acceptable.
+\stopitem
+\startitem
+    Messing around with font features is fragile because there is not much consistency in
+    how these are organized.
+\stopitem
+\stopitemize
+
+\startlinecorrection[2*big]
+\startMPcode
+    SampleShapes(15mm,  0mm,1mm,0mm) ;
+    SampleShapes(15mm, 40mm,2mm,0mm) ;
+    SampleShapes(17mm, 80mm,2mm,0mm) ;
+\stopMPcode
+\stoplinecorrection
+
+\startlinecorrection[2*big]
+\startMPcode
+    SampleShapes(15mm,  0mm,1mm,0mm) ;
+    SampleShapes(15mm, 40mm,2mm,2mm) ;
+    SampleShapes(17mm, 80mm,2mm,2mm) ;
+\stopMPcode
+\stoplinecorrection
+
+\startlinecorrection[2*big]
+\startMPcode
+    SampleShapes(10mm,  0mm,1mm,0mm) ;
+    SampleShapes(10mm, 40mm,1mm,1mm) ;
+    SampleShapes(10mm, 80mm,2mm,0mm) ;
+    SampleShapes(10mm,120mm,2mm,2mm) ;
+\stopMPcode
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=Ligatures]
+
+\definefontfeature
+  [demo-1]
+  [default]
+  [hlig=yes]
+
+\definefontfeature
+  [demo-2]
+  [demo-1]
+  [effect=0.5]
+
+\startitemize
+\startitem
+    Ligatures are even less predictable so this is why we cannot apply too much
+    effect.
+\stopitem
+\startitem
+    There can be artifacts due to the way characters are combined (like in Latin
+    Modern).
+\stopitem
+\stopitemize
+
+\startlinecorrection
+\startcombination[1*3]
+    { \scale [width=.8\textwidth] {
+        \definedfont[texgyrepagellaregular*demo-1]fist effe
+        \par
+        \definedfont[texgyrepagellaregular*demo-2]fist effe
+    } } {
+        \tttf \maincolor texgyre pagella regular
+    } { \scale [width=.8\textwidth] {
+        \definedfont[cambria*demo-1]fist effe
+        \par
+        \definedfont[cambria*demo-2]fist effe
+    } } {
+        \tttf \maincolor cambria
+    } { \scale [width=.8\textwidth] {
+        \definedfont[ebgaramond12regular*demo-1]fist effe
+        \par
+        \definedfont[ebgaramond12regular*demo-2]fist effe
+    } } {
+        \tttf \maincolor ebgaramond 12 regular
+    }
+\stopcombination
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=Finetuning]
+
+\startbuffer
+\definefontfeature[lm-bald]
+  [effect={width=0.25,effect=both}]
+\definefontfeature[pg-bald]
+  [effect={width=0.25,effect=both}]
+\definefontfeature[dj-bald]
+  [effect={width=0.35,effect=both}]
+
+\definefontfeature[lm-bold]
+  [effect={width=0.25,hdelta=0,ddelta=0,effect=both,
+    extend=1.10}]
+
+\definefontfeature[pg-bold]
+  [effect={width=0.25,hdelta=0,ddelta=0,effect=both,
+    extend=1.00}]
+
+\definefontfeature[dj-bold]
+  [effect={width=0.35,hdelta=0,ddelta=0,effect=both,
+    extend=1.05}]
+\stopbuffer
+
+\definefont[lmbald][Serif*default,lm-bald sa d]
+\definefont[pgbald][Serif*default,pg-bald sa d]
+\definefont[djbald][Serif*default,dj-bald sa d]
+
+\definefont[lmbold][Serif*default,lm-bold sa d]
+\definefont[pgbold][Serif*default,pg-bold sa d]
+\definefont[djbold][Serif*default,dj-bold sa d]
+
+\typebuffer \getbuffer
+
+\page
+
+\starttabulate[|l|l|l|l|]
+\NC
+    \NC
+    \tt \maincolor modern  \NC
+    \tt \maincolor pagella \NC
+    \tt \maincolor dejavu  \NC
+\NR
+\NC
+    \maincolor \type{\tfd} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\tfd    ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\tfd    ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\tfd    ABC}\NC
+\NR
+\NC
+    \maincolor \type{\..bald} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\lmbald ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\pgbald ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\djbald ABC}\NC
+\NR
+\NC
+    \maincolor \type{\bfd} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\bfd    ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\bfd    ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\bfd    ABC}\NC
+\NR
+\NC
+    \maincolor \type{\..bold} \NC
+    \switchtobodyfont [modern,24pt]\strut\ruledhbox{\lmbold ABC}\NC
+    \switchtobodyfont[pagella,24pt]\strut\ruledhbox{\pgbold ABC}\NC
+    \switchtobodyfont [dejavu,24pt]\strut\ruledhbox{\djbold ABC}\NC
+\NR
+\stoptabulate
+
+\stoptitle
+
+\starttitle[title=Pagella]
+
+\startbuffer
+\definefontfeature
+  [pg-fake-1]
+  [effect={width=0.25,effect=both}]
+
+\definefontfeature
+  [pg-fake-2]
+  [effect={width=0.25,hdelta=0,ddelta=0,effect=both}]
+
+\definefont[pgregular]  [Serif*default]
+\definefont[pgbold]     [SerifBold*default]
+\definefont[pgfakebolda][Serif*default,pg-fake-1]
+\definefont[pgfakeboldb][Serif*default,pg-fake-2]
+
+\definecolor[color-pgregular]  [t=.5,a=1,r=.6]
+\definecolor[color-pgbold]     [t=.5,a=1,g=.6]
+\definecolor[color-pgfakebolda][t=.5,a=1,b=.6]
+\definecolor[color-pgfakeboldb][t=.5,a=1,r=.6,g=.6]
+\stopbuffer
+
+\typebuffer
+
+\page
+
+\startbuffer[sample]
+
+\start \switchtobodyfont[pagella]  \getbuffer
+
+\startcombination[2*2]
+    {
+        \scale [width=\measure{combination}] {
+            \ruledhbox{\showglyphs\pgregular   \SampleWord}
+        }
+    } {
+        regular
+    } {
+        \scale [width=\measure{combination}] {
+            \ruledhbox{\showglyphs\pgbold      \SampleWord}
+        }
+    } {
+        bold
+    } {
+        \scale [width=\measure{combination}] {
+            \ruledhbox{\showglyphs\pgfakebolda \SampleWord}
+        }
+    } {
+        fakebolda
+    } {
+        \scale [width=\measure{combination}] {
+            \ruledhbox{\showglyphs\pgfakeboldb \SampleWord}
+        }
+    } {
+        fakeboldb
+    }
+\stopcombination
+
+\stop
+
+\page
+
+\start \switchtobodyfont[pagella]  \getbuffer
+
+\startcombination[2*3]
+    {
+        \scale [width=.35\textwidth] {
+            \startoverlay
+                {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                {\color[color-pgbold]     {\pgbold      \SampleWord}}
+            \stopoverlay
+        }
+    } {
+        bold over regular
+    } {
+        \scale [width=.35\textwidth] {
+            \startoverlay
+                {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+            \stopoverlay
+        }
+    } {
+        fakebolda over regular
+    } {
+        \scale [width=.35\textwidth] {
+            \startoverlay
+                {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                {\color[color-pgfakebolda]{\pgfakeboldb \SampleWord}}
+            \stopoverlay
+        }
+    } {
+        fakeboldb over regular
+    } {
+        \scale [width=.35\textwidth] {
+            \startoverlay
+                {\color[color-pgbold]     {\pgbold      \SampleWord}}
+                {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+            \stopoverlay
+        }
+    } {
+        fakeboldb over bold
+    } {
+        \scale [width=.35\textwidth] {
+            \startoverlay
+                {\color[color-pgfakebolda]{\pgfakebolda \SampleWord}}
+                {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+            \stopoverlay
+        }
+    } {
+         fakeboldb over fakebolda
+    } {
+        \scale [width=.35\textwidth] {
+            \startoverlay
+                {\color[color-pgregular]  {\pgregular   \SampleWord}}
+                {\color[color-pgbold]     {\pgbold      \SampleWord}}
+                {\color[color-pgfakebolda]{\pgfakebolda \SampleWord}}
+                {\color[color-pgfakeboldb]{\pgfakeboldb \SampleWord}}
+            \stopoverlay
+        }
+    } {
+         all four overlayed
+    }
+\stopcombination
+
+\stop
+
+\stopbuffer
+
+\def\SampleWord{\^o\"ep\c s}    \getbuffer[sample]
+\def\SampleWord{London Grammar} \getbuffer[sample]
+
+\stoptitle
+
+\starttitle[title=Arabic]
+
+\startbuffer
+\definefontfeature
+  [bolden-arabic-1]
+  [effect={width=0.4}]
+
+\definefontfeature
+  [bolden-arabic-2]
+  [effect={width=0.4,effect=outer}]
+
+\definefontfeature
+  [bolden-arabic-3]
+  [effect={width=0.5,wdelta=0.5,ddelta=.2,hdelta=.2,factor=.1}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+
+\setupalign
+  [righttoleft]
+
+\setupinterlinespace
+  [1.5]
+
+\start
+  \definedfont[arabictest*arabic,bolden-arabic-1 @ 30pt]
+  \samplefile{khatt-ar}\blank
+  \definedfont[arabictest*arabic,bolden-arabic-2 @ 30pt]
+  \samplefile{khatt-ar}\blank
+  \definedfont[arabictest*arabic,bolden-arabic-3 @ 30pt]
+  \samplefile{khatt-ar}\blank
+\stop
+\stopbuffer
+
+\page \start \definefontsynonym[arabictest][arabtype] \getbuffer\stop
+
+\page \start \definefontsynonym[arabictest][husayni]  \getbuffer\stop
+
+\stoptitle
+
+\starttitle[title=Marks and cursive]
+
+\startitemize
+\startitem
+    Marks are tricky because they can be anchored at any location and we can
+    only guess what should be done.
+\stopitem
+\startitem
+    Cursive connections still need to connect and we don't know in advance
+    how shapes overlap.
+\stopitem
+\stopitemize
+
+\startMPinclusions
+    def DrawShapes(expr how) =
+        def SampleShapes(expr offset, pw, xc, xs, xt, yc, ys, yt, txt, more) =
+            numeric l ; l := pw * mm ;
+            picture p ; p := image (
+                draw fullcircle   scaled 10 ;
+                draw fullcircle   scaled  3 shifted (-3+xc  ,8+yc) withcolor "darkred" ;
+                draw fullsquare   scaled  3 shifted ( 6+xs  ,7+ys) withcolor "darkblue";
+                draw fulltriangle scaled  4 shifted ( 6+xt+5,6+yt) withcolor "darkgreen";
+            ) shifted (offset,0) scaled mm ;
+            draw p
+                withpen pencircle
+                    if how = 2 :
+                        xscaled l yscaled (l/2) rotated 30 ;
+                    else :
+                        scaled l ;
+                    fi ;
+            draw boundingbox p
+                withcolor "darkyellow" ;
+            draw textext(txt)
+                shifted (xpart center p, -8mm) ;
+            draw textext(more)
+                shifted (xpart center p, -11mm) ;
+        enddef ;
+        SampleShapes(  0,1, 0,0,0, 0,   0,   0,  "\tinyfont \setstrut \strut original",   "\tinyfont \setstrut \strut ") ;
+        SampleShapes( 25,2, 0,0,0, 0,   0,   0,  "\tinyfont \setstrut \strut instance",   "\tinyfont \setstrut \strut ") ;
+        SampleShapes( 50,2,-1,1,0, 0,   0,   0,  "\tinyfont \setstrut \strut mark",       "\tinyfont \setstrut \strut x only") ;
+        SampleShapes( 75,2,-1,1,1, 0,   0,   0,  "\tinyfont \setstrut \strut mark + mkmk","\tinyfont \setstrut \strut x only") ;
+        SampleShapes(100,2,-1,1,1, 1,   1,   1,  "\tinyfont \setstrut \strut mark + mkmk","\tinyfont \setstrut \strut x and y") ;
+        SampleShapes(125,2,-1,2,2,-1/2,-1/2,-1/2,"\tinyfont \setstrut \strut mark + mkmk","\tinyfont \setstrut \strut x and -y") ;
+    enddef ;
+\stopMPinclusions
+
+\startlinecorrection[2*big]
+\scale
+  [width=\textwidth]
+  {\startMPcode DrawShapes(1) ; \stopMPcode}
+\stoplinecorrection
+
+\startlinecorrection[2*big]
+\scale
+  [width=\textwidth]
+  {\startMPcode DrawShapes(2) ; \stopMPcode}
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title=Radicals and such]
+
+Radicals are constructed using rules and extensible characters. Especially the rules
+need to be adapted.
+
+\startbuffer[mathblob]
+\def\MathSample
+  {2\times\sqrt{\frac{\sqrt{\frac{\sqrt{2}}{\sqrt{2}}}}
+     {\sqrt{\frac{\sqrt{2}}{\sqrt{2}}}}}}
+\stopbuffer
+
+\startbuffer
+$\mr \darkblue  \MathSample \quad
+ \mb \darkgreen \MathSample $
+\stopbuffer
+
+\getbuffer[mathblob]
+
+\typebuffer
+
+\startlinecorrection[blank]
+\scale[width=\textwidth]{\switchtobodyfont[modernlatin,24pt]\getbuffer}
+\stoplinecorrection
+
+\page
+
+\startbuffer
+\dostepwiserecurse {1} {30} {5} {
+  $
+    \mr \sqrt{\blackrule[width=2mm,height=#1mm,color=darkblue]}
+    \quad
+    \mb \sqrt{\blackrule[width=2mm,height=#1mm,color=darkgreen]}
+  $
+}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+\scale[width=\textwidth]{\switchtobodyfont[modernlatin,24pt]\getbuffer}
+\stoplinecorrection
+
+\page
+
+\definecolor[colormr] [t=.5,a=1,b=.6]
+\definecolor[colormb] [t=.5,a=1,g=.6]
+
+% and a fix in \LUATEX: pickup the value from the font instead of the currently
+
+\startlinecorrection
+\midaligned{\scale[height=.6\textheight]{\startoverlay
+    {\color[colormb]{$\mb\sqrt{\frac{1}{x}}$}}
+    {\color[colormr]{$   \sqrt{\frac{1}{x}}$}}
+\stopoverlay}}
+\stoplinecorrection
+
+\page
+
+\unexpanded\def\ShowMathSample#1%
+  {\switchtobodyfont[#1,14.4pt]%
+   \mathematics{%
+    \mr \darkblue  \MathSample \quad
+    \mb \darkgreen \MathSample
+   }}
+
+\unexpanded\def\ShowMathCaption#1%
+  {\switchtobodyfont[#1]%
+   #1:
+   $
+   {\mr2\enspace \scriptstyle2\enspace \scriptscriptstyle2}
+   \enspace
+   {\mb2\enspace \scriptstyle2\enspace \scriptscriptstyle2}
+   $}
+
+\midaligned{\startcombination[3*2]
+    {\ShowMathSample {dejavu}} {\ShowMathCaption{dejavu}}
+    {\ShowMathSample{pagella}} {\ShowMathCaption{pagella}}
+    {\ShowMathSample {termes}} {\ShowMathCaption{termes}}
+    {\ShowMathSample  {bonum}} {\ShowMathCaption{bonum}}
+    {\ShowMathSample {schola}} {\ShowMathCaption{schola}}
+    {\ShowMathSample{cambria}} {\ShowMathCaption{cambria}}
+\stopcombination}
+
+\page
+
+\starttyping
+\definefontfeature
+  [boldened-30]
+  [effect={width=0.3,extend=1.15,squeeze=0.985,%
+    delta=1,hdelta=0.225,ddelta=0.225,vshift=0.225}]
+
+\definefontfeature
+  [boldened-30]
+  [effect={width=0.30,auto=yes}]
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=An application]
+
+\def\MathSample
+  {\overbrace{2 +
+     \sqrt{\frac{\sqrt{\frac{\sqrt{2}}{\sqrt{2}}}}
+       {\sqrt{\frac{\sqrt{\underbar{2}}}{\sqrt{\overbar{2}}}}}}}}
+
+\startbuffer
+\definehead [mysectiona] [section]
+\definehead [mysectionb] [mysectiona]
+
+\setuphead
+  [mysectiona]
+  [style=\tfc,
+   color=darkblue,
+   before=\blank,
+   after=\blank]
+
+\setuphead
+  [mysectionb]
+  [style=\bfc,
+   color=darkred]
+
+\mysectiona{Regular\quad$\MathSample\quad\mb\MathSample$}
+\mysectionb{Bold   \quad$\MathSample\quad\mb\MathSample$}
+\stopbuffer
+
+\typebuffer \page \getbuffer \page
+
+\startcolumns
+    \switchtobodyfont[modern,12pt]      \setupinterlinespace[15pt] \samplefile{poe} \column
+    \switchtobodyfont[modernlatin,12pt] \setupinterlinespace[15pt] \samplefile{poe} % \column
+\stopcolumns
+
+\stoptitle
+
+\stoptext

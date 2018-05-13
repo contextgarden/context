@@ -54,7 +54,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-youless",
-    banner   = "YouLess Fetcher 1.100",
+    banner   = "YouLess Fetcher 1.10",
     helpinfo = helpinfo,
 }
 

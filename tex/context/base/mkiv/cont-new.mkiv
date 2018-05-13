@@ -11,13 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2018.05.12 00:07}
+\newcontextversion{2018.05.13 10:54}
 
 %D This file is loaded at runtime, thereby providing an excellent place for
 %D hacks, patches, extensions and new features.
 
 \unprotect
 
-% \writestatus\m!system{beware: some patches loaded from cont-new.mkiv}
+\writestatus\m!system{beware: some patches loaded from cont-new.mkiv}
+
+\ifnum\texenginefunctionality<6753\else
+    \mathrulethicknessmode\zerocount
+\fi
 
 \protect \endinput

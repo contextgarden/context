@@ -1,0 +1,1856 @@
+
+\startbuffer[colors]
+\definecolor[red]    [r=.6]
+\definecolor[green]  [g=.6]
+\definecolor[blue]   [b=.6]
+
+\definecolor[cyan]   [g=.6,b=.6]
+\definecolor[magenta][r=.6,b=.6]
+\definecolor[yellow] [r=.6,g=.6]
+\stopbuffer
+
+\getbuffer[colors]
+
+\usemodule[abbreviations-smallcaps]
+\usemodule[scite]
+
+\setuptyping[option=TEX]
+\setuptype[option=TEX]
+
+\dontcomplain
+
+\usebodyfont [modern]
+\usebodyfont[pagella]
+\usebodyfont [dejavu]
+
+\setuppapersize[S6]
+
+\definecolor[maincolor][r=.6]
+\definecolor[maintrans][r=.6,t=.5,a=1]
+\definecolor[moretrans][g=.6,t=.5,a=1]
+
+\setupwhitespace[line]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   margin=0cm,
+   header=0cm,
+   footer=0cm,
+   topspace=1cm,
+   bottomspace=1cm,
+   backspace=1cm]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=darkgray]
+
+\setupbackgrounds
+  [text][text]
+  [background=color,
+   backgroundoffset=5mm,
+   backgroundcolor=middlegray]
+
+\definefont
+  [LargeFont]
+  [SansBold*default,boldened-20 @ 40pt]
+
+\definefont
+  [SmallFont]
+  [SansBold*default,boldened-20 @ 20pt]
+
+\definefont
+  [HeadFont]
+  [SansBold*default,boldened-30 @ 30pt]
+
+\setupbodyfont
+  [modernlatin,12pt]
+
+\setuphead
+  [title]
+  [style=\HeadFont,
+   color=maincolor,
+   align=middle]
+
+\starttext
+
+\startstandardmakeup[footerstate=start]
+    \LargeFont \maincolor \setupalign[middle]
+    \vfil
+    \dontleavehmode\scale[width=.6\textwidth]{\setstrut\strut MetaPost}
+    \vfil
+    \dontleavehmode\scale[width=.6\textwidth]{\setstrut\strut Extensions}
+    \vfil
+    \dontleavehmode\scale[width=.7\textwidth]{\setstrut\strut A few examples}
+    \vfil
+    \vfil
+    \vfil
+    \SmallFont \darkgray Bacho\TeX\ 2018\enspace\emdash\enspace Hans Hagen
+\stopstandardmakeup
+
+\starttitle[title=History]
+
+\startitemize
+    \startitem
+        We started using \METAPOST\ some two decades ago and immediately went
+        the \PDF\ route.
+    \stopitem
+    \startitem
+        We used special colors plus specials to communicate extensions, for instance
+        \CMYK\ colors and shades.
+    \stopitem
+    \startitem
+        This mechanism was stepwise improved and extended. Some mechanisms, like texts,
+        needed an extra pass.
+    \stopitem
+    \startitem
+        When we moved to \LUATEX\ and \MPLIB\ we started using pre- and postscripts to
+        carry information with the paths.
+    \stopitem
+    \startitem
+        Currently we use a bit of \LUA\ from within \MPLIB\ to communicate during the
+        \METAPOST\ run with \CONTEXT. This permits cleaner interfaces.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+%%%% COLORS %%%%
+
+\starttitle[title=Colors]
+
+\startbuffer
+\startMPcode
+  draw image (
+    draw image (
+      fill unitcircle rotated  45 withcolor "red" ;
+      fill unitcircle rotated 165 withcolor "green" ;
+      fill unitcircle rotated 285 withcolor "blue" ;
+    ) shifted (-1.25,0)  ;
+    draw image (
+      fill unitcircle rotated  45 withcolor "cyan" ;
+      fill unitcircle rotated 165 withcolor "magenta" ;
+      fill unitcircle rotated 285 withcolor "yellow" ;
+    ) shifted ( 1.25,0) ;
+  ) xsized TextWidth;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \page \getbuffer \page
+
+\startbuffer
+\startMPcode
+  draw image (
+    draw image (
+      fill unitcircle rotated  45 withcolor "red" ;
+      fill unitcircle rotated 165 withcolor "green" ;
+      fill unitcircle rotated 285 withcolor "blue" ;
+      fill unitcircle rotated  45 scaled 2/4 withcolor (1,0,0) ;
+      fill unitcircle rotated 165 scaled 2/4 withcolor (0,1,0) ;
+      fill unitcircle rotated 285 scaled 2/4 withcolor (0,0,1) ;
+    ) shifted (-1.25,0)  ;
+    draw image (
+      fill unitcircle rotated  45 withcolor "cyan" ;
+      fill unitcircle rotated 165 withcolor "magenta" ;
+      fill unitcircle rotated 285 withcolor "yellow" ;
+      fill unitcircle rotated  45 scaled 2/4 withcolor (1,0,0,0) ;
+      fill unitcircle rotated 165 scaled 2/4 withcolor (0,1,0,0) ;
+      fill unitcircle rotated 285 scaled 2/4 withcolor (0,0,1,0) ;
+    ) shifted ( 1.25,0) ;
+  ) xsized TextWidth;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[colors] \typebuffer \page \getbuffer \page
+
+\startbuffer[colors]
+\definecolor     [whatever]   [c=1,a=1,t=0.5]
+
+\definecolor     [blue]       [c=1,m=.38,y=0,k=.64] % pantone pms 2965 uncoated m
+\definecolor     [yellow]     [c=0,m=.28,y=1,k=.06] % pantone pms  124 uncoated m
+
+\definespotcolor [blue-100]   [blue]   [p=1]
+\definespotcolor [yellow-100] [yellow] [p=1]
+
+\definemultitonecolor [somecolor] [blue=.12,yellow=.28] [c=.1,m=.1,y=.3,k=.1]
+\stopbuffer
+
+\typebuffer[colors] \page
+
+\startbuffer
+% \enabletrackers[metapost.lua]
+\startMPcode
+vardef C(expr r,dx) = fullcircle scaled r shifted (dx,0) enddef ;
+
+draw image (
+  fill C(3cm,1cm) withcolor (0,1,1,0) ;
+  fill C(3cm,2cm) withcolor transparent(1,0.5,(1,1,0,0)) ;
+  fill C(3cm,3cm) withcolor transparent(1,0.5,"blue-100") ;
+  fill C(3cm,4cm) withcolor 0.75*transparent(1,0.5,"green") ;
+  fill C(3cm,5cm) withcolor spotcolor("blue-100",(.3,.4,.5)) ;
+  fill C(3cm,6cm) withcolor 0.75 * spotcolor("blue-100",(.3,.4,.5)) ;
+  fill C(3cm,7cm) withcolor namedcolor("blue-100") ;
+  fill C(3cm,8cm) withcolor "blue-100" ;
+  fill C(3cm,9cm) withcolor (0,1,1,0) withtransparency (1,0.5);
+) xsized TextWidth;
+\stopMPcode
+\stopbuffer
+
+\typebuffer {\getbuffer[colors] \getbuffer }\page
+
+\stoptitle
+
+%%%% SHADES %%%%
+
+\starttitle[title=Shades]
+
+\startbuffer
+\startMPcode
+  draw image (
+    fill fullcircle scaled 10cm
+      withshademethod "circular"
+      withshadevector (5cm,1cm)
+      withshadecenter (.1,.5)
+      withshadedomain (.2,.6)
+      withshadefactor 1.2
+      withshadecolors ("red","green")
+    ;
+    fill fullcircle scaled 10cm shifted (12cm,0)
+      withshademethod "circular"
+      withshadevector (4cm,2cm)
+      withshadecenter (.2,.8)
+      withshadedomain (.2,.8)
+      withshadefactor 1.5
+      withshadecolors ("blue","green")
+    ;
+  ) xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \page \getbuffer \page
+
+\starttabulate[|l|p|]
+\BC domain  \NC The range over which the colors run, with a minimum of 0 and maximum of 1. \NC \NR
+\BC color   \NC A color to start from and one to end with, we default from black to white. \NC \NR
+\BC type    \NC The shading can be linear or circular. \NC \NR
+\BC center  \NC The origin of the shade vector. \NC \NR
+\BC radius  \NC The radius vector of a circular shade. \NC \NR
+\BC vector  \NC Where we start and end the shading. \NC \NR
+\stoptabulate
+
+For a {\bf linear} shade the centers are the lower left and upper right corners,
+for a circular shade it's the center of the path. For a {\bf circular} shade the
+radius runs from zero to the maximum distance from the center as determined by
+the boundingbox.
+
+The vector is used as follows: the first coordinate (xpart) determines the point
+on the path where we start, the second coordinate (ypart) the point on the
+path where we end.
+
+\startbuffer
+\startreusableMPgraphic{bullet}
+   fill fullcircle
+     scaled (.75EmWidth)
+     withshademethod "circular"
+     withcolor "red" shadedinto "blue" ;
+\stopreusableMPgraphic
+
+\definesymbol[1][\hbox{\lower.125ex\hbox{\reuseMPgraphic{bullet}}}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startitemize[packed]
+  \startitem This is item one! \stopitem
+  \startitem This is item two! \stopitem
+\stopitemize
+
+\page
+
+A triangle has three points. Using 1 and 2 as second vector value gives the same
+results as do values in the range 0 upto 1 and 2 upto 3 (0 again).
+
+\startbuffer
+\startMPcode
+fill fulltriangle xyscaled (TextWidth,1cm)
+  withshademethod "linear"
+  withshadevector (0.25,0.75)
+  withshadecolors (darkred,darkgreen)
+;
+
+draw fulltriangle xyscaled (TextWidth,1cm)
+  shownshadevector (0.25,0.75)
+  withpen pencircle scaled 2
+  withcolor white ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+The shadevector relates to (the x coordinates of) points on the path. A variant is
+to use the boundingbox:
+
+\startbuffer
+\startMPcode
+for i=1 upto 3 :
+  fill fulltriangle xyscaled (TextWidth,1cm) shifted (0,-i*15mm)
+    withshademethod "linear"
+    withshadedirection (1,1-i/4)
+    withshadecolors (darkgreen,darkblue)
+  ;
+endfor ;
+for i=1 upto 3 :
+  draw fulltriangle xyscaled (TextWidth,1cm) shifted (0,-i*15mm)
+    shownshadevector (1,1-i/4)
+    withpen pencircle scaled 2
+    withcolor white ;
+endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\stopbuffer
+
+
+To make life convenient we provide a few constants that indicate directions:
+
+\starttyping
+\startMPcode
+pair shadedup    ; shadedup    := (0.5,2.5) ;
+pair shadeddown  ; shadeddown  := (2.5,0.5) ;
+pair shadedleft  ; shadedleft  := (1.5,3.5) ;
+pair shadedright ; shadedright := (3.5,1.5) ;
+\stopMPcode
+\stoptyping
+
+\startbuffer
+\startMPcode
+for d = shadedup, shadeddown, shadedleft, shadedright :
+  fill fullsquare xyscaled (TextWidth,1cm)
+    withshademethod "linear"
+    withshadedirection d
+    withshadecolors (darkgreen,darkblue)
+  ;
+  currentpicture := currentpicture shifted (0,15mm) ;
+endfor ;
+
+currentpicture := currentpicture shifted (0,-60mm) ;
+
+for d = shadedup, shadeddown, shadedleft, shadedright :
+  draw fullsquare xyscaled (TextWidth,1cm)
+    shownshadedirection d
+    withpen pencircle scaled 2
+    withcolor .5white ;
+  currentpicture := currentpicture shifted (0,15mm) ;
+endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+In case of a circular shade another method comes in handy. Here the values relate
+to the center of path i.e.\ they shift the center by the given fraction of the
+width and height of the boundingbox devided by 2.
+
+\startbuffer
+\startMPcode
+fill fullcircle xyscaled (TextWidth,4cm)
+  withshademethod "circular"
+  withshadecenter (.7,.9)
+  withshadecolors (darkblue,darkyellow)
+;
+
+draw fullcircle xyscaled (TextWidth,4cm)
+  shownshadecenter (.7,.9)
+  withpen pencircle scaled 2
+  withcolor .5white ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+You can set a center directly i.e.\ unrelated to the center of the path as
+follows:
+
+\startbuffer
+\startMPcode
+fill fullcircle xyscaled (TextWidth,4cm)
+  withshademethod "circular"
+  withshadeorigin (-30mm,-15mm)
+  withshadecolors (darkblue,darkyellow)
+;
+
+draw fullcircle xyscaled (TextWidth,4cm)
+  shownshadeorigin (-30mm,-15mm)
+  withpen pencircle scaled 2
+  withcolor .5white ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+In a similar way you can set an explicit radius:
+
+\startbuffer
+\startMPcode
+fill fullcircle xyscaled (TextWidth,3cm)
+  withshademethod "circular"
+  withshaderadius (10mm,50mm)
+  withshadecolors (darkblue,darkyellow)
+;
+
+currentpicture := currentpicture shifted (0,40mm) ;
+
+fill fullcircle xyscaled (TextWidth,3cm)
+  withshademethod "circular"
+  withshaderadius (50mm,10mm)
+  withshadecolors (darkgreen,darkred)
+;
+
+currentpicture := currentpicture shifted (0,40mm) ;
+
+fill fullcircle xyscaled (TextWidth,3cm)
+  withshademethod "circular"
+  withshaderadius (20mm,30mm)
+  withshadecolors (darkmagenta,darkcyan)
+;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+This one is made for Mojca:
+
+\startbuffer
+\startMPcode
+fill fullsquare xyscaled (TextWidth,1cm)
+  withshademethod "linear"
+  withshadevector (0,1)
+  withshadestep (
+    withshadefraction .3
+    withshadecolors (red,green)
+  )
+  withshadestep (
+    withshadefraction .5
+    withshadecolors (green,blue)
+  )
+  withshadestep (
+    withshadefraction .7
+    withshadecolors (blue,red)
+  )
+  withshadestep (
+    withshadefraction 1
+    withshadecolors (red,yellow)
+  )
+;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+Shades work well with colors and transparencies. This involves quite some
+resource managament in the backend but it's hidden by the interface.
+
+\startbuffer
+\startMPcode
+draw image (
+  fill fullsquare scaled 5cm
+    withshademethod "linear"
+    withshadefactor 1
+    withshadedomain (0,1)
+    withshadevector (0.5,2.75)
+    withshadecolors (red,green) ;
+
+  fill fullcircle scaled 6cm
+    withshademethod "circular"
+    withshadefactor 1
+    withshadedomain (0,1)
+    withshadecenter (.25,.25)
+    withshadecolors (green,blue) ;
+
+  fill fulltriangle scaled 7cm
+    withshademethod "circular"
+    withshadefactor 1
+    withshadedomain (0,1)
+    withshadecenter (.25,.25)
+    withshadecolors (blue,yellow) ;
+) ysized TextHeight ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+draw image (
+  fill fullsquare scaled 5cm
+    withshademethod "linear"
+    withshadevector (0.5,2.75)
+    withshadecolors (red,green)
+    withtransparency (1,.5) ;
+
+  fill fullcircle scaled 6cm
+    withshademethod "circular"
+    withshadecenter (.25,.25)
+    withshadecolors (green,blue)
+    withtransparency (1,.5) ;
+
+  fill fulltriangle scaled 7cm
+    withshademethod "circular"
+    withshadecenter (.25,.25)
+    withcolor blue shadedinto yellow
+    withtransparency (1,.5) ;
+) ysized TextHeight ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+defineshade myshade
+  withshademethod "circular"
+  withshadefactor 1
+  withshadedomain (0,1)
+  withshadecolors (black,white)
+  withtransparency (1,.5)
+;
+
+draw image (
+  for i=1 upto 5 :
+    fill fullcircle randomized 1 xyscaled(5cm,3cm)
+      shaded myshade ;
+  endfor ;
+
+  draw image (
+    for i=1 upto 5 :
+      fill fullcircle randomized 1
+        shaded myshade
+        withshadecolors (yellow,blue) ;
+    endfor ;
+  ) xyscaled(5cm,3cm) shifted (5cm,0) ;
+) xysized (TextWidth, TextHeight) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+
+\startbuffer
+\startMPcode
+fill fullsquare xyscaled (15mm, 15mm)
+  withshademethod "linear"
+  withshadedirection shadedright
+  withshadecolors (red,(1,1,1)) ;
+
+fill fullsquare xyscaled (10mm, 10mm)
+  withshademethod "circular"
+  withshadecolors (green,blue) ;
+
+currentpicture := currentpicture xysized (.4TextWidth,30mm) ;
+currentpicture := currentpicture shifted (5mm,5mm) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+fill fullsquare xyscaled (15mm, 15mm)
+  withshademethod "linear"
+  withshadetransform "no"
+  withshadedirection shadedright
+  withshadecolors (red,(1,1,1)) ;
+
+fill fullsquare xyscaled (10mm, 10mm)
+  withshademethod "circular"
+  withshadetransform "no"
+  withshadecolors (green,blue) ;
+
+currentpicture := currentpicture xysized (.4TextWidth,30mm) ;
+currentpicture := currentpicture shifted (5mm,5mm) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\stoptitle
+
+\starttitle[title=Bitmaps]
+
+\startbuffer
+\startMPcode
+  draw
+    bitmapimage(2,2,"334455 667788 99aabb ccddee")
+    scaled 3cm
+    rotated 15 ;
+  draw
+    bitmapimage(2,2,"33 55 77 99")
+    scaled 2cm
+    rotated 30 ;
+  draw
+    bitmapimage(2,2,"0000ff00 ff00ff00 00ff0000 ffff0000")
+    scaled 1cm
+    rotated 45 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\starttyping
+\startMPcode
+draw bitmapimage (
+  128, 128,
+  "
+      dbdefadbdffbdbdffbdbdffbdbdffbdbdff.....
+      dcdffbdcdffbdcdffbdcdffbdcdffbdcdff.....
+      dcdffbdcdffbdcdffbdcdffbdcdffbdcdff.....
+      ......
+  "
+) rotated 15 ysized 4cm ;
+\stopMPcode
+\stoptyping
+
+\startMPcode
+draw bitmapimage (
+    128, 128,
+    "
+        dbdefadbdffbdbdffbdbdffbdbdffbdbdffbdbdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffb
+        dcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffb
+        dcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffb
+        dcdffbdcdffbdcdffbdcdffbdce0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fb
+        dde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fb
+        dde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fb
+        dde0fbdde0fbdde0fbdde0fbdee0fbdee0fbdee0fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fb
+        dee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fbdee1fb
+        daddfadaddfadaddfadaddfadaddfadaddfadadefadadefadadefadadefadadefadadefadadefadadefadadefadadefa
+        dbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefa
+        dbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefa
+        dbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdffbdbdffbdbdffbdbdffbdbdffbdbdffbdcdffb
+        dcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffb
+        dcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffb
+        dcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdce0fbdde0fbdde0fbdde0fb
+        dde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fbdde0fb
+        d9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9ddfad9ddfad9ddfad9ddfad9ddfa
+        d9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfadaddfadaddfadaddfadaddfadaddfadaddfa
+        daddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfa
+        daddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadadefadadefa
+        dadefadadefadadefadadefadadefadadefadadefadadefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefa
+        dbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefa
+        dbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefadbdefa
+        dbdefadbdffbdbdffbdbdffbdbdffbdbdffbdbdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffbdcdffb
+        d8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dcfa
+        d8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfa
+        d8dcfad8dcfad8dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfa
+        d9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfa
+        d9dcfad9dcfad9dcfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfad9ddfa
+        d9ddfad9ddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfa
+        daddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfadaddfa
+        daddfadaddfadaddfadaddfadaddfadaddfadadefadadefadadefadadefadadefadadefadadefadadefadadefadadefa
+        d7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafa
+        d7dafad7dafad7dafad7dafad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfa
+        d7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad8dbfad8dbfad8dbfa
+        d8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfa
+        d8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfa
+        d8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad8dcfad9dcfad9dcfad9dcfad9dcfad9dcfa
+        d9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfa
+        d9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9dcfad9ddfad9ddfad9ddfad9ddfad9ddfa
+        d5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fa
+        d6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6dafad6dafad6dafad6dafad6dafad6dafad6dafa
+        d6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafa
+        d6dafad6dafad6dafad6dafad6dafad6dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafa
+        d7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dbfad7dbfad7dbfad7dbfa
+        d7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfad7dbfa
+        d7dbfad7dbfad7dbfad7dbfad7dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfa
+        d8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dbfad8dcfa
+        d4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fa
+        d4d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d9fad5d9fa
+        d5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fa
+        d5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad6d9fa
+        d6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fa
+        d6d9fad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafa
+        d6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad6dafad7dafad7dafa
+        d7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafad7dafa
+        d3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fa
+        d3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad4d7fad4d7fad4d7fad4d7fad4d7fad4d7fa
+        d4d7fad4d7fad4d7fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fa
+        d4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fa
+        d4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d8fa
+        d5d8fad5d8fad5d8fad5d8fad5d8fad5d8fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fa
+        d5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fa
+        d5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad5d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fad6d9fa
+        d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9
+        d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9
+        d2d6f9d2d6f9d2d6f9d2d6f9d3d6f9d3d6f9d3d6f9d3d6f9d3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fa
+        d3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fa
+        d3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fa
+        d3d7fad3d7fad4d7fad4d7fad4d7fad4d7fad4d7fad4d7fad4d7fad4d7fad4d7fad4d8fad4d8fad4d8fad4d8fad4d8fa
+        d4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fa
+        d4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fad4d8fa
+        d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9
+        d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9
+        d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d6f9d2d6f9d2d6f9d2d6f9
+        d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9
+        d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9
+        d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d3d6f9d3d6f9d3d6f9d3d6f9
+        d3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fa
+        d3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fad3d7fa
+        cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9
+        d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9
+        d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9
+        d0d4f9d0d5f9d0d5f9d0d5f9d0d5f9d0d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9
+        d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9
+        d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9
+        d1d5f9d1d5f9d1d5f9d1d5f9d1d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9
+        d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9d2d6f9
+        ced2f9ced2f9ced2f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9
+        ced3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9
+        cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9
+        cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9
+        d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9
+        d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9
+        d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d5f9d0d5f9d0d5f9d0d5f9d0d5f9d1d5f9d1d5f9
+        d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9d1d5f9
+        cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9
+        cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9ced2f9ced2f9ced2f9ced2f9ced2f9
+        ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9
+        ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced3f9ced3f9ced3f9ced3f9ced3f9
+        ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9
+        cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9
+        cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd3f9cfd4f9cfd4f9
+        cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9cfd4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9d0d4f9
+        ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd1f9ccd1f9ccd1f9
+        ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9
+        ccd1f9ccd1f9ccd1f9ccd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9
+        cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9
+        cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9
+        cdd2f9cdd2f9cdd2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9
+        ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9ced2f9
+        ced2f9ced2f9ced2f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9ced3f9
+        cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9
+        cbcff9cbcff9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9
+        cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9ccd0f9ccd0f9ccd0f9
+        ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9
+        ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9
+        ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9ccd1f9cdd1f9cdd1f9cdd1f9cdd1f9
+        cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9
+        cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd1f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9cdd2f9
+        c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8
+        cacef8cacef8cacef8cacef8cacef8cacef8cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9
+        cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9
+        cacff9cacff9cacff9cacff9cacff9cacff9cacff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9
+        cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9
+        cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9
+        cbd0f9cbd0f9cbd0f9cbd0f9cbd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9
+        ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd0f9ccd1f9ccd1f9ccd1f9
+        c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8
+        c8cdf8c8cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cef8c9cef8c9cef8c9cef8c9cef8
+        c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8
+        c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8
+        cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacff9cacff9
+        cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9
+        cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cacff9cbcff9
+        cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9cbcff9
+        c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8
+        c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c8ccf8c8ccf8c8ccf8c8ccf8c8ccf8
+        c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8
+        c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8
+        c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cdf8c9cdf8
+        c9cdf8c9cdf8c9cdf8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8
+        c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8
+        c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8c9cef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8cacef8
+        c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8
+        c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8
+        c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8
+        c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8
+        c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8
+        c7ccf8c7ccf8c7ccf8c8ccf8c8ccf8c8ccf8c8ccf8c8ccf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8
+        c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8
+        c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8c8cdf8
+        c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8
+        c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8
+        c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5cbf8c5cbf8c5cbf8c5cbf8c6cbf8c6cbf8
+        c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8020204020204020204020204
+        020204020204c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8
+        c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c7ccf8c7ccf8c7ccf8
+        c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8
+        c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8c7ccf8
+        c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8
+        c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8
+        c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4caf8
+        c4caf8c4caf8c4caf8c4caf8c4caf8c4caf8c4caf8c5caf8c5caf8020204020204020204020204020204020204020204
+        020204020204020204020204020204c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8
+        c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8
+        c5caf8c5caf8c5cbf8c5cbf8c5cbf8c5cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8
+        c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8c6cbf8
+        c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8
+        c2c8f8c2c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8
+        c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8
+        c3c8f8c3c8f8c3c8f8c3c8f8c3c9f8c3c9f8c3c9f8020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8
+        c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8
+        c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4caf8c4caf8c4caf8c4caf8c4caf8c4caf8c4caf8c4caf8c5caf8
+        c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8c5caf8
+        c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8
+        c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c2c7f8c2c7f8c2c7f8c2c7f8
+        c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8
+        c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8020204020204020204020204020204020204020204020204020204020204
+        0202040202040202040202040a0604020204020204020204020204c2c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8
+        c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8
+        c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c8f8c3c9f8c3c9f8c3c9f8c3c9f8
+        c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c3c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8c4c9f8
+        c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7
+        c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7
+        c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7
+        c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7020204020204020204020204020204020204020204020204020204020204020204
+        0202040202040202040c0c0c343434343434141413020204020204020204c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8
+        c1c7f8c1c7f8c1c7f8c1c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8
+        c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8c2c7f8
+        c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8c2c8f8
+        bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc5f7
+        bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7
+        bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7c0c5f7c0c5f7
+        c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7020204020204020204020204020204020204020204020204020204020204020204
+        0202040202040202041414135c5c5c7c7c7c505050242424020204020204020204c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7
+        c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c1c6f7c1c6f7c1c6f7
+        c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7
+        c1c6f7c1c6f7c1c6f7c1c6f7c1c6f7c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8c1c7f8
+        bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bec3f7bec3f7bec3f7bec3f7bec3f7bec3f7bec3f7
+        bec3f7bec3f7bec3f7bec3f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7
+        bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7
+        bec4f7bec4f7bec4f7bec4f7020204020204020204020204020204020204020204020204020204020204020204020204
+        0202040202040202041c1c1b6464646c6c6b505050343434141413020204020204bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7
+        bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7
+        bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7bfc5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7
+        c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c5f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7c0c6f7
+        bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7
+        bcc2f7bcc2f7bcc2f7bdc2f7bdc2f7bdc2f7bdc2f7bdc2f7bdc2f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7
+        bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7
+        bdc3f7bdc3f7bdc3f7bdc3f7020204020204020204020204020204020204020204020204020204020204020204020204
+        0202040202040202041c1c1b5050504444442c2c2c1c1c1b0c0c0c020204020204020204bec4f7bec4f7bec4f7bec4f7
+        bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7
+        bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7bec4f7
+        bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc4f7bfc5f7
+        bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7
+        bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bcc1f7bcc1f7bcc2f7bcc2f7
+        bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7
+        bcc2f7bcc2f7bcc2f7020204020204020204020204020204020204020204020204020204020204020204020204020204
+        020204020204020204141413242424141413020204020204020204020204020204020204bdc2f7bdc2f7bdc2f7bdc2f7
+        bdc2f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7
+        bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7
+        bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bdc3f7bec3f7bec3f7bec3f7bec3f7bec3f7bec3f7bec3f7
+        bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7
+        bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7
+        bac0f7bac0f7bac1f7bac1f7bac1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7
+        bbc1f7bbc1f7bbc1f7020204020204020204020204020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204020204020204020204020204020204bbc1f7bbc1f7bbc1f7
+        bbc1f7bbc1f7bbc1f7bbc1f7bcc1f7bcc1f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7
+        bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7
+        bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7bcc2f7
+        b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7
+        b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7
+        b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9c0f7b9c0f7b9c0f7b9c0f7b9c0f7b9c0f7b9c0f7b9c0f7bac0f7
+        bac0f7bac0f7bac0f7020204020204020204020204020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204020204020204020204020204020204bac0f7bac0f7bac0f7
+        bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac1f7bac1f7bac1f7bbc1f7bbc1f7bbc1f7
+        bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7
+        bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7bbc1f7
+        b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6
+        b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6
+        b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bff7b8bff7b8bff7b8bff7
+        b8bff7b8bff7b8bff7020204020204020204020204020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204020204020204020204020204020204020204b9bff7b9bff7
+        b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9c0f7
+        b9c0f7b9c0f7b9c0f7b9c0f7b9c0f7b9c0f7b9c0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7
+        bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7bac0f7
+        b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6
+        b6bdf6b6bdf6b6bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6
+        b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6
+        b7bdf6b7bef6b7bef60202040202040202040c0c0c0a06042424240c0c0c020204020204020204020204020204020204
+        0202040202040202040202040c0c0c505050141413020204020204020204020204020204020204020204b8bef6b8bef6
+        b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6
+        b8bef6b8bef6b8bef6b8bef6b8bff7b8bff7b8bff7b8bff7b8bff7b8bff7b8bff7b8bff7b8bff7b8bff7b8bff7b8bff7
+        b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7b9bff7
+        b5bbf6b5bbf6b5bbf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6
+        b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b6bcf6b6bcf6b6bcf6b6bcf6
+        b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6
+        b6bcf6b6bcf6b6bcf60202040202040202040202042424240202040c0c0c343434020204020204020204020204020204
+        0a06045c5c5c7c7c7c9494945c5c5c0202041c1c1b141413020204020204020204020204020204020204b7bdf6b7bdf6
+        b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6
+        b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bdf6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6
+        b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b7bef6b8bef6b8bef6b8bef6b8bef6b8bef6b8bef6
+        b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6
+        b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6
+        b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6
+        b5bbf6b5bbf6b5bbf60202040202041c1c1b949494bebdbcbebdbc141413020204020204020204020204020204020204
+        747474949494a4a4a4acacacc4c4c49c9c9c0a06040a0604020204020204020204020204020204020204b5bcf6b5bcf6
+        b5bcf6b5bcf6b5bcf6b5bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6
+        b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bcf6b6bdf6b6bdf6
+        b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6b6bdf6
+        b2b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3baf6b3baf6b3baf6b3baf6
+        b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6
+        b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b4baf6
+        b4baf6b4baf6b4baf60202040202047c7c7cacacacccccccbebdbc8d8d8c0c0c0c020204020204020204020204565654
+        b5b4b3dddddce4e4e4e4e4e4d4d4d4a4a4a4505050020204020204020204020204020204020204020204b4bbf6b4bbf6
+        b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b5bbf6b5bbf6
+        b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6b5bbf6
+        b5bbf6b5bbf6b5bbf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6b5bcf6
+        b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b2b8f6b2b8f6b2b8f6b2b8f6b2b8f6b2b8f6
+        b2b8f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6
+        b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6
+        b2b9f6b2b9f6b2b9f6020204020204e4e4e4f4f4f4c4c4c4f4f4f4fefefc9c9c9c020204020204020204020204cccccc
+        fefefcfefefc3434340c0c0cfefefcfefefce4e4e4020204020204020204020204020204020204020204b3baf6b3baf6
+        b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6
+        b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b3baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6
+        b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4baf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6b4bbf6
+        b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6
+        b0b7f6b0b7f6b0b7f6b0b7f6b1b7f6b1b7f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6
+        b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6
+        b1b8f6b1b8f6b1b8f6020204020204f4f4f40202043c3c3c3c3c3cfefefcf4f4f40c0c0c0202040a0604020204d4d4d4
+        fefefc141413020204747474242424f4f4f4fefefc1c1c1b020204020204020204020204020204020204b2b9f6b2b9f6
+        b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6
+        b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6b2b9f6
+        b2b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3b9f6b3baf6b3baf6b3baf6b3baf6
+        afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5
+        afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb7f6afb7f6b0b7f6b0b7f6b0b7f6
+        b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6
+        b0b7f6b0b7f6b0b7f6020204020204f4f4f4020204020204747474e4e4e4f4f4f41414131c1c1b5050500a0604d4d4d4
+        f4f4f4020204020204020204747474acacacfefefc747474020204020204020204020204020204020204b1b8f6b1b8f6
+        b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6
+        b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6
+        b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b1b8f6b2b8f6b2b8f6b2b8f6b2b8f6b2b8f6b2b8f6
+        aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5
+        aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5
+        aeb6f5aeb6f5aeb6f5aeb6f5aeb6f5aeb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5
+        afb6f5afb6f5afb6f5020204020204f4f4f40a06040202044444446c6c6bececec0202040202040202040c0c0cacacac
+        e4e4e4020204020204020204141413646464fefefca4a4a4020204020204020204020204020204020204afb6f5afb6f5
+        afb6f5afb6f5afb6f5afb7f6afb7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6
+        b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6
+        b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6b0b7f6
+        acb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5
+        adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5
+        adb4f5adb4f5adb4f5adb4f5adb4f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5
+        aeb5f5aeb5f5aeb5f5020204020204f4f4f4020204020204020204646464aa7e0ae1b40ae5ac09ecb40be1b40a96720b
+        f4f4f4020204020204020204020204ccccccfefefc7c7c7c020204020204020204020204020204020204aeb5f5aeb5f5
+        aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb6f5aeb6f5aeb6f5aeb6f5aeb6f5aeb6f5afb6f5afb6f5
+        afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5
+        afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5afb6f5
+        abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5acb3f5acb3f5acb3f5acb3f5acb3f5
+        acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5
+        acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5
+        acb4f5acb4f5acb4f5020204020204ecececacacac020204291c04b67e0ad19b09ebbc0bebbc0bd7ac098e6a07c39a0e
+        ebbc0b5e4a04020204020204242424fefefcfefefc0c0c0c020204020204020204020204020204020204adb4f5adb4f5
+        adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb5f5adb5f5adb5f5
+        adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5adb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5
+        aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5aeb5f5
+        aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5
+        aab2f5aab2f5aab2f5aab2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5
+        abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb3f5abb3f5
+        abb3f5abb3f5abb3f5020204020204c4c4c4fefefca2895cb98309e5ac09f2b60cebbc0be2bc0cebc40cebc40cf5cd31
+        f3cd0cebc40cebbc0bc2930becececfefefcd4d4d4020204020204020204020204020204020204020204020204acb3f5
+        acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5acb3f5
+        acb3f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5acb4f5
+        acb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5adb4f5
+        a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5
+        a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5aab1f5aab1f5aab1f5
+        aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5
+        aab1f5aab1f5aab1f50202040202040c0c0ca2895cb98309d19b09ecb40becb40bebbc0bebc40cedcc0ef1d42af2da2c
+        f6da4af6da14f3cd0cf3c40bebbc0bdaa309946c09020204020204020204020204020204020204020204020204abb2f5
+        abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5
+        abb2f5abb2f5abb2f5abb2f5abb2f5abb2f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5
+        abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5abb3f5acb3f5acb3f5acb3f5acb3f5acb3f5
+        a8aff5a8aff5a8aff5a8aff5a8aff5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5
+        a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5
+        a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5
+        a9b0f5a9b0f5a9b0f5020204020204a5720ab67e0acf9407dfa509ebbc0bebbc0bebc40cedcc0ef1d311f2da2cf6da4a
+        f6da14f6da14f6da14f6da14f6d50df1d311f5cd31a4770a020204020204020204020204020204020204020204a9b1f5
+        a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5
+        aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab1f5aab2f5aab2f5aab2f5aab2f5aab2f5
+        aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5aab2f5
+        a6aef4a6aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5
+        a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5
+        a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5
+        a8aff5a8aff5a8aff50202040c0c0cb37907c08507d89c08e5ac09ecb40bebbc0be2bc0cedcc0ef1d42af6da4af6d50d
+        f6da14f6d50df6d50df6d50dac8c04a4770ae5ac097c5b0a020204020204020204020204020204020204020204a8b0f5
+        a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a9b0f5
+        a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5a9b0f5
+        a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5a9b1f5
+        a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a6adf4a6adf4a6adf4a6adf4a6aef4
+        a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4
+        a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4
+        a6aef4a6aef4a6aef40202040c0c0cb37907cf9407daa309ecb40bf2b60cebc40cebc40cedcc0ef6da4af6d50df6d50d
+        f6d50df6d50df1d3118e6a07cf9407daa309d89c085c4309020204020204020204020204020204020204020204a7aff5
+        a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5
+        a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5a8aff5a8aff5a8aff5a8aff5a8aff5a8aff5a8aff5a8aff5
+        a8aff5a8aff5a8aff5a8aff5a8aff5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5a8b0f5
+        a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4
+        a4acf4a4acf4a4acf4a4adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4
+        a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4
+        a5adf4a5adf4a5adf4020204020204603e05ac8409e5ac09ecb40bf5bd0cebc40cf1d311f1d311f6da14f6da14f1d311
+        ebc40c885f07ce8e08d89c08daa309d89c08ce8e080c0c0c0202040202046464640a0604020204020204020204020204
+        a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4
+        a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4a6aef4
+        a6aef4a6aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aef4a7aff5a7aff5a7aff5a7aff5a7aff5a7aff5
+        a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4
+        a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3acf4a3acf4a3acf4a3acf4a3acf4a3acf4a4acf4a4acf4
+        a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4
+        a4acf4a4acf4a4acf40202040202041c1c1b7c5b0a7c5b0ae1b40af3c40bebcd28ebcd28f1d311f1d311e2bc0c7e620c
+        b37907cf9407d89c08d89c08cf9418b57e2fa69b871414130202040202042c2c2c8383845c5c5c0c0c0c020204020204
+        a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4
+        a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4
+        a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a5adf4a6adf4a6adf4a6adf4a6adf4a6aef4
+        a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4
+        a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2abf4a2abf4a2abf4
+        a2abf4a2abf4a2abf4a2abf4a2abf4a2abf4a2abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4
+        a3abf4a3abf4a3abf4020204020204141413bebdbc906007885f078a66048e6a078a66048a6604ad780ab98309c98e07
+        cf9407ce8e08cf9407b98309bebdbcbebdbcbebdbca4a4a40202040202040202047c7c7c7c7c7c4a4a4c020204020204
+        a3acf4a3acf4a3acf4a3acf4a3acf4a3acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4
+        a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4
+        a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4a4acf4
+        a0a9f4a0a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4
+        a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4
+        a1a9f4a1a9f4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4
+        a1aaf4a2aaf4a2aaf40202040202043c3c3cbebdbcbebdbc976105a4770ad9b30de1b40ad89c08d7960dd7960dce8e08
+        c78a08b98309b58c35bebdbcc4c4c4ccccccc4c4c4bebdbc0202040202040202046464648383845c5c5c0a0604020204
+        020204a2aaf4a2aaf4a2aaf4a2aaf4a2abf4a2abf4a2abf4a2abf4a2abf4a2abf4a2abf4a2abf4a2abf4a2abf4a3abf4
+        a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4
+        a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4a3abf4
+        9fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f4a0a8f4a0a8f4a0a8f4a0a8f4
+        a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4
+        a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4
+        a0a9f4a0a9f4a0a9f4020204020204343434bebdbcbebdbcbebdbc885f079d6a07b67e0ab67e0ab37907a46d05a46d05
+        ba8330bebdbcbfb5a4bebdbcd4d4d4ecececfefefcececec0c0c0c020204020204020204141413020204020204020204
+        020204020204a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4
+        a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a1aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4
+        a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4a2aaf4
+        9ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f4
+        9ea7f49ea7f49ea7f49ea7f49ea7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f4
+        9fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa8f49fa8f49fa8f49fa8f4
+        9fa8f49fa8f40202040202040202042c2c2cd4d4d4c4c4c4bebdbcbebdbca2895c906007906007976105a3713fb8a378
+        bebdbcbebdbcbebdbcd4d4d4fefefcfefefcfefefcfefefcacacac020204020204020204020204020204020204020204
+        0202040c0c0ca0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a8f4a0a9f4
+        a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4a0a9f4
+        a0a9f4a0a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4a1a9f4
+        9da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f3
+        9da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39ea6f39ea6f3
+        9ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f3
+        9ea6f39ea7f4020204020204020204fefefcecececccccccbebdbcbebdbcbebdbcbebdbcbebdbcbebdbcbebdbcbebdbc
+        bebdbcc4c4c4d4d4d4f4f4f4fefefcfefefcfefefcfefefcfefefc0c0c0c020204020204020204020204020204020204
+        0202040202041414139fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f49fa7f4
+        9fa7f49fa7f49fa7f49fa7f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f4
+        9fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f49fa8f4a0a8f4a0a8f4a0a8f4a0a8f4
+        9ca4f39ca4f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f3
+        9ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f3
+        9ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f3
+        9da5f31414130a06040202040a0604fefefcfefefcecececbebdbcbebdbcbebdbcbebdbcbebdbcbebdbcbebdbcbebdbc
+        d4d4d4e4e4e4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcbebdbc020204020204020204020204020204020204
+        0202040202040a06049da6f39da6f39da6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f3
+        9ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea6f39ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f4
+        9ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f49ea7f4
+        9aa3f39aa3f39aa3f39ba3f39ba3f39ba3f39ba3f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f3
+        9ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f3
+        9ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f3
+        0202040c0c0c020204020204ecececfefefcfefefcfefefce4e4e4bebdbcbebdbcbebdbcbebdbcbebdbccccccce4e4e4
+        fefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc2c2c2c020204020204020204020204020204
+        0202040202040202040202049ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f3
+        9da5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f39da5f39da6f39da6f39da6f3
+        9da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f39da6f3
+        99a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f39aa3f39aa3f39aa3f39aa3f3
+        9aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f3
+        9aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f3
+        020204020204020204838384fefefcfefefcfefefcfefefcf4f4f4d4d4d4c4c4c4bebdbcbebdbcdddddcf4f4f4fefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4020204020204020204020204020204
+        0202040202040202040202040202049ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f3
+        9ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ca4f39ca4f39ca4f39ca4f39ca4f39ca4f39ca4f3
+        9ca4f39ca4f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f39ca5f3
+        98a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f3
+        98a1f398a2f398a2f398a2f398a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f3
+        99a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f3020204
+        020204020204020204fefefcfefefcfefefcfefefcfefefcfefefcfefefcececece4e4e4f4f4f4fefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc020204020204020204020204020204
+        0202040202040202040202040202049aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f3
+        9aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f39aa3f3
+        9aa3f39aa3f39aa3f39ba3f39ba3f39ba3f39ba3f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f39ba4f3
+        97a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f3
+        97a0f397a0f397a0f397a0f397a0f397a0f397a1f397a1f397a1f397a1f397a1f397a1f397a1f397a1f397a1f398a1f3
+        98a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f3020204020204
+        020204020204e4e4e4fefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc0a0604020204020204020204020204
+        02020402020402020402020402020402020499a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f3
+        99a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f3
+        99a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f399a2f39aa3f39aa3f39aa3f39aa3f3
+        969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3
+        969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff396a0f396a0f396a0f396a0f396a0f3
+        96a0f396a0f396a0f396a0f396a0f396a0f396a0f396a0f397a0f397a0f397a0f397a0f397a0f3020204020204020204
+        020204242424e4e4e4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc2c2c2c020204020204020204020204
+        02020402020402020402020402020402020402020498a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f3
+        98a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f3
+        98a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f398a1f3
+        949ef2949ef2949ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2
+        959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ff3
+        959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3020204020204020204020204
+        020204838384dddddcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4ecececbebdbc0a0604020204020204020204
+        02020402020402020402020402020402020402020402020496a0f396a0f396a0f396a0f396a0f396a0f396a0f396a0f3
+        97a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f3
+        97a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f397a0f3
+        939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2949df2949df2949df2949df2
+        949df2949df2949df2949df2949df2949df2949df2949df2949df2949df2949df2949df2949df2949df2949df2949df2
+        949df2949df2949df2949df2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2020204020204020204020204
+        0202049c9c9cc4c4c4f4f4f4f4f4f4fefefcfefefcfefefcf4f4f4f4f4f4ececece4e4e4ecececf4f4f4fefefcfefefc
+        fefefcf4f4f4fefefcfefefcf4f4f4f4f4f4ececececececdddddcd4d4d4dddddcececec0c0c0c020204020204020204
+        020204020204020204020204020204020204020204020204020204959ff3959ff3959ff3959ff3959ff3959ff3959ff3
+        959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3959ff3969ff3969ff3969ff3969ff3969ff3969ff3
+        969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3969ff3
+        929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2
+        929cf2929cf2929cf2929cf2929cf2929cf2939cf2939cf2939cf2939cf2939cf2939cf2939cf2939cf2939cf2939cf2
+        939cf2939cf2939cf2939cf2939cf2939cf2939cf2939cf2939cf2939df2939df2020204020204020204020204020204
+        1414139c9c9ca4a4a4bebdbcd4d4d4ecececf4f4f4fefefcfefefcfefefcdddddce4e4e4f4f4f4fefefcfefefcfefefc
+        fefefcfefefcf4f4f4e4e4e4ccccccc4c4c4bebdbcbebdbcbebdbcc4c4c4c4c4c4d4d4d4bebdbc020204020204020204
+        020204020204020204020204020204020204020204020204020204020204949df2949df2949ef2949ef2949ef2949ef2
+        949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2949ef2
+        949ef2949ef2949ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2959ef2
+        919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2
+        919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2929bf2
+        929bf2929bf2929bf2929bf2929bf2929bf2929bf2929bf2929bf2929bf2020204020204020204020204020204020204
+        1c1c1ba4a4a4bebdbce4e4e4f4f4f4fefefcfefefcfefefcfefefcfefefce4e4e4f4f4f4fefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcf4f4f4ecececdddddcd4d4d4c4c4c4bebdbcbebdbcc4c4c4e4e4e4646464020204020204
+        565654242424020204020204020204020204020204020204020204020204939cf2939cf2939cf2939cf2939cf2939cf2
+        939cf2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2
+        939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2939df2949df2949df2949df2949df2
+        909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2
+        909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2
+        909af2909af2909af2909af2909af2909af2909af2909af2909af2919af2020204020204020204020204020204020204
+        141413ccccccecececf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcecececfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcecececdddddcccccccc4c4c4ccccccf4f4f40a0604020204
+        0202040c0c0c444444020204020204020204020204020204020204020204929bf2929bf2929bf2929bf2929bf2929bf2
+        929bf2929bf2929bf2929bf2929bf2929bf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2
+        929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2929cf2
+        8e98f28e98f28e98f28e98f28f98f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f2
+        8f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f2
+        8f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f20202040202040202043c3c3c0202040c0c0c
+        bebdbcecececfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4d4d4d4bebdbcdddddcf4f4f4020204
+        020204020204020204444444020204020204020204020204020204020204020204909af2909af2909af2909af2909af2
+        909af2919af2919af2919af2919af2919af2919af2919af2919af2919af2919af2919bf2919bf2919bf2919bf2919bf2
+        919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2919bf2
+        8d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d98f28d98f28d98f28d98f28e98f28e98f28e98f2
+        8e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f2
+        8e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f20202040202045c5c5c020204020204505050
+        f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4f4f4f4
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcc4c4c4e4e4e4020204
+        0202040202040a06040202043c3c3c0202040202040202040202040202040202048f99f28f99f28f99f28f99f28f99f2
+        8f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f29099f29099f29099f29099f29099f29099f2
+        909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2909af2
+        8c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c97f28c97f2
+        8c97f28c97f28c97f28c97f28c97f28c97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f2
+        8d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f20202040202041414130c0c0c0202040c0c0cf4f4f4
+        fefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcc4c4c4acacac
+        0202040c0c0c2424241c1c1b1414131414130202040202040202040202040202040202048e98f28e98f28e98f28e98f2
+        8e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f28e98f2
+        8e98f28e98f28e98f28e98f28f98f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f28f99f2
+        8b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f1
+        8b95f18b95f18b95f18b96f18b96f18b96f18b96f18b96f18b96f18b96f18b96f18b96f18b96f18b96f18b96f18b96f1
+        8c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f1020204020204646464020204020204747474fefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcf4f4f4fefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4
+        0202040c0c0c3434343c3c3c0c0c0c4a4a4c0202040202040202040202040202040202048d97f28d97f28d97f28d97f2
+        8d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f2
+        8d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d97f28d98f28d98f28d98f28d98f28e98f28e98f28e98f2
+        8a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f1
+        8a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a95f18a95f18a95f18a95f18a95f18a95f18a95f18a95f1
+        8a95f18a95f18a95f18a95f18a95f18a95f18a95f18a95f1020204020204242424020204020204020204fefefcfefefc
+        fefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        1c1c1b1414133434341c1c1b0c0c0c0202043c3c3c0202040202040202040202040202040202048c96f18c96f18c96f1
+        8c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f1
+        8c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c96f18c97f28c97f2
+        8893f18893f18893f18893f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f1
+        8993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18994f18994f18994f1
+        8994f18994f18994f18994f18994f18994f18994f18994f10202040202045656540202040202041c1c1bfefefcf4f4f4
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefce4e4e4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        a4a4a40202040a06040202040202040202045656540202040202040202040202040202040202048a95f18a95f18a95f1
+        8a95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f1
+        8b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f18b95f1
+        8792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18892f18892f18892f1
+        8892f18892f18892f18892f18892f18892f18892f18892f18892f18892f18892f18892f18892f18892f18892f18892f1
+        8892f18892f18893f18893f18893f18893f18893f18893f10202040202040a0604020204020204d4d4d4fefefcfefefc
+        fefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcf4f4f4ecececfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc0202040202040202040202040202041c1c1b0202040202040202040202040202040202048994f18994f18994f1
+        8994f18994f18994f18994f18994f18994f18994f18994f18994f18994f18994f18a94f18a94f18a94f18a94f18a94f1
+        8a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f18a94f1
+        8691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f1
+        8691f18691f18691f18691f18691f18691f18691f18791f18791f18791f18791f18791f18791f18791f18791f18791f1
+        8791f18791f18791f18791f18791f18791f18791f1020204020204141413020204020204141413fefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc0202040202040202040202040202040202040a06040202040202040202040202040202048893f18893f18893f1
+        8893f18893f18893f18893f18893f18893f18893f18893f18893f18893f18893f18893f18893f18893f18893f18893f1
+        8893f18893f18893f18893f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f18993f1
+        8590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f1
+        8590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f1
+        8690f18690f18690f18690f18690f18690f18690f10202040202045c5c5c020204020204bebdbcfefefcf4f4f4fefefc
+        fefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcecececf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc0202040202040202040202040202040202040202040202040202040202040202040202040202048791f18792f1
+        8792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f1
+        8792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18792f18892f18892f18892f1
+        848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1
+        848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1
+        848ff1848ff1848ff1848ff1848ff1848ff1020204020204020204242424020204020204fefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcecececf4f4f4fefefcfefefcfefefcfefefcfefefcf4f4f4
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc0202040202040202040202040202040202040202040202040202040202040202040202040202048690f18690f1
+        8690f18690f18690f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f1
+        8691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f18691f1
+        828df0828df0828ef0828ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0
+        838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0
+        838ef0838ef0838ef0838ef0838ef0838ef00202040202040c0c0c0c0c0c0202040c0c0cfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcecececf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc0c0c0c020204020204020204020204141413020204020204020204020204020204020204020204848ff1848ff1
+        848ff1848ff1858ff1858ff1858ff1858ff1858ff1858ff18590f18590f18590f18590f18590f18590f18590f18590f1
+        8590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f18590f1
+        818cf0818cf0818cf0818cf0818cf0818cf0818cf0818df0818df0818df0818df0818df0818df0818df0828df0828df0
+        828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0
+        828df0828df0828df0828df0828df00202040202040202040c0c0c0c0c0c020204444444fefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcf4f4f4fefefcf4f4f4dddddcf4f4f4fefefcfefefcfefefcfefefcf4f4f4fefefc
+        fefefcfefefcfefefcf4f4f4fefefcfefefcf4f4f4fefefcf4f4f4f4f4f4f4f4f4fefefcfefefcfefefcf4f4f4fefefc
+        f4f4f41c1c1b0202040202040202040202043c3c3c020204020204020204020204020204020204020204838ef0838ef0
+        838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0848ef0848ef0848ff1848ff1848ff1
+        848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1848ff1
+        808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808cf0808cf0808cf0808cf0
+        808cf0808cf0808cf0808cf0808cf0808cf0808cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0
+        818cf0818cf0818cf0818cf002022f0202040202040202041c1c1b141413020204949494fefefcfefefcfefefcfefefc
+        f4f4f4fefefcfefefcfefefcfefefcfefefcf4f4f4fefefcdddddcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        f4f4f4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc3434340202040202040202040202045c5c5c020204020204020204020204020204020204020204828df0828df0
+        828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0828df0
+        828df0828df0828ef0828ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0838ef0
+        7f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af0
+        7f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf07f8bf0
+        7f8bf0808bf0808bf0808bf00202040202040202040202042c2c2c2c2c2c020204b5b4b3fefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4fefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc3c3c3c020204020204020204020204141413020204020204020204020204020204020204020204818cf0818cf0
+        818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0818cf0
+        818cf0818cf0818cf0818cf0818cf0818cf0818cf0818df0818df0818df0818df0818df0818df0818df0828df0828df0
+        7e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f0
+        7e89f07e89f07e89f07e89f07e89f07e8af07e8af07e8af07e8af07e8af07e8af07e8af07e8af07e8af07e8af07e8af0
+        7e8af07e8af07e8af07e8af00202040202040202041414134a4a4c747474020204d4d4d4fefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcf4f4f4fefefcfefefcfefefcfefefcfefefcf4f4f4
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc4a4a4c0202040202040202040c0c0c020204020204020204020204020204020204020204020204808bf0808bf0
+        808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0
+        808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808bf0808cf0808cf0808cf0808cf0
+        7c88f07c88f07c88f07c88f07c88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f0
+        7d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d89f07d89f07d89f07d89f07d89f07d89f0
+        7d89f07d89f07d89f07d89f00202040202040202040202040c0c0c5c5c5c020204dddddcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefc
+        fefefc2424240202040202040202043c3c3c0202040202040202040202040202040202040202040202047e8af07e8af0
+        7e8af07e8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af0
+        7f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af07f8af0
+        7b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07c87f07c87f0
+        7c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c87f07c88f0
+        7c88f07c88f07c88f07c88f00202040202040202040202040202040c0c0c020204ccccccfefefcfefefcfefefcfefefc
+        f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc0c0c0c0202040202043c3c3c2424241414132424240c0c0c0202040202040202040202040202047d89f07d89f0
+        7d89f07d89f07d89f07d89f07d89f07d89f07d89f07d89f07d89f07d89f07d89f07d89f07e89f07e89f07e89f07e89f0
+        7e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f07e89f0
+        7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef
+        7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7b86ef7b86ef7b86ef7b86ef7b86ef7b86ef7b86ef7b86ef
+        7b86ef7b86ef7b86ef7b86ef020204020204885f077453070c0c0c020204444444acacacfefefcfefefcfefefcf4f4f4
+        fefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcdddddcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefc0202040c0c0c1414130202040202040202040202040c0c0c3c3c3c4444440202040202040202047c88f07c88f0
+        7c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f07c88f0
+        7c88f07c88f07c88f07c88f07c88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f07d88f0
+        7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef
+        7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef
+        7985ef7a85ef7a85ef7a85ef744e22d89c08f5bd0cf5bd0cf2b60c291c040202044a4a4cfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcdddddcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        ececec0202041414130202040202040202040202040202040202040202043c3c3c6c6c6b0a06040202047b87f07b87f0
+        7b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f0
+        7b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07b87f07c87f07c87f0
+        7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef
+        7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef
+        7884ef7884ef7884ef7884efcf9418f2b60cf5bd0cf5bd0cf5bd0cf5bd0c392a0c0202040c0c0cdddddcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefce4e4e4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdfa509f3c40bf3cd0c
+        f5bd0cc39a0e0202040202040202040202040202040202040202040202043434342424241414137a85ef7a85ef7a85ef
+        7a85ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef
+        7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef7a86ef
+        7683ef7683ef7683ef7683ef7683ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef
+        7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef
+        7783ef7783ef7783efc08507d89c08ecb40bf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c1414130202041c1c1bf4f4f4fefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefce4e4e4fefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcf4f4f4fefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcf4f4f4e5ac09f3c40bf6d50d
+        f6d50d946c090202040202040202040202040202040202040202040a06041c1c1b0a0604a4770af1d3117884ef7884ef
+        7884ef7884ef7884ef7984ef7984ef7984ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef
+        7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef7985ef
+        7581ef7581ef7581ef7581ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7682ef
+        7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef
+        7682ef7682ef7682efcf9407dfa509f2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cd7ac09020204020204141413dddddc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcecececf4f4f4fefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdfa509f5bd0cf3c40b
+        ebc40c5c4309020204020204020204020204020204020204020204020204020204140d04ebc40cf1d311d7ac097783ef
+        7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7784ef7784ef7884ef7884ef7884ef7884ef
+        7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef7884ef
+        7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7481ef7481ef7481ef7481ef7481ef7481ef7481ef
+        7481ef7481ef7481ef7481ef7481ef7481ef7481ef7481ef7581ef7581ef7581ef7581ef7581ef7581efb67e0ab67e0a
+        b57e2fb67e0ac78a08d89c08e5ac09f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf3c40bc2930b0202040202040c0c0c
+        acacacfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4dfa509f2b60cf5bd0c
+        e1b40a784e04020204020204020204020204020204020204020204020204020204d19b09ebc40cf3c40bebbc0b7682ef
+        7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7682ef7683ef
+        7683ef7683ef7683ef7683ef7683ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef7783ef
+        737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef7380ef7380ef
+        7380ef7380ef7380ef7380ef7380ef7380ef7380ef7380ef7380ef7380ef7380efb98309cf9418daa309dfa509daa309
+        d89c08dfa509e5ac09ebb316f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf3cd0cb98309020204020204
+        020204444444fefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcccccccc4c4c4d89c08f2b60cecb40b
+        dfa509b67e0a1f16040202040202040202040202040202040202040a0604c08507e1b40aebbc0bf2b60cf2b60c7581ef
+        7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef7581ef
+        7581ef7581ef7581ef7581ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7582ef7682ef
+        727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee
+        727eee727eee727eee727fef727fef727fef727fef727fef727fef727fef727fefcf9418dfa509ebb316ecb40bebb316
+        e5ac09ecb40bf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cebbc0bf3c40be2bc0c020204020204
+        0202040202041c1c1becececfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcf4f4f4fefefcfefefcf4f4f4fefefcfefefcfefefcfefefce4e4e4c4c4c4c4c4c4d89c08ecb40be5ac09
+        d89c08b98309ab7205020204020204020204020204020204291c04a4770ad89c08e1b40aebbc0bf2b60cf2b60c7480ef
+        7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef
+        7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7480ef7481ef7481ef7481ef7481ef7481ef7481ef7481ef
+        707dee707dee707dee707dee707dee707dee717dee717dee717dee717dee717dee717dee717dee717dee717dee717dee
+        717dee717dee717dee717dee717dee717dee717dee717dee717eee717eee717eeed7960de5ac09ecb40bf5bd0cf2b60c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cedcc0e946c09020204
+        0202040202040202040c0c0cc4c4c4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcd4d4d4c4c4c4c4c4c4d7960de5ac09e5ac09
+        daa309c98e07b98309ad780aa5720aa46d05a46d05ad780ab67e0ac2930be5ac09f2b60cf2b60cf5bd0cf5bd0c727fef
+        727fef727fef727fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef
+        737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef737fef7380ef7380ef
+        6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee707cee
+        707cee707cee707cee707cee707cee707cee707cee707cee707cee707cee707ceed19b09e5ac09f2b60cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf2b60cf3c40be2bc0c312305
+        020204020204020204020204020204a4a4a4fefefcf4f4f4fefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4fefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcd4d4d4c4c4c4c4c4c4cf9418e5ac09ecb40b
+        dfa509d89c08cf9407c78a08c78a08c78a08c78a08cf9407d89c08e5ac09f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cebb316
+        717eee717eee717eee717eee717eee717eee717eee717eee717eee717eee717eee717eee727eee727eee727eee727eee
+        727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee727eee
+        6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee
+        6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6f7bee6f7beecf9418e5ac09f2b60cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cedcc0ed19b09
+        0202040202040202040202040202040a0604ecececfefefcfefefcf4f4f4fefefcfefefcf4f4f4fefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcdddddcc4c4c4bebdbcc18b0ad89c08ecb40b
+        ecb40bdfa509d89c08d89c08cf9407cf9407d19b09daa309e5ac09ecb40bf5bd0cf5bd0cf5bd0cf5bd0cebbc0bf2b60c
+        d7ac09707dee707dee707dee707dee707dee707dee707dee707dee707dee707dee707dee707dee707dee707dee707dee
+        707dee707dee707dee707dee707dee707dee717dee717dee717dee717dee717dee717dee717dee717dee717dee717dee
+        6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee
+        6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aeec98e07dfa509ebb316f2b60cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cebc40c
+        a5720a020204020204020204020204020204838384fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4ecececc4c4c4c4c4c4b98309d89c08ecb40b
+        ecb40becb40be5ac09dfa509daa309dfa509e5ac09e5ac09ecb40bf2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cebb316
+        f2b60cd19b096f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee
+        6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee6f7cee707cee
+        6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee
+        6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79eec98e07d89c08ebb316f5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cedcc0e
+        d7ac09020204020204020204020204020204505050fefefcfefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4eedec4c4c4242424c08507d89c08ecb40b
+        f2b60cf2b60cecb40be5ac09e5ac09e5ac09e5ac09ecb40bf2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        ebb316ebbc0bc39a0e6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee
+        6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee6e7bee
+        6a78ee6a78ee6a78ee6a78ee6a78ee6a78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee
+        6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78eec08507d89c08e5ac09f5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cebbc0b
+        f3cd0cc98e07020204020204020204020204f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcf4eede141413402c07b98309d89c08ecb40b
+        f2b60cf5bd0cf5bd0cf5bd0cf2b60cf2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cdaa3096d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee
+        6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee6d7aee
+        6976ed6976ed6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee
+        6a77ee6a77ee6a77ee6a77ee6a77ee6a77ee6a77ee6a77ee6a77ee6a77ee6a77eec78a08d89c08ebb316f5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        ebbc0bebc40c4930060c0c0c444444fefefcf4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcf4f4f4f4f4f4fefefcfefefc3c3c3c0202044c3604b98309d89c08ecb40b
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cdaa3096b78ee6b78ee6b79ee6b79ee6b79ee6b79ee6b79ee6c79ee6c79ee6c79ee
+        6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee6c79ee
+        6875ed6875ed6875ed6875ed6875ed6875ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed
+        6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6976ed6976edc78a08d89c08ebb316f5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        ebbc0bedcc0ed19b09a4a4a4fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        f4f4f4fefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcf4f4f41c1c1b020204020204654307b98309d89c08ecb40b
+        f2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cdaa3096a77ee6a77ee6a77ee6a77ee6a77ee6a77ee6a77ee6a78ee6a78ee6a78ee
+        6a78ee6a78ee6a78ee6a78ee6a78ee6a78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee6b78ee
+        6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6775ed6775ed6775ed6775ed6775ed
+        6775ed6775ed6775ed6775ed6775ed6775ed6775ed6775ed6775ed6775ed6775edc78a08d89c08f2b60cf2b60cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f2b60cebc40ce2bc0cb98309fefefcfefefcfefefcf4f4f4f4f4f4fefefcfefefcfefefcfefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefc020204020204020204020204784e04b98309dfa509ecb40b
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf2b60cebb316cf94186976ed6976ed6976ed6976ed6976ed6976ed6976ed6976ed6976ed6976ed
+        6976ed6976ed6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee6977ee
+        6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed
+        6674ed6674ed6674ed6674ed6674ed6674ed6674ed6674ed6674ed6674ed6674edc78a08dfa509f2b60cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cebbc0be2bc0cdfa509906007fefefcfefefcfefefcfefefcfefefcfefefcfefefcfefefcf4f4f4fefefcfefefc
+        fefefcfefefcfefefcfefefcfefefcfefefc1c1c1b020204020204020204020204020204745307b67e0adaa309f2b60c
+        f2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf5bd0cebb316d89c08ce8e086875ed6875ed6875ed6875ed6875ed6875ed6875ed6875ed6875ed6875ed6875ed
+        6875ed6875ed6875ed6875ed6875ed6875ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed6876ed
+        6472ed6472ed6472ed6472ed6472ed6472ed6472ed6572ed6572ed6572ed6572ed6572ed6572ed6572ed6572ed6572ed
+        6572ed6572ed6572ed6572ed6572ed6573ed6573ed6573ed6573ed6573edb37907cf9407f2b60cf5bd0cf5bd0cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf2b60ce1b40adfa509aa7e0a444444f4f4f4f4f4f4fefefcfefefcfefefcf4f4f4fefefcfefefcfefefcfefefc
+        fefefcfefefcfefefcfefefc3c3c3c020204020204020204020204020204020204140d04744904b67e0adaa309f2b60c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf2b60c
+        f2b60ce5ac09d89c08b57e2f6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed
+        6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6774ed6775ed6775ed6775ed6775ed6775ed
+        6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed
+        6471ed6471ed6471ed6471ed6471ed6471ed6471ed6471ed6471ed6471edc08507dfa509ecb40bf5bd0cf2b60cf5bd0c
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf2b60c
+        f5bd0cf2b60ce5ac09daa309b983095b3a050202048d8d8cf4f4f4f4f4f4fefefcfefefcfefefcfefefcf4f4f4fefefc
+        f4f4f4c4c4c42424240202040202040202040202040202040202040202040202041f1604784e04b98309daa309f2b60c
+        f2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf2b60cebb316dfa509
+        d89c08ce8e086573ed6573ed6573ed6573ed6573ed6573ed6573ed6573ed6573ed6573ed6573ed6673ed6673ed6673ed
+        6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed6673ed
+        6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed
+        6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270edc78a08d7960de5ac09f2b60cf2b60cf2b60c
+        f5bd0cf5bd0cf5bd0cf2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf5bd0ce5ac09d89c08b98309784e04140d04020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204020204020204020204402c07875805b98309d89c08ecb40b
+        f5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cebb316ebb316ebb316dfa509c78a08976105
+        6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed6472ed
+        6472ed6472ed6472ed6472ed6472ed6472ed6472ed6572ed6572ed6572ed6572ed6572ed6572ed6572ed6572ed6572ed
+        616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed
+        616fed616fed616fed616fed616fed616fed616fed616fed616fed616fedb67e0ac98e07cf9407d89c08dfa509e5ac09
+        e5ac09e5ac09e5ac09f2b60cf2b60cf5bd0cf5bd0cf2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf2b60ce5ac09d89c08b37907784e04493006020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204020204020204020204493006875805b67e0ad19b09ecb40b
+        f2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0cf2b60ce5ac09e5ac09daa309ce8e08b67e0a6371ed6371ed
+        6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed
+        6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed6371ed
+        606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec
+        606eec606eec606eec606eec606eec606eec606eec606eec606eec606eecad780ab37907b67e0ab98309c18b0ace8e08
+        cf9407d89c08d89c08dfa509dfa509e5ac09e5ac09ecb40bf5bd0cf2b60cf2b60cf5bd0cf5bd0cf5bd0cf5bd0cf5bd0c
+        f5bd0cf2b60cdaa309c78a08ab72057d5305533606020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204020204020204020204493006835204b37907c98e07dfa509
+        f2b60cf5bd0cf2b60cf2b60cf5bd0cf5bd0cf2b60cebb316dfa509d7960dce8e08c78a087449046270ed6270ed6270ed
+        6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed
+        6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed6270ed
+        5e6dec5e6dec5e6dec5e6dec5e6dec5e6dec5e6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec
+        5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec9761059d6a07ab7205
+        b37907b37907c08507c08507c78a08c78a08cf9407d89c08d89c08dfa509f2b60cf2b60cf2b60cf5bd0cf5bd0cf2b60c
+        f2b60ce5ac09cf9407b37907976105744904493006020204020204020204020204020204020204020204020204020204
+        020204020204020204020204020204020204020204020204020204020204020204402c07744904ab7205b98309d89c08
+        e5ac09ecb40bf2b60cf2b60cf2b60cebb316e5ac09dfa509d7960dc08507b37907606eec606eec606eec606eec606eec
+        606fed606fed606fed606fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed
+        616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed616fed
+        5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec
+        5d6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec
+        5e6cec8352048f5a049761059b66059b6605a46d05ad780ab37907b98309cf9407d7960dd89c08dfa509dfa509e5ac09
+        d89c08c78a08b67e0a9b66058352045b3a05291c040202040202040202040202045e6dec5e6dec5e6dec5e6dec5f6dec
+        5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec020204020204020204020204382605654307976105ab7205c18b0a
+        d89c08dfa509dfa509e5ac09dfa509d89c08cf9407b98309ab7205784e045f6dec5f6dec5f6dec5f6dec5f6dec5f6dec
+        5f6dec5f6dec5f6dec5f6dec5f6dec5f6eec5f6eec5f6eec5f6eec5f6eec5f6eec5f6eec5f6eec5f6eec606eec606eec
+        606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec606eec
+        5c6aec5c6aec5c6aec5c6aec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec
+        5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec
+        5d6bec5d6bec5d6bec5d6bec5d6bec6c4505784e04885f07906007976105ab7205b37907b67e0ab98309c98e07c78a08
+        c08507ab72059761058352046c45054930060202045d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec
+        5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5e6cec5e6cec402c075b3a058f5a049b6605b37907
+        b98309c08507c78a08c98e07c08507b98309b379079d6a077449045e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec
+        5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6cec5e6dec5e6dec5e6dec5e6dec5e6dec5e6dec
+        5e6dec5e6dec5e6dec5e6dec5e6dec5e6dec5e6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec5f6dec
+        5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec
+        5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec
+        5b6aec5b6aec5b6aec5c6aec5c6aec5c6aec5c6aec5c6aec472f1f603e058352048f5a049761059b66059d6a079b6605
+        9761058352047449046c45055b3a055c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6bec5c6bec5c6bec5c6bec
+        5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec4930067449048f5a04a46d05
+        ab7205b37907ad780ab37907ad780aa46d059761055336065d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec
+        5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6bec5d6cec
+        5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec5d6cec
+        5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a69ec5a69ec5a69ec
+        5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec
+        5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5b3a05744904744904784e04784e04
+        744904744904603e054930063926205b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec
+        5b69ec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec493006603e05875805
+        9761059b66059b66059b6605976105784e046543075b6aec5b6aec5b6aec5b6aec5c6aec5c6aec5c6aec5c6aec5c6aec
+        5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec5c6aec
+        5c6aec5c6aec5c6aec5c6aec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec5c6bec
+        5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5967ec5967ec5967ec5967ec5967ec5967ec5967ec5967ec
+        5967ec5967ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec
+        5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec493006493006
+        493006402c075968ec5968ec5968ec5968ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec
+        5a68ec5a68ec5a68ec5a68ec5a68ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec493006
+        493006533606533606493006402c075a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec5a69ec
+        5a69ec5a69ec5a69ec5a69ec5a69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec
+        5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b69ec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec5b6aec
+        5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb
+        5766eb5866eb5866eb5866eb5866eb5866eb5866eb5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec
+        5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec
+        5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec
+        5967ec5967ec5967ec5967ec5967ec5967ec5967ec5967ec5967ec5967ec5968ec5968ec5968ec5968ec5968ec5968ec
+        5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec
+        5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5968ec5a68ec5a68ec
+        5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a68ec5a69ec5a69ec5a69ec
+        5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb
+        5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5765eb5766eb5766eb5766eb5766eb
+        5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb
+        5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb
+        5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5866eb5866eb5866eb5866eb5866eb5866eb5867ec
+        5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec
+        5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec
+        5867ec5867ec5867ec5867ec5867ec5867ec5867ec5867ec5967ec5967ec5967ec5967ec5967ec5967ec5967ec5967ec
+        5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb
+        5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb
+        5564eb5565eb5565eb5565eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb
+        5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb
+        5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb
+        5665eb5665eb5665eb5765eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb
+        5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb
+        5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb5766eb
+        5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb
+        5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb
+        5463eb5463eb5463eb5463eb5463eb5463eb5464eb5464eb5464eb5464eb5464eb5464eb5464eb5564eb5564eb5564eb
+        5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb
+        5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb
+        5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5565eb5565eb5565eb5665eb5665eb5665eb5665eb
+        5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb
+        5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb5665eb
+        5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb
+        5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb
+        5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5363eb5363eb5363eb5363eb5363eb
+        5363eb5363eb5363eb5363eb5363eb5363eb5363eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb
+        5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb
+        5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5464eb5464eb
+        5464eb5464eb5464eb5464eb5464eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb
+        5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb5564eb
+        5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb
+        5161eb5161eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb
+        5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5262eb
+        5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb
+        5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb
+        5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb
+        5362eb5362eb5362eb5363eb5363eb5363eb5363eb5363eb5363eb5363eb5363eb5363eb5363eb5363eb5363eb5463eb
+        5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb5463eb
+        505feb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb
+        5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5160eb5160eb5160eb5160eb5160eb
+        5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb
+        5160eb5160eb5160eb5160eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb
+        5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5261eb5261eb5261eb5261eb5261eb5261eb
+        5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb5261eb
+        5261eb5261eb5261eb5261eb5261eb5261eb5261eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb
+        5262eb5262eb5262eb5262eb5262eb5262eb5262eb5262eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb5362eb
+        4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb
+        4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb
+        4f5feb4f5feb4f5feb4f5feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb
+        505feb505feb505feb505feb505feb505feb505feb505feb505feb5060eb5060eb5060eb5060eb5060eb5060eb5060eb
+        5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb
+        5060eb5060eb5060eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb
+        5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5160eb5161eb5161eb5161eb5161eb
+        5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb5161eb
+        4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5eea4e5eea4e5eea4e5eea4e5eea
+        4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea
+        4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4f5eea4f5eea
+        4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5feb4f5feb
+        4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb
+        4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb505feb505feb505feb505feb
+        505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb505feb
+        505feb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb5060eb
+        4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4d5cea4d5cea4d5cea4d5cea4d5cea4d5cea4d5cea
+        4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea
+        4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea
+        4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea
+        4e5dea4e5dea4e5dea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea
+        4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea
+        4e5eea4e5eea4e5eea4e5eea4e5eea4e5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea
+        4f5eea4f5eea4f5eea4f5eea4f5eea4f5eea4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb4f5feb
+        4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea
+        4b5bea4b5bea4c5bea4c5bea4c5bea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea
+        4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea
+        4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea
+        4c5cea4d5cea4d5cea4d5cea4d5cea4d5cea4d5cea4d5cea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea
+        4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea
+        4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4d5dea4e5dea
+        4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5dea4e5eea4e5eea4e5eea4e5eea4e5eea
+        4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea
+        4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5bea4a5bea4b5bea4b5bea4b5bea4b5bea4b5bea
+        4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea
+        4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea
+        4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4c5bea4c5bea4c5bea4c5cea4c5cea4c5cea
+        4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea
+        4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea
+        4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4c5cea4d5cea4d5cea4d5cea4d5cea4d5cea4d5cea4d5cea
+        4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea
+        4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea495aea495aea
+        495aea495aea495aea495aea495aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea
+        4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea
+        4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea
+        4a5aea4a5bea4a5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea
+        4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea
+        4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea4b5bea
+        4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea
+        4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea
+        4858ea4858ea4858ea4859ea4859ea4859ea4859ea4859ea4859ea4859ea4859ea4859ea4859ea4859ea4959ea4959ea
+        4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea
+        4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea
+        4959ea4959ea4959ea4959ea4959ea4959ea495aea495aea495aea495aea495aea495aea495aea4a5aea4a5aea4a5aea
+        4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea
+        4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea4a5aea
+        4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea
+        4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea
+        4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea
+        4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea
+        4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea
+        4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4859ea4859ea4859ea4859ea4859ea
+        4859ea4859ea4859ea4859ea4859ea4859ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea
+        4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea4959ea
+        4556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e9
+        4556e94556e94556e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e9
+        4656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94657ea4657ea4657ea
+        4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea
+        4657ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea
+        4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea
+        4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea4758ea
+        4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea4858ea
+        4455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e9
+        4455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94555e94555e94555e94555e9
+        4555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e9
+        4555e94555e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e9
+        4556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94656e94656e94656e94656e94656e9
+        4656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e94656e9
+        4656e94656e94656e94656e94656e94657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea
+        4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4657ea4757ea4757ea4757ea4757ea4757ea4757ea4757ea
+        4353e94353e94353e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e9
+        4354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e94354e9
+        4354e94354e94354e94354e94354e94454e94454e94454e94454e94454e94454e94454e94454e94454e94454e94454e9
+        4454e94454e94454e94454e94454e94454e94454e94455e94455e94455e94455e94455e94455e94455e94455e94455e9
+        4455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e94455e9
+        4455e94455e94455e94455e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94555e9
+        4555e94555e94555e94555e94555e94555e94555e94555e94555e94555e94556e94556e94556e94556e94556e94556e9
+        4556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e94556e9
+        "
+) rotated 15 ysized 4cm ;
+\stopMPcode
+
+\stoptitle
+
+\starttitle[title=Layers]
+
+\startbuffer
+\defineviewerlayer[rotation:30]
+\defineviewerlayer[rotation:60]
+\defineviewerlayer[rotation:90]
+
+\startMPcode
+draw image (
+
+ fill fullsquare scaled 8cm rotated 30
+   withcolor red
+   withtransparency(1,.5)
+   onlayer "rotation:30" ;
+
+ fill fullsquare scaled 8cm rotated 60
+   withcolor green
+   withtransparency(1,.5)
+   onlayer "rotation:60" ;
+
+ fill fullsquare scaled 8cm rotated 90
+   withcolor blue
+   withtransparency(1,.5)
+   onlayer "rotation:90" ;
+
+) ysized TextHeight ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\stoptitle
+
+\starttitle[title=Outlines]
+
+% \startMPcode
+%     graphictext ("Hi There!") scaled 10 ;
+% \stopMPcode
+
+\startbuffer
+\startMPcode
+  draw outlinetext.d
+    ("Hi There!")
+    (withcolor "red" withpen pencircle scaled 1/10 )
+    scaled 10 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+  draw outlinetext.f
+   ("Hi There!")
+   (withcolor "green")
+   scaled 10 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+  draw outlinetext.b
+    ("Hi There!")
+    (withcolor "green")
+    (withcolor "red" withpen pencircle scaled 1/10 )
+    scaled 10 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+  draw outlinetext.r
+    ("Hi There!")
+    (withcolor "green")
+    (withcolor "red" withpen pencircle scaled 1/10 )
+    scaled 10 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+  draw outlinetext.d
+    ("\framed[align=normal]{\input klein }")
+    (withcolor "white" withpen pencircle scaled 1/10 )
+    xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\stoptitle
+
+\starttitle[title=Images]
+
+\startbuffer
+\startMPcode
+  draw externalfigure ("cow.pdf") xsized 4cm ;
+\stopMPcode
+
+\startMPcode
+  draw figure ("cow.pdf") rotated -25 xsized 2cm shifted (14cm,-3cm) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\stoptitle
+
+\starttitle[title=Text]
+
+\startbuffer
+\startMPcode
+draw textext("\bfd Hello, {\green does} this work?")
+  shifted (4cm,2cm)
+  rotated 10
+  withcolor white ;
+
+draw textext("\bfd Hello, {\green does} this work?")
+  shifted (4cm,-2cm)
+  rotated -10
+  withcolor white
+  withtransparency (1,0.5);
+
+for i=1 step 10 until 360:
+  draw textext(decimal i)
+    shifted (0,4.5cm)
+    rotated i
+    withcolor i/360 ;
+endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\stoptitle
+
+\starttitle[title=Paths]
+
+\startbuffer
+\startMPcode
+draw image (
+  path p ; p := reverse fullcircle scaled 4cm ;
+  draw p ;
+  draw followtext(p,
+    "A nice clip: Rai Thistlethwayte's Betty Page @ Keyscape.\quad")
+) ysized .6TextHeight ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+draw image (
+  path p ; p := fullcircle scaled 4cm ;
+  fill p withcolor white ;
+  draw followtext(reverse p,"\obeydiscretionaries\samplefile{sapolsky}") ;
+) ysized .6TextHeight ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer \getbuffer \page
+
+\startbuffer
+\startMPcode
+draw image (
+  path p ; p := fullcircle scaled 4cm ;
+  fill p withcolor white ;
+  draw followtext(reverse p,"\obeydiscretionaries\samplefile{sapolsky}") ;
+) ysized TextHeight ;
+\stopMPcode
+\stopbuffer
+
+{\showfontkerns \getbuffer} \page
+
+\stoptitle
+
+\starttitle[title=So \unknown]
+
+\startitemize
+    \startitem
+        Get rid of old code snippets. And maybe translate some experiments into useful code.
+    \stopitem
+    \startitem
+        Optimize some of the code. On the average the code is quite efficient but less
+        is often better.
+    \stopitem
+    \startitem
+        Check the \METAFUN\ manual for recent additions. And maybe remove older
+        (more \MPII ish) solutions.
+    \stopitem
+    \startitem
+        Think about a way to circumvent unwanted suffix expansion so that we can use more keywords
+        without problems. (Maybe I should come up with a decent \METAPOST\ extension. Needs discussion
+        with Alan Braslau.)
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\stoptext
