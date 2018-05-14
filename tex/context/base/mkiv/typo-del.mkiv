@@ -214,7 +214,8 @@
 
 \unexpanded\def\startsubsentence{\beginofsubsentence\prewordbreak\beginofsubsentencespacing\typo_subsentence_cleanup_start}
 \unexpanded\def\stopsubsentence {\typo_subsentence_cleanup_stop\endofsubsentencespacing\prewordbreak\endofsubsentence}
-\unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
+\unexpanded\def\subsentence     {\groupedcommandcs\startsubsentence\stopsubsentence}
+%unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
 \unexpanded\def\midsubsentence  {\typo_subsentence_cleanup_start\prewordbreak\midsentence\prewordbreak\typo_subsentence_cleanup_stop}
 
 \definehspace [quotation]      [\zeropoint]

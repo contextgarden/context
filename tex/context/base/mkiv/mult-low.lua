@@ -173,8 +173,9 @@ return {
         "secondargumentfalse", "secondargumenttrue",
         "thirdargumentfalse", "thirdargumenttrue",
         "fourthargumentfalse", "fourthargumenttrue",
-        "fifthargumentfalse", "fifthsargumenttrue",
-        "sixthargumentfalse", "sixtsargumenttrue",
+        "fifthargumentfalse", "fifthargumenttrue",
+        "sixthargumentfalse", "sixthargumenttrue",
+        "seventhargumentfalse", "seventhargumenttrue",
         --
         "doglobal", "dodoglobal", "redoglobal", "resetglobal",
         --
@@ -216,9 +217,15 @@ return {
         "scratchtoks", "globalscratchtoks", "privatescratchtoks",
         "scratchbox", "globalscratchbox", "privatescratchbox",
         --
+        "groupedcommand", "groupedcommandcs",
+        "triggergroupedcommand", "triggergroupedcommandcs",
+        "simplegroupedcommand", "pickupgroupedcommand",
+        --
         "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --
         "availablehsize", "localhsize", "setlocalhsize", "distributedhsize", "hsizefraction",
+        --
+        "next", "nexttoken",
         --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs", "flushnextbox",
         --

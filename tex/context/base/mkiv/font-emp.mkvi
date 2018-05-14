@@ -227,12 +227,22 @@
 %D their style as good as possible. These macros are obsolete
 %D in \MKIV.
 
-\unexpanded\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
-\unexpanded\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
-\unexpanded\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
-\unexpanded\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
+% \unexpanded\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
+% \unexpanded\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
+% \unexpanded\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
+% \unexpanded\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
+% \unexpanded\def\emph  {\groupedcommand{\em}{}}
 
-\unexpanded\def\emph  {\groupedcommand{\em}{}}
+\unexpanded\def\font_emphasis_bf{\bf\def\emphit{\bi}\def\emphsl{\bs}}
+\unexpanded\def\font_emphasis_it{\it\def\emphbf{\bi}\def\emphsl{\sl}}
+\unexpanded\def\font_emphasis_sl{\sl\def\emphbf{\bs}\def\emphit{\it}}
+\unexpanded\def\font_emphasis_tf{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}
+
+\unexpanded\def\emphbf{\triggergroupedcommandcs\font_emphasis_bf}
+\unexpanded\def\emphit{\triggergroupedcommandcs\font_emphasis_it}
+\unexpanded\def\emphsl{\triggergroupedcommandcs\font_emphasis_sl}
+\unexpanded\def\emphtf{\triggergroupedcommandcs\font_emphasis_tf}
+\unexpanded\def\emph  {\triggergroupedcommandcs\em}
 
 \unexpanded\def\emphasized{\bgroup\em\let\nexttoken}
 

@@ -81,20 +81,23 @@
 
 % todo: names casings
 
-\unexpanded\def\WORD {\groupedcommand{\setcharactercasing[\v!WORD ]}{}}
-\unexpanded\def\word {\groupedcommand{\setcharactercasing[\v!word ]}{}}
-\unexpanded\def\Word {\groupedcommand{\setcharactercasing[\v!Word ]}{}}
-\unexpanded\def\Words{\groupedcommand{\setcharactercasing[\v!Words]}{}}
-\unexpanded\def\camel{\groupedcommand{\setcharactercasing[\v!camel]}{}}
+% \unexpanded\def\WORD {\groupedcommand{\setcharactercasing[\v!WORD ]}{}}
+% \unexpanded\def\word {\groupedcommand{\setcharactercasing[\v!word ]}{}}
+% \unexpanded\def\Word {\groupedcommand{\setcharactercasing[\v!Word ]}{}}
+% \unexpanded\def\Words{\groupedcommand{\setcharactercasing[\v!Words]}{}}
+% \unexpanded\def\camel{\groupedcommand{\setcharactercasing[\v!camel]}{}}
 
-% This might become:
-%
-% \unexpanded\def\WORD {\bgroup\def\g_word{\setcharactercasing[\v!WORD ]}\afterassignment\g_word\let\nexttoken}
-% \unexpanded\def\word {\bgroup\def\g_word{\setcharactercasing[\v!word ]}\afterassignment\g_word\let\nexttoken}
-% \unexpanded\def\Word {\bgroup\def\g_word{\setcharactercasing[\v!Word ]}\afterassignment\g_word\let\nexttoken}
-% \unexpanded\def\Words{\bgroup\def\g_word{\setcharactercasing[\v!Words]}\afterassignment\g_word\let\nexttoken}
-%
-% so no longer {\Word test} and { } mandate (also later \groupedcommands will go)
+\unexpanded\def\typo_capitale_WORD {\clf_setcharactercasing{\v!WORD }\fontid\font}
+\unexpanded\def\typo_capitale_word {\clf_setcharactercasing{\v!word }\fontid\font}
+\unexpanded\def\typo_capitale_Word {\clf_setcharactercasing{\v!Word }\fontid\font}
+\unexpanded\def\typo_capitale_Words{\clf_setcharactercasing{\v!Words}\fontid\font}
+\unexpanded\def\typo_capitale_camel{\clf_setcharactercasing{\v!camel}\fontid\font}
+
+\unexpanded\def\WORD {\triggergroupedcommandcs\typo_capitale_WORD }
+\unexpanded\def\word {\triggergroupedcommandcs\typo_capitale_word }
+\unexpanded\def\Word {\triggergroupedcommandcs\typo_capitale_Word }
+\unexpanded\def\Words{\triggergroupedcommandcs\typo_capitale_Words}
+\unexpanded\def\camel{\triggergroupedcommandcs\typo_capitale_camel}
 
 \let\WORDS\WORD
 \let\words\word
@@ -176,16 +179,27 @@
    \sc
    \clf_setcharactercasing{\currentcapitals}\fontid\font}
 
-\unexpanded\def\pseudosmallcapped{\groupedcommand{\typo_capitals_set_fake\v!WORD   }\donothing} % all upper
-\unexpanded\def\pseudoSmallcapped{\groupedcommand{\typo_capitals_set_fake\v!capital}\donothing} % one upper + font
-\unexpanded\def\pseudoSmallCapped{\groupedcommand{\typo_capitals_set_fake\v!Capital}\donothing} % some upper + font
-\unexpanded\def\pseudoMixedCapped{\groupedcommand{\typo_capitals_set_fake\v!mixed  }\donothing} % UpperCase
+% \unexpanded\def\pseudosmallcapped{\groupedcommand{\typo_capitals_set_fake\v!WORD   }\donothing} % all upper
+% \unexpanded\def\pseudoSmallcapped{\groupedcommand{\typo_capitals_set_fake\v!capital}\donothing} % one upper + font
+% \unexpanded\def\pseudoSmallCapped{\groupedcommand{\typo_capitals_set_fake\v!Capital}\donothing} % some upper + font
+% \unexpanded\def\pseudoMixedCapped{\groupedcommand{\typo_capitals_set_fake\v!mixed  }\donothing} % UpperCase
+%
+% \unexpanded\def\realsmallcapped  {\groupedcommand{\typo_capitals_set_real\v!WORD   }\donothing} % all lower
+% \unexpanded\def\realSmallcapped  {\groupedcommand{\typo_capitals_set_real\v!Word   }\donothing} % one upper + font
+% \unexpanded\def\realSmallCapped  {\groupedcommand{\typo_capitals_set_real\v!Words  }\donothing} % some upper
+%
+% \unexpanded\def\notsmallcapped   {\groupedcommand{\typo_capitals_set_fake\v!word   }\donothing}
 
-\unexpanded\def\realsmallcapped  {\groupedcommand{\typo_capitals_set_real\v!WORD   }\donothing} % all lower
-\unexpanded\def\realSmallcapped  {\groupedcommand{\typo_capitals_set_real\v!Word   }\donothing} % one upper + font
-\unexpanded\def\realSmallCapped  {\groupedcommand{\typo_capitals_set_real\v!Words  }\donothing} % some upper
+\unexpanded\def\pseudosmallcapped{\triggergroupedcommandcs\font_style_pseudosmallcapped}
+\unexpanded\def\pseudoSmallcapped{\triggergroupedcommandcs\font_style_pseudoSmallcapped}
+\unexpanded\def\pseudoSmallCapped{\triggergroupedcommandcs\font_style_pseudoSmallCapped}
+\unexpanded\def\pseudoMixedCapped{\triggergroupedcommandcs\font_style_pseudoMixedCapped}
 
-\unexpanded\def\notsmallcapped   {\groupedcommand{\typo_capitals_set_fake\v!word   }\donothing}
+\unexpanded\def\realsmallcapped  {\triggergroupedcommandcs\font_style_realsmallcapped}
+\unexpanded\def\realSmallcapped  {\triggergroupedcommandcs\font_style_realSmallcapped}
+\unexpanded\def\realSmallCapped  {\triggergroupedcommandcs\font_style_realSmallCapped}
+
+\unexpanded\def\notsmallcapped   {\triggergroupedcommandcs\font_style_notsmallcapped}
 
 \unexpanded\def\font_style_pseudosmallcapped{\typo_capitals_set_fake\v!WORD   } % all upper
 \unexpanded\def\font_style_pseudoSmallcapped{\typo_capitals_set_fake\v!capital} % one upper + font
@@ -285,7 +299,9 @@
 %
 % \definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 
-\unexpanded\def\randomizetext{\groupedcommand{\attribute\caseattribute\pluseight}{}}
+% \unexpanded\def\randomizetext{\groupedcommand{\attribute\caseattribute\pluseight}{}}
+
+\unexpanded\def\randomizetext{\triggergroupedcommand{\attribute\caseattribute\pluseight}}
 
 \definestartstop[randomized][\c!before=\dosetattribute{case}{8},\c!after=]
 

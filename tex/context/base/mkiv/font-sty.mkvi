@@ -59,17 +59,17 @@
 \newconstant\c_fonts_basics_alternative_style_method
 
 \def\font_basics_define_alternative_style_indeed#variantone#varianttwo#command%
-  {\setvalue{\??alternativestyle#command}{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}%
+  {\setuvalue{\??alternativestyle#command}{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}%
    \ifcsname#command\endcsname
      % no redefinition
    \else\ifnum\c_fonts_basics_alternative_style_method=\plusone
       \ifthirdargument
-        \setuevalue{#command}{\groupedcommand{\expandafter\noexpand\begincsname\??alternativestyle#command\endcsname}{}}%
+        \setuevalue{#command}{\triggergroupedcommandcs\begincsname\??alternativestyle#command\endcsname}%
       \else
-        \setuvalue{#command}{\groupedcommand{#variantone}{}}%
+        \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
       \fi
    \else
-     \setuvalue{#command}{\groupedcommand{#variantone}{}}%
+     \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
    \fi\fi}
 
 \def\font_helpers_apply_alternative_style
@@ -279,17 +279,26 @@
      \fi\fi
    \endcsname{#name}}
 
+% \setvalue{\??styleargument1}#name%
+%   {\groupedcommand{\begincsname#name\endcsname}{}}
+
 \setvalue{\??styleargument1}#name%
-  {\groupedcommand{\csname#name\endcsname}{}}
+  {\expandafter\triggergroupedcommandcs\begincsname#name\endcsname}
+
+% \setvalue{\??styleargument2}#name%
+%   {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
 
 \setvalue{\??styleargument2}#name%
-  {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
+  {\triggergroupedcommand{\font_styles_use_defined{#name}}} % or {\font_styles_apply_grouped{#name}}
 
 \setvalue{\??styleargument3}#specification%
   {\doifelseassignment{#specification}\font_styles_assignment\font_styles_direct{#specification}}
 
-\def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
-\def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}
+% \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
+% \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}
+
+\def\font_styles_assignment#specification{\triggergroupedcommand{\font_styles_use_generic{#specification}}}
+\def\font_styles_direct    #specification{\triggergroupedcommand{\definedfont[#specification]}}
 
 % environments
 

@@ -121,17 +121,31 @@ local t_stream          = token("keyword", p_stream)
                         * token("text",    (1 - p_endstream)^1)
                         * token("keyword", p_endstream)
 
+local t_other           = t_constant + t_reference + t_string + t_unicode + t_number + t_reserved + t_whatsit
+
 local t_dictionary      = { "dictionary",
-                            dictionary = t_opendictionary * (t_spaces * t_keyword * t_spaces * V("whatever"))^0 * t_spaces * t_closedictionary,
-                            array      = t_openarray * (t_spaces * V("whatever"))^0 * t_spaces * t_closearray,
-                            whatever   = V("dictionary") + V("array") + t_constant + t_reference + t_string + t_unicode + t_number + t_reserved + t_whatsit,
+                            dictionary = t_opendictionary
+                                       * (t_spaces * t_keyword * t_spaces * V("whatever"))^0
+                                       * t_spaces
+                                       * t_closedictionary,
+                            array      = t_openarray
+                                       * (t_spaces * V("whatever"))^0
+                                       * t_spaces
+                                       * t_closearray,
+                            whatever   = V("dictionary")
+                                       + V("array")
+                                       + t_other,
                         }
 
 local t_object          = { "object", -- weird that we need to catch the end here (probably otherwise an invalid lpeg)
                             dictionary = t_dictionary.dictionary,
                             array      = t_dictionary.array,
                             whatever   = t_dictionary.whatever,
-                            object     = t_openobject * t_spaces * (V("dictionary")^-1 * t_spaces * t_stream^-1 + V("array") + V("number") + t_spaces) * t_spaces * t_closeobject,
+                            object     = t_openobject
+                                       * t_spaces
+                                       * (V("dictionary") * t_spaces * t_stream^-1 + V("array") + t_other)
+                                       * t_spaces
+                                       * t_closeobject,
                             number     = t_number,
                         }
 

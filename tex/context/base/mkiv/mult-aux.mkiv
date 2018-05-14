@@ -1055,176 +1055,176 @@
 \def\s!double{double}
 \def\s!triple{triple}
 
-\unexpanded\def\syst_helpers_double_empty#1#2#3%
-  {\syst_helpers_argument_reset
-   \doifelsenextoptional
-     {\syst_helpers_double_empty_one_yes_mult#2#3}%
-     {\syst_helpers_double_empty_one_nop_mult#1}}
+% \unexpanded\def\syst_helpers_double_empty#1#2#3%
+%   {\syst_helpers_argument_reset
+%    \doifelsenextoptional
+%      {\syst_helpers_double_empty_one_yes_mult#2#3}%
+%      {\syst_helpers_double_empty_one_nop_mult#1}}
+%
+% \def\syst_helpers_double_empty_one_yes_mult#1#2[#3]%
+%   {\firstargumenttrue
+%    \doifelsenextoptional
+%      {\secondargumenttrue#2[{#3}]}%
+%      {\syst_helpers_double_empty_two_nop_mult#1{#3}}}
+%
+% \def\syst_helpers_double_empty_one_nop_mult% #1%
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    }% #1}
+%
+% \def\syst_helpers_double_empty_two_nop_mult
+%   {\secondargumentfalse
+%    \if_next_blank_space_token
+%      \expandafter\syst_helpers_double_empty_one_spaced_mult
+%    \else
+%      \expandafter\syst_helpers_double_empty_one_normal_mult
+%    \fi}
+%
+% \def\syst_helpers_double_empty_one_spaced_mult#1#2{#1[{#2}] }
+% \def\syst_helpers_double_empty_one_normal_mult#1#2{#1[{#2}]}
+%
+% \unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8%
+%   {\ifx#3\relax\let#3\empty\fi
+%    \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
+%    \newtoks#4%
+%    \newtoks#7%
+%    \edef\m_mult_interface_setup{\csstring#2_}%
+%    \unexpanded\edef#2{\syst_helpers_double_empty
+%      \csname\m_mult_interface_setup\s!simple\endcsname
+%      \csname\m_mult_interface_setup\s!single\endcsname
+%      \csname\m_mult_interface_setup\s!double\endcsname}%
+%    \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!double\endcsname[##1][##2]%
+%      {\let#6#3%
+%       \def#8####1% we will have a simple one as well
+%         {\edef#3{####1}%
+%          \mult_interfaces_get_parameters{#1#3:}[##2]%
+%          \the#4}%
+%       \processcommalist[##1]#8%
+%       \let#3#6%
+%       \the#7}%
+%    \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!single\endcsname[##1]%
+%      {\let#6#3%
+%       \let#3\empty
+%       \mult_interfaces_get_parameters{#1:}[##1]%
+%       \the#4%
+%       \let#3#6%
+%       \the#7}%
+%    \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!simple\endcsname%
+%      {\let#6#3%
+%       \let#3\empty
+%       \the#4%
+%       \let#3#6%
+%       \the#7}}
 
-\def\syst_helpers_double_empty_one_yes_mult#1#2[#3]%
-  {\firstargumenttrue
-   \doifelsenextoptional
-     {\secondargumenttrue#2[{#3}]}%
-     {\syst_helpers_double_empty_two_nop_mult#1{#3}}}
-
-\def\syst_helpers_double_empty_one_nop_mult% #1%
-  {\firstargumentfalse
-   \secondargumentfalse
-   }% #1}
-
-\def\syst_helpers_double_empty_two_nop_mult
-  {\secondargumentfalse
-   \if_next_blank_space_token
-     \expandafter\syst_helpers_double_empty_one_spaced_mult
-   \else
-     \expandafter\syst_helpers_double_empty_one_normal_mult
-   \fi}
-
-\def\syst_helpers_double_empty_one_spaced_mult#1#2{#1[{#2}] }
-\def\syst_helpers_double_empty_one_normal_mult#1#2{#1[{#2}]}
-
-\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8%
-  {\ifx#3\relax\let#3\empty\fi
-   \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
-   \newtoks#4%
-   \newtoks#7%
-   \edef\m_mult_interface_setup{\csstring#2_}%
-   \unexpanded\edef#2{\syst_helpers_double_empty
-     \csname\m_mult_interface_setup\s!simple\endcsname
-     \csname\m_mult_interface_setup\s!single\endcsname
-     \csname\m_mult_interface_setup\s!double\endcsname}%
-   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!double\endcsname[##1][##2]%
-     {\let#6#3%
-      \def#8####1% we will have a simple one as well
-        {\edef#3{####1}%
-         \mult_interfaces_get_parameters{#1#3:}[##2]%
-         \the#4}%
-      \processcommalist[##1]#8%
-      \let#3#6%
-      \the#7}%
-   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!single\endcsname[##1]%
-     {\let#6#3%
-      \let#3\empty
-      \mult_interfaces_get_parameters{#1:}[##1]%
-      \the#4%
-      \let#3#6%
-      \the#7}%
-   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!simple\endcsname%
-     {\let#6#3%
-      \let#3\empty
-      \the#4%
-      \let#3#6%
-      \the#7}}
-
-\unexpanded\def\installsetuphandler#1#2%
-  {\normalexpanded
-     {\mult_interfaces_install_setup_handler
-        {\noexpand#1}% \??aa
-        \expandafter\noexpand\csname setup#2\endcsname
-        \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname everysetup#2\endcsname
-        \expandafter\noexpand\csname setupcurrent#2\endcsname
-        \expandafter\noexpand\csname saved_setup_current#2\endcsname
-        \expandafter\noexpand\csname everysetup#2root\endcsname
-        \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
-
-\unexpanded\def\syst_helpers_triple_empty#1#2#3#4%
-  {\syst_helpers_argument_reset
-   \doifelsenextoptional
-     {\syst_helpers_triple_empty_one_yes_mult#2#3#4}%
-     {\syst_helpers_triple_empty_one_nop_mult#1}}
-
-\def\syst_helpers_triple_empty_one_yes_mult#1#2#3[#4]%
-  {\firstargumenttrue
-   \doifelsenextoptional
-     {\syst_helpers_triple_empty_two_yes_mult#2#3{#4}}%
-     {\syst_helpers_triple_empty_two_nop_mult#1{#4}}}
-
-\def\syst_helpers_triple_empty_two_yes_mult#1#2#3[#4]%
-  {\secondargumenttrue
-   \doifelsenextoptional
-     {\thirdargumenttrue#2[{#3}][{#4}]}%
-     {\syst_helpers_triple_empty_three_nop_mult#1{#3}{#4}}}
-
-\def\syst_helpers_triple_empty_one_nop_mult % #1%
-  {\firstargumentfalse
-   \secondargumentfalse
-   \thirdargumentfalse
-   } % #1
-
-\def\syst_helpers_triple_empty_two_nop_mult
-  {\secondargumentfalse
-   \thirdargumentfalse
-   \if_next_blank_space_token
-     \expandafter\syst_helpers_triple_empty_two_spaced_mult
-   \else
-     \expandafter\syst_helpers_triple_empty_two_normal_mult
-   \fi}
-
-\def\syst_helpers_triple_empty_three_nop_mult
-  {\thirdargumentfalse
-   \if_next_blank_space_token
-     \expandafter\syst_helpers_triple_empty_three_spaced_mult
-   \else
-     \expandafter\syst_helpers_triple_empty_three_normal_mult
-   \fi}
-
-\def\syst_helpers_triple_empty_two_spaced_mult  #1#2{#1[{#2}] }
-\def\syst_helpers_triple_empty_two_normal_mult  #1#2{#1[{#2}]}
-\def\syst_helpers_triple_empty_three_spaced_mult#1#2#3{#1[{#2}][{#3}] }
-\def\syst_helpers_triple_empty_three_normal_mult#1#2#3{#1[{#2}][{#3}]}
-
-\unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
-  {\ifx#3\relax\let#3\empty\fi
-   \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}%
-   \newtoks#4%
-   \edef\m_mult_interface_setup{\csstring#2_}%
-   \unexpanded\edef#2{\syst_helpers_triple_empty
-     \csname\m_mult_interface_setup\s!simple\endcsname
-     \csname\m_mult_interface_setup\s!single\endcsname
-     \csname\m_mult_interface_setup\s!double\endcsname
-     \csname\m_mult_interface_setup\s!triple\endcsname}%
-   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!triple\endcsname[##1][##2][##3]%
-     {\let#7#3%
-      \def#8####1%
-        {\edef#3{####1}%
-         \expandafter\def\csname#1#3:\s!parent\endcsname{#1##2}%
-         \mult_interfaces_get_parameters{#1#3:}[##3]% always sets parent
-         \the#4}%
-      \processcommalist[##1]#8%
-      \let#3#7}%
-   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!double\endcsname[##1][##2]%
-     {\let#7#3%
-      \def#8####1%
-        {\edef#3{####1}%
-         #6% checks parent and sets if needed
-         \mult_interfaces_get_parameters{#1#3:}[##2]%
-         \the#4}%
-      \processcommalist[##1]#8%
-      \let#3#7}%
-   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!single\endcsname[##1]%
-     {\let#7#3%
-      \let#3\empty
-      \mult_interfaces_get_parameters{#1:}[##1]%
-      \the#4%
-      \let#3#7}%
-   \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!simple\endcsname%
-     {\let#7#3%
-      \let#3\empty
-      \the#4%
-      \let#3#7}}
-
-\unexpanded\def\installautosetuphandler#1#2%
-  {\normalexpanded
-     {\mult_interfaces_install_auto_setup_handler
-        {\noexpand#1}% \??aa
-        \expandafter\noexpand\csname setup#2\endcsname
-        \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname everysetup#2\endcsname
-        \expandafter\noexpand\csname setupcurrent#2\endcsname
-        \expandafter\noexpand\csname check#2parent\endcsname
-        \expandafter\noexpand\csname saved_setup_current#2\endcsname
-        \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
+% \unexpanded\def\installsetuphandler#1#2%
+%   {\normalexpanded
+%      {\mult_interfaces_install_setup_handler
+%         {\noexpand#1}% \??aa
+%         \expandafter\noexpand\csname setup#2\endcsname
+%         \expandafter\noexpand\csname current#2\endcsname
+%         \expandafter\noexpand\csname everysetup#2\endcsname
+%         \expandafter\noexpand\csname setupcurrent#2\endcsname
+%         \expandafter\noexpand\csname saved_setup_current#2\endcsname
+%         \expandafter\noexpand\csname everysetup#2root\endcsname
+%         \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
+%
+% \unexpanded\def\syst_helpers_triple_empty#1#2#3#4%
+%   {\syst_helpers_argument_reset
+%    \doifelsenextoptional
+%      {\syst_helpers_triple_empty_one_yes_mult#2#3#4}%
+%      {\syst_helpers_triple_empty_one_nop_mult#1}}
+%
+% \def\syst_helpers_triple_empty_one_yes_mult#1#2#3[#4]%
+%   {\firstargumenttrue
+%    \doifelsenextoptional
+%      {\syst_helpers_triple_empty_two_yes_mult#2#3{#4}}%
+%      {\syst_helpers_triple_empty_two_nop_mult#1{#4}}}
+%
+% \def\syst_helpers_triple_empty_two_yes_mult#1#2#3[#4]%
+%   {\secondargumenttrue
+%    \doifelsenextoptional
+%      {\thirdargumenttrue#2[{#3}][{#4}]}%
+%      {\syst_helpers_triple_empty_three_nop_mult#1{#3}{#4}}}
+%
+% \def\syst_helpers_triple_empty_one_nop_mult % #1%
+%   {\firstargumentfalse
+%    \secondargumentfalse
+%    \thirdargumentfalse
+%    } % #1
+%
+% \def\syst_helpers_triple_empty_two_nop_mult
+%   {\secondargumentfalse
+%    \thirdargumentfalse
+%    \if_next_blank_space_token
+%      \expandafter\syst_helpers_triple_empty_two_spaced_mult
+%    \else
+%      \expandafter\syst_helpers_triple_empty_two_normal_mult
+%    \fi}
+%
+% \def\syst_helpers_triple_empty_three_nop_mult
+%   {\thirdargumentfalse
+%    \if_next_blank_space_token
+%      \expandafter\syst_helpers_triple_empty_three_spaced_mult
+%    \else
+%      \expandafter\syst_helpers_triple_empty_three_normal_mult
+%    \fi}
+%
+% \def\syst_helpers_triple_empty_two_spaced_mult    #1#2{#1[{#2}] }
+% \def\syst_helpers_triple_empty_two_normal_mult    #1#2{#1[{#2}]}
+% \def\syst_helpers_triple_empty_three_spaced_mult#1#2#3{#1[{#2}][{#3}] }
+% \def\syst_helpers_triple_empty_three_normal_mult#1#2#3{#1[{#2}][{#3}]}
+%
+% \unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
+%   {\ifx#3\relax\let#3\empty\fi
+%    \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}%
+%    \newtoks#4%
+%    \edef\m_mult_interface_setup{\csstring#2_}%
+%    \unexpanded\edef#2{\syst_helpers_triple_empty
+%      \csname\m_mult_interface_setup\s!simple\endcsname
+%      \csname\m_mult_interface_setup\s!single\endcsname
+%      \csname\m_mult_interface_setup\s!double\endcsname
+%      \csname\m_mult_interface_setup\s!triple\endcsname}%
+%    \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!triple\endcsname[##1][##2][##3]%
+%      {\let#7#3%
+%       \def#8####1%
+%         {\edef#3{####1}%
+%          \expandafter\def\csname#1#3:\s!parent\endcsname{#1##2}%
+%          \mult_interfaces_get_parameters{#1#3:}[##3]% always sets parent
+%          \the#4}%
+%       \processcommalist[##1]#8%
+%       \let#3#7}%
+%    \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!double\endcsname[##1][##2]%
+%      {\let#7#3%
+%       \def#8####1%
+%         {\edef#3{####1}%
+%          #6% checks parent and sets if needed
+%          \mult_interfaces_get_parameters{#1#3:}[##2]%
+%          \the#4}%
+%       \processcommalist[##1]#8%
+%       \let#3#7}%
+%    \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!single\endcsname[##1]%
+%      {\let#7#3%
+%       \let#3\empty
+%       \mult_interfaces_get_parameters{#1:}[##1]%
+%       \the#4%
+%       \let#3#7}%
+%    \unexpanded\expandafter\def\csname\m_mult_interface_setup\s!simple\endcsname%
+%      {\let#7#3%
+%       \let#3\empty
+%       \the#4%
+%       \let#3#7}}
+%
+% \unexpanded\def\installautosetuphandler#1#2%
+%   {\normalexpanded
+%      {\mult_interfaces_install_auto_setup_handler
+%         {\noexpand#1}% \??aa
+%         \expandafter\noexpand\csname setup#2\endcsname
+%         \expandafter\noexpand\csname current#2\endcsname
+%         \expandafter\noexpand\csname everysetup#2\endcsname
+%         \expandafter\noexpand\csname setupcurrent#2\endcsname
+%         \expandafter\noexpand\csname check#2parent\endcsname
+%         \expandafter\noexpand\csname saved_setup_current#2\endcsname
+%         \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
 
 % okay, we can also get rid of the #9, but this code looks pretty bad, while the previous is
 % still okay given that we can also use #6 as setup (so in fact we can save some cs again and
