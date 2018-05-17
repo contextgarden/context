@@ -417,7 +417,7 @@
 % Key "a":  a{TOKENS} adds TOKENS to the right of (after) the template
 
 \newtableformatkey a#1%
-  {\!taDataColumnTemplate\expandafter{\the\!taDataColumnTemplate #1}%
+  {\toksapp\!taDataColumnTemplate{#1}%
    \doreadtableformatkeys}
 
 % Key "\{": Enclose template in braces.
@@ -435,7 +435,7 @@
    \scratchtoks\emptytoks
    \!thLoop
      \ifnum\scratchcounter>\zerocount
-     \scratchtoks\expandafter{\the\scratchtoks#2}%
+     \toksapp\scratchtoks{#2}%
      \advance\scratchcounter\minusone
    \repeat
    \expandafter\doreadtableformatkeys\the\scratchtoks}

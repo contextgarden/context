@@ -568,13 +568,13 @@
 \installtabulatepreambleoption{i}{\tabl_tabulate_set_preskip}
 \installtabulatepreambleoption{j}{\tabl_tabulate_set_posskip}
 \installtabulatepreambleoption{k}{\tabl_tabulate_set_preposskip}
-\installtabulatepreambleoption{e}{\t_tabl_tabulate_settings\expandafter{\the\t_tabl_tabulate_settings\global\settrue\c_tabl_tabulate_equal}%
+\installtabulatepreambleoption{e}{\toksapp\t_tabl_tabulate_settings{\global\settrue\c_tabl_tabulate_equal}%
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{g}{\tabl_tabulate_set_align}
 \installtabulatepreambleoption{.}{\tabl_tabulate_set_align.}
 \installtabulatepreambleoption{,}{\tabl_tabulate_set_align,}
 \installtabulatepreambleoption{C}{\tabl_tabulate_set_color_span}
-\installtabulatepreambleoption{d}{\t_tabl_tabulate_settings\expandafter{\the\t_tabl_tabulate_settings\fixedspaces}%
+\installtabulatepreambleoption{d}{\toksapp\t_tabl_tabulate_settings{\fixedspaces}%
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{ }{\tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{A}{\tabl_tabulate_set_alignment}
@@ -2423,8 +2423,8 @@
    \dostarttaggedchained\t!tabulate\empty\??tabulation
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
-   \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
- % \toksapp\everycr{\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+ % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+   \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
    \dostoptagged

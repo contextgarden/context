@@ -20818,7 +20818,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 14943, stripped down to: 8305
+-- original size: 16094, stripped down to: 9206
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -20978,7 +20978,7 @@ local function locate(required,version,trace,report,action)
       report("stored library: %a",required)
     end
   end
-  return library
+  return library or nil
 end
 do
   local report_swiglib=logs.reporter("swiglib")
@@ -21057,11 +21057,11 @@ if FFISUPPORTED and ffi and ffi.load then
     name=removesuffix(name)
     local l=loaded[name]
     if l==nil then
-      local message,library=pcall(savedffiload,name)
-      if type(message)=="userdata" then
-        l=message
-      elseif type(library)=="userdata" then
+      local state,library=pcall(savedffiload,name)
+      if type(library)=="userdata" then
         l=library
+      elseif type(state)=="userdata" then
+        l=state
       else
         l=false
       end
@@ -21071,6 +21071,19 @@ if FFISUPPORTED and ffi and ffi.load then
     end
     return l
   end
+  local function getlist(required)
+    local list=directives.value("system.librarynames" )
+    if type(list)=="table" then
+      list=list[required]
+      if type(list)=="table" then
+        if trace then
+          report("using lookup list for library %a: % | t",required,list)
+        end
+        return list
+      end
+    end
+    return { required }
+  end
   function ffilib(name,version)
     name=removesuffix(name)
     local l=loaded[name]
@@ -21079,21 +21092,43 @@ if FFISUPPORTED and ffi and ffi.load then
         report_ffilib("reusing already loaded %a",name)
       end
       return l
-    elseif version=="system" then
-      return locateindeed(name)
+    end
+    local list=getlist(name)
+    if version=="system" then
+      for i=1,#list do
+        local library=locateindeed(list[i])
+        if type(library)=="userdata" then
+          return library
+        end
+      end
     else
-      return locate(name,version,trace_ffilib,report_ffilib,locateindeed)
+      for i=1,#list do
+        local library=locate(list[i],version,trace_ffilib,report_ffilib,locateindeed)
+        if type(library)=="userdata" then
+          return library
+        end
+      end
     end
   end
   function ffi.load(name)
-    local library=ffilib(name)
-    if type(library)=="userdata" then
-      return library
+    local list=getlist(name)
+    for i=1,#list do
+      local library=ffilib(list[i])
+      if type(library)=="userdata" then
+        return library
+      end
     end
     if trace_ffilib then
       report_ffilib("trying to load %a using normal loader",name)
     end
-    return savedffiload(name)
+    for i=1,#list do
+      local state,library=pcall(savedffiload,list[i])
+      if type(library)=="userdata" then
+        return library
+      elseif type(state)=="userdata" then
+        return library
+      end
+    end
   end
 end
 
@@ -21443,8 +21478,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 881753
--- stripped bytes    : 319042
+-- original bytes    : 882904
+-- stripped bytes    : 319292
 
 -- end library merge
 

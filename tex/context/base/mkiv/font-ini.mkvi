@@ -583,7 +583,7 @@
 \def\font_basics_define_fontstyle[#commands][#style]% style: rm ss tt ...
   {\ifcsname\??fontstyleknown#style\endcsname \else % can be delayed till used (cg, hw)
      \font_helpers_register_style{#style}%
-     % todo: apptoks
+     % todo: toksapp
      \t_font_style_commands\expandafter{\the\t_font_style_commands\m_font_style_command{#style}}%
    \fi
    \processcommalist[#commands]{\font_basics_define_fontstyle_indeed{#style}}}
@@ -603,7 +603,7 @@
 \unexpanded\def\definefontalternative[#alternative]%
   {\ifcsname\??fontalternativeknown#alternative\endcsname \else
      \font_helpers_register_alternative{#alternative}%
-     % todo: apptoks
+     % todo: toksapp
      \t_font_alternative_commands\expandafter{\the\t_font_alternative_commands
        \m_font_alternative_command{#alternative}}%
    \fi

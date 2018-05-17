@@ -1286,9 +1286,11 @@
      {\dodoubleempty#7}%
    \unexpanded\def#7[##1][##2]%
      {\ifsecondargument
-        #3\c_mult_set\expandafter{\the\c_mult_set#9[##1][##2]}%
+       %#3\c_mult_set\expandafter{\the\c_mult_set#9[##1][##2]}%
+        #3\toksapp\c_mult_set{#9[##1][##2]}%
       \else\iffirstargument
-        #3\c_mult_set\expandafter{\the\c_mult_set#8[##1]}%
+       %#3\c_mult_set\expandafter{\the\c_mult_set#8[##1]}%
+        #3\toksapp\c_mult_set{#8[##1]}%
       \fi\fi}}
 
 \unexpanded\def\installdefinitionsetmember#1#2#3#4%

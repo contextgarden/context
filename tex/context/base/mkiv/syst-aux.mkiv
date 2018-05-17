@@ -2299,49 +2299,67 @@
 
 \newtoks\t_syst_aux
 
-\def\syst_helpers_empty_spaced_six  {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][][] }
-\def\syst_helpers_empty_normal_six  {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][][]}
-\def\syst_helpers_empty_spaced_five {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][] }
-\def\syst_helpers_empty_normal_five {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][]}
-\def\syst_helpers_empty_spaced_four {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][] }
-\def\syst_helpers_empty_normal_four {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][]}
-\def\syst_helpers_empty_spaced_three{\expandafter\m_syst_aux_do\the\t_syst_aux[][][] }
-\def\syst_helpers_empty_normal_three{\expandafter\m_syst_aux_do\the\t_syst_aux[][][]}
-\def\syst_helpers_empty_spaced_two  {\expandafter\m_syst_aux_do\the\t_syst_aux[][] }
-\def\syst_helpers_empty_normal_two  {\expandafter\m_syst_aux_do\the\t_syst_aux[][]}
-\def\syst_helpers_empty_spaced_one  {\expandafter\m_syst_aux_do\the\t_syst_aux[] }
-\def\syst_helpers_empty_normal_one  {\expandafter\m_syst_aux_do\the\t_syst_aux[]}
-
-\def\syst_helpers_single_empty_one_yes      {\firstargumenttrue              \m_syst_aux_do}
-\def\syst_helpers_double_empty_two_yes      {\secondargumenttrue \expandafter\m_syst_aux_do\the\t_syst_aux}
-\def\syst_helpers_triple_empty_three_yes    {\thirdargumenttrue  \expandafter\m_syst_aux_do\the\t_syst_aux}
-\def\syst_helpers_quadruple_empty_four_yes  {\fourthargumenttrue \expandafter\m_syst_aux_do\the\t_syst_aux}
-\def\syst_helpers_quintuple_empty_five_yes  {\fifthargumenttrue  \expandafter\m_syst_aux_do\the\t_syst_aux}
-\def\syst_helpers_sixtuple_empty_six_yes    {\sixthargumenttrue  \expandafter\m_syst_aux_do\the\t_syst_aux}
-\def\syst_helpers_seventuple_empty_seven_yes{\seventhargumenttrue\expandafter\m_syst_aux_do\the\t_syst_aux}
-
-% The commented variant (somewhat slower in practice):
+% \def\syst_helpers_empty_spaced_six  {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][][] }
+% \def\syst_helpers_empty_normal_six  {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][][]}
+% \def\syst_helpers_empty_spaced_five {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][] }
+% \def\syst_helpers_empty_normal_five {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][][]}
+% \def\syst_helpers_empty_spaced_four {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][] }
+% \def\syst_helpers_empty_normal_four {\expandafter\m_syst_aux_do\the\t_syst_aux[][][][]}
+% \def\syst_helpers_empty_spaced_three{\expandafter\m_syst_aux_do\the\t_syst_aux[][][] }
+% \def\syst_helpers_empty_normal_three{\expandafter\m_syst_aux_do\the\t_syst_aux[][][]}
+% \def\syst_helpers_empty_spaced_two  {\expandafter\m_syst_aux_do\the\t_syst_aux[][] }
+% \def\syst_helpers_empty_normal_two  {\expandafter\m_syst_aux_do\the\t_syst_aux[][]}
+% \def\syst_helpers_empty_spaced_one  {\expandafter\m_syst_aux_do\the\t_syst_aux[] }
+% \def\syst_helpers_empty_normal_one  {\expandafter\m_syst_aux_do\the\t_syst_aux[]}
 %
-% \def\syst_helpers_empty_spaced_six  {\the\t_syst_aux[][][][][][] }
-% \def\syst_helpers_empty_normal_six  {\the\t_syst_aux[][][][][][]}
-% \def\syst_helpers_empty_spaced_five {\the\t_syst_aux[][][][][] }
-% \def\syst_helpers_empty_normal_five {\the\t_syst_aux[][][][][]}
-% \def\syst_helpers_empty_spaced_four {\the\t_syst_aux[][][][] }
-% \def\syst_helpers_empty_normal_four {\the\t_syst_aux[][][][]}
-% \def\syst_helpers_empty_spaced_three{\the\t_syst_aux[][][] }
-% \def\syst_helpers_empty_normal_three{\the\t_syst_aux[][][]}
-% \def\syst_helpers_empty_spaced_two  {\the\t_syst_aux[][] }
-% \def\syst_helpers_empty_normal_two  {\the\t_syst_aux[][]}
-% \def\syst_helpers_empty_spaced_one  {\the\t_syst_aux[] }
-% \def\syst_helpers_empty_normal_one  {\the\t_syst_aux[]}
+% \def\syst_helpers_single_empty_one_yes      {\firstargumenttrue              \m_syst_aux_do}
+% \def\syst_helpers_double_empty_two_yes      {\secondargumenttrue \expandafter\m_syst_aux_do\the\t_syst_aux}
+% \def\syst_helpers_triple_empty_three_yes    {\thirdargumenttrue  \expandafter\m_syst_aux_do\the\t_syst_aux}
+% \def\syst_helpers_quadruple_empty_four_yes  {\fourthargumenttrue \expandafter\m_syst_aux_do\the\t_syst_aux}
+% \def\syst_helpers_quintuple_empty_five_yes  {\fifthargumenttrue  \expandafter\m_syst_aux_do\the\t_syst_aux}
+% \def\syst_helpers_sixtuple_empty_six_yes    {\sixthargumenttrue  \expandafter\m_syst_aux_do\the\t_syst_aux}
+% \def\syst_helpers_seventuple_empty_seven_yes{\seventhargumenttrue\expandafter\m_syst_aux_do\the\t_syst_aux}
 %
-% \def\syst_helpers_single_empty_one_yes      {\firstargumenttrue  \m_syst_aux_do}
-% \def\syst_helpers_double_empty_two_yes      {\secondargumenttrue \the\t_syst_aux}
-% \def\syst_helpers_triple_empty_three_yes    {\thirdargumenttrue  \the\t_syst_aux}
-% \def\syst_helpers_quadruple_empty_four_yes  {\fourthargumenttrue \the\t_syst_aux}
-% \def\syst_helpers_quintuple_empty_five_yes  {\fifthargumenttrue  \the\t_syst_aux}
-% \def\syst_helpers_sixtuple_empty_six_yes    {\sixthargumenttrue  \the\t_syst_aux}
-% \def\syst_helpers_seventuple_empty_seven_yes{\seventhargumenttrue\the\t_syst_aux}
+% with
+%
+% \unexpanded\def\dodoubleempty#1%
+%   {\syst_helpers_argument_reset
+%    \let\m_syst_aux_do#1% alias
+%    \let\m_syst_action_yes\syst_helpers_double_empty_one_yes
+%    \let\m_syst_action_nop\syst_helpers_double_empty_one_nop
+%    \let\if_next_blank_space_token\iffalse
+%    \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+%
+% \def\syst_helpers_double_empty_one_yes[#1]%
+%   {\firstargumenttrue
+%    \t_syst_aux{[{#1}]}% assignment
+%    \let\m_syst_action_yes\syst_helpers_double_empty_two_yes
+%    \let\m_syst_action_nop\syst_helpers_double_empty_two_nop
+%    \let\if_next_blank_space_token\iffalse
+%    \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+%
+% But we use this as it keeps the original name visible:
+
+\def\syst_helpers_empty_spaced_six  {\the\t_syst_aux[][][][][][] }
+\def\syst_helpers_empty_normal_six  {\the\t_syst_aux[][][][][][]}
+\def\syst_helpers_empty_spaced_five {\the\t_syst_aux[][][][][] }
+\def\syst_helpers_empty_normal_five {\the\t_syst_aux[][][][][]}
+\def\syst_helpers_empty_spaced_four {\the\t_syst_aux[][][][] }
+\def\syst_helpers_empty_normal_four {\the\t_syst_aux[][][][]}
+\def\syst_helpers_empty_spaced_three{\the\t_syst_aux[][][] }
+\def\syst_helpers_empty_normal_three{\the\t_syst_aux[][][]}
+\def\syst_helpers_empty_spaced_two  {\the\t_syst_aux[][] }
+\def\syst_helpers_empty_normal_two  {\the\t_syst_aux[][]}
+\def\syst_helpers_empty_spaced_one  {\the\t_syst_aux[] }
+\def\syst_helpers_empty_normal_one  {\the\t_syst_aux[]}
+
+\def\syst_helpers_single_empty_one_yes      {\firstargumenttrue  \the\t_syst_aux}
+\def\syst_helpers_double_empty_two_yes      {\secondargumenttrue \the\t_syst_aux}
+\def\syst_helpers_triple_empty_three_yes    {\thirdargumenttrue  \the\t_syst_aux}
+\def\syst_helpers_quadruple_empty_four_yes  {\fourthargumenttrue \the\t_syst_aux}
+\def\syst_helpers_quintuple_empty_five_yes  {\fifthargumenttrue  \the\t_syst_aux}
+\def\syst_helpers_sixtuple_empty_six_yes    {\sixthargumenttrue  \the\t_syst_aux}
+\def\syst_helpers_seventuple_empty_seven_yes{\seventhargumenttrue\the\t_syst_aux}
 
 %D Single:
 
@@ -2357,7 +2375,7 @@
 
 \unexpanded\def\dosingleempty#1%
   {\syst_helpers_argument_reset
-   \let\m_syst_aux_do#1%
+   \t_syst_aux{#1}%
    \let\m_syst_action_yes\syst_helpers_single_empty_one_yes
    \let\m_syst_action_nop\syst_helpers_single_empty_one_nop
    \let\if_next_blank_space_token\iffalse
@@ -2365,7 +2383,7 @@
 
 \def\syst_helpers_single_empty_one_nop
   {\firstargumentfalse
-   \m_syst_aux_do[]}
+   \the\t_syst_aux[]}
 
 %D Double
 
@@ -2399,8 +2417,7 @@
 
 \unexpanded\def\dodoubleempty#1%
   {\syst_helpers_argument_reset
-  %\t_syst_aux{#1}%
-   \let\m_syst_aux_do#1%
+   \t_syst_aux{#1}%
    \let\m_syst_action_yes\syst_helpers_double_empty_one_yes
    \let\m_syst_action_nop\syst_helpers_double_empty_one_nop
    \let\if_next_blank_space_token\iffalse
@@ -2408,8 +2425,7 @@
 
 \def\syst_helpers_double_empty_one_yes[#1]%
   {\firstargumenttrue
-  %\toksapp\t_syst_aux{[{#1}]}%
-   \t_syst_aux{[{#1}]}%
+   \toksapp\t_syst_aux{[{#1}]}%
    \let\m_syst_action_yes\syst_helpers_double_empty_two_yes
    \let\m_syst_action_nop\syst_helpers_double_empty_two_nop
    \let\if_next_blank_space_token\iffalse
@@ -2418,8 +2434,7 @@
 \def\syst_helpers_double_empty_one_nop
   {\firstargumentfalse
    \secondargumentfalse
-  %\the\t_syst_aux[][]}
-   \m_syst_aux_do[][]}
+   \the\t_syst_aux[][]}
 
 \def\syst_helpers_double_empty_two_nop
   {\secondargumentfalse
@@ -2479,8 +2494,7 @@
 
 \unexpanded\def\dotripleempty#1%
   {\syst_helpers_argument_reset
-  %\t_syst_aux{#1}%
-   \let\m_syst_aux_do#1%
+   \t_syst_aux{#1}%
    \let\m_syst_action_yes\syst_helpers_triple_empty_one_yes
    \let\m_syst_action_nop\syst_helpers_triple_empty_one_nop
    \let\if_next_blank_space_token\iffalse
@@ -2488,8 +2502,7 @@
 
 \def\syst_helpers_triple_empty_one_yes[#1]%
   {\firstargumenttrue
-  %\toksapp\t_syst_aux{[{#1}]}%
-   \t_syst_aux{[{#1}]}%
+   \toksapp\t_syst_aux{[{#1}]}%
    \let\m_syst_action_yes\syst_helpers_triple_empty_two_yes
    \let\m_syst_action_nop\syst_helpers_triple_empty_two_nop
    \let\if_next_blank_space_token\iffalse
@@ -2507,8 +2520,7 @@
   {\firstargumentfalse
    \secondargumentfalse
    \thirdargumentfalse
-  %\the\t_syst_aux[][][]}
-   \m_syst_aux_do[][][]}
+   \the\t_syst_aux[][][]}
 
 \def\syst_helpers_triple_empty_two_nop
   {\secondargumentfalse
@@ -2596,8 +2608,7 @@
 
 \unexpanded\def\doquadrupleempty#1%
   {\syst_helpers_argument_reset
-  %\t_syst_aux{#1}%
-   \let\m_syst_aux_do#1%
+   \t_syst_aux{#1}%
    \let\m_syst_action_yes\syst_helpers_quadruple_empty_one_yes
    \let\m_syst_action_nop\syst_helpers_quadruple_empty_one_nop
    \let\if_next_blank_space_token\iffalse
@@ -2605,8 +2616,7 @@
 
 \def\syst_helpers_quadruple_empty_one_yes[#1]%
   {\firstargumenttrue
-  %\toksapp\t_syst_aux{[{#1}]}%
-   \t_syst_aux{[{#1}]}%
+   \toksapp\t_syst_aux{[{#1}]}%
    \let\m_syst_action_yes\syst_helpers_quadruple_empty_two_yes
    \let\m_syst_action_nop\syst_helpers_quadruple_empty_two_nop
    \let\if_next_blank_space_token\iffalse
@@ -2633,7 +2643,6 @@
    \secondargumentfalse
    \thirdargumentfalse
    \fourthargumentfalse
-  %\m_syst_aux_do[][][][]}
    \the\t_syst_aux[][][][]}
 
 \def\syst_helpers_quadruple_empty_two_nop
@@ -2752,8 +2761,7 @@
 
 \unexpanded\def\doquintupleempty#1%
   {\syst_helpers_argument_reset
-  %\t_syst_aux{#1}%
-   \let\m_syst_aux_do#1%
+   \t_syst_aux{#1}%
    \let\m_syst_action_yes\syst_helpers_quintuple_empty_one_yes
    \let\m_syst_action_nop\syst_helpers_quintuple_empty_one_nop
    \let\if_next_blank_space_token\iffalse
@@ -2761,8 +2769,7 @@
 
 \def\syst_helpers_quintuple_empty_one_yes[#1]%
   {\firstargumenttrue
-  %\toksapp\t_syst_aux{[{#1}]}%
-   \t_syst_aux{[{#1}]}%
+   \toksapp\t_syst_aux{[{#1}]}%
    \let\m_syst_action_yes\syst_helpers_quintuple_empty_two_yes
    \let\m_syst_action_nop\syst_helpers_quintuple_empty_two_nop
    \let\if_next_blank_space_token\iffalse
@@ -2798,8 +2805,7 @@
    \thirdargumentfalse
    \fourthargumentfalse
    \fifthargumentfalse
-  %\the\t_syst_aux[][][][][]}
-   \m_syst_aux_do[][][][][]}
+   \the\t_syst_aux[][][][][]}
 
 \def\syst_helpers_quintuple_empty_two_nop
   {\secondargumentfalse
@@ -2949,8 +2955,7 @@
 
 \unexpanded\def\dosixtupleempty#1%
   {\syst_helpers_argument_reset
-  %\t_syst_aux{#1}%
-   \let\m_syst_aux_do#1%
+   \t_syst_aux{#1}%
    \let\m_syst_action_yes\syst_helpers_sixtuple_empty_one_yes
    \let\m_syst_action_nop\syst_helpers_sixtuple_empty_one_nop
    \let\if_next_blank_space_token\iffalse
@@ -2958,8 +2963,7 @@
 
 \def\syst_helpers_sixtuple_empty_one_yes[#1]%
   {\firstargumenttrue
-  %\toksapp\t_syst_aux{[{#1}]}%
-   \t_syst_aux{[{#1}]}%
+   \toksapp\t_syst_aux{[{#1}]}%
    \let\m_syst_action_yes\syst_helpers_sixtuple_empty_two_yes
    \let\m_syst_action_nop\syst_helpers_sixtuple_empty_two_nop
    \let\if_next_blank_space_token\iffalse
@@ -3004,8 +3008,7 @@
    \fourthargumentfalse
    \fifthargumentfalse
    \sixthargumentfalse
-  %\the\t_syst_aux[][][][][][]}
-   \m_syst_aux_do[][][][][][]}
+   \the\t_syst_aux[][][][][][]}
 
 \def\syst_helpers_sixtuple_empty_two_nop
   {\secondargumentfalse
@@ -3189,8 +3192,7 @@
 
 \unexpanded\def\doseventupleempty#1%
   {\syst_helpers_argument_reset
-  %\t_syst_aux{#1}%
-   \let\m_syst_aux_do#1%
+   \t_syst_aux{#1}%
    \let\m_syst_action_yes\syst_helpers_seventuple_empty_one_yes
    \let\m_syst_action_nop\syst_helpers_seventuple_empty_one_nop
    \let\if_next_blank_space_token\iffalse
@@ -3198,8 +3200,7 @@
 
 \def\syst_helpers_seventuple_empty_one_yes[#1]%
   {\firstargumenttrue
-  %\toksapp\t_syst_aux{[{#1}]}%
-   \t_syst_aux{[{#1}]}%
+   \toksapp\t_syst_aux{[{#1}]}%
    \let\m_syst_action_yes\syst_helpers_seventuple_empty_two_yes
    \let\m_syst_action_nop\syst_helpers_seventuple_empty_two_nop
    \let\if_next_blank_space_token\iffalse
@@ -3253,8 +3254,7 @@
    \fifthargumentfalse
    \sixthargumentfalse
    \seventhargumentfalse
-  %\the\t_syst_aux[][][][][][][]}
-   \m_syst_aux_do[][][][][][][]}
+   \the\t_syst_aux[][][][][][][]}
 
 \def\syst_helpers_seventuple_empty_two_nop
   {\secondargumentfalse

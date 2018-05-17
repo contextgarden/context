@@ -1364,7 +1364,7 @@
    \fi}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
-  {\t_tabl_ntb_row\expandafter{\the\t_tabl_ntb_row\tabl_ntb_pass #1 #2 }% space delimited -> less tokens
+  {\toksapp\t_tabl_ntb_row{\tabl_ntb_pass #1 #2 }% space delimited -> less tokens
    \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount
      \normalexpanded

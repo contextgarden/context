@@ -17,6 +17,8 @@ boolean context_tool ; context_tool := true ;
 
 let @## = @# ;
 
+let noexpand = quote ;
+
 %D New, version number testing:
 %D
 %D \starttyping

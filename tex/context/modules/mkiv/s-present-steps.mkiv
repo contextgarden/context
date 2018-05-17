@@ -1,0 +1,114 @@
+%D \module
+%D   [      file=s-present-steps,
+%D        version=2018.05.17,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Repeated Steps,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This a preliminary module, a quick hack and not entirely proper \CONTEXT, but
+%D let's see what more is needed.
+
+\startmodule[present-steps]
+
+\startluacode
+
+moduledata.steps = moduledata.steps or { }
+
+local steps      = moduledata.steps
+local data       = { }
+local name       = "unknown"
+local set        = 0
+local settings   = nil
+
+function steps.startsteps(buffername)
+    set  = set + 1
+    data = { }
+    name = buffername
+end
+
+function steps.startstep(str)
+    settings = utilities.parsers.settings_to_hash(str)
+end
+
+function steps.stopstep()
+    settings.content = buffers.getcontent(name)
+    data[#data+1] = settings
+end
+
+function steps.stopsteps()
+    for i=1,#data do
+        for j=1,i do
+            local step = data[j]
+            if step then
+                local option = step.option
+                local flush  = true
+                if option == interfaces.variables["title"] then
+                    if i > 1 then
+                        flush = false
+                    end
+                elseif option == interfaces.variables["repeat"] then
+                    if i == 1 then
+                        flush = false
+                    end
+                end
+                if flush then
+                    context(function()
+                        buffers.assign("step",step.content)
+                        context.processstep("step",set,j,i)
+                    end)
+                end
+            end
+        end
+    end
+end
+
+\stopluacode
+
+\definebuffer
+  [step]
+
+\def\currentstep{0}
+
+\unexpanded\def\processstep#1#2#3#4%
+  {\par
+   \edef\currentstep{#4}%
+   \ifnum#3=#4\relax
+      \setupreferencing[prefix=#2:#3]
+      \getbuffer[#1]%
+      \page
+   \else
+      \getbuffer[#1]%
+      \par
+   \fi}
+
+\let\normalstartstep\startstep
+
+\unexpanded\def\startstep
+  {\dosingleempty\startstepindeed}
+
+\def\startstepindeed[#1]%
+  {\ctxlua{moduledata.steps.startstep("#1")}%
+   \normalstartstep}
+
+\unexpanded\def\stopstep
+  {\ctxlua{moduledata.steps.stopstep()}}
+
+\unexpanded\def\startsteps
+  {\ctxlua{moduledata.steps.startsteps("\thedefinedbuffer{step}")}}
+
+\unexpanded\def\stopsteps
+  {\ctxlua{moduledata.steps.stopsteps()}}
+
+\stopmodule
+
+\continueifinputfile{s-present-steps.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-steps-001.tex}

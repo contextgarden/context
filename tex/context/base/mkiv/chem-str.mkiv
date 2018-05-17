@@ -650,18 +650,18 @@
      \chem_formula_bot_nop
    \fi\fi
    \ifcsname\??chemicalsymbol d:\detokenize{#1}\endcsname
-     \t_chem_mid\expandafter{\the\t_chem_mid\chemicalsymbol[d:#1]\aligntab}%
+     \toksapp\t_chem_mid{\chemicalsymbol[d:#1]\aligntab}%
    \else
-     \t_chem_mid\expandafter{\the\t_chem_mid\molecule{#1}\aligntab}%
+     \toksapp\t_chem_mid{\molecule{#1}\aligntab}%
    \fi}
 
 \def\chem_formula_mid#1%
   {\csname\??chemicalsymbol\detokenize{#1}\endcsname}
 
-\def\chem_formula_top_nop  {\t_chem_top\expandafter{\the\t_chem_top\aligntab}}
-\def\chem_formula_bot_nop  {\t_chem_bot\expandafter{\the\t_chem_bot\aligntab}}
-\def\chem_formula_top_yes#1{\t_chem_top\expandafter{\the\t_chem_top\chem_formula_top_indeed{#1}\aligntab}\settrue\c_chem_has_top}
-\def\chem_formula_bot_yes#1{\t_chem_bot\expandafter{\the\t_chem_bot\chem_formula_bot_indeed{#1}\aligntab}\settrue\c_chem_has_bot}
+\def\chem_formula_top_nop  {\toksapp\t_chem_top{\aligntab}}
+\def\chem_formula_bot_nop  {\toksapp\t_chem_bot{\aligntab}}
+\def\chem_formula_top_yes#1{\toksapp\t_chem_top{\chem_formula_top_indeed{#1}\aligntab}\settrue\c_chem_has_top}
+\def\chem_formula_bot_yes#1{\toksapp\t_chem_bot{\chem_formula_bot_indeed{#1}\aligntab}\settrue\c_chem_has_bot}
 
 \def\chem_formula_top_indeed#1{\strut#1}
 \def\chem_formula_bot_indeed#1{\strut#1}

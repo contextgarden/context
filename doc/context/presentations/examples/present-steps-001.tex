@@ -1,0 +1,98 @@
+\usemodule[present-steps]
+
+\setuppapersize
+  [S6]
+
+\setupinteraction
+  [state=start]
+
+
+\setupwhitespace
+  [big]
+
+\setupheadertexts
+  []
+
+\setupbodyfont
+  [modernlatin]
+
+\setuplist
+  [chapter]
+  [interaction=all]
+
+\defineoverlay
+  [go-on]
+  [\overlaybutton{nextpage}]
+
+\setupbackgrounds
+  [page]
+  [background=go-on]
+
+\starttext
+
+\title{Contents}
+
+\placelist
+  [chapter]
+
+\startsteps
+    \startstep
+        \ifnum\currentstep > 1
+          \repeathead[chapter]
+        \else
+          \chapter{Step Set 1}
+        \fi
+    \stopstep
+
+    \startstep
+        STEP ONE
+    \stopstep
+
+    \startstep
+        STEP TWO
+    \stopstep
+
+    \startstep
+        STEP THREE
+    \stopstep
+
+    \startstep
+        STEP FOUR
+    \stopstep
+
+\stopsteps
+
+\startsteps
+
+    \startstep[option=title]
+      \chapter{Step Set 2}
+    \stopstep
+
+    \startstep[option=repeat]
+      \repeathead[chapter]
+    \stopstep
+
+    \startstep
+        \startitemize
+            \startitem STEP 1a \stopitem
+            \startitem STEP 1b \stopitem
+        \stopitemize
+    \stopstep
+
+    \startstep
+        \startitemize[continue]
+            \startitem STEP 2a \stopitem
+            \startitem STEP 2b \stopitem
+        \stopitemize
+    \stopstep
+
+    \startstep
+        \startitemize[continue]
+            \startitem STEP 3a \stopitem
+            \startitem STEP 3b \stopitem
+        \stopitemize
+    \stopstep
+
+\stopsteps
+
+\stoptext

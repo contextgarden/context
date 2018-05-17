@@ -60,11 +60,11 @@ for k, v in next, node.types() do
     nodecodes[k] = v
     nodecodes[v] = k
 end
-for i=0,#glyphcodes do
-    glyphcodes[glyphcodes[i]] = i
+for k, v in next, glyphcodes do
+    glyphcodes[v] = k
 end
-for i=0,#disccodes do
-    disccodes[disccodes[i]] = i
+for k, v in next, glyphcodes do
+    disccodes[v] = k
 end
 
 nodes.nodecodes    = nodecodes

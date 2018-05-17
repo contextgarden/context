@@ -1006,6 +1006,26 @@
 \unexpanded\def\placerawheadtext  [#1]{\getspecificstructuretitle{\thenamedheadlevel{#1}}}
 \unexpanded\def\placerawheadnumber[#1]{\getfullstructurenumber{\thenamedheadlevel{#1}}}
 
+\unexpanded\def\repeathead[#1]%
+  {\begingroup
+   \setupinteraction[\c!state=\v!stop]%
+   \def\currenthead{#1}
+   \strc_sectioning_initialize_placement
+   \strc_sectioning_initialize_number
+   \dostarttagged\t!sectioncaption\empty
+   \let\getheadsyncs \relax
+   \def\getheadtitle {\getmarking[#1]}
+   \def\getheadnumber{\getmarking[#1\v!number]}
+   \strc_sectioning_before_yes
+   \ifconditional\headshownumber
+      \strc_rendering_place_head_number_and_text
+   \else
+      \strc_rendering_place_head_text
+   \fi
+   \dostoptagged
+   \strc_sectioning_after_yes
+   \endgroup}
+
 % \setuphead[chapter][placehead=hidden]
 % \chapter {test}
 %

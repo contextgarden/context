@@ -107,13 +107,13 @@ dircodes = allocate {
     [1] = "cancel",
 }
 
+
 -- local glyphcodes = allocate {
---     [0] = "character",
---     [1] = "glyph",
---     [2] = "ligature",
---     [3] = "ghost",
---     [4] = "left",
---     [5] = "right",
+--     [ 1] = "character",
+--     [ 2] = "ligature",
+--     [ 4] = "ghost",
+--     [ 8] = "left",
+--     [16] = "right",
 -- }
 
 local glyphcodes = mark(getsubtypes("glyph"))
@@ -358,39 +358,41 @@ dirvalues        = allocate(swapped(dirvalues,dirvalues))
 gluevalues       = allocate(swapped(gluevalues,gluevalues))
 pdfliteralvalues = allocate(swapped(pdfliteralvalues,pdfliteralvalues))
 
-nodes.gluecodes        = gluecodes
-nodes.dircodes         = dircodes
-nodes.boundarycodes    = boundarycodes
-nodes.noadcodes        = noadcodes
-nodes.nodecodes        = nodecodes
-nodes.whatcodes        = whatcodes
-nodes.listcodes        = listcodes
-nodes.glyphcodes       = glyphcodes
-nodes.kerncodes        = kerncodes
-nodes.penaltycodes     = penaltycodes
-nodes.mathcodes        = mathcodes
-nodes.fillcodes        = fillcodes
-nodes.margincodes      = margincodes
-nodes.disccodes        = disccodes
-nodes.accentcodes      = accentcodes
-nodes.radicalcodes     = radicalcodes
-nodes.fencecodes       = fencecodes
-nodes.rulecodes        = rulecodes
-nodes.leadercodes      = leadercodes
-nodes.usercodes        = usercodes
-nodes.noadoptions      = noadoptions
-nodes.dirvalues        = dirvalues
-nodes.gluevalues       = gluevalues
-nodes.pdfliteralvalues = pdfliteralvalues
+nodes.gluecodes            = gluecodes
+nodes.dircodes             = dircodes
+nodes.boundarycodes        = boundarycodes
+nodes.noadcodes            = noadcodes
+nodes.nodecodes            = nodecodes
+nodes.whatcodes            = whatcodes
+nodes.listcodes            = listcodes
+nodes.glyphcodes           = glyphcodes
+nodes.kerncodes            = kerncodes
+nodes.penaltycodes         = penaltycodes
+nodes.mathcodes            = mathcodes
+nodes.fillcodes            = fillcodes
+nodes.margincodes          = margincodes
+nodes.disccodes            = disccodes
+nodes.accentcodes          = accentcodes
+nodes.radicalcodes         = radicalcodes
+nodes.fencecodes           = fencecodes
+nodes.rulecodes            = rulecodes
+nodes.leadercodes          = leadercodes
+nodes.usercodes            = usercodes
+nodes.noadoptions          = noadoptions
+nodes.dirvalues            = dirvalues
+nodes.gluevalues           = gluevalues
+nodes.pdfliteralvalues     = pdfliteralvalues
 
-nodes.skipcodes          = gluecodes        -- more friendly
-nodes.directioncodes     = dircodes         -- more friendly
-nodes.whatsitcodes       = whatcodes        -- more official
-nodes.marginkerncodes    = margincodes
-nodes.discretionarycodes = disccodes
-nodes.directionvalues    = dirvalues        -- more friendly
-nodes.skipvalues         = gluevalues       -- more friendly
-nodes.literalvalues      = pdfliteralvalues -- more friendly
+nodes.skipcodes            = gluecodes        -- more friendly
+nodes.directioncodes       = dircodes         -- more friendly
+nodes.whatsitcodes         = whatcodes        -- more official
+nodes.marginkerncodes      = margincodes
+nodes.discretionarycodes   = disccodes
+nodes.directionvalues      = dirvalues        -- more friendly
+nodes.skipvalues           = gluevalues       -- more friendly
+nodes.literalvalues        = pdfliteralvalues -- more friendly
+
+glyphcodes.glyph           = glyphcodes.character
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
@@ -468,4 +470,3 @@ end
 if node.fix_node_lists then
     node.fix_node_lists(false)
 end
-

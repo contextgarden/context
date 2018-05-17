@@ -237,7 +237,7 @@ local function locate(required,version,trace,report,action)
             report("stored library: %a",required)
         end
     end
-    return library
+    return library or nil
 end
 
 do
@@ -352,7 +352,7 @@ We use the same lookup logic for ffi loading.
     trackers.register("resolvers.ffilib", function(v) trace_ffilib = v end)
 
  -- pushlibpath(pathpart(name))
- -- local message, library = pcall(savedffiload,nameonly(name))
+ -- local state, library = pcall(savedffiload,nameonly(name))
  -- poplibpath()
 
     local loaded = { }
@@ -361,11 +361,11 @@ We use the same lookup logic for ffi loading.
         name = removesuffix(name)
         local l = loaded[name]
         if l == nil then
-            local message, library = pcall(savedffiload,name)
-            if type(message) == "userdata" then
-                l = message
-            elseif type(library) == "userdata" then
+            local state, library = pcall(savedffiload,name)
+            if type(library) == "userdata" then
                 l = library
+            elseif type(state) == "userdata" then
+                l = state
             else
                 l = false
             end
@@ -376,6 +376,20 @@ We use the same lookup logic for ffi loading.
         return l
     end
 
+    local function getlist(required)
+        local list = directives.value("system.librarynames" )
+        if type(list) == "table" then
+            list = list[required]
+            if type(list) == "table" then
+                if trace then
+                    report("using lookup list for library %a: % | t",required,list)
+                end
+                return list
+            end
+        end
+        return { required }
+    end
+
     function ffilib(name,version)
         name = removesuffix(name)
         local l = loaded[name]
@@ -384,23 +398,45 @@ We use the same lookup logic for ffi loading.
                 report_ffilib("reusing already loaded %a",name)
             end
             return l
-        elseif version == "system" then
-            return locateindeed(name)
+        end
+        local list = getlist(name)
+        if version == "system" then
+            for i=1,#list do
+                local library = locateindeed(list[i])
+                if type(library) == "userdata" then
+                    return library
+                end
+            end
         else
-            return locate(name,version,trace_ffilib,report_ffilib,locateindeed)
+            for i=1,#list do
+                local library = locate(list[i],version,trace_ffilib,report_ffilib,locateindeed)
+                if type(library) == "userdata" then
+                    return library
+                end
+            end
         end
     end
 
     function ffi.load(name)
-        local library = ffilib(name)
-        if type(library) == "userdata" then
-            return library
+        local list = getlist(name)
+        for i=1,#list do
+            local library = ffilib(list[i])
+            if type(library) == "userdata" then
+                return library
+            end
         end
         if trace_ffilib then
             report_ffilib("trying to load %a using normal loader",name)
         end
         -- so here we don't store
-        return savedffiload(name)
+        for i=1,#list do
+            local state, library = pcall(savedffiload,list[i])
+            if type(library) == "userdata" then
+                return library
+            elseif type(state) == "userdata" then
+                return library
+            end
+        end
     end
 
 end

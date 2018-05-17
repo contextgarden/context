@@ -959,7 +959,7 @@ local ruledglue do
     local g_cache_h = caches["hglue"]
 
     local tags = {
-     -- userskip              = "US",
+     -- [gluecodes.userskip]              = "US",
         [gluecodes.lineskip]              = "LS",
         [gluecodes.baselineskip]          = "BS",
         [gluecodes.parskip]               = "PS",
@@ -982,8 +982,8 @@ local ruledglue do
         [gluecodes.cleaders]              = "CL",
         [gluecodes.xleaders]              = "XL",
         [gluecodes.gleaders]              = "GL",
-     -- true                  = "VS",
-     -- false                 = "HS",
+     -- true                              = "VS",
+     -- false                             = "HS",
     }
 
     -- we sometimes pass previous as we can have issues in math (not watertight for all)

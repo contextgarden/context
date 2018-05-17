@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/13/18 10:54:38
+-- merge date  : 05/17/18 18:32:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -5351,11 +5351,11 @@ for k,v in next,node.types() do
   nodecodes[k]=v
   nodecodes[v]=k
 end
-for i=0,#glyphcodes do
-  glyphcodes[glyphcodes[i]]=i
+for k,v in next,glyphcodes do
+  glyphcodes[v]=k
 end
-for i=0,#disccodes do
-  disccodes[disccodes[i]]=i
+for k,v in next,glyphcodes do
+  disccodes[v]=k
 end
 nodes.nodecodes=nodecodes
 nodes.glyphcodes=glyphcodes
