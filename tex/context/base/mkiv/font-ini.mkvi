@@ -583,8 +583,7 @@
 \def\font_basics_define_fontstyle[#commands][#style]% style: rm ss tt ...
   {\ifcsname\??fontstyleknown#style\endcsname \else % can be delayed till used (cg, hw)
      \font_helpers_register_style{#style}%
-     % todo: toksapp
-     \t_font_style_commands\expandafter{\the\t_font_style_commands\m_font_style_command{#style}}%
+     \toksapp\t_font_style_commands{\m_font_style_command{#style}}%
    \fi
    \processcommalist[#commands]{\font_basics_define_fontstyle_indeed{#style}}}
 
@@ -595,17 +594,14 @@
 \unexpanded\def\definefontsize[#size]%
   {\ifcsname\??fontsizeknown#size\endcsname \else
      \font_helpers_register_size{#size}%
-     \t_font_size_commands\expandafter{\the\t_font_size_commands
-       \m_font_size_command{#size}}%
+     \toksapp\t_font_size_commands{\m_font_size_command{#size}}%
    \fi
    \font_helpers_check_fontname_combinations}
 
 \unexpanded\def\definefontalternative[#alternative]%
   {\ifcsname\??fontalternativeknown#alternative\endcsname \else
      \font_helpers_register_alternative{#alternative}%
-     % todo: toksapp
-     \t_font_alternative_commands\expandafter{\the\t_font_alternative_commands
-       \m_font_alternative_command{#alternative}}%
+     \toksapp\t_font_alternative_commands{\m_font_alternative_command{#alternative}}%
    \fi
    \font_helpers_check_fontname_combinations}
 

@@ -938,7 +938,9 @@
    \fi\fi}
 
 \unexpanded\def\defaultregisterseeword#1#2#3#4#5#6% i n #3:processor #4:internal #5:seeindex #6:word
-  {\registerpageseparator
+  {\ifnum#1=\plusone
+     \registerpageseparator
+   \fi
    \global\setconstant\c_strc_registers_page_state\plustwo
    \def\currentregisterpageindex{#4}%
    \dostarttagged\t!registersee\empty

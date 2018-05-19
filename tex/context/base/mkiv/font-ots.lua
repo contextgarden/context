@@ -4200,9 +4200,26 @@ end
 local plugins = { }
 otf.plugins   = plugins
 
+local report  = logs.reporter("fonts")
+
 function otf.registerplugin(name,f)
     if type(name) == "string" and type(f) == "function" then
         plugins[name] = { name, f }
+        report()
+        report("plugin %a has been loaded, please be aware of possible side effects",name)
+        report()
+        if logs.pushtarget then
+            logs.pushtarget("log")
+        end
+        report("Plugins are not officially supported unless stated otherwise. This is because")
+        report("they bypass the regular font handling and therefore some features in ConTeXt")
+        report("(especially those related to fonts) might not work as expected or might not work")
+        report("at all. Some plugins are for testing and development only and might change")
+        report("whenever we feel the need for it.")
+        report()
+        if logs.poptarget then
+            logs.poptarget()
+        end
     end
 end
 

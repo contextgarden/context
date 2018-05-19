@@ -296,6 +296,7 @@ return {
   "mathdirection",
   "mathdisplayskipmode",
   "matheqnogapstep",
+  "mathflattenmode",
   "mathitalicsmode",
   "mathnolimitsmode",
   "mathoption",

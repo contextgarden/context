@@ -38,9 +38,9 @@
 \startsteps
     \startstep
         \ifnum\currentstep > 1
-          \repeathead[chapter]
+            \repeathead[chapter]
         \else
-          \chapter{Step Set 1}
+            \chapter{Step Set 1}
         \fi
     \stopstep
 
@@ -65,11 +65,19 @@
 \startsteps
 
     \startstep[option=title]
-      \chapter{Step Set 2}
+        \chapter{Step Set 2}
     \stopstep
 
     \startstep[option=repeat]
-      \repeathead[chapter]
+        \repeathead[chapter]
+    \stopstep
+
+    \startstep[n=2]
+        this is a formula
+        \startformula
+            \startsubstep e =   \stopsubstep
+            \startsubstep m c^2 \stopsubstep
+        \stopformula
     \stopstep
 
     \startstep
@@ -77,6 +85,14 @@
             \startitem STEP 1a \stopitem
             \startitem STEP 1b \stopitem
         \stopitemize
+    \stopstep
+
+    \startstep[n=2]
+        this is a formula
+        \startformula
+            \startsubstep e =   \stopsubstep
+            \startsubstep m c^2 \stopsubstep
+        \stopformula
     \stopstep
 
     \startstep

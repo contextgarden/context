@@ -592,7 +592,7 @@ do
 
     function handlers.families(head,style,penalties)
         processnoads(head,families,"families")
-        return true
+        return true -- not needed
     end
 
 end
@@ -717,7 +717,7 @@ do
 
     function handlers.relocate(head,style,penalties)
         processnoads(head,relocate,"relocate")
-        return true
+        return true -- not needed
     end
 
 end
@@ -751,7 +751,7 @@ do
 
     function handlers.render(head,style,penalties)
         processnoads(head,render,"render")
-        return true
+        return true -- not needed
     end
 
 end
@@ -813,7 +813,7 @@ do
 
     function handlers.resize(head,style,penalties)
         processnoads(head,resize,"resize")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1137,7 +1137,7 @@ do
 
     function handlers.unscript(head,style,penalties)
         processnoads(head,unscript,"unscript")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1376,7 +1376,7 @@ do
 
     function handlers.alternates(head,style,penalties)
         processnoads(head,alternate,"alternate")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1514,7 +1514,7 @@ do
 
     function handlers.italics(head,style,penalties)
         processnoads(head,italics,"italics")
-        return true
+        return true -- not needed
     end
 
     local enable = function()
@@ -1643,7 +1643,7 @@ do
 
     function handlers.kernpairs(head,style,penalties)
         processnoads(head,kernpairs,"kernpairs")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1756,7 +1756,7 @@ do
 
     function noads.handlers.collapse(head,style,penalties)
         processnoads(head,collapse,"collapse")
-        return true
+        return true -- not needed
     end
 
     local enable = function()
@@ -1904,7 +1904,7 @@ do
 
     function noads.handlers.fixscripts(head,style,penalties)
         processnoads(head,fixscripts,"fixscripts")
-        return true
+        return true -- not needed
     end
 
 end
@@ -1968,7 +1968,7 @@ do
 
     function handlers.variants(head,style,penalties)
         processnoads(head,variants,"unicode variant")
-        return true
+        return true -- not needed
     end
 
 end
@@ -2008,7 +2008,7 @@ do
 
     function handlers.classes(head,style,penalties)
         processnoads(head,classes,"classes")
-        return true
+        return true -- not needed
     end
 
     registertracker("math.classes",function(v)
@@ -2169,7 +2169,7 @@ do
 
     function handlers.domains(head,style,penalties)
         processnoads(head,domains,"domains")
-        return true
+        return true -- not needed
     end
 
 end

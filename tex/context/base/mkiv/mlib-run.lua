@@ -39,6 +39,7 @@ local P = lpeg.P
 
 local trace_graphics   = false  trackers.register("metapost.graphics",   function(v) trace_graphics   = v end)
 local trace_tracingall = false  trackers.register("metapost.tracingall", function(v) trace_tracingall = v end)
+local trace_btexetex   = false  trackers.register("metapost.btexetex",   function(v) trace_btexetex   = v end)
 
 local report_metapost = logs.reporter("metapost")
 local texerrormessage = logs.texerrormessage
@@ -212,9 +213,13 @@ local f_textext = formatters[ [[rawtextext("%s")]] ]
 
 function metapost.maketext(s,mode)
     if mode and mode == 1 then
-     -- report_metapost("ignoring verbatimtex: %s",s)
+        if trace_btexetex then
+            report_metapost("ignoring verbatimtex: [[%s]]",s)
+        end
     else
-     -- report_metapost("handling btex ... etex: %s",s)
+        if trace_btexetex then
+            report_metapost("handling btex ... etex: [[%s]]",s)
+        end
         s = gsub(s,'"','"&ditto&"')
         return f_textext(s)
     end

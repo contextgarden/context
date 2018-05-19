@@ -334,7 +334,7 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
                     break
                 end
             end
-            local rundirection = runstart == start and sor or list[runstart-1].direction
+            local rundirection = runstart == start and sor or (runstart > 1 and list[runstart-1].direction)
             if rundirection ~= "en" then
                 rundirection = runlimit == limit and orderafter or list[runlimit+1].direction
             end

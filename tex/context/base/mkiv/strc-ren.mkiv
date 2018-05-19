@@ -325,7 +325,9 @@
      % kind of special, we want to snap heads also according to local specs local
      \setbox\b_strc_rendering_head\hbox
        {\hskip\dimexpr\d_strc_rendering_local_leftoffset+\headparameter\c!margin\relax
-        \box\b_strc_rendering_head}%
+        \box\b_strc_rendering_head
+        \getheadsyncs % a latelua why not in the box
+        }%
      \ifgridsnapping
        \applygridmethod
          {\headparameter\c!grid}%
@@ -345,7 +347,7 @@
        \nointerlineskip
        \dosomebreak\nobreak
      \fi
-     \getheadsyncs % a latelua, why not in the box
+%      \getheadsyncs % a latelua why not in the box
    \else
      % somehow this goes ok even when we push in the margin probably because we gobble pars
      % in the process of collecting index entries etc

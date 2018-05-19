@@ -47,7 +47,6 @@ local v_last               = variables.last
 local v_text               = variables.text
 
 local context              = context
-local commands             = commands
 
 local implement            = interfaces.implement
 

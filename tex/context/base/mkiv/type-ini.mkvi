@@ -294,7 +294,7 @@
 \def\font_typescripts_start_gobble#definitions\stoptypescript{}
 
 \def\font_typescripts_start_document#definitions\stoptypescript
-  {\c_font_typescripts_document\expandafter{\the\c_font_typescripts_document\starttypescript#definitions\stoptypescript}}
+  {\toksapp\c_font_typescripts_document{\starttypescript#definitions\stoptypescript}}
 
 \def\font_typescripts_start_process % could be a faster \doifelsenextoptionalif needed
   {\let\typescriptone  \m_font_typescripts_one
