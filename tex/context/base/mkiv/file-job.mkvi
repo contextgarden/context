@@ -312,6 +312,12 @@
   {\documentvariable\c!after
    \stoptext}
 
+\unexpanded\def\doifelsedocumentvariable#name{\doifelsesomething{\documentvariable{#name}}}
+\unexpanded\def\doifdocumentvariable    #name{\doifsomething    {\documentvariable{#name}}}
+\unexpanded\def\doifnotdocumentvariable #name{\doifnot          {\documentvariable{#name}}}
+
+\let\doifdocumentvariableelse\doifelsedocumentvariable
+
 \def\documentvariable#name%
   {\getvariable\s!document{#name}}
 

@@ -311,4 +311,16 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="installmacrostack" level="system" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installglobalmacrostack" level="system" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

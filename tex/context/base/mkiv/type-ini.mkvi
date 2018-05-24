@@ -45,17 +45,29 @@
 \let\currenttypescripts\empty
 \let\currenttypefile   \empty
 
+\installmacrostack\currenttypefile
+
 \let\typescriptone  \empty % public, used in typescripts
 \let\typescripttwo  \empty % public, used in typescripts
 \let\typescriptthree\empty % public, used in typescripts
 
+\installmacrostack\typescriptone
+\installmacrostack\typescripttwo
+\installmacrostack\typescriptthree
+
 \let\fontclassstyle \empty
+
+\installmacrostack\fontclassstyle
 
 \let\m_font_typescripts_one  \empty
 \let\m_font_typescripts_two  \empty
 \let\m_font_typescripts_three\empty
 \let\m_font_typescripts_check\empty
 \let\m_font_typescripts_match\empty
+
+\installmacrostack\m_font_typescripts_one
+\installmacrostack\m_font_typescripts_two
+\installmacrostack\m_font_typescripts_three
 
 \let\t_font_typescripts\relax % uses as synonym
 
@@ -74,6 +86,9 @@
 
 \let\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
 \let\typescriptstate \plustwo % 1: process 2: store
+
+\installmacrostack\typescriptmethod
+\installmacrostack\typescriptstate
 
 \unexpanded\def\starttypescriptcollection
   {\dosingleempty\font_typescripts_collection_start}
@@ -95,19 +110,21 @@
 \def\font_typescripts_use_one{\let\typescriptmethod\plusone\font_typescripts_use}
 \def\font_typescripts_use_two{\let\typescriptmethod\plustwo\font_typescripts_use}
 
+\installmacrostack\stoptypescript
+
 \unexpanded\def\font_typescripts_use[#one][#two][#three]%
-  {\pushmacro\m_font_typescripts_one
-   \pushmacro\m_font_typescripts_two
-   \pushmacro\m_font_typescripts_three
+  {\push_macro_m_font_typescripts_one
+   \push_macro_m_font_typescripts_two
+   \push_macro_m_font_typescripts_three
    \edef\m_font_typescripts_one  {\truetypescript{#one}}%
    \edef\m_font_typescripts_two  {\truetypescript{#two}}%
    \edef\m_font_typescripts_three{\truetypescript{#three}}%
-   \pushmacro\typescriptone
-   \pushmacro\typescripttwo
-   \pushmacro\typescriptthree
-   \pushmacro\typescriptmethod
-   \pushmacro\typescriptstate
-   \pushmacro\stoptypescript
+   \push_macro_typescriptone
+   \push_macro_typescripttwo
+   \push_macro_typescriptthree
+   \push_macro_typescriptmethod
+   \push_macro_typescriptstate
+   \push_macro_stoptypescript
    \typescriptfoundfalse
    \let\typescriptstate\plusone % why
    \iftracetypescripts
@@ -119,15 +136,15 @@
      \font_typescripts_use_display
    \fi
    \setfalse\c_font_typescripts_first_pass
-   \popmacro\stoptypescript
-   \popmacro\typescriptstate
-   \popmacro\typescriptmethod
-   \popmacro\typescriptthree
-   \popmacro\typescripttwo
-   \popmacro\typescriptone
-   \popmacro\m_font_typescripts_three
-   \popmacro\m_font_typescripts_two
-   \popmacro\m_font_typescripts_one}
+   \pop_macro_stoptypescript
+   \pop_macro_typescriptstate
+   \pop_macro_typescriptmethod
+   \pop_macro_typescriptthree
+   \pop_macro_typescripttwo
+   \pop_macro_typescriptone
+   \pop_macro_m_font_typescripts_three
+   \pop_macro_m_font_typescripts_two
+   \pop_macro_m_font_typescripts_one}
 
 \def\font_typescripts_use_display
   {\processcommacommand[\typescriptfiles]\font_typescripts_load_file
@@ -170,10 +187,10 @@
 % 1 then, it doesn't get stored without doing that explicitly
 
 \unexpanded\def\loadtypescriptfile[#1]%
-  {\pushmacro\typescriptstate
+  {\push_macro_typescriptstate
    \let\typescriptstate\plustwo % assumes 2 at the outer level
    \clf_loadtypescriptfile{#1}%
-   \popmacro\typescriptstate}
+   \pop_macro_typescriptstate}
 
 \unexpanded\def\loadfoundtypescriptfile#1%
   {\startreadingfile
@@ -207,14 +224,14 @@
 
 \def\font_typescripts_load_file#filename%
   {\setfalse\c_font_typescripts_quit
-   \pushmacro\currenttypefile
+   \push_macro_currenttypefile
    \def\currenttypefile{#filename}%
    \ifconditional\c_font_typescripts_preload
      \font_typescript_process_typescript_file_and_store
    \else
      \font_typescript_process_typescript_file
    \fi
-   \popmacro\currenttypefile
+   \pop_macro_currenttypefile
    \ifconditional\c_font_typescripts_quit
      \quitcommalist
      \setfalse\c_font_typescripts_quit
@@ -343,10 +360,10 @@
 \let\font_typescripts_start_process_again_three\font_typescripts_start_process_yes
 
 \def\font_typescripts_start_process_indeed
-  {\pushmacro\fontclass}
+  {\push_macro_fontclass}
 
 \unexpanded\def\stoptypescript
-  {\popmacro\fontclass}
+  {\pop_macro_fontclass}
 
 \def\font_typescripts_check#asked#target#followup[#value]% script use value next
   {\donefalse
@@ -520,8 +537,8 @@
    \let\@@tsdirection \empty
    \let\@@tsdesignsize\empty
    \geteparameters[\??ts][#settings]% todo raw
-   \pushmacro\fontclass
-   \pushmacro\fontclassstyle
+   \push_macro_fontclass
+   \push_macro_fontclassstyle
    \setcurrentfontclass{#name}%
    \savefontclassparameters{#style}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdesignsize\@@tsdirection
    \the\everybeforedefinetypeface}
@@ -535,8 +552,8 @@
 
 \def\font_typefaces_defining_stop
   {\the\everyafterdefinetypeface
-   \popmacro\fontclassstyle
-   \popmacro\fontclass}
+   \pop_macro_fontclassstyle
+   \pop_macro_fontclass}
 
 \def\dofastdefinetypeface#name#style#fontshape#fontsize#settings% called from the lua end (via case d)
   {\font_typefaces_define_indeed[#name][#style]%
@@ -596,7 +613,7 @@
   {\doifelsenothing{#styles}
      {\font_typescripts_inherit_indeed[#name][\s!rm,\s!ss,\s!tt,\s!mm][\fontclass]}
      {\doifnot{#name}{#parentclass}
-        {\global\let\font_typescripts_inherit_check\font_typescripts_inherit_check_indeed
+        {\glet\font_typescripts_inherit_check\font_typescripts_inherit_check_indeed
          \def\font_typescripts_inherit_check_step#style{\setevalue{\??typescriptinheritances#name:#style}{#parentclass}}%
          \processcommalist[#styles]\font_typescripts_inherit_check_step}}}
 

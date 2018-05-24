@@ -36,9 +36,9 @@
 \let\usetexmodule\usemodules
 
 \def\strc_modules_use[#category][#name][#parameters]% category=t|m|x|p|...
-  {\pushmacro\currentmodule
-   \pushmacro\currentmodulecategory
-   \pushmacro\currentmoduleparameters
+  {\push_macro_currentmodule
+   \push_macro_currentmodulecategory
+   \push_macro_currentmoduleparameters
    \ifthirdargument
      \edef\currentmodulecategory  {#category}%
      \edef\currentmodule          {#name}%
@@ -57,9 +57,9 @@
      \let \currentmoduleparameters\empty
    \fi\fi
    \processcommacommand[\currentmodule]{\strc_modules_use_indeed\currentmodulecategory}%
-   \popmacro\currentmoduleparameters
-   \popmacro\currentmodulecategory
-   \popmacro\currentmodule}
+   \pop_macro_currentmoduleparameters
+   \pop_macro_currentmodulecategory
+   \pop_macro_currentmodule}
 
 \def\strc_modules_use_indeed#category#name%
   {\ifx\currentmoduleparameters\empty\else
@@ -70,20 +70,24 @@
 
 \installcorenamespace{module}
 
-\let\currentmoduleparameters\empty
 \let\currentmodule          \s!unknown
+\let\currentmodulecategory  \empty
+\let\currentmoduleparameters\empty
 
-\newcount \c_syst_modules_nesting
+\installmacrostack\currentmodule
+\installmacrostack\currentmodulecategory
+\installmacrostack\currentmoduleparameters
 
-\newtoks\everysetupmodule
+\newcount\c_syst_modules_nesting
+\newtoks \everysetupmodule
 
 \unexpanded\def\startmodule
   {\doifelsenextoptionalcs\syst_modules_start_yes\syst_modules_start_nop}
 
 \def\syst_modules_start_yes[#name]%
   {\global\advance\c_syst_modules_nesting\plusone
-   \pushmacro\currentmodule
-   \pushmacro\currentmoduleparameters
+   \push_macro_currentmodule
+   \push_macro_currentmoduleparameters
    \def\currentmodule{#name}}
 
 \def\syst_modules_start_nop#name %
@@ -93,8 +97,8 @@
   {\ifcase\c_syst_modules_nesting
      \writestatus\m!system{module wrapping error in '\currentmodule'}%
    \else
-     \popmacro\currentmoduleparameters
-     \popmacro\currentmodule
+     \pop_macro_currentmoduleparameters
+     \pop_macro_currentmodule
      \global\advance\c_syst_modules_nesting\minusone
    \fi}
 
@@ -203,7 +207,7 @@
   {\ifcsname\??runtimeloaded#2\endcsname
      % already loaded
    \else
-     \global\let#1\undefined
+     \glet#1\undefined
      \startreadingfile
      \startnointerference % \bgroup
      \cleanupfeatures % better \setnormalcatcodes / test first

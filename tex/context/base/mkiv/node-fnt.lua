@@ -648,7 +648,7 @@ if LUATEXVERSION >= 1.090 then
 
         for n, char, font in nextchar, head do
          -- local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-            local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+            local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
             if font ~= prevfont or attr ~= prevattr then
                 prevfont = font
                 prevattr = attr
@@ -665,7 +665,7 @@ if LUATEXVERSION >= 1.090 then
                 lastnone = n
             end
             if variants then
-                if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
+                if (char >= 0xFE00 and char <= 0xFE0F) or (char >= 0xE0100 and char <= 0xE01EF) then
                     local hash = variants[char]
                     if hash then
                         local p = getprev(n)
@@ -769,7 +769,7 @@ if LUATEXVERSION >= 1.090 then
                     local prevattr = nil
                     local none     = false
                     for n, char, font in nextchar, r do
-                        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+                        local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
                         if font ~= prevfont or attr ~= prevattr then
                             prevfont = font
                             prevattr = attr

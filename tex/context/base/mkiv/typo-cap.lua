@@ -97,19 +97,6 @@ local function get(a)
         extract(a, 0, 8)  -- run
 end
 
--- local function get(a)
---     return
---         (a >>  8) & ~(-1 <<  8), -- & 0x0FF -- tag
---         (a >> 16) & ~(-1 << 12), -- & 0xFFF -- font
---         (a >>  0) & ~(-1 <<  8)  -- & 0x0FF -- run
--- end
-
--- print(get(set(  1,   0)))
--- print(get(set(  1,  99)))
--- print(get(set(  2,  96)))
--- print(get(set( 30, 922)))
--- print(get(set(250,4000)))
-
 -- a previous implementation used char(0) as placeholder for the larger font, so we needed
 -- to remove it before it can do further harm ... that was too tricky as we use char 0 for
 -- other cases too

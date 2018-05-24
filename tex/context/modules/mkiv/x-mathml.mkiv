@@ -350,7 +350,7 @@
 %
 % \def\postponedMMLactions
 %   {\global\setfalse\somepostponedMMLactions
-%    \@EA\global\@EA\@@postponedMMLactions\@EA\emptytoks
+%    \expandafter\global\expandafter\@@postponedMMLactions\expandafter\emptytoks
 %    \the\@@postponedMMLactions}
 
 \startxmlsetups mml:apply

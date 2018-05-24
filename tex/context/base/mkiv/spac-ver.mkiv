@@ -165,6 +165,8 @@
 
 \installcommandhandler \??interlinespace {interlinespace} \??interlinespace
 
+\installmacrostack\currentinterlinespace
+
 \unexpanded\def\setupinterlinespace
   {\dodoubleempty\spac_linespacing_setup}
 
@@ -205,7 +207,7 @@
    \ifx\p_spac_checked_interlinespace\empty
      \spac_linespacing_synchronize_local
    \else\ifcsname\namedinterlinespacehash\p_spac_checked_interlinespace\s!parent\endcsname % we could have a \s!check
-     \pushmacro\currentinterlinespace
+     \push_macro_currentinterlinespace
      \let\currentinterlinespace\p_spac_checked_interlinespace
      \spac_linespacing_setup_specified_interline_space % \dosetupspecifiedinterlinespaceindeed
      \iflocalinterlinespace
@@ -215,7 +217,7 @@
        \the\everysetuplocalinterlinespace
        \localinterlinespacefalse
      \fi
-     \popmacro\currentinterlinespace
+     \pop_macro_currentinterlinespace
    \else
      \normalexpanded{\noexpand\doifelseassignment{\p_spac_checked_interlinespace}%
        \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
@@ -230,9 +232,9 @@
 
 \unexpanded\def\setuplocalinterlinespace[#1]%
   {\localinterlinespacetrue
-   \pushmacro\currentinterlinespace
+   \push_macro_currentinterlinespace
    \setupinterlinespace[#1]%
-   \popmacro\currentinterlinespace
+   \pop_macro_currentinterlinespace
    \localinterlinespacefalse}
 
 \let\switchtointerlinespace\setuplocalinterlinespace
@@ -1361,7 +1363,7 @@
 \let\restoreinterlinepenalty\relax
 
 \unexpanded\def\spac_penalties_restore
-  {\global\let\restoreinterlinepenalty\relax
+  {\glet\restoreinterlinepenalty\relax
    \global\resetpenalties\interlinepenalties
    \global\c_spac_keep_lines_together\zerocount}
 
@@ -1369,7 +1371,7 @@
   {\ifnum#1>\c_spac_keep_lines_together
      \global\c_spac_keep_lines_together#1%
      \global\setpenalties\interlinepenalties\c_spac_keep_lines_together\plustenthousand
-     \global\let\restoreinterlinepenalty\spac_penalties_restore
+     \glet\restoreinterlinepenalty\spac_penalties_restore
    \fi}
 
 \def\defaultdisplaywidowpenalty        {50}
@@ -1701,7 +1703,7 @@
    \fi
    \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
    \clf_vspacingsnap\nextbox\attribute\snapmethodattribute\relax
-   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% *pack ?
+   \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% no pack (?), we snap
    \egroup}
 
 \def\spac_grids_check_nop
@@ -1816,15 +1818,15 @@
 
 \unexpanded\def\gridboxvbox
   {\ifcase\gridboxlinemode
-     \vbox
+     \vpack
    \or
-     \ruledvbox
+     \ruledvpack
    \or
-     \vbox
+     \vpack
    \or
-     \ruledvbox
+     \ruledvpack
    \else
-     \ruledvbox
+     \ruledvpack
    \fi}
 
 \def\gridboxwidth{\ifcase\gridboxlinemode0\or.5\or.5\or0\else.5\fi\linewidth}

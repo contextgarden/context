@@ -72,6 +72,9 @@ local v_page               = variables.page
 local v_paper              = variables.paper
 local v_attachment         = variables.attachment
 local v_layer              = variables.layer
+local v_lefttoright        = variables.lefttoright
+local v_righttoleft        = variables.righttoleft
+local v_title              = variables.title
 
 local positive             = register(pdfpageliteral("/GSpositive gs"))
 local negative             = register(pdfpageliteral("/GSnegative gs"))
@@ -304,14 +307,26 @@ local plusspecs = {
     [v_paper] = {
         paper  = true,
     },
+    [v_title] ={
+        title = true,
+    },
+    [v_lefttoright] ={
+        direction = "L2R",
+    },
+    [v_righttoleft] ={
+        direction = "R2R",
+    },
 }
 
 local pagespecs = {
     --
-    [v_max]        = plusspecs[v_max],
-    [v_bookmark]   = plusspecs[v_bookmark],
-    [v_attachment] = plusspecs[v_attachment],
-    [v_layer]      = plusspecs[v_layer],
+    [v_max]         = plusspecs[v_max],
+    [v_bookmark]    = plusspecs[v_bookmark],
+    [v_attachment]  = plusspecs[v_attachment],
+    [v_layer]       = plusspecs[v_layer],
+    [v_lefttoright] = plusspecs[v_lefttoright],
+    [v_righttoleft] = plusspecs[v_righttoleft],
+    [v_title]       = plusspecs[v_title],
     --
     [v_none] = {
     },
@@ -433,13 +448,15 @@ local function documentspecification()
             end
         end
     end
-    --
-    local layout = spec.layout
-    local mode   = spec.mode
-    local fit    = spec.fit
-    local fixed  = spec.fixed
-    local duplex = spec.duplex
-    local paper  = spec.paper
+    -- maybe interfaces.variables
+    local layout    = spec.layout
+    local mode      = spec.mode
+    local fit       = spec.fit
+    local fixed     = spec.fixed
+    local duplex    = spec.duplex
+    local paper     = spec.paper
+    local title     = spec.title
+    local direction = spec.direction
     if layout then
         addtocatalog("PageLayout",pdfconstant(layout))
     end
@@ -458,18 +475,21 @@ local function documentspecification()
             prints = pdfarray(flattened(pages.toranges(marked)))
         end
     end
-    if fit or fixed or duplex or copies or paper or prints then
+    if fit or fixed or duplex or copies or paper or prints or title or direction then
         addtocatalog("ViewerPreferences",pdfdictionary {
-            FitWindow         = fit    and true                or nil,
-            PrintScaling      = fixed  and pdfconstant("None") or nil,
-            Duplex            = duplex and pdfconstant(duplex) or nil,
-            NumCopies         = copies and copies              or nil,
-            PickTrayByPDFSize = paper  and true                or nil,
-            PrintPageRange    = prints                         or nil,
+            FitWindow         = fit       and true                   or nil,
+            PrintScaling      = fixed     and pdfconstant("None")    or nil,
+            Duplex            = duplex    and pdfconstant(duplex)    or nil,
+            NumCopies         = copies    and copies                 or nil,
+            PickTrayByPDFSize = paper     and true                   or nil,
+            PrintPageRange    = prints                               or nil,
+            DisplayDocTitle   = title     and true                   or nil,
+            Direction         = direction and pdfconstant(direction) or nil,
         })
     end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
     addtocatalog("Version", pdfconstant(format("1.%s",pdfminorversion())))
+    addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))
 end
 
 -- temp hack: the mediabox is not under our control and has a precision of 5 digits

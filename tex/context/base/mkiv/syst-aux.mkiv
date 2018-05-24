@@ -181,12 +181,9 @@
 %D These are not needed any more now that we have wide screens (and bytes come
 %D cheap).
 
-\let\@EA          \singleexpandafter
-\let\@EAEAEA      \doubleexpandafter
-\let\@EAEAEAEAEAEA\tripleexpandafter
-
-\let\@NX          \noexpand
-\def\@EAEA       {\expandafter\expandafter} % can often be avoided
+\let\@EA          \singleexpandafter % obsolete
+\let\@EAEAEA      \doubleexpandafter % obsolete
+\let\@EAEAEAEAEAEA\tripleexpandafter % obsolete
 
 %D Sometimes we pass macros as arguments to commands that don't expand them
 %D before interpretation. Such commands can be enclosed with \type {\expanded},
@@ -564,7 +561,7 @@
 %D \setevalue  {name}{...} = \edef\name{...}
 %D \setxvalue  {name}{...} = \xdef\name{...}
 %D \letvalue   {name}=\... = \let\name=\...
-%D \letgvalue  {name}=\... = \global\let\name=\...
+%D \letgvalue  {name}=\... = \glet\name=\...
 %D \getvalue   {name}      = \name
 %D \resetvalue {name}      = \def\name{}
 %D \stoptyping
@@ -572,16 +569,16 @@
 %D As we will see, \CONTEXT\ uses these commands many times, which is mainly due to
 %D its object oriented and parameter driven character.
 
-\def\setvalue     #1{\expandafter \def\csname#1\endcsname}
+\def\setvalue     #1{\expandafter\def \csname#1\endcsname}
 \def\setgvalue    #1{\expandafter\gdef\csname#1\endcsname}
 \def\setevalue    #1{\expandafter\edef\csname#1\endcsname}
 \def\setxvalue    #1{\expandafter\xdef\csname#1\endcsname}
 \def\getvalue     #1{\csname#1\endcsname}
-\def\letvalue     #1{\expandafter\let\csname#1\endcsname}
-\def\letgvalue    #1{\global\expandafter\let\csname#1\endcsname}
-\def\resetvalue   #1{\expandafter\let\csname#1\endcsname\empty}
-\def\undefinevalue#1{\expandafter\let\csname#1\endcsname\undefined}
-\def\ignorevalue#1#2{\expandafter\let\csname#1\endcsname\empty}
+\def\letvalue     #1{\expandafter\let \csname#1\endcsname}
+\def\letgvalue    #1{\expandafter\glet\csname#1\endcsname}
+\def\resetvalue   #1{\expandafter\let \csname#1\endcsname\empty}
+\def\undefinevalue#1{\expandafter\let \csname#1\endcsname\undefined}
+\def\ignorevalue#1#2{\expandafter\let \csname#1\endcsname\empty}
 
 \def\setuvalue    #1{\normalprotected\expandafter \def\csname#1\endcsname}
 \def\setuevalue   #1{\normalprotected\expandafter\edef\csname#1\endcsname}
@@ -597,7 +594,11 @@
 %D tokens will save us some $300\times4=1200$ bytes of format file on a 32~bit
 %D system. Not that it matters much today. This shortcut is already defined:
 
-\unexpanded\def\glet{\global\let}  \let\globallet\glet
+\ifdefined\glet\else
+    \unexpanded\def\glet{\global\let}
+\fi
+
+\let\globallet\glet
 
 %D \macros
 %D   {doifundefined,doifdefined,
@@ -670,7 +671,7 @@
   {\ifcsname#1\endcsname\expandafter\let\csname#1\endcsname\undefined\fi}
 
 \def\globalundefine#1% conditional
-  {\ifcsname#1\endcsname\expandafter\global\let\csname#1\endcsname\undefined\fi}
+  {\ifcsname#1\endcsname\expandafter\glet\csname#1\endcsname\undefined\fi}
 
 %D Beware, being \type {\undefined} in \ETEX\ means that the macro {\em is} defined!
 %D
@@ -3496,7 +3497,7 @@
 
 \begingroup
   \def\\ {\syst_helpers_get_grouped_argument\syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nop}
-  \global\let\syst_helpers_get_grouped_argument_e\\
+  \glet\syst_helpers_get_grouped_argument_e\\
 \endgroup
 
 \def\syst_helpers_get_grouped_argument_f
@@ -3627,13 +3628,13 @@
 %D
 %D Trivial:
 
-\unexpanded\def\letempty             #1{\let#1\empty}
-\unexpanded\def\globalletempty#1{\global\let#1\empty}
+\unexpanded\def\letempty      #1{\let #1\empty}
+\unexpanded\def\globalletempty#1{\glet#1\empty}
 
-\unexpanded\def\letvalueempty        #1{\expandafter\let\csname#1\endcsname\empty}
-\unexpanded\def\letgvalueempty#1{\global\expandafter\let\csname#1\endcsname\empty}
-\unexpanded\def\letvaluerelax        #1{\expandafter\let\csname#1\endcsname\relax}
-\unexpanded\def\letgvalurelax #1{\global\expandafter\let\csname#1\endcsname\relax}
+\unexpanded\def\letvalueempty #1{\expandafter\let \csname#1\endcsname\empty}
+\unexpanded\def\letgvalueempty#1{\expandafter\glet\csname#1\endcsname\empty}
+\unexpanded\def\letvaluerelax #1{\expandafter\let \csname#1\endcsname\relax}
+\unexpanded\def\letgvalurelax #1{\expandafter\glet\csname#1\endcsname\relax}
 
 \unexpanded\def\relaxvalueifundefined#1%
   {\ifcsname#1\endcsname \else
@@ -3849,7 +3850,7 @@
 
 % \bgroup \obeylines
 %
-% \global\let\stoptexdefinition\relax
+% \glet\stoptexdefinition\relax
 %
 % \unexpanded\gdef\starttexdefinition%
 %   {\bgroup%
@@ -3906,7 +3907,7 @@
 
 % \bgroup \obeylines
 %
-% \global\let\stoptexdefinition\relax
+% \glet\stoptexdefinition\relax
 %
 % \unexpanded\gdef\starttexdefinition%
 %   {\bgroup%
@@ -3925,7 +3926,7 @@
 
 \bgroup \obeylines
 
-\global\let\stoptexdefinition\relax
+\glet\stoptexdefinition\relax
 
 \unexpanded\gdef\starttexdefinition%
   {\bgroup%
@@ -4142,8 +4143,8 @@
 
 \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
-   \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname{#4}%
-   \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname{#4}%
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \ifnum#3>\zerocount\relax
      \ifnum#2<#1\relax
        \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
@@ -4240,13 +4241,13 @@
 
 \unexpanded\def\syst_helpers_recurse_x#1#2%
   {\global\advance\outerrecurse \plusone
-          \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname{#2}%
-   \global\expandafter\let \csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname{#2}%
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \expandafter\syst_helpers_recurse_indeed\expandafter1\expandafter{\number#1}}
 
 \unexpanded\def\syst_helpers_recurse_y#1#2%
   {\global\advance\outerrecurse \plusone
-   \global\expandafter\let\csname\??recurseindex\the\outerrecurse\endcsname\recurselevel
+   \expandafter\glet\csname\??recurseindex\the\outerrecurse\endcsname\recurselevel
    \let\recurselevel\!!plusone
    #2%
    \expandafter\let\expandafter\recurselevel\csname\??recurseindex\the\outerrecurse\endcsname
@@ -4312,8 +4313,8 @@
 
 \unexpanded\def\doloop#1%
   {\global\advance\outerrecurse \plusone
-          \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname{#1}%
-   \global\expandafter\let \csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname{#1}%
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \let\endofloop\syst_helpers_loop
    \syst_helpers_loop1} % no \plusone else \recurselevel wrong
 
@@ -4380,23 +4381,23 @@
 
 \unexpanded\def\syst_helpers_recurse_x#1#2%
   {\global\advance\outerrecurse \plusone
-   \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#2}%
-   \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#2}%
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \expandafter\syst_helpers_recurse_indeed\expandafter1\expandafter{\number#1}}
 
 \unexpanded\def\syst_helpers_recurse_y#1#2%
   {\global\advance\outerrecurse \plusone
-   \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \let\recurselevel\!!plusone
-   \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#2}%
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#2}%
    \syst_helpers_recurse_content
    \expandafter\let\expandafter\recurselevel\csname\??recurseindex\the\outerrecurse\endcsname
    \global\advance\outerrecurse \minusone}
 
 \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
-   \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
-   \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \ifnum#3>\zerocount\relax
      \ifnum#2<#1\relax
        \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
@@ -4417,8 +4418,8 @@
 
 \unexpanded\def\doloop#1%
   {\global\advance\outerrecurse \plusone
-   \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#1}%
-   \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#1}%
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \let\endofloop\syst_helpers_loop
    \syst_helpers_loop1} % no \plusone else \recurselevel wrong
 
@@ -4426,8 +4427,8 @@
 
 % \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
 %   {\global\advance\outerrecurse \plusone
-%    \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
-%    \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+%    \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
+%    \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
 %    \csname @swr%
 %      \ifnum#3>\zerocount
 %        \ifnum#2<#1\else d\fi
@@ -4444,8 +4445,8 @@
 
 \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
-   \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
-   \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
+   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
    \csname\??recursestepwise
      % we need the x in order to avoid the \relax that tex adds
      \ifnum#3>\zerocount
@@ -4464,8 +4465,8 @@
 %
 % \def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
 %   {\global\advance\outerrecurse \plusone
-%    \global\expandafter\def\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
-%    \global\expandafter\let\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+%    \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
+%    \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
 %    \normalexpanded
 %      {\ifnum#3>\zerocount
 %         \ifnum#2<#1
@@ -6099,7 +6100,7 @@
    \fi}
 
 \unexpanded\def\globalprocesscommalist[#1]#2%
-  {\global\let\m_syst_helpers_comma_list_command_global#2%
+  {\glet\m_syst_helpers_comma_list_command_global#2%
    \expandafter\syst_helpers_comma_list_command_global_step#1,],}
 
 %D \macros
@@ -6161,9 +6162,9 @@
 \unexpanded\def\swapcounts#1#2{\c_syst_helpers_swapped    #1\relax#1#2\relax#2\c_syst_helpers_swapped}
 \unexpanded\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let  #1#2\let  #2\m_syst_helpers_swapped}
 
-\unexpanded\def\globalswapdimens#1#2{\d_syst_helpers_swapped    #1\global    #1#2\global    #2\d_syst_helpers_swapped}
-\unexpanded\def\globalswapcounts#1#2{\c_syst_helpers_swapped    #1\global    #1#2\global    #2\c_syst_helpers_swapped}
-\unexpanded\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\global\let#1#2\global\let#2\m_syst_helpers_swapped}
+\unexpanded\def\globalswapdimens#1#2{\d_syst_helpers_swapped    #1\global#1#2\global#2\d_syst_helpers_swapped}
+\unexpanded\def\globalswapcounts#1#2{\c_syst_helpers_swapped    #1\global#1#2\global#2\c_syst_helpers_swapped}
+\unexpanded\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\glet  #1#2\glet  #2\m_syst_helpers_swapped}
 
 %D \macros
 %D   {pushmacro,popmacro}
@@ -6188,11 +6189,11 @@
 %      \expandafter\newcount\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
 %    \fi
 %    \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \plusone
-%    \global\expandafter\let\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
+%    \expandafter\glet\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
 %
 % \unexpanded\def\globalpopmacro#1%
 %   {\xdef\m_syst_helpers_push_macro{\string#1}%
-%    \global\expandafter\let\expandafter#1\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname
+%    \expandafter\glet\expandafter#1\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname
 %    \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \minusone}
 %
 % \unexpanded\def\localpushmacro#1% this one can be used to push a value over an \egroup
@@ -6201,7 +6202,7 @@
 %      \expandafter\newcount\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
 %    \fi
 %    \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname \plusone
-%    \global\expandafter\let\csname\the\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
+%    \expandafter\glet\csname\the\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
 %
 % \unexpanded\def\localpopmacro#1%
 %   {\xdef\m_syst_helpers_push_macro{\string#1}%
@@ -6212,6 +6213,8 @@
 % \let\popmacro \localpopmacro
 %
 % slightly faster but more important: less tracing
+%
+% possible optimization \installmacrostack\foo: \syst_push_foo \syst_pop_foo
 
 \let\m_syst_helpers_push_macro\empty
 
@@ -6232,7 +6235,7 @@
    \else
      \syst_helpers_push_macro_new_global
    \fi
-   \global\expandafter\let\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
+   \expandafter\glet\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
 
 \unexpanded\def\localpushmacro#1% this one can be used to push a value over an \egroup
   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
@@ -6241,13 +6244,13 @@
    \else
      \syst_helpers_push_macro_new_local
    \fi
-   \global\expandafter\let\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
+   \expandafter\glet\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
 
 \unexpanded\def\globalpopmacro#1%
   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
    \c_syst_helpers_pop_count\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
    \global\advance\lastnamedcs \minusone
-   \global\expandafter\let\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
+   \expandafter\glet\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
 
 \unexpanded\def\localpopmacro#1%
   {\xdef\m_syst_helpers_push_macro{\csstring#1}%

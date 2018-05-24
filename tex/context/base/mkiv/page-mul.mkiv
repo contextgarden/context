@@ -471,7 +471,7 @@
    \page_mul_postprocess_lines
    \page_mul_postprocess_columns
    \dohandleallcolumns
-     {\global\setbox\currentcolumnbox\hbox to \d_page_mul_used_width
+     {\global\setbox\currentcolumnbox\hpack to \d_page_mul_used_width
         {\box\currentcolumnbox}%
       \wd\currentcolumnbox\d_page_mul_used_width
       \ifheightencolumns
@@ -479,12 +479,12 @@
       \fi}%
    \page_mul_calculate_column_result_dimensions
    \overlaycolumnfootnotes
-   \setbox\columnpagebox\vbox
-     {\hbox \ifconditional\c_page_mul_reverse dir TRT \fi to \makeupwidth
+   \setbox\columnpagebox\vpack % \vbox
+     {\hpack \ifconditional\c_page_mul_reverse dir TRT \fi to \makeupwidth
         {\hskip\ifconditional\c_page_mul_reverse\d_page_mul_rightskip\else\d_page_mul_leftskip\fi\relax
          \dohandleallcolumns
            {\finishcolumnbox
-               {\setbox\scratchbox\hbox
+               {\setbox\scratchbox\hpack
                    {\ifx\finishcolumnbox\relax\else\strut\fi
                    \box\currentcolumnbox}% hm, why strut
                \anch_mark_column_box\scratchbox
@@ -499,13 +499,13 @@
       \fi
       \global\setbox\currenttopcolumnbox\emptybox}%
    \advance\scratchdimen \ht\columnpagebox
-   \setbox\scratchbox\hbox to \makeupwidth
+   \setbox\scratchbox\hbox to \makeupwidth % between can be something so no \hpack
      {\vrule
         \s!width \zeropoint
         \s!height\scratchdimen
         \s!depth \dp\columnpagebox
       \dostepwiserecurse\plustwo\nofcolumns\plusone{\hfil\page_mul_between_columns}\hfil}%
-   \setbox\columnpagebox\hbox
+   \setbox\columnpagebox\hpack
      {\box\columnpagebox
       \hskip-\makeupwidth
       \box\scratchbox}%
@@ -1135,7 +1135,7 @@
 %      \global\savednoffloats\zerocount
 %      \global\setfalse\c_page_floats_some_waiting
 %    \else
-%      \global\let\page_floats_column_pop_saved\relax
+%      \glet\page_floats_column_pop_saved\relax
 %    \fi}
 %
 % \let\page_floats_column_pop_saved\relax
@@ -1249,7 +1249,7 @@
          \xdef\insertionheight{\the\dimen0}%
          \egroup
        \else
-         \global\let\insertionheight\zeropoint
+         \glet\insertionheight\zeropoint
        \fi}
 
     \def\docolumnroomfloat
@@ -1364,7 +1364,7 @@
                 \global\setbox\currenttopcolumnbox\vbox
                   {\snaptogrid\vbox
                      {\copy\currenttopcolumnbox
-                      \hbox{\vphantom{\vskip\floatheight}}}% known from previous
+                      \hpack{\vphantom{\vskip\floatheight}}}% known from previous
                       \whitespace % nodig ?
                       \blank[\rootfloatparameter\c!spaceafter]}%
               \else

@@ -5658,6 +5658,16 @@
     <cd:csname/>
    </cd:arguments>
   </cd:command>
+  <cd:command file="mult-aux.mkiv" level="system" name="installmacrostack">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="mult-aux.mkiv" level="system" name="installglobalmacrostack">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
  </cd:interface>
  <cd:interface file="i-comment.xml">
   <cd:command category="pdf" file="scrn-wid.mkvi" level="style" name="definecomment">
@@ -15233,10 +15243,12 @@
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="thinspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="negthinspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="enspace"/>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="negenspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="enskip"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="quad"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="qquad"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="emspace"/>
+  <cd:command category="whitespace" file="spac-hor.mkiv" level="style" name="negemspace"/>
   <cd:command category="whitespace" file="spac-hor.mkiv" level="system" name="dotfskip">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -16501,6 +16513,7 @@
       <cd:constant type="paper"/>
       <cd:constant type="attachment"/>
       <cd:constant type="layer"/>
+      <cd:constant type="title"/>
      </cd:parameter>
      <cd:parameter name="copies">
       <cd:constant type="cd:number"/>
@@ -33867,6 +33880,88 @@
     </cd:keywords>
     <cd:csname/>
     <cd:content/>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
+ <cd:interface file="i-ruby.xml">
+  <cd:command category="fonts" file="typo-rub.mkiv" level="style" name="defineruby">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupruby"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="typo-rub.mkiv" level="style" name="setupruby">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:parameter name="location">
+      <cd:constant default="yes" type="top"/>
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:constant type="auto"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant default="yes" type="middle"/>
+      <cd:constant type="flushright"/>
+     </cd:parameter>
+     <cd:parameter name="stretch">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="hoffset">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="voffset">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="none"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="left">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="right">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="typo-rub.mkiv" level="document" name="ruby">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="typo-rub.mkiv" level="document" name="ruby" type="environment">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
    </cd:arguments>
   </cd:command>
  </cd:interface>

@@ -86,7 +86,7 @@
      \let\spac_lines_break\relax
    \fi
    \linesparameter\c!before
-   \pushmacro\checkindentation
+   \push_macro_checkindentation
    \whitespace
    \dostarttaggedchained\t!lines\currentlines\??lines
    \begingroup
@@ -126,7 +126,7 @@
   {\dostoptagged
    \endgroup
    \dostoptagged
-   \popmacro\checkindentation
+   \pop_macro_checkindentation
    \linesparameter\c!after
    \egroup}
 

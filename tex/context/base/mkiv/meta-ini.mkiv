@@ -365,12 +365,12 @@
 \let\MPdrawingdata\empty
 
 \unexpanded\def\resetMPdrawing
-  {\global\let\MPdrawingdata\empty
+  {\glet\MPdrawingdata\empty
    \global\MPdrawingdonefalse}
 
 \unexpanded\def\pushMPdrawing
   {\globalpushmacro\MPdrawingdata
-   \global\let\MPdrawingdata\empty}
+   \glet\MPdrawingdata\empty}
 
 \unexpanded\def\popMPdrawing
   {\globalpopmacro\MPdrawingdata}
@@ -728,7 +728,7 @@
 % \def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
 %  %{\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
 %  %{\setxvalue{\??mpgraphic#1}{\noexpand\meta_handle_use_graphic{#1}{\normalunexpanded{#2}}{\normalunexpanded{#3}}}}
-%   {\global\expandafter\gdef\csname\??mpgraphic#1\expandafter\endcsname\expandafter{\expandafter\meta_handle_use_graphic\expandafter{\normalexpanded{#1}}{#2}{#3}}}
+%   {\expandafter\gdef\csname\??mpgraphic#1\expandafter\endcsname\expandafter{\expandafter\meta_handle_use_graphic\expandafter{\normalexpanded{#1}}{#2}{#3}}}
 %
 % cleaner:
 

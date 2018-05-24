@@ -30,7 +30,7 @@
 \startsetups module:showallglyphshapes:start
 
     \unexpanded\def\modulefontsstartshowglyphshape##1##2##3{
-        \startTEXpage[\c!offset=\exheight,\c!frame=\v!on]
+        \startTEXpage[\c!offset=\exheight] % ,\c!frame=\v!on]
         \edef\lastshownglyphshapefieldunicode{##1}%
         \edef\lastshownglyphshapefieldname   {##2}%
         \edef\lastshownglyphshapefieldindex  {##3}%

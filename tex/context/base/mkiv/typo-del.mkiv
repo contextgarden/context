@@ -278,6 +278,8 @@
 
 \let\currentdelimitedtext\s!unknown
 
+\installglobalmacrostack\currentdelimitedtext
+
 \let\delimitedtextlevel\!!zerocount
 
 \def\c_typo_delimited_nesting{\csname\??delimitedtextlevel\currentparentdelimitedtext\endcsname}
@@ -301,6 +303,8 @@
 %D \stoptabulate
 
 \let\currentdelimitedlanguage\empty
+
+\installglobalmacrostack\currentdelimitedlanguage
 
 \def\typo_delimited_set_language_nop
   {\setusedlanguage{\delimitedtextparameter\c!language}}
@@ -334,8 +338,8 @@
    \let\m_delimited_argument\empty}
 
 \def\typo_delimited_push#1#2%
-  {\globalpushmacro\currentdelimitedtext     % can we combine these two
-   \globalpushmacro\currentdelimitedlanguage % the language used for hyphenation
+  {\push_macro_currentdelimitedtext     % can we combine these two
+   \push_macro_currentdelimitedlanguage % the language used for hyphenation
    \edef\currentdelimitedtext{#1}%
    \edef\m_delimited_argument{#2}%
    \ifx\m_delimited_argument\empty
@@ -351,8 +355,8 @@
 
 \def\typo_delimited_pop
   {\global\advance\c_typo_delimited_nesting\minusone
-   \globalpopmacro\currentdelimitedlanguage
-   \globalpopmacro\currentdelimitedtext}
+   \pop_macro_currentdelimitedlanguage
+   \pop_macro_currentdelimitedtext}
 
 \installcorenamespace{delimitedtext}
 \installcorenamespace{delimitedtextlevel}
@@ -494,7 +498,7 @@
      \let\typo_delimited_stop_par_indeed\stopnarrower
    \fi
    % so far
-   \pushmacro\checkindentation
+   \push_macro_checkindentation
    \useindentingparameter\delimitedtextparameter
    %
    \begingroup
@@ -516,7 +520,7 @@
   {\typo_delimited_stop_content
    \rightdelimitedtextmark
    \carryoverpar\endgroup % new per 2013-01-21 ... please left floats
-   \popmacro\checkindentation
+   \pop_macro_checkindentation
    \typo_delimited_stop_par_indeed
    \delimitedtextparameter\c!after
    \edef\p_delimited_spaceafter{\delimitedtextparameter\c!spaceafter}%

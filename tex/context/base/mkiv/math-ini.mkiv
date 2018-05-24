@@ -217,18 +217,20 @@
 \unexpanded\def\startmathematics % no grouping, if ever then also an optional second
   {\doifelsenextoptionalcs\math_mathematics_start_yes\math_mathematics_start_nop}
 
+\installmacrostack\currentmathematics
+
 \unexpanded\def\math_mathematics_start_yes[#1]%
-  {\pushmacro\currentmathematics
+  {\push_macro_currentmathematics
    \edef\currentmathematics{#1}% check for valid
    \the\everyswitchmathematics}
 
 \unexpanded\def\math_mathematics_start_nop
-  {\pushmacro\currentmathematics
+  {\push_macro_currentmathematics
    \let\currentmathematics\empty
    \the\everyswitchmathematics}
 
 \unexpanded\def\stopmathematics
-  {\popmacro\currentmathematics
+  {\pop_macro_currentmathematics
    \the\everyswitchmathematics}
 
 \definemathematics[\v!default] % not needed, but nicer when nesting back to normal
@@ -734,28 +736,26 @@
 %
 % \def\math_op{\ifx\nexttoken\bgroup\else\nexttoken\egroup\fi}
 
-
 % this one too: \letvalue{\??mathcodecommand op}\mathop ?
 
 \unexpanded\def\normalmbox
-  {\normalhbox\bgroup
+  {\hbox\bgroup
    \usemathematicsstyleandcolor\c!textstyle\c!textcolor % new
-   \dowithnextboxcs\math_mbox_finish\normalhbox}
+   \dowithnextboxcs\math_mbox_finish\hbox}
 
 \def\math_mbox_finish
   {\flushnextbox
    \egroup}
 
 \unexpanded\def\mbox % we cannot add \dontleavehmode ... else no \setbox0\mbox possible
-  {\ifmmode\normalmbox\else\normalhbox\fi}
+  {\ifmmode\normalmbox\else\hbox\fi}
 
 \unexpanded\def\enablembox
   {\appendtoks\math_enable_mbox\to \everymathematics}
   {\everymathematics\expandafter{\the\everymathematics\math_enable_mbox}}
 
 \def\math_enable_mbox
-  {\ifdefined\normalhbox\else\let\normalhbox\hbox\fi % ?
-   \let\hbox\mbox}
+  {\let\hbox\mbox}
 
 \unexpanded\def\snappedmath#1% sort of \struttedbox
   {\dontleavehmode
@@ -1077,8 +1077,8 @@
 
 % most math fonts have messed up primes, just test this: $\prime^{\prime^{\prime}}$
 
-{ \catcode\circumflexasciicode\othercatcode       \global\let\othercircumflextoken      ^ }
-{ \catcode\circumflexasciicode\superscriptcatcode \global\let\superscriptcircumflextoken^ }
+{ \catcode\circumflexasciicode\othercatcode       \glet\othercircumflextoken      ^ }
+{ \catcode\circumflexasciicode\superscriptcatcode \glet\superscriptcircumflextoken^ }
 
 \ifdefined \prime \else
     \Umathchardef\prime "0 "0 "2032
@@ -1446,7 +1446,7 @@
 \def\math_collapsing_initialize
   {\ifnum\c_math_collapsing_attribute=\attributeunsetvalue \else
      \clf_initializemathcollapsing % one time
-     \global\let\math_collapsing_initialize\relax
+     \glet\math_collapsing_initialize\relax
    \fi}
 
 \appendtoks
@@ -1483,7 +1483,7 @@
 \def\math_italics_initialize
   {\ifnum\c_math_italics_attribute=\attributeunsetvalue \else
      \clf_initializemathitalics % one time
-     \global\let\math_italics_initialize\relax
+     \glet\math_italics_initialize\relax
    \fi}
 
 \appendtoks
@@ -1523,7 +1523,7 @@
 \def\math_kernpairs_initialize
   {\ifnum\c_math_kernpairs_attribute=\attributeunsetvalue \else
      \clf_initializemathkernpairs % one time
-     \global\let\math_kernpairs_initialize\relax
+     \glet\math_kernpairs_initialize\relax
    \fi}
 
 \appendtoks
@@ -2355,7 +2355,7 @@
 %    \c_math_styles_state_cramped\zerocount
 %    \c_math_styles_state_size   \zerocount
 %    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-%    \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+%    \expandafter\glet\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
 %    \csname\??mathstylecache\m_math_style_asked\endcsname}
 
 \def\math_style_set_indeed
@@ -2377,7 +2377,7 @@
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-   \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+   \expandafter\glet\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
    \csname\??mathstylecache\m_math_style_asked\endcsname}
 
 \letvalue{\??mathstyle     \??mathstyle     }\math_style_set_mathstyle_mathstyle      % still needed?
@@ -2544,7 +2544,7 @@
 % this can become an option:
 
 \unexpanded\def\math_display_align_hack % I don't like the global, maybe we should push and pop
-  {\global\let\math_display_align_hack_indeed\math_display_align_hack_remove_skip
+  {\glet\math_display_align_hack_indeed\math_display_align_hack_remove_skip
    \math_openup\displayopenupvalue % was \math_openup\jot
    \everycr{\noalign{\math_display_align_hack_indeed}}}
 
@@ -2552,7 +2552,7 @@
   {\ifdim\prevdepth>-\thousandpoint
      \vskip\dimexpr-\lineskiplimit+\normallineskiplimit\relax
    \fi
-   \global\let\math_display_align_hack_indeed\math_display_align_hack_insert_penalty}
+   \glet\math_display_align_hack_indeed\math_display_align_hack_insert_penalty}
 
 \def\math_display_align_hack_insert_penalty
   {\penalty\interdisplaylinepenalty}
@@ -2782,7 +2782,7 @@
 \def\math_domain_initialize
   {\ifnum\c_math_domain_attribute=\attributeunsetvalue \else
      \clf_initializemathdomain % one time
-     \global\let\math_domain_initialize\relax
+     \glet\math_domain_initialize\relax
    \fi}
 
 \appendtoks
@@ -2806,7 +2806,7 @@
 
 \installcorenamespace{mathrules}
 
-\unexpanded\def\enablemathrules{\global\letvalue{\??mathrules\fontclass}\plusone}
+\unexpanded\def\enablemathrules{\letgvalue{\??mathrules\fontclass}\plusone}
 
 \appendtoks
     \mathrulesmode\ifcsname\??mathrules\fontclass\endcsname

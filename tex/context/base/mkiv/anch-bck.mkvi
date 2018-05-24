@@ -47,7 +47,7 @@
 
 \unexpanded\def\anch_backgrounds_text_initialize
   {\doifelsepositionsused\enableparpositions\donothing
-   \global\let\anch_backgrounds_text_initialize\relax}
+   \glet\anch_backgrounds_text_initialize\relax}
 
 \appendtoks
     \anch_backgrounds_text_initialize
@@ -352,7 +352,7 @@
   {\ifproductionrun
      \enabletextarearegistration
      \enablehiddenbackground
-     \global\let\checkpositionoverlays\relax
+     \glet\checkpositionoverlays\relax
    \fi}
 
 % shape handling

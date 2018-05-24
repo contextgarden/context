@@ -107,23 +107,27 @@
 %D to split between cite and list here as it only complicates matters (timing) and is
 %D not clear either.
 
-\let\currentbtxspecification\empty
+\let\currentbtxspecification        \empty
+\let\currentbtxspecificationfallback\empty
+
+\installmacrostack\currentbtxspecification
+\installmacrostack\currentbtxspecificationfallback
 
 \unexpanded\def\startbtxrenderingdefinitions[#1]%
   {\unprotect
-   \pushmacro\currentbtxspecification
+   \push_macro_currentbtxspecification
    \edef\currentbtxspecification{#1}}
 
 \unexpanded\def\stopbtxrenderingdefinitions
-  {\popmacro\currentbtxspecification
+  {\pop_macro_currentbtxspecification
    \protect}
 
 \unexpanded\def\loadbtxdefinitionfile [#1]{\clf_btxloaddefinitionfile {#1}}
 \unexpanded\def\loadbtxreplacementfile[#1]{\clf_btxloadreplacementfile{#1}}
 
 \unexpanded\def\publ_specification_push#1%
-  {\pushmacro\currentbtxspecification
-   \pushmacro\currentbtxspecificationfallback
+  {\push_macro_currentbtxspecification
+   \push_macro_currentbtxspecificationfallback
    \edef\currentbtxspecification{#1}%
    \edef\currentbtxspecificationfallback{\namedbtxparameter\currentbtxspecification\c!default}%
    \ifx\currentbtxspecificationfallback\currentbtxspecification
@@ -132,8 +136,8 @@
    \clf_btxsetspecification{\currentbtxspecification}}
 
 \unexpanded\def\publ_specification_pop
-  {\popmacro\currentbtxspecificationfallback
-   \popmacro\currentbtxspecification
+  {\pop_macro_currentbtxspecificationfallback
+   \pop_macro_currentbtxspecification
    \clf_btxsetspecification{\currentbtxspecification}}
 
 \unexpanded\def\publ_specification_set#1% beware: is global
@@ -222,9 +226,6 @@
 \installcommandhandler \??btxdataset   {btxdataset}   \??btxdataset
 \installcommandhandler \??btxregister  {btxregister}  \??btxregister
 \installcommandhandler \??btxrendering {btxrendering} \??btxrendering
-
-\let\currentbtxcitealternative      \empty
-\let\currentbtxspecificationfallback\empty
 
 \unexpanded\def\setbtxparameterset#1#2%
   {\edef\currentbtx
@@ -341,10 +342,10 @@
 \def\publ_command_nop#1%
   {\ifcsname#1\endcsname
      \showmessage\m!publications{10}{#1,#1}%
-     \global\expandafter\let\csname\??btxcommand#1\expandafter\endcsname\csname#1\endcsname
+     \expandafter\glet\csname\??btxcommand#1\expandafter\endcsname\csname#1\endcsname
    \else\ifcsname\utfupper{#1}\endcsname
      \showmessage\m!publications{10}{#1}{\utfupper{#1}}%
-     \global\expandafter\let\csname\??btxcommand#1\expandafter\endcsname\csname\utfupper{#1}\endcsname
+     \expandafter\glet\csname\??btxcommand#1\expandafter\endcsname\csname\utfupper{#1}\endcsname
    \else
      \showmessage\m!publications{11}{#1}%
      \setugvalue{\??btxcommand#1}{\underbar{\tttf#1}}%
@@ -1113,7 +1114,8 @@
 
 \let\btxcitereference\btx_cite_reference_inject
 
-\let\currentbtxnumbering\empty
+\let\currentbtxnumbering       \empty
+\let\currentbtxcitealternative \empty
 
 \appendtoks
     \edef\currentbtxnumbering{\btxrenderingparameter\c!numbering}%
@@ -1185,7 +1187,7 @@
 \unexpanded\def\btxflushauthorinverted     {\btx_flush_author{inverted}}      % #1
 \unexpanded\def\btxflushauthorinvertedshort{\btx_flush_author{invertedshort}} % #1
 
-\let\currentbtxauthorfield\s!author
+\let\currentbtxauthorfield      \s!author
 
 \unexpanded\def\btxsetauthorfield#1{\edef\currentbtxauthorfield{#1}}
 

@@ -69,6 +69,8 @@ local scan_token      = token.scan_token
 local scan_word       = token.scan_word
 local scan_number     = token.scan_number
 local scan_csname     = token.scan_csname
+local scan_real       = token.scan_real
+local scan_float      = token.scan_float
 
 local get_next        = token.get_next
 
@@ -240,6 +242,8 @@ tokens.scanners = { -- these expand
     glue      = scan_glue,
     skip      = scan_glue,
     integer   = scan_int,
+    real      = scan_real,
+    float     = scan_float,
     count     = scan_int,
     string    = scan_string,
     argument  = scan_argument,

@@ -413,13 +413,13 @@
       \fi
       %
       \ifdim\wd\scratchboxone<\scratchwidth
-        \setbox\scratchboxone\hbox to \scratchwidth{\hss\unhbox\scratchboxone\hss}% unhboxing makes leaders work
+        \setbox\scratchboxone\hpack to \scratchwidth{\hss\unhbox\scratchboxone\hss}% unhboxing makes leaders work
       \fi
       \ifdim\wd\scratchboxtwo<\scratchwidth
-        \setbox\scratchboxtwo\hbox to \scratchwidth{\hss\unhbox\scratchboxtwo\hss}%
+        \setbox\scratchboxtwo\hpack to \scratchwidth{\hss\unhbox\scratchboxtwo\hss}%
       \fi
       \ifdim\wd\scratchboxthree<\scratchwidth
-        \setbox\scratchboxthree\hbox to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
+        \setbox\scratchboxthree\hpack to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
       \fi
       %
       \ifcsname\??mathstackerslocation\p_location\endcsname
@@ -448,7 +448,7 @@
       \fi
       %
       \ifzeropt\scratchdistance\else
-        \setbox\scratchboxthree\hbox{\lower\scratchdistance\box\scratchboxthree}%
+        \setbox\scratchboxthree\hpack{\lower\scratchdistance\box\scratchboxthree}%
       \fi
       %
       \math_stackers_normalize_three
@@ -603,7 +603,7 @@
       \advance\scratchwidth2\scratchhoffset
       %
       \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
-      \setbox\scratchboxthree\hbox to \scratchwidth{\hss\box\scratchboxthree\hss}%
+      \setbox\scratchboxthree\hpack to \scratchwidth{\hss\box\scratchboxthree\hss}%
       %
       \scratchunicode#codeextra\relax
       \ifcase\scratchunicode\else
@@ -803,10 +803,10 @@
       \advance\scratchwidth2\scratchhoffset
       %
       \ifdim\wd\scratchboxone<\scratchwidth
-        \setbox\scratchboxone\hbox to \scratchwidth{\hss\unhbox\scratchboxone\hss}%
+        \setbox\scratchboxone\hpack to \scratchwidth{\hss\unhbox\scratchboxone\hss}%
       \fi
       \ifdim\wd\scratchboxthree<\scratchwidth
-        \setbox\scratchboxthree\hbox to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
+        \setbox\scratchboxthree\hpack to \scratchwidth{\hss\unhbox\scratchboxthree\hss}%
       \fi
       %
       \math_stackers_normalize_three

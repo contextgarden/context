@@ -8278,7 +8278,7 @@ return {
    ["ro"]="inaltime",
   },
   ["hfactor"]={
-   ["cs"]="vfaktor",
+   ["cs"]="hfaktor",
    ["de"]="hfaktor",
    ["en"]="hfactor",
    ["fr"]="facteurhauteur",
@@ -8286,6 +8286,14 @@ return {
    ["nl"]="hfactor",
    ["pe"]="عامل‌ارتفاع",
    ["ro"]="hfactor",
+  },
+  ["vfactor"]={
+   ["cs"]="vfaktor",
+   ["de"]="vfaktor",
+   ["en"]="vfactor",
+   ["it"]="vfactor",
+   ["nl"]="vfactor",
+   ["ro"]="vfactor",
   },
   ["hfil"]={
    ["cs"]="hfil",

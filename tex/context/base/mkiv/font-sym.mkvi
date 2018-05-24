@@ -167,7 +167,7 @@
 \def\font_basics_define_symbolic_font
   {\definefont[currentsymbolfont][\askedsymbolfont]%
    \currentsymbolfont
-   \global\expandafter\let\csname\??symbolfont\askedsymbolfont\endcsname\lastrawfontcall}
+   \expandafter\glet\csname\??symbolfont\askedsymbolfont\endcsname\lastrawfontcall}
 
 \unexpanded\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
 \unexpanded\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}

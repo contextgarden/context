@@ -248,8 +248,8 @@
        \!!counta#1\relax
      \fi
    \fi
-   \relax % needed ! ! ! ! else lookahead over \fi and \@EA
-   \@EA\egroup\@EA\scratchcounter\the\!!counta\relax}
+   \relax % needed ! ! ! ! else lookahead over \fi and \expandafter
+   \expandafter\egroup\expandafter\scratchcounter\the\!!counta\relax}
 
 \def\OTRSETsetcorrectcellht
   {\bgroup
@@ -260,8 +260,8 @@
      \restoreglobalbodyfont
    \fi
    \advance\!!dimena\strutht
-   \relax % needed ! ! ! ! else lookahead over \fi and \@EA
-   \@EA\egroup\@EA\scratchdimen\the\!!dimena\relax}
+   \relax % needed ! ! ! ! else lookahead over \fi and \expandafter
+   \expandafter\egroup\expandafter\scratchdimen\the\!!dimena\relax}
 
 \def\doOTRSETsetgridcells#1#2#3#4#5#6% placeholder col row wid hei {data}
   {\!!countd#2\advance\!!countd#4\advance\!!countd\minusone
@@ -642,7 +642,7 @@
   {\page_set_command_set_vsize}
 
 \def\doOTRSETcolumnseparator
-  {\hbox to \zeropoint{\hss\red\vl\hss}}
+  {\hpack to \zeropoint{\hss\red\vl\hss}}
 
 \let\OTRSETcolumnseparator\relax
 
@@ -754,7 +754,7 @@
         \fi}%
      \ifdim\lastskipinotr>\zeropoint
        \scratchskip\ht\scratchbox
-       \setbox\scratchbox\hbox
+       \setbox\scratchbox\hpack
          {\lower\strutdepth\box\scratchbox}%
        \dp\scratchbox\scratchdimen
        \ht\scratchbox\scratchskip
@@ -942,7 +942,7 @@
    \fi
    \ifenoughcolumncells
      \OTRSETsetgridcells\mofcolumns\columnfirstcell\columnhcells\columnvcells
-       {\hbox{\copy#1}}%
+       {\hpack{\copy#1}}%
      \page_set_command_set_vsize
    \else
      \OTRSETsavebox{#1}%
@@ -1155,7 +1155,7 @@
        %OTRSETprepareforcolumnslot3{#1}%
        %ruledvskip\columnslotspacing\lineheight
        \blank[\number\columnslotspacing*\v!line]%
-       \snaptogrid\hbox to \hsize{\hss\box#1\hss}% strange, why the centering
+       \snaptogrid\hpack to \hsize{\hss\box#1\hss}% strange, why the centering
        \blank[\number\columnslotspacing*\v!line]%
      \else
        \OTRSETstoreincolumnslotSOMEWHERE2{#1}%
@@ -1336,7 +1336,7 @@
 % a quick hack ... will be redone
 %
 \ifdim\wd\floatbox<\floatwidth \ifhbox\floatbox
-    \global\setbox\floatbox\hbox{\unhbox\floatbox}%
+    \global\setbox\floatbox\hpack{\unhbox\floatbox}%
 \fi \fi
 %
           \dp\floatbox\zeropoint
@@ -1417,7 +1417,7 @@
                {\advance\totalcolumnspace \OTRSETlocalwidth\recurselevel
                 \advance\totalcolumnspace \namedcolumnsetparameter{\currentcolumnset:\recurselevel}\c!distance}%
              \ifdim\totalcolumnspace>\wd\scratchbox
-               \setbox\scratchbox\hbox to \totalcolumnspace{\hss\box\scratchbox\hss}%
+               \setbox\scratchbox\hpack to \totalcolumnspace{\hss\box\scratchbox\hss}%
              \fi
              \page_set_cell_set\currenthcell\currentvcell\box\scratchbox
            \egroup
@@ -1619,7 +1619,7 @@
 
 \def\dostartcolumnset[#1][#2]%
   {\increment\columnsetlevel\relax
-   \global\let\localcolumnmaxcells\!!zerocount
+   \glet\localcolumnmaxcells\!!zerocount
    \global\setfalse\OTRSETfinish
    \ifnum\columnsetlevel=\plusone
      \bgroup
@@ -1678,7 +1678,7 @@
      \ifvoid\OTRfinalpagebox\else
        % probably balanced
        \ifdim\ht\OTRfinalpagebox<\textheight
-         \snaptogrid[\v!page]\hbox{\box\OTRfinalpagebox}%
+         \snaptogrid[\v!page]\hpack{\box\OTRfinalpagebox}%
        \else
          \box\OTRfinalpagebox
        \fi
@@ -1765,7 +1765,7 @@
 \def\OTRSETstartnextpage
   {\doifsomething\OTRSETlist
      {\getfromcommacommand[\OTRSETlist][1]%
-      \global\let\OTRSETidentifier\commalistelement
+      \glet\OTRSETidentifier\commalistelement
       \xdef\currentcolumnset{\commalistelement}%
       \checkcolumnsetparent
       \let\newcommalistelement\empty
@@ -1848,7 +1848,7 @@
      {\unvbox\normalpagebox
       \global\lastskipinotr\lastskip}%
    \ifdim\lastskipinotr>\zeropoint
-     \global\setbox\b_page_set_preceding\hbox
+     \global\setbox\b_page_set_preceding\hpack
        {\lower\strutdepth\box\b_page_set_preceding}%
    \fi
    \dp\b_page_set_preceding\strutdepth
@@ -1970,7 +1970,7 @@
 
 \def\columnplaceholder#1#2%
   {\hbox
-     {\setbox\scratchbox\hbox to \hsize
+     {\setbox\scratchbox\hpack to \hsize
         {\iftracecolumnset
            \hskip-.5ex%
            \startcolor[columnset:#2]\vrule\s!width\exheight\s!height.5\exheight\s!depth.5\exheight\stopcolor
@@ -2032,7 +2032,7 @@
 \def\page_set_place_float_slot
   {\setbox\floatbox\vbox{\page_otr_command_flush_float_box}%
    \dp\floatbox\strutdp
-   \@EA\uppercasestring\floatmethod\to\floatmethod
+   \expandafter\uppercasestring\floatmethod\to\floatmethod
    \OTRSETstoreincolumnslot\floatmethod\floatbox
    \page_floats_report_total}
 
@@ -2337,11 +2337,11 @@
    \advance\!!countb \minusone
    % new (*)
    \doif{\columntextareaparameter\c!location}\v!depth
-     {\setbox\scratchbox\hbox{\lower\strutdepth\box\scratchbox}%
+     {\setbox\scratchbox\hpack{\lower\strutdepth\box\scratchbox}%
       \dp\scratchbox\zeropoint
       \ht\scratchbox\!!heighta}%
    %
-   \setbox0\hbox
+   \setbox0\hpack
      {\ifcase\!!countc
         \copy\scratchbox % \box
       \else
@@ -2360,7 +2360,7 @@
      \advance\!!counta \columntextareaparameter\c!nx
      \advance\!!counta -\!!countc
      \advance\!!widtha -\!!widthb
-     \setbox0\hbox
+     \setbox0\hpack
 %        {\hskip-\namedlayoutparameter\v!odd\c!backspace
        {\hskip-\layoutparameter\c!backspace
         \clip
@@ -2560,7 +2560,7 @@
      % todo: nboven/onder
      %\OTRSETstoreincolumnslotHERE\scratchbox
      \edef\floatmethod{\namedframedtextparameter{\??columnsetspan#1}\c!default}%
-     \@EA\uppercasestring\floatmethod\to\floatmethod
+     \expandafter\uppercasestring\floatmethod\to\floatmethod
      % todo : \v!here -> here enzovoorts
      \OTRSETstoreincolumnslot\floatmethod\scratchbox
      \checknextindentation[\namedframedtextparameter{\??columnsetspan#1}\c!indentnext]%

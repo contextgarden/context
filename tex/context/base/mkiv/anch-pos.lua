@@ -20,6 +20,10 @@ more efficient.</p>
 -- this is one of the first modules using scanners and we need to replace
 -- it by implement and friends
 
+-- we could have namespaces, like p, page, region, columnarea, textarea but then
+-- we need virtual table accessors as well as have tag/id accessors ... we don't
+-- save much here (at least not now)
+
 local tostring, next, rawget, rawset, setmetatable, tonumber = tostring, next, rawget, rawset, setmetatable, tonumber
 local sort, sortedhash, sortedkeys = table.sort, table.sortedhash, table.sortedkeys
 local format, gmatch = string.format, string.gmatch

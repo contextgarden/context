@@ -317,13 +317,15 @@
     \let\lang_basics_synchronize\relax % be nice for setups till we have one
 \fi
 
+\installmacrostack\currentlanguage
+
 \def\lang_basics_setup[#1][#2]%
   {\ifsecondargument
-     \pushmacro\currentlanguage % can be default
+     \push_macro_currentlanguage % can be default
      \edef\currentsetuplanguage{\reallanguagetag{#1}}%
      \getparameters[\??language\currentsetuplanguage][#2]%
      \the\everysetuplanguage
-     \popmacro\currentlanguage
+     \pop_macro_currentlanguage
     %\doif\currentsetuplanguage\currentlanguage we can have influenced inheritance (default)
    \else
      \let\currentsetuplanguage\currentlanguage
@@ -449,7 +451,7 @@
 \appendtoks
     % we need to reassign the number because new patterns can be defined later on
     % so let's hope not that many \setups happen during a run
-    \global\expandafter\let\csname\??languagenumbers\currentlanguage\endcsname\undefined
+    \expandafter\glet\csname\??languagenumbers\currentlanguage\endcsname\undefined
 \to \everysetuplanguage
 
 \def\lang_basics_synchronize_yes

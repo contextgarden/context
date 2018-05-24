@@ -321,11 +321,18 @@
 \def\math_alignment_EQ
   {\NC=}
 
+\installmacrostack\NC % maybe more to shared table definitions
+\installmacrostack\NN % maybe more to shared table definitions
+\installmacrostack\EQ % maybe more to shared table definitions
+\installmacrostack\NR % maybe more to shared table definitions
+\installmacrostack\BC % maybe more to shared table definitions
+\installmacrostack\EC % maybe more to shared table definitions
+
 \appendtoks
-    \pushmacro\NC
-    \pushmacro\NN
-    \pushmacro\EQ
-    \pushmacro\NR
+    \push_macro_NC
+    \push_macro_NN
+    \push_macro_EQ
+    \push_macro_NR
     \let\NC\math_alignment_NC
     \let\NN\math_alignment_NN
     \let\EQ\math_alignment_EQ
@@ -334,10 +341,10 @@
 \to \everymathalignment
 
 \appendtoks
-    \popmacro\NR
-    \popmacro\EQ
-    \popmacro\NN
-    \popmacro\NC
+    \pop_macro_NR
+    \pop_macro_EQ
+    \pop_macro_NN
+    \pop_macro_NC
 \to \everymathalignmentdone
 
 \let\math_alignment_snap_start\relax
@@ -694,11 +701,11 @@
   {\unskip
    \math_cases_end_math
    \aligntab
-   \global\let\math_cases_NC\math_cases_NC_first
+   \glet\math_cases_NC\math_cases_NC_first
    \dodirectdoubleempty\math_cases_NR}
 
 \def\math_cases_NC_first
-  {\global\let\math_cases_NC\math_cases_NC_second}
+  {\glet\math_cases_NC\math_cases_NC_second}
 
 \def\math_cases_NC_second
   {\math_cases_end_math\aligntab}
@@ -722,7 +729,7 @@
    \let\NC\math_cases_NC_zero
    \let\MC\math_cases_MC_zero
    \let\NR\math_cases_NR_zero
-   \global\let\math_cases_NC\math_cases_NC_first
+   \glet\math_cases_NC\math_cases_NC_first
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks

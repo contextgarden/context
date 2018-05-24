@@ -247,12 +247,12 @@
    inline:\ifconditional \inlinelefttoright  l2r\else r2l\fi\space
    ]\endgroup}
 
-\unexpanded\def\righttolefthbox#1#{\normalhbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
-\unexpanded\def\lefttorighthbox#1#{\normalhbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
-\unexpanded\def\righttoleftvbox#1#{\normalvbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
-\unexpanded\def\lefttorightvbox#1#{\normalvbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
-\unexpanded\def\righttoleftvtop#1#{\normalvtop dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
-\unexpanded\def\lefttorightvtop#1#{\normalvtop dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
+\unexpanded\def\righttolefthbox#1#{\hbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
+\unexpanded\def\lefttorighthbox#1#{\hbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
+\unexpanded\def\righttoleftvbox#1#{\vbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
+\unexpanded\def\lefttorightvbox#1#{\vbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
+\unexpanded\def\righttoleftvtop#1#{\vtop dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
+\unexpanded\def\lefttorightvtop#1#{\vtop dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
 
 \unexpanded\def\autodirhbox#1#{\hbox#1\bgroup\synchronizeinlinedirection\let\next}
 \unexpanded\def\autodirvbox#1#{\vbox#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vbox
@@ -643,8 +643,8 @@
       }}% kept, nice for tracing
    \edef\raggedcommand    {\the\t_spac_align_collected }%
    \edef\updateraggedskips{\spac_align_flush_horizontal}%
-   \global\expandafter\let\csname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
-   \global\expandafter\let\csname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
+   \expandafter\glet\csname\??alignmentnormalcache\m_spac_align_asked\endcsname\raggedcommand
+   \expandafter\glet\csname\??alignmentraggedcache\m_spac_align_asked\endcsname\updateraggedskips}
 
 \def\spac_align_collect#1%
   {\csname\??aligncommand#1\endcsname}

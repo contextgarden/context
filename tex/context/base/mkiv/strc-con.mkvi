@@ -980,11 +980,11 @@
    \xdef\currentconstructionincrementnumber{\constructionparameter\c!incrementnumber}%
    %
    \ifx\currentconstructionexpansion\empty
-     \global\let\currentconstructionexpansion\v!no
+     \glet\currentconstructionexpansion\v!no
    \fi
    %
    \ifx\currentconstructionreferenceprefix\empty
-     \global\let\currentconstructionreferenceprefix\referenceprefix
+     \glet\currentconstructionreferenceprefix\referenceprefix
    \fi
    \ifx\currentconstructionexpansion\s!xml
      \xmlstartraw
@@ -994,9 +994,9 @@
        \xdef\currentconstructionlist    {\constructionparameter\c!list}%
      \xmlstopraw
      \ifx\currentconstructionlist\empty
-       \global\let\currentconstructionlist\currentconstructiontitle
+       \glet\currentconstructionlist\currentconstructiontitle
      \fi
-     \global\let\currentconstructioncoding\s!xml
+     \glet\currentconstructioncoding\s!xml
    \else
      \ifx\currentconstructionexpansion\v!yes
        \xdef\currentconstructiontitle   {\constructionparameter\c!title}%

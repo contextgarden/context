@@ -928,7 +928,7 @@
      \global\c_tabl_table_n_of_vrules\plusone
      \unskip
    \fi
-   \global\let\m_tabl_table_vrule_color\empty
+   \glet\m_tabl_table_vrule_color\empty
    \hfil
    \aligntab}
 
@@ -1370,8 +1370,8 @@
   {\tabl_tables_chuck_auto_row % before the tail, else noalign problem
    \tabl_table_insert_tail
    \starttablenoalign
-     \global\let\tabl_table_head\empty
-     \global\let\tabl_table_tail\empty
+     \glet\tabl_table_head\empty
+     \glet\tabl_table_tail\empty
    \stoptablenoalign
    \tabl_table_finish
    \ifx\p_tabl_table_frame\empty
@@ -1481,7 +1481,7 @@
    \tabl_table_restart
 %    \starttablenoalign
 %      \globalpushmacro\simpletableHL
-%      \global\let\simpletableHL\doverysimpletableHL
+%      \glet\simpletableHL\doverysimpletableHL
 %    \stoptablenoalign
    \tabl_table_insert_head
    \ifsplittables \ifconditional \c_tabl_table_repeat_tail
@@ -1593,8 +1593,8 @@
    \egroup
    \dontcomplain
    \tabl_table_split_box\tablecontentbox
-   \global\let\tabl_table_head\empty % new here
-   \global\let\tabl_table_tail\empty % new here
+   \glet\tabl_table_head\empty % new here
+   \glet\tabl_table_tail\empty % new here
    \flushnotes
    \egroup}
 
@@ -1914,7 +1914,7 @@
    \dosingleempty\table_tabl_VL_indeed}
 
 \def\table_tabl_VL_indeed[#1]%
-  {\global\let\m_tabl_table_vrule_color\empty
+  {\glet\m_tabl_table_vrule_color\empty
    \global\c_tabl_table_vrule_thickness_factor\m_tabl_table_VLwidth\relax
    \iffirstargument
      \rawprocesscommalist[#1]\tabl_table_vrulecommand
@@ -1961,7 +1961,7 @@
      \bgroup
        \global\c_tabl_table_hrule_thickness_factor\m_tabl_table_HLheight\relax
        \iffirstargument
-         \global\let\m_tabl_table_hrule_color\empty
+         \glet\m_tabl_table_hrule_color\empty
          \rawprocesscommalist[#1]\tabl_table_hrulecommand
          \ifx\m_tabl_table_hrule_color\empty\else
            \switchtocolor[\m_tabl_table_hrule_color]%
@@ -2083,7 +2083,7 @@
      \global\c_tabl_table_hrule_thickness_factor\m_tabl_table_HLheight\relax
      \global\c_tabl_table_drule_span\zerocount
      \iffirstargument
-       \global\let\m_tabl_table_hrule_color\empty
+       \glet\m_tabl_table_hrule_color\empty
        \rawprocesscommalist[#1]\tabl_table_drulecommand
      % \ifx\m_tabl_table_hrule_color\empty\else
      %   \switchtocolor[\m_tabl_table_hrule_color]% see *DL*

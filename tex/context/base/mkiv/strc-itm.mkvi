@@ -352,8 +352,8 @@
    \csname\??itemgroupsetting\currentitemgroup\endcsname}
 
 \def\strc_itemgroups_reset_continue_state
-  {\global\expandafter\let\csname\??itemgroupoption \currentitemgroup\endcsname\relax
-   \global\expandafter\let\csname\??itemgroupsetting\currentitemgroup\endcsname\relax}
+  {\expandafter\glet\csname\??itemgroupoption \currentitemgroup\endcsname\relax
+   \expandafter\glet\csname\??itemgroupsetting\currentitemgroup\endcsname\relax}
 
 % These will become keywords. We will also add a feature to keep the while set
 % together.

@@ -314,6 +314,6 @@
 \normalprotected\def\resetctxscanner#1%
   {\edef\m_syst_name{\csstring#1}%
    \global\expandafter\chardef\csname\??luafunction\m_syst_name\endcsname\zerocount
-   \global\expandafter\let\csname\m_syst_name\endcsname\relax}
+   \expandafter\glet\csname\m_syst_name\endcsname\relax}
 
 \protect \endinput

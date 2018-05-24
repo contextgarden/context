@@ -122,14 +122,14 @@
      \font_preloads_reset
    \else
      \font_preloads_reset
-     \pushmacro\fontstyle
+     \push_macro_fontstyle
      \ifcsname\??fontclass\fontclass\s!mm\s!features\endcsname \else
        \font_preload_default_fonts_mm
      \fi
      \ifcsname\??fontclass\fontclass\s!tt\s!features\endcsname \else
        \font_preload_default_fonts_tt
      \fi
-     \popmacro\fontstyle
+     \pop_macro_fontstyle
      \font_preloads_reset_checked % reset third, mm and tt
      \setupbodyfont[\fontstyle]%
    \fi}

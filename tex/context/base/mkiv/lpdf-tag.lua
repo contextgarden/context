@@ -170,6 +170,7 @@ local index, pageref, pagenum, list = 0, nil, 0, nil
 
 local pdf_mcr            = pdfconstant("MCR")
 local pdf_struct_element = pdfconstant("StructElem")
+local pdf_s              = pdfconstant("S")
 
 local function initializepage()
     index   = 0
@@ -182,6 +183,8 @@ end
 local function finishpage()
     -- flush what can be flushed
     addtopageattributes("StructParents",pagenum-1)
+    -- there might be more
+    addtopageattributes("Tabs",s)
 end
 
 -- here we can flush and free elements that are finished

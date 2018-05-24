@@ -11,6 +11,21 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+
+% \usemodule[article-basic,article-titletop]
+% \usemodule[article-basic,article-titlepage]
+%
+% \startdocument
+%   [title={Some title},
+%    subject={Some Subject},
+%    author={Hans \& Ton},
+%    affiliation={PRAGMA ADE},
+%    date=\currentdate]
+%
+%     \samplefile{ward}
+%
+% \stopdocument
+
 \startmodule[article-basic]
 
 \unprotect
@@ -70,6 +85,10 @@
 \setuplist
   [\c!interaction=\v!all]
 
+\setupdocument
+  [\c!before=\directsetup{document:titlepage}]
+
 \protect
 
 \stopmodule
+

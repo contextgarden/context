@@ -149,12 +149,12 @@
         \let\currentlayout\empty
       \fi
       \letlayoutparameter\c!state\v!normal % global ? still needed ?
-      \global\let\currentlayout\currentlayout % global
+      \glet\currentlayout\currentlayout % global
       \page_layouts_synchronize
       \page_layouts_check_next
     \or % \setuplayout (reverts to main layout)
       \letlayoutparameter\c!state\v!normal % global ? still needed ?
-      \global\let\currentlayout\empty % global
+      \glet\currentlayout\empty % global
       \page_layouts_synchronize
       \page_layouts_check_next
     \fi
@@ -462,7 +462,7 @@
 
 \appendtoks
     \page_paper_reinstate
-    \global\let\page_paper_reinstate\relax
+    \glet\page_paper_reinstate\relax
 \to \everyaftershipout
 
 \unexpanded\def\page_paper_set_restore#1#2%
@@ -538,7 +538,7 @@
    \ifx\currentlayouttarget\empty
      \let\currentlayouttarget\currentpage
    \fi
-   \global\let\papersize\currentlayouttarget
+   \glet\papersize\currentlayouttarget
    \page_paper_reset_paper
    \processcommacommand[\m_page_asked_paper]\page_paper_handle_page_option
    \global\paperwidth \layouttargetparameter\c!width \relax
@@ -561,7 +561,7 @@
    %  locate paper target
    \page_paper_reset_print
    \processcommacommand[\m_page_asked_print]\page_paper_identify_target
-   \global\let\printpapersize\currentlayouttarget
+   \glet\printpapersize\currentlayouttarget
    \page_paper_reset_print
    \processcommacommand[\m_page_asked_print]\page_paper_handle_print_option
    \global\printpaperwidth \layouttargetparameter\c!width \relax
@@ -814,18 +814,18 @@
   {\edef\m_page_check{#1}
    \edef\m_page_state{\namedlayoutparameter\m_page_check\c!state}%
    \ifx\m_page_state\v!start
-     \global\let\v_page_layouts_pre_check\currentlayout
-     \global\let\currentlayout\m_page_check
+     \glet\v_page_layouts_pre_check\currentlayout
+     \glet\currentlayout\m_page_check
      \page_layouts_synchronize
    \else\ifx\m_page_state\v!repeat
-     \global\let\v_page_layouts_pre_check\relax
-     \global\let\currentlayout\m_page_check
+     \glet\v_page_layouts_pre_check\relax
+     \glet\currentlayout\m_page_check
      \page_layouts_synchronize
    \fi\fi}
 
 \def\page_layouts_check_revert
-  {\global\let\currentlayout\v_page_layouts_pre_check
-   \global\let\v_page_layouts_pre_check\relax
+  {\glet\currentlayout\v_page_layouts_pre_check
+   \glet\v_page_layouts_pre_check\relax
    \page_layouts_synchronize}
 
 \def\page_layouts_check_default
@@ -1040,8 +1040,8 @@
    \page_otr_command_set_vsize
    %
    \page_backgrounds_recalculate
-   \global\let\page_adepts_push\relax
-   \global\let\page_adepts_pop\page_adepts_pop_indeed}
+   \glet\page_adepts_push\relax
+   \glet\page_adepts_pop\page_adepts_pop_indeed}
 
 % \def\page_adapts_check
 %   {\csname\??pageadaptations\the\ifcsname\??pageadaptations\the\realpageno\endcsname\realpageno\else\zerocount\fi\endcsname}
@@ -1067,8 +1067,8 @@
   {\global\textheight  \d_page_adepts_pushed_text_height
    \global\footerheight\d_page_adepts_pushed_footer_height
    \page_layouts_synchronize
-   \global\let\page_adepts_push\page_adepts_push_indeed
-   \global\let\page_adepts_pop\relax}
+   \glet\page_adepts_push\page_adepts_push_indeed
+   \glet\page_adepts_pop\relax}
 
 \appendtoks \page_adapts_check \to \everystarttext
 \appendtoks \page_adapts_reset \to \everyshipout
@@ -1180,9 +1180,6 @@
 %D differently. We cannot adapt the real page number, since
 %D it is used in cross referencing. The next switch is set
 %D when we start at an even page.
-
-% We could use nested if here plus some \@EAEAEA's but but the
-% next variant has less expansion which is nicer in tracing.
 
 % #single #left #right
 

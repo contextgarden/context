@@ -62,10 +62,10 @@
      \csname\??attributeid#2\endcsname\scratchcounter
      % some attributes are always global
      \doifelseinset\s!global{#3}%
-       {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_global}%
-       {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_local }%
+       {\etoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\etoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!nomath{#3}%
-       {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_nomath}%
+       {\etoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
      % here public means 'visible' so it's not to be confused with 'public' at the lua end
      \doifinset\s!public{#3}%
        {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%

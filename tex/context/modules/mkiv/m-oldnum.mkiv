@@ -210,7 +210,7 @@
 \fi
 
 \def\doscandigit#1%
-  {\ifcase\skipdigit\@EA\hbox\else\@EA\hphantom\fi\bgroup
+  {\ifcase\skipdigit\expandafter\hbox\else\expandafter\hphantom\fi\bgroup
      \mathematics % brr, needed because of stored punctuation
        {\ifnum\digitinputmode=#1\relax
         \ifcase\digitoutputmode

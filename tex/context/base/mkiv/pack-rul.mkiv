@@ -487,7 +487,7 @@
 
 \unexpanded\def\executedefinedoverlay#1#2% we can share the definitions
   {\bgroup % redundant grouping
-   \setbox\scratchbox\hbox\bgroup
+   \setbox\scratchbox\hbox\bgroup % \hpack ?
      \ifzeropt\d_framed_target_dp
        \the\everyoverlay#2% saves wrapping (and lua call)
      \else
@@ -614,7 +614,7 @@
    \fi}
 
 \def\pack_framed_add_background
-  {\setbox\b_framed_normal\hbox % was vbox % see also *1*
+  {\setbox\b_framed_normal\hpack % was vbox % see also *1*
      {%\pack_framed_forgetall % can be relaxed
       \boxmaxdepth\maxdimen
       \framedbackgroundoffset\d_framed_backgroundoffset
@@ -631,7 +631,7 @@
         \setlayoutcomponentattribute{\v!background:\p_framed_component}%
       \fi
       \let\foregroundbox\pack_framed_background_box_content
-      \hbox \layoutcomponentboxattribute to \framedbackgroundwidth\bgroup % width in case 'foreground' is used as overlay
+      \hpack \layoutcomponentboxattribute to \framedbackgroundwidth\bgroup % width in case 'foreground' is used as overlay
          \the\everybackgroundbox % moved
          \expandafter\pack_framed_process_backgrounds\p_framed_background,\s!unknown,\relax % hm, messy .. look into it
          \box\b_framed_normal
@@ -692,10 +692,10 @@
         \scratchdimen\zeropoint
       \fi
       \edef\overlaylinecolor{\framedparameter\c!framecolor}% twice, also in background
-      \setbox\b_framed_extra\hbox
+      \setbox\b_framed_extra\hpack
         {\kern-\d_framed_frameoffset
          \raise\scratchdimen
-         \hbox{\ifx\overlaylinecolor\empty\else\dousecolorparameter\overlaylinecolor\fi\pack_framed_stroked_box}}%
+         \hpack{\ifx\overlaylinecolor\empty\else\dousecolorparameter\overlaylinecolor\fi\pack_framed_stroked_box}}%
       \wd\b_framed_extra\wd\b_framed_normal
       \ht\b_framed_extra\ht\b_framed_normal
       \dp\b_framed_extra\dp\b_framed_normal
@@ -728,7 +728,7 @@
   {\setbox\scratchbox\vpack \bgroup
      \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
      \nointerlineskip % new (needed for fences)
-     \hbox \bgroup
+     \hpack \bgroup
        \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
        \novrule
          \s!width \d_framed_target_wd
@@ -2203,7 +2203,7 @@
    \ignorespaces}
 
 \def\dododoformatonelinerbox
-  {\hbox to \hsize % maybe \hpack
+  {\hpack to \hsize % was \hbox
      {\ifcase\raggedstatus\or\hss\or\hss       \fi
       \unhbox\nextbox \removeunwantedspaces
       \ifcase\raggedstatus\or    \or\hss\or\hss\fi}%
@@ -2324,7 +2324,7 @@
        \doformatonelinerbox}
 
 \def\pack_framed_format_format_vsize
-  {\vbox to \d_framed_height
+  {\vbox to \d_framed_height % no vpack .. maybe grid
      \bgroup
        \let\postprocessframebox\relax
      % \pack_framed_forgetall
@@ -2551,9 +2551,9 @@
    \par
    \kern-\d_framed_linewidth
    \dontleavehmode
-     \hpack to \zeropoint{\normalhss\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth}%
+     \hpack to \zeropoint{\hss\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth}%
      \hfill
-     \hpack to \zeropoint{\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth\normalhss}%
+     \hpack to \zeropoint{\vrule\s!height\d_framed_linewidth\s!depth\zeropoint\s!width\scratchwidth\hss}%
    \par
    \nointerlineskip
    \kern\scratchoffset
@@ -2792,7 +2792,7 @@
    \csname\??framedtextlocation\framedtextparameter\c!location\endcsname
    \resetframedtextparameter\c!location
    \pack_framed_text_check
-   \setbox\b_framed_normal\vbox
+   \setbox\b_framed_normal\vbox % \vpack
      \startboxedcontent
        \hsize\localhsize
     %  \insidefloattrue % ? better
@@ -3069,7 +3069,7 @@
    \fi}
 
 \def\pack_framed_start_content_indeed
-  {\setbox\b_framed_normal\hbox\bgroup % maybe \hpack
+  {\setbox\b_framed_normal\hpack\bgroup
      \setlocalhsize
      \hsize\localhsize
      \scratchleftoffset  \framedcontentparameter\c!leftoffset  \relax
@@ -3079,16 +3079,16 @@
      \advance\hsize\dimexpr-\scratchleftoffset-\scratchrightoffset \relax
      \advance\vsize\dimexpr-\scratchtopoffset -\scratchbottomoffset\relax
      \kern\scratchleftoffset
-     \vbox\bgroup
+     \vpack\bgroup
        \vskip\scratchtopoffset
-         \vbox\bgroup
-           \forgetall
-           \blank[\v!disable]}
+       \vbox\bgroup
+         \forgetall
+         \blank[\v!disable]}
 
 \def\pack_framed_stop_content_indeed
-          {\removelastskip
-        \egroup
-        \vskip\scratchbottomoffset
+         {\removelastskip
+       \egroup
+       \vskip\scratchbottomoffset
      \egroup
      \kern\scratchrightoffset
    \egroup

@@ -1551,7 +1551,7 @@
 \unexpanded\def\postponenotes
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
-     \global\let\flushnotes\doflushnotes
+     \glet\flushnotes\doflushnotes
      \clf_postponenotes
    \fi}
 
@@ -1560,7 +1560,7 @@
 \unexpanded\def\startpostponingnotes % experimental, page-mix
   {\ifconditional\postponingnotes\else
      \global\settrue\postponingnotes
-    %\global\let\flushnotes\doflushnotes
+    %\glet\flushnotes\doflushnotes
      \clf_postponenotes
    \fi}
 
@@ -1581,7 +1581,7 @@
      \clf_flushpostponednotes% this also resets the states !
      \global\setfalse\postponednote
      \global\setfalse\postponingnotes
-     \global\let\flushnotes\relax
+     \glet\flushnotes\relax
      \endgroup
    \fi}
 

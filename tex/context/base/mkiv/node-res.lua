@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['node-res'] = {
     license   = "see context related readme files"
 }
 
+local type, next = type, next
 local gmatch, format = string.gmatch, string.format
 
 --[[ldx--

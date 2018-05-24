@@ -65,85 +65,87 @@
 \def\cutmarkrulethickness{\onepoint}
 
 \unexpanded\def\horizontalcuts
-  {\normalhbox to \d_pack_cutmarks_width
-     {\dorecurse\horizontalcutmarks{\vrule\s!width\cutmarkrulethickness\s!height\cutmarklength\normalhfill}%
+  {\hpack to \d_pack_cutmarks_width
+     {\dorecurse\horizontalcutmarks{\vrule\s!width\cutmarkrulethickness\s!height\cutmarklength\hfill}%
       \unskip}}
 
 \unexpanded\def\verticalcuts
-  {\normalvbox to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
+  {\vpack to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
      {\hsize\cutmarklength
-      \dorecurse\verticalcutmarks{\vrule\s!height\cutmarkrulethickness\s!width\hsize\normalvfill}%
+      \dorecurse\verticalcutmarks{\vrule\s!height\cutmarkrulethickness\s!width\hsize\vfill}%
       \unskip}}
 
 \unexpanded\def\baselinecuts
   {\ifdim\d_pack_cutmarks_depth>\zeropoint
-     \normalvbox to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
+     \vpack to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
        {\hsize\dimexpr\cutmarklength/2\relax
-        \normalvskip\zeropoint\s!plus\d_pack_cutmarks_height
+        \vskip\zeropoint\s!plus\d_pack_cutmarks_height
         \vrule\s!height\cutmarkrulethickness\s!width\hsize
-        \normalvskip\zeropoint\s!plus\d_pack_cutmarks_depth}%
+        \vskip\zeropoint\s!plus\d_pack_cutmarks_depth}%
    \fi}
 
 \unexpanded\def\cutmarksymbols#1%
-  {\normalhbox to \d_pack_cutmarks_width
-     {\setbox\scratchbox\normalhbox to \cutmarklength
-        {\normalhss\infofont\cutmarksymbol\normalhss}%
-      \normalhss
-      \normalvbox to \cutmarklength
+  {\hpack to \d_pack_cutmarks_width
+     {\setbox\scratchbox\hbox to \cutmarklength
+        {\hss\infofont\cutmarksymbol\hss}%
+      \hss
+      \vpack to \cutmarklength
         {\scratchdimen\dimexpr\cutmarklength/2\relax
          \scratchskip \ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
-         \normalvss
-         \hpack to \d_pack_cutmarks_width
-           {\llap{\copy\scratchbox\normalhskip\scratchskip}%
-            \normalhskip\scratchdimen\hss\infofont#1\hss\normalhskip\scratchdimen
-            \rlap{\normalhskip\scratchskip\copy\scratchbox}}%
-         \normalvss}%
-      \normalhss}}
+         \vss
+         \hbox to \d_pack_cutmarks_width
+           {\llap{\copy\scratchbox\hskip\scratchskip}%
+            \hskip\scratchdimen\hss
+            \infofont#1%
+            \hss\hskip\scratchdimen
+            \rlap{\hskip\scratchskip\copy\scratchbox}}%
+         \vss}%
+      \hss}}
 
 \unexpanded\def\makecutbox#1%
   {\bgroup
    \d_pack_cutmarks_height\ht#1%
    \d_pack_cutmarks_depth \dp#1%
    \d_pack_cutmarks_width \wd#1%
-   \setbox#1\normalhbox
+   \setbox#1\hpack
      {\dontcomplain
       \forgetall
       \boxmaxdepth\maxdimen
       \offinterlineskip
       \scratchdimen\dimexpr\cutmarklength/2\relax
       \hsize\d_pack_cutmarks_width
-      \setbox\scratchbox\normalvbox
-        {\setbox\scratchbox\normalhbox{\horizontalcuts}%
+      \setbox\scratchbox\vpack
+        {\setbox\scratchbox\hpack{\horizontalcuts}%
          \scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
-         \tlap{\copy\scratchbox\normalvskip\scratchskip}%
+         \tlap{\copy\scratchbox\vskip\scratchskip}%
          \hpack to \d_pack_cutmarks_width
            {\scratchskip\ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
-            \setbox\scratchbox\normalhbox{\verticalcuts}%
-            \llap{\copy\scratchbox\normalhskip\scratchskip}%
+            \setbox\scratchbox\hpack{\verticalcuts}%
+            \llap{\copy\scratchbox\hskip\scratchskip}%
             \ifdim\d_pack_cutmarks_depth=\zeropoint
-              \normalhfill
+              \hfill
             \else
               \bgroup
-              \setbox\scratchbox\normalhbox{\baselinecuts}%
-              \llap{\copy\scratchbox\normalhskip\scratchskip}%
-              \normalhfill
-              \rlap{\normalhskip\scratchskip\copy\scratchbox}%
+              \setbox\scratchbox\hpack{\baselinecuts}%
+              \llap{\copy\scratchbox\hskip\scratchskip}%
+              \hfill
+              \rlap{\hskip\scratchskip\copy\scratchbox}%
               \egroup
             \fi
-            \rlap{\normalhskip\scratchskip\copy\scratchbox}}%
-         \blap{\normalvskip\scratchskip\copy\scratchbox}}%
+            \rlap{\hskip\scratchskip\copy\scratchbox}}%
+         \blap{\vskip\scratchskip\copy\scratchbox}}%
       \ht\scratchbox\d_pack_cutmarks_height
       \dp\scratchbox\d_pack_cutmarks_depth
       \wd\scratchbox\zeropoint
       \startcolor[\defaulttextcolor]%
       \box\scratchbox
       \ifx\cutmarksymbol\relax \else
-        \setbox\scratchbox\normalvbox
+        \setbox\scratchbox\vpack
           {\scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
            \vskip-\dimexpr\scratchskip+\cutmarklength\relax
-           \normalhbox{\cutmarksymbols\cutmarktoptext}%
+           \hpack{\cutmarksymbols\cutmarktoptext}%
            \vskip\dimexpr\scratchskip+\d_pack_cutmarks_height+\d_pack_cutmarks_depth+\scratchskip\relax
-           \normalhbox{\cutmarksymbols\cutmarkbottomtext}}%
+           \hpack{\cutmarksymbols\cutmarkbottomtext}}%
         \ht\scratchbox\d_pack_cutmarks_height
         \dp\scratchbox\d_pack_cutmarks_depth
         \wd\scratchbox\zeropoint
@@ -156,8 +158,8 @@
    \dp#1\d_pack_cutmarks_depth
    \egroup}
 
-\unexpanded\def\cuthbox{\normalhbox\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalhbox}
-\unexpanded\def\cutvbox{\normalvbox\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvbox}
-\unexpanded\def\cutvtop{\normalvtop\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\normalvtop}
+\unexpanded\def\cuthbox{\hpack\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\hbox}
+\unexpanded\def\cutvbox{\vpack\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\vbox}
+\unexpanded\def\cutvtop{\tpack\bgroup\dowithnextbox{\makecutbox\nextbox\flushnextbox\egroup}\vtop}
 
 \protect \endinput

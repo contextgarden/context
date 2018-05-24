@@ -297,8 +297,13 @@
 %   {\let\dostarttagged\strc_tags_start_yes
 %    \let\dostoptagged \strc_tags_stop_yes}
 
+\newconditional\c_strc_tags_enabled
+
 \unexpanded\def\strc_tags_enable
-  {\let\dostarttagged        \strc_tags_enabled_start_detail
+  {% once enable one is toast
+   \global\settrue\c_strc_tags_enabled
+   % and gets:
+   \let\dostarttagged        \strc_tags_enabled_start_detail
    \let\dostarttaggednodetail\strc_tags_enabled_start_no_detail
    \let\dostarttaggedchained \strc_tags_enabled_start_chained
    \let\dostoptagged         \strc_tags_enabled_stop
@@ -306,12 +311,21 @@
    \let\dostopignoretagging  \strc_tags_stop_yes_ignore}
 
 \unexpanded\def\strc_tags_disable
-  {\let\dostarttagged        \strc_tags_start_nop_detail
-   \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
-   \let\dostarttaggedchained \strc_tags_start_nop_chained
-   \let\dostoptagged         \strc_tags_stop_nop
-   \let\dostartignoretagging \strc_tags_start_nop_ignore
-   \let\dostopignoretagging  \strc_tags_stop_nop_ignore}
+  {\ifconditional\c_strc_tags_enabled
+     % so now all are artifacts
+     \let\dostarttagged        \strc_tags_start_nop_ignore
+     \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
+     \let\dostarttaggedchained \strc_tags_start_nop_chained
+     \let\dostoptagged         \strc_tags_stop_nop_ignore
+   \else
+     % initial
+     \let\dostarttagged        \strc_tags_start_nop_detail
+     \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
+     \let\dostarttaggedchained \strc_tags_start_nop_chained
+     \let\dostoptagged         \strc_tags_stop_nop
+     \let\dostartignoretagging \strc_tags_start_nop_ignore
+     \let\dostopignoretagging  \strc_tags_stop_nop_ignore
+   \fi}
 
 % for luigi (beware: fully expandable):
 
@@ -468,8 +482,19 @@
 
 %D This will only work well with sane use.
 
+% \appendtoks
+%     {%
+%         \doglobal\appendtoks
+%             \strc_tags_start_yes_ignore
+%         \to \everybeforepagebody
+%         \doglobal\appendtoks
+%             \strc_tags_stop_yes_ignore
+%         \to \everyafterpagebody
+%     }%
+% \to \everyenableelements
+
 \appendtoks
-   \dostartignoretagging
+    \dostartignoretagging
 \to \everybeforepagebody
 
 \appendtoks

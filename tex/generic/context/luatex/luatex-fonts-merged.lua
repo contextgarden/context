@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/19/18 21:46:20
+-- merge date  : 05/24/18 15:49:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -27458,7 +27458,7 @@ do
     end
     local initialrl=direction=="TRT" and -1 or 0
     local datasets=otfdataset(tfmdata,font,attr)
-    local dirstack={} 
+    local dirstack={ nil } 
     sweephead={}
     for s=1,#datasets do
       local dataset=datasets[s]
@@ -27674,7 +27674,7 @@ do
     local steps=sequence.steps
     local nofsteps=sequence.nofsteps
     local done=false
-    local dirstack={} 
+    local dirstack={ nil } 
     local start=head
     local initialrl=direction=="TRT" and -1 or 0
     local rlmode=initialrl
@@ -36466,7 +36466,7 @@ local function nodepass(head,groupcode,size,packtype,direction)
       end
       if variants then
         local char=getchar(n)
-        if char>=0xFE00 and (char<=0xFE0F or (char>=0xE0100 and char<=0xE01EF)) then
+        if (char>=0xFE00 and char<=0xFE0F) or (char>=0xE0100 and char<=0xE01EF) then
           local hash=variants[char]
           if hash then
             local p=getprev(n)

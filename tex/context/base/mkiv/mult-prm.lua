@@ -254,6 +254,7 @@ return {
   "fontid",
   "formatname",
   "gleaders",
+  "glet",
   "hjcode",
   "hyphenationbounds",
   "hyphenationmin",

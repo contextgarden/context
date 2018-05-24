@@ -477,10 +477,10 @@
   {\scratchwidth \wd\nextbox
    \scratchheight\ht\nextbox
    \scratchdepth \dp\nextbox
-   \setbox\nextbox\hbox % \hpack ?
+   \setbox\nextbox\hpack
      {\framed[\c!frame=\v!off,#2]{\box\nextbox}}%
    \strc_references_set_simple_reference{#1}%
-   \setbox\nextbox\hbox attr \destinationattribute \currentdestinationattribute % \hpack ?
+   \setbox\nextbox\hpack attr \destinationattribute \currentdestinationattribute % \hpack ?
      {\strc_references_flush_destination_nodes
       \box\nextbox}%
    \setbox\nextbox\hpack{\box\nextbox}%
@@ -492,7 +492,7 @@
 
 \def\strc_references_content_nop_finish#1#2%
   {\strc_references_set_simple_reference{#1}%
-   \hbox attr \destinationattribute \currentdestinationattribute % \hpack ?
+   \hpack attr \destinationattribute \currentdestinationattribute % \hpack ?
      {\strc_references_flush_destination_nodes
       \box\nextbox}%
    \egroup}
@@ -794,7 +794,7 @@
    \clf_setinternalreference
      reference {#kind:#name}% no view
    \relax
-   \hbox attr \destinationattribute\lastdestinationattribute{}%
+   \hpack attr \destinationattribute\lastdestinationattribute{}%
    \endgroup}
 
 \installcorenamespace{savedinternalreference}
@@ -1084,7 +1084,7 @@
      \expandafter\sixthofsixarguments \fi}
 
 \unexpanded\def\referencesymbol
-  {\hbox\bgroup
+  {\hpack\bgroup
      \strut
      \markreferencepage
      \high
@@ -1670,7 +1670,7 @@
    \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
      {\clf_injectcurrentreference
       \global\lastsavedreferenceattribute\lastreferenceattribute
-      \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}
+      \hpack attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}
      {\box\scratchbox}%
    \endgroup}
 

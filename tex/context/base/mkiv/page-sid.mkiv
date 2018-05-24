@@ -557,14 +557,14 @@
 \def\page_sides_check_floats_after_par
   {\page_sides_check_floats_indeed
    \ifdim\d_page_sides_pagetotal=\pagetotal \else
-     \global\let\page_sides_check_floats\page_sides_check_floats_indeed
+     \glet\page_sides_check_floats\page_sides_check_floats_indeed
      \page_sides_flush_floats
      \global\c_page_sides_n_of_lines\zerocount % here !
    \fi}
 
 \unexpanded\def\page_sides_flush_floats_after_par
   {\global\d_page_sides_pagetotal\pagetotal
-   \global\let\page_sides_check_floats\page_sides_check_floats_after_par}
+   \glet\page_sides_check_floats\page_sides_check_floats_after_par}
 
 \unexpanded\def\page_sides_forget_floats
   {\global\d_page_sides_vsize\d_page_sides_vsize_reset

@@ -205,6 +205,9 @@
 
 \let\checkindentation\relax
 
+\installmacrostack\checkindentation
+\installmacrostack\ifindentation
+
 \def\spac_indentation_remove
   {\ifdim\parindent=\zeropoint \else
      \begingroup
@@ -218,21 +221,21 @@
 
 \def\spac_indentation_do_toggle_indeed
   {\global\indentationfalse
-   \global\let\checkindentation\spac_indentation_no_toggle_indeed
+   \glet\checkindentation\spac_indentation_no_toggle_indeed
    \spac_indentation_remove}
 
 \def\spac_indentation_no_toggle_indeed
   {\global\indentationtrue
-   \global\let\checkindentation\spac_indentation_do_toggle_indeed}
+   \glet\checkindentation\spac_indentation_do_toggle_indeed}
 
 \def\spac_indentation_do_indeed
   {\global\indentationtrue}
 
 \def\spac_indentation_do_toggle
-  {\global\let\checkindentation\spac_indentation_do_toggle_indeed}
+  {\glet\checkindentation\spac_indentation_do_toggle_indeed}
 
 \def\spac_indentation_no_toggle
-  {\global\let\checkindentation\spac_indentation_no_toggle_indeed}
+  {\glet\checkindentation\spac_indentation_no_toggle_indeed}
 
 \def\spac_indentation_check_toggle
   {\ifcase\c_spac_indentation_toggle_state
@@ -244,22 +247,22 @@
    \fi}
 
 \def\spac_indentation_variant_yes
-  {\global\let\checkindentation\spac_indentation_do_indeed}
+  {\glet\checkindentation\spac_indentation_do_indeed}
 
 \def\spac_indentation_no_next_check
   {\spac_indentation_remove
-   \global\let\checkindentation\spac_indentation_do_indeed}
+   \glet\checkindentation\spac_indentation_do_indeed}
 
 \def\spac_indentation_variant_no % made global
   {\ifinpagebody \else
      \global\indentationfalse
-     \global\let\checkindentation\spac_indentation_no_next_check
+     \glet\checkindentation\spac_indentation_no_next_check
    \fi}
 
 \def\nonoindentation % bv bij floats
   {\ifinpagebody \else
      \global\indentationtrue
-     \global\let\checkindentation\spac_indentation_do_indeed
+     \glet\checkindentation\spac_indentation_do_indeed
    \fi}
 
 \def\spac_indentation_variant_force
@@ -271,13 +274,13 @@
    \fi \fi}
 
 \appendtoks
-    \pushmacro\checkindentation
-    \pushmacro\ifindentation
+    \push_macro_checkindentation
+    \push_macro_ifindentation
 \to \everypushsomestate
 
 \appendtoks
-    \popmacro\ifindentation
-    \popmacro\checkindentation
+    \pop_macro_ifindentation
+    \pop_macro_checkindentation
 \to \everypopsomestate
 
 % public:
@@ -287,16 +290,16 @@
 \let\doindentation\spac_indentation_variant_yes   % public
 
 \def\dontrechecknextindentation              % public (in macros)
-  {\global\let\dorechecknextindentation\relax}
+  {\glet\dorechecknextindentation\relax}
 
 \let\dorechecknextindentation\relax          % public (in macros)
 
 \unexpanded\def\spac_indentation_check_next_indentation
-  {\global\let\dorechecknextindentation\relax
+  {\glet\dorechecknextindentation\relax
    \doifelsenextchar\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
 
 \def\spac_indentation_variant_auto
-  {\global\let\dorechecknextindentation\spac_indentation_check_next_indentation}
+  {\glet\dorechecknextindentation\spac_indentation_check_next_indentation}
 
 %D This one sets up the local indentation behaviour (i.e. either or not
 %D a next paragraph will be indented).
@@ -603,6 +606,9 @@
     \unexpanded\def\qquad {\hskip 2\emwidth}
 
 \fi
+
+\unexpanded\def\negenspace{\kern-.5\emwidth}
+\unexpanded\def\negemspace{\kern-  \emwidth}
 
 \let\emspace\quad
 

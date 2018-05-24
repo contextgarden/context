@@ -26,7 +26,7 @@
 \newtoks\t_page_text_data
 
 \unexpanded\def\starttextdata#1\stoptextdata
-  {\global\let\page_shipouts_flush_text_data\page_shipouts_flush_text_data_indeed
+  {\glet\page_shipouts_flush_text_data\page_shipouts_flush_text_data_indeed
    \globaladdtotoks\t_page_text_data{#1}}
 
 \let\stoptextdata\relax
@@ -34,7 +34,7 @@
 \def\page_shipouts_flush_text_data_indeed
   {\vsmashed{\the\t_page_text_data}%
    \global\t_page_text_data\emptytoks
-   \global\let\page_shipouts_flush_text_data\relax}
+   \glet\page_shipouts_flush_text_data\relax}
 
 \let\page_shipouts_flush_text_data\relax
 
@@ -320,14 +320,14 @@
 \let\pusharrangedpage\relax
 
 \def\dosetuparrangement#1#2#3#4#5#6#7#8%
-  {\global\arrangedpageX         #1%
-   \global\arrangedpageY         #2%
-   \global\arrangedpageT         #3%
-   \global\c_page_marks_nx       #4%
-   \global\c_page_marks_ny       #5%
-   \global\let\pusharrangedpage  #6%
-   \global\let\poparrangedpages  #7%
-   \global\let\handlearrangedpage#8}
+  {\global\arrangedpageX     #1%
+   \global\arrangedpageY     #2%
+   \global\arrangedpageT     #3%
+   \global\c_page_marks_nx   #4%
+   \global\c_page_marks_ny   #5%
+   \glet  \pusharrangedpage  #6%
+   \glet  \poparrangedpages  #7%
+   \glet  \handlearrangedpage#8}
 
 \installpagearrangement {\v!normal}
   {\global\arrangingpagesfalse}

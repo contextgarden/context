@@ -179,13 +179,13 @@
    \gridboxlinemode  \c_page_grids_line_mode
    \gridboxlinenomode\c_page_grids_lineno_mode
    \setgridbox\scratchbox\makeupwidth\textheight % todo: check color
-   \global\setbox#1\hbox % global ?
+   \global\setbox#1\hpack % global ?
      {\ifcase\c_page_grids_location\or\or\box#1\hskip-\makeupwidth\fi
       \begingroup % color
       \ifcase\layoutcolumns\else
         \gray
         \setlayoutcomponentattribute{\v!grid:\v!columns}%
-        \hbox \layoutcomponentboxattribute to \makeupwidth
+        \hpack \layoutcomponentboxattribute to \makeupwidth
           {\dorecurse\layoutcolumns
              {\hskip\layoutcolumnwidth
               \ifnum\recurselevel<\layoutcolumns
@@ -197,7 +197,7 @@
         \hskip-\makeupwidth
       \fi
       \setlayoutcomponentattribute{\v!grid:\v!lines}%
-      \hbox \layoutcomponentboxattribute{\box\scratchbox}%
+      \hpack \layoutcomponentboxattribute{\box\scratchbox}%
       \endgroup
       \ifcase\c_page_grids_location\or\hskip-\makeupwidth\box#1\fi}%
    \stopcolor}

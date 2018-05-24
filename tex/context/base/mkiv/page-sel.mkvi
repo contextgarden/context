@@ -342,7 +342,7 @@
 \def\page_selectors_slice_indeed[#filename][#oddsettings][#evensettings]%
   {\bgroup
    \dontcomplain
-   \global\let\slicedpagenumber\!!zerocount
+   \glet\slicedpagenumber\!!zerocount
    \getfiguredimensions[#filename]%
    \setupcurrentwithpages
      [\c!offset=\zeropoint,%
@@ -366,7 +366,7 @@
         \c!header=\zeropoint,\c!footer=\zeropoint]%
    \fi
    \dorecurse\noffigurepages
-     {\global\let\slicedpagenumber\recurselevel
+     {\glet\slicedpagenumber\recurselevel
       \ifnum\c_page_selectors_n>\plusone
         \dorecurse\c_page_selectors_n
           {\let\slicedpagestepx\recurselevel

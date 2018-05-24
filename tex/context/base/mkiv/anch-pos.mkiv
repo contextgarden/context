@@ -155,7 +155,7 @@
 
 \def\anch_positions_set_data_indeed#1#2#3#4%
   {\anch_positions_initialize
-   \hbox
+   \hbox % \hpack
      {\edef\currentposition{#1}%
       \dosetpositionwhd\currentposition{#2}{#3}{#4}% already \the\dimexpr
       \anch_positions_trace_left
@@ -177,7 +177,7 @@
 
 \def\anch_positions_set_box_finish#1%
   {\anch_positions_initialize
-   \hbox to \wd\nextbox
+   \hbox to \wd\nextbox % \hpack
      {\edef\currentposition{#1}%
       \dosetpositionbox\currentposition\nextbox
       \anch_positions_trace_left
@@ -198,7 +198,7 @@
 
 \def\anch_positions_set_strut_yes#1%
   {\anch_positions_initialize
-   \hbox to \zeropoint
+   \hbox to \zeropoint % \hpack
      {\edef\currentposition{#1}%
       \dosetpositionstrut\currentposition
       \anch_positions_trace_left
@@ -215,7 +215,7 @@
 
 \def\anch_positions_set_strut_kind_yes#1#2%
   {\anch_positions_initialize
-   \hbox to \zeropoint
+   \hbox to \zeropoint % \hpack
      {\edef\currentposition{#1}%
       \dosetpositionstrutkind\currentposition{#2}%
       \anch_positions_trace_left
@@ -235,7 +235,7 @@
 
 \def\anch_positions_set_plus_indeed#1#2#3#4#5%
   {\anch_positions_initialize
-   \hbox % just package
+   \hbox % \hpack
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}% already \the\dimexpr
       \anch_positions_trace_right
@@ -257,7 +257,7 @@
 
 \def\anch_positions_set_plus_yes_finish#1#2%
   {\anch_positions_initialize
-   \hbox to \nextboxwd
+   \hbox to \nextboxwd % \hpack
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}{#2}%
       \anch_positions_trace_right
@@ -296,7 +296,7 @@
   {\clf_markregionbox#1\relax}
 
 \unexpanded\def\anch_mark_flow_box#1% will be extended / renamed
-  {\hbox\bgroup
+  {\hbox\bgroup % \hpack
    \global\advance\c_anch_text\plusone
    \clf_markregionboxtagged#1{textarea:\the\c_anch_text}%
    \box#1%
@@ -393,7 +393,7 @@
   {\the\t_anch_positions_tracers}
 
 \unexpanded\def\enableparpositions % global
-  {\global\let\registerparoptions\doregisterparoptions
+  {\glet\registerparoptions\doregisterparoptions
    \global\positioningtrue}
 
 \let\disableparpositions\relax

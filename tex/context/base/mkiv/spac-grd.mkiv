@@ -108,8 +108,8 @@
 \newbox  \b_spac_lines_correction_after
 
 \def\spac_lines_initialize_corrections
-  {\setbox\b_spac_lines_correction_before\hbox{\setstrut\strut}%
-   \setbox\b_spac_lines_correction_after \hbox{(}%
+  {\setbox\b_spac_lines_correction_before\hpack{\setstrut\strut}%
+   \setbox\b_spac_lines_correction_after \hbox {(}%
    \d_spac_lines_correction_before\dimexpr\ht\b_spac_lines_correction_before-\ht\b_spac_lines_correction_after\relax
    \d_spac_lines_correction_after \dimexpr\dp\b_spac_lines_correction_before-\dp\b_spac_lines_correction_after\relax
    \ifdim\d_spac_lines_correction_before<\zeropoint\d_spac_lines_correction_before\zeropoint\fi

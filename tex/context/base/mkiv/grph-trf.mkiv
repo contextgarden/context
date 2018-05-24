@@ -146,10 +146,10 @@
    \d_grph_scale_ht\ht\nextbox
    \d_grph_scale_dp\dp\nextbox
    %
-   \global\let\finalscaleboxxscale \!!plusone
-   \global\let\finalscaleboxyscale \!!plusone
-   \xdef      \finalscaleboxwidth {\the\d_grph_scale_wd}%
-   \xdef      \finalscaleboxheight{\the\d_grph_scale_ht}%
+   \glet\finalscaleboxxscale \!!plusone
+   \glet\finalscaleboxyscale \!!plusone
+   \xdef\finalscaleboxwidth {\the\d_grph_scale_wd}%
+   \xdef\finalscaleboxheight{\the\d_grph_scale_ht}%
    %
    \forgetall
    \dontcomplain

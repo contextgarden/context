@@ -62,7 +62,7 @@ ranges of numbers for them. Of course a the <l n='context'/> end a private attri
 accessible too, so a private attribute can have a public appearance.</p>
 --ldx]]--
 
-sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or  127 -- very private (can become 15)
+sharedstorage.attributes_last_private = sharedstorage.attributes_last_private or   15 -- very private
 sharedstorage.attributes_last_public  = sharedstorage.attributes_last_public  or 1024 -- less private
 
 function attributes.private(name) -- at the lua end (hidden from user)

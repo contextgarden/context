@@ -137,7 +137,7 @@ local function nodepass(head,groupcode,size,packtype,direction)
             end
             if variants then
                 local char = getchar(n)
-                if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
+                if (char >= 0xFE00 and char <= 0xFE0F) or (char >= 0xE0100 and char <= 0xE01EF) then
                     local hash = variants[char]
                     if hash then
                         local p = getprev(n)

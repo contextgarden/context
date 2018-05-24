@@ -355,14 +355,14 @@
       \ifdim\wd2=\zeropoint
         \setbox0\emptybox
         \setbox2\emptybox
-        \@EA\grabfirstline
+        \expandafter\grabfirstline
       \else\ifdim\wd2>\hsize
         \hbox to \hsize{\strut\unhbox0}#2\egroup
         \break##1\
         \egroup
       \else
         \setbox0\box2
-        \@EAEAEA\grabfirstline
+        \doubleexpandafter\grabfirstline
       \fi\fi}%
    \grabfirstline}
 

@@ -2813,6 +2813,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
         notmatchpre     = { }
         notmatchpost    = { }
         notmatchreplace = { }
+     -- notmatchpre     = { a = 1, b = 1 }  notmatchpre    .a = nil notmatchpre    .b = nil
+     -- notmatchpost    = { a = 1, b = 1 }  notmatchpost   .a = nil notmatchpost   .b = nil
+     -- notmatchreplace = { a = 1, b = 1 }  notmatchreplace.a = nil notmatchreplace.b = nil
     end
     return head, start, done
 end
@@ -3852,8 +3855,9 @@ do
 
      -- local done      = false
         local datasets  = otfdataset(tfmdata,font,attr)
-        local dirstack  = { } -- could move outside function but we can have local runs
+        local dirstack  = { nil } -- could move outside function but we can have local runs
         sweephead       = { }
+     -- sweephead  = { a = 1, b = 1 } sweephead.a = nil sweephead.b = nil
 
         -- Keeping track of the headnode is needed for devanagari. (I generalized it a bit
         -- so that multiple cases are also covered.) We could prepend a temp node.
@@ -4127,7 +4131,7 @@ do
         local nofsteps  = sequence.nofsteps
 
         local done      = false
-        local dirstack  = { } -- could move outside function but we can have local runs
+        local dirstack  = { nil } -- could move outside function but we can have local runs (maybe a few more nils)
         local start     = head
         local initialrl = direction == "TRT" and -1 or 0
      -- local initialrl = (direction == 1 or direction == "TRT") and -1 or 0

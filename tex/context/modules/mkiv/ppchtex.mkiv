@@ -1747,7 +1747,7 @@
 
 \def\dosimplechemicalA#1#2#3% % evt: {#1,\relax}
   {\let\chemicalspace=\relax
-   \@EA\dosimplechemical\@EA{\@@chemicalchemicaloffset,#1}{#2}{#3}%
+   \expandafter\dosimplechemical\expandafter{\@@chemicalchemicaloffset,#1}{#2}{#3}%
    \egroup}
 
 \def\dosimplechemicalB#1#2#3%
@@ -1849,9 +1849,9 @@
    \setevalue{\??chemical\c!text\the\levchemical}{\the\txtchemical}%
    \txtchemical=0
    \dodochemical[#1][#2]%
-   % \@EA\txtchemical\@EA\csname\??chemical\c!text\the\levchemical\endcsname
+   % \expandafter\txtchemical\expandafter\csname\??chemical\c!text\the\levchemical\endcsname
    \txtchemical\csname\??chemical\c!text\the\levchemical\endcsname
-   \@EA\let\@EA\unknownchemical\csname\??chemical\s!unknown\the\levchemical\endcsname
+   \expandafter\let\expandafter\unknownchemical\csname\??chemical\s!unknown\the\levchemical\endcsname
    \advance\levchemical -1
    %\egroup
    \ignorespaces}
@@ -2099,7 +2099,7 @@
      \verchemical=\getvalue{\s!chemical y1}\relax
    \else
      \restorechemicalvalues{\getvalue{\s!chemical n\the\chemicalstack}}%
-     %\@EA\let\@EA\@@chemicalpostponed\@EA=\csname\s!chemical p\the\chemicalstack\endcsname
+     %\expandafter\let\expandafter\@@chemicalpostponed\expandafter=\csname\s!chemical p\the\chemicalstack\endcsname
      \let\@@chemicalpostponed=\relax
      \horchemical=\getvalue{\s!chemical x\the\chemicalstack}\relax
      \verchemical=\getvalue{\s!chemical y\the\chemicalstack}\relax

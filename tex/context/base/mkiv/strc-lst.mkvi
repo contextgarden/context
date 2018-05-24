@@ -177,7 +177,7 @@
         view     {\interactionparameter\c!focus}%
      \relax % this will change
      \xdef\currentstructurelistattribute{\the\lastdestinationattribute}%
-     \dontleavehmode\hbox attr \destinationattribute \lastdestinationattribute{}% todo
+     \dontleavehmode\hpack attr \destinationattribute \lastdestinationattribute{}% todo
    \else
      % and this one doesn't
      \clf_enhancelist\currentlistnumber\relax
@@ -1091,7 +1091,7 @@
             \fi
             \ifconditional\c_lists_has_page
                 \ifconditional\c_lists_show_page
-                    \setbox\b_strc_lists_page\hbox {
+                    \setbox\b_strc_lists_page\hpack {
                         \scratchdimen\listalternativeparameter\c!width
                         \hbox \strc_lists_get_reference_attribute\v!pagenumber \ifdim\scratchdimen>\zeropoint to \scratchdimen\fi {
                             \hfill

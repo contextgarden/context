@@ -703,6 +703,8 @@ local function writer(parent,command,...) -- already optimized before call
             -- nothing
         elseif ti == "" then
             flush(currentcatcodes,"{}")
+     -- elseif ti == 1 then
+     --     flush(currentcatcodes,"{1}")
         else
             local typ = type(ti)
             if typ == "string" then
@@ -719,7 +721,7 @@ local function writer(parent,command,...) -- already optimized before call
                     flush(currentcatcodes,"}")
                 end
             elseif typ == "number" then
-                -- numbers never have funny catcodes
+                -- numbers never have funny catcodesz
                 flush(currentcatcodes,"{",ti,"}")
             elseif typ == "table" then
                 local tn = #ti

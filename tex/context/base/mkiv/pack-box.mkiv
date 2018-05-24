@@ -108,6 +108,7 @@
   {\global\advance\c_pack_anchors_n\plusone
    \pagereference[\v!layer:\v!anchor:\number\c_pack_anchors_n]%
    \putboxincache\v!anchor{\number\c_pack_anchors_n}\b_pack_anchors
+%    \xtoksapp\t_pack_anchors_flush{\pack_anchors_flush{\number\c_pack_anchors_n}{#1}{#2}}%
    \doglobal\appendetoks
      \pack_anchors_flush{\number\c_pack_anchors_n}{#1}{#2}%
    \to \t_pack_anchors_flush

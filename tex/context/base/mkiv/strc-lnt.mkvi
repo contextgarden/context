@@ -242,13 +242,13 @@
 
 \def\strc_linenotes_traced_indeed#1%
   {\iftracelinenotes
-     \hbox to \zeropoint
+     \hpack to \zeropoint
        {\forgetall
         \hsize\zeropoint
         \hss
-        \vbox to \strutheight{\llap{\red\infofont\setstrut\the\c_strc_linenotes}\vss}%
+        \vpack to \strutheight{\llap{\red\infofont\setstrut\the\c_strc_linenotes}\vss}%
         {\color[blue]{\vl}}%
-        \vbox to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
+        \vpack to \strutheight{\rlap{\red\infofont\setstrut#1}\vss}%
         \hss}%
       \prewordbreak
    \fi}

@@ -212,7 +212,7 @@
      \setbox2\hbox{m}%
      \ifdim\wd0=\wd2
        \endgroup
-       \@EAEAEA\gobbleoneargument
+       \doubleexpandafter\gobbleoneargument
      \else
        \endgroup
      \fi
@@ -220,8 +220,8 @@
 
 \unexpanded\def\dimension#1%
   {\begingroup
-   \global\let\savedthedimensionprefix\thedimensionprefix
-   \global\let\savedthedimensionpower\thedimensionpower
+   \glet\savedthedimensionprefix\thedimensionprefix
+   \glet\savedthedimensionpower\thedimensionpower
    \unexpanded\def\dimension##1{\global\nesteddimensiontrue}%
    \let\dimensionprefix\dimension
    \let\dimensionmidfix\dimension
@@ -229,8 +229,8 @@
    \let\dimensionpower \dimension
    \global\nesteddimensionfalse
    \setbox\scratchbox\hbox{\ustartmathmode#1\ustopmathmode}% pre-roll
-   \global\let\thedimensionprefix\savedthedimensionprefix
-   \global\let\thedimensionpower \savedthedimensionpower
+   \glet\thedimensionprefix\savedthedimensionprefix
+   \glet\thedimensionpower \savedthedimensionpower
    \endgroup
    \ifnesteddimension#1\else\dodimension{#1}\fi}
 
@@ -278,8 +278,8 @@
    \else
      \hskip\dimensionpowersignal
    \fi
-   \global\let\thedimensionprefix\empty
-   \global\let\thedimensionpower\empty}
+   \glet\thedimensionprefix\empty
+   \glet\thedimensionpower\empty}
 
 %D \macros
 %D   {dontbreakdimension,

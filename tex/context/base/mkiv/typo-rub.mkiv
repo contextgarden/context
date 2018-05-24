@@ -26,6 +26,7 @@
 \installcorenamespace {ruby}
 \installcorenamespace {rubyanalyze}
 \installcorenamespace {rubyplacement}
+\installcorenamespace {rubynumber}
 
 \installcommandhandler \??ruby {ruby} \??ruby
 
@@ -134,6 +135,14 @@
    \c!distance=\zeropoint, % \v!none means no skip at all so no break either
    \c!hoffset=\zeropoint,
    \c!voffset=-2\exheight]
+
+%D Experiment too:
+
+\unexpanded\def\numberedruby[#1]#2%
+  {\doifnotcounter{\??rubynumber#1}{\definecounter[\??rubynumber#1]\setcounter[\??rubynumber#1][1]}%
+   \ruby[#1]{#2}{\convertedcounter[\??rubynumber#1]}%
+   \incrementcounter[\??rubynumber#1]%
+   \relax}
 
 \protect \endinput
 

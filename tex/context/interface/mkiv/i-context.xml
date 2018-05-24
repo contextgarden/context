@@ -188,6 +188,7 @@
     <cd:interfacefile filename="i-renderingwindow.xml"/>
     <cd:interfacefile filename="i-replacement.xml"/>
     <cd:interfacefile filename="i-rotatation.xml"/>
+    <cd:interfacefile filename="i-ruby.xml"/>
     <cd:interfacefile filename="i-scale.xml"/>
     <cd:interfacefile filename="i-script.xml"/>
     <cd:interfacefile filename="i-section.xml"/>

@@ -120,7 +120,7 @@
    \setheadmarking
    \doresetstructureheadnumbercontent
    \ifconditional\c_strc_sectioning_empty
-     \setbox\b_strc_rendering_head\hbox \headreferenceattributes to \zeropoint{\strut}%
+     \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint{\strut}%
    \else
      \docheckheadreference
      \setbox\b_strc_rendering_head\hbox \headreferenceattributes
@@ -139,7 +139,7 @@
      \dosetstructureheadnumbercontent
      \doresetstructureheadnumbercontent
    \ifconditional\c_strc_sectioning_empty
-     \setbox\b_strc_rendering_head\hbox \headreferenceattributes to \zeropoint{\strut}%
+     \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint{\strut}%
    \else % = needed
      \docheckheadreference
      \setbox\b_strc_rendering_head\hbox \headreferenceattributes
@@ -779,18 +779,18 @@
 
 \startsetups[\??headrenderings:\v!bottom]
     \ifconditional\headshownumber
-        \setbox0\hbox {
+        \setbox\scratchboxone\hbox {
             \headnumbercontent
         }
-        \setbox2\vbox {
+        \setbox\scratchboxtwo\vbox {
             \headsetupspacing
-            \advance\hsize-\wd0\relax
+            \advance\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
         \hbox {
-            \box0
+            \box\scratchboxone
             \hskip\headnumberdistance
-            \box2
+            \box\scratchboxtwo
         }
     \else
         \vbox {
@@ -808,18 +808,18 @@
 
 \startsetups[\??headrenderings:\v!top]
     \ifconditional\headshownumber
-        \setbox0\hbox {
+        \setbox\scratchboxone\hbox {
             \headnumbercontent
         }
-        \setbox2\vtop {
+        \setbox\scratchboxtwo\vtop {
             \headsetupspacing
-            \advance\hsize-\wd0\relax
+            \advance\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
         \hbox {
-            \box0
+            \box\scratchboxone
             \hskip\headnumberdistance
-            \box2
+            \box\scratchboxtwo
         }
     \else
         \vtop{

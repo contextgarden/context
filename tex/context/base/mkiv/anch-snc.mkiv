@@ -25,9 +25,9 @@
 
 \unexpanded\def\definesyncpositions[#1]%
   {\ifcsname\s!num:\s!syncpos:#1\endcsname \else
-     \global\let\flushsyncpositions\doflushsyncpositions % only when used
-     \global\let\flushsyncresets   \doflushsyncresets
-     \global\let\flushsyncpresets  \doflushsyncpresets
+     \glet\flushsyncpositions\doflushsyncpositions % only when used
+     \glet\flushsyncresets   \doflushsyncresets
+     \glet\flushsyncpresets  \doflushsyncpresets
      \expandafter\newcount\csname\s!num:\s!syncpos:#1\endcsname
      \doglobal\appendtoksonce\csname\s!reset :\s!syncpos:#1\endcsname\to\resetsyncpositions
    \doglobal\appendtoksonce\csname\s!preset:\s!syncpos:#1\endcsname\to\presetsyncpositions

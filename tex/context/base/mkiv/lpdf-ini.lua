@@ -559,7 +559,9 @@ end
 local cache = { } -- can be weak
 
 local function pdfnumber(n,default) -- 0-10
-    n = n or default
+    if not n then
+        n = default
+    end
     local c = cache[n]
     if not c then
         c = setmetatable({ n },mt_n)
@@ -581,7 +583,9 @@ end
 local escaped = Cs(Cc("/") * (S(forbidden)/replacements + P(1))^0)
 
 local function pdfconstant(str,default)
-    str = str or default or ""
+    if not str then
+        str = default or ""
+    end
     local c = cache[str]
     if not c then
      -- c = setmetatable({ "/" .. str },mt_c)

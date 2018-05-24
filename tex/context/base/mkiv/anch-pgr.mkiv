@@ -66,7 +66,7 @@
 
 \def\anch_positions_action_indeed_yes % we need a way to figure out if we have actions
   {\begingroup
-   \setbox\scratchbox\hbox
+   \setbox\scratchbox\hbox % \hpack
      {\anch_positions_trace_action_yes
       \the\everyinsertpositionaction
       \the\everypositionaction
@@ -130,12 +130,12 @@
        \else
          \c_anch_page_width \paperwidth
          \c_anch_page_height\paperheight
-         \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hbox{\box#1}\fi
+         \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hpack{\box#1}\fi
        \fi
      \else
        \c_anch_page_width \paperwidth
        \c_anch_page_height\paperheight
-       \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hbox{\box#1}\fi
+       \anch_make_page_box{#1}% \ifvbox#1\setbox#1\hpack{\box#1}\fi
      \fi
    \fi\fi}
 
@@ -243,7 +243,7 @@
       \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
-      \setbox\scratchbox\hbox to \d_overlay_width
+      \setbox\scratchbox\hbox to \d_overlay_width % \hpack
         {\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
       \ht\scratchbox\d_overlay_height
       \dp\scratchbox\zeropoint
@@ -275,7 +275,7 @@
       \let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
       \the\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
-      \setbox\scratchbox\hbox to \d_overlay_width
+      \setbox\scratchbox\hbox to \d_overlay_width % \hpack
         {\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
       \ht\scratchbox\d_overlay_height
       \dp\scratchbox\zeropoint
@@ -366,7 +366,7 @@
    \anch_positions_meta_graphic_prepare
    \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
    \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
-   \setbox\b_anch_positions_graphic\hbox
+   \setbox\b_anch_positions_graphic\hbox % \hpack
      {\ignorespaces\csname#1#2\endcsname\removelastspace}%
    \smashbox\b_anch_positions_graphic
    \box\b_anch_positions_graphic

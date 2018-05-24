@@ -1321,9 +1321,30 @@
      \expandafter\noexpand\csname current#2parent\endcsname
      \expandafter\noexpand\csname inject#2parent\endcsname}}
 
+% Faster but not used that much to make a dent in performance. But, because it's
+% cleaner anyway and also gives less tracing, we apply it a few times.
+
+\unexpanded\def\syst_helpers_install_macro_stack#1#2#3%
+  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+   \expandafter\newcount\csname#3\m_syst_helpers_push_macro\endcsname
+   \expandafter\edef\csname push_macro_\m_syst_helpers_push_macro\endcsname
+     {\noexpand\expandafter\glet
+         \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname
+         \noexpand#1%
+       \global\advance\csname#3\m_syst_helpers_push_macro\endcsname\plusone}%
+   \expandafter\edef\csname pop_macro_\m_syst_helpers_push_macro\endcsname
+     {\global\advance\csname#3\m_syst_helpers_push_macro\endcsname\minusone
+      \noexpand\expandafter#2%
+         \noexpand\expandafter\noexpand#1%
+         \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname}}
+
+\unexpanded\def\installmacrostack      #1{\syst_helpers_install_macro_stack#1\let \??localpushedmacro }
+\unexpanded\def\installglobalmacrostack#1{\syst_helpers_install_macro_stack#1\glet\??globalpushedmacro}
+
 \protect
 
-%\unprotect
+%  \unprotect
+%
 %  \installcorenamespace {test} \installcommandhandler \??test {test} \??test
 %  \unexpanded\def\TestMeA[#1]%
 %    {\edef\currenttest{#1}
@@ -1338,12 +1359,92 @@
 %  \unexpanded\def\TestMeD[#1]%
 %    {\edef\currenttest{#1}
 %     \doubleexpandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
-% \protect
 %
-% \starttext
-%   \definetest[foo] \definetest[bar][foo] \setuptest[bar][before=indeed]
-%   \resettimer \dorecurse{100000}{\TestMeA[bar]} A:\elapsedtime \par % 0.502
-%   \resettimer \dorecurse{100000}{\TestMeB[bar]} B:\elapsedtime \par % 0.530
-%   \resettimer \dorecurse{100000}{\TestMeC[bar]} C:\elapsedtime \par % 0.487
-%   \resettimer \dorecurse{100000}{\TestMeD[bar]} D:\elapsedtime \par % 0.493
-% \stoptext
+%  \protect
+%
+%  \starttext
+%    \definetest[foo] \definetest[bar][foo] \setuptest[bar][before=indeed]
+%    \resettimer \dorecurse{100000}{\TestMeA[bar]} A:\elapsedtime \par % 0.502
+%    \resettimer \dorecurse{100000}{\TestMeB[bar]} B:\elapsedtime \par % 0.530
+%    \resettimer \dorecurse{100000}{\TestMeC[bar]} C:\elapsedtime \par % 0.487
+%    \resettimer \dorecurse{100000}{\TestMeD[bar]} D:\elapsedtime \par % 0.493
+%  \stoptext
+
+% There is no real demand for this ... even if this is twice as fast we only gain
+% a few milliseconds:
+%
+%   \unexpanded\def\foo#1{[foo:#1]}
+%
+%   \installcommalistprocessor                        {foo} \foo
+%   \installcommalistprocessorcommand \processfoolist {foo} \foo
+%
+%   \commalistprocessor{foo}[a,b,c,d]
+%   \processfoolist         [a, b, c, d]
+%
+%   \testfeatureonce{30000}{}                                           \elapsedtime\par % 0.01 -> 0.00
+%   \testfeatureonce{30000}{\processfoolist         [fixed,middle]}     \elapsedtime\par % 0.07 -> 0.06
+%   \testfeatureonce{30000}{\commalistprocessor{foo}[fixed,middle]}     \elapsedtime\par % 0.09 -> 0.08
+%   \testfeatureonce{30000}{\processcommalist       [fixed,middle]\foo} \elapsedtime\par % 0.13 -> 0.12
+%
+% For instance the luatex manual only has some 3000 calls. But I keep this around as one
+% never knows when we might need it.
+%
+%  \installcorenamespace{commalistprocessor}
+%  \installcorenamespace{commalistprocessorcheck}
+%  \installcorenamespace{commalistprocessorwrap}
+%  \installcorenamespace{commalistprocessorfirst}
+%  \installcorenamespace{commalistprocessorcheckspace}
+%  \installcorenamespace{commalistprocessorcheckfinish}
+%  \installcorenamespace{commalistprocessoraction}
+%  \installcorenamespace{commalistprocessorgobblespace}
+%
+%  \unexpanded\def\installcommalistprocessor#1#2% 7 macro names overhead
+%    {\let\nexttoken\relax
+%     %
+%     \unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
+%       {\futurelet\nexttoken\csname\??commalistprocessorcheck#1\endcsname}%
+%     %
+%     \unexpanded\expandafter\edef\csname\??commalistprocessorcheck#1\endcsname
+%       {\noexpand\ifx\nexttoken]%
+%          \noexpand\expandafter\noexpand\gobblethreearguments
+%        \noexpand\else
+%          \noexpand\expandafter\csname\??commalistprocessorwrap#1\endcsname
+%        \noexpand\fi
+%        \relax}% this one preserved the next {}
+%     %
+%     \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
+%       {\csname\??commalistprocessorfirst#1\endcsname##1,]\relax}%
+%     %
+%     \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname##1% picks up \relax
+%       {\csname\??commalistprocessorcheckspace#1\endcsname}%
+%     %
+%     \unexpanded\expandafter\edef\csname\??commalistprocessorcheckspace#1\endcsname
+%       {\noexpand\ifx\nexttoken\noexpand\blankspace
+%          \noexpand\expandafter\csname\??commalistprocessorgobblespace#1\endcsname
+%        \noexpand\else
+%          \noexpand\expandafter\csname\??commalistprocessorcheckfinish#1\endcsname
+%        \noexpand\fi}%
+%     %
+%     \unexpanded\expandafter\edef\csname\??commalistprocessorcheckfinish#1\endcsname
+%       {\noexpand\ifx\nexttoken]%
+%          \noexpand\expandafter\noexpand\gobbleoneargument
+%        \noexpand\else
+%          \noexpand\expandafter\csname\??commalistprocessoraction#1\endcsname
+%        \noexpand\fi}%
+%     %
+%     \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
+%       {\noexpand#2{##1}%
+%        \futurelet\nexttoken\csname\??commalistprocessorcheckspace#1\endcsname}%
+%     %
+%     \let\next\:%
+%     \unexpanded\edef            \:{\csname\??commalistprocessorgobblespace#1\endcsname}%
+%     \unexpanded\expandafter\edef\: {\futurelet\nexttoken\csname\??commalistprocessorcheckspace#1\endcsname}%
+%     \let\:\next
+%     %
+%     }
+%
+%  \unexpanded\def\installcommalistprocessorcommand#1#2#3%
+%    {\installcommalistprocessor{#2}{#3}%
+%     \expandafter\let\expandafter#1\csname\??commalistprocessor#2\endcsname}
+%
+%  \unexpanded\def\commalistprocessor#1{\csname\??commalistprocessor#1\endcsname}

@@ -482,7 +482,7 @@
      \donothing
      {\writestatus\m!floatblocks{unknown float type '\currentfloat'}%
       \let\currentfloat\v!figure}% also a hack
-   \global\let\lastplacedfloat\currentfloat
+   \glet\lastplacedfloat\currentfloat
    \let\m_strc_floats_saved_userdata\empty
    \let\currentfloatcaption\currentfloat}
 
@@ -493,8 +493,8 @@
   {\global\emptyfloatcaptionfalse
    \global\nofloatcaptionfalse
    \global\nofloatnumberfalse
-   \global\let\askedfloatmethod \empty
-   \global\let\askedfloatoptions\empty}
+   \glet\askedfloatmethod \empty
+   \glet\askedfloatoptions\empty}
 
 % place
 

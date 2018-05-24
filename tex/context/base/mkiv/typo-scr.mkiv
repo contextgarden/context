@@ -142,8 +142,8 @@
 
 \unexpanded\def\typo_scripts_lowhigh_indeed[#1]#2#3% todo: align .. [#1] is compatible hack
   {\dostarttagged\t!subsup\currentlowhigh
-   \setbox\plusfour\hbox{\typo_scripts_lowhigh_low_high\lower\c!down\t!sub{#2}}%
-   \setbox\plussix \hbox{\typo_scripts_lowhigh_low_high\raise\c!up  \t!sup{#3}}%
+   \setbox\plusfour\hpack{\typo_scripts_lowhigh_low_high\lower\c!down\t!sub{#2}}%
+   \setbox\plussix \hpack{\typo_scripts_lowhigh_low_high\raise\c!up  \t!sup{#3}}%
    \doif{#1}{\v!left}
      {\ifdim\wd\plusfour<\wd\plussix
         \setbox\plusfour\hpack to \wd\plussix {\hss\box\plusfour}%
@@ -166,7 +166,7 @@
   {\dontleavehmode
    \begingroup
    \kern\lowhighparameter\c!distance\relax
-   \setbox\scratchbox\hbox\bgroup
+   \setbox\scratchbox\hpack\bgroup
      #1\lowhighparameter#2\hbox\bgroup
        \ifx\fontsize\empty
          \ifmmode

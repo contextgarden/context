@@ -348,6 +348,7 @@
 %D 128-1023 are private and should not be touched.
 
 \let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
+
 \normalprotected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
@@ -506,8 +507,8 @@
 
 \def\unvoidbox{\unhbox\voidbox}
 \def\emptybox {\box   \voidbox}  % used in initializations so no attributes
-\def\emptyvbox{\normalvbox{}}    % no copy as we need to set attributes
-\def\emptyhbox{\normalhbox{}}    % no copy as we need to set attributes
+\def\emptyvbox{\normalvpack{}}   % no copy as we need to set attributes
+\def\emptyhbox{\normalhpack{}}   % no copy as we need to set attributes
 
 \let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
 
@@ -839,7 +840,8 @@
 \normalprotected\def\newmacro   #1{\let#1\empty}
 \normalprotected\def\setnewmacro#1{\let#1}
 
-\def\!!plusone{1}
+\def\!!zerocount{0}
+\def\!!plusone  {1}
 
 \normalprotected\def\newfraction#1{\let#1\!!plusone}
 
@@ -1234,6 +1236,8 @@
 \let\normalstopdmath    \Ustopdisplaymath
 
 %D For now:
+
+\ifdefined\glet                   \else \normalprotected\def\glet{\global\let} \fi
 
 \ifdefined\protrusionboundary     \else \let\protrusionboundary\boundary   \fi
 \ifdefined\wordboundary           \else \let\wordboundary      \noboundary \fi

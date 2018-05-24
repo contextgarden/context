@@ -53,6 +53,10 @@
 \def\m_strc_references_prefix_yes{+}
 \def\m_strc_references_prefix_nop{-}
 
+\let\currentstructurereferenceprefix\empty
+
+\installglobalmacrostack\currentstructurereferenceprefix
+
 \def\strc_sectioning_set_reference_prefix
   {\ifx\currentstructurereferenceprefix\empty
      % nothing
@@ -64,7 +68,7 @@
    \else
      \setupglobalreferenceprefix[\currentstructurereferenceprefix]%
    \fi\fi\fi
-   \let\currentstructurereferenceprefix\referenceprefix}
+   \glet\currentstructurereferenceprefix\referenceprefix}
 
 % why xdef ?
 
@@ -340,6 +344,9 @@
 
 \installcommandhandler \??head {head} \??head
 
+\installmacrostack\currenthead
+\installmacrostack\currentheadparent
+
 \setuphead [%
     %\c!after=,
     %\c!align=,
@@ -479,15 +486,17 @@
 \to \everysetuphead
 
 \unexpanded\def\doredefinehead#1#2% called at lua end
-  {\pushmacro\currenthead
-   \pushmacro\currentheadparent
+  {\push_macro_currenthead
+   \push_macro_currentheadparent
    \edef\currenthead{#1}%
    \edef\currentheadparent{#2}%
    \the\everyredefinehead\relax
-   \popmacro\currentheadparent
-   \popmacro\currenthead}
+   \pop_macro_currentheadparent
+   \pop_macro_currenthead}
 
 \let\currentnamedsection\empty
+
+\installmacrostack\currentnamedsection
 
 \unexpanded\def\startnamedsection
   {\dotripleempty\strc_sectioning_start_named_section}
@@ -577,7 +586,7 @@
    \fi}
 
 \def\strc_sectioning_setup_indeed[#1][#2][#3]%
-  {\pushmacro\currenthead
+  {\push_macro_currenthead
    \ifthirdargument
      \edef\currenthead{#1#2}%     % not used at any more in mkiv (sets now)
      \setupcurrenthead[#3]%
@@ -585,7 +594,7 @@
      \edef\currenthead{#1}%
      \setupcurrenthead[#2]%
    \fi
-   \popmacro\currenthead}
+   \pop_macro_currenthead}
 
 % we share the parameters as sections are roots of heads so eventually we can
 % consider \definesection -> \definehead with one argument
@@ -638,7 +647,8 @@
   {\strc_sectioning_handle{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
 
 \unexpanded\def\strc_sectioning_start_named_section[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
-  {\pushmacro\currentnamedsection
+  {\push_macro_currentnamedsection
+   \push_macro_currentstructurereferenceprefix
    \edef\currentnamedsection{#1}%
    \setfalse\currentstructureown
   %\globalpushmacro\currenthead % this does not work out well
@@ -659,7 +669,8 @@
    \headparameter\c!aftersection
    \the\everyafterhead
    \resetsystemmode\currenthead
-   \popmacro\currentnamedsection} % new, also here now
+   \pop_macro_currentstructurereferenceprefix
+   \pop_macro_currentnamedsection} % new, also here now
 
 \let\dostarthead\strc_sectioning_start % used at lua end
 \let\dostophead \strc_sectioning_stop  % used at lua end

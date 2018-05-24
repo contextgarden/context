@@ -69,7 +69,7 @@
           \obeyluatokens
           \csname\??luacode#1\endcsname}%
        %
-       \global\expandafter\let\csname\s!stop#1\s!code\endcsname\relax
+       \expandafter\glet\csname\s!stop#1\s!code\endcsname\relax
        %
        \normalexpanded{\xdef\csname\??luacode#1\endcsname##1\csname\s!stop#1\s!code\endcsname}%
          {\noexpand\expandafter\endgroup
@@ -77,7 +77,7 @@
             \expandafter\noexpand\csname clf_\fullname\endcsname
             \noexpand\expandafter{\noexpand\normalexpanded{##1}}}%
        %
-       \global\expandafter\let\csname#1\s!code\expandafter\endcsname\csname clf_\fullname\endcsname
+       \expandafter\glet\csname#1\s!code\expandafter\endcsname\csname clf_\fullname\endcsname
      \fi
    \fi
    \egroup}

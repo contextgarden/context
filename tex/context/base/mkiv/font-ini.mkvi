@@ -341,12 +341,16 @@
    \the\everybodyfont
    \settrue\c_font_synchronize}
 
+\let\savedfont\empty
+
+\installmacrostack\savedfont
+
 \unexpanded\def\savefont
   {\edef\savedfont{\the\font}% gives \csname
-   \pushmacro\savedfont}
+   \push_macro_savedfont}
 
 \unexpanded\def\restorefont
-  {\popmacro\savedfont
+  {\pop_macro_savedfont
    \savedfont}
 
 \unexpanded\def\pushcurrentfont
@@ -424,7 +428,7 @@
 %
 % \def\normalizebodyfontsize_indeed#macro#body%
 %   {\edef#macro{\ctxcommand{nbfs(\number\dimexpr#body,\number\fontdigits)}}%
-%    \global\expandafter\let\csname\??fontnormalizedbody\number\fontdigits:\number\dimexpr#body\endcsname#macro}
+%    \expandafter\glet\csname\??fontnormalizedbody\number\fontdigits:\number\dimexpr#body\endcsname#macro}
 %
 % \def\thenormalizedbodyfontsize#body%
 %   {\ctxcommand{nbfs(\number\dimexpr#body\relax,\number\fontdigits)}}
@@ -439,7 +443,7 @@
 
 \def\normalizebodyfontsize_indeed#macro#body%
   {\edef#macro{\clf_nbfs\dimexpr#body\relax}%
-   \global\expandafter\let\csname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
+   \expandafter\glet\csname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
 
 \def\thenormalizedbodyfontsize#body%
   {\clf_nbfs\dimexpr#body\relax}
@@ -771,7 +775,7 @@
 
 \unexpanded\def\font_helpers_low_level_define#specification#csname%
   {% we can now set more at the lua end
-   \global\let\somefontname\defaultfontfile
+   \glet\somefontname\defaultfontfile
    \let\somefontsize\empty
    \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
@@ -908,7 +912,7 @@
 %D The following macros are used at the \LUA\ end. Watch the \type {\normal}
 %D hackery: this makes the mkvi parser happy.
 
-% \normaldef\fntsetdefname {\global\let\somefontname\defaultfontfile}    % do before calling
+% \normaldef\fntsetdefname {\glet\somefontname\defaultfontfile}    % do before calling
 % \normaldef\fntsetnopsize {\let\somefontsize\empty}                     % do before calling
 % \normaldef\fntsetsomename{\normalgdef\somefontname} % takes argument
 % \normaldef\fntsetsomesize{\normaldef\somefontsize}  % takes argument
@@ -1034,7 +1038,7 @@
   {\begingroup
    \font_basics_define_font[#name][#specification][#settings]%
    \csname#name\endcsname
-   \global\let\lastglobalrawfontcall\lastrawfontcall
+   \glet\lastglobalrawfontcall\lastrawfontcall
    \endgroup
    \expandafter\let\csname#name\endcsname\lastglobalrawfontcall}
 
@@ -1373,16 +1377,16 @@
 %D settings (just to be sure, as it's not really needed).
 
 \def\font_basics_define_body_font_environment_empty[#body][#settings][#dummy]%
-  {\pushmacro\fontclass
+  {\push_macro_fontclass
    \let\fontclass\empty
    \font_basics_define_body_font_environment_class[][#body][#settings]%
-   \popmacro\fontclass}
+   \pop_macro_fontclass}
 
 \def\font_basics_define_body_font_environment_unset[#body][#dummya][#dummyb]%
-  {\pushmacro\fontclass
+  {\push_macro_fontclass
    \let\fontclass\empty
    \font_basics_define_body_font_environment_class[][#body][]%
-   \popmacro\fontclass}
+   \pop_macro_fontclass}
 
 %D We don't check too soon as we can refer to later definitions.
 
@@ -1393,13 +1397,13 @@
    \ifcsname\??fontenvironmentknown#class#normalizedbody\endcsname
      % environment and size already defined
    \else\ifproductionrun
-     \pushmacro\fontclass
+     \push_macro_fontclass
      \edef\fontclass{#class}%
      \font_helpers_register_environment{#class}{#normalizedbody}%
      \settrue\c_font_defining_environment_state
      \font_helpers_define_unknown_font{#normalizedbody}% current class
      \setfalse\c_font_defining_environment_state
-     \popmacro\fontclass
+     \pop_macro_fontclass
    \fi\fi
    \font_helpers_register_fontbody{#normalizedbody}}
 
@@ -1523,12 +1527,12 @@
    \fi}
 
 \def\font_basics_define_body_font_class_given[#1][#2][#3]#4%
-  {\pushmacro\fontclass
+  {\push_macro_fontclass
    \doifelse{#4}\s!default
      {\let\fontclass\empty}
      {\def\fontclass{#4}}%
    \definebodyfont[#1][#2][#3]%
-   \popmacro\fontclass}
+   \pop_macro_fontclass}
 
 \def\font_basics_define_body_font_class_known
   {\ifthirdargument
@@ -1640,13 +1644,13 @@
 
 \unexpanded\def\font_basics_define_body_font_yes_xx[#one#two#rest=#value]% global
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
-   \global\expandafter\let\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-1\endcsname\undefined
+   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-1\endcsname\undefined
    \unexpanded\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-0}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-   \global\expandafter\let\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-2\endcsname\undefined
+   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-2\endcsname\undefined
    \unexpanded\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-4}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
-   \global\expandafter\let\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-3\endcsname\undefined
+   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-3\endcsname\undefined
    \unexpanded\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-5}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
@@ -1669,9 +1673,9 @@
 
 \unexpanded\def\font_basics_define_body_font_yes_mm[#one#two#rest=#value]% global
   {%\ifcsname\s!mm\endcsname\else\font_basics_check_fontname_combination\s!mm{#one#two}{#rest}\fi
-   \global\expandafter\let\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-1\endcsname\undefined
- % \global\expandafter\let\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
- % \global\expandafter\let\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
+   \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-1\endcsname\undefined
+ % \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
+ % \expandafter\glet\csname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
    \unexpanded\expandafter\normalxdef\csname\??fontinstanceready\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
@@ -2353,7 +2357,7 @@
      \noexpand\edef\noexpand\xtextface       {\currentbodyfontdimension\s!x           }%
      \noexpand\edef\noexpand\xxtextface      {\currentbodyfontdimension\s!xx          }%
    }%
-   \global\expandafter\let\csname\??fontbodyfaces\fontbody\endcsname\font_basics_set_faces}
+   \expandafter\glet\csname\??fontbodyfaces\fontbody\endcsname\font_basics_set_faces}
 
 % \def\currentbodyfontdimension#parameter%
 %   {\the\dimexpr
@@ -2495,15 +2499,15 @@
 %D \stoptyping
 
 % \unexpanded\def\usebodyfont[#1]%
-%   {\pushmacro\fontclass
+%   {\push_macro_fontclass
 %    \switchtobodyfont[#1]%
-%    \popmacro\fontclass
+%    \pop_macro_fontclass
 %    \ifx\fontclass\empty\else\setupbodyfont\relax\fi}
 
 % \unexpanded\def\usebodyfont[#1]%
-%   {\pushmacro\fontclass
+%   {\push_macro_fontclass
 %    \font_helpers_set_font\zerocount{#1}%
-%    \popmacro\fontclass
+%    \pop_macro_fontclass
 %    \ifx\fontclass\empty \else
 %      \font_basics_setupbodyfont_nop
 %    \fi}
@@ -2706,7 +2710,7 @@
 
 \unexpanded\def\font_basics_predefine#1#2%
   {\font_basics_defined_font_yes[#2]%
-   \global\expandafter\let\csname#1\expandafter\endcsname\csname\v_font_identifier_basic\endcsname}
+   \expandafter\glet\csname#1\expandafter\endcsname\csname\v_font_identifier_basic\endcsname}
 
 \unexpanded\def\font_basics_predefined#1%
   {\font_basics_predefine{\??predefinedfont#1}{#1}}

@@ -92,15 +92,15 @@
   {\ifx\objectoffset\undefined\zeropoint\else\objectoffset\fi}
 
 \def\resetMPvariables#1#2#3%
-  {\global\let\MPwidth \!!zeropoint
-   \global\let\MPheight\!!zeropoint
-   \global\let\MPllx   \!!zerocount
-   \global\let\MPlly   \!!zerocount
-   \global\let\MPurx   \!!zerocount
-   \global\let\MPury   \!!zerocount
-   \xdef\MPxscale      {#2}\ifx\MPxscale\empty\let\MPxscale\!!plusone\fi
-   \xdef\MPyscale      {#3}\ifx\MPyscale\empty\let\MPyscale\!!plusone\fi
-   \xdef\MPfilename    {#1}}
+  {\glet\MPwidth    \!!zeropoint
+   \glet\MPheight   \!!zeropoint
+   \glet\MPllx      \!!zerocount
+   \glet\MPlly      \!!zerocount
+   \glet\MPurx      \!!zerocount
+   \glet\MPury      \!!zerocount
+   \xdef\MPxscale   {#2}\ifx\MPxscale\empty\let\MPxscale\!!plusone\fi
+   \xdef\MPyscale   {#3}\ifx\MPyscale\empty\let\MPyscale\!!plusone\fi
+   \xdef\MPfilename {#1}}
 
 %D The main macro:
 
@@ -164,7 +164,7 @@
      \else
        \getMPPDFobject
      \fi
-     \global\let\currentPDFresources\empty
+     \glet\currentPDFresources\empty
    \else
      \box#1%
    \fi}
@@ -250,12 +250,12 @@
 %D Some day we may consider collecting local resources.
 
 \appendtoks
-  \global\let\currentPDFresources\empty % kind of redundant
+  \glet\currentPDFresources\empty % kind of redundant
 \to \MPstartresources
 
 % \appendtoks
 %    \collectPDFresources
-%    \global\let\currentPDFresources\collectedPDFresources
+%    \glet\currentPDFresources\collectedPDFresources
 % \to \MPstopresources
 
 \appendtoksonce

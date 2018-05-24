@@ -777,7 +777,7 @@ local ruledbox do
             )
             --
             setlisttransparency(info,c_text)
-         -- info = new_hlist(info)
+            info = new_hlist(info) -- important
             --
             setattr(info,a_layer,layer)
             if vertical then

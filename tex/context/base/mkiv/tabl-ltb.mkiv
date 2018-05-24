@@ -705,14 +705,14 @@
    \else
      \t_tabl_lines_head\emptytoks
    \fi
-   \pushmacro\BC
-   \pushmacro\EC
+   \push_macro_BC
+   \push_macro_EC
    \def\BC##1\EC{\appendtoks##1\to\t_tabl_lines_head}%
    \let\EC\relax} % signal
 
 \unexpanded\def\tabl_lines_EH
-  {\popmacro\EC
-   \popmacro\BC
+  {\pop_macro_EC
+   \pop_macro_BC
    \expandafter\startlinetablehead\the\t_tabl_lines_head\stoplinetablehead}
 
 \let\startlinetablebody\relax

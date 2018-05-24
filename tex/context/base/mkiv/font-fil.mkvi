@@ -42,19 +42,17 @@
 %
 % \setupbodyfont[palatino]
 
-\let\fontclass\empty
-
 \unexpanded\def\startfontclass
   {\dosingleempty\font_basics_start_font_class}
 
 \def\font_basics_start_font_class[#class]%
-  {\pushmacro\fontclass
+  {\push_macro_fontclass
    \doifelse{#class}\v!each
      {\let\fontclass\empty}
      {\doifsomething{#class}{\def\fontclass{#class}}}}
 
 \unexpanded\def\stopfontclass
-  {\popmacro\fontclass}
+  {\pop_macro_fontclass}
 
 \def\classfont#class#name{#class#name} % \definefont[whatever][\classfont{xx}{yy} at 10pt]
 
@@ -127,7 +125,7 @@
 
 % helpers, some day these will be toks and counts
 
-% \def\fntsetdefname {\global\let\somefontname\defaultfontfile}
+% \def\fntsetdefname {\glet\somefontname\defaultfontfile}
 % \def\fntsetsomename{\gdef\somefontname} % takes argument
 % \def\fntsetnopsize {\let\somefontsize\empty}
 % \def\fntsetsomesize{\def\somefontsize}  % takes argument
@@ -145,10 +143,10 @@
    \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\undefined}
 
 \def\font_basics_define_font_synonym_yes_nil
-  {\global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\undefined
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\undefined
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\undefined
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\undefined}
+  {\expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\undefined
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\undefined
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\undefined
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\undefined}
 
 \def\font_basics_get_font_parameter_nop_finish
   {\expandafter\let\csname\??fontfile\m_font_name\s!features  \endcsname\p_features
@@ -157,10 +155,10 @@
    \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\p_designsize}
 
 \def\font_basics_get_font_parameter_yes_finish
-  {\global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\p_features
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\p_fallbacks
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\p_goodies
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\p_designsize}
+  {\expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\p_features
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\p_fallbacks
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\p_goodies
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\p_designsize}
 
 %\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
 %
@@ -305,6 +303,8 @@
    \else
      #2%
    \fi\fi}
+
+\installmacrostack\fontclass
 
 %D Files or names can have properties and these need to be consulted
 %D at some point. They can inherit them.

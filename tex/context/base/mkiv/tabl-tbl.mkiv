@@ -369,8 +369,8 @@
    \ifx\m_tabl_tabulate_color_local\empty
      \xdef\m_tabl_tabulate_color{#1}%
    \else
-     \global\let\m_tabl_tabulate_color\m_tabl_tabulate_color_local
-     \global\let\m_tabl_tabulate_color_local\empty
+     \glet\m_tabl_tabulate_color\m_tabl_tabulate_color_local
+     \glet\m_tabl_tabulate_color_local\empty
    \fi
    \ifcase\c_tabl_tabulate_localcolorspan
      \global\c_tabl_tabulate_colorspan#2\relax
@@ -396,8 +396,8 @@
    \ifx\m_tabl_tabulate_vrule_color_local\empty
      \xdef\m_tabl_tabulate_vrule_color{#1}%
    \else
-     \global\let\m_tabl_tabulate_vrule_color\m_tabl_tabulate_vrule_color_local
-     \global\let\m_tabl_tabulate_vrule_color_local\empty
+     \glet\m_tabl_tabulate_vrule_color\m_tabl_tabulate_vrule_color_local
+     \glet\m_tabl_tabulate_vrule_color_local\empty
    \fi}
 
 \let\tabl_tabulate_check_local_color      \gobbletwoarguments
@@ -719,6 +719,28 @@
    \fi
    \tabl_tabulate_set_preamble}
 
+% faster but seldom used
+%
+% \installcorenamespace{tabulatewidth}
+%
+% \setvalue{\??tabulatewidth\v!fit  }{\c_tabl_tabulate_modus\plusthree}
+% \setvalue{\??tabulatewidth\v!fixed}{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_nopbreak}
+% \setvalue{\??tabulatewidth\v!auto }{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
+%
+% \def\tabl_tabulate_set_width_step#1%
+%   {\ifcsname\??tabulatewidth#1\endcsname
+%      \lastnamedcs
+%    \else
+%      \d_tabl_tabulate_width#1\relax
+%    \fi}
+%
+% \def\tabl_tabulate_set_width_indeed(#1)%
+%   {\rawprocesscommacommand[#1]\tabl_tabulate_set_width_step
+%    \ifconditional\c_tabl_tabulate_pwidth_set
+%      \global\advance\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
+%    \fi
+%    \tabl_tabulate_set_preamble}
+%
 \def\tabl_tabulate_set_raggedright {\ifnum\c_tabl_tabulate_type=\plusone \else\raggedright \fi}
 \def\tabl_tabulate_set_raggedcenter{\ifnum\c_tabl_tabulate_type=\plusone \else\raggedcenter\fi}
 \def\tabl_tabulate_set_raggedleft  {\ifnum\c_tabl_tabulate_type=\plusone \else\raggedleft  \fi}
@@ -787,10 +809,10 @@
    \t_tabl_tabulate_emath\emptytoks
    \t_tabl_tabulate_font\emptytoks
    \t_tabl_tabulate_settings\emptytoks
-   \global\let\m_tabl_tabulate_alignment\empty
-   \global\let\m_tabl_tabulate_color\empty
-   \global\let\m_tabl_tabulate_text_color\empty
-   \global\let\m_tabl_tabulate_vrule_color\empty
+   \glet\m_tabl_tabulate_alignment\empty
+   \glet\m_tabl_tabulate_color\empty
+   \glet\m_tabl_tabulate_text_color\empty
+   \glet\m_tabl_tabulate_vrule_color\empty
    \global\c_tabl_tabulate_colorspan\zerocount
    \global\setfalse\c_tabl_auto_align_mode
    \global\advance\c_tabl_tabulate_columns\plusone
@@ -814,8 +836,8 @@
    \fi}
 
 \def\tabl_tabulate_set_last_entry#1% rulespec
-  {\global\let\m_tabl_tabulate_color\empty
-   \global\let\m_tabl_tabulate_vrule_color\empty
+  {\glet\m_tabl_tabulate_color\empty
+   \glet\m_tabl_tabulate_vrule_color\empty
    \edef\currenttabulationtrulespec{#1}%
    \ifx\currenttabulationtrulespec\empty
      \global\d_tabl_tabulate_vrulethickness\zeropoint
@@ -1191,9 +1213,12 @@
      \expandafter\tabl_start_regular_one
    \fi}
 
+\def\tabl_default_format{|l|p|}
+
 \def\tabl_start_regular_one[#1][#2]%
   {\doifelseassignment{#1}
-     {\setupcurrenttabulation[\c!format={|l|p|},#1]}
+     {\lettabulationparameter\c!format\tabl_default_format
+      \setupcurrenttabulation[#1]}
      {\def\p_format{#1}%
       \ifx\p_format\empty
         \def\p_format{|l|p|}%
@@ -1204,7 +1229,7 @@
 \def\tabl_start_regular_two[#1][#2]%
   {\def\p_format{#1}%
    \ifx\p_format\empty
-     \def\p_format{|l|p|}%
+     \let\p_format\tabl_default_format
    \fi
    \lettabulationparameter\c!format\p_format
    \setupcurrenttabulation[#2]%
@@ -1392,12 +1417,12 @@
 \let\m_tabl_tabulate_blank_default      \empty
 
 \appendtoks
-    \global\let\m_tabl_tabulate_color_previous      \empty
-    \global\let\m_tabl_tabulate_color               \empty
-    \global\let\m_tabl_tabulate_text_color          \empty
-    \global\let\m_tabl_tabulate_color_local         \empty
-    \global\let\m_tabl_tabulate_vrule_color         \empty
-    \global\let\m_tabl_tabulate_vrule_color_local   \empty
+    \glet\m_tabl_tabulate_color_previous      \empty
+    \glet\m_tabl_tabulate_color               \empty
+    \glet\m_tabl_tabulate_text_color          \empty
+    \glet\m_tabl_tabulate_color_local         \empty
+    \glet\m_tabl_tabulate_vrule_color         \empty
+    \glet\m_tabl_tabulate_vrule_color_local   \empty
     \global    \d_tabl_tabulate_vrulethickness_local\zeropoint
 \to \t_tabl_tabulate_every_row
 
@@ -1489,7 +1514,7 @@
 % ruled columns
 
 \def\tabl_tabulate_column_vruled_preset
-  {\global\let\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
+  {\glet\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
    \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default}
 
 \def\tabl_tabulate_column_vruled#1#2%
@@ -1532,7 +1557,7 @@
    \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
 
 \def\tabl_tabulate_vrule_reset_step % undefined or relax
-  {\global\expandafter\let\csname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
+  {\expandafter\glet\csname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
 
 \appendtoks
     \tabl_tabulate_vrule_reset
@@ -1625,12 +1650,12 @@
    \egroup}
 
 \def\tabl_tabulate_hrule_spec_ignore#1%
-  {%\global\let\currenttabulationlocalhrulecolor\empty
+  {%\glet\currenttabulationlocalhrulecolor\empty
    %\global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
    \doifelsefastoptionalcheck#1#1}
 
 \def\tabl_tabulate_hrule_spec_pickup#1%
-  {\global\let\currenttabulationlocalhrulecolor\m_tabl_tabulate_hrule_color_default
+  {\glet\currenttabulationlocalhrulecolor\m_tabl_tabulate_hrule_color_default
    \global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
    \doifelsefastoptionalcheck{\tabl_tabulate_hrule_preset#1}#1}
 
@@ -1706,13 +1731,13 @@
 \unexpanded\def\tabl_tabulate_color_set#1% we could store the attributes at the cost of a lua call
   {\begingroup
    \clf_enablebackgroundalign % was \node_backgrounds_align_initialize
-   \global\let\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
+   \glet\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
    \global\settrue\c_tabl_tabulate_has_colors
    \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
      \global\c_tabl_tabulate_max_colorcolumn\c_tabl_tabulate_column
    \fi
-   \global\expandafter\xdef\csname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname{#1}%
-   \hbox \thealignbackgroundcolorattr{#1}{}% pack ?
+   \expandafter\xdef\csname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname{#1}%
+   \hpack \thealignbackgroundcolorattr{#1}{}% pack ?
    \endgroup}
 
 \def\tabl_tabulate_color_repeat_second % for split off lines
@@ -1720,7 +1745,7 @@
    \scratchcounter\numexpr\c_tabl_tabulate_column-\plusone\relax % ugly !
    \ifcsname\??tabulatecolor\the\scratchcounter\endcsname
     %\hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}% pack ?
-     \hbox \thealignbackgroundcolorattr{\lastnamedcs}{}% pack ?
+     \hpack \thealignbackgroundcolorattr{\lastnamedcs}{}% pack ?
    \fi
    \endgroup}
 
@@ -1742,7 +1767,7 @@
   {\dofastloopcs\c_tabl_tabulate_max_colorcolumn\tabl_tabulate_color_reset_step}
 
 \def\tabl_tabulate_color_reset_step % undefined or empty?
-  {\global\expandafter\let\csname\??tabulatecolor\number\fastloopindex\endcsname\undefined}
+  {\expandafter\glet\csname\??tabulatecolor\number\fastloopindex\endcsname\undefined}
 
 \appendtoks
     \tabl_tabulate_color_reset
@@ -1791,17 +1816,20 @@
     \tabl_tabulate_register_par_options
 \to \t_tabl_tabulate_every_row
 
+\def\tabl_tabulate_flush_indent_indeed
+  {\hbox to \d_tabl_tabulate_indent % pack ?
+     {% we now have a local hsize, and since we want to
+      % register positional info (i.e. real hsizes) we
+      % need to reconstitute the original hsize
+      \advance\hsize\d_tabl_tabulate_indent
+      % this is indeed rather messy and took a few hours
+      % to dis/uncover
+      \the\t_tabl_tabulate_every_row
+      \hss}}
+
 \def\tabl_tabulate_flush_indent
   {\ifnum\c_tabl_tabulate_column=\zerocount
-     \hbox to \d_tabl_tabulate_indent % pack ?
-       {% we now have a local hsize, and since we want to
-        % register positional info (i.e. real hsizes) we
-        % need to reconstitute the original hsize
-        \advance\hsize\d_tabl_tabulate_indent
-        % this is indeed rather messy and took a few hours
-        % to dis/uncover
-        \the\t_tabl_tabulate_every_row
-        \hss}%
+     \tabl_tabulate_flush_indent_indeed
    \fi}
 
 \def\tabl_tabulate_digits{\digits}
@@ -1820,7 +1848,7 @@
 
 \unexpanded\def\tabl_tabulate_bskip_first {\setbox\b_tabl_tabulate\vbox\bgroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_nop}
 \unexpanded\def\tabl_tabulate_eskip_first {\par\egroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_yes}
-\unexpanded\def\tabl_tabulate_xbskip_first{\hbox\bgroup\vbox\bgroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_nop}
+\unexpanded\def\tabl_tabulate_xbskip_first{\hpack\bgroup\vbox\bgroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_nop}
 \unexpanded\def\tabl_tabulate_xeskip_first{\par\egroup\egroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_yes}
 
 \let\tabl_tabulate_bbskip\relax
@@ -1851,12 +1879,12 @@
 
 % \def\tabl_tabulate_break_state_set
 %   {%\writestatus{SET}{\the\c_tabl_tabulate_noflines}%
-%    \global\expandafter\let\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\conditionaltrue}
+%    \expandafter\glet\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\conditionaltrue}
 %
 % \def\tabl_tabulate_break_state_reset
 %   {\ifcsname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname
 %     %\writestatus{RESET}{\the\c_tabl_tabulate_noflines}%
-%      \global\expandafter\let\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\undefined
+%      \expandafter\glet\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\undefined
 %    \fi}
 %
 % \def\tabl_tabulate_break_state_allowbreak
@@ -1931,8 +1959,6 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
-
-\let\NI\relax
 
 \unexpanded\def\tabl_tabulate_NI_first{\doifelsefastoptionalcheck\tabl_tbl_NI_yes\tabl_tbl_NI_nop}
 
@@ -2224,9 +2250,9 @@
 %      \tabl_tabulate_break_no
 %      \ifx\dotabulateautoline\dotabulatelinerule\kern-\lineheight\fi
 %      \ifnum\noftabulatelines=\totalnoftabulatelines
-%        \@EA\dotabulatenobreak
+%        \expandafter\dotabulatenobreak
 %      \else
-%        \@EA\tabl_tabulate_break_allow
+%        \expandafter\tabl_tabulate_break_allow
 %      \fi
 %    \stoptabulatenoalign
 %    \dotabulateautoline

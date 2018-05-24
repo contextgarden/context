@@ -611,6 +611,46 @@
 % \unexpanded\def\ShowMathFractions#1#2%
 %  {\mathematics{x+\tfrac{#1}{#2}+1+\frac{#1}{#2}+2+\sfrac{#1}{#2}+g}}
 
+%D More fracking (for Alan):
+
+\def\s!vfrac{vfrac}
+
+\unexpanded\def\math_frac_colored_vulgar#1#2%
+  {\savecolor
+   \colo_helpers_activate\p_math_fractions_color
+   {\restorecolor#1}\Uskewed/{\restorecolor#2}}
+
+\unexpanded\def\math_frac_normal_vulgar#1#2%
+  {{#1}\Uskewed/{#2}}
+
+\unexpanded\def\vfrac#1#2%
+  {\bgroup
+   \edef\p_math_fractions_color{\namedmathfractionparameter\s!vfrac\c!color}%
+   \ifx\p_math_fractions_color\empty
+     \expandafter\math_frac_normal_vulgar
+   \else
+     \expandafter\math_frac_colored_vulgar
+   \fi
+   {#1}%
+   {#2}%
+   \egroup}
+
+\appendtoks
+    \edef\p_hfactor{\namedmathfractionparameter\s!vfrac\c!hfactor}%
+    \edef\p_vfactor{\namedmathfractionparameter\s!vfrac\c!vfactor}%
+    \Umathskewedfractionhgap\textstyle        \p_hfactor\fontemwidth \mathstylefont\textstyle
+    \Umathskewedfractionhgap\scriptstyle      \p_hfactor\fontemwidth \mathstylefont\scriptstyle
+    \Umathskewedfractionhgap\scriptscriptstyle\p_hfactor\fontemwidth \mathstylefont\scriptscriptstyle
+    \Umathskewedfractionvgap\textstyle        \p_vfactor\fontexheight\mathstylefont\textstyle
+    \Umathskewedfractionvgap\scriptstyle      \p_vfactor\fontexheight\mathstylefont\scriptstyle
+    \Umathskewedfractionvgap\scriptscriptstyle\p_vfactor\fontexheight\mathstylefont\scriptscriptstyle
+\to \everysetupmathfraction
+
+\setupmathfraction
+  [\s!vfrac]
+  [\c!hfactor=.2,
+   \c!vfactor=.1]
+
 \protect \endinput
 
 % I have no clue what \mthfrac and \mthsqrt are supposed to do but
@@ -660,7 +700,7 @@
 % \unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
 % \unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
 
-% used for prototypine \Uskewed
+% used for prototyping \Uskewed
 %
 % \unexpanded\def\skewedfractiona#1#2{%
 %     \raise

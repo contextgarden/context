@@ -84,8 +84,8 @@
 \newcount      \noftabpositions
 \newtoks       \posXCtoks
 
-\def\anch_tabulate_bpos{\bpos}
-\def\anch_tabulate_epos{\epos}
+\unexpanded\def\anch_tabulate_bpos{\bpos}
+\unexpanded\def\anch_tabulate_epos{\epos}
 
 \installcorenamespace{positiontables}
 
@@ -134,15 +134,18 @@
   {\anch_tables_append_GSC[#1:#1]}
 
 \def\anch_tables_append_GSC[#1:#2:#3]%
-  {\doglobal\appendtoks\anch_tables_process_GSC[#1:#2]\to\posXCtoks\NC}
+% {\doglobal\appendtoks\anch_tables_process_GSC[#1:#2]\to\posXCtoks\NC}
+  {\gtoksapp\posXCtoks{\anch_tables_process_GSC[#1:#2]}\NC}
 
 \def\anch_tables_process_GSC[#1:#2]%
   {\remappositionframed{#2}{\tbPOSprefix#1}%
    \anch_tabulate_bpos{\tbPOSprefix#1}%
-   \doglobal\appendtoks\@EA\anch_tabulate_epos\@EA{\tbPOSprefix#1}\to\posXCtoks}
+   \doglobal\appendtoks\expandafter\anch_tabulate_epos\expandafter{\tbPOSprefix#1}\to\posXCtoks}
+%  \xtoksapp\posXCtoks{\anch_tabulate_epos{\tbPOSprefix#1}}}
 
 \def\anch_tables_indeed_GFC[#1]%
   {\doglobal\appendtoks\anch_tables_delayed_GFC[#1]\to\posXCtoks\NC}
+% {\gtoksapp\posXCtoks{\anch_tables_delayed_GFC[#1]}\NC}
 
 \def\anch_tables_delayed_GFC[#1]%
   {\processcommalist[#1]\anch_tables_step_GFC}
@@ -156,9 +159,11 @@
 
 \def\anch_tables_indeed_GTC[#1]%
   {\doglobal\appendtoks\anch_tables_delayed_GTC[#1]\to\posXCtoks\NC}
+% {\gtoksapp\posXCtoks{\anch_tables_delayed_GTC[#1]}\NC}
 
 \def\anch_tables_delayed_GTC[#1]%
   {\doglobal\appendtoks\anch_tables_process_GTC[#1]\to\posXCtoks}
+% {\gtoksapp\posXCtoks{\anch_tables_process_GTC[#1]}\NC}
 
 \def\anch_tables_process_GTC[#1]%
   {\processcommalist[#1]\anch_tables_step_GTC}
@@ -207,10 +212,10 @@
 
 \let\anch_tabulate_flush_epos\relax
 
-\def\anch_tabulate_bpos_indeed
+\unexpanded\def\anch_tabulate_bpos_indeed
   {\bpos}
 
-\def\anch_tabulate_epos_indeed#1%
+\unexpanded\def\anch_tabulate_epos_indeed#1%
   {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
      \epos{#1}%
      \glet\anch_tabulate_flush_epos\relax

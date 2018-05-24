@@ -98,8 +98,8 @@
   {\expandafter\normalgdef\csname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
 
 \def\page_layouts_set_element_status_normal#vertical%
-  {\global\expandafter\let\csname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
-   \global\expandafter\let\csname\??layouttextsreset#vertical\endcsname\relax
+  {\expandafter\glet\csname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
+   \expandafter\glet\csname\??layouttextsreset#vertical\endcsname\relax
    \page_layouts_synchronize_element{#vertical}}
 
 \def\page_layouts_synchronize_element#vertical%
@@ -863,7 +863,8 @@
       \vskip\dimexpr\headerheight+\headerdistance+\textdistance\relax
       \dontleavehmode
      %\page_prepare_backgrounds{#2}%
-      \hbox to \makeupwidth
+%       \hbox to \makeupwidth
+      \hpack to \makeupwidth
         {\begingroup
            \swapmargins
            \goleftonpage

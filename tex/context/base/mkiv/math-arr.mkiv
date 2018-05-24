@@ -67,39 +67,46 @@
 
 \def\math_arrows_construct#1#2#3#4#5% hm, looks like we do a double mathrel (a bit cleaned up .. needs checking)
   {\begingroup
-   \def\m_math_arrows_factor{1}%
-   \def\m_math_arrows_extra {0}%
+   \let\m_math_arrows_factor\!!plusone
+   \let\m_math_arrows_extra \!!zerocount
    \edef\p_math_spacing{#1}%
    \csname\??matharrowsettings
      \ifcsname\??matharrowsettings\p_math_spacing\endcsname\p_math_spacing\else\s!unknown\fi
    \endcsname
    \mathsurround\zeropoint
-   \muskip0=\muexpr\m_math_arrows_factor\muexpr\thirdoffourarguments #2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\firstoffourarguments #2\onemuskip\relax
-   \muskip2=\muexpr\m_math_arrows_factor\muexpr\fourthoffourarguments#2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\secondoffourarguments#2\onemuskip\relax
-   \setbox0\hbox{\normalstartimath
-                 \scriptstyle
-                 \mkern\muskip0\relax
-                 #5\relax
-                 \mkern\muskip2\relax
-                 \normalstopimath}%
-   \setbox2\hbox{\normalstartimath
-                 \scriptstyle
-                 \mkern\muskip0\relax
-                 #4\relax
-                 \mkern\muskip2\relax
-                 \normalstopimath}%
-   \setbox4\hbox{#3\displaystyle}%
-   \dimen0\wd0\relax
-   \ifdim\wd2>\dimen0
-     \dimen0\wd2\relax
+   \scratchmuskipone\muexpr\m_math_arrows_factor\muexpr\thirdoffourarguments #2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\firstoffourarguments #2\onemuskip\relax
+   \scratchmuskiptwo\muexpr\m_math_arrows_factor\muexpr\fourthoffourarguments#2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\secondoffourarguments#2\onemuskip\relax
+   \setbox\scratchboxone\hbox
+     {\normalstartimath
+      \scriptstyle
+      \mkern\scratchmuskipone\relax
+      #5\relax
+      \mkern\scratchmuskiptwo\relax
+      \normalstopimath}%
+   \setbox\scratchboxtwo\hbox
+     {\normalstartimath
+      \scriptstyle
+      \mkern\scratchmuskipone\relax
+      #4\relax
+      \mkern\scratchmuskiptwo\relax
+      \normalstopimath}%
+   \setbox\scratchboxthree\hbox{#3\displaystyle}%
+   \scratchdimenone\wd\scratchboxone\relax
+   \ifdim\wd\scratchboxtwo>\scratchdimenone
+     \scratchdimenone\wd\scratchboxtwo\relax
    \fi
-   \ifdim\wd4>\dimen0
-     \dimen0\wd4\relax
+   \ifdim\wd\scratchboxthree>\scratchdimenone
+     \scratchdimenone\wd\scratchboxthree\relax
    \fi
-   \ifdim\wd4=\dimen0\else
-     \setbox4\hbox to \dimen0{#3\displaystyle}%
+   \ifdim\wd\scratchboxthree=\scratchdimenone\else
+     \setbox\scratchboxthree\hbox to \scratchdimenone{#3\displaystyle}%
    \fi
-   \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits\normalsuperscript{\box0}\normalsubscript{\box2}}% pack ?
+   \mathrel
+     {\mathop
+        {\hpack to \scratchdimenone{\hss\box\scratchboxthree\hss}}% pack ? copy ?
+        \limits
+        \normalsuperscript{\box\scratchboxone}%
+        \normalsubscript  {\box\scratchboxtwo}}%
    \endgroup}
 
 \let\math_arrows_construct_single\math_arrows_construct

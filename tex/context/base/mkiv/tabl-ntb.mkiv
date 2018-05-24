@@ -271,10 +271,10 @@
 \letvalue{\??naturaltablesqueeze\v!broad}\donetrue
 \letvalue{\??naturaltablesqueeze\v!local}\donetrue
 
-\def\tabl_ntb_let_gal{\global\expandafter\let\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
+\def\tabl_ntb_let_gal{\expandafter\glet\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
 \def\tabl_ntb_get_gal{\csname\??naturaltablegal\m_tabl_tbl_level\endcsname}
 
-\def\tabl_ntb_let_tal#1{\global\expandafter\let\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_let_tal#1{\expandafter\glet\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
 \def\tabl_ntb_get_tal#1{\csname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
 
 \def\tabl_ntb_set_nob#1{\expandafter\let\csname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone}
@@ -291,8 +291,8 @@
 %def\tabl_ntb_set_wd#1#2{\expandafter\xdef\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
 \def\tabl_ntb_set_ht#1#2{\expandafter\xdef\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
 
-%def\tabl_ntb_let_wd#1#2{\global\expandafter\let\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
-\def\tabl_ntb_let_ht#1#2{\global\expandafter\let\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+%def\tabl_ntb_let_wd#1#2{\expandafter\glet\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+\def\tabl_ntb_let_ht#1#2{\expandafter\glet\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
 
 \def\tabl_ntb_get_tag#1#2{\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 \def\tabl_ntb_get_col#1#2{\csname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
@@ -306,10 +306,10 @@
 \def\tabl_ntb_set_dis#1{\expandafter\xdef\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
 \def\tabl_ntb_set_aut#1{\expandafter\xdef\csname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
 
-\def\tabl_ntb_let_wid#1{\global\expandafter\let\csname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_hei#1{\global\expandafter\let\csname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_dis#1{\global\expandafter\let\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_aut#1{\global\expandafter\let\csname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_wid#1{\expandafter\glet\csname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_hei#1{\expandafter\glet\csname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_dis#1{\expandafter\glet\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_aut#1{\expandafter\glet\csname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
 
 \def\tabl_ntb_get_wid#1{\ifcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 \def\tabl_ntb_get_hei#1{\ifcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
@@ -1206,9 +1206,9 @@
    \xdef\m_tabl_ntb_same_page   {#3}}
 
 \unexpanded\def\tabl_ntb_row_align_reset
-  {\global\let\m_tabl_ntb_before_split\empty
-   \global\let\m_tabl_ntb_after_split \empty
-   \global\let\m_tabl_ntb_same_page   \empty}
+  {\glet\m_tabl_ntb_before_split\empty
+   \glet\m_tabl_ntb_after_split \empty
+   \glet\m_tabl_ntb_same_page   \empty}
 
 \def\tabl_ntb_prelocate_error
   {\writestatus\m!TABLE{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \the\c_tabl_prelocated_rows)}}

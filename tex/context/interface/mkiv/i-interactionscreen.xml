@@ -47,6 +47,7 @@
                     <cd:constant type="paper"/>
                     <cd:constant type="attachment"/>
                     <cd:constant type="layer"/>
+                    <cd:constant type="title"/>
                 </cd:parameter>
                 <cd:parameter name="copies">
                     <cd:constant type="cd:number"/>

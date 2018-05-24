@@ -812,12 +812,12 @@
   {\iflocation
      \edef\temp{\bibtexcitationparameter\c!interaction}%
      \ifx\temp\v!stop
-       \@EA@EA@EA\secondoftwoarguments
+       \doubleexpandafter\secondoftwoarguments
      \else
-       \@EA@EA@EA\firstoftwoarguments
+       \doubleexpandafter\firstoftwoarguments
      \fi
    \else
-     \@EA\secondoftwoarguments
+     \expandafter\secondoftwoarguments
    \fi}
 
 \let\doifbibtexinteractionelse\doifelsebibtexinteraction

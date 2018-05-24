@@ -188,13 +188,13 @@
 \let\scrn_canvas_synchronize_complex\relax
 
 \appendtoks
-    \global\let\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
-    \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+    \glet\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \glet\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
 \to \everysetuplayout
 
 \appendtoks
-    \global\let\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
-    \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+    \glet\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \glet\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
 \to \everysetuplayouttarget
 
 \def\scrn_canvas_synchronize_only
@@ -213,8 +213,8 @@
 
 \def\scrn_canvas_synchronize_simple_indeed
   {\scrn_canvas_synchronize_only
-  %\global\let\scrn_canvas_synchronize_simple \relax
-   \global\let\scrn_canvas_synchronize_complex\relax}
+  %\glet\scrn_canvas_synchronize_simple \relax
+   \glet\scrn_canvas_synchronize_complex\relax}
 
 \def\scrn_canvas_synchronize_complex_indeed
   {\scrn_canvas_calculate % otherwise we need to hook it into setuppage etc
@@ -235,8 +235,8 @@
         copies      \numexpr\interactionscreenparameter\c!copies\relax
         print       {\interactionscreenparameter\c!print}%
    \relax
-  %\global\let\scrn_canvas_synchronize_simple \relax
-   \global\let\scrn_canvas_synchronize_complex\relax}
+  %\glet\scrn_canvas_synchronize_simple \relax
+   \glet\scrn_canvas_synchronize_complex\relax}
 
 \appendtoks
     \begingroup
@@ -262,8 +262,8 @@
    \c!option=\v!auto]
 
 \appendtoks
-    \global\let\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
-    \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+    \glet\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \glet\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
 \to \everysetupinteractionscreen
 
 %D Conditional page breaks:

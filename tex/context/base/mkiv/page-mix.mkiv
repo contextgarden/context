@@ -371,6 +371,9 @@
 
 \let\currentmixedcolumnsmethod\empty
 
+\installmacrostack\currentmixedcolumns
+\installmacrostack\currentmixedcolumnsmethod
+
 \unexpanded\def\startmixedcolumns
   {\dodoubleempty\page_mix_start_columns}
 
@@ -385,8 +388,8 @@
    \fi\fi}
 
 \unexpanded\def\page_mix_start_columns
-  {\pushmacro\currentmixedcolumns
-   \pushmacro\currentmixedcolumnsmethod
+  {\push_macro_currentmixedcolumns
+   \push_macro_currentmixedcolumnsmethod
    \ifsecondargument
      \singleexpandafter\page_mix_start_columns_a
    \else\iffirstargument
@@ -462,8 +465,8 @@
    \let\stopmixedcolumns\page_mix_columns_stop_nop}
 
 \unexpanded\def\page_mix_fast_columns_start#1%
-  {\pushmacro\currentmixedcolumns
-   \pushmacro\currentmixedcolumnsmethod
+  {\push_macro_currentmixedcolumns
+   \push_macro_currentmixedcolumnsmethod
    \edef\currentmixedcolumns{#1}%
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
    \mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
@@ -492,15 +495,15 @@
    \endgroup
    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
    \mixedcolumnsparameter\c!after\relax
-   \popmacro\currentmixedcolumnsmethod
-   \popmacro\currentmixedcolumns
+   \pop_macro_currentmixedcolumnsmethod
+   \pop_macro_currentmixedcolumns
    \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 \unexpanded\def\page_mix_columns_stop_nop
   {\page_mix_finalize_columns
    \endgroup
-   \popmacro\currentmixedcolumnsmethod
-   \popmacro\currentmixedcolumns
+   \pop_macro_currentmixedcolumnsmethod
+   \pop_macro_currentmixedcolumns
    \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 % \unexpanded\def\page_mix_columns_stop_yes
@@ -509,12 +512,12 @@
 %    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
 %    \mixedcolumnsparameter\c!after\relax
 % \ifx\currentmixedcolumnsmethod\s!otr
-%    \popmacro\currentmixedcolumnsmethod
-%    \popmacro\currentmixedcolumns
+%    \pop_macro_currentmixedcolumnsmethod
+%    \pop_macro_currentmixedcolumns
 %    \synchronizeoutput % brrr, otherwise sometimes issues in itemize
 % \else
-%    \popmacro\currentmixedcolumnsmethod
-%    \popmacro\currentmixedcolumns
+%    \pop_macro_currentmixedcolumnsmethod
+%    \pop_macro_currentmixedcolumns
 % \fi
 %    }
 
