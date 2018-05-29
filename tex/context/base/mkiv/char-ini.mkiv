@@ -42,8 +42,8 @@
 % use \normalUchar when possible .. the next one is nice for documents and it also accepts
 % 0x prefixed numbers
 
-\def\utfchar #1{\clf_utfchar \numexpr#1\relax}
-\def\safechar#1{\clf_safechar\numexpr#1\relax}
+\def\utfchar #1{\clf_utfchar {#1}}
+\def\safechar#1{\clf_safechar{#1}}
 
 \unexpanded\def\Ux #1{\Uchar\numexpr"#1\relax} % used in xml
            \def\eUx#1{\Uchar\numexpr"#1\relax} % used in xml

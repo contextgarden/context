@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/24/18 15:49:05
+-- merge date  : 05/29/18 11:47:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -305,8 +305,8 @@ patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+unders
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
 patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(P(-1)+Cc(" ")))^0))
-local function anywhere(pattern) 
-  return P { P(pattern)+1*V(1) }
+function anywhere(pattern) 
+  return (1-P(pattern))^0*P(pattern)
 end
 lpeg.anywhere=anywhere
 function lpeg.instringchecker(p)

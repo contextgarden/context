@@ -2016,7 +2016,7 @@
      \expandafter\nostartblankhandling
    \fi}
 
-\def\nostartblankhandling#1\stopblankhandling
+\unexpanded\def\nostartblankhandling#1\stopblankhandling
   {}
 
 \def\dostartblankhandling
@@ -2044,7 +2044,7 @@
    \setfalse\c_space_vspacing_done
    \the\everybeforeblankhandling}
 
-\def\addpredefinedblankskip#1#2%
+\unexpanded\def\addpredefinedblankskip#1#2%
   {\settrue\c_space_vspacing_done
    \advance\s_spac_vspacing_temp#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
 
@@ -2091,7 +2091,7 @@
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
 
-\def\directvspacing#1%
+\unexpanded\def\directvspacing#1%
   {\par\clf_vspacing{#1}}
 
 \def\directcheckedvspacing

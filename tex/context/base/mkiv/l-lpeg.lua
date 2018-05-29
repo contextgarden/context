@@ -291,8 +291,12 @@ patterns.beginline     = #(1-newline)
 
 patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^1 + whitespace^1/"" * (P(-1) + Cc(" ")))^0))
 
-local function anywhere(pattern) --slightly adapted from website
-    return P { P(pattern) + 1 * V(1) }
+-- local function anywhere(pattern) -- slightly adapted from website
+--     return P { P(pattern) + 1 * V(1) }
+-- end
+
+function anywhere(pattern) -- faster
+    return (1-P(pattern))^0 * P(pattern)
 end
 
 lpeg.anywhere = anywhere

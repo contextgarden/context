@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['char-tex'] = {
 
 local lpeg = lpeg
 local tonumber, next, type = tonumber, next, type
-local format, find, gmatch = string.format, string.find, string.gmatch
+local format, find, gmatch, match = string.format, string.find, string.gmatch, string.match
 local utfchar, utfbyte = utf.char, utf.byte
 local concat, tohash = table.concat, table.tohash
 local P, C, R, S, V, Cs, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.V, lpeg.Cs, lpeg.Cc
@@ -462,16 +462,24 @@ function commands.makeactive(n,name) -- not used
  -- context("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name)
 end
 
+local function to_number(s)
+    local n = tonumber(s)
+    if n then
+        return n
+    end
+    return tonumber(match(s,'^"(.*)$'),16) or 0
+end
+
 implement {
     name      = "utfchar",
-    actions   = { utfchar, contextsprint },
-    arguments = "integer"
+    actions   = { to_number, utfchar, contextsprint },
+    arguments = "string"
 }
 
 implement {
     name      = "safechar",
-    actions   = { texcharacters.safechar, contextsprint },
-    arguments = "integer"
+    actions   = { to_number, texcharacters.safechar, contextsprint },
+    arguments = "string"
 }
 
 implement {

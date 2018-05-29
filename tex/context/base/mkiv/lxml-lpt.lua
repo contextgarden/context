@@ -157,11 +157,11 @@ apply_axis['root'] = function(list)
 end
 
 apply_axis['self'] = function(list)
---~     local collected = { }
---~     for l=1,#list do
---~         collected[l] = list[l]
---~     end
---~     return collected
+ -- local collected = { }
+ -- for l=1,#list do
+ --     collected[l] = list[l]
+ -- end
+ -- return collected
     return list
 end
 
@@ -171,18 +171,32 @@ apply_axis['child'] = function(list)
         local ll = list[l]
         local dt = ll.dt
         if dt then -- weird that this is needed
-            local en = 0
-            for k=1,#dt do
-                local dk = dt[k]
+            local n = #dt
+            if n == 0 then
+                ll.en = 0
+            elseif n == 1 then
+                local dk = dt[1]
                 if dk.tg then
                     c = c + 1
                     collected[c] = dk
-                    dk.ni = k -- refresh
-                    en = en + 1
-                    dk.ei = en
+                    dk.ni = 1 -- refresh
+                    dk.ei = 1
+                    ll.en = 1
                 end
+            else
+                local en = 0
+                for k=1,#dt do
+                    local dk = dt[k]
+                    if dk.tg then
+                        c = c + 1
+                        en = en + 1
+                        collected[c] = dk
+                        dk.ni = k -- refresh
+                        dk.ei = en
+                    end
+                end
+                ll.en = en
             end
-            ll.en = en
         end
     end
     return collected
@@ -191,19 +205,36 @@ end
 local function collect(list,collected,c)
     local dt = list.dt
     if dt then
-        local en = 0
-        for k=1,#dt do
-            local dk = dt[k]
+        local n = #dt
+        if n == 0 then
+            list.en = 0
+        elseif n == 1 then
+            local dk = dt[1]
             if dk.tg then
                 c = c + 1
                 collected[c] = dk
-                dk.ni = k -- refresh
-                en = en + 1
-                dk.ei = en
+                dk.ni = 1 -- refresh
+                dk.ei = 1
                 c = collect(dk,collected,c)
+                list.en = 1
+            else
+                list.en = 0
             end
+        else
+            local en = 0
+            for k=1,n do
+                local dk = dt[k]
+                if dk.tg then
+                    c = c + 1
+                    en = en + 1
+                    collected[c] = dk
+                    dk.ni = k -- refresh
+                    dk.ei = en
+                    c = collect(dk,collected,c)
+                end
+            end
+            list.en = en
         end
-        list.en = en
     end
     return c
 end
@@ -219,22 +250,38 @@ end
 local function collect(list,collected,c)
     local dt = list.dt
     if dt then
-        local en = 0
-        for k=1,#dt do
-            local dk = dt[k]
+        local n = #dt
+        if n == 0 then
+            list.en = 0
+        elseif n == 1 then
+            local dk = dt[1]
             if dk.tg then
                 c = c + 1
                 collected[c] = dk
-                dk.ni = k -- refresh
-                en = en + 1
-                dk.ei = en
+                dk.ni = 1 -- refresh
+                dk.ei = 1
                 c = collect(dk,collected,c)
+                list.en = 1
             end
+        else
+            local en = 0
+            for k=1,#dt do
+                local dk = dt[k]
+                if dk.tg then
+                    c = c + 1
+                    en = en + 1
+                    collected[c] = dk
+                    dk.ni = k -- refresh
+                    dk.ei = en
+                    c = collect(dk,collected,c)
+                end
+            end
+            list.en = en
         end
-        list.en = en
     end
     return c
 end
+
 apply_axis['descendant-or-self'] = function(list)
     local collected, c = { }, 0
     for l=1,#list do
@@ -301,40 +348,40 @@ apply_axis['namespace'] = function(list)
 end
 
 apply_axis['following'] = function(list) -- incomplete
---~     local collected, c = { }, 0
---~     for l=1,#list do
---~         local ll = list[l]
---~         local p = ll.__p__
---~         local d = p.dt
---~         for i=ll.ni+1,#d do
---~             local di = d[i]
---~             if type(di) == "table" then
---~                 c = c + 1
---~                 collected[c] = di
---~                 break
---~             end
---~         end
---~     end
---~     return collected
+ -- local collected, c = { }, 0
+ -- for l=1,#list do
+ --     local ll = list[l]
+ --     local p = ll.__p__
+ --     local d = p.dt
+ --     for i=ll.ni+1,#d do
+ --         local di = d[i]
+ --         if type(di) == "table" then
+ --             c = c + 1
+ --             collected[c] = di
+ --             break
+ --         end
+ --     end
+ -- end
+ -- return collected
     return { }
 end
 
 apply_axis['preceding'] = function(list) -- incomplete
---~     local collected, c = { }, 0
---~     for l=1,#list do
---~         local ll = list[l]
---~         local p = ll.__p__
---~         local d = p.dt
---~         for i=ll.ni-1,1,-1 do
---~             local di = d[i]
---~             if type(di) == "table" then
---~                 c = c + 1
---~                 collected[c] = di
---~                 break
---~             end
---~         end
---~     end
---~     return collected
+ -- local collected, c = { }, 0
+ -- for l=1,#list do
+ --     local ll = list[l]
+ --     local p = ll.__p__
+ --     local d = p.dt
+ --     for i=ll.ni-1,1,-1 do
+ --         local di = d[i]
+ --         if type(di) == "table" then
+ --             c = c + 1
+ --             collected[c] = di
+ --             break
+ --         end
+ --     end
+ -- end
+ -- return collected
     return { }
 end
 

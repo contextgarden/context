@@ -650,28 +650,49 @@ end
 
 -- pushing to context:
 
-local separator = context.nested.markingseparator
-local command   = context.nested.markingcommand
-local ctxconcat = context.concat
+-- local separator = context.nested.markingseparator
+-- local command   = context.nested.markingcommand
+-- local ctxconcat = context.concat
 
-local function fetchonemark(name,range,method)
-    context(command(name,fetched(name,range,method)))
-end
+-- local function fetchonemark(name,range,method)
+--     context(command(name,fetched(name,range,method)))
+-- end
 
-local function fetchtwomarks(name,range)
-    ctxconcat( {
-        command(name,fetched(name,range,v_first)),
-        command(name,fetched(name,range,v_last)),
-    }, separator(name))
-end
+-- local function fetchtwomarks(name,range)
+--     ctxconcat( {
+--         command(name,fetched(name,range,v_first)),
+--         command(name,fetched(name,range,v_last)),
+--     }, separator(name))
+-- end
 
-local function fetchallmarks(name,range)
-    ctxconcat( {
-        command(name,fetched(name,range,v_previous)),
-        command(name,fetched(name,range,v_first)),
-        command(name,fetched(name,range,v_last)),
-    }, separator(name))
-end
+-- local function fetchallmarks(name,range)
+--     ctxconcat( {
+--         command(name,fetched(name,range,v_previous)),
+--         command(name,fetched(name,range,v_first)),
+--         command(name,fetched(name,range,v_last)),
+--     }, separator(name))
+-- end
+
+    local ctx_separator = context.markingseparator
+    local ctx_command   = context.markingcommand
+
+    local function fetchonemark(name,range,method)
+        ctx_command(name,fetched(name,range,method))
+    end
+
+    local function fetchtwomarks(name,range)
+        ctx_command(name,fetched(name,range,v_first))
+        ctx_separator(name)
+        ctx_command(name,fetched(name,range,v_last))
+    end
+
+    local function fetchallmarks(name,range)
+        ctx_command(name,fetched(name,range,v_previous))
+        ctx_separator(name)
+        ctx_command(name,fetched(name,range,v_first))
+        ctx_separator(name)
+        ctx_command(name,fetched(name,range,v_last))
+    end
 
 function marks.fetch(name,range,method) -- chapter page first | chapter column:1 first
     if trace_marks_get then

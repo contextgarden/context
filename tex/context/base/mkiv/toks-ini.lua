@@ -56,6 +56,19 @@ if setinspector then
 
 end
 
+if token.commands then
+
+    local commands = token.commands()
+
+    tokens.commands = utilities.storage.allocate(table.swapped(commands,commands))
+
+else
+
+    tokens.commands = { }
+
+end
+
+
 local scan_toks       = token.scan_toks
 local scan_string     = token.scan_string
 local scan_argument   = token.scan_argument

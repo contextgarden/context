@@ -2817,6 +2817,56 @@
     \mathrulesfam\zerocount
 \to \everymathematics
 
+%D Maybe:
+
+% \starttabulate[|||c|c|]
+% \BC positive                            \BC negative                               \BC text                           \BC math \NC \NR
+% \NC \tex {f1} \tex {hairspace}  \tex{,} \NC \tex {b1} \tex {neghairspace}          \NC {\darkred\vl}\f1{\darkblue\vl} \NC ${\darkred\vl}\f1{\darkblue\vl}$ \NC \NR
+% \NC \tex {f2} \tex {thinspace}  \tex{:} \NC \tex {b2} \tex {negthinspace}  \tex{!} \NC {\darkred\vl}\f2{\darkblue\vl} \NC ${\darkred\vl}\f2{\darkblue\vl}$ \NC \NR
+% \NC \tex {f3} \tex {medspace}   \tex{;} \NC \tex {b3} \tex {negmedspace}           \NC {\darkred\vl}\f3{\darkblue\vl} \NC ${\darkred\vl}\f3{\darkblue\vl}$ \NC \NR
+% \NC \tex {f4} \tex {thickspace}         \NC \tex {b4} \tex {negthickspace}         \NC {\darkred\vl}\f4{\darkblue\vl} \NC ${\darkred\vl}\f4{\darkblue\vl}$ \NC \NR
+% \NC \tex {f5} \tex {enspace}            \NC \tex {b5}                              \NC {\darkred\vl}\f5{\darkblue\vl} \NC ${\darkred\vl}\f5{\darkblue\vl}$ \NC \NR
+% \NC \tex {f6} \tex {emspace}            \NC \tex {b6}                              \NC {\darkred\vl}\f6{\darkblue\vl} \NC ${\darkred\vl}\f6{\darkblue\vl}$ \NC \NR
+% \stoptabulate
+
+% \unexpanded\def\negenspace{\kern-.5\emwidth}
+% \unexpanded\def\negemspace{\kern-  \emwidth}
+%
+% \unexpanded\def\math_f#1%
+%   {\ifcase#1\or
+%      \hairspace
+%    \or
+%      \thinspace
+%    \or
+%      \medspace
+%    \or
+%      \thickspace
+%    \or
+%      \enspace
+%    \or
+%      \emspace
+%    \fi}
+%
+% \unexpanded\def\math_b#1%
+%   {\ifcase#1\or
+%      \neghairspace
+%    \or
+%      \negthinspace
+%    \or
+%      \negmedspace
+%    \or
+%      \negthickspace
+%    \or
+%      \negenspace
+%    \or
+%      \negemspace
+%    \fi}
+%
+% \appendtoks
+%     \let\f\math_f
+%     \let\b\math_b
+% \to \everymathematics
+
 \protect \endinput
 
 % % not used (yet)

@@ -84,6 +84,7 @@ local texgetcount       = tex.getcount
 local isnode            = node.is_node
 local writenode         = node.write
 local copynodelist      = node.copy_list
+local tonut             = node.direct.todirect
 
 local catcodenumbers    = catcodes.numbers
 
@@ -103,6 +104,21 @@ local report_cld        = logs.reporter("cld","stack")
 ----- report_template   = logs.reporter("cld","template")
 
 local processlines      = true -- experiments.register("context.processlines", function(v) processlines = v end)
+
+local tokenflushmode    = false
+local nodeflushmode     = false
+local maxflushnodeindex = 0x10FFFF - 1
+
+if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6768 then
+
+    tokenflushmode    = true
+    nodeflushmode     = true
+    maxflushnodeindex = token.biggest_char() - 1
+
+end
+
+tokenflushmode    = false
+nodeflushmode     = false
 
 -- In earlier experiments a function tables was referred to as lua.calls and the
 -- primitive \luafunctions was \luacall and we used our own implementation of
@@ -327,25 +343,16 @@ function interfaces.registerscanner(name,action,protected,public,call)
      -- report_cld("using interface scanner: %s",k)
     else
         storedscanners[name] = true
---         if protected then
---          -- report_cld("installing expandable interface scanner: %s",k)
---             if public then
---                 context("\\installprotectedctxscanner{%s}{interfaces.scanners.%s}",name,name)
---             else
---                 context("\\installprotectedctxscanner{clf_%s}{interfaces.scanners.%s}",name,name)
---             end
---         else
---          -- report_cld("installing protected interface scanner: %s",k)
---             if public then
---                 context("\\installctxscanner{%s}{interfaces.scanners.%s}",name,name)
---             else
---                 context("\\installctxscanner{clf_%s}{interfaces.scanners.%s}",name,name)
---             end
---         end
          -- report_cld("installing interface scanner: %s",k)
-            context("\\install%sctxscanner%s{%s%s}{interfaces.scanners.%s}",
+         -- context("\\install%sctxscanner%s{%s%s}{interfaces.scanners.%s}",
+         --     protected and "protected" or "",
+         --     call      and "call"      or "",
+         --     public    and ""          or "clf_",
+         --     name,
+         --     name
+         -- )
+            context("\\install%sctxscanner{%s%s}{interfaces.scanners.%s}",
                 protected and "protected" or "",
-                call      and "call"      or "",
                 public    and ""          or "clf_",
                 name,
                 name
@@ -683,8 +690,19 @@ local s_cldl_argument_e = "}"
 -- local s_cldl_argument_b = "{"
 -- local s_cldl_argument_f = "{ "
 
+local t_cldl_luafunction       = token.create("luafunctioncall")
+
+local lua_expandable_call_code = token.command_id and token.command_id("lua_expandable_call")
+local newtoken                 = token.new
+
 local function writer(parent,command,...) -- already optimized before call
-    flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+
+    if type(command) == "string" then -- for now
+        flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
+    else
+        flush(command) -- todo: ctx|prt|texcatcodes
+    end
+
     local direct = false
  -- local t = { ... }
  -- for i=1,#t do
@@ -751,7 +769,16 @@ local function writer(parent,command,...) -- already optimized before call
                 elseif tn == 1 then -- some 20% faster than the next loop
                     local tj = ti[1]
                     if type(tj) == "function" then
-                        flush(currentcatcodes,s_cldl_option_b,storefunction(tj),s_cldl_option_e)
+                        tj = storefunction(tj)
+                        if tokenflushmode then
+if newtoken then
+    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
+else
+                            flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
+end
+                        else
+                            flush(currentcatcodes,s_cldl_option_b,tj,s_cldl_option_e)
+                        end
                     else
                         flush(currentcatcodes,"[",tj,"]")
                     end
@@ -760,10 +787,19 @@ local function writer(parent,command,...) -- already optimized before call
                     for j=1,tn do
                         local tj = ti[j]
                         if type(tj) == "function" then
-                            if j == tn then
-                                flush(currentcatcodes,s_cldl_option_s,storefunction(tj),"]")
+                            tj = storefunction(tj)
+                            if tokenflushmode then
+if newtoken then
+    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
+else
+                                flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
+end
                             else
-                                flush(currentcatcodes,s_cldl_option_s,storefunction(tj),",")
+                                if j == tn then
+                                    flush(currentcatcodes,s_cldl_option_s,tj,"]")
+                                else
+                                    flush(currentcatcodes,s_cldl_option_s,tj,",")
+                                end
                             end
                         else
                             if j == tn then
@@ -776,7 +812,16 @@ local function writer(parent,command,...) -- already optimized before call
                 end
             elseif typ == "function" then
                 -- todo: ctx|prt|texcatcodes
-                flush(currentcatcodes,s_cldl_argument_f,storefunction(ti),s_cldl_argument_e)
+                ti = storefunction(ti)
+                if tokenflushmode then
+if newtoken then
+    flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_code),"}")
+else
+                    flush(currentcatcodes,"{",t_cldl_luafunction,ti,"}")
+end
+                else
+                    flush(currentcatcodes,s_cldl_argument_f,ti,s_cldl_argument_e)
+                end
             elseif typ == "boolean" then
                 if ti then
                     flushdirect(currentcatcodes,"\r")
@@ -785,11 +830,32 @@ local function writer(parent,command,...) -- already optimized before call
                 end
             elseif typ == "thread" then
                 report_context("coroutines not supported as we cannot yield across boundaries")
-            elseif isnode(ti) then -- slow
-                flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+            elseif isnode(ti) then -- slow | why {} here ?
+                if nodeflushmode then
+                    local n = tonut(ti)
+                    if n <= maxflushnodeindex then
+                        flush(currentcatcodes,"{",ti,"}")
+                    else
+                        flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+                    end
+                else
+                    flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+                end
             else
                 report_context("error: %a gets a weird argument %a",command,ti)
             end
+--             else
+--                 local n = isnode(ti)
+--                 if n then
+--                     if nodeflushmode and n <= maxflushnodeindex then
+--                         flush(ti)
+--                     else
+--                         flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
+--                     end
+--                 else
+--                     report_context("error: %a gets a weird argument %a",command,ti)
+--                 end
+--             end
         end
     end
 end
@@ -820,27 +886,71 @@ end
 --     end
 -- end
 
-local core = setmetatableindex(function(parent,k)
-    local c = "\\" .. k -- tostring(k)
-    local f = function(first,...)
-        if first == nil then
-            flush(currentcatcodes,c)
-        else
-            return writer(context,c,first,...)
-        end
-    end
-    parent[k] = f
-    return f
-end)
+local core
 
-core.cs = setmetatableindex(function(parent,k)
-    local c = "\\" .. k -- tostring(k)
-    local f = function()
-        flush(currentcatcodes,c)
-    end
-    parent[k] = f
-    return f
-end)
+if tokenflushmode then
+
+    local create = token.create
+
+    local toks = setmetatableindex(function(t,k)
+        local v = create(k)
+        t[k] = v
+        return v
+    end)
+
+    core = setmetatableindex(function(parent,k)
+        local t
+        local f = function(first,...)
+            if not t then
+                t = toks[k]
+            end
+            if first == nil then
+                flush(t)
+            else
+                return writer(context,t,first,...)
+            end
+        end
+        parent[k] = f
+        return f
+    end)
+
+    core.cs = setmetatableindex(function(parent,k)
+        local t
+        local f = function()
+            if not t then
+                t = toks[k]
+            end
+            flush(t)
+        end
+        parent[k] = f
+        return f
+    end)
+
+else
+
+    core = setmetatableindex(function(parent,k)
+        local c = "\\" .. k -- tostring(k)
+        local f = function(first,...)
+            if first == nil then
+                flush(currentcatcodes,c)
+            else
+                return writer(context,c,first,...)
+            end
+        end
+        parent[k] = f
+        return f
+    end)
+
+    core.cs = setmetatableindex(function(parent,k)
+        local c = "\\" .. k -- tostring(k)
+        local f = function()
+            flush(currentcatcodes,c)
+        end
+        parent[k] = f
+        return f
+    end)
+
+end
 
 local indexer = function(parent,k)
     if type(k) == "string" then
@@ -935,8 +1045,16 @@ local caller = function(parent,f,a,...)
             end
         elseif typ == "function" then
             -- ignored: a ...
-            flush(currentcatcodes,"{\\cldl",storefunction(f),"}") -- todo: ctx|prt|texcatcodes
-         -- flush(currentcatcodes,"{",storefunction(f),"}") -- todo: ctx|prt|texcatcodes
+            f = storefunction(f)
+            if tokenflushmode then
+if newtoken then
+    flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_code),"}")
+else
+                flush(currentcatcodes,"{",t_cldl_luafunction,f,"}")
+end
+            else
+                flush(currentcatcodes,s_cldl_argument_b,f,s_cldl_argument_e) -- todo: ctx|prt|texcatcodes
+            end
         elseif typ == "boolean" then
             if f then
                 if a ~= nil then
@@ -955,20 +1073,38 @@ local caller = function(parent,f,a,...)
         elseif typ == "thread" then
             report_context("coroutines not supported as we cannot yield across boundaries")
         elseif isnode(f) then -- slow
-         -- writenode(f)
-            flush(currentcatcodes,"\\cldl",storenode(f)," ")
-         -- flush(currentcatcodes,"",storenode(f)," ")
+            if nodeflushmode then
+                local n = tonut(f)
+                if n <= maxflushnodeindex then
+                    flush(f)
+                else
+                    flush(currentcatcodes,s_cldl_option_s,storenode(f)," ")
+                end
+            else
+                flush(currentcatcodes,s_cldl_option_s,storenode(f)," ")
+            end
         else
             report_context("error: %a gets a weird argument %a","context",f)
         end
+--         else
+--             local n = isnode(f)
+--             if n then
+--                 if nodeflushmode and n <= maxflushnodeindex then
+--                     flush(f)
+--                 else
+--                     flush(currentcatcodes,s_cldl_option_s,storenode(f)," ")
+--                 end
+--             else
+--                 report_context("error: %a gets a weird argument %a","context",f)
+--             end
+--         end
     end
 end
 
-context.nodes = {
+context.nodes = { -- todo
     store = storenode,
     flush = function(n)
-        flush(currentcatcodes,"\\cldl",storenode(n)," ")
-     -- flush(currentcatcodes,"",storenode(n)," ")
+        flush(currentcatcodes,s_cldl_option_s,storenode(n)," ")
     end,
 }
 
@@ -1034,7 +1170,11 @@ local tracedwriter = function(parent,...) -- also catcodes ?
     local savedflushdirect = flushdirect -- unlikely to be used here
     local t, n = { "w : - : " }, 1
     local traced = function(catcodes,...) -- todo: check for catcodes
-        local s = concat({...})
+        local s = { ... }
+        for i=1,#s do
+            s[i] = tostring(s[i]) -- because we can have nodes and tokens too
+        end
+        s = concat(s)
         s = lpegmatch(visualizer,s)
         n = n + 1
         t[n] = s

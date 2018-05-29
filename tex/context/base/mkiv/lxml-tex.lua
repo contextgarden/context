@@ -1180,7 +1180,7 @@ function lxml.flushsetups(id,...)
         local sd = setups[document]
         if sd then
             for k=1,#sd do
-                local v= sd[k]
+                local v = sd[k]
                 if not done[v] then
                     if trace_loading then
                         report_lxml("applying setup %02i : %a to %a",k,v,document)

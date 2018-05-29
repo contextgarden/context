@@ -981,7 +981,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 39305, stripped down to: 21144
+-- original size: 39398, stripped down to: 21142
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1150,8 +1150,8 @@ patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+unders
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
 patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(P(-1)+Cc(" ")))^0))
-local function anywhere(pattern) 
-  return P { P(pattern)+1*V(1) }
+function anywhere(pattern) 
+  return (1-P(pattern))^0*P(pattern)
 end
 lpeg.anywhere=anywhere
 function lpeg.instringchecker(p)
@@ -4778,7 +4778,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 17703, stripped down to: 11691
+-- original size: 18035, stripped down to: 11890
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -4842,6 +4842,8 @@ local function glob_pattern_function(path,patt,recurse,action)
       usedpath=path
     end
     local dirs
+    local nofdirs=0
+    local noffiles=#result
     for name in walkdir(usedpath) do
       if name~="." and name~=".." then
         local full=path..name
@@ -4851,16 +4853,18 @@ local function glob_pattern_function(path,patt,recurse,action)
             action(full)
           end
         elseif recurse and mode=="directory" then
-          if not dirs then
-            dirs={ full }
+          if dirs then
+            nofdirs=nofdirs+1
+            dirs[nofdirs]=full
           else
-            dirs[#dirs+1]=full
+            nofdirs=1
+            dirs={ full }
           end
         end
       end
     end
     if dirs then
-      for i=1,#dirs do
+      for i=1,nofdirs do
         glob_pattern_function(dirs[i],patt,recurse,action)
       end
     end
@@ -4870,38 +4874,41 @@ local function glob_pattern_table(path,patt,recurse,result)
   if not result then
     result={}
   end
-  if isdir(path) then
-    local usedpath
-    if path=="/" then
-      usedpath="/."
-    elseif not find(path,"/$") then
-      usedpath=path.."/."
-      path=path.."/"
-    else
-      usedpath=path
-    end
-    local dirs
-    for name in walkdir(usedpath) do
-      if name~="." and name~=".." then
-        local full=path..name
-        local mode=attributes(full,'mode')
-        if mode=='file' then
-          if not patt or find(full,patt) then
-            result[#result+1]=full
-          end
-        elseif recurse and mode=="directory" then
-          if not dirs then
-            dirs={ full }
-          else
-            dirs[#dirs+1]=full
-          end
+  local usedpath
+  if path=="/" then
+    usedpath="/."
+  elseif not find(path,"/$") then
+    usedpath=path.."/."
+    path=path.."/"
+  else
+    usedpath=path
+  end
+  local dirs
+  local nofdirs=0
+  local noffiles=#result
+  for name,a in walkdir(usedpath) do
+    if name~="." and name~=".." then
+      local full=path..name
+      local mode=attributes(full,'mode')
+      if mode=='file' then
+        if not patt or find(full,patt) then
+          noffiles=noffiles+1
+          result[noffiles]=full
+        end
+      elseif recurse and mode=="directory" then
+        if dirs then
+          nofdirs=nofdirs+1
+          dirs[nofdirs]=full
+        else
+          nofdirs=1
+          dirs={ full }
         end
       end
     end
-    if dirs then
-      for i=1,#dirs do
-        glob_pattern_table(dirs[i],patt,recurse,result)
-      end
+  end
+  if dirs then
+    for i=1,nofdirs do
+      glob_pattern_table(dirs[i],patt,recurse,result)
     end
   end
   return result
@@ -4911,12 +4918,13 @@ local function globpattern(path,patt,recurse,method)
   if patt and sub(patt,1,-3)==path then
     patt=false
   end
+  local okay=isdir(path)
   if kind=="function" then
-    return glob_pattern_function(path,patt,recurse,method)
+    return okay and glob_pattern_function(path,patt,recurse,method) or {}
   elseif kind=="table" then
-    return glob_pattern_table(path,patt,recurse,method)
+    return okay and glob_pattern_table(path,patt,recurse,method) or method
   else
-    return glob_pattern_table(path,patt,recurse,{})
+    return okay and glob_pattern_table(path,patt,recurse,{}) or {}
   end
 end
 dir.globpattern=globpattern
@@ -13668,7 +13676,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 53326, stripped down to: 32477
+-- original size: 54551, stripped down to: 33353
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -13753,18 +13761,32 @@ apply_axis['child']=function(list)
     local ll=list[l]
     local dt=ll.dt
     if dt then 
-      local en=0
-      for k=1,#dt do
-        local dk=dt[k]
+      local n=#dt
+      if n==0 then
+        ll.en=0
+      elseif n==1 then
+        local dk=dt[1]
         if dk.tg then
           c=c+1
           collected[c]=dk
-          dk.ni=k 
-          en=en+1
-          dk.ei=en
+          dk.ni=1 
+          dk.ei=1
+          ll.en=1
         end
+      else
+        local en=0
+        for k=1,#dt do
+          local dk=dt[k]
+          if dk.tg then
+            c=c+1
+            en=en+1
+            collected[c]=dk
+            dk.ni=k 
+            dk.ei=en
+          end
+        end
+        ll.en=en
       end
-      ll.en=en
     end
   end
   return collected
@@ -13772,19 +13794,36 @@ end
 local function collect(list,collected,c)
   local dt=list.dt
   if dt then
-    local en=0
-    for k=1,#dt do
-      local dk=dt[k]
+    local n=#dt
+    if n==0 then
+      list.en=0
+    elseif n==1 then
+      local dk=dt[1]
       if dk.tg then
         c=c+1
         collected[c]=dk
-        dk.ni=k 
-        en=en+1
-        dk.ei=en
+        dk.ni=1 
+        dk.ei=1
         c=collect(dk,collected,c)
+        list.en=1
+      else
+        list.en=0
       end
+    else
+      local en=0
+      for k=1,n do
+        local dk=dt[k]
+        if dk.tg then
+          c=c+1
+          en=en+1
+          collected[c]=dk
+          dk.ni=k 
+          dk.ei=en
+          c=collect(dk,collected,c)
+        end
+      end
+      list.en=en
     end
-    list.en=en
   end
   return c
 end
@@ -13798,19 +13837,34 @@ end
 local function collect(list,collected,c)
   local dt=list.dt
   if dt then
-    local en=0
-    for k=1,#dt do
-      local dk=dt[k]
+    local n=#dt
+    if n==0 then
+      list.en=0
+    elseif n==1 then
+      local dk=dt[1]
       if dk.tg then
         c=c+1
         collected[c]=dk
-        dk.ni=k 
-        en=en+1
-        dk.ei=en
+        dk.ni=1 
+        dk.ei=1
         c=collect(dk,collected,c)
+        list.en=1
       end
+    else
+      local en=0
+      for k=1,#dt do
+        local dk=dt[k]
+        if dk.tg then
+          c=c+1
+          en=en+1
+          collected[c]=dk
+          dk.ni=k 
+          dk.ei=en
+          c=collect(dk,collected,c)
+        end
+      end
+      list.en=en
     end
-    list.en=en
   end
   return c
 end
@@ -21478,8 +21532,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 882905
--- stripped bytes    : 319293
+-- original bytes    : 884555
+-- stripped bytes    : 319870
 
 -- end library merge
 

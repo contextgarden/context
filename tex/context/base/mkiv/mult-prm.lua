@@ -289,6 +289,7 @@ return {
   "luaescapestring",
   "luafunction",
   "luafunctioncall",
+  "luadef",
   "luatexbanner",
   "luatexrevision",
   "luatexversion",

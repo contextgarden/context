@@ -414,11 +414,7 @@ return {
         "startluacode", "stopluacode", "startlua", "stoplua",
         "startctxfunction","stopctxfunction","ctxfunction",
         "startctxfunctiondefinition","stopctxfunctiondefinition",
-        "installctxfunction", "installctxfunctioncall",
-        "installprotectedctxfunction", "installprotectedctxfunctioncall",
-        "installctxscanner", "installctxscannercall",
-        "resetctxscanner",
-        "installprotectedctxscanner", "installprotectedctxscannercall",
+        "installctxfunction", "installprotectedctxfunction",  "installprotectedctxscanner", "installctxscanner", "resetctxscanner",
         "cldprocessfile", "cldloadfile", "cldloadviafile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
