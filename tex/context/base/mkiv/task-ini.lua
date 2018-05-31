@@ -94,7 +94,6 @@ appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler",  
 appendaction("shipouts",     "wrapup",      "nodes.handlers.export",                            nil, "nut",    "disabled"  )  -- always last
 appendaction("shipouts",     "wrapup",      "luatex.synctex.collect",                           nil, "nut",    "disabled"  )
 
-
 appendaction("math",         "normalizers", "noads.handlers.showtree",                          nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.unscript",                          nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.variants",                          nil, "nonut",  "enabled"   )

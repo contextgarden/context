@@ -1172,7 +1172,7 @@ local function analyzefiles(olddata)
             report_names("scanning path %a for %s files",blobpath,suffix)
         end, function(blobtype,blobpath,pattern,total,checked,done)
             blobpath = resolveprefix(blobpath) -- no shortcut
-            report_names("%s entries found, %s %s files checked, %s okay",total,checked,suffix,done)
+            report_names("%s %s files checked, %s okay",checked,suffix,done)
         end)
     end
 

@@ -739,9 +739,9 @@
 % this one too: \letvalue{\??mathcodecommand op}\mathop ?
 
 \unexpanded\def\normalmbox
-  {\hbox\bgroup
+  {\normalhbox\bgroup
    \usemathematicsstyleandcolor\c!textstyle\c!textcolor % new
-   \dowithnextboxcs\math_mbox_finish\hbox}
+   \dowithnextboxcs\math_mbox_finish\normalhbox}
 
 \def\math_mbox_finish
   {\flushnextbox
@@ -751,8 +751,8 @@
   {\ifmmode\normalmbox\else\hbox\fi}
 
 \unexpanded\def\enablembox
-  {\appendtoks\math_enable_mbox\to \everymathematics}
-  {\everymathematics\expandafter{\the\everymathematics\math_enable_mbox}}
+ %{\appendtoks\math_enable_mbox\to \everymathematics}
+  {\toksapp\everymathematics{\math_enable_mbox}}
 
 \def\math_enable_mbox
   {\let\hbox\mbox}

@@ -266,18 +266,26 @@ enddef ;
 graph_margin_fraction.low=-.07 ;         % bbox fraction for default range start
 graph_margin_fraction.high=1.07 ;        % bbox fraction for default range stop
 
+%def graph_with_pen_and_color(expr q) =
+%  withpen penpart q
+%  withcolor
+%  if colormodel q=1 :
+%    false
+%  elseif colormodel q=3 :
+%    (greypart q)
+%  elseif colormodel q=5 :
+%    (redpart q, greenpart q, bluepart q)
+%  elseif colormodel q=7 :
+%    (cyanpart q, magentapart q, yellowpart q, blackpart q)
+%  fi
+%  withprescript  prescriptpart q
+%  withpostscript postscriptpart q
+%enddef ;
+
 def graph_with_pen_and_color(expr q) =
-  withpen penpart q withcolor
-  if colormodel q=1 :
-    false
-  elseif colormodel q=3 :
-    (greypart q)
-  elseif colormodel q=5 :
-    (redpart q, greenpart q, bluepart q)
-  elseif colormodel q=7 :
-    (cyanpart q, magentapart q, yellowpart q, blackpart q)
-  fi
+  withproperties q
 enddef ;
+
 
 % Add picture component q to picture @# and change part p to tp,
 % where p is something from q that needs coordinate transformation.

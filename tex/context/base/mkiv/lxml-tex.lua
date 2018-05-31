@@ -92,6 +92,8 @@ local forceraw           = false
 
 local p_texescape        = patterns.texescape
 
+local tokenizedcs        = context.tokenizedcs
+
 directives.enable("xml.path.keeplastmatch")
 
 -- tex entities
@@ -499,13 +501,30 @@ function lxml.checkindex(name)
     return root and root.index or 0
 end
 
-function lxml.withindex(name,n,command) -- will change as name is always there now
-    local i, p = lpegmatch(splitter,n)
-    if p then
-        contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",n,"}")
-    else
-        contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",name,"::",n,"}")
+if tokenizedcs then
+
+    function lxml.withindex(name,n,command) -- will change as name is always there now
+        local i, p = lpegmatch(splitter,n)
+        local w = tokenizedcs.xmlw
+        if p then
+            contextsprint(ctxcatcodes,w,"{",command,"}{",n,"}")
+        else
+            contextsprint(ctxcatcodes,w,"{",command,"}{",name,"::",n,"}")
+        end
     end
+
+else
+
+    function lxml.withindex(name,n,command) -- will change as name is always there now
+        local i, p = lpegmatch(splitter,n)
+
+        if p then
+            contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",n,"}")
+        else
+            contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",name,"::",n,"}")
+        end
+    end
+
 end
 
 function lxml.getindex(name,n) -- will change as name is always there now
@@ -728,21 +747,6 @@ end
 
 local default_element_handler = xml.gethandlers("verbose").functions["@el@"]
 
--- local xmlw = setmetatableindex(function(t,k)
---     local v = setmetatableindex(function(t,kk)
---         local v
---         if kk == false then
---             v = "\\xmlw{" .. k .. "}{"
---         else
---             v = "\\xmlw{" .. k .. "}{" .. kk .. "::"
---         end
---         t[kk] = v
---         return v
---     end)
---     t[k]= v
---     return v
--- end)
-
 local setfilename = false
 local trace_name  = false
 local report_name = logs.reporter("lxml")
@@ -765,39 +769,80 @@ trackers.register("system.synctex.xml",function(v)
     trace_name = v
 end)
 
-local function tex_element(e,handlers)
-    if setfilename then
-        syncfilename(e,"element")
-    end
-    local command = e.command
-    if command == nil then
-        default_element_handler(e,handlers)
-    elseif command == true then
-        -- text (no <self></self>) / so, no mkii fallback then
-        handlers.serialize(e.dt,handlers)
-    elseif command == false then
-        -- ignore
-    else
-        local tc = type(command)
-        if tc == "string" then
-            local rootname, ix = e.name, e.ix
-            if rootname then
-                if not ix then
-                    addindex(rootname,false,true)
-                    ix = e.ix
+local tex_element
+
+if tokenizedcs then
+
+    tex_element = function(e,handlers)
+        if setfilename then
+            syncfilename(e,"element")
+        end
+        local command = e.command
+        if command == nil then
+            default_element_handler(e,handlers)
+        elseif command == true then
+            -- text (no <self></self>) / so, no mkii fallback then
+            handlers.serialize(e.dt,handlers)
+        elseif command == false then
+            -- ignore
+        else
+            local tc = type(command)
+            if tc == "string" then
+                local rootname, ix = e.name, e.ix
+                local w = tokenizedcs.xmlw
+                if rootname then
+                    if not ix then
+                        addindex(rootname,false,true)
+                        ix = e.ix
+                    end
+                    contextsprint(ctxcatcodes,w,"{",command,"}{",rootname,"::",ix,"}")
+                else
+                    report_lxml("fatal error: no index for %a",command)
+                    contextsprint(ctxcatcodes,w,"{",command,"}{",ix or 0,"}")
                 end
-             -- faster than context.xmlw
-                contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",rootname,"::",ix,"}")
-             -- contextsprint(ctxcatcodes,xmlw[command][rootname],ix,"}")
-            else
-                report_lxml("fatal error: no index for %a",command)
-                contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",ix or 0,"}")
-             -- contextsprint(ctxcatcodes,xmlw[command][false],ix or 0,"}")
+            elseif tc == "function" then
+                command(e)
             end
-        elseif tc == "function" then
-            command(e)
         end
     end
+
+else
+
+    tex_element = function(e,handlers)
+        if setfilename then
+            syncfilename(e,"element")
+        end
+        local command = e.command
+        if command == nil then
+            default_element_handler(e,handlers)
+        elseif command == true then
+            -- text (no <self></self>) / so, no mkii fallback then
+            handlers.serialize(e.dt,handlers)
+        elseif command == false then
+            -- ignore
+        else
+            local tc = type(command)
+            if tc == "string" then
+                local rootname, ix = e.name, e.ix
+                if rootname then
+                    if not ix then
+                        addindex(rootname,false,true)
+                        ix = e.ix
+                    end
+                 -- faster than context.xmlw
+                    contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",rootname,"::",ix,"}")
+                 -- contextsprint(ctxcatcodes,xmlw[command][rootname],ix,"}")
+                else
+                    report_lxml("fatal error: no index for %a",command)
+                    contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",ix or 0,"}")
+                 -- contextsprint(ctxcatcodes,xmlw[command][false],ix or 0,"}")
+                end
+            elseif tc == "function" then
+                command(e)
+            end
+        end
+    end
+
 end
 
 -- <?context-directive foo ... ?>
@@ -1442,29 +1487,63 @@ end
 -- the number of commands is often relative small but there can be many calls
 -- to this finalizer
 
-local function command(collected,cmd,otherwise)
-    local n = collected and #collected
-    if n and n > 0 then
-        local wildcard = find(cmd,"*",1,true)
-        for c=1,n do -- maybe optimize for n=1
-            local e = collected[c]
-            local ix = e.ix
-            local name = e.name
-            if name and not ix then
-                addindex(name,false,true)
-                ix = e.ix
+local command
+
+if tokenizedcs then
+
+    command = function(collected,cmd,otherwise)
+        local n = collected and #collected
+        local w = tokenizedcs.xmlw
+        if n and n > 0 then
+            local wildcard = find(cmd,"*",1,true)
+            for c=1,n do -- maybe optimize for n=1
+                local e = collected[c]
+                local ix = e.ix
+                local name = e.name
+                if name and not ix then
+                    addindex(name,false,true)
+                    ix = e.ix
+                end
+                if not ix or not name then
+                    report_lxml("no valid node index for element %a using command %s",name or "?",cmd)
+                elseif wildcard then
+                    contextsprint(ctxcatcodes,w,"{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
+                else
+                    contextsprint(ctxcatcodes,w,"{",cmd,"}{",name,"::",ix,"}")
+                end
             end
-            if not ix or not name then
-                report_lxml("no valid node index for element %a using command %s",name or "?",cmd)
-            elseif wildcard then
-                contextsprint(ctxcatcodes,"\\xmlw{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
-            else
-                contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",name,"::",ix,"}")
-            end
+        elseif otherwise then
+            contextsprint(ctxcatcodes,w,"{",otherwise,"}{#1}")
         end
-    elseif otherwise then
-        contextsprint(ctxcatcodes,"\\xmlw{",otherwise,"}{#1}")
     end
+
+else
+
+    command = function(collected,cmd,otherwise)
+        local n = collected and #collected
+        if n and n > 0 then
+            local wildcard = find(cmd,"*",1,true)
+            for c=1,n do -- maybe optimize for n=1
+                local e = collected[c]
+                local ix = e.ix
+                local name = e.name
+                if name and not ix then
+                    addindex(name,false,true)
+                    ix = e.ix
+                end
+                if not ix or not name then
+                    report_lxml("no valid node index for element %a using command %s",name or "?",cmd)
+                elseif wildcard then
+                    contextsprint(ctxcatcodes,"\\xmlw{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
+                else
+                    contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",name,"::",ix,"}")
+                end
+            end
+        elseif otherwise then
+            contextsprint(ctxcatcodes,"\\xmlw{",otherwise,"}{#1}")
+        end
+    end
+
 end
 
 -- local wildcards = setmetatableindex(function(t,k)
@@ -1675,7 +1754,7 @@ local function concatrange(collected,start,stop,separator,lastseparator,textonly
     end
 end
 
-local function concat(collected,separator,lastseparator,textonly) -- test this on mml
+local function concatlist(collected,separator,lastseparator,textonly) -- test this on mml
     concatrange(collected,false,false,separator,lastseparator,textonly)
 end
 
@@ -1697,13 +1776,11 @@ texfinalizers.context        = ctxtext
 texfinalizers.position       = position
 texfinalizers.match          = match
 texfinalizers.index          = index
-texfinalizers.concat         = concat
+texfinalizers.concat         = concatlist
 texfinalizers.concatrange    = concatrange
 texfinalizers.chainattribute = chainattribute
 texfinalizers.chainpath      = chainpath
 texfinalizers.default        = all -- !!
-
-local concat = table.concat
 
 function texfinalizers.tag(collected,n)
     if collected then
@@ -2139,24 +2216,51 @@ function lxml.direct(id)
     end
 end
 
-function lxml.command(id,pattern,cmd)
-    local i, p = getid(id,true)
-    local collected = xmlapplylpath(getid(i),pattern)
-    if collected then
-        local nc = #collected
-        if nc > 0 then
-            local rootname = p or i.name
-            for c=1,nc do
-                local e = collected[c]
-                local ix = e.ix
-                if not ix then
-                    addindex(rootname,false,true)
-                    ix = e.ix
+if tokenizedcs then
+
+    function lxml.command(id,pattern,cmd)
+        local i, p = getid(id,true)
+        local collected = xmlapplylpath(getid(i),pattern)
+        if collected then
+            local nc = #collected
+            if nc > 0 then
+                local rootname = p or i.name
+                local w = tokenizedcs.xmlw
+                for c=1,nc do
+                    local e = collected[c]
+                    local ix = e.ix
+                    if not ix then
+                        addindex(rootname,false,true)
+                        ix = e.ix
+                    end
+                    contextsprint(ctxcatcodes,w,"{",cmd,"}{",rootname,"::",ix,"}")
                 end
-                contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",rootname,"::",ix,"}")
             end
         end
     end
+
+else
+
+    function lxml.command(id,pattern,cmd)
+        local i, p = getid(id,true)
+        local collected = xmlapplylpath(getid(i),pattern)
+        if collected then
+            local nc = #collected
+            if nc > 0 then
+                local rootname = p or i.name
+                for c=1,nc do
+                    local e = collected[c]
+                    local ix = e.ix
+                    if not ix then
+                        addindex(rootname,false,true)
+                        ix = e.ix
+                    end
+                    contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",rootname,"::",ix,"}")
+                end
+            end
+        end
+    end
+
 end
 
 -- loops
@@ -2292,13 +2396,13 @@ function texfinalizers.lettered(collected)
     end
 end
 
---~ function texfinalizers.apply(collected,what) -- to be tested
---~     if collected then
---~         for c=1,#collected do
---~             contextsprint(ctxcatcodes,what(collected[c].dt[1]))
---~         end
---~     end
---~ end
+-- function texfinalizers.apply(collected,what) -- to be tested
+--     if collected then
+--         for c=1,#collected do
+--             contextsprint(ctxcatcodes,what(collected[c].dt[1]))
+--         end
+--     end
+-- end
 
 function lxml.toparameters(id)
     local e = getid(id)

@@ -1228,8 +1228,9 @@ end
 function table.reverse(t) -- check with 5.3 ?
     if t then
         local n = #t
+        local m = n + 1
         for i=1,floor(n/2) do -- maybe just n//2
-            local j = n - i + 1
+            local j = m - i
             t[i], t[j] = t[j], t[i]
         end
         return t

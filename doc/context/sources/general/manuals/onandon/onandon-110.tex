@@ -1,0 +1,96 @@
+% language=uk
+
+% After watching \quotation {What Makes This Song Great 30: Alanis Morisette} by
+% Rick Beato, it's tempting to poder \quotation {What makes \TEX\ great}.
+
+\startcomponent onandon-110
+
+\environment onandon-environment
+
+\startchapter[title={Getting there, version 1.10}]
+
+When we decided to turn experiments with a \LUA\ extensions to \PDFTEX\ into
+developing \LUATEX\ as alternative engine we had, in addition to opening up some
+of \TEX's internals, some extensions in mind. Around version 1.00 most was
+already achieved and with version 1.10 we're pretty close to where we want to be.
+The question is, when are we ready? In order to answer that I will look at four
+aspects:
+
+\startitemize[packed]
+\startitem objectives \stopitem
+\startitem functionality \stopitem
+\startitem performance \stopitem
+\startitem stability \stopitem
+\stopitemize
+
+The main {\em objective} was to open up \TEX\ in a way that permit extensions
+without the need to patch the engine. Although it might suit us, we don't want to
+change too much the internals, first of all because \TEX\ is \TEX, the documented
+program with a large legacy. Discussions about how to extend \TEX\ are not easy
+and seldom lead to an agreement so better is to provide a way to do what you like
+without bothering other users and|/|or interfering with macro packages. I think
+that this objective is met quite well now. Other objectives, like embedding basic
+graphic capabilities using \METAPOST\ have already been met long ago. There is
+more control over the backend and modern fonts can be dealt with.
+
+The {\em functionality} in terms of primitives has been extended but within
+reasonable bounds: we only added things that make coding a bit more natural but
+we realize that this is very subjective. So, here again we can say that we met
+our goals.
+
+We wanted to keeping {\em performance} acceptable. The core \TEX\ engine is
+already pretty fast and it's often the implementation of macros (in macro
+packages) that creates a performance hit. Going \UTF\ has a price as do modern
+fonts. At the time of this writing processing the 270 page \LUATEX\ manual takes
+about 12 seconds (one run), which boils down to over 27 pages per second.
+
+\starttabulate[||c|c|]
+\NC            \BC runtime \BC overhead \NC \NR
+\BC \LUATEX    \NC $12.0$  \NC $+0.6$   \NC \NR
+\BC \LUAJITTEX \NC $ 9.7$  \NC $+0.5$   \NC \NR
+\stoptabulate
+
+Is this fast or slow? One can do tests with specific improvements (using new
+primitives) but in practice it's very hard to improve performance significantly.
+This is because a test with millions of calls that show a .05 second improvement
+disappears when one only has a few thousand calls. Many small improvements can
+add up, but less that one thinks, especially when macros are already quite
+optimal.
+
+You also have to take into account that having a browser open in the background
+of a \TEX\ run has way more impact than a few tenths of a second in \LUATEX\
+performance. The same is true for memory usage: why bother about \LUATEX\ taking
+tens of megabytes for fonts while a few tabs in a browser can bump memory
+consumption to gigabytes of memory usage. Also, using a large \TEX\ tree (say the
+whole of \TEXLIVE) can have a bit of a performance hit! Or what about inefficient
+callbacks, using inefficient \LUA\ code of badly designed solutions. What we
+could gain here we loose there, so I think we can safely say that the current
+implementation of \LUATEX\ is as good as you can (and will) get. Why should we
+introduce obscure optimizations where on workstations \TEX\ is just one of the
+many processes. Why should we bother too much to speed up on servers that have
+start|-|up or job management overhead or are connected to relatively slow remote
+file system. Why squeeze out a few more milliseconds when badly written macros or
+styles can have an way more impact on performance. So, for now we're satisfied
+with performance.
+
+That brings us to {\em stability}. In order to achieve that we will not introduce
+many more extensions. That way users get accustomed to what is there (read: there
+is no need to search for what else is possible). Also, it makes that existing
+functionality can become bug free because no new features can interfere. So, at
+some point we might need to decide that this is it. If we can do what we want
+now, there are no strong arguments for more. in that perspective version 1.10 can
+be considered very close to what we want to achieve.
+
+Of course development will continue. For instance, the \PDF\ inclusion code will
+be replaced by more lightweight and independent code. Names of functions and
+symbolic constants might be normalized (currently they are often related to or
+derived from internals). More documentation will be added. We will probably keep
+up with \LUA\ versions. The \FFI\ interface will become more stable. For sure
+bugs will be fixed. We might add a few more options to control behaviour of for
+instance of math rendering. Some tricky internals (like alignments) might get
+better attribute support if possible. But currently we think that most
+fundamental issues have been dealt with.
+
+\stopchapter
+
+\stopcomponent

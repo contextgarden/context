@@ -223,6 +223,13 @@ local name, platform = os.name or "linux", os.getenv("MTX_PLATFORM") or ""
 
 -- os.bits = 32 | 64
 
+-- os.uname()
+--     sysname
+--     machine
+--     release
+--     version
+--     nodename
+
 if platform ~= "" then
 
     os.platform = platform

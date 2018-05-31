@@ -92,8 +92,11 @@ function context.glyph(id,k)
     end
 end
 
-local function ctx_par  () context("\\par")   end
-local function ctx_space() context("\\space") end
+-- local function ctx_par  () context("\\par")   end
+-- local function ctx_space() context("\\space") end
+
+local ctx_par   = context.cs.par
+local ctx_space = context.cs.space
 
 context.par   = ctx_par
 context.space = ctx_space
@@ -101,8 +104,11 @@ context.space = ctx_space
 ctxcore.par   = ctx_par
 ctxcore.space = ctx_space
 
-local function ctx_bgroup() context("{") end
-local function ctx_egroup() context("}") end
+-- local function ctx_bgroup() context("{") end
+-- local function ctx_egroup() context("}") end
+
+local ctx_bgroup = context.cs.bgroup
+local ctx_egroup = context.cs.bgroup
 
 context.bgroup = ctx_bgroup
 context.egroup = ctx_egroup

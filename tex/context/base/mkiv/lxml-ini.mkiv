@@ -231,6 +231,7 @@
 \unexpanded\def\xmlremovedocumentsetup   #1#2{\clf_xmlremovesetup {#1}{#2}}
 \unexpanded\def\xmlresetdocumentsetups     #1{\clf_xmlresetsetups {#1}}
 
+\unexpanded\def\xmlflushsetups             #1{\clf_xmlflushsetups {#1}{*}{}}   % #1 == id where to apply *
 \unexpanded\def\xmlflushdocumentsetups   #1#2{\clf_xmlflushsetups {#1}{*}{#2}} % #1 == id where to apply * and #2
 
 \let\xmlregistersetup        \xmlappendsetup
@@ -240,7 +241,7 @@
 
 \unexpanded\def\xmlregisteredsetups
   {\xmlstarttiming
-   \xmlflushsetups
+   \xmlflushsetups\xmldocument
    \xmldefaulttotext\xmldocument % after include
    \xmlstoptiming}
 

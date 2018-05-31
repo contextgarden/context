@@ -92,7 +92,13 @@ local get_macro       = token.get_macro
 local get_meaning     = token.get_meaning
 local get_cmdname     = token.get_cmdname
 local set_char        = token.set_char
+local set_lua         = token.set_lua
+
 local create_token    = token.create
+local new_token       = token.new
+
+tokens.new            = new_token
+tokens.create         = create_token
 
 if not set_char then -- for a while
     local contextsprint = context.sprint
@@ -285,6 +291,7 @@ tokens.getters = { -- these don't expand
 tokens.setters = {
     macro = set_macro,
     char  = set_char,
+    lua   = set_lua,
     count = tex.setcount,
     dimen = tex.setdimen,
     skip  = tex.setglue,

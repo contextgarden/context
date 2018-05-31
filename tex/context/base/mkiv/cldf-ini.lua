@@ -52,6 +52,11 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- watching Trio Hiromi Uehara, Anthony Jackson & Simon Phillips (discovered via the
 -- later on YT). Hopefully the video breaks made the following better in the end.
 
+-- This module is also a test bed for experimental features so the content changes over
+-- time (for the better or worse). There have been no fundamental changes for many years
+-- and performance has not changed much either.
+
+
 local format, stripstring = string.format, string.strip
 local next, type, tostring, tonumber, unpack, select, rawset = next, type, tostring, tonumber, unpack, select, rawset
 local insert, remove, concat = table.insert, table.remove, table.concat
@@ -107,18 +112,26 @@ local processlines      = true -- experiments.register("context.processlines", f
 
 local tokenflushmode    = false
 local nodeflushmode     = false
+local scannerdefmode    = false
 local maxflushnodeindex = 0x10FFFF - 1
 
-if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6768 then
+local newtoken          = token.new
+local setluatoken       = token.set_lua
+
+if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6780 then
+
+    -- The gain in performasnce is neglectable.
 
     tokenflushmode    = true
     nodeflushmode     = true
+    scannerdefmode    = true
     maxflushnodeindex = token.biggest_char() - 1
 
 end
 
-tokenflushmode    = false
-nodeflushmode     = false
+-- tokenflushmode    = false
+-- scannerdefmode    = false
+-- nodeflushmode     = false
 
 -- In earlier experiments a function tables was referred to as lua.calls and the
 -- primitive \luafunctions was \luacall and we used our own implementation of
@@ -198,9 +211,13 @@ local f_resolve = nil
 local p_resolve  = ((1-lpegP("."))^1 / function(s) f_resolve = f_resolve[s] end * lpegP(".")^0)^1
 
 local function resolvestoredfunction(str)
-    f_resolve = global
-    lpegmatch(p_resolve,str)
-    return f_resolve
+    if type(str) == "string" then
+        f_resolve = global
+        lpegmatch(p_resolve,str)
+        return f_resolve
+    else
+        return str
+    end
 end
 
 local function expose(slot,f,...) -- so we can register yet undefined functions
@@ -262,17 +279,17 @@ local registerfunction = function(f,direct) -- either f=code or f=namespace,dire
             func = resolvestoredfunction(f)
         end
         if type(func) ~= "function" then
-            func = function() report_cld("invalid resolve %A",f) end
+            func = function() report_cld("invalid resolve %A, case %s",f,1) end
         end
     elseif type(f) == "string" then
         func = loadstring(f)
         if type(func) ~= "function" then
-            func = function() report_cld("invalid code %A",f) end
+            func = function() report_cld("invalid code %A, case %s",f,2) end
         end
     elseif type(f) == "function" then
         func = f
     else
-        func = function() report_cld("invalid function %A",f) end
+        func = function() report_cld("invalid function %A, case %s",f,3) end
     end
     knownfunctions[slot] = func
     return slot
@@ -321,44 +338,52 @@ local storedscanners      = interfaces.storedscanners
 storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
 local interfacescanners = setmetatablenewindex(function(t,k,v)
+    rawset(t,k,v)
     if storedscanners[k] then
-     -- report_cld("warning: scanner %a is already set",k)
+     -- report_cld("warning: scanner %a is already set (mode 1a)",k)
      -- os.exit()
         -- \scan_<k> is already in the format
      -- report_cld("using interface scanner: %s",k)
+    elseif scannerdefmode then
+     -- report_cld("installing interface scanner: %s (mode 1b)",k)
+     -- local n = registerfunction(interfaces.scanners[k],true)
+        local n = registerfunction("interfaces.scanners."..k,true)
+        storedscanners[k] = n
+        local name = "clf_" .. k
+        setluatoken(name,n,"global") -- todo : protected and "protected" or ""
     else
-        -- todo: allocate slot here and pass it
+     -- report_cld("installing interface scanner: %s (mode 1c)",k)
         storedscanners[k] = true
-     -- report_cld("installing interface scanner: %s",k)
         context("\\installctxscanner{clf_%s}{interfaces.scanners.%s}",k,k)
     end
-    rawset(t,k,v)
+ -- rawset(t,k,v)
 end)
 
 function interfaces.registerscanner(name,action,protected,public,call)
+    rawset(interfacescanners,name,action)
     if storedscanners[name] then
-     -- report_cld("warning: scanner %a is already set",k)
+     -- report_cld("warning: scanner %a is already set (mode 2a)",name)
      -- os.exit()
         -- \scan_<k> is already in the format
      -- report_cld("using interface scanner: %s",k)
+    elseif scannerdefmode then
+     -- report_cld("installing interface scanner: %s (mode 2b)",name)
+     -- local n = registerfunction(action,true) -- todo
+        local n = registerfunction("interfaces.scanners."..name,true)
+        storedscanners[name] = n
+        local name = public and name or ("clf_" .. name)
+        setluatoken(name,n,"global",protected and "protected" or "")
     else
         storedscanners[name] = true
-         -- report_cld("installing interface scanner: %s",k)
-         -- context("\\install%sctxscanner%s{%s%s}{interfaces.scanners.%s}",
-         --     protected and "protected" or "",
-         --     call      and "call"      or "",
-         --     public    and ""          or "clf_",
-         --     name,
-         --     name
-         -- )
-            context("\\install%sctxscanner{%s%s}{interfaces.scanners.%s}",
-                protected and "protected" or "",
-                public    and ""          or "clf_",
-                name,
-                name
-            )
+     -- report_cld("installing interface scanner: %s (mode 2c)",name)
+        context("\\install%sctxscanner{%s%s}{interfaces.scanners.%s}",
+            protected and "protected" or "",
+            public and "" or "clf_",
+            name,
+            name
+        )
     end
-    rawset(interfacescanners,name,action)
+ -- rawset(interfacescanners,name,action)
 end
 
 interfaces.scanners = storage.mark(interfacescanners)
@@ -386,7 +411,7 @@ end
 
 local function dummy() end
 
-function commands.ctxresetter(name)
+function commands.ctxresetter(name) -- to be checked
     return function()
         if storedscanners[name] then
             rawset(interfacescanners,name,dummy)
@@ -691,9 +716,7 @@ local s_cldl_argument_e = "}"
 -- local s_cldl_argument_f = "{ "
 
 local t_cldl_luafunction       = token.create("luafunctioncall")
-
 local lua_expandable_call_code = token.command_id and token.command_id("lua_expandable_call")
-local newtoken                 = token.new
 
 local function writer(parent,command,...) -- already optimized before call
 
@@ -771,11 +794,11 @@ local function writer(parent,command,...) -- already optimized before call
                     if type(tj) == "function" then
                         tj = storefunction(tj)
                         if tokenflushmode then
-if newtoken then
-    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
-else
-                            flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
-end
+                            if newtoken then
+                                flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
+                            else
+                                flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
+                            end
                         else
                             flush(currentcatcodes,s_cldl_option_b,tj,s_cldl_option_e)
                         end
@@ -789,17 +812,13 @@ end
                         if type(tj) == "function" then
                             tj = storefunction(tj)
                             if tokenflushmode then
-if newtoken then
-    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
-else
-                                flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
-end
-                            else
-                                if j == tn then
-                                    flush(currentcatcodes,s_cldl_option_s,tj,"]")
+                                if newtoken then
+                                    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
                                 else
-                                    flush(currentcatcodes,s_cldl_option_s,tj,",")
+                                    flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
                                 end
+                            else
+                                flush(currentcatcodes,s_cldl_option_s,tj,j == tn and "]" or ",")
                             end
                         else
                             if j == tn then
@@ -814,11 +833,11 @@ end
                 -- todo: ctx|prt|texcatcodes
                 ti = storefunction(ti)
                 if tokenflushmode then
-if newtoken then
-    flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_code),"}")
-else
-                    flush(currentcatcodes,"{",t_cldl_luafunction,ti,"}")
-end
+                    if newtoken then
+                        flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_code),"}")
+                    else
+                        flush(currentcatcodes,"{",t_cldl_luafunction,ti,"}")
+                    end
                 else
                     flush(currentcatcodes,s_cldl_argument_f,ti,s_cldl_argument_e)
                 end
@@ -860,43 +879,24 @@ end
     end
 end
 
--- if performance really matters we can consider a compiler but it will never
--- pay off
-
--- local function prtwriter(command,...) -- already optimized before call
---     flush(prtcatcodes,command)
---     for i=1,select("#",...) do
---         local ti = select(i,...)
---         if ti == nil then
---             -- nothing
---         elseif ti == "" then
---             flush(prtcatcodes,"{}")
---         else
---             local tp = type(ti)
---             if tp == "string" or tp == "number"then
---                 flush(prtcatcodes,"{",ti,"}")
---             elseif tp == "function" then
---                 flush(prtcatcodes,s_cldl_argument_f,storefunction(ti),s_cldl_argument_e)
---             elseif isnode(ti) then
---                 flush(prtcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
---             else
---                 report_context("fatal error: prt %a gets a weird argument %a",command,ti)
---             end
---         end
---     end
--- end
-
 local core
 
-if tokenflushmode then
+if tokenflushmode then -- combine them
 
-    local create = token.create
+    local create  = token.create
+    local cmdname = token.get_cmdname
 
     local toks = setmetatableindex(function(t,k)
         local v = create(k)
+     -- if cmdname(v) == "undefined_cs" then
+     --     report_context("invalid token reference %a",k)
+     --     os.exit()
+     -- end
         t[k] = v
         return v
     end)
+
+    context.tokenizedcs = toks
 
     core = setmetatableindex(function(parent,k)
         local t
@@ -928,8 +928,10 @@ if tokenflushmode then
 
 else
 
+    context.tokenizedcs = false
+
     core = setmetatableindex(function(parent,k)
-        local c = "\\" .. k -- tostring(k)
+        local c = "\\" .. k
         local f = function(first,...)
             if first == nil then
                 flush(currentcatcodes,c)
@@ -1047,11 +1049,11 @@ local caller = function(parent,f,a,...)
             -- ignored: a ...
             f = storefunction(f)
             if tokenflushmode then
-if newtoken then
-    flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_code),"}")
-else
-                flush(currentcatcodes,"{",t_cldl_luafunction,f,"}")
-end
+                if newtoken then
+                    flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_code),"}")
+                else
+                    flush(currentcatcodes,"{",t_cldl_luafunction,f,"}")
+                end
             else
                 flush(currentcatcodes,s_cldl_argument_b,f,s_cldl_argument_e) -- todo: ctx|prt|texcatcodes
             end
@@ -1507,14 +1509,22 @@ function context.newindexer(catcodes,cmdcodes)
         contentcatcodes = savedcatcodes
     end
 
-    handler.cs = setmetatableindex(function(parent,k)
-        local c = "\\" .. k -- tostring(k)
-        local f = function()
-            flush(cmdcodes,c)
-        end
-        parent[k] = f
-        return f
-    end)
+    if tokenflushmode then
+
+        handler.cs = core.cs
+
+    else
+
+        handler.cs = setmetatableindex(function(parent,k)
+            local c = "\\" .. k -- tostring(k)
+            local f = function()
+                flush(cmdcodes,c)
+            end
+            parent[k] = f
+            return f
+        end)
+
+    end
 
     setmetatableindex(handler,indexer)
     setmetatablecall (handler,caller)

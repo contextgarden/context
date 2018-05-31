@@ -386,7 +386,6 @@ local function starttext()
         if trace_jobfiles then
             report_jobfiles("starting text")
         end
-     -- registerfileinfo[begin]jobfilename
         context.dostarttext()
     end
     textlevel = textlevel + 1
@@ -406,8 +405,6 @@ local function stoptext()
                 report_jobfiles("stopping text")
             end
             context.dostoptext()
-            -- registerfileinfo[end]jobfilename
-            context.finalend()
             stopped = true
         end
     end

@@ -1903,7 +1903,7 @@ function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, 
                 end
             end
             if after then
-                after(blobtype,blobpath,pattern,total,checked,done)
+                after(blobtype,blobpath,pattern,checked,done)
             end
         end
     end

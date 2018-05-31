@@ -84,8 +84,8 @@
 
 \let\dompattribute\gobbletwoarguments
 
-\unexpanded\def\resetglobalattributes{\the\t_attr_list_global}
-\unexpanded\def\resetlocalattributes {\the\t_attr_list_local }
+\unexpanded\def\resetglobalattributes{\the\t_attr_list_global\attribute\zerocount\zerocount}
+\unexpanded\def\resetlocalattributes {\the\t_attr_list_local \attribute\zerocount\zerocount}
 
 \let\resetallattributes\resetlocalattributes
 

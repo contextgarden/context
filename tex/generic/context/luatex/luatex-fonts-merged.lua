@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/29/18 11:47:09
+-- merge date  : 05/31/18 19:34:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -2001,8 +2001,9 @@ end
 function table.reverse(t) 
   if t then
     local n=#t
+    local m=n+1
     for i=1,floor(n/2) do 
-      local j=n-i+1
+      local j=m-i
       t[i],t[j]=t[j],t[i]
     end
     return t
