@@ -445,7 +445,7 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
         end
         token = P(token)
         local notoken = hack((1 - token)^1)
-        local cstoken = name_pattern * space_pattern
+        local cstoken = Cs(name_pattern * (space_pattern/""))
         escapepattern = (
             (token / "")
           * (cstoken / (escapecommand or texcommand))

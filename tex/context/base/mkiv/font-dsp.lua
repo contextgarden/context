@@ -51,6 +51,9 @@ if not modules then modules = { } end modules ['font-dsp'] = {
 -- All this packing in the otf format is somewhat obsessive as nowadays 4K resolution
 -- multi-gig videos pass through our networks and storage and memory is abundant.
 
+-- Although we use a few table readers there i sno real gain in there (apart from having
+-- less code. After all there are often not that many demanding features.
+
 local next, type = next, type
 local band = bit32.band
 local extract = bit32.extract
@@ -94,30 +97,38 @@ local readfixed         = streamreader.readfixed4
 local read2dot14        = streamreader.read2dot14
 local skipshort         = streamreader.skipshort
 local skipbytes         = streamreader.skip
-local readfword         = readshort
 local readbytetable     = streamreader.readbytetable
 local readbyte          = streamreader.readbyte
+local readcardinaltable = streamreader.readcardinaltable
+local readintegertable  = streamreader.readintegertable
+local readfword         = readshort
+
+local short  = 2
+local ushort = 2
+local ulong  = 4
 
 directives.register("fonts.streamreader",function()
 
-    streamreader  = utilities.streams
+    streamreader      = utilities.streams
 
-    setposition   = streamreader.setposition
-    getposition   = streamreader.getposition
-    readushort    = streamreader.readcardinal2
-    readulong     = streamreader.readcardinal4
-    readinteger   = streamreader.readinteger1
-    readshort     = streamreader.readinteger2
-    readstring    = streamreader.readstring
-    readtag       = streamreader.readtag
-    readbytes     = streamreader.readbytes
-    readfixed     = streamreader.readfixed4
-    read2dot14    = streamreader.read2dot14
-    skipshort     = streamreader.skipshort
-    skipbytes     = streamreader.skip
-    readfword     = readshort
-    readbytetable = streamreader.readbytetable
-    readbyte      = streamreader.readbyte
+    setposition       = streamreader.setposition
+    getposition       = streamreader.getposition
+    readushort        = streamreader.readcardinal2
+    readulong         = streamreader.readcardinal4
+    readinteger       = streamreader.readinteger1
+    readshort         = streamreader.readinteger2
+    readstring        = streamreader.readstring
+    readtag           = streamreader.readtag
+    readbytes         = streamreader.readbytes
+    readfixed         = streamreader.readfixed4
+    read2dot14        = streamreader.read2dot14
+    skipshort         = streamreader.skipshort
+    skipbytes         = streamreader.skip
+    readbytetable     = streamreader.readbytetable
+    readbyte          = streamreader.readbyte
+    readcardinaltable = streamreader.readcardinaltable
+    readintegertable  = streamreader.readintegertable
+    readfword         = readshort
 
 end)
 
@@ -219,39 +230,6 @@ local read_integer = {
     streamreader.readinteger3,
     streamreader.readinteger4,
 }
-
--- using helpers doesn't make much sense, subtle differences
---
--- local function readushortarray(f,n)
---     local t = { }
---     for i=1,n do
---         t[i] = readushort(f)
---     end
---     return t
--- end
---
--- local function readulongarray(f,n)
---     local t = { }
---     for i=1,n do
---         t[i] = readulong(f)
---     end
---     return t
--- end
---
--- local function readushortarray(f,target,first,size)
---     if not size then
---         for i=1,size do
---             target[i] = readushort(f)
---         end
---     else
---         for i=1,size do
---             target[first+i] = readushort(f)
---         end
---     end
---     return target
--- end
---
--- so we get some half helper - half non helper mix then
 
 -- Traditionally we use these unique names (so that we can flatten the lookup list
 -- (we create subsets runtime) but I will adapt the old code to newer names.
@@ -504,10 +482,7 @@ local function readvariationdata(f,storeoffset,factors) -- store
     local format       = readushort(f)
     local regionoffset = storeoffset + readulong(f)
     local nofdeltadata = readushort(f)
-    local deltadata    = { }
-    for i=1,nofdeltadata do
-        deltadata[i] = readulong(f)
-    end
+    local deltadata    = readcardinaltable(f,nofdeltadata,ulong)
     -- regions
     setposition(f,regionoffset)
     local nofaxis    = readushort(f)
@@ -538,10 +513,7 @@ local function readvariationdata(f,storeoffset,factors) -- store
             end
             -- we could test before and save a for
             for i=1,nofdeltasets do
-                local t = { } -- newtable
-                for i=1,nofshorts do
-                    t[i] = readshort(f)
-                end
+                local t = readintegertable(f,nofshorts,short)
                 for i=nofshorts+1,nofregions do
                     t[i] = readinteger(f)
                 end
@@ -566,21 +538,32 @@ helpers.readvariationdata = readvariationdata
 local function readcoverage(f,offset,simple)
     setposition(f,offset)
     local coverageformat = readushort(f)
-    local coverage = { }
     if coverageformat == 1 then
         local nofcoverage = readushort(f)
         if simple then
-            for i=1,nofcoverage do
-                coverage[i] = readushort(f)
+            -- often 1 or 2
+            if nofcoverage == 1 then
+                return { readushort(f) }
+            elseif nofcoverage == 2 then
+                return { readushort(f), readushort(f) }
+            else
+                return readcardinaltable(f,nofcoverage,ushort)
             end
+        elseif nofcoverage == 1 then
+            return { [readushort(f)] = 0 }
+        elseif nofcoverage == 2 then
+            return { [readushort(f)] = 0, [readushort(f)] = 1 }
         else
+            local coverage = { }
             for i=0,nofcoverage-1 do
                 coverage[readushort(f)] = i -- index in record
             end
+            return coverage
         end
     elseif coverageformat == 2 then
         local nofranges = readushort(f)
-        local n = simple and 1 or 0 -- needs checking
+        local coverage  = { }
+        local n         = simple and 1 or 0 -- needs checking
         for i=1,nofranges do
             local firstindex = readushort(f)
             local lastindex  = readushort(f)
@@ -597,10 +580,11 @@ local function readcoverage(f,offset,simple)
                 end
             end
         end
+        return coverage
     else
         report("unknown coverage format %a ",coverageformat)
+        return { }
     end
-    return coverage
 end
 
 local function readclassdef(f,offset,preset)
@@ -834,23 +818,17 @@ local function readfirst(f,offset)
     return { readushort(f) }
 end
 
-local function readarray(f,offset,first)
+-- quite often 0, 1, 2
+
+function readarray(f,offset)
     if offset then
         setposition(f,offset)
     end
     local n = readushort(f)
-    if first then
-        local t = { first }
-        for i=2,n do
-            t[i] = readushort(f)
-        end
-        return t, n
+    if n == 1 then
+        return { readushort(f) }, 1
     elseif n > 0 then
-        local t = { }
-        for i=1,n do
-            t[i] = readushort(f)
-        end
-        return t, n
+        return readcardinaltable(f,n,ushort), n
     end
 end
 
@@ -1251,10 +1229,7 @@ function gsubhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
     elseif subtype == 2 then -- in streamreader a seek and fetch is faster than a temp table
         local coverage        = readushort(f)
         local nofreplacements = readushort(f)
-        local replacements    = { }
-        for i=1,nofreplacements do
-            replacements[i] = readushort(f)
-        end
+        local replacements    = readcardinaltable(f,nofreplacements,ushort)
         local coverage = readcoverage(f,tableoffset + coverage) -- not simple as we need to set key/value anyway
         for index, newindex in next, coverage do
             newindex = newindex + 1
@@ -1282,18 +1257,10 @@ local function sethandler(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofglyp
     if subtype == 1 then
         local coverage    = readushort(f)
         local nofsequence = readushort(f)
-        local sequences   = { }
-        for i=1,nofsequence do
-            sequences[i] = readushort(f)
-        end
+        local sequences   = readcardinaltable(f,nofsequence,ushort)
         for i=1,nofsequence do
             setposition(f,tableoffset + sequences[i])
-            local n = readushort(f)
-            local s = { }
-            for i=1,n do
-                s[i] = readushort(f)
-            end
-            sequences[i] = s
+            sequences[i] = readcardinaltable(f,readushort(f),ushort)
         end
         local coverage = readcoverage(f,tableoffset + coverage)
         for index, newindex in next, coverage do
@@ -1328,19 +1295,20 @@ function gsubhandlers.ligature(f,fontdata,lookupid,lookupoffset,offset,glyphs,no
     if subtype == 1 then
         local coverage  = readushort(f)
         local nofsets   = readushort(f)
-        local ligatures = { }
-        for i=1,nofsets do
-            ligatures[i] = readushort(f)
-        end
+        local ligatures = readcardinaltable(f,nofsets,ushort)
         for i=1,nofsets do
             local offset = lookupoffset + offset + ligatures[i]
             setposition(f,offset)
             local n = readushort(f)
-            local l = { }
-            for i=1,n do
-                l[i] = offset + readushort(f)
+            if n == 1 then
+                ligatures[i] = { offset + readushort(f) }
+            else
+                local l = { }
+                for i=1,n do
+                    l[i] = offset + readushort(f)
+                end
+                ligatures[i] = l
             end
-            ligatures[i] = l
         end
         local coverage = readcoverage(f,tableoffset + coverage)
         for index, newindex in next, coverage do
@@ -1988,10 +1956,15 @@ do
             local parameters = readushort(f) -- feature.parameters
             local noflookups = readushort(f)
             if noflookups > 0 then
-                local lookups   = { }
+--                 local lookups   = { }
+--                 feature.lookups = lookups
+--                 for j=1,noflookups do
+--                     lookups[j] = readushort(f) + 1
+--                 end
+                local lookups   = readcardinaltable(f,noflookups,ushort)
                 feature.lookups = lookups
                 for j=1,noflookups do
-                    lookups[j] = readushort(f) + 1
+                    lookups[j] = lookups[j] + 1
                 end
             end
             if parameters > 0 then
@@ -2007,11 +1980,8 @@ do
 
     local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
         setposition(f,lookupoffset)
-        local lookups    = { }
         local noflookups = readushort(f)
-        for i=1,noflookups do
-            lookups[i] = readushort(f)
-        end
+        local lookups    = readcardinaltable(f,noflookups,ushort)
         for lookupid=1,noflookups do
             local offset = lookups[lookupid]
             setposition(f,lookupoffset+offset)
@@ -2302,9 +2272,7 @@ do
                                             end
                                         end
                                     end
--- report("before : % t",rlookups[index])
                                     rlookups[index] = noffound > 0 and found or false
--- report("after  : % t",rlookups[index])
                                 else
                                     rlookups[index] = false
                                 end
@@ -2344,11 +2312,12 @@ do
                 record.condition = nil
                 record.matchtype = "always"
             else
-                setposition(f,variationsoffset+offset)
+                local offset = variationsoffset+offset
+                setposition(f,offset)
                 local nofconditions = readushort(f)
                 local conditions    = { }
                 for i=1,nofconditions do
-                    conditions[i] = variationsoffset+offset+readulong(f)
+                    conditions[i] = offset + readulong(f)
                 end
                 record.conditions = conditions
                 record.matchtype  = "condition"
@@ -2391,10 +2360,7 @@ do
                         setposition(f,tableoffset)
                         local parameters = readulong(f) -- feature parameters
                         local noflookups = readushort(f)
-                        local lookups    = { }
-                        for i=1,noflookups do
-                            lookups[i] = readushort(f) -- not sure what to do with these
-                        end
+                        local lookups    = readcardinaltable(f,noflookups,ushort) -- not sure what to do with these
                         -- todo : resolve to proper lookups
                         record.substitutions = lookups
                     end
@@ -2617,10 +2583,7 @@ function readers.gdef(f,fontdata,specification)
             local format = readushort(f)
             if format == 1 then
                 local nofsets = readushort(f)
-                local sets    = { }
-                for i=1,nofsets do
-                    sets[i] = readulong(f)
-                end
+                local sets    = readcardinal(f,nofsets,ulong)
                 for i=1,nofsets do
                     local offset = sets[i]
                     if offset ~= 0 then
@@ -2857,14 +2820,8 @@ local function readmathvariants(f,fontdata,offset)
     local hcoverage     = readushort(f)
     local vnofglyphs    = readushort(f)
     local hnofglyphs    = readushort(f)
-    local vconstruction = { }
-    local hconstruction = { }
-    for i=1,vnofglyphs do
-        vconstruction[i] = readushort(f)
-    end
-    for i=1,hnofglyphs do
-        hconstruction[i] = readushort(f)
-    end
+    local vconstruction = readcardinaltable(f,vnofglyphs,ushort)
+    local hconstruction = readcardinaltable(f,hnofglyphs,ushort)
 
     fontdata.mathconstants.MinConnectorOverlap = minoverlap
 
@@ -3039,10 +2996,7 @@ function readers.cpal(f,fontdata,specification)
         local nofcolorrecords    = readushort(f)
         local firstcoloroffset   = readulong(f)
         local colorrecords       = { }
-        local palettes           = { }
-        for i=1,nofpalettes do
-            palettes[i] = readushort(f)
-        end
+        local palettes           = readcardinaltable(f,nofpalettes,ushort)
         if version == 1 then
             -- used for guis
             local palettettypesoffset = readulong(f)

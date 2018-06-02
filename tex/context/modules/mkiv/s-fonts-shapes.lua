@@ -58,39 +58,6 @@ function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
         for k, v in next, characters.data do
             if chrs[k] then
                 NC() context("0x%05X",k)
-                NC() char(id,k) -- getvalue(cs) context.char(k)
-                NC() char(id,v.shcode)
-                NC() char(id,v.lccode or k)
-                NC() char(id,v.uccode or k)
-                NC() special(id,v.specials)
-                NC() context.tx(v.description)
-                NC() NR()
-            end
-        end
-    context.stoptabulate()
-    context.endgroup()
-end
-
-function moduledata.fonts.shapes.showlist(specification) -- todo: ranges
-    specification = interfaces.checkedspecification(specification)
-    local id, cs = fonts.definers.internal(specification,"<module:fonts:shapes:font>")
-    local chrs = fontdata[id].characters
-    context.begingroup()
-    context.tt()
-    context.starttabulate { "|l|c|c|c|c|l|l|" }
-        context.FL()
-            NC() context.bold("unicode")
-            NC() context.bold("glyph")
-            NC() context.bold("shape")
-            NC() context.bold("lower")
-            NC() context.bold("upper")
-            NC() context.bold("specials")
-            NC() context.bold("description")
-            NC() NR()
-        context.TL()
-        for k, v in next, characters.data do
-            if chrs[k] then
-                NC() context("0x%05X",k)
                 NC() char(id,k)
                 NC() char(id,v.shcode)
                 NC() char(id,v.lccode or k)

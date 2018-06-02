@@ -18,44 +18,6 @@ local printtable = table.print
 local concat     = table.concat
 local format     = string.format
 
-if setinspector then
-
-    local istoken = token.is_token
-    local simple  = { letter = "letter", other_char = "other" }
-
-    local function astable(t)
-        if t and istoken(t) then
-            local cmdname = t.cmdname
-            local simple  = simple[cmdname]
-            if simple then
-                return {
-                    category   = simple,
-                    character  = utfchar(t.mode) or nil,
-                }
-            else
-                return {
-                    command    = t.command,
-                    id         = t.id,
-                    tok        = t.tok,
-                    csname     = t.csname,
-                    active     = t.active,
-                    expandable = t.expandable,
-                    protected  = t.protected,
-                    mode       = t.mode,
-                    index      = t.index,
-                    cmdname    = cmdname,
-                }
-            end
-        end
-    end
-
-    tokens.istoken = istoken
-    tokens.astable = astable
-
-    setinspector("token",function(v) if istoken(v) then printtable(astable(v),tostring(v)) return true end end)
-
-end
-
 if token.commands then
 
     local commands = token.commands()
@@ -67,7 +29,6 @@ else
     tokens.commands = { }
 
 end
-
 
 local scan_toks       = token.scan_toks
 local scan_string     = token.scan_string
@@ -96,27 +57,22 @@ local set_lua         = token.set_lua
 
 local create_token    = token.create
 local new_token       = token.new
+local is_defined      = token.is_defined
+local is_token        = token.is_token
+
+if not is_defined then
+
+    is_defined = function(name)
+        return get_cmdname(create_token(name)) ~= "undefined_cs"
+    end
+
+end
 
 tokens.new            = new_token
 tokens.create         = create_token
-
-if not set_char then -- for a while
-    local contextsprint = context.sprint
-    local ctxcatcodes   = catcodes.numbers.ctxcatcodes
-    set_char = function(n,u) contextsprint(ctxcatcodes,format("\\chardef\\%s=%s",n,u)) end
-end
-
-function tokens.defined(name)
-    return get_cmdname(create_token(name)) ~= "undefined_cs"
-end
-
--- set_macro = function(k,v,g)
---     if g == "global" then
---         context.setgvalue(k,v or '')
---     else
---         context.setvalue(k,v or '')
---     end
--- end
+tokens.istoken        = is_token
+tokens.isdefined      = is_defined
+tokens.defined        = is_defined
 
 local bits = {
     escape      = 0x00000001, -- 2^00
@@ -321,3 +277,45 @@ tokens.setters = {
 --  /* unsave_tex_scanner(texstate); */
 --     return 1;
 -- }
+
+if setinspector then
+
+    local simple = { letter = "letter", other_char = "other" }
+
+    local function astable(t)
+        if t and is_token(t) then
+            local cmdname = t.cmdname
+            local simple  = simple[cmdname]
+            if simple then
+                return {
+                    category   = simple,
+                    character  = utfchar(t.mode) or nil,
+                }
+            else
+                return {
+                    command    = t.command,
+                    id         = t.id,
+                    tok        = t.tok,
+                    csname     = t.csname,
+                    active     = t.active,
+                    expandable = t.expandable,
+                    protected  = t.protected,
+                    mode       = t.mode,
+                    index      = t.index,
+                    cmdname    = cmdname,
+                }
+            end
+        end
+    end
+
+    tokens.astable = astable
+
+    setinspector("token",function(v) local t = astable(v) if t then printtable(t,tostring(v)) return true end end)
+
+end
+
+tokens.cache = table.setmetatableindex(function(t,k)
+    local v = create_token(k)
+    t[k] = v
+    return v
+end)

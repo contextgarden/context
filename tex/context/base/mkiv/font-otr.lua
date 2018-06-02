@@ -121,32 +121,40 @@ local read2dot14        = streamreader.read2dot14     -- 16-bit signed fixed num
 local readfword         = readshort                   -- 16-bit   signed integer that describes a quantity in FUnits
 local readufword        = readushort                  -- 16-bit unsigned integer that describes a quantity in FUnits
 local readoffset        = readushort
+local readcardinaltable = streamreader.readcardinaltable
+local readintegertable  = streamreader.readintegertable
 
 function streamreader.readtag(f)
     return lower(stripstring(readstring(f,4)))
 end
 
+local short  = 2
+local ushort = 2
+local ulong  = 4
+
 directives.register("fonts.streamreader",function()
 
-    streamreader = utilities.streams
+    streamreader      = utilities.streams
 
-    openfile     = streamreader.open
-    closefile    = streamreader.close
-    setposition  = streamreader.setposition
-    skipshort    = streamreader.skipshort
-    readbytes    = streamreader.readbytes
-    readstring   = streamreader.readstring
-    readbyte     = streamreader.readcardinal1
-    readushort   = streamreader.readcardinal2
-    readuint     = streamreader.readcardinal3
-    readulong    = streamreader.readcardinal4
-    readshort    = streamreader.readinteger2
-    readlong     = streamreader.readinteger4
-    readfixed    = streamreader.readfixed4
-    read2dot14   = streamreader.read2dot14
-    readfword    = readshort
-    readufword   = readushort
-    readoffset   = readushort
+    openfile          = streamreader.open
+    closefile         = streamreader.close
+    setposition       = streamreader.setposition
+    skipshort         = streamreader.skipshort
+    readbytes         = streamreader.readbytes
+    readstring        = streamreader.readstring
+    readbyte          = streamreader.readcardinal1
+    readushort        = streamreader.readcardinal2
+    readuint          = streamreader.readcardinal3
+    readulong         = streamreader.readcardinal4
+    readshort         = streamreader.readinteger2
+    readlong          = streamreader.readinteger4
+    readfixed         = streamreader.readfixed4
+    read2dot14        = streamreader.read2dot14
+    readfword         = readshort
+    readufword        = readushort
+    readoffset        = readushort
+    readcardinaltable = streamreader.readcardinaltable
+    readintegertable  = streamreader.readintegertable
 
     function streamreader.readtag(f)
         return lower(stripstring(readstring(f,4)))
@@ -1349,34 +1357,18 @@ formatreaders[4] = function(f,fontdata,offset)
     --
     skipshort(f,3) -- searchrange entryselector rangeshift
     --
-    local endchars   = { }
-    local startchars = { }
-    local deltas     = { }
-    local offsets    = { }
-    local indices    = { }
     local mapping    = fontdata.mapping
     local glyphs     = fontdata.glyphs
     local duplicates = fontdata.duplicates
     local nofdone    = 0
-    --
-    for i=1,nofsegments do
-        endchars[i] = readushort(f)
-    end
-    local reserved = readushort(f) -- 0
-    for i=1,nofsegments do
-        startchars[i] = readushort(f)
-    end
-    for i=1,nofsegments do
-        deltas[i] = readshort(f)
-    end
-    for i=1,nofsegments do
-        offsets[i] = readushort(f)
-    end
+    local endchars   = readcardinaltable(f,nofsegments,ushort)
+    local reserved   = readushort(f) -- 0
+    local startchars = readcardinaltable(f,nofsegments,ushort)
+    local deltas     = readcardinaltable(f,nofsegments,ushort)
+    local offsets    = readcardinaltable(f,nofsegments,ushort)
     -- format length language nofsegments searchrange entryselector rangeshift 4-tables
-    local size = (length - 2 * 2 - 5 * 2 - 4 * 2 * nofsegments) / 2
-    for i=1,size-1 do
-        indices[i] = readushort(f)
-    end
+    local size       = (length - 2 * 2 - 5 * 2 - 4 * 2 * nofsegments) / 2
+    local indices    = readcardinaltable(f,size-1,ushort)
     --
     for segment=1,nofsegments do
         local startchar = startchars[segment]
@@ -2237,12 +2229,9 @@ local function loadfontdata(specification)
             fontdata = readdata(f,0,specification)
         elseif version == "ttcf" then
             local subfont     = tonumber(specification.subfont)
-            local offsets     = { }
             local ttcversion  = readulong(f)
             local nofsubfonts = readulong(f)
-            for i=1,nofsubfonts do
-                offsets[i] = readulong(f)
-            end
+            local offsets     = readcardinaltable(f,nofsubfonts,ulong)
             if subfont then -- a number of not
                 if subfont >= 1 and subfont <= nofsubfonts then
                     fontdata = readdata(f,offsets[subfont],specification)

@@ -87,17 +87,21 @@
 
 % demo: trialtypesetting is a systemmode as well as an if
 
-\newsystemmode{trialtypesetting} % the name of \@@trialtypesetting might change (also at the lua end)
+\newsystemmode{trialtypesetting}
 
-\expandafter\let\expandafter\@@trialtypesetting\csname\??mode\systemmodeprefix trialtypesetting\endcsname % private !
+\expandafter\let\expandafter\c_trial_typesetting\csname\??mode\systemmodeprefix trialtypesetting\endcsname % private !
 
 \appendtoks
-    \@@trialtypesetting\enabledmode
+    \c_trial_typesetting\enabledmode
+    \luacopyinputnodes\plusone
 \to \everysettrialtypesetting
 
 \appendtoks
-    \@@trialtypesetting\disabledmode
+    \c_trial_typesetting\disabledmode
+    \luacopyinputnodes\zerocount
 \to \everyresettrialtypesetting
+
+\ctxlua{context.registertrialtypesetting("c_trial_typesetting")}
 
 % user ones
 

@@ -748,7 +748,7 @@
    \egroup}
 
 \unexpanded\def\mbox % we cannot add \dontleavehmode ... else no \setbox0\mbox possible
-  {\ifmmode\normalmbox\else\hbox\fi}
+  {\ifmmode\normalmbox\else\normalhbox\fi}
 
 \unexpanded\def\enablembox
  %{\appendtoks\math_enable_mbox\to \everymathematics}
@@ -760,7 +760,7 @@
 \unexpanded\def\snappedmath#1% sort of \struttedbox
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\hbox\bgroup
+   \setbox\scratchbox\normalhbox\bgroup
      \startimath#1\stopimath
    \egroup
    \ht\scratchbox\strutht

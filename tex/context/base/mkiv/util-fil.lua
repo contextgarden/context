@@ -343,3 +343,40 @@ if fio and fio.readcardinal1 then
     end
 
 end
+
+if fio and fio.readcardinaltable then
+
+    files.readcardinaltable = fio.readcardinaltable
+    files.readintegertable  = fio.readintegertable
+
+else
+
+    local readcardinal1 = files.readcardinal1
+    local readcardinal2 = files.readcardinal2
+    local readcardinal3 = files.readcardinal3
+    local readcardinal4 = files.readcardinal4
+
+    function files.readcardinaltable(f,n,b)
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readcardinal1(f) end
+        elseif b == 2 then for i=1,n do t[i] = readcardinal2(f) end
+        elseif b == 3 then for i=1,n do t[i] = readcardinal3(f) end
+        elseif b == 4 then for i=1,n do t[i] = readcardinal4(f) end end
+        return t
+    end
+
+    local readinteger1 = files.readinteger1
+    local readinteger2 = files.readinteger2
+    local readinteger3 = files.readinteger3
+    local readinteger4 = files.readinteger4
+
+    function files.readintegertable(f,n,b)
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readinteger1(f) end
+        elseif b == 2 then for i=1,n do t[i] = readinteger2(f) end
+        elseif b == 3 then for i=1,n do t[i] = readinteger3(f) end
+        elseif b == 4 then for i=1,n do t[i] = readinteger4(f) end end
+        return t
+    end
+
+end

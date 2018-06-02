@@ -91,6 +91,11 @@ local writenode         = node.write
 local copynodelist      = node.copy_list
 local tonut             = node.direct.todirect
 
+local istoken           = token.is_token
+local newtoken          = token.new
+local createtoken       = token.create
+local setluatoken       = token.set_lua
+
 local catcodenumbers    = catcodes.numbers
 
 local ctxcatcodes       = catcodenumbers.ctxcatcodes
@@ -115,9 +120,6 @@ local nodeflushmode     = false
 local scannerdefmode    = false
 local maxflushnodeindex = 0x10FFFF - 1
 
-local newtoken          = token.new
-local setluatoken       = token.set_lua
-
 if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6780 then
 
     -- The gain in performasnce is neglectable.
@@ -137,12 +139,22 @@ end
 -- primitive \luafunctions was \luacall and we used our own implementation of
 -- a function table (more indirectness).
 
+local trialtypesettingstate = 0
+
+function context.trialtypesetting()
+    return texgetcount(trialtypesettingstate) ~= 0
+end
+
+function context.registertrialtypesetting(name)
+    trialtypesettingstate = createtoken(name).index
+end
+
 local knownfunctions = lua.get_functions_table()
 local showstackusage = false
 
 trackers.register("context.stack",function(v) showstackusage = v end)
 
-local freed, nofused, noffreed = { }, 0, 0 -- maybe use the number of @@trialtypesetting
+local freed, nofused, noffreed = { }, 0, 0
 
 local usedstack = function()
     return nofused, noffreed
@@ -151,7 +163,7 @@ end
 local flushfunction = function(slot,arg)
     if arg() then
         -- keep
-    elseif texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+    elseif texgetcount(trialtypesettingstate) == 0 then
         noffreed = noffreed + 1
         freed[noffreed] = slot
         knownfunctions[slot] = false
@@ -176,7 +188,7 @@ local storefunction = function(arg)
 end
 
 local flushnode = function(slot,arg)
-    if texgetcount("@@trialtypesetting") == 0 then  -- @@trialtypesetting is private!
+    if texgetcount(trialtypesettingstate) == 0 then
         writenode(arg)
         noffreed = noffreed + 1
         freed[noffreed] = slot
@@ -418,10 +430,6 @@ function commands.ctxresetter(name) -- to be checked
             context.resetctxscanner("clf_" .. name)
         end
     end
-end
-
-function context.trialtypesetting()
-    return texgetcount("@@trialtypesetting") ~= 0
 end
 
 -- Should we keep the catcodes with the function?
@@ -715,7 +723,7 @@ local s_cldl_argument_e = "}"
 -- local s_cldl_argument_b = "{"
 -- local s_cldl_argument_f = "{ "
 
-local t_cldl_luafunction       = token.create("luafunctioncall")
+local t_cldl_luafunction       = createtoken("luafunctioncall")
 local lua_expandable_call_code = token.command_id and token.command_id("lua_expandable_call")
 
 local function writer(parent,command,...) -- already optimized before call
@@ -883,18 +891,7 @@ local core
 
 if tokenflushmode then -- combine them
 
-    local create  = token.create
-    local cmdname = token.get_cmdname
-
-    local toks = setmetatableindex(function(t,k)
-        local v = create(k)
-     -- if cmdname(v) == "undefined_cs" then
-     --     report_context("invalid token reference %a",k)
-     --     os.exit()
-     -- end
-        t[k] = v
-        return v
-    end)
+    local toks = tokens.cache
 
     context.tokenizedcs = toks
 
@@ -1106,7 +1103,15 @@ end
 context.nodes = { -- todo
     store = storenode,
     flush = function(n)
-        flush(currentcatcodes,s_cldl_option_s,storenode(n)," ")
+        if nodeflushmode then
+            if tonut(n) <= maxflushnodeindex then
+                flush(n)
+            else
+                flush(currentcatcodes,s_cldl_option_s,storenode(n)," ")
+            end
+        else
+            flush(currentcatcodes,s_cldl_option_s,storenode(n)," ")
+        end
     end,
 }
 
@@ -1152,8 +1157,8 @@ local nofflushes        = 0
 local tracingpermitted  = true
 
 local visualizer = lpeg.replacer {
-    { "\n","<<newline>>" },
-    { "\r","<<par>>" },
+    { "\n", "<<newline>>" },
+    { "\r", "<<par>>" },
 }
 
 statistics.register("traced context", function()
@@ -1166,15 +1171,45 @@ statistics.register("traced context", function()
     end
 end)
 
+local function userdata(argument)
+    if isnode(argument) then
+        return formatters["<< %s node %i>>"](nodes.nodecodes[argument.id],tonut(argument))
+    end
+    if istoken(argument) then
+        local csname = argument.csname
+        if csname then
+         -- return formatters["<<\\%s>>"](csname)
+            return formatters["\\%s"](csname)
+        end
+        local cmdname = argument.cmdname
+        if cmdname == "lua_expandable_call" or cmdname == "lua_call" then
+            return "<<function>>" -- argument.mode
+        end
+        return "<<token>>"
+    end
+    return "<<userdata>>"
+end
+
+
 local tracedwriter = function(parent,...) -- also catcodes ?
     nofwriters = nofwriters + 1
     local savedflush       = flush
     local savedflushdirect = flushdirect -- unlikely to be used here
     local t, n = { "w : - : " }, 1
     local traced = function(catcodes,...) -- todo: check for catcodes
-        local s = { ... }
+        local s = type(catcodes) == "number" and { ... } or { catcodes, ... }
         for i=1,#s do
-            s[i] = tostring(s[i]) -- because we can have nodes and tokens too
+            local argument = s[i]
+            local argtype  = type(argument)
+            if argtype == "string" then
+                s[i] = lpegmatch(visualizer,argument)
+            elseif argtype == "number" then
+                s[i] = argument
+            elseif argtype == "userdata" then
+                s[i] = userdata(argument)
+            else
+                s[i] = formatters["<<%S>>"](argument)
+            end
         end
         s = concat(s)
         s = lpegmatch(visualizer,s)
@@ -1215,6 +1250,8 @@ local traced = function(one,two,...)
                 collapsed[c] = lpegmatch(visualizer,argument)
             elseif argtype == "number" then
                 collapsed[c] = argument
+            elseif argtype == "userdata" then
+                collapsed[c] = userdata(argument)
             else
                 collapsed[c] = formatters["<<%S>>"](argument)
             end
@@ -1227,6 +1264,8 @@ local traced = function(one,two,...)
             currenttrace(formatters["f : - : %s"](lpegmatch(visualizer,one)))
         elseif argtype == "number" then
             currenttrace(formatters["f : - : %s"](one))
+        elseif argtype == "userdata" then
+            currenttrace(formatters["f : - : %s"](userdata(one)))
         else
             currenttrace(formatters["f : - : <<%S>>"](one))
         end
@@ -1577,21 +1616,51 @@ do
         end
     end
 
-    local function indexer(parent,k)
-        if type(k) == "string" then
-            local c = "\\" .. k
-            local f = function(first,...)
-                if first == nil then
-                    flush(currentcatcodes,c)
-                else
-                    return formattedflush(parent,c,first,...)
+    local indexer
+
+    if tokenflushmode then -- combine them
+
+        local toks = tokens.cache
+
+        indexer = function(parent,k)
+            if type(k) == "string" then
+                local t
+                local f = function(first,...)
+                    if not t then
+                        t = toks[k]
+                    end
+                    if first == nil then
+                        flush(t)
+                    else
+                        return formattedflush(parent,t,first,...)
+                    end
                 end
+                parent[k] = f
+                return f
+            else
+                return context -- catch
             end
-            parent[k] = f
-            return f
-        else
-            return context -- catch
         end
+
+    else
+
+        indexer = function(parent,k)
+            if type(k) == "string" then
+                local c = "\\" .. k
+                local f = function(first,...)
+                    if first == nil then
+                        flush(currentcatcodes,c)
+                    else
+                        return formattedflush(parent,c,first,...)
+                    end
+                end
+                parent[k] = f
+                return f
+            else
+                return context -- catch
+            end
+        end
+
     end
 
     -- formatted([catcodes,]format[,...])

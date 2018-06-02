@@ -89,6 +89,7 @@ function context.glyph(id,k)
         local glyph = new_glyph(id,k)
         glyph.attr = current_attr()
         context(glyph)
+     -- context.node(glyph)
     end
 end
 
@@ -108,7 +109,7 @@ ctxcore.space = ctx_space
 -- local function ctx_egroup() context("}") end
 
 local ctx_bgroup = context.cs.bgroup
-local ctx_egroup = context.cs.bgroup
+local ctx_egroup = context.cs.egroup
 
 context.bgroup = ctx_bgroup
 context.egroup = ctx_egroup

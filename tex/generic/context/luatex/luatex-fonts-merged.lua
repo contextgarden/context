@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/31/18 19:34:39
+-- merge date  : 06/02/18 22:34:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -4867,6 +4867,35 @@ if fio and fio.readcardinal1 then
   end
   function files.skiplong(f,n)
     skipposition(f,4*(n or 1))
+  end
+end
+if fio and fio.readcardinaltable then
+  files.readcardinaltable=fio.readcardinaltable
+  files.readintegertable=fio.readintegertable
+else
+  local readcardinal1=files.readcardinal1
+  local readcardinal2=files.readcardinal2
+  local readcardinal3=files.readcardinal3
+  local readcardinal4=files.readcardinal4
+  function files.readcardinaltable(f,n,b)
+    local t={}
+      if b==1 then for i=1,n do t[i]=readcardinal1(f) end
+    elseif b==2 then for i=1,n do t[i]=readcardinal2(f) end
+    elseif b==3 then for i=1,n do t[i]=readcardinal3(f) end
+    elseif b==4 then for i=1,n do t[i]=readcardinal4(f) end end
+    return t
+  end
+  local readinteger1=files.readinteger1
+  local readinteger2=files.readinteger2
+  local readinteger3=files.readinteger3
+  local readinteger4=files.readinteger4
+  function files.readintegertable(f,n,b)
+    local t={}
+      if b==1 then for i=1,n do t[i]=readinteger1(f) end
+    elseif b==2 then for i=1,n do t[i]=readinteger2(f) end
+    elseif b==3 then for i=1,n do t[i]=readinteger3(f) end
+    elseif b==4 then for i=1,n do t[i]=readinteger4(f) end end
+    return t
   end
 end
 
@@ -11326,9 +11355,14 @@ local read2dot14=streamreader.read2dot14
 local readfword=readshort          
 local readufword=readushort         
 local readoffset=readushort
+local readcardinaltable=streamreader.readcardinaltable
+local readintegertable=streamreader.readintegertable
 function streamreader.readtag(f)
   return lower(stripstring(readstring(f,4)))
 end
+local short=2
+local ushort=2
+local ulong=4
 directives.register("fonts.streamreader",function()
   streamreader=utilities.streams
   openfile=streamreader.open
@@ -11348,6 +11382,8 @@ directives.register("fonts.streamreader",function()
   readfword=readshort
   readufword=readushort
   readoffset=readushort
+  readcardinaltable=streamreader.readcardinaltable
+  readintegertable=streamreader.readintegertable
   function streamreader.readtag(f)
     return lower(stripstring(readstring(f,4)))
   end
@@ -12050,32 +12086,17 @@ formatreaders[4]=function(f,fontdata,offset)
   local language=readushort(f)
   local nofsegments=readushort(f)/2
   skipshort(f,3)
-  local endchars={}
-  local startchars={}
-  local deltas={}
-  local offsets={}
-  local indices={}
   local mapping=fontdata.mapping
   local glyphs=fontdata.glyphs
   local duplicates=fontdata.duplicates
   local nofdone=0
-  for i=1,nofsegments do
-    endchars[i]=readushort(f)
-  end
+  local endchars=readcardinaltable(f,nofsegments,ushort)
   local reserved=readushort(f) 
-  for i=1,nofsegments do
-    startchars[i]=readushort(f)
-  end
-  for i=1,nofsegments do
-    deltas[i]=readshort(f)
-  end
-  for i=1,nofsegments do
-    offsets[i]=readushort(f)
-  end
+  local startchars=readcardinaltable(f,nofsegments,ushort)
+  local deltas=readcardinaltable(f,nofsegments,ushort)
+  local offsets=readcardinaltable(f,nofsegments,ushort)
   local size=(length-2*2-5*2-4*2*nofsegments)/2
-  for i=1,size-1 do
-    indices[i]=readushort(f)
-  end
+  local indices=readcardinaltable(f,size-1,ushort)
   for segment=1,nofsegments do
     local startchar=startchars[segment]
     local endchar=endchars[segment]
@@ -12817,12 +12838,9 @@ local function loadfontdata(specification)
       fontdata=readdata(f,0,specification)
     elseif version=="ttcf" then
       local subfont=tonumber(specification.subfont)
-      local offsets={}
       local ttcversion=readulong(f)
       local nofsubfonts=readulong(f)
-      for i=1,nofsubfonts do
-        offsets[i]=readulong(f)
-      end
+      local offsets=readcardinaltable(f,nofsubfonts,ulong)
       if subfont then 
         if subfont>=1 and subfont<=nofsubfonts then
           fontdata=readdata(f,offsets[subfont],specification)
@@ -14958,6 +14976,8 @@ local readchar=streamreader.readinteger1
 local readshort=streamreader.readinteger2  
 local read2dot14=streamreader.read2dot14   
 local readinteger=streamreader.readinteger1
+local readcardinaltable=streamreader.readcardinaltable
+local readintegertable=streamreader.readintegertable
 directives.register("fonts.streamreader",function()
   streamreader=utilities.streams
   setposition=streamreader.setposition
@@ -14970,7 +14990,12 @@ directives.register("fonts.streamreader",function()
   readshort=streamreader.readinteger2
   read2dot14=streamreader.read2dot14
   readinteger=streamreader.readinteger1
+  readcardinaltable=streamreader.readcardinaltable
+  readintegertable=streamreader.readintegertable
 end)
+local short=2
+local ushort=2
+local ulong=4
 local helpers=readers.helpers
 local gotodatatable=helpers.gotodatatable
 local function mergecomposites(glyphs,shapes)
@@ -15532,12 +15557,9 @@ local function repackpoints(glyphs,shapes)
 end
 local function readglyph(f,nofcontours) 
   local points={}
-  local contours={}
   local instructions={}
   local flags={}
-  for i=1,nofcontours do
-    contours[i]=readshort(f)+1
-  end
+  local contours=readintegertable(f,nofcontours,short)
   local nofpoints=contours[nofcontours]
   local nofinstructions=readushort(f)
   skipbytes(f,nofinstructions)
@@ -16064,9 +16086,14 @@ local readfixed=streamreader.readfixed4
 local read2dot14=streamreader.read2dot14
 local skipshort=streamreader.skipshort
 local skipbytes=streamreader.skip
-local readfword=readshort
 local readbytetable=streamreader.readbytetable
 local readbyte=streamreader.readbyte
+local readcardinaltable=streamreader.readcardinaltable
+local readintegertable=streamreader.readintegertable
+local readfword=readshort
+local short=2
+local ushort=2
+local ulong=4
 directives.register("fonts.streamreader",function()
   streamreader=utilities.streams
   setposition=streamreader.setposition
@@ -16082,9 +16109,11 @@ directives.register("fonts.streamreader",function()
   read2dot14=streamreader.read2dot14
   skipshort=streamreader.skipshort
   skipbytes=streamreader.skip
-  readfword=readshort
   readbytetable=streamreader.readbytetable
   readbyte=streamreader.readbyte
+  readcardinaltable=streamreader.readcardinaltable
+  readintegertable=streamreader.readintegertable
+  readfword=readshort
 end)
 local gsubhandlers={}
 local gposhandlers={}
@@ -16352,10 +16381,7 @@ local function readvariationdata(f,storeoffset,factors)
   local format=readushort(f)
   local regionoffset=storeoffset+readulong(f)
   local nofdeltadata=readushort(f)
-  local deltadata={}
-  for i=1,nofdeltadata do
-    deltadata[i]=readulong(f)
-  end
+  local deltadata=readcardinaltable(f,nofdeltadata,ulong)
   setposition(f,regionoffset)
   local nofaxis=readushort(f)
   local nofregions=readushort(f)
@@ -16383,10 +16409,7 @@ local function readvariationdata(f,storeoffset,factors)
         usedregions[i]=regions[readushort(f)+1]
       end
       for i=1,nofdeltasets do
-        local t={} 
-        for i=1,nofshorts do
-          t[i]=readshort(f)
-        end
+        local t=readintegertable(f,nofshorts,short)
         for i=nofshorts+1,nofregions do
           t[i]=readinteger(f)
         end
@@ -16406,20 +16429,30 @@ helpers.readvariationdata=readvariationdata
 local function readcoverage(f,offset,simple)
   setposition(f,offset)
   local coverageformat=readushort(f)
-  local coverage={}
   if coverageformat==1 then
     local nofcoverage=readushort(f)
     if simple then
-      for i=1,nofcoverage do
-        coverage[i]=readushort(f)
+      if nofcoverage==1 then
+        return { readushort(f) }
+      elseif nofcoverage==2 then
+        return { readushort(f),readushort(f) }
+      else
+        return readcardinaltable(f,nofcoverage,ushort)
       end
+    elseif nofcoverage==1 then
+      return { [readushort(f)]=0 }
+    elseif nofcoverage==2 then
+      return { [readushort(f)]=0,[readushort(f)]=1 }
     else
+      local coverage={}
       for i=0,nofcoverage-1 do
         coverage[readushort(f)]=i 
       end
+      return coverage
     end
   elseif coverageformat==2 then
     local nofranges=readushort(f)
+    local coverage={}
     local n=simple and 1 or 0 
     for i=1,nofranges do
       local firstindex=readushort(f)
@@ -16437,10 +16470,11 @@ local function readcoverage(f,offset,simple)
         end
       end
     end
+    return coverage
   else
     report("unknown coverage format %a ",coverageformat)
+    return {}
   end
-  return coverage
 end
 local function readclassdef(f,offset,preset)
   setposition(f,offset)
@@ -16646,23 +16680,15 @@ local function readfirst(f,offset)
   end
   return { readushort(f) }
 end
-local function readarray(f,offset,first)
+function readarray(f,offset)
   if offset then
     setposition(f,offset)
   end
   local n=readushort(f)
-  if first then
-    local t={ first }
-    for i=2,n do
-      t[i]=readushort(f)
-    end
-    return t,n
+  if n==1 then
+    return { readushort(f) },1
   elseif n>0 then
-    local t={}
-    for i=1,n do
-      t[i]=readushort(f)
-    end
-    return t,n
+    return readcardinaltable(f,n,ushort),n
   end
 end
 local function readcoveragearray(f,offset,t,simple)
@@ -17015,10 +17041,7 @@ function gsubhandlers.single(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofg
   elseif subtype==2 then 
     local coverage=readushort(f)
     local nofreplacements=readushort(f)
-    local replacements={}
-    for i=1,nofreplacements do
-      replacements[i]=readushort(f)
-    end
+    local replacements=readcardinaltable(f,nofreplacements,ushort)
     local coverage=readcoverage(f,tableoffset+coverage) 
     for index,newindex in next,coverage do
       newindex=newindex+1
@@ -17043,18 +17066,10 @@ local function sethandler(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofglyp
   if subtype==1 then
     local coverage=readushort(f)
     local nofsequence=readushort(f)
-    local sequences={}
-    for i=1,nofsequence do
-      sequences[i]=readushort(f)
-    end
+    local sequences=readcardinaltable(f,nofsequence,ushort)
     for i=1,nofsequence do
       setposition(f,tableoffset+sequences[i])
-      local n=readushort(f)
-      local s={}
-      for i=1,n do
-        s[i]=readushort(f)
-      end
-      sequences[i]=s
+      sequences[i]=readcardinaltable(f,readushort(f),ushort)
     end
     local coverage=readcoverage(f,tableoffset+coverage)
     for index,newindex in next,coverage do
@@ -17086,19 +17101,20 @@ function gsubhandlers.ligature(f,fontdata,lookupid,lookupoffset,offset,glyphs,no
   if subtype==1 then
     local coverage=readushort(f)
     local nofsets=readushort(f)
-    local ligatures={}
-    for i=1,nofsets do
-      ligatures[i]=readushort(f)
-    end
+    local ligatures=readcardinaltable(f,nofsets,ushort)
     for i=1,nofsets do
       local offset=lookupoffset+offset+ligatures[i]
       setposition(f,offset)
       local n=readushort(f)
-      local l={}
-      for i=1,n do
-        l[i]=offset+readushort(f)
+      if n==1 then
+        ligatures[i]={ offset+readushort(f) }
+      else
+        local l={}
+        for i=1,n do
+          l[i]=offset+readushort(f)
+        end
+        ligatures[i]=l
       end
-      ligatures[i]=l
     end
     local coverage=readcoverage(f,tableoffset+coverage)
     for index,newindex in next,coverage do
@@ -17675,10 +17691,10 @@ do
       local parameters=readushort(f) 
       local noflookups=readushort(f)
       if noflookups>0 then
-        local lookups={}
+        local lookups=readcardinaltable(f,noflookups,ushort)
         feature.lookups=lookups
         for j=1,noflookups do
-          lookups[j]=readushort(f)+1
+          lookups[j]=lookups[j]+1
         end
       end
       if parameters>0 then
@@ -17693,11 +17709,8 @@ do
   end
   local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
     setposition(f,lookupoffset)
-    local lookups={}
     local noflookups=readushort(f)
-    for i=1,noflookups do
-      lookups[i]=readushort(f)
-    end
+    local lookups=readcardinaltable(f,noflookups,ushort)
     for lookupid=1,noflookups do
       local offset=lookups[lookupid]
       setposition(f,lookupoffset+offset)
@@ -17990,11 +18003,12 @@ do
         record.condition=nil
         record.matchtype="always"
       else
-        setposition(f,variationsoffset+offset)
+        local offset=variationsoffset+offset
+        setposition(f,offset)
         local nofconditions=readushort(f)
         local conditions={}
         for i=1,nofconditions do
-          conditions[i]=variationsoffset+offset+readulong(f)
+          conditions[i]=offset+readulong(f)
         end
         record.conditions=conditions
         record.matchtype="condition"
@@ -18036,10 +18050,7 @@ do
             setposition(f,tableoffset)
             local parameters=readulong(f) 
             local noflookups=readushort(f)
-            local lookups={}
-            for i=1,noflookups do
-              lookups[i]=readushort(f) 
-            end
+            local lookups=readcardinaltable(f,noflookups,ushort)
             record.substitutions=lookups
           end
         end
@@ -18243,10 +18254,7 @@ function readers.gdef(f,fontdata,specification)
       local format=readushort(f)
       if format==1 then
         local nofsets=readushort(f)
-        local sets={}
-        for i=1,nofsets do
-          sets[i]=readulong(f)
-        end
+        local sets=readcardinal(f,nofsets,ulong)
         for i=1,nofsets do
           local offset=sets[i]
           if offset~=0 then
@@ -18468,14 +18476,8 @@ local function readmathvariants(f,fontdata,offset)
   local hcoverage=readushort(f)
   local vnofglyphs=readushort(f)
   local hnofglyphs=readushort(f)
-  local vconstruction={}
-  local hconstruction={}
-  for i=1,vnofglyphs do
-    vconstruction[i]=readushort(f)
-  end
-  for i=1,hnofglyphs do
-    hconstruction[i]=readushort(f)
-  end
+  local vconstruction=readcardinaltable(f,vnofglyphs,ushort)
+  local hconstruction=readcardinaltable(f,hnofglyphs,ushort)
   fontdata.mathconstants.MinConnectorOverlap=minoverlap
   local function get(offset,coverage,nofglyphs,construction,kvariants,kparts,kitalic)
     if coverage~=0 and nofglyphs>0 then
@@ -18626,10 +18628,7 @@ function readers.cpal(f,fontdata,specification)
     local nofcolorrecords=readushort(f)
     local firstcoloroffset=readulong(f)
     local colorrecords={}
-    local palettes={}
-    for i=1,nofpalettes do
-      palettes[i]=readushort(f)
-    end
+    local palettes=readcardinaltable(f,nofpalettes,ushort)
     if version==1 then
       local palettettypesoffset=readulong(f)
       local palettelabelsoffset=readulong(f)

@@ -386,3 +386,40 @@ if sio and sio.readcardinal2 then
     streams.readinteger    = streams.readinteger1
 
 end
+
+if sio and sio.readcardinaltable then
+
+    streams.readcardinaltable = sio.readcardinaltable
+    streams.readintegertable  = sio.readintegertable
+
+else
+
+    local readcardinal1 = streams.readcardinal1
+    local readcardinal2 = streams.readcardinal2
+    local readcardinal3 = streams.readcardinal3
+    local readcardinal4 = streams.readcardinal4
+
+    function streams.readcardinaltable(f,n,b)
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readcardinal1(f) end
+        elseif b == 2 then for i=1,n do t[i] = readcardinal2(f) end
+        elseif b == 3 then for i=1,n do t[i] = readcardinal3(f) end
+        elseif b == 4 then for i=1,n do t[i] = readcardinal4(f) end end
+        return t
+    end
+
+    local readinteger1 = streams.readinteger1
+    local readinteger2 = streams.readinteger2
+    local readinteger3 = streams.readinteger3
+    local readinteger4 = streams.readinteger4
+
+    function streams.readintegertable(f,n,b)
+        local t = { }
+            if b == 1 then for i=1,n do t[i] = readinteger1(f) end
+        elseif b == 2 then for i=1,n do t[i] = readinteger2(f) end
+        elseif b == 3 then for i=1,n do t[i] = readinteger3(f) end
+        elseif b == 4 then for i=1,n do t[i] = readinteger4(f) end end
+        return t
+    end
+
+end

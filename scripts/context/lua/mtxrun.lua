@@ -7613,7 +7613,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7787, stripped down to: 5858
+-- original size: 9034, stripped down to: 6958
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7875,6 +7875,35 @@ if fio and fio.readcardinal1 then
     skipposition(f,4*(n or 1))
   end
 end
+if fio and fio.readcardinaltable then
+  files.readcardinaltable=fio.readcardinaltable
+  files.readintegertable=fio.readintegertable
+else
+  local readcardinal1=files.readcardinal1
+  local readcardinal2=files.readcardinal2
+  local readcardinal3=files.readcardinal3
+  local readcardinal4=files.readcardinal4
+  function files.readcardinaltable(f,n,b)
+    local t={}
+      if b==1 then for i=1,n do t[i]=readcardinal1(f) end
+    elseif b==2 then for i=1,n do t[i]=readcardinal2(f) end
+    elseif b==3 then for i=1,n do t[i]=readcardinal3(f) end
+    elseif b==4 then for i=1,n do t[i]=readcardinal4(f) end end
+    return t
+  end
+  local readinteger1=files.readinteger1
+  local readinteger2=files.readinteger2
+  local readinteger3=files.readinteger3
+  local readinteger4=files.readinteger4
+  function files.readintegertable(f,n,b)
+    local t={}
+      if b==1 then for i=1,n do t[i]=readinteger1(f) end
+    elseif b==2 then for i=1,n do t[i]=readinteger2(f) end
+    elseif b==3 then for i=1,n do t[i]=readinteger3(f) end
+    elseif b==4 then for i=1,n do t[i]=readinteger4(f) end end
+    return t
+  end
+end
 
 
 end -- of closure
@@ -7883,7 +7912,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 8716, stripped down to: 6754
+-- original size: 9987, stripped down to: 7878
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -8215,6 +8244,35 @@ if sio and sio.readcardinal2 then
   streams.readsignedbyte=streams.readinteger1
   streams.readcardinal=streams.readcardinal1
   streams.readinteger=streams.readinteger1
+end
+if sio and sio.readcardinaltable then
+  streams.readcardinaltable=sio.readcardinaltable
+  streams.readintegertable=sio.readintegertable
+else
+  local readcardinal1=streams.readcardinal1
+  local readcardinal2=streams.readcardinal2
+  local readcardinal3=streams.readcardinal3
+  local readcardinal4=streams.readcardinal4
+  function streams.readcardinaltable(f,n,b)
+    local t={}
+      if b==1 then for i=1,n do t[i]=readcardinal1(f) end
+    elseif b==2 then for i=1,n do t[i]=readcardinal2(f) end
+    elseif b==3 then for i=1,n do t[i]=readcardinal3(f) end
+    elseif b==4 then for i=1,n do t[i]=readcardinal4(f) end end
+    return t
+  end
+  local readinteger1=streams.readinteger1
+  local readinteger2=streams.readinteger2
+  local readinteger3=streams.readinteger3
+  local readinteger4=streams.readinteger4
+  function streams.readintegertable(f,n,b)
+    local t={}
+      if b==1 then for i=1,n do t[i]=readinteger1(f) end
+    elseif b==2 then for i=1,n do t[i]=readinteger2(f) end
+    elseif b==3 then for i=1,n do t[i]=readinteger3(f) end
+    elseif b==4 then for i=1,n do t[i]=readinteger4(f) end end
+    return t
+  end
 end
 
 
@@ -21533,8 +21591,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 884660
--- stripped bytes    : 319967
+-- original bytes    : 887178
+-- stripped bytes    : 320261
 
 -- end library merge
 

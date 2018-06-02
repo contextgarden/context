@@ -38,40 +38,48 @@ local sqrt, round = math.sqrt, math.round
 local char = string.char
 local concat = table.concat
 
-local report        = logs.reporter("otf reader","ttf")
+local report            = logs.reporter("otf reader","ttf")
 
-local trace_deltas  = false
+local trace_deltas      = false
 
-local readers       = fonts.handlers.otf.readers
-local streamreader  = readers.streamreader
+local readers           = fonts.handlers.otf.readers
+local streamreader      = readers.streamreader
 
-local setposition   = streamreader.setposition
-local getposition   = streamreader.getposition
-local skipbytes     = streamreader.skip
-local readbyte      = streamreader.readcardinal1  --  8-bit unsigned integer
-local readushort    = streamreader.readcardinal2  -- 16-bit unsigned integer
-local readulong     = streamreader.readcardinal4  -- 24-bit unsigned integer
-local readchar      = streamreader.readinteger1   --  8-bit   signed integer
-local readshort     = streamreader.readinteger2   -- 16-bit   signed integer
-local read2dot14    = streamreader.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
-local readinteger   = streamreader.readinteger1
+local setposition       = streamreader.setposition
+local getposition       = streamreader.getposition
+local skipbytes         = streamreader.skip
+local readbyte          = streamreader.readcardinal1  --  8-bit unsigned integer
+local readushort        = streamreader.readcardinal2  -- 16-bit unsigned integer
+local readulong         = streamreader.readcardinal4  -- 24-bit unsigned integer
+local readchar          = streamreader.readinteger1   --  8-bit   signed integer
+local readshort         = streamreader.readinteger2   -- 16-bit   signed integer
+local read2dot14        = streamreader.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
+local readinteger       = streamreader.readinteger1
+local readcardinaltable = streamreader.readcardinaltable
+local readintegertable  = streamreader.readintegertable
 
 directives.register("fonts.streamreader",function()
 
-    streamreader = utilities.streams
+    streamreader      = utilities.streams
 
-    setposition  = streamreader.setposition
-    getposition  = streamreader.getposition
-    skipbytes    = streamreader.skip
-    readbyte     = streamreader.readcardinal1
-    readushort   = streamreader.readcardinal2
-    readulong    = streamreader.readcardinal4
-    readchar     = streamreader.readinteger1
-    readshort    = streamreader.readinteger2
-    read2dot14   = streamreader.read2dot14
-    readinteger  = streamreader.readinteger1
+    setposition       = streamreader.setposition
+    getposition       = streamreader.getposition
+    skipbytes         = streamreader.skip
+    readbyte          = streamreader.readcardinal1
+    readushort        = streamreader.readcardinal2
+    readulong         = streamreader.readcardinal4
+    readchar          = streamreader.readinteger1
+    readshort         = streamreader.readinteger2
+    read2dot14        = streamreader.read2dot14
+    readinteger       = streamreader.readinteger1
+    readcardinaltable = streamreader.readcardinaltable
+    readintegertable  = streamreader.readintegertable
 
 end)
+
+local short  = 2
+local ushort = 2
+local ulong  = 4
 
 local helpers       = readers.helpers
 local gotodatatable = helpers.gotodatatable
@@ -699,13 +707,10 @@ end
 -- end of converter
 
 local function readglyph(f,nofcontours) -- read deltas here, saves space
-    local points       = { }
-    local contours     = { }
-    local instructions = { }
-    local flags        = { }
-    for i=1,nofcontours do
-        contours[i] = readshort(f) + 1
-    end
+    local points          = { }
+    local instructions    = { }
+    local flags           = { }
+    local contours        = readintegertable(f,nofcontours,short)
     local nofpoints       = contours[nofcontours]
     local nofinstructions = readushort(f)
     skipbytes(f,nofinstructions)

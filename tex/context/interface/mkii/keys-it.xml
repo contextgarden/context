@@ -1280,6 +1280,7 @@
 		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='veroffset'/>
+		<cd:constant name='vfactor' value='vfactor'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
 		<cd:constant name='voffset' value='voffset'/>

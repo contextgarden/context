@@ -42,11 +42,7 @@ local systemmodes          = { }
 
 -- undefined: mode == 0 or cmdname = "undefined_cs"
 
-local cache = setmetatableindex(function(t,k)
-    local v = createtoken(k)
-    t[k] = v
-    return v
-end)
+local cache = tokens.cache
 
 -- we can have a modes cache too
 
