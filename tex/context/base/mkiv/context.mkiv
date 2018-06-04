@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.06.02 22:34}
+\edef\contextversion{2018.06.04 12:18}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -77,8 +77,8 @@
 
 %D We just quit if new functionality is expected.
 
-\ifnum\luatexversion<105 % also change message
-    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.05!}
+\ifnum\luatexversion<107 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 1.07!}
     \expandafter\end
 \fi
 

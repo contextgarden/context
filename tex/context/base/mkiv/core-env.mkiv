@@ -89,19 +89,17 @@
 
 \newsystemmode{trialtypesetting}
 
-\expandafter\let\expandafter\c_trial_typesetting\csname\??mode\systemmodeprefix trialtypesetting\endcsname % private !
+\expandafter\let\csname\??mode\systemmodeprefix trialtypesetting\endcsname\trialtypesettingstate
 
 \appendtoks
-    \c_trial_typesetting\enabledmode
+    \trialtypesettingstate\enabledmode
     \luacopyinputnodes\plusone
 \to \everysettrialtypesetting
 
 \appendtoks
-    \c_trial_typesetting\disabledmode
+    \trialtypesettingstate\disabledmode
     \luacopyinputnodes\zerocount
 \to \everyresettrialtypesetting
-
-\ctxlua{context.registertrialtypesetting("c_trial_typesetting")}
 
 % user ones
 

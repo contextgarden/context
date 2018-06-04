@@ -29,7 +29,7 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- todo : context("%bold{total: }%s",total)
 -- todo : context.documentvariable("title")
 --
--- during the crited project we ran into the situation that luajittex was 10-20 times
+-- During the crited project we ran into the situation that luajittex was 10-20 times
 -- slower that luatex ... after 3 days of testing and probing we finally figured out that
 -- the the differences between the lua and luajit hashers can lead to quite a slowdown
 -- in some cases.
@@ -120,9 +120,9 @@ local nodeflushmode     = false
 local scannerdefmode    = false
 local maxflushnodeindex = 0x10FFFF - 1
 
-if LUATEXFUNCTIONALITY and LUATEXFUNCTIONALITY > 6780 then
+if LUATEXFUNCTIONALITY > 6780 then
 
-    -- The gain in performasnce is neglectable.
+    -- The gain in performance is neglectable.
 
     tokenflushmode    = true
     nodeflushmode     = true
@@ -139,14 +139,10 @@ end
 -- primitive \luafunctions was \luacall and we used our own implementation of
 -- a function table (more indirectness).
 
-local trialtypesettingstate = 0
+local trialtypesettingstate = createtoken("trialtypesettingstate").index
 
 function context.trialtypesetting()
     return texgetcount(trialtypesettingstate) ~= 0
-end
-
-function context.registertrialtypesetting(name)
-    trialtypesettingstate = createtoken(name).index
 end
 
 local knownfunctions = lua.get_functions_table()
