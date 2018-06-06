@@ -782,7 +782,12 @@
 
 % Since we couple definitions, we could stick to one test. Todo. Same for mpcolor.
 
-\def\v_colo_dummy_name{d_u_m_m_y}
+\def\v_colo_dummy_name{c_o_l_o_r}
+
+\letvalue{\??colorattribute       \v_colo_dummy_name}\empty
+\letvalue{\??transparencyattribute\v_colo_dummy_name}\empty
+\letvalue{\??colorsetter          \v_colo_dummy_name}\empty
+\letvalue{\??transparencysetter   \v_colo_dummy_name}\empty
 
 \letvalue{\??colorsetter       -}\empty % used?
 \letvalue{\??transparencysetter-}\empty % used?
@@ -942,7 +947,7 @@
 
 \def\colo_basics_defined_and_activated#1%
   {\clf_defineprocesscolordummy{#1}% we could pass dummy here too
-   \colo_basics_synchronize{d_u_m_m_y}%
+   \colo_basics_synchronize{\v_colo_dummy_name}%
    \colo_helpers_activate_dummy}
 
 \def\colo_basics_define_process

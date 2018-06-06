@@ -40,20 +40,41 @@
 
 \let\MPLIBflushenvironment\doMPLIBflushenvironment
 
-\unexpanded\def\MPLIBsetNtext#1% #2% box text
-  {\MPLIBflushenvironment
-   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
-     \meta_set_current_color
-     \let\MPLIBflushenvironment\doMPLIBflushenvironment
-     \let\next} % gobble open brace
+\ifnum\texenginefunctionality < 6789
 
-\unexpanded\def\MPLIBsetCtext#1#2% #3% box colorspec text
-  {\MPLIBflushenvironment
-   \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
-     \directcolored[#2]%
-     \meta_set_current_color % so, textcolor wins !
-     \let\MPLIBflushenvironment\doMPLIBflushenvironment
-     \let\next} % gobble open brace
+    \unexpanded\def\MPLIBsetNtext#1% #2% box text
+      {\MPLIBflushenvironment
+       \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
+         \meta_set_current_color
+         \let\MPLIBflushenvironment\doMPLIBflushenvironment
+         \let\next} % gobble open brace
+
+    \unexpanded\def\MPLIBsetCtext#1#2% #3% box colorspec text
+      {\MPLIBflushenvironment
+       \dowithnextbox{\clf_mpsettext\nextbox #1}\hbox\bgroup % text
+         \directcolored[#2]%
+         \meta_set_current_color % so, textcolor wins !
+         \let\MPLIBflushenvironment\doMPLIBflushenvironment
+         \let\next} % gobble open brace
+
+\else
+
+    \unexpanded\def\MPLIBsetNtext#1% #2% box text
+       {\MPLIBflushenvironment
+       \hbox\bgroup % text
+       \meta_set_current_color
+       \let\MPLIBflushenvironment\doMPLIBflushenvironment
+       \let\next}
+
+    \unexpanded\def\MPLIBsetCtext#1#2% #3% box colorspec text
+       {\MPLIBflushenvironment
+       \hbox\bgroup % text
+       \directcolored[#2]%
+       \meta_set_current_color % so, textcolor wins !
+       \let\MPLIBflushenvironment\doMPLIBflushenvironment
+       \let\next}
+
+\fi
 
 \let\MPLIBsettext\MPLIBsetNtext
 
@@ -184,5 +205,16 @@
   {\begingroup
    \setbox\scratchbox\hpack\bgroup
    \unexpanded\def\MPLIBstopgroup{\doMPLIBstopgroup{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+% For now here ... will be cleaned up:
+
+\newtoks\mptexttoks
+\newbox \mptextbox
+\newtoks\mpoutlinetoks
+\newtoks\mpgraphictexttoks
+
+\mptexttoks       {\global\setbox\mptextbox\hbox{\clf_mptexttoks}}
+\mpoutlinetoks    {\global\setbox\mptextbox\vbox{\clf_mpoutlinetoks}}
+\mpgraphictexttoks{\global\setbox\mptextbox\vbox{\clf_mpgraphictexttoks}}
 
 \protect \endinput

@@ -60,6 +60,12 @@ vardef mlib_luas_luacall(text t) =
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
+        elseif pair s :
+            & mfun_pair_to_table(s)
+        elseif rgbcolor s :
+            & mfun_rgb_to_table(s)
+        elseif cmykcolor s :
+            & mfun_cmyk_to_table(s)
         else :
             & ditto & tostring(s) & ditto
         fi endfor
@@ -81,6 +87,12 @@ vardef mlib_luas_lualist(expr c)(text t) =
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
+        elseif pair s :
+            & mfun_pair_to_table(s)
+        elseif rgbcolor s :
+            & mfun_rgb_to_table(s)
+        elseif cmykcolor s :
+            & mfun_cmyk_to_table(s)
         else :
             & ditto & tostring(s) & ditto
         fi endfor & ")"

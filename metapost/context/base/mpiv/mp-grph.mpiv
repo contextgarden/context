@@ -128,33 +128,52 @@ picture mfun_gt_picture ;
 
 % this is the old version:
 
-def old_graphictext primary t =
-    hide (
-        if mfun_trial_run :
-            let mfun_graphic_text = mfun_no_graphic_text ;
-        else :
-            let mfun_graphic_text = mfun_do_graphic_text ;
-        fi
-    )
-    mfun_graphic_text(t)
-enddef ;
+if LUATEXFUNCTIONALITY >= 6789 :
 
-def mfun_do_graphic_text (expr t) =
-    % withprescript "gt_stage=final"
-    begingroup ;
-    save figurepicture ; picture figurepicture ;
-    figurepicture := currentpicture ; currentpicture := nullpicture ;
-    currentgraphictext := currentgraphictext + 1 ;
-    mfun_finish_graphic_text % picks up directives
-enddef ;
+    def old_graphictext primary t =
+        mfun_do_graphic_text(t)
+    enddef ;
 
-def mfun_no_graphic_text (expr t) text rest =
-    currentgraphictext := currentgraphictext + 1 ;
-    draw unitsquare
-        withprescript "gt_stage=trial"
-        withprescript "gt_index=" & decimal currentgraphictext
-        withpostscript t
-enddef ;
+    def mfun_do_graphic_text (expr t) =
+        begingroup ;
+        save figurepicture ; picture figurepicture ;
+        figurepicture := currentpicture ; currentpicture := nullpicture ;
+        currentgraphictext := currentgraphictext + 1 ;
+        lua.mp.GraphicText(currentgraphictext,t) ;
+        mfun_finish_graphic_text % picks up directives
+    enddef ;
+
+else :
+
+    def old_graphictext primary t =
+        hide (
+            if mfun_trial_run :
+                let mfun_graphic_text = mfun_no_graphic_text ;
+            else :
+                let mfun_graphic_text = mfun_do_graphic_text ;
+            fi
+        )
+        mfun_graphic_text(t)
+    enddef ;
+
+    def mfun_do_graphic_text (expr t) =
+        % withprescript "gt_stage=final"
+        begingroup ;
+        save figurepicture ; picture figurepicture ;
+        figurepicture := currentpicture ; currentpicture := nullpicture ;
+        currentgraphictext := currentgraphictext + 1 ;
+        mfun_finish_graphic_text % picks up directives
+    enddef ;
+
+    def mfun_no_graphic_text (expr t) text rest =
+        currentgraphictext := currentgraphictext + 1 ;
+        draw unitsquare
+            withprescript "gt_stage=trial"
+            withprescript "gt_index=" & decimal currentgraphictext
+            withpostscript t
+    enddef ;
+
+fi ;
 
 def mfun_finish_graphic_text text rest =
     protectgraphicmacros ; % resets currentpicture

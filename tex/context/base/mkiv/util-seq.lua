@@ -99,50 +99,113 @@ function sequencers.new(t) -- was reset
 end
 
 function sequencers.prependgroup(t,group,where)
-    t = known[t]
-    if t then
-        local order = t.order
-        removevalue(order,group)
-        insertbeforevalue(order,where,group)
-        t.list[group] = { }
-        t.dirty       = true
-        t.runner      = nil
+    if t and group then
+        t = known[t]
+        if t then
+            local order = t.order
+            removevalue(order,group)
+            insertbeforevalue(order,where,group)
+            t.list[group] = { }
+            t.dirty       = true
+            t.runner      = nil
+        end
     end
 end
 
 function sequencers.appendgroup(t,group,where)
-    t = known[t]
-    if t then
-        local order = t.order
-        removevalue(order,group)
-        insertaftervalue(order,where,group)
-        t.list[group] = { }
-        t.dirty       = true
-        t.runner      = nil
+    if t and group then
+        t = known[t]
+        if t then
+            local order = t.order
+            removevalue(order,group)
+            insertaftervalue(order,where,group)
+            t.list[group] = { }
+            t.dirty       = true
+            t.runner      = nil
+        end
     end
 end
 
 function sequencers.prependaction(t,group,action,where,kind,force)
-    t = known[t]
-    if t then
-        local g = t.list[group]
-        if g and (force or validaction(action)) then
-            removevalue(g,action)
-            insertbeforevalue(g,where,action)
-            t.kind[action] = kind
-            t.dirty        = true
-            t.runner       = nil
+    if t and group and action then
+        t = known[t]
+        if t then
+            local g = t.list[group]
+            if g and (force or validaction(action)) then
+                removevalue(g,action)
+                insertbeforevalue(g,where,action)
+                t.kind[action] = kind
+                t.dirty        = true
+                t.runner       = nil
+            end
         end
     end
 end
 
 function sequencers.appendaction(t,group,action,where,kind,force)
-    t = known[t]
-    if t then
-        local g = t.list[group]
-        if g and (force or validaction(action)) then
-            removevalue(g,action)
-            insertaftervalue(g,where,action)
+    if t and group and action then
+        t = known[t]
+        if t then
+            local g = t.list[group]
+            if g and (force or validaction(action)) then
+                removevalue(g,action)
+                insertaftervalue(g,where,action)
+                t.kind[action] = kind
+                t.dirty        = true
+                t.runner       = nil
+            end
+        end
+    end
+end
+
+function sequencers.enableaction(t,action)
+    if t and action then
+        t = known[t]
+        if t then
+            t.askip[action] = false
+            t.dirty         = true
+            t.runner        = nil
+        end
+    end
+end
+
+function sequencers.disableaction(t,action)
+    if t and action then
+        t = known[t]
+        if t then
+            t.askip[action] = true
+            t.dirty         = true
+            t.runner        = nil
+        end
+    end
+end
+
+function sequencers.enablegroup(t,group)
+    if t and group then
+        t = known[t]
+        if t then
+            t.gskip[group] = false
+            t.dirty        = true
+            t.runner       = nil
+        end
+    end
+end
+
+function sequencers.disablegroup(t,group)
+    if t and group then
+        t = known[t]
+        if t then
+            t.gskip[group] = true
+            t.dirty        = true
+            t.runner       = nil
+        end
+    end
+end
+
+function sequencers.setkind(t,action,kind)
+    if t and action then
+        t = known[t]
+        if t then
             t.kind[action] = kind
             t.dirty        = true
             t.runner       = nil
@@ -150,69 +213,28 @@ function sequencers.appendaction(t,group,action,where,kind,force)
     end
 end
 
-function sequencers.enableaction(t,action)
-    t = known[t]
-    if t then
-        t.askip[action] = false
-        t.dirty         = true
-        t.runner        = nil
-    end
-end
-
-function sequencers.disableaction(t,action)
-    t = known[t]
-    if t then
-        t.askip[action] = true
-        t.dirty         = true
-        t.runner        = nil
-    end
-end
-
-function sequencers.enablegroup(t,group)
-    t = known[t]
-    if t then
-        t.gskip[action] = false
-        t.dirty         = true
-        t.runner        = nil
-    end
-end
-
-function sequencers.disablegroup(t,group)
-    t = known[t]
-    if t then
-        t.gskip[action] = true
-        t.dirty         = true
-        t.runner        = nil
-    end
-end
-
-function sequencers.setkind(t,action,kind)
-    t = known[t]
-    if t then
-        t.kind[action]  = kind
-        t.dirty         = true
-        t.runner        = nil
-    end
-end
-
 function sequencers.removeaction(t,group,action,force)
-    t = known[t]
-    local g = t and t.list[group]
-    if g and (force or validaction(action)) then
-        removevalue(g,action)
-        t.dirty  = true
-        t.runner = nil
+    if t and group and action then
+        t = known[t]
+        local g = t and t.list[group]
+        if g and (force or validaction(action)) then
+            removevalue(g,action)
+            t.dirty  = true
+            t.runner = nil
+        end
     end
 end
 
 function sequencers.replaceaction(t,group,oldaction,newaction,force)
-    t = known[t]
-    if t then
-        local g = t.list[group]
-        if g and (force or validaction(oldaction)) then
-            replacevalue(g,oldaction,newaction)
-            t.dirty  = true
-            t.runner = nil
+    if t and group and oldaction and newaction then
+        t = known[t]
+        if t then
+            local g = t.list[group]
+            if g and (force or validaction(oldaction)) then
+                replacevalue(g,oldaction,newaction)
+                t.dirty  = true
+                t.runner = nil
+            end
         end
     end
 end

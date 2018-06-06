@@ -47,4 +47,10 @@
 % \def\reversedtext#1%
 %   {\cldcontext{table.concat(table.reverse(utf.totable(\!!bs#1\!!es)))}}
 
+%D New:
+
+\newtoks\mpblobtext
+
+\mpblobtext{\global\setbox\mptextbox\vbox{\clf_mpblobtext}}
+
 \protect \endinput

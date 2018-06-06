@@ -178,6 +178,7 @@ interfaces.implement {
 
 -- the plug:
 
+
 local function reset()
     blob_raw_reset()
 end
@@ -187,12 +188,12 @@ local function analyze(object,prescript)
 end
 
 local function process(object,prescript,before,after)
-    if prescript.tb_stage == "inject" then
+--     if prescript.tb_stage == "inject" then
         local tb_blob = tonumber(prescript.tb_blob)
         if tb_blob then
             before[#before+1] = injectblob(object,tb_blob)
         end
-    end
+--     end
 end
 
 metapost.installplugin(reset,analyze,process)
@@ -278,28 +279,64 @@ interfaces.implement {
     actions   = initialize,
 }
 
-local function reset()
-    -- nothing
-end
+local tb_reset, tb_analyze, tb_process  do
 
-local function analyze(object,prescript)
-    if prescript.ft_stage == "trial" then
-        local ft_category = tonumber(prescript.ft_category)
-        if ft_category then
-            newblob(ft_category,object.postscript) -- only for tracing
-            context.MPLIBfollowtext(ft_category,object.postscript)
-            metapost.getjobdata().multipass = true
+    if LUATEXFUNCTIONALITY >= 6789 then
+
+        local mp_category = 0
+        local mp_str      = ""
+
+        function mp.InjectBlobB(category,str)
+            newblob(category,str) -- only for tracing
+            mp_category = category
+            mp_str      = str
+            tex.runtoks("mpblobtext")
         end
+
+        interfaces.implement {
+            name    = "mpblobtext",
+            actions = function()
+                context.MPLIBfollowtext(mp_category,mp_str)
+            end
+        }
+
+        tb_process = function(object,prescript,before,after)
+            object.path    = false
+            object.color   = false
+            object.grouped = true
+            object.istext  = true
+        end
+
+
+    else
+
+        tb_reset = function()
+            -- nothing
+        end
+
+        tb_analyze = function(object,prescript)
+            if prescript.ft_stage == "trial" then
+                local ft_category = tonumber(prescript.ft_category)
+                if ft_category then
+                    newblob(ft_category,object.postscript) -- only for tracing
+                    context.MPLIBfollowtext(ft_category,object.postscript)
+                    metapost.getjobdata().multipass = true
+                end
+            end
+        end
+
+        tb_process = function(object,prescript,before,after)
+            if prescript.ft_stage == "final" then
+                object.path    = false
+                object.color   = false
+                object.grouped = true
+                object.istext  = true
+            end
+        end
+
+
     end
+
 end
 
-local function process(object,prescript,before,after)
-    if prescript.ft_stage == "final" then
-        object.path    = false
-        object.color   = false
-        object.grouped = true
-        object.istext  = true
-    end
-end
-
-metapost.installplugin(reset,analyze,process)
+metapost.installplugin(tb_reset,tb_analyze,tb_process)

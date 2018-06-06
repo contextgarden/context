@@ -14,7 +14,7 @@ local commands  = commands
 local context   = context
 local colors    = attributes.colors
 
-local private   = table.tohash { "d_u_m_m_y", "maintextcolor", "themaintextcolor" }
+local private   = table.tohash { "c_o_l_o_r", "maintextcolor", "themaintextcolor" }
 
 function commands.showcolorset(name)
     local set = colors.setlist(name)

@@ -1092,7 +1092,7 @@ implement {
 implement {
     name      = "defineprocesscolordummy",
     actions   = defineprocesscolor,
-    arguments = { "'d_u_m_m_y'", "string", false, false }
+    arguments = { "'c_o_l_o_r'", "string", false, false }
 }
 
 implement {
