@@ -28,7 +28,7 @@ enddef ;
 
 extra_endfig := extra_endfig & "mfun_reset_tex_blobs ; " ;
 
-if LUATEXFUNCTIONALITY >= 6789 :
+if mfun_use_one_pass :
 
     vardef mfun_inject_blob(expr n) =
         mfun_blob_c := nullpicture ;
@@ -64,7 +64,7 @@ newinternal tracingfollowtext       ; tracingfollowtext       := 0 ;
 newinternal autoscaleupfollowtext   ; autoscaleupfollowtext   := 2 ;
 newinternal autoscaledownfollowtext ; autoscaledownfollowtext := 0 ;
 
-if LUATEXFUNCTIONALITY >= 6789 :
+if mfun_use_one_pass :
 
     vardef followtext(expr pth, txt) =
         image (

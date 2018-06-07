@@ -54,14 +54,47 @@ local whitespace  = patterns.whitespace
 local spacer      = patterns.spacer
 local spaceortab  = patterns.spaceortab
 
+-- local function points(n)
+--     n = tonumber(n)
+--     return (not n or n == 0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+-- end
+
+-- local function basepoints(n)
+--     n = tonumber(n)
+--     return (not n or n == 0) and "0bp" or lpegmatch(stripper,format("%.5fbp", n*(7200/7227)/65536))
+-- end
+
+local ptf = 1 / 65536
+local bpf = (7200/7227) / 65536
+
 local function points(n)
+    if n == 0 then
+        return "0pt"
+    end
     n = tonumber(n)
-    return (not n or n == 0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+    if not n or n == 0 then
+        return "0pt"
+    end
+    n = n * ptf
+    if n % 1 == 0 then
+        return format("%ipt",n)
+    end
+    return lpegmatch(stripper,format("%.5fpt",n))
 end
 
 local function basepoints(n)
+    if n == 0 then
+        return "0pt"
+    end
     n = tonumber(n)
-    return (not n or n == 0) and "0bp" or lpegmatch(stripper,format("%.5fbp", n*(7200/7227)/65536))
+    if not n or n == 0 then
+        return "0pt"
+    end
+    n = n * bpf
+    if n % 1 == 0 then
+        return format("%ibp",n)
+    end
+    return lpegmatch(stripper,format("%.5fbp",n))
 end
 
 number.points     = points
@@ -874,7 +907,7 @@ local format_n = function() -- strips leading and trailing zeros and removes .0
     return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
 
-local format_N = function() -- strips leading and trailing zeros (also accepst string)
+local format_N = function() -- strips leading and trailing zeros (also accepts string)
     n = n + 1
     return format("tostring(tonumber(a%s) or a%s)",n,n)
 end

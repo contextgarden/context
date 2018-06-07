@@ -202,6 +202,8 @@
 \stopMPdefinitions
 
 \startluacode
+    local context   = context
+
     local nodecodes = nodes.nodecodes
     local kerncodes = nodes.kerncodes
 
@@ -217,10 +219,19 @@
     local c_userkern = kerncodes.userkern
     local a_fontkern = attributes.private("fontkern")
 
+    local copynode = nodes.copy
+    local freenode = nodes.free
+
+    local topoints = number.topoints
+    local mpprint  = mp.print
+
     local n = nil
     local s = 0
 
     function mp.follow_reset()
+        for i=1,#n do
+            freenode(n[i])
+        end
         n = nil
         s = 0
     end
@@ -251,19 +262,19 @@
     end
 
     function mp.follow_size()
-        mp.print(s)
+        mpprint(s)
     end
 
     function mp.follow_slot(i)
-        mp.print('textext("\\getfollowtoken{' .. i .. '}")')
+        mpprint('textext("\\getfollowtoken{' .. i .. '}")')
     end
 
     function mp.follow_text(s)
-        context(n[s])
+        context(copynode(n[s]))
     end
 
     function mp.follow_width(i)
-        mp.print(number.topoints(n[i].width))
+        mpprint(topoints(n[i].width))
     end
 \stopluacode
 

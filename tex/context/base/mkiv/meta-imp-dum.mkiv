@@ -59,7 +59,7 @@
 %     clip currentpicture to p ;
 % \stopuseMPgraphic
 
-\startuseMPgraphic{figure:placeholder}{width,height,reduction,color}
+\startuseMPgraphic{minifun::figure:placeholder}{width,height,reduction,color}
     begingroup ;
     save w, h, d, r, p, c, b ;
     numeric w, h, d, r ; path p ;
@@ -88,7 +88,7 @@
 \defineoverlay
   [figure:placeholder:graphic]
   [\useMPgraphic
-     {figure:placeholder}%
+     {minifun::figure:placeholder}%
      {width=\figurewidth,%
       height=\figureheight,%
       reduction=\externalfigureparameter\c!reduction,%

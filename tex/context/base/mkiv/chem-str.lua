@@ -766,9 +766,6 @@ function chemistry.stop()
         if trace_metapost then
             report_chemistry("metapost code:\n%s", mpcode)
         end
-        if metapost.instance(chemistry.instance) then
-            f_initialize = nil
-        end
         metapost.graphic {
             instance    = chemistry.instance,
             format      = chemistry.format,
@@ -776,7 +773,6 @@ function chemistry.stop()
             data        = mpcode,
             definitions = f_initialize,
         }
-        t_initialize = ""
         metacode = nil
     end
 end

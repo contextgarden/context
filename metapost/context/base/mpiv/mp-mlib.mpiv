@@ -18,6 +18,8 @@ boolean context_mlib ; context_mlib := true ;
 
 numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY)") ;
 
+boolean mfun_use_one_pass ; mfun_use_one_pass := runscript("mp.print(metapost.use_one_pass)") ;
+
 %D Color and transparency
 %D
 %D Separable:
@@ -176,40 +178,9 @@ extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 % flush twice: once in location in order to pick up e.g. color properties,
 % and once at the end because we need to flush missing ones.
 
-% see mp-keep.mpiv for older code
-
-% vardef rawtextext(expr s) = % todo: avoid currentpicture
-%     if s = "" :
-%         nullpicture
-%     else :
-%         mfun_tt_n := mfun_tt_n + 1 ;
-%         mfun_tt_c := nullpicture ;
-%         if mfun_trial_run :
-%             mfun_tt_o := nullpicture ;
-%             addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-%             addto mfun_tt_c doublepath unitsquare
-%                 withprescript "tx_number=" & decimal mfun_tt_n
-%                 withprescript "tx_stage=trial"
-%                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-%                 withpostscript s ;
-%             addto mfun_tt_p also mfun_tt_c ;
-%         elseif known mfun_tt_d[mfun_tt_n] :
-%             addto mfun_tt_c doublepath unitsquare
-%                 xscaled mfun_tt_w[mfun_tt_n]
-%                 yscaled (mfun_tt_h[mfun_tt_n] + mfun_tt_d[mfun_tt_n])
-%                 shifted (0,-mfun_tt_d[mfun_tt_n])
-%                 withprescript "tx_number=" & decimal mfun_tt_n
-%                 withprescript "tx_stage=final" ;
-%         else :
-%             addto mfun_tt_c doublepath unitsquare ; % unitpicture
-%         fi ;
-%         mfun_tt_c
-%     fi
-% enddef ;
-
 boolean mfun_onetime_textext ; mfun_onetime_textext := false ;
 
-if LUATEXFUNCTIONALITY >= 6789 :
+if mfun_use_one_pass :
 
     % todo: onetime
 
@@ -463,7 +434,7 @@ enddef ;
 
 % formatted text
 
-if LUATEXFUNCTIONALITY >= 6789 :
+if mfun_use_one_pass :
 
     vardef rawfmttext(text t) =
         mfun_tt_n := mfun_tt_n + 1 ;
@@ -1203,7 +1174,7 @@ def mfun_do_outline_options_d = enddef ;
 def mfun_do_outline_options_f = enddef ;
 def mfun_do_outline_options_r = enddef ;
 
-if LUATEXFUNCTIONALITY >= 6789 :
+if mfun_use_one_pass :
 
     vardef outlinetext@# (expr t) text rest =
         save kind ; string kind ; kind := str @# ;
@@ -1300,7 +1271,6 @@ enddef ;
 vardef rule(expr wd,ht,dp) =
     image (fill (0,-dp)--(wd,-dp)--(wd,ht)--(0,ht)--cycle)
 enddef ;
-
 
 % Housekeeping
 

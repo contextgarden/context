@@ -296,24 +296,52 @@ function metapost.unload(mpx)
     stoptiming(mplib)
 end
 
-local mpxformats = { }
+metapost.use_one_pass    = LUATEXFUNCTIONALITY >= 6789 -- for a while
 
-function metapost.format(instance,name,method)
-    if not instance or instance == "" then
-        instance = "metafun" -- brrr
+metapost.defaultformat   = "metafun"
+metapost.defaultinstance = "metafun"
+metapost.defaultmethod   = "default"
+
+local mpxformats = { }
+local nofformats = 0
+
+function metapost.pushformat(specification,f,m) -- was: instance, name, method
+    if type(specification) ~= "table" then
+        specification = {
+            instance = specification,
+            format   = f,
+            method   = m,
+        }
     end
-    name = name or instance
+    local instance = specification.instance
+    local format   = specification.format
+    local method   = specification.method
+    if not instance or instance == "" then
+        instance = metapost.defaultinstance
+        specification.instance = instance
+    end
+    if not format or format == "" then
+        format = metapost.defaultformat
+        specification.format = format
+    end
+    if not method or method == "" then
+        method = metapost.defaultmethod
+        specification.method = method
+    end
+    nofformats = nofformats + 1
+    instance = instance .. ":" .. nofformats
     local mpx = mpxformats[instance]
     if not mpx then
-        report_metapost("initializing instance %a using format %a",instance,name)
-        mpx = metapost.checkformat(name,method)
+        report_metapost("initializing instance %a using format %a and method %a",instance,format,method)
+        mpx = metapost.checkformat(format,method)
         mpxformats[instance] = mpx
     end
+    specification.mpx = mpx
     return mpx
 end
 
-function metapost.instance(instance)
-    return mpxformats[instance]
+function metapost.popformat()
+    nofformats = nofformats - 1
 end
 
 function metapost.reset(mpx)
@@ -339,10 +367,6 @@ local mp_tra = { }
 local mp_tag = 0
 
 -- key/values
-
-if not metapost.initializescriptrunner then
-    function metapost.initializescriptrunner() end
-end
 
 do
 
@@ -384,16 +408,18 @@ do
 
 end
 
-function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
-    local converted, result = false, { }
-    if type(mpx) == "string" then
-        mpx = metapost.format(mpx) -- goody
+function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig, incontext)
+    local converted = false
+    local result    = { }
+    local mpxdone   = type(mpx) == "string"
+    if mpxdone then
+        mpx = metapost.pushformat { instance = mpx, format = mpx }
     end
     if mpx and data then
         local tra = nil
         starttiming(metapost)
-        metapost.variables = { }
-        metapost.initializescriptrunner(mpx,trialrun)
+        metapost.variables = { } -- todo also push / pop
+        metapost.pushscriptrunner(mpx)
         if trace_graphics then
             tra = mp_tra[mpx]
             if not tra then
@@ -466,7 +492,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                         end
                     end
                     if result.fig then
-                        converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
+                        converted = metapost.convert(result, trialrun, flusher, multipass, askedfig, incontext)
                     end
                 end
             elseif i then
@@ -496,6 +522,10 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             tra.log:write(banner)
         end
         stoptiming(metapost)
+        metapost.popscriptrunner(mpx)
+    end
+    if mpxdone then
+        metapost.popformat()
     end
     return converted, result
 end
@@ -643,12 +673,13 @@ do
     }
 
     function metapost.simple(format,code) -- even less than metapost.quickcanddirty
-        local mpx = metapost.format(format or "metafun","metafun")
+        local mpx = metapost.pushformat { } -- takes defaults
      -- metapost.setoutercolor(2)
         metapost.process(mpx,
             { "beginfig(1);", code, "endfig;" },
             false, flusher, false, false, 1, true -- last true is plugmode !
         )
+        metapost.popformat()
         if result then
             local stream = concat(result," ")
             result = nil -- cleanup

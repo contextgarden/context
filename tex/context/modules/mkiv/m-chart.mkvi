@@ -185,11 +185,14 @@
   {\dodoubleempty\module_charts_process}
 
 \def\module_charts_process[#name][#settings]%
-  {\bgroup % \vbox removed
+%   {\hpack\bgroup % \vbox removed, \hpack prevents issues with tex.runtoks
+  {\bgroup % \vbox removed, \hpack prevents issues with tex.runtoks
      \insidefloattrue
      \dontcomplain
      \setupFLOWchart[#settings]%
      \usebodyfontparameter\FLOWchartparameter
+% \meta_process_graphic_start
+% \meta_start_current_graphic
      \clf_flow_make_chart
         chart {
             name            {#name}
@@ -248,6 +251,8 @@
             after           {}
         }
      \relax
+% \meta_stop_current_graphic
+% \meta_process_graphic_stop
   \egroup}
 
 \unexpanded\def\FLOWcharts

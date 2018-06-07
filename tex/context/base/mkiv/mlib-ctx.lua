@@ -11,46 +11,29 @@ local format, concat = string.format, table.concat
 local settings_to_hash = utilities.parsers.settings_to_hash
 local formatters = string.formatters
 
-local report_metapost = logs.reporter("metapost")
+local report_metapost = logs.reporter ("metapost")
+local status_metapost = logs.messenger("metapost")
 
-local starttiming        = statistics.starttiming
-local stoptiming         = statistics.stoptiming
+local starttiming     = statistics.starttiming
+local stoptiming      = statistics.stoptiming
 
-local mplib              = mplib
+local trace_graphic   = false
 
-metapost                 = metapost or { }
-local metapost           = metapost
-local context            = context
+trackers.register("metapost.graphics",
+    function(v) trace_graphic = v end
+);
 
-local setters            = tokens.setters
-local setmacro           = setters.macro
-local implement          = interfaces.implement
+local mplib            = mplib
 
-local v_no               = interfaces.variables.no
+metapost               = metapost or { }
+local metapost         = metapost
+local context          = context
 
-metapost.defaultformat   = "metafun"
-metapost.defaultinstance = "metafun"
-metapost.defaultmethod   = "default"
+local setters          = tokens.setters
+local setmacro         = setters.macro
+local implement        = interfaces.implement
 
-local function setmpsformat(specification)
-    local instance = specification.instance
-    local format   = specification.format
-    local method   = specification.method
-    if not instance or instance == "" then
-        instance = metapost.defaultinstance
-        specification.instance = instance
-    end
-    if not format or format == "" then
-        format = metapost.defaultformat
-        specification.format = format
-    end
-    if not method or method == "" then
-        method = metapost.defaultmethod
-        specification.method = method
-    end
-    specification.mpx = metapost.format(instance,format,method)
-    return specification
-end
+local v_no             = interfaces.variables.no
 
 local extensiondata    = metapost.extensiondata or storage.allocate { }
 metapost.extensiondata = extensiondata
@@ -95,9 +78,6 @@ implement {
     actions   = { metapost.getextensions, context } ,
     arguments = "string"
 }
-
-local report_metapost = logs.reporter ("metapost")
-local status_metapost = logs.messenger("metapost")
 
 local patterns = {
     "meta-imp-%s.mkiv",
@@ -192,7 +172,9 @@ implement {
 -- or just move the scanners to pps
 
 function metapost.graphic(specification)
-    metapost.graphic_base_pass(setmpsformat(specification))
+    metapost.pushformat(specification)
+    metapost.graphic_base_pass(specification)
+    metapost.popformat()
 end
 
 function metapost.startgraphic(t)
@@ -218,8 +200,10 @@ end
 function metapost.stopgraphic(t)
     if t then
         t.data = concat(t.data or { },"\n")
+        if trace_graphic then
+            report_metapost("\n"..t.data.."\n")
+        end
         metapost.graphic(t)
-        t.data = ""
     end
 end
 
@@ -265,8 +249,7 @@ implement {
 }
 
 function metapost.getclippath(specification) -- why not a special instance for this
-    setmpsformat(specification)
-    local mpx = specification.mpx
+    local mpx  = metapost.pushformat(specification)
     local data = specification.data or ""
     if mpx and data ~= "" then
         starttiming(metapost)
@@ -285,7 +268,10 @@ function metapost.getclippath(specification) -- why not a special instance for t
             result = metapost.filterclippath(result)
         end
         stoptiming(metapost)
+        metapost.pushformat()
         return result
+    else
+        metapost.pushformat()
     end
 end
 

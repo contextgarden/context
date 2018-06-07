@@ -128,7 +128,7 @@ picture mfun_gt_picture ;
 
 % this is the old version:
 
-if LUATEXFUNCTIONALITY >= 6789 :
+if mfun_use_one_pass :
 
     def old_graphictext primary t =
         mfun_do_graphic_text(t)

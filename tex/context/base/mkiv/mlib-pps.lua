@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 }
 
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
-local tonumber, type, unpack, next = tonumber, type, unpack, next
+local tonumber, type, unpack, next, select = tonumber, type, unpack, next, select
 local round, sqrt, min, max = math.round, math.sqrt, math.min, math.max
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
@@ -244,7 +244,8 @@ local function preset(t,k)
     return v
 end
 
-local function startjob(plugmode)
+local function startjob(plugmode,kind)
+    insert(stack,top)
     top = {
         textexts   = { },                          -- all boxes, optionally with a different color
         texstrings = { },
@@ -252,9 +253,9 @@ local function startjob(plugmode)
         texdata    = setmetatableindex({},preset), -- references to textexts in order or usage
         plugmode   = plugmode,                     -- some day we can then skip all pre/postscripts
     }
-    insert(stack,top)
     if trace_runs then
-        report_metapost("starting run at level %i",#stack)
+        report_metapost("starting %s run at level %i in %s mode",
+            kind,#stack+1,plugmode and "plug" or "normal")
     end
     return top
 end
@@ -270,10 +271,9 @@ local function stopjob()
             end
         end
         if trace_runs then
-            report_metapost("stopping run at level %i",#stack)
+            report_metapost("stopping run at level %i",#stack+1)
         end
-        remove(stack)
-        top = stack[#stack]
+        top = remove(stack)
         return top
     end
 end
@@ -284,28 +284,49 @@ end
 
 -- end of new
 
-local function settext(box,slot,str)
-    if top then
-     -- if trace_textexts then
-     --     report_textexts("getting text %s from box %s",slot,box)
-     -- end
-        top.textexts[slot] = textakebox(box)
-    end
-end
+local settext, gettext
 
-local function gettext(box,slot)
-    if top then
-     -- maybe check how often referenced
-if LUATEXFUNCTIONALITY >= 6789 then
-        texsetbox(box,top.textexts[slot])
-        top.textexts[slot] = false
-else
-        texsetbox(box,copy_list(top.textexts[slot]))
-end
-     -- if trace_textexts then
-     --     report_textexts("putting text %s in box %s",slot,box)
-     -- end
+if metapost.use_one_pass then
+
+    settext = function(box,slot,str)
+        if top then
+         -- if trace_textexts then
+         --     report_textexts("getting text %s from box %s",slot,box)
+         -- end
+            top.textexts[slot] = textakebox(box)
+        end
     end
+
+    gettext = function(box,slot)
+        if top then
+            texsetbox(box,top.textexts[slot])
+            top.textexts[slot] = false
+         -- if trace_textexts then
+         --     report_textexts("putting text %s in box %s",slot,box)
+         -- end
+        end
+    end
+
+else
+
+    settext = function(box,slot,str)
+        if top then
+         -- if trace_textexts then
+         --     report_textexts("getting text %s from box %s",slot,box)
+         -- end
+            top.textexts[slot] = textakebox(box)
+        end
+    end
+
+    gettext = function(box,slot)
+        if top then
+            texsetbox(box,copy_list(top.textexts[slot]))
+         -- if trace_textexts then
+         --     report_textexts("putting text %s in box %s",slot,box)
+         -- end
+        end
+    end
+
 end
 
 metapost.settext = settext
@@ -561,32 +582,7 @@ local do_begin_fig = "; beginfig(1) ; "
 local do_end_fig   = "; endfig ;"
 local do_safeguard = ";"
 
--- local f_text_data  = formatters["mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"]
---
--- function metapost.textextsdata()
---     local textexts     = top.textexts
---     local collected    = { }
---     local nofcollected = 0
---     for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
---         local texorder = data.texorder
---         for n=1,#texorder do
---             local box = textexts[texorder[n]]
---             if box then
---                 local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
---                 if trace_textexts then
---                     report_textexts("passed data item %s:%s > (%p,%p,%p)",k,n,wd,ht,dp)
---                 end
---                 nofcollected = nofcollected + 1
---                 collected[nofcollected] = f_text_data(n,wd,n,ht,n,dp)
---             else
---                 break
---             end
---         end
---     end
---     return collected
--- end
-
-function metapost.textextsdata()
+function metapost.preparetextextsdata()
     local textexts  = top.textexts
     local collected = { }
     for k, data in sortedhash(top.texdata) do -- sort is nicer in trace
@@ -608,7 +604,7 @@ metapost.intermediate.actions = metapost.intermediate.actions or { }
 
 metapost.method = 1 -- 1:dumb 2:clever 3:nothing
 
-if LUATEXFUNCTIONALITY >= 6789 then
+if metapost.use_one_pass then
 
     metapost.method  = 3
     checking_enabled = false
@@ -640,11 +636,10 @@ local function extrapass()
     if trace_runs then
         report_metapost("second run of job %s, asked figure %a",top.nofruns,top.askedfig)
     end
-    local textexts = metapost.textextsdata()
+    metapost.preparetextextsdata()
     processmetapost(top.mpx, {
         top.wrappit and do_begin_fig or "",
         no_trial_run,
-        textexts and concat(textexts," ;\n") or "",
         top.initializations,
         do_safeguard,
         top.data,
@@ -653,7 +648,7 @@ local function extrapass()
 end
 
 function metapost.graphic_base_pass(specification) -- name will change (see mlib-ctx.lua)
-    local top = startjob(true)
+    local top = startjob(true,"base")
     --
     local mpx             = specification.mpx -- mandate
     local data            = specification.data or ""
@@ -697,7 +692,7 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
         if method == 1 then
             report_metapost("forcing two runs due to library configuration")
         elseif method ~= 2 then
-            report_metapost("ignoring run due to library configuration")
+            report_metapost("ignoring extra run due to library configuration")
         elseif not (done_1 or done_2 or done_3) then
             report_metapost("forcing one run only due to analysis")
         elseif done_1 then
@@ -724,7 +719,7 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
             do_safeguard,
             data,
             wrappit and do_end_fig or "",
-        }, true, nil, not (forced_1 or forced_2 or forced_3), false, askedfig)
+        }, true, nil, not (forced_1 or forced_2 or forced_3), false, askedfig, true)
         if top.intermediate then
             for _, action in next, metapost.intermediate.actions do
                 action()
@@ -751,7 +746,7 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
             do_safeguard,
             data,
             wrappit and do_end_fig or "",
-        }, false, nil, false, false, askedfig)
+        }, false, nil, false, false, askedfig, true)
     end
     context(stopjob)
 end
@@ -759,7 +754,7 @@ end
 -- we overload metapost.process here
 
 function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig, plugmode) -- overloads
-    startjob(plugmode)
+    startjob(plugmode,"process")
     processmetapost(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
     stopjob()
 end
@@ -843,27 +838,23 @@ end
 
 -- -- the new plugin handler -- --
 
-local sequencers          = utilities.sequencers
-local appendgroup         = sequencers.appendgroup
-local appendaction        = sequencers.appendaction
+local sequencers       = utilities.sequencers
+local appendgroup      = sequencers.appendgroup
+local appendaction     = sequencers.appendaction
 
-local resetter            = nil
-local analyzer            = nil
-local processor           = nil
+local resetter         = nil
+local analyzer         = nil
+local processor        = nil
 
-local resetteractions     = sequencers.new { arguments = "t" }
-local analyzeractions     = sequencers.new { arguments = "object,prescript" }
-local processoractions    = sequencers.new { arguments = "object,prescript,before,after" }
+local resetteractions  = sequencers.new { arguments = "t" }
+local analyzeractions  = sequencers.new { arguments = "object,prescript" }
+local processoractions = sequencers.new { arguments = "object,prescript,before,after" }
 
 appendgroup(resetteractions, "system")
 appendgroup(analyzeractions, "system")
 appendgroup(processoractions,"system")
 
 -- later entries come first
-
---~ local scriptsplitter = Cf(Ct("") * (
---~     Cg(C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0)
---~ )^0, rawset)
 
 local scriptsplitter = Ct ( Ct (
     C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0
@@ -873,15 +864,15 @@ local function splitprescript(script)
     local hash = lpegmatch(scriptsplitter,script)
     for i=#hash,1,-1 do
         local h = hash[i]
-if h == "reset" then
-    for k, v in next, hash do
-        if type(k) ~= "number" then
-            hash[k] = nil
+        if h == "reset" then
+            for k, v in next, hash do
+                if type(k) ~= "number" then
+                    hash[k] = nil
+                end
+            end
+        else
+            hash[h[1]] = h[2]
         end
-    end
-else
-        hash[h[1]] = h[2]
-end
     end
     if trace_scripts then
         report_scripts(table.serialize(hash,"prescript"))
@@ -1011,18 +1002,25 @@ local tx_reset, tx_analyze, tx_process  do
     ----- pat = tsplitat(":")
     local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
 
-    local f_gray_yes = formatters["s=%F,a=%F,t=%F"]
-    local f_gray_nop = formatters["s=%F"]
-    local f_rgb_yes  = formatters["r=%F,g=%F,b=%F,a=%F,t=%F"]
-    local f_rgb_nop  = formatters["r=%F,g=%F,b=%F"]
-    local f_cmyk_yes = formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"]
-    local f_cmyk_nop = formatters["c=%F,m=%F,y=%F,k=%F"]
+--     local f_gray_yes = formatters["s=%F,a=%F,t=%F"]
+--     local f_gray_nop = formatters["s=%F"]
+--     local f_rgb_yes  = formatters["r=%F,g=%F,b=%F,a=%F,t=%F"]
+--     local f_rgb_nop  = formatters["r=%F,g=%F,b=%F"]
+--     local f_cmyk_yes = formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"]
+--     local f_cmyk_nop = formatters["c=%F,m=%F,y=%F,k=%F"]
 
-    local ctx_MPLIBsetNtext = context.MPLIBsetNtext
-    local ctx_MPLIBsetCtext = context.MPLIBsetCtext
-    local ctx_MPLIBsettext  = context.MPLIBsettext
+    local f_gray_yes = formatters["s=%n,a=%n,t=%n"]
+    local f_gray_nop = formatters["s=%n"]
+    local f_rgb_yes  = formatters["r=%n,g=%n,b=%n,a=%n,t=%n"]
+    local f_rgb_nop  = formatters["r=%n,g=%n,b=%n"]
+    local f_cmyk_yes = formatters["c=%n,m=%n,y=%n,k=%n,a=%n,t=%n"]
+    local f_cmyk_nop = formatters["c=%n,m=%n,y=%n,k=%n"]
 
-    if LUATEXFUNCTIONALITY >= 6789 then
+    if metapost.use_one_pass then
+
+        local ctx_MPLIBsetNtext = context.MPLIBsetNtextX
+        local ctx_MPLIBsetCtext = context.MPLIBsetCtextX
+        local ctx_MPLIBsettext  = context.MPLIBsettextX
 
         local bp = number.dimenfactors.bp
 
@@ -1031,6 +1029,36 @@ local tx_reset, tx_analyze, tx_process  do
         local mp_c      = nil
         local mp_a      = nil
         local mp_t      = nil
+
+        local function processtext()
+            local mp_text = top.texstrings[mp_index]
+            if not mp_text then
+                report_textexts("missing text for index %a",mp_index)
+            elseif not mp_c then
+                ctx_MPLIBsetNtext(mp_target,mp_text)
+            elseif #mp_c == 1 then
+                if mp_a and mp_t then
+                    ctx_MPLIBsetCtext(mp_target,f_gray_yes(mp_c[1],mp_a,mp_t),mp_text)
+                else
+                    ctx_MPLIBsetCtext(mp_target,f_gray_nop(mp_c[1]),mp_text)
+                end
+            elseif #mp_c == 3 then
+                if mp_a and mp_t then
+                    ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
+                else
+                    ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3]),mp_text)
+                end
+            elseif #mp_c == 4 then
+                if mp_a and mp_t then
+                    ctx_MPLIBsetCtext(mp_target,f_cmyk_yes(mp_c[1],mp_c[2],mp_c[3],mp_c[4],mp_a,mp_t),mp_text)
+                else
+                    ctx_MPLIBsetCtext(mp_target,f_cmyk_nop(mp_c[1],mp_c[2],mp_c[3],mp_c[4]),mp_text)
+                end
+            else
+                -- can't happen
+                ctx_MPLIBsetNtext(mp_target,mp_text)
+            end
+        end
 
         function mp.SomeText(index,str)
             mp_target = index
@@ -1060,35 +1088,7 @@ local tx_reset, tx_analyze, tx_process  do
 
         interfaces.implement {
             name    = "mptexttoks",
-            actions = function()
-                local mp_text = top.texstrings[mp_index]
-                if not mp_text then
-                    report_textexts("missing text for index %a",mp_index)
-                elseif not mp_c then
-                    ctx_MPLIBsetNtext(mp_target,mp_text)
-                elseif #mp_c == 1 then
-                    if mp_a and mp_t then
-                        ctx_MPLIBsetCtext(mp_target,f_gray_yes(mp_c[1],mp_a,mp_t),mp_text)
-                    else
-                        ctx_MPLIBsetCtext(mp_target,f_gray_nop(mp_c[1]),mp_text)
-                    end
-                elseif #mp_c == 3 then
-                    if mp_a and mp_t then
-                        ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
-                    else
-                        ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3]),mp_text)
-                    end
-                elseif #mp_c == 4 then
-                    if mp_a and mp_t then
-                        ctx_MPLIBsetCtext(mp_target,f_cmyk_yes(mp_c[1],mp_c[2],mp_c[3],mp_c[4],mp_a,mp_t),mp_text)
-                    else
-                        ctx_MPLIBsetCtext(mp_target,f_cmyk_nop(mp_c[1],mp_c[2],mp_c[3],mp_c[4]),mp_text)
-                    end
-                else
-                    -- can't happen
-                    ctx_MPLIBsetNtext(mp_target,mp_text)
-                end
-            end,
+            actions = processtext,
         }
 
         tx_reset = function()
@@ -1160,6 +1160,10 @@ local tx_reset, tx_analyze, tx_process  do
         end
 
     else
+
+        local ctx_MPLIBsetNtext = context.MPLIBsetNtext
+        local ctx_MPLIBsetCtext = context.MPLIBsetCtext
+        local ctx_MPLIBsettext  = context.MPLIBsettext
 
         tx_reset = function()
             if top then
@@ -1342,7 +1346,7 @@ local gt_reset, gt_analyze, gt_process do
 
     local graphics = { }
 
-    if LUATEXFUNCTIONALITY >= 6789 then
+    if metapost.use_one_pass then
 
         local mp_index = 0
         local mp_str   = ""
@@ -1707,10 +1711,6 @@ end
 
 -- groups
 
-local types = {
-    isolated
-}
-
 local function gr_process(object,prescript,before,after)
     local gr_state = prescript.gr_state
     if not gr_state then
@@ -1742,15 +1742,15 @@ end
 
 -- outlines
 
-local ot_reset, ot_analyze, ot_process, outlinetexts do
+local ot_reset, ot_analyze, ot_process do
 
-    outlinetexts = { }
+    local outlinetexts = { } -- also in top data
 
     local function ot_reset()
         outlinetexts = { }
     end
 
-    if LUATEXFUNCTIONALITY >= 6789 then
+    if metapost.use_one_pass then
 
         local mp_index = 0
         local mp_kind  = ""
@@ -1787,23 +1787,23 @@ local ot_reset, ot_analyze, ot_process, outlinetexts do
 
     end
 
-end
-
-implement {
-    name      = "MPLIBconvertoutlinetext",
-    arguments = { "integer", "string", "integer" },
-    actions   = function(index,kind,box)
-        local boxtomp = fonts.metapost.boxtomp
-        if boxtomp then
-            outlinetexts[index] = boxtomp(box,kind)
-        else
-            outlinetexts[index] = ""
+    implement {
+        name      = "MPLIBconvertoutlinetext",
+        arguments = { "integer", "string", "integer" },
+        actions   = function(index,kind,box)
+            local boxtomp = fonts.metapost.boxtomp
+            if boxtomp then
+                outlinetexts[index] = boxtomp(box,kind)
+            else
+                outlinetexts[index] = ""
+            end
         end
-    end
-}
+    }
 
-function mp.get_outline_text(index) -- maybe we need a more private namespace
-    mp.print(outlinetexts[index] or "draw origin;")
+    function mp.get_outline_text(index) -- maybe we need a more private namespace
+        mp.print(outlinetexts[index] or "draw origin;")
+    end
+
 end
 
 -- definitions

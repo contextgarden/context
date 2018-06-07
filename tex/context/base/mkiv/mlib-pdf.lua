@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 
 -- maybe %s is better than %f
 
-local format, concat, gsub = string.format, table.concat, string.gsub
+local gsub = string.gsub
+local concat, insert, remove = table.concat, table.insert, table.remove
 local abs, sqrt, round = math.abs, math.sqrt, math.round
 local setmetatable, rawset, tostring, tonumber, type = setmetatable, rawset, tostring, tonumber, type
 local P, S, C, Ct, Cc, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Carg
@@ -102,14 +103,14 @@ local function getobjects(result,figure,index)
     end
 end
 
-function metapost.convert(result, trialrun, flusher, multipass, askedfig)
+function metapost.convert(result, trialrun, flusher, multipass, askedfig, incontext)
     if trialrun then
         local multipassindeed = metapost.parse(result,askedfig)
         if multipass and not multipassindeed and metapost.optimize then
             if save_table then
                 table.save(save_table,metapost.totable(result,1)) -- direct
             end
-            metapost.flush(result,flusher,askedfig) -- saves a run
+            metapost.flush(result,flusher,askedfig,incontext) -- saves a run
         else
             return false
         end
@@ -117,7 +118,7 @@ function metapost.convert(result, trialrun, flusher, multipass, askedfig)
         if save_table then
             table.save(save_table,metapost.totable(result,1)) -- direct
         end
-        metapost.flush(result,flusher,askedfig)
+        metapost.flush(result,flusher,askedfig,incontext)
     end
     return true -- done
 end
@@ -374,7 +375,9 @@ function metapost.processspecial(str)
     end
 end
 
-local function setproperties(figure)
+local stack = { }
+
+local function pushproperties(figure)
     local boundingbox = figure:boundingbox()
     local properties = {
         llx    = boundingbox[1],
@@ -388,15 +391,20 @@ local function setproperties(figure)
         italic = figure:italcorr(),
         number = figure:charcode() or 0,
     }
+    insert(stack,properties)
     metapost.properties = properties
     return properties
+end
+
+local function popproperties()
+    metapost.properties = remove(stack)
 end
 
 local function nocomment() end
 
 metapost.comment = nocomment
 
-function metapost.flush(result,flusher,askedfig)
+function metapost.flush(result,flusher,askedfig,incontext)
     if result then
         local figures = result.fig
         if figures then
@@ -413,7 +421,7 @@ function metapost.flush(result,flusher,askedfig)
             metapost.comment = flusher.comment or nocomment
             for index=1,#figures do
                 local figure = figures[index]
-                local properties = setproperties(figure)
+                local properties = pushproperties(figure)
                 if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
                     local objects = getobjects(result,figure,index)
                     local result = { }
@@ -442,7 +450,7 @@ function metapost.flush(result,flusher,askedfig)
                                     if objecttype == "text" then
                                         result[#result+1] = "q"
                                         local ot = object.transform -- 3,4,5,6,1,2
-                                        result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: formatters["%F %F m %F %F %F %F 0 0 cm"](unpack(ot))
+                                        result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2])
                                         flushfigure(result) -- flush accumulated literals
                                         result = { }
                                         textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
@@ -637,13 +645,19 @@ function metapost.flush(result,flusher,askedfig)
                             flushfigure(result)
                         end
                         startfigure(properties.number,llx,lly,urx,ury,"begin",figure)
-                        context(function() processfigure() end)
+                        if incontext then
+                            context(function() processfigure() end)
+                        else
+                            processfigure()
+                        end
                         stopfigure("end")
+
                     end
                     if askedfig ~= "all" then
                         break
                     end
                 end
+                popproperties()
             end
             metapost.comment = nocomment
             resetplugins(result) -- we should move the colorinitializer here
@@ -659,7 +673,7 @@ function metapost.parse(result,askedfig)
             local analyzeplugins = metapost.analyzeplugins -- each object
             for index=1,#figures do
                 local figure = figures[index]
-                local properties = setproperties(figure)
+                local properties = pushproperties(figure)
                 if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
                     local objects = getobjects(result,figure,index)
                     if objects then
@@ -673,6 +687,7 @@ function metapost.parse(result,askedfig)
                         break
                     end
                 end
+                popproperties()
             end
             return multipass
         end

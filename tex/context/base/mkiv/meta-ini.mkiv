@@ -211,6 +211,7 @@
 \def\currentMPformat     {\currentMPinstance}
 
 \defineMPinstance[metafun]    [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[minifun]    [\s!format=minifun]
 \defineMPinstance[extrafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 \defineMPinstance[lessfun]    [\s!format=metafun]
 \defineMPinstance[doublefun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
@@ -275,11 +276,13 @@
    \endgroup}
 
 \def\meta_process_graphic_start
-  {\setbox\b_meta_graphic\hpack\bgroup}
+  {\pushMPboundingbox
+   \setbox\b_meta_graphic\hpack\bgroup}
 
 \def\meta_process_graphic_stop
   {\egroup
-   \meta_place_graphic}
+   \meta_place_graphic
+   \popMPboundingbox}
 
 \unexpanded\def\meta_process_graphic_instance#1%
   {\edef\currentMPinstance{#1}%
@@ -785,11 +788,28 @@
 \unexpanded\def\useMPgraphic
   {\dodoublegroupempty\meta_use_graphic}
 
+% \def\meta_use_graphic#1#2%
+%   {\meta_begin_graphic_group{#1}%
+%   %\doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
+%    \doifsomething{#2}{\setupMPvariables[#1][#2]}%
+%    \csname\??mpgraphic#1\endcsname\empty
+%    \meta_end_graphic_group}
+
 \def\meta_use_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
-%    \doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
-   \doifsomething{#2}{\setupMPvariables[#1][#2]}%
-   \csname\??mpgraphic#1\endcsname\empty
+   \ifcsname\??mpgraphic#1\endcsname
+     \edef\usedMPgraphicname{#1}%
+   \else\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
+     \let\usedMPgraphicname\currentMPgraphicname
+   \else
+     \let\usedMPgraphicname\empty
+   \fi\fi
+   \ifx\usedMPgraphicname\empty
+     % message
+   \else
+     \doifsomething{#2}{\setupMPvariables[\usedMPgraphicname][#2]}%
+     \csname\??mpgraphic\usedMPgraphicname\endcsname
+   \fi
    \meta_end_graphic_group}
 
 \let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed

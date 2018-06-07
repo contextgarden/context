@@ -47,6 +47,18 @@
    \global\MPurx   \zeropoint
    \global\MPury   \zeropoint}
 
+\let\popMPboundingbox\relax
+
+\unexpanded\def\pushMPboundingbox
+  {\edef\popMPboundingbox
+     {\global\MPwidth \the\MPwidth
+      \global\MPheight\the\MPheight
+      \global\MPllx   \the\MPllx
+      \global\MPlly   \the\MPlly
+      \global\MPurx   \the\MPurx
+      \global\MPury   \the\MPury
+      \relax}}
+
 \unexpanded\def\repositionMPboxindeed
   {\setbox\MPbox\hpack\bgroup
      \kern-\MPllx
@@ -76,15 +88,15 @@
    \wd\MPbox\MPwidth
    \ht\MPbox\MPheight}
 
-\unexpanded\def\MPtextext#1#2#3#4#5% beware: we use a different method now (see mlib-pps)
-  {\begingroup
-   \setbox\MPbox\hbox{\font\temp=#1\space at #2\onebasepoint \let\c\char \temp #3}% text
-   \MPllx-#4\onebasepoint
-   \MPlly-#5\onebasepoint
-   \repositionMPbox
-   \smashbox\MPbox
-   \box\MPbox
-   \endgroup}
+% \unexpanded\def\MPtextext#1#2#3#4#5% beware: we use a different method now (see mlib-pps)
+%   {\begingroup
+%    \setbox\MPbox\hbox{\font\temp=#1\space at #2\onebasepoint \let\c\char \temp #3}% text
+%    \MPllx-#4\onebasepoint
+%    \MPlly-#5\onebasepoint
+%    \repositionMPbox
+%    \smashbox\MPbox
+%    \box\MPbox
+%    \endgroup}
 
 % MPLIB specific:
 

@@ -12,9 +12,9 @@ if not modules then modules = { } end modules ['mlib-lua'] = {
 
 local type, tostring, select, loadstring = type, tostring, select, loadstring
 local find, match, gsub, gmatch = string.find, string.match, string.gsub, string.gmatch
+local concat, insert, remove = table.concat, table.insert, table.remove
 
 local formatters   = string.formatters
-local concat       = table.concat
 local lpegmatch    = lpeg.match
 local lpegpatterns = lpeg.patterns
 
@@ -31,7 +31,10 @@ local be_tolerant    = true   directives.register("metapost.lua.tolerant",functi
 mp = mp or { } -- system namespace
 MP = MP or { } -- user namespace
 
-local buffer, n, max = { }, 0, 10 -- we reuse upto max
+local buffer  = { }
+local n       = 0
+local max     = 10 -- we reuse upto max
+local nesting = 0
 
 function mp._f_()
     if trace_enabled and trace_luarun then
@@ -40,7 +43,7 @@ function mp._f_()
             buffer = { }
         end
         n = 0
-        report_luarun("data: %s",result)
+        report_luarun("%i: data: %s",nesting,result)
         return result
     else
         if n == 0 then
@@ -62,11 +65,17 @@ end
 
 local f_code         = formatters["%s return mp._f_()"]
 
-local f_numeric      = formatters["%.16f"]
 local f_integer      = formatters["%i"]
-local f_pair         = formatters["(%.16f,%.16f)"]
-local f_triplet      = formatters["(%.16f,%.16f,%.16f)"]
-local f_quadruple    = formatters["(%.16f,%.16f,%.16f,%.16f)"]
+
+-- local f_numeric      = formatters["%.16f"]
+-- local f_pair         = formatters["(%.16f,%.16f)"]
+-- local f_triplet      = formatters["(%.16f,%.16f,%.16f)"]
+-- local f_quadruple    = formatters["(%.16f,%.16f,%.16f,%.16f)"]
+
+local f_numeric      = formatters["%n"]
+local f_pair         = formatters["(%n,%n)"]
+local f_triplet      = formatters["(%n,%n,%n)"]
+local f_quadruple    = formatters["(%n,%n,%n,%n)"]
 
 local f_points       = formatters["%p"]
 local f_pair_pt      = formatters["(%p,%p)"]
@@ -383,9 +392,11 @@ end
 -- end
 
 function metapost.runscript(code)
+    nesting = nesting + 1
+
     local trace = trace_enabled and trace_luarun
     if trace then
-        report_luarun("code: %s",code)
+        report_luarun("%i: code: %s",nesting,code)
     end
     runs = runs + 1
     local f = loadstring(f_code(code))
@@ -393,6 +404,8 @@ function metapost.runscript(code)
         f = loadstring(code)
     end
     if f then
+        local _buffer_, _n_ = buffer, n
+        buffer, n = { }, 0
         local result = f()
         if result then
             local t = type(result)
@@ -402,53 +415,54 @@ function metapost.runscript(code)
                 result = tostring(result)
             end
             if trace then
-                report_luarun("result: %s",result)
+                if #result == 0 then
+                    report_luarun("%i: no result",nesting)
+                else
+                    report_luarun("%i: result: %s",nesting,result)
+                end
             end
+            buffer, n = _buffer_, _n_
+            nesting = nesting - 1
             return result
         elseif trace then
-            report_luarun("no result")
+            report_luarun("%i: no result",nesting)
         end
+        buffer, n = _buffer_, _n_
     else
-        report_luarun("no result, invalid code: %s",code)
+        report_luarun("%i: no result, invalid code: %s",nesting,code)
     end
+
+    nesting = nesting - 1
     return ""
 end
 
--- function metapost.initializescriptrunner(mpx)
---     mp.numeric = function(s) return mpx:get_numeric(s) end
---     mp.string  = function(s) return mpx:get_string (s) end
---     mp.boolean = function(s) return mpx:get_boolean(s) end
---     mp.number  = mp.numeric
--- end
+do
 
-local get_numeric = mplib.get_numeric
-local get_string  = mplib.get_string
-local get_boolean = mplib.get_boolean
-local get_number  = get_numeric
+    local get_numeric = mplib.get_numeric
+    local get_string  = mplib.get_string
+    local get_boolean = mplib.get_boolean
+    local get_number  = get_numeric
 
--- function metapost.initializescriptrunner(mpx)
---     mp.numeric = function(s) return get_numeric(mpx,s) end
---     mp.string  = function(s) return get_string (mpx,s) end
---     mp.boolean = function(s) return get_boolean(mpx,s) end
---     mp.number  = mp.numeric
--- end
+    local currentmpx   = nil
+    local stack        = { }
+    local getters      = { }
 
-local currentmpx = nil
+    getters.numeric = function(s) return get_numeric(currentmpx,s) end
+    getters.string  = function(s) return get_string (currentmpx,s) end
+    getters.boolean = function(s) return get_boolean(currentmpx,s) end
+    getters.number  = mp.numeric
 
-local get = { }
-mp.get    = get
-
-get.numeric = function(s) return get_numeric(currentmpx,s) end
-get.string  = function(s) return get_string (currentmpx,s) end
-get.boolean = function(s) return get_boolean(currentmpx,s) end
-get.number  = mp.numeric
-
-function metapost.initializescriptrunner(mpx,trialrun)
-    currentmpx = mpx
-    if trace_luarun then
-        report_luarun("type of run: %s", trialrun and "trial" or "final")
+    function metapost.pushscriptrunner(mpx)
+        insert(stack,mpx)
+        currentmpx = mpx
     end
- -- trace_enabled = not trialrun blocks too much
+
+    function metapost.popscriptrunner()
+        currentmpx = remove(stack,mpx)
+    end
+
+    mp.get = getters
+
 end
 
 -- texts:

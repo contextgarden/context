@@ -6147,7 +6147,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 40074, stripped down to: 22776
+-- original size: 40725, stripped down to: 23032
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6189,13 +6189,35 @@ local endofstring=patterns.endofstring
 local whitespace=patterns.whitespace
 local spacer=patterns.spacer
 local spaceortab=patterns.spaceortab
+local ptf=1/65536
+local bpf=(7200/7227)/65536
 local function points(n)
+  if n==0 then
+    return "0pt"
+  end
   n=tonumber(n)
-  return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+  if not n or n==0 then
+    return "0pt"
+  end
+  n=n*ptf
+  if n%1==0 then
+    return format("%ipt",n)
+  end
+  return lpegmatch(stripper,format("%.5fpt",n))
 end
 local function basepoints(n)
+  if n==0 then
+    return "0pt"
+  end
   n=tonumber(n)
-  return (not n or n==0) and "0bp" or lpegmatch(stripper,format("%.5fbp",n*(7200/7227)/65536))
+  if not n or n==0 then
+    return "0pt"
+  end
+  n=n*bpf
+  if n%1==0 then
+    return format("%ibp",n)
+  end
+  return lpegmatch(stripper,format("%.5fbp",n))
 end
 number.points=points
 number.basepoints=basepoints
@@ -21591,8 +21613,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 887178
--- stripped bytes    : 320261
+-- original bytes    : 887829
+-- stripped bytes    : 320656
 
 -- end library merge
 

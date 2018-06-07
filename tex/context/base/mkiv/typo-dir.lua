@@ -45,8 +45,9 @@ local band                  = bit32.band
 local texsetattribute       = tex.setattribute
 local unsetvalue            = attributes.unsetvalue
 
-local getnext               = nodes.getnext
-local getattr               = nodes.getattr
+local nuts                  = nodes.nuts
+local getnext               = nuts.getnext
+local getattr               = nuts.getattr
 
 local enableaction          = nodes.tasks.enableaction
 local tracers               = nodes.tracers

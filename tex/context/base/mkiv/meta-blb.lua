@@ -281,7 +281,7 @@ interfaces.implement {
 
 local tb_reset, tb_analyze, tb_process  do
 
-    if LUATEXFUNCTIONALITY >= 6789 then
+    if metapost.use_one_pass then
 
         local mp_category = 0
         local mp_str      = ""

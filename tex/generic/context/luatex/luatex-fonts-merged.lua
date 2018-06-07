@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/06/18 19:22:34
+-- merge date  : 06/07/18 22:40:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -3814,13 +3814,35 @@ local endofstring=patterns.endofstring
 local whitespace=patterns.whitespace
 local spacer=patterns.spacer
 local spaceortab=patterns.spaceortab
+local ptf=1/65536
+local bpf=(7200/7227)/65536
 local function points(n)
+  if n==0 then
+    return "0pt"
+  end
   n=tonumber(n)
-  return (not n or n==0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+  if not n or n==0 then
+    return "0pt"
+  end
+  n=n*ptf
+  if n%1==0 then
+    return format("%ipt",n)
+  end
+  return lpegmatch(stripper,format("%.5fpt",n))
 end
 local function basepoints(n)
+  if n==0 then
+    return "0pt"
+  end
   n=tonumber(n)
-  return (not n or n==0) and "0bp" or lpegmatch(stripper,format("%.5fbp",n*(7200/7227)/65536))
+  if not n or n==0 then
+    return "0pt"
+  end
+  n=n*bpf
+  if n%1==0 then
+    return format("%ibp",n)
+  end
+  return lpegmatch(stripper,format("%.5fbp",n))
 end
 number.points=points
 number.basepoints=basepoints
