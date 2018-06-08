@@ -2583,7 +2583,7 @@ function readers.gdef(f,fontdata,specification)
             local format = readushort(f)
             if format == 1 then
                 local nofsets = readushort(f)
-                local sets    = readcardinal(f,nofsets,ulong)
+                local sets    = readcardinaltable(f,nofsets,ulong)
                 for i=1,nofsets do
                     local offset = sets[i]
                     if offset ~= 0 then

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/07/18 22:40:31
+-- merge date  : 06/08/18 09:31:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -18276,7 +18276,7 @@ function readers.gdef(f,fontdata,specification)
       local format=readushort(f)
       if format==1 then
         local nofsets=readushort(f)
-        local sets=readcardinal(f,nofsets,ulong)
+        local sets=readcardinaltable(f,nofsets,ulong)
         for i=1,nofsets do
           local offset=sets[i]
           if offset~=0 then
