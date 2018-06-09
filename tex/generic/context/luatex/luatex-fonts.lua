@@ -275,7 +275,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
 
         -- We support xetex compatible specifiers (plain/latex only).
 
-        loadmodule('font-xtx.lua')
+        loadmodule('luatex-fonts-def.lua') -- was font-xtx.lua
 
         -- Here come some additional features.
 
@@ -289,7 +289,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         -- We need to plug into a callback and the following module implements the
         -- handlers. Actual plugging in happens later.
 
-        loadmodule('font-gbn.lua')
+        loadmodule('luatex-fonts-gbn.lua')
 
     end
 

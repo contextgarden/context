@@ -180,6 +180,8 @@ extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 
 boolean mfun_onetime_textext ; mfun_onetime_textext := false ;
 
+def notcached = withprescript "tx_cache=no" enddef ;
+
 if mfun_use_one_pass :
 
     % todo: onetime

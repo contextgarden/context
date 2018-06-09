@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/08/18 09:31:24
+-- merge date  : 06/09/18 14:30:08
 
 do -- begin closure to overcome local limits and interference
 
@@ -32982,11 +32982,13 @@ local loadedfonts=constructors.loadedfonts
 local designsizes=constructors.designsizes
 local resolvefile=fontgoodies and fontgoodies.filenames and fontgoodies.filenames.resolve or function(s) return s end
 local splitter,splitspecifiers=nil,"" 
-local P,C,S,Cc=lpeg.P,lpeg.C,lpeg.S,lpeg.Cc
+local P,C,S,Cc,Cs=lpeg.P,lpeg.C,lpeg.S,lpeg.Cc,lpeg.Cs
 local left=P("(")
 local right=P(")")
 local colon=P(":")
 local space=P(" ")
+local lbrace=P("{")
+local rbrace=P("}")
 definers.defaultlookup="file"
 local prefixpattern=P(false)
 local function addspecifier(symbol)
@@ -32995,7 +32997,7 @@ local function addspecifier(symbol)
   local lookup=C(prefixpattern)*colon
   local sub=left*C(P(1-left-right-method)^1)*right
   local specification=C(method)*C(P(1)^1)
-  local name=C((1-sub-specification)^1)
+  local name=Cs((lbrace/"")*(1-rbrace)^1*(rbrace/"")+(1-sub-specification)^1)
   splitter=P((lookup+Cc(""))*name*(sub+Cc(""))*(specification+Cc("")))
 end
 local function addlookup(str,default)
@@ -33376,15 +33378,15 @@ local function iscrap (s)  list.crap=string.lower(s) end
 local function iskey (k,v) list[k]=v        end
 local function istrue (s)  list[s]=true      end
 local function isfalse(s)  list[s]=false      end
-local P,S,R,C=lpeg.P,lpeg.S,lpeg.R,lpeg.C
+local P,S,R,C,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cs
 local spaces=P(" ")^0
-local namespec=(1-S("/:("))^0 
+local namespec=Cs((P("{")/"")*(1-S("}"))^0*(P("}")/"")+(1-S("/:("))^0)
 local crapspec=spaces*P("/")*(((1-P(":"))^0)/iscrap)*spaces
 local filename_1=P("file:")/isfile*(namespec/thename)
 local filename_2=P("[")*P(true)/isname*(((1-P("]"))^0)/thename)*P("]")
 local fontname_1=P("name:")/isname*(namespec/thename)
 local fontname_2=P(true)/issome*(namespec/thename)
-local sometext=(R("az","AZ","09")+S("+-.{}"))^1
+local sometext=(P("{")/"")*(1-P("}"))^0*(P("}")/"")+(R("az","AZ","09")+S("+-."))^1
 local truevalue=P("+")*spaces*(sometext/istrue)
 local falsevalue=P("-")*spaces*(sometext/isfalse)
 local keyvalue=(C(sometext)*spaces*P("=")*spaces*C(sometext))/iskey
@@ -36376,7 +36378,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-gbn']={
+if not modules then modules={} end modules ['luatex-fonts-gbn']={
   version=1.001,
   comment="companion to luatex-*.tex",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",

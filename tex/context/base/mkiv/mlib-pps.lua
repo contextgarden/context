@@ -1002,12 +1002,12 @@ local tx_reset, tx_analyze, tx_process  do
     ----- pat = tsplitat(":")
     local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
 
---     local f_gray_yes = formatters["s=%F,a=%F,t=%F"]
---     local f_gray_nop = formatters["s=%F"]
---     local f_rgb_yes  = formatters["r=%F,g=%F,b=%F,a=%F,t=%F"]
---     local f_rgb_nop  = formatters["r=%F,g=%F,b=%F"]
---     local f_cmyk_yes = formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"]
---     local f_cmyk_nop = formatters["c=%F,m=%F,y=%F,k=%F"]
+ -- local f_gray_yes = formatters["s=%F,a=%F,t=%F"]
+ -- local f_gray_nop = formatters["s=%F"]
+ -- local f_rgb_yes  = formatters["r=%F,g=%F,b=%F,a=%F,t=%F"]
+ -- local f_rgb_nop  = formatters["r=%F,g=%F,b=%F"]
+ -- local f_cmyk_yes = formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"]
+ -- local f_cmyk_nop = formatters["c=%F,m=%F,y=%F,k=%F"]
 
     local f_gray_yes = formatters["s=%n,a=%n,t=%n"]
     local f_gray_nop = formatters["s=%n"]
@@ -1116,18 +1116,25 @@ local tx_reset, tx_analyze, tx_process  do
                 mp_a = tonumber(prescript.tr_alternative)
                 mp_t = tonumber(prescript.tr_transparency)
                 --
-                local mp_text = top.texstrings[mp_index]
-                local hash = fmt(mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
-                local box  = data.texhash[hash]
                 mp_index  = index
                 mp_target = top.texlast - 1
                 top.texlast = mp_target
-                if box then
-                    box = copy_list(box)
-                else
+                --
+                local mp_text = top.texstrings[mp_index]
+                local box
+                if prescript.tx_cache == "no" then
                     tex.runtoks("mptexttoks")
                     box = textakebox("mptextbox")
-                    data.texhash[hash] = box
+                else
+                    local hash = fmt(mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
+                    box = data.texhash[hash]
+                    if box then
+                        box = copy_list(box)
+                    else
+                        tex.runtoks("mptexttoks")
+                        box = textakebox("mptextbox")
+                        data.texhash[hash] = box
+                    end
                 end
                 top.textexts[mp_target] = box
                 --

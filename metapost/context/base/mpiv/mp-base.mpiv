@@ -250,7 +250,7 @@ vardef whatever =
     ?
 enddef ;
 
-% unary operators
+% unary operators (with patched round)
 
 let abs = length ;
 
@@ -258,7 +258,14 @@ vardef round primary u =
     if numeric u :
         floor(u+.5)
     elseif pair u :
-        (round xpart u, round ypart u)
+        (floor(xpart u+.5), floor(ypart u+.5))
+    elseif path u :
+        % added by HH
+        for i=0 upto length u-1 :
+            round(point i of u) ..
+            controls round(postcontrol i of u) and round(precontrol i+1 of u) ..
+        endfor
+        if cycle u : cycle else : point infinity of u fi
     else :
         u
     fi

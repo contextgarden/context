@@ -38,16 +38,17 @@ local function iskey  (k,v) list[k]     = v               end
 local function istrue (s)   list[s]     = true            end
 local function isfalse(s)   list[s]     = false           end
 
-local P, S, R, C = lpeg.P, lpeg.S, lpeg.R, lpeg.C
+local P, S, R, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs
 
 local spaces     = P(" ")^0
-local namespec   = (1-S("/:("))^0 -- was: (1-S("/: ("))^0
+local namespec   = Cs((P("{")/"") * (1-S("}"))^0 * (P("}")/"") + (1-S("/:("))^0)
 local crapspec   = spaces * P("/") * (((1-P(":"))^0)/iscrap) * spaces
 local filename_1 = P("file:")/isfile * (namespec/thename)
 local filename_2 = P("[") * P(true)/isname * (((1-P("]"))^0)/thename) * P("]")
 local fontname_1 = P("name:")/isname * (namespec/thename)
 local fontname_2 = P(true)/issome * (namespec/thename)
-local sometext   = (R("az","AZ","09") + S("+-.{}"))^1
+----- sometext   = (R("az","AZ","09") + S("+-.{}"))^1
+local sometext   = (P("{")/"")*(1-P("}"))^0*(P("}")/"") + (R("az","AZ","09")+S("+-."))^1
 local truevalue  = P("+") * spaces * (sometext/istrue)
 local falsevalue = P("-") * spaces * (sometext/isfalse)
 local keyvalue   = (C(sometext) * spaces * P("=") * spaces * C(sometext))/iskey

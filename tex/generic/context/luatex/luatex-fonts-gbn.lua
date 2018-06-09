@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-gbn'] = {
+if not modules then modules = { } end modules ['luatex-fonts-gbn'] = {
     version   = 1.001,
     comment   = "companion to luatex-*.tex",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

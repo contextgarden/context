@@ -64,6 +64,7 @@ return {
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal", "colordecimalslist",
         "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox", "istextext",
+        "notcached",
         "verbatim",
         "thelabel", "label",
         "autoalign",

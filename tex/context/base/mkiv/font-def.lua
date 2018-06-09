@@ -82,12 +82,14 @@ and prepares a table that will move along as we proceed.</p>
 
 local splitter, splitspecifiers = nil, "" -- not so nice
 
-local P, C, S, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc
+local P, C, S, Cc, Cs = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.Cs
 
-local left  = P("(")
-local right = P(")")
-local colon = P(":")
-local space = P(" ")
+local left   = P("(")
+local right  = P(")")
+local colon  = P(":")
+local space  = P(" ")
+local lbrace = P("{")
+local rbrace = P("}")
 
 definers.defaultlookup = "file"
 
@@ -99,7 +101,7 @@ local function addspecifier(symbol)
     local lookup        = C(prefixpattern) * colon
     local sub           = left * C(P(1-left-right-method)^1) * right
     local specification = C(method) * C(P(1)^1)
-    local name          = C((1-sub-specification)^1)
+    local name          = Cs((lbrace/"") * (1-rbrace)^1 * (rbrace/"") + (1-sub-specification)^1)
     splitter = P((lookup + Cc("")) * name * (sub + Cc("")) * (specification + Cc("")))
 end
 

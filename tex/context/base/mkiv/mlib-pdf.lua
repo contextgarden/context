@@ -48,17 +48,29 @@ local experiment      = true -- uses context(node) that already does delayed nod
 local savedliterals   = nil  -- needs checking
 local mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral)) -- pdfliteral.mode  = 1
 
-local f_f  = formatters["%F"]
+-- we can have "withaccuracy 3" and then change formatters on the fly
 
-local f_m  = formatters["%F %F m"]
-local f_c  = formatters["%F %F %F %F %F %F c"]
-local f_l  = formatters["%F %F l"]
-local f_cm = formatters["%F %F %F %F %F %F cm"]
-local f_M  = formatters["%F M"]
+-- local f_f  = formatters["%F"]
+-- local f_m  = formatters["%F %F m"]
+-- local f_c  = formatters["%F %F %F %F %F %F c"]
+-- local f_l  = formatters["%F %F l"]
+-- local f_cm = formatters["%F %F %F %F %F %F cm"]
+-- local f_M  = formatters["%F M"]
+-- local f_j  = formatters["%i j"]
+-- local f_J  = formatters["%i J"]
+-- local f_d  = formatters["[%s] %F d"]
+-- local f_w  = formatters["%F w"]
+
+local f_f  = formatters["%.6F"]
+local f_m  = formatters["%.6F %.6F m"]
+local f_c  = formatters["%.6F %.6F %.6F %.6F %.6F %.6F c"]
+local f_l  = formatters["%.6F %.6F l"]
+local f_cm = formatters["%.6F %.6F %.6F %.6F %.6F %.6F cm"]
+local f_M  = formatters["%.6F M"]
 local f_j  = formatters["%i j"]
 local f_J  = formatters["%i J"]
-local f_d  = formatters["[%s] %F d"]
-local f_w  = formatters["%F w"]
+local f_d  = formatters["[%s] %.6F d"]
+local f_w  = formatters["%.3F w"]
 
 directives.register("metapost.savetable",function(v)
     if type(v) == "string" then
