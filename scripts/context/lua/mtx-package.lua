@@ -69,8 +69,19 @@ function scripts.package.merge_luatex_files(name)
                     end
                 end
             end
-            report("saving %q",newname)
-            io.savedata(newname,table.concat(collected))
+            collected = table.concat(collected)
+            if environment.argument("stripcontext") then
+                local n = 0
+                collected = string.gsub(collected,"\nif context then.-\nend",function(s)
+                    n = n + #s
+                    return ""
+                end)
+                if n > 0 then
+                    report("%i context specific bytes stripped",n)
+                end
+            end
+            report("saving %q (%i bytes)",newname,#collected)
+            io.savedata(newname,collected)
         end
     end
 end

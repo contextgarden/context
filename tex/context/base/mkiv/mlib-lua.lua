@@ -26,14 +26,14 @@ local report_message = logs.reporter("metapost")
 local trace_luarun   = false  trackers.register("metapost.lua",function(v) trace_luarun = v end)
 local trace_enabled  = true
 
-local be_tolerant    = true   directives.register("metapost.lua.tolerant",function(v) be_tolerant = v end)
+local be_tolerant    = true   directives.register("metapost.lua.tolerant", function(v) be_tolerant = v end)
 
 mp = mp or { } -- system namespace
 MP = MP or { } -- user namespace
 
 local buffer  = { }
 local n       = 0
-local max     = 10 -- we reuse upto max
+local max     = 20 -- we reuse upto max
 local nesting = 0
 
 function mp._f_()
@@ -376,6 +376,8 @@ function metapost.nofscriptruns()
     return runs
 end
 
+-- there is no gain in:
+--
 -- local cache = table.makeweak()
 --
 -- f = cache[code]
@@ -393,7 +395,6 @@ end
 
 function metapost.runscript(code)
     nesting = nesting + 1
-
     local trace = trace_enabled and trace_luarun
     if trace then
         report_luarun("%i: code: %s",nesting,code)
@@ -431,7 +432,6 @@ function metapost.runscript(code)
     else
         report_luarun("%i: no result, invalid code: %s",nesting,code)
     end
-
     nesting = nesting - 1
     return ""
 end

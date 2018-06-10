@@ -130,6 +130,7 @@ local remapper = {
     pfb    = "type1 fonts",        -- needed for vector loading
     afm    = "afm",
     enc    = "enc files",
+    lua    = "tex",
 }
 
 function resolvers.findfile(name,fileformat)

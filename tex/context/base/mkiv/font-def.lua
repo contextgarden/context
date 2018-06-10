@@ -80,55 +80,6 @@ and prepares a table that will move along as we proceed.</p>
 -- name name(sub) name(sub)*spec name*spec
 -- name@spec*oeps
 
-local splitter, splitspecifiers = nil, "" -- not so nice
-
-local P, C, S, Cc, Cs = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.Cs
-
-local left   = P("(")
-local right  = P(")")
-local colon  = P(":")
-local space  = P(" ")
-local lbrace = P("{")
-local rbrace = P("}")
-
-definers.defaultlookup = "file"
-
-local prefixpattern = P(false)
-
-local function addspecifier(symbol)
-    splitspecifiers     = splitspecifiers .. symbol
-    local method        = S(splitspecifiers)
-    local lookup        = C(prefixpattern) * colon
-    local sub           = left * C(P(1-left-right-method)^1) * right
-    local specification = C(method) * C(P(1)^1)
-    local name          = Cs((lbrace/"") * (1-rbrace)^1 * (rbrace/"") + (1-sub-specification)^1)
-    splitter = P((lookup + Cc("")) * name * (sub + Cc("")) * (specification + Cc("")))
-end
-
-local function addlookup(str,default)
-    prefixpattern = prefixpattern + P(str)
-end
-
-definers.addlookup = addlookup
-
-addlookup("file")
-addlookup("name")
-addlookup("spec")
-
-local function getspecification(str)
-    return lpegmatch(splitter,str or "") -- weird catch
-end
-
-definers.getspecification = getspecification
-
-function definers.registersplit(symbol,action,verbosename)
-    addspecifier(symbol)
-    variants[symbol] = action
-    if verbosename then
-        variants[verbosename] = action
-    end
-end
-
 local function makespecification(specification,lookup,name,sub,method,detail,size)
     size = size or 655360
     if not lookup or lookup == "" then
@@ -153,13 +104,65 @@ local function makespecification(specification,lookup,name,sub,method,detail,siz
     return t
 end
 
-
 definers.makespecification = makespecification
 
-function definers.analyze(specification, size)
-    -- can be optimized with locals
-    local lookup, name, sub, method, detail = getspecification(specification or "")
-    return makespecification(specification, lookup, name, sub, method, detail, size)
+if context then
+
+    local splitter, splitspecifiers = nil, "" -- not so nice
+
+    local P, C, S, Cc, Cs = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.Cs
+
+    local left   = P("(")
+    local right  = P(")")
+    local colon  = P(":")
+    local space  = P(" ")
+    local lbrace = P("{")
+    local rbrace = P("}")
+
+    definers.defaultlookup = "file"
+
+    local prefixpattern = P(false)
+
+    local function addspecifier(symbol)
+        splitspecifiers     = splitspecifiers .. symbol
+        local method        = S(splitspecifiers)
+        local lookup        = C(prefixpattern) * colon
+        local sub           = left * C(P(1-left-right-method)^1) * right
+        local specification = C(method) * C(P(1)^1)
+        local name          = Cs((lbrace/"") * (1-rbrace)^1 * (rbrace/"") + (1-sub-specification)^1)
+        splitter = P((lookup + Cc("")) * name * (sub + Cc("")) * (specification + Cc("")))
+    end
+
+    local function addlookup(str)
+        prefixpattern = prefixpattern + P(str)
+    end
+
+    definers.addlookup = addlookup
+
+    addlookup("file")
+    addlookup("name")
+    addlookup("spec")
+
+    local function getspecification(str)
+        return lpegmatch(splitter,str or "") -- weird catch
+    end
+
+    definers.getspecification = getspecification
+
+    function definers.registersplit(symbol,action,verbosename)
+        addspecifier(symbol)
+        variants[symbol] = action
+        if verbosename then
+            variants[verbosename] = action
+        end
+    end
+
+    function definers.analyze(specification, size)
+        -- can be optimized with locals
+        local lookup, name, sub, method, detail = getspecification(specification or "")
+        return makespecification(specification, lookup, name, sub, method, detail, size)
+    end
+
 end
 
 --[[ldx--

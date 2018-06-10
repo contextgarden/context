@@ -313,7 +313,7 @@
 \unexpanded\def\strc_tags_disable
   {\ifconditional\c_strc_tags_enabled
      % so now all are artifacts
-     \let\dostarttagged        \strc_tags_start_nop_ignore
+     \let\dostarttagged        \strc_tags_start_nop_detail
      \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
      \let\dostarttaggedchained \strc_tags_start_nop_chained
      \let\dostoptagged         \strc_tags_stop_nop_ignore
@@ -322,7 +322,7 @@
      \let\dostarttagged        \strc_tags_start_nop_detail
      \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
      \let\dostarttaggedchained \strc_tags_start_nop_chained
-     \let\dostoptagged         \strc_tags_stop_nop
+     \let\dostoptagged         \strc_tags_stop_nop_ignore
      \let\dostartignoretagging \strc_tags_start_nop_ignore
      \let\dostopignoretagging  \strc_tags_stop_nop_ignore
    \fi}

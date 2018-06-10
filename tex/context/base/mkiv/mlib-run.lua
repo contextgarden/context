@@ -30,7 +30,6 @@ nears zero.</p>
 --ldx]]--
 
 local type, tostring, tonumber, next = type, tostring, tonumber, next
-local gsub, match, find = string.gsub, string.match, string.find
 local striplines = utilities.strings.striplines
 local concat, insert, remove = table.concat, table.insert, table.remove
 
@@ -208,22 +207,6 @@ function metapost.scripterror(str)
 end
 
 -- todo: random_seed
-
-local f_textext = formatters[ [[rawtextext("%s")]] ]
-
-function metapost.maketext(s,mode)
-    if mode and mode == 1 then
-        if trace_btexetex then
-            report_metapost("ignoring verbatimtex: [[%s]]",s)
-        end
-    else
-        if trace_btexetex then
-            report_metapost("handling btex ... etex: [[%s]]",s)
-        end
-        s = gsub(s,'"','"&ditto&"')
-        return f_textext(s)
-    end
-end
 
 local seed = nil
 

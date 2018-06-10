@@ -26,7 +26,7 @@ end
 
 -- the generic name parser (different from context!)
 
-local list = { }
+local list = { } -- we could pass Carg but let's keep the old one
 
 local function issome ()    list.lookup = 'name'          end -- xetex mode prefers name (not in context!)
 local function isfile ()    list.lookup = 'file'          end
@@ -44,25 +44,28 @@ local spaces     = P(" ")^0
 local namespec   = Cs((P("{")/"") * (1-S("}"))^0 * (P("}")/"") + (1-S("/:("))^0)
 local crapspec   = spaces * P("/") * (((1-P(":"))^0)/iscrap) * spaces
 local filename_1 = P("file:")/isfile * (namespec/thename)
-local filename_2 = P("[") * P(true)/isname * (((1-P("]"))^0)/thename) * P("]")
+local filename_2 = P("[") * P(true)/isfile * (((1-P("]"))^0)/thename) * P("]")
 local fontname_1 = P("name:")/isname * (namespec/thename)
 local fontname_2 = P(true)/issome * (namespec/thename)
------ sometext   = (R("az","AZ","09") + S("+-.{}"))^1
-local sometext   = (P("{")/"")*(1-P("}"))^0*(P("}")/"") + (R("az","AZ","09")+S("+-."))^1
+local sometext   = R("az","AZ","09")^1
+local somekey    = R("az","AZ","09")^1
+local somevalue  = (P("{")/"")*(1-P("}"))^0*(P("}")/"") + (1-S(";"))^1
 local truevalue  = P("+") * spaces * (sometext/istrue)
 local falsevalue = P("-") * spaces * (sometext/isfalse)
-local keyvalue   = (C(sometext) * spaces * P("=") * spaces * C(sometext))/iskey
+local keyvalue   = (C(somekey) * spaces * P("=") * spaces * C(somevalue))/iskey
 local somevalue  = sometext/istrue
 local subvalue   = P("(") * (C(P(1-S("()"))^1)/issub) * P(")") -- for Kim
 local option     = spaces * (keyvalue + falsevalue + truevalue + somevalue) * spaces
 local options    = P(":") * spaces * (P(";")^0  * option)^0
 
-local pattern    = (filename_1 + filename_2 + fontname_1 + fontname_2) * subvalue^0 * crapspec^0 * options^0
+local pattern    = (filename_1 + filename_2 + fontname_1 + fontname_2)
+                 * subvalue^0 * crapspec^0 * options^0
 
-local function colonized(specification) -- xetex mode
+function fonts.definers.analyze(str,size)
+    local specification = fonts.definers.makespecification(str,nil,nil,nil,":",nil,size)
     list = { }
-    lpeg.match(pattern,specification.specification)
-    list.crap = nil -- style not supported, maybe some day
+    lpeg.match(pattern,str)
+    list.crap = nil
     if list.name then
         specification.name = list.name
         list.name = nil
@@ -76,11 +79,9 @@ local function colonized(specification) -- xetex mode
         list.sub = nil
     end
     specification.features.normal = fonts.handlers.otf.features.normalize(list)
+    list = nil
     return specification
 end
-
-fonts.definers.registersplit(":",colonized,"cryptic")
-fonts.definers.registersplit("", colonized,"more cryptic") -- catches \font\text=[names]
 
 function fonts.definers.applypostprocessors(tfmdata)
     local postprocessors = tfmdata.postprocessors

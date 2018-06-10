@@ -208,6 +208,22 @@ if mfun_use_one_pass :
         fi
     enddef ;
 
+    vardef rawmadetext =
+        mfun_tt_n := mfun_tt_n + 1 ;
+        mfun_tt_c := nullpicture ;
+        mfun_tt_o := nullpicture ;
+        addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+        mfun_tt_r := lua.mp.MadeText(mfun_tt_n) ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled redpart mfun_tt_r
+            yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
+            shifted (0,-bluepart mfun_tt_r)
+            withprescript "tx_index=" & decimal mfun_tt_n
+            withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+        ;
+        mfun_tt_c
+    enddef ;
+
 else :
 
     vardef rawtextext(expr s) = % todo: avoid currentpicture

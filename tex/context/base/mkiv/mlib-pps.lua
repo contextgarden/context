@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
     license   = "see context related readme files",
 }
 
-local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
+local format, gmatch, match, split, gsub = string.format, string.gmatch, string.match, string.split, string.gsub
 local tonumber, type, unpack, next, select = tonumber, type, unpack, next, select
 local round, sqrt, min, max = math.round, math.sqrt, math.min, math.max
 local insert, remove, concat = table.insert, table.remove, table.concat
@@ -1071,6 +1071,27 @@ local tx_reset, tx_analyze, tx_process  do
             local box = textakebox("mptextbox")
             top.textexts[mp_target] = box
             mp.triplet(bp*box.width,bp*box.height,bp*box.depth)
+            madetext = nil
+        end
+
+        local madetext = nil
+
+        function mp.MadeText(index)
+            mp.SomeText(index,madetext)
+        end
+
+        function metapost.maketext(s,mode)
+            if mode and mode == 1 then
+                if trace_btexetex then
+                    report_metapost("ignoring verbatimtex: [[%s]]",s)
+                end
+            else
+                if trace_btexetex then
+                    report_metapost("handling btex ... etex: [[%s]]",s)
+                end
+                madetext = s
+                return "rawmadetext"
+            end
         end
 
         function mp.SomeFormattedText(index,fmt,...)
@@ -1308,6 +1329,22 @@ local tx_reset, tx_analyze, tx_process  do
                     object.grouped = true
                     object.istext  = true
                 end
+            end
+        end
+
+        local f_textext = formatters[ [[rawtextext("%s")]] ]
+
+        function metapost.maketext(s,mode)
+            if mode and mode == 1 then
+                if trace_btexetex then
+                    report_metapost("ignoring verbatimtex: [[%s]]",s)
+                end
+            else
+                if trace_btexetex then
+                    report_metapost("handling btex ... etex: [[%s]]",s)
+                end
+                s = gsub(s,'"','"&ditto&"')
+                return f_textext(s)
             end
         end
 

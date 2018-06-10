@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/09/18 14:30:08
+-- merge date  : 06/10/18 15:42:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -4932,10 +4932,6 @@ if not modules then modules={} end modules ['luat-basics-gen']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 local match,gmatch,gsub,lower=string.match,string.gmatch,string.gsub,string.lower
 local formatters,split,format,dump=string.formatters,string.split,string.format,string.dump
 local loadfile,type=loadfile,type
@@ -5030,6 +5026,7 @@ local remapper={
   pfb="type1 fonts",
   afm="afm",
   enc="enc files",
+  lua="tex",
 }
 function resolvers.findfile(name,fileformat)
   name=gsub(name,"\\","/")
@@ -5367,10 +5364,6 @@ if not modules then modules={} end modules ['luatex-fonts-nod']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 if tex.attribute[0]~=0 then
   texio.write_nl("log","!")
   texio.write_nl("log","! Attribute 0 is reserved for ConTeXt's font feature management and has to be")
@@ -9036,9 +9029,6 @@ fonts.analyzers={}
 fonts.readers={}
 fonts.definers={ methods={} }
 fonts.loggers={ register=function() end }
-if context then
-  fontloader=nil
-end
 
 end -- closure
 
@@ -9051,10 +9041,6 @@ if not modules then modules={} end modules ['luatex-font-mis']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 local currentfont=font.current
 local hashes=fonts.hashes
 local identifiers=hashes.identifiers or {}
@@ -10424,10 +10410,6 @@ if not modules then modules={} end modules ['luatex-font-enc']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 local fonts=fonts
 local encodings={}
 fonts.encodings=encodings
@@ -11034,10 +11016,6 @@ if not modules then modules={} end modules ['luatex-fonts-syn']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 local fonts=fonts
 fonts.names=fonts.names or {}
 fonts.names.version=1.001 
@@ -23910,27 +23888,6 @@ function nodes.injections.setspacekerns(font,sequence)
   end
 end
 local getthreshold
-if context then
-  local threshold=1 
-  local parameters=fonts.hashes.parameters
-  directives.register("otf.threshold",function(v) threshold=tonumber(v) or 1 end)
-  getthreshold=function(font)
-    local p=parameters[font]
-    local f=p.factor
-    local s=p.spacing
-    local t=threshold*(s and s.width or p.space or 0)-2
-    return t>0 and t or 0,f
-  end
-else
-  injections.threshold=0
-  getthreshold=function(font)
-    local p=fontdata[font].parameters
-    local f=p.factor
-    local s=p.spacing
-    local t=injections.threshold*(s and s.width or p.space or 0)-2
-    return t>0 and t or 0,f
-  end
-end
 injections.getthreshold=getthreshold
 function injections.isspace(n,threshold,id)
   if (id or getid(n))==glue_code then
@@ -28090,24 +28047,6 @@ replace_all_nbsp=function(head)
   return replace_all_nbsp(head)
 end
 local processcharacters=nil
-if context then
-  local fontprocesses=fonts.hashes.processes
-  function processcharacters(head,font)
-    local processors=fontprocesses[font]
-    for i=1,#processors do
-      head=processors[i](head,font,0)
-    end
-    return head
-  end
-else
-  function processcharacters(head,font)
-    local processors=fontdata[font].shared.processes
-    for i=1,#processors do
-      head=processors[i](head,font,0)
-    end
-    return head
-  end
-end
 local indicgroups=characters and characters.indicgroups
 if not indicgroups and characters then
   local indic={
@@ -29987,71 +29926,12 @@ local downcommand=helpers.commands.down
 local otf=fonts.handlers.otf
 local f_color=formatters["%.3f %.3f %.3f rg"]
 local f_gray=formatters["%.3f g"]
-if context then
-  local startactualtext=nil
-  local stopactualtext=nil
-  function otf.getactualtext(s)
-    if not startactualtext then
-      startactualtext=backends.codeinjections.startunicodetoactualtextdirect
-      stopactualtext=backends.codeinjections.stopunicodetoactualtextdirect
-    end
-    return startactualtext(s),stopactualtext()
-  end
-else
-  local tounicode=fonts.mappings.tounicode16
-  function otf.getactualtext(s)
-    return
-      "/Span << /ActualText <feff"..s.."> >> BDC",
-      "EMC"
-  end
-end
 local sharedpalettes={}
 local hash=setmetatableindex(function(t,k)
   local v={ "pdf","direct",k }
   t[k]=v
   return v
 end)
-if context then
-  local colors=attributes.list[attributes.private('color')] or {}
-  local transparencies=attributes.list[attributes.private('transparency')] or {}
-  function otf.registerpalette(name,values)
-    sharedpalettes[name]=values
-    for i=1,#values do
-      local v=values[i]
-      local c=nil
-      local t=nil
-      if type(v)=="table" then
-        c=colors.register(name,"rgb",
-          max(round((v.r or 0)*255),255)/255,
-          max(round((v.g or 0)*255),255)/255,
-          max(round((v.b or 0)*255),255)/255
-        )
-      else
-        c=colors[v]
-        t=transparencies[v]
-      end
-      if c and t then
-        values[i]=hash[lpdf.color(1,c).." "..lpdf.transparency(t)]
-      elseif c then
-        values[i]=hash[lpdf.color(1,c)]
-      elseif t then
-        values[i]=hash[lpdf.color(1,t)]
-      end
-    end
-  end
-else 
-  function otf.registerpalette(name,values)
-    sharedpalettes[name]=values
-    for i=1,#values do
-      local v=values[i]
-      values[i]=hash[f_color(
-        max(round((v.r or 0)*255),255)/255,
-        max(round((v.g or 0)*255),255)/255,
-        max(round((v.b or 0)*255),255)/255
-      )]
-    end
-  end
-end
 local function convert(t,k)
   local v={}
   for i=1,#k do
@@ -32981,43 +32861,6 @@ local lastdefined=nil
 local loadedfonts=constructors.loadedfonts
 local designsizes=constructors.designsizes
 local resolvefile=fontgoodies and fontgoodies.filenames and fontgoodies.filenames.resolve or function(s) return s end
-local splitter,splitspecifiers=nil,"" 
-local P,C,S,Cc,Cs=lpeg.P,lpeg.C,lpeg.S,lpeg.Cc,lpeg.Cs
-local left=P("(")
-local right=P(")")
-local colon=P(":")
-local space=P(" ")
-local lbrace=P("{")
-local rbrace=P("}")
-definers.defaultlookup="file"
-local prefixpattern=P(false)
-local function addspecifier(symbol)
-  splitspecifiers=splitspecifiers..symbol
-  local method=S(splitspecifiers)
-  local lookup=C(prefixpattern)*colon
-  local sub=left*C(P(1-left-right-method)^1)*right
-  local specification=C(method)*C(P(1)^1)
-  local name=Cs((lbrace/"")*(1-rbrace)^1*(rbrace/"")+(1-sub-specification)^1)
-  splitter=P((lookup+Cc(""))*name*(sub+Cc(""))*(specification+Cc("")))
-end
-local function addlookup(str,default)
-  prefixpattern=prefixpattern+P(str)
-end
-definers.addlookup=addlookup
-addlookup("file")
-addlookup("name")
-addlookup("spec")
-local function getspecification(str)
-  return lpegmatch(splitter,str or "") 
-end
-definers.getspecification=getspecification
-function definers.registersplit(symbol,action,verbosename)
-  addspecifier(symbol)
-  variants[symbol]=action
-  if verbosename then
-    variants[verbosename]=action
-  end
-end
 local function makespecification(specification,lookup,name,sub,method,detail,size)
   size=size or 655360
   if not lookup or lookup=="" then
@@ -33042,10 +32885,6 @@ local function makespecification(specification,lookup,name,sub,method,detail,siz
   return t
 end
 definers.makespecification=makespecification
-function definers.analyze(specification,size)
-  local lookup,name,sub,method,detail=getspecification(specification or "")
-  return makespecification(specification,lookup,name,sub,method,detail,size)
-end
 definers.resolvers=definers.resolvers or {}
 local resolvers=definers.resolvers
 function resolvers.file(specification)
@@ -33359,16 +33198,12 @@ if not modules then modules={} end modules ['luatex-fonts-def']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 local fonts=fonts
 fonts.constructors.namemode="specification"
 function fonts.definers.getspecification(str)
   return "",str,"",":",str
 end
-local list={}
+local list={} 
 local function issome ()  list.lookup='name'     end 
 local function isfile ()  list.lookup='file'     end
 local function isname ()  list.lookup='name'     end
@@ -33383,22 +33218,25 @@ local spaces=P(" ")^0
 local namespec=Cs((P("{")/"")*(1-S("}"))^0*(P("}")/"")+(1-S("/:("))^0)
 local crapspec=spaces*P("/")*(((1-P(":"))^0)/iscrap)*spaces
 local filename_1=P("file:")/isfile*(namespec/thename)
-local filename_2=P("[")*P(true)/isname*(((1-P("]"))^0)/thename)*P("]")
+local filename_2=P("[")*P(true)/isfile*(((1-P("]"))^0)/thename)*P("]")
 local fontname_1=P("name:")/isname*(namespec/thename)
 local fontname_2=P(true)/issome*(namespec/thename)
-local sometext=(P("{")/"")*(1-P("}"))^0*(P("}")/"")+(R("az","AZ","09")+S("+-."))^1
+local sometext=R("az","AZ","09")^1
+local somekey=R("az","AZ","09")^1
+local somevalue=(P("{")/"")*(1-P("}"))^0*(P("}")/"")+(1-S(";"))^1
 local truevalue=P("+")*spaces*(sometext/istrue)
 local falsevalue=P("-")*spaces*(sometext/isfalse)
-local keyvalue=(C(sometext)*spaces*P("=")*spaces*C(sometext))/iskey
+local keyvalue=(C(somekey)*spaces*P("=")*spaces*C(somevalue))/iskey
 local somevalue=sometext/istrue
 local subvalue=P("(")*(C(P(1-S("()"))^1)/issub)*P(")") 
 local option=spaces*(keyvalue+falsevalue+truevalue+somevalue)*spaces
 local options=P(":")*spaces*(P(";")^0*option)^0
 local pattern=(filename_1+filename_2+fontname_1+fontname_2)*subvalue^0*crapspec^0*options^0
-local function colonized(specification) 
+function fonts.definers.analyze(str,size)
+  local specification=fonts.definers.makespecification(str,nil,nil,nil,":",nil,size)
   list={}
-  lpeg.match(pattern,specification.specification)
-  list.crap=nil 
+  lpeg.match(pattern,str)
+  list.crap=nil
   if list.name then
     specification.name=list.name
     list.name=nil
@@ -33412,10 +33250,9 @@ local function colonized(specification)
     list.sub=nil
   end
   specification.features.normal=fonts.handlers.otf.features.normalize(list)
+  list=nil
   return specification
 end
-fonts.definers.registersplit(":",colonized,"cryptic")
-fonts.definers.registersplit("",colonized,"more cryptic") 
 function fonts.definers.applypostprocessors(tfmdata)
   local postprocessors=tfmdata.postprocessors
   if postprocessors then
@@ -33441,10 +33278,6 @@ if not modules then modules={} end modules ['luatex-fonts-ext']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 local byte=string.byte
 local fonts=fonts
 local handlers=fonts.handlers
@@ -33826,13 +33659,6 @@ local function blockligatures(str)
   end
 end
 otf.helpers.blockligatures=blockligatures
-if context then
-  interfaces.implement {
-    name="blockligatures",
-    arguments="string",
-    actions=blockligatures,
-  }
-end
 
 end -- closure
 
@@ -33891,58 +33717,6 @@ local specification={
 }
 registerotffeature(specification)
 registerafmfeature(specification)
-if context then
-  local function initialize(tfmdata,value) 
-    tfmdata.properties.textitalics=toboolean(value)
-  end
-  local specification={
-    name="textitalics",
-    description="use alternative text italic correction",
-    initializers={
-      base=initialize,
-      node=initialize,
-    }
-  }
-  registerotffeature(specification)
-  registerafmfeature(specification)
-end
-if context then
-end
-if context then
-  local letter=characters.is_letter
-  local always=true
-  local function collapseitalics(tfmdata,key,value)
-    local threshold=value==true and 100 or tonumber(value)
-    if threshold and threshold>0 then
-      if threshold>100 then
-        threshold=100
-      end
-      for unicode,data in next,tfmdata.characters do
-        if always or letter[unicode] or letter[data.unicode] then
-          local italic=data.italic
-          if italic and italic~=0 then
-            local width=data.width
-            if width and width~=0 then
-              local delta=threshold*italic/100
-              data.width=width+delta
-              data.italic=italic-delta
-            end
-          end
-        end
-      end
-    end
-  end
-  local dimensions_specification={
-    name="collapseitalics",
-    description="collapse italics",
-    manipulators={
-      base=collapseitalics,
-      node=collapseitalics,
-    }
-  }
-  registerotffeature(dimensions_specification)
-  registerafmfeature(dimensions_specification)
-end
 
 end -- closure
 
@@ -36385,10 +36159,6 @@ if not modules then modules={} end modules ['luatex-fonts-gbn']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if context then
-  texio.write_nl("fatal error: this module is not for context")
-  os.exit()
-end
 local next=next
 local fonts=fonts
 local nodes=nodes
