@@ -114,7 +114,7 @@ function luautilities.strippedloadstring(code,name,forcestrip) -- not executed
     end
     if forcestrip and luautilities.stripcode or luautilities.alwaysstripcode then
         register(name)
-        return load(dump(code,true)), 0 -- not yet executes
+        return load(dump(code,true)), 0 -- not yet executed
     else
         return code, 0
     end

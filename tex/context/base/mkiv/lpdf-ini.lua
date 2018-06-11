@@ -896,27 +896,7 @@ function lpdf.finalizedocument()
     end
 end
 
--- codeinjections.finalizepage = lpdf.finalizepage -- no longer triggered at the tex end
-
-if not callbacks.register("finish_pdfpage", lpdf.finalizepage) then
-
-    local find_tail    = nodes.tail
-    local latelua_node = nodes.pool.latelua
-
-    function nodeinjections.finalizepage(head)
-        local t = find_tail(head.list)
-        if t then
-            local n = latelua_node("lpdf.finalizepage(true)") -- last in the shipout
-            t.next = n
-            n.prev = t
-        end
-        return head, true
-    end
-
-    nodes.tasks.enableaction("shipouts","backends.pdf.nodeinjections.finalizepage")
-
-end
-
+callbacks.register("finish_pdfpage", lpdf.finalizepage)
 callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 do

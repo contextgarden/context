@@ -3064,7 +3064,7 @@ function nodes.handlers.export(head) -- hooks into the page builder
     end
  -- continueexport()
     restart = true
-    collectresults(tonut(head))
+    collectresults(head)
     if trace_export then
         report_export("%w<!-- stop flushing page -->",currentdepth)
     end

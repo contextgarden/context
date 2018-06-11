@@ -1,0 +1,499 @@
+% language=uk
+
+\startcomponent onandon-fences
+
+\environment onandon-environment
+
+% avoid context defaults:
+%
+% \mathitalicsmode   \plusone   % default in context
+% \mathdelimitersmode\plusseven % optional in context
+
+\def\UseMode#1{\appendtoks\mathdelimitersmode#1\to\everymathematics}
+
+\startchapter[title={Tricky fences}]
+
+Occasionally one of my colleagues notices some suboptimal rendering and asks me
+to have a look at it. Now, one can argue about \quotation {what is right} and
+indeed there is not always a best answer to it. Such questions can even be a
+nuisance; let's think of the following scenario. You have a project where \TEX\
+is practically the only solution. Let it be an \XML\ rendering project, which
+means that there are some boundary conditions. Speaking in 2017 we find that in
+most cases a project starts out with the assumption that everything is possible.
+
+Often such a project starts with a folio in mind and therefore by decent tagging
+to match the educational and esthetic design. When rendering is mostly automatic
+and concerns too many (variants) to check all rendering, some safeguards are used
+(an example will be given below). Then different authors, editors and designers
+come into play and their expectations, also about what is best, often conflict.
+Add to that rendering for the web, and devices and additional limitations show
+up: features get dropped and even more cases need to be compensated (the quality
+rules for paper are often much higher). But, all that defeats the earlier
+attempts to do well because suddenly it has to match the lesser format. This in
+turn makes investing in improving rendering very inefficient (read: a bottomless
+pit because it never gets paid and there is no way to gain back the investment).
+Quite often it is spacing that triggers discussions and questions what rendering
+is best. And inconsistency dominates these questions.
+
+So, in case you wonder why I bother with subtle aspects of rendering as discussed
+below, the answer is that it is not so much professional demand but users (like
+my colleagues or those on the mailing lists) that make me look into it and often
+something that looks trivial takes days to sort out (even for someone who knows
+his way around the macro language, fonts and the inner working of the engine).
+And one can be sure that more cases will pop up.
+
+All this being said, let's move on to a recent example. In \CONTEXT\ we support
+\MATHML\ although in practice we're forced to a mix of that standard and
+\ASCIIMATH. When we're lucky, we even get a mix with good old \TEX-encoded math.
+One problem with an automated flow and processing (other than raw \TEX) is that
+one can get anything and therefore we need to play safe. This means for instance
+that you can get input like this:
+
+\starttyping
+f(x) + f(1/x)
+\stoptyping
+
+or in more structured \TEX\ speak:
+
+\startbuffer
+$f(x) + f(\frac{1}{x})$
+\stopbuffer
+
+\typebuffer
+
+Using \TeX\ Gyre Pagella, this renders as: {\UseMode\zerocount\inlinebuffer}, and
+when seeing this a \TEX\ user will revert to:
+
+\startbuffer
+$f(x) + f\left(\frac{1}{x}\right)$
+\stopbuffer
+
+\typebuffer
+
+which gives: {\UseMode\zerocount \inlinebuffer}. So, in order to be robust we can
+always use the \type {\left} and \type {\right} commands, can't we?
+
+\startbuffer
+$f(x) + f\left(x\right)$
+\stopbuffer
+
+\typebuffer
+
+which gives {\UseMode\zerocount \inlinebuffer}, but let's blow up this result a
+bit showing some additional tracing from left to right, now in Latin Modern:
+
+\startbuffer[blownup]
+\startcombination[nx=3,ny=2,after=\vskip3mm]
+    {\scale[scale=4000]{\hbox{$f(x)$}}}
+        {just characters}
+    {\scale[scale=4000]{\ruledhbox{\showglyphs \showfontkerns \showfontitalics$f(x)$}}}
+        {just characters}
+    {\scale[scale=4000]{\ruledhbox{\showglyphs \showfontkerns \showfontitalics \showmakeup$f(x)$}}}
+        {just characters}
+    {\scale[scale=4000]{\hbox{$f\left(x\right)$}}}
+        {using delimiters}
+    {\scale[scale=4000]{\ruledhbox{\showglyphs \showfontkerns \showfontitalics$f\left(x\right)$}}}
+        {using delimiters}
+    {\scale[scale=4000]{\ruledhbox{\showglyphs \showfontkerns \showfontitalics \showmakeup$f\left(x\right)$}}}
+        {using delimiters}
+\stopcombination
+\stopbuffer
+
+\startlinecorrection
+\UseMode\zerocount
+\switchtobodyfont[modern]\getbuffer[blownup]
+\stoplinecorrection
+
+When we visualize the glyphs and kerns we see that there's a space instead of a
+kern when we use delimiters. This is because the delimited sequence is processed
+as a subformula and injected as a so|-|called inner object and as such gets
+spaced according to the ordinal (for the $f$) and inner (\quotation {fenced} with
+delimiters $x$) spacing rules. Such a difference normally will go unnoticed but
+as we mentioned authors, editors and designers being involved, there's a good
+chance that at some point one will magnify a \PDF\ preview and suddenly notice
+that the difference between the $f$ and $($ is a bit on the large side for simple
+unstacked cases, something that in print is likely to go unnoticed. So, even when
+we don't know how to solve this, we do need to have an answer ready.
+
+When I was confronted by this example of rendering I started wondering if there
+was a way out. It makes no sense to hard code a negative space before a fenced
+subformula because sometimes you don't want that, especially not when there's
+nothing before it. So, after some messing around I decided to have a look at the
+engine instead. I wondered if we could just give the non|-|scaled fence case the
+same treatment as the character sequence.
+
+Unfortunately here we run into the somewhat complex way the rendering takes
+place. Keep in mind that it is quite natural from the perspective of \TEX\
+because normally a user will explicitly use \type {\left} and \type {\right} as
+needed, while in our case the fact that we automate and therefore want a generic
+solution interferes (as usual in such cases).
+
+Once read in the sequence \type {f(x)} can be represented as a list:
+
+\starttyping
+list = {
+ {
+  id = "noad", subtype = "ord", nucleus = {
+   {
+    id = "mathchar", fam = 0, char = "U+00066",
+   },
+  },
+ },
+ {
+  id = "noad", subtype = "open", nucleus = {
+   {
+    id = "mathchar", fam = 0, char = "U+00028",
+   },
+  },
+ },
+ {
+  id = "noad", subtype = "ord", nucleus = {
+   {
+    id = "mathchar", fam = 0, char = "U+00078",
+   },
+  },
+ },
+ {
+  id = "noad", subtype = "close", nucleus = {
+   {
+    id = "mathchar", fam = 0, char = "U+00029",
+   },
+  },
+ },
+}
+\stoptyping
+
+The sequence \type {f \left( x \right)} is also a list but now it is a tree (we
+leave out some unset keys):
+
+\starttyping
+list = {
+ {
+  id = "noad", subtype = "ord", nucleus = {
+   {
+    id = "mathchar", fam = 0, char = "U+00066",
+   },
+  },
+ },
+ {
+  id = "noad", subtype = "inner", nucleus = {
+   {
+    id = "submlist", head = {
+     {
+      id = "fence", subtype = "left", delim = {
+       {
+        id = "delim", small_fam = 0, small_char = "U+00028",
+       },
+      },
+     },
+     {
+      id = "noad", subtype = "ord", nucleus = {
+       {
+        id = "mathchar", fam = 0, char = "U+00078",
+       },
+      },
+     },
+     {
+      id = "fence", subtype = "right", delim = {
+       {
+        id = "delim", small_fam = 0, small_char = "U+00029",
+       },
+      },
+     },
+    },
+   },
+  },
+ },
+}
+\stoptyping
+
+So, the formula \type {f(x)} is just four characters and stays that way, but with
+some inter|-|character spacing applied according to the rules of \TEX\ math. The
+sequence \typ {f \left( x \right)} however becomes two components: the \type {f}
+is an ordinal noad,\footnote {Noads are the mathematical building blocks.
+Eventually they become nodes, the building blocks of paragraphs and boxed
+material.} and \typ {\left( x \right)} becomes an inner noad with a list as a
+nucleus, which gets processed independently. The way the code is written this is
+what (roughly) happens:
+
+\startitemize
+\startitem
+    A formula starts; normally this is triggered by one or two dollar signs.
+\stopitem
+\startitem
+    The \type {f} becomes an ordinal noad and \TEX\ goes~on.
+\stopitem
+\startitem
+    A fence is seen with a left delimiter and an inner noad is injected.
+\stopitem
+\startitem
+    That noad has a sub|-|math list that takes the left delimiter up to a
+    matching right one.
+\stopitem
+\startitem
+    When all is scanned a routine is called that turns a list of math noads into
+    a list of nodes.
+\stopitem
+\startitem
+    So, we start at the beginning, the ordinal \type {f}.
+\stopitem
+\startitem
+    Before moving on a check happens if this character needs to be kerned with
+    another (but here we have an ordinal|-|inner combination).
+\stopitem
+\startitem
+    Then we encounter the subformula (including fences) which triggers a nested
+    call to the math typesetter.
+\stopitem
+\startitem
+    The result eventually gets packaged into a hlist and we're back one level up
+    (here after the ordinal \type {f}).
+\stopitem
+\startitem
+    Processing a list happens in two passes and, to cut it short, it's the second
+    pass that deals with choosing fences and spacing.
+\stopitem
+\startitem
+    Each time when a (sub)list is processed a second pass over that list
+    happens.
+\stopitem
+\startitem
+    So, now \TEX\ will inject the right spaces between pairs of noads.
+\stopitem
+\startitem
+    In our case that is between an ordinal and an inner noad, which is quite
+    different from a sequence of ordinals.
+\stopitem
+\stopitemize
+
+It's these fences that demand a two-pass approach because we need to know the
+height and depth of the subformula. Anyway, do you see the complication? In our
+inner formula the fences are not scaled, but this is not communicated back in the
+sense that the inner noad can become an ordinal one, as in the simple \type {f(}
+pair. The information is not only lost, it is not even considered useful and the
+only way to somehow bubble it up in the processing so that it can be used in the
+spacing requires an extension. And even then we have a problem: the kerning that
+we see between \type {f(} is also lost. It must be noted that this kerning is
+optional and triggered by setting \type {\mathitalicsmode=1}. One reason for this
+is that fonts approach italic correction differently, and cheat with the
+combination of natural width and italic correction.
+
+Now, because such a workaround is definitely conflicting with the inner workings
+of \TEX, our experimenting demands another variable be created: \type
+{\mathdelimitersmode}. It might be a prelude to more manipulations but for now we
+stick to this one case. How messy it really is can be demonstrated when we render
+our example with Cambria.
+
+\startlinecorrection
+\UseMode\zerocount
+\switchtobodyfont[cambria]\getbuffer[blownup]
+\stoplinecorrection
+
+If you look closely you will notice that the parenthesis are moved up a bit. Also
+notice the more accurate bounding boxes. Just to be sure we also show Pagella:
+
+\startlinecorrection
+\UseMode\zerocount
+\switchtobodyfont[pagella]\getbuffer[blownup]
+\stoplinecorrection
+
+When we really want the unscaled variant to be somewhat compatible with the
+fenced one we now need to take into account:
+
+\startitemize[packed]
+\startitem
+    the optional axis|-|and|-|height|/|depth related shift of the fence (bit 1)
+\stopitem
+\startitem
+    the optional kern between characters (bit 2)
+\stopitem
+\startitem
+    the optional space between math objects (bit 4)
+\stopitem
+\stopitemize
+
+Each option can be set (which is handy for testing) but here we will set them
+all, so, when \type {\mathdelimitersmode=7}, we want cambria to come out as
+follows:
+
+\startlinecorrection
+\UseMode\plusseven
+\switchtobodyfont[cambria]\getbuffer[blownup]
+\stoplinecorrection
+
+When this mode is set the following happens:
+
+\startitemize
+\startitem
+    We keep track of the scaling and when we use the normal size this is
+    registered in the noad (we had space in the data structure for that).
+\stopitem
+\startitem
+    This information is picked up by the caller of the routine that does the
+    subformula and stored in the (parent) inner noad (again, we had space for
+    that).
+\stopitem
+\startitem
+    Kerns between a character (ordinal) and subformula (inner) are kept,
+    which can be bad for other cases but probably less than what we try
+    to solve here.
+\stopitem
+\startitem
+    When the fences are unscaled the inner property temporarily becomes
+    an ordinal one when we apply the inter|-|noad spacing.
+\stopitem
+\stopitemize
+
+Hopefully this is good enough but anything more fancy would demand drastic
+changes in one of the most sensitive mechanisms of \TEX. It might not always work
+out right, so for now I consider it an experiment, which means that it can be
+kept around, rejected or improved.
+
+In case one wonders if such an extension is truly needed, one should also take
+into account that automated typesetting (also of math) is probably one of the
+areas where \TEX\ can shine for a while. And while we can deal with much by using
+\LUA, this is one of the cases where the interwoven and integrated parsing,
+converting and rendering of the math machinery makes it hard. It also fits into a
+further opening up of the inner working by modes.
+
+\startbuffer[simple]
+\dontleavehmode
+\scale
+    [scale=3000]
+    {\ruledhbox
+        {\showglyphs
+         \showfontkerns
+         \showfontitalics
+         $f(x)$}}
+\stopbuffer
+
+\startbuffer[fenced]
+\dontleavehmode
+\scale
+    [scale=3000]
+    {\ruledhbox
+        {\showglyphs
+         \showfontkerns
+         \showfontitalics
+         $f\left(x\right)$}}
+\stopbuffer
+
+\def\TestMe#1%
+  {\bTR
+       \bTD[width=35mm,align=middle,toffset=3mm] \switchtobodyfont[#1]\UseMode\zerocount\getbuffer[simple] \eTD
+       \bTD[width=35mm,align=middle,toffset=3mm] \switchtobodyfont[#1]\UseMode\zerocount\getbuffer[fenced] \eTD
+       \bTD[width=35mm,align=middle,toffset=3mm] \switchtobodyfont[#1]\UseMode\plusseven\getbuffer[simple] \eTD
+       \bTD[width=35mm,align=middle,toffset=3mm] \switchtobodyfont[#1]\UseMode\plusseven\getbuffer[fenced] \eTD
+   \eTR
+   \bTR
+       \bTD[align=middle,nx=2] \type{\mathdelimitersmode=0} \eTD
+       \bTD[align=middle,nx=2] \type{\mathdelimitersmode=7} \eTD
+   \eTR
+   \bTR
+       \bTD[align=middle,nx=4] \switchtobodyfont[#1]\bf #1 \eTD
+   \eTR}
+
+\startbuffer
+\bTABLE[frame=off]
+    \TestMe{modern}
+    \TestMe{cambria}
+    \TestMe{pagella}
+\eTABLE
+\stopbuffer
+
+Another objection to such a solution can be that we should not alter the engine
+too much. However, fences already are an exception and treated specially (tests
+and jumps in the program) so adding this fits reasonably well into that part of
+the design.
+
+In the following examples we demonstrate the results for Latin Modern, Cambria
+and Pagella when \type {\mathdelimitersmode} is set to zero or one. First we show
+the case where \type {\mathitalicsmode} is disabled:
+
+\startlinecorrection
+    \mathitalicsmode\zerocount\getbuffer
+\stoplinecorrection
+
+When we enable \type {\mathitalicsmode} we get:
+
+\startlinecorrection
+    \mathitalicsmode\plusone  \getbuffer
+\stoplinecorrection
+
+So is this all worth the effort? I don't know, but at least I got the picture and
+hopefully now you have too. It might also lead to some more modes in future
+versions of \LUATEX.
+
+\startbuffer[simple]
+\dontleavehmode
+\scale
+    [scale=2000]
+    {\ruledhbox
+        {\showglyphs
+         \showfontkerns
+         \showfontitalics
+         $f(x)$}}
+\stopbuffer
+
+\startbuffer[fenced]
+\dontleavehmode
+\scale
+    [scale=2000]
+    {\ruledhbox
+        {\showglyphs
+         \showfontkerns
+         \showfontitalics
+         $f\left(x\right)$}}
+\stopbuffer
+
+\def\TestMe#1%
+  {\bTR
+       \dostepwiserecurse{0}{7}{1}{
+           \bTD[align=middle,toffset=3mm] \switchtobodyfont[#1]\UseMode##1\getbuffer[simple] \eTD
+        }
+   \eTR
+   \bTR
+       \dostepwiserecurse{0}{7}{1}{
+           \bTD[align=middle,toffset=3mm] \switchtobodyfont[#1]\UseMode##1\getbuffer[fenced] \eTD
+        }
+   \eTR
+   \bTR
+       \dostepwiserecurse{0}{7}{1}{
+           \bTD[align=middle]
+              \tttf
+              \ifcase##1\relax
+              \or ns       % 1
+              \or    it    % 2
+              \or ns it    % 3
+              \or       or % 4
+              \or ns    or % 5
+              \or    it or % 6
+              \or ns it or % 7
+              \fi
+           \eTD
+       }
+   \eTR
+   \bTR
+       \bTD[align=middle,nx=8] \switchtobodyfont[#1]\bf #1 \eTD
+   \eTR}
+
+\startbuffer
+\bTABLE[frame=off,distance=2mm]
+    \TestMe{modern}
+    \TestMe{cambria}
+    \TestMe{pagella}
+\eTABLE
+\stopbuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+In \CONTEXT, a regular document can specify \type {\setupmathfences
+[method=auto]}, but in \MATHML\ or \ASCIIMATH\ this feature is enabled by default
+(so that we can test it).
+
+We end with a summary of all the modes (assuming italics mode is enabled) in the
+table below.
+
+\stopcomponent

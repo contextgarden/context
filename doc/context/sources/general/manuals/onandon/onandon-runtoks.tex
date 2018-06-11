@@ -1,0 +1,531 @@
+% language=uk
+
+\startcomponent onandon-amputating
+
+\environment onandon-environment
+
+\startchapter[title={Amputating code}]
+
+\startsection[title={Introduction}]
+
+Because \CONTEXT\ is already rather old in terms of software life and because it
+evolves over time, code can get replaced by better code. Reasons for this can be:
+
+\startitemize[packed]
+\startitem a better understanding of the way \TEX\ and \METAPOST\ work \stopitem
+\startitem demand for more advanced options \stopitem
+\startitem a brainwave resulting in a better solution \stopitem
+\startitem new functionality provided in \TEX\ engine used \stopitem
+\startitem the necessity to speed up a core process \stopitem
+\stopitemize
+
+Replacing code that in itself does a good job but is no longer the best to be
+used comes with sentiments. It can be rather satisfying to cook up a
+(conceptually as well as codewise) good solution and therefore removing code from
+a file can result in a somewhat bad feeling and even a feeling of losing
+something. Hence the title of this chapter.
+
+Here I will discuss one of the more complex subsystems: the one dealing with
+typeset text in \METAPOST\ graphics. I will stick to the principles and not
+present (much) code as that can be found in archives. This is not a tutorial,
+but more a sort of wrap|-|up for myself. It anyhow show the thinking behind
+this mechanism. I'll also introduce a new \LUATEX\ feature here: subruns.
+
+\stopsection
+
+\startsection[title={The problem}]
+
+\METAPOST\ is meant for drawing graphics and adding text to them is not really
+part of the concept. Its a bit like how \TEX\ sees images: the dimensions matter,
+the content doesn't. This means that in \METAPOST\ a blob of text is an
+abstraction. The native way to create a typeset text picture is:
+
+\starttyping
+picture p ; p := btex some text etex ;
+\stoptyping
+
+In traditional \METAPOST\ this will create a temporary \TEX\ file with the words
+\type {some text} wrapped in a box that when typeset is just shipped out. The
+result is a \DVI\ file that with an auxiliary program will be transformed into a
+\METAPOST\ picture. That picture itself is made from multiple pictures, because
+each sequences of characters becomes a picture and kerns become shifts.
+
+There is also a primitive \type {infont} that takes a text and just converts it
+into a low level text object but no typesetting is done there: so no ligatures
+and no kerns are found there. In \CONTEXT\ this operator is redefined to do the
+right thing.
+
+In both cases, what ends up in the \POSTSCRIPT\ file is references to fonts and
+characters and the original idea is that \DVIPS\ understands what
+fonts to embed. Details are communicated via specials (comments) that \DVIPS\ is
+supposed to intercept and understand. This all happens in an 8~bit (font) universe.
+
+When we moved on to \PDF, a converter from \METAPOST's rather predictable and
+simple \POSTSCRIPT\ code to \PDF\ was written in \TEX. The graphic operators
+became \PDF\ operators and the text was retypeset using the font information and
+snippets of strings and injected at the right spot. The only complication was
+that a non circular pen actually produced two path of which one has to be
+transformed.
+
+At that moment it already had become clear that a more tight integration in
+\CONTEXT\ would happen and not only would that demand a more sophisticated
+handling of text, but it would also require more features not present in
+\METAPOST, like dealing with \CMYK\ colors, special color spaces, transparency,
+images, shading, and more. All this was implemented. In the next sections we will
+only discuss texts.
+
+\stopsection
+
+\startsection[title={Using the traditional method}]
+
+The \type {btex} approach was not that flexible because what happens is that
+\type {btex} triggers the parser to just grabbing everything upto the \type
+{etex} and pass that to an external program. It's special scanner mode and
+because because of that using macros for typesetting texts is a pain. So, instead
+of using this method in \CONTEXT\ we used \type {textext}. Before a run the
+\METAPOST\ file was scanned and for each \type {textext} the argument was copied
+to a file. The \type {btex} calls were scanned to and replaced by \type {textext}
+calls.
+
+For each processed snippet the dimensions were stored in order to be loaded at
+the start of the \METAPOST\ run. In fact, each text was just a rectangle with
+certain dimensions. The \PDF\ converter would use the real snippet (by
+typesetting it).
+
+Of course there had to be some housekeeping in order to make sure that the right
+snippets were used, because the order of definition (as picture) can be different
+from them being used. This mechanism evolved into reasonable robust text handling
+but of course was limited by the fact that the file was scanned for snippets. So,
+the string had to be string and not assembled one. This disadvantage was
+compensated by the fact that we could communicate relevant bits of the
+environment and apply all the usual context trickery in texts in a way that was
+consistent with the rest of the document.
+
+A later implementation could communicate the text via specials which is more
+flexible. Although we talk of this method in the past sense it is still used in
+\MKII.
+
+\stopsection
+
+\startsection[title={Using the library}]
+
+When the \MPLIB\ library showed up in \LUATEX, the same approach was used but
+soon we moved on to a different approach. We already used specials to communicate
+extensions to the backend, using special colors and fake objects as signals. But
+at that time paths got pre- and postscripts fields and those could be used to
+really carry information with objects because unlike specials, they were bound to
+that object. So, all extensions using specials as well as texts were rewritten to
+use these scripts.
+
+The \type {textext} macro changed its behaviour a bit too. Remember that a
+text effectively was just a rectangle with some transformation applied. However
+this time the postscript field carried the text and the prescript field some
+specifics, like the fact that that we are dealing with text. Using the script made
+it possible to carry some more inforation around, like special color demands.
+
+\starttyping
+draw textext("foo") ;
+\stoptyping
+
+Among the prescripts are \typ {tx_index=trial} and \typ {tx_state=trial}
+(multiple prescripts are prepended) and the postscript is \type {foo}. In a
+second run the prescript is \type {tx_index=trial} and \typ {tx_state=final}.
+After the first run we analyze all objects, collect the texts (those with a \type
+{tx_} variables set) and typeset them. As part of the second run we pass the
+dimensions of each indexed text snippet. Internally before the first run we
+\quote {reset} states, then after the first run we \quote {analyze}, and after
+the second run we \quote {process} as part of the conversion of output to \PDF.
+
+\stopsection
+
+\startsection[title={Using \type {runscript}}]
+
+When the \type {runscript} feature was introduced in the library we no longer
+needed to pass the dimensions via subscripted variables. Instead we could just
+run a \LUA\ snippets and ask for the dimensions of a text with some index. This
+is conceptually not much different but it saves us creating \METAPOST\ code that
+stored the dimensions, at the cost of potentially a bit more runtime due to the
+\type {runscript} calls. But the code definitely looks a bit cleaner this way. Of
+course we had to keep the dimensions at the \LUA\ end but we already did that
+because we stored the preprocessed snippets for final usage.
+
+\stopsection
+
+\startsection[title={Using a sub \TEX\ run}]
+
+We now come the current (post \LUATEX\ 1.08) solution. For reasons I will
+mention later a two pass approach is not optimal, but we can live with that,
+especially because \CONTEXT\ with \METAFUN\ (which is what we're talking about
+here) is quit efficient. More important is that it's kind of ugly to do all the
+not that special work twice. In addition to text we also have outlines, graphics
+and more mechanisms that needed two passes and all these became one pass
+features.
+
+A \TEX\ run is special in many ways. At some point after starting up \TEX\
+enters the main loop and begins reading text and expanding macros. Normally you
+start with a file but soon a macro is seen, and a next level of input is entered,
+because as part of the expansion more text can be met, files can be opened,
+other macros be expanded. When a macro expands a token register, another level is
+entered and the same happens when a \LUA\ call is triggered. Such a call can
+print back something to \TEX\ and that has to be scanned as if it came from a
+file.
+
+When token lists (and macros) get expanded, some commands result in direct
+actions, others result in expansion only and processing later as one of more
+tokens can end up in the input stack. The internals of the engine operate in
+miraculous ways. All commands trigger a function call, but some have their own
+while others share one with a switch statement (in \CCODE\ speak) because they
+belong to a category of similar actions. Some are expanded directly, some get
+delayed.
+
+Does it sound complicated? Well, it is. It's even more so when you consider that
+\TEX\ uses nesting, which means pushing and popping local assignments, knows
+modes, like horizontal, vertical and math mode, keeps track of interrupts and at
+the same type triggers typesetting, par building, page construction and flushing
+to the output file.
+
+It is for this reason plus the fact that users can and will do a lot to influence
+that behaviour that there is just one main loop and in many aspects global state.
+There are some exceptions, for instance when the output routine is called, which
+creates a sort of closure: it interrupts the process and for that reason gets
+grouping enforced so that it doesn't influence the main run. But even then the
+main loop does the job.
+
+Starting with version 1.10 \LUATEX\ provides a way to do a local run. There are
+two ways provided: expanding a token register and calling a \LUA\ function. It
+took a bit of experimenting to reach an implementation that works out reasonable
+and many variants were tried. In the appendix we give an example of usage.
+
+The current variant is reasonable robust and does the job but care is needed.
+First of all, as soon as you start piping something to \TEX\ that gets typeset
+you'd better in a valid mode. If not, then for instance glyphs can end up in a
+vertical list and \LUATEX\ will abort. In case you wonder why we don't intercept
+this: we can't because we don't know the users intentions. We cannot enforce a
+mode for instance as this can have side effects, think of expanding \type
+{\everypar} or injecting an indentation box. Also, as soon as you start juggling
+nodes there is no way that \TEX\ can foresee what needs to be copied to
+discarded. Normally it works out okay but because in \LUATEX\ you can cheat in
+numerous ways with \LUA, you can get into trouble.
+
+So, what has this to do with \METAPOST ? Well, first of all we could now use a
+one pass approach. The \type {textext} macro calls \LUA, which then let \TEX\ do
+some typesetting, and then gives back the dimensions to \METAPOST. The \quote
+{analyze} phase is now integrated in the run. For a regular text this works quite
+well because we just box some text and that's it. However, in the next section we
+will see where things get complicated.
+
+Let's summarize the one pass approach: the \type {textext} macro creates
+rectangle with the right dimensions and for doing passes the string to \LUA\
+using \type {runscript}. We store the argument of \type {textext} in a variable,
+then call \type {runtoks}, which expands the given token list, where we typeset a
+box with the stored text (that we fetch with a \LUA\ call), and the \type
+{runscript} passes back the three dimensions as fake \RGB\ color to \METAPOST\
+which applies a \type {scantokens} to the result. So, in principle there is no
+real conceptual difference except that we now analyze in|-|place instead of
+between runs. I will not show the code here because in \CONTEXT\ we use a wrapper
+around \type {runscript} so low level examples won't run well.
+
+\stopsection
+
+\startsection[title={Some aspects}]
+
+An important aspect of the text handling is that the whole text can be
+transformed. Normally this is only some scaling but rotation is also quite valid.
+In the first approach, the original \METAPOST\ one, we have pictures constructed
+of snippets and pictures transform well as long as the backend is not too
+confused, something that can happen when for instance very small or large font
+scales are used. There were some limitations with respect to the number of fonts
+and efficient inclusion when for instance randomization was used (I remember
+cases with thousands of font instances). The \PDF\ backend could handle most
+cases well, by just using one size and scaling at the \PDF\ level. All the \type
+{textext} approaches use rectangles as stubs which is very efficient and permits
+all transforms.
+
+How about color? Think of this situation:
+
+\starttyping
+\startMPcode
+    draw textext("some \color[red]{text}")
+        withcolor green ;
+\stopMPcode
+\stoptyping
+
+And what about the document color? We suffice by saying that this is all well
+supported. Of course using transparency, spot colors etc.\ also needs extensions.
+These are however not directly related to texts although we need to take it into
+account when dealing with the inclusion.
+
+\starttyping
+\startMPcode
+    draw textext("some \color[red]{text}")
+      withcolor "blue"
+      withtransparency (1,0.5) ;
+\stopMPcode
+\stoptyping
+
+What if you have a graphic with many small snippets of which many have the same
+content? These are by default shared, but if needed you can disable it. This makes
+sense if you have a case like this:
+
+\starttyping
+\useMPlibrary[dum]
+
+\startMPcode
+    draw textext("\externalfigure[unknown]") notcached ;
+    draw textext("\externalfigure[unknown]") notcached ;
+\stopMPcode
+\stoptyping
+
+Normally each unknown image gets a nice placeholder with some random properties.
+So, do we want these two to have the same or not? At least you can control it.
+
+When I said that things can get complicated with the one pass approach the
+previous code snippet is a good example. The dummy figure is generated by
+\METAPOST. So, as we have one pass, and jump temporarily back to \TEX,
+we have two problems: we reenter the \MPLIB\ instance again in the middle of
+a run, and we might pipe back something to and|/|or from \TEX\ nested.
+
+The first problem could be solved by starting a new \MPLIB\ session. This
+normally is not a problem as both runs are independent of each other. In
+\CONTEXT\ we can have \METAPOST\ runs in many places and some produce some more
+of less stand alone graphic in the text while other calls produce \PDF\ code in
+the backend that is used in a different way (for instance in a font). In the
+first case the result gets nicely wrapped in a box, while in the second case it
+might directly end up in the page stream. And, as \TEX\ has no knowledge of what
+is needed, it's here that we can get the complications that can lead to aborting
+a run when you are careless. But in any case, if you abort, then you can be sure
+you're doing the wrong thing. So, the second problem can only be solved by
+careful programming.
+
+When I ran the test suite on the new code, some older modules had to be fixed.
+They were doing the right thing from the perspective of intermediate runs and
+therefore independent box handling, putting a text in a box and collecting
+dimensions, but interwoven they demanded a bit more defensive programming. For
+instance, the multi|-|pass approach always made copies snippets while the one
+pass approach does that only when needed. And that confused some old code in a
+module, which incidentally is never used today because we have better
+functionality built|-|in (the \METAFUN\ \type {followtext} mechanism).
+
+The two pass approach has special code for cases where a text is not used.
+Imagine this:
+
+\starttyping
+picture p ; p := textext("foo") ;
+
+draw boundingbox p;
+\stoptyping
+
+Here the \quote {analyze} stage will never see the text because we don't flush p.
+However because \type {textext} is called it can also make sure we still know the
+dimensions. In the next case we do use the text but in two different ways. These
+subtle aspects are dealt with properly and could be made a it simpler in the
+single pass approach.
+
+\starttyping
+picture p ; p := textext("foo") ;
+
+draw p rotated 90 withcolor red ;
+draw p withcolor green ;
+\stoptyping
+
+\stopsection
+
+\startsection[title=One or two runs]
+
+So are we better off now? One problem with two passes is that if you use the
+equation solver you need to make sure that you don't run into the redundant
+equation issue. So, you need to manage your variables well. In fact you need to
+do that anyway because you can call out to \METAPOST\ many times in a run so old
+variables can interfere anyway. So yes, we're better off here.
+
+Are we worse off now? The two runs with in between the text processing is very
+robust. There is no interference of nested runs and no interference of nested
+local \TEX\ calls. So, maybe we're also bit worse off. You need to anyhow keep
+this in mind when you write your own low level \TEX|-|\METAPOST\ interaction
+trickery, but fortunately now many users do that. And if you did write your own
+plugins, you now need to make them single pass.
+
+The new code is conceptually cleaner but also still not trivial because due to
+the mentioned complications. It's definitely less code but somehow amputating the
+old code does hurt a bit. Maybe I should keep it around as reference of how text
+handling evolved over a few decades.
+
+\stopsection
+
+\startsection[title=Appendix]
+
+Because the single pass approach made me finally look into a (although somewhat
+limited) local \TEX\ run, I will show a simple example. For the sake of
+generality I will use \type {\directlua}. Say that you need the dimensions of a
+box while in \LUA:
+
+\startbuffer
+\directlua {
+    tex.sprint("result 1: <")
+
+    tex.sprint("\\setbox0\\hbox{one}")
+    tex.sprint("\\number\\wd0")
+
+    tex.sprint("\\setbox0\\hbox{\\directlua{tex.print{'first'}}}")
+    tex.sprint(",")
+    tex.sprint("\\number\\wd0")
+
+    tex.sprint(">")
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This looks ok, but only because all printed text is collected and pushed into a
+new input level once the \LUA\ call is done. So take this then:
+
+\startbuffer
+\directlua {
+    tex.sprint("result 2: <")
+
+    tex.sprint("\\setbox0\\hbox{one}")
+    tex.sprint(tex.getbox(0).width)
+
+    tex.sprint("\\setbox0\\hbox{\\directlua{tex.print{'first'}}}")
+    tex.sprint(",")
+    tex.sprint(tex.getbox(0).width)
+
+    tex.sprint(">")
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This time we get the widths of the box known at the moment that we are in \LUA,
+but we haven't typeset the content yet, so we get the wrong dimensions. This
+however will work okay:
+
+\startbuffer
+\toks0{\setbox0\hbox{one}}
+\toks2{\setbox0\hbox{first}}
+\directlua {
+    tex.forcehmode(true)
+
+    tex.sprint("<")
+
+    tex.runtoks(0)
+    tex.sprint(tex.getbox(0).width)
+
+    tex.runtoks(2)
+    tex.sprint(",")
+    tex.sprint(tex.getbox(0).width)
+
+    tex.sprint(">")
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+as does this:
+
+\startbuffer
+\toks0{\setbox0\hbox{\directlua{tex.sprint(MyGlobalText)}}}
+\directlua {
+    tex.forcehmode(true)
+
+    tex.sprint("result 3: <")
+
+    MyGlobalText = "one"
+    tex.runtoks(0)
+    tex.sprint(tex.getbox(0).width)
+
+    MyGlobalText = "first"
+    tex.runtoks(0)
+    tex.sprint(",")
+    tex.sprint(tex.getbox(0).width)
+
+    tex.sprint(">")
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here is a variant that uses functions:
+
+\startbuffer
+\directlua {
+    tex.forcehmode(true)
+
+    tex.sprint("result 4: <")
+
+    tex.runtoks(function()
+        tex.sprint("\\setbox0\\hbox{one}")
+    end)
+    tex.sprint(tex.getbox(0).width)
+
+    tex.runtoks(function()
+        tex.sprint("\\setbox0\\hbox{\\directlua{tex.print{'first'}}}")
+    end)
+    tex.sprint(",")
+    tex.sprint(tex.getbox(0).width)
+
+    tex.sprint(">")
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {forcemode} is needed when you do this in vertical mode. Otherwise the
+run aborts. Of course you can also force horizontal mode before the call. I'm
+sure that users will be surprised by side effects when they really use this
+feature but that is to be expected: you really need to be aware of the subtle
+interference of input levels and mix of input media (files, token lists, macros
+or \LUA) as well as the fact that \TEX\ often looks one token ahead, and often,
+when forced to typeset something, also can trigger builders. You're warned.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \starttext
+
+% \toks0{\hbox{test}}  [\ctxlua{tex.runtoks(0)}]\par
+
+% \toks0{\relax\relax\hbox{test}\relax\relax}[\ctxlua{tex.runtoks(0)}]\par
+
+% \toks0{xxxxxxx}  [\ctxlua{tex.runtoks(0)}]\par
+
+% \toks0{\hbox{(\ctxlua{context("test")})}}  [\ctxlua{tex.runtoks(0)}]\par
+
+% \toks0{\global\setbox1\hbox{(\ctxlua{context("test")})}}  [\ctxlua{tex.runtoks(0)}\box1]\par
+
+% \startluacode
+% local s = "[\\ctxlua{tex.runtoks(0)}\\box1]"
+% context("<")
+% context( function() context(s) end)
+% context( function() context(s) end)
+% context(">")
+% \stopluacode\par
+
+% \toks10000{\hbox{\red test1}}
+% \toks10002{\green\hbox{test2}}
+% \toks10004{\hbox{\global\setbox1\hbox to 1000sp{\directlua{context("!4!")}}}}
+% \toks10006{\hbox{\global\setbox3\hbox to 2000sp{\directlua{context("?6?")}}}}
+% \hbox{x\startluacode
+%     local s0 = "(\\hbox{\\ctxlua{tex.runtoks(10000)}})"
+%     local s2 = "[\\hbox{\\ctxlua{tex.runtoks(10002)}}]"
+%     context("<!")
+% --    context( function() context(s0) end)
+% --    context( function() context(s0) end)
+% --    context( function() context(s2) end)
+%     context(s0)
+%     context(s0)
+%     context(s2)
+%     context("<")
+%     tex.runtoks(10004)
+%     context("X")
+%     tex.runtoks(10006)
+%     context(tex.box[1].width)
+%     context("/")
+%     context(tex.box[3].width)
+%     context("!>")
+% \stopluacode x}\par
+
+

@@ -184,7 +184,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-macro"] = package.loaded["l-macro"] or true
 
--- original size: 8260, stripped down to: 5213
+-- original size: 9473, stripped down to: 5845
 
 if not modules then modules={} end modules ['l-macros']={
   version=1.001,
@@ -196,7 +196,7 @@ if not modules then modules={} end modules ['l-macros']={
 local S,P,R,V,C,Cs,Cc,Ct,Carg=lpeg.S,lpeg.P,lpeg.R,lpeg.V,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Carg
 local lpegmatch=lpeg.match
 local concat=table.concat
-local format,sub=string.format,string.sub
+local format,sub,match=string.format,string.sub,string.match
 local next,load,type=next,load,type
 local newline=S("\n\r")^1
 local continue=P("\\")*newline
@@ -332,6 +332,35 @@ end
 function macros.resolving()
   return next(patterns)
 end
+local function reload(path,name,data)
+  local only=match(name,".-([^/]+)%.lua")
+  if only and only~="" then
+    local name=path.."/"..only
+    local f=io.open(name,"wb")
+    f:write(data)
+    f:close()
+    local f=loadfile(name)
+    os.remove(name)
+    return f
+  end
+end
+local function reload(path,name,data)
+  if path and path~="" then
+    local only=string.match(name,".-([^/]+)%.lua")
+    if only and only~="" then
+      local name=path.."/"..only.."-macro.lua"
+      local f=io.open(name,"wb")
+      if f then
+        f:write(data)
+        f:close()
+        local l=loadfile(name)
+        os.remove(name)
+        return l
+      end
+    end
+  end
+  return load(data,name)
+end
 local function loaded(name,trace,detail)
   local f=io.open(name,"rb")
   if not f then
@@ -355,12 +384,7 @@ local function loaded(name,trace,detail)
       report_lua("no macros expanded in '%s'",name)
     end
   end
-  if #name>30 then
-    n="--[["..sub(name,-30).."]] "..n
-  else
-    n="--[["..name.."]] "..n
-  end
-  return load(n)
+  return reload(lfs and lfs.currentdir(),name,n)
 end
 macros.loaded=loaded
 function required(name,trace)
@@ -21377,7 +21401,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 9268, stripped down to: 7401
+-- original size: 9272, stripped down to: 7401
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -21613,8 +21637,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 887829
--- stripped bytes    : 320656
+-- original bytes    : 889046
+-- stripped bytes    : 321241
 
 -- end library merge
 

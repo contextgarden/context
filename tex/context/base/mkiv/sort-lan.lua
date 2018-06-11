@@ -71,16 +71,22 @@ definitions['fr'] = { parent = 'default' }
 
 -- DIN 5007-1
 
-definitions['DIN 5007-1'] = { parent = 'default' }
+definitions['DIN 5007-1'] = {
+    parent       = 'default',
+    replacements = {
+        { "ß", "ss" },
+    },
+}
 
 -- DIN 5007-2
 
 definitions['DIN 5007-2'] = {
     parent       = 'default',
     replacements = {
-        { "ä", 'ae' }, { "Ä", 'Ae' },
-        { "ö", 'oe' }, { "Ö", 'Oe' },
-        { "ü", 'ue' }, { "Ü", 'Ue' },
+        { "ä", "ae" }, { "Ä", "Ae" },
+        { "ö", "oe" }, { "Ö", "Oe" },
+        { "ü", "ue" }, { "Ü", "Ue" },
+        { "ß", "ss" },
     },
 }
 
@@ -88,7 +94,9 @@ definitions['DIN 5007-2'] = {
 
 definitions['Duden'] = {
     parent       = 'default',
-    replacements = { { "ß", 's' } },
+    replacements = {
+        { "ß", "s" },
+    },
 }
 
 -- definitions['de'] = { parent = 'default' } -- new german

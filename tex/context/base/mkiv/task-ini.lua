@@ -81,7 +81,6 @@ appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility",     
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.rubies.attach",                        nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "nodes.properties.delayed",                         nil, "nut",    "production")
-appendaction("shipouts",     "normalizers", "backends.pdf.nodeinjections.finalizepage",         nil, "nut",    "production")
 
 appendaction("shipouts",     "finishers",   "nodes.visualizers.handler",                        nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.colors.handler",                        nil, "nut",    "disabled"  )

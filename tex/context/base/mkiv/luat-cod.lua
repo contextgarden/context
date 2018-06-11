@@ -38,7 +38,7 @@ lua.bytedata      = bytedata
 lua.bytedone      = bytedone
 
 local setbytecode = lua.setbytecode
-local getbytecode = lua.getbytecode
+----- getbytecode = lua.getbytecode
 
 lua.firstbytecode = 501
 lua.lastbytecode  = lua.lastbytecode or (lua.firstbytecode - 1) -- as we load ourselves again ... maybe return earlier

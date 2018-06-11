@@ -255,7 +255,7 @@ function visualizers.load(name)
             if trace_visualize then
                 report_visualizers("loading visualizer %a",name)
             end
-            lua.registercode(luaname)
+            lua.registercode(luaname) -- only used here, end up in format
             context.input(texname)
         end
         if rawget(specifications,name) == nil then
