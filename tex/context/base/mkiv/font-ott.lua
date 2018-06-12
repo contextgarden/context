@@ -988,9 +988,13 @@ setmetatableindex(languages, function(t,k)
     return "dflt"
 end)
 
-setmetatablenewindex(languages, "ignore")
-setmetatablenewindex(baselines, "ignore")
-setmetatablenewindex(baselines, "ignore")
+if setmetatablenewindex then
+
+    setmetatablenewindex(languages, "ignore")
+    setmetatablenewindex(scripts,   "ignore")
+    setmetatablenewindex(baselines, "ignore")
+
+end
 
 local function resolve(t,k)
     if k then
@@ -1030,7 +1034,11 @@ local function assign(t,k,v)
     end
 end
 
-setmetatablenewindex(features, assign)
+if setmetatablenewindex then
+
+    setmetatablenewindex(features, assign)
+
+end
 
 local checkers = {
     rand = function(v)

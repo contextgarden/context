@@ -315,6 +315,9 @@ if setinspector then
 end
 
 tokens.cache = table.setmetatableindex(function(t,k)
+    if not is_defined(k) then
+        set_macro(k,"","global")
+    end
     local v = create_token(k)
     t[k] = v
     return v

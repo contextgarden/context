@@ -65,6 +65,9 @@ set directive variables (show list with --showdirectives)
 .B --silent=list
 disable logcatgories (show list with --showlogcategories)
 .TP
+.B --strip
+strip Lua code (only meant for production where no errors are expected)
+.TP
 .B --errors=list
 show errors at the end of a run, quit when in list (also when ----silent)
 .TP

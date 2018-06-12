@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 
 -- A merged file is generated with:
 --
---   mtxrun --script package --merge ./luatex-fonts.lua
+--   mtxrun --script package --merge luatex-fonts.lua
 --
 -- A needed resource file is made by:
 --
@@ -243,8 +243,9 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
 
         -- This is the bulk of opentype code.
 
-        loadmodule('font-oti.lua')
         loadmodule('font-otr.lua')
+        loadmodule('font-oti.lua')
+        loadmodule('font-ott.lua')
         loadmodule('font-cff.lua')
         loadmodule('font-ttf.lua')
         loadmodule('font-dsp.lua')

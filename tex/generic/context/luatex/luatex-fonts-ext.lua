@@ -151,11 +151,15 @@ registerafmfeature(specification)
 
 -- normalizer (generic only)
 
-otf.features.normalize = function(t)
-    if t.rand then
-        t.rand = "random"
+if not otf.features.normalize then
+
+    otf.features.normalize = function(t)
+        if t.rand then
+            t.rand = "random"
+        end
+        return t
     end
-    return t
+
 end
 
 -- bonus

@@ -173,24 +173,27 @@ example of why coding in \TEX\ makes sense as it looks more intuitive:
 \test{test 4 \test{test 5} test 6}
 \stoptyping
 
-There is also another mechanism available. In the next example the second
-argument is actually a string.
+The \type {context.nested} variant is now an alias to \type {context.delayed} and
+no longer builds a string representation.
 
-\starttyping
-local nested = context.nested
-
-context.test("test 8",nested.test("test 9"),"test 10")
-\stoptyping
-
-There is a pitfall here: a nested context command needs to be flushed explicitly,
-so in the case of:
-
-\starttyping
-context.nested.test("test 9")
-\stoptyping
-
-a string is created but nothing ends up at the \TEX\ end. Flushing is up to you.
-Beware: \type {nested} only works with the regular \CONTEXT\ catcode regime.
+% There is also another mechanism available. In the next example the second
+% argument is actually a string.
+%
+% \starttyping
+% local nested = context.nested
+%
+% context.test("test 8",nested.test("test 9"),"test 10")
+% \stoptyping
+%
+% There is a pitfall here: a nested context command needs to be flushed explicitly,
+% so in the case of:
+%
+% \starttyping
+% context.nested.test("test 9")
+% \stoptyping
+%
+% a string is created but nothing ends up at the \TEX\ end. Flushing is up to you.
+% Beware: \type {nested} only works with the regular \CONTEXT\ catcode regime.
 
 \stopsection
 

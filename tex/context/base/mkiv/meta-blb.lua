@@ -196,7 +196,12 @@ local function process(object,prescript,before,after)
 --     end
 end
 
-metapost.installplugin(reset,analyze,process)
+metapost.installplugin {
+    name    = "texblob",
+    reset   = reset,
+    analyze = analyze,
+    process = process,
+}
 
 -- Here follows an example of usage of the above: a more modern
 -- version of followokens (in meta-imp-txt.mkiv).
@@ -279,7 +284,7 @@ interfaces.implement {
     actions   = initialize,
 }
 
-local tb_reset, tb_analyze, tb_process  do
+local ft_reset, ft_analyze, ft_process  do
 
     if metapost.use_one_pass then
 
@@ -300,7 +305,7 @@ local tb_reset, tb_analyze, tb_process  do
             end
         }
 
-        tb_process = function(object,prescript,before,after)
+        ft_process = function(object,prescript,before,after)
             object.path    = false
             object.color   = false
             object.grouped = true
@@ -310,11 +315,11 @@ local tb_reset, tb_analyze, tb_process  do
 
     else
 
-        tb_reset = function()
+        ft_reset = function()
             -- nothing
         end
 
-        tb_analyze = function(object,prescript)
+        ft_analyze = function(object,prescript)
             if prescript.ft_stage == "trial" then
                 local ft_category = tonumber(prescript.ft_category)
                 if ft_category then
@@ -325,7 +330,7 @@ local tb_reset, tb_analyze, tb_process  do
             end
         end
 
-        tb_process = function(object,prescript,before,after)
+        ft_process = function(object,prescript,before,after)
             if prescript.ft_stage == "final" then
                 object.path    = false
                 object.color   = false
@@ -339,4 +344,9 @@ local tb_reset, tb_analyze, tb_process  do
 
 end
 
-metapost.installplugin(tb_reset,tb_analyze,tb_process)
+metapost.installplugin {
+    name    = "followtext",
+    reset   = ft_reset,
+    analyze = ft_analyze,
+    process = ft_process,
+}

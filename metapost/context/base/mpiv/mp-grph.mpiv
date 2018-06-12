@@ -168,6 +168,7 @@ else :
     def mfun_no_graphic_text (expr t) text rest =
         currentgraphictext := currentgraphictext + 1 ;
         draw unitsquare
+            withprescript "mf_object=graphictext"
             withprescript "gt_stage=trial"
             withprescript "gt_index=" & decimal currentgraphictext
             withpostscript t

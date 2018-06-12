@@ -776,3 +776,17 @@ do
     end
 
 end
+
+do
+
+    -- a bit overkill: just a find(str,"mf_object=") can be enough
+
+    local p1      = P("mf_object=")
+    local p2      = lpeg.patterns.eol * p1
+    local pattern = (1-p2)^0 * p2 + p1
+
+    function mp.isobject(str)
+        mp.boolean(pattern and str ~= "" and lpegmatch(p,str))
+    end
+
+end

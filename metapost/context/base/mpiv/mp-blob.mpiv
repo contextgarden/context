@@ -37,6 +37,7 @@ if mfun_use_one_pass :
             xscaled redpart mfun_blob_b
             yscaled (greenpart mfun_blob_b + bluepart mfun_blob_b)
             shifted (0,- bluepart mfun_blob_b)
+            withprescript "mf_object=texblob"
             withprescript "tb_blob=" & decimal lua.mp.blob_index(mfun_blob_n,n) ;
         mfun_blob_c
     enddef ;
@@ -50,6 +51,7 @@ else :
             xscaled redpart mfun_blob_b
             yscaled (greenpart mfun_blob_b + bluepart mfun_blob_b)
             shifted (0,- bluepart mfun_blob_b)
+            withprescript "mf_object=texblob"
             withprescript "tb_stage=inject"
             withprescript "tb_blob=" & decimal lua.mp.blob_index(mfun_blob_n,n) ;
         mfun_blob_c
@@ -125,6 +127,7 @@ if mfun_use_one_pass :
                 draw boundingbox currentpicture withpen pencircle scaled .25pt withcolor blue ;
             fi ;
             draw fullcircle scaled 100bp
+                withprescript "mf_object=followtext"
                 withprescript "ft_stage=final"
                 withprescript "ft_category=" & decimal mfun_blob_n ;
         )
@@ -137,6 +140,7 @@ else :
             mfun_blob_n := mfun_blob_n + 1 ;
             if mfun_trial_run :
                 draw fullcircle scaled 100bp
+                    withprescript "mf_object=followtext"
                     withprescript "ft_stage=trial"
                     withprescript "ft_category=" & decimal mfun_blob_n
                     withpostscript txt ;
@@ -196,6 +200,7 @@ else :
                     draw boundingbox currentpicture withpen pencircle scaled .25pt withcolor blue ;
                 fi ;
                 draw fullcircle scaled 100bp
+                    withprescript "mf_object=followtext"
                     withprescript "ft_stage=final"
                     withprescript "ft_category=" & decimal mfun_blob_n ;
             fi ;

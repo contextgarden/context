@@ -18,6 +18,7 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 local next, type, tonumber, select = next, type, tonumber, select
 local find, match = string.find, string.match
 local concat, fastcopy, insert, remove = table.concat, table.fastcopy, table.insert, table.remove
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local max, min = math.max, math.min
 local allocate, mark, accesstable = utilities.storage.allocate, utilities.storage.mark, utilities.tables.accesstable
 local setmetatableindex = table.setmetatableindex
@@ -42,6 +43,7 @@ local trace_sectioning    = false  trackers.register("structures.sectioning", fu
 local trace_detail        = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
 
 local report_structure    = logs.reporter("structure","sectioning")
+local report_used         = logs.reporter("structure")
 
 local context             = context
 local commands            = commands
@@ -972,6 +974,47 @@ function sections.getnumber(depth,what) -- redefined here
     context(askednumber)
 end
 
+-- maybe handy
+
+function sections.showstructure()
+
+    local tobesaved = structures.lists.tobesaved
+
+    if not tobesaved then
+        return
+    end
+
+    local levels = setmetatableindex("table")
+    local names  = setmetatableindex("table")
+
+    report_used()
+    report_used("sections")
+    for i=1,#tobesaved do
+        local si = tobesaved[i]
+        local md = si.metadata
+        if md and md.kind == "section" then
+            local level   = md.level
+            local name    = md.name
+            local numbers = si.numberdata.numbers
+            local  title  = si.titledata.title
+            report_used("  %i : %-10s %-20s %s",level,concat(numbers,"."),name,title)
+            levels[level][name] = true
+            names[name][level]  = true
+        end
+    end
+    report_used()
+    report_used("levels")
+    for level, list in sortedhash(levels) do
+        report_used("  %s : % t",level,sortedkeys(list))
+    end
+    report_used()
+    report_used("names")
+    for name, list in sortedhash(names) do
+        report_used("  %-10s : % t",name,sortedkeys(list))
+    end
+    report_used()
+end
+
 -- experimental
 
 local levels = { }
@@ -1042,6 +1085,7 @@ implement { name = "getsomefullstructurenumber", actions = sections.fullnumber, 
 implement { name = "getspecificstructuretitle",  actions = sections.structuredata,   arguments = { "string", "'titledata.title'",false,"string" } }
 
 implement { name = "reportstructure",            actions = sections.reportstructure }
+implement { name = "showstructure",              actions = sections.showstructure }
 
 implement {
     name      = "registersection",

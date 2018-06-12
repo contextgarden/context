@@ -1454,7 +1454,7 @@ do
 
     local function indexer(parent,k)
         local f = function(...)
-            local a = { ... }
+            local a = { ... } -- this also freezes ...
             return function()
              -- return context[k](unpack(a))
                 return core[k](unpack(a))
@@ -1479,46 +1479,48 @@ do
 
 end
 
-do
+-- do
+--
+--     -- context.nested (todo: lines), creates strings
+--
+--     local nested = { }
+--
+--     local function indexer(parent,k) -- not ok when traced
+--         local f = function(...)
+--             local t, savedflush, n = { }, flush, 0
+--             flush = function(c,f,s,...) -- catcodes are ignored
+--                 n = n + 1
+--                 t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
+--             end
+--          -- context[k](...)
+--             core[k](...)
+--             flush = savedflush
+--             return concat(t)
+--         end
+--         parent[k] = f
+--         return f
+--     end
+--
+--     local function caller(parent,...)
+--         local t, savedflush, n = { }, flush, 0
+--         flush = function(c,f,s,...) -- catcodes are ignored
+--             n = n + 1
+--             t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
+--         end
+--      -- context(...)
+--         defaultcaller(context,...)
+--         flush = savedflush
+--         return concat(t)
+--     end
+--
+--     setmetatableindex(nested,indexer)
+--     setmetatablecall (nested,caller)
+--
+--     context.nested = nested
+--
+-- end
 
-    -- context.nested (todo: lines), creates strings
-
-    local nested = { }
-
-    local function indexer(parent,k) -- not ok when traced
-        local f = function(...)
-            local t, savedflush, n = { }, flush, 0
-            flush = function(c,f,s,...) -- catcodes are ignored
-                n = n + 1
-                t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
-            end
-         -- context[k](...)
-            core[k](...)
-            flush = savedflush
-            return concat(t)
-        end
-        parent[k] = f
-        return f
-    end
-
-    local function caller(parent,...)
-        local t, savedflush, n = { }, flush, 0
-        flush = function(c,f,s,...) -- catcodes are ignored
-            n = n + 1
-            t[n] = s and concat{f,s,...} or f -- optimized for #args == 1
-        end
-     -- context(...)
-        defaultcaller(context,...)
-        flush = savedflush
-        return concat(t)
-    end
-
-    setmetatableindex(nested,indexer)
-    setmetatablecall (nested,caller)
-
-    context.nested = nested
-
-end
+context.nested = context.delayed
 
 -- verbatim
 

@@ -816,6 +816,17 @@
 \let\currentheadlevel   \!!zerocount
 \let\currentheadcounter \!!zerocount
 
+\let\strc_show_used\relax
+
+\installtextracker
+  {structures.showused}
+  {\let\strc_show_used\clf_showstructure}
+  {\let\strc_show_used\relax}
+
+\appendtoks
+    \strc_show_used
+\to \everystoptext
+
 \unexpanded\def\placeheadtext  {\dosingleempty\strc_sectioning_place_head_text  } % use with care
 \unexpanded\def\placeheadnumber{\dosingleempty\strc_sectioning_place_head_number} % use with care
 

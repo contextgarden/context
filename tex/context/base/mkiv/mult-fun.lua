@@ -145,5 +145,7 @@ return {
         "sortlist", "copylist", "shapedlist", "listtocurves", "listtolines", "listsize", "listlast", "uniquelist",
         --
         "circularpath", "squarepath", "linearpath",
+        --
+        "theoffset",
     },
 }

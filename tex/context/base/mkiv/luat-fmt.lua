@@ -48,6 +48,9 @@ local function secondaryflags()
     if arguments.ansi then
         flags[#flags+1] = "--c:ansi"
     end
+    if arguments.strip then
+        flags[#flags+1] = "--c:strip"
+    end
     return concat(flags," ")
 end
 

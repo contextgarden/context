@@ -20,6 +20,12 @@ numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXF
 
 boolean mfun_use_one_pass ; mfun_use_one_pass := runscript("mp.print(metapost.use_one_pass)") ;
 
+%D Objects:
+
+vardef isobject expr p =
+    lua.mp.isobject(prescriptpart p)
+enddef ;
+
 %D Color and transparency
 %D
 %D Separable:
@@ -201,6 +207,7 @@ if mfun_use_one_pass :
                 xscaled redpart mfun_tt_r
                 yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
                 shifted (0,-bluepart mfun_tt_r)
+                withprescript "mf_object=text"
                 withprescript "tx_index=" & decimal mfun_tt_n
                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
             ;
@@ -218,6 +225,7 @@ if mfun_use_one_pass :
             xscaled redpart mfun_tt_r
             yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
             shifted (0,-bluepart mfun_tt_r)
+            withprescript "mf_object=text"
             withprescript "tx_index=" & decimal mfun_tt_n
             withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
         ;
@@ -237,6 +245,7 @@ else :
                 mfun_tt_o := nullpicture ;
                 addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
                 addto mfun_tt_c doublepath unitsquare
+                    withprescript "mf_object=text"
                     withprescript "tx_number=" & decimal mfun_tt_n
                     withprescript "tx_stage=trial"
                     withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
@@ -251,6 +260,7 @@ else :
                     xscaled redpart mfun_tt_b
                     yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
                     shifted (0,- bluepart mfun_tt_b)
+                    withprescript "mf_object=text"
                     withprescript "tx_number=" & decimal mfun_tt_n
                     withprescript "tx_stage=final" ;
             fi ;
@@ -281,6 +291,7 @@ vardef rawtexbox(expr category, name) =
             xscaled redpart mfun_tt_b
             yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
             shifted (0,- bluepart mfun_tt_b)
+            withprescript "mf_object=box"
             withprescript "bx_category=" & if numeric category : decimal fi category
             withprescript "bx_name=" & if numeric name : decimal fi name ;
     fi
@@ -424,8 +435,6 @@ enddef ;
 
 plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" & "useplainlabels ;" ;
 
-% next comes own own:
-
 vardef thetextext@#(expr p,z) =
   % interim labeloffset := textextoffset ;
     if string p :
@@ -464,6 +473,7 @@ if mfun_use_one_pass :
             xscaled redpart mfun_tt_r
             yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
             shifted (0,-bluepart mfun_tt_r)
+            withprescript "mf_object=text"
             withprescript "tx_index=" & decimal mfun_tt_n
             withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
         ;
@@ -484,6 +494,7 @@ else :
             mfun_tt_o := nullpicture ;
             addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
             addto mfun_tt_c doublepath unitsquare
+                withprescript "mf_object=text"
                 withprescript "tx_number=" & decimal mfun_tt_n
                 withprescript "tx_stage=trial"
                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
@@ -507,6 +518,7 @@ else :
                 xscaled redpart mfun_tt_b
                 yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
                 shifted (0,- bluepart mfun_tt_b)
+                withprescript "mf_object=text"
                 withprescript "tx_number=" & decimal mfun_tt_n
                 withprescript "tx_stage=final" ;
             % begin of fmt specific
@@ -557,11 +569,44 @@ vardef texbox@#(expr category, name) = % no draw here
     thetexbox@#(category,name,origin)
 enddef ;
 
+% vardef thelabel@#(expr p,z) =
+%     if string p :
+%         thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
+%     else :
+%         p shifted (z + labeloffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+%     fi
+% enddef;
+
+vardef theoffset@#(expr z) =
+    if pair z :
+        z
+    elseif path z :
+        if mfun_laboff@# = origin :
+            center z
+        elseif cycle z :
+            ((center z         )--
+             (mfun_labxf@#*ulcorner z + mfun_labyf@#*lrcorner z + (1-mfun_labxf@#-mfun_labyf@#)*urcorner z))
+                intersectionpoint z
+        else :
+            ((center z)--
+             (mfun_labxf@#*ulcorner z + mfun_labyf@#*lrcorner z + (1-mfun_labxf@#-mfun_labyf@#)*urcorner z))
+                intersectionpoint (z--cycle)
+        fi
+    else : % picture
+        (mfun_labxf@#*ulcorner z + mfun_labyf@#*lrcorner z + (1-mfun_labxf@#-mfun_labyf@#)*urcorner z)
+    fi
+enddef;
+
 vardef thelabel@#(expr p,z) =
-    if string p :
+    if numeric p :
+        thelabel@#(decimal p)
+    elseif string p :
         thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
     else :
-        p shifted (z + labeloffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+        p shifted (theoffset@#(z)
+            + labeloffset*mfun_laboff@#
+            - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p +
+                (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
     fi
 enddef;
 
@@ -1235,6 +1280,7 @@ else :
             if mfun_trial_run :
               % lua.mp.report("set outline text",currentoutlinetext);
                 normaldraw unitsquare
+                    withprescript "mf_object=outline"
                     withprescript "ot_stage=trial"
                     withprescript "ot_index=" & decimal currentoutlinetext
                     withprescript "ot_kind=" & kind

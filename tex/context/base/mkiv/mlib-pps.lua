@@ -842,10 +842,6 @@ local sequencers       = utilities.sequencers
 local appendgroup      = sequencers.appendgroup
 local appendaction     = sequencers.appendaction
 
-local resetter         = nil
-local analyzer         = nil
-local processor        = nil
-
 local resetteractions  = sequencers.new { arguments = "t" }
 local analyzeractions  = sequencers.new { arguments = "object,prescript" }
 local processoractions = sequencers.new { arguments = "object,prescript,before,after" }
@@ -914,7 +910,7 @@ end
 function metapost.resetplugins(t) -- intialize plugins, before figure
     if top.plugmode then
         outercolormodel = colors.currentmodel() -- currently overloads the one set at the tex end
-        resetter(t)
+        resetteractions.runner(t)
     end
 end
 
@@ -922,7 +918,7 @@ function metapost.analyzeplugins(object) -- each object (first pass)
     if top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
-            analyzer(object,splitprescript(prescript) or {})
+            analyzeractions.runner(object,splitprescript(prescript) or {})
             return top.multipass
         end
     end
@@ -935,7 +931,7 @@ function metapost.processplugins(object) -- each object (second pass)
         if prescript and #prescript > 0 then
             local before = { }
             local after = { }
-            processor(object,splitprescript(prescript) or {},before,after)
+            processoractions.runner(object,splitprescript(prescript) or {},before,after)
             return #before > 0 and before, #after > 0 and after
         else
             local c = object.color
@@ -1850,31 +1846,21 @@ local ot_reset, ot_analyze, ot_process do
 
 end
 
--- definitions
+-- mf_object=<string>
 
-appendaction(resetteractions, "system",ot_reset)
-appendaction(resetteractions, "system",cl_reset)
-appendaction(resetteractions, "system",tx_reset)
+local p1      = P("mf_object=")
+local p2      = lpeg.patterns.eol * p1
+local pattern = (1-p2)^0 * p2 + p1
 
-appendaction(processoractions,"system",ot_process)
-appendaction(processoractions,"system",gr_process)
+function metapost.isobject(str)
+    return pattern and str ~= "" and lpegmatch(p,str) and true or false
+end
 
-appendaction(analyzeractions, "system",ot_analyze)
-appendaction(analyzeractions, "system",tx_analyze)
-appendaction(analyzeractions, "system",gt_analyze)
-
-appendaction(processoractions,"system",sh_process)
---          (processoractions,"system",gt_process)
-appendaction(processoractions,"system",bm_process)
-appendaction(processoractions,"system",tx_process)
-appendaction(processoractions,"system",bx_process)
-appendaction(processoractions,"system",ps_process)
-appendaction(processoractions,"system",fg_process)
-appendaction(processoractions,"system",tr_process) -- last, as color can be reset
-
-appendaction(processoractions,"system",la_process)
-
-function metapost.installplugin(reset,analyze,process)
+local function installplugin(specification)
+    local reset   = specification.reset
+    local analyze = specification.analyze
+    local process = specification.process
+    local object  = specification.object
     if reset then
         appendaction(resetteractions,"system",reset)
     end
@@ -1884,13 +1870,21 @@ function metapost.installplugin(reset,analyze,process)
     if process then
         appendaction(processoractions,"system",process)
     end
-    resetter  = resetteractions .runner
-    analyzer  = analyzeractions .runner
-    processor = processoractions.runner
 end
 
--- we're nice and set them already
+metapost.installplugin = installplugin
 
-resetter  = resetteractions .runner
-analyzer  = analyzeractions .runner
-processor = processoractions.runner
+-- definitions
+
+installplugin { name = "outline",      reset = ot_reset, analyze = ot_analyze, process = ot_process }
+installplugin { name = "color",        reset = cl_reset, analyze = cl_analyze, process = cl_process }
+installplugin { name = "text",         reset = tx_reset, analyze = tx_analyze, process = tx_process }
+installplugin { name = "group",        reset = gr_reset, analyze = gr_analyze, process = gr_process }
+installplugin { name = "graphictext",  reset = gt_reset, analyze = gt_analyze, process = gt_process }
+installplugin { name = "shade",        reset = sh_reset, analyze = sh_analyze, process = sh_process }
+installplugin { name = "bitmap",       reset = bm_reset, analyze = bm_analyze, process = bm_process }
+installplugin { name = "box",          reset = bx_reset, analyze = bx_analyze, process = bx_process }
+installplugin { name = "position",     reset = ps_reset, analyze = ps_analyze, process = ps_process }
+installplugin { name = "figure",       reset = fg_reset, analyze = fg_analyze, process = fg_process }
+installplugin { name = "layer",        reset = la_reset, analyze = la_analyze, process = la_process }
+installplugin { name = "transparency", reset = tr_reset, analyze = tr_analyze, process = tr_process }

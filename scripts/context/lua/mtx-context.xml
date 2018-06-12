@@ -70,6 +70,9 @@
                 <flag name="silent" value="list">
                     <short>disable logcatgories (show list with <ref name="showlogcategories"/>)</short>
                 </flag>
+                <flag name="strip">
+                    <short>strip Lua code (only meant for production where no errors are expected)</short>
+                </flag>
                 <flag name="errors" value="list">
                     <short>show errors at the end of a run, quit when in list (also when <ref name="--silent"/>)</short>
                 </flag>

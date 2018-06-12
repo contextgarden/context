@@ -63,6 +63,30 @@ add up, but less that one thinks, especially when macros are already quite
 optimal. Also this runtime includes time normally used for running additional
 programs (e.g.\ for getting bibliographies right).
 
+It must be said that performance is not completely under our control. For
+instance, we have patched the \LUAJIT\ hash function because it favours \URL's
+and therefore favours hashing the middle of the string which is bad for our use
+as we are more interested in the (often unique) start of strings. We also
+compress the format which speeds up loading but not on the native windows 64~bit
+binary. At the time this writing the extra overhead is 2~seconds due to some
+suboptimal gzip handling; the cross compiled 64~bit mingw binaries that I use
+don't suffer from this. When I was testing the 32~bit binaries on the machine of
+a colleague, I was surprised to measure the following differences on a complex
+document with hundreds of \XML\ files, many images and a lot of manipulations.
+
+\starttabulate[||c|c|]
+\NC            \BC 1.08 with \LUA\ 5.2 \BC 1.09 with \LUA\ 5.3 \NC \NR
+\BC \LUATEX    \NC $21.5$              \NC $15.2$              \NC \NR
+\BC \LUAJITTEX \NC $10.7$              \NC $10.3$              \NC \NR
+\stoptabulate
+
+Now, these are just rough numbers but they demonstrate that the gap between
+\LUATEX\ and \LUAJITTEX\ is becoming less which is good because at this moment it
+looks like \LUAJIT\ will not catch up with \LUA\ 5.3 so at some point we might
+drop it. It will be interesting to see what \LUA\ 5.4 will bring as it offers an
+\ alternative garbage collector. And imagine that the regular \LUA\ virtual
+machine gets more optimized.
+
 You also have to take into account that having a browser open in the background
 of a \TEX\ run has way more impact than a few tenths of a second in \LUATEX\
 performance. The same is true for memory usage: why bother about \LUATEX\ taking

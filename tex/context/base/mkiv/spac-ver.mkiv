@@ -2420,12 +2420,13 @@
    \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
    \ifx\m_spac_hanging_location\v!right
      \hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
-     \rlap{\hskip\dimexpr\hsize-\wd\nextbox\relax\box\nextbox}%
+     \rlap{\hskip\dimexpr\hsize-\leftskip-\wd\nextbox\relax\box\nextbox}% \leftskip is new
    \else
      \hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
      \llap{\box\nextbox\hskip\scratchdistance}%
    \fi
    \ignorespaces}
+
 
 %D \macros
 %D   {startfixed}

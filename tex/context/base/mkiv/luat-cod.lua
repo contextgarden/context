@@ -49,6 +49,8 @@ end
 
 -- no file.* and utilities.parsers.* functions yet
 
+local strip = false if arg then for i=-1,#arg do if arg[i] == "--c:strip" then strip = true break end end end
+
 function lua.registercode(filename,options)
     local barename = gsub(filename,"%.[%a%d]+$","")
     if barename == filename then filename = filename .. ".lua" end
@@ -66,7 +68,11 @@ function lua.registercode(filename,options)
             if environment.initex then
                 local n = lua.lastbytecode + 1
                 bytedata[n] = { name = barename, options = opts }
-                setbytecode(n,code)
+                if strip or opts.strip then
+                    setbytecode(n,code,true)
+                else
+                    setbytecode(n,code)
+                end
                 lua.lastbytecode = n
             end
         elseif environment.initex then
