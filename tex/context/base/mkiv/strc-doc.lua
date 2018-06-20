@@ -124,12 +124,16 @@ local tobesaved  = allocate()
 sections.collected  = collected
 sections.tobesaved  = tobesaved
 
--- local function initializer()
---     collected = sections.collected
---     tobesaved = sections.tobesaved
--- end
---
--- job.register('structures.sections.collected', tobesaved, initializer)
+-- We have to save this mostly redundant list because we can have (rare)
+-- cases with own numbers that don't end up in the list so we get out of
+-- sync when we use (*).
+
+local function initializer()
+    collected = sections.collected
+    tobesaved = sections.tobesaved
+end
+
+job.register('structures.sections.collected', tobesaved, initializer)
 
 local registered    = sections.registered or allocate()
 sections.registered = registered
@@ -160,7 +164,7 @@ end
 local lastsaved = 0
 
 function sections.save(sectiondata)
---  local sectionnumber = helpers.simplify(section.sectiondata) -- maybe done earlier
+local sectiondata = helpers.simplify(sectiondata) -- maybe done earlier
     local numberdata = sectiondata.numberdata
     local ntobesaved = #tobesaved
     if not numberdata or sectiondata.metadata.nolist then
@@ -180,28 +184,28 @@ function sections.currentsectionindex()
     return lastsaved -- only for special controlled situations
 end
 
-function sections.load()
-    setmetatableindex(collected,nil)
-    local lists = lists.collected
-    for i=1,#lists do
-        local list = lists[i]
-        local metadata = list.metadata
-        if metadata and metadata.kind == "section" and not metadata.nolist then
-            local numberdata = list.numberdata
-            if numberdata then
-                collected[#collected+1] = numberdata
-            end
-        end
-    end
-    sections.load = functions.dummy
-end
-
-table.setmetatableindex(collected, function(t,i)
-    sections.load()
-    return collected[i] or { }
-end)
-
+-- See comment above (*). We cannot use the following space optimization:
 --
+-- function sections.load()
+--     setmetatableindex(collected,nil)
+--     local lists = lists.collected
+--     for i=1,#lists do
+--         local list = lists[i]
+--         local metadata = list.metadata
+--         if metadata and metadata.kind == "section" and not metadata.nolist then
+--             local numberdata = list.numberdata
+--             if numberdata then
+--                 collected[#collected+1] = numberdata
+--             end
+--         end
+--     end
+--     sections.load = functions.dummy
+-- end
+--
+-- table.setmetatableindex(collected, function(t,i)
+--     sections.load()
+--     return collected[i] or { }
+-- end)
 
 sections.verbose          = true
 

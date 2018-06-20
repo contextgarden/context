@@ -56,13 +56,15 @@ vardef mlib_luas_luacall(text t) =
     runscript("" for s = t :
         if string s :
             & s
-%             & mfun_lua_bs & s & mfun_lua_es
+          % & mfun_lua_bs & s & mfun_lua_es
         elseif numeric s :
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
         elseif pair s :
             & mfun_pair_to_table(s)
+        elseif path s :
+            & mfun_path_to_table(s)
         elseif rgbcolor s :
             & mfun_rgb_to_table(s)
         elseif cmykcolor s :
@@ -90,6 +92,8 @@ vardef mlib_luas_lualist(expr c)(text t) =
             & if s : "true" else : "false" fi
         elseif pair s :
             & mfun_pair_to_table(s)
+        elseif path s :
+            & mfun_path_to_table(s)
         elseif rgbcolor s :
             & mfun_rgb_to_table(s)
         elseif cmykcolor s :

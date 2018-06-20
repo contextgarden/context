@@ -127,17 +127,21 @@ local function getfonts(pdffile)
     local function collect(where,tag)
         local resources = where.Resources
         if resources then
-            local fontlist = resources.Font
-            if fontlist then
-                for k, v in next, expand(fontlist) do
-                    usedfonts[tag and (tag .. "." .. k) or k] = expand(v,k)
+            if expand then
+                local fontlist = resources.Font
+                if fontlist then
+                    for k, v in expand(fontlist) do
+                        usedfonts[tag and (tag .. "." .. k) or k] = expand(v,k)
+                    end
                 end
-            end
-            local objects = resources.XObject
-            if objects then
-                for k, v in next, expand(objects) do
-                    collect(v,tag and (tag .. "." .. k) or k)
+                local objects = resources.XObject
+                if objects then
+                    for k, v in next, expand(objects) do
+                        collect(v,tag and (tag .. "." .. k) or k)
+                    end
                 end
+            else
+                report("adapt this to the new pdelib")
             end
         end
     end

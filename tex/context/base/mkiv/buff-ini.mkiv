@@ -49,7 +49,13 @@
 
 \def\buff_start_indeed#1#2#3#4%
   {\edef\p_strip{\namedbufferparameter{#1}\c!strip}% for aditya
-   \normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}\ifx\p_strip\v!no\zerocount\else\plusone\fi}}
+   \normalexpanded{\buff_pickup
+     {#2}%
+     {#3}%
+     {#4}%
+     {}%
+     {\buff_stop{#4}}%
+     \ifx\p_strip\v!no\zerocount\else\plusone\fi}}
 
 \unexpanded\def\grabbufferdata % was: \dostartbuffer
   {\begingroup % (4)

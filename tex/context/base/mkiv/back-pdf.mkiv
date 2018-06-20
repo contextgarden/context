@@ -32,7 +32,11 @@
 \registerctxluafile{lpdf-swf}{} % this will become a module
 \registerctxluafile{lpdf-tag}{}
 \registerctxluafile{lpdf-fmt}{}
-\registerctxluafile{lpdf-epd}{}
+\ifnum\texenginefunctionality<6802
+    \registerctxluafile{lpdf-epd}{}
+\else
+    \registerctxluafile{lpdf-pde}{}
+\fi
 \registerctxluafile{lpdf-epa}{}
 
 \registerctxluafile{back-pdf}{} % some code will move to lpdf-*

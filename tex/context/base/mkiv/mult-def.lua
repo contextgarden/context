@@ -11552,6 +11552,12 @@ return {
    ["pe"]="گام‌وای",
    ["ro"]="ystep",
   },
+  ["ownerpassword"]={
+    ["en"]="ownerpassword",
+  },
+  ["userpassword"]={
+    ["en"]="userpassword",
+  },
  },
  ["elements"]={
   ["answerlines"]={

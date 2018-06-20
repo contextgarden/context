@@ -43,6 +43,7 @@ local findfile             = resolvers.findfile
 local addsuffix            = file.addsuffix
 
 local v_yes                = variables.yes
+local v_no                 = variables.no
 local v_last               = variables.last
 local v_all                = variables.all
 local v_absolute           = variables.absolute
@@ -736,7 +737,8 @@ end
 
 local function filter(lines,settings) -- todo: inline or display in settings
     local strip = settings.strip
-    if strip and strip ~= "" then
+ -- if strip and strip == "" then
+    if strip ~= v_no and strip ~= false then
         lines = realign(lines,strip)
     end
     local line, n = 0, 0

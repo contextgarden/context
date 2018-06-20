@@ -123,10 +123,12 @@ setmetatablenewindex(texifs, function(t,k)
 end)
 
 setmetatableindex(texisdefined, function(t,k)
-    return k and cache[k].mode ~= 0
+ -- return k and cache[k].mode ~= 0
+    return k and is_defined(k)
 end)
 setmetatablecall(texisdefined, function(t,k)
-    return k and cache[k].mode ~= 0
+ -- return k and cache[k].mode ~= 0
+    return k and is_defined(k)
 end)
 setmetatablenewindex(texisdefined, function(t,k)
     -- just ignore

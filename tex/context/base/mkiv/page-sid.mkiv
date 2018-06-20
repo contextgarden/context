@@ -541,13 +541,18 @@
 \def\page_sides_inject_dummy_lines
   {\par
    \nointerlineskip
+ % \ifnum\lastpenalty>\zerocount
+ %   \penalty\plustenthousand
+ % \fi
    \dontleavehmode
    \iftracesidefloats
      \page_sides_inject_dummy_line_traced
    \else
      \page_sides_inject_dummy_line_normal
    \fi
-   \vskip-\dimexpr\lineheight+\strutdp\relax
+   \par
+   \ignoreparskip
+   \kern-\dimexpr\lineheight+\strutdp\relax
    \ignoreparskip
    \blank[\v!samepage]
    \blank[\v!disable]}
@@ -716,6 +721,15 @@
 %D As we have no clear end of one or more paragraphs we only have pre float
 %D skips.
 
+\newconstant\c_page_sides_page_method % will be: \c_page_sides_page_method\plusone
+
+\def\page_otr_force_new_page_one
+  {\vskip\d_page_sides_height
+   \penalty\outputpenalty
+   \vskip-\dimexpr\d_page_sides_height-\strutdp\relax
+   \prevdepth\strutdp}
+  %\ignoreparskip}
+
 \def\page_sides_handle_float#1% grid (4) is rather experimental
   {\page_sides_check_horizontal_skips
    \page_sides_check_vertical_skips
@@ -726,8 +740,16 @@
    \page_sides_relocate_float{#1}%
    \page_sides_apply_vertical_shift
    \page_sides_analyse_space
-   \ifconditional\c_page_floats_room \else
-     \page_otr_fill_and_eject_page
+   \ifconditional\c_page_floats_room
+     % we're ok
+   \else
+     \ifcase\c_page_sides_page_method
+       \page_otr_fill_and_eject_page
+     \or
+       \page_otr_force_new_page_one
+     \else
+       \page_otr_fill_and_eject_page
+     \fi
      \page_sides_analyse_space
     %\page_sides_inject_before
      \page_sides_inject_dummy_lines

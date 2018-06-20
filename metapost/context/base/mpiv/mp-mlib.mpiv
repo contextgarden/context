@@ -1489,6 +1489,20 @@ vardef mfun_pair_to_table(expr p) =
     "}"
 enddef ;
 
+vardef mfun_point_to_table(expr p,i) =
+    "{" & decimal xpart (point       i of p) &
+    "," & decimal ypart (point       i of p) &
+    "," & decimal xpart (precontrol  i of p) &
+    "," & decimal ypart (precontrol  i of p) &
+    "," & decimal xpart (postcontrol i of p) &
+    "," & decimal ypart (postcontrol i of p) &
+    "}"
+enddef ;
+
+vardef mfun_path_to_table(expr p) =
+    "{" & mfun_point_to_table(p,0) for i=1 upto length(p) : & "," & mfun_point_to_table(p,i) endfor & "}"
+enddef ;
+
 vardef mfun_rgbcolor_to_table(expr c) =
     "{" & decimal redpart   c &
     "," & decimal greenpart c &

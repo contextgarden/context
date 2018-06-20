@@ -120,7 +120,7 @@ function checkimage(figure)
         local width  = figure.width
         local height = figure.height
         if width <= 0 or height <= 0 then
-            report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename,width,height)
+            report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename or "?",width,height)
             return false, "bad dimensions"
         end
         local xres    = figure.xres
@@ -1362,16 +1362,18 @@ end
 local pagecount = { }
 
 function checkers.generic(data)
-    local dr, du, ds = data.request, data.used, data.status
-    local name       = du.fullname or "unknown generic"
-    local page       = du.page or dr.page
-    local size       = dr.size or "crop"
-    local color      = dr.color or "natural"
-    local mask       = dr.mask or "none"
-    local conversion = dr.conversion
-    local resolution = dr.resolution
-    local arguments  = dr.arguments
-    local scanimage  = dr.scanimage or scanimage
+    local dr, du, ds    = data.request, data.used, data.status
+    local name          = du.fullname or "unknown generic"
+    local page          = du.page or dr.page
+    local size          = dr.size or "crop"
+    local color         = dr.color or "natural"
+    local mask          = dr.mask or "none"
+    local conversion    = dr.conversion
+    local resolution    = dr.resolution
+    local arguments     = dr.arguments
+    local scanimage     = dr.scanimage or scanimage
+    local userpassword  = dr.userpassword
+    local ownerpassword = dr.ownerpassword
     if not conversion or conversion == "" then
         conversion = "default"
     end
@@ -1398,6 +1400,8 @@ function checkers.generic(data)
             page            = page,
             pagebox         = dr.size,
             keepopen        = dr.keepopen or false,
+            userpassword    = userpassword,
+            ownerpassword   = ownerpassword,
          -- visiblefilename = "", -- this prohibits the full filename ending up in the file
         }
         codeinjections.setfigurecolorspace(data,figure)
@@ -1405,7 +1409,11 @@ function checkers.generic(data)
         if figure then
             -- new, bonus check
             if page and page > 1 then
-                local f = scanimage{ filename = name }
+                local f = scanimage{
+                    filename      = name,
+                    userpassword  = userpassword,
+                    ownerpassword = ownerpassword,
+                }
                 if f.page and f.pages < page then
                     report_inclusion("no page %i in %a, using page 1",page,name)
                     page        = 1
@@ -1966,6 +1974,8 @@ implement {
             { "transform" },
             { "width", "dimen" },
             { "height", "dimen" },
+            { "userpassword" },
+            { "ownerpassword" },
         }
     }
 }
@@ -2056,17 +2066,18 @@ local function pdf_checker(data)
     local used    = data.used
     if request and used and not request.scanimage then
         local openpdf  = lpdf.epdf.image.open
-        ----- closepdf = lpdf.epdf.image.close
+        local closepdf = lpdf.epdf.image.close
         local querypdf = lpdf.epdf.image.query
         local copypage = lpdf.epdf.image.copy
+        local pdfdoc   = nil
         request.scanimage = function(t)
-            local pdfdoc = openpdf(t.filename)
-            if pdfdoc then
-                used.pdfdoc = pdfdoc
-                -- nofpages
-            end
+            pdfdoc = openpdf(t.filename,request.userpassword,request.ownerpassword)
+         -- if pdfdoc then
+         --     used.pdfdoc = pdfdoc
+         --     -- nofpages
+         -- end
             local info = querypdf(pdfdoc,request.page)
-            local bbox = info.boundingbox
+            local bbox = info and info.boundingbox or { 0, 0, 0, 0 }
             return {
                 filename    = filename,
              -- page        = 1,
@@ -2084,7 +2095,14 @@ local function pdf_checker(data)
             }
         end
         request.copyimage = function(t)
-            return copypage(used.pdfdoc,request.page)
+         -- local pdfdoc = used.pdfdoc
+            local result = copypage(pdfdoc,request.page)
+            if pdfdoc.nofpages == 1 then -- and object usage
+                closepdf(pdfdoc)
+             -- used.pdfdoc = nil
+                pdfdoc = nil
+            end
+            return result
         end
     end
     return checkers.generic(data)

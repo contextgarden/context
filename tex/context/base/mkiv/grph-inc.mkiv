@@ -105,6 +105,8 @@
    \c!align          =\v!none, % New, for Tacos extremely large graphics.
    \c!crossreference =\v!no,
    \c!transform      =\v!auto,
+   \c!userpassword   =,
+   \c!ownerpassword  =,
   ]
 
 %D Defining figures.
@@ -317,27 +319,29 @@
    %
    \dostarttagged\t!image\empty
    \clf_figure_push {
-        name       {\p_grph_include_name}%
-        label      {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
-        page       {\externalfigureparameter\c!page}%
-        file       {\externalfigureparameter\c!file}%
-        size       {\externalfigureparameter\c!size}%
-        object     {\externalfigureparameter\c!object}%
-        prefix     {\externalfigureparameter\c!prefix}%
-        cache      {\externalfigureparameter\c!cache}%
-        format     {\externalfigureparameter\c!method}%
-        preset     {\externalfigureparameter\c!prefix}%
-        controls   {\externalfigureparameter\c!controls}%
-        resources  {\externalfigureparameter\c!resources}%
-        preview    {\externalfigureparameter\c!preview}%
-        display    {\externalfigureparameter\c!display}%
-        mask       {\externalfigureparameter\c!mask}%
-        conversion {\externalfigureparameter\c!conversion}%
-        resolution {\externalfigureparameter\c!resolution}%
-        color      {\externalfigureparameter\c!color}% unprocessed raw key
-        arguments  {\externalfigureparameter\c!arguments}% used for converters
-        repeat     {\externalfigureparameter\c!repeat}%
-        transform  {\externalfigureparameter\c!transform}%
+        name         {\p_grph_include_name}%
+        label        {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
+        page         {\externalfigureparameter\c!page}%
+        file         {\externalfigureparameter\c!file}%
+        size         {\externalfigureparameter\c!size}%
+        object       {\externalfigureparameter\c!object}%
+        prefix       {\externalfigureparameter\c!prefix}%
+        cache        {\externalfigureparameter\c!cache}%
+        format       {\externalfigureparameter\c!method}%
+        preset       {\externalfigureparameter\c!prefix}%
+        controls     {\externalfigureparameter\c!controls}%
+        resources    {\externalfigureparameter\c!resources}%
+        preview      {\externalfigureparameter\c!preview}%
+        display      {\externalfigureparameter\c!display}%
+        mask         {\externalfigureparameter\c!mask}%
+        conversion   {\externalfigureparameter\c!conversion}%
+        resolution   {\externalfigureparameter\c!resolution}%
+        color        {\externalfigureparameter\c!color}% unprocessed raw key
+        arguments    {\externalfigureparameter\c!arguments}% used for converters
+        repeat       {\externalfigureparameter\c!repeat}%
+        transform    {\externalfigureparameter\c!transform}%
+        userpassword {\externalfigureparameter\c!userpassword}%
+        ownerpassword{\externalfigureparameter\c!ownerpassword}%
     \ifx\p_width\empty \else
         width      \dimexpr\p_width\relax
     \fi

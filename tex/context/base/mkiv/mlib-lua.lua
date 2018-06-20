@@ -74,11 +74,13 @@ local f_integer      = formatters["%i"]
 
 local f_numeric      = formatters["%n"]
 local f_pair         = formatters["(%n,%n)"]
+local f_ctrl         = formatters["(%n,%n) .. controls (%n,%n) and (%n,%n)"]
 local f_triplet      = formatters["(%n,%n,%n)"]
 local f_quadruple    = formatters["(%n,%n,%n,%n)"]
 
 local f_points       = formatters["%p"]
 local f_pair_pt      = formatters["(%p,%p)"]
+local f_ctrl_pt      = formatters["(%p,%p) .. controls (%p,%p) and (%p,%p)"]
 local f_triplet_pt   = formatters["(%p,%p,%p)"]
 local f_quadruple_pt = formatters["(%p,%p,%p,%p)"]
 
@@ -231,7 +233,7 @@ function mp.quadruplepoints(w,x,y,z)
     end
 end
 
-local function mppath(f,t,connector,cycle)
+local function mppath(f2,f6,t,connector,cycle)
     if type(t) == "table" then
         local tn = #t
         if tn > 0 then
@@ -242,11 +244,23 @@ local function mppath(f,t,connector,cycle)
                 connector = "--"
             end
             local ti = t[1]
-            n = n + 1 ; buffer[n] = f(ti[1],ti[2])
+            n = n + 1 ;
+            if #ti == 6 then
+                local tn = t[2] or t[1]
+                buffer[n] = f6(ti[1],ti[2],ti[5],ti[6],tn[3],tn[4])
+            else
+                buffer[n] = f2(ti[1],ti[2])
+            end
             for i=2,tn do
                 local ti = t[i]
                 n = n + 1 ; buffer[n] = connector
-                n = n + 1 ; buffer[n] = f(ti[1],ti[2])
+                n = n + 1 ;
+                if #ti == 6 then
+                    local tn = t[i+1] or t[1]
+                    buffer[n] = f6(ti[1],ti[2],ti[5],ti[6],tn[3],tn[4])
+                else
+                    buffer[n] = f2(ti[1],ti[2])
+                end
             end
             if cycle then
                 n = n + 1 ; buffer[n] = connector
@@ -257,11 +271,47 @@ local function mppath(f,t,connector,cycle)
 end
 
 function mp.path(...)
-    mppath(f_pair,...)
+    mppath(f_pair,f_ctrl,...)
 end
 
 function mp.pathpoints(...)
-    mppath(f_pair_pt,...)
+    mppath(f_pair_pt,f_ctrl_pt,...)
+end
+
+
+function mp.pathpoints(t,connector,cycle)
+    if type(t) == "table" then
+        local tn = #t
+        if tn > 0 then
+            if connector == true then
+                connector = "--"
+                cycle     = true
+            elseif not connector then
+                connector = "--"
+            end
+            local ti = t[1]
+            n = n + 1 ;
+            if #ti == 6 then
+                buffer[n] = f_pair_pt_ctrl(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
+            else
+                buffer[n] = f_pair_pt(ti[1],ti[2])
+            end
+            for i=2,tn do
+                local ti = t[i]
+                n = n + 1 ; buffer[n] = connector
+                n = n + 1 ;
+                if #ti == 6 then
+                    buffer[n] = f_pair_pt_ctrl(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
+                else
+                    buffer[n] = f_pair_pt(ti[1],ti[2])
+                end
+            end
+            if cycle then
+                n = n + 1 ; buffer[n] = connector
+                n = n + 1 ; buffer[n] = "cycle"
+            end
+        end
+    end
 end
 
 function mp.size(t)

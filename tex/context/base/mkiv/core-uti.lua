@@ -195,6 +195,7 @@ end
 
 local packlist = {
     "numbers",
+    "ownnumbers",
     "metadata",
     "sectiondata",
     "prefixdata",
@@ -209,6 +210,7 @@ local packlist = {
 local skiplist = {
     "datasets",
     "userdata",
+    "positions",
 }
 
 -- not ok as we can have arbitrary keys in userdata and dataset so some day we

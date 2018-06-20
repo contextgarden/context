@@ -514,9 +514,16 @@
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
 
 \unexpanded\def\buff_verbatim_type_block#1#2%
-  {\buff_pickup{_typing_}{#1}{#2}{}{\buff_verbatim_type_block_verbatim_indeed{#1}{#2}}\plusone} % was dowithbuffer
+  {\edef\p_strip{\typingparameter\c!strip}%
+   \normalexpanded{\buff_pickup
+     {_typing_}%
+     {#1}%
+     {#2}%
+     {}%
+     {\buff_verbatim_type_block_verbatim_indeed{#1}{#2}}%
+     \ifx\p_strip\v!no\zerocount\else\plusone\fi}}
 
-\def\buff_verbatim_type_block_verbatim_indeed#1#2%
+\unexpanded\def\buff_verbatim_type_block_verbatim_indeed#1#2%
   {\buff_verbatim_initialize_typing_two
    \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines

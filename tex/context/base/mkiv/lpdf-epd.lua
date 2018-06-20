@@ -149,21 +149,21 @@ end
 local report_epdf      = logs.reporter("epdf")
 
 local typenames        = { [0] =
-  "boolean",
-  "integer",
-  "real",
-  "string",
-  "name",
-  "null",
-  "array",
-  "dictionary",
-  "stream",
-  "ref",
-  "cmd",
-  "error",
-  "eof",
-  "none",
-  "integer64",
+    "boolean",
+    "integer",
+    "real",
+    "string",
+    "name",
+    "null",
+    "array",
+    "dictionary",
+    "stream",
+    "ref",
+    "cmd",
+    "error",
+    "eof",
+    "none",
+    "integer64",
 }
 
 local typenumbers    = table.swapped(typenames)
