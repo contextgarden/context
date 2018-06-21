@@ -11,34 +11,34 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 
 -- ppdoc_permissions (ppdoc *pdf);
 
--- PPSTRING_ENCODED        (1<< 0)
--- PPSTRING_DECODED        (1<< 1)
--- PPSTRING_EXEC           (1<< 2)   postscript only
--- PPSTRING_PLAIN               0
--- PPSTRING_BASE16         (1<< 3)
--- PPSTRING_BASE85         (1<< 4)
--- PPSTRING_UTF16BE        (1<< 5)
--- PPSTRING_UTF16LE        (1<< 6)
+-- PPSTRING_ENCODED        1 <<  0
+-- PPSTRING_DECODED        1 <<  1
+-- PPSTRING_EXEC           1 <<  2   postscript only
+-- PPSTRING_PLAIN                0
+-- PPSTRING_BASE16         1 <<  3
+-- PPSTRING_BASE85         1 <<  4
+-- PPSTRING_UTF16BE        1 <<  5
+-- PPSTRING_UTF16LE        1 <<  6
 
--- PPDOC_ALLOW_PRINT       (1<< 2)   printing
--- PPDOC_ALLOW_MODIFY      (1<< 3)   filling form fields, signing, creating template pages
--- PPDOC_ALLOW_COPY        (1<< 4)   copying, copying for accessibility
--- PPDOC_ALLOW_ANNOTS      (1<< 5)   filling form fields, copying, signing
--- PPDOC_ALLOW_EXTRACT     (1<< 9)   contents copying for accessibility
--- PPDOC_ALLOW_ASSEMBLY    (1<<10)   no effect)
--- PPDOC_ALLOW_PRINT_HIRES (1<<11)   no effect
+-- PPDOC_ALLOW_PRINT       1 <<  2   printing
+-- PPDOC_ALLOW_MODIFY      1 <<  3   filling form fields, signing, creating template pages
+-- PPDOC_ALLOW_COPY        1 <<  4   copying, copying for accessibility
+-- PPDOC_ALLOW_ANNOTS      1 <<  5   filling form fields, copying, signing
+-- PPDOC_ALLOW_EXTRACT     1 <<  9   contents copying for accessibility
+-- PPDOC_ALLOW_ASSEMBLY    1 << 10   no effect
+-- PPDOC_ALLOW_PRINT_HIRES 1 << 11   no effect
 
--- PPCRYPT_NONE                      no encryption, go ahead
--- PPCRYPT_DONE                      encryption present but password succeeded, go ahead
--- PPCRYPT_PASS                      encryption present, need non-empty password
--- PPCRYPT_FAIL                      invalid or unsupported encryption (eg. undocumented in pdf spec)
+-- PPCRYPT_NONE                  0   no encryption, go ahead
+-- PPCRYPT_DONE                  1   encryption present but password succeeded, go ahead
+-- PPCRYPT_PASS                 -1   encryption present, need non-empty password
+-- PPCRYPT_FAIL                 -2   invalid or unsupported encryption (eg. undocumented in pdf spec)
 
 local setmetatable, rawset, rawget, type, next = setmetatable, rawset, rawget, type, next
 local tostring, tonumber, unpack = tostring, tonumber, unpack
-local lower, match, char, byte, find = string.lower, string.match, string.char, string.byte, string.find
+local char, byte, find = string.char, string.byte, string.find
 local abs = math.abs
 local concat, swapped = table.concat, table.swapped
-local toutf, toeight, utfchar = string.toutf, utf.toeight, utf.char
+local utfchar = string.char
 local setmetatableindex = table.setmetatableindex
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
@@ -75,39 +75,31 @@ local report_epdf       = logs.reporter("epdf")
 
 local allocate          = utilities.storage.allocate
 
-local objectcodes = { [0] =
-    "none",
-    "null",
-    "bool",
-    "integer",
-    "number",
-    "name",
-    "string",
-    "array",
-    "dictionary",
-    "stream",
-    "reference",
+local objectcodes = {
+     [0] = "none",
+           "null",
+           "bool",
+           "integer",
+           "number",
+           "name",
+           "string",
+           "array",
+           "dictionary",
+           "stream",
+           "reference",
 }
 
-local stringcodes = { [0] =
-    "plain",
-    "base16",
-    "base85",
-}
-
-local encryptioncodes = { [0] =
-        "notencrypted", -- PPCRYPT_NONE
-        "unencrypted",  -- PPCRYPT_DONE
- [-1] = "protected",    -- PPCRYPT_PASS
- [-2] = "failure",      -- PPCRYPT_FAIL
+local encryptioncodes = {
+     [0] = "notencrypted",
+     [1] = "unencrypted",
+    [-1] = "protected",
+    [-2] = "failure",
 }
 
 objectcodes           = allocate(swapped(objectcodes,objectcodes))
-stringcodes           = allocate(swapped(stringcodes,stringcodes))
 encryptioncodes       = allocate(swapped(encryptioncodes,encryptioncodes))
 
 pdfe.objectcodes      = objectcodes
-pdfe.stringcodes      = stringcodes
 pdfe.encryptioncodes  = encryptioncodes
 
 local null_code       = objectcodes.null
@@ -126,11 +118,11 @@ local stream_code     = objectcodes.stream
 local reference_code  = objectcodes.reference
 
 local checked_access
-local get_flagged
-
-local frompdfdoc = lpdf.frompdfdoc
+local get_flagged     -- from pdfe -> lpdf
 
 if lpdf.dictionary then
+
+    -- we're in context
 
     local pdfdictionary = lpdf.dictionary
     local pdfarray      = lpdf.array
@@ -161,15 +153,7 @@ if lpdf.dictionary then
 else
 
     get_flagged = function(t,f,k)
-        local tk = t[k] -- triggers resolve
-        local fk = f[k]
-        if not fk then
-            return tk
-        elseif fk == "rawtext" then
-            return frompdfdoc(tk)
-        else
-            return tk
-        end
+        return t[k]
     end
 
 end
@@ -192,28 +176,8 @@ local some_dictionary
 local some_array
 local some_stream
 local some_reference
-local some_string
 
-local u_pattern = lpeg.patterns.utfbom_16_be * lpeg.patterns.utf16_to_utf8_be
-
-local function some_string(s)
-    -- the toutf function only converts a utf16 string and leaves the original
-    -- untouched otherwise; one might want to apply lpdf.frompdfdoc to a
-    -- non-unicode string
-    if not s or s == "" then
-        return ""
-    end
-    local u = lpegmatch(u_pattern,s)
-    if u then
-        return u, "unicode"
-    end
-    -- this is too tricky and fails on e.g. reload of url www.pragma-ade.com)
- -- local b = lpegmatch(b_pattern,s)
- -- if b then
- --     return b, "rawtext"
- -- end
-    return s, "rawtext"
-end
+local some_string = lpdf.frombytes
 
 local function get_value(document,t,key)
     if not key then
@@ -231,7 +195,7 @@ local function get_value(document,t,key)
     if kind == name_code then
         return value[2]
     elseif kind == string_code then
-        return some_string(value[2],document)
+        return some_string(value[2],value[3])
     elseif kind == array_code then
         return some_array(value[2],document)
     elseif kind == dictionary_code then
@@ -282,9 +246,9 @@ some_stream = function(s,d,document)
         end,
         __call = function(t,raw)
             if raw == false then
-                return readwholestream(s,false) -- uncompressed
+                return readwholestream(s,false) -- original
             else
-                return readwholestream(s,true)  -- original
+                return readwholestream(s,true)  -- uncompressed
             end
         end,
     } )
@@ -452,7 +416,6 @@ local loaded = { }
 function lpdf_epdf.load(filename,userpassword,ownerpassword)
     local document = loaded[filename]
     if not document then
-print("opening",filename)
         statistics.starttiming(lpdf_epdf)
         local __data__ = openPDF(filename) -- maybe resolvers.find_file
         if userpassword and getstatus(__data__) < 0 then
@@ -500,7 +463,6 @@ function lpdf_epdf.unload(filename)
     if type(filename) == "string" then
         local document = loaded[filename]
         if document then
-print("closing",filename)
             loaded[document] = nil
             loaded[filename] = nil
         end
@@ -781,9 +743,8 @@ if img then do
     local pdfconstant          = lpdf.constant
     local pdfarray             = lpdf.array
     local pdfdictionary        = lpdf.dictionary
-    local pdfunicode           = lpdf.unicode
-    local pdfstring            = lpdf.string
     local pdfnull              = lpdf.null
+    local pdfliteral           = lpdf.literal
 
     local report               = logs.reporter("backend","xobjects")
 
@@ -795,37 +756,8 @@ if img then do
         return { b[1]*factor, b[2]*factor, b[3]*factor, b[4]*factor }
     end
 
-    local function copyobject(xref,copied,object,key,value)
-        local t = type(value)
-if t == "string" then
-    return pdfconstant(value)
-elseif t ~= "table" then
-    return value
-end
-        local kind = value[1]
-        if kind == name_code then
-            return pdfconstant(value[2])
-        elseif kind == string_code then
-            local entry = value[2]
-            if not entry or entry == "" then
-                return ""
-            end
-            local u = lpegmatch(u_pattern,entry)
-            if u then
-                return pdfunicode(entry)
-            end
-            return pdfstring(entry)
-        elseif kind == array_code then
-            return copyarray(xref,copied,object[key])
-        elseif kind == dictionary_code then
-            return copydictionary(xref,copied,object[key])
-        elseif kind == null_code then
-            return pdfnull()
-        elseif kind == reference_code then
-            -- expand
-            value = object[key]
-        end
-        local entry  = value[2]
+    local function deepcopyobject(xref,copied,value)
+        -- no need for tables, just nested loop with obj
         local objnum = xref[value]
         if objnum then
             local usednum = copied[objnum]
@@ -834,7 +766,7 @@ end
             else
                 usednum = pdfreserveobject()
                 copied[objnum] = usednum
-                local entry = object[key]
+                local entry = value
                 local kind  = entry.__type__
                 if kind == array_code then
                     local a = copyarray(xref,copied,entry)
@@ -855,18 +787,63 @@ end
                     else
                         -- keep as-is, even Length which indicates the
                         -- decompressed length
-                        local s = entry(false)                   -- get compressed stream
-                        pdfflushstreamobject(s,d,false,usednum)  -- don't compress stream
+                        local s = entry(false)                        -- get compressed stream
+                     -- pdfflushstreamobject(s,d,false,usednum,true)  -- don't compress stream
+                        pdfflushstreamobject(s,d,"raw",usednum)       -- don't compress stream
                     end
                 else
-                    pdfflushobject(usednum,tostring(entry))
+                    local t = type(value)
+                    if t == "string" then
+                        value = pdfconstant(value)
+                    elseif t == "table" then
+                        local kind  = value[1]
+                        local entry = value[2]
+                        if kind == name_code then
+                            value = pdfconstant(entry)
+                        elseif kind == string_code then
+                            value = pdfliteral(entry,value[3])
+                        elseif kind == null_code then
+                            value = pdfnull()
+                        elseif kind == reference_code then
+                            value = deepcopyobject(xref,copied,entry)
+                        else
+                            value = tostring(entry)
+                        end
+                    end
+                    pdfflushobject(usednum,value)
                 end
             end
             return pdfreference(usednum)
         elseif kind == stream_code then
-            report("stream not done: %s", objecttypes[kind] or "?")
+            report("stream not done: %s", objectcodes[kind] or "?")
         else
-            report("object not done: %s", objecttypes[kind] or "?")
+            report("object not done: %s", objectcodes[kind] or "?")
+        end
+    end
+
+    local function copyobject(xref,copied,object,key,value)
+        local t = type(value)
+        if t == "string" then
+            return pdfconstant(value)
+        elseif t ~= "table" then
+            return value
+        end
+        local kind = value[1]
+        if kind == name_code then
+            return pdfconstant(value[2])
+        elseif kind == string_code then
+            return pdfliteral(value[2],value[3])
+        elseif kind == array_code then
+            return copyarray(xref,copied,object[key])
+        elseif kind == dictionary_code then
+            return copydictionary(xref,copied,object[key])
+        elseif kind == null_code then
+            return pdfnull()
+        elseif kind == reference_code then
+            -- expand
+            return deepcopyobject(xref,copied,object[key])
+        else
+            report("weird: %s", objecttypes[kind] or "?")
         end
     end
 

@@ -281,10 +281,10 @@ function codeinjections.mergereferences(specification)
     local annotations = pagedata and pagedata.Annots
     local namespace   = makenamespace(fullname)
     local reference   = namespace .. pagenumber
-    if annotations and annotations.n > 0 then
+    if annotations and #annotations > 0 then
         local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
         initializelayer(height,width)
-        for i=1,annotations.n do
+        for i=1,#annotations do
             local annotation = annotations[i]
             if annotation then
                 if annotation.Subtype == "Link" then
@@ -333,7 +333,7 @@ function codeinjections.mergeviewerlayers(specification)
     local namespace = makenamespace(fullname)
     local layers    = document.layers
     if layers then
-        for i=1,layers.n do
+        for i=1,#layers do
             local layer = layers[i]
             if layer then
                 local tag   = namespace .. gsub(layer," ",":")
@@ -538,14 +538,14 @@ function codeinjections.mergecomments(specification)
  -- local pagenumber  = specification.page or 1
  -- local pagedata    = document.pages[pagenumber]
  -- local annotations = pagedata and pagedata.Annots
- -- if annotations and annotations.n > 0 then
+ -- if annotations and #annotations > 0 then
  --     local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
  --     initializelayer(height,width)
  --     --
  --     local lockflags  = specification.lock -- todo: proper parameter
  --     local references = { }
  --     local usedpopups = { }
- --     for i=1,annotations.n do
+ --     for i=1,#annotations do
  --         local annotation = annotations[i]
  --         if annotation then
  --             local subtype = annotation.Subtype
@@ -559,7 +559,7 @@ function codeinjections.mergecomments(specification)
  --         end
  --     end
  --     --
- --     for i=1,annotations.n do
+ --     for i=1,#annotations do
  --         -- we keep the order
  --         local annotation = annotations[i]
  --         if annotation then
@@ -722,11 +722,11 @@ function codeinjections.mergefields(specification)
  -- local pagenumber  = specification.page or 1
  -- local pagedata    = document.pages[pagenumber]
  -- local annotations = pagedata and pagedata.Annots
- -- if annotations and annotations.n > 0 then
+ -- if annotations and #annotations > 0 then
  --     local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
  --     initializelayer(height,width)
  --     --
- --     for i=1,annotations.n do
+ --     for i=1,#annotations do
  --         -- we keep the order
  --         local annotation = annotations[i]
  --         if annotation then
@@ -870,7 +870,7 @@ function codeinjections.getbookmarks(filename)
 
     local outlines     = document.Catalog.Outlines
     local pages        = document.pages
-    local nofpages     = pages.n -- we need to access once in order to initialize
+    local nofpages     = document.nofpages
     local destinations = document.destinations
 
     -- I need to check this destination analyzer with the one in annotations .. best share
@@ -892,7 +892,7 @@ function codeinjections.getbookmarks(filename)
                         entry.realpage = pagedata.number
                     end
                 elseif kind == "table" then
-                    local pageref = destination.n
+                    local pageref = #destination
                     if pageref then
                         local pagedata = pages[pageref]
                         if pagedata then
@@ -1024,7 +1024,7 @@ function codeinjections.getinfo(specification)
             local catalog    = pdffile.Catalog
             local info       = pdffile.Info
             local pages      = pdffile.pages
-            local nofpages   = pages.n
+            local nofpages   = pdffile.nofpages
             if metadata then
                 local m = catalog.Metadata
                 if m then
@@ -1048,10 +1048,8 @@ function codeinjections.getinfo(specification)
             local media = nobox
             local page  = pages[pagenumber]
             if page then
-                crop    = page.CropBox or nobox
-                media   = page.MediaBox or crop or nobox
-                crop.n  = nil -- nicer
-                media.n = nil -- nicer
+                crop  = page.CropBox or nobox
+                media = page.MediaBox or crop or nobox
             end
             local bbox = crop or media or nobox
             return {

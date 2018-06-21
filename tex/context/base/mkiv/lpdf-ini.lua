@@ -13,7 +13,8 @@ local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
 local sort = table.sort
-local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
+local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, lpeg.V
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local formatters = string.formatters
 local isboolean = string.is_boolean
 local rshift = bit32.rshift
@@ -276,7 +277,7 @@ local cache = table.setmetatableindex(function(t,k) -- can be made weak
     return v
 end)
 
-local escaped = Cs(Cc("(") * (S("\\()")/"\\%0" + P(1))^0 * Cc(")"))
+local escaped = Cs(Cc("(") * (S("\\()\n\r\t\b\f")/"\\%0" + P(1))^0 * Cc(")"))
 local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
 
 local function tosixteen(str) -- an lpeg might be faster (no table)
@@ -343,11 +344,79 @@ local function toeight(str)
     end
 end
 
+local b_pattern = Cs((P("\\")/"" * (
+    S("()")
+  + S("nrtbf") / { n = "\n", r = "\r", t = "\t", b = "\b", f = "\f" }
+  + lpegpatterns.octdigit^-3 / function(s) return char(tonumber(s,8)) end)
++ P(1))^0)
+
+local function fromeight(str)
+    if not str or str == "" then
+        return ""
+    else
+        return lpegmatch(unescape,str)
+    end
+end
+
 lpdf.tosixteen   = tosixteen
 lpdf.toeight     = toeight
 lpdf.topdfdoc    = topdfdoc
 lpdf.fromsixteen = fromsixteen
+lpdf.fromeight   = fromeight
 lpdf.frompdfdoc  = frompdfdoc
+
+do
+
+    local u_pattern = lpegpatterns.utfbom_16_be * lpegpatterns.utf16_to_utf8_be -- official
+                    + lpegpatterns.utfbom_16_le * lpegpatterns.utf16_to_utf8_le -- we've seen these
+
+    local h_pattern = lpegpatterns.hextobytes
+
+    local zero = S(" \n\r\t") + P("\\ ")
+    local one  = C(4)
+    local two  = P("d") * R("89","af") * C(2) * C(4)
+
+    local x_pattern = P { "start",
+        start     = V("wrapped") + V("unwrapped") + V("original"),
+        original  = Cs(P(1)^0),
+        wrapped   = P("<") * V("unwrapped") * P(">") * P(-1),
+        unwrapped = P("feff")
+                  * Cs( (
+                        zero  / ""
+                      + two   / function(a,b)
+                                    a = (tonumber(a,16) - 0xD800) * 1024
+                                    b = (tonumber(b,16) - 0xDC00)
+                                    return utfchar(a+b)
+                                end
+                      + one   / function(a)
+                                    return utfchar(tonumber(a,16))
+                                end
+                    )^1 ) * P(-1)
+    }
+
+    function lpdf.frombytes(s,hex)
+        if not s or s == "" then
+            return ""
+        end
+        if hex then
+            local x = lpegmatch(x_pattern,s)
+            if x then
+                return x
+            end
+            local h = lpegmatch(h_pattern,s)
+            if h then
+                return h
+            end
+        else
+            local u = lpegmatch(u_pattern,s)
+            if u then
+                return u
+            end
+        end
+        return lpegmatch(b_pattern,s)
+    end
+
+end
 
 local function merge_t(a,b)
     local t = { }
@@ -385,8 +454,6 @@ tostring_d = function(t,contentonly,key)
                 r[i] = f_key_value(k,toeight(v))
             elseif tv == "number" then
                 r[i] = f_key_number(k,v)
-         -- elseif tv == "unicode" then -- can't happen
-         --     r[i] = f_key_value(k,tosixteen(v))
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 if mv and mv.__lpdftype then
@@ -430,8 +497,6 @@ tostring_a = function(t,contentonly,key)
                 r[k] = toeight(v)
             elseif tv == "number" then
                 r[k] = f_tonumber(v)
-         -- elseif tv == "unicode" then
-         --     r[k] = tosixteen(v)
             elseif tv == "table" then
                 local mv = getmetatable(v)
                 local mt = mv and mv.__lpdftype
@@ -486,6 +551,17 @@ local tostring_v = function(t)
     end
 end
 
+local tostring_l = function(t)
+    local s = t[1]
+    if not s or s == "" then
+        return "()"
+    elseif t[2] then
+        return "<" .. s .. ">"
+    else
+        return "(" .. s .. ")"
+    end
+end
+
 local function value_x(t) return t                  end
 local function value_s(t) return t[1]               end
 local function value_p(t) return t[1]               end
@@ -499,6 +575,7 @@ local function value_t(t) return t.value or true    end
 local function value_f(t) return t.value or false   end
 local function value_r(t) return t[1] or 0          end -- null
 local function value_v(t) return t[1]               end
+local function value_l(t) return t[1]               end
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
 
@@ -515,6 +592,7 @@ local mt_t = { __lpdftype = "true",       __tostring = tostring_t, __call = valu
 local mt_f = { __lpdftype = "false",      __tostring = tostring_f, __call = value_f }
 local mt_r = { __lpdftype = "reference",  __tostring = tostring_r, __call = value_r }
 local mt_v = { __lpdftype = "verbose",    __tostring = tostring_v, __call = value_v }
+local mt_l = { __lpdftype = "literal",    __tostring = tostring_l, __call = value_l }
 
 local function pdfstream(t) -- we need to add attributes
     if t then
@@ -556,6 +634,10 @@ local function pdfunicode(str,default)
     return setmetatable({ str or default or "" },mt_u) -- could be a string
 end
 
+local function pdfliteral(str,hex) -- can also produce a hex <> instead of () literal
+    return setmetatable({ str, hex },mt_l)
+end
+
 local cache = { } -- can be weak
 
 local function pdfnumber(n,default) -- 0-10
@@ -574,13 +656,26 @@ for i=-1,9 do cache[i] = pdfnumber(i) end
 
 local cache = { } -- can be weak
 
-local forbidden, replacements = "\0\t\n\r\f ()[]{}/%%#\\", { } -- table faster than function
+local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
+    ["\00"]="#00",
+    ["\09"]="#09",
+    ["\10"]="#0a",
+    ["\12"]="#0c",
+    ["\13"]="#0d",
+    [ " " ]="#20",
+    [ "#" ]="#23",
+    [ "%" ]="#25",
+    [ "(" ]="#28",
+    [ ")" ]="#29",
+    [ "/" ]="#2f",
+    [ "[" ]="#5b",
+    [ "\\"]="#5c",
+    [ "]" ]="#5d",
+    [ "{" ]="#7b",
+    [ "}" ]="#7d",
+} + P(1)
 
-for s in gmatch(forbidden,".") do
-    replacements[s] = format("#%02x",byte(s))
-end
-
-local escaped = Cs(Cc("/") * (S(forbidden)/replacements + P(1))^0)
+local escaped = Cs(Cc("/") * replacer^0)
 
 local function pdfconstant(str,default)
     if not str then
@@ -588,15 +683,13 @@ local function pdfconstant(str,default)
     end
     local c = cache[str]
     if not c then
-     -- c = setmetatable({ "/" .. str },mt_c)
         c = setmetatable({ lpegmatch(escaped,str) },mt_c)
         cache[str] = c
     end
     return c
 end
 
-local escaped = Cs((S(forbidden)/replacements + P(1))^0)
------ escaped = Cs((1-forbidden)^0 * S(forbidden)/replacements * ((S(forbidden)/replacements + P(1))^0)
+local escaped = Cs(replacer^0)
 
 function lpdf.escaped(str)
     return lpegmatch(escaped,str) or str
@@ -663,6 +756,7 @@ lpdf.null        = pdfnull
 lpdf.boolean     = pdfboolean
 lpdf.reference   = pdfreference
 lpdf.verbose     = pdfverbose
+lpdf.literal     = pdfliteral
 
 local names, cache = { }, { }
 
@@ -739,15 +833,22 @@ function lpdf.flushobject(name,data)
     end
 end
 
-
 function lpdf.flushstreamobject(data,dict,compressed,objnum) -- default compressed
     if trace_objects then
         report_objects("flushing stream object of %s bytes",#data)
     end
-    local dtype = type(dict)
+    local dtype    = type(dict)
+    local kind     = compressed == "raw" and "raw" or "stream"
+    local nolength = nil
+    if compressed == "raw" then
+        compressed = nil
+        nolength   = true
+     -- data       = string.formatters["<< %s >>stream\n%s\nendstream"](attr,data)
+    end
     return pdfdeferredobject {
         objnum        = objnum,
         immediate     = true,
+        nolength      = nolength,
         compresslevel = compressed == false and 0 or nil,
         type          = "stream",
         string        = data,
@@ -1251,7 +1352,6 @@ end
 --     end,
 -- })
 
-
 -- The next variant of ActualText is what Taco and I could come up with
 -- eventually. As of September 2013 Acrobat copies okay, Sumatra copies a
 -- question mark, pdftotext injects an extra space and Okular adds a
@@ -1370,11 +1470,9 @@ end
 function lpdf.copyarray(a)
     if a then
         local t = pdfarray()
-        local k = a.__kind
         for i=1,#a do
             t[i] = a(i)
         end
--- inspect(t)
         return t
     end
 end
@@ -1385,7 +1483,6 @@ function lpdf.copydictionary(d)
         for k, v in next, d do
             t[k] = d(k)
         end
--- inspect(t)
         return t
     end
 end

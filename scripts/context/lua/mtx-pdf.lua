@@ -27,7 +27,6 @@ local helpinfo = [[
     <flag name="metadata"><short>show metadata xml blob</short></flag>
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
-    <flag name="linearize"><short>linearize given file</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
@@ -47,7 +46,11 @@ local application = logs.application {
 
 local report = application.report
 
-dofile(resolvers.findfile("lpdf-epd.lua","tex"))
+if pdfe then
+    dofile(resolvers.findfile("lpdf-pde.lua","tex"))
+else
+    dofile(resolvers.findfile("lpdf-epd.lua","tex"))
+end
 
 scripts     = scripts     or { }
 scripts.pdf = scripts.pdf or { }
@@ -73,7 +76,7 @@ function scripts.pdf.info(filename)
         local catalog  = pdffile.Catalog
         local info     = pdffile.Info
         local pages    = pdffile.pages
-        local nofpages = pages.n -- no # yet. will be in 5.2
+        local nofpages = pdffile.nofpages
 
         report("filename          > %s",filename)
         report("pdf version       > %s",catalog.Version)
@@ -119,7 +122,7 @@ function scripts.pdf.metadata(filename,pretty)
     end
 end
 
-local expand = lpdf.epdf.expand
+local expanded = lpdf.epdf.expanded
 
 local function getfonts(pdffile)
     local usedfonts = { }
@@ -127,26 +130,22 @@ local function getfonts(pdffile)
     local function collect(where,tag)
         local resources = where.Resources
         if resources then
-            if expand then
-                local fontlist = resources.Font
-                if fontlist then
-                    for k, v in expand(fontlist) do
-                        usedfonts[tag and (tag .. "." .. k) or k] = expand(v,k)
-                    end
+            local fontlist = resources.Font
+            if fontlist then
+                for k, v in expanded(fontlist) do
+                    usedfonts[tag and (tag .. "." .. k) or k] = v
                 end
-                local objects = resources.XObject
-                if objects then
-                    for k, v in next, expand(objects) do
-                        collect(v,tag and (tag .. "." .. k) or k)
-                    end
+            end
+            local objects = resources.XObject
+            if objects then
+                for k, v in expanded(objects) do
+                    collect(v,tag and (tag .. "." .. k) or k)
                 end
-            else
-                report("adapt this to the new pdelib")
             end
         end
     end
 
-    for i=1,pdffile.pages.n do
+    for i=1,pdffile.nofpages do
         collect(pdffile.pages[i])
     end
 
@@ -269,46 +268,6 @@ function scripts.pdf.fonts(filename)
     end
 end
 
--- this is a quick hack ... proof of concept .. will change (derived from luigi's example) ...
--- i will make a ctx wrapper
-
--- local qpdf -- just call qpdf, no need for a lib here
---
--- function scripts.pdf.linearize(filename)
---     qpdf = qpdf or swiglib("qpdf.core")
---     local oldfile = filename or environment.files[1]
---     if not oldfile then
---         return
---     end
---     file.addsuffix(oldfile,"pdf")
---     if not lfs.isfile(oldfile) then
---         return
---     end
---     local newfile = environment.files[2]
---     if not newfile or file.removesuffix(oldfile) == file.removesuffix(newfile)then
---         newfile = file.addsuffix(file.removesuffix(oldfile) .. "-linearized","pdf")
---     end
---     local password = environment.arguments.password
---     local instance = qpdf.qpdf_init()
---     if bit32.band(qpdf.qpdf_read(instance,oldfile,password),qpdf.QPDF_ERRORS) ~= 0 then
---         report("unable to open input file")
---     elseif bit32.band(qpdf.qpdf_init_write(instance,newfile),qpdf.QPDF_ERRORS) ~= 0 then
---         report("unable to open output file")
---     else
---         report("linearizing %a into %a",oldfile,newfile)
---         qpdf.qpdf_set_static_ID(instance,qpdf.QPDF_TRUE)
---         qpdf.qpdf_set_linearization(instance,qpdf.QPDF_TRUE)
---         qpdf.qpdf_write(instance)
---     end
---     while qpdf.qpdf_more_warnings(instance) ~= 0 do
---         report("warning: %s",qpdf.qpdf_get_error_full_text(instance,qpdf.qpdf_next_warning(qpdf)))
---     end
---     if qpdf.qpdf_has_error(instance) ~= 0 then
---         report("error: %s",qpdf.qpdf_get_error_full_text(instance,qpdf.qpdf_get_error(qpdf)))
---     end
---     qpdf.qpdf_cleanup_p(instance)
--- end
-
 -- scripts.pdf.info("e:/tmp/oeps.pdf")
 -- scripts.pdf.metadata("e:/tmp/oeps.pdf")
 -- scripts.pdf.fonts("e:/tmp/oeps.pdf")
@@ -321,11 +280,9 @@ if filename == "" then
 elseif environment.argument("info") then
     scripts.pdf.info(filename)
 elseif environment.argument("metadata") then
-    scripts.pdf.metadata(filename)
+    scripts.pdf.metadata(filename,environment.argument("pretty"))
 elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
--- elseif environment.argument("linearize") then
---     scripts.pdf.linearize(filename)
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),filename)
 else

@@ -683,7 +683,7 @@ local function pdfaction(actions)
                     return nil
                 end
             end
-            return first, actions.n
+            return first, actions.n or #actions
         end
     end
 end
