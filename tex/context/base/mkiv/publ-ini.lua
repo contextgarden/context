@@ -229,9 +229,9 @@ logs.registerfinalactions(function()
                 logs.startfilelogging(report,"used btx commands")
                 done = true
             end
-            if isdefined[command] then
+            if isdefined(command) then
                 report("%-20s %-20s % 5i %s",name,command,n,"known")
-            elseif isdefined[upper(command)] then
+            elseif isdefined(upper(command)) then
                 report("%-20s %-20s % 5i %s",name,command,n,"KNOWN")
             else
                 report("%-20s %-20s % 5i %s",name,command,n,"unknown")
@@ -246,7 +246,7 @@ logs.registerfinalactions(function()
         logs.starterrorlogging(report,"unknown btx commands")
         for name, dataset in sortedhash(datasets) do
             for command, n in sortedhash(dataset.commands) do
-                if not isdefined[command] and not isdefined[upper(command)] then
+                if not isdefined(command) and not isdefined(upper(command)) then
                     report("%-20s %-20s % 5i %s",name,command,n,"unknown")
                 end
             end

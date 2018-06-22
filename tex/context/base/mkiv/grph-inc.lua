@@ -2065,10 +2065,11 @@ local function pdf_checker(data)
     local request = data.request
     local used    = data.used
     if request and used and not request.scanimage then
-        local openpdf  = lpdf.epdf.image.open
-        local closepdf = lpdf.epdf.image.close
-        local querypdf = lpdf.epdf.image.query
-        local copypage = lpdf.epdf.image.copy
+        local image    = lpdf.epdf.image
+        local openpdf  = image.open
+        local closepdf = image.close
+        local querypdf = image.query
+        local copypage = image.copy
         local pdfdoc   = nil
         request.scanimage = function(t)
             pdfdoc = openpdf(t.filename,request.userpassword,request.ownerpassword)
@@ -2076,33 +2077,37 @@ local function pdf_checker(data)
          --     used.pdfdoc = pdfdoc
          --     -- nofpages
          -- end
-            local info = querypdf(pdfdoc,request.page)
-            local bbox = info and info.boundingbox or { 0, 0, 0, 0 }
-            return {
-                filename    = filename,
-             -- page        = 1,
-                pages       = pdfdoc.nofpages,
-                width       = bbox[3] - bbox[1],
-                height      = bbox[4] - bbox[2],
-                depth       = 0,
-                colordepth  = 0,
-                xres        = 0,
-                yres        = 0,
-                xsize       = 0,
-                ysize       = 0,
-                rotation    = 0,
-                orientation = 0,
-            }
+            if pdfdoc then
+                local info = querypdf(pdfdoc,request.page)
+                local bbox = info and info.boundingbox or { 0, 0, 0, 0 }
+                return {
+                    filename    = filename,
+                 -- page        = 1,
+                    pages       = pdfdoc.nofpages,
+                    width       = bbox[3] - bbox[1],
+                    height      = bbox[4] - bbox[2],
+                    depth       = 0,
+                    colordepth  = 0,
+                    xres        = 0,
+                    yres        = 0,
+                    xsize       = 0,
+                    ysize       = 0,
+                    rotation    = 0,
+                    orientation = 0,
+                }
+            end
         end
         request.copyimage = function(t)
-         -- local pdfdoc = used.pdfdoc
-            local result = copypage(pdfdoc,request.page)
-            if pdfdoc.nofpages == 1 then -- and object usage
-                closepdf(pdfdoc)
-             -- used.pdfdoc = nil
-                pdfdoc = nil
+            if pdfdoc then
+             -- local pdfdoc = used.pdfdoc
+                local result = copypage(pdfdoc,request.page)
+                if pdfdoc.nofpages == 1 then -- and object usage
+                    closepdf(pdfdoc)
+                 -- used.pdfdoc = nil
+                    pdfdoc = nil
+                end
+                return result
             end
-            return result
         end
     end
     return checkers.generic(data)

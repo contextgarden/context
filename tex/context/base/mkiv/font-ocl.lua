@@ -323,16 +323,39 @@ do
     local hashed     = { }
     local cache      = { }
 
-    function otf.storepdfdata(pdf)
-        local done = hashed[pdf]
-        if not done then
-            nofstreams = nofstreams + 1
-            local o, n = epdf.openMemStream(pdf,#pdf,f_name(nofstreams))
-            cache[n] = o -- we need to keep in mem
-            done = f_used(n)
-            hashed[pdf] = done
+    if epdf then
+
+        local openpdf = epdf.openMemStream
+
+        function otf.storepdfdata(pdf)
+            local done = hashed[pdf]
+            if not done then
+                nofstreams = nofstreams + 1
+                local o, n = openpdf(pdf,#pdf,f_name(nofstreams))
+                cache[n] = o -- we need to keep in mem
+                done = f_used(n)
+                hashed[pdf] = done
+            end
+            return nil, done, nil
         end
-        return nil, done, nil
+
+    else
+
+        -- todo: bypass backend and directly inject xforms
+
+        local openpdf = pdfe.new
+
+        function otf.storepdfdata(pdf)
+            local done = hashed[pdf]
+            if not done then
+                nofstreams = nofstreams + 1
+                local n = openpdf(pdf,#pdf,f_name(nofstreams))
+                done = f_used(n)
+                hashed[pdf] = done
+            end
+            return nil, done, nil
+        end
+
     end
 
  -- maybe more efficient but much slower (and we hash already)

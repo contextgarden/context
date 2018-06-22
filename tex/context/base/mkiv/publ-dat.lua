@@ -22,6 +22,10 @@ if not characters then
     dofile(resolvers.findfile("char-tex.lua"))
 end
 
+if not utilities.sequencers then
+    dofile(resolvers.findfile("util-seq.lua"))
+end
+
 local lower, find, sub = string.lower, string.find, string.sub
 local concat, copy, tohash = table.concat, table.copy, table.tohash
 local next, type, rawget, tonumber = next, type, rawget, tonumber
@@ -1248,3 +1252,5 @@ do
     writers.pagenumber = writers.range
 
 end
+
+-- inspect(publications.load { filename = "e:/tmp/oeps.bib" })

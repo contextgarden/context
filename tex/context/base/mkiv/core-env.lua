@@ -26,6 +26,7 @@ local setmetatablenewindex = table.setmetatablenewindex
 local setmetatablecall     = table.setmetatablecall
 
 local createtoken          = token.create
+local isdefined            = tokens.isdefined
 
 texmodes                   = allocate { }  tex.modes        = texmodes
 texsystemmodes             = allocate { }  tex.systemmodes  = texsystemmodes
@@ -68,7 +69,7 @@ setmetatableindex(texmodes, function(t,k)
         return m()
     elseif k then
         local n = "mode>" .. k
-        if is_defined then
+        if isdefined(n) then
             rawset(modes,k, function() return texgetcount(n) == 1 end)
             return texgetcount(n) == 1 -- 2 is prevented
         else
@@ -89,7 +90,7 @@ setmetatableindex(texsystemmodes, function(t,k)
         return m()
     else
         local n = "mode>*" .. k
-        if is_defined(n) then
+        if isdefined(n) then
             rawset(systemmodes,k,function() return texgetcount(n) == 1 end)
             return texgetcount(n) == 1 -- 2 is prevented
         else
@@ -122,17 +123,7 @@ setmetatablenewindex(texifs, function(t,k)
     -- just ignore
 end)
 
-setmetatableindex(texisdefined, function(t,k)
- -- return k and cache[k].mode ~= 0
-    return k and is_defined(k)
-end)
-setmetatablecall(texisdefined, function(t,k)
- -- return k and cache[k].mode ~= 0
-    return k and is_defined(k)
-end)
-setmetatablenewindex(texisdefined, function(t,k)
-    -- just ignore
-end)
+tex.isdefined = isdefined
 
 function tex.isdimen(name)
     local hit = cache[name]

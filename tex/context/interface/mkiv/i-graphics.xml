@@ -218,6 +218,12 @@
                 <cd:parameter name="cache">
                     <cd:constant type="cd:path"/>
                 </cd:parameter>
+                <cd:parameter name="userpassword">
+                    <cd:constant type="cd:string"/>
+                </cd:parameter>
+                <cd:parameter name="ownerpassword">
+                    <cd:constant type="cd:string"/>
+                </cd:parameter>
                 <cd:parameter name="resources">
                     <cd:constant type="cd:path"/>
                 </cd:parameter>

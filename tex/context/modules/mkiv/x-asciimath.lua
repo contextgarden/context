@@ -132,6 +132,12 @@ local reserved = {
     ["overbar"]   = { false, "\\overline",          "unary" },
     ["overline"]  = { false, "\\overline",          "unary" },
     ["underline"] = { false, "\\underline",         "unary" },
+    ["overbrace"] = { false, "\\overbrace",         "unary" },
+    ["underbrace"]= { false, "\\underbrace",        "unary" },
+    ["overset"]   = { false, "\\overset",           "unary" },
+    ["underset"]  = { false, "\\underset",          "unary" },
+    ["obrace"]    = { false, "\\overbrace",         "unary" },
+    ["ubrace"]    = { false, "\\underbrace",        "unary" },
     ["ul"]        = { false, "\\underline",         "unary" },
     ["vec"]       = { false, "\\overrightarrow",    "unary" },
     ["dot"]       = { false, "\\dot",               "unary" }, -- 0x2D9
@@ -143,6 +149,7 @@ local reserved = {
     ["-"]         = { true,  "-" },
     ["*"]         = { true,  "⋅" },
     ["**"]        = { true,  "⋆" },
+    ["////"]      = { true,  "⁄⁄" }, -- crap
     ["//"]        = { true,  "⁄" }, -- \slash
     ["\\"]        = { true,  "\\" },
     ["xx"]        = { true,  "×" },
@@ -749,11 +756,14 @@ end
 reserved.P  = nil
 reserved.S  = nil
 
+
 local isbinary = {
     ["\\frac"]              = true,
     ["\\root"]              = true,
     ["\\asciimathroot"]     = true,
     ["\\asciimathstackrel"] = true,
+    ["\\overset"]           = true,
+    ["\\underset"]          = true,
 }
 
 local isunary = { -- can be taken from reserved
@@ -772,6 +782,10 @@ local isunary = { -- can be taken from reserved
     ["\\dot"]             = true, --
     ["\\ddot"]            = true, --
 
+    ["\\overbrace"]       = true,
+    ["\\underbrace"]      = true,
+    ["\\obrace"]          = true,
+    ["\\ubrace"]          = true,
 }
 
 local isfunny = {
@@ -1715,8 +1729,14 @@ local function collapse_fractions_2(t)
     while i < n do
         local current = t[i]
         if current == "⁄" and i > 1 then -- \slash
-            t[m] = "{" .. s_left .. t[i-1] .. s_mslash .. t[i+1] .. s_right .. "}"
-            i = i + 2
+            if i < n and t[i+1] == "⁄" then
+                -- crap for
+                t[m] = "{" .. s_left .. t[i-1] .. s_mslash .. s_mslash .. t[i+2] .. s_right .. "}"
+                i = i + 3
+            else
+                t[m] = "{" .. s_left .. t[i-1] .. s_mslash .. t[i+1] .. s_right .. "}"
+                i = i + 2
+            end
             if i < n then
                 m = m + 1
                 t[m] = t[i]

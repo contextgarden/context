@@ -612,6 +612,7 @@ local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
 local formattedfloat=number.formattedfloat
+local stripper=lpeg.patterns.stripzeros
     ]]
 
 else
@@ -639,6 +640,7 @@ else
         formattednumber = number.formatted,
         sparseexponent  = number.sparseexponent,
         formattedfloat  = number.formattedfloat,
+        stripper        = lpeg.patterns.stripzeros,
     }
 
 end
@@ -907,9 +909,18 @@ local format_n = function() -- strips leading and trailing zeros and removes .0
     return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
 
+-- local format_N = function() -- strips leading and trailing zeros (also accepts string)
+--     n = n + 1
+--     return format("tostring(tonumber(a%s) or a%s)",n,n)
+-- end
+
 local format_N = function() -- strips leading and trailing zeros (also accepts string)
     n = n + 1
-    return format("tostring(tonumber(a%s) or a%s)",n,n)
+    if not f or f == "" then
+        return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%.9f',a%s)))",n,n,n,n,n)
+    else
+        return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%%sf',a%s)))",n,n,f,n)
+    end
 end
 
 local format_a = function(f)

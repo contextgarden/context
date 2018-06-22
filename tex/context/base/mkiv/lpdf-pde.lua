@@ -7,6 +7,10 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
     history   = "this one replaces the poppler/pdfe binding",
 }
 
+-- maximum integer : +2^32
+-- maximum real    : +2^15
+-- minimum real    : 1/(2^16)
+
 -- get_flagged : does that still work
 
 -- ppdoc_permissions (ppdoc *pdf);
@@ -411,40 +415,47 @@ function resolvers.pages(document)
     return pages
 end
 
-local loaded = { }
+local loaded    = { }
+local nofloaded = 0
 
 function lpdf_epdf.load(filename,userpassword,ownerpassword)
     local document = loaded[filename]
     if not document then
         statistics.starttiming(lpdf_epdf)
         local __data__ = openPDF(filename) -- maybe resolvers.find_file
-        if userpassword and getstatus(__data__) < 0 then
-            unencrypt(__data__,userpassword,nil)
-        end
-        if ownerpassword and getstatus(__data__) < 0 then
-            unencrypt(__data__,nil,ownerpassword)
-        end
-        if getstatus(__data__) < 0 then
-            report_epdf("the document is encrypted, provide proper passwords",getstatus(__data__))
-        end
         if __data__ then
-            document = {
-                filename   = filename,
-                __cache__  = { },
-                __xrefs__  = { },
-                __fonts__  = { },
-                __copied__ = { },
-                __data__   = __data__,
-            }
-            document.Catalog = some_dictionary(getcatalog(__data__),document)
-            document.Info    = some_dictionary(getinfo(__data__),document)
-            document.Trailer = some_dictionary(gettrailer(__data__),document)
-            --
-            setmetatableindex(document,resolve)
-            --
-            document.majorversion, document.minorversion = getversion(__data__)
-            --
-            document.nofpages = getnofpages(__data__)
+-- nofloaded = nofloaded + 1
+-- report_epdf("%04i opened: %s",nofloaded,filename)
+            if userpassword and getstatus(__data__) < 0 then
+                unencrypt(__data__,userpassword,nil)
+            end
+            if ownerpassword and getstatus(__data__) < 0 then
+                unencrypt(__data__,nil,ownerpassword)
+            end
+            if getstatus(__data__) < 0 then
+                report_epdf("the document is encrypted, provide proper passwords",getstatus(__data__))
+            end
+            if __data__ then
+                document = {
+                    filename   = filename,
+                    __cache__  = { },
+                    __xrefs__  = { },
+                    __fonts__  = { },
+                    __copied__ = { },
+                    __data__   = __data__,
+                }
+                document.Catalog = some_dictionary(getcatalog(__data__),document)
+                document.Info    = some_dictionary(getinfo(__data__),document)
+                document.Trailer = some_dictionary(gettrailer(__data__),document)
+                --
+                setmetatableindex(document,resolve)
+                --
+                document.majorversion, document.minorversion = getversion(__data__)
+                --
+                document.nofpages = getnofpages(__data__)
+            else
+                document = false
+            end
         else
             document = false
         end
@@ -463,6 +474,8 @@ function lpdf_epdf.unload(filename)
     if type(filename) == "string" then
         local document = loaded[filename]
         if document then
+-- report_epdf("%04i closed: %s",nofloaded,filename)
+-- nofloaded = nofloaded - 1
             loaded[document] = nil
             loaded[filename] = nil
         end
@@ -865,7 +878,7 @@ if img then do
         return target
     end
 
- -- local function copy_resources(pdfdoc,xref,copied,pagedata)
+ -- local function copyresources(pdfdoc,xref,copied,pagedata)
  --     local Resources = pagedata.Resources
  --     if Resources then
  --         local r = pdfreserveobject()
@@ -875,8 +888,21 @@ if img then do
  --     end
  -- end
 
-    local function copy_resources(pdfdoc,xref,copied,pagedata)
+    local function copyresources(pdfdoc,xref,copied,pagedata)
         local Resources = pagedata.Resources
+     --
+     -- -- This needs testing:
+     --
+     -- if not Resources then
+     --     local Parent = page.Parent
+     --     while (Parent and (Parent.__type__ == dictionary_code or Parent.__type__ == reference_code) do
+     --         Resources = Parent.Resources
+     --         if Resources then
+     --             break
+     --         end
+     --         Parent = Parent.Parent
+     --     end
+     -- end
         if Resources then
             local d = copydictionary(xref,copied,Resources)
             return shareobjectreference(d)
@@ -920,23 +946,16 @@ if img then do
             local contents = page.Contents
             local xref     = pdfdoc.__xrefs__
             local copied   = pdfdoc.__copied__
-            --
             local xobject  = pdfdictionary {
-                Type           = pdfconstant("XObject"),
-                Subtype        = pdfconstant("Form"),
-             -- image attributes
-                FormType       = 1,
-                BBox           = pageinfo.cropbox,
-             -- MetaData       = copy(xref,copied,root,"MetaData"),
-             -- Group          = copy(xref,copied,page,"Group"),
-             -- LastModified   = copy(xref,copied,page,"LastModified"),
-             -- Metadata       = copy(xref,copied,page,"Metadata"),
-             -- PieceInfo      = copy(xref,copied,page,"PieceInfo"),
-                Resources      = copy_resources(pdfdoc,xref,copied,page),
-             -- SeparationInfo = copy(xref,copied,page,"SeparationInfo"),
+                Group          = copyobject(xref,copied,page,"Group"),
+                LastModified   = copyobject(xref,copied,page,"LastModified"),
+                MetaData       = copyobject(xref,copied,root,"MetaData"),
+                Metadata       = copyobject(xref,copied,page,"Metadata"),
+                PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
+                Resources      = copyresources(pdfdoc,xref,copied,page),
+                SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
             }
             if attributes then
-             -- for k, v in next, expand(attributes) do
                 for k, v in expanded(attributes) do
                     page[k] = v -- maybe nested
                 end
