@@ -1393,6 +1393,12 @@ function checkers.generic(data)
         resolution,
         arguments
     )
+    -- for now:
+    if LUATEXFUNCTIONALITY <= 6802 then
+        userpassword  = nil
+        ownerpassword = nil
+    end
+    --
     local figure = figures_loaded[hash]
     if figure == nil then
         figure = newimage {
