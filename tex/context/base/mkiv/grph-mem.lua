@@ -20,67 +20,143 @@ local gsub = string.gsub
 local report = logs.reporter("memstream")
 local trace  = false  trackers.register  ("graphics.memstreams", function(v) trace = v end)
 local data   = { }
-local opened = { }
 
-local function setmemstream(name,stream,once)
-    if once and data[name] then
-        if trace then
-            report("not overloading %a",name) --
+if pdfe then
+
+    local function setmemstream(name,stream,once)
+        if once and data[name] then
+            if trace then
+                report("not overloading %a",name) --
+            end
+            return data[name]
         end
-        return data[name]
-    end
-    local memstream, identifier = epdf.openMemStream(stream,#stream,name)
-    if not identifier then
-        report("no valid stream %a",name)
-        identifier = "invalid-memstream"
-    elseif trace then
-        report("setting %a with identifier %a",name,identifier)
-    end
-    data  [name] = identifier
-    opened[name] = memstream
-    return identifier
-end
-
-resolvers.setmemstream = setmemstream
-
-function resolvers.finders.memstream(specification)
-    local name       = specification.path
-    local identifier = data[name]
-    if identifier then
-        if trace then
-            report("reusing %a with identifier %a",name,identifier)
+        local kind       = figures.guessfromstring(stream)
+        local identifier = false
+        if kind == "pdf" then
+            identifier = pdfe.new(stream,#stream,name)
+            if not identifier then
+                report("no valid pdf stream %a",name)
+            elseif trace then
+                report("setting %a with identifier %a",name,identifier)
+            end
+        else
+            identifier = "m_k_i_v_memstream_" .. name .. "." .. kind
+            io.savedata(identifier,stream)
         end
+        if not identifier then
+            identifier = "invalid-memstream"
+        end
+        data[name] = identifier
         return identifier
     end
-    local stream = io.loaddata(name)
-    if not stream or stream == "" then
+
+    resolvers.setmemstream = setmemstream
+
+    function resolvers.finders.memstream(specification)
+        local name       = specification.path
+        local identifier = data[name]
+        if identifier then
+            if trace then
+                report("reusing %a with identifier %a",name,identifier)
+            end
+            return identifier
+        end
+        local stream = io.loaddata(name)
+        if stream and stream ~= "" then
+            return setmemstream(name,stream)
+        end
         if trace then
-            report("no valid file %a",name)
+            report("no valid memstream %a",name)
         end
         return resolvers.finders.notfound()
-    else
-        return setmemstream(name,stream)
     end
-end
 
-local flush = { }
+    local flush = { }
 
-function resolvers.resetmemstream(name,afterpage)
-    if afterpage then
-        flush[#flush+1] = name
-    else
-        opened[name] = nil
-    end
-end
-
-luatex.registerpageactions(function()
-    if #flush > 0 then
-        for i=1,#flush do
-            opened[flush[i]] = nil -- we keep of course data[name] because of reuse
+    function resolvers.resetmemstream(name,afterpage)
+        if afterpage then
+            flush[#flush+1] = name
         end
-        flush = { }
     end
-end)
+
+    luatex.registerpageactions(function()
+        if #flush > 0 then
+            for i=1,#flush do
+                local identifier = data[name]
+                if identifier then
+                    os.remove(identifier)
+                    data[name] = nil
+                end
+            end
+            flush = { }
+        end
+    end)
+
+else
+
+    local opened = { }
+
+    local function setmemstream(name,stream,once)
+        if once and data[name] then
+            if trace then
+                report("not overloading %a",name) --
+            end
+            return data[name]
+        end
+        local memstream, identifier = epdf.openMemStream(stream,#stream,name)
+        if not identifier then
+            report("no valid stream %a",name)
+            identifier = "invalid-memstream"
+        elseif trace then
+            report("setting %a with identifier %a",name,identifier)
+        end
+        data  [name] = identifier
+        opened[name] = memstream
+        return identifier
+    end
+
+    resolvers.setmemstream = setmemstream
+
+    function resolvers.finders.memstream(specification)
+        local name       = specification.path
+        local identifier = data[name]
+        if identifier then
+            if trace then
+                report("reusing %a with identifier %a",name,identifier)
+            end
+            return identifier
+        end
+        local stream = io.loaddata(name)
+        if not stream or stream == "" then
+            if trace then
+                report("no valid file %a",name)
+            end
+            return resolvers.finders.notfound()
+        else
+            return setmemstream(name,stream)
+        end
+    end
+
+    local flush = { }
+
+    function resolvers.resetmemstream(name,afterpage)
+        if afterpage then
+            flush[#flush+1] = name
+        else
+            opened[name] = nil
+        end
+    end
+
+    luatex.registerpageactions(function()
+        if #flush > 0 then
+            for i=1,#flush do
+                opened[flush[i]] = nil -- we keep of course data[name] because of reuse
+            end
+            flush = { }
+        end
+    end)
+
+end
 
 figures.identifiers.list[#figures.identifiers.list+1] = function(specification)
     local name = specification.request.name

@@ -1005,7 +1005,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 39415, stripped down to: 21143
+-- original size: 39717, stripped down to: 21361
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1103,10 +1103,10 @@ local fullstripper=whitespace^0*C((whitespace^0*nonwhitespace^1)^0)
 local collapser=Cs(spacer^0/""*nonspacer^0*((spacer^0/" "*nonspacer^1)^0))
 local nospacer=Cs((whitespace^1/""+nonwhitespace^1)^0)
 local b_collapser=Cs(whitespace^0/""*(nonwhitespace^1+whitespace^1/" ")^0)
-local e_collapser=Cs((whitespace^1*P(-1)/""+nonwhitespace^1+whitespace^1/" ")^0)
+local e_collapser=Cs((whitespace^1*endofstring/""+nonwhitespace^1+whitespace^1/" ")^0)
 local m_collapser=Cs((nonwhitespace^1+whitespace^1/" ")^0)
 local b_stripper=Cs(spacer^0/""*(nonspacer^1+spacer^1/" ")^0)
-local e_stripper=Cs((spacer^1*P(-1)/""+nonspacer^1+spacer^1/" ")^0)
+local e_stripper=Cs((spacer^1*endofstring/""+nonspacer^1+spacer^1/" ")^0)
 local m_stripper=Cs((nonspacer^1+spacer^1/" ")^0)
 patterns.stripper=stripper
 patterns.fullstripper=fullstripper
@@ -1173,7 +1173,7 @@ patterns.decafloat=sign^-1*(digit^0*period*digits+digits*period*digit^0+digits)*
 patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+underscore+digit)^0*endofstring
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
-patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(P(-1)+Cc(" ")))^0))
+patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(endofstring+Cc(" ")))^0))
 function anywhere(pattern) 
   return (1-P(pattern))^0*P(pattern)
 end
@@ -1738,12 +1738,21 @@ end
 function lpeg.times(pattern,n)
   return P(nextstep(n,2^16,{ "start",["1"]=pattern }))
 end
-local trailingzeros=zero^0*-digit 
-local case_1=period*trailingzeros/""
-local case_2=period*(digit-trailingzeros)^1*(trailingzeros/"")
-local number=digits*(case_1+case_2)
-local stripper=Cs((number+1)^0)
-lpeg.patterns.stripzeros=stripper
+do
+  local trailingzeros=zero^0*-digit 
+  local stripper=Cs((
+    digits*(
+      period*trailingzeros/""+period*(digit-trailingzeros)^1*(trailingzeros/"")
+    )+1
+  )^0)
+  lpeg.patterns.stripzeros=stripper 
+  local nonzero=digit-zero
+  local trailingzeros=zero^1*endofstring
+  local stripper=Cs((1-period)^0*(
+    (period*trailingzeros/"")+period*(nonzero^1+(trailingzeros/"")+zero^1)^0
+  ))
+  lpeg.patterns.stripzero=stripper
+end
 local byte_to_HEX={}
 local byte_to_hex={}
 local byte_to_dec={} 
@@ -1807,7 +1816,7 @@ local patterns={}
 local function containsws(what)
   local p=patterns[what]
   if not p then
-    local p1=P(what)*(whitespace+P(-1))*Cc(true)
+    local p1=P(what)*(whitespace+endofstring)*Cc(true)
     local p2=whitespace*P(p1)
     p=P(p1)+P(1-p2)^0*p2+Cc(false)
     patterns[what]=p
@@ -6171,7 +6180,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 41277, stripped down to: 23383
+-- original size: 41303, stripped down to: 23381
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6207,7 +6216,7 @@ else
   end
 end
 if not number then number={} end 
-local stripper=patterns.stripzeros
+local stripper=patterns.stripzero
 local newline=patterns.newline
 local endofstring=patterns.endofstring
 local whitespace=patterns.whitespace
@@ -6524,7 +6533,7 @@ local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
 local formattedfloat=number.formattedfloat
-local stripper=lpeg.patterns.stripzeros
+local stripper=lpeg.patterns.stripzero
     ]]
 else
   environment={
@@ -6550,7 +6559,7 @@ else
     formattednumber=number.formatted,
     sparseexponent=number.sparseexponent,
     formattedfloat=number.formattedfloat,
-    stripper=lpeg.patterns.stripzeros,
+    stripper=lpeg.patterns.stripzero,
   }
 end
 local arguments={ "a1" } 
@@ -6759,7 +6768,7 @@ local format_n=function()
   n=n+1
   return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
-local format_N=function() 
+local format_N=function(f) 
   n=n+1
   if not f or f=="" then
     return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%.9f',a%s)))",n,n,n,n,n)
@@ -21646,8 +21655,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 889689
--- stripped bytes    : 321468
+-- original bytes    : 890017
+-- stripped bytes    : 321580
 
 -- end library merge
 

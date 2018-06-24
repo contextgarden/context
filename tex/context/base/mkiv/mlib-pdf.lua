@@ -48,19 +48,6 @@ local experiment      = true -- uses context(node) that already does delayed nod
 local savedliterals   = nil  -- needs checking
 local mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral)) -- pdfliteral.mode  = 1
 
--- we can have "withaccuracy 3" and then change formatters on the fly
-
--- local f_f  = formatters["%F"]
--- local f_m  = formatters["%F %F m"]
--- local f_c  = formatters["%F %F %F %F %F %F c"]
--- local f_l  = formatters["%F %F l"]
--- local f_cm = formatters["%F %F %F %F %F %F cm"]
--- local f_M  = formatters["%F M"]
--- local f_j  = formatters["%i j"]
--- local f_J  = formatters["%i J"]
--- local f_d  = formatters["[%s] %F d"]
--- local f_w  = formatters["%F w"]
-
 local f_f  = formatters["%.6F"]
 local f_m  = formatters["%.6F %.6F m"]
 local f_c  = formatters["%.6F %.6F %.6F %.6F %.6F %.6F c"]
@@ -71,6 +58,19 @@ local f_j  = formatters["%i j"]
 local f_J  = formatters["%i J"]
 local f_d  = formatters["[%s] %.6F d"]
 local f_w  = formatters["%.3F w"]
+
+directives.register("metapost.stripzeros",function()
+    f_f  = formatters["%.6N"]
+    f_m  = formatters["%.6N %.6N m"]
+    f_c  = formatters["%.6N %.6N %.6N %.6N %.6N %.6N c"]
+    f_l  = formatters["%.6N %.6N l"]
+    f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
+    f_M  = formatters["%.6N M"]
+    f_j  = formatters["%i j"]
+    f_J  = formatters["%i J"]
+    f_d  = formatters["[%s] %.6N d"]
+    f_w  = formatters["%.3N w"]
+end)
 
 directives.register("metapost.savetable",function(v)
     if type(v) == "string" then
@@ -560,14 +560,14 @@ function metapost.flush(result,flusher,askedfig,incontext)
                                             local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
                                             local pen = object.pen
                                             if pen then
-                                               if pen.type == 'elliptical' then
+                                               if pen.type == "elliptical" then
                                                     transformed, penwidth = pen_characteristics(original) -- boolean, value
                                                     result[#result+1] = f_w(penwidth) -- todo: only if changed
-                                                    if objecttype == 'fill' then
-                                                        objecttype = 'both'
+                                                    if objecttype == "fill" then
+                                                        objecttype = "both"
                                                     end
                                                else -- calculated by mplib itself
-                                                    objecttype = 'fill'
+                                                    objecttype = "fill"
                                                end
                                             end
                                             if transformed then

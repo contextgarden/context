@@ -372,22 +372,30 @@ function figures.setorder(list) -- can be table or string
     end
 end
 
+local function guessfromstring(str)
+    if str then
+        for i=1,#figures_magics do
+            local pattern = figures_magics[i]
+            if lpegmatch(pattern.pattern,str) then
+                local format = pattern.format
+                if trace_figures then
+                    report_inclusion("file %a has format %a",filename,format)
+                end
+                return format
+            end
+        end
+    end
+end
+
+figures.guessfromstring = guessfromstring
+
 function figures.guess(filename)
     local f = io.open(filename,'rb')
     if f then
         local str = f:read(100)
         f:close()
         if str then
-            for i=1,#figures_magics do
-                local pattern = figures_magics[i]
-                if lpegmatch(pattern.pattern,str) then
-                    local format = pattern.format
-                    if trace_figures then
-                        report_inclusion("file %a has format %a",filename,format)
-                    end
-                    return format
-                end
-            end
+            return guessfromstring(str)
         end
     end
 end
@@ -2079,11 +2087,10 @@ local function pdf_checker(data)
         local pdfdoc   = nil
         request.scanimage = function(t)
             pdfdoc = openpdf(t.filename,request.userpassword,request.ownerpassword)
-         -- if pdfdoc then
-         --     used.pdfdoc = pdfdoc
-         --     -- nofpages
-         -- end
             if pdfdoc then
+                --
+                pdfdoc.nofcopiedpages = 0
+                --
                 local info = querypdf(pdfdoc,request.page)
                 local bbox = info and info.boundingbox or { 0, 0, 0, 0 }
                 return {
@@ -2105,14 +2112,15 @@ local function pdf_checker(data)
         end
         request.copyimage = function(t)
             if pdfdoc then
-             -- local pdfdoc = used.pdfdoc
                 local result = copypage(pdfdoc,request.page)
-                if pdfdoc.nofpages == 1 then -- and object usage
+                pdfdoc.nofcopiedpages = pdfdoc.nofcopiedpages + 1
+                if pdfdoc.nofcopiedpages >= pdfdoc.nofpages then
                     closepdf(pdfdoc)
-                 -- used.pdfdoc = nil
                     pdfdoc = nil
                 end
                 return result
+            else
+                -- message, should not happen as we always first scan so that reopens
             end
         end
     end

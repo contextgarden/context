@@ -97,12 +97,21 @@ end
 
 local f_f     = formatters["%F"]
 local f_f3    = formatters["%.3F"]
-
 local f_gray  = formatters["%.3F g %.3F G"]
 local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
 local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
 local f_cm    = formatters["q %F %F %F %F %F %F cm"]
 local f_shade = formatters["MpSh%s"]
+
+directives.register("metapost.stripzeros",function()
+    f_f     = formatters["%N"]
+    f_f3    = formatters["%.3N"]
+    f_gray  = formatters["%.3N g %.3N G"]
+    f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
+    f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
+    f_cm    = formatters["q %N %N %N %N %N %N cm"]
+    f_shade = formatters["MpSh%s"]
+end)
 
 local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
 
@@ -998,19 +1007,21 @@ local tx_reset, tx_analyze, tx_process  do
     ----- pat = tsplitat(":")
     local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
 
- -- local f_gray_yes = formatters["s=%F,a=%F,t=%F"]
- -- local f_gray_nop = formatters["s=%F"]
- -- local f_rgb_yes  = formatters["r=%F,g=%F,b=%F,a=%F,t=%F"]
- -- local f_rgb_nop  = formatters["r=%F,g=%F,b=%F"]
- -- local f_cmyk_yes = formatters["c=%F,m=%F,y=%F,k=%F,a=%F,t=%F"]
- -- local f_cmyk_nop = formatters["c=%F,m=%F,y=%F,k=%F"]
+    local f_gray_yes = formatters["s=%.3F,a=%i,t=%.3F"]
+    local f_gray_nop = formatters["s=%.3F"]
+    local f_rgb_yes  = formatters["r=%.3F,g=%.3F,b=%.3F,a=%.3F,t=%.3F"]
+    local f_rgb_nop  = formatters["r=%.3F,g=%.3F,b=%.3F"]
+    local f_cmyk_yes = formatters["c=%.3F,m=%.3F,y=%.3F,k=%.3F,a=%.3F,t=%.3F"]
+    local f_cmyk_nop = formatters["c=%.3F,m=%.3F,y=%.3F,k=%.3F"]
 
-    local f_gray_yes = formatters["s=%n,a=%n,t=%n"]
-    local f_gray_nop = formatters["s=%n"]
-    local f_rgb_yes  = formatters["r=%n,g=%n,b=%n,a=%n,t=%n"]
-    local f_rgb_nop  = formatters["r=%n,g=%n,b=%n"]
-    local f_cmyk_yes = formatters["c=%n,m=%n,y=%n,k=%n,a=%n,t=%n"]
-    local f_cmyk_nop = formatters["c=%n,m=%n,y=%n,k=%n"]
+    directives.register("metapost.stripzeros",function()
+        f_gray_yes = formatters["s=%.3N,a=%i,t=%.3N"]
+        f_gray_nop = formatters["s=%.3N"]
+        f_rgb_yes  = formatters["r=%.3N,g=%.3N,b=%.3N,a=%.3N,t=%.3N"]
+        f_rgb_nop  = formatters["r=%.3N,g=%.3N,b=%.3N"]
+        f_cmyk_yes = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N,a=%.3N,t=%.3N"]
+        f_cmyk_nop = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N"]
+    end)
 
     if metapost.use_one_pass then
 

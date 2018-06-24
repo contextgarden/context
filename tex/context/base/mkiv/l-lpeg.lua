@@ -202,13 +202,13 @@ local fullstripper     = whitespace^0 * C((whitespace^0 * nonwhitespace^1)^0)
 local collapser        = Cs(spacer^0/"" * nonspacer^0 * ((spacer^0/" " * nonspacer^1)^0))
 local nospacer         = Cs((whitespace^1/"" + nonwhitespace^1)^0)
 
-local b_collapser      = Cs( whitespace^0        /"" * (nonwhitespace^1 + whitespace^1/" ")^0)
-local e_collapser      = Cs((whitespace^1 * P(-1)/"" +  nonwhitespace^1 + whitespace^1/" ")^0)
-local m_collapser      = Cs(                           (nonwhitespace^1 + whitespace^1/" ")^0)
+local b_collapser      = Cs( whitespace^0              /"" * (nonwhitespace^1 + whitespace^1/" ")^0)
+local e_collapser      = Cs((whitespace^1 * endofstring/"" +  nonwhitespace^1 + whitespace^1/" ")^0)
+local m_collapser      = Cs(                                 (nonwhitespace^1 + whitespace^1/" ")^0)
 
-local b_stripper       = Cs( spacer^0        /"" * (nonspacer^1 + spacer^1/" ")^0)
-local e_stripper       = Cs((spacer^1 * P(-1)/"" +  nonspacer^1 + spacer^1/" ")^0)
-local m_stripper       = Cs(                       (nonspacer^1 + spacer^1/" ")^0)
+local b_stripper       = Cs( spacer^0              /"" * (nonspacer^1 + spacer^1/" ")^0)
+local e_stripper       = Cs((spacer^1 * endofstring/"" +  nonspacer^1 + spacer^1/" ")^0)
+local m_stripper       = Cs(                             (nonspacer^1 + spacer^1/" ")^0)
 
 patterns.stripper      = stripper
 patterns.fullstripper  = fullstripper
@@ -289,7 +289,7 @@ patterns.propername    = (uppercase + lowercase + underscore) * (uppercase + low
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
-patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^1 + whitespace^1/"" * (P(-1) + Cc(" ")))^0))
+patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^1 + whitespace^1/"" * (endofstring + Cc(" ")))^0))
 
 -- local function anywhere(pattern) -- slightly adapted from website
 --     return P { P(pattern) + 1 * V(1) }
@@ -1133,23 +1133,36 @@ end
 
 -- moved here (before util-str)
 
------ digit         = R("09")
------ period        = P(".")
------ zero          = P("0")
-local trailingzeros = zero^0 * -digit -- suggested by Roberto R
-local case_1        = period * trailingzeros / ""
-local case_2        = period * (digit - trailingzeros)^1 * (trailingzeros / "")
-local number        = digits * (case_1 + case_2)
-local stripper      = Cs((number + 1)^0)
+do
 
-lpeg.patterns.stripzeros = stripper
+    local trailingzeros = zero^0 * -digit -- suggested by Roberto R
+    local stripper      = Cs((
+        digits * (
+            period * trailingzeros / ""
+          + period * (digit - trailingzeros)^1 * (trailingzeros / "")
+        ) + 1
+    )^0)
 
--- local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
--- collectgarbage("collect")
--- str = string.rep(sample,10000)
--- local ts = os.clock()
--- lpegmatch(stripper,str)
--- print(#str, os.clock()-ts, lpegmatch(stripper,sample))
+    lpeg.patterns.stripzeros = stripper -- multiple in string
+
+    local nonzero = digit - zero
+
+    local trailingzeros = zero^1 * endofstring
+    local stripper      = Cs( (1-period)^0 * (
+       (period *               trailingzeros/"") +
+        period * (nonzero^1 + (trailingzeros/"") + zero^1)^0
+    ))
+
+    lpeg.patterns.stripzero  = stripper -- slightly more efficient
+
+    -- local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
+    -- collectgarbage("collect")
+    -- str = string.rep(sample,10000)
+    -- local ts = os.clock()
+    -- lpegmatch(stripper,str)
+    -- print(#str, os.clock()-ts, lpegmatch(stripper,sample))
+
+end
 
 -- for practical reasone we keep this here:
 
@@ -1229,7 +1242,7 @@ local patterns = { } -- can be made weak
 local function containsws(what)
     local p = patterns[what]
     if not p then
-        local p1 = P(what) * (whitespace + P(-1)) * Cc(true)
+        local p1 = P(what) * (whitespace + endofstring) * Cc(true)
         local p2 = whitespace * P(p1)
         p = P(p1) + P(1-p2)^0 * p2 + Cc(false)
         patterns[what] = p

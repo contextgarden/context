@@ -793,8 +793,8 @@ if img then do
                         -- recompress
                         d.Filter      = nil
                         d.Length      = nil
-                        d.DecodeParms = nil
-                        d.DL          = nil
+                        d.DecodeParms = nil -- not relevant
+                        d.DL          = nil -- needed?
                         local s = entry()                        -- get uncompressed stream
                         pdfflushstreamobject(s,d,true,usednum)   -- compress stream
                     else
@@ -835,6 +835,9 @@ if img then do
     end
 
     local function copyobject(xref,copied,object,key,value)
+        if not value then
+            value = object.__raw__[key]
+        end
         local t = type(value)
         if t == "string" then
             return pdfconstant(value)
@@ -949,7 +952,6 @@ if img then do
             local xobject  = pdfdictionary {
                 Group          = copyobject(xref,copied,page,"Group"),
                 LastModified   = copyobject(xref,copied,page,"LastModified"),
-                MetaData       = copyobject(xref,copied,root,"MetaData"),
                 Metadata       = copyobject(xref,copied,page,"Metadata"),
                 PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
                 Resources      = copyresources(pdfdoc,xref,copied,page),
@@ -960,12 +962,26 @@ if img then do
                     page[k] = v -- maybe nested
                 end
             end
-            local content = ""
-            local ctype   = contents.__type__
+            local content  = ""
+            local nolength = nil
+            local ctype    = contents.__type__
             -- we always recompress because image object streams can not be
             -- influenced (yet)
             if ctype == stream_code then
-                content = contents() -- uncompressed
+                if recompress then
+                    content = contents() -- uncompressed
+                else
+                    local Filter = copyobject(xref,copied,contents,"Filter")
+                    local Length = copyobject(xref,copied,contents,"Length")
+                    if Length and Filter then
+                        nolength = true
+                        xobject.Length = Length
+                        xobject.Filter = Filter
+                        content = contents(false) -- uncompressed
+                    else
+                        content = contents() -- uncompressed
+                    end
+                end
             elseif ctype == array_code then
                 content = { }
                 for i=1,#contents do
@@ -975,9 +991,10 @@ if img then do
             end
             -- still not nice: we double wrap now
             return newimage {
-                bbox   = pageinfo.boundingbox,
-                stream = content,
-                attr   = xobject(),
+                bbox     = pageinfo.boundingbox,
+                nolength = nolength,
+                stream   = content, -- todo: no compress, pass directly also length, filter etc
+                attr     = xobject(),
             }
         end
     end

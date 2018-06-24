@@ -128,7 +128,6 @@ if mfun_use_one_pass :
             fi ;
             draw fullcircle scaled 100bp
                 withprescript "mf_object=followtext"
-                withprescript "ft_stage=final"
                 withprescript "ft_category=" & decimal mfun_blob_n ;
         )
     enddef ;

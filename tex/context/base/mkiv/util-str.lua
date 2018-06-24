@@ -47,7 +47,7 @@ end
 
 if not number then number = { } end -- temp hack for luatex-fonts
 
-local stripper    = patterns.stripzeros
+local stripper    = patterns.stripzero
 local newline     = patterns.newline
 local endofstring = patterns.endofstring
 local whitespace  = patterns.whitespace
@@ -368,6 +368,7 @@ end
 -- automatic          %...a   'whatever' (string, table, ...)
 -- automatic          %...A   "whatever" (string, table, ...)
 -- zap                %...z   skip
+-- stripped  %...N    %...N
 -- comma/period real  %...m
 -- period/comma real  %...M
 -- formatted float    %...k   n.m
@@ -612,7 +613,7 @@ local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
 local formattedfloat=number.formattedfloat
-local stripper=lpeg.patterns.stripzeros
+local stripper=lpeg.patterns.stripzero
     ]]
 
 else
@@ -640,7 +641,7 @@ else
         formattednumber = number.formatted,
         sparseexponent  = number.sparseexponent,
         formattedfloat  = number.formattedfloat,
-        stripper        = lpeg.patterns.stripzeros,
+        stripper        = lpeg.patterns.stripzero,
     }
 
 end
@@ -914,7 +915,7 @@ end
 --     return format("tostring(tonumber(a%s) or a%s)",n,n)
 -- end
 
-local format_N = function() -- strips leading and trailing zeros (also accepts string)
+local format_N = function(f) -- strips leading and trailing zeros (also accepts string)
     n = n + 1
     if not f or f == "" then
         return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%.9f',a%s)))",n,n,n,n,n)

@@ -306,10 +306,12 @@ local ft_reset, ft_analyze, ft_process  do
         }
 
         ft_process = function(object,prescript,before,after)
-            object.path    = false
-            object.color   = false
-            object.grouped = true
-            object.istext  = true
+            if prescript.ft_category then
+                object.path    = false
+                object.color   = false
+                object.grouped = true
+                object.istext  = true
+            end
         end
 
 
