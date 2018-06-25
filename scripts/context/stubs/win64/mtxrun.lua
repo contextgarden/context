@@ -6180,7 +6180,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 41303, stripped down to: 23381
+-- original size: 41537, stripped down to: 23512
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6216,7 +6216,8 @@ else
   end
 end
 if not number then number={} end 
-local stripper=patterns.stripzero
+local stripzero=patterns.stripzero
+local stripzeros=patterns.stripzeros
 local newline=patterns.newline
 local endofstring=patterns.endofstring
 local whitespace=patterns.whitespace
@@ -6236,7 +6237,7 @@ local function points(n)
   if n%1==0 then
     return format("%ipt",n)
   end
-  return lpegmatch(stripper,format("%.5fpt",n))
+  return lpegmatch(stripzeros,format("%.5fpt",n)) 
 end
 local function basepoints(n)
   if n==0 then
@@ -6250,7 +6251,7 @@ local function basepoints(n)
   if n%1==0 then
     return format("%ibp",n)
   end
-  return lpegmatch(stripper,format("%.5fbp",n))
+  return lpegmatch(stripzeros,format("%.5fbp",n)) 
 end
 number.points=points
 number.basepoints=basepoints
@@ -6533,7 +6534,8 @@ local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
 local formattedfloat=number.formattedfloat
-local stripper=lpeg.patterns.stripzero
+local stripzero=lpeg.patterns.stripzero
+local stripzeros=lpeg.patterns.stripzeros
     ]]
 else
   environment={
@@ -6559,7 +6561,8 @@ else
     formattednumber=number.formatted,
     sparseexponent=number.sparseexponent,
     formattedfloat=number.formattedfloat,
-    stripper=lpeg.patterns.stripzero,
+    stripzero=lpeg.patterns.stripzero,
+    stripzeros=lpeg.patterns.stripzeros,
   }
 end
 local arguments={ "a1" } 
@@ -6771,9 +6774,9 @@ end
 local format_N=function(f) 
   n=n+1
   if not f or f=="" then
-    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%.9f',a%s)))",n,n,n,n,n)
+    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%.9f',a%s)))",n,n,n,n,n)
   else
-    return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%%sf',a%s)))",n,n,f,n)
+    return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
   end
 end
 local format_a=function(f)
@@ -21655,8 +21658,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 890017
--- stripped bytes    : 321580
+-- original bytes    : 890251
+-- stripped bytes    : 321683
 
 -- end library merge
 

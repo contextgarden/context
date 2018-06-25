@@ -47,7 +47,8 @@ end
 
 if not number then number = { } end -- temp hack for luatex-fonts
 
-local stripper    = patterns.stripzero
+local stripzero   = patterns.stripzero
+local stripzeros  = patterns.stripzeros
 local newline     = patterns.newline
 local endofstring = patterns.endofstring
 local whitespace  = patterns.whitespace
@@ -56,12 +57,12 @@ local spaceortab  = patterns.spaceortab
 
 -- local function points(n)
 --     n = tonumber(n)
---     return (not n or n == 0) and "0pt" or lpegmatch(stripper,format("%.5fpt",n/65536))
+--     return (not n or n == 0) and "0pt" or lpegmatch(stripzeros,format("%.5fpt",n/65536))
 -- end
 
 -- local function basepoints(n)
 --     n = tonumber(n)
---     return (not n or n == 0) and "0bp" or lpegmatch(stripper,format("%.5fbp", n*(7200/7227)/65536))
+--     return (not n or n == 0) and "0bp" or lpegmatch(stripzeros,format("%.5fbp", n*(7200/7227)/65536))
 -- end
 
 local ptf = 1 / 65536
@@ -79,7 +80,7 @@ local function points(n)
     if n % 1 == 0 then
         return format("%ipt",n)
     end
-    return lpegmatch(stripper,format("%.5fpt",n))
+    return lpegmatch(stripzeros,format("%.5fpt",n)) -- plural as we need to keep the pt
 end
 
 local function basepoints(n)
@@ -94,7 +95,7 @@ local function basepoints(n)
     if n % 1 == 0 then
         return format("%ibp",n)
     end
-    return lpegmatch(stripper,format("%.5fbp",n))
+    return lpegmatch(stripzeros,format("%.5fbp",n)) -- plural as we need to keep the pt
 end
 
 number.points     = points
@@ -265,7 +266,7 @@ local striplinepatterns = {
     ["retain"]              = p_retain_normal,
     ["retain and collapse"] = p_retain_collapse,
     ["retain and no empty"] = p_retain_noempty,
-    ["collapse"]            = patterns.collapser, -- how about: stripper fullstripper
+    ["collapse"]            = patterns.collapser,
 }
 
 setmetatable(striplinepatterns,{ __index = function(t,k) return p_prune_collapse end })
@@ -613,7 +614,8 @@ local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
 local formattedfloat=number.formattedfloat
-local stripper=lpeg.patterns.stripzero
+local stripzero=lpeg.patterns.stripzero
+local stripzeros=lpeg.patterns.stripzeros
     ]]
 
 else
@@ -641,7 +643,8 @@ else
         formattednumber = number.formatted,
         sparseexponent  = number.sparseexponent,
         formattedfloat  = number.formattedfloat,
-        stripper        = lpeg.patterns.stripzero,
+        stripzero       = lpeg.patterns.stripzero,
+        stripzeros      = lpeg.patterns.stripzeros,
     }
 
 end
@@ -917,10 +920,11 @@ end
 
 local format_N = function(f) -- strips leading and trailing zeros (also accepts string)
     n = n + 1
+    -- stripzero (singular) as we only have a number
     if not f or f == "" then
-        return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%.9f',a%s)))",n,n,n,n,n)
+        return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%.9f',a%s)))",n,n,n,n,n)
     else
-        return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripper,format('%%%sf',a%s)))",n,n,f,n)
+        return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
     end
 end
 

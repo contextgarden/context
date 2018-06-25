@@ -1982,7 +1982,7 @@ local function setinternalreference(specification)
         if reference then
             local prefix = specification.prefix
             if prefix and prefix ~= "" then
-                prefix = prefix .. ":" -- watch out, : here
+                local prefix = prefix .. ":" -- watch out, : here
                 local function action(ref)
                     tn = tn + 1
                     t[tn] = prefix .. ref
@@ -2076,7 +2076,7 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
         local done = references.set(data) -- we had kind i.e .item -> full
         if done then
             attr = setinternalreference {
-                prefix    = prefix,
+                prefix    = rdat.prefix,
                 reference = rdat.reference,
                 internal  = rdat.internal,
                 view      = rdat.view

@@ -218,7 +218,7 @@ local defaultdestination = pdfarray { 0, pdf_fit }
 
 -- fit is default (see lpdf-nod)
 
-local destinations = { } -- to be used soon
+local destinations = { }
 local reported     = setmetatableindex("table")
 
 local function pdfregisterdestination(name,reference)

@@ -556,11 +556,11 @@ nodes.references = {
 
 -- todo: get rid of n (n is just a number, can be used for tracing, obsolete)
 
-local function setreference(h,d,r)
+local function setreference(h,d,r) -- h and d can be nil
     topofstack = topofstack + 1
     -- the preroll permits us to determine samepage (but delayed also has some advantages)
     -- so some part of the backend work is already done here
-    stack[topofstack] = { r, h, d, codeinjections.prerollreference(r) }
+    stack[topofstack] = { r, h or false, d or false, codeinjections.prerollreference(r) }
  -- texsetattribute(attribute,topofstack) -- todo -> at tex end
     texsetcount("lastreferenceattribute",topofstack)
 end

@@ -90,7 +90,7 @@ local t_number          = token("number",   real)
 --    t_reference       = token("number",   cardinal)
 --                      * t_spacing
 --                      * token("number",   cardinal)
-local t_reserved        = token("number",   P("true") + P("false") + P("NULL"))
+local t_reserved        = token("number",   P("true") + P("false") + P("null"))
 --    t_reference       = token("warning",  cardinal * spacing * cardinal * spacing)
 --                      * token("keyword",  p_reference)
 local t_reference       = token("warning",  cardinal)

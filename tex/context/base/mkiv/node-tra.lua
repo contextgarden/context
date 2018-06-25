@@ -456,6 +456,7 @@ local function numbertodimen(d,unit,fmt)
         end
         return formatters[fmt](d*dimenfactors[unit],unit)
     elseif not unit or unit == "pt" then
+print(d,unit,fmt,f_pt(d))
         return f_pt(d)
     else
         return f_un(d*dimenfactors[unit],unit)
