@@ -32974,6 +32974,10 @@
       <cd:constant type="all"/>
       <cd:constant type="packed"/>
      </cd:parameter>
+     <cd:parameter name="check">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
      <cd:parameter name="criterium">
       <cd:constant type="local"/>
       <cd:constant type="text"/>
@@ -41922,6 +41926,13 @@
       <cd:constant type="cd:value"/>
      </cd:parameter>
     </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="xml" file="strc-tag.mkiv" level="document" name="ignoretagsinexport">
+   <cd:arguments>
+    <cd:keywords list="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
    </cd:arguments>
   </cd:command>
  </cd:interface>

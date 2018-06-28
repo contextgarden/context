@@ -49,6 +49,10 @@
                     <cd:constant type="all"/>
                     <cd:constant type="packed"/>
                 </cd:parameter>
+                <cd:parameter name="check">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <cd:parameter name="criterium">
                     <cd:constant type="local"/>
                     <cd:constant type="text"/>

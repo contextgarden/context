@@ -72,4 +72,10 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="ignoretagsinexport" level="document" category="xml" file="strc-tag.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

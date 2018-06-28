@@ -171,6 +171,28 @@ vardef positionatanchor(expr name) =
     currentpicture := currentpicture shifted - positionxy(name) ;
 enddef ;
 
-
 vardef texvar(expr name) = lua.mp.texvar(name) enddef ;
 vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
+
+%D New experimental feature for Alan-The-Number-Cruncher:
+
+% \startMPcode{doublefun}
+%     path p ; p := (
+%         for i=1 upto 20000 :
+%             origin randomized 10000 ..
+%         endfor cycle
+%     ) xysized (TextWidth,TextHeight) ;
+%     draw for i inpath p:
+%         pointof i .. controls (leftof i) and (rightof i) ..
+%     endfor cycle ;
+% \stopMPcode
+
+def inpath suffix p =
+    = 1 step 1 until lua.mp.mfun_path_length(str p)
+enddef ;
+
+vardef pointof primary i = lua.mp.mfun_path_point(i) enddef ;
+vardef leftof  primary i = lua.mp.mfun_path_left (i) enddef ;
+vardef rightof primary i = lua.mp.mfun_path_right(i) enddef ;
+
+extra_endfig := extra_endfig & " lua.mp.mfun_path_reset() ; " ;

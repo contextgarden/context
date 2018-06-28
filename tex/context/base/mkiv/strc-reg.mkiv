@@ -83,6 +83,7 @@
    \c!pagestyle=\v!slanted,
    \c!indicator=\v!yes,
    \c!criterium=\v!all,
+   \c!check=\v!yes, % check for weird see usage
   %\c!command=,
    \c!referencing=\v!on,
    \c!location=\v!middle,
@@ -600,6 +601,7 @@
         language    {\registerparameter\s!language}%
         method      {\registerparameter\c!method}%
         numberorder {\registerparameter\c!numberorder}%
+        check       {\registerparameter\c!check}%
         compress    {\registerparameter\c!compress}%
         criterium   {\registerparameter\c!criterium}%
         pagenumber  \ifx\registerpageseparatorsymbol\empty false\else true\fi
@@ -877,11 +879,15 @@
 %    \fi}
 
 \unexpanded\def\withregisterpagecommand#1#2#3#4%
-  {\def\currentregisterpageindex{#2}%
-   \iflocation
-     \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
+  {\ifcase#3\relax
+     {\tt [entry\space not\space flushed]}%
    \else
-     \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
+     \def\currentregisterpageindex{#2}%
+     \iflocation
+       \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
+     \else
+       \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
+     \fi
    \fi}
 
 \unexpanded\def\registeronepage#1#2#3#4% #1:processor content

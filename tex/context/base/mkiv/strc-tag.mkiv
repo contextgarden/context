@@ -180,6 +180,9 @@
 \unexpanded\def\strc_tags_set_aspect_nop#1#2{}
 \unexpanded\def\strc_tags_set_aspect_yes#1#2{\clf_settagaspect{#1}{#2}} % todo: ignore when no export / also \let
 
+\unexpanded\def\ignoretagsinexport[#1]%
+  {\clf_ignoretagsinexport{#1}}
+
 \installcorenamespace{tagging}
 
 \installsetuponlycommandhandler \??tagging {tagging}

@@ -255,7 +255,7 @@ local function mppath(f2,f6,t,connector,cycle)
                 local ti = t[i]
                 n = n + 1 ; buffer[n] = connector
                 n = n + 1 ;
-                if #ti == 6 then
+                if #ti == 6 and (i < tn or cycle) then
                     local tn = t[i+1] or t[1]
                     buffer[n] = f6(ti[1],ti[2],ti[5],ti[6],tn[3],tn[4])
                 else
@@ -491,16 +491,23 @@ do
     local get_numeric = mplib.get_numeric
     local get_string  = mplib.get_string
     local get_boolean = mplib.get_boolean
+    local get_path    = mplib.get_path
     local get_number  = get_numeric
 
-    local currentmpx   = nil
-    local stack        = { }
-    local getters      = { }
+    local set_path    = mplib.set_path
+
+    local currentmpx  = nil
+    local stack       = { }
+    local getters     = { }
+    local setters     = { }
 
     getters.numeric = function(s) return get_numeric(currentmpx,s) end
     getters.string  = function(s) return get_string (currentmpx,s) end
     getters.boolean = function(s) return get_boolean(currentmpx,s) end
+    getters.path    = function(s) return get_path   (currentmpx,s) end
     getters.number  = mp.numeric
+
+    setters.path    = function(s,t) return set_path(currentmpx,s,t) end
 
     function metapost.pushscriptrunner(mpx)
         insert(stack,mpx)
@@ -512,6 +519,7 @@ do
     end
 
     mp.get = getters
+    mp.set = setters
 
 end
 
@@ -837,6 +845,54 @@ do
 
     function mp.isobject(str)
         mp.boolean(pattern and str ~= "" and lpegmatch(p,str))
+    end
+
+end
+
+do
+
+    local mpnumeric = mp.numeric
+    local mppair    = mp.pair
+    local mpgetpath = mp.get.path
+
+    local p = nil
+    local n = 0
+
+    function mp.mfun_path_length(name)
+        p = mp.get.path(name)
+        n = p and #p or 0
+        mpnumeric(n)
+    end
+
+    function mp.mfun_path_point(i)
+        if i > 0 and i <= n then
+            local pi = p[i]
+            mppair(pi[1],pi[2])
+        end
+    end
+
+    function mp.mfun_path_left(i)
+        if i > 0 and i <= n then
+            local pi = p[i]
+            mppair(pi[5],pi[6])
+        end
+    end
+
+    function mp.mfun_path_right(i)
+        if i > 0 and i <= n then
+            local pn
+            if i == 1 then
+                pn = p[2] or p[1]
+            else
+                pn = p[i+1] or p[1]
+            end
+            mppair(pn[3],pn[4])
+        end
+    end
+
+    function mp.mfun_path_reset()
+        p = nil
+        n = 0
     end
 
 end

@@ -15,6 +15,15 @@
 %
 % / for cambria
 
+%D We need this for Alan, who nests math in \METAPOST:
+
+\unprotect
+
+\setupmathstackers
+  [\c!mp=minifun::math:stacker:\number\scratchunicode]
+
+\protect
+
 \startMPextensions
 
     vardef math_stacker_bracket_shape(expr delta, rotate) =
@@ -129,55 +138,55 @@
     enddef ;
 \stopMPextensions
 
-\startuniqueMPgraphic{math:stacker:\number"FE3B4}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE3B4}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_bracket_shape(OverlayHeight,false)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3B5}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE3B5}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_bracket_shape(OverlayDepth,true)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DC}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE3DC}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_parent_shape(OverlayHeight,false)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DD}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE3DD}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_parent_shape(OverlayDepth,true)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DE}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE3DE}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_brace_shape(OverlayHeight,false)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE3DF}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE3DF}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_brace_shape(OverlayDepth,true)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE33E}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE33E}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_bar_shape(false)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"FE33F}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"FE33F}{axis,ex,em}
     math_stacker_draw_accent(math_stacker_bar_shape(true)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"2190}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"2190}{axis,ex,em}
     math_stacker_draw_arrow(math_stacker_arrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"2192}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"2192}{axis,ex,em}
     math_stacker_draw_arrow(math_stacker_arrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},true)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"2194}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"2194}{axis,ex,em}
     math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"27F7}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"27F7}{axis,ex,em}
     math_stacker_draw_arrow(math_stacker_leftrightarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{math:stacker:\number"21C4}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:stacker:\number"21C4}{axis,ex,em}
     math_stacker_draw_arrow(math_stacker_rightoverleftarrow_shape(\MPvar{axis},\MPvar{ex},\MPvar{em},false)) ;
 \stopuniqueMPgraphic
 
@@ -193,7 +202,7 @@
     enddef ;
 \stopMPextensions
 
-\startuniqueMPgraphic{math:radical:default}{axis,ex,em}
+\startuniqueMPgraphic{minifun::math:radical:default}{axis,ex,em}
     draw
         math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
         withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30

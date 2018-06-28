@@ -554,6 +554,8 @@ do
 
     local fields = { "title", "subtitle", "author", "keywords", "url", "version" }
 
+    local ignoredelements = false
+
     local function checkdocument(root)
         local data = root.data
         if data then
@@ -578,6 +580,9 @@ do
                 elseif di.content then
                     -- okay
                 elseif tg == "ignore" then
+                    di.element = ""
+                    checkdocument(di)
+                elseif ignoredelements and ignoredelements[tg] then
                     di.element = ""
                     checkdocument(di)
                 else
@@ -608,6 +613,20 @@ do
         end
         checkdocument(di)
     end
+
+    implement {
+        name      = "ignoretagsinexport",
+        actions   = function(list)
+            for tag in string.gmatch(list,"[a-z]+") do
+                if ignoredelements then
+                    ignoredelements[tag] = true
+                else
+                    ignoredelements = { [tag] = true }
+                end
+            end
+        end,
+        arguments = "string"
+    }
 
 end
 
@@ -3870,7 +3889,6 @@ implement {
     name      = "initializeexport",
     actions   = structurestags.initializeexport,
 }
-
 
 implement {
     name      = "settagitemgroup",

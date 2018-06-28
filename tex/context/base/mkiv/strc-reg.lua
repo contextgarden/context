@@ -38,6 +38,7 @@ local texgetcount          = tex.getcount
 local variables            = interfaces.variables
 local v_forward            = variables.forward
 local v_all                = variables.all
+local v_no                 = variables.no
 local v_yes                = variables.yes
 local v_packed             = variables.packed
 local v_current            = variables.current
@@ -451,23 +452,6 @@ local tagged = { }
 local function preprocessentries(rawdata)
     local entries = rawdata.entries
     if entries then
-        --
-     -- local e = entries[1] or ""
-     -- local k = entries[2] or ""
-     -- local et, kt, entryproc, pageproc
-     -- if type(e) == "table" then
-     --     et = e
-     -- else
-     --     entryproc, e = splitprocessor(e)
-     --     et = lpegmatch(entrysplitter,e)
-     -- end
-     -- if type(k) == "table" then
-     --     kt = k
-     -- else
-     --     pageproc, k = splitprocessor(k)
-     --     kt = lpegmatch(entrysplitter,k)
-     -- end
-        --
         local processors = rawdata.processors
         local et         = entries.entries
         local kt         = entries.keys
@@ -738,7 +722,7 @@ local seeindex = 0
 
 -- meerdere loops, seewords, dan words, anders seewords
 
-local function crosslinkseewords(result) -- all words
+local function crosslinkseewords(result,check) -- all words
     -- collect all seewords
     local seewords = { }
     for i=1,#result do
@@ -782,28 +766,17 @@ local function crosslinkseewords(result) -- all words
                 local seeparent = seeparents[text]
                 if seeparent then
                     local seeindex = seewords[text]
---                     local s, ns, d, w, l = { }, 0, data.split, seeparent.split, data.list
---                     -- trick: we influence sorting by adding fake subentries
---                     for i=1,#d do
---                         ns = ns + 1
---                         s[ns] = d[i] -- parent
---                     end
---                     for i=1,#w do
---                         ns = ns + 1
---                         s[ns] = w[i] -- see
---                     end
---                     data.split = s
---                     -- we also register a fake extra list entry so that the
---                     -- collapser works okay
---                     l[#l+1] = { text, "" }
                     data.references.seeindex = seeindex
                     if trace_registers then
                         report_registers("see crosslink %03i: %s",seeindex,text)
                     end
                     seeword.valid = true
-                else
-                    report_registers("invalid crosslink : %s",text)
+                elseif check then
+                    report_registers("invalid crosslink : %s, %s",text,"ignored")
                     seeword.valid = false
+                else
+                    report_registers("invalid crosslink : %s, %s",text,"passed")
+                    seeword.valid = true
                 end
             end
         end
@@ -827,7 +800,7 @@ local function removeemptyentries(result)
     end
 end
 
-function registers.prepare(data)
+function registers.prepare(data,options)
     -- data has 'list' table
     local strip    = sorters.strip
     local splitter = sorters.splitters.utf
@@ -839,10 +812,10 @@ function registers.prepare(data)
             local split = { }
             local list  = entry.list
             if list then
-if entry.seeword then
-    -- we can have multiple seewords, only two levels supported
-    list[#list+1] = { seeprefix .. strip(entry.seeword.text) }
-end
+                if entry.seeword then
+                    -- we can have multiple seewords, only two levels supported
+                    list[#list+1] = { seeprefix .. strip(entry.seeword.text) }
+                end
                 for l=1,#list do
                     local ll   = list[l]
                     local word = ll[1]
@@ -856,7 +829,7 @@ end
             entry.split = split
         end
         removeemptyentries(result)
-        crosslinkseewords(result)
+        crosslinkseewords(result,options.check ~= v_no)
     end
 end
 
@@ -1315,10 +1288,10 @@ function registers.flush(data,options,prefixspec,pagespec)
             local function case_4()
                 local t, nt = { }, 0
                 while true do
-if entry.seeword and entry.seeword.valid then
-                    nt = nt + 1
-                    t[nt] = entry
-end
+                    if entry.seeword and entry.seeword.valid then
+                        nt = nt + 1
+                        t[nt] = entry
+                    end
                     if d == #data then
                         break
                     else
@@ -1402,6 +1375,7 @@ implement {
             { "numberorder" },
             { "compress" },
             { "criterium" },
+            { "check" },
             { "pagenumber", "boolean" },
         },
         {
