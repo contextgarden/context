@@ -67,7 +67,7 @@ end
 if not generic_context.push_namespaces then
 
     function generic_context.push_namespaces()
-        texio.write(" <push namespace>")
+     -- logs.report("system","push namespace")
         local normalglobal = { }
         for k, v in next, _G do
             normalglobal[k] = v
@@ -77,7 +77,7 @@ if not generic_context.push_namespaces then
 
     function generic_context.pop_namespaces(normalglobal,isolate)
         if normalglobal then
-            texio.write(" <pop namespace>")
+         -- logs.report("system","pop namespace")
             for k, v in next, _G do
                 if not normalglobal[k] then
                     generic_context[k] = v
@@ -92,7 +92,7 @@ if not generic_context.push_namespaces then
             -- just to be sure:
             setmetatable(generic_context,_G)
         else
-            texio.write(" <fatal error: invalid pop of generic_context>")
+            logs.report("system","fatal error: invalid pop of generic_context")
             os.exit()
         end
     end
@@ -119,8 +119,25 @@ local starttime = os.gettimeofday()
 
 -- kpse.set_program_name("luatex")
 
+-- One can define texio.reporter as alternative terminal/log writer. That's as far
+-- as I want to go with this.
+
 local ctxkpse = nil
 local verbose = true
+
+if not logs or not logs.report then
+    if not logs then
+        logs = { }
+    end
+    function logs.report(c,f,...)
+        local r = texio.reporter or texio.write_nl
+        if f then
+            r(c .. " : " .. string.format(f,...))
+        else
+            r("")
+        end
+    end
+end
 
 local function loadmodule(name,continue)
     local foundname = kpse.find_file(name,"tex") or ""
@@ -132,12 +149,12 @@ local function loadmodule(name,continue)
     end
     if foundname == "" then
         if not continue then
-            texio.write_nl(string.format(" <luatex-fonts: unable to locate %s>",name))
+            logs.report("system","unable to locate file '%s'",name)
             os.exit()
         end
     else
         if verbose then
-            texio.write(string.format(" <%s>",foundname)) -- no file.basename yet
+            logs.report("system","loading '%s'",foundname) -- no file.basename yet
         end
         dofile(foundname)
     end
@@ -328,6 +345,6 @@ end
 
 -- We're done.
 
-texio.write(string.format(" <luatex-fonts.lua loaded in %0.3f seconds>", os.gettimeofday()-starttime))
+logs.report("system","luatex-fonts.lua loaded in %0.3f seconds", os.gettimeofday()-starttime)
 
 generic_context.pop_namespaces(whatever)

@@ -143,7 +143,7 @@ local mapping = allocate { -- this is just an experiment to illustrate some prin
 
 table.setmetatableindex(mapping,
     function(t,k)
-        v = "placeholder unknown gray"
+        local v = "placeholder unknown gray"
         t[k] = v
         return v
     end

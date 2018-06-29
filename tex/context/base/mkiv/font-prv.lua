@@ -29,7 +29,7 @@ end
 -- use these privates for mechanisms like alignments-on-character and such
 
 local sharedprivates = setmetatableindex(function(t,k)
-    v = currentprivate
+    local v = currentprivate
     if currentprivate < maximumprivate then
         currentprivate = currentprivate + 1
     else

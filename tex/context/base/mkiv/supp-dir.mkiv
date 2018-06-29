@@ -30,7 +30,17 @@
 % \ifnum\thetextdir=0 L\else R\fi \textdir TRT \ifnum\thetextdir=0 L\else R\fi
 
 \unexpanded\def\showdirsinmargin
-  {\inleft{\normalexpanded{\noexpand\hbox dir TLT{\ttxx[\the\pardir,\the\textdir]}}}}
+  {\inleft{\normalexpanded{\noexpand\hbox bdir\directionlefttoright{\ttxx[\the\pardir,\the\textdir]}}}}
+
+% this will become:
+
+% \def\syst_direction_string#1{\ifnum#1=\plusone r2l\else l2r\fi}
+%
+% \unexpanded\def\showdirsinmargin
+%   {\inleft{\normalexpanded{\noexpand\hbox bdir\directionlefttoright
+%      {\ttxx[\syst_direction_string\pardirection,\syst_direction_string\textdirection]}}}}
+
+% will become obsolete:
 
 \bgroup
     \catcode`L=\othercatcode \gdef\istltdir#1#2#3{\if#2L0\else1\fi}
@@ -43,8 +53,11 @@
 \def\istltpardir {\expandafter\istltdir\the\pardir }
 \def\istrtpardir {\expandafter\istrtdir\the\pardir }
 
-% \ifcase\istlttextdir          Y\else N\fi
-% \ifcase\istltpardir           Y\else N\fi
-% \ifcase\istltdir    TRT\relax Y\else N\fi
+% in 1.10 but obsolete helpers anyway
+
+% \def\istlttextdir{\ifnum\textdirection=\plusone \zerocount\else \plusone  \fi}
+% \def\istrttextdir{\ifnum\textdirection=\plusone \plusone  \else \zerocount\fi}
+% \def\istltpardir {\ifnum\pardirection =\plusone \zerocount\else \plusone  \fi}
+% \def\istrtpardir {\ifnum\pardirection =\plusone \plusone  \else \zerocount\fi}
 
 \protect \endinput

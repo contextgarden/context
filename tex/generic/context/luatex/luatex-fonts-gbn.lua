@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['luatex-fonts-gbn'] = {
 -- generic [base|node] mode handler
 
 if context then
-    texio.write_nl("fatal error: this module is not for context")
     os.exit()
 end
 
@@ -52,8 +51,8 @@ local d_kerning    = nuts.kerning
 
 local basemodepass = true
 
-local function l_warning() texio.write_nl("warning: node.ligaturing called directly") l_warning = nil end
-local function k_warning() texio.write_nl("warning: node.kerning called directly")    k_warning = nil end
+local function l_warning() logs.report("fonts","don't call 'node.ligaturing' directly") l_warning = nil end
+local function k_warning() logs.report("fonts","don't call 'node.kerning' directly")    k_warning = nil end
 
 function node.ligaturing(...)
     if basemodepass and l_warning then

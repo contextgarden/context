@@ -126,6 +126,8 @@
 
 \definesystemattribute[displaymath]    [public]
 
+\mathflattenmode 31
+
 \appendtoks
     \attribute\mathmodeattribute\plusone
 \to \everydisplay
@@ -1333,7 +1335,7 @@
 \to \everyswitchmathematics
 
 \unexpanded\def\math_basics_synchronize_direction
-  {\mathdir T\ifconditional\c_math_right_to_left R\else L\fi T}
+  {\mathdirection\ifconditional\c_math_right_to_left\plusone\else\zerocount\fi}
 
 % Not \everymathematics as it comes too late and I'm not in the mood for a mixed mode
 % kludge now (should be a property of beginmath nodes and passed to callbacks).

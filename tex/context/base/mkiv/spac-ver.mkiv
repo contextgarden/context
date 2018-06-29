@@ -2091,8 +2091,56 @@
 \def\spac_vspacing_nop_ignore
   {\ifmmode\else\par\fi}
 
+% \unexpanded\def\directvspacing#1%
+%   {\par\clf_vspacing{#1}}
+%
+%
+% \def\directdefaultvspacing
+%   {\ifinpagebody % somewhat weird
+%      \clf_vspacing{\currentvspacing}%
+%    \else\ifconditional\c_spac_packed_blank
+%      \clf_vspacing{\currentvspacing}%
+%    \fi\fi}
+%
+% \unexpanded\def\useblankparameter#1% faster local variant
+%   {\edef\m_spac_blank_asked{#1\c!blank}%
+%    \ifx\m_spac_blank_asked\empty\else
+%      \clf_vspacing{\m_spac_blank_asked}
+%    \fi}
+
+\installcorenamespace{vspacing}
+
 \unexpanded\def\directvspacing#1%
-  {\par\clf_vspacing{#1}}
+  {\par
+   \ifcsname\??vspacing#1\endcsname
+     \lastnamedcs
+   \else
+     \spac_vspacing_yes_preset{#1}%
+   \fi}
+
+\def\spac_vspacing_yes_preset#1%
+  {\setxvalue{\??vspacing#1}{\clf_vspacing{#1}}%
+  %\writestatus{}{}%
+  %\writestatus{#1}{\expandafter\meaning\csname\??vspacing#1\endcsname}%
+  %\writestatus{}{}%
+   \csname\??vspacing#1\endcsname}
+
+\def\spac_vspacing_yes_indeed[#1]%
+  {\ifmmode\else
+     \directvspacing{#1}%
+   \fi}
+
+\def\spac_vspacing_nop_indeed
+  {\ifmmode\else
+     \directvspacing\currentvspacing
+   \fi}
+
+\def\directdefaultvspacing
+  {\ifinpagebody % somewhat weird
+     \directvspacing\currentvspacing
+   \else\ifconditional\c_spac_packed_blank
+     \directvspacing\currentvspacing
+   \fi\fi}
 
 \def\directcheckedvspacing
   {\ifinpagebody % somewhat weird
@@ -2103,17 +2151,10 @@
      \doubleexpandafter\gobbleoneargument
    \fi\fi}
 
-\def\directdefaultvspacing
-  {\ifinpagebody % somewhat weird
-     \clf_vspacing{\currentvspacing}%
-   \else\ifconditional\c_spac_packed_blank
-     \clf_vspacing{\currentvspacing}%
-   \fi\fi}
-
 \unexpanded\def\useblankparameter#1% faster local variant
   {\edef\m_spac_blank_asked{#1\c!blank}%
    \ifx\m_spac_blank_asked\empty\else
-     \clf_vspacing{\m_spac_blank_asked}
+     \directvspacing\m_spac_blank_asked
    \fi}
 
 % handy (and faster):

@@ -64,12 +64,18 @@
 %D We will not use bodydir and pagedir so we disable them. That way we get
 %D normal hyperlink support. We back on it (too hard to fake \type {\the}).
 
+\chardef\directionlefttoright\zerocount
+\chardef\directionrighttoleft\plusone
+
 \unexpanded\def\syst_fatal_dir_error#1%
   {\writestatus{fatal error}{\string#1\space is forbidden}%
    \wait}
 
 \def\pagedir      {\syst_fatal_dir_error\pagedir}        \let\normalpagedir\pagedir
 \def\bodydir      {\syst_fatal_dir_error\bodydir}        \let\normalbodydir\bodydir
+
+\def\pagedirection{\syst_fatal_dir_error\pagedirection}  \let\normalpagedirection\pagedirection
+\def\bodydirection{\syst_fatal_dir_error\bodydirection}  \let\normalbodydirection\bodydirection
 
 % This will become a more advanced layout controller soon:
 
@@ -94,14 +100,14 @@
 \unexpanded\def\spac_directions_lefttoright_vmode
   {\settrue\displaylefttoright
    \settrue\inlinelefttoright
-   \textdir TLT\relax
-   \pardir  TLT\relax}
+   \textdirection\directionlefttoright
+   \pardirection \directionlefttoright}
 
 \unexpanded\def\spac_directions_righttoleft_vmode
   {\setfalse\displaylefttoright
    \setfalse\inlinelefttoright
-   \textdir TRT\relax
-   \pardir  TRT\relax}
+   \textdirection\directionrighttoleft
+   \pardirection \directionrighttoleft}
 
 % % keep this as reference
 %
@@ -136,11 +142,11 @@
 %    \setfalse\inlinelefttoright}
 
 \unexpanded\def\spac_directions_lefttoright_hmode
-  {\linedir TLT\relax % linedir keeps subtype of skip
+  {\linedirection\directionlefttoright % linedir keeps subtype of skip
    \settrue\inlinelefttoright}
 
 \unexpanded\def\spac_directions_righttoleft_hmode
-  {\linedir TRT\relax % linedir keeps subtype of skip
+  {\linedirection\directionrighttoleft % linedir keeps subtype of skip
    \setfalse\inlinelefttoright}
 
 % \def\currentdirectionparameters
@@ -167,16 +173,17 @@
 
 \def\spac_directions_synchronize_lr
   {\settrue\inlinelefttoright
-   \textdir TLT\relax
-   \pardir  TLT\relax}
+   \textdirection\directionlefttoright
+   \pardirection \directionlefttoright}
 
 \def\spac_directions_synchronize_rl
   {\setfalse\inlinelefttoright
-   \textdir TRT\relax
-   \pardir  TRT\relax}
+   \textdirection\directionrighttoleft
+   \pardirection \directionrighttoleft}
 
 \unexpanded\def\synchronizeinlinedirection
-  {\textdir T\ifconditional\inlinelefttoright L\else R\fi T\relax}
+  {% why not \linedirection here
+   \textdirection\ifconditional\inlinelefttoright\directionlefttoright\else\directionrighttoleft\fi}
 
 \unexpanded\def\checkedlefttoright
   {\ifvmode
@@ -210,49 +217,20 @@
 \unexpanded\def\usebidiparameter#1%
   {\begincsname\??bidi#1\c!bidi\endcsname}
 
-% maybe some day:
-%
-% \newcount\postdirpenalty % \zerocount
-% \newcount\predirpenalty  % \zerocount
-%
-% \def\spac_directions_post_break
-%   {\ifhmode
-%      \removeunwantedspaces
-%      \penalty\postdirpenalty
-%    \fi}
-%
-% \def\spac_directions_pre_break
-%   {\ifhmode
-%      \penalty\predirpenalty
-%      \ignorespaces
-%    \fi}
-%
-% \unexpanded\def\spac_directions_lefttoright_hmode
-%   {\settrue\inlinelefttoright
-%    \textdir TLT\relax
-%    \aftergroup\spac_directions_post_break
-%    \spac_directions_pre_break}
-%
-% \unexpanded\def\spac_directions_righttoleft_hmode
-%   {\textdir TRT\relax
-%    \setfalse\inlinelefttoright
-%    \aftergroup\spac_directions_post_break
-%    \spac_directions_pre_break}
-
 \unexpanded\def\showdirections
   {\dontleavehmode
-   \begingroup\infofont\textdir TLT[\space
-   layout:\ifconditional \layoutlefttoright  l2r\else r2l\fi\space
-   display:\ifconditional\displaylefttoright l2r\else r2l\fi\space
-   inline:\ifconditional \inlinelefttoright  l2r\else r2l\fi\space
+   \begingroup\infofont\textdirection\directionlefttoright[\space
+   layout:  \ifconditional\layoutlefttoright  l2r\else r2l\fi\space
+   display: \ifconditional\displaylefttoright l2r\else r2l\fi\space
+   inline:  \ifconditional\inlinelefttoright  l2r\else r2l\fi\space
    ]\endgroup}
 
-\unexpanded\def\righttolefthbox#1#{\hbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
-\unexpanded\def\lefttorighthbox#1#{\hbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
-\unexpanded\def\righttoleftvbox#1#{\vbox dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
-\unexpanded\def\lefttorightvbox#1#{\vbox dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
-\unexpanded\def\righttoleftvtop#1#{\vtop dir TRT #1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
-\unexpanded\def\lefttorightvtop#1#{\vtop dir TLT #1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
+\unexpanded\def\righttolefthbox#1#{\hbox bdir\plusone  #1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
+\unexpanded\def\lefttorighthbox#1#{\hbox bdir\zerocount#1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
+\unexpanded\def\righttoleftvbox#1#{\vbox bdir\plusone  #1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
+\unexpanded\def\lefttorightvbox#1#{\vbox bdir\zerocount#1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
+\unexpanded\def\righttoleftvtop#1#{\vtop bdir\plusone  #1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
+\unexpanded\def\lefttorightvtop#1#{\vtop bdir\zerocount#1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
 
 \unexpanded\def\autodirhbox#1#{\hbox#1\bgroup\synchronizeinlinedirection\let\next}
 \unexpanded\def\autodirvbox#1#{\vbox#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vbox

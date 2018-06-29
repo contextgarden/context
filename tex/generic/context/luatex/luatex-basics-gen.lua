@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['luat-basics-gen'] = {
 }
 
 if context then
-    texio.write_nl("fatal error: this module is not for context")
     os.exit()
 end
 
@@ -27,10 +26,19 @@ local dummyreporter = function(c)
     return function(f,...)
         local r = texio.reporter or texio.write_nl
         if f then
-            r(c .. " : " ..formatters(f,...))
+            r(c .. " : " .. (formatters or format)(f,...))
         else
             r("")
         end
+    end
+end
+
+local dummyreport = function(c,f,...)
+    local r = texio.reporter or texio.write_nl
+    if f then
+        r(c .. " : " .. (formatters or format)(f,...))
+    else
+        r("")
     end
 end
 
@@ -68,7 +76,7 @@ logs = {
     new           = dummyreporter,
     reporter      = dummyreporter,
     messenger     = dummyreporter,
-    report        = dummyfunction,
+    report        = dummyreport,
 }
 
 callbacks = {
@@ -224,7 +232,7 @@ do
         if not lfs.isdir(cachepath) then
             lfs.mkdirs(cachepath) -- needed for texlive and latex
             if lfs.isdir(cachepath) then
-                texio.write(format("(created cache path: %s)",cachepath))
+                logs.report("system","creating cache path '%s'",cachepath)
             end
         end
         if file.is_writable(cachepath) then
@@ -243,16 +251,16 @@ do
     end
 
     if not writable then
-        texio.write_nl("quiting: fix your writable cache path")
+        logs.report("system","no writeable cache path, quiting")
         os.exit()
     elseif #readables == 0 then
-        texio.write_nl("quiting: fix your readable cache path")
+        logs.report("system","no readable cache path, quiting")
         os.exit()
     elseif #readables == 1 and readables[1] == writable then
-        texio.write(format("(using cache: %s)",writable))
+        logs.report("system","using cache '%s'",writable)
     else
-        texio.write(format("(using write cache: %s)",writable))
-        texio.write(format("(using read cache: %s)",table.concat(readables, " ")))
+        logs.report("system","using write cache '%s'",writable)
+        logs.report("system","using read cache '%s'",table.concat(readables," "))
     end
 
 end
@@ -290,28 +298,28 @@ function caches.loaddata(readables,name,writable)
         local loader = false
         local luaname, lucname = makefullname(path,name)
         if lfs.isfile(lucname) then
-            texio.write(format("(load luc: %s)",lucname))
+            logs.report("system","loading luc file '%s'",lucname)
             loader = loadfile(lucname)
         end
         if not loader and lfs.isfile(luaname) then
             -- can be different paths when we read a file database from disk
             local luacrap, lucname = makefullname(writable,name)
-            texio.write(format("(compiling luc: %s)",lucname))
+            logs.report("system","compiling luc file '%s'",lucname)
             if lfs.isfile(lucname) then
                 loader = loadfile(lucname)
             end
             caches.compile(data,luaname,lucname)
             if lfs.isfile(lucname) then
-                texio.write(format("(load luc: %s)",lucname))
+                logs.report("system","loading luc file '%s'",lucname)
                 loader = loadfile(lucname)
             else
-                texio.write(format("(loading failed: %s)",lucname))
+                logs.report("system","error in loading luc file '%s'",lucname)
             end
             if not loader then
-                texio.write(format("(load lua: %s)",luaname))
+                logs.report("system","loading lua file '%s'",luaname)
                 loader = loadfile(luaname)
             else
-                texio.write(format("(loading failed: %s)",luaname))
+                logs.report("system","error in loading lua file '%s'",luaname)
             end
         end
         if loader then
@@ -326,11 +334,11 @@ end
 function caches.savedata(path,name,data)
     local luaname, lucname = makefullname(path,name)
     if luaname then
-        texio.write(format("(save: %s)",luaname))
+        logs.report("system","saving lua file '%s'",luaname)
         table.tofile(luaname,data,true)
         if lucname and type(caches.compile) == "function" then
             os.remove(lucname) -- better be safe
-            texio.write(format("(save: %s)",lucname))
+            logs.report("system","saving luc file '%s'",lucname)
             caches.compile(data,luaname,lucname)
         end
     end
@@ -384,7 +392,6 @@ function table.makeweak(t)
     end
     return t
 end
-
 
 -- helper for plain:
 

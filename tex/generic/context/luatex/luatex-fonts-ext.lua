@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['luatex-fonts-ext'] = {
 }
 
 if context then
-    texio.write_nl("fatal error: this module is not for context")
     os.exit()
 end
 

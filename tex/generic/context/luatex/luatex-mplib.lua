@@ -82,7 +82,11 @@ else
     --ldx]]--
 
     metapost.report = metapost.report or function(...)
-        texio.write(format("<mplib: %s>",format(...)))
+        if logs.report then
+            logs.report("metapost",...)
+        else
+            texio.write(format("<mplib: %s>",format(...)))
+        end
     end
 
     --[[ldx--
