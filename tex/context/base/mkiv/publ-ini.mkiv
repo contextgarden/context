@@ -334,6 +334,11 @@
      \expandafter\publ_command_nop
    \fi{#1}}
 
+\newtoks\t_btx_cmd
+\newbox \b_btx_cmd
+
+\t_btx_cmd{\global\setbox\b_btx_cmd\hpack{\clf_btxcmdstring}}
+
 \let\btxcmd\btxcommand
 
 \def\publ_command_yes#1%
@@ -1996,5 +2001,16 @@
 \fetchruntimecommand \showbtxhashedauthors       \f!publ_tra
 \fetchruntimecommand \showbtxfields              \f!publ_tra
 \fetchruntimecommand \showbtxtables              \f!publ_tra
+
+%D Some potential crap:
+%D
+%D Because I consider this bad data management and a weird mix of languages only one
+%D accessor is provided.
+
+\unexpanded\def\btxshortcut
+  {\dosingleempty\publ_shortcut}
+
+\def\publ_shortcut[#1]#2%
+  {\clf_btxshortcut{\iffirstargument#1\else\s!default\fi}{#2}}
 
 \protect

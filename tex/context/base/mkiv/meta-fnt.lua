@@ -108,19 +108,20 @@ local function process(mpxformat,name,instances,scalefactor)
             for i=1,instances do
                 characters   = { }
                 descriptions = { }
-                metapost.process(
-                    mpxformat,
-                    {
+                metapost.process {
+                    mpx         = mpxformat,
+                 -- trialrun    = false,
+                    flusher     = flusher,
+                 -- multipass   = false,
+                 -- isextrapass = false,
+                    askedfig    = "all",
+                 -- incontext   = false,
+                    data        = {
                         formatters["randomseed := %s ;"](i*10),
                         formatters["charscale  := %s ;"](scalefactor),
                         data,
                     },
-                    false,
-                    flusher,
-                    false,
-                    false,
-                    "all"
-                )
+                }
                 lists[i] = {
                     characters   = characters,
                     descriptions = descriptions,

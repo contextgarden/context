@@ -16,6 +16,7 @@ local lpeg = lpeg
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local concat, sortedhash = table.concat, table.sortedhash
 local utfsub = utf.sub
+local find = string.find
 local formatters = string.formatters
 
 local P, S, C, V, Cs, Ct, Cg, Cf, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cg, lpeg.Cf, lpeg.Cc
@@ -37,6 +38,8 @@ local allocate        = utilities.storage.allocate
 local chardata        = characters.data
 
 local trace_hashing   = false  trackers.register("publications.authorhash", function(v) trace_hashing = v end)
+
+local expand_authors  = false  directives.register("publications.prerollauthor", function(v) expand_authors = v end)
 
 local report          = logs.reporter("publications","authors")
 local report_cite     = logs.reporter("publications","cite")
@@ -123,6 +126,8 @@ end
 local authormap        = allocate()
 publications.authormap = authormap
 
+local prerollcmdstring = publications.prerollcmdstring
+
 local function splitauthor(author,justsplit)
     local detail, remapped
     if not justsplit then
@@ -142,6 +147,9 @@ local function splitauthor(author,justsplit)
     end
     local author = remapped or author
     local firstnames, vons, surnames, initials, juniors, options
+    if expand_authors and find(author,"\\btxcmd") then
+        author = prerollcmdstring(author)
+    end
     local split = lpegmatch(commasplitter,author)
     local n = #split
     detail = {
@@ -825,8 +833,10 @@ local p_clean = Cs ( (
                   + lpeg.patterns.utf8character
                 )^1)
 
+-- Probabbly more robust is a two pass approach.
+
 authorhashers.short = function(authors)
-    -- a short is a real dumb hardcodes kind of tag and we only support
+    -- a short is a real dumb hardcoded kind of tag and we only support
     -- this one because some users might expect it, not because it makes
     -- sense
     if type(authors) == "table" then

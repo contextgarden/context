@@ -104,19 +104,20 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
         for i=1,instances do
             characters   = { }
             descriptions = { }
-            metapost.process(
-                mpxformat,
-                {
+            metapost.process {
+                mpx         = mpxformat,
+             -- trialrun    = false,
+                flusher     = flusher,
+             -- multipass   = false,
+             -- isextrapass = false,
+                askedfig    = "all",
+             -- incontext   = false,
+                data        = {
                     "randomseed := " .. i*10 .. ";",
                     "scale_factor := " .. scalefactor .. " ;",
                     data
                 },
-                false,
-                flusher,
-                false,
-                false,
-                "all"
-            )
+            }
             lists[i] = {
                 characters   = characters,
                 descriptions = descriptions,

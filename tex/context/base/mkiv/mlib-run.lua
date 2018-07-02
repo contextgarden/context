@@ -279,14 +279,42 @@ function metapost.unload(mpx)
     stoptiming(mplib)
 end
 
+-- The flatten hack is needed because the library currently barks on \n\n and the
+-- collapse because mp cannot handle snippets due to grouping issues.
+
+local function flatten(source,target)
+    for i=1,#source do
+        local d = source[i]
+        if type(d) == "table" then
+            flatten(d,target)
+        elseif d and d ~= "" then
+            target[#target+1] = d
+        end
+    end
+    return target
+end
+
+local function prepareddata(data,collapse)
+    if data and data ~= "" then
+        if type(data) == "table" then
+            data = flatten(data,{ })
+            if collapse then
+                data = #data > 1 and concat(data,"\n") or data[1]
+            end
+        end
+        return data
+    end
+end
+
 metapost.use_one_pass    = LUATEXFUNCTIONALITY >= 6789 -- for a while
 
 metapost.defaultformat   = "metafun"
 metapost.defaultinstance = "metafun"
 metapost.defaultmethod   = "default"
 
-local mpxformats = { }
-local nofformats = 0
+local mpxformats   = { }
+local nofformats   = 0
+local mpxpreambles = { }
 
 function metapost.pushformat(specification,f,m) -- was: instance, name, method
     if type(specification) ~= "table" then
@@ -296,9 +324,12 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
             method   = m,
         }
     end
-    local instance = specification.instance
-    local format   = specification.format
-    local method   = specification.method
+    local instance    = specification.instance
+    local format      = specification.format
+    local method      = specification.method
+    local definitions = specification.definitions
+    local extensions  = specification.extensions
+    local preamble    = nil
     if not instance or instance == "" then
         instance = metapost.defaultinstance
         specification.instance = instance
@@ -311,13 +342,35 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
         method = metapost.defaultmethod
         specification.method = method
     end
+    if definitions and definitions ~= "" then
+        preamble = definitions
+    end
+    if extensions and extensions ~= "" then
+        if preamble then
+            preamble = preamble .. "\n" .. extensions
+        else
+            preamble = extensions
+        end
+    end
     nofformats = nofformats + 1
-    instance = instance .. ":" .. nofformats
-    local mpx = mpxformats[instance]
+    local usedinstance = instance .. ":" .. nofformats
+    local mpx = mpxformats[usedinstance]
+    local mpp = mpxpreambles[instance] or ""
+    if preamble then
+        preamble = prepareddata(preamble,true)
+        mpp = mpp .. "\n" .. preamble
+        mpxpreambles[instance] = mpp
+    end
     if not mpx then
-        report_metapost("initializing instance %a using format %a and method %a",instance,format,method)
+        report_metapost("initializing instance %a using format %a and method %a",usedinstance,format,method)
         mpx = metapost.checkformat(format,method)
-        mpxformats[instance] = mpx
+        mpxformats[usedinstance] = mpx
+        if mpp ~= "" then
+            preamble = mpp
+        end
+    end
+    if preamble then
+        mpx:execute(preamble)
     end
     specification.mpx = mpx
     return mpx
@@ -391,7 +444,41 @@ do
 
 end
 
-function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig, incontext)
+
+if not metapost.process then
+
+    function metapost.process(specification)
+        metapost.run(specification)
+    end
+
+end
+
+-- run, process, convert and flush all work with a specification with the
+-- following (often optional) fields
+--
+--     mpx          string or mp object
+--     data         string or table of strings
+--     trialrun     boolean
+--     flusher      table with flush methods
+--     multipass    boolean
+--     isextrapass  boolean
+--     askedfig     string ("all" etc) or number
+--     incontext    boolean
+--     plugmode     boolean
+
+local function makebeginbanner(specification)
+    return formatters
+        ["%% begin graphic: n=%s, trialrun=%l, multipass=%l, isextrapass=%l\n\n"]
+        (metapost.n, specification.trialrun, specification.multipass, specification.isextrapass)
+end
+
+local function makeendbanner(specification)
+    return "\n% end graphic\n\n"
+end
+
+function metapost.run(specification)
+    local mpx       = specification.mpx
+    local data      = specification.data
     local converted = false
     local result    = { }
     local mpxdone   = type(mpx) == "string"
@@ -414,39 +501,12 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                 }
                 mp_tra[mpx] = tra
             end
-            local banner = formatters["%% begin graphic: n=%s, trialrun=%s, multipass=%s, isextrapass=%s\n\n"](
-                metapost.n, tostring(trialrun), tostring(multipass), tostring(isextrapass))
+            local banner = makebeginbanner(specification)
             tra.inp:write(banner)
             tra.log:write(banner)
         end
-        if type(data) == "table" then
-            -- this hack is needed because the library currently barks on \n\n
-            -- eventually we can text for "" in the next loop
-            local n = 0
-            local nofsnippets = #data
-            for i=1,nofsnippets do
-                local d = data[i]
-                if d ~= "" then
-                    n = n + 1
-                    data[n] = d
-                end
-            end
-            for i=nofsnippets,n+1,-1 do
-                data[i] = nil
-            end
-            -- and this one because mp cannot handle snippets due to grouping issues
-            if metapost.collapse then
-                if #data > 1 then
-                    data = concat(data,"\n")
-                else
-                    data = data[1]
-                end
-            end
-            -- end of hacks
-        end
-
+        local data = prepareddata(data,metapost.collapse)
         local function process(d,i)
-         -- d = string.gsub(d,"\r","")
             if d then
                 if trace_graphics then
                     if i then
@@ -458,7 +518,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                     end
                 end
                 starttiming(metapost.exectime)
-                result = mpx:execute(d) -- some day we wil use a coroutine with textexts
+                result = mpx:execute(d)
                 stoptiming(metapost.exectime)
                 if trace_graphics and result then
                     local str = result.log or result.error
@@ -475,7 +535,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                         end
                     end
                     if result.fig then
-                        converted = metapost.convert(result, trialrun, flusher, multipass, askedfig, incontext)
+                        converted = metapost.convert(specification,result)
                     end
                 end
             elseif i then
@@ -489,7 +549,6 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             if trace_tracingall then
                 mpx:execute("tracingall;")
             end
-         -- table.insert(data,2,"")
             for i=1,#data do
                 process(data[i],i)
             end
@@ -500,7 +559,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             process(data)
         end
         if trace_graphics then
-            local banner = "\n% end graphic\n\n"
+            local banner = makeendbanner(specification)
             tra.inp:write(banner)
             tra.log:write(banner)
         end
@@ -513,8 +572,12 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
     return converted, result
 end
 
-function metapost.convert()
-    report_metapost('warning: no converter set')
+if not metapost.convert then
+
+    function metapost.convert()
+        report_metapost('warning: no converter set')
+    end
+
 end
 
 -- handy
@@ -582,7 +645,7 @@ end
 
 -- goodie
 
-function metapost.quickanddirty(mpxformat,data,plugmode)
+function metapost.quickanddirty(mpxformat,data,incontext)
     if not data then
         mpxformat = "metafun"
         data      = mpxformat
@@ -602,7 +665,14 @@ function metapost.quickanddirty(mpxformat,data,plugmode)
         end
     }
     local data = formatters["; beginfig(1) ;\n %s\n ; endfig ;"](data)
-    metapost.process(mpxformat, { data }, false, flusher, false, false, "all", plugmode)
+    metapost.process {
+        mpx        = mpxformat,
+        flusher    = flusher,
+        askedfig   = "all",
+        useplugins = incontext,
+        incontext  = incontext,
+        data       = { data },
+    }
     if code then
         return {
             bbox = bbox or { 0, 0, 0, 0 },
@@ -637,7 +707,6 @@ do
     local width  = 0
     local height = 0
     local depth  = 0
-    local mpx    = false
 
     local flusher = {
         startfigure = function(n,llx,lly,urx,ury)
@@ -655,13 +724,17 @@ do
         end
     }
 
-    function metapost.simple(format,code) -- even less than metapost.quickcanddirty
+    function metapost.simple(format,code)   -- even less than metapost.quickcanddirty
         local mpx = metapost.pushformat { } -- takes defaults
      -- metapost.setoutercolor(2)
-        metapost.process(mpx,
-            { "beginfig(1);", code, "endfig;" },
-            false, flusher, false, false, 1, true -- last true is plugmode !
-        )
+        metapost.process {
+            mpx        = mpx,
+            flusher    = flusher,
+            askedfig   = 1,
+            useplugins = false,
+            incontext  = false,
+            data       = { "beginfig(1);", code, "endfig;" },
+        }
         metapost.popformat()
         if result then
             local stream = concat(result," ")

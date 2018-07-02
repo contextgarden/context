@@ -97,18 +97,18 @@ def RuleColor = %color% enddef ;
     ruleactions.mp = function(p,h,v,i,n)
         local name = p.name or "fake:rest"
         local code = (predefined[name] or predefined["fake:rest"]) {
-            data            = p.data or "",
-            width           = p.width * bpfactor,
-            height          = p.height * bpfactor,
-            depth           = p.depth * bpfactor,
-            factor          = (p.factor or 0) * bpfactor, -- needs checking
-            offset          = p.offset or 0,
-            line            = (p.line or 65536) * bpfactor,
-            color           = mpcolor(p.ma,p.ca,p.ta),
-            option          = p.option or "",
-            direction       = p.direction or "TLT",
-            h               = h * bpfactor,
-            v               = v * bpfactor,
+            data      = p.data or "",
+            width     = p.width * bpfactor,
+            height    = p.height * bpfactor,
+            depth     = p.depth * bpfactor,
+            factor    = (p.factor or 0) * bpfactor, -- needs checking
+            offset    = p.offset or 0,
+            line      = (p.line or 65536) * bpfactor,
+            color     = mpcolor(p.ma,p.ca,p.ta),
+            option    = p.option or "",
+            direction = p.direction or "TLT",
+            h         = h * bpfactor,
+            v         = v * bpfactor,
         }
         if not initialized then
             initialized = true
@@ -133,14 +133,28 @@ do
     local f_rectangle = formatters["%.6F w %.6F %.6F %.6F %.6F re %s"]
     local f_baselined = formatters["%.6F w %.6F %.6F %.6F %.6F re s %.6F %.6F m %.6F %.6F l s"]
     local f_dashlined = formatters["%.6F w %.6F %.6F %.6F %.6F re s [%.6F %.6F] 2 d %.6F %.6F m %.6F %.6F l s"]
-    local f_radtangle = formatters[ [[
-        %.6F w %.6F %.6F m
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        %.6F %.6F l %.6F %.6F %.6F %.6F y
-        h %s
-    ]] ]
+    local f_radtangle = formatters[
+    [[%.6F w %.6F %.6F m
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+%.6F %.6F l %.6F %.6F %.6F %.6F y
+h %s]]
+        ]
+
+    directives.register("metapost.stripzeros",function() -- confusing name but ok
+        f_rectangle = formatters["%.6N w %.6N %.6N %.6N %.6N re %s"]
+        f_baselined = formatters["%.6N w %.6N %.6N %.6N %.6N re s %.6N %.6N m %.6N %.6N l s"]
+        f_dashlined = formatters["%.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s"]
+        f_radtangle = formatters[
+[[%.6N w %.6N %.6N m
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+%.6N %.6N l %.6N %.6N %.6N %.6N y
+h %s]]
+        ]
+    end)
 
     ruleactions.fill = function(p,h,v,i,n)
         local l = (p.line or 65536)*bpfactor

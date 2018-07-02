@@ -622,7 +622,7 @@ end
 
 -- maybe we can latelua the texts some day
 
-local processmetapost = metapost.process
+local runmetapost = metapost.run
 
 local function checkaskedfig(askedfig) -- return askedfig, wrappit
     if not askedfig then
@@ -646,36 +646,41 @@ local function extrapass()
         report_metapost("second run of job %s, asked figure %a",top.nofruns,top.askedfig)
     end
     metapost.preparetextextsdata()
-    processmetapost(top.mpx, {
-        top.wrappit and do_begin_fig or "",
-        no_trial_run,
-        top.initializations,
-        do_safeguard,
-        top.data,
-        top.wrappit and do_end_fig or "",
-    }, false, nil, false, true, top.askedfig)
+    runmetapost {
+        mpx         = top.mpx,
+        isextrapass = true,
+        askedfig    = top.askedfig,
+        incontext   = true,
+        data        = {
+            top.wrappit and do_begin_fig or "",
+            no_trial_run,
+            top.initializations,
+            do_safeguard,
+            top.data,
+            top.wrappit and do_end_fig or "",
+        },
+    }
 end
 
-function metapost.graphic_base_pass(specification) -- name will change (see mlib-ctx.lua)
-    local top = startjob(true,"base")
-    --
+-- This one is called from the \TEX\ end so the specification is different
+-- from the specification to metapost,run cum suis! The definitions and
+-- extension used to be handled here but are now delegated to the format
+-- initializers because we need to accumulate them for nested instances (a
+-- side effect of going single pass).
+
+function metapost.graphic_base_pass(specification)
+    local top             = startjob(true,"base")
     local mpx             = specification.mpx -- mandate
     local data            = specification.data or ""
-    local definitions     = specification.definitions or ""
- -- local extensions      = metapost.getextensions(specification.instance,specification.useextensions)
-    local extensions      = specification.extensions or ""
     local inclusions      = specification.inclusions or ""
     local initializations = specification.initializations or ""
-    local askedfig        = specification.figure -- no default else no wrapper
+    local askedfig,
+          wrappit         = checkaskedfig(specification.figure)
+    nofruns               = nofruns + 1
+    top.askedfig          = askedfig
+    top.wrappit           = wrappit
+    top.nofruns           = nofruns
     metapost.namespace    = specification.namespace or ""
-    --
-    local askedfig, wrappit = checkaskedfig(askedfig)
-    --
-    nofruns      = nofruns + 1
-    --
-    top.askedfig = askedfig
-    top.wrappit  = wrappit
-    top.nofruns  = nofruns
     --
     local done_1, done_2, done_3, forced_1, forced_2, forced_3
     if checking_enabled then
@@ -691,12 +696,12 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
             inclusions, done_3, forced_3 = checktexts(inclusions)
         end
     end
-    top.intermediate     = false
-    top.multipass        = false -- no needed here
-    top.mpx              = mpx
-    top.data             = data
-    top.initializations  = initializations
-    local method         = metapost.method
+    top.intermediate    = false
+    top.multipass       = false -- no needed here
+    top.mpx             = mpx
+    top.data            = data
+    top.initializations = initializations
+    local method        = metapost.method
     if trace_runs then
         if method == 1 then
             report_metapost("forcing two runs due to library configuration")
@@ -716,56 +721,78 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
         if trace_runs then
             report_metapost("first run of job %s, asked figure %a",nofruns,askedfig)
         end
-     -- first true means: trialrun, second true means: avoid extra run if no multipass
-        local flushed = processmetapost(mpx, {
-            definitions,
-            extensions,
-            inclusions,
-            wrappit and do_begin_fig or "",
-            do_first_run,
-            do_trial_run,
-            initializations,
-            do_safeguard,
-            data,
-            wrappit and do_end_fig or "",
-        }, true, nil, not (forced_1 or forced_2 or forced_3), false, askedfig, true)
+        local flushed = runmetapost {
+            mpx       = mpx,
+            trialrun  = true,
+            multipass = not (forced_1 or forced_2 or forced_3),
+            askedfig  = askedfig,
+            incontext = true,
+            data      = {
+                inclusions,
+                wrappit and do_begin_fig or "",
+                do_first_run,
+                do_trial_run,
+                initializations,
+                do_safeguard,
+                data,
+                wrappit and do_end_fig or "",
+            },
+        }
         if top.intermediate then
             for _, action in next, metapost.intermediate.actions do
                 action()
             end
         end
         if not flushed or not metapost.optimize then
-            -- tricky, we can only ask once for objects and therefore
-            -- we really need a second run when not optimized
-         -- context.MPLIBextrapass(askedfig)
+            -- This is tricky as we can only ask for objects once and therefore
+            -- we really need a second run when we're not optimized.
             context(extrapass)
         end
     else
         if trace_runs then
             report_metapost("running job %s, asked figure %a",nofruns,askedfig)
         end
-        processmetapost(mpx, {
-            definitions,
-            extensions,
-            inclusions,
-            wrappit and do_begin_fig or "",
-            do_first_run,
-            no_trial_run,
-            initializations,
-            do_safeguard,
-            data,
-            wrappit and do_end_fig or "",
-        }, false, nil, false, false, askedfig, true)
+        runmetapost {
+            mpx         = mpx,
+            askedfig    = askedfig,
+            incontext   = true,
+            data        = {
+                inclusions,
+                wrappit and do_begin_fig or "",
+                do_first_run,
+                no_trial_run,
+                initializations,
+                do_safeguard,
+                data,
+                wrappit and do_end_fig or "",
+            },
+        }
     end
     context(stopjob)
 end
 
--- we overload metapost.process here
+local function oldschool(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig, incontext)
+    metapost.process {
+        mpx         = mpx,
+        trialrun    = trialrun,
+        flusher     = flusher,
+        multipass   = multipass,
+        isextrapass = isextrapass,
+        askedfig    = askedfig,
+        useplugins  = incontext,
+        incontext   = incontext,
+        data        = data,
+    }
+end
 
-function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig, plugmode) -- overloads
-    startjob(plugmode,"process")
-    processmetapost(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
-    stopjob()
+function metapost.process(specification,...)
+    if type(specification) ~= "table" then
+        oldschool(specification,...)
+    else
+        startjob(specification.incontext or specification.useplugins,"process")
+        runmetapost(specification)
+        stopjob()
+    end
 end
 
 local start    = [[\starttext]]

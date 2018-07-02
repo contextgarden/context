@@ -443,7 +443,7 @@ do
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     local command   = P("\\") * (Carg(1) * C(csletter^1) * space^0 / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)
     local whatever  = P("\\") * P(" ")^1 / " "
-                    + P("\\") * ( P("hbox") + P("raise") ) -- bah
+    -----           + P("\\") * ( P("hbox") + P("raise") ) -- bah -- no longer
     local somemath  = P("$") * ((1-P("$"))^1) * P("$") -- let's not assume nested math
     ----- character = lpegpatterns.utf8character
     local any       = P(1)
@@ -644,16 +644,17 @@ do
     local somevalue  = d_value + b_value + s_value + r_value + n_value + e_value
     local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
-    local stripper   = lpegpatterns.stripper
-          value      = value / function(s) return lpegmatch(stripper,s) end
+    local stripper   = lpegpatterns.collapser
+    local stripped   = value / function(s) return lpegmatch(stripper,s) end
 
     local forget     = percent^1 * (1-lineending)^0
     local spacing    = spacing * forget^0 * spacing
-    local assignment = spacing * key * spacing * equal * spacing * value * spacing
+    local replacement= spacing * key * spacing * equal * spacing * value    * spacing
+    local assignment = spacing * key * spacing * equal * spacing * stripped * spacing
     local definition = category * spacing * left * spacing * tag * spacing * comma * Ct((assignment * comma^0)^0) * spacing * right * Carg(1) / do_definition
 
     local crapword   = C((1-space-left)^1)
-    local shortcut   = Cmt(crapword,function(_,p,s) return lower(s) == "string"  and p end) * spacing * left * ((assignment * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
+    local shortcut   = Cmt(crapword,function(_,p,s) return lower(s) == "string"  and p end) * spacing * left * ((replacement * Carg(1))/do_shortcut * comma^0)^0  * spacing * right
     local comment    = Cmt(crapword,function(_,p,s) return lower(s) == "comment" and p end) * spacing * lpegpatterns.argument * Carg(1) / do_comment
 
     local casecrap   = #S("sScC") * (shortcut + comment)
@@ -1250,6 +1251,19 @@ do
 
     casters.pagenumber = casters.range
     writers.pagenumber = writers.range
+
+end
+
+do
+
+    implement {
+        name      = "btxshortcut",
+        arguments = "2 strings",
+        actions   = function(instance,key)
+            local d = publications.datasets[instance]
+            context(d and d.shortcuts[key] or "?")
+        end,
+    }
 
 end
 

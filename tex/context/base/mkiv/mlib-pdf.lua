@@ -115,14 +115,19 @@ local function getobjects(result,figure,index)
     end
 end
 
-function metapost.convert(result, trialrun, flusher, multipass, askedfig, incontext)
+function metapost.convert(specification,result)
+    local trialrun  = specification.trialrun
+    local flusher   = specification.flusher
+    local multipass = specification.multipass
+    local askedfig  = specification.askedfig
+    local incontext = specification.incontext
     if trialrun then
         local multipassindeed = metapost.parse(result,askedfig)
         if multipass and not multipassindeed and metapost.optimize then
             if save_table then
                 table.save(save_table,metapost.totable(result,1)) -- direct
             end
-            metapost.flush(result,flusher,askedfig,incontext) -- saves a run
+            metapost.flush(specification,result)
         else
             return false
         end
@@ -130,7 +135,7 @@ function metapost.convert(result, trialrun, flusher, multipass, askedfig, incont
         if save_table then
             table.save(save_table,metapost.totable(result,1)) -- direct
         end
-        metapost.flush(result,flusher,askedfig,incontext)
+        metapost.flush(specification,result)
     end
     return true -- done
 end
@@ -416,9 +421,12 @@ local function nocomment() end
 
 metapost.comment = nocomment
 
-function metapost.flush(result,flusher,askedfig,incontext)
+function metapost.flush(specification,result)
     if result then
-        local figures = result.fig
+        local flusher   = specification.flusher
+        local askedfig  = specification.askedfig
+        local incontext = specification.incontext
+        local figures   = result.fig
         if figures then
             flusher = flusher or pdfflusher
             local resetplugins = metapost.resetplugins or ignore -- before figure
@@ -708,27 +716,36 @@ end
 
 -- tracing:
 
-local result = { }
+do
 
-local flusher = {
-    startfigure = function()
-        result = { }
-        context.startnointerference()
-    end,
-    flushfigure = function(literals)
-        local n = #result
-        for i=1,#literals do
-            result[n+i] = literals[i]
+    local result = { }
+
+    local flusher = {
+        startfigure = function()
+            result = { }
+            context.startnointerference()
+        end,
+        flushfigure = function(literals)
+            local n = #result
+            for i=1,#literals do
+                result[n+i] = literals[i]
+            end
+        end,
+        stopfigure = function()
+            context.stopnointerference()
         end
-    end,
-    stopfigure = function()
-        context.stopnointerference()
-    end
-}
+    }
 
-function metapost.pdfliterals(result)
-    metapost.flush(result,flusher)
-    return result
+    local specification = {
+        flusher   = flusher,
+     -- incontext = true,
+    }
+
+    function metapost.pdfliterals(result)
+        metapost.flush(specification,result)
+        return result
+    end
+
 end
 
 function metapost.totable(result,askedfig)

@@ -190,9 +190,6 @@ function metapost.startgraphic(t)
     if not t.method then
         t.method = metapost.defaultmethod
     end
-    if not t.definitions then
-        t.definitions = ""
-    end
     t.data = { }
     return t
 end
