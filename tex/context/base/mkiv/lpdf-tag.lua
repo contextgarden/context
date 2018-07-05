@@ -331,10 +331,11 @@ function nodeinjections.addtags(head)
         for n, id in nextnode, head do
             if id == glyph_code then
                 -- maybe also disc
-                local at = getattr(n,a_tagged)
-                if not at then
-                    range = nil
-                elseif last ~= at then
+                local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+             -- if not at then
+             --     range = nil
+             -- elseif ...
+                if last ~= at then
                     range = { at, "glyph", n, n, list } -- attr id start stop list
                     ranges[#ranges+1] = range
                     last = at
@@ -344,12 +345,12 @@ function nodeinjections.addtags(head)
             elseif id == hlist_code or id == vlist_code then
                 local at = getattr(n,a_image)
                 if at then
-                    local at = getattr(n,a_tagged)
-                    if not at then
-                        range = nil
-                    else
+                    local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+                 -- if not at then
+                 --     range = nil
+                 -- else
                         ranges[#ranges+1] = { at, "image", n, n, list } -- attr id start stop list
-                    end
+                 -- end
                     last = nil
                 else
                     collectranges(getlist(n),n)
@@ -379,83 +380,93 @@ function nodeinjections.addtags(head)
     local top    = nil
     local noftop = 0
 
+
+    local function inject(start,stop,list,literal)
+        local prev = getprev(start)
+        if prev then
+            setlink(prev,literal)
+        end
+        setlink(literal,start)
+        if list and getlist(list) == start then
+            setlist(list,literal)
+        end
+        local literal = copy_node(EMCliteral)
+        -- use insert instead:
+        local next    = getnext(stop)
+        if next then
+            setlink(literal,next)
+        end
+        setlink(stop,literal)
+    end
+
     for i=1,#ranges do
-        local range         = ranges[i]
-        local attr          = range[1]
-        local id            = range[2]
-        local start         = range[3]
-        local stop          = range[4]
-        local list          = range[5]
-        local specification = taglist[attr]
-        local taglist       = specification.taglist
-        local noftags       = #taglist
-        local common        = 0
-        if top then
-            for i=1,noftags >= noftop and noftop or noftags do
-                if top[i] == taglist[i] then
-                    common = i
-                else
-                    break
+
+        local range = ranges[i]
+        local attr  = range[1]
+        local id    = range[2]
+        local start = range[3]
+        local stop  = range[4]
+        local list  = range[5]
+
+        if attr then
+
+            local specification = taglist[attr]
+            local taglist       = specification.taglist
+            local noftags       = #taglist
+            local common        = 0
+            local literal       = nil
+            local ignore        = false
+
+            if top then
+                for i=1,noftags >= noftop and noftop or noftags do
+                    if top[i] == taglist[i] then
+                        common = i
+                    else
+                        break
+                    end
                 end
             end
-        end
 
-        local prev    = common > 0 and elements[taglist[common]] or root
-        local ignore  = false
-        local literal = nil
+            local prev = common > 0 and elements[taglist[common]] or root
 
-        for j=common+1,noftags do
-            local tag = taglist[j]
-            local prv = elements[tag] or makeelement(tag,prev)
-            if prv == false then
-                -- ignore this one
-                prev   = false
-                ignore = true
-                break
-            elseif prv == true then
-                -- skip this one
-            else
-                prev = prv
+            for j=common+1,noftags do
+                local tag = taglist[j]
+                local prv = elements[tag] or makeelement(tag,prev)
+                if prv == false then
+                    -- ignore this one
+                    prev   = false
+                    ignore = true
+                    break
+                elseif prv == true then
+                    -- skip this one
+                else
+                    prev = prv
+                end
             end
-        end
-        if prev then
-            literal = pdfpageliteral(makecontent(prev,id,specification))
-        elseif ignore then
-            literal = pdfpageliteral(makeignore(specification))
-        end
 
-        if literal then
-            local prev = getprev(start)
             if prev then
-                setlink(prev,literal)
+                literal = pdfpageliteral(makecontent(prev,id,specification))
+            elseif ignore then
+                literal = pdfpageliteral(makeignore(specification))
+            else
+                -- maybe also ignore or maybe better: comment or so
             end
-            setlink(literal,start)
-            if list and getlist(list) == start then
-                setlist(list,literal)
+
+            if literal then
+                inject(start,stop,list,literal)
             end
-            local literal = copy_node(EMCliteral)
-            -- use insert instead:
-            local next    = getnext(stop)
-            if next then
-                setlink(literal,next)
-            end
-            setlink(stop,literal)
+
+            top    = taglist
+            noftop = noftags
+
+        else
+
+            local literal = pdfpageliteral(makeignore(specification))
+
+            inject(start,stop,list,literal)
+
         end
 
-     -- if literal then
-     --     if list and getlist(list) == start then
-     --         setlink(literal,start)
-     --         setlist(list,literal)
-     --     else
-     --         setlink(getprev(start),literal,start)
-     --     end
-     --     -- use insert instead:
-     --     local literal = copy_node(EMCliteral)
-     --     setlink(stop,literal,getnext(stop))
-     -- end
-
-        top    = taglist
-        noftop = noftags
     end
 
     finishpage()

@@ -1033,6 +1033,7 @@
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='buitenmarge'/>
 		<cd:constant name='overprint' value='overprint'/>
+		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='eigennummer'/>
 		<cd:constant name='page' value='pagina'/>
 		<cd:constant name='pageboundaries' value='paginaovergangen'/>
@@ -1274,6 +1275,7 @@
 		<cd:constant name='up' value='up'/>
 		<cd:constant name='urlalternative' value='urlvariant'/>
 		<cd:constant name='urlspace' value='urlspatie'/>
+		<cd:constant name='userpassword' value='userpassword'/>
 		<cd:constant name='validate' value='valideer'/>
 		<cd:constant name='values' value='waarden'/>
 		<cd:constant name='vcommand' value='vcommando'/>

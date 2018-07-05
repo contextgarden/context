@@ -492,13 +492,16 @@
 %     }%
 % \to \everyenableelements
 
-\appendtoks
-    \dostartignoretagging
-\to \everybeforepagebody
+% This doesn't work well either, so instead we handle the ornaments in the
+% tagging in a different way (see attr -> false code).
 
-\appendtoks
-    \dostopignoretagging
-\to \everyafterpagebody
+% \appendtoks
+%     \dostartignoretagging
+% \to \everybeforepagebody
+%
+% \appendtoks
+%     \dostopignoretagging
+% \to \everyafterpagebody
 
 % \doifelseinelement{structure:section}            {yes} {no}
 % \doifelseinelement{structure:chapter}            {yes} {no}

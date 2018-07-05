@@ -710,7 +710,10 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     local points          = { }
     local instructions    = { }
     local flags           = { }
-    local contours        = readintegertable(f,nofcontours,short)
+    local contours        = { } -- readintegertable(f,nofcontours,short)
+    for i=1,nofcontours do
+        contours[i] = readshort(f) + 1
+    end
     local nofpoints       = contours[nofcontours]
     local nofinstructions = readushort(f)
     skipbytes(f,nofinstructions)

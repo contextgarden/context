@@ -341,15 +341,15 @@ do
 
     else
 
-        -- todo: bypass backend and directly inject xforms
-
         local openpdf = pdfe.new
+        ----- prefix  = "data:application/pdf,"
 
         function otf.storepdfdata(pdf)
             local done = hashed[pdf]
             if not done then
                 nofstreams = nofstreams + 1
-                local n = openpdf(pdf,#pdf,f_name(nofstreams))
+                local f = f_name(nofstreams)
+                local n = openpdf(pdf,#pdf,f)
                 done = f_used(n)
                 hashed[pdf] = done
             end
@@ -436,6 +436,8 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
                 dy   = 0
             end
             if data then
+                -- We can delay storage by a lua function in commands: but then we need to
+                -- be able to provide our own mem stream name (so that we can reserve it).
                 local setcode, name, nilcode = storepdfdata(data)
                 if name then
                     local bt = unicode and getactualtext(unicode)
@@ -459,8 +461,8 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = sbix|svg
 end
 
 local otfsvg   = otf.svg or { }
-otf.svg         = otfsvg
-otf.svgenabled  = true
+otf.svg        = otfsvg
+otf.svgenabled = true
 
 do
 

@@ -11,11 +11,11 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 -- had renditions but they turned out to be unreliable from the start and look
 -- obsolete too or at least they are bound to the (obsolete) flash technology for
 -- rendering. They were already complex constructs. Now we have rich media which
--- instead of providing a robust future proof framework fo rgeneral media types
+-- instead of providing a robust future proof framework for general media types
 -- again seems to depend on viewers built in (yes, also kind of obsolete) flash
 -- technology, and we cannot expect this non-open technology to show up in open
 -- browsers. So, in the end we can best just use links to external resources to be
--- future proof. Just look at the viewer prferences pane to see how fragile support
+-- future proof. Just look at the viewer preferences pane to see how fragile support
 -- is. Interestingly u3d support is kind of built in, while e.g. mp4 support relies
 -- on wrapping in swf. We used to stay ahead of the pack with support of the fancy
 -- pdf features but it backfires and is not worth the trouble. And yes, for control

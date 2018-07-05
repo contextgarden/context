@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mlib-run'] = {
     license   = "see context related readme files",
 }
 
+-- todo mpx :execute -> mlib.execute(mpx,)
+
 -- cmyk       -> done, native
 -- spot       -> done, but needs reworking (simpler)
 -- multitone  ->
@@ -38,7 +40,6 @@ local P = lpeg.P
 
 local trace_graphics   = false  trackers.register("metapost.graphics",   function(v) trace_graphics   = v end)
 local trace_tracingall = false  trackers.register("metapost.tracingall", function(v) trace_tracingall = v end)
-local trace_btexetex   = false  trackers.register("metapost.btexetex",   function(v) trace_btexetex   = v end)
 
 local report_metapost = logs.reporter("metapost")
 local texerrormessage = logs.texerrormessage

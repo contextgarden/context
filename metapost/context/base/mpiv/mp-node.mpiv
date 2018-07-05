@@ -51,7 +51,7 @@ clearnodepath ;
 
 vardef makenode@#(text t) =
     for a = t :
-        if (path a) or (unknown a) :
+        if (path a) or (unknown a) or ((string a) and (length(a) = 0)) :
             mfun_makenode@#(t,)
         else :
             mfun_makenode@#(nodepath, t,)
@@ -62,7 +62,7 @@ enddef ;
 
 vardef node@#(text t) =
     for a = t :
-        if (path a) or (unknown a) :
+        if (path a) or (unknown a) or ((string a) and (length(a) = 0)) :
             mfun_node@#(t,)
         else :
             mfun_node@#(nodepath, t,)
@@ -73,7 +73,7 @@ enddef ;
 
 vardef nodeboundingpoint@#(text t) =
     for a = t :
-        if (path a) or (unknown a) :
+        if (path a) or (unknown a) or ((string a) and (length(a) = 0)) :
             mfun_nodeboundingpoint@#(t)
         else :
             mfun_nodeboundingpoint@#(nodepath,a)

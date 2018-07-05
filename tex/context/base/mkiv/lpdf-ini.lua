@@ -776,7 +776,7 @@ end
 -- lpdf.deferredobject  = pdfdeferredobject
 -- lpdf.referenceobject = pdfreferenceobject
 
-local pagereference = pdf.pageref -- tex.pdfpageref is obsolete
+local pagereference = pdf.getpageref or pdf.pageref -- tex.pdfpageref is obsolete
 local nofpages      = 0
 
 function lpdf.pagereference(n)

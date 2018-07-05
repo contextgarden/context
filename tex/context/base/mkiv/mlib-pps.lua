@@ -37,6 +37,7 @@ local stoptiming           = statistics.stoptiming
 local trace_runs           = false  trackers.register("metapost.runs",     function(v) trace_runs     = v end)
 local trace_textexts       = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 local trace_scripts        = false  trackers.register("metapost.scripts",  function(v) trace_scripts  = v end)
+local trace_btexetex       = false  trackers.register("metapost.btexetex", function(v) trace_btexetex = v end)
 
 local report_metapost      = logs.reporter("metapost")
 local report_textexts      = logs.reporter("metapost","textexts")

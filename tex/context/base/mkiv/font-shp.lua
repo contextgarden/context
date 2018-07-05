@@ -290,7 +290,7 @@ otf.loadoutlinedata = loadoutlinedata -- not public
 otf.loadstreamdata  = loadstreamdata  -- not public
 otf.loadshapes      = loadshapes
 
--- experimental code, for me only ... unsupported
+-- experimental code, for me only ... unsupported (todo: use %N)
 
 local f_c = string.formatters["%F %F %F %F %F %F c"]
 local f_l = string.formatters["%F %F l"]

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\registerctxluafile{meta-nod}{}
+
 \unprotect
 
 \defineMPinstance
@@ -105,6 +107,9 @@
 
 \let\stopnodes\relax
 
+%D Hm, we started out simple but it now quickly becomes the usual mess of
+%D \TEX, \METAPOST\ and \LUA. Hard to understand.
+
 \unexpanded\def\startnodes
   {\dosingleempty\meta_nodes_start}
 
@@ -120,6 +125,7 @@
    #2\removeunwantedspaces
    % for alan, will be commented:
    \writestatus{metanodes}{\detokenize\expandafter{\the\t_meta_nodes}}%
+   \ctxlua{metapost.nodes.initialize()}%
    \startMPcode
      mfun_node_init(%
         \the\dimexpr\metanodesparameter\c!dx\relax,%
@@ -129,10 +135,8 @@
      \the\t_meta_nodes ;
      mfun_node_flush ;
    \stopMPcode
+   \ctxlua{metapost.nodes.reset()}%
    \egroup}
-
-% \unexpanded\def\grph_nodes_node[#1,#2]#3%
-%   {\etoksapp\t_meta_nodes{mfun_node_make(\number#1,\number#2,"\metanodesparameter\c!command{#3}");}}
 
 \unexpanded\def\grph_nodes_node
   {\dodoubleempty\grph_nodes_node_two}
@@ -145,10 +149,16 @@
    \ifsecondargument
      \setupcurrentmetanodes[#3]%
    \fi
-   \edef\p_label{#4}%
+   \edef\p_label    {#4}%
+   \edef\p_reference{\metanodesparameter\c!reference}%
+   \ifx\p_reference\empty\else
+      \ctxlua{metapost.nodes.register("\p_reference",\number#1)}%
+   \fi
    \normalexpanded{\endgroup\noexpand\etoksapp\t_meta_nodes{%
      mfun_node_make(\number#1,\number#2%
-       \ifx\p_label\empty \else
+       \ifx\p_label\empty
+         ,""%
+       \else
          ,"\metanodesparameter\c!command{\p_label}"%
        \fi
      );%
@@ -199,8 +209,11 @@
      \space
      mfun_nodes_fromto\begincsname\??metanodesposition\metanodesparameter\c!position\endcsname(%
        \metanodesparameter\c!offset,%
-       \number#1,\number#2%
-       \ifx\p_label\empty \else
+     % \number#1,\number#2%
+       \ctxlua{metapost.nodes.resolve("#1")},\ctxlua{metapost.nodes.resolve("#2")}%
+       \ifx\p_label\empty
+         ,""%
+       \else
          ,"\ifx\p_command\empty\p_label\else\p_command{\p_label}\fi"%
        \fi
      )%
