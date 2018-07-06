@@ -37,7 +37,7 @@ local next, type, tonumber = next, type, tonumber
 local sub, gsub = string.sub, string.gsub
 local validstring = string.valid
 local lpegmatch = lpeg.match
-local utfchar, utfvalues = utf.char, utf.values
+local utfchar, utfvalues, utflen = utf.char, utf.values, utf.len
 local concat, insert, remove, merge, sort = table.concat, table.insert, table.remove, table.merge, table.sort
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local formatters = string.formatters
@@ -82,55 +82,7 @@ local fontchar          = fonts.hashes.characters
 local fontquads         = fonts.hashes.quads
 local languagenames     = languages.numbers
 
-local nodecodes         = nodes.nodecodes
-local skipcodes         = nodes.skipcodes
-local listcodes         = nodes.listcodes
-
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
-local glyph_code        = nodecodes.glyph
-local glue_code         = nodecodes.glue
-local kern_code         = nodecodes.kern
-local disc_code         = nodecodes.disc
-
-local userskip_code     = skipcodes.userskip
-local rightskip_code    = skipcodes.rightskip
-local parfillskip_code  = skipcodes.parfillskip
-local spaceskip_code    = skipcodes.spaceskip
-local xspaceskip_code   = skipcodes.xspaceskip
-
-local line_code         = listcodes.line
-
 local texgetcount       = tex.getcount
-
-local privateattribute  = attributes.private
-local a_characters      = privateattribute('characters')
-local a_exportstatus    = privateattribute('exportstatus')
-local a_tagged          = privateattribute('tagged')
-local a_taggedpar       = privateattribute("taggedpar")
-local a_image           = privateattribute('image')
-local a_reference       = privateattribute('reference')
-local a_textblock       = privateattribute("textblock")
-
-local nuts              = nodes.nuts
-local tonut             = nuts.tonut
-
-local getnext           = nuts.getnext
-local getsubtype        = nuts.getsubtype
-local getfont           = nuts.getfont
-local getchar           = nuts.getchar
-local getdisc           = nuts.getdisc
-local getcomponents     = nuts.getcomponents
-local getlist           = nuts.getlist
-local getid             = nuts.getid
-local getattr           = nuts.getattr
-local setattr           = nuts.setattr -- maybe use properties
-local isglyph           = nuts.isglyph
-local getkern           = nuts.getkern
-local getwidth          = nuts.getwidth
-
-local nexthlist         = nuts.traversers.hlist
-local nextnode          = nuts.traversers.node
 
 local references        = structures.references
 local structurestags    = structures.tags
@@ -941,7 +893,8 @@ evaluators.special = function(di,var)
     end
 end
 
-local referencehash = { }
+local referencehash   = { }
+local destinationhash = { }
 
 do
 
@@ -1059,10 +1012,37 @@ do
         end
     end
 
+    local function reference(di,element,n,fulltag)
+        local destination = destinationhash[fulltag]
+        if destination then
+            local d = structures.references.internals[destination]
+            if d then
+                addreference(di,d.references)
+                return true
+            else
+                return false
+            end
+        else
+            local data = di.data
+            if data then
+                for i=1,#data do
+                    local di = data[i]
+                    if di then
+                        local fulltag = di.fulltag
+                        if fulltag and reference(di,element,n,fulltag) then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     extras.adddestination = adddestination
     extras.addreference   = addreference
 
     extras.link           = link
+    extras.reference      = reference
 
 end
 
@@ -1262,22 +1242,21 @@ do
                 }
             end
             if ndata == 0 then
-root.skip = "comment" -- get rid of weird artefacts
-root.nota = "weird"
+                root.skip = "comment" -- get rid of weird artefacts
+                root.nota = "weird"
                 return
             elseif ndata == 1 then
                 local d = data[1]
                 if not d or d == "" then
-root.skip = "comment"
+                    root.skip = "comment"
                     return
                 elseif d.content then
                     return
                 else -- if ndata == 1 then
                     local tg = d.tg
---                     if automathrows and roottg == "mrow" then
-if automathrows and (roottg == "mrow" or roottg == "mtext") then
+                    if automathrows and (roottg == "mrow" or roottg == "mtext") then
                         -- maybe just always ! check spec first
--- or we can have chesks.* for each as we then can flatten
+                        -- or we can have chesks.* for each as we then can flatten
                         if no_mrow[tg] then
                             root.skip = "comment"
                         end
@@ -1689,10 +1668,10 @@ if automathrows and (roottg == "mrow" or roottg == "mtext") then
     end
 
     function checks.mrow(di)
---         local d = di.data
---         if d then
---             checked(d)
---         end
+     -- local d = di.data
+     -- if d then
+     --     checked(d)
+     -- end
     end
 
     -- we can move more checks here
@@ -2720,7 +2699,7 @@ local function pushcontent(oldparagraph,newparagraph)
                 local nd = #td
                 td[nd+1] = { parnumber = oldparagraph or currentparagraph, content = content }
                 if trace_export then
-                    report_export("%w<!-- start content with length %s -->",currentdepth,#content)
+                    report_export("%w<!-- start content with length %s -->",currentdepth,utflen(content))
                     report_export("%w%s",currentdepth,(gsub(content,"\n","\\n")))
                     report_export("%w<!-- stop content -->",currentdepth)
                 end
@@ -2765,96 +2744,157 @@ end
 
 -- inserts ?
 
-local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
-    local p
-    for n, id in nextnode, head do
-        if id == glyph_code then
-            local c  = getchar(n)
-            local at = getattr(n,a_tagged) or pat
-            if not at then
-             -- we need to tag the pagebody stuff as being valid skippable
-             --
-             -- report_export("skipping character: %C (no attribute)",n.char)
-            else
-                -- we could add tonunicodes for ligatures (todo)
-                local components = getcomponents(n)
-                if components and (not characterdata[c] or overloads[c]) then -- we loose data
-                    collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
+local collectresults  do -- too many locals otherwise
+
+    local nodecodes         = nodes.nodecodes
+    local skipcodes         = nodes.skipcodes
+    local listcodes         = nodes.listcodes
+
+    local hlist_code        = nodecodes.hlist
+    local vlist_code        = nodecodes.vlist
+    local glyph_code        = nodecodes.glyph
+    local glue_code         = nodecodes.glue
+    local kern_code         = nodecodes.kern
+    local disc_code         = nodecodes.disc
+
+    local userskip_code     = skipcodes.userskip
+    local rightskip_code    = skipcodes.rightskip
+    local parfillskip_code  = skipcodes.parfillskip
+    local spaceskip_code    = skipcodes.spaceskip
+    local xspaceskip_code   = skipcodes.xspaceskip
+
+    local line_code         = listcodes.line
+
+    local privateattribute  = attributes.private
+    local a_image           = privateattribute('image')
+    local a_reference       = privateattribute('reference')
+    local a_destination     = privateattribute('destination')
+    local a_characters      = privateattribute('characters')
+    local a_exportstatus    = privateattribute('exportstatus')
+    local a_tagged          = privateattribute('tagged')
+    local a_taggedpar       = privateattribute("taggedpar")
+    local a_textblock       = privateattribute("textblock")
+
+    local nuts              = nodes.nuts
+
+    local getnext           = nuts.getnext
+    local getsubtype        = nuts.getsubtype
+    local getfont           = nuts.getfont
+    local getchar           = nuts.getchar
+    local getdisc           = nuts.getdisc
+    local getcomponents     = nuts.getcomponents
+    local getlist           = nuts.getlist
+    local getid             = nuts.getid
+    local getattr           = nuts.getattr
+    local setattr           = nuts.setattr -- maybe use properties
+    local isglyph           = nuts.isglyph
+    local getkern           = nuts.getkern
+    local getwidth          = nuts.getwidth
+
+    local nexthlist         = nuts.traversers.hlist
+    local nextnode          = nuts.traversers.node
+
+    local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
+        local p
+        for n, id in nextnode, head do
+            if id == glyph_code then
+                local c  = getchar(n)
+                local at = getattr(n,a_tagged) or pat
+                if not at then
+                 -- we need to tag the pagebody stuff as being valid skippable
+                 --
+                 -- report_export("skipping character: %C (no attribute)",n.char)
                 else
-                    if last ~= at then
-                        local tl = taglist[at]
-                        pushcontent()
-                        currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar) or pap
-                        currentattribute = at
-                        last = at
-                        pushentry(currentnesting)
-                        if trace_export then
-                            report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
-                        end
-                        -- We need to intercept this here; maybe I will also move this
-                        -- to a regular setter at the tex end.
-                        local r = getattr(n,a_reference)
-                        if r then
-                            local t = tl.taglist
-                            referencehash[t[#t]] = r -- fulltag
-                        end
-                        --
-                    elseif last then
-                        -- we can consider tagging the pars (lines) in the parbuilder but then we loose some
-                        -- information unless we inject a special node (but even then we can run into nesting
-                        -- issues)
-                        local ap = getattr(n,a_taggedpar) or pap
-                        if ap ~= currentparagraph then
-                            pushcontent(currentparagraph,ap)
+                    -- we could add tonunicodes for ligatures (todo)
+                    local components = getcomponents(n)
+                    if components and (not characterdata[c] or overloads[c]) then -- we loose data
+                        collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
+                    else
+                        if last ~= at then
+                            local tl = taglist[at]
+                            pushcontent()
+                            currentnesting = tl
+                            currentparagraph = getattr(n,a_taggedpar) or pap
+                            currentattribute = at
+                            last = at
                             pushentry(currentnesting)
-                            currentattribute = last
-                            currentparagraph = ap
-                        end
-                        if trace_export then
-                            report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,last)
-                        end
-                    else
-                        if trace_export then
-                            report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,at)
-                        end
-                    end
-                    local s = getattr(n,a_exportstatus)
-                    if s then
-                        c = s
-                    end
-                    if c == 0 then
-                        if trace_export then
-                            report_export("%w<!-- skipping last glyph -->",currentdepth)
-                        end
-                    elseif c == 0x20 then
-                        local a = getattr(n,a_characters)
-                        nofcurrentcontent = nofcurrentcontent + 1
-                        if a then
                             if trace_export then
-                                report_export("%w<!-- turning last space into special space %U -->",currentdepth,a)
+                                report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
                             end
-                            currentcontent[nofcurrentcontent] = specialspaces[a] -- special space
+                            -- We need to intercept this here; maybe I will also move this
+                            -- to a regular setter at the tex end.
+                            local r = getattr(n,a_reference)
+                            if r then
+                                local t = tl.taglist
+                                referencehash[t[#t]] = r -- fulltag
+                            end
+                            local d = getattr(n,a_destination)
+                            if d then
+                                local t = tl.taglist
+                                destinationhash[t[#t]] = d -- fulltag
+                            end
+                            --
+                        elseif last then
+                            -- we can consider tagging the pars (lines) in the parbuilder but then we loose some
+                            -- information unless we inject a special node (but even then we can run into nesting
+                            -- issues)
+                            local ap = getattr(n,a_taggedpar) or pap
+                            if ap ~= currentparagraph then
+                                pushcontent(currentparagraph,ap)
+                                pushentry(currentnesting)
+                                currentattribute = last
+                                currentparagraph = ap
+                            end
+                            if trace_export then
+                                report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,last)
+                            end
                         else
-                            currentcontent[nofcurrentcontent] = " "
+                            if trace_export then
+                                report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,at)
+                            end
                         end
-                    else
-                        local fc = fontchar[getfont(n)]
-                        if fc then
-                            fc = fc and fc[c]
+                        local s = getattr(n,a_exportstatus)
+                        if s then
+                            c = s
+                        end
+                        if c == 0 then
+                            if trace_export then
+                                report_export("%w<!-- skipping last glyph -->",currentdepth)
+                            end
+                        elseif c == 0x20 then
+                            local a = getattr(n,a_characters)
+                            nofcurrentcontent = nofcurrentcontent + 1
+                            if a then
+                                if trace_export then
+                                    report_export("%w<!-- turning last space into special space %U -->",currentdepth,a)
+                                end
+                                currentcontent[nofcurrentcontent] = specialspaces[a] -- special space
+                            else
+                                currentcontent[nofcurrentcontent] = " "
+                            end
+                        else
+                            local fc = fontchar[getfont(n)]
                             if fc then
-                                local u = fc.unicode
-                                if not u then
+                                fc = fc and fc[c]
+                                if fc then
+                                    local u = fc.unicode
+                                    if not u then
+                                        nofcurrentcontent = nofcurrentcontent + 1
+                                        currentcontent[nofcurrentcontent] = utfchar(c)
+                                    elseif type(u) == "table" then
+                                        for i=1,#u do
+                                            nofcurrentcontent = nofcurrentcontent + 1
+                                            currentcontent[nofcurrentcontent] = utfchar(u[i])
+                                        end
+                                    else
+                                        nofcurrentcontent = nofcurrentcontent + 1
+                                        currentcontent[nofcurrentcontent] = utfchar(u)
+                                    end
+                                elseif c > 0 then
                                     nofcurrentcontent = nofcurrentcontent + 1
                                     currentcontent[nofcurrentcontent] = utfchar(c)
-                                elseif type(u) == "table" then
-                                    for i=1,#u do
-                                        nofcurrentcontent = nofcurrentcontent + 1
-                                        currentcontent[nofcurrentcontent] = utfchar(u[i])
-                                    end
                                 else
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = utfchar(u)
+                                    -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                                 end
                             elseif c > 0 then
                                 nofcurrentcontent = nofcurrentcontent + 1
@@ -2862,139 +2902,104 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                             else
                                 -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                             end
-                        elseif c > 0 then
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            currentcontent[nofcurrentcontent] = utfchar(c)
-                        else
-                            -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                         end
                     end
                 end
-            end
-        elseif id == disc_code then -- probably too late
-            local pre, post, replace = getdisc(n)
-            if keephyphens then
-                if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
-                    nofcurrentcontent = nofcurrentcontent + 1
-                    currentcontent[nofcurrentcontent] = hyphen
+            elseif id == disc_code then -- probably too late
+                local pre, post, replace = getdisc(n)
+                if keephyphens then
+                    if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
+                        nofcurrentcontent = nofcurrentcontent + 1
+                        currentcontent[nofcurrentcontent] = hyphen
+                    end
                 end
-            end
-            if replace then
-                collectresults(replace,nil)
-            end
-        elseif id == glue_code then
-            -- we need to distinguish between hskips and vskips
-            local ca = getattr(n,a_characters)
-            if ca == 0 then
-                -- skip this one ... already converted special character (node-acc)
-            elseif ca then
-                local a = getattr(n,a_tagged) or pat
-                if a then
-                    local c = specialspaces[ca]
-                    if last ~= a then
-                        local tl = taglist[a]
-                        if trace_export then
-                            report_export("%w<!-- processing space glyph %U tagged %a case 1 -->",currentdepth,ca,a)
-                        end
-                        pushcontent()
-                        currentnesting = tl
-                        currentparagraph = getattr(n,a_taggedpar) or pap
-                        currentattribute = a
-                        last = a
-                        pushentry(currentnesting)
-                        -- no reference check (see above)
-                    elseif last then
-                        local ap = getattr(n,a_taggedpar) or pap
-                        if ap ~= currentparagraph then
-                            pushcontent(currentparagraph,ap)
+                if replace then
+                    collectresults(replace,nil)
+                end
+            elseif id == glue_code then
+                -- we need to distinguish between hskips and vskips
+                local ca = getattr(n,a_characters)
+                if ca == 0 then
+                    -- skip this one ... already converted special character (node-acc)
+                elseif ca then
+                    local a = getattr(n,a_tagged) or pat
+                    if a then
+                        local c = specialspaces[ca]
+                        if last ~= a then
+                            local tl = taglist[a]
+                            if trace_export then
+                                report_export("%w<!-- processing space glyph %U tagged %a case 1 -->",currentdepth,ca,a)
+                            end
+                            pushcontent()
+                            currentnesting = tl
+                            currentparagraph = getattr(n,a_taggedpar) or pap
+                            currentattribute = a
+                            last = a
                             pushentry(currentnesting)
-                            currentattribute = last
-                            currentparagraph = ap
-                        end
-                        if trace_export then
-                            report_export("%w<!-- processing space glyph %U tagged %a case 2 -->",currentdepth,ca,last)
-                        end
-                    end
-                    -- if somespace[currentcontent[nofcurrentcontent]] then
-                    --     if trace_export then
-                    --         report_export("%w<!-- removing space -->",currentdepth)
-                    --     end
-                    --     nofcurrentcontent = nofcurrentcontent - 1
-                    -- end
-                    nofcurrentcontent = nofcurrentcontent + 1
-                    currentcontent[nofcurrentcontent] = c
-                end
-            else
-                local subtype = getsubtype(n)
-                if subtype == userskip_code then
-                    if getwidth(n) > threshold then
-                        if last and not somespace[currentcontent[nofcurrentcontent]] then
-                            local a = getattr(n,a_tagged) or pat
-                            if a == last then
-                                if trace_export then
-                                    report_export("%w<!-- injecting spacing 5a -->",currentdepth)
-                                end
-                                nofcurrentcontent = nofcurrentcontent + 1
-                                currentcontent[nofcurrentcontent] = " "
-                            elseif a then
-                                -- e.g LOGO<space>LOGO
-                                if trace_export then
-                                    report_export("%w<!-- processing glue > threshold tagged %s becomes %s -->",currentdepth,last,a)
-                                end
-                                pushcontent()
-                                if trace_export then
-                                    report_export("%w<!-- injecting spacing 5b -->",currentdepth)
-                                end
-                                last = a
-                                nofcurrentcontent = nofcurrentcontent + 1
-                                currentcontent[nofcurrentcontent] = " "
-                                currentnesting = taglist[last]
+                            -- no reference check (see above)
+                        elseif last then
+                            local ap = getattr(n,a_taggedpar) or pap
+                            if ap ~= currentparagraph then
+                                pushcontent(currentparagraph,ap)
                                 pushentry(currentnesting)
                                 currentattribute = last
+                                currentparagraph = ap
+                            end
+                            if trace_export then
+                                report_export("%w<!-- processing space glyph %U tagged %a case 2 -->",currentdepth,ca,last)
                             end
                         end
+                        -- if somespace[currentcontent[nofcurrentcontent]] then
+                        --     if trace_export then
+                        --         report_export("%w<!-- removing space -->",currentdepth)
+                        --     end
+                        --     nofcurrentcontent = nofcurrentcontent - 1
+                        -- end
+                        nofcurrentcontent = nofcurrentcontent + 1
+                        currentcontent[nofcurrentcontent] = c
                     end
-                elseif subtype == spaceskip_code or subtype == xspaceskip_code then
-                    if not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = getattr(n,a_tagged) or pat
-                        if a == last then
-                            if trace_export then
-                                report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
+                else
+                    local subtype = getsubtype(n)
+                    if subtype == userskip_code then
+                        if getwidth(n) > threshold then
+                            if last and not somespace[currentcontent[nofcurrentcontent]] then
+                                local a = getattr(n,a_tagged) or pat
+                                if a == last then
+                                    if trace_export then
+                                        report_export("%w<!-- injecting spacing 5a -->",currentdepth)
+                                    end
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = " "
+                                elseif a then
+                                    -- e.g LOGO<space>LOGO
+                                    if trace_export then
+                                        report_export("%w<!-- processing glue > threshold tagged %s becomes %s -->",currentdepth,last,a)
+                                    end
+                                    pushcontent()
+                                    if trace_export then
+                                        report_export("%w<!-- injecting spacing 5b -->",currentdepth)
+                                    end
+                                    last = a
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = " "
+                                    currentnesting = taglist[last]
+                                    pushentry(currentnesting)
+                                    currentattribute = last
+                                end
                             end
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            currentcontent[nofcurrentcontent] = " "
-                        else
-                            if trace_export then
-                                report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
-                            end
-                            last = a
-                            pushcontent()
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            currentcontent[nofcurrentcontent] = " "
-                            currentnesting = taglist[last]
-                            pushentry(currentnesting)
-                            currentattribute = last
                         end
-                    end
-                elseif subtype == rightskip_code then
-                    -- a line
-                    if nofcurrentcontent > 0 then
-                        local r = currentcontent[nofcurrentcontent]
-                        if r == hyphen then
-                            if not keephyphens then
-                                nofcurrentcontent = nofcurrentcontent - 1
-                            end
-                        elseif not somespace[r] then
+                    elseif subtype == spaceskip_code or subtype == xspaceskip_code then
+                        if not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
+                                    report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
                             else
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
+                                    report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
                                 end
                                 last = a
                                 pushcontent()
@@ -3005,110 +3010,125 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                                 currentattribute = last
                             end
                         end
+                    elseif subtype == rightskip_code then
+                        -- a line
+                        if nofcurrentcontent > 0 then
+                            local r = currentcontent[nofcurrentcontent]
+                            if r == hyphen then
+                                if not keephyphens then
+                                    nofcurrentcontent = nofcurrentcontent - 1
+                                end
+                            elseif not somespace[r] then
+                                local a = getattr(n,a_tagged) or pat
+                                if a == last then
+                                    if trace_export then
+                                        report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
+                                    end
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = " "
+                                else
+                                    if trace_export then
+                                        report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
+                                    end
+                                    last = a
+                                    pushcontent()
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = " "
+                                    currentnesting = taglist[last]
+                                    pushentry(currentnesting)
+                                    currentattribute = last
+                                end
+                            end
+                        end
+                    elseif subtype == parfillskip_code then
+                        -- deal with paragaph endings (crossings) elsewhere and we quit here
+                        -- as we don't want the rightskip space addition
+                        return
                     end
-                elseif subtype == parfillskip_code then
-                    -- deal with paragaph endings (crossings) elsewhere and we quit here
-                    -- as we don't want the rightskip space addition
-                    return
                 end
-            end
-        elseif id == hlist_code or id == vlist_code then
-            local ai = getattr(n,a_image)
-            if ai then
-                local at = getattr(n,a_tagged) or pat
-                if nofcurrentcontent > 0 then
-                    pushcontent()
-                    pushentry(currentnesting) -- ??
-                end
-                pushentry(taglist[at]) -- has an index, todo: flag empty element
-                if trace_export then
-                    report_export("%w<!-- processing image tagged %a",currentdepth,last)
-                end
-                last = nil
-                currentparagraph = nil
-            else
-                -- we need to determine an end-of-line
-                local list = getlist(n)
-                if list then
+            elseif id == hlist_code or id == vlist_code then
+                local ai = getattr(n,a_image)
+                if ai then
                     local at = getattr(n,a_tagged) or pat
-                    collectresults(list,n,at)
+                    if nofcurrentcontent > 0 then
+                        pushcontent()
+                        pushentry(currentnesting) -- ??
+                    end
+                    pushentry(taglist[at]) -- has an index, todo: flag empty element
+                    if trace_export then
+                        report_export("%w<!-- processing image tagged %a",currentdepth,last)
+                    end
+                    last = nil
+                    currentparagraph = nil
+                else
+                    -- we need to determine an end-of-line
+                    local list = getlist(n)
+                    if list then
+                        local at = getattr(n,a_tagged) or pat
+                        collectresults(list,n,at)
+                    end
                 end
-            end
-        elseif id == kern_code then
-            local kern = getkern(n)
-            if kern > 0 then
-                local limit = threshold
-                if p and getid(p) == glyph_code then
-                    limit = fontquads[getfont(p)] / 4
-                end
-                if kern > limit then
-                    if last and not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = getattr(n,a_tagged) or pat
-                        if a == last then
-                            if not somespace[currentcontent[nofcurrentcontent]] then
+            elseif id == kern_code then
+                local kern = getkern(n)
+                if kern > 0 then
+                    local limit = threshold
+                    if p and getid(p) == glyph_code then
+                        limit = fontquads[getfont(p)] / 4
+                    end
+                    if kern > limit then
+                        if last and not somespace[currentcontent[nofcurrentcontent]] then
+                            local a = getattr(n,a_tagged) or pat
+                            if a == last then
+                                if not somespace[currentcontent[nofcurrentcontent]] then
+                                    if trace_export then
+                                        report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                    end
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = " "
+                                end
+                            elseif a then
+                                -- e.g LOGO<space>LOGO
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                    report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
+                                end
+                                last = a
+                                pushcontent()
+                                if trace_export then
+                                    report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
+                                currentnesting = taglist[last]
+                                pushentry(currentnesting)
+                                currentattribute = last
                             end
-                        elseif a then
-                            -- e.g LOGO<space>LOGO
-                            if trace_export then
-                                report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
-                            end
-                            last = a
-                            pushcontent()
-                            if trace_export then
-                                report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
-                            end
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            currentcontent[nofcurrentcontent] = " "
-                            currentnesting = taglist[last]
-                            pushentry(currentnesting)
-                            currentattribute = last
                         end
                     end
                 end
             end
-        end
-        p = n
-    end
-end
-
-function nodes.handlers.export(head) -- hooks into the page builder
-    starttiming(treehash)
-    if trace_export then
-        report_export("%w<!-- start flushing page -->",currentdepth)
-    end
- -- continueexport()
-    restart = true
-    collectresults(head)
-    if trace_export then
-        report_export("%w<!-- stop flushing page -->",currentdepth)
-    end
-    stoptiming(treehash)
-    return head
-end
-
-function builders.paragraphs.tag(head) -- traverse_list
-    noftextblocks = noftextblocks + 1
-    for n in nexthlist, head do
-        local subtype = getsubtype(n)
-        if subtype == line_code then
-            setattr(n,a_textblock,noftextblocks)
-        elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
-            setattr(n,a_textblock,0)
+            p = n
         end
     end
-    return false
-end
 
-if LUATEXVERSION >= 1.090 then
+    function nodes.handlers.export(head) -- hooks into the page builder
+        starttiming(treehash)
+        if trace_export then
+            report_export("%w<!-- start flushing page -->",currentdepth)
+        end
+     -- continueexport()
+        restart = true
+        collectresults(head)
+        if trace_export then
+            report_export("%w<!-- stop flushing page -->",currentdepth)
+        end
+        stoptiming(treehash)
+        return head
+    end
 
     function builders.paragraphs.tag(head) -- traverse_list
         noftextblocks = noftextblocks + 1
-        for n, subtype in nexthlist, head do
+        for n in nexthlist, head do
+            local subtype = getsubtype(n)
             if subtype == line_code then
                 setattr(n,a_textblock,noftextblocks)
             elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
@@ -3116,6 +3136,22 @@ if LUATEXVERSION >= 1.090 then
             end
         end
         return false
+    end
+
+    if LUATEXVERSION >= 1.090 then
+
+        function builders.paragraphs.tag(head) -- traverse_list
+            noftextblocks = noftextblocks + 1
+            for n, subtype in nexthlist, head do
+                if subtype == line_code then
+                    setattr(n,a_textblock,noftextblocks)
+                elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
+                    setattr(n,a_textblock,0)
+                end
+            end
+            return false
+        end
+
     end
 
 end

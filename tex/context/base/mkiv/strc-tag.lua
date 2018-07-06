@@ -157,6 +157,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     subformula            = { pdf = "Div",        nature = "display" },
 
     link                  = { pdf = "Link",       nature = "inline"  },
+    reference             = { pdf = "Span",       nature = "inline"  },
 
     margintextblock       = { pdf = "Span",       nature = "inline"  },
     margintext            = { pdf = "Span",       nature = "inline"  },

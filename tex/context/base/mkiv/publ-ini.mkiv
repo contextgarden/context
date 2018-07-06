@@ -2013,4 +2013,17 @@
 \def\publ_shortcut[#1]#2%
   {\clf_btxshortcut{\iffirstargument#1\else\s!default\fi}{#2}}
 
+%D Let's see when Alan finds out about this one:
+
+\definesymbol[btxattachment][{\infofont bib}]
+
+\unexpanded\def\btxattachrecord
+  {\iflocation
+     \clf_btxentrytobuffer{\currentbtxdataset}{\currentbtxtag}{temp-bib-export}%
+     \attachment
+       [\c!symbol=btxattachment,%
+        \c!buffer=temp-bib-export,%
+        \c!name={\currentbtxtag.bib}]%
+   \fi}
+
 \protect

@@ -1099,8 +1099,8 @@ do
         local f_start = formatters["@%s{%s,\n"]
         local f_field = formatters["  %s = {%s},\n"]
         local s_stop  = "}\n\n"
-        local result  = { s_preamble }
-        local n, r = 0, 1
+        local result  = { }
+        local n, r = 0, 0
         for tag, data in sortedhash(tobesaved) do
             r = r + 1 ; result[r] = f_start(data.category or "article",tag)
             for key, value in sortedhash(data) do
@@ -1111,8 +1111,16 @@ do
             r = r + 1 ; result[r] = s_stop
             n = n + 1
         end
-        report("%s entries from dataset %a saved in %a",n,dataset,filename)
-        io.savedata(filename,concat(result))
+        result = concat(result)
+        if find(result,"\\btxcmd") then
+            result = s_preamble .. result
+        end
+        if filename then
+            report("%s entries from dataset %a saved in %a",n,dataset,filename)
+            io.savedata(filename,result)
+        else
+            return result
+        end
     end
 
     function savers.lua(dataset,filename,tobesaved)
@@ -1180,6 +1188,8 @@ do
         return dataset
     end
 
+    publications.savers = savers
+
     if implement then
 
         implement {
@@ -1193,6 +1203,21 @@ do
                     { "criterium" },
                 }
             }
+        }
+
+        implement {
+            name      = "btxentrytobuffer",
+            arguments = "3 strings",
+            actions   = function(dataset,tag,target)
+                local d = publications.datasets[dataset]
+                if d then
+                    d = d.luadata[tag]
+                end
+                if d then
+                    d = string.fullstrip(savers.bib(dataset,false,{ [tag] = d }))
+                end
+                buffers.assign(target,d or "")
+            end
         }
 
     end

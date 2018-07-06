@@ -136,6 +136,7 @@
 \def\t!subformula            {subformula}             % Div
 
 \def\t!link                  {link}                   % Link
+\def\t!reference             {reference}              % Span
 
 \def\t!margintext            {margintext}             % Span
 \def\t!margintextblock       {margintextblock}        % Div
@@ -298,10 +299,15 @@
 
 \newconditional\c_strc_tags_enabled
 
+\let\dotaggedplaceholder\empty
+
+\chardef\strc_tags_placeholder_char\zerocount % "FFFC
+
 \unexpanded\def\strc_tags_enable
   {% once enable one is toast
    \global\settrue\c_strc_tags_enabled
    % and gets:
+   \let\dotaggedplaceholder  \strc_tags_placeholder_char
    \let\dostarttagged        \strc_tags_enabled_start_detail
    \let\dostarttaggednodetail\strc_tags_enabled_start_no_detail
    \let\dostarttaggedchained \strc_tags_enabled_start_chained
@@ -312,12 +318,14 @@
 \unexpanded\def\strc_tags_disable
   {\ifconditional\c_strc_tags_enabled
      % so now all are artifacts
+     \let\dotaggedplaceholder  \strc_tags_placeholder_char
      \let\dostarttagged        \strc_tags_start_nop_detail
      \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
      \let\dostarttaggedchained \strc_tags_start_nop_chained
      \let\dostoptagged         \strc_tags_stop_nop_ignore
    \else
      % initial
+     \let\dotaggedplaceholder  \empty
      \let\dostarttagged        \strc_tags_start_nop_detail
      \let\dostarttaggednodetail\strc_tags_start_nop_no_detail
      \let\dostarttaggedchained \strc_tags_start_nop_chained

@@ -165,6 +165,32 @@
      \unhbox\b_strc_destination_nodes
    \fi}
 
+\def\strc_references_placeholder
+  {\ifx\dotaggedplaceholder\empty\else
+     \attribute\destinationattribute\lastdestinationattribute
+     \dotaggedplaceholder
+   \fi}
+
+\unexpanded\def\strc_references_destination_point_yes
+  {\strc_references_inject_before % new
+   \dostarttagged\t!reference\empty
+   \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
+     \strc_references_flush_destination_nodes
+     \strc_references_placeholder
+     \egroup
+   \dostoptagged
+   \strc_references_inject_after}
+
+\unexpanded\def\strc_references_destination_point_nop
+  {\strc_references_inject_before % new
+   \dostarttagged\t!reference\empty
+   \dontleavehmode\hbox \bgroup
+     \strc_references_flush_destination_nodes
+     \strc_references_placeholder
+   \egroup
+   \dostoptagged
+   \strc_references_inject_after}
+
 \unexpanded\def\strc_references_start_destination_nodes % messy but we need the delay
   {\setbox\b_strc_destination_nodes\hbox\bgroup}        % also sets lastdestinationattribute
 
@@ -238,17 +264,9 @@
    \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    % will become an option:
    \ifnum\lastdestinationattribute>\zerocount
-     \strc_references_inject_before % new
-     \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
-       \strc_references_flush_destination_nodes
-     \egroup
-     \strc_references_inject_after % new
+     \strc_references_destination_point_yes
    \else\ifvoid\b_strc_destination_nodes\else
-     \strc_references_inject_before % new
-     \dontleavehmode\hbox \bgroup
-       \strc_references_flush_destination_nodes
-     \egroup
-     \strc_references_inject_after % new
+     \strc_references_destination_point_nop
    \fi\fi}
 
 \def\strc_references_set_page_only_destination_attribute#labels% could in fact be fully expandable
@@ -322,17 +340,9 @@
    \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    % will become an option:
    \ifnum\lastdestinationattribute>\zerocount
-     \strc_references_inject_before % new
-     \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
-       \strc_references_flush_destination_nodes
-     \egroup
-     \strc_references_inject_after % new
+     \strc_references_destination_point_yes
    \else\ifvoid\b_strc_destination_nodes\else
-     \strc_references_inject_before % new
-     \dontleavehmode\hbox \bgroup
-       \strc_references_flush_destination_nodes
-     \egroup
-     \strc_references_inject_after % new
+     \strc_references_destination_point_nop
    \fi\fi}
 
 \unexpanded\def\strc_references_direct_full

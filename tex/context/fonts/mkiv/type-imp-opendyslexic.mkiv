@@ -29,10 +29,15 @@
         \definefontsynonym [\s!SansBoldItalic] [\s!file:opendyslexicalta-bolditalic.otf] [\s!features=\s!default]
     \stoptypescript
 
+    \starttypescript [\s!mono] [opendyslexic] [\s!name]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym [\s!Mono]           [\s!file:opendyslexicmono-regular.otf]    [\s!features=\s!none]
+    \stoptypescript
+
     \starttypescript[opendyslexic]
         \definetypeface [opendyslexic] [\s!rm] [\s!serif] [opendyslexic] [\s!default]
         \definetypeface [opendyslexic] [\s!ss] [\s!sans]  [opendyslexic] [\s!default]
-        \definetypeface [opendyslexic] [\s!tt] [\s!mono]  [dejavu]       [\s!default]% [rscale=1.065]
+        \definetypeface [opendyslexic] [\s!tt] [\s!mono]  [opendyslexic] [\s!default]% [rscale=1.065]
         \definetypeface [opendyslexic] [\s!mm] [\s!math]  [xits]         [\s!default]% [rscale=1.020]
     \stoptypescript
 
