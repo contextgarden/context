@@ -1057,18 +1057,6 @@
 \newskip \s_strc_notes_distance % we need to implement stretch
 \newcount\c_strc_notes_columns
 
-% \def\strc_notes_set_distance
-%   {\begingroup
-%    \setbox\scratchbox\vbox % no reuse as it can mirror
-%      {\forgetall
-%       \restoreglobalbodyfont % really needed
-%       \dontcomplain
-%       \noteparameter\c!before
-%       \placenoterule
-%       \noteparameter\c!after}%
-%    \expandafter\endgroup\expandafter
-%    \s_strc_notes_distance\the\htdp\scratchbox\relax} % also dp now
-
 \newskip       \s_strc_notes_before
 \newskip       \s_strc_notes_inbetween
 \newconditional\c_strc_notes_first_flushed
@@ -1382,19 +1370,22 @@
    \fi}
 
 \appendtoks
-  \strc_notes_set_penalties
-  \forgetall % again
-  \strc_notes_set_bodyfont
-  \redoconvertfont % to undo \undo calls in in headings etc
-  \splittopskip\strutht  % not actually needed here
-  \splitmaxdepth\strutdp % not actually needed here
-  % not:
-% \leftmargindistance \noteparameter\c!margindistance
-% \rightmargindistance\leftmargindistance
-% \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
-%   \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
-% \fi
-  %
+    \strc_notes_set_penalties
+    \forgetall % again
+    \strc_notes_set_bodyfont
+    \redoconvertfont % to undo \undo calls in in headings etc
+    \splittopskip\strutht  % not actually needed here
+    \splitmaxdepth\strutdp % not actually needed here
+    %
+    % not:
+    %
+  % \leftmargindistance \noteparameter\c!margindistance
+  % \rightmargindistance\leftmargindistance
+  % \ifnum\noteparameter\c!n=\zerocount % no ifcase new 31-07-99 ; always ?
+  %   \doifnotinset{\noteparameter\c!width}{\v!fit,\v!broad}\setnotehsize % ?
+  % \fi
+    %
+    \pickupattributes
 \to \everyinsidenoteinsert
 
 % maybe but better use [scope=local] here

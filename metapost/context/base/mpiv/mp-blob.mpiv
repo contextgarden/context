@@ -32,13 +32,13 @@ if mfun_use_one_pass :
 
     vardef mfun_inject_blob(expr n) =
         mfun_blob_c := nullpicture ;
-        mfun_blob_b := lua.mp.blob_dimensions(mfun_blob_n,n) ;
+        mfun_blob_b := lua.mp.mf_blob_dimensions(mfun_blob_n,n) ;
         addto mfun_blob_c doublepath unitsquare
             xscaled redpart mfun_blob_b
             yscaled (greenpart mfun_blob_b + bluepart mfun_blob_b)
             shifted (0,- bluepart mfun_blob_b)
             withprescript "mf_object=texblob"
-            withprescript "tb_blob=" & decimal lua.mp.blob_index(mfun_blob_n,n) ;
+            withprescript "tb_blob=" & decimal lua.mp.mf_blob_index(mfun_blob_n,n) ;
         mfun_blob_c
     enddef ;
 
@@ -46,14 +46,14 @@ else :
 
     vardef mfun_inject_blob(expr n) =
         mfun_blob_c := nullpicture ;
-        mfun_blob_b := lua.mp.blob_dimensions(mfun_blob_n,n) ;
+        mfun_blob_b := lua.mp.mf_blob_dimensions(mfun_blob_n,n) ;
         addto mfun_blob_c doublepath unitsquare
             xscaled redpart mfun_blob_b
             yscaled (greenpart mfun_blob_b + bluepart mfun_blob_b)
             shifted (0,- bluepart mfun_blob_b)
             withprescript "mf_object=texblob"
             withprescript "tb_stage=inject"
-            withprescript "tb_blob=" & decimal lua.mp.blob_index(mfun_blob_n,n) ;
+            withprescript "tb_blob=" & decimal lua.mp.mf_blob_index(mfun_blob_n,n) ;
         mfun_blob_c
     enddef ;
 
@@ -71,19 +71,19 @@ if mfun_use_one_pass :
     vardef followtext(expr pth, txt) =
         image (
             mfun_blob_n := mfun_blob_n + 1 ;
-            lua.mp.InjectBlobB(mfun_blob_n,txt);
+            lua.mp.mf_inject_blob(mfun_blob_n,txt);
             save pat, al, at, pl, pc, wid, pos, ap, ad, pic, len, n, sc ;
             path pat ; pat := pth ;
             numeric al, at, pl, pc, wid, pos, len[], n, sc ;
             pair ap, ad ;
             picture pic[] ;
             len[0] := 0 ;
-            n := lua.mp.blob_size(mfun_blob_n) ;
+            n := lua.mp.mf_blob_size(mfun_blob_n) ;
             sc := 0 ;
             for i=1 upto n :
                 pic[i] := mfun_inject_blob(i) ;
                 pic[i] := pic[i] shifted - llcorner pic[i] ;
-                len[i] := len[i-1] + lua.mp.blob_width(mfun_blob_n,i) ;
+                len[i] := len[i-1] + lua.mp.mf_blob_width(mfun_blob_n,i) ;
             endfor ;
             al := arclength pth ;
             if al = 0 :
@@ -107,7 +107,7 @@ if mfun_use_one_pass :
                 draw pat withpen pencircle scaled 1pt withcolor blue ;
             fi ;
             for i=1 upto n :
-                wid := lua.mp.blob_width(mfun_blob_n,i) ;
+                wid := lua.mp.mf_blob_width(mfun_blob_n,i) ;
                 pos := len[i]-wid/2 + (i-1)*pl + pc ;
                 at := arctime   pos of pat ;
                 ap := point     at  of pat ;
@@ -150,12 +150,12 @@ else :
                 pair ap, ad ;
                 picture pic[] ;
                 len[0] := 0 ;
-                n := lua.mp.blob_size(mfun_blob_n) ;
+                n := lua.mp.mf_blob_size(mfun_blob_n) ;
                 sc := 0 ;
                 for i=1 upto n :
                     pic[i] := mfun_inject_blob(i) ;
                     pic[i] := pic[i] shifted - llcorner pic[i] ;
-                    len[i] := len[i-1] + lua.mp.blob_width(mfun_blob_n,i) ;
+                    len[i] := len[i-1] + lua.mp.mf_blob_width(mfun_blob_n,i) ;
                 endfor ;
                 al := arclength pth ;
                 if al = 0 :
@@ -179,7 +179,7 @@ else :
                     draw pat withpen pencircle scaled 1pt withcolor blue ;
                 fi ;
                 for i=1 upto n :
-                    wid := lua.mp.blob_width(mfun_blob_n,i) ;
+                    wid := lua.mp.mf_blob_width(mfun_blob_n,i) ;
                     pos := len[i]-wid/2 + (i-1)*pl + pc ;
                     at := arctime   pos of pat ;
                     ap := point     at  of pat ;

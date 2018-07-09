@@ -1,0 +1,155 @@
+\startenvironment xml-mkiv-style
+
+\input lxml-ctx.mkiv
+
+\settrue \xmllshowtitle
+\setfalse\xmllshowwarning
+
+\usemodule[set-11]
+
+\loadsetups[i-context]
+
+% \definehspace[squad][1em plus .25em minus .25em]
+
+\usemodule[abr-02]
+
+\setuplayout
+  [location=middle,
+   marking=on,
+   backspace=20mm,
+   cutspace=20mm,
+   topspace=15mm,
+   header=15mm,
+   footer=15mm,
+   height=middle,
+   width=middle]
+
+\setuppagenumbering
+  [alternative=doublesided,
+   location=]
+
+\setupfootertexts
+  [][pagenumber]
+
+\setupheadertexts
+  [][chapter]
+
+\setupheader
+  [color=colortwo,
+   style=bold]
+
+\setupfooter
+  [color=colortwo,
+   style=bold]
+
+\setuphead
+  [chapter]
+  [page={yes,header,right},
+   header=empty,
+   style=\bfc]
+
+\setupsectionblock
+  [page={yes,header,right}]
+
+\starttexdefinition unexpanded section:chapter:number #1
+    \doifmode{*sectionnumber} {
+        \bf
+        \llap{<\enspace}#1\enspace>
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded section:section:number #1
+    \doifmode{*sectionnumber} {
+        \bf
+        \llap{<<\enspace}#1\enspace>>
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded section:subsection:number #1
+    \doifmode{*sectionnumber} {
+        \bf
+        \llap{<<<\enspace}#1\enspace>>>
+    }
+\stoptexdefinition
+
+\setuphead[chapter]      [numbercolor=black,numbercommand=\texdefinition{section:chapter:number}]
+\setuphead[section]      [numbercolor=black,numbercommand=\texdefinition{section:section:number}]
+\setuphead[subsection]   [numbercolor=black,numbercommand=\texdefinition{section:subsection:number}]
+\setuphead[subsubsection][numbercolor=,numbercommand=,before=\blank,after=\blank]
+
+\setuphead
+  [section]
+  [style=\bfa]
+
+\setuplist
+  [chapter]
+  [style=bold]
+
+\setupinteractionscreen
+  [option=doublesided]
+
+\setupalign
+  [tolerant,stretch]
+
+\setupwhitespace
+  [big]
+
+\setuptolerance
+  [tolerant]
+
+\doifelsemode {atpragma} {
+    \setupbodyfont[lucidaot,10pt]
+} {
+    \setupbodyfont[dejavu,10pt]
+}
+
+\definecolor[colorone]  [b=.5]
+\definecolor[colortwo]  [s=.3]
+\definecolor[colorthree][y=.5]
+
+\setuptype
+  [color=colorone]
+
+\setuptyping
+  [color=colorone]
+
+\setuphead
+  [lshowtitle]
+  [style=\tt,
+   color=colorone]
+
+\setuphead
+  [chapter,section]
+  [numbercolor=colortwo,
+   color=colorone]
+
+\definedescription
+  [xmlcmd]
+  [alternative=hanging,
+   width=line,
+   distance=1em,
+   margin=2em,
+   headstyle=monobold,
+   headcolor=colorone]
+
+\setupframedtext
+  [setuptext]
+  [framecolor=colorone,
+   rulethickness=1pt,
+   corner=round]
+
+\usemodule[punk]
+
+\usetypescript[punk]
+
+\definelayer
+  [page]
+  [width=\paperwidth,
+   height=\paperheight]
+
+\definestartstop
+  [smallexample]
+  [before={\blank\bgroup\ss\small\setupwhitespace[medium]\setupblank[medium]},
+   after={\par\egroup\blank}]
+
+\stopenvironment

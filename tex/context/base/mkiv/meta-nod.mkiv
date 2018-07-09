@@ -110,6 +110,8 @@
 %D Hm, we started out simple but it now quickly becomes the usual mess of
 %D \TEX, \METAPOST\ and \LUA. Hard to understand.
 
+\newcount\c_meta_nodes_n
+
 \unexpanded\def\startnodes
   {\dosingleempty\meta_nodes_start}
 
@@ -121,11 +123,12 @@
    \edef\p_meta_option{\metanodesparameter\c!option}%
    \edef\p_meta_alternative{\metanodesparameter\c!alternative}%
    \the\t_every_meta_nodes
+   \c_meta_nodes_n\zerocount
    \t_meta_nodes\emptytoks
    #2\removeunwantedspaces
    % for alan, will be commented:
    \writestatus{metanodes}{\detokenize\expandafter{\the\t_meta_nodes}}%
-   \ctxlua{metapost.nodes.initialize()}%
+   \clf_grph_nodes_initialize
    \startMPcode
      mfun_node_init(%
         \the\dimexpr\metanodesparameter\c!dx\relax,%
@@ -135,7 +138,7 @@
      \the\t_meta_nodes ;
      mfun_node_flush ;
    \stopMPcode
-   \ctxlua{metapost.nodes.reset()}%
+   \clf_grph_nodes_reset
    \egroup}
 
 \unexpanded\def\grph_nodes_node
@@ -149,10 +152,10 @@
    \ifsecondargument
      \setupcurrentmetanodes[#3]%
    \fi
-   \edef\p_label    {#4}%
+   \edef\p_label{#4}%
    \edef\p_reference{\metanodesparameter\c!reference}%
    \ifx\p_reference\empty\else
-      \ctxlua{metapost.nodes.register("\p_reference",\number#1)}%
+      \clf_grph_nodes_register{\p_reference}\c_meta_nodes_n\relax
    \fi
    \normalexpanded{\endgroup\noexpand\etoksapp\t_meta_nodes{%
      mfun_node_make(\number#1,\number#2%
@@ -162,7 +165,8 @@
          ,"\metanodesparameter\c!command{\p_label}"%
        \fi
      );%
-   }}}
+   }}%
+   \advance\c_meta_nodes_n\plusone}
 
 \appendtoks
    \let\placenode\grph_nodes_node
@@ -210,7 +214,7 @@
      mfun_nodes_fromto\begincsname\??metanodesposition\metanodesparameter\c!position\endcsname(%
        \metanodesparameter\c!offset,%
      % \number#1,\number#2%
-       \ctxlua{metapost.nodes.resolve("#1")},\ctxlua{metapost.nodes.resolve("#2")}%
+       \clf_grph_nodes_resolve{#1},\clf_grph_nodes_resolve{#2}%
        \ifx\p_label\empty
          ,""%
        \else

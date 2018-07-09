@@ -188,6 +188,8 @@ fi ;
 
 string CurrentLayout ; CurrentLayout := "default" ;
 
+% runscript("mp.PaperHeight()") % way faster of course
+
 vardef PaperHeight          = lua.mp.PaperHeight         () enddef ;
 vardef PaperWidth           = lua.mp.PaperWidth          () enddef ;
 vardef PrintPaperHeight     = lua.mp.PrintPaperHeight    () enddef ;

@@ -78,10 +78,15 @@
   {\clf_mpgettext\MPtextbox #1%
    \vpack to \zeropoint{\vss\hpack to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
+% \unexpanded\def\MPLIBfigure#1#2%
+%   {\setbox\scratchbox\hpack{\externalfigure[#1][\c!mask=#2]}%
+%    \clf_mpsetsxsy\wd\scratchbox\ht\scratchbox\zeropoint
+%    \vpack to \zeropoint{\vss\hpack to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
+
 \unexpanded\def\MPLIBfigure#1#2%
   {\setbox\scratchbox\hpack{\externalfigure[#1][\c!mask=#2]}%
    \clf_mpsetsxsy\wd\scratchbox\ht\scratchbox\zeropoint
-   \vpack to \zeropoint{\vss\hpack to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
+   \vpack to \zeropoint{\vss\hpack to \zeropoint{\fastsxsy{\sx}{\sy}{\box\scratchbox}\hss}}}
 
 % horrible (we could inline scale and matrix code):
 

@@ -1,0 +1,814 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-tricks
+
+\startchapter[title={Tips and tricks}]
+
+\startsection[title={tracing}]
+
+It can be hard to debug code as much happens kind of behind the screens.
+Therefore we have a couple of tracing options. Of course you can typeset some
+status information, using for instance:
+
+\startxmlcmd {\cmdbasicsetup{xmlshow}}
+    typeset the tree given by \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlinfo}}
+    typeset the name in the element given by \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlpath}}
+    returns the complete path (including namespace prefix and index) of the
+    given \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startbuffer[demo]
+<?xml version "1.0"?>
+<document>
+    <section>
+        <content>
+            <p>first</p>
+            <p><b>second</b></p>
+        </content>
+    </section>
+    <section>
+        <content>
+            <p><b>third</b></p>
+            <p>fourth</p>
+        </content>
+    </section>
+</document>
+\stopbuffer
+
+Say that we have the following \XML:
+
+\typebuffer[demo]
+
+and the next definitions:
+
+\startbuffer
+\startxmlsetups xml:demo:base
+    \xmlsetsetup{#1}{p|b}{xml:demo:*}
+\stopxmlsetups
+
+\startxmlsetups xml:demo:p
+    \xmlflush{#1}
+    \par
+\stopxmlsetups
+
+\startxmlsetups xml:demo:b
+    \par
+    \xmlpath{#1} : \xmlflush{#1}
+    \par
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-10}{xml:demo:base}
+
+\xmlprocessbuffer{example-10}{demo}{}
+\stopbuffer
+
+\typebuffer
+
+This will give us:
+
+\blank \startpacked \getbuffer \stoppacked \blank
+
+If you use \type {\xmlshow} you will get a complete subtree which can
+be handy for tracing but can also lead to large documents.
+
+We also have a bunch of trackers that can be enabled, like:
+
+\starttyping
+\enabletrackers[xml.show,xml.parse]
+\stoptyping
+
+The full list (currently) is:
+
+\starttabulate[|lT|p|]
+\NC xml.entities  \NC show what entities are seen and replaced \NC \NR
+\NC xml.path      \NC show the result of parsing an lpath expression \NC \NR
+\NC xml.parse     \NC show stepwise resolving of expressions \NC \NR
+\NC xml.profile   \NC report all parsed lpath expressions (in the log) \NC \NR
+\NC xml.remap     \NC show what namespaces are remapped \NC \NR
+\NC lxml.access   \NC report errors with respect to resolving (symbolic) nodes \NC \NR
+\NC lxml.comments \NC show the comments that are encountered (if at all) \NC \NR
+\NC lxml.loading  \NC show what files are loaded and converted \NC \NR
+\NC lxml.setups   \NC show what setups are being associated to elements \NC \NR
+\stoptabulate
+
+In one of our workflows we produce books from \XML\ where the (educational)
+content is organized in many small files. Each book has about 5~chapters and each
+chapter is made of sections that contain text, exercises, resources, etc.\ and so
+the document is assembled from thousands of files (don't worry, runtime inclusion
+is pretty fast). In order to see where in the sources content resides we can
+trace the filename.
+
+\startxmlcmd {\cmdbasicsetup{xmlinclusion}}
+    returns the file where the node comes from
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlinclusions}}
+    returns the list of files where the node comes from
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlbadinclusions}}
+    returns a list of files that were not included due to some problem
+\stopxmlcmd
+
+Of course you have to make sure that these names end up somewhere visible, for
+instance in the margin.
+
+\stopsection
+
+\startsection[title={expansion}]
+
+For novice users the concept of expansion might sound frightening and to some
+extend it is. However, it is important enough to spend some words on it here.
+
+It is good to realize that most setups are sort of immediate. When one setup is
+issued, it can call another one and so on. Normally you won't notice that but
+there are cases where that can be a problem. In \TEX\ you can define a macro,
+take for instance:
+
+\starttyping
+\startxmlsetups xml:foo
+  \def\foobar{\xmlfirst{#1}{/bar}}
+\stopxmlsetups
+\stoptyping
+
+you store the reference top node \type {bar} in \type {\foobar} maybe for later use. In
+this case the content is not yet fetched, it will be done when \type {\foobar} is
+called.
+
+\starttyping
+\startxmlsetups xml:foo
+  \edef\foobar{\xmlfirst{#1}{/bar}}
+\stopxmlsetups
+\stoptyping
+
+Here the content of \type {bar} becomes the body of the macro. But what if
+\type {bar} itself contains elements that also contain elements. When there
+is a setup for \type {bar} it will be triggered and so on.
+
+When that setup looks like:
+
+\starttyping
+\startxmlsetups xml:bar
+  \def\barfoo{\xmlflush{#1}}
+\stopxmlsetups
+\stoptyping
+
+Here we get something like:
+
+\starttyping
+\foobar => {\def\barfoo{...}}
+\stoptyping
+
+When \type {\barfoo} is not defined we get an error and when it is known and expands
+to something weird we might also get an error.
+
+Especially when you don't know what content can show up, this can result in errors
+when an expansion fails, for example because some macro being used is not defined.
+To prevent this we can define a macro:
+
+\starttyping
+\starttexdefinition unexpanded xml:bar:macro #1
+  \def\barfoo{\xmlflush{#1}}
+\stoptexdefinition
+
+\startxmlsetups xml:bar
+  \texdefinition{xml:bar:macro}{#1}
+\stopxmlsetups
+\stoptyping
+
+The setup \type {xml:bar} will still expand but the replacement text now is just the
+call to the macro, think of:
+
+\starttyping
+\foobar => {\texdefinition{xml:bar:macro}{#1}}
+\stoptyping
+
+But this is often not needed, most \CONTEXT\ commands can handle the expansions
+quite well but it's good to know that there is a way out. So, now to some
+examples. Imagine that we have an \XML\ file that looks as follows:
+
+\starttyping
+<?xml version='1.0' ?>
+<demo>
+    <chapter>
+        <title>Some <em>short</em> title</title>
+        <content>
+            zeta
+            <index>
+                <key>zeta</key>
+                <content>zeta again</content>
+            </index>
+            alpha
+            <index>
+                <key>alpha</key>
+                <content>alpha <em>again</em></content>
+            </index>
+            gamma
+            <index>
+                <key>gamma</key>
+                <content>gamma</content>
+            </index>
+            beta
+            <index>
+                <key>beta</key>
+                <content>beta</content>
+            </index>
+            delta
+            <index>
+                <key>delta</key>
+                <content>delta</content>
+            </index>
+            done!
+        </content>
+    </chapter>
+</demo>
+\stoptyping
+
+There are a few structure related elements here: a chapter (with its list entry)
+and some index entries. Both are multipass related and therefore travel around.
+This means that when we let data end up in the auxiliary file, we need to make
+sure that we end up with either expanded data (i.e.\ no references to the \XML\
+tree) or with robust forward and backward references to elements in the tree.
+
+Here we discuss three approaches (and more may show up later): pushing \XML\ into
+the auxiliary file and using references to elements either or not with an
+associated setup. We control the variants with a switch.
+
+\starttyping
+\newcount\TestMode
+
+\TestMode=0 % expansion=xml
+\TestMode=1 % expansion=yes, index, setup
+\TestMode=2 % expansion=yes
+\stoptyping
+
+We apply a couple of setups:
+
+\starttyping
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{\xmldocument}{demo|index|content|chapter|title|em}{xml:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mysetups}
+\stoptyping
+
+The main document is processed with:
+
+\starttyping
+\startxmlsetups xml:demo
+    \xmlflush{#1}
+    \subject{contents}
+    \placelist[chapter][criterium=all]
+    \subject{index}
+    \placeregister[index][criterium=all]
+    \page % else buffer is forgotten when placing header
+\stopxmlsetups
+\stoptyping
+
+First we show three alternative ways to deal with the chapter. The first case
+expands the \XML\ reference so that we have an \XML\ stream in the auxiliary
+file. This stream is processed as a small independent subfile when needed. The
+second case registers a reference to the current element (\type {#1}). This means
+that we have access to all data of this element, like attributes, title and
+content. What happens depends on the given setup. The third variant does the same
+but here the setup is part of the reference.
+
+\starttyping
+\startxmlsetups xml:chapter
+    \ifcase \TestMode
+        % xml code travels around
+        \setuphead[chapter][expansion=xml]
+        \startchapter[title=eh: \xmltext{#1}{title}]
+            \xmlfirst{#1}{content}
+        \stopchapter
+    \or
+        % index is used for access via setup
+        \setuphead[chapter][expansion=yes,xmlsetup=xml:title:flush]
+        \startchapter[title=\xmlgetindex{#1}]
+            \xmlfirst{#1}{content}
+        \stopchapter
+    \or
+        % tex call to xml using index is used
+        \setuphead[chapter][expansion=yes]
+        \startchapter[title=hm: \xmlreference{#1}{xml:title:flush}]
+            \xmlfirst{#1}{content}
+        \stopchapter
+    \fi
+\stopxmlsetups
+
+\startxmlsetups xml:title:flush
+    \xmltext{#1}{title}
+\stopxmlsetups
+\stoptyping
+
+We need to deal with emphasis and the content of the chapter.
+
+\starttyping
+\startxmlsetups xml:em
+    \begingroup\em\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\startxmlsetups xml:content
+    \xmlflush{#1}
+\stopxmlsetups
+\stoptyping
+
+A similar approach is followed with the index entries. Watch how we use the
+numbered entries variant (in this case we could also have used just \type
+{entries} and \type {keys}).
+
+\starttyping
+\startxmlsetups xml:index
+    \ifcase \TestMode
+        \setupregister[index][expansion=xml,xmlsetup=]
+        \setstructurepageregister
+          [index]
+          [entries:1=\xmlfirst{#1}{content},
+           keys:1=\xmltext{#1}{key}]
+    \or
+        \setupregister[index][expansion=yes,xmlsetup=xml:index:flush]
+        \setstructurepageregister
+          [index]
+          [entries:1=\xmlgetindex{#1},
+           keys:1=\xmltext{#1}{key}]
+    \or
+        \setupregister[index][expansion=yes,xmlsetup=]
+        \setstructurepageregister
+          [index]
+          [entries:1=\xmlreference{#1}{xml:index:flush},
+           keys:1=\xmltext{#1}{key}]
+    \fi
+\stopxmlsetups
+
+\startxmlsetups xml:index:flush
+    \xmlfirst{#1}{content}
+\stopxmlsetups
+\stoptyping
+
+Instead of this flush, you can use the predefined setup \type {xml:flush}
+unless it is overloaded by you.
+
+The file is processed by:
+
+\starttyping
+\starttext
+    \xmlprocessfile{main}{test.xml}{}
+\stoptext
+\stoptyping
+
+We don't show the result here. If you're curious what the output is, you can test
+it yourself. In that case it also makes sense to peek into the \type {test.tuc}
+file to see how the information travels around. The \type {metadata} fields carry
+information about how to process the data.
+
+The first case, the \XML\ expansion one, is somewhat special in the sense that
+internally we use small pseudo files. You can control the rendering by tweaking
+the following setups:
+
+\starttyping
+\startxmlsetups xml:ctx:sectionentry
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:ctx:registerentry
+    \xmlflush{#1}
+\stopxmlsetups
+\stoptyping
+
+{\em When these methods work out okay the other structural elements will be
+dealt with in a similar way.}
+
+\stopsection
+
+\startsection[title={special cases}]
+
+Normally the content will be flushed under a special (so called) catcode regime.
+This means that characters that have a special meaning in \TEX\ will have no such
+meaning in an \XML\ file. If you want content to be treated as \TEX\ code, you can
+use one of the following:
+
+\startxmlcmd {\cmdbasicsetup{xmlflushcontext}}
+    flush the given \cmdinternal {cd:node} using the \TEX\ character
+    interpretation scheme
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlcontext}}
+    flush the match of \cmdinternal {cd:lpath} for the given \cmdinternal
+    {cd:node} using the \TEX\ character interpretation scheme
+\stopxmlcmd
+
+We use this in cases like:
+
+\starttyping
+....
+  \xmlsetsetup {#1} {
+      tm|texformula|
+  } {xml:*}
+....
+
+\startxmlsetups xml:tm
+  \mathematics{\xmlflushcontext{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:texformula
+  \placeformula\startformula\xmlflushcontext{#1}\stopformula
+\stopxmlsetups
+\stoptyping
+
+\stopsection
+
+\startsection[title={collecting}]
+
+Say that your document has
+
+\starttyping
+<table>
+    <tr>
+        <td>foo</td>
+        <td>bar<td>
+    </tr>
+</table>
+\stoptyping
+
+And that you need to convert that to \TEX\ speak like:
+
+\starttyping
+\bTABLE
+    \bTR
+        \bTD foo \eTD
+        \bTD bar \eTD
+    \eTR
+\eTABLE
+\stoptyping
+
+A simple mapping is:
+
+\starttyping
+\startxmlsetups xml:table
+    \bTABLE \xmlflush{#1} \eTABLE
+\stopxmlsetups
+\startxmlsetups xml:tr
+    \bTR \xmlflush{#1} \eTR
+\stopxmlsetups
+\startxmlsetups xml:td
+    \bTD \xmlflush{#1} \eTD
+\stopxmlsetups
+\stoptyping
+
+The \type {\bTD} command is a so called delimited command which means that it
+picks up its argument by looking for an \type {\eTD}. For the simple case here
+this works quite well because the flush is inside the pair. This is not the case
+in the following variant:
+
+\starttyping
+\startxmlsetups xml:td:start
+    \bTD
+\stopxmlsetups
+\startxmlsetups xml:td:stop
+    \eTD
+\stopxmlsetups
+\startxmlsetups xml:td
+    \xmlsetup{#1}{xml:td:start}
+    \xmlflush{#1}
+    \xmlsetup{#1}{xml:td:stop}
+\stopxmlsetups
+\stoptyping
+
+When for some reason \TEX\ gets confused you can revert to a mechanism that
+collects content.
+
+\starttyping
+\startxmlsetups xml:td:start
+    \startcollect
+        \bTD
+    \stopcollect
+\stopxmlsetups
+\startxmlsetups xml:td:stop
+    \startcollect
+        \eTD
+    \stopcollect
+\stopxmlsetups
+\startxmlsetups xml:td
+    \startcollecting
+        \xmlsetup{#1}{xml:td:start}
+        \xmlflush{#1}
+        \xmlsetup{#1}{xml:td:stop}
+    \stopcollecting
+\stopxmlsetups
+\stoptyping
+
+You can even implement solutions that effectively do this:
+
+\starttyping
+\startcollecting
+    \startcollect \bTABLE \stopcollect
+        \startcollect \bTR \stopcollect
+            \startcollect \bTD \stopcollect
+            \startcollect   foo\stopcollect
+            \startcollect \eTD \stopcollect
+            \startcollect \bTD \stopcollect
+            \startcollect   bar\stopcollect
+            \startcollect \eTD \stopcollect
+        \startcollect \eTR \stopcollect
+    \startcollect \eTABLE \stopcollect
+\stopcollecting
+\stoptyping
+
+Of course you only need to go that complex when the situation demands it. Here is
+another weird one:
+
+\starttyping
+\startcollecting
+    \startcollect \setupsomething[\stopcollect
+        \startcollect foo=\stopcollect
+        \startcollect FOO,\stopcollect
+        \startcollect bar=\stopcollect
+        \startcollect BAR,\stopcollect
+    \startcollect ]\stopcollect
+\stopcollecting
+\stoptyping
+
+\stopsection
+
+\startsection[title={selectors and injectors}]
+
+This section describes a bit special feature, one that we needed for a project
+where we could not touch the original content but could add specific sections for
+our own purpose. Hopefully the example demonstrates its useability.
+
+\enabletrackers[lxml.selectors]
+
+\startbuffer[foo]
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive message info 1: this is a demo file ?>
+<?context-message-directive info 2: this is a demo file ?>
+
+<one>
+    <two>
+        <?context-select begin t1 t2 t3 ?>
+            <three>
+                t1 t2 t3
+                <?context-directive injector crlf t1 ?>
+                t1 t2 t3
+            </three>
+        <?context-select end ?>
+        <?context-select begin t4 ?>
+            <four>
+                t4
+            </four>
+        <?context-select end ?>
+        <?context-select begin t8 ?>
+            <four>
+                t8.0
+                t8.0
+            </four>
+        <?context-select end ?>
+        <?context-include begin t4 ?>
+            <!--
+                <three>
+                    t4.t3
+                    <?context-directive injector crlf t1 ?>
+                    t4.t3
+                </three>
+            -->
+            <three>
+                t3
+                <?context-directive injector crlf t1 ?>
+                t3
+            </three>
+        <?context-include end ?>
+        <?context-select begin t8 ?>
+            <four>
+                t8.1
+                t8.1
+            </four>
+        <?context-select end ?>
+        <?context-select begin t8 ?>
+            <four>
+                t8.2
+                t8.2
+            </four>
+        <?context-select end ?>
+        <?context-select begin t4 ?>
+            <four>
+                t4
+                t4
+            </four>
+        <?context-select end ?>
+        <?context-directive injector page t7 t8 ?>
+        foo
+        <?context-directive injector blank t1 ?>
+        bar
+        <?context-directive injector page t7 t8 ?>
+        bar
+    </two>
+</one>
+\stopbuffer
+
+\typebuffer[foo]
+
+First we show how to plug in a directive. Processing instructions like the
+following are normally ignored by an \XML\ processor, unless they make sense
+to it.
+
+\starttyping
+<?context-directive message info 1: this is a demo file ?>
+<?context-message-directive info 2: this is a demo file ?>
+\stoptyping
+
+We can define a message handler as follows:
+
+\startbuffer
+\def\MyMessage#1#2#3{\writestatus{#1}{#2 #3}}
+
+\xmlinstalldirective{message}{MyMessage}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When this file is processed you will see this on the console:
+
+\starttyping
+info > 1: this is a demo file
+info > 2: this is a demo file
+\stoptyping
+
+The file has some sections that can be used or ignored. The recipe for
+obeying \type {t1} and \type {t4} is the following:
+
+\startbuffer
+\xmlsetinjectors[t1]
+\xmlsetinjectors[t4]
+
+\startxmlsetups xml:initialize
+    \xmlapplyselectors{#1}
+    \xmlsetsetup {#1} {
+        one|two|three|four
+    } {xml:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:initialize}
+
+\startxmlsetups xml:one
+    [ONE \xmlflush{#1} ONE]
+\stopxmlsetups
+
+\startxmlsetups xml:two
+    [TWO \xmlflush{#1} TWO]
+\stopxmlsetups
+
+\startxmlsetups xml:three
+    [THREE \xmlflush{#1} THREE]
+\stopxmlsetups
+
+\startxmlsetups xml:four
+    [FOUR \xmlflush{#1} FOUR]
+\stopxmlsetups
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This typesets:
+
+\startnarrower
+\xmlprocessbuffer{main}{foo}{}
+\stopnarrower
+
+The include coding is kind of special: it permits adding content (in a comment)
+and ignoring the rest so that we indeed can add something without interfering
+with the original. Of course in a normal workflow such messy solutions are
+not needed, but alas, often workflows are not that clean, especially when one
+has no real control over the source.
+
+\startxmlcmd {\cmdbasicsetup{xmlsetinjectors}}
+    enables a list of injectors that will be used
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlresetinjectors}}
+    resets the list of injectors
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlinjector}}
+    expands an injection (command); normally this one is only used
+    (in some setup) or for testing
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlapplyselectors}}
+    analyze the tree \cmdinternal {cd:node} for marked sections that
+    will be injected
+\stopxmlcmd
+
+We have some injections predefined:
+
+\starttyping
+\startsetups xml:directive:injector:page
+    \page
+\stopsetups
+
+\startsetups xml:directive:injector:column
+    \column
+\stopsetups
+
+\startsetups xml:directive:injector:blank
+    \blank
+\stopsetups
+\stoptyping
+
+In the example we see:
+
+\starttyping
+<?context-directive injector page t7 t8 ?>
+\stoptyping
+
+When we set \type {\xmlsetinjector[t7]} a pagebreak will injected in that spot.
+Tags like \type {t7}, \type {t8} etc.\ can represent versions.
+
+\stopsection
+
+\startsection[title=preprocessing]
+
+% local match    = lpeg.match
+% local replacer = lpeg.replacer("BAD TITLE:","<bold>BAD TITLE:</bold>")
+%
+% function lxml.preprocessor(data,settings)
+%     return match(replacer,data)
+% end
+
+\startbuffer[pre-code]
+\startluacode
+    function lxml.preprocessor(data,settings)
+        return string.find(data,"BAD TITLE:")
+           and string.gsub(data,"BAD TITLE:","<bold>BAD TITLE:</bold>")
+            or data
+    end
+\stopluacode
+\stopbuffer
+
+\startbuffer[pre-xml]
+\startxmlsetups pre:demo:initialize
+    \xmlsetsetup{#1}{*}{pre:demo:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{pre:demo}{pre:demo:initialize}
+
+\startxmlsetups pre:demo:root
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups pre:demo:bold
+    \begingroup\bf\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\starttext
+    \xmlprocessbuffer{pre:demo}{demo}{}
+\stoptext
+\stopbuffer
+
+Say that you have the following \XML\ setup:
+
+\typebuffer[pre-xml]
+
+and that (such things happen) the input looks like this:
+
+\startbuffer[demo]
+<root>
+BAD TITLE: crap crap crap ...
+
+BAD TITLE: crap crap crap ...
+</root>
+\stopbuffer
+
+\typebuffer[demo]
+
+You can then clean up these \type {BAD TITLE}'s as follows:
+
+\typebuffer[pre-code]
+
+and get as result:
+
+\start \getbuffer[pre-code,pre-xml] \stop
+
+The preprocessor function gets as second argument the current settings, an d
+the field \type {currentresource} can be used to limit the actions to
+specific resources, in our case it's \type {buffer: demo}. Afterwards you can
+reset the proprocessor with:
+
+\startluacode
+lxml.preprocessor = nil
+\stopluacode
+
+Future versions might give some more control over preprocessors. For now consider
+it to be a quick hack.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

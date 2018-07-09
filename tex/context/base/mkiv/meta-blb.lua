@@ -87,20 +87,20 @@ local function blob_raw_wipe(i)
     allblobs[i] = false
 end
 
-mp.blob_raw_dimensions = blob_raw_dimensions
-mp.blob_raw_content    = blob_raw_content
-mp.blob_raw_reset      = blob_raw_reset
-mp.blob_raw_wipe       = blob_raw_wipe
-mp.blob_raw_toutf      = blob_raw_toutf
+mp.mf_blob_raw_dimensions = blob_raw_dimensions
+mp.mf_blob_raw_content    = blob_raw_content
+mp.mf_blob_raw_reset      = blob_raw_reset
+mp.mf_blob_raw_wipe       = blob_raw_wipe
+mp.mf_blob_raw_toutf      = blob_raw_toutf
 
-function mp.blob_new(category,text)
+function mp.mf_blob_new(category,text)
     if trace then
         report("category %a, text %a",category,text)
     end
     texblobs[category].text = text
 end
 
-function mp.blob_add(category,blob)
+function mp.mf_blob_add(category,blob)
     local tb = texblobs[category].blobs
     local tn = #allblobs + 1
     blob = hpack_nodes(blob)
@@ -111,7 +111,7 @@ function mp.blob_add(category,blob)
     end
 end
 
-function mp.blob_width(category,i)
+function mp.mf_blob_width(category,i)
     local index = texblobs[category].blobs[i]
     local blob  = allblobs[index]
     if blob then
@@ -121,15 +121,15 @@ function mp.blob_width(category,i)
     end
 end
 
-function mp.blob_size(category,i)
+function mp.mf_blob_size(category,i)
     mpprint(#texblobs[category].blobs or 0)
 end
 
-function mp.blob_index(category,i)
+function mp.mf_blob_index(category,i)
     mpprint(texblobs[category].blobs[i] or 0)
 end
 
-function mp.blob_dimensions(category,i)
+function mp.mf_blob_dimensions(category,i)
     local index = texblobs[category].blobs[i]
     local blob  = allblobs[index]
     if blob then
@@ -163,7 +163,7 @@ local function injectblob(object,blob)
     end
 end
 
-mp.blob_inject = injectblob
+-- mp.mf_blob_inject = injectblob
 
 local function getblob(box,blob)
     texsetbox(box,blob_raw_content(blob))
@@ -221,8 +221,8 @@ local flatten_list    = node.flatten_discretionaries
 local remove_node     = nodes.remove
 local flush_node      = nodes.flush
 
-local addblob         = mp.blob_add
-local newblob         = mp.blob_new
+local addblob         = mp.mf_blob_add
+local newblob         = mp.mf_blob_new
 
 local visible_code = {
     [nodecodes.glyph] = true,
@@ -291,7 +291,7 @@ local ft_reset, ft_analyze, ft_process  do
         local mp_category = 0
         local mp_str      = ""
 
-        function mp.InjectBlobB(category,str)
+        function mp.mf_inject_blob(category,str)
             newblob(category,str) -- only for tracing
             mp_category = category
             mp_str      = str

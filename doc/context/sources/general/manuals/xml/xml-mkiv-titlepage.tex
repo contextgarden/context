@@ -1,0 +1,47 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-titlepage
+
+\setuplayout[page]
+
+\startstandardmakeup
+    \startfontclass[none] % nil the current fontclass since it may append its features
+    \EnableRandomPunk
+    \setlayerframed
+      [page]
+      [width=\paperwidth,height=\paperheight,
+       background=color,backgroundcolor=colorone,backgroundoffset=1ex,frame=off]
+      {}
+    \definedfont[demo@punk at 18pt]
+    \setbox\scratchbox\vbox {
+        \hsize\dimexpr\paperwidth+2ex\relax
+        \setupinterlinespace
+        \baselineskip 1\baselineskip plus 1pt minus 1pt
+        \raggedcenter
+        \color[colortwo]{\dorecurse{1000}{XML }}
+    }
+    \setlayer
+      [page]
+      [preset=middle]
+      {\vsplit\scratchbox to \dimexpr\paperheight+2ex\relax}
+    \definedfont[demo@punk at 90pt]
+    \setstrut
+    \setlayerframed
+      [page]
+      [preset=rightbottom,offset=10mm]
+      [foregroundcolor=colorthree,align=flushright,offset=overlay,frame=off]
+      {Dealing\\with XML in\\Con\TeX t MkIV}
+    \definedfont[demo@punk at 18pt]
+    \setstrut
+    \setlayerframed
+      [page]
+      [preset=righttop,offset=10mm,x=3mm,rotation=90]
+      [foregroundcolor=colorthree,align=flushright,offset=overlay,frame=off]
+      {Hans Hagen, Pragma ADE, \currentdate}
+    \tightlayer[page]
+    \stopfontclass
+\stopstandardmakeup
+
+\setuplayout
+
+\stopcomponent

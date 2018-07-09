@@ -182,7 +182,7 @@ local function collectcontent(name,separator) -- no print
 end
 
 local function loadcontent(name) -- no print
-    local content = collectcontent(name,"\n") -- tex likes \n
+    local content = collectcontent(name,"\n") -- tex likes \n hm, elsewhere \r
     local ok, err = load(content)
     if ok then
         return ok()

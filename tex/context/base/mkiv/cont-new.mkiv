@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2018.07.05 23:06}
+\newcontextversion{2018.07.09 23:01}
 
 %D This file is loaded at runtime, thereby providing an excellent place for
 %D hacks, patches, extensions and new features.
@@ -20,8 +20,22 @@
 
 \writestatus\m!system{beware: some patches loaded from cont-new.mkiv}
 
+% math-ini.mkiv
+
 \ifnum\texenginefunctionality<6753\else
     \mathrulethicknessmode\zerocount
 \fi
+
+% math-ini.mkiv
+
+\ifdefined\t \else \unexpanded\def\t{\mathortext\text\mathtext} \fi
+\ifdefined\w \else \unexpanded\def\w{\mathortext\word\mathword} \fi
+
+\appendtoks
+    \let\t\mathtext
+    \let\w\mathword
+\to \everymathematics
+
+% done
 
 \protect \endinput

@@ -1,0 +1,948 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-examples
+
+\startchapter[title=Examples]
+
+\startsection[title=attribute chains]
+
+In \CSS, when an attribute is not present, the parent element is checked, and when
+not found again, the lookup follows the chain till a match is found or the root is
+reached. The following example demonstrates how such a chain lookup works.
+
+\startbuffer[test]
+<something mine="1" test="one" more="alpha">
+  <whatever mine="2" test="two">
+    <whocares mine="3">
+      <!-- this is a test -->
+    </whocares>
+  </whatever>
+</something>
+\stopbuffer
+
+\typebuffer[test]
+
+We apply the following setups to this tree:
+
+\startbuffer[setups]
+\startxmlsetups xml:common
+    [
+        \xmlchainatt{#1}{mine},
+        \xmlchainatt{#1}{test},
+        \xmlchainatt{#1}{more},
+        \xmlchainatt{#1}{none}
+    ]\par
+\stopxmlsetups
+
+\startxmlsetups xml:something
+    something: \xmlsetup{#1}{xml:common}
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:whatever
+    whatever: \xmlsetup{#1}{xml:common}
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:whocares
+    whocares: \xmlsetup{#1}{xml:common}
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{#1}{something|whatever|whocares}{xml:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-1}{xml:mysetups}
+
+\xmlprocessbuffer{example-1}{test}{}
+\stopbuffer
+
+\typebuffer[setups]
+
+This gives:
+
+\start
+    \getbuffer[setups]
+\stop
+
+\stopsection
+
+\startsection[title=conditional setups]
+
+Say that we have this code:
+
+\starttyping
+\xmldoifelse {#1} {/what[@a='1']} {
+    \xmlfilter {#1} {/what/command('xml:yes')}
+} {
+    \xmlfilter {#1} {/what/command('xml:nop')}
+}
+\stoptyping
+
+Here we first determine if there is a child \type {what} with attribute \type {a}
+set to \type {1}. Depending on the outcome again we check the child nodes for
+being named \type {what}. A faster solution which also takes less code is this:
+
+\starttyping
+\xmlfilter {#1} {/what[@a='1']/command('xml:yes','xml:nop')}
+\stoptyping
+
+\stopsection
+
+\startsection[title=manipulating]
+
+Assume that we have the following \XML\ data:
+
+\startbuffer[test]
+<A>
+  <B>right</B>
+  <B>wrong</B>
+</A>
+\stopbuffer
+
+\typebuffer[test]
+
+But, instead of \type {right} we want to see \type {okay}. We can do that with a
+finalizer:
+
+\startbuffer
+\startluacode
+local rehash = {
+    ["right"] = "okay",
+}
+
+function xml.finalizers.tex.Okayed(collected,what)
+    for i=1,#collected do
+        if what == "all" then
+            local str = xml.text(collected[i])
+            context(rehash[str] or str)
+        else
+            context(str)
+        end
+    end
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startxmlsetups xml:A
+	\xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:B
+    (It's \xmlfilter{#1}{./Okayed("all")})
+\stopxmlsetups
+
+\startxmlsetups xml:testsetups
+	\xmlsetsetup{#1}{A|B}{xml:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-2}{xml:testsetups}
+\xmlprocessbuffer{example-2}{test}{}
+\stopbuffer
+
+\typebuffer
+
+The result is: \start \inlinebuffer \stop
+
+\stopsection
+
+\startsection[title=cross referencing]
+
+A rather common way to add cross references to \XML\ files is to borrow the
+asymmetrical id's from \HTML. This means that one cannot simply use a value
+of (say) \type {href} to locate an \type {id}. The next example came up on
+the \CONTEXT\ mailing list.
+
+\startbuffer[test]
+<doc>
+    <p>Text
+        <a href="#fn1" class="footnoteref" id="fnref1"><sup>1</sup></a> and
+        <a href="#fn2" class="footnoteref" id="fnref2"><sup>2</sup></a>
+    </p>
+    <div class="footnotes">
+        <hr />
+        <ol>
+            <li id="fn1"><p>A footnote.<a href="#fnref1">↩</a></p></li>
+            <li id="fn2"><p>A second footnote.<a href="#fnref2">↩</a></p></li>
+        </ol>
+    </div>
+</doc>
+\stopbuffer
+
+\typebuffer[test]
+
+We give two variants for dealing with such references. The first solution does
+lookups and depending on the size of the file can be somewhat inefficient.
+
+\startbuffer
+\startxmlsetups xml:doc
+    \blank
+    \xmlflush{#1}
+    \blank
+\stopxmlsetups
+
+\startxmlsetups xml:p
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:footnote
+    (variant 1)\footnote
+        {\xmlfirst
+            {example-3-1}
+            {div[@class='footnotes']/ol/li[@id='\xmlrefatt{#1}{href}']}}
+\stopxmlsetups
+
+\startxmlsetups xml:initialize
+    \xmlsetsetup{#1}{p|doc}{xml:*}
+    \xmlsetsetup{#1}{a[@class='footnoteref']}{xml:footnote}
+    \xmlsetsetup{#1}{div[@class='footnotes']}{xml:nothing}
+\stopxmlsetups
+
+\xmlresetdocumentsetups{*}
+\xmlregisterdocumentsetup{example-3-1}{xml:initialize}
+
+\xmlprocessbuffer{example-3-1}{test}{}
+\stopbuffer
+
+\typebuffer
+
+This will typeset two footnotes.
+
+\getbuffer
+
+The second variant collects the references so that the time spend on lookups is
+less.
+
+\startbuffer
+\startxmlsetups xml:doc
+    \blank
+    \xmlflush{#1}
+    \blank
+\stopxmlsetups
+
+\startxmlsetups xml:p
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startluacode
+    userdata.notes =  {}
+\stopluacode
+
+\startxmlsetups xml:collectnotes
+    \ctxlua{userdata.notes['\xmlrefatt{#1}{id}'] = '#1'}
+\stopxmlsetups
+
+\startxmlsetups xml:footnote
+    (variant 2)\footnote
+        {\xmlflush
+            {\cldcontext{userdata.notes['\xmlrefatt{#1}{href}']}}}
+\stopxmlsetups
+
+\startxmlsetups xml:initialize
+    \xmlsetsetup{#1}{p|doc}{xml:*}
+    \xmlsetsetup{#1}{a[@class='footnoteref']}{xml:footnote}
+    \xmlfilter{#1}{div[@class='footnotes']/ol/li/command(xml:collectnotes)}
+    \xmlsetsetup{#1}{div[@class='footnotes']}{}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-3-2}{xml:initialize}
+
+\xmlprocessbuffer{example-3-2}{test}{}
+\stopbuffer
+
+\typebuffer
+
+This will again typeset two footnotes:
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=mapping values]
+
+One way to process options \type {frame} in the example below is to map the
+values to values known by \CONTEXT.
+
+\startbuffer[test]
+<a>
+  <nattable frame="on">
+    <tr><td>#1</td><td>#2</td><td>#3</td><td>#4</td></tr>
+    <tr><td>#5</td><td>#6</td><td>#7</td><td>#8</td></tr>
+  </nattable>
+  <nattable frame="off">
+    <tr><td>#1</td><td>#2</td><td>#3</td><td>#4</td></tr>
+    <tr><td>#5</td><td>#6</td><td>#7</td><td>#8</td></tr>
+  </nattable>
+  <nattable frame="no">
+    <tr><td>#1</td><td>#2</td><td>#3</td><td>#4</td></tr>
+    <tr><td>#5</td><td>#6</td><td>#7</td><td>#8</td></tr>
+  </nattable>
+</a>
+\stopbuffer
+
+\typebuffer[test]
+
+\startbuffer
+\startxmlsetups xml:a
+    \xmlflush{#1}
+\stopxmlsetups
+
+\xmlmapvalue {nattable:frame} {on}  {on}
+\xmlmapvalue {nattable:frame} {yes} {on}
+\xmlmapvalue {nattable:frame} {off} {off}
+\xmlmapvalue {nattable:frame} {no}  {off}
+
+\startxmlsetups xml:nattable
+    \startplacetable[title=#1]
+        \setupTABLE[frame=\xmlval{nattable:frame}{\xmlatt{#1}{frame}}{on}]%
+        \bTABLE
+            \xmlflush{#1}
+        \eTABLE
+    \stopplacetable
+\stopxmlsetups
+
+\startxmlsetups xml:tr
+    \bTR
+        \xmlflush{#1}
+    \eTR
+\stopxmlsetups
+
+\startxmlsetups xml:td
+    \bTD
+        \xmlflush{#1}
+    \eTD
+\stopxmlsetups
+
+\startxmlsetups xml:testsetups
+    \xmlsetsetup{example-4}{a|nattable|tr|td|}{xml:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-4}{xml:testsetups}
+
+\xmlprocessbuffer{example-4}{test}{}
+\stopbuffer
+
+The \type {\xmlmapvalue} mechanism is rather efficient and involves a minimum
+of testing.
+
+\typebuffer
+
+We get:
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=using \LUA]
+
+In this example we demonstrate how you can delegate rendering to \LUA. We
+will construct a so called extreme table. The input is:
+
+\startbuffer[demo]
+<?xml version="1.0" encoding="utf-8"?>
+
+<a>
+  <b> <c>1</c> <d>Text</d>           </b>
+  <b> <c>2</c> <d>More text</d>      </b>
+  <b> <c>2</c> <d>Even more text</d> </b>
+  <b> <c>2</c> <d>And more</d>       </b>
+  <b> <c>3</c> <d>And even more</d>  </b>
+  <b> <c>2</c> <d>The last text</d>  </b>
+</a>
+\stopbuffer
+
+\typebuffer[demo]
+
+The processor code is:
+
+\startbuffer[process]
+\startxmlsetups xml:test_setups
+    \xmlsetsetup{#1}{a|b|c|d}{xml:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-5}{xml:test_setups}
+
+\xmlprocessbuffer{example-5}{demo}{}
+\stopbuffer
+
+\typebuffer
+
+We color a sequence of the same titles (numbers here) differently. The first
+solution remembers the last title:
+
+\startbuffer
+\startxmlsetups xml:a
+    \startembeddedxtable
+        \xmlflush{#1}
+    \stopembeddedxtable
+\stopxmlsetups
+
+\startxmlsetups xml:b
+    \xmlfunction{#1}{test_ba}
+\stopxmlsetups
+
+\startluacode
+local lasttitle = nil
+
+function xml.functions.test_ba(t)
+    local title   = xml.text(t, "/c")
+    local content = xml.text(t, "/d")
+    context.startxrow()
+    context.startxcell {
+        background      = "color",
+        backgroundcolor = lasttitle == title and "colorone" or "colortwo",
+        foregroundstyle = "bold",
+        foregroundcolor = "white",
+    }
+    context(title)
+    lasttitle = title
+    context.stopxcell()
+    context.startxcell()
+    context(content)
+    context.stopxcell()
+    context.stopxrow()
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {embeddedxtable} environment is needed because the table is picked up
+as argument.
+
+\startlinecorrection \getbuffer[process] \stoplinecorrection
+
+The second implemetation remembers what titles are already processed so here we
+can color the last one too.
+
+\startbuffer
+\startxmlsetups xml:a
+    \ctxlua{xml.functions.reset_bb()}
+    \startembeddedxtable
+        \xmlflush{#1}
+    \stopembeddedxtable
+\stopxmlsetups
+
+\startxmlsetups xml:b
+    \xmlfunction{#1}{test_bb}
+\stopxmlsetups
+
+\startluacode
+local titles
+
+function xml.functions.reset_bb(t)
+    titles = { }
+end
+
+function xml.functions.test_bb(t)
+    local title   = xml.text(t, "/c")
+    local content = xml.text(t, "/d")
+    context.startxrow()
+    context.startxcell {
+        background      = "color",
+        backgroundcolor = titles[title] and "colorone" or "colortwo",
+        foregroundstyle = "bold",
+        foregroundcolor = "white",
+    }
+    context(title)
+    titles[title] = true
+    context.stopxcell()
+    context.startxcell()
+    context(content)
+    context.stopxcell()
+    context.stopxrow()
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection \getbuffer[process] \stoplinecorrection
+
+A solution without any state variable is given below.
+
+\startbuffer
+\startxmlsetups xml:a
+    \startembeddedxtable
+        \xmlflush{#1}
+    \stopembeddedxtable
+\stopxmlsetups
+
+\startxmlsetups xml:b
+    \xmlfunction{#1}{test_bc}
+\stopxmlsetups
+
+\startluacode
+function xml.functions.test_bc(t)
+    local title   = xml.text(t, "/c")
+    local content = xml.text(t, "/d")
+    context.startxrow()
+    local okay = xml.text(t,"./preceding-sibling::/[-1]") == title
+    context.startxcell {
+        background      = "color",
+        backgroundcolor = okay and "colorone" or "colortwo",
+        foregroundstyle = "bold",
+        foregroundcolor = "white",
+    }
+    context(title)
+    context.stopxcell()
+    context.startxcell()
+    context(content)
+    context.stopxcell()
+    context.stopxrow()
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlinecorrection \getbuffer[process] \stoplinecorrection
+
+Here is a solution that delegates even more to \LUA. The previous variants were
+actually not that safe with repect to special characters and didn't handle
+nested elements either but the next one does.
+
+\startbuffer[demo]
+<?xml version="1.0" encoding="utf-8"?>
+
+<a>
+  <b> <c>#1</c> <d>Text</d>                     </b>
+  <b> <c>#2</c> <d>More text</d>                </b>
+  <b> <c>#2</c> <d>Even more text</d>           </b>
+  <b> <c>#2</c> <d>And more</d>                 </b>
+  <b> <c>#3</c> <d>And even more</d>            </b>
+  <b> <c>#2</c> <d>Something <i>nested</i> </d> </b>
+</a>
+\stopbuffer
+
+\typebuffer[demo]
+
+We also need to map the \type {i} element.
+
+\startbuffer
+\startxmlsetups xml:a
+    \starttexcode
+        \xmlfunction{#1}{test_a}
+    \stoptexcode
+\stopxmlsetups
+
+\startxmlsetups xml:c
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:d
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:i
+    {\em\xmlflush{#1}}
+\stopxmlsetups
+
+\startluacode
+function xml.functions.test_a(t)
+    context.startxtable()
+    local previous = false
+    for b in xml.collected(lxml.getid(t),"/b") do
+        context.startxrow()
+            local current = xml.text(b,"/c")
+            context.startxcell {
+                background      = "color",
+                backgroundcolor = (previous == current) and "colorone" or "colortwo",
+                foregroundstyle = "bold",
+                foregroundcolor = "white",
+            }
+            lxml.first(b,"/c")
+            context.stopxcell()
+            context.startxcell()
+            lxml.first(b,"/d")
+            context.stopxcell()
+            previous = current
+        context.stopxrow()
+    end
+    context.stopxtable()
+end
+\stopluacode
+
+\startxmlsetups xml:test_setups
+    \xmlsetsetup{#1}{a|b|c|d|i}{xml:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-5}{xml:test_setups}
+
+\xmlprocessbuffer{example-5}{demo}{}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+The question is, do we really need \LUA ? Often we don't, apart maybe from an
+occasional special finalizer. A pure \TEX\ solution is given next:
+
+\startbuffer
+\startxmlsetups xml:a
+    \glet\MyPreviousTitle\empty
+    \glet\MyCurrentTitle \empty
+    \startembeddedxtable
+        \xmlflush{#1}
+    \stopembeddedxtable
+\stopxmlsetups
+
+\startxmlsetups xml:b
+    \startxrow
+        \xmlflush{#1}
+    \stopxrow
+\stopxmlsetups
+
+\startxmlsetups xml:c
+    \xdef\MyCurrentTitle{\xmltext{#1}{.}}
+    \doifelse {\MyPreviousTitle} {\MyCurrentTitle} {
+        \startxcell
+          [background=color,
+           backgroundcolor=colorone,
+           foregroundstyle=bold,
+           foregroundcolor=white]
+    } {
+        \glet\MyPreviousTitle\MyCurrentTitle
+        \startxcell
+          [background=color,
+           backgroundcolor=colortwo,
+           foregroundstyle=bold,
+           foregroundcolor=white]
+    }
+    \xmlflush{#1}
+    \stopxcell
+\stopxmlsetups
+
+\startxmlsetups xml:d
+    \startxcell
+        \xmlflush{#1}
+    \stopxcell
+\stopxmlsetups
+
+\startxmlsetups xml:i
+    {\em\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:test_setups
+    \xmlsetsetup{#1}{*}{xml:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-5}{xml:test_setups}
+
+\xmlprocessbuffer{example-5}{demo}{}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+You can even save a few lines of code:
+
+\starttyping
+\startxmlsetups xml:c
+    \xdef\MyCurrentTitle{\xmltext{#1}{.}}
+    \startxcell
+      [background=color,
+       backgroundcolor=color\ifx\MyPreviousTitle\MyCurrentTitle one\else two\fi,
+       foregroundstyle=bold,
+       foregroundcolor=white]
+    \xmlflush{#1}
+    \stopxcell
+    \glet\MyPreviousTitle\MyCurrentTitle
+\stopxmlsetups
+\stoptyping
+
+Or if you prefer:
+
+\starttyping
+\startxmlsetups xml:c
+    \xdef\MyCurrentTitle{\xmltext{#1}{.}}
+    \doifelse {\MyPreviousTitle} {\MyCurrentTitle} {
+        \xmlsetup{#1}{xml:c:one}
+    } {
+        \xmlsetup{#1}{xml:c:two}
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:c:one
+    \startxcell
+      [background=color,
+       backgroundcolor=colorone,
+       foregroundstyle=bold,
+       foregroundcolor=white]
+    \xmlflush{#1}
+    \stopxcell
+\stopxmlsetups
+
+\startxmlsetups xml:c:two
+    \startxcell
+      [background=color,
+       backgroundcolor=colortwo,
+       foregroundstyle=bold,
+       foregroundcolor=white]
+    \xmlflush{#1}
+    \stopxcell
+    \global\let\MyPreviousTitle\MyCurrentTitle
+\stopxmlsetups
+\stoptyping
+
+These examples demonstrate that it doesn't hurt to know a little bit of \TEX\
+programming: defining macros and basic comparisons can come in handy. There are
+examples in the test suite, you can peek in the source code, you can consult
+the wiki or you can just ask on the list.
+
+\stopsection
+
+\startsection[title=last match]
+
+For the next example we use the following \XML\ input:
+
+\startbuffer[demo]
+<?xml version "1.0"?>
+<document>
+    <section id="1">
+        <content>
+            <p>first</p>
+            <p>second</p>
+        </content>
+    </section>
+    <section id="2">
+        <content>
+            <p>third</p>
+            <p>fourth</p>
+        </content>
+    </section>
+</document>
+\stopbuffer
+
+\typebuffer[demo]
+
+If you check if some element is present and then act accordingly, you can
+end up with doing the same lookup twice. Although it might sound inefficient,
+in practice it's often not measureable.
+
+\startbuffer
+\startxmlsetups xml:demo:document
+    \type{\xmlall{#1}{/section[@id='2']/content/p}}\par
+    \xmldoif{#1}{/section[@id='2']/content/p} {
+        \xmlall{#1}{/section[@id='2']/content/p}
+    }
+    \type{\xmllastmatch}\par
+    \xmldoif{#1}{/section[@id='2']/content/p} {
+        \xmllastmatch
+    }
+    \type{\xmlall{#1}{last-match::}}\par
+    \xmldoif{#1}{/section[@id='2']/content/p} {
+        \xmlall{#1}{last-match::}
+    }
+    \type{\xmlfilter{#1}{last-match::/command(xml:demo:p)}}\par
+    \xmldoif{#1}{/section[@id='2']/content/p} {
+        \xmlfilter{#1}{last-match::/command(xml:demo:p)}
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:demo:p
+    \quad\xmlflush{#1}\endgraf
+\stopxmlsetups
+
+\startxmlsetups xml:demo:base
+    \xmlsetsetup{#1}{document|p}{xml:demo:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-6}{xml:demo:base}
+
+\xmlprocessbuffer{example-6}{demo}{}
+\stopbuffer
+
+\typebuffer
+
+In the second check we just flush the last match, so effective we do an \type
+{\xmlall} here. The third and fourth alternatives demonstrate how we can use
+\type {last-match} as axis. The gain is 10\% or more on the lookup but of course
+typesetting often takes relatively more time than the lookup.
+
+\startpacked
+\getbuffer
+\stoppacked
+
+\stopsection
+
+\startsection[title=Finalizers]
+
+The \XML\ parser is also available outside \TEX. Here is an example of its usage.
+We pipe the result to \TEX\ but you can do with \type {t} whatever you like.
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = { }
+
+for c in xml.collected(x,"//*") do
+    if not c.special and not t[c.tg] then
+        t[c.tg] = true
+    end
+end
+
+context.tocontext(table.sortedkeys(t))
+\stopbuffer
+
+% \typebuffer
+
+This returns:
+
+\ctxluabuffer
+
+We can wrap this in a finalizer:
+
+\startbuffer
+xml.finalizers.taglist = function(collected)
+    local t = { }
+    for i=1,#collected do
+        local c = collected[i]
+        if not c.special then
+            local tg = c.tg
+            if tg and not t[tg] then
+                t[tg] = true
+            end
+        end
+    end
+    return table.sortedkeys(t)
+end
+\stopbuffer
+
+\typebuffer
+
+Or in a more extensive one:
+
+\startbuffer
+xml.finalizers.taglist = function(collected,parenttoo)
+    local t = { }
+    for i=1,#collected do
+        local c = collected[i]
+        if not c.special then
+            local tg = c.tg
+            if tg and not t[tg] then
+                t[tg] = true
+            end
+            if parenttoo then
+                local p = c.__p__
+                if p and not p.special then
+                    local tg = p.tg .. ":" .. tg
+                    if tg and not t[tg] then
+                        t[tg] = true
+                    end
+                end
+            end
+        end
+    end
+    return table.sortedkeys(t)
+end
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+Usage is as follows:
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = xml.applylpath(x,"//*/taglist()")
+
+context.tocontext(t)
+\stopbuffer
+
+\typebuffer
+
+And indeed we get:
+
+\ctxluabuffer
+
+But we can also say:
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = xml.applylpath(x,"//*/taglist(true)")
+
+context.tocontext(t)
+\stopbuffer
+
+\typebuffer
+
+Now we get:
+
+\ctxluabuffer
+
+\stopsection
+
+\startsection[title=Pure xml]
+
+One might wonder how a \TEX\ macro package would look like when backslashes,
+dollars and percent signs would have no special meaning. In fact, it would be
+rather useless as interpreting commands are triggered by such characters. Any
+formatting or coding system needs such characters. Take \XML: angle brackets and
+ampersands are really special. So, no matter what system we use, we do have to
+deal with the (common) case where these characters need to be seen as they are.
+Normally escaping is the solution.
+
+The \CONTEXT\ interface for \XML\ suffers from this as well. You really don't
+want to know how many tricks are used for dealing with special characters and
+entities: there are several ways these travel through the system and it is
+possible to adapt and cheat. Especially roundtripped data (via tuc file) puts
+some demands on the system because when ts \XML\ can become \TEX\ and vise versa.
+The next example (derived from a mail on the list) demonstrates this:
+
+\starttyping
+\startbuffer[demo]
+<doc>
+    <pre><code>\ConTeXt\ is great</code></pre>
+
+    <pre><code>but you need to know some tricks</code></pre>
+</doc>
+\stopbuffer
+
+\startxmlsetups xml:initialize
+     \xmlsetsetup{#1}{doc|p|code}{xml:*}
+     \xmlsetsetup{#1}{pre/code}{xml:pre:code}
+\stopxmlsetups
+
+\xmlregistersetup{xml:initialize}
+
+\startxmlsetups xml:doc
+     \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:pre:code
+    no solution
+    \comment[symbol=Key, location=inmargin,color=yellow]{\xmlflush{#1}}
+    \par
+    solution one \begingroup
+        \expandUx
+        \comment[symbol=Key, location=inmargin,color=yellow]{\xmlflush{#1}}
+    \endgroup
+    \par
+    solution two
+    \comment[symbol=Key, location=inmargin,color=yellow]{\xmlpure{#1}}
+    \par
+    \xmlprettyprint{#1}{tex}
+\stopxmlsetups
+
+\xmlprocessbuffer{main}{demo}{}
+\stoptyping
+
+The first comment (an interactive feature of \PDF\ comes out as:
+
+\starttyping
+\Ux {5C}ConTeXt\Ux {5C} is great
+\stoptyping
+
+The second and third comment are okay. It's one of the reasons why we have \type
+{\xmlpure}.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

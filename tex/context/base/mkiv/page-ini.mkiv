@@ -256,7 +256,10 @@
       \box\pagebox
    \egroup \ifconditional\c_page_boxes_save_page_body \copy\b_page_boxes_saved_page_body \fi}
 
-\appendtoks \restoreglobalbodyfont \to \everybeforepagebody
+\appendtoks
+    \restoreglobalbodyfont
+    \pickupattributes
+\to \everybeforepagebody
 
 \ifdefined\nestednewbox \else \newbox\nestednextbox \fi % hm, still needed?
 

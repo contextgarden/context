@@ -605,7 +605,10 @@
 
 %D A few shortcuts:
 
-\normalprotected\def\glet {\global         \let }
+\ifdefined\glet \else
+    \normalprotected\def\glet{\global\let}
+\fi
+
 \normalprotected\def\udef {\normalprotected\def }
 \normalprotected\def\ugdef{\normalprotected\gdef}
 \normalprotected\def\uedef{\normalprotected\edef}
@@ -1107,6 +1110,8 @@
 \edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    \plusone
 \edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   \zerocount
 \edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          \plusone
+%edef\pdfomitcidset          {\pdfvariable omitcidset }         \pdfomitcidset            \zerocount
+%edef\pdfomitcharset         {\pdfvariable omitcharset}         \pdfomitcharset           \plusone
 \edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               \zerocount
 \edef\pdfmajorversion        {\pdfvariable majorversion}      % \pdfmajorversion          \plusone
 \edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          \plusseven

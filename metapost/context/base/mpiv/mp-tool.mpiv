@@ -244,19 +244,19 @@ boolean savingdata     ; savingdata     := false ;
 boolean savingdatadone ; savingdatadone := false ;
 
 def savedata expr txt =
-    lua.mp.save_data(txt);
+    lua.mp.mf_save_data(txt);
 enddef ;
 
 def startsavingdata =
-    lua.mp.start_saving_data();
+    lua.mp.mf_start_saving_data();
 enddef ;
 
 def stopsavingdata =
-    lua.mp.stop_saving_data() ;
+    lua.mp.mf_stop_saving_data() ;
 enddef ;
 
 def finishsavingdata =
-    lua.mp.finish_saving_data() ;
+    lua.mp.mf_finish_saving_data() ;
 enddef ;
 
 %D Instead of a keystroke eating save and allocation

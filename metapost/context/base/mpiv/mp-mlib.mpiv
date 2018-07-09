@@ -202,7 +202,7 @@ if mfun_use_one_pass :
             mfun_tt_c := nullpicture ;
             mfun_tt_o := nullpicture ;
             addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-            mfun_tt_r := lua.mp.SomeText(mfun_tt_n,s) ;
+            mfun_tt_r := lua.mp.mf_some_text(mfun_tt_n,s) ;
             addto mfun_tt_c doublepath unitsquare
                 xscaled redpart mfun_tt_r
                 yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
@@ -220,7 +220,7 @@ if mfun_use_one_pass :
         mfun_tt_c := nullpicture ;
         mfun_tt_o := nullpicture ;
         addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-        mfun_tt_r := lua.mp.MadeText(mfun_tt_n) ;
+        mfun_tt_r := lua.mp.mf_made_text(mfun_tt_n) ;
         addto mfun_tt_c doublepath unitsquare
             xscaled redpart mfun_tt_r
             yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
@@ -255,7 +255,7 @@ else :
                         withprescript "tx_global=yes" ;
                 fi ;
             else :
-                mfun_tt_b := lua.mp.tt_dimensions(mfun_tt_n) ;
+                mfun_tt_b := lua.mp.mf_tt_dimensions(mfun_tt_n) ;
                 addto mfun_tt_c doublepath unitsquare
                     xscaled redpart mfun_tt_b
                     yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
@@ -286,7 +286,7 @@ enddef ;
 vardef rawtexbox(expr category, name) =
     mfun_tt_c := nullpicture ;
     if validtexbox(category,name) :
-        mfun_tt_b := lua.mp.tb_dimensions(category, name) ;
+        mfun_tt_b := lua.mp.mf_tb_dimensions(category, name) ;
         addto mfun_tt_c doublepath unitsquare
             xscaled redpart mfun_tt_b
             yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
@@ -468,7 +468,7 @@ if mfun_use_one_pass :
         mfun_tt_c := nullpicture ;
         mfun_tt_o := nullpicture ;
         addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-        mfun_tt_r := lua.mp.SomeFormattedText(mfun_tt_n,t) ;
+        mfun_tt_r := lua.mp.mf_formatted_text(mfun_tt_n,t) ;
         addto mfun_tt_c doublepath unitsquare
             xscaled redpart mfun_tt_r
             yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
@@ -513,7 +513,7 @@ else :
                     withprescript "tx_global=yes" ;
             fi ;
         else :
-            mfun_tt_b := lua.mp.tt_dimensions(mfun_tt_n) ;
+            mfun_tt_b := lua.mp.mf_tt_dimensions(mfun_tt_n) ;
             addto mfun_tt_c doublepath unitsquare
                 xscaled redpart mfun_tt_b
                 yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
@@ -1075,19 +1075,38 @@ def withmask primary filename =
     withprescript "fg_mask=" & filename
 enddef ;
 
-def externalfigure primary filename =
-    if false :
-        rawtextext("\externalfigure[" & filename & "]")
-    else :
-        image (
-            addto currentpicture doublepath unitsquare
-                withprescript "fg_name=" & filename ;
-        )
-%             unitsquare
-%                 withpen pencircle scaled 0
-%                 withprescript "fg_name=" & filename
-    fi
-enddef ;
+if mfun_use_one_pass :
+
+    vardef externalfigure primary filename =
+        mfun_tt_c := nullpicture ;
+        mfun_tt_r := lua.mp.mf_external_figure(filename) ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled redpart mfun_tt_r
+            yscaled greenpart mfun_tt_r
+            withprescript "mf_object=figure"
+            withprescript "fg_name=" & filename ;
+        ;
+        mfun_tt_c
+    enddef ;
+
+else :
+
+    def externalfigure primary filename =
+        if false :
+            rawtextext("\externalfigure[" & filename & "]")
+        else :
+            image (
+                addto currentpicture doublepath unitsquare
+                    withprescript "mf_object=figure"
+                    withprescript "fg_name=" & filename ;
+            )
+          % unitsquare
+          %     withpen pencircle scaled 0
+          %     withprescript "fg_name=" & filename
+        fi
+    enddef ;
+
+fi ;
 
 def figure primary filename =
     rawtextext("\externalfigure[" & filename & "]")
@@ -1247,7 +1266,7 @@ if mfun_use_one_pass :
         def mfun_do_outline_options_r = enddef ;
         image ( normaldraw image (
           % lua.mp.report("set outline text",currentoutlinetext);
-            lua.mp.OutlineText(currentoutlinetext,t,kind) ;
+            lua.mp.mf_outline_text(currentoutlinetext,t,kind) ;
           % lua.mp.report("get outline text",currentoutlinetext);
             if kind = "f" :
                 mfun_do_outline_text_set_f rest ;
@@ -1264,7 +1283,7 @@ if mfun_use_one_pass :
             else :
                 mfun_do_outline_text_set_n rest ;
             fi ;
-            lua.mp.get_outline_text(currentoutlinetext) ;
+            lua.mp.mf_get_outline_text(currentoutlinetext) ;
         ) mfun_do_outline_options_r ; )
     enddef ;
 
@@ -1302,7 +1321,7 @@ else :
                 else :
                     mfun_do_outline_text_set_n rest ;
                 fi ;
-                lua.mp.get_outline_text(currentoutlinetext) ;
+                lua.mp.mf_get_outline_text(currentoutlinetext) ;
             fi ;
         ) mfun_do_outline_options_r ; )
     enddef ;
@@ -1757,23 +1776,15 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 
 % so we can do: withcolor "red"
 
-% vardef resolvedcolor primary s =
-%   % lua.mp.namedcolor(s)   % conflicts with macro namedcolor
-%   % lua.mp.NamedColor(s)   % okay but, can also be
-%   % lua.mp("NamedColor",s) % which gives expansion mess
-%     if string s :
-%         runscript("mp.NamedColor('" & s & "')") % faster anyway
-%     else :
-%         s
-%     fi
-% enddef ;
+% We do a low level runscript:
+%
+% lua.mp.namedcolor(s)       % conflicts with macro namedcolor
+% lua.mp.mf_named_color(s)   % okay but, can also be
+% lua.mp("mf_named_color",s) % which gives expansion mess
 
 def resolvedcolor primary s = % no vardef
-  % lua.mp.namedcolor(s)   % conflicts with macro namedcolor
-  % lua.mp.NamedColor(s)   % okay but, can also be
-  % lua.mp("NamedColor",s) % which gives expansion mess
     if string s :
-        runscript("mp.NamedColor('" & s & "')") % faster anyway
+        runscript("mp.mf_named_color('" & s & "')") % faster anyway
     else :
         s
     fi

@@ -1,0 +1,314 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-lookups
+
+\startchapter[title={Lookups using lpaths}]
+
+\startsection[title={introduction}]
+
+There is not that much system in the following examples. They resulted from tests
+with different documents. The current implementation evolved out of the
+experimental code. For instance, I decided to add the multiple expressions in row
+handling after a few email exchanges with Jean|-|Michel Huffen.
+
+One of the main differences between the way \XSLT\ resolves a path and our way is
+the anchor. Take:
+
+\starttyping
+/something
+something
+\stoptyping
+
+The first one anchors in the current (!) element so it will only consider direct
+children. The second one does a deep lookup and looks at the descendants as well.
+Furthermore we have a few extra shortcuts like \type {**} in \type {a/**/b} which
+represents all descendants.
+
+The expressions (between square brackets) has to be valid \LUA\ and some
+preprocessing is done to resolve the built in functions. So, you might use code
+like:
+
+\starttyping
+my_lpeg_expression:match(text()) == "whatever"
+\stoptyping
+
+given that \type {my_lpeg_expression} is known. In the examples below we use the
+visualizer to show the steps. Some are shown more than once as part of a set.
+
+\stopsection
+
+\startsection[title={special cases}]
+
+\xmllshow{}
+\xmllshow{*}
+\xmllshow{.}
+\xmllshow{/}
+
+\stopsection
+
+\startsection[title={wildcards}]
+
+\xmllshow{*}
+\xmllshow{*:*}
+\xmllshow{/*}
+\xmllshow{/*:*}
+\xmllshow{*/*}
+\xmllshow{*:*/*:*}
+
+\xmllshow{a/*}
+\xmllshow{a/*:*}
+\xmllshow{/a/*}
+\xmllshow{/a/*:*}
+
+\xmllshow{/*}
+\xmllshow{/**}
+\xmllshow{/***}
+
+\stopsection
+
+\startsection[title={multiple steps}]
+
+\xmllshow{answer}
+\xmllshow{answer/test/*}
+\xmllshow{answer/test/child::}
+\xmllshow{answer/*}
+\xmllshow{answer/*[tag()='p' and position()=1 and text()!='']}
+
+\stopsection
+
+\startsection[title={pitfals}]
+
+\xmllshow{[oneof(lower(@encoding),'tex','context','ctx')]}
+\xmllshow{.[oneof(lower(@encoding),'tex','context','ctx')]}
+
+\stopsection
+
+\startsection[title={more special cases}]
+
+\xmllshow{**}
+\xmllshow{*}
+\xmllshow{..}
+\xmllshow{.}
+\xmllshow{//}
+\xmllshow{/}
+
+\xmllshow{**/}
+\xmllshow{**/*}
+\xmllshow{**/.}
+\xmllshow{**//}
+
+\xmllshow{*/}
+\xmllshow{*/*}
+\xmllshow{*/.}
+\xmllshow{*//}
+
+\xmllshow{/**/}
+\xmllshow{/**/*}
+\xmllshow{/**/.}
+\xmllshow{/**//}
+
+\xmllshow{/*/}
+\xmllshow{/*/*}
+\xmllshow{/*/.}
+\xmllshow{/*//}
+
+\xmllshow{./}
+\xmllshow{./*}
+\xmllshow{./.}
+\xmllshow{.//}
+
+\xmllshow{../}
+\xmllshow{../*}
+\xmllshow{../.}
+\xmllshow{..//}
+
+\stopsection
+
+\startsection[title={more wildcards}]
+
+\xmllshow{one//two}
+\xmllshow{one/*/two}
+\xmllshow{one/**/two}
+\xmllshow{one/***/two}
+\xmllshow{one/x//two}
+\xmllshow{one//x/two}
+\xmllshow{//x/two}
+
+\stopsection
+
+\startsection[title={special axis}]
+
+\xmllshow{descendant::whocares/ancestor::whoknows}
+\xmllshow{descendant::whocares/ancestor::whoknows/parent::}
+\xmllshow{descendant::whocares/ancestor::}
+\xmllshow{child::something/child::whatever/child::whocares}
+\xmllshow{child::something/child::whatever/child::whocares|whoknows}
+\xmllshow{child::something/child::whatever/child::(whocares|whoknows)}
+\xmllshow{child::something/child::whatever/child::!(whocares|whoknows)}
+\xmllshow{child::something/child::whatever/child::(whocares)}
+\xmllshow{child::something/child::whatever/child::(whocares)[position()>2]}
+\xmllshow{child::something/child::whatever[position()>2][position()=1]}
+\xmllshow{child::something/child::whatever[whocares][whocaresnot]}
+\xmllshow{child::something/child::whatever[whocares][not(whocaresnot)]}
+\xmllshow{child::something/child::whatever/self::whatever}
+
+There is also \type {last-match::} that starts with the last found set of nodes.
+This can save some run time when you do lots of tests combined with a same check
+afterwards. There is however one pitfall: you never know what is done with that
+last match in the setup that gets called nested. Take the following example:
+
+\starttyping
+\startbuffer[test]
+<something>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 1
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 2
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 3
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+</something>
+\stopbuffer
+\stoptyping
+
+One way to filter the content is this:
+
+\starttyping
+\xmldoif {#1} {/crap/crapa/crapb/crapc/crapd/crape} {
+    some action
+}
+\stoptyping
+
+It is not unlikely that you will do something like this:
+
+\starttyping
+\xmlfirst {#1} {/crap/crapa/crapb/crapc/crapd/crape} {
+    \xmlfirst{#1}{/crap/crapa/crapb/crapc/crapd/crape}
+}
+\stoptyping
+
+This means that the path is resolved twice but that can be avoided as
+follows:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlfirst{#1}{last-match::}
+}
+\stoptyping
+
+But the next is now guaranteed to work:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlfirst{#1}{last-match::}
+    \xmllast{#1}{last-match::}
+}
+\stoptyping
+
+Because the first one can have done some lookup the last match can be replaced
+and the second call will give unexpected results. You can overcome this with:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlpushmatch
+    \xmlfirst{#1}{last-match::}
+    \xmlpopmatch
+}
+\stoptyping
+
+Does it pay off? Here are some timings of a 10.000 times text and lookup
+like the previous (on a decent January 2016 laptop):
+
+\starttabulate[|r|l|]
+\NC 0.239 \NC \type {\xmldoif {...} {...}}                                     \NC \NR
+\NC 0.292 \NC \type {\xmlfirst {...} {...}}                                    \NC \NR
+\NC 0.538 \NC \type {\xmldoif {...} {...} + \xmlfirst {...} {...}}             \NC \NR
+\NC 0.338 \NC \type {\xmldoif {...} {...} + \xmlfirst {...} {last-match::}}    \NC \NR
+\NC 0.349 \NC \type {+ \xmldoif {...} {...} + \xmlfirst {...} {last-match::}-} \NC \NR
+\stoptabulate
+
+So, pushing and popping (the last row) is a bit slower than not doing that but it
+is still much faster than not using \type {last-match::} at all. As a shortcut
+you can use \type {=}, as in:
+
+\starttyping
+\xmlfirst{#1}{=}
+\stoptyping
+
+You can even do this:
+
+\starttyping
+\xmlall{#1}{last-match::/text()}
+\stoptyping
+
+or
+
+\starttyping
+\xmlall{#1}{=/text()}
+\stoptyping
+
+
+\stopsection
+
+\startsection[title={some more examples}]
+
+\xmllshow{/something/whatever}
+\xmllshow{something/whatever}
+\xmllshow{/**/whocares}
+\xmllshow{whoknows/whocares}
+\xmllshow{whoknows}
+\xmllshow{whocares[contains(text(),'f') or contains(text(),'g')]}
+\xmllshow{whocares/first()}
+\xmllshow{whocares/last()}
+\xmllshow{whatever/all()}
+\xmllshow{whocares/position(2)}
+\xmllshow{whocares/position(-2)}
+\xmllshow{whocares[1]}
+\xmllshow{whocares[-1]}
+\xmllshow{whocares[2]}
+\xmllshow{whocares[-2]}
+\xmllshow{whatever[3]/attribute(id)}
+\xmllshow{whatever[2]/attribute('id')}
+\xmllshow{whatever[3]/text()}
+\xmllshow{/whocares/first()}
+\xmllshow{/whocares/last()}
+
+\xmllshow{xml://whatever/all()}
+\xmllshow{whatever/all()}
+\xmllshow{//whocares}
+\xmllshow{..[2]}
+\xmllshow{../*[2]}
+
+\xmllshow{/(whocares|whocaresnot)}
+\xmllshow{/!(whocares|whocaresnot)}
+\xmllshow{/!whocares}
+
+\xmllshow{/interface/command/command(xml:setups:register)}
+\xmllshow{/interface/command[@name='xxx']/command(xml:setups:typeset)}
+\xmllshow{/arguments/*}
+\xmllshow{/sequence/first()}
+\xmllshow{/arguments/text()}
+\xmllshow{/sequence/variable/first()}
+\xmllshow{/interface/define[@name='xxx']/first()}
+\xmllshow{/parameter/command(xml:setups:parameter:measure)}
+
+\xmllshow{/(*:library|figurelibrary)/*:figure/*:label}
+\xmllshow{/(*:library|figurelibrary)/figure/*:label}
+\xmllshow{/(*:library|figurelibrary)/figure/label}
+\xmllshow{/(*:library|figurelibrary)/figure:*/label}
+
+\xmlshow {whatever//br[tag(1)='br']}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -75,32 +75,69 @@ vardef mlib_luas_luacall(text t) =
     )
 enddef ;
 
+% vardef mlib_luas_lualist(expr c)(text t) =
+%     save b ; boolean b ; b := false ;
+%     runscript(c & "(" for s = t :
+%         if b :
+%             & ","
+%         else :
+%             hide(b := true)
+%         fi
+%         if string s :
+%           % & ditto & s & ditto
+%             & mfun_lua_bs & s & mfun_lua_es
+%         elseif numeric s :
+%             & decimal s
+%         elseif boolean s :
+%             & if s : "true" else : "false" fi
+%         elseif pair s :
+%             & mfun_pair_to_table(s)
+%         elseif path s :
+%             & mfun_path_to_table(s)
+%         elseif rgbcolor s :
+%             & mfun_rgb_to_table(s)
+%         elseif cmykcolor s :
+%             & mfun_cmyk_to_table(s)
+%         else :
+%             & ditto & tostring(s) & ditto
+%         fi endfor & ")"
+%     )
+% enddef ;
+
+newinternal mfun_luas_b ;
+
+def mlib_luas_luadone =
+    exitif numeric begingroup mfun_luas_b := 1 ; endgroup ;
+enddef ;
+
 vardef mlib_luas_lualist(expr c)(text t) =
-    save b ; boolean b ; b := false ;
-    runscript(c & "(" for s = t :
-        if b :
-            & ","
+    interim mfun_luas_b := 0 ;
+    runscript(c & for s = t :
+        if mfun_luas_b = 0 :
+            "("
+          % hide(mfun_luas_b := 1)
+            mlib_luas_luadone
         else :
-            hide(b := true)
+            ","
         fi
+        &
         if string s :
-          % & ditto & s & ditto
-            & mfun_lua_bs & s & mfun_lua_es
+            mfun_lua_bs & s & mfun_lua_es
         elseif numeric s :
-            & decimal s
+            decimal s
         elseif boolean s :
-            & if s : "true" else : "false" fi
+            if s : "true" else : "false" fi
         elseif pair s :
-            & mfun_pair_to_table(s)
+            mfun_pair_to_table(s)
         elseif path s :
-            & mfun_path_to_table(s)
+            mfun_path_to_table(s)
         elseif rgbcolor s :
-            & mfun_rgb_to_table(s)
+            mfun_rgb_to_table(s)
         elseif cmykcolor s :
-            & mfun_cmyk_to_table(s)
+            mfun_cmyk_to_table(s)
         else :
-            & ditto & tostring(s) & ditto
-        fi endfor & ")"
+            ditto & tostring(s) & ditto
+        fi & endfor if mfun_luas_b = 0 : "()" else : ")" fi
     )
 enddef ;
 
@@ -188,11 +225,11 @@ vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
 % \stopMPcode
 
 def inpath suffix p =
-    = 1 step 1 until lua.mp.mfun_path_length(str p)
+    = 1 step 1 until lua.mp.mf_path_length(str p)
 enddef ;
 
-vardef pointof primary i = lua.mp.mfun_path_point(i) enddef ;
-vardef leftof  primary i = lua.mp.mfun_path_left (i) enddef ;
-vardef rightof primary i = lua.mp.mfun_path_right(i) enddef ;
+vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
+vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
+vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
 
-extra_endfig := extra_endfig & " lua.mp.mfun_path_reset() ; " ;
+extra_endfig := extra_endfig & " lua.mp.mf_path_reset() ; " ;

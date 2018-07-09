@@ -102,8 +102,9 @@
     numeric h, w; boolean mapping ; path p, q, r ; color f, d ; pair s ;
     h := OverlayHeight ; w := 2*OverlayWidth ;
     r := unitsquare xyscaled (w,h) ;
-    fill r withcolor \MPcolor{lightgray} ;
-    mapping := lua.mp.processingmode("setups:mapping") ;
+    fill r withcolor resolvedcolor("lightgray") ;
+  % mapping := lua.mp.processingmode("setups:mapping") ;
+    mapping := lua.mp("processingmode","setups:mapping") ;
     if mapping :
         set_grid(w,h,w/8,w/160) ;
         pickup pensquare yscaled (w/80) ;
@@ -114,8 +115,8 @@
     forever :
         s := center r randomized (w,h) ;
         if new_on_grid(xpart s, ypart s) :
-            d := .5[\MPcolor{LocalColor},\MPcolor{lightgray}] randomized (.5,.9) ;
-            f := \MPcolor{lightgray} randomized (.5,.9) ;
+            d := .5[resolvedcolor("LocalColor"),resolvedcolor("lightgray")] randomized (.5,.9) ;
+            f := resolvedcolor("lightgray") randomized (.5,.9) ;
             s := (dx,dy) ;
             if mapping :
                 p := (-w/4,0) -- (w/4,0) ;

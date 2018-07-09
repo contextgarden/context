@@ -1354,23 +1354,20 @@ do
     local sentinel     = string.char(26) -- ASCII SUB character : endoffileasciicode : ignorecatcode
     local level        = 0
 
-    local function collect(c,...) -- can be optimized
-        -- snippets
-        for i=1,select("#",...) do
+    local function collect(c,a,...) -- can be optimized
+        if type(c) == "userdata" then
             nofcollected = nofcollected + 1
-            collected[nofcollected] = select(i,...)
+         -- collected[nofcollected] = userdata(c)
+            collected[nofcollected] = "\\" .. c.csname
+        end
+        if a then
+            for i=1,select("#",a,...) do
+                local c = select(i,a,...)
+                nofcollected = nofcollected + 1
+                collected[nofcollected] = type(c) == "userdata" and userdata(c) or c
+            end
         end
     end
-
-    -- local function collectdirect(c,...) -- can be optimized
-    --     -- lines
-    --     for i=1,select("#",...) do
-    --         n = n + 1
-    --         t[n] = select(i,...)
-    --         n = n + 1
-    --         t[n] = "\r"
-    --     end
-    -- end
 
     local collectdirect = collect
     local permitted     = true

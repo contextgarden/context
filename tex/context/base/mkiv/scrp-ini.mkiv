@@ -18,9 +18,9 @@
 \registerctxluafile{scrp-eth}{}
 \registerctxluafile{scrp-tha}{}
 
-\definesystemattribute[scriptinjection][public]
-\definesystemattribute[scriptsplitting][public]
-\definesystemattribute[scriptstatus]   [public]
+\definesystemattribute[scriptinjection][public,pickup]
+\definesystemattribute[scriptsplitting][public,pickup]
+\definesystemattribute[scriptstatus]   [public,pickup]
 
 %D Since scripts need specific \LUA\ code we use hard coded attribute
 %D values, but we might have more tricks at some time, so we use a
@@ -43,9 +43,22 @@
 \unexpanded\def\scripts_basics_set
   {\clf_setscript{\currentscript}{\scriptparameter\c!method}{\scriptparameter\c!preset}}
 
-\unexpanded\def\setscript[#1]%
+% \unexpanded\def\setscript[#1]%
+%   {\edef\currentscript{#1}%
+%    \scripts_basics_set}
+
+\unexpanded\def\setglobalscript[#1]%
+  {\edef\currentscript{#1}%
+   \scripts_basics_set
+   \pickupscriptinjectionattribute
+   \pickupscriptsplittingattribute
+   \pickupscriptstatusattribute}
+
+\unexpanded\def\setlocalscript[#1]%
   {\edef\currentscript{#1}%
    \scripts_basics_set}
+
+\let\setscript\setlocalscript
 
 \unexpanded\def\resetscript
   {\clf_resetscript}

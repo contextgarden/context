@@ -24,6 +24,7 @@
 \installcorenamespace{attributecount}  % the counter representing the attribute (attrdef'd)
 \installcorenamespace{attributeid}     % the internal number
 \installcorenamespace{attributestack}  % the attribute specific stack
+\installcorenamespace{attributepickup}
 
 \unexpanded\def\pushattribute#1%
   {\global\advance\csname\??attributestack\string#1\endcsname\plusone
@@ -40,18 +41,23 @@
 
 \newtoks \t_attr_list_global
 \newtoks \t_attr_list_local
+\newtoks \t_attr_list_pickup
 \newtoks \t_attr_list_nomath
 
 \ifdefined \s!global    \else \def\s!global   {global}    \fi % for metatex % or hard check later
 \ifdefined \s!public    \else \def\s!public   {public}    \fi % for metatex % or hard check later
 \ifdefined \s!private   \else \def\s!private  {private}   \fi % for metatex % or hard check later
 \ifdefined \s!attribute \else \def\s!attribute{attribute} \fi % for metatex % or hard check later
+\ifdefined \s!pickup    \else \def\s!pickup   {pickup}    \fi % for metatex % or hard check later
+\ifdefined \s!forget    \else \def\s!forget   {forget}    \fi % for metatex % or hard check later
 
 \unexpanded\def\defineattribute      {\dodoubleempty\attr_basics_define}
 \unexpanded\def\definesystemattribute{\dodoubleempty\attr_basics_define_system}
 
 \def\attr_basics_define       {\attr_basics_define_indeed\s!public}
 \def\attr_basics_define_system{\attr_basics_define_indeed\s!private}
+
+     % here public means 'visible' so it's not to be confused with 'public' at the lua end
 
 \def\attr_basics_define_indeed#1[#2][#3]%
   {\ifcsname\??attributecount#2\endcsname\else
@@ -66,10 +72,28 @@
        {\etoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!nomath{#3}%
        {\etoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-     % here public means 'visible' so it's not to be confused with 'public' at the lua end
      \doifinset\s!public{#3}%
        {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
+     \doifinset\s!pickup{#3}%
+       {\expandafter\newconstant\csname\??attributepickup#2\endcsname
+        \csname\??attributepickup#2\endcsname\attributeunsetvalue
+        \etoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
+        \ifcsname#2\s!attribute\endcsname
+          \expandafter\edef\csname\s!pickup#2\s!attribute\endcsname
+            {\csname\??attributepickup#2\endcsname\csname\??attributecount#2\endcsname}%
+          \expandafter\edef\csname\s!forget#2\s!attribute\endcsname
+            {\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
+        \fi}%
    \fi}
+
+\unexpanded\def\pickupattributes
+  {\the\t_attr_list_pickup\relax}
+
+% \unexpanded\def\pickupattribute#1%
+%   {\csname\??attributecount#1\endcsname\csname\??attributepickup#1\endcsname}
+
+% \unexpanded\def\pickupattributelater#1%
+%   {\csname\??attributepickup#1\endcsname\csname\??attributecount#1\endcsname}
 
 \unexpanded\def\newattribute#1%
   {\attr_basics_define_indeed\s!public[\csstring#1][]%

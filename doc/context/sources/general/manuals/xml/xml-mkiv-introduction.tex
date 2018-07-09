@@ -1,0 +1,42 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-introduction
+
+\startchapter[title={Introduction}]
+
+This manual presents the \MKIV\ way of dealing with \XML. Although the
+traditional \MKII\ streaming parser has a charming simplicity in its control, for
+complex documents the tree based \MKIV\ method is more convenient. It is for this
+reason that the old method has been removed from \MKIV. If you are familiar with
+\XML\ processing in \MKII, then you will have noticed that the \MKII\ commands
+have \type {XML} in their name. The \MKIV\ commands have a lowercase \type {xml}
+in their names. That way there is no danger for confusion or a mixup.
+
+You may wonder why we do these manipulations in \TEX\ and not use \XSLT\ (or
+other transformation methods) instead. The advantage of an integrated approach is
+that it simplifies usage. Think of not only processing the document, but also
+using \XML\ for managing resources in the same run. An \XSLT\ approach is just as
+verbose (after all, you still need to produce \TEX\ code) and probably less
+readable. In the case of \MKIV\ the integrated approach is also faster and gives
+us the option to manipulate content at runtime using \LUA. It has the additional
+advantage that to some extend we can handle a mix of \TEX\ and \XML\ because we
+know when we're doing one or the other.
+
+This manual is dedicated to Taco Hoekwater, one of the first \CONTEXT\ users, and
+also the first to use it for processing \XML. Who could have thought at that time
+that we would have a more convenient way of dealing with those angle brackets.
+The second version for this manual is dedicated to Thomas Schmitz, a power user
+who occasionally became victim of the evolving mechanisms.
+
+\blank
+
+\startlines
+Hans Hagen
+\PRAGMA
+Hasselt NL
+2008\endash2016
+\stoplines
+
+\stopchapter
+
+\stopcomponent

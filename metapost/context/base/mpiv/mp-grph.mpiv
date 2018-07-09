@@ -139,7 +139,7 @@ if mfun_use_one_pass :
         save figurepicture ; picture figurepicture ;
         figurepicture := currentpicture ; currentpicture := nullpicture ;
         currentgraphictext := currentgraphictext + 1 ;
-        lua.mp.GraphicText(currentgraphictext,t) ;
+        lua.mp.mf_graphic_text(currentgraphictext,t) ;
         mfun_finish_graphic_text % picks up directives
     enddef ;
 

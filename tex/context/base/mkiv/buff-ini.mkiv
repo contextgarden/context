@@ -179,16 +179,16 @@
   {\dosingleempty\buff_get}
 
 \unexpanded\def\buff_get[#1]% [name]
-  {\namedbufferparameter\empty\c!before
+  {\namedbufferparameter\empty\c!before\relax
    \doifelsenothing{#1}
      {\buff_get_stored_indeed\empty}
      {\processcommalist[#1]\buff_get_stored_indeed}%
-   \namedbufferparameter\empty\c!after}
+   \namedbufferparameter\empty\c!after\relax}
 
 \unexpanded\def\buff_get_stored#1#2%
-  {\namedbufferparameter{#1}\c!before
+  {\namedbufferparameter{#1}\c!before\relax
    \buff_get_stored_indeed{#2}%
-   \namedbufferparameter{#1}\c!after}
+   \namedbufferparameter{#1}\c!after\relax}
 
 \unexpanded\def\buff_get_stored_indeed#1%
   {\clf_getbuffer{#1}}

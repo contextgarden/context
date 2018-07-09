@@ -117,23 +117,23 @@ do
 
     local data = false
 
-    function mp.start_saving_data(n)
+    function mp.mf_start_saving_data(n)
         data = { }
     end
 
-    function mp.stop_saving_data()
+    function mp.mf_stop_saving_data()
         if data then
             -- nothing
         end
     end
 
-    function mp.finish_saving_data()
+    function mp.mf_finish_saving_data()
         if data then
             -- nothing
         end
     end
 
-    function mp.save_data(str)
+    function mp.mf_save_data(str)
         if data then
             data[#data+1] = str
         end

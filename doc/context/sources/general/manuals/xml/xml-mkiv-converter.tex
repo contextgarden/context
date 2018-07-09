@@ -1,0 +1,300 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-converter
+
+\startchapter[title={Setting up a converter}]
+
+\startsection[title={from structure to setup}]
+
+We use a very simple document structure for demonstrating how a converter is
+defined. In practice a mapping will be more complex, especially when we have a
+style with complex chapter openings using data coming from all kind of places,
+different styling of sections with the same name, selectively (out of order)
+flushed content, special formatting, etc.
+
+\typefile{manual-demo-1.xml}
+
+Say that this document is stored in the file \type {demo.xml}, then the following
+code can be used as starting point:
+
+\starttyping
+\startxmlsetups xml:demo:base
+  \xmlsetsetup{#1}{document|section|p}{xml:demo:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{demo}{xml:demo:base}
+
+\startxmlsetups xml:demo:document
+  \starttitle[title={Contents}]
+    \placelist[chapter]
+  \stoptitle
+  \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:demo:section
+  \startchapter[title=\xmlfirst{#1}{/title}]
+    \xmlfirst{#1}{/content}
+  \stopchapter
+\stopxmlsetups
+
+\startxmlsetups xml:demo:p
+  \xmlflush{#1}\endgraf
+\stopxmlsetups
+
+\xmlprocessfile{demo}{demo.xml}{}
+\stoptyping
+
+Watch out! These are not just setups, but specific \XML\ setups which get an
+argument passed (the \type {#1}). If for some reason your \XML\ processing fails,
+it might be that you mistakenly have used a normal setup definition. The argument
+\type {#1} represents the current node (element) and is a unique identifier. For
+instance a \type {<p>..</p>} can have an identifier {demo::5}. So, we can get
+something:
+
+\starttyping
+\xmlflush{demo::5}\endgraf
+\stoptyping
+
+but as well:
+
+\starttyping
+\xmlflush{demo::6}\endgraf
+\stoptyping
+
+Keep in mind that the references tor the actual nodes (elements) are
+abstractions, you never see those \type {<id>::<number>}'s, because we will use
+either the abstract \type {#1} (any node) or an explicit reference like \type
+{demo}. The previous setup when issued will be like:
+
+\starttyping
+\startchapter[title=\xmlfirst{demo::3}{/title}]
+  \xmlfirst{demo::4}{/content}
+\stopchapter
+\stoptyping
+
+Here the \type {title} is used to typeset the chapter title but also for an entry
+in the table of contents. At the moment the title is typeset the \XML\ node gets
+looked up and expanded in real text. However, for the list it gets stored for
+later use. One can argue that this is not needed for \XML, because one can just
+filter all the titles and use page references, but then one also looses the
+control one normally has over such titles. For instance it can be that some
+titles are rendered differently and for that we need to keep track of usage.
+Doing that with transformations or filtering is often more complex than leaving
+that to \TEX. As soon as the list gets typeset, the reference (\type {demo::#3})
+is used for the lookup. This is because by default the title is stored as given.
+So, as long as we make sure the \XML\ source is loaded before the table of
+contents is typeset we're ok. Later we will look into this in more detail, for
+now it's enough to know that in most cases the abstract \type {#1} reference will
+work out ok.
+
+Contrary to the style definitions this interface looks rather low level (with no
+optional arguments) and the main reason for this is that we want processing to be
+fast. So, the basic framework is:
+
+\starttyping
+\startxmlsetups xml:demo:base
+  % associate setups with elements
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{demo}{xml:demo:base}
+
+% define setups for matches
+
+\xmlprocessfile{demo}{demo.xml}{}
+\stoptyping
+
+In this example we mostly just flush the content of an element and in the case of
+a section we flush explicit child elements. The \type {#1} in the example code
+represents the current element. The line:
+
+\starttyping
+\xmlsetsetup{demo}{*}{-}
+\stoptyping
+
+sets the default for each element to \quote {just ignore it}. A \type {+} would
+make the default to always flush the content. This means that at this point we
+only handle:
+
+\starttyping
+<section>
+  <title>Some title</title>
+  <content>
+    <p>a paragraph of text</p>
+  </content>
+</section>
+\stoptyping
+
+In the next section we will deal with the slightly more complex itemize and
+figure placement. At first sight all these setups may look overkill but keep in
+mind that normally the number of elements is rather limited. The complexity is
+often in the style and having access to each snippet of content is actually
+quite handy for that.
+
+\stopsection
+
+\startsection[title={alternative solutions}]
+
+Dealing with an itemize is rather simple (as long as we forget about
+attributes that control the behaviour):
+
+\starttyping
+<itemize>
+  <item>first</item>
+  <item>second</item>
+</itemize>
+\stoptyping
+
+First we need to add \type {itemize} to the setup assignment (unless we've used
+the wildcard \type {*}):
+
+\starttyping
+\xmlsetsetup{demo}{document|section|p|itemize}{xml:demo:*}
+\stoptyping
+
+The setup can look like:
+
+\starttyping
+\startxmlsetups xml:demo:itemize
+  \startitemize
+    \xmlfilter{#1}{/item/command(xml:demo:itemize:item)}
+  \stopitemize
+\stopxmlsetups
+
+\startxmlsetups xml:demo:itemize:item
+  \startitem
+    \xmlflush{#1}
+  \stopitem
+\stopxmlsetups
+\stoptyping
+
+An alternative is to map item directly:
+
+\starttyping
+\xmlsetsetup{demo}{document|section|p|itemize|item}{xml:demo:*}
+\stoptyping
+
+and use:
+
+\starttyping
+\startxmlsetups xml:demo:itemize
+  \startitemize
+    \xmlflush{#1}
+  \stopitemize
+\stopxmlsetups
+
+\startxmlsetups xml:demo:item
+  \startitem
+    \xmlflush{#1}
+  \stopitem
+\stopxmlsetups
+\stoptyping
+
+Sometimes, a more local solution using filters and \type {/command(...)} makes more
+sense, especially when the \type {item} tag is used for other purposes as well.
+
+Explicit flushing with \type {command} is definitely the way to go when you have
+complex products. In one of our projects we compose math school books from many
+thousands of small \XML\ files, and from one source set several products are
+typeset. Within a book sections get done differently, content gets used, ignored
+or interpreted differently depending on the kind of content, so there is a
+constant checking of attributes that drive the rendering. In that a generic setup
+for a title element makes less sense than explicit ones for each case. (We're
+talking of huge amounts of files here, including multiple images on each rendered
+page.)
+
+When using \type {command} you can pass two arguments, the first is the setup for
+the match, the second one for the miss, as in:
+
+\starttyping
+\xmlfilter{#1}{/element/command(xml:true,xml:false)}
+\stoptyping
+
+Back to the example, this leaves us with dealing with the resources, like
+figures:
+
+\starttyping
+<resource type='figure'>
+  <caption>A picture of a cow.</caption>
+  <content><external file="cow.pdf"/></content>
+</resource>
+\stoptyping
+
+Here we can use a more restricted match:
+
+\starttyping
+\xmlsetsetup{demo}{resource[@type='figure']}{xml:demo:figure}
+\xmlsetsetup{demo}{external}{xml:demo:*}
+\stoptyping
+
+and the definitions:
+
+\starttyping
+\startxmlsetups xml:demo:figure
+  \placefigure
+    {\xmlfirst{#1}{/caption}}
+    {\xmlfirst{#1}{/content}}
+\stopxmlsetups
+
+\startxmlsetups xml:demo:external
+  \externalfigure[\xmlatt{#1}{file}]
+\stopxmlsetups
+\stoptyping
+
+At this point it is good to notice that \type {\xmlatt{#1}{file}} is passed as it
+is: a macro call. This means that when a macro like \type {\externalfigure} uses
+the first argument frequently without first storing its value, the lookup is done
+several times. A solution for this is:
+
+\starttyping
+\startxmlsetups xml:demo:external
+  \expanded{\externalfigure[\xmlatt{#1}{file}]}
+\stopxmlsetups
+\stoptyping
+
+Because the lookup is rather fast, normally there is no need to bother about this
+too much because internally \CONTEXT\ already makes sure such expansion happens
+only once.
+
+An alternative definition for placement is the following:
+
+\starttyping
+\xmlsetsetup{demo}{resource}{xml:demo:resource}
+\stoptyping
+
+with:
+
+\starttyping
+\startxmlsetups xml:demo:resource
+  \placefloat
+    [\xmlatt{#1}{type}]
+    {\xmlfirst{#1}{/caption}}
+    {\xmlfirst{#1}{/content}}
+\stopxmlsetups
+\stoptyping
+
+This way you can specify \type {table} as type too. Because you can define your
+own float types, more complex variants are also possible. In that case it makes
+sense to provide some default behaviour too:
+
+\starttyping
+\definefloat[figure-here][figure][default=here]
+\definefloat[figure-left][figure][default=left]
+\definefloat[table-here] [table] [default=here]
+\definefloat[table-left] [table] [default=left]
+
+\startxmlsetups xml:demo:resource
+  \placefloat
+    [\xmlattdef{#1}{type}{figure}-\xmlattdef{#1}{location}{here}]
+    {\xmlfirst{#1}{/caption}}
+    {\xmlfirst{#1}{/content}}
+\stopxmlsetups
+\stoptyping
+
+In this example we support two types and two locations. We default to a figure
+placed (when possible) at the current location.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

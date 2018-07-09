@@ -1,0 +1,893 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-commands
+
+\startchapter[title={Commands}]
+
+\startsection[title={nodes and lpaths}]
+
+The amount of commands available for manipulating the \XML\ file is rather large.
+Many of the commands cooperate with the already discussed setups, a fancy name
+for a collection of macro calls either or not mixed with text.
+
+Most of the commands are just shortcuts to \LUA\ calls, which means that the real
+work is done by \LUA. In fact, what happens is that we have a continuous transfer
+of control from \TEX\ to \LUA, where \LUA\ prints back either data (like element
+content or attribute values) or just invokes a setup whereby it passes a
+reference to the node resolved conform the path expression. The invoked setup
+itself might return control to \LUA\ again, etc.
+
+This sounds complicated but examples will show what we mean here. First we
+present the whole repertoire of commands. Because users can read the source code,
+they might uncover more commands, but only the ones discussed here are official.
+The commands are grouped in categories.
+
+In the following sections \cmdinternal {cd:node} means a reference to a node:
+this can be the identifier of the root (the loaded xml tree) or a reference to a
+node in that tree (often the result of some lookup. A \cmdinternal {cd:lpath} is
+a fancy name for a path expression (as with \XSLT) but resolved by \LUA.
+
+\stopsection
+
+\startsection[title={commands}]
+
+There are a lot of commands available but you probably can ignore most of them.
+We try to be complete which means that there is for instance \type {\xmlfirst} as
+well as \type {\xmllast} but you probably never need the last one. There are also
+commands that were used when testing this interface and we see no reason to
+remove them. Some obscure ones are used in modules and after a while even I often
+forget that they exist. To give you an idea of what commands are important we
+show their use in generating the \CONTEXT\ command definitions (\type
+{x-set-11.mkiv}) per January 2016:
+
+\startcolumns[n=2,balance=yes]
+\starttabulate[|l|r|]
+\NC \type {\xmlall}                   \NC  1 \NC \NR
+\NC \type {\xmlatt}                   \NC 23 \NC \NR
+\NC \type {\xmlattribute}             \NC  1 \NC \NR
+\NC \type {\xmlcount}                 \NC  1 \NC \NR
+\NC \type {\xmldoif}                  \NC  2 \NC \NR
+\NC \type {\xmldoifelse}              \NC  1 \NC \NR
+\NC \type {\xmlfilterlist}            \NC  4 \NC \NR
+\NC \type {\xmlflush}                 \NC  5 \NC \NR
+\NC \type {\xmlinclude}               \NC  1 \NC \NR
+\NC \type {\xmlloadonly}              \NC  1 \NC \NR
+\NC \type {\xmlregisterdocumentsetup} \NC  1 \NC \NR
+\NC \type {\xmlsetsetup}              \NC  1 \NC \NR
+\NC \type {\xmlsetup}                 \NC  4 \NC \NR
+\stoptabulate
+\stopcolumns
+
+As you can see filtering, flushing and accessing attributes score high. Below we show
+the statistics of a quite complex rendering (5 variants of schoolbooks: basic book,
+answers, teachers guide, worksheets, full blown version with extensive tracing).
+
+\startcolumns[n=2,balance=yes]
+\starttabulate[|l|r|]
+\NC \type {\xmladdindex}              \NC   3 \NC \NR
+\NC \type {\xmlall}                   \NC   5 \NC \NR
+\NC \type {\xmlappendsetup}           \NC   1 \NC \NR
+\NC \type {\xmlapplyselectors}        \NC   1 \NC \NR
+\NC \type {\xmlatt}                   \NC  40 \NC \NR
+\NC \type {\xmlattdef}                \NC   9 \NC \NR
+\NC \type {\xmlattribute}             \NC  10 \NC \NR
+\NC \type {\xmlbadinclusions}         \NC   3 \NC \NR
+\NC \type {\xmlconcat}                \NC   3 \NC \NR
+\NC \type {\xmlcount}                 \NC   1 \NC \NR
+\NC \type {\xmldelete}                \NC  11 \NC \NR
+\NC \type {\xmldoif}                  \NC  39 \NC \NR
+\NC \type {\xmldoifelse}              \NC  28 \NC \NR
+\NC \type {\xmldoifelsetext}          \NC  13 \NC \NR
+\NC \type {\xmldoifnot}               \NC   2 \NC \NR
+\NC \type {\xmldoifnotselfempty}      \NC   1 \NC \NR
+\NC \type {\xmlfilter}                \NC 100 \NC \NR
+\NC \type {\xmlfirst}                 \NC  51 \NC \NR
+\NC \type {\xmlflush}                 \NC  69 \NC \NR
+\NC \type {\xmlflushcontext}          \NC   2 \NC \NR
+\NC \type {\xmlinclude}               \NC   1 \NC \NR
+\NC \type {\xmlincludeoptions}        \NC   5 \NC \NR
+\NC \type {\xmlinclusion}             \NC  16 \NC \NR
+\NC \type {\xmlinjector}              \NC   1 \NC \NR
+\NC \type {\xmlloaddirectives}        \NC   1 \NC \NR
+\NC \type {\xmlmapvalue}              \NC   4 \NC \NR
+\NC \type {\xmlmatch}                 \NC   1 \NC \NR
+\NC \type {\xmlprependsetup}          \NC   5 \NC \NR
+\NC \type {\xmlregisterdocumentsetup} \NC   2 \NC \NR
+\NC \type {\xmlregistersetup}         \NC   1 \NC \NR
+\NC \type {\xmlremapnamespace}        \NC   1 \NC \NR
+\NC \type {\xmlsetfunction}           \NC   2 \NC \NR
+\NC \type {\xmlsetinjectors}          \NC   2 \NC \NR
+\NC \type {\xmlsetsetup}              \NC  11 \NC \NR
+\NC \type {\xmlsetup}                 \NC  76 \NC \NR
+\NC \type {\xmlstrip}                 \NC   1 \NC \NR
+\NC \type {\xmlstripanywhere}         \NC   1 \NC \NR
+\NC \type {\xmltag}                   \NC   1 \NC \NR
+\NC \type {\xmltext}                  \NC  53 \NC \NR
+\NC \type {\xmlvalue}                 \NC   2 \NC \NR
+\stoptabulate
+\stopcolumns
+
+Here many more are used but this is an exceptional case. The top is again
+dominated by filtering, flushing and attribute consulting. The list can actually
+be smaller. For instance, the \type {\xmlcount} can just as well be \type
+{\xmlfilter} with a \type {count} finalizer. There are also some special ones,
+like the injectors, that are needed for finetuning the final result.
+
+\stopsection
+
+\startsection[title={loading}]
+
+\startxmlcmd {\cmdbasicsetup{xmlloadfile}}
+    loads the file \cmdinternal {cd:file} and registers it under \cmdinternal
+    {cd:name} and applies either given or standard \cmdinternal
+    {cd:xmlsetup} (alias: \type {\xmlload})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlloadbuffer}}
+    loads the buffer \cmdinternal {cd:buffer} and registers it under
+    \cmdinternal {cd:name} and applies either given or standard
+    \cmdinternal {cd:xmlsetup}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlloaddata}}
+    loads \cmdinternal {cd:text} and registers it under \cmdinternal
+    {cd:name} and applies either given or standard \cmdinternal
+    {cd:xmlsetup}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlloadonly}}
+    loads \cmdinternal {cd:text} and registers it under \cmdinternal
+    {cd:name} and applies either given or standard \cmdinternal
+    {cd:xmlsetup} but doesn't flush the content
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlinclude}}
+    includes the file specified by attribute \cmdinternal {cd:name} of the
+    element located by \cmdinternal {cd:lpath} at node \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlprocessfile}}
+    registers file \cmdinternal {cd:file} as \cmdinternal {cd:name} and
+    process the tree starting with \cmdinternal {cd:xmlsetup} (alias:
+    \type {\xmlprocess})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlprocessbuffer}}
+    registers buffer \cmdinternal {cd:name} as \cmdinternal {cd:name} and process
+    the tree starting with \cmdinternal {cd:xmlsetup}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlprocessdata}}
+    registers \cmdinternal {cd:text} as \cmdinternal {cd:name} and process
+    the tree starting with \cmdinternal {cd:xmlsetup}
+\stopxmlcmd
+
+The initial setup defaults to \type {xml:process} that is defined
+as follows:
+
+\starttyping
+\startsetups xml:process
+  \xmlregistereddocumentsetups\xmldocument
+  \xmlmain\xmldocument
+\stopsetups
+\stoptyping
+
+First we apply the setups associated with the document (including common setups)
+and then we flush the whole document. The macro \type {\xmldocument} expands to
+the current document id. There is also \type {\xmlself} which expands to the
+current node number (\type {#1} in setups).
+
+\startxmlcmd {\cmdbasicsetup{xmlmain}}
+    returns the whole document
+\stopxmlcmd
+
+Normally such a flush will trigger a chain reaction of setups associated with the
+child elements.
+
+\stopsection
+
+\startsection[title={saving}]
+
+\startxmlcmd {\cmdbasicsetup{xmlsave}}
+    saves the given node \cmdinternal {cd:node} in the file \cmdinternal {cd:file}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmltofile}}
+    saves the match of \cmdinternal {cd:lpath} in the file \cmdinternal {cd:file}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmltobuffer}}
+    saves the match of \cmdinternal {cd:lpath} in the buffer \cmdinternal {cd:buffer}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmltobufferverbose}}
+    saves the match of \cmdinternal {cd:lpath} verbatim in the buffer \cmdinternal
+    {cd:buffer}
+\stopxmlcmd
+
+% \startxmlcmd {\cmdbasicsetup{xmltoparameters}}
+%     converts the match of \cmdinternal {cd:lpath} to key|/|values (for tracing)
+% \stopxmlcmd
+
+The next command is only needed when you have messed with the tree using
+\LUA\ code.
+
+\startxmlcmd {\cmdbasicsetup{xmladdindex}}
+    (re)indexes a tree
+\stopxmlcmd
+
+The following macros are only used in special situations and are not really meant
+for users.
+
+\startxmlcmd {\cmdbasicsetup{xmlraw}}
+    flush the content if \cmdinternal {cd:node} with original entities
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{startxmlraw}}
+    flush the wrapped content with original entities
+\stopxmlcmd
+
+\stopsection
+
+\startsection[title={flushing data}]
+
+When we flush an element, the associated \XML\ setups are expanded. The most
+straightforward way to flush an element is the following. Keep in mind that the
+returned values itself can trigger setups and therefore flushes.
+
+\startxmlcmd {\cmdbasicsetup{xmlflush}}
+    returns all nodes under \cmdinternal {cd:node}
+\stopxmlcmd
+
+You can restrict flushing by using commands that accept a specification.
+
+\startxmlcmd {\cmdbasicsetup{xmltext}}
+    returns the text of the matching \cmdinternal {cd:lpath} under \cmdinternal
+    {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlpure}}
+    returns the text of the matching \cmdinternal {cd:lpath} under \cmdinternal
+    {cd:node} without \type {\Ux} escaped special \TEX\ characters
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlflushtext}}
+    returns the text of the \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlflushpure}}
+    returns the text of the \cmdinternal {cd:node} without \type {\Ux} escaped
+    special \TEX\ characters
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlnonspace}}
+    returns the text of the matching \cmdinternal {cd:lpath} under \cmdinternal
+    {cd:node} without embedded spaces
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlall}}
+    returns all nodes under \cmdinternal {cd:node} that matches \cmdinternal
+    {cd:lpath}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmllastmatch}}
+    returns all nodes found in the last match
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlfirst}}
+    returns the first node under \cmdinternal {cd:node} that matches \cmdinternal
+    {cd:lpath}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmllast}}
+    returns the last node under \cmdinternal {cd:node} that matches \cmdinternal
+    {cd:lpath}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlfilter}}
+    at a match of \cmdinternal {cd:lpath} a given filter \type {filter} is applied
+    and the result is returned
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsnippet}}
+    returns the \cmdinternal {cd:number}\high{th} element under \cmdinternal
+    {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlposition}}
+    returns the \cmdinternal {cd:number}\high{th} match of \cmdinternal
+    {cd:lpath} at node \cmdinternal {cd:node}; a negative number starts at the
+    end (alias: \type {\xmlindex})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlelement}}
+    returns the \cmdinternal {cd:number}\high{th} child of node \cmdinternal {cd:node};
+    a negative number starts at the end
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlpos}}
+    returns the index (position) in the parent node of \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlconcat}}
+    returns the sequence of nodes that match \cmdinternal {cd:lpath} at
+    \cmdinternal {cd:node} whereby \cmdinternal {cd:text} is put between each
+    match
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlconcatrange}}
+    returns the \cmdinternal {cd:first}\high {th} upto \cmdinternal
+    {cd:last}\high {th} of nodes that match \cmdinternal {cd:lpath} at
+    \cmdinternal {cd:node} whereby \cmdinternal {cd:text} is put between each
+    match
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlcommand}}
+    apply the given \cmdinternal {cd:xmlsetup} to each match of \cmdinternal
+    {cd:lpath} at node \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlstrip}}
+    remove leading and trailing spaces from nodes under \cmdinternal {cd:node}
+    that match \cmdinternal {cd:lpath}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlstripped}}
+    remove leading and trailing spaces from nodes under \cmdinternal {cd:node}
+    that match \cmdinternal {cd:lpath} and return the content afterwards
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlstripnolines}}
+    remove leading and trailing spaces as well as collapse embedded spaces
+    from nodes under \cmdinternal {cd:node} that match \cmdinternal {cd:lpath}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlstrippednolines}}
+    remove leading and trailing spaces as well as collapse embedded spaces from
+    nodes under \cmdinternal {cd:node} that match \cmdinternal {cd:lpath} and
+    return the content afterwards
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlverbatim}}
+    flushes the content verbatim code (without any wrapping, i.e. no fonts
+    are selected and such)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlinlineverbatim}}
+    return the content of the node as inline verbatim code; no further
+    interpretation (expansion) takes place and spaces are honoured; it uses the
+    following wrapper
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{startxmlinlineverbatim}}
+    wraps inline verbatim mode using the environment specified (a prefix \type
+    {xml:} is added to the environment name)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldisplayverbatim}}
+    return the content of the node as display verbatim code; no further
+    interpretation (expansion) takes place and leading and trailing spaces and
+    newlines are treated special; it uses the following wrapper
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{startxmldisplayverbatim}}
+    wraps the content in display verbatim using the environment specified (a prefix
+    \type {xml:} is added to the environment name)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlprettyprint}}
+    pretty print (with colors) the node \cmdinternal {cd:node}; use the \CONTEXT\
+    \SCITE\ lexers when available (\type {\usemodule [scite]})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlflushspacewise}}
+    flush node \cmdinternal {cd:node} obeying spaces and newlines
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlflushlinewise}}
+    flush node \cmdinternal {cd:node} obeying newlines
+\stopxmlcmd
+
+\stopsection
+
+\startsection[title={information}]
+
+The following commands return strings. Normally these are used in tests.
+
+\startxmlcmd {\cmdbasicsetup{xmlname}}
+    returns the complete name (including namespace prefix) of the
+    given \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlnamespace}}
+    returns the namespace of the given \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmltag}}
+    returns the tag of the element, without namespace prefix
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlcount}}
+    returns the number of matches of \cmdinternal {cd:lpath} at node \cmdinternal
+    {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlatt}}
+    returns the value of attribute \cmdinternal {cd:name} or empty if no such
+    attribute exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlattdef}}
+    returns the value of attribute \cmdinternal {cd:name} or \cmdinternal
+    {cd:string} if no such attribute exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlrefatt}}
+    returns the value of attribute \cmdinternal {cd:name} or empty if no such
+    attribute exists; a leading \type {#} is removed (nicer for tex)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlchainatt}}
+    returns the value of attribute \cmdinternal {cd:name} or empty if no such
+    attribute exists; backtracks till a match is found
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlchainattdef}}
+    returns the value of attribute \cmdinternal {cd:name} or \cmdinternal
+    {cd:string} if no such attribute exists; backtracks till a match is found
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlattribute}}
+    finds a first match for \cmdinternal {cd:lpath} at \cmdinternal {cd:node} and
+    returns the value of attribute \cmdinternal {cd:name} or empty if no such
+    attribute exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlattributedef}}
+    finds a first match for \cmdinternal {cd:lpath} at \cmdinternal {cd:node} and
+    returns the value of attribute \cmdinternal {cd:name} or \cmdinternal
+    {cd:text} if no such attribute exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmllastatt}}
+    returns the last attribute found (this avoids a lookup)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetatt}}
+    set the value of attribute \cmdinternal {cd:name}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetattribute}}
+    set the value of attribute \cmdinternal {cd:name} for each match of \cmdinternal
+    {cd:lpath}
+\stopxmlcmd
+
+\stopsection
+
+\startsection[title={manipulation}]
+
+You can use \LUA\ code to manipulate the tree and it makes no sense to duplicate
+this in \TEX. In the future we might provide an interface to some of this
+functionality. Keep in mind that manipuating the tree might have side effects as
+we maintain several indices into the tree that also needs to be updated then.
+
+\stopsection
+
+\startsection[title={integration}]
+
+If you write a module that deals with \XML, for instance processing cals tables,
+then you need ways to control specific behaviour. For instance, you might want to
+add a background to the table. Such directives are collected in \XML\ files and
+can be loaded on demand.
+
+\startxmlcmd {\cmdbasicsetup{xmlloaddirectives}}
+    loads \CONTEXT\ directives from \cmdinternal {cd:file} that will get
+    interpreted when processing documents
+\stopxmlcmd
+
+A directives definition file looks as follows:
+
+\starttyping
+<?xml version="1.0" standalone="yes"?>
+
+<directives>
+  <directive attribute='id' value="100"
+    setup="cdx:100"/>
+  <directive attribute='id' value="101"
+    setup="cdx:101"/>
+  <directive attribute='cdx' value="colors" element="cals:table"
+    setup="cdx:cals:table:colors"/>
+  <directive attribute='cdx' value="vertical" element="cals:table"
+    setup="cdx:cals:table:vertical"/>
+  <directive attribute='cdx' value="noframe" element="cals:table"
+    setup="cdx:cals:table:noframe"/>
+  <directive attribute='cdx' value="*" element="cals:table"
+    setup="cdx:cals:table:*"/>
+</directives>
+\stoptyping
+
+Examples of usage can be found in \type {x-cals.mkiv}. The directive is triggered
+by an attribute. Instead of a setup you can specify a setup to be applied before
+and after the node gets flushed.
+
+\startxmlcmd {\cmdbasicsetup{xmldirectives}}
+    apply the setups directive associated with the node
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldirectivesbefore}}
+    apply the before directives associated with the node
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldirectivesafter}}
+    apply the after directives associated with the node
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlinstalldirective}}
+    defines a directive that hooks into a handler
+\stopxmlcmd
+
+Normally a directive will be put in the \XML\ file, for instance as:
+
+\starttyping
+<?context-mathml-directive minus reduction yes ?>
+\stoptyping
+
+Here the \type {mathml} is the general class of directives and \type {minus} a
+subclass, in our case a specific element.
+
+\stopsection
+
+\startsection[title={setups}]
+
+The basic building blocks of \XML\ processing are setups. These are just
+collections of macros that are expanded. These setups get one argument passed
+(\type {#1}):
+
+\starttyping
+\startxmlsetups somedoc:somesetup
+    \xmlflush{#1}
+\stopxmlsetups
+\stoptyping
+
+This argument is normally a number that internally refers to a specific node in
+the \XML\ tree. The user should see it as an abstract reference and not depend on
+its numeric property. Just think of it as \quote {the current node}. You can (and
+probably will) call such setups using:
+
+\startxmlcmd {\cmdbasicsetup{xmlsetup}}
+    expands setup \cmdinternal {cd:setup} and pass \cmdinternal {cd:node} as
+    argument
+\stopxmlcmd
+
+However, in most cases the setups are associated to specific elements,
+something that users of \XSLT\ might recognize as templates.
+
+\startxmlcmd {\cmdbasicsetup{xmlsetfunction}}
+    associates function \cmdinternal {cd:luafunction} to the elements in
+    namespace \cmdinternal {cd:name} that match \cmdinternal {cd:lpath}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetsetup}}
+    associates setups \cmdinternal {cd:setup} (\TEX\ code) with the matching
+    nodes of \cmdinternal {cd:lpath} or root \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlprependsetup}}
+    pushes \cmdinternal {cd:setup} to the front of global list of setups
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlappendsetup}}
+    adds \cmdinternal {cd:setup} to the global list of setups to be applied
+    (alias: \type{\xmlregistersetup})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlbeforesetup}}
+    pushes \cmdinternal {cd:setup} into the global list of setups; the
+    last setup is the position
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlaftersetup}}
+    adds \cmdinternal {cd:setup} to the global list of setups; the last setup
+    is the position
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlremovesetup}}
+    removes \cmdinternal {cd:setup} from the global list of setups
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlprependdocumentsetup}}
+    pushes \cmdinternal {cd:setup} to the front of list of setups to be applied
+    to \cmdinternal {cd:name}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlappenddocumentsetup}}
+    adds \cmdinternal {cd:setup} to the list of setups to be applied to
+    \cmdinternal {cd:name} (you can also use the alias: \type
+    {\xmlregisterdocumentsetup})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlbeforedocumentsetup}}
+    pushes \cmdinternal {cd:setup} into the setups to be applied to \cmdinternal
+    {cd:name}; the last setup is the position
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlafterdocumentsetup}}
+    adds \cmdinternal {cd:setup} to the setups to be applied to \cmdinternal
+    {cd:name}; the last setup is the position
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlremovedocumentsetup}}
+    removes \cmdinternal {cd:setup} from the global list of setups to be applied
+    to \cmdinternal {cd:name}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlresetsetups}}
+    removes all global setups
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlresetdocumentsetups}}
+    removes all setups from the \cmdinternal {cd:name} specific list of setups to
+    be applied
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlflushdocumentsetups}{setup}}
+    applies \cmdinternal {cd:setup} (can be a list) to \cmdinternal {cd:name}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlregisteredsetups}}
+    applies all global setups to the current document
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlregistereddocumentsetups}}
+    applies all document specific \cmdinternal {cd:setup} to document
+    \cmdinternal {cd:name}
+\stopxmlcmd
+
+\stopsection
+
+\startsection[title={testing}]
+
+The following test macros all take a \cmdinternal {cd:node} as first argument
+and an \cmdinternal {cd:lpath} as second:
+
+\startxmlcmd {\cmdbasicsetup{xmldoif}}
+    expands to \cmdinternal {cd:true} when \cmdinternal {cd:lpath} matches at
+    node \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifnot}}
+    expands to \cmdinternal {cd:true} when \cmdinternal {cd:lpath} does not match
+    at node \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifelse}}
+    expands to \cmdinternal {cd:true} when \cmdinternal {cd:lpath} matches at
+    node \cmdinternal {cd:node} and to \cmdinternal {cd:false} otherwise
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoiftext}}
+    expands to \cmdinternal {cd:true} when the node matching \cmdinternal
+    {cd:lpath} at node \cmdinternal {cd:node} has some content
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifnottext}}
+    expands to \cmdinternal {cd:true} when the node matching \cmdinternal
+    {cd:lpath} at node \cmdinternal {cd:node} has no content
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifelsetext}}
+    expands to \cmdinternal {cd:true} when the node matching \cmdinternal
+    {cd:lpath} at node \cmdinternal {cd:node} has content and to \cmdinternal
+    {cd:false} otherwise
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifatt}}
+    expands to \cmdinternal {cd:true} when the attribute matching \cmdinternal
+    {cd:node} and the name given as second argument matches the third argument
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifnotatt}}
+    expands to \cmdinternal {cd:true} when the attribute matching \cmdinternal
+    {cd:node} and the name given as second argument differs from the third
+    argument
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifelseatt}}
+    expands to \cmdinternal {cd:true} when the attribute matching \cmdinternal
+    {cd:node} and the name given as second argument matches the third argument
+    and to \cmdinternal {cd:false} otherwise
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifelseempty}}
+    expands to \cmdinternal {cd:true} when the node matching \cmdinternal
+    {cd:lpath} at node \cmdinternal {cd:node} is empty and to \cmdinternal
+    {cd:false} otherwise
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifelseselfempty}}
+    expands to \cmdinternal {cd:true} when the node is empty and to \cmdinternal
+    {cd:false} otherwise
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifselfempty}}
+    expands to \cmdinternal {cd:true} when \cmdinternal {cd:node} is empty
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifnotselfempty}}
+    expands to \cmdinternal {cd:true} when \cmdinternal {cd:node} is not empty
+\stopxmlcmd
+
+\stopsection
+
+\startsection[title={initialization}]
+
+The general setup command (not to be confused with setups) that deals with the
+\MKIV\ tree handler is \type {\setupxml}. There are currently only a few options.
+
+\cmdfullsetup{setupxml}
+
+When you set \type {default} to \cmdinternal {cd:text} elements with no setup
+assigned will end up as text. When set to \type {hidden} such elements will be
+hidden. You can apply the default yourself using:
+
+\startxmlcmd {\cmdbasicsetup{xmldefaulttotext}}
+    presets the tree with root \cmdinternal {cd:node} to the handlers set up with
+    \type {\setupxml} option \cmdinternal{default}
+\stopxmlcmd
+
+You can set \type {compress} to \type {yes} in which case comment is stripped
+from the tree when the file is read.
+
+\startxmlcmd {\cmdbasicsetup{xmlregisterns}}
+    associates an internal namespace (like \type {mml}) with one given in the
+    document as \URL\ (like mathml)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlremapname}}
+    changes the namespace and tag of the matching elements
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlremapnamespace}}
+    replaces all references to the given namespace to a new one (applied
+    recursively)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlchecknamespace}}
+    sets the namespace of the matching elements unless a namespace is already set
+\stopxmlcmd
+
+\stopsection
+
+\startsection[title={helpers}]
+
+Often an attribute will determine the rendering and this may result in many
+tests. Especially when we have multiple attributes that control the output such
+tests can become rather extensive and redundant because one gets $n\times m$ or
+more such tests.
+
+Therefore we have a convenient way to map attributes onto for instance strings or
+commands.
+
+\startxmlcmd {\cmdbasicsetup{xmlmapvalue}}
+    associate a \cmdinternal {cd:text} with a \cmdinternal {cd:category} and
+    \cmdinternal {cd:name} (alias: \type{\xmlmapval})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlvalue}}
+    expand the value associated with a \cmdinternal {cd:category} and
+    \cmdinternal {cd:name} and if not resolved, expand to the \cmdinternal
+    {cd:text} (alias: \type{\xmlval})
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmldoifelsevalue}}
+    associate a \cmdinternal {cd:text} with a \cmdinternal {cd:category} and
+    \cmdinternal {cd:name}
+\stopxmlcmd
+
+This is used as follows. We define a couple of mappings in the same category:
+
+\starttyping
+\xmlmapvalue{emph}{bold}  {\bf}
+\xmlmapvalue{emph}{italic}{\it}
+\stoptyping
+
+Assuming that we have associated the following setup with the \type {emph}
+element, we can say (with \type {#1} being the current element):
+
+\starttyping
+\startxmlsetups demo:emph
+  \begingroup
+    \xmlvalue{emph}{\xmlatt{#1}{type}}{}
+  \endgroup
+\stopxmlsetups
+\stoptyping
+
+In this case we have no default. The \type {type} attribute triggers the actions,
+as in:
+
+\starttyping
+normal <emph type='bold'>bold</emph> normal
+\stoptyping
+
+This mechanism is not really bound to elements and attributes so you can use this
+mechanism for other purposes as well.
+
+\stopsection
+
+\startsection[title={Parameters}]
+
+\startbuffer[test]
+<something whatever="alpha">
+    <what>
+        beta
+    </what>
+</something>
+\stopbuffer
+
+\startbuffer
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{\xmldocument}{*}{xml:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mysetups}
+
+\startxmlsetups xml:something
+    parameter : \xmlpar   {#1}{whatever}\par
+    attribute : \xmlatt   {#1}{whatever}\par
+    text      : \xmlfirst {#1}{what}    \par
+                \xmlsetpar{#1}{whatever}{gamma}
+    parameter : \xmlpar   {#1}{whatever}\par
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:what
+    what: \xmlflush{#1}\par
+    parameter : \xmlparam{#1}{..}{whatever}\par
+\stopxmlsetups
+
+\xmlprocessbuffer{main}{test}{}
+\stopbuffer
+
+Say that we have this \XML\ blob:
+
+\typebuffer[test]
+
+With:
+
+\typebuffer
+
+we get:
+
+\getbuffer
+
+Parameters are stored with a node.
+
+\startxmlcmd {\cmdbasicsetup{xmlpar}}
+    returns the value of parameter \cmdinternal {cd:name} or empty if no such
+    parameter exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlparam}}
+    finds a first match for \cmdinternal {cd:lpath} at \cmdinternal {cd:node} and
+    returns the value of parameter \cmdinternal {cd:name} or empty if no such
+    parameter exists
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmllastpar}}
+    returns the last parameter found (this avoids a lookup)
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetpar}}
+    set the value of parameter \cmdinternal {cd:name}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlsetparam}}
+    set the value of parameter \cmdinternal {cd:name} for each match of \cmdinternal
+    {cd:lpath}
+\stopxmlcmd
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

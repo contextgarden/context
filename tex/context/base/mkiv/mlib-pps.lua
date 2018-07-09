@@ -101,8 +101,10 @@ local f_f3    = formatters["%.3F"]
 local f_gray  = formatters["%.3F g %.3F G"]
 local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
 local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
-local f_cm    = formatters["q %F %F %F %F %F %F cm"]
+local f_cm_b  = formatters["q %F %F %F %F %F %F cm"]
 local f_shade = formatters["MpSh%s"]
+
+local s_cm_e  = "Q"
 
 directives.register("metapost.stripzeros",function()
     f_f     = formatters["%N"]
@@ -110,7 +112,7 @@ directives.register("metapost.stripzeros",function()
     f_gray  = formatters["%.3N g %.3N G"]
     f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
     f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
-    f_cm    = formatters["q %N %N %N %N %N %N cm"]
+    f_cm_b  = formatters["q %N %N %N %N %N %N cm"]
     f_shade = formatters["MpSh%s"]
 end)
 
@@ -606,7 +608,7 @@ function metapost.preparetextextsdata()
             end
         end
     end
-    mp.tt_initialize(collected)
+    mp.mf_tt_initialize(collected)
 end
 
 metapost.intermediate         = metapost.intermediate         or { }
@@ -989,7 +991,7 @@ local function cm(object)
     if op then
         local first, second, fourth = op[1], op[2], op[4]
         if fourth then
-            local tx, ty = first.x_coord      , first.y_coord
+            local tx, ty = first.x_coord,       first.y_coord
             local sx, sy = second.x_coord - tx, fourth.y_coord - ty
             local rx, ry = second.y_coord - ty, fourth.x_coord - tx
             if sx == 0 then sx = 0.00001 end
@@ -1095,7 +1097,7 @@ local tx_reset, tx_analyze, tx_process  do
             end
         end
 
-        function mp.SomeText(index,str)
+        function mp.mf_some_text(index,str)
             mp_target = index
             mp_index  = index
             mp_c      = nil
@@ -1111,8 +1113,8 @@ local tx_reset, tx_analyze, tx_process  do
 
         local madetext = nil
 
-        function mp.MadeText(index)
-            mp.SomeText(index,madetext)
+        function mp.mf_made_text(index)
+            mp.mf_some_text(index,madetext)
         end
 
         function metapost.maketext(s,mode)
@@ -1129,7 +1131,7 @@ local tx_reset, tx_analyze, tx_process  do
             end
         end
 
-        function mp.SomeFormattedText(index,fmt,...)
+        function mp.mf_formatted_text(index,fmt,...)
             local t = { }
             for i=1,select("#",...) do
                 local ti = select(i,...)
@@ -1139,7 +1141,7 @@ local tx_reset, tx_analyze, tx_process  do
             end
             local f = lpegmatch(cleaner,fmt)
             local s = formatters[f](unpack(t)) or ""
-            mp.SomeText(index,s)
+            mp.mf_some_text(index,s)
         end
 
         interfaces.implement {
@@ -1433,7 +1435,7 @@ local gt_reset, gt_analyze, gt_process do
         function metapost.intermediate.actions.makempy()
         end
 
-        function mp.GraphicText(index,str)
+        function mp.mf_graphic_text(index,str)
             if not graphics[index] then
                 mp_index = index
                 mp_str   = str
@@ -1613,7 +1615,7 @@ end
 local function bm_process(object,prescript,before,after)
     local bm_xresolution = prescript.bm_xresolution
     if bm_xresolution then
-        before[#before+1] = f_cm(cm(object))
+        before[#before+1] = f_cm_b(cm(object))
         before[#before+1] = function()
             figures.bitmapimage {
                 xresolution = tonumber(bm_xresolution),
@@ -1623,7 +1625,7 @@ local function bm_process(object,prescript,before,after)
                 data        = object.postscript
             }
         end
-        before[#before+1] = "Q"
+        before[#before+1] = s_cm_e
         object.path = false
         object.color = false
         object.grouped = true
@@ -1651,14 +1653,32 @@ end
 
 -- figures
 
+-- local sx, rx, ry, sy, tx, ty = cm(object)
+-- sxsy(box.width,box.height,box.depth))
+
+
+function mp.mf_external_figure(filename)
+    local f = figures.getinfo(filename)
+    local w = 0
+    local h = 0
+    if f then
+        local u = f.used
+        if u and u.fullname then
+            w = u.width
+            h = u.height
+        end
+    end
+    mp.triplet(w/65536,h/65536,0)
+end
+
 local function fg_process(object,prescript,before,after)
     local fg_name = prescript.fg_name
     if fg_name then
-        before[#before+1] = f_cm(cm(object)) -- beware: does not use the cm stack
+        before[#before+1] = f_cm_b(cm(object)) -- beware: does not use the cm stack
         before[#before+1] = function()
             context.MPLIBfigure(fg_name,prescript.fg_mask or "")
         end
-        before[#before+1] = "Q"
+        before[#before+1] = s_cm_e
         object.path = false
         object.grouped = true
     end
@@ -1835,7 +1855,7 @@ local ot_reset, ot_analyze, ot_process do
         local mp_kind  = ""
         local mp_str   = ""
 
-        function mp.OutlineText(index,str,kind)
+        function mp.mf_outline_text(index,str,kind)
             if not outlinetexts[index] then
                 mp_index = index
                 mp_kind  = kind
@@ -1879,7 +1899,7 @@ local ot_reset, ot_analyze, ot_process do
         end
     }
 
-    function mp.get_outline_text(index) -- maybe we need a more private namespace
+    function mp.mf_get_outline_text(index) -- maybe we need a more private namespace
         mp.print(outlinetexts[index] or "draw origin;")
     end
 

@@ -1,0 +1,262 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-filtering
+
+\startchapter[title={Filtering content}]
+
+\startsection[title={\TEX\ versus \LUA}]
+
+It will not come as a surprise that we can access \XML\ files from \TEX\ as well
+as from \LUA. In fact there are two methods to deal with \XML\ in \LUA. First
+there are the low level \XML\ functions in the \type {xml} namespace. On top of
+those functions there is a set of functions in the \type {lxml} namespace that
+deals with \XML\ in a more \TEX ie way. Most of these have similar commands at
+the \TEX\ end.
+
+\startbuffer
+\startxmlsetups first:demo:one
+  \xmlfilter {#1} {artist/name[text()='Randy Newman']/..
+    /albums/album[position()=3]/command(first:demo:two)}
+\stopxmlsetups
+
+\startxmlsetups first:demo:two
+  \blank \start \tt
+    \xmldisplayverbatim{#1}
+  \stop \blank
+\stopxmlsetups
+
+\xmlprocessfile{demo}{music-collection.xml}{first:demo:one}
+\stopbuffer
+
+\typebuffer
+
+This gives the following snippet of verbatim \XML\ code. The indentation is
+conform the indentation in the whole \XML\ file. \footnote {The (probably
+outdated) \XML\ file contains the collection stores on my slimserver instance.
+You can use the \type {mtxrun --script flac} to generate such files.}
+
+\doifmodeelse {atpragma} {
+    \getbuffer
+} {
+    \typefile{xml-mkiv-01.xml}
+}
+
+An alternative written in \LUA\ looks as follows:
+
+\startbuffer
+\blank \start \tt \startluacode
+  local m = lxml.load("mine","music-collection.xml") -- m == lxml.id("mine")
+  local p = "artist/name[text()='Randy Newman']/../albums/album[position()=4]"
+  local l = lxml.filter(m,p) -- returns a list (with one entry)
+  lxml.displayverbatim(l[1])
+\stopluacode \stop \blank
+\stopbuffer
+
+\typebuffer
+
+This produces:
+
+\doifmodeelse {atpragma} {
+    \getbuffer
+} {
+    \typefile{xml-mkiv-02.xml}
+}
+
+You can use both methods mixed but in practice we will use the \TEX\ commands in
+regular styles and the mixture in modules, for instance in those dealing with
+\MATHML\ and cals tables. For complex matters you can write your own finalizers
+(the last action to be taken in a match) in \LUA\ and use them at the \TEX\ end.
+
+\stopsection
+
+\startsection[title={a few details}]
+
+In \CONTEXT\ setups are a rather common variant on macros (\TEX\ commands) but
+with their own namespace. An example of a setup is:
+
+\starttyping
+\startsetup doc:print
+  \setuppapersize[A4][A4]
+\stopsetup
+
+\startsetup doc:screen
+  \setuppapersize[S6][S4]
+\stopsetup
+\stoptyping
+
+Given the previous definitions, later on we can say something like:
+
+\starttyping
+\doifmodeelse {paper} {
+  \setup[doc:print]
+} {
+  \setup[doc:screen]
+}
+\stoptyping
+
+Another example is:
+
+\starttyping
+\startsetup[doc:header]
+  \marking[chapter]
+  \space
+  --
+  \space
+  \pagenumber
+\stopsetup
+\stoptyping
+
+in combination with:
+
+\starttyping
+\setupheadertexts[\setup{doc:header}]
+\stoptyping
+
+Here the advantage is that instead of ending up with an unreadable header
+definitions, we use a nicely formatted setup. An important property of setups and
+the reason why they were introduced long ago is that spaces and newlines are
+ignored in the definition. This means that we don't have to worry about so called
+spurious spaces but it also means that when we do want a space, we have to use
+the \type {\space} command.
+
+The only difference between setups and \XML\ setups is that the following ones
+get an argument (\type {#1}) that reflects the current node in the \XML\ tree.
+
+\stopsection
+
+\startsection[title={CDATA}]
+
+What to do with \type {CDATA}? There are a few methods at tle \LUA\ end for
+dealing with it but here we just mention how you can influence the rendering.
+There are four macros that play a role here:
+
+\starttyping
+\unexpanded\def\xmlcdataobeyedline {\obeyedline}
+\unexpanded\def\xmlcdataobeyedspace{\strut\obeyedspace}
+\unexpanded\def\xmlcdatabefore     {\begingroup\tt}
+\unexpanded\def\xmlcdataafter      {\endgroup}
+\stoptyping
+
+Technically you can overload them but beware of side effects. Normally you won't
+see much \type {CDATA} and whenever we do, it involves special data that needs
+very special treatment anyway.
+
+\stopsection
+
+\startsection[title={Entities}]
+
+As usual with any way of encoding documents you need escapes in order to encode
+the characters that are used in tagging the content, embedding comments, escaping
+special characters in strings (in programming languages), etc. In \XML\ this
+means that in order characters like \type {<} you need an escape like \type
+{&lt;} and in order then to encode an \type {&} you need \type {&amp;}.
+
+In a typesetting workflow using a programming language like \TEX, another problem
+shows up. There we have different special characters, like \type {$ $} for triggering
+math, but also the backslash, braces etc. Even one such special character is already
+enough to have yet another escaping mechanism at work.
+
+Ideally a user should not worry about these issues but it helps figuring out issues
+when you know what happens under the hood. Also it is good to know that in the
+code there are several ways to deal with these issues. Take the following document:
+
+\starttyping
+<text>
+    Here we have a bit of a &lt;&mess&gt;:
+
+    # &#35;
+    % &#37;
+    \ &#92;
+    { &#123;
+    | &#124;
+    } &#125;
+    ~ &#126;
+</text>
+\stoptyping
+
+When the file is read the \type {&lt;} entity will be replaced by \type {<} and
+the \type {&gt;} by \type {>}. The numeric entities will be replaced by the
+characters they refer to. The \type {&mess} is kind of special. We do preload
+a huge list of more or less standardized entities but \type {mess} is not in
+there. However, it is possible to have it defined in the document preamble, like:
+
+\starttyping
+<!DOCTYPE dummy SYSTEM "dummy.dtd" [
+    <!ENTITY mess "what a mess" >
+]>
+\stoptyping
+
+or even this:
+
+\starttyping
+<!DOCTYPE dummy SYSTEM "dummy.dtd" [
+    <!ENTITY mess "<p>what a mess</p>" >
+]>
+\stoptyping
+
+You can also define it in your document style using one of:
+
+\startxmlcmd {\cmdbasicsetup{xmlsetentity}}
+    replaces entity with name \cmdinternal {cd:name} by \cmdinternal {cd:text}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmltexentity}}
+    replaces entity with name \cmdinternal {cd:name} by \cmdinternal {cd:text}
+    typeset under a \TEX\ regime
+\stopxmlcmd
+
+Such a definition will always have a higher priority than the one defined
+in the document. Anyway, when the document is read in all entities are
+resolved and those that need a special treatment because they map to some
+text are stored in such a way that we can roundtrip them. As a consequence,
+as soon as the content gets pushed into \TEX, we need not only to intercept
+special characters but also have to make sure that the following works:
+
+\starttyping
+\xmltexentity {tex} {\TEX}
+\stoptyping
+
+Here the backslash starts a control sequence while in regular content a
+backslash is just that: a backslash.
+
+Special characters are really special when we have to move text around
+in a \TEX\ ecosystem.
+
+\starttyping
+<text>
+    <title>About #3</title>
+</text>
+\stoptyping
+
+If we map and define title as follows:
+
+\starttyping
+\startxmlsetup xml:title
+    \title{\xmlflush{#1}}
+\stopxmlsetup
+\stoptyping
+
+normally something \type {\xmlflush {id::123}} will be written to the
+auxiliary file and in most cases that is quite okay, but if we have this:
+
+\starttyping
+\setuphead[title][expansion=yes]
+\stoptyping
+
+then we don't want the \type {#} to end up as hash because later on \TEX\
+can get very confused about it because it sees some argument then in a
+probably unexpected way. This is solved by escaping the hash like this:
+
+\starttyping
+About \Ux{23}3
+\stoptyping
+
+The \type {\Ux} command will convert its hexadecimal argument into a
+character. Of course one then needs to typeset such a text under a \TEX\
+character regime but that is normally the case anyway.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,645 @@
+\environment xml-mkiv-style
+
+\startcomponent xml-mkiv-expressions
+
+\startchapter[title={Expressions and filters}]
+
+\startsection[title={path expressions}]
+
+In the previous chapters we used \cmdinternal {cd:lpath} expressions, which are a variant
+on \type {xpath} expressions as in \XSLT\ but in this case more geared towards
+usage in \TEX. This mechanisms will be extended when demands are there.
+
+A path is a sequence of matches. A simple path expression is:
+
+\starttyping
+a/b/c/d
+\stoptyping
+
+Here each \type {/} goes one level deeper. We can go backwards in a lookup with
+\type {..}:
+
+\starttyping
+a/b/../d
+\stoptyping
+
+We can also combine lookups, as in:
+
+\starttyping
+a/(b|c)/d
+\stoptyping
+
+A negated lookup is preceded by a \type {!}:
+
+\starttyping
+a/(b|c)/!d
+\stoptyping
+
+A wildcard is specified with a \type {*}:
+
+\starttyping
+a/(b|c)/!d/e/*/f
+\stoptyping
+
+In addition to these tag based lookups we can use attributes:
+
+\starttyping
+a/(b|c)/!d/e/*/f[@type=whatever]
+\stoptyping
+
+An \type {@} as first character means that we are dealing with an attribute.
+Within the square brackets there can be boolean expressions:
+
+\starttyping
+a/(b|c)/!d/e/*/f[@type=whatever and @id>100]
+\stoptyping
+
+You can use functions as in:
+
+\starttyping
+a/(b|c)/!d/e/*/f[something(text()) == "oeps"]
+\stoptyping
+
+There are a couple of predefined functions:
+
+\starttabulate[|l|l|p|]
+\NC \type{rootposition} \type{order} \NC number \NC the index of the matched root element (kind of special) \NC \NR
+\NC \type{position}                  \NC number \NC the current index of the matched element in the match list \NC \NR
+\NC \type{match}                     \NC number \NC the current index of the matched element sub list with the same parent \NC \NR
+\NC \type{first}                     \NC number \NC \NC \NR
+\NC \type{last}                      \NC number \NC \NC \NR
+\NC \type{index}                     \NC number \NC the current index of the matched element in its parent list \NC \NR
+\NC \type{firstindex}                \NC number \NC \NC \NR
+\NC \type{lastindex}                 \NC number \NC \NC \NR
+\NC \type{element}                   \NC number \NC the element's index \NC \NR
+\NC \type{firstelement}              \NC number \NC \NC \NR
+\NC \type{lastelement}               \NC number \NC \NC \NR
+\NC \type{text}                      \NC string \NC the textual representation of the matched element \NC \NR
+\NC \type{content}                   \NC table  \NC the node of the matched element \NC \NR
+\NC \type{name}                      \NC string \NC the full name of the matched element: namespace and tag \NC \NR
+\NC \type{namespace} \type{ns}       \NC string \NC the namespace of the matched element \NC \NR
+\NC \type{tag}                       \NC string \NC the tag of the matched element \NC \NR
+\NC \type{attribute}                 \NC string \NC the value of the attribute with the given name of the matched element \NC \NR
+\stoptabulate
+
+There are fundamental differences between \type {position}, \type {match} and
+\type {index}. Each step results in a new list of matches. The \type {position}
+is the index in this new (possibly intermediate) list. The \type {match} is also
+an index in this list but related to the specific match of element names. The
+\type {index} refers to the location in the parent element.
+
+Say that we have:
+
+\starttyping
+<collection>
+  <resources>
+    <manual>
+      <screen>.1.</screen>
+      <paper>.1.</paper>
+    </manual>
+    <manual>
+      <paper>.2.</paper>
+      <screen>.2.</screen>
+    </manual>
+  <resources>
+  <resources>
+    <manual>
+      <screen>.3.</screen>
+      <paper>.3.</paper>
+    </manual>
+  <resources>
+<collection>
+\stoptyping
+
+The following then applies:
+
+\starttabulate[|l|l|]
+\NC \type {collection/resources/manual[position()==1]/paper} \NC \type{.1.} \NC \NR
+\NC \type {collection/resources/manual[match()==1]/paper}    \NC \type{.1.} \type{.3.} \NC \NR
+\NC \type {collection/resources/manual/paper[index()==1]}    \NC \type{.2.} \NC \NR
+\stoptabulate
+
+In most cases the \type {position} test is more restrictive than the \type
+{match} test.
+
+You can pass your own functions too. Such functions are defined in the \type
+{xml.expressions} namespace. We have defined a few shortcuts:
+
+\starttabulate[|l|l|]
+\NC \type {find(str,pattern)} \NC \type{string.find}      \NC \NR
+\NC \type {contains(str)}     \NC \type{string.find}      \NC \NR
+\NC \type {oneof(str,...)}    \NC is \type{str} in list   \NC \NR
+\NC \type {upper(str)}        \NC \type{characters.upper} \NC \NR
+\NC \type {lower(str)}        \NC \type{characters.lower} \NC \NR
+\NC \type {number(str)}       \NC \type{tonumber}         \NC \NR
+\NC \type {boolean(str)}      \NC \type{toboolean}        \NC \NR
+\NC \type {idstring(str)}     \NC removes leading hash    \NC \NR
+\NC \type {name(index)}       \NC full tag name           \NC \NR
+\NC \type {tag(index)}        \NC tag name                \NC \NR
+\NC \type {namespace(index)}  \NC namespace of tag        \NC \NR
+\NC \type {text(index)}       \NC content                 \NC \NR
+\NC \type {error(str)}        \NC quit and show error     \NC \NR
+\NC \type {quit()}            \NC quit                    \NC \NR
+\NC \type {print()}           \NC print message           \NC \NR
+\NC \type {count(pattern)}    \NC number of matches       \NC \NR
+\NC \type {child(pattern)}    \NC take child that matches \NC \NR
+\stoptabulate
+
+
+You can also use normal \LUA\ functions as long as you make sure that you pass
+the right arguments. There are a few predefined variables available inside such
+functions.
+
+\starttabulate[|Tl|l|p|]
+\NC \type{list}  \NC table   \NC the list of matches \NC \NR
+\NC \type{l}     \NC number  \NC the current index in the list of matches \NC \NR
+\NC \type{ll}    \NC element \NC the current element that matched \NC \NR
+\NC \type{order} \NC number  \NC the position of the root of the path \NC \NR
+\stoptabulate
+
+The given expression between \type {[]} is converted to a \LUA\ expression so you
+can use the usual operators:
+
+\starttyping
+== ~= <= >= < > not and or ()
+\stoptyping
+
+In addition, \type {=} equals \type {==} and \type {!=} is the same as \type
+{~=}. If you mess up the expression, you quite likely get a \LUA\ error message.
+
+\stopsection
+
+\startsection[title={css selectors}]
+
+\startbuffer[selector-001]
+<?xml version="1.0" ?>
+
+<a>
+    <b class="one">b.one</b>
+    <b class="two">b.two</b>
+    <b class="one two">b.one.two</b>
+    <b class="three">b.three</b>
+    <b id="first">b#first</b>
+    <c>c</c>
+    <d>d e</d>
+    <e>d e</e>
+    <e>d e e</e>
+    <d>d f</d>
+    <f foo="bar">@foo = bar</f>
+    <f bar="foo">@bar = foo</f>
+    <f bar="foo1">@bar = foo1</f>
+    <f bar="foo2">@bar = foo2</f>
+    <f bar="foo3">@bar = foo3</f>
+    <f bar="foo+4">@bar = foo+4</f>
+    <g>g</g>
+    <g><gg><d>g gg d</d></gg></g>
+    <g><gg><f>g gg f</f></gg></g>
+    <g><gg><f class="one">g gg f.one</f></gg></g>
+    <g>g</g>
+    <g><gg><f class="two">g gg f.two</f></gg></g>
+    <g><gg><f class="three">g gg f.three</f></gg></g>
+    <g><f class="one">g f.one</f></g>
+    <g><f class="three">g f.three</f></g>
+    <h whatever="four five six">@whatever = four five six</h>
+</a>
+\stopbuffer
+
+\xmlloadbuffer{selector-001}{selector-001}
+
+\startxmlsetups xml:selector:demo
+    \advance\scratchcounter\plusone
+    \inleftmargin{\the\scratchcounter}\ignorespaces\xmlverbatim{#1}\par
+\stopxmlsetups
+
+\unexpanded\def\showCSSdemo#1#2%
+  {\blank
+   \textrule{\tttf#2}
+   \startlines
+   \dontcomplain
+   \tttf \obeyspaces
+   \scratchcounter\zerocount
+   \xmlcommand{#1}{#2}{xml:selector:demo}
+   \stoplines
+   \blank}
+
+The \CSS\ approach to filtering is a bit different from the path based one and is
+supported too. In fact, you can combine both methods. Depending on what you
+select, the \CSS\ one can be a little bit faster too. It has the advantage that
+one can select more in one go but at the same time looks a bit less attractive.
+This method was added just to show that it can be done but might be useful too. A
+selector is given between curly braces (after all \CSS\ uses them and they have no
+function yet in the parser.
+
+\starttyping
+\xmlall{#1}{{foo bar .whatever, bar foo .whatever}}
+\stoptyping
+
+The following methods are supported:
+
+\starttabulate[|T||]
+\NC element                          \NC all tags element \NC \NR
+\NC element-1 > element-2            \NC all tags element-2 with parent tag element-1 \NC \NR
+\NC element-1 + element-2            \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC element-1 ~ element-2            \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC element-1 element-2              \NC all tags element-2 inside tag element-1 \NC \NR
+\NC [attribute]                      \NC has attribute \NC \NR
+\NC [attribute=value]                \NC attribute equals value\NC \NR
+\NC [attribute\lettertilde =value]   \NC attribute contains value (space is separator) \NC \NR
+\NC [attribute\letterhat   ="value"] \NC attribute starts with value \NC \NR
+\NC [attribute\letterdollar="value"] \NC attribute ends with value \NC \NR
+\NC [attribute*="value"]             \NC attribute contains value \NC \NR
+\NC .class                           \NC has class \NC \NR
+\NC \letterhash id                   \NC has id \NC \NR
+\NC :nth-child(n)                    \NC the child at index n \NC \NR
+\NC :nth-last-child(n)               \NC the child at index n from the end \NC \NR
+\NC :first-child                     \NC the first child \NC \NR
+\NC :last-child                      \NC the last child \NC \NR
+\NC :nth-of-type(n)                  \NC the match at index n \NC \NR
+\NC :nth-last-of-type(n)             \NC the match at index n from the end \NC \NR
+\NC :first-of-type                   \NC the first match \NC \NR
+\NC :last-of-type                    \NC the last match \NC \NR
+\NC :only-of-type                    \NC the only match or nothing \NC \NR
+\NC :only-child                      \NC the only child or nothing \NC \NR
+\NC :empty                           \NC only when empty \NC \NR
+\NC :root                            \NC the whole tree \NC \NR
+\stoptabulate
+
+The next pages show some examples. For that we use the demo file:
+
+\typebuffer[selector-001]
+
+The class and id selectors often only make sense in \HTML\ like documents but they
+are supported nevertheless. They are after all just shortcuts for filtering by
+attribute. The class filtering is special in the sense that it checks for a class
+in a list of classes given in an attribute.
+
+\showCSSdemo{selector-001}{{.one}}
+\showCSSdemo{selector-001}{{.one, .two}}
+\showCSSdemo{selector-001}{{.one, .two, \letterhash first}}
+
+Attributes can be filtered by presence, value, partial value and such. Quotes are
+optional but we advice to use them.
+
+\showCSSdemo{selector-001}{{[foo], [bar=foo]}}
+\showCSSdemo{selector-001}{{[bar\lettertilde=foo]}}
+\showCSSdemo{selector-001}{{[bar\letterhat="foo"]}}
+\showCSSdemo{selector-001}{{[whatever\lettertilde="five"]}}
+
+You can of course combine the methods as in:
+
+\showCSSdemo{selector-001}{{g f .one, g f .three}}
+\showCSSdemo{selector-001}{{g > f .one, g > f .three}}
+\showCSSdemo{selector-001}{{d + e}}
+\showCSSdemo{selector-001}{{d ~ e}}
+\showCSSdemo{selector-001}{{d ~ e, g f .one, g f .three}}
+
+You can also negate the result by using \type {:not} on a simple expression:
+
+\showCSSdemo{selector-001}{{:not([whatever\lettertilde="five"])}}
+\showCSSdemo{selector-001}{{:not(d)}}
+
+The child and match selectors are also supported:
+
+\showCSSdemo{selector-001}{{a:nth-child(3)}}
+\showCSSdemo{selector-001}{{a:nth-last-child(3)}}
+\showCSSdemo{selector-001}{{g:nth-of-type(3)}}
+\showCSSdemo{selector-001}{{g:nth-last-of-type(3)}}
+\showCSSdemo{selector-001}{{a:first-child}}
+\showCSSdemo{selector-001}{{a:last-child}}
+\showCSSdemo{selector-001}{{e:first-of-type}}
+\showCSSdemo{selector-001}{{gg d:only-of-type}}
+
+Instead of numbers you can also give the \type {an} and \type {an+b} formulas
+as well as the \type {odd} and \type {even} keywords:
+
+\showCSSdemo{selector-001}{{a:nth-child(even)}}
+\showCSSdemo{selector-001}{{a:nth-child(odd)}}
+\showCSSdemo{selector-001}{{a:nth-child(3n+1)}}
+\showCSSdemo{selector-001}{{a:nth-child(2n+3)}}
+
+There are a few special cases:
+
+\showCSSdemo{selector-001}{{g:empty}}
+\showCSSdemo{selector-001}{{g:root}}
+\showCSSdemo{selector-001}{{*}}
+
+Combining the \CSS\ methods with the regular ones is possible:
+
+\showCSSdemo{selector-001}{{g gg f .one}}
+\showCSSdemo{selector-001}{g/gg/f[@class='one']}
+\showCSSdemo{selector-001}{g/{gg f .one}}
+
+\startbuffer[selector-002]
+<?xml version="1.0" ?>
+
+<document>
+    <title class="one"  >title 1</title>
+    <title class="two"  >title 2</title>
+    <title class="one"  >title 3</title>
+    <title class="three">title 4</title>
+</document>
+\stopbuffer
+
+The next examples we use this file:
+
+\typebuffer[selector-002]
+
+\xmlloadbuffer{selector-002}{selector-002}
+
+When we filter from this (not too well structured) tree we can use both
+methods to achieve the same:
+
+\showCSSdemo{selector-002}{{document title .one, document title .three}}
+
+\showCSSdemo{selector-002}{/document/title[(@class='one') or (@class='three')]}
+
+However, imagine this file:
+
+\startbuffer[selector-003]
+<?xml version="1.0" ?>
+
+<document>
+    <title    class="one">title 1</title>
+    <subtitle class="sub">title 1.1</subtitle>
+    <title    class="two">title 2</title>
+    <subtitle class="sub">title 2.1</subtitle>
+    <title    class="one">title 3</title>
+    <subtitle class="sub">title 3.1</subtitle>
+    <title    class="two">title 4</title>
+    <subtitle class="sub">title 4.1</subtitle>
+</document>
+\stopbuffer
+
+\typebuffer[selector-003]
+
+\xmlloadbuffer{selector-003}{selector-003}
+
+The next filter in easier with the \CSS\ selector methods because these accumulate
+independent (simple) expressions:
+
+\showCSSdemo{selector-003}{{document title .one + subtitle, document title .two + subtitle}}
+
+Watch how we get an output in the document order. Because we render a sequential document
+a combined filter will trigger a sorting pass.
+
+\stopsection
+
+\startsection[title={functions as filters}]
+
+At the \LUA\ end a whole \cmdinternal {cd:lpath} expression results in a (set of) node(s)
+with its environment, but that is hardly usable in \TEX. Think of code like:
+
+\starttyping
+for e in xml.collected(xml.load('text.xml'),"title") do
+  -- e = the element that matched
+end
+\stoptyping
+
+The older variant is still supported but you can best use the previous variant.
+
+\starttyping
+for r, d, k in xml.elements(xml.load('text.xml'),"title") do
+  -- r = root of the title element
+  -- d = data table
+  -- k = index in data table
+end
+\stoptyping
+
+Here \type {d[k]} points to the \type {title} element and in this case all titles
+in the tree pass by. In practice this kind of code is encapsulated in function
+calls, like those returning elements one by one, or returning the first or last
+match. The result is then fed back into \TEX, possibly after being altered by an
+associated setup. We've seen the wrappers to such functions already in a previous
+chapter.
+
+In addition to the previously discussed expressions, one can add so called
+filters to the expression, for instance:
+
+\starttyping
+a/(b|c)/!d/e/text()
+\stoptyping
+
+In a filter, the last part of the \cmdinternal {cd:lpath} expression is a
+function call. The previous example returns the text of each element \type {e}
+that results from matching the expression. When running \TEX\ the following
+functions are available. Some are also available when using pure \LUA. In \TEX\
+you can often use one of the macros like \type {\xmlfirst} instead of a \type
+{\xmlfilter} with finalizer \type {first()}. The filter can be somewhat faster
+but that is hardly noticeable.
+
+\starttabulate[|l|l|p|]
+\NC \type {context()}                \NC string  \NC the serialized text with \TEX\ catcode regime \NC \NR
+%NC \type {ctxtext()}                \NC string  \NC \NC \NR
+\NC \type {function()}               \NC string  \NC depends on the function \NC \NR
+%
+\NC \type {name()}                   \NC string  \NC the (remapped) namespace \NC \NR
+\NC \type {tag()}                    \NC string  \NC the name of the element \NC \NR
+\NC \type {tags()}                   \NC list    \NC the names of the element \NC \NR
+%
+\NC \type {text()}                   \NC string  \NC the serialized text \NC \NR
+\NC \type {upper()}                  \NC string  \NC the serialized text uppercased \NC \NR
+\NC \type {lower()}                  \NC string  \NC the serialized text lowercased \NC \NR
+\NC \type {stripped()}               \NC string  \NC the serialized text stripped \NC \NR
+\NC \type {lettered()}               \NC string  \NC the serialized text only letters (cf. \UNICODE) \NC \NR
+%
+\NC \type {count()}                  \NC number  \NC the number of matches \NC \NR
+\NC \type {index()}                  \NC number  \NC the matched index in the current path \NC \NR
+\NC \type {match()}                  \NC number  \NC the matched index in the preceding path \NC \NR
+%
+%NC \type {lowerall()}               \NC string  \NC \NC \NR
+%NC \type {upperall()}               \NC string  \NC \NC \NR
+%
+\NC \type {attribute(name)}          \NC content \NC returns the attribute with the given name \NC \NR
+\NC \type {chainattribute(name)}     \NC content \NC sidem, but backtracks till one is found \NC \NR
+\NC \type {command(name)}            \NC content \NC expands the setup with the given name for each found element \NC \NR
+\NC \type {position(n)}              \NC content \NC processes the \type {n}\high{th} instance of the found element \NC \NR
+\NC \type {all()}                    \NC content \NC processes all instances of the found element \NC \NR
+%NC \type {default}                  \NC content \NC all \NC \NR
+\NC \type {reverse()}                \NC content \NC idem in reverse order \NC \NR
+\NC \type {first()}                  \NC content \NC processes the first instance of the found element \NC \NR
+\NC \type {last()}                   \NC content \NC processes the last instance of the found element \NC \NR
+\NC \type {concat(...)}              \NC content \NC concatinates the match \NC \NC \NR
+\NC \type {concatrange(from,to,...)} \NC content \NC concatinates a range of matches \NC \NC \NR
+\stoptabulate
+
+The extra arguments of the concatinators are: \type {separator} (string), \type
+{lastseparator} (string) and \type {textonly} (a boolean).
+
+These filters are in fact \LUA\ functions which means that if needed more of them
+can be added. Indeed this happens in some of the \XML\ related \MKIV\ modules,
+for instance in the \MATHML\ processor.
+
+\stopsection
+
+\startsection[title={example}]
+
+The number of commands is rather large and if you want to avoid them this is
+often possible. Take for instance:
+
+\starttyping
+\xmlall{#1}{/a/b[position()>3]}
+\stoptyping
+
+Alternatively you can use:
+
+\starttyping
+\xmlfilter{#1}{/a/b[position()>3]/all()}
+\stoptyping
+
+and actually this is also faster as internally it avoids a function call. Of
+course in practice this is hardly measurable.
+
+In previous examples we've already seen quite some expressions, and it might be
+good to point out that the syntax is modelled after \XSLT\ but is not quite the
+same. The reason is that we started with a rather minimal system and have already
+styles in use that depend on compatibility.
+
+\starttyping
+namespace:// axis node(set) [expr 1]..[expr n] / ... / filter
+\stoptyping
+
+When we are inside a \CONTEXT\ run, the namespace is \type {tex}. Hoewever, if
+you want not to print back to \TEX\ you need to be more explicit. Say that we
+typeset examns and have a (not that logical) structure like:
+
+\starttyping
+<question>
+  <text>...</text>
+  <answer>
+    <item>one</item>
+    <item>two</item>
+    <item>three</item>
+  </answer>
+  <alternative>
+    <condition>true</condition>
+    <score>1</score>
+  </alternative>
+  <alternative>
+    <condition>false</condition>
+    <score>0</score>
+  </alternative>
+  <alternative>
+    <condition>true</condition>
+    <score>2</score>
+  </alternative>
+</question>
+\stoptyping
+
+Say that we typeset the questions with:
+
+\starttyping
+\startxmlsetups question
+  \blank
+  score: \xmlfunction{#1}{totalscore}
+  \blank
+  \xmlfirst{#1}{text}
+  \startitemize
+      \xmlfilter{#1}{/answer/item/command(answer:item)}
+  \stopitemize
+  \endgraf
+  \blank
+\stopxmlsetups
+\stoptyping
+
+Each item in the answer results in a call to:
+
+\starttyping
+\startxmlsetups answer:item
+  \startitem
+    \xmlflush{#1}
+    \endgraf
+    \xmlfilter{#1}{../../alternative[position()=rootposition()]/
+      condition/command(answer:condition)}
+  \stopitem
+\stopxmlsetups
+\stoptyping
+
+\starttyping
+\startxmlsetups answer:condition
+  \endgraf
+  condition: \xmlflush{#1}
+  \endgraf
+\stopxmlsetups
+\stoptyping
+
+Now, there are two rather special filters here. The first one involves
+calculating the total score. As we look forward we use a function to deal with
+this.
+
+\starttyping
+\startluacode
+function xml.functions.totalscore(root)
+  local score = 0
+  for e in xml.collected(root,"/alternative") do
+    score = score + xml.filter(e,"xml:///score/number()") or 0
+  end
+  tex.write(score)
+end
+\stopluacode
+\stoptyping
+
+Watch how we use the namespace to keep the results at the \LUA\ end.
+
+The second special trick shown here is to limit a match using the current
+position of the root (\type {#}) match.
+
+As you can see, a path expression can be more than just filtering a few nodes. At
+the end of this manual you will find a bunch of examples.
+
+\stopsection
+
+\startsection[title={tables}]
+
+If you want to know how the internal \XML\ tables look you can print such a
+table:
+
+\starttyping
+print(table.serialize(e))
+\stoptyping
+
+This produces for instance:
+
+% s = xml.convert("<document><demo label='whatever'>some text</demo></document>")
+% print(table.serialize(xml.filter(s,"demo")[1]))
+
+\starttyping
+t={
+ ["at"]={
+  ["label"]="whatever",
+ },
+ ["dt"]={ "some text" },
+ ["ns"]="",
+ ["rn"]="",
+ ["tg"]="demo",
+}
+\stoptyping
+
+The \type {rn} entry is the renamed namespace (when renaming is applied). If you
+see tags like \type {@pi@} this means that we don't have an element, but (in this
+case) a processing instruction.
+
+\starttabulate[|l|p|]
+\NC \type {@rt@} \NC the root element \NC \NR
+\NC \type {@dd@} \NC document definition \NC \NR
+\NC \type {@cm@} \NC comment, like \type {<!-- whatever -->} \NC \NR
+\NC \type {@cd@} \NC so called \type {CDATA} \NC \NR
+\NC \type {@pi@} \NC processing instruction, like \type {<?whatever we want ?>} \NC \NR
+\stoptabulate
+
+There are many ways to deal with the content, but in the perspective of \TEX\
+only a few matter.
+
+\starttabulate[|l|p|]
+\NC \type {xml.sprint(e)} \NC print the content to \TEX\ and apply setups if needed \NC \NR
+\NC \type {xml.tprint(e)} \NC print the content to \TEX\ (serialize elements verbose) \NC \NR
+\NC \type {xml.cprint(e)} \NC print the content to \TEX\ (used for special content) \NC \NR
+\stoptabulate
+
+Keep in mind that anything low level that you uncover is not part of the official
+interface unless mentioned in this manual.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

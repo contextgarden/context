@@ -496,7 +496,7 @@
 
 \def\buff_verbatim_typing_start_nop
   {\typingparameter\c!before
-   \startpacked[\v!blank]
+   \startpacked[\v!blank]%
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_setup_keep_together
@@ -504,7 +504,7 @@
 
 \def\buff_verbatim_typing_start_yes[#1]%
   {\typingparameter\c!before
-   \startpacked[\v!blank]
+   \startpacked[\v!blank]%
    \doifelseassignment{#1}
      {\setupcurrenttyping[#1]}
      {\doif\v!continue{#1}{\lettypingparameter\c!continue\v!yes}}%
@@ -540,7 +540,7 @@
    \dostoptagged
    \endofverbatimlines
    \dostoptagged
-   \csname#2\endcsname}
+   \begincsname#2\endcsname}
 
 \unexpanded\def\buff_verbatim_typing_stop#1% hm, currenttyping
   {\stoppacked

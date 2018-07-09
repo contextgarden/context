@@ -18,7 +18,7 @@
 
 \unprotect
 
-\registerctxluafile{typo-dir}{}
+\registerctxluafile{typo-dir}{optimize}
 \registerctxluafile{typo-dha}{}
 \registerctxluafile{typo-dua}{}
 \registerctxluafile{typo-dub}{}
@@ -28,7 +28,7 @@
     \registerctxluafile{typo-duc}{}
 }
 
-\definesystemattribute[directions][public,global]
+\definesystemattribute[directions][public,pickup]
 
 \installcorenamespace{directions}
 \installcorenamespace{directionsbidimode}
@@ -69,8 +69,9 @@
    \expandafter\glet\csname\??directionsbidimode\currentbidistamp\endcsname\currentbidimode}
 
 \appendtoks
+    \edef\p_bidi{\directionsparameter\c!bidi}%
     \edef\currentbidistamp
-      {\directionsparameter\c!bidi
+      {\p_bidi
       :\directionsparameter\c!method
       :\directionsparameter\c!fences}%
     \expandafter\let\expandafter\currentbidimode\csname\??directionsbidimode\currentbidistamp\endcsname
@@ -82,6 +83,11 @@
         \resetdirection
     \else
         \setdirection[\number\directionsbidimode]%
+    \fi
+    \ifx\p_bidi\v!global
+        \pickupdirectionsattribute
+    \else
+        \forgetdirectionsattribute
     \fi
 \to \everysetupdirections
 

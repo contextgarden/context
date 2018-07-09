@@ -1,0 +1,207 @@
+\input lxml-ctx.mkiv
+
+\ctxlua{dofile("t:/sources/lxml-lpt.lua")}
+
+\startbuffer[xmltest]
+<?xml version='1.0'?>
+
+<!-- this is a test file -->
+
+<something id='1'>
+  <x:whatever id='1.1'>
+    <whocares id='1.1.1'>
+      test a
+    </whocares>
+    <whocaresnot id='1.1.2'>
+      test b
+    </whocaresnot>
+  </x:whatever>
+  <whatever id='2'>
+    <whocares id='2.1'>
+      test c
+    </whocares>
+    <whocaresnot id='2.2'>
+      test d
+    </whocaresnot>
+  </whatever>
+  <whatever id='3'>
+     test e
+  </whatever>
+  <whatever id='4' test="xxx">
+    <whocares id='4.1'>
+      test f
+    </whocares>
+    <whocares id='4.2'>
+      test g
+    </whocares>
+  </whatever>
+  <whatever id='5' test="xxx">
+    <whoknows id='5.1'>
+        <whocares id='5.1.1'>
+          test h
+        </whocares>
+    </whoknows>
+    <whoknows id='5.2'>
+        <whocaresnot id='5.2.1'>
+          test i
+        </whocaresnot>
+    </whoknows>
+    <whoknows id='5.3'>
+        <whocares id='5.3.1'>
+          test j
+        </whocares>
+    </whoknows>
+  </whatever>
+</something>
+\stopbuffer
+
+% \enabletrackers[xml.lparse]
+
+\setuplayout[width=middle,height=middle,header=1cm,footer=1cm,topspace=2cm,backspace=2cm]
+\setupbodyfont[10pt]
+
+\setfalse\xmllshowbuffer
+
+\starttext
+
+\xmllshow{/(*:library|figurelibrary)/*:figure/*:label}
+\xmllshow{/(*:library|figurelibrary)/figure/*:label}
+\xmllshow{/(*:library|figurelibrary)/figure/label}
+\xmllshow{/(*:library|figurelibrary)/figure:*/label}
+
+% \xmllshow{collection[@version='all']/resources/manual[match()==1]/paper/command(xml:overview)}
+% \xmllshow{collection/resources/manual[match()=1]/paper/command(xml:overview)}
+
+% \xmllshow{answer//oeps}
+% \xmllshow{answer/*/oeps}
+% \xmllshow{answer/**/oeps}
+% \xmllshow{answer/***/oeps}
+% \xmllshow{answer/x//oeps}
+% \xmllshow{answer//x/oeps}
+% \xmllshow{//x/oeps}
+% \xmllshow{answer/test/*}
+% \xmllshow{answer/test/child::}
+% \xmllshow{answer/*}
+% \xmllshow{  oeps / answer / .. / * [tag()='p' and position()=1 and text()!=''] / oeps()}
+
+% \xmllshow{ artist / name [text()='Randy Newman'] / .. / albums / album [position()=3] / command(first:demo:two)}
+% \xmllshow{/exa:selectors/exa:selector/exa:list/component[count()>1]}
+
+\stoptext
+
+\xmllshow{/*}
+\xmllshow{child::}
+\xmllshow{child::test}
+\xmllshow{/test/test}
+\xmllshow{../theory/sections/section/exercises}
+\xmllshow{../training/practicalassignments}
+\xmllshow{../../Outcome[position()=rootposition()]/Condition/command(xml:answer:mc:condition)}
+
+% \stoptext
+
+% \typebuffer[xmltest] \page
+
+\xmllshowbuffer{xmltest}{**}{id}
+\xmllshowbuffer{xmltest}{*}{id}
+\xmllshowbuffer{xmltest}{..}{id}
+\xmllshowbuffer{xmltest}{.}{id}
+\xmllshowbuffer{xmltest}{//}{id}
+\xmllshowbuffer{xmltest}{/}{id}
+
+\xmllshowbuffer{xmltest}{**/}{id}
+\xmllshowbuffer{xmltest}{**/*}{id}
+\xmllshowbuffer{xmltest}{**/.}{id}
+\xmllshowbuffer{xmltest}{**//}{id}
+
+\xmllshowbuffer{xmltest}{*/}{id}
+\xmllshowbuffer{xmltest}{*/*}{id}
+\xmllshowbuffer{xmltest}{*/.}{id}
+\xmllshowbuffer{xmltest}{*//}{id}
+
+\xmllshowbuffer{xmltest}{/**/}{id}
+\xmllshowbuffer{xmltest}{/**/*}{id}
+\xmllshowbuffer{xmltest}{/**/.}{id}
+\xmllshowbuffer{xmltest}{/**//}{id}
+
+\xmllshowbuffer{xmltest}{/*/}{id}
+\xmllshowbuffer{xmltest}{/*/*}{id}
+\xmllshowbuffer{xmltest}{/*/.}{id}
+\xmllshowbuffer{xmltest}{/*//}{id}
+
+\xmllshowbuffer{xmltest}{./}{id}
+\xmllshowbuffer{xmltest}{./*}{id}
+\xmllshowbuffer{xmltest}{./.}{id}
+\xmllshowbuffer{xmltest}{.//}{id}
+
+\xmllshowbuffer{xmltest}{../}{id}
+\xmllshowbuffer{xmltest}{../*}{id}
+\xmllshowbuffer{xmltest}{../.}{id}
+\xmllshowbuffer{xmltest}{..//}{id}
+
+\xmllshowbuffer{xmltest}{descendant::whocares/ancestor::whoknows}{id}
+\xmllshowbuffer{xmltest}{descendant::whocares/ancestor::whoknows/parent::}{id}
+\xmllshowbuffer{xmltest}{descendant::whocares/ancestor::}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever/child::whocares}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever/child::whocares|whoknows}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever/child::(whocares|whoknows)}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever/child::!(whocares|whoknows)}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever/child::(whocares)}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever/child::(whocares)[position()>2]}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever[position()>2][position()=1]}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever[whocares][whocaresnot]}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever[whocares][not(whocaresnot)]}{id}
+\xmllshowbuffer{xmltest}{child::something/child::whatever/self::whatever}{id}
+\xmllshowbuffer{xmltest}{/something/whatever}{id}
+\xmllshowbuffer{xmltest}{something/whatever}{id}
+\xmllshowbuffer{xmltest}{/**/whocares}{id}
+\xmllshowbuffer{xmltest}{whoknows/whocares}{id}
+\xmllshowbuffer{xmltest}{whoknows}{id}
+\xmllshowbuffer{xmltest}{whocares[contains(text(),'f') or contains(text(),'g')]}{id}
+\xmllshowbuffer{xmltest}{whocares/first()}{id}
+\xmllshowbuffer{xmltest}{whocares/last()}{id}
+\xmllshowbuffer{xmltest}{whatever/all()}{id}
+\xmllshowbuffer{xmltest}{whocares/position(2)}{id}
+\xmllshowbuffer{xmltest}{whocares/position(-2)}{id}
+\xmllshowbuffer{xmltest}{whocares[1]}{id}
+\xmllshowbuffer{xmltest}{whocares[-1]}{id}
+\xmllshowbuffer{xmltest}{whocares[2]}{id}
+\xmllshowbuffer{xmltest}{whocares[-2]}{id}
+\xmllshowbuffer{xmltest}{whatever[3]/attribute(id)}{id}
+\xmllshowbuffer{xmltest}{whatever[2]/attribute('id')}{id}
+\xmllshowbuffer{xmltest}{whatever[3]/text()}{id}
+\xmllshowbuffer{xmltest}{/whocares/first()}{id}
+\xmllshowbuffer{xmltest}{/whocares/last()}{id}
+
+\xmllshowbuffer{xmltest}{xml://whatever/all()}{id}
+\xmllshowbuffer{xmltest}{whatever/all()}{id}
+\xmllshowbuffer{xmltest}{//whocares}{id}
+\xmllshowbuffer{xmltest}{..[2]}{id}
+\xmllshowbuffer{xmltest}{../*[2]}{id}
+
+\xmllshowbuffer{xmltest}{/(whocares|whocaresnot)}{id}
+\xmllshowbuffer{xmltest}{/!(whocares|whocaresnot)}{id}
+\xmllshowbuffer{xmltest}{/!whocares}{id}
+
+% \page
+
+% \xmllshow{/interface/command/command(xml:setups:register)}
+% \xmllshow{/interface/command[@name='xxx']/command(xml:setups:typeset)}
+% \xmllshow{/arguments/*}
+% \xmllshow{/sequence/first()}
+% \xmllshow{/arguments/text()}
+% \xmllshow{/sequence/variable/first()}
+% \xmllshow{/interface/define[@name='xxx']/first()}
+% \xmllshow{/parameter/command(xml:setups:parameter:measure)}
+
+% \page
+
+% \xmllshow{interface/command/command(xml:setups:register)}
+% \xmllshow{interface/command[@name='xxx']/command(xml:setups:typeset)}
+% \xmllshow{arguments/*}
+% \xmllshow{sequence/first()}
+% \xmllshow{arguments/text()}
+% \xmllshow{sequence/variable/first()}
+% \xmllshow{interface/define[@name='xxx']/first()}
+% \xmllshow{parameter/command(xml:setups:parameter:measure)}
+
+\stoptext
