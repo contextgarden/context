@@ -56,6 +56,9 @@ table.setmetatablecall(MP,function(t,k,...) return t[k](...) end)
 
 do
 
+    local currentmpx  = nil
+    local stack       = { }
+
     local get_numeric = mplib.get_numeric
     local get_string  = mplib.get_string
     local get_boolean = mplib.get_boolean
@@ -69,13 +72,6 @@ do
     get.number  = function(s) return get_numeric(currentmpx,s) end
 
     set.path    = function(s,t) return set_path(currentmpx,s,t) end -- not working yet
-
-end
-
-do
-
-    local currentmpx = nil
-    local stack      = { }
 
     function metapost.pushscriptrunner(mpx)
         insert(stack,mpx)
@@ -458,6 +454,7 @@ do
                 if trace then
                     if #result == 0 then
                         report_luarun("%i: no result",nesting)
+-- print(debug.traceback())
                     else
                         report_luarun("%i: result: %s",nesting,result)
                     end
@@ -467,6 +464,7 @@ do
                 return result
             elseif trace then
                 report_luarun("%i: no result",nesting)
+-- print(debug.traceback())
             end
             buffer, n = _buffer_, _n_
         else
@@ -569,7 +567,7 @@ end
 
 do
 
-    local mptriplet    = mptriplet
+    local mptriplet    = mp.triplet
 
     local bpfactor     = number.dimenfactors.bp
     local textexts     = nil
@@ -592,7 +590,7 @@ do
 
     function mp.mf_tb_dimensions(category,name)
         local w, h, d = nbdimensions(category,name)
-        mptripletpoints(w*bpfactor,h*bpfactor,d*bpfactor)
+        mptriplet(w*bpfactor,h*bpfactor,d*bpfactor)
     end
 
     function mp.report(a,b)
@@ -908,27 +906,27 @@ do
     local p = nil
     local n = 0
 
-    function mp.mf_path_length(name)
+    local function mf_path_length(name)
         p = mpgetpath(name)
         n = p and #p or 0
         mpnumeric(n)
     end
 
-    function mp.mf_path_point(i)
+    local function mf_path_point(i)
         if i > 0 and i <= n then
             local pi = p[i]
             mppair(pi[1],pi[2])
         end
     end
 
-    function mp.mf_path_left(i)
+    local function mf_path_left(i)
         if i > 0 and i <= n then
             local pi = p[i]
             mppair(pi[5],pi[6])
         end
     end
 
-    function mp.mf_path_right(i)
+    local function mf_path_right(i)
         if i > 0 and i <= n then
             local pn
             if i == 1 then
@@ -940,9 +938,15 @@ do
         end
     end
 
-    function mp.mf_path_reset()
+    local function mf_path_reset()
         p = nil
         n = 0
     end
+
+    mp.mf_path_length = mf_path_length   mp.pathlength = mf_path_length
+    mp.mf_path_point  = mf_path_point    mp.pathpoint  = mf_path_point
+    mp.mf_path_left   = mf_path_left     mp.pathleft   = mf_path_left
+    mp.mf_path_right  = mf_path_right    mp.pathright  = mf_path_right
+    mp.mf_path_reset  = mf_path_reset    mp.pathreset  = mf_path_reset
 
 end

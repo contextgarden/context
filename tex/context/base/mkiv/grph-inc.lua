@@ -1941,8 +1941,10 @@ function figures.getinfo(name,page)
     end
     if name.name then
         local data = figures.push(name)
-        figures.identify()
-        figures.check()
+        data = figures.identify(data)
+        if data.status and data.status.status > 0 then
+            data = figures.check(data)
+        end
         figures.pop()
         return data
     end

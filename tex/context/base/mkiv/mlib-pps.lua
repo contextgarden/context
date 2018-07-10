@@ -1656,7 +1656,6 @@ end
 -- local sx, rx, ry, sy, tx, ty = cm(object)
 -- sxsy(box.width,box.height,box.depth))
 
-
 function mp.mf_external_figure(filename)
     local f = figures.getinfo(filename)
     local w = 0
@@ -1664,9 +1663,11 @@ function mp.mf_external_figure(filename)
     if f then
         local u = f.used
         if u and u.fullname then
-            w = u.width
-            h = u.height
+            w = u.width or 0
+            h = u.height or 0
         end
+    else
+        report_metapost("external figure %a not found",filename)
     end
     mp.triplet(w/65536,h/65536,0)
 end
