@@ -127,85 +127,85 @@
 
 % bidi test
 
-\definefontfeature
-  [arab]
-  [mode=node,language=dflt,script=arab,
-   init=yes,medi=yes,fina=yes,isol=yes,
-   liga=yes,dlig=yes,rlig=yes,clig=yes,
-   mark=yes,mkmk=yes,kern=yes,curs=yes]
-
-\font\Arabic=arabtype*arab at 20pt
-
-\def\LATIN{LATIN} {\setdirection[1]} % enable this
-\def\ARAB {محمد}
-
-\startluacode
-    function documentdata.split_tokens(str)
-        for s in str:bytes() do
-            context.sprint(tex.ctxcatcodes,string.format("\\hbox{\\char %s}",s))
-        end
-    end
-\stopluacode
-
-\unexpanded\def\biditest#1#2#3% font text raw
-  {\dontleavehmode\hbox
-    {\framed[offset=overlay]{\tttf#2}\quad
-     \enabletrackers[typesetters.directions]%
-     \framed[offset=overlay]{#1#3}\quad
-     \disabletrackers[typesetters.directions]%
-     \tttf\ctxlua{documentdata.split_tokens([[\detokenize{#3}]])}}}
-
-\startbuffer[bidi-sample]
-\biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
-\biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
-\biditest\Arabic{LATIN ARAB}{\textdir TLT{\bidilro \LATIN\ \ARAB}}\par % right -> left
-\biditest\Arabic{LATIN ARAB}{\textdir TRT{\bidilro \LATIN\ \ARAB}}\par % right -> left
-\biditest\Arabic{BARA NITAL}{\textdir TLT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
-\biditest\Arabic{BARA NITAL}{\textdir TRT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
-\stopbuffer
-
-\startbuffer[bidi-sample]
-\biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
-\biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
-\biditest\Arabic{LATIN ARAB}{\textdir TLT\bidilro \LATIN\ \ARAB}\par % right -> left
-\biditest\Arabic{LATIN ARAB}{\textdir TRT\bidilro \LATIN\ \ARAB}\par % right -> left
-\biditest\Arabic{BARA NITAL}{\textdir TLT\bidirlo \LATIN\ \ARAB}\par % left -> right
-\biditest\Arabic{BARA NITAL}{\textdir TRT\bidirlo \LATIN\ \ARAB}\par % left -> right
-\stopbuffer
-
-\startbuffer[bidi-setup]
-\setupdirections[bidi=off]
-\stopbuffer
-
-{\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
-
-\startbuffer[bidi-setup]
-\setupdirections[bidi=global]
-\stopbuffer
-
-{\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
-
-\startbuffer[bidi-setup]
-\setupdirections[bidi=local]
-\stopbuffer
-
-{\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
-
-\startbuffer[bidi-sample]
-\setupdirections[bidi=global]
-
-                  \hbox{\righttoleft\arabicfont (0001)}\par
-   \dontleavehmode\hbox{\righttoleft\arabicfont (0002)}\par
-                       {\righttoleft\arabicfont (0003)\par}
-                       {\righttoleft\arabicfont (0004)}\par
-        \dontleavehmode{\righttoleft\arabicfont (0005)\par}
-        \dontleavehmode{\righttoleft\arabicfont (0006)}\par
-               \rtlhbox{\arabicfont (0007)}\par
-               \ltrhbox{\arabicfont (0008)}\par
-\dontleavehmode\rtlhbox{\arabicfont (0009)}\par
-\dontleavehmode\ltrhbox{\arabicfont (0010)}\par
-\stopsetups
-
-{\typebuffer[bidi-sample]  \getbuffer[bidi-sample]}
-
-\stoptext
+% \definefontfeature
+%   [arab]
+%   [mode=node,language=dflt,script=arab,
+%    init=yes,medi=yes,fina=yes,isol=yes,
+%    liga=yes,dlig=yes,rlig=yes,clig=yes,
+%    mark=yes,mkmk=yes,kern=yes,curs=yes]
+%
+% \font\Arabic=arabtype*arab at 20pt
+%
+% \def\LATIN{LATIN} {\setdirection[1]} % enable this
+% \def\ARAB {عربي}
+%
+% \startluacode
+%     function documentdata.split_tokens(str)
+%         for s in str:bytes() do
+%             context.sprint(tex.ctxcatcodes,string.format("\\hbox{\\char %s}",s))
+%         end
+%     end
+% \stopluacode
+%
+% \unexpanded\def\biditest#1#2#3% font text raw
+%   {\dontleavehmode\hbox
+%     {\framed[offset=overlay]{\tttf#2}\quad
+%      \enabletrackers[typesetters.directions]%
+%      \framed[offset=overlay]{#1#3}\quad
+%      \disabletrackers[typesetters.directions]%
+%      \tttf\ctxlua{documentdata.split_tokens([[\detokenize{#3}]])}}}
+%
+% \startbuffer[bidi-sample]
+% \biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{LATIN ARAB}{\textdir TLT{\bidilro \LATIN\ \ARAB}}\par % right -> left
+% \biditest\Arabic{LATIN ARAB}{\textdir TRT{\bidilro \LATIN\ \ARAB}}\par % right -> left
+% \biditest\Arabic{BARA NITAL}{\textdir TLT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
+% \biditest\Arabic{BARA NITAL}{\textdir TRT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
+% \stopbuffer
+%
+% \startbuffer[bidi-sample]
+% \biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{LATIN ARAB}{\textdir TLT\bidilro \LATIN\ \ARAB}\par % right -> left
+% \biditest\Arabic{LATIN ARAB}{\textdir TRT\bidilro \LATIN\ \ARAB}\par % right -> left
+% \biditest\Arabic{BARA NITAL}{\textdir TLT\bidirlo \LATIN\ \ARAB}\par % left -> right
+% \biditest\Arabic{BARA NITAL}{\textdir TRT\bidirlo \LATIN\ \ARAB}\par % left -> right
+% \stopbuffer
+%
+% \startbuffer[bidi-setup]
+% \setupdirections[bidi=off]
+% \stopbuffer
+%
+% {\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
+%
+% \startbuffer[bidi-setup]
+% \setupdirections[bidi=global]
+% \stopbuffer
+%
+% {\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
+%
+% \startbuffer[bidi-setup]
+% \setupdirections[bidi=local]
+% \stopbuffer
+%
+% {\typebuffer[bidi-setup] \getbuffer[bidi-setup] \getbuffer[bidi-sample]}
+%
+% \startbuffer[bidi-sample]
+% \setupdirections[bidi=global]
+%
+%                   \hbox{\righttoleft\arabicfont (0001)}\par
+%    \dontleavehmode\hbox{\righttoleft\arabicfont (0002)}\par
+%                        {\righttoleft\arabicfont (0003)\par}
+%                        {\righttoleft\arabicfont (0004)}\par
+%         \dontleavehmode{\righttoleft\arabicfont (0005)\par}
+%         \dontleavehmode{\righttoleft\arabicfont (0006)}\par
+%                \rtlhbox{\arabicfont (0007)}\par
+%                \ltrhbox{\arabicfont (0008)}\par
+% \dontleavehmode\rtlhbox{\arabicfont (0009)}\par
+% \dontleavehmode\ltrhbox{\arabicfont (0010)}\par
+% \stopsetups
+%
+% {\typebuffer[bidi-sample]  \getbuffer[bidi-sample]}
+%
+% \stoptext

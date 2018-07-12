@@ -201,7 +201,7 @@ let graycolor = numeric ;
 % color part (will be overloaded)
 
 def colorpart primary t =
-    if colormodel t=7:
+    if colormodel t = 7:
         (cyanpart t, magentapart t, yellowpart t, blackpart t)
     elseif colormodel t = 5 :
         (redpart t, greenpart t, bluepart t)

@@ -122,17 +122,11 @@ do
     mp._f_    = _f_ -- convenient to have it in a top module
     aux.flush = _f_
 
-    local f_code         = formatters["%s return mp._f_()"]
+    ----- f_code         = formatters["%s return mp._f_()"]
 
     local f_integer      = formatters["%i"]
- -- local f_numeric      = formatters["%.16f"]
- -- local f_pair         = formatters["(%.16f,%.16f)"]
- -- local f_triplet      = formatters["(%.16f,%.16f,%.16f)"]
- -- local f_quadruple    = formatters["(%.16f,%.16f,%.16f,%.16f)"]
 
-    -- %N
-
-    local f_numeric      = formatters["%n"]
+    local f_numeric      = formatters["%n"] -- maybe %N
     local f_pair         = formatters["(%n,%n)"]
     local f_ctrl         = formatters["(%n,%n) .. controls (%n,%n) and (%n,%n)"]
     local f_triplet      = formatters["(%n,%n,%n)"]
@@ -418,7 +412,8 @@ do
     --
     -- f = cache[code]
     -- if not f then
-    --     f = loadstring(f_code(code))
+    --  -- f = loadstring(f_code(code))
+    --     f = loadstring(code .. " return mp._f_()")
     --     if f then
     --         cache[code] = f
     --     elseif be_tolerant then
@@ -436,7 +431,8 @@ do
             report_luarun("%i: code: %s",nesting,code)
         end
         runs = runs + 1
-        local f = loadstring(f_code(code))
+        ----- f = loadstring(f_code(code))
+        local f = loadstring(code .. " return mp._f_()")
         if not f and be_tolerant then
             f = loadstring(code)
         end
@@ -593,46 +589,13 @@ do
         mptriplet(w*bpfactor,h*bpfactor,d*bpfactor)
     end
 
-    function mp.report(a,b)
-        if b then
+    function mp.report(a,b,c,...)
+        if c then
+            report_message("%s : %s",a,formatters[(gsub(b,"@","%%"))](c,...))
+        elseif b then
             report_message("%s : %s",a,b)
         elseif a then
             report_message("%s : %s","message",a)
-        end
-    end
-
-end
-
-do
-
-    local mpprint  = aux.print
-    local mpvprint = aux.vprint
-
-    local hashes   = { }
-
-    function mp.newhash()
-        for i=1,#hashes+1 do
-            if not hashes[i] then
-                hashes[i] = { }
-                mpvprint(i)
-                return
-            end
-        end
-    end
-
-    function mp.disposehash(n)
-        hashes[n] = nil
-    end
-
-    function mp.inhash(n,key)
-        local h = hashes[n]
-        mpprint(h and h[key] and true or false)
-    end
-
-    function mp.tohash(n,key)
-        local h = hashes[n]
-        if h then
-            h[key] = true
         end
     end
 
@@ -708,9 +671,11 @@ end
 
 do
 
+    local getmacro  = tex.getmacro
     local getdimen  = tex.getdimen
     local getcount  = tex.getcount
     local gettoks   = tex.gettoks
+    local setmacro  = tex.setmacro
     local setdimen  = tex.setdimen
     local setcount  = tex.setcount
     local settoks   = tex.settoks
@@ -722,22 +687,27 @@ do
 
     -- more helpers
 
-    function mp.getdimen(k)   mpprint (getdimen(k)*bpfactor) end
-    function mp.getcount(k)   mpprint (getcount(k)) end
-    function mp.gettoks (k)   mpquoted(gettoks (k)) end
+    local function getmacro(k)   mpprint (getmacro(k)) end
+    local function getdimen(k)   mpprint (getdimen(k)*bpfactor) end
+    local function getcount(k)   mpprint (getcount(k)) end
+    local function gettoks (k)   mpquoted(gettoks (k)) end
 
-    function mp.setdimen(k,v) setdimen(k,v/factor) end
-    function mp.setcount(k,v) setcount(k,v) end
-    function mp.settoks (k,v) settoks (k,v) end
+    local function setmacro(k,v) setmacro(k,v) end
+    local function setdimen(k,v) setdimen(k,v/bpfactor) end
+    local function setcount(k,v) setcount(k,v) end
+    local function settoks (k,v) settoks (k,v) end
 
     -- def foo = lua.mp.foo ... enddef ; % loops due to foo in suffix
 
-    mp._get_dimen_ = mp.getdimen
-    mp._get_count_ = mp.getcount
-    mp._get_toks_  = mp.gettoks
-    mp._set_dimen_ = mp.setdimen
-    mp._set_count_ = mp.setcount
-    mp._set_toks_  = mp.settoks
+    mp._get_macro_ = getmacro   mp.getmacro = getmacro
+    mp._get_dimen_ = getdimen   mp.getdimen = getdimen
+    mp._get_count_ = getcount   mp.getcount = getcount
+    mp._get_toks_  = gettoks    mp.gettoks  = gettoks
+
+    mp._set_macro_ = setmacro   mp.setmacro = setmacro
+    mp._set_dimen_ = setdimen   mp.setdimen = setdimen
+    mp._set_count_ = setcount   mp.setcount = setcount
+    mp._set_toks_  = settoks    mp.settoks  = settoks
 
 end
 
@@ -851,31 +821,65 @@ end
 
 do
 
-    local mpvprint = mp.vprint
+    local mpprint  = aux.print
+    local mpvprint = aux.vprint
 
-    local stores   = { }
+    local hashes   = { }
 
-    function mp.newstore(name)
-        stores[name] = { }
+    function mp.newhash(name)
+        if name then
+            hashes[name] = { }
+        else
+            for i=1,#hashes+1 do
+                if not hashes[i] then
+                    hashes[i] = { }
+                    mpvprint(i)
+                    return
+                end
+            end
+        end
     end
 
-    function mp.disposestore(name)
-        stores[name] = nil
+    function mp.disposehash(n)
+        if tonumber(n) then
+            hashes[n] = false
+        else
+            hashes[n] = nil
+        end
     end
 
-    function mp.tostore(name,key,value)
-        stores[name][key] = value
+    function mp.inhash(n,key)
+        local h = hashes[n]
+        mpvprint(h and h[key] and true or false)
     end
 
-    function mp.fromstore(name,key)
-        mpvprint(stores[name][key]) -- type specific
+    function mp.tohash(n,key,value)
+        local h = hashes[n]
+        if h then
+            if value == nil then
+                h[key] = true
+            else
+                h[key] = value
+            end
+        end
+    end
+
+    function mp.fromhash(n,key)
+        local h = hashes[n]
+        mpvprint(h and h[key] or false)
     end
 
     interfaces.implement {
-        name      = "getMPstored",
+        name      = "MPfromhash",
         arguments = "2 strings",
         actions   = function(name,key)
-            context(stores[name][key])
+            local h = hashes[name] or hashes[tonumber(name)]
+            if h then
+                local v = h[key] or h[tonumber(key)]
+                if v then
+                    context(v)
+                end
+            end
         end
     }
 
@@ -892,7 +896,7 @@ do
     local pattern   = (1-p2)^0 * p2 + p1
 
     function mp.isobject(str)
-        mpboolean(pattern and str ~= "" and lpegmatch(p,str))
+        mpboolean(pattern and str ~= "" and lpegmatch(pattern,str))
     end
 
 end

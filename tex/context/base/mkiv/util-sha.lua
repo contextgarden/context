@@ -277,10 +277,10 @@ digest[224] = digest[256]
 digest[384] = digest[512]
 
 local finalize = {
-    [224] = function(hash,tohex) return tohex(packstring(">I4I4I4I4I4I4I4",  unpack(hash))) end, -- #  56
-    [256] = function(hash,tohex) return tohex(packstring(">I4I4I4I4I4I4I4I4",unpack(hash))) end, -- #  64
-    [384] = function(hash,tohex) return tohex(packstring(">I8I8I8I8I8I8",    unpack(hash))) end, -- #  96
-    [512] = function(hash,tohex) return tohex(packstring(">I8I8I8I8I8I8I8I8",unpack(hash))) end, -- # 128
+    [224] = function(hash,tohex) local s = packstring(">I4I4I4I4I4I4I4",  unpack(hash)) return tohex and tohex(s) or s end, -- #  56
+    [256] = function(hash,tohex) local s = packstring(">I4I4I4I4I4I4I4I4",unpack(hash)) return tohex and tohex(s) or s end, -- #  64
+    [384] = function(hash,tohex) local s = packstring(">I8I8I8I8I8I8",    unpack(hash)) return tohex and tohex(s) or s end, -- #  96
+    [512] = function(hash,tohex) local s = packstring(">I8I8I8I8I8I8I8I8",unpack(hash)) return tohex and tohex(s) or s end, -- # 128
 }
 
 local hash = { }
@@ -293,14 +293,18 @@ local function hashed(str,method,tohex)
 end
 
 local sha2 = {
-    hash224 = function(str) return hashed(str,224,tohex) end,
-    hash256 = function(str) return hashed(str,256,tohex) end,
-    hash384 = function(str) return hashed(str,384,tohex) end,
-    hash512 = function(str) return hashed(str,512,tohex) end,
-    HASH224 = function(str) return hashed(str,224,toHEX) end,
-    HASH256 = function(str) return hashed(str,256,toHEX) end,
-    HASH384 = function(str) return hashed(str,384,toHEX) end,
-    HASH512 = function(str) return hashed(str,512,toHEX) end,
+    digest224 = function(str) return hashed(str,224) end,
+    digest256 = function(str) return hashed(str,256) end,
+    digest384 = function(str) return hashed(str,384) end,
+    digest512 = function(str) return hashed(str,512) end,
+    hash224   = function(str) return hashed(str,224,tohex) end,
+    hash256   = function(str) return hashed(str,256,tohex) end,
+    hash384   = function(str) return hashed(str,384,tohex) end,
+    hash512   = function(str) return hashed(str,512,tohex) end,
+    HASH224   = function(str) return hashed(str,224,toHEX) end,
+    HASH256   = function(str) return hashed(str,256,toHEX) end,
+    HASH384   = function(str) return hashed(str,384,toHEX) end,
+    HASH512   = function(str) return hashed(str,512,toHEX) end,
 }
 
 -- local setmetatableindex = table.setmetatableindex

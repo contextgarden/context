@@ -1958,11 +1958,27 @@ do
                     if trace_collect_vspacing then report("%s > storing %s nodes in stack (initial): %s",where,newhead) end
                     stackhead = newhead
                 end
+if not flush then
+    local h = 0
+    for n, id in nextnode, stackhead do
+        if id == glue_code then
+            h = h + getwidth(n)
+        elseif id == kern_code then
+            h = h + getkern(n)
+        end
+    end
+    if h + tex.pagetotal >= tex.pagegoal then
+        newhead = stackhead
+        stackhead, stacktail = nil, nil
+        return newhead
+    end
+end
                 stacktail = newtail
              -- texlists.contrib_head = nil
              -- newhead = nil
             end
         end
+--         tex.triggerbuildpage()
         return nil
     end
 

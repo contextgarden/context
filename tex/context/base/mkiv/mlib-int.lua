@@ -97,7 +97,7 @@ mp.HSize          = mp.CurrentWidth
 mp.VSize          = mp.CurrentHeight
 mp.LastPageNumber = mp.NOfPages
 
-function mp.PageFraction         ()
+function mp.PageFraction()
     local lastpage = getcount("lastpageno")
     if lastpage > 1 then
         mpprint((getcount("realpageno")-1)/(lastpage-1))
@@ -124,18 +124,9 @@ function mp.OverlayDepth     () mpprint(getdimen("d_overlay_depth")    *factor) 
 function mp.OverlayLineWidth () mpprint(getdimen("d_overlay_linewidth")*factor) end
 function mp.OverlayOffset    () mpprint(getdimen("d_overlay_offset")   *factor) end
 
-function mp.defaultcolormodel()
+function mp.mf_default_color_model()
     local colormethod = getcount("MPcolormethod")
- -- if colormethod == 0 then
- --     return 1
- -- elseif colormethod == 1 then
- --     return 1
- -- elseif colormethod == 2 then
- --     return 3
- -- else
- --     return 3
- -- end
-    return (colormethod == 0 or colormethod == 1) and 1 or 3
+    return mpprint((colormethod == 0 or colormethod == 1) and 1 or 3)
 end
 
 -- not much difference (10000 calls in a graphic neither as expansion seems to win

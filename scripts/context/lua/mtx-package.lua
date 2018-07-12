@@ -77,7 +77,7 @@ function scripts.package.merge_luatex_files(name)
                 local start    = eol * lpeg.P("if context then") * space * eol
                 local stop     = eol * (lpeg.P("else") + lpeg.P("end")) * space * eol
                 local noppes   = function()
-                    stripped = striped + 1
+                    stripped = stripped + 1
                     return "\n--removed\n"
                 end
                 local pattern = lpeg.Cs((start * ((1-stop)^1/noppes) * stop + lpeg.P(1))^0)

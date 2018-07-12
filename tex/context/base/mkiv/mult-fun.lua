@@ -147,5 +147,27 @@ return {
         "circularpath", "squarepath", "linearpath",
         --
         "theoffset",
+        --
+        "texmode", "systemmode",
+        "texvar", "texstr",
+        "isarray", "prefix", "dimension",
+        "getmacro", "getdimen", "getcount", "gettoks",
+        "setmacro", "setdimen", "setcount", "settoks",
+        --
+        "positionpath", "positioncurve", "positionxy", "positionpxy",
+        "positionwhd", "positionpage", "positionregion", "positionbox",
+        "positionanchor", "positioninregion", "positionatanchor",
+        --
+        "wdpart", "htpart", "dppart",
+        --
+        "texvar", "texstr",
+        --
+        "inpath", "pointof", "leftof", "rightof",
+        --
+        "newhash", "disposehash", "inhash", "tohash",
+        --
+        "isarray", "prefix", "isobject",
+        --
+        "comment", "report", "lua", "mp", "MP", "luacall",
     },
 }

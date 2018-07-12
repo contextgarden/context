@@ -23,7 +23,11 @@ boolean mfun_use_one_pass ; mfun_use_one_pass := runscript("mp.print(metapost.us
 %D Objects:
 
 vardef isobject expr p =
-    lua.mp.isobject(prescriptpart p)
+    if picture p :
+        lua.mp.isobject(prescriptpart p)
+    else :
+        false
+    fi
 enddef ;
 
 %D Color and transparency
@@ -204,9 +208,9 @@ if mfun_use_one_pass :
             addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
             mfun_tt_r := lua.mp.mf_some_text(mfun_tt_n,s) ;
             addto mfun_tt_c doublepath unitsquare
-                xscaled redpart mfun_tt_r
-                yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
-                shifted (0,-bluepart mfun_tt_r)
+                xscaled wdpart mfun_tt_r
+                yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+                shifted (0,-dppart mfun_tt_r)
                 withprescript "mf_object=text"
                 withprescript "tx_index=" & decimal mfun_tt_n
                 withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
@@ -222,9 +226,9 @@ if mfun_use_one_pass :
         addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
         mfun_tt_r := lua.mp.mf_made_text(mfun_tt_n) ;
         addto mfun_tt_c doublepath unitsquare
-            xscaled redpart mfun_tt_r
-            yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
-            shifted (0,-bluepart mfun_tt_r)
+            xscaled wdpart mfun_tt_r
+            yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+            shifted (0,-dppart mfun_tt_r)
             withprescript "mf_object=text"
             withprescript "tx_index=" & decimal mfun_tt_n
             withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
@@ -257,9 +261,9 @@ else :
             else :
                 mfun_tt_b := lua.mp.mf_tt_dimensions(mfun_tt_n) ;
                 addto mfun_tt_c doublepath unitsquare
-                    xscaled redpart mfun_tt_b
-                    yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
-                    shifted (0,- bluepart mfun_tt_b)
+                    xscaled wdpart mfun_tt_b
+                    yscaled (htpart mfun_tt_b + dppart mfun_tt_b)
+                    shifted (0,- dppart mfun_tt_b)
                     withprescript "mf_object=text"
                     withprescript "tx_number=" & decimal mfun_tt_n
                     withprescript "tx_stage=final" ;
@@ -288,9 +292,9 @@ vardef rawtexbox(expr category, name) =
     if validtexbox(category,name) :
         mfun_tt_b := lua.mp.mf_tb_dimensions(category, name) ;
         addto mfun_tt_c doublepath unitsquare
-            xscaled redpart mfun_tt_b
-            yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
-            shifted (0,- bluepart mfun_tt_b)
+            xscaled wdpart mfun_tt_b
+            yscaled (htpart mfun_tt_b + dppart mfun_tt_b)
+            shifted (0,- dppart mfun_tt_b)
             withprescript "mf_object=box"
             withprescript "bx_category=" & if numeric category : decimal fi category
             withprescript "bx_name=" & if numeric name : decimal fi name ;
@@ -470,9 +474,9 @@ if mfun_use_one_pass :
         addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
         mfun_tt_r := lua.mp.mf_formatted_text(mfun_tt_n,t) ;
         addto mfun_tt_c doublepath unitsquare
-            xscaled redpart mfun_tt_r
-            yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
-            shifted (0,-bluepart mfun_tt_r)
+            xscaled wdpart mfun_tt_r
+            yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+            shifted (0,-dppart mfun_tt_r)
             withprescript "mf_object=text"
             withprescript "tx_index=" & decimal mfun_tt_n
             withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
@@ -515,9 +519,9 @@ else :
         else :
             mfun_tt_b := lua.mp.mf_tt_dimensions(mfun_tt_n) ;
             addto mfun_tt_c doublepath unitsquare
-                xscaled redpart mfun_tt_b
-                yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
-                shifted (0,- bluepart mfun_tt_b)
+                xscaled wdpart mfun_tt_b
+                yscaled (htpart mfun_tt_b + dppart mfun_tt_b)
+                shifted (0,- dppart mfun_tt_b)
                 withprescript "mf_object=text"
                 withprescript "tx_number=" & decimal mfun_tt_n
                 withprescript "tx_stage=final" ;
@@ -1081,8 +1085,8 @@ if mfun_use_one_pass :
         mfun_tt_c := nullpicture ;
         mfun_tt_r := lua.mp.mf_external_figure(filename) ;
         addto mfun_tt_c doublepath unitsquare
-            xscaled redpart mfun_tt_r
-            yscaled greenpart mfun_tt_r
+            xscaled wdpart mfun_tt_r
+            yscaled htpart mfun_tt_r
             withprescript "mf_object=figure"
             withprescript "fg_name=" & filename ;
         ;
@@ -1795,6 +1799,10 @@ enddef ;
 
 def comment expr str =
     special "metapost.comment[[" & str & "]]" ;
+enddef ;
+
+vardef report(text t) =
+    lua.mp.report(t)
 enddef ;
 
 % This overloads a dummy:

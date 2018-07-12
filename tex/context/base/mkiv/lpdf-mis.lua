@@ -89,7 +89,7 @@ local function initializenegative()
         Range        = a,
         Domain       = a,
     }
-    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("{ 1 exch sub }",d)) }
+    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("{ 1 exch sub }",d)) } -- can be shared
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
     adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
     adddocumentextgstate("GSpositive", pdfreference(pdfflushobject(positive)))

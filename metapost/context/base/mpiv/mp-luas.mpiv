@@ -161,8 +161,13 @@ vardef MP@#(text t) =
 enddef ;
 
 def message expr t =
-    if t <> "" : lua.mp.report(t) fi ;
+    lua.mp.report(tostring(t)) ;
 enddef ;
+
+% Modes:
+
+vardef texmode   (expr s) = lua.mp("mode",      s) enddef ;
+vardef systemmode(expr s) = lua.mp("systemmode",s) enddef ;
 
 % A few helpers
 
@@ -172,19 +177,15 @@ vardef dimension suffix a = lua.mp.dimension(str a) enddef ;
 
 % More access
 
-def getdimen(expr k)    = lua.mp._get_dimen_(k)   enddef ;
-def getcount(expr k)    = lua.mp._get_count_(k)   enddef ;
-def gettoks (expr k)    = lua.mp._get_toks_ (k)   enddef ;
-def setdimen(expr k, v) = lua.mp._set_dimen_(k,v) enddef ;
-def setcount(expr k, v) = lua.mp._set_count_(k,v) enddef ;
-def settoks (expr k, v) = lua.mp._set_toks_ (k,v) enddef ;
+vardef getmacro(expr k)   = lua.mp._get_macro_(k)   enddef ;
+vardef getdimen(expr k)   = lua.mp._get_dimen_(k)   enddef ;
+vardef getcount(expr k)   = lua.mp._get_count_(k)   enddef ;
+vardef gettoks (expr k)   = lua.mp._get_toks_ (k)   enddef ;
 
-% vardef getdimen(expr k)   = save getdimen ; lua.mp.getdimen(k) enddef ;
-% vardef getcount(expr k)   = save getcount ; lua.mp.getcount(k) enddef ;
-% vardef gettoks (expr k)   = save gettoks  ; lua.mp.gettoks (k) enddef ;
-% vardef setdimen(expr k,v) = save setdimen ; lua.mp.setdimen(k,v) enddef ;
-% vardef setcount(expr k,v) = save setcount ; lua.mp.setcount(k,v) enddef ;
-% vardef settoks (expr k,v) = save settoks  ; lua.mp.settoks (k,v) enddef ;
+def setmacro(expr k,v) = lua.mp._set_macro_(k,v) enddef ;
+def setdimen(expr k,v) = lua.mp._set_dimen_(k,v) enddef ;
+def setcount(expr k,v) = lua.mp._set_count_(k,v) enddef ;
+def settoks (expr k,v) = lua.mp._set_toks_ (k,v) enddef ;
 
 vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
 vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;

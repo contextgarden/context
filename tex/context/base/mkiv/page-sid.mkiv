@@ -48,6 +48,7 @@
 \newcount       \c_page_sides_n_of_lines
 \newcount       \c_page_sides_n_of_hang
 \newconstant    \c_page_sides_float_type
+\newcount       \c_page_sides_hangafter
 
 \newconditional \c_page_sides_short
 \newconditional \c_page_sides_flag
@@ -656,12 +657,40 @@
    \fi
    \endgroup}
 
+% \def\page_sides_analyse_progress
+%   {\d_page_sides_progress\d_page_sides_vsize
+%    \ifconditional\c_page_sides_flag
+%      \advance\d_page_sides_progress-\d_page_sides_page_total
+%      \global\setfalse\c_page_sides_flag
+%    \else
+%      \advance\d_page_sides_progress-\pagetotal
+%    \fi}
+
+% test case
+%
+% \usemodule[art-01]
+% \starttext
+%     \dorecurse{40}{\line{#1}}
+%     \placefigure[left]{}{}
+%     \input ward
+%     \startitemize
+%         \item word \item word \item word \item word
+%     \stopitemize
+%     \input ward
+%     \page
+% \stoptext
+
 \def\page_sides_analyse_progress
   {\d_page_sides_progress\d_page_sides_vsize
    \ifconditional\c_page_sides_flag
      \advance\d_page_sides_progress-\d_page_sides_page_total
      \global\setfalse\c_page_sides_flag
    \else
+     \ifdim\dimexpr\d_page_sides_progress+\d_page_sides_bottomtotal\relax>\pagegoal
+       % we adapt pagegoal because we can already have placed something with
+       % everypar and we hope that it triggers a flush, see test above
+       \pagegoal\dimexpr\pagegoal-\d_page_sides_bottomtotal\relax
+     \fi
      \advance\d_page_sides_progress-\pagetotal
    \fi}
 
@@ -793,6 +822,24 @@
    \fi
    \endgroup}
 
+% tricky test:
+
+% \starttext
+%     \dorecurse{33}{\line{#1}}
+%     \placefigure[left]{}{}
+%     \input ward
+%     \startitemize
+%         \item word \item word \item word \item word
+%     \stopitemize
+%     \input ward
+%     \page
+%     \placefigure[left]{}{}
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \dontleavehmode \begingroup \input ward \par \endgroup
+%     \input ward
+% \stoptext
+
 \unexpanded\def\page_sides_check_floats_set
   {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
    \ifx\p_sidethreshold\v!old
@@ -807,8 +854,14 @@
          \dimexpr\d_page_sides_progress-\p_sidethreshold\relax
        \fi
      \getnoflines\d_page_sides_progression
+     % this can be an option
+     \ifdim\dimexpr\noflines\lineheight>\dimexpr\pagegoal-\pagetotal\relax
+       \getrawnoflines\d_page_sides_progression
+     \fi
+     %
      \c_page_sides_n_of_hang\noflines
    \fi
+   \global\c_page_sides_hangafter\zerocount
    \ifnum\c_page_sides_n_of_hang>\zerocount
      \ifcase\c_page_sides_n_of_lines
      \else
@@ -844,6 +897,7 @@
      \else
        \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
        \hangafter-\c_page_sides_n_of_hang
+       \global\c_page_sides_hangafter\hangafter
      \fi
    \fi
    \global\advance\c_page_sides_checks_done \plusone
@@ -852,7 +906,15 @@
    \fi}
 
 \unexpanded\def\page_sides_check_floats_reset
-  {\global\c_page_sides_checks_done\zerocount}
+  {\ifcase\c_page_sides_checks_done\else
+     \ifcase\c_page_sides_hangafter\else
+       % we need to deal with par's ending in a group which would restore
+       % hang parameters
+       \global\c_page_sides_hangafter\zerocount
+       \hangindent\zeropoint
+     \fi
+     \global\c_page_sides_checks_done\zerocount
+   \fi}
 
 \unexpanded\def\page_sides_synchronize_floats
   {\ifinner \else
