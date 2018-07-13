@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['node-acc'] = {
 
 local nodes, node = nodes, node
 
-local nodecodes          = nodes.nodecodes
 local tasks              = nodes.tasks
 
 local nuts               = nodes.nuts
@@ -16,6 +15,7 @@ local tonut              = nodes.tonut
 local tonode             = nodes.tonode
 
 local getid              = nuts.getid
+local getsubtype         = nuts.getsubtype
 local getattr            = nuts.getattr
 local getlist            = nuts.getlist
 local getchar            = nuts.getchar
@@ -35,21 +35,30 @@ local nextnode           = nuts.traversers.node
 local insert_after       = nuts.insert_after
 local copy_no_components = nuts.copy_no_components
 
+local nodecodes          = nodes.nodecodes
+local skipcodes          = nodes.skipcodes
+
 local glue_code          = nodecodes.glue
 ----- kern_code          = nodecodes.kern
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
+local userskip_code      = skipcodes.user
+local spaceskip_code     = skipcodes.spaceskip
+local xspaceskip_code    = skipcodes.xspaceskip
+
 local a_characters       = attributes.private("characters")
 
-local threshold          = 65536 -- not used
 local nofreplaced        = 0
 
 -- todo: nbsp etc
 -- todo: collapse kerns (not needed, backend does this)
 -- todo: maybe cache as we now create many nodes
 -- todo: check for subtype related to spacing (13/14 but most seems to be user anyway)
+
+local trace = false   trackers.register("backend.spaces", function(v) trace = v end)
+local slot  = nil
 
 local function injectspaces(head)
     local p, p_id
@@ -58,21 +67,25 @@ local function injectspaces(head)
         local id = getid(n)
         if id == glue_code then
             if p and getid(p) == glyph_code then
-                -- unless we don't care about the little bit of overhead
-                -- we can just: local g = copy_node(g)
-                local g = copy_no_components(p)
-                local a = getattr(n,a_characters)
-                setchar(g,32)
-                setlink(p,g,n)
-                setwidth(n,getwidth(n) - getwidth(g))
-                if a then
-                    setattr(g,a_characters,a)
+                local s = getsubtype(n)
+                if s == spaceskip_code or s == xspaceskip_code then
+                    -- unless we don't care about the little bit of overhead
+                    -- we can just: local g = copy_node(g)
+                    local g = copy_no_components(p)
+                    local a = getattr(n,a_characters)
+                    setchar(g,slot)
+                    setlink(p,g,n)
+                    setwidth(n,getwidth(n) - getwidth(g))
+                 -- setsubtype(n,userskip_code)
+                    if a then
+                        setattr(g,a_characters,a)
+                    end
+                    setattr(n,a_characters,0)
+                    nofreplaced = nofreplaced + 1
                 end
-                setattr(n,a_characters,0)
-                nofreplaced = nofreplaced + 1
             end
         elseif id == hlist_code or id == vlist_code then
-            injectspaces(getlist(n),attribute)
+            injectspaces(getlist(n),slot)
         end
         p_id = id
         p = n
@@ -82,7 +95,14 @@ local function injectspaces(head)
 end
 
 nodes.handlers.accessibility = function(head)
-    return injectspaces(head)
+    if trace then
+        if not slot then
+            slot = fonts.helpers.privateslot("visualspace")
+        end
+    else
+        slot = 32
+    end
+    return injectspaces(head,slot)
 end
 
 statistics.register("inserted spaces in output",function()

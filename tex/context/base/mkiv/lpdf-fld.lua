@@ -360,6 +360,8 @@ local function fieldsurrounding(specification)
     return tostring(stream)
 end
 
+-- Can we use any font?
+
 codeinjections.fieldsurrounding = fieldsurrounding
 
 local function registerfonts()

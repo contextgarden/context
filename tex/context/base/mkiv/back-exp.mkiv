@@ -241,6 +241,13 @@
     \let\specialcontrolspace  \explicitcontrolspace
 \to \everyenableelements
 
+\appendtoks
+    \unexpanded\def\dotagregisterformula#1%
+      {\iftrialtypesetting\else
+         \clf_settagformulacontent#1\relax
+       \fi}%
+\to \everyenableelements
+
 % The action: \setupbackend[export=yes] % or filename
 
 % maybe xhtml css settings will move to setupexport
@@ -261,18 +268,18 @@
    \c!author={\directinteractionparameter\c!author},
  % \c!firstpage=, % imagename
  % \c!lastpage=,  % imagename
-   \c!alternative=, % html, div
    \c!properties=\v!no, % no: ignore, yes: as attribute, otherwise: use as prefix
    \c!hyphen=\v!no,
    \c!svgstyle=,
    \c!cssfile=,
-   \c!file={\backendparameter\c!export}] % downward compatibility
+   \c!file=]
 
 \resetsystemmode\v!export
 
 \unexpanded\def\doinitializeexport
   {\edef\p_export{\backendparameter\c!export}%
    \ifx\p_export\empty \else
+      % yes | xml
       \setuptagging[\c!state=\v!start]%
       \clf_initializeexport
       \setsystemmode\v!export
@@ -300,6 +307,7 @@
        svgstyle   {\exportparameter\c!svgstyle}%
        cssfile    {\exportparameter\c!cssfile}%
        file       {\exportparameter\c!file}%
+       export     {\backendparameter\c!export}%
    \relax}
 
 \unexpanded\def\dostopexport

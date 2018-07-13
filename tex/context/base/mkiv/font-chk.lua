@@ -506,3 +506,31 @@ local dummies_specification = {
 
 registerotffeature(dummies_specification)
 registerafmfeature(dummies_specification)
+
+--
+
+local function addvisualspace(tfmdata)
+    local spacechar = tfmdata.characters[32]
+    if spacechar and not spacechar.commands then
+        local w = spacechar.width
+        local h = tfmdata.parameters.xheight
+        local c = {
+            width    = w,
+            commands = { { "rule", h, w } }
+        }
+        local u = addprivate(tfmdata, "visualspace", c)
+    end
+end
+
+local visualspace_specification = {
+    name        = "visualspace",
+    description = "visual space",
+    default     = true,
+    manipulators = {
+        base = addvisualspace,
+        node = addvisualspace,
+    }
+}
+
+registerotffeature(visualspace_specification)
+registerafmfeature(visualspace_specification)

@@ -72,3 +72,7 @@ function helpers.hasprivate(tfmdata,name)
     local privates = properties and properties.privates
     return privates and privates[name] or false
 end
+
+function helpers.privateslot(name)
+    return rawget(sharedprivates,name)
+end

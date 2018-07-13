@@ -533,12 +533,16 @@ do
                     value = lpegmatch(filter_2,value,1,dataset.commands) -- we need to start at 1 for { }
                 end
                 if normalized == "crossref" then
-                    local parent = luadata[value]
-                    if parent then
-                        setmetatableindex(entries,parent)
-                    else
-                        -- warning
-                    end
+                    setmetatableindex(entries,function(t,k)
+                        local parent = luadata[value]
+                        if parent then
+                            setmetatableindex(entries,parent)
+                            return entries[k]
+                        else
+                            report_duplicates("no valid parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                            setmetatableindex(entries,nil)
+                        end
+                    end)
                 end
                 entries[normalized] = value
             end
@@ -1203,21 +1207,6 @@ do
                     { "criterium" },
                 }
             }
-        }
-
-        implement {
-            name      = "btxentrytobuffer",
-            arguments = "3 strings",
-            actions   = function(dataset,tag,target)
-                local d = publications.datasets[dataset]
-                if d then
-                    d = d.luadata[tag]
-                end
-                if d then
-                    d = string.fullstrip(savers.bib(dataset,false,{ [tag] = d }))
-                end
-                buffers.assign(target,d or "")
-            end
         }
 
     end

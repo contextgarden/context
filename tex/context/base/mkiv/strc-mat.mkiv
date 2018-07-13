@@ -880,6 +880,9 @@
      \par
    \fi
    \bgroup % HERE
+   \iftrialtypesetting\else
+     \global\advance\c_strc_formulas_n\plusone
+   \fi
    \def\currentformula{#1}%
    \strc_math_set_split
    \dostarttaggedchained\t!formula\currentformula\??formula
@@ -922,10 +925,15 @@
 
 % tagging of formulanumbers is not ok (we get two display maths blobs)
 
+\newcount\c_strc_formulas_n
+
+\ifdefined\dotagregisterformula \else \let\dotagregisterformula\gobbleoneargument \fi
+
 \unexpanded\def\strc_formulas_stop_formula
   {\strc_formulas_place_number % in case it hasn't happened yet
    \strc_formulas_flush_number % in case we are in native mode
    \dostarttagged\t!formulacontent\empty
+   \dotagregisterformula\c_strc_formulas_n
    \csname\e!stop\formulaparameter\c!alternative\v!formula\endcsname
    \dostoptagged
    \dostoptagged

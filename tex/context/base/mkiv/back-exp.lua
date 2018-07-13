@@ -67,6 +67,7 @@ local attributes        = attributes
 local variables         = interfaces.variables
 local v_yes             = variables.yes
 local v_no              = variables.no
+local v_xml             = variables.xml
 local v_hidden          = variables.hidden
 
 local implement         = interfaces.implement
@@ -1758,6 +1759,25 @@ end
 
 do
 
+    local registered = { }
+
+    function structurestags.setformulacontent(n)
+        registered[locatedtag("formulacontent")] = {
+            n = n,
+        }
+    end
+
+    function extras.formulacontent(di,element,n,fulltag)
+        local r = registered[fulltag]
+        if r then
+            setattribute(di,"n",r.n)
+        end
+    end
+
+end
+
+do
+
     local registered = structures.sections.registered
 
     local function resolve(di,element,n,fulltag)
@@ -2060,7 +2080,7 @@ do
     local depth  = 0
     local inline = 0
 
-    local function emptytag(result,embedded,element,nature,di) -- currently only break but at some point
+    local function emptytag(result,element,nature,di) -- currently only break but at some point
         local a = di.attributes                       -- we might add detail etc
         if a then -- happens seldom
             if nature == "display" then
@@ -2109,7 +2129,7 @@ do
         end
     end
 
-    local function begintag(result,embedded,element,nature,di,skip)
+    local function begintag(result,element,nature,di,skip)
         local index         = di.n
         local fulltag       = di.fulltag
         local specification = specifications[fulltag] or { } -- we can have a dummy
@@ -2132,12 +2152,6 @@ do
         elseif skip then
             -- ignore
         else
-
-         -- if embedded then
-         --     if element == "math" then
-         --         embedded[f_tagid(element,index)] = #result+1
-         --     end
-         -- end
 
             local n = 0
             local r = { } -- delay this
@@ -2247,7 +2261,7 @@ do
         end
     end
 
-    local function endtag(result,embedded,element,nature,di,skip)
+    local function endtag(result,element,nature,di,skip)
         if skip == "comment" then
             if show_comment then
                 if nature == "display" and (inline == 0 or inline == 1) then
@@ -2278,18 +2292,10 @@ do
                 inline = inline - 1
                 result[#result+1] = f_end_inline(namespaced[element])
             end
-
-         -- if embedded then
-         --     if element == "math" then
-         --         local id = f_tagid(element,di.n) -- index)
-         --         local tx = concat(result,"",embedded[id],#result)
-         --         embedded[id] = "<?xml version='1.0' standalone='yes'?>" .. "\n" .. tx
-         --     end
-         -- end
         end
     end
 
-    local function flushtree(result,embedded,data,nature)
+    local function flushtree(result,data,nature)
         local nofdata = #data
         for i=1,nofdata do
             local di = data[i]
@@ -2321,23 +2327,23 @@ do
                     if not element then
                         -- skip
                     elseif element == "break" then -- or element == "pagebreak"
-                        emptytag(result,embedded,element,nature,di)
+                        emptytag(result,element,nature,di)
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
                     else
                         if di.before then
-                            flushtree(result,embedded,di.before,nature)
+                            flushtree(result,di.before,nature)
                         end
                         local natu = di.nature
                         local skip = di.skip
                         if di.breaknode then
-                            emptytag(result,embedded,"break","display",di)
+                            emptytag(result,"break","display",di)
                         end
-                        begintag(result,embedded,element,natu,di,skip)
-                        flushtree(result,embedded,di.data,natu)
-                        endtag(result,embedded,element,natu,di,skip)
+                        begintag(result,element,natu,di,skip)
+                        flushtree(result,di.data,natu)
+                        endtag(result,element,natu,di,skip)
                         if di.after then
-                            flushtree(result,embedded,di.after,nature)
+                            flushtree(result,di.after,nature)
                         end
                     end
                 end
@@ -3308,13 +3314,12 @@ local htmltemplate = [[
 
     local function allcontent(tree,embed)
         local result   = { }
-        local embedded = embed and { }
-        flushtree(result,embedded,tree.data,"display") -- we need to collect images
+        flushtree(result,tree.data,"display") -- we need to collect images
         result = concat(result)
         -- no need to lpeg .. fast enough
         result = gsub(result,"\n *\n","\n")
         result = gsub(result,"\n +([^< ])","\n%1")
-        return result, embedded
+        return result
     end
 
     -- local xhtmlpreamble = [[
@@ -3569,7 +3574,6 @@ local htmltemplate = [[
     local basename  = file.basename
 
     local embedfile = false  directives.register("export.embed",function(v) embedfile = v end)
-    local embedmath = false
 
     function structurestags.finishexport()
 
@@ -3579,12 +3583,18 @@ local htmltemplate = [[
             return
         end
 
+        local onlyxml = finetuning.export == v_xml
+
         starttiming(treehash)
         --
         finishexport()
         --
         report_export("")
-        report_export("exporting xml, xhtml and html files")
+        if onlyxml then
+            report_export("exporting xml, no other files")
+        else
+            report_export("exporting xml, xhtml, html and css files")
+        end
         report_export("")
         --
         wrapups.collapsetree(tree)
@@ -3612,7 +3622,7 @@ local htmltemplate = [[
         -- ./jobname-export/styles/jobname-images.css
         -- ./jobname-export/styles/jobname-templates.css
 
-        if type(askedname) ~= "string" or askedname == v_yes or askedname == "" then
+        if type(askedname) ~= "string" or askedname == "" then
             askedname = tex.jobname
         end
 
@@ -3680,6 +3690,55 @@ local htmltemplate = [[
             stylefilebase,
         }
 
+        local cssextra = cssfile and table.unique(settings_to_array(cssfile)) or { }
+
+        -- at this point we're ready for the content; the collector also does some
+        -- housekeeping and data collecting; at this point we still have an xml
+        -- representation that uses verbose element names and carries information in
+        -- attributes
+
+        local data = tree.data
+        for i=1,#data do
+            if data[i].tg ~= "document" then
+                data[i] = { }
+            end
+        end
+
+        local result = allcontent(tree,embedmath) -- embedfile is for testing
+
+        if onlyxml then
+
+            os.remove(defaultfilename)
+            os.remove(imagefilename)
+            os.remove(stylefilename)
+            os.remove(templatefilename)
+
+            for i=1,#cssextra do
+                os.remove(joinfile(stylepath,basename(source)))
+            end
+
+         -- os.remove(xmlfilename)
+
+            os.remove(imagefilename)
+            os.remove(stylefilename)
+            os.remove(templatefilename)
+            os.remove(xhtmlfilename)
+            os.remove(specificationfilename)
+            os.remove(htmlfilename)
+
+            result = concat {
+                wholepreamble(true),
+                "<!-- This export file is used for filtering runtime only! -->\n",
+                result,
+            }
+
+            report_export("saving xml data in %a",xmlfilename)
+            io.savedata(xmlfilename,result)
+
+            return
+
+        end
+
         local examplefilename = resolvers.find_file("export-example.css")
         if examplefilename then
             local data = io.loaddata(examplefilename)
@@ -3692,9 +3751,8 @@ local htmltemplate = [[
         end
 
         if cssfile then
-            local list = table.unique(settings_to_array(cssfile))
-            for i=1,#list do
-                local source = addsuffix(list[i],"css")
+            for i=1,#cssextra do
+                local source = addsuffix(cssextra[i],"css")
                 local target = joinfile(stylepath,basename(source))
                 cssfiles[#cssfiles+1] = source
                 if not lfs.isfile(source) then
@@ -3709,21 +3767,6 @@ local htmltemplate = [[
 
         local x_styles, h_styles = allusedstylesheets(cssfiles,files,"styles")
 
-        -- at this point we're ready for the content; the collector also does some
-        -- housekeeping and data collecting; at this point we still have an xml
-        -- representation that uses verbose element names and carries information in
-        -- attributes
-
-
-        local data = tree.data
-        for i=1,#data do
-            if data[i].tg ~= "document" then
-                data[i] = { }
-            end
-        end
-
-        local result, embedded = allcontent(tree,embedmath) -- embedfile is for testing
-
         local attach = backends.nodeinjections.attachfile
 
         if embedfile and attach then
@@ -3737,22 +3780,6 @@ local htmltemplate = [[
                 mimetype   = "application/mathml+xml",
             }
         end
-     -- if embedmath and attach then
-     --     local refs = { }
-     --     for k, v in sortedhash(embedded) do
-     --         attach {
-     --             data       = v,
-     --             file       = basename(k),
-     --             name       = addsuffix(k,"xml"),
-     --             registered = k,
-     --             reference  = k,
-     --             title      = "xml export snippet: " .. k,
-     --             method     = v_hidden,
-     --             mimetype   = "application/mathml+xml",
-     --         }
-     --         refs[k] = 0
-     --     end
-     -- end
 
         result = concat {
             wholepreamble(true),
@@ -3782,14 +3809,14 @@ local htmltemplate = [[
 
         local xmltree = cleanxhtmltree(xml.convert(result))
 
--- local xmltree = xml.convert(result)
--- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
---     print(c)
--- end
--- for c in xml.collected(xmltree,"mtext/mrow") do
---     print(c)
--- end
--- local xmltree = cleanxhtmltree(xmltree)
+     -- local xmltree = xml.convert(result)
+     -- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
+     --     print(c)
+     -- end
+     -- for c in xml.collected(xmltree,"mtext/mrow") do
+     --     print(c)
+     -- end
+     -- local xmltree = cleanxhtmltree(xmltree)
 
         xml.save(xmltree,xhtmlfilename)
 
@@ -3912,6 +3939,7 @@ implement {
             { "svgstyle" },
             { "cssfile" },
             { "file" },
+            { "export" },
         }
     }
 }
@@ -3942,6 +3970,12 @@ implement {
     name      = "settagfloat",
     actions   = structurestags.setfloat,
     arguments = "2 strings",
+}
+
+implement {
+    name      = "settagformulacontent",
+    actions   = structurestags.setformulacontent,
+    arguments = "integer",
 }
 
 implement {

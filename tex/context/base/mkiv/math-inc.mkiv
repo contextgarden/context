@@ -1,0 +1,69 @@
+%D \module
+%D   [       file=math-inc,
+%D        version=2018.06.23,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=XML inclusion,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / XML inclusion}
+
+\registerctxluafile{math-inc}{}
+
+%D I had some doubt about including this in \CONTEXT\ but it might serve some users
+%D anyway. It's always the question to what extent one can be really roundtrip. I
+%D might improve it when I need it.
+
+% Talking about creating from a source ... June Lee's transcription of
+% Close to You by Jacob Collier is an amazing example:
+%
+% https://www.youtube.com/watch?v=hdBVN-HMuqI
+
+\unprotect
+
+\definesymbol[mmlattachment][{\infofont\darkred  mml}]
+\definesymbol[mmlcomment]   [{\infofont\darkblue mml}]
+
+\unexpanded\def\lxml_add_mml_blob#1#2%
+  {\relax
+   \clf_xmlformulatobuffer\number\c_strc_formulas_n{temp-xml-export}%
+   #2%
+     [\c!symbol=#1,%
+      \c!space=\v!yes,%
+      \c!buffer=temp-xml-export,%
+      \c!name={formula-\number\c_strc_formulas_n.xml}]%
+   \relax}
+
+\unexpanded\def\xmlattachmml
+  {\iftrialtypesetting \else \ifexporting \iflocation
+     \dostarttagged\t!ignore\empty
+       \lxml_add_mml_blob{mmlattachment}\attachment
+     \dostoptagged
+   \fi \fi \fi}
+
+\unexpanded\def\xmlcommentmml
+  {\iftrialtypesetting \else \ifexporting \iflocation
+     \dostarttagged\t!ignore\empty
+       \lxml_add_mml_blob{mmlcomment}\comment
+     \dostoptagged
+   \fi \fi \fi}
+
+%D This kind of feature creep is not yet configurable, nor documented.
+
+\unexpanded\def\xmladdmmlsource
+  {\iftrialtypesetting \else \ifexporting \iflocation
+     \dostarttagged\t!ignore\empty
+     \inleftmargin{%
+       \lxml_add_mml_blob{mmlattachment}\attachment
+       \quad
+       \lxml_add_mml_blob{mmlcomment}\comment
+     }%
+     \dostoptagged
+   \fi \fi \fi}
+
+\protect \endinput
