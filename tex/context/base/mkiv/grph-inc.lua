@@ -579,6 +579,7 @@ function figures.initialize(request)
         request.cache     = request.cache ~= "" and request.cache
         request.prefix    = request.prefix ~= "" and request.prefix
         request.format    = request.format ~= "" and request.format
+        request.compact   = request.compact == v_yes
         table.merge(figuredata.request,request)
     end
     return figuredata
@@ -1988,6 +1989,7 @@ implement {
             { "arguments" },
             { "repeat" },
             { "transform" },
+            { "compact" },
             { "width", "dimen" },
             { "height", "dimen" },
             { "userpassword" },
@@ -2114,7 +2116,7 @@ local function pdf_checker(data)
         end
         request.copyimage = function(t)
             if pdfdoc then
-                local result = copypage(pdfdoc,request.page)
+                local result = copypage(pdfdoc,request.page,nil,request.compact)
                 pdfdoc.nofcopiedpages = pdfdoc.nofcopiedpages + 1
                 if pdfdoc.nofcopiedpages >= pdfdoc.nofpages then
                     closepdf(pdfdoc)

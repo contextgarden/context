@@ -872,11 +872,22 @@ if img then do
         return target
     end
 
+    local plugins = nil
+
     copydictionary = function (xref,copied,object)
         local target = pdfdictionary()
         local source = object.__raw__
         for key, value in next, source do
-            target[key] = copyobject(xref,copied,object,key,value)
+            if plugins then
+                local p = plugins[key]
+                if p then
+                    target[key] = p(xref,copied,object,key,value,copyobject) -- maybe a table of methods
+                else
+                    target[key] = copyobject(xref,copied,object,key,value)
+                end
+            else
+                target[key] = copyobject(xref,copied,object,key,value)
+            end
         end
         return target
     end
@@ -941,7 +952,7 @@ if img then do
         end
     end
 
-    local function copypage(pdfdoc,pagenumber,attributes)
+    local function copypage(pdfdoc,pagenumber,attributes,compact)
         if pdfdoc then
             local root     = pdfdoc.Catalog
             local page     = pdfdoc.pages[pagenumber or 1]
@@ -949,6 +960,9 @@ if img then do
             local contents = page.Contents
             local xref     = pdfdoc.__xrefs__
             local copied   = pdfdoc.__copied__
+            if compact and lpdf_epdf.plugin then
+                plugins = lpdf_epdf.plugin(pdfdoc,xref,copied,page)
+            end
             local xobject  = pdfdictionary {
                 Group          = copyobject(xref,copied,page,"Group"),
                 LastModified   = copyobject(xref,copied,page,"LastModified"),
@@ -990,6 +1004,7 @@ if img then do
                 content = concat(content," ")
             end
             -- still not nice: we double wrap now
+            plugins = nil
             return newimage {
                 bbox     = pageinfo.boundingbox,
                 nolength = nolength,

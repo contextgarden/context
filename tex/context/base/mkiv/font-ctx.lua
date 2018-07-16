@@ -1990,13 +1990,17 @@ local function descriptiontoslot(name)
     end
 end
 
-local function indextoslot(index)
-    local r = resources[true]
+local function indextoslot(font,index)
+    if not index then
+        index = font
+        font  = true
+    end
+    local r = resources[font]
     if r then
         local indices = r.indices
         if not indices then
             indices = { }
-            local c = characters[true]
+            local c = characters[font]
             for unicode, data in next, c do
                 local di = data.index
                 if di then

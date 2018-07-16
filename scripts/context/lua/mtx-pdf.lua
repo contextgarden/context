@@ -179,7 +179,7 @@ local function getunicodes(font)
         end
         for s in gmatch(cid,"beginbfchar%s*(.-)%s*endbfchar") do
             for old, new in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
-                indices[old] = true
+                indices[tonumber(old,16)] = true
                 for n in gmatch(new,"....") do
                     local c = tonumber(n,16)
                     counts[c] = counts[c] + 1

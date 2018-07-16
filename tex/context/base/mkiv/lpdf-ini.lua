@@ -1502,3 +1502,6 @@ function lpdf.copystring(v)
         return pdfstring(v)
     end
 end
+
+lpdf.includechar = pdf.includechar
+lpdf.includefont = pdf.includefont
