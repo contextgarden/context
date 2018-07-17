@@ -84,6 +84,9 @@ local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local getheight          = nuts.getheight
 
+local currentattr        = nuts.current_attr
+local setattrlist        = nuts.setattrlist
+
 local getbox             = nuts.getbox
 local takebox            = nuts.takebox
 
@@ -298,7 +301,9 @@ function margins.save(t)
         --
      -- t.realpageno          = texgetcount("realpageno")
         if inline then
-            context(tonode(new_usernumber(inline_mark,nofsaved))) -- or use a normal node
+            local n = new_usernumber(inline_mark,nofsaved)
+            setattrlist(n,currentattr())
+            context(tonode(n)) -- or use a normal node
             store[nofsaved] = t -- no insert
             nofinlined = nofinlined + 1
         else
@@ -984,6 +989,7 @@ interfaces.implement {
            { "align" },
            { "option" },
            { "line", "integer" },
+           { "index", "integer" },
            { "stackname" },
            { "stack" },
         }

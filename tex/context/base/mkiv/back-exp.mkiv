@@ -248,6 +248,13 @@
        \fi}%
 \to \everyenableelements
 
+\appendtoks
+    \unexpanded\def\dotagmarginanchor#1%
+      {\iftrialtypesetting\else\clf_settagmarginanchor#1\relax\fi}%
+    \unexpanded\def\dotagmargintext#1%
+      {\iftrialtypesetting\else\clf_settagmargintext#1\relax\fi}%
+\to \everyenableelements
+
 % The action: \setupbackend[export=yes] % or filename
 
 % maybe xhtml css settings will move to setupexport

@@ -495,8 +495,8 @@ do
 
     -- experiment: names can change
 
-    local mppath     = aux.mppath
-    local mpsize     = aux.mpsize
+    local mppath     = aux.path
+    local mpsize     = aux.size
 
     local whitespace = lpegpatterns.whitespace
     local newline    = lpegpatterns.newline
@@ -522,11 +522,26 @@ do
         end
         local data = lpegmatch(pattern,io.loaddata(filename) or "")
         datasets[tag] = {
-            Data = data,
-            Line = function(n) mppath(data[n or 1]) end,
-            Size = function()  mpsize(data)         end,
+            data = data,
+            line = function(n) mppath(data[n or 1]) end,
+            size = function()  mpsize(data)         end,
         }
     end
+
+    table.setmetatablecall(datasets,function(t,k,f,...)
+        local d = datasets[k]
+        local t = type(d)
+        if t == "table" then
+            d = d[f]
+            if type(d) == "function" then
+                d(...)
+            else
+                mpvprint(...)
+            end
+        elseif t == "function" then
+            d(f,...)
+        end
+    end)
 
 end
 

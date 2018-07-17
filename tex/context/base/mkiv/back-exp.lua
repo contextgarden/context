@@ -569,6 +569,7 @@ do
 
     implement {
         name      = "ignoretagsinexport",
+        arguments = "string",
         actions   = function(list)
             for tag in string.gmatch(list,"[a-z]+") do
                 if ignoredelements then
@@ -578,8 +579,51 @@ do
                 end
             end
         end,
-        arguments = "string"
     }
+
+end
+
+do
+
+    local marginanchors = { }
+    local margincontent = { }
+
+    implement {
+        name      = "settagmargintext",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("margintext")] = n
+        end
+    }
+
+    implement {
+        name      = "settagmarginanchor",
+        arguments = "integer",
+        actions   = function(n)
+            marginanchors[locatedtag("marginanchor")] = n
+        end
+    }
+
+    function checks.margintext(di)
+        local i = marginanchors[di.fulltag]
+        margincontent[i] = di
+    end
+
+    function checks.marginanchor(di)
+        local i = marginanchors[di.fulltag]
+        local d = margincontent[i]
+        --
+        di.attribute = d.attribute
+        di.data      = d.data
+        di.detail    = d.detail
+        di.element   = d.element
+        di.fulltag   = d.fulltag
+        di.nature    = d.nature
+        di.samepar   = true
+        di.tg        = d.tg
+        --
+        d.skip       = "ignore"
+  end
 
 end
 
@@ -1879,7 +1923,7 @@ do
         end
     end
 
-    local function ignorebreaks(di,element,n,fulltag)
+    function extras.registerpages(di,element,n,fulltag) -- ignorebreaks
         local data = di.data
         for i=1,#data do
             local d = data[i]
@@ -1889,7 +1933,7 @@ do
         end
     end
 
-    local function ignorespaces(di,element,n,fulltag)
+    function extras.registerseparator(di,element,n,fulltag) -- ignorespaces
         local data = di.data
         for i=1,#data do
             local d = data[i]
@@ -1899,9 +1943,6 @@ do
             end
         end
     end
-
-    extras.registerpages     = ignorebreaks
-    extras.registerseparator = ignorespaces
 
 end
 
@@ -2172,6 +2213,7 @@ do
                 n = n + 1
                 r[n] = f_index(index)
             end
+            --
             local extra = extras[element]
             if extra then
                 extra(di,element,index,fulltag)
@@ -2364,19 +2406,25 @@ do
                 local di = data[i]
                 if not di then
                     -- skip
+                elseif di.skip == "ignore" then
+                    -- skip (new)
                 elseif di.content then
-                    local parnumber = di.parnumber
-                    if prevnature == "inline" and prevparnumber and prevparnumber ~= parnumber then
-                        nofnewdata = nofnewdata + 1
-                        if trace_spacing then
-                            newdata[nofnewdata] = makebreaknode { type = "a", p = prevparnumber, n = parnumber }
-                        else
-                            newdata[nofnewdata] = makebreaknode()
+                    if di.samepar then
+                        prevparnumber = false
+                    else
+                        local parnumber = di.parnumber
+                        if prevnature == "inline" and prevparnumber and prevparnumber ~= parnumber then
+                            nofnewdata = nofnewdata + 1
+                            if trace_spacing then
+                                newdata[nofnewdata] = makebreaknode { type = "a", p = prevparnumber, n = parnumber }
+                            else
+                                newdata[nofnewdata] = makebreaknode()
+                            end
                         end
+                        prevelement = nil
+                        prevparnumber = parnumber
                     end
-                    prevelement = nil
                     prevnature = "inline"
-                    prevparnumber = parnumber
                     nofnewdata = nofnewdata + 1
                     newdata[nofnewdata] = di
                 elseif not di.collapsed then
@@ -2387,39 +2435,51 @@ do
                         end
                         prevelement = element
                         prevnature = "display"
+                        nofnewdata = nofnewdata + 1
+                        newdata[nofnewdata] = di
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
+                    else
+                        if di.samepar then
+                            prevnature    = "inline"
+                            prevparnumber = false
+                        else
+                            local nature = di.nature
+                            local parnumber = di.parnumber
+                            if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
+                                nofnewdata = nofnewdata + 1
+                                if trace_spacing then
+                                    newdata[nofnewdata] = makebreaknode { type = "b", p = prevparnumber, n = parnumber }
+                                else
+                                    newdata[nofnewdata] = makebreaknode()
+                                end
+                            end
+                            prevnature = nature
+                            prevparnumber = parnumber
+                        end
+                        prevelement = element
+                        breaktree(di,tree,element)
+                        nofnewdata = nofnewdata + 1
+                        newdata[nofnewdata] = di
+                    end
+                else
+                    if di.samepar then
+                        prevnature    = "inline"
+                        prevparnumber = false
                     else
                         local nature = di.nature
                         local parnumber = di.parnumber
                         if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
                             nofnewdata = nofnewdata + 1
                             if trace_spacing then
-                                newdata[nofnewdata] = makebreaknode { type = "b", p = prevparnumber, n = parnumber }
+                                newdata[nofnewdata] = makebreaknode { type = "c", p = prevparnumber, n = parnumber }
                             else
                                 newdata[nofnewdata] = makebreaknode()
                             end
                         end
                         prevnature = nature
                         prevparnumber = parnumber
-                        prevelement = element
-                        breaktree(di,tree,element)
                     end
-                    nofnewdata = nofnewdata + 1
-                    newdata[nofnewdata] = di
-                else
-                    local nature = di.nature
-                    local parnumber = di.parnumber
-                    if prevnature == "inline" and nature == "inline" and prevparnumber and prevparnumber ~= parnumber then
-                        nofnewdata = nofnewdata + 1
-                        if trace_spacing then
-                            newdata[nofnewdata] = makebreaknode { type = "c", p = prevparnumber, n = parnumber }
-                        else
-                            newdata[nofnewdata] = makebreaknode()
-                        end
-                    end
-                    prevnature = nature
-                    prevparnumber = parnumber
                     nofnewdata = nofnewdata + 1
                     newdata[nofnewdata] = di
                 end
@@ -2451,6 +2511,8 @@ do
                             local cd = currentdata[j]
                             if not cd or cd == "" then
                                 -- skip
+elseif cd.skip == "ignore" then
+    -- skip
                             elseif cd.content then
                                 if not currentpar then
                                     -- add space ?
@@ -2755,6 +2817,7 @@ local collectresults  do -- too many locals otherwise
     local nodecodes         = nodes.nodecodes
     local skipcodes         = nodes.skipcodes
     local listcodes         = nodes.listcodes
+    local whatsitcodes      = nodes.whatsitcodes
 
     local hlist_code        = nodecodes.hlist
     local vlist_code        = nodecodes.vlist
@@ -2762,6 +2825,7 @@ local collectresults  do -- too many locals otherwise
     local glue_code         = nodecodes.glue
     local kern_code         = nodecodes.kern
     local disc_code         = nodecodes.disc
+    local whatsit_code      = nodecodes.whatsit
 
     local userskip_code     = skipcodes.userskip
     local rightskip_code    = skipcodes.rightskip
@@ -2770,6 +2834,8 @@ local collectresults  do -- too many locals otherwise
     local xspaceskip_code   = skipcodes.xspaceskip
 
     local line_code         = listcodes.line
+
+    local userdefined_code  = whatsitcodes.userdefined
 
     local privateattribute  = attributes.private
     local a_image           = privateattribute('image')
@@ -2780,6 +2846,8 @@ local collectresults  do -- too many locals otherwise
     local a_tagged          = privateattribute('tagged')
     local a_taggedpar       = privateattribute("taggedpar")
     local a_textblock       = privateattribute("textblock")
+
+    local inline_mark       = nodes.pool.userids["margins.inline"]
 
     local nuts              = nodes.nuts
 
@@ -2796,13 +2864,18 @@ local collectresults  do -- too many locals otherwise
     local isglyph           = nuts.isglyph
     local getkern           = nuts.getkern
     local getwidth          = nuts.getwidth
+    local getfield          = nuts.getfield
 
     local nexthlist         = nuts.traversers.hlist
     local nextnode          = nuts.traversers.node
 
     local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
         local p
-        for n, id in nextnode, head do
+        for n, id, subtype in nextnode, head do
+-- can go :
+if not subtype then
+    subtype = getsubtype(n)
+end
             if id == glyph_code then
                 local c  = getchar(n)
                 local at = getattr(n,a_tagged) or pat
@@ -2964,48 +3037,75 @@ local collectresults  do -- too many locals otherwise
                         nofcurrentcontent = nofcurrentcontent + 1
                         currentcontent[nofcurrentcontent] = c
                     end
-                else
-                    local subtype = getsubtype(n)
-                    if subtype == userskip_code then
-                        if getwidth(n) > threshold then
-                            if last and not somespace[currentcontent[nofcurrentcontent]] then
-                                local a = getattr(n,a_tagged) or pat
-                                if a == last then
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 5a -->",currentdepth)
-                                    end
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                elseif a then
-                                    -- e.g LOGO<space>LOGO
-                                    if trace_export then
-                                        report_export("%w<!-- processing glue > threshold tagged %s becomes %s -->",currentdepth,last,a)
-                                    end
-                                    pushcontent()
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 5b -->",currentdepth)
-                                    end
-                                    last = a
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                    currentnesting = taglist[last]
-                                    pushentry(currentnesting)
-                                    currentattribute = last
-                                end
-                            end
-                        end
-                    elseif subtype == spaceskip_code or subtype == xspaceskip_code then
-                        if not somespace[currentcontent[nofcurrentcontent]] then
+                elseif subtype == userskip_code then
+                    if getwidth(n) > threshold then
+                        if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
+                                    report_export("%w<!-- injecting spacing 5a -->",currentdepth)
+                                end
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                            elseif a then
+                                -- e.g LOGO<space>LOGO
+                                if trace_export then
+                                    report_export("%w<!-- processing glue > threshold tagged %s becomes %s -->",currentdepth,last,a)
+                                end
+                                pushcontent()
+                                if trace_export then
+                                    report_export("%w<!-- injecting spacing 5b -->",currentdepth)
+                                end
+                                last = a
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                                currentnesting = taglist[last]
+                                pushentry(currentnesting)
+                                currentattribute = last
+                            end
+                        end
+                    end
+                elseif subtype == spaceskip_code or subtype == xspaceskip_code then
+                    if not somespace[currentcontent[nofcurrentcontent]] then
+                        local a = getattr(n,a_tagged) or pat
+                        if a == last then
+                            if trace_export then
+                                report_export("%w<!-- injecting spacing 7 (stay in element) -->",currentdepth)
+                            end
+                            nofcurrentcontent = nofcurrentcontent + 1
+                            currentcontent[nofcurrentcontent] = " "
+                        else
+                            if trace_export then
+                                report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
+                            end
+                            last = a
+                            pushcontent()
+                            nofcurrentcontent = nofcurrentcontent + 1
+                            currentcontent[nofcurrentcontent] = " "
+                            currentnesting = taglist[last]
+                            pushentry(currentnesting)
+                            currentattribute = last
+                        end
+                    end
+                elseif subtype == rightskip_code then
+                    -- a line
+                    if nofcurrentcontent > 0 then
+                        local r = currentcontent[nofcurrentcontent]
+                        if r == hyphen then
+                            if not keephyphens then
+                                nofcurrentcontent = nofcurrentcontent - 1
+                            end
+                        elseif not somespace[r] then
+                            local a = getattr(n,a_tagged) or pat
+                            if a == last then
+                                if trace_export then
+                                    report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
                             else
                                 if trace_export then
-                                    report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
+                                    report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
                                 end
                                 last = a
                                 pushcontent()
@@ -3016,41 +3116,11 @@ local collectresults  do -- too many locals otherwise
                                 currentattribute = last
                             end
                         end
-                    elseif subtype == rightskip_code then
-                        -- a line
-                        if nofcurrentcontent > 0 then
-                            local r = currentcontent[nofcurrentcontent]
-                            if r == hyphen then
-                                if not keephyphens then
-                                    nofcurrentcontent = nofcurrentcontent - 1
-                                end
-                            elseif not somespace[r] then
-                                local a = getattr(n,a_tagged) or pat
-                                if a == last then
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
-                                    end
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                else
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
-                                    end
-                                    last = a
-                                    pushcontent()
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                    currentnesting = taglist[last]
-                                    pushentry(currentnesting)
-                                    currentattribute = last
-                                end
-                            end
-                        end
-                    elseif subtype == parfillskip_code then
-                        -- deal with paragaph endings (crossings) elsewhere and we quit here
-                        -- as we don't want the rightskip space addition
-                        return
                     end
+                elseif subtype == parfillskip_code then
+                    -- deal with paragaph endings (crossings) elsewhere and we quit here
+                    -- as we don't want the rightskip space addition
+                    return
                 end
             elseif id == hlist_code or id == vlist_code then
                 local ai = getattr(n,a_image)
@@ -3110,6 +3180,21 @@ local collectresults  do -- too many locals otherwise
                             end
                         end
                     end
+                end
+            elseif id == whatsit_code then
+                if subtype == userdefined_code then
+                    -- similar to images, see above
+                    local at = getattr(n,a_tagged)
+                    if nofcurrentcontent > 0 then
+                        pushcontent()
+                        pushentry(currentnesting) -- ??
+                    end
+                    pushentry(taglist[at])
+                    if trace_export then
+                        report_export("%w<!-- processing anchor tagged %a",currentdepth,last)
+                    end
+                    last = nil
+                    currentparagraph = nil
                 end
             end
             p = n

@@ -161,6 +161,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
 
     margintextblock       = { pdf = "Span",       nature = "inline"  },
     margintext            = { pdf = "Span",       nature = "inline"  },
+    marginanchor          = { pdf = "Span",       nature = "inline"  },
 
     math                  = { pdf = "Div",        nature = "inline"  }, -- no display
     mn                    = { pdf = "Span",       nature = "mixed"   },

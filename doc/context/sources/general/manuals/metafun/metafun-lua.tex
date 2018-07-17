@@ -263,7 +263,7 @@ There are several ways to deal with this table. I will show clumsy as well as
 better looking ways.
 
 \startbuffer
-lua("MP = { } MP.data = table.load('demo-data.lua')") ;
+lua("MP.data = table.load('demo-data.lua')") ;
 numeric n ;
 lua("mp.print('n := ',\#MP.data)") ;
 for i=1 upto n :
@@ -524,17 +524,23 @@ The \type {mp} namespace provides the following helpers:
 
 \starttabulate[|l|l|]
 \HL
-\NC \type {print(...)}                \NC returns one or more values \NC \NR
-\NC \type {pair(x,y)}
-    \type {pair(t)}                   \NC returns a proper pair \NC \NR
-\NC \type {triplet(x,y,z)}
-    \type {triplet(t)}                \NC returns an \RGB\ color \NC \NR
-\NC \type {quadruple(w,x,y,z)}
-    \type {quadruple(t)}              \NC returns an \CMYK\ color \NC \NR
-\NC \type {format(fmt,...)}           \NC returns a formatted string \NC \NR
+\NC \type {print(...)}                      \NC returns one or more values \NC \NR
+\NC \type {fprint(fmt,...)}                 \NC returns a formatted result \NC \NR
+\NC \type {boolean(b)}                      \NC returns \type {true} or \type {false} \NC \NR
+\NC \type {numeric(f)}                      \NC returns a floating point number \NC \NR
+\NC \type {integer(i)}                      \NC returns a whole number \NC \NR
+\NC \type {points(i)}                       \NC returns a floating point with unit \type {pt} \NC \NR
+\NC \type {pair(x,y)|(t)}                   \NC returns a proper pair \NC \NR
+\NC \type {pairpoints(x,y)|(t)}             \NC returns a proper pair with unit \type {pt} \NC \NR
+\NC \type {triplet(x,y,z)|(t)}              \NC returns a \RGB\ color \NC \NR
+\NC \type {tripletpoints(x,y,z)|(t)}        \NC returns a \RGB\ color but with unit \type {pt} \NC \NR
+\NC \type {quadruple(w,x,y,z)|(t)}          \NC returns a \CMYK\ color \NC \NR
+\NC \type {quadruplepoints(w,x,y,z)|(t)}    \NC returns a \CMYK\ color but with unit \type {pt} \NC \NR
+\NC \type {format(fmt,...)}                 \NC returns a formatted string \NC \NR
 \NC \type {quoted(fmt,...)}
-    \type {quoted(s)}                 \NC returns a (formatted) quoted string  \NC \NR
-\NC \type {path(t[,connect][,close])} \NC returns a connected (closed) path \NC \NR
+    \type {quoted(s)}                       \NC returns a (formatted) quoted string  \NC \NR
+\NC \type {path(t[,connect][,close])}       \NC returns a connected (closed) path \NC \NR
+\NC \type {pathpoints(t[,connect][,close])} \NC returns a connected (closed) path with units \type {pt} \NC \NR
 \HL
 \stoptabulate
 
@@ -780,15 +786,15 @@ We load the data in datasets:
 
 \startbuffer
 \startMPcode
-  lua.mp.datasets.load("foo","foo.tmp") ;
-  lua.mp.datasets.load("bar","bar.tmp") ;
+  lua.mp.datasets("load","foo","foo.tmp") ;
+  lua.mp.datasets("load","bar","bar.tmp") ;
   fill area
-    lua.mp.datasets.foo.Line()
+    lua.mp.datasets("foo","line")
     xysized (HSize/2-EmWidth-.25ExHeight,10ExHeight)
     withpen pencircle scaled .25ExHeight
     withcolor darkyellow ;
   fill area
-    lua.mp.datasets.bar.Line()
+    lua.mp.datasets("bar","line")
     xysized (HSize/2-EmWidth-.25ExHeight,10ExHeight)
     shifted (HSize/2+EmWidth,0)
     withpen pencircle scaled .25ExHeight
@@ -798,7 +804,7 @@ We load the data in datasets:
 
 \typebuffer
 
-Because the datasets are stores by name we can use them without worrying about
+Because the datasets are stored by name we can use them without worrying about
 them being forgotten:
 
 \startlinecorrection[blank] \getbuffer \stoplinecorrection
@@ -808,8 +814,8 @@ valid:
 
 \starttyping
 \startMPcode
-  lua.mp.datasets.load("foo.tmp") ;
-  lua.mp.datasets.load("bar.tmp") ;
+  lua.mp.datasets("load","foo.tmp") ;
+  lua.mp.datasets("load","bar.tmp") ;
 \stopMPcode
 \stoptyping
 
@@ -819,9 +825,9 @@ The following methods are defined for a dataset:
 \HL
 \NC \type {method} \NC usage \NC \NR
 \HL
-\NC \type {Size}   \NC the number of subsets in a dataset \NC \NR
-\NC \type {Line}   \NC the joined pairs in a dataset making a non|-|closed path \NC \NR
-\NC \type {Data}   \NC the table containing the data (in subsets, so there is always at least one subset) \NC \NR
+\NC \type {size}   \NC the number of subsets in a dataset \NC \NR
+\NC \type {line}   \NC the joined pairs in a dataset making a non|-|closed path \NC \NR
+\NC \type {data}   \NC the table containing the data (in subsets, so there is always at least one subset) \NC \NR
 \HL
 \stoptabulate
 
@@ -847,7 +853,7 @@ passvariable("triplet",(1/1,1/2,1/3)) ;
 passvariable("quad",(1.1,2.2,3.3,4.4)) ;
 passvariable("boolean",false) ;
 passvariable("path",fullcircle scaled 1cm) ;
-path p[] ; p[1] := fullcircle ; p[2] := fullsquare ;
+save p ; path p[] ; p[1] := fullcircle ; p[2] := fullsquare ;
 passarrayvariable("list",p,1,2,1) ; % first last step
 \stopMPcalculation
 \stopbuffer
@@ -940,6 +946,533 @@ draw fullcircle ;
 
 In this case the \type {tostring} is redundant as the message already does the
 serialization.
+
+\stopsection
+
+\startsection[title={Interference}]
+
+In this section we will discuss a potential conflict with other mechanisms,
+especially primitives and macros. A simple example of using the interface is:
+
+\startbuffer
+\startluacode
+function MP.AnExample(str)
+    mp.aux.quoted(string.reverse(str))
+end
+\stopluacode
+
+\startMPcode
+draw textext(lua.MP.AnExample("Hi there!"))
+    rotated 45
+    ysized 2cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The \type {mp} namespace is reserved for functionality provided by \CONTEXT\
+itself so you should not polute it with your own code. Instead use the \type {MP}
+namespace and mix in some uppercase characters.
+
+Here you see a subnamespace \type {aux} which is where officially the helpers are
+organized but they are also accessible directly (as shown in previous sections).
+The reason for the \type {aux} namespace is, apart from propection aginst
+redefinition, also that we have \type {get} and \type {set} namespaces and there
+might be more in the future. At the \LUA\ end you can best use these namespaces
+because they are less likely to be accidentally overwritten by user code.
+
+As mentioned, there can still be conflicts. For instance the following will not
+work:
+
+\startbuffer
+\startluacode
+function MP.reverse(str)
+    mp.aux.quoted(string.reverse(str))
+end
+\stopluacode
+
+\startMPcode
+draw textext(lua.MP.reverse("Hi there!"))
+    rotated -45
+    ysized 2cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+% \startlinecorrection
+% \getbuffer
+% \stoplinecorrection
+
+The reason is that \type {reverse} gets expanded as part of parsing the macro
+name and this command expects an expression. A way out of this is the following:
+
+\startbuffer
+\startluacode
+function MP.reverse(str)
+    mp.aux.quoted(string.reverse(str))
+end
+\stopluacode
+
+\startMPcode
+draw textext(lua.MP("reverse","Hi there!"))
+    rotated -45
+    ysized 2cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+You can add litle bit of protection for your own code by using a prefix in the
+name, like:
+
+\startbuffer
+\startluacode
+MP["mynamespace.reverse"] = function(str)
+    mp.aux.quoted(string.reverse(str))
+end
+\stopluacode
+
+\startMPcode
+draw textext(lua.MP("mynamespace.reverse","Hi there!"))
+    rotated -90
+    ysized 2cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Predefined properties]
+
+As mentioned, the \type {mp} namespace is reserved for commands that come
+with the \CONTEXT|-|\METAFUN\ combination. For instance, a lot of layout
+related calls are there::
+
+\startcolumns[n=3]
+\starttyping
+BackSpace
+BaseLineSkip
+BodyFontSize
+BottomDistance
+BottomHeight
+BottomSpace
+CurrentColumn
+CurrentHeight
+CurrentWidth
+CutSpace
+EmWidth
+ExHeight
+FooterDistance
+FooterHeight
+HeaderDistance
+HeaderHeight
+InnerEdgeDistance
+InnerEdgeWidth
+InnerMarginDistance
+InnerMarginWidth
+LastPageNumber
+LayoutColumnDistance
+LayoutColumns
+LayoutColumnWidth
+LeftEdgeDistance
+LeftEdgeWidth
+LeftMarginDistance
+LeftMarginWidth
+LineHeight
+MakeupHeight
+MakeupWidth
+NOfColumns
+NOfPages
+NOfPages
+NOfSubPages
+OuterEdgeDistance
+OuterEdgeWidth
+OuterMarginDistance
+OuterMarginWidth
+PageDepth
+PageFraction
+PageNumber
+PageNumber
+PageOffset
+PaperBleed
+PaperHeight
+PaperWidth
+PrintPaperHeight
+PrintPaperWidth
+RealPageNumber
+RealPageNumber
+RightEdgeDistance
+RightEdgeWidth
+RightMarginDistance
+RightMarginWidth
+SpineWidth
+StrutDepth
+StrutHeight
+SubPageNumber
+TextHeight
+TextWidth
+TopDistance
+TopHeight
+TopSkip
+TopSpace
+\stoptyping
+\stopcolumns
+
+There all return dimensions, contrary to the next few that return a boolean:
+
+\startcolumns[n=3]
+\starttyping
+OnRightPage
+OnOddPage
+InPageBody
+\stoptyping
+\stopcolumns
+
+There are also calls related to backgrounds:
+
+\startcolumns[n=3]
+\starttyping
+OverlayWidth
+OverlayHeight
+OverlayDepth
+OverlayLineWidth
+OverlayOffset
+\stoptyping
+\stopcolumns
+
+And one related to color:
+
+\startcolumns[n=3]
+\starttyping
+NamedColor
+\stoptyping
+\stopcolumns
+
+In most cases such \type {lua.mp.command()} calls have a \METAPOST\ macro with
+the same name defined.
+
+\stopsection
+
+\startsection[title=Large paths]
+
+The plugins (like those dealing with text) also use calls in the \type {mp}
+namespace but they have sort of protected names, starting with \type {mf_}. These
+are visible but not meant to be used by users. Not only can their name change,
+their functionality can as well.
+
+The following are actually private as they have related macros but also have a
+public alias:
+
+\startlines
+lua.mp.pathlength(name)
+lua.mp.pathpoint(i)
+lua.mp.pathleft(i)
+lua.mp.pathright(i)
+lua.mp.pathreset()
+\stoplines
+
+They are meant for special high|-|performance path access, for example:
+
+\startlinecorrection
+\startMPcode
+    save p, q, r;
+    path p ; p := for i=1 upto 1000 :
+        (i,0) -- (i,4 + uniformdeviate 4) --
+    endfor cycle ;
+    fill p xysized (TextWidth,20mm) withcolor red ;
+
+    path q ; q := for i=1 upto lua.mp.pathlength("p") :
+        if (i mod 4) == 0 : lua.mp.pathpoint(i) -- fi
+    endfor cycle ;
+    fill q xysized (TextWidth,2cm) shifted (0,-45mm) withcolor green ;
+
+    path r ; r := for i inpath p :
+        if not odd (i) : pointof i -- fi
+    endfor cycle ;
+    fill r xysized (TextWidth,2cm) shifted (0,-70mm) withcolor blue ;
+\stopMPcode
+\stoplinecorrection
+
+Because a lookup of a point in \METAPOST\ is a linear lookup over a linked list
+for very large paths the gain is significant when using \LUA\ because there the
+points are stored in an indexed table. The left and right points can be used
+vebose like
+
+\starttyping
+lua.mp.pathpoint(i) controls lua.mp.pathleft(i) and lua.mp.pathright(i)
+\stoptyping
+
+or more terse:
+
+\starttyping
+pointof i controls leftof i and rightof i
+\stoptyping
+
+Beware: this kind of trickery is {\em only} needed when you have very large paths
+that are to be manipulated and the. Otherwise it's overkill.
+
+\stopsection
+
+\startsection[title={Interfacing to \TEX}]
+
+The next bunch of calls is for accessing \TEX\ registers. You can set their
+values and get them as well.
+
+\starttyping
+lua.mp.getmacro(k)
+lua.mp.getdimen(k)
+lua.mp.getcount(k)
+lua.mp.gettoks (k)
+
+lua.mp.setmacro(k,v)
+lua.mp.setdimen(k,v)
+lua.mp.setcount(k,v)
+lua.mp.settoks (k,v)
+\stoptyping
+
+When you mess around with variables and run into issues it might help to
+report values on the console. The \type {report} function does this:
+
+\starttyping
+lua.mp.report(a,b)
+\stoptyping
+
+\startlinecorrection
+\startMPcode
+lua.mp.report("status","a circle") ;
+fill fullcircle xyscaled (2cm,1cm) withcolor red ;
+lua.mp.report("status","its boundingbox [@N,@N,@N,@N]",
+    xpart llcorner currentpicture, ypart llcorner currentpicture,
+    xpart urcorner currentpicture, ypart urcorner currentpicture
+) ;
+draw boundingbox currentpicture withcolor blue ;
+report("status","the size: @Nbp x @Nbp",
+    bbwidth(currentpicture), bbheight(currentpicture)
+) ;
+message("done") ;
+\stopMPcode
+\stoplinecorrection
+
+The console shows:
+
+\starttyping
+metapost > status : a circle
+metapost > status : its boundingbox [-28.34645,-14.17323,28.34645,14.17323]
+metapost > status : the size: 57.1929bp x 28.84647bp
+metapost > message : done
+\stoptyping
+
+There are two more getters. These can be used to access the specific graphic
+related variables set at the \TEX\ end.
+
+\starttyping
+mp.texvar(name)
+mp.texstr(name)
+\stoptyping
+
+If you have adaptive styles you might want to test for modes.
+
+\starttyping
+if lua.mp.mode("screen") : % or processingmode
+    % some action only needed for screen documents
+fi ;
+if lua.mp.systemmode("first") :
+    % some action for the first run
+fi ;
+\stoptyping
+
+For convenience these are wrapped into macros:
+
+\starttyping
+if texmode("screen") :
+    % some action only needed for screen documents
+fi ;
+if systemmode("first") :
+    % some action for the first run
+fi ;
+\stoptyping
+
+When you implement your own helpers you can fall back on some auxiliary functions
+in the \type {mp} namespace. Actually these are collected in \type {mp.aux} and
+thereby protected from being overwritten by mistake. Here they are:
+
+% mp.flush()
+% mp.size(t)
+
+\stopsection
+
+\startsection[title={Interfacing to \METAPOST}]
+
+There is also experimental access to some of the \METAPOST\ internals. In order
+to deal with (large) paths a few more iterator related helpers are provided too.
+
+% mp.set (numeric string path boolean)
+
+\starttyping
+n = mp.getnumeric(name)
+s = mp.getstring(name)
+b = mp.getboolean(name)
+p = mp.getpath(name)
+\stoptyping
+
+A is path a table of tables that have six values: the coordinates and the
+pre- and postcontrol. You can manipulate this table and feed it back into
+\METAPOST.
+
+\startlinecorrection
+\startMPcode
+numeric n ; n := lua.mp.newhash() ;
+
+for i=1 upto 3 :
+    lua.mp.tohash(n,i) ;
+endfor ;
+
+fill fullcircle scaled 10mm withcolor
+    if lua.mp.inhash(n,3) : green else : red fi ;
+
+fill fullcircle scaled 5mm withcolor
+    if lua.mp.inhash(n,4) : green else : red fi ;
+
+lua.mp.disposehash(n)
+\stopMPcode
+\stoplinecorrection
+
+You can also store values with keys and access them later:
+
+\startlinecorrection
+\startMPcode
+numeric n ; n := lua.mp.newhash() ;
+
+for i=1 upto 3 :
+    lua.mp.tohash(n,i,decimal sqrt(i)) ;
+endfor ;
+
+draw textext(lua.mp.fromhash(n,3))
+    ysized 1cm
+    withcolor blue ;
+
+lua.mp.disposehash(n)
+\stopMPcode
+\stoplinecorrection
+
+You can also name your own hash:
+
+\startlinecorrection
+\startMPcode
+lua.mp.newhash("foo") ;
+
+for i=1 upto 3 :
+    lua.mp.tohash("foo",i,decimal sqrt(i)) ;
+endfor ;
+
+draw textext(lua.mp.fromhash("foo",2))
+    ysized 1cm
+    withcolor green ;
+
+lua.mp.disposehash("foo")
+\stopMPcode
+\stoplinecorrection
+
+Although it might look like \METAPOST\ supports arrays the reality is that it
+doesn't really. There is a concept of suffixes but internally these are just a
+way to compose macros. The following test is one that is used in one of the
+\METAFUN\ modules written by Alan Braslau.
+
+\startlinecorrection
+\startMPcode
+path p, q[] ;
+
+if lua.mp.isarray(str q[1]) :
+    fill fullcircle scaled 1cm withcolor red ;
+    draw textext(lua.mp.prefix(str q[1])) withcolor white;
+else :
+    fill fullsquare scaled 1cm withcolor blue ;
+fi ;
+
+currentpicture := currentpicture shifted (-2cm,0) ;
+
+if lua.mp.isarray(str p) :
+    fill fullcircle scaled 1cm withcolor red ;
+else :
+    fill fullsquare scaled 1cm withcolor blue ;
+fi ;
+\stopMPcode
+\stoplinecorrection
+
+Another helper relates to extensions that \METAFUN\ adds to \METAPOST. When you
+iterate over a picture you can recognize these as objects. The next code shows
+the \LUA\ call as well as the more convenient macro call. So, \type {textext}
+clearly is a foreign object.
+
+\startlinecorrection
+\startMPcode
+picture p ; p := image (
+    fill fullcircle scaled 1cm withcolor red ;
+    draw textext("ok") withcolor white ;
+) ;
+
+for i within p :
+    if not picture i :
+        draw i ysized 4cm ;
+    elseif isobject i :
+        draw i xsized 3cm ;
+    else :
+        draw i ysized 4cm ;
+    fi ;
+endfor ;
+
+currentpicture := currentpicture shifted (-6cm,0) ;
+
+for i within p :
+    if isobject(i) :
+        draw i xsized 5cm ;
+    else :
+        draw i ysized 3cm withcolor blue;
+    fi ;
+endfor ;
+\stopMPcode
+\stoplinecorrection
+
+% not yet, still experimental:
+%
+% mp.dataset(str)
+% mp.n(t)
+
+% not for users:
+%
+% mp.defaultcolormodel()
+
+% rather specialized:
+%
+% mp.positionpath(name)
+% mp.positioncurve(name)
+% mp.positionbox(name)
+% mp.positionxy(name)
+% mp.positionpage(name)
+% mp.positionregion(name)
+% mp.positionwhd(name)
+% mp.positionpxy(name)
+% mp.positionanchor()
+
+
+% mp.cleaned
+% mp.format(fmt,str)
+% mp.formatted(fmt,...)
+% mp.graphformat(fmt,num)
 
 \stopsection
 
@@ -1055,6 +1588,4 @@ serialization.
 %
 % \ctxcommand{mprunvar("x")}
 
-\stoptext
-
-
+\stopcomponent

@@ -201,11 +201,17 @@
 
 \let\margindatahbox\naturalhbox % \hbox
 
+\newcount\c_typo_margins_n
+
+\ifdefined\dotagmarginanchor \else \let\dotagmarginanchor\gobbleoneargument \fi
+\ifdefined\dotagmargintext   \else \let\dotagmargintext  \gobbleoneargument \fi
+
 \unexpanded\def\typo_margins_data_yes_indeed[#dataparameters][#textparameters]#content%
   {\iffirstargument
      \setupcurrentmargindata[#dataparameters]%
    \fi
    \doifelsenothing{#content}\donefalse\donetrue
+   \global\advance\c_typo_margins_n\plusone
    \ifdone
      \edef\currentmarginreference{\margindataparameter\c!reference}%
      \ifx\currentmarginreference\empty \else
@@ -213,6 +219,7 @@
      \fi
      \edef\currentmargindatastrut{\margindataparameter\c!strut}%
      \dostarttaggedchained\t!margintext\currentmargindata\??margindata
+     \dotagmargintext\c_typo_margins_n
      \ifcsname\currentmarginframedhash\s!parent\endcsname
        \setbox\nextbox\margindatahbox \currentmarginreference \bgroup
          \the\everymargindatacontent
@@ -272,6 +279,8 @@
    \ifdone
      \edef\p_anchor{\margindataparameter\c!anchor}%
      \anch_positions_initialize % we use positions at the lua end
+     \dostarttagged\t!marginanchor\empty
+     \dotagmarginanchor\c_typo_margins_n
      \clf_savemargindata
        location    {\margindataparameter\c!location}%
        method      {\margindataparameter\c!method}%
@@ -307,7 +316,9 @@
        line        \numexpr\margindataparameter\c!line\relax
        stackname   {\margindataparameter\c!stackname}%
        stack       {\margindataparameter\c!stack}%
+       index       \c_typo_margins_n
      \relax
+     \dostoptagged
    \else
      \clf_savemargindata
        location    {\margindataparameter\c!location}%

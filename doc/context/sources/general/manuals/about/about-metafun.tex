@@ -727,15 +727,15 @@ We load the data in datasets:
 
 \startbuffer
 \startMPcode
-  lua.mp.datasets.load("foo","foo.tmp") ;
-  lua.mp.datasets.load("bar","bar.tmp") ;
+  lua.mp.datasets("load","foo","foo.tmp") ;
+  lua.mp.datasets("load","bar","bar.tmp") ;
   fill area
-    lua.mp.datasets.foo.Line()
+    lua.mp.datasets("foo","line")
     xysized (HSize/2-EmWidth,10ExHeight)
     withpen pencircle scaled .25ExHeight
     withcolor green/2 ;
   fill area
-    lua.mp.datasets.bar.Line()
+    lua.mp.datasets("bar","line")
     xysized (HSize/2-EmWidth,10ExHeight)
     shifted (HSize/2+EmWidth,0)
     withpen pencircle scaled .25ExHeight
@@ -755,8 +755,8 @@ following is valid:
 
 \starttyping
 \startMPcode
-  lua.mp.datasets.load("foo.tmp") ;
-  lua.mp.datasets.load("bar.tmp") ;
+  lua.mp.datasets("load","foo.tmp") ;
+  lua.mp.datasets("load","bar.tmp") ;
 \stopMPcode
 \stoptyping
 
