@@ -167,7 +167,7 @@
 \def\stoplocal   {\dostopglobaldefs}
 \def\startglobal {\dostartglobaldefs<+}
 \def\stopglobal  {\dostopglobaldefs}
-
+
 \def\complexstart[#1]{\bgroup\getvalue{\e!start#1}}
 \def\complexstop [#1]{\getvalue{\e!stop #1}\egroup}
 
@@ -215,7 +215,7 @@
 
 \def\setupstartstop
   {\dodoubleargument\dosetupstartstop}
-
+
 % \docommand kan niet worden gebruikt omdat deze macro
 %  soms lokaal wordt gebruikt
 
@@ -275,7 +275,7 @@
    \def\docommand##1{\setbox0\hbox{\getvalue{\string##1}##1}}%
    \processcommalist[#1]\docommand
    \egroup}
-
+
 \newif\ifforcefileexpansion % handy for document level overload
 
 %D The next implementation is about 4 times as faster than a
@@ -374,7 +374,7 @@
    \let\unicodechar\numbertoutf
    \edef\ascii{#1}%
    \expandafter\endgroup\expandafter\edef\expandafter#2\expandafter{\ascii}}
-
+
 % \setvalue{statevalue\v!stop   }{0}
 % \setvalue{statevalue\v!start  }{1}
 % \setvalue{statevalue\v!normaal}{2}
@@ -385,12 +385,12 @@
 %   {\chardef\currentstate=0\getvalue{statevalue\getvalue{#1\c!state}\relax}
 %
 % \ifcase\currentstate ...
-
+
 \def\redo{\dorepeat} % [n*10], kind of obsolete
 
 % obsolete, use \dorecurse instead
 %
 % \def\herhaler           {\repeater}
 % \def\herhaalmetcommando {\dorepeatwithcommand}
-
+
 \protect \endinput

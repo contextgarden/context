@@ -2057,7 +2057,7 @@ do
     local f_detail                     = formatters[' detail="%s"']
     local f_chain                      = formatters[' chain="%s"']
     local f_index                      = formatters[' n="%s"']
-    local f_spacing                    = formatters['<c n="%s">%s</c>']
+    local f_spacing                    = formatters['<c p="%s">%s</c>']
 
     local f_empty_inline               = formatters["<%s/>"]
     local f_empty_mixed                = formatters["%w<%s/>\n"]
@@ -2235,8 +2235,14 @@ do
             end
             local a = di.attributes
             if a then
+                if trace_spacing then
+                    a.p = di.parnumber or 0
+                end
                 n = n + 1
                 r[n] = attributes(a)
+            elseif trace_spacing then
+                n = n + 1
+                r[n] = attributes { p = di.parnumber or 0 }
             end
             if n == 0 then
                 if nature == "inline" or inline > 0 then
@@ -2826,6 +2832,7 @@ local collectresults  do -- too many locals otherwise
     local kern_code         = nodecodes.kern
     local disc_code         = nodecodes.disc
     local whatsit_code      = nodecodes.whatsit
+    local localpar_code     = nodecodes.localpar
 
     local userskip_code     = skipcodes.userskip
     local rightskip_code    = skipcodes.rightskip
@@ -2869,8 +2876,30 @@ local collectresults  do -- too many locals otherwise
     local nexthlist         = nuts.traversers.hlist
     local nextnode          = nuts.traversers.node
 
+    local function addtomaybe(maybewrong,c,case)
+        if trace_export then
+            report_export("%w<!-- possible paragraph mixup at %C case %i -->",currentdepth,c,at,case)
+        else
+            local s = formatters["%C"](c)
+            if maybewrong then
+                maybewrong[#maybewrong+1] = s
+            else
+                maybewrong = { s }
+            end
+            return maybewrong
+        end
+    end
+
+    local function showmaybe(maybewrong)
+        if not trace_export then
+            report_export("fuzzy paragraph: % t",maybewrong)
+        end
+    end
+
     local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
         local p
+        local localparagraph
+        local maybewrong
         for n, id, subtype in nextnode, head do
 -- can go :
 if not subtype then
@@ -2891,9 +2920,13 @@ end
                     else
                         if last ~= at then
                             local tl = taglist[at]
+                            local ap = getattr(n,a_taggedpar) or pap
+if localparagraph and (not ap or ap < localparagraph) then
+    maybewrong = addtomaybe(maybewrong,c,1)
+end
                             pushcontent()
-                            currentnesting = tl
-                            currentparagraph = getattr(n,a_taggedpar) or pap
+                            currentnesting   = tl
+                            currentparagraph = ap
                             currentattribute = at
                             last = at
                             pushentry(currentnesting)
@@ -2924,12 +2957,15 @@ end
                                 currentattribute = last
                                 currentparagraph = ap
                             end
+if localparagraph and (not ap or ap < localparagraph) then
+    maybewrong = addtomaybe(maybewrong,c,2)
+end
                             if trace_export then
-                                report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,last)
+                                report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,last)
                             end
                         else
                             if trace_export then
-                                report_export("%w<!-- processing glyph %C tagged %a) -->",currentdepth,c,at)
+                                report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
                             end
                         end
                         local s = getattr(n,a_exportstatus)
@@ -3118,8 +3154,11 @@ end
                         end
                     end
                 elseif subtype == parfillskip_code then
-                    -- deal with paragaph endings (crossings) elsewhere and we quit here
+                    -- deal with paragraph endings (crossings) elsewhere and we quit here
                     -- as we don't want the rightskip space addition
+                    if maybewrong then
+                        showmaybe(maybewrong)
+                    end
                     return
                 end
             elseif id == hlist_code or id == vlist_code then
@@ -3196,8 +3235,13 @@ end
                     last = nil
                     currentparagraph = nil
                 end
+            elseif id == localpar_code then
+                localparagraph = getattr(n,a_taggedpar)
             end
             p = n
+        end
+        if maybewrong then
+            showmaybe(maybewrong)
         end
     end
 
@@ -3214,6 +3258,11 @@ end
         end
         stoptiming(treehash)
         return head
+    end
+
+    function nodes.handlers.checkparcounter(p)
+        setattr(p,a_taggedpar,texgetcount("tagparcounter") + 1)
+        return p
     end
 
     function builders.paragraphs.tag(head) -- traverse_list
@@ -3982,6 +4031,7 @@ local htmltemplate = [[
             enableaction("shipouts","nodes.handlers.export")
             enableaction("shipouts","nodes.handlers.accessibility")
             enableaction("math",    "noads.handlers.tags")
+            enableaction("everypar","nodes.handlers.checkparcounter")
             luatex.registerstopactions(structurestags.finishexport)
             exporting = true
         end

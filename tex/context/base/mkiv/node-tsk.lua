@@ -277,22 +277,12 @@ function tasks.table(name) --maybe move this to task-deb.lua
     end
 end
 
--- -- shipouts -- --
+-- -- shipouts everypar -- --
 
 -- the shipout handlers acts on boxes so we don't need to return something
 -- and also don't need to keep the state (done)
 
-tasks.new {
-    name      = "shipouts",
-    processor = nodeprocessor,
-    sequence  = {
-        "before",      -- users
-        "normalizers", -- system
-        "finishers",   -- system
-        "after",       -- users
-        "wrapup",      -- system
-    },
-    templates = {
+local templates = {
 
 default = [[
 return function(head)
@@ -330,7 +320,30 @@ nonut = [[
     %action%(nuthead)
 ]],
 
-    }
+}
+
+tasks.new {
+    name      = "shipouts",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- users
+        "normalizers", -- system
+        "finishers",   -- system
+        "after",       -- users
+        "wrapup",      -- system
+    },
+    templates = templates
+}
+
+tasks.new {
+    name      = "everypar",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- users
+        "normalizers", -- system
+        "after",       -- users
+    },
+    templates = templates,
 }
 
 -- -- finalizers -- --

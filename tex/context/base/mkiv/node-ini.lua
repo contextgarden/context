@@ -383,6 +383,26 @@ nodes.dirvalues            = dirvalues
 nodes.gluevalues           = gluevalues
 nodes.pdfliteralvalues     = pdfliteralvalues
 
+nodes.subtypes = {
+    [nodecodes.accent]     = accentcodes,
+    [nodecodes.boundary]   = boundarycodes,
+    [nodecodes.dir]        = dircodes,
+    [nodecodes.disc]       = disccodes,
+    [nodecodes.fence]      = fencecodes,
+    [nodecodes.glue]       = gluecodes,
+    [nodecodes.glyph]      = glyphcodes,
+    [nodecodes.hlist]      = listcodes,
+    [nodecodes.kern]       = kerncodes,
+    [nodecodes.marginkern] = margincodes,
+    [nodecodes.math]       = mathcodes,
+    [nodecodes.noad]       = noadcodes,
+    [nodecodes.penalty]    = penaltycodes,
+    [nodecodes.radical]    = radicalcodes,
+    [nodecodes.rule]       = rulecodes,
+    [nodecodes.vlist]      = listcodes,
+    [nodecodes.whatsit]    = whatcodes,
+}
+
 nodes.skipcodes            = gluecodes        -- more friendly
 nodes.directioncodes       = dircodes         -- more friendly
 nodes.whatsitcodes         = whatcodes        -- more official

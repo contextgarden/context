@@ -97,7 +97,7 @@
 
 \newconstant\c_page_otr_eject_penalty   \c_page_otr_eject_penalty   -\plustenthousand
 \newconstant\c_page_otr_super_penalty   \c_page_otr_super_penalty   -\plustwentythousand
-\newcount   \c_page_otf_trigger_penalty \c_page_otf_trigger_penalty -100010
+\newcount   \c_page_otr_trigger_penalty \c_page_otr_trigger_penalty -100010
 
 \newif      \ifinotr % we keep this (name) for old times sake
 
@@ -127,9 +127,9 @@
    \endgroup}
 
 \unexpanded\def\installoutputroutine#invoke#action% \invoke \action
-  {\global\advance\c_page_otf_trigger_penalty\minusone
-   \edef#invoke{\page_otr_trigger{\number\c_page_otf_trigger_penalty}}%
-   \setvalue{\??otrtriggers\number\c_page_otf_trigger_penalty}{#action}}
+  {\global\advance\c_page_otr_trigger_penalty\minusone
+   \edef#invoke{\page_otr_trigger{\number\c_page_otr_trigger_penalty}}%
+   \setvalue{\??otrtriggers\number\c_page_otr_trigger_penalty}{#action}}
 
 \unexpanded\def\page_otr_triggered_output_routine_traced
   {\ifcsname\??otrtriggers\the\outputpenalty\endcsname
@@ -160,7 +160,7 @@
 \ifdefined\everybeforeoutput \else \newtoks\everybeforeoutput \fi
 \ifdefined\everyafteroutput  \else \newtoks\everyafteroutput  \fi
 
-\def\page_otf_set_engine_output_routine#content%
+\def\page_otr_set_engine_output_routine#content%
   {\global\output
      {\inotrtrue
       \the\everybeforeoutput
@@ -172,7 +172,7 @@
 % \ifdefined\everybeforeoutputgroup \else \newtoks\everybeforeoutputgroup \fi
 % \ifdefined\everyafteroutputgroup  \else \newtoks\everyafteroutputgroup  \fi
 %
-% \def\page_otf_set_engine_output_routine#content%
+% \def\page_otr_set_engine_output_routine#content%
 %   {\the\everybeforeoutputgroup
 %    \global\output
 %      {\inotrtrue
@@ -187,7 +187,7 @@
 %     \fi
 % \to \everyafteroutputgroup
 
-\page_otf_set_engine_output_routine\page_otr_triggered_output_routine
+\page_otr_set_engine_output_routine\page_otr_triggered_output_routine
 
 \installoutputroutine\synchronizeoutput % use \triggerpagebuilder instead
   {\ifvoid\normalpagebox\else

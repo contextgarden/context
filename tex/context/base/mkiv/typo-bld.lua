@@ -139,7 +139,7 @@ end
 
 -- also for testing (now also surrounding spacing done)
 
-function builders.paragraphs.constructors.methods.oneline(head,followed_by_display)
+function parbuilders.constructors.methods.oneline(head,followed_by_display)
     -- when needed we will turn this into a helper
     local t = texnest[texnest.ptr]
     local h = hpack_node(head)

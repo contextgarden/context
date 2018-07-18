@@ -171,7 +171,8 @@ local new_rule            = nodepool.rule
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
-local penaltycodes        = nodes.penaltycodes
+----- penaltycodes        = nodes.penaltycodes
+----- listcodes           = nodes.listcodes
 
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
@@ -179,9 +180,10 @@ local glue_code           = nodecodes.glue
 local insert_code         = nodecodes.ins
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
+local rule_code           = nodecodes.rule
 local localpar_code       = nodecodes.localpar
 
-local linebreak_code      = penaltycodes.linebreakpenalty
+local linebreak_code      = nodes.penaltycodes.linebreakpenalty
 
 local userskip_code       = skipcodes.userskip
 local lineskip_code       = skipcodes.lineskip
@@ -189,6 +191,8 @@ local baselineskip_code   = skipcodes.baselineskip
 local parskip_code        = skipcodes.parskip
 local topskip_code        = skipcodes.topskip
 local splittopskip_code   = skipcodes.splittopskip
+
+local line_code           = nodes.listcodes.line
 
 local abovedisplayskip_code      = skipcodes.abovedisplayskip
 local belowdisplayskip_code      = skipcodes.belowdisplayskip
@@ -2023,7 +2027,6 @@ do
 
     local outer   = texnest[0]
     local enabled = true
-    local count   = true
     local trace   = false
     local report  = logs.reporter("vspacing")
 
@@ -2032,37 +2035,8 @@ do
     end)
 
     directives.register("vspacing.synchronizepage",function(v)
-        if v == true or v == "count" then
-            enabled = true
-            count   = true
-        elseif v == "first" then
-            enabled = true
-            count   = false
-        else
-            enabled = false
-            count   = false
-        end
+        enabled = v
     end)
-
-    -- hm, check the old one
-
- -- function vspacing.synchronizepage()
- --     if enabled then
- --         local head = texlists.hold_head
- --         local skip = 0
- --         while head and head.id == insert_code do
- --             head = head.next
- --             skip = skip + 1
- --         end
- --         if head then
- --             outer.prevdepth = 0
- --         end
- --         if trace then
- --             report("prevdepth %s at page %i, skipped %i, value %p",
- --                 head and "reset" or "kept",texgetcount("realpageno"),skip,outer.prevdepth)
- --         end
- --     end
- -- end
 
     local ignoredepth = -65536000
 
@@ -2072,59 +2046,59 @@ do
             local olddepth = newdepth
             local oldlines = outer.prevgraf
             local newlines = 0
-            local boxfound = false
-            local head     = texlists.contrib_head
+            local head     = texlists.page_head
             if head then
-                local tail = find_node_tail(tonut(head))
-                while tail do
-                    local id = getid(tail)
-                    if id == hlist_code then
-                        if not boxfound then
-                            newdepth = getdepth(tail)
-                            boxfound = true
-                        end
-                        newlines = newlines + 1
-                        if not count then
+                head = tonut(head)
+                if getid(head) == glue_code and getsubtype(head) == topskip_code then
+                    local tail = find_node_tail(head)
+                    while tail do
+                        local id = getid(tail)
+                        if id == hlist_code then
+                            if getsubtype(tail) == line_code then
+                                newlines = newlines + 1
+                            else
+                                break
+                            end
+                        elseif id == vlist_code then
                             break
-                        end
-                    elseif id == vlist_code then
-                        if not boxfound then
-                            newdepth = getdepth(tail)
-                            boxfound = true
-                        end
-                        break
-                    elseif id == glue_code then
-                        local subtype = getsubtype(tail)
-                        if not (subtype == baselineskip_code or subtype == lineskip_code) then
+                        elseif id == glue_code then
+                            local subtype = getsubtype(tail)
+                            if subtype == baselineskip_code or subtype == lineskip_code then
+                                -- we're ok
+                            elseif subtype == parskip_code then
+                                if getwidth(tail) > 0 then
+                                    break
+                                else
+                                    -- we assume we're ok
+                                end
+                            end
+                        elseif id == penalty_code then
+                            -- we're probably ok
+                        elseif id == rule_code or id == kern_code then
                             break
-                        elseif boxfound and not count then
-                            break
+                        else
+                            -- ins, mark, boundary, whatsit
                         end
-                    elseif id == penalty_code then
-                        if boxfound and not count then
-                            break
-                        end
-                    else
-                        -- ins, mark, kern, rule, boundary, whatsit
-                        break
+                        tail = getprev(tail)
                     end
-                    tail = getprev(tail)
                 end
-            end
-            if boxfound then
-                -- what if newdepth ...
             else
+                newdepth = ignoredepth
                 texset("prevdepth",ignoredepth)
                 outer.prevdepth = ignoredepth
             end
             texset("prevgraf", newlines)
             outer.prevgraf = newlines
             if trace then
-                report("page %i, prevdepth %p (last depth %p), prevgraf %i (from %i), %sboxes",
-                    texgetcount("realpageno"),olddepth,newdepth,oldlines,newlines,boxfound and "" or "no ")
+                report("page %i, prevdepth %p => %p, prevgraf %i => %i",
+                    texgetcount("realpageno"),olddepth,newdepth,oldlines,newlines)
+                report("list %s",nodes.idsandsubtypes(head))
             end
         end
     end
+
+
+
 
     local trace = false
 

@@ -284,16 +284,16 @@
       \doifnotinset\v!low\floatspecification\vfill}%
    \page_otr_fill_and_eject_page}
 
-\let\m_page_otf_checked_page_float\relax
+\let\m_page_otr_checked_page_float\relax
 
 \unexpanded\def\page_floats_flush_page_floats % used in postpone
-  {\edef\m_page_otf_checked_page_float{\clf_checkedpagefloat}%
-   \ifx\m_page_otf_checked_page_float\empty
+  {\edef\m_page_otr_checked_page_float{\clf_checkedpagefloat}%
+   \ifx\m_page_otr_checked_page_float\empty
      % nothing
-   \else\ifx\m_page_otf_checked_page_float\v!empty
+   \else\ifx\m_page_otr_checked_page_float\v!empty
       \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
    \else
-      \page_floats_flush_page_floats_indeed\m_page_otf_checked_page_float
+      \page_floats_flush_page_floats_indeed\m_page_otr_checked_page_float
    \fi\fi}
 
 % temp hack, needed to prevent floatbox being forgotten during

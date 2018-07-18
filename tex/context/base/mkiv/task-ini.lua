@@ -139,6 +139,8 @@ appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler",    
 appendaction("mvlbuilders",  "normalizers", "builders.profiling.pagehandler",                   nil, "nut",    "disabled"  )
 appendaction("mvlbuilders",  "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )
 
+appendaction("everypar",     "normalizers", "nodes.handlers.checkparcounter",                   nil, "nut",    "disabled"  )
+
 -- some protection
 
 freezecallbacks("find_.*_file", "find file using resolver")
@@ -172,6 +174,8 @@ freezegroup("vboxbuilders", "normalizers")
 
 freezegroup("math",         "normalizers")
 freezegroup("math",         "builders")
+
+freezegroup("everypar",     "normalizers")
 
 -- new: disabled here
 

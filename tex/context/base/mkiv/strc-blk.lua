@@ -43,11 +43,11 @@ job.register('structures.blocks.collected', tobesaved, initializer)
 
 local listitem = utilities.parsers.listitem
 
-function blocks.print(name,data,hide)
+function blocks.print(name,data,parameters,hide)
     if hide then
-        context.dostarthiddenblock(name)
+        context.dostarthiddenblock(name, parameters)
     else
-        context.dostartnormalblock(name)
+        context.dostartnormalblock(name, parameters)
     end
     context.viafile(data,format("block.%s",validstring(name,"noname")))
     if hide then
@@ -98,12 +98,12 @@ function blocks.select(state,name,tag,criterium)
         local metadata = ri.metadata
         if names[metadata.name] then
             if all then
-                blocks.print(name,ri.data,hide)
+                blocks.print(name,ri.data,ri.parameters,hide)
             else
                 local mtags = metadata.tags
                 for tag, sta in next, tags do
                     if mtags[tag] then
-                        blocks.print(name,ri.data,hide)
+                        blocks.print(name,ri.data,ri.parameters,hide)
                         break
                     end
                 end
@@ -112,7 +112,7 @@ function blocks.select(state,name,tag,criterium)
     end
 end
 
-function blocks.save(name,tag,buffer) -- wrong, not yet adapted
+function blocks.save(name,tag,parameters,buffer) -- wrong, not yet adapted
     local data = buffers.getcontent(buffer)
     local tags = settings_to_set(tag)
     local plus, minus = false, false
@@ -129,24 +129,25 @@ function blocks.save(name,tag,buffer) -- wrong, not yet adapted
             section  = sections.currentid(),
         },
         data = data or "error",
+        parameters = parameters,
     }
     local allstate = states[name].all
     if not next(tags) then
         if allstate ~= "hide" then
-            blocks.print(name,data)
+            blocks.print(name,data,parameters)
         elseif plus then
-            blocks.print(name,data,true)
+            blocks.print(name,data,parameters,true)
         end
     else
         local sn = states[name]
         for tag, _ in next, tags do
             if sn[tag] == nil then
                 if allstate ~= "hide" then
-                    blocks.print(name,data)
+                    blocks.print(name,data,parameters)
                     break
                 end
             elseif sn[tag] ~= "hide" then
-                blocks.print(name,data)
+                blocks.print(name,data,parameters)
                 break
             end
         end
@@ -157,6 +158,6 @@ end
 -- interface
 
 implement { name = "definestructureblock",   actions = blocks.define,   arguments = "string" }
-implement { name = "savestructureblock",     actions = blocks.save,     arguments = "3 strings" }
+implement { name = "savestructureblock",     actions = blocks.save,     arguments = "4 strings" }
 implement { name = "selectstructureblock",   actions = blocks.select,   arguments = "4 strings" }
 implement { name = "setstructureblockstate", actions = blocks.setstate, arguments = "3 strings" }

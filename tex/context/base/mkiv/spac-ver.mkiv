@@ -1309,9 +1309,27 @@
 
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
 
+%D This is tricky. The prevdepth value is still set to the last
+%D one even if there is nothing on the page. The same is true for
+%D prevgraf, which doesn't resemble the value on the current page.
+%D
+%D So, here we kick in a checker but it has to happen after the
+%D output group and it only has to be done once (output can trigger
+%D itself!).
+
+\unexpanded\def\page_otr_synchronize_page_yes
+  {\aftergroup\page_otr_synchronize_page_indeed
+   \glet\page_otr_synchronize_page\relax}
+
+\unexpanded\def\page_otr_synchronize_page_indeed
+  {\clf_synchronizepage
+   \glet\page_otr_synchronize_page\page_otr_synchronize_page_yes}
+
+\let\page_otr_synchronize_page\page_otr_synchronize_page_yes
+
 \appendtoks
-    \ifvmode\clf_synchronizepage\fi % a nasty hack (tested for a while now)
-\to \everyafteroutput
+    \page_otr_synchronize_page
+\to \everyaftershipout
 
 %D My own one:
 

@@ -70,6 +70,8 @@ local whatcodes        = nodes.whatcodes
 local skipcodes        = nodes.skipcodes
 local fillcodes        = nodes.fillcodes
 
+local subtypes         = nodes.subtypes
+
 local glyph_code       = nodecodes.glyph
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
@@ -99,8 +101,9 @@ end
 function nodes.handlers.checkglyphs(head,message)
     local h = tonut(head)
     local t = { }
+    local f = formatters["%U:%s"]
     for g in nextglyph, h do
-        t[#t+1] = formatters["%U:%s"](getchar(g),getsubtype(g))
+        t[#t+1] = f(getchar(g),getsubtype(g))
     end
     if #t > 0 then
         if message and message ~= "" then
@@ -125,11 +128,11 @@ function nodes.handlers.checkforleaks(sparse)
     end
 end
 
-local f_sequence = formatters["U+%04X:%s"]
-local f_subrange = formatters["[[ %s ][ %s ][ %s ]]"]
 
 local function tosequence(start,stop,compact)
     if start then
+        local f_sequence = formatters["U+%04X:%s"]
+        local f_subrange = formatters["[[ %s ][ %s ][ %s ]]"]
         start = tonut(start)
         stop = stop and tonut(stop)
         local t = { }
@@ -204,6 +207,8 @@ function nodes.idstostring(head,tail)
     local t       = { }
     local last_id = nil
     local last_n  = 0
+    local f_two   = formatters["[%s*%s]"]
+    local f_one   = formatters["[%s]"]
     for n, id, subtype in nextnode, head do
         if id == whatsit_code then
             id = whatcodes[subtype]
@@ -217,9 +222,9 @@ function nodes.idstostring(head,tail)
             last_n = last_n + 1
         else
             if last_n > 1 then
-                t[#t+1] = formatters["[%s*%s]"](last_n,last_id)
+                t[#t+1] = f_two(last_n,last_id)
             else
-                t[#t+1] = formatters["[%s]"](last_id)
+                t[#t+1] = f_one(last_id)
             end
             last_id = id
             last_n  = 1
@@ -232,12 +237,27 @@ function nodes.idstostring(head,tail)
         t[#t+1] = "no nodes"
     else
         if last_n > 1 then
-            t[#t+1] = formatters["[%s*%s]"](last_n,last_id)
+            t[#t+1] = f_two(last_n,last_id)
         else
-            t[#t+1] = formatters["[%s]"](last_id)
+            t[#t+1] = f_one(last_id)
         end
     end
     return concat(t," ")
+end
+
+function nodes.idsandsubtypes(head)
+    local h = tonut(head)
+    local t = { }
+    local f = formatters["%s:%s"]
+    for n, id, subtype in nextnode, h do
+        local c = nodecodes[id]
+        if subtype then
+            t[#t+1] = f(c,subtypes[id][subtype])
+        else
+            t[#t+1] = c
+        end
+    end
+    return concat(t, " ")
 end
 
 -- function nodes.xidstostring(head,tail) -- only for special tracing of backlinks
@@ -304,17 +324,19 @@ nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 local function listtoutf(h,joiner,textonly,last,nodisc)
     local w = { }
     local n = 0
+    local g = formatters["<%i>"]
+    local d = formatters["[%s|%s|%s]"]
     while h do
         local c, id = isglyph(h)
         if c then
-            n = n + 1 ; w[n] = c >= 0 and utfchar(c) or formatters["<%i>"](c)
+            n = n + 1 ; w[n] = c >= 0 and utfchar(c) or g(c)
             if joiner then
                 n = n + 1 ; w[n] = joiner
             end
         elseif id == disc_code then
             local pre, pos, rep = getdisc(h)
             if not nodisc then
-                n = n + 1 ; w[n] = formatters["[%s|%s|%s]"] (
+                n = n + 1 ; w[n] = d(
                     pre and listtoutf(pre,joiner,textonly) or "",
                     pos and listtoutf(pos,joiner,textonly) or "",
                     rep and listtoutf(rep,joiner,textonly) or ""

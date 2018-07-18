@@ -34,14 +34,14 @@
 
 \appendtoks
     \clf_definestructureblock{\currentblock}%
-    \setuevalue{\e!begin\currentblock}{\dodoubleempty\strc_blocks_begin[\currentblock]}%
+    \setuevalue{\e!begin\currentblock}{\dotripleempty\strc_blocks_begin[\currentblock]}%
     \setuevalue{\e!end  \currentblock}{}%
 \to \everydefineblock
 
-\unexpanded\def\strc_blocks_begin[#1][#2]%
+\unexpanded\def\strc_blocks_begin[#1][#2][#3]%
   {\normalexpanded{\buff_pickup{@block@}{\e!begin#1}{\e!end#1}}
      {}% before
-     {\clf_savestructureblock{#1}{#2}{@block@}}%
+     {\clf_savestructureblock{#1}{#2}{#3}{@block@}}%
      \plusone}% after
 
 \let\strc_blocks_setup\relax
@@ -54,10 +54,11 @@
   {\dostopnormalblock
    \stopnointerference}
 
-\unexpanded\def\dostartnormalblock#1% called at lua end
+\unexpanded\def\dostartnormalblock#1#2% called at lua end
   {\bgroup
    \visibletrue  % will change
    \edef\currentblock{#1}%
+   \setupcurrentblock[#2]%
    \strc_blocks_setup
    \let\strc_blocks_setup\relax
    \blockparameter\c!before
