@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['strc-blk'] = {
 -- this one runs on top of buffers and structure
 
 local type, next = type, next
-local find, format, validstring = string.find, string.format, string.valid
+local find, formatters, validstring = string.find, string.formatters, string.valid
 local settings_to_set, settings_to_array = utilities.parsers.settings_to_set, utilities.parsers.settings_to_array
 local allocate = utilities.storage.allocate
 
@@ -25,6 +25,7 @@ structures.blocks = structures.blocks or { }
 local blocks      = structures.blocks
 local sections    = structures.sections
 local lists       = structures.lists
+local helpers     = structures.helpers
 
 local collected   = allocate()
 local tobesaved   = allocate()
@@ -42,14 +43,28 @@ end
 job.register('structures.blocks.collected', tobesaved, initializer)
 
 local listitem = utilities.parsers.listitem
+local f_block  = formatters["block.%s"]
 
-function blocks.print(name,data,parameters,hide)
-    if hide then
-        context.dostarthiddenblock(name, parameters)
-    else
-        context.dostartnormalblock(name, parameters)
+function blocks.uservariable(index,key,default)
+    local c = collected[index]
+    if c then
+        local u = c.userdata
+        if u then
+            local v = u[key] or default
+            if v then
+                context(v)
+            end
+        end
     end
-    context.viafile(data,format("block.%s",validstring(name,"noname")))
+end
+
+local function printblock(index,name,data,hide)
+    if hide then
+        context.dostarthiddenblock(index,name)
+    else
+        context.dostartnormalblock(index,name)
+    end
+    context.viafile(data,f_block(validstring(name,"noname")))
     if hide then
         context.dostophiddenblock()
     else
@@ -57,12 +72,14 @@ function blocks.print(name,data,parameters,hide)
     end
 end
 
+blocks.print = printblock
+
 function blocks.define(name)
     states[name] = { all = "hide" }
 end
 
 function blocks.setstate(state,name,tag)
-    local all = tag == ""
+    local all  = tag == ""
     local tags = not all and settings_to_array(tag)
     for n in listitem(name) do
         local sn = states[n]
@@ -98,12 +115,12 @@ function blocks.select(state,name,tag,criterium)
         local metadata = ri.metadata
         if names[metadata.name] then
             if all then
-                blocks.print(name,ri.data,ri.parameters,hide)
+                printblock(ri.index,name,ri.data,hide)
             else
                 local mtags = metadata.tags
                 for tag, sta in next, tags do
                     if mtags[tag] then
-                        blocks.print(name,ri.data,ri.parameters,hide)
+                        printblock(ri.index,name,ri.data,hide)
                         break
                     end
                 end
@@ -112,42 +129,51 @@ function blocks.select(state,name,tag,criterium)
     end
 end
 
-function blocks.save(name,tag,parameters,buffer) -- wrong, not yet adapted
-    local data = buffers.getcontent(buffer)
-    local tags = settings_to_set(tag)
-    local plus, minus = false, false
-    if tags['+'] then plus  = true tags['+'] = nil end
-    if tags['-'] then minus = true tags['-'] = nil end
-    tobesaved[#tobesaved+1] = {
-        metadata = {
-            name = name,
-            tags = tags,
-            plus = plus,
+function blocks.save(name,tag,userdata,buffer) -- wrong, not yet adapted
+    local data  = buffers.getcontent(buffer)
+    local tags  = settings_to_set(tag)
+    local plus  = false
+    local minus = false
+    local last  = #tobesaved + 1
+    local all   = states[name].all
+    if tags['+'] then
+        plus      = true
+        tags['+'] = nil
+    end
+    if tags['-'] then
+        minus     = true
+        tags['-'] = nil
+    end
+    tobesaved[last] = helpers.simplify {
+        metadata   = {
+            name  = name,
+            tags  = tags,
+            plus  = plus,
             minus = minus,
         },
+        index      = last,
+        data       = data or "error",
+        userdata   = userdata and type(userdata) == "string" and helpers.touserdata(userdata),
         references = {
-            section  = sections.currentid(),
+            section = sections.currentid(),
         },
-        data = data or "error",
-        parameters = parameters,
     }
-    local allstate = states[name].all
     if not next(tags) then
-        if allstate ~= "hide" then
-            blocks.print(name,data,parameters)
+        if all ~= "hide" then
+            printblock(last,name,data)
         elseif plus then
-            blocks.print(name,data,parameters,true)
+            printblock(last,name,data,true)
         end
     else
         local sn = states[name]
         for tag, _ in next, tags do
             if sn[tag] == nil then
-                if allstate ~= "hide" then
-                    blocks.print(name,data,parameters)
+                if all ~= "hide" then
+                    printblock(last,name,data)
                     break
                 end
             elseif sn[tag] ~= "hide" then
-                blocks.print(name,data,parameters)
+                printblock(last,name,data)
                 break
             end
         end
@@ -157,7 +183,8 @@ end
 
 -- interface
 
-implement { name = "definestructureblock",   actions = blocks.define,   arguments = "string" }
-implement { name = "savestructureblock",     actions = blocks.save,     arguments = "4 strings" }
-implement { name = "selectstructureblock",   actions = blocks.select,   arguments = "4 strings" }
-implement { name = "setstructureblockstate", actions = blocks.setstate, arguments = "3 strings" }
+implement { name = "definestructureblock",       actions = blocks.define,       arguments = "string" }
+implement { name = "savestructureblock",         actions = blocks.save,         arguments = "4 strings" }
+implement { name = "selectstructureblock",       actions = blocks.select,       arguments = "4 strings" }
+implement { name = "setstructureblockstate",     actions = blocks.setstate,     arguments = "3 strings" }
+implement { name = "structureblockuservariable", actions = blocks.uservariable, arguments = { "integer", "string" } }

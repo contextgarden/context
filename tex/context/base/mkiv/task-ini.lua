@@ -127,7 +127,7 @@ appendaction("contributers", "normalizers", "nodes.handlers.flattenline",       
 appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds",                   nil, "nut",    "disabled"  )
 
 appendaction("vboxbuilders", "normalizers", "nodes.handlers.backgroundsvbox",                   nil, "nut",    "disabled"  )
---------("vboxbuilders", "normalizers", "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )
+------------("vboxbuilders", "normalizers", "typesetters.margins.localhandler",                 nil, "nut",    "disabled"  )
 appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler",                    nil, "nut",    "enabled"   )
 appendaction("vboxbuilders", "normalizers", "builders.profiling.vboxhandler",                   nil, "nut",    "disabled"  )
 appendaction("vboxbuilders", "normalizers", "typesetters.checkers.handler",                     nil, "nut",    "disabled"  )

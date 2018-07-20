@@ -244,6 +244,11 @@ function logins.userpermitted(db,name)
         }
     end
     if not data or not data.name then
+        if not data then
+            report_logins("no user data for %a",name)
+        else
+            report_logins("no name entry for %a",name)
+        end
         local d = {
             name  = name,
             state = 0,

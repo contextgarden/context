@@ -17,8 +17,9 @@ use locals to refer to them when compiling the chain.</p>
 
 -- todo: protect groups (as in tasks)
 
-local gsub, concat, gmatch = string.gsub, table.concat, string.gmatch
-local type, load = type, load
+local gsub, gmatch = string.gsub, string.gmatch
+local concat, sortedkeys = table.concat, table.sortedkeys
+local type, load, next, tostring = type, load, next, tostring
 
 utilities               = utilities or { }
 local tables            = utilities.tables
@@ -75,6 +76,7 @@ function sequencers.new(t) -- was reset
         gskip  = { },
         dirty  = true,
         runner = nil,
+        steps  = 0,
     }
     if t then
         s.arguments    = t.arguments
@@ -292,6 +294,7 @@ local function construct(t)
         end
     end
     t.dirty = false
+    t.steps = n
     if n == 0 then
         t.compiled = ""
     else
@@ -399,6 +402,7 @@ function sequencers.nodeprocessor(t,nofarguments)
             end
         end
     end
+    t.steps = steps
     local processor
     if steps == 0 then
         processor = templates.default or construct { }
@@ -412,15 +416,13 @@ function sequencers.nodeprocessor(t,nofarguments)
             actions  = concat(calls,"\n"),
         }
     end
-
  -- processor = "print('running : " .. (t.name or "?") .. "')\n" .. processor
  -- print(processor)
-
     return processor
 end
 
 statistics.register("used sequences",function()
     if next(usednames) then
-        return table.concat(table.sortedkeys(usednames)," ")
+        return concat(sortedkeys(usednames)," ")
     end
 end)

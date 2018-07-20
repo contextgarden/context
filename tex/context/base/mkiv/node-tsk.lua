@@ -226,24 +226,25 @@ statistics.register("node list callback tasks", function()
     end
 end)
 
-function tasks.actions(name) -- we optimize for the number or arguments (no ...)
+local function create(data,t)
+    created = created + 1
+    local runner = compile(data.list,data.processor,t)
+    if trace_tasks then
+        report_tasks("creating runner %a, %i actions enabled",t.name,data.list.steps or 0)
+    end
+    data.runner = runner
+    return runner
+end
+
+function tasks.actions(name)
     local data = tasksdata[name]
     if data then
         local t = data.templates
         if t then
             t.name = data.name
             return function(...)
-                total = total + 1 -- will go away
-                local runner = data.runner
-                if not runner then
-                    created = created + 1
-                    if trace_tasks then
-                        report_tasks("creating runner %a",name)
-                    end
-                    runner = compile(data.list,data.processor,t)
-                    data.runner = runner
-                end
-                return runner(...)
+                total = total + 1
+                return (data.runner or create(data,t))(...)
             end
         end
     end

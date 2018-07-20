@@ -444,6 +444,89 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
     return head, pardir, txtdir
 end
 
+-- -- maybe first check for glyphs and use a goto:
+--
+-- local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
+--     local first, last, firstdir, reference
+--     if not pardir then
+--         pardir = "==="
+--     end
+--     if not texdir then
+--         txtdir = "==="
+--     end
+--     local current = head
+--     while current do
+--         local id = getid(current)
+--         local r -- else scope message due to goto
+--         if id == glyph_code then
+--             goto rest
+--         elseif id == hlist_code or id == vlist_code then
+--             r = getattr(current,attribute)
+--             -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
+--             -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
+--          -- if r and (not skip or r >) skip then -- maybe no > test
+--          --     inject_list(id,current,r,make,stack,pardir,txtdir)
+--          -- end
+--             if r then
+--                 if not reference then
+--                     reference, first, last, firstdir = r, current, current, txtdir
+--                 elseif r == reference then
+--                     -- same link
+--                     last = current
+--                 elseif (done[reference] or 0) == 0 then
+--                     if not skip or r > skip then -- maybe no > test
+--                         head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+--                         reference, first, last, firstdir = nil, nil, nil, nil
+--                     end
+--                 else
+--                     reference, first, last, firstdir = r, current, current, txtdir
+--                 end
+--                 done[r] = (done[r] or 0) + 1
+--             end
+--             local list = getlist(current)
+--             if list then
+--                 local h
+--                 h, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
+--                 if h ~= current then
+--                     setlist(current,h)
+--                 end
+--             end
+--             if r then
+--                 done[r] = done[r] - 1
+--             end
+--         elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
+--             --
+--         elseif id == dir_code then
+--             txtdir = getdir(current)
+--         elseif id == localpar_code then -- only test at begin
+--             pardir = getdir(current)
+--         end
+--         goto next
+--         ::rest::
+--         r = getattr(current,attribute)
+--         if not r then
+--             -- just go on, can be kerns
+--         elseif not reference then
+--             reference, first, last, firstdir = r, current, current, txtdir
+--         elseif r == reference then
+--             last = current
+--         elseif (done[reference] or 0) == 0 then -- or id == glue_code and getsubtype(current) == right_skip_code
+--             if not skip or r > skip then -- maybe no > test
+--                 head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+--                 reference, first, last, firstdir = nil, nil, nil, nil
+--             end
+--         else
+--             reference, first, last, firstdir = r, current, current, txtdir
+--         end
+--         ::next::
+--         current = getnext(current)
+--     end
+--     if reference and (done[reference] or 0) == 0 then
+--         head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
+--     end
+--     return head, pardir, txtdir
+-- end
+
 -- tracing: todo: use predefined colors
 
 local register_color = colors.register

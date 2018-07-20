@@ -1301,6 +1301,8 @@ if img then do
         end
     end
 
+    -- todo: codeinjections
+
     lpdf_epdf.image = {
         open  = openpdf,
         close = closepdf,

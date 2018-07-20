@@ -63,7 +63,7 @@ local getdisc             = nuts.getdisc
 local getwhd              = nuts.getwhd
 local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
-local getdir              = nuts.getdir
+----- getdirection        = nuts.getdirection
 local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 local getshift            = nuts.getshift
@@ -117,6 +117,10 @@ local stoptiming          = statistics.stoptiming
 
 local a_visual            = attributes.private("visual")
 local a_layer             = attributes.private("viewerlayer")
+
+----- dirvalues           = nodes.dirvalues
+----- LTL                 = dirvalues.LTL
+----- RTT                 = dirvalues.RTT
 
 local band  = bit32.band
 local bor   = bit32.bor
@@ -705,8 +709,8 @@ local ruledbox do
         local wd, ht, dp = getwhd(current)
         if wd ~= 0 then
             local shift = getshift(current)
-         -- local dir   = getdir(current)
-         -- if dir == "LTL" or dir == "RRT" then
+         -- local dir   = getdirection(current)
+         -- if dir == LTL or dir == RRT then
          --     wd, ht, dp = ht + dp, wd, 0
          -- end
             local next = getnext(current)
@@ -854,8 +858,8 @@ local ruledglyph do
      -- local wd = chardata[getfont(current)][getchar(current)].width
         if wd ~= 0 then
             local wd, ht, dp = getwhd(current)
-         -- local dir = getdir(current)
-         -- if dir == "LTL" or dir = "RTT" then
+         -- local dir = getdirection(current)
+         -- if dir == LTL or dir == RTT then
          --     wd, ht, dp = ht + dp, wd, 0
          -- end
             local next = getnext(current)

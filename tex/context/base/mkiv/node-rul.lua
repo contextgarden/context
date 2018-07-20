@@ -44,7 +44,6 @@ local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local setwhd             = nuts.setwhd
-local setdir             = nuts.setdir
 local setattrlist        = nuts.setattrlist
 local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth

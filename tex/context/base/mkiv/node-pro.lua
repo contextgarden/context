@@ -65,14 +65,14 @@ do
 
 end
 
-local tracer = processors.tracer
-
 processors.enabled = true -- this will become a proper state (like trackers)
 
 do
 
     local has_glyph   = nodes.has_glyph
     local count_nodes = nodes.countall
+
+    local tracer      = processors.tracer
 
     local function pre_linebreak_filter(head,groupcode) -- ,size,packtype,direction
         local found = force_processors or has_glyph(head)
@@ -152,6 +152,8 @@ do
 
     local actions     = tasks.actions("finalizers") -- head, where
     local count_nodes = nodes.countall
+
+    local tracer      = processors.tracer
 
     local function post_linebreak_filter(head,groupcode)
         if trace_callbacks then

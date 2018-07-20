@@ -1,0 +1,288 @@
+% language=uk
+
+\startcomponent onandon-53
+
+\environment onandon-environment
+
+\startchapter[title={From \LUA\ 5.2 to 5.3}]
+
+When we started with \LUATEX\ we used \LUA\ 5.1 and moved to 5.2 when that became
+available. We didn't run into issues then because there were no fundamental
+changes that could not be dealt with. However, when \LUA\ 5.3 was announced in
+2015 we were not sure if we should make the move. The main reason was that we'd
+chosen \LUA\ because of its clean design which meant that we had only one number
+type: double. In 5.3 on the other hand, deep down a number can be either an
+integer or a floating point quantity.
+
+Internally \TEX\ is mostly (up to) 32-bit integers and when we go from \LUA\ to
+\TEX\ we round numbers. Nonetheless one can expect some benefits in using
+integers. Performance|-|wise we didn't expect much, and memory consumption would
+be the same too. So, the main question then was: can we get the same output and
+not run into trouble due to possible differences in serializing numbers; after
+all \TEX\ is about stability. The serialization aspect is for instance important
+when we compare quantities and|/|or use numbers in hashes.
+
+Apart from this change in number model, which comes with a few extra helpers,
+another extension in 5.3 was that bit|-|wise operations are now part of the
+language. The lpeg library is still not part of stock \LUA. There is some minimal
+\UTF8 support, but less than we provide in \LUATEX\ already. So, looking at these
+changes, we were not in a hurry to update. Also, it made sense to wait till this
+important number|-|related change was stable.
+
+But, a few years later, we still had it on our agenda to test, and after the
+\CONTEXT\ 2017 meeting we decided to give it a try; here are some observations. A
+quick test was just dropping in the new \LUA\ code and seeing if we could make a
+\CONTEXT\ format. Indeed that was no big deal but a test run failed because at
+some point a (for instance) \type {1} became a \type {1.0}. It turned out that
+serializing has some side effects. And with some ad hoc prints for tracing (in
+the \LUATEX\ source) I could figure out what went on. How numbers are seen can
+(to some extent) be deduced from the \type {string.format} function, which is in
+\LUA\ a combination of parsing, splitting and concatenation combined with piping
+to the \CCODE\ \type {sprintf} function. \footnote {Actually, at some point I
+decided to write my own formatter on top of \type {format} and I ended up with
+splitting as well. It's only now that I realize why this is working out so well
+(in terms of performance): simple format (single items) are passed more or less
+directly to \type {sprintf} and as \LUA\ itself is fast, due to some caching, the
+overhead is small compared to the built|-|in splitter method. And the \CONTEXT\
+formatter has many more options and is extensible.}
+
+\starttyping
+local a =  2   * (1/2) print(string.format("%s",  a),math.type(x))
+local b =  2   * (1/2) print(string.format("%d",  b),math.type(x))
+local c =  2           print(string.format("%d",  c),math.type(x))
+local d = -2           print(string.format("%d",  d),math.type(x))
+local e =  2   * (1/2) print(string.format("%i",  e),math.type(x))
+local f =  2.1         print(string.format("%.0f",f),math.type(x))
+local g =  2.0         print(string.format("%.0f",g),math.type(x))
+local h =  2.1         print(string.format("%G",  h),math.type(x))
+local i =  2.0         print(string.format("%G",  i),math.type(x))
+local j =  2           print(string.format("%.0f",j),math.type(x))
+local k = -2           print(string.format("%.0f",k),math.type(x))
+\stoptyping
+
+This gives the following results:
+
+\starttabulate[|cBT|c|T|c|cT|]
+\BC a \NC  2   * (1/2)\NC   s \NC 1.0 \NC float   \NC \NR
+\BC b \NC  2   * (1/2)\NC   d \NC 1	  \NC float   \NC \NR
+\BC c \NC  2          \NC   d \NC 2   \NC integer \NC \NR
+\BC d \NC -2          \NC   d \NC 2	  \NC integer \NC \NR
+\BC e \NC  2   * (1/2)\NC   i \NC 1	  \NC float   \NC \NR
+\BC f \NC  2.1        \NC .0f \NC 2	  \NC float   \NC \NR
+\BC g \NC  2.0        \NC .0f \NC 2	  \NC float   \NC \NR
+\BC h \NC  2.1        \NC   G \NC 2.1 \NC float   \NC \NR
+\BC i \NC  2.0        \NC   G \NC 2	  \NC float   \NC \NR
+\BC j \NC  2          \NC .0f \NC 2	  \NC integer \NC \NR
+\BC k \NC -2          \NC .0f \NC 2	  \NC integer \NC \NR
+\stoptabulate
+
+This demonstrates that we have to be careful when we need these numbers
+represented as strings. In \CONTEXT\ the number of places where we had to check
+for that was not that large; in fact, only some hashing related to font sizes had
+to be done using explicit rounding.
+
+Another surprising side effect is the following. Instead of:
+
+\starttyping
+local n = 2^6
+\stoptyping
+
+we now need to use:
+
+\starttyping
+local n = 0x40
+\stoptyping
+
+or just:
+
+\starttyping
+local n = 64
+\stoptyping
+
+because we don't want this to be serialized to \type {64.0} which is due to the
+fact that a power results in a float. One can wonder if this makes sense when we
+apply it to an integer.
+
+At any rate, once we could process a file, two documents were chosen for a
+performance test. Some experiments with loops and casts had demonstrated that we
+could expect a small performance hit and indeed, this was the case. Processing
+the \LUATEX\ manual takes 10.7 seconds with 5.2 on my 5-year-old laptop and 11.6
+seconds with 5.3. If we consider that \CONTEXT\ spends 50\% of its time in \LUA,
+then we see a 20\% performance penalty. Processing the \METAFUN\ manual (which
+has lots of \METAPOST\ images) went from less than 20 seconds (\LUAJITTEX\ does
+it in 16 seconds) up to more than 27 seconds. So there we lose more than 50\% on
+the \LUA\ end. When we observed these kinds of differences, Luigi and I
+immediately got into debugging mode, partly out of curiosity, but also because
+consistent performance is important to~us.
+
+Because these numbers made no sense, we traced different sub-mechanisms and
+eventually it became clear that the reason for the speed penalty was that the
+core \typ {string.format} function was behaving quite badly in the \type {mingw}
+cross-compiled binary, as seen by this test:
+
+\starttyping
+local t = os.clock()
+for i=1,1000*1000 do
+ -- local a = string.format("%.3f",1.23)
+ -- local b = string.format("%i",123)
+    local c = string.format("%s",123)
+end
+print(os.clock()-t)
+\stoptyping
+
+\starttabulate[|c|c|c|c|c|]
+\BC   \BC lua 5.3 \BC lua 5.2 \BC texlua 5.3  \BC texlua 5.2 \BC \NR
+\BC a \NC 0.43    \NC 0.54    \NC 3.71 (0.47) \NC 0.53       \NC \NR
+\BC b \NC 0.18    \NC 0.24    \NC 3.78 (0.17) \NC 0.22       \NC \NR
+\BC c \NC 0.26    \NC 0.68    \NC 3.67 (0.29) \NC 0.66       \NC \NR
+\stoptabulate
+
+The 5.2 binaries perform the same but the 5.3 Lua binary greatly outperforms
+\LUATEX, and so we had to figure out why. After all, all this integer
+optimization could bring some gain! It took us a while to figure this out. The
+numbers in parentheses are the results after fixing this.
+
+Because font internals are specified in integers one would expect a gain
+in running:
+
+\starttyping
+mtxrun --script font --reload force
+\stoptyping
+
+and indeed that is the case. On my machine a scan results in 2561 registered
+fonts from 4906 read files and with 5.2 that takes 9.1 seconds while 5.3 needs a
+bit less: 8.6 seconds (with the bad format performance) and even less once that
+was fixed. For a test:
+
+\starttyping
+\setupbodyfont[modern]     \tf \bf \it \bs
+\setupbodyfont[pagella]    \tf \bf \it \bs
+\setupbodyfont[dejavu]     \tf \bf \it \bs
+\setupbodyfont[termes]     \tf \bf \it \bs
+\setupbodyfont[cambria]    \tf \bf \it \bs
+\starttext \stoptext
+\stoptyping
+
+This code needs 30\% more runtime so the question is: how often do we call \type
+{string.format} there? A first run (when we wipe the font cache) needs some
+715,000 calls while successive runs need 115,000 calls so that slow down
+definitely comes from the bad handling of \type {string.format}. When we drop in
+a \LUA\ update or whatever other dependency we don't want this kind of impact. In
+fact, when one uses external libraries that are or can be compiled under the
+\TEX\ Live infrastructure and the impact would be such, it's bad advertising,
+especially when one considers the occasional complaint about \LUATEX\ being
+slower than other engines.
+
+The good news is that eventually Luigi was able to nail down this issue and we
+got a binary that performed well. It looks like \LUA\ 5.3.4 (cross|)|compiles
+badly with \GCC\ 5.3.0 and 6.3.0.
+
+So in the end caching the fonts takes:
+
+\starttabulate[||c|c|]
+\BC            \BC caching   \BC running \NC \NR
+\BC 5.2 stock  \NC  8.3      \NC 1.2     \NC \NR
+\BC 5.3 bugged \NC 12.6      \NC 2.1     \NC \NR
+\BC 5.3 fixed  \NC  6.3      \NC 1.0     \NC \NR
+\stoptabulate
+
+So indeed it looks like 5.3 is able to speed up \LUATEX\ a bit, given that one
+integrates it in the right way! Using a recent compiler is needed too, although
+one can wonder when a bad case will show up again. One can also wonder why such a
+slow down can mostly go unnoticed, because for sure \LUATEX\ is not the only
+compiled program.
+
+The next examples are some edge cases that show you need to be aware
+that
+\startitemize[n,text,nostopper]
+    \startitem an integer has its limits, \stopitem
+    \startitem that hexadecimal numbers are integers and \stopitem
+    \startitem that \LUA\ and \LUAJIT\ can be different in details. \stopitem
+\stopitemize
+
+\starttabulate[||T|T|]
+\NC        \NC \tx print(0xFFFFFFFFFFFFFFFF) \NC \tx print(0x7FFFFFFFFFFFFFFF) \NC \NR
+\HL
+\BC lua 52 \NC 1.844674407371e+019 \NC 9.2233720368548e+018 \NC \NR
+\BC luajit \NC 1.844674407371e+19  \NC 9.2233720368548e+18  \NC \NR
+\BC lua 53 \NC -1                  \NC 9223372036854775807  \NC \NR
+\stoptabulate
+
+So, to summarize the process. A quick test was relatively easy: move 5.3 into the
+code base, adapt a little bit of internals (there were some \LUATEX\ interfacing
+bits where explicit rounding was needed), run tests and eventually fix some
+issues related to the Makefile (compatibility) and \CCODE\ obscurities (the slow
+\type {sprintf}). Adapting \CONTEXT\ was also not much work, and the test suite
+uncovered some nasty side effects. For instance, the valid 5.2 solution:
+
+\starttyping
+local s = string.format("02X",u/1024)
+local s = string.char        (u/1024)
+\stoptyping
+
+now has to become (both 5.2 and 5.3):
+
+\starttyping
+local s = string.format("02X",math.floor(u/1024))
+local s = string.char        (math.floor(u/1024))
+\stoptyping
+
+or (both 5.2 and (emulated or real) 5.3):
+
+\starttyping
+local s = string.format("02X",bit32.rshift(u,10))
+local s = string.char        (bit32.rshift(u,10))
+\stoptyping
+
+or (only 5.3):
+
+\starttyping
+local s = string.format("02X",u >> 10))
+local s = string.char        (u >> 10)
+\stoptyping
+
+or (only 5.3):
+
+\starttyping
+local s = string.format("02X",u//1024)
+local s = string.char        (u//1024)
+\stoptyping
+
+A conditional section like:
+
+\starttyping
+if LUAVERSION >= 5.3 then
+    local s = string.format("02X",u >> 10))
+    local s = string.char        (u >> 10)
+else
+    local s = string.format("02X",bit32.rshift(u,10))
+    local s = string.char        (bit32.rshift(u,10))
+end
+\stoptyping
+
+will fail because (of course) the 5.2 parser doesn't like that. In \CONTEXT\ we
+have some experimental solutions for that but that is beyond this summary.
+
+In the process a few \UTF\ helpers were added to the string library so that we
+have a common set for \LUAJIT\ and \LUA\ (the \type {utf8} library that was added
+to 5.3 is not that important for \LUATEX). For now we keep the \type {bit32}
+library on board. Of course we'll not mention all the details here.
+
+When we consider a gain in speed of 5-10\% with 5.3 that also means that the gain
+of \LUAJITTEX\ compared to 5.2 becomes less. For instance in font processing both
+engines now perform closer to the same.
+
+As I write this, we've just entered 2018 and after a few months of testing
+\LUATEX\ with \LUA\ 5.3 we're confident that we can move the code to the
+experimental branch. This means that we will use this version in the \CONTEXT\
+distribution and likely will ship this version as 1.10 in 2019, where it becomes
+the default. The 2018 version of \TEX~Live will have 1.07 with \LUA\ 5.2 while
+intermediate versions of the \LUA\ 5.3 binary will end up on the \CONTEXT\
+garden, probably with number 1.08 and 1.09 (who knows what else we will add or
+change in the meantime).
+
+\stopchapter
+
+\stopcomponent
+
+% collectgarbage("count") -- two return values in 2

@@ -1,0 +1,307 @@
+% language=uk
+
+\startcomponent onandon-expansion
+
+\environment onandon-environment
+
+\startchapter[title={More (new) expansion trickery}]
+
+Contrary to what one might expect when looking at macro definitions, \TEX\ is
+pretty efficient. Occasionally I wonder if some extra built in functionality
+could help me write better code but when you program with a bit care there is
+often not much to gain in terms of tokens and performance. \footnote {The long
+trip to the yearly Bacho\TeX\ meeting is always a good opportunity to ponder
+\TEX\ and its features. The new functionality discussed here is a side effect of
+the most recent trip.} Also, some possible extensions probably only would be
+applied a few times which makes them low priority. When you look at the
+extensions brought by \ETEX\ the number is not that large, and \LUATEX\ only
+added a few that deal with the language, for instance \tex {expanded} which is
+like an \tex {edef} without the defining a macro and acts on a token list wrapped
+in (normally) curly braces. Just as reference we mention some of the expansion
+related helpers.
+
+\starttabulate[|l|l|p|]
+\BC command \BC argument \BC
+    comment
+\NC \NR
+\HL
+\NC \tex {expandafter} \NC \type {token} \NC
+    The token after the next token gets expanded (one level only). In tricky
+    \TEX\ code you can often see multiple such commands in sequence which makes a
+    nice puzzle.
+\NC \NR
+\NC \tex {noexpand} \NC \type {token} \NC
+    The token after this command is not expanded in the context of expansion.
+\NC \NR
+\NC \tex {expanded} \NC \type {{tokens}} \NC
+    The given token list is expanded. This command showed up early in \LUATEX\
+    development and was taken from \ETEX\ follow|-|ups. I have mails from 2011
+    mentioning its presence in \PDFTEX\ 1.50 (which was targeted in 2008) but
+    somehow it never ended up in a production version at that time (and we're
+    still not at that version). In \CONTEXT\ we already had a command with that
+    name so there we use \tex {normalexpanded}. Users normally can just use the
+    \CONTEXT\ variant of \type {\expanded}.
+\NC \NR
+\NC \tex {unexpanded} \NC \type {{tokens}} \NC
+    The given token list is hidden from expansion. Again, in \CONTEXT\ we already
+    had a command serving as prefix for definitions so instead we use \tex
+    {normalunexpanded}. In the core of \CONTEXT\ this new \ETEX\ command is hardly
+    used.
+\NC \NR
+\NC \tex {detokenize} \NC \type {{tokens}} \NC
+    The given tokenlist becomes (basically) verbatim \TEX\ code. We had something
+    like that in \CONTEXT\ but have no nameclash. It is used in a few places. It's
+    also an \ETEX\ command.
+\NC \NR
+\NC \tex {scantokens} \NC \type {{tokens}} \NC
+    This primitive interprets its argument as a pseudo file. We don't really use it.
+\NC \NR %
+\NC \tex {scantextokens} \NC \type {{tokens}} \NC
+    This \LUATEX\ primitive does the same but has no end|-|of|-|file side
+    effects. This one is also not really used in \CONTEXT.
+\NC \NR
+\NC \tex {protected} \NC \type {\.def} \NC
+    The definition following this prefix, introduced in \ETEX, is unexpandable in
+    the context of expansion. We already used such a command in \CONTEXT\ but
+    with a completely different meaning so use \tex {normalprotected} as prefix
+    or \tex {unexpanded} which is an alias.
+\NC \NR
+\stoptabulate
+
+Here I will present two other extensions in \LUATEX\ that can come in handy, and
+they are there simply because their effect can hardly be realized otherwise
+(never say never in \TEX). One has to do with immediately applying a definition,
+the other with user defined conditions. The first one relates directly to
+expansion, the second one concerns conditions and relates more to parsing
+branches which on purpose avoids expansion.
+
+For the first one I use some silly examples. I must admit that although I can
+envision useful application, I really need to go over the large amount of
+\CONTEXT\ source code to really find a place where it is making things better.
+Take the following definitions:
+
+\startbuffer
+\newcount\NumberOfCalls
+
+\def\TestMe{\advance\NumberOfCalls1 }
+
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+The result is a macro \tex {Tested} that not only has the unexpanded incrementing
+code in its body but also hasn't done any advancing:
+
+\getbuffer
+
+Of course when you're typesetting something, this kind of expansion normally is
+not needed. Instead of the above definition we can define \tex {TestMe} in a way
+that expands the assignment immediately. You need of course to be aware of
+preventing look ahead interference by using a space or \tex {relax} (often an
+expression works better as it doesn't leave an \tex {relax}).
+
+\startbuffer
+\def\TestMe{\immediateassignment\advance\NumberOfCalls1 }
+
+\edef\Tested{\TestMe bar:\the\NumberOfCalls}
+\edef\Tested{\TestMe bar:\the\NumberOfCalls}
+\edef\Tested{\TestMe bar:\the\NumberOfCalls}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+This time the counter gets updated and we don't see interference in the resulting
+\tex {Tested} macro:
+
+\getbuffer
+
+Here is a somewhat silly example of an expanded comparison of two \quote
+{strings}:
+
+\startbuffer
+\def\expandeddoifelse#1#2#3#4%
+  {\immediateassignment\edef\tempa{#1}%
+   \immediateassignment\edef\tempb{#2}%
+   \ifx\tempa\tempb
+     \immediateassignment\def\next{#3}%
+   \else
+     \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+
+\edef\Tested
+  {(\expandeddoifelse{abc}{def}{yes}{nop}/%
+    \expandeddoifelse{abc}{abc}{yes}{nop})}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+I don't remember many cases where I needed such an expanded comparison. We have a
+variant in \CONTEXT\ that uses \LUA\ but that one is not really used in the core.
+Anyway, the above code gives:
+
+\getbuffer
+
+You can do the same assignments as in preambles of \tex {halign} and after \tex
+{accent} which means that assignments to box registers are blocked (boxing
+involves grouping and delayed assignments and so). The error you will get when
+you use a non||assignment command refers to a prefix, because internally such
+commands are called prefixed commands. Leading spaces and \tex {relax} are
+ignored.
+
+In addition to this one|-|time immediate assignment a pseudo token list variant
+is provided, so the above could be rewritten to:
+
+\starttyping
+\def\expandeddoifelse#1#2#3#4%
+  {\immediateassigned {
+     \edef\tempa{#1}
+     \edef\tempb{#2}
+   }%
+   \ifx\tempa\tempb
+     \immediateassignment\def\next{#3}%
+   \else
+     \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+\stoptyping
+
+While \tex {expanded} first builds a token lists that then gets used, the \tex
+{immediateassigned} primitive just walls over the list delimited by curly braces.
+
+A next extension concerns conditions. If you have done a bit of extensive \TEX\
+programming you know that nested conditions need to be properly constructed in
+for instance macro bodies. This is because (for good reason) \TEX\ goes into a
+fast scanning mode when there is a match and it has to skip the \tex {else} upto
+\tex {fi} branch. In order to do that properly a nested \tex {if} in there needs
+to have a matching \tex {fi}.
+
+In practice this is no real problem and careful coding will never give a problem
+here: you can either hide nested code in a macro or somehow jump over nested
+conditions if really needed. Actually you only need to care when you pickup a
+token inside the branch because likely you don't want to pick up for instance a
+\tex {fi} but something that comes after it. Say that we have a sane conditional
+setup like this:
+
+\starttyping
+\newif\iffoo \foofalse
+\newif\ifbar \bartrue
+
+\ifoo
+  \ifbar \else \fi
+\else
+  \ifbar \else \fi
+\fi
+\stoptyping
+
+Here the \tex {iffoo} and \tex {ifbar} need to be equivalent to \tex {iftrue} or
+\tex {iffalse} in order to succeed well and that is what for instance \tex
+{footrue} and \tex {foofalse} will do: change the meaning of \tex {iffoo}.
+
+But imagine that you want something more complex. You want for instance to let
+\tex {ifbar} do some calculations. In that case you want it to behave a bit like
+what a so called \type {vardef} in \METAPOST\ does: the end result is what
+matters. Now, because \TEX\ macros often are a complex mix of expandable and
+non|-|expandable this is not that trivial. One solution is a dedicated definer,
+say \tex {cdef} for defining a macro with conditional properties. I actually
+implemented such a definer a few years ago but left it so long in a folder with
+ideas that I only found it back after I had come up with another solution. It was
+probably proof that it was not that good an idea.
+
+The solution implemented in \LUATEX\ is just a special case of a test: \tex
+{ifcondition}. When looking at the next example, keep in mind that from the
+perspective of \TEX's scanner it only needs to know if something is a token that
+does some test and has a matching \tex {fi}. For that purpose you can consider
+\tex {ifcondition} to be \tex {iftrue}. When \TEX\ actually wants to do a test,
+which is the case in the true branch, then it will simply ignore this \tex
+{ifcondition} primitive and expands what comes after it (which is \TEX's natural
+behaviour). Effectively \tex {ifcondition} has no meaning except from when it has
+to be skipped, in which case it's a token flagged as \tex {if} kind of command.
+
+\starttyping
+\unexpanded\def\something#1#2%
+  {\edef\tempa{#1}%
+   \edef\tempb{#2}
+   \ifx\tempa\tempb}
+
+\ifcondition\something{a}{b}%
+    \ifcondition\something{a}{a}%
+        true 1
+    \else
+        false 1
+    \fi
+\else
+    \ifcondition\something{a}{a}%
+        true 2
+    \else
+        false 2
+    \fi
+\fi
+\stoptyping
+
+Wrapped in a macro you can actually make this fully expandable when you use the
+previously mentioned immediate assignment. Here is another example:
+
+\starttyping
+\unexpanded\def\onoddpage
+  {\ifodd\count0 }
+
+\ifcondition\onoddpage odd \else even \fi page
+\stoptyping
+
+The previously defined comparison macro can now be rewritten as:
+
+\starttyping
+\def\equaltokens#1#2%
+  {\immediateassignment\edef\tempa{#1}%
+   \immediateassignment\edef\tempb{#2}%
+   \ifx\tempa\tempb}
+
+\def\expandeddoifelse#1#2#3#4%
+  {\ifcondition\equaltokens{#1}{#2}%
+     \immediateassignment\def\next{#3}%
+   \else
+     \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+\stoptyping
+
+When used this way it will of course also work without the \tex {ifcondition} but
+when used nested it can be like this. This last example also demonstrates that
+this feature probably only makes sense in more complicated cases where more work
+is done in the \tex {onoddpage} or \tex {equaltokens} macro. And again, I am not
+sure if for instance in \CONTEXT\ I have a real use for it because there are only
+a few cases where nesting like this could benefit. I did some tests with a low
+level macro where it made the code look nicer. It was actually a bit faster but
+most core macros are not called that often. Although the overhead of this feature
+can be neglected, performance should not be the reason for using it: in \CONTEXT\
+for instance one can often only measure such possible speed|-|ups on macros that
+are called tens or hundreds of thousands of times and that seldom happens in a
+real run end even then a change from say 0.827 seconds to 0.815 seconds for 10K
+calls of a complex case is just noise as the opposite can also happen.
+
+Although not strictly necessary these extensions might make some code look better
+so that is why they officially will be available in the 1.09 release of \LUATEX\
+in fall 2018. It might eventually inspire me to go over some code and see where I
+can improve the look and feel.
+
+The last few years I have implemented some more ideas as local experiments, for
+instance \tex {futurelet} variant or a simple (one level) \tex {expand}, but in
+the end rejected them because there is no real benefit in them (no better looking
+code, no gain in performance, hard to document, possible side effects, etc.), so
+it is very unlikely that we will have more extensions like this. After all, we
+could do more than 40 years without them. Although \unknown\ who knows what we
+will provide in \LUATEX\ version~2.
+
+\stopchapter
+
+\stopcomponent

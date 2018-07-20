@@ -41,7 +41,7 @@ local getid           = nuts.getid
 local getlist         = nuts.getlist
 local getattribute    = nuts.getattribute
 local getbox          = nuts.getbox
-local getdir          = nuts.getdir
+local getdirection    = nuts.getdirection
 local getwidth        = nuts.getwidth
 local takebox         = nuts.takebox
 
@@ -66,6 +66,7 @@ local list_dimensions = nuts.dimensions
 local hpack           = nuts.hpack
 
 local nextdisc        = nuts.traversers.disc
+local nextdir         = nuts.traversers.dir
 local nexthlist       = nuts.traversers.hlist
 
 local listtoutf       = nodes.listtoutf
@@ -419,29 +420,41 @@ interfaces.implement {
 
 nodes.setboxtonaturalwd = setboxtonaturalwd
 
-local function firstdirinbox(n)
-    local b = getbox(n)
-    if b then
-        local l = getlist(b)
-        if l then
-            for h in nexthlist, l do
-                return getdir(h)
-            end
-        end
-    end
-end
-
-nodes.firstdirinbox = firstdirinbox
-
 local doifelse = commands.doifelse
 
-interfaces.implement {
-    name      = "doifelserighttoleftinbox",
-    arguments = "integer",
-    actions   = function(n)
-        doifelse(firstdirinbox(n) == "TRT")
+do
+
+    local dirvalues   = nodes.dirvalues
+    local righttoleft = dirvalues.righttoleft
+    local lefttoright = dirvalues.lefttoright
+
+    local function firstdirinbox(n)
+        local b = getbox(n)
+        if b then
+            local l = getlist(b)
+            if l then
+                for d in nextdir, l do
+                    return getdirection(d)
+                end
+                for h in nexthlist, l do
+                    return getdirection(h)
+                end
+            end
+        end
+        return lefttoright
     end
-}
+
+    nodes.firstdirinbox = firstdirinbox
+
+    interfaces.implement {
+        name      = "doifelserighttoleftinbox",
+        arguments = "integer",
+        actions   = function(n)
+            doifelse(firstdirinbox(n) == righttoleft)
+        end
+    }
+
+end
 
 -- new (handy for mp) .. might move to its own module
 

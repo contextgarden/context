@@ -199,11 +199,7 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
             local before = count_nodes(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
             local after = count_nodes(head)
-            if done then
-                nodes.processors.tracer("vpack","changed",head,groupcode,before,after,true)
-            else
-                nodes.processors.tracer("vpack","unchanged",head,groupcode,before,after,true)
-            end
+            nodes.processors.tracer("vpack",head,groupcode,before,after,done)
         else
             head, done = vboxactions(head,groupcode)
         end
@@ -256,7 +252,8 @@ function builders.buildpage_filter(groupcode)
         if trace_page_builder then
             report(groupcode)
         end
-        return nil, false -- no return value needed
+--         return nil, false -- no return value needed
+        return nil
     end
 end
 

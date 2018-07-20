@@ -41,23 +41,39 @@ function pages.mark(name,list)
             local page = list[i]
             local sign = false
             if type(page) == "string" then
-                local s, p = match(page,"([%+%-])(%d+)")
-                if s then
-                    sign, page = s, p
+                local f, t = match(page,"(%d+)[:%-](%d+)")
+                if f and t then
+                    f, t = tonumber(f), tonumber(t)
+                    if f and t and f <= t then
+                        if trace then
+                            report("marking page %i upto %i as %a",f,t,name)
+                        end
+                        for page=f,t do
+                            data[page][name] = true
+                        end
+                    end
+                    page = false
+                else
+                    local s, p = match(page,"([%+%-])(%d+)")
+                    if s then
+                        sign, page = s, p
+                    end
                 end
             end
-            page = tonumber(page)
             if page then
-                if sign == "+" then
-                    page = realpage + page
-                end
-                if sign == "-" then
-                    report("negative page numbers are not supported")
-                else
-                    if trace then
-                        report("marking page %i as %a",page,name)
+                page = tonumber(page)
+                if page then
+                    if sign == "+" then
+                        page = realpage + page
                     end
-                    data[page][name] = true
+                    if sign == "-" then
+                        report("negative page numbers are not supported")
+                    else
+                        if trace then
+                            report("marking page %i as %a",page,name)
+                        end
+                        data[page][name] = true
+                    end
                 end
             end
         end
@@ -75,7 +91,6 @@ local function marked(name)
         rawset(data,i,nil)
     end
     local pagedata = rawget(data,realpage)
-    print(pagedata and pagedata[name] and true or false)
     return pagedata and pagedata[name] and true or false
 end
 

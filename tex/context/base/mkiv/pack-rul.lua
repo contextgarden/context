@@ -44,6 +44,7 @@ local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getbox          = nuts.getbox
 local getdir          = nuts.getdir
+local getdirection    = nuts.getdirection
 local setshift        = nuts.setshift
 local setwidth        = nuts.setwidth
 local getwidth        = nuts.getwidth
@@ -199,7 +200,8 @@ if LUATEXVERSION >= 1.090 then
                     if list then
                         if id == hlist_code then
                             if subtype == box_code or subtype == line_code then
-                                lastlinelength = list_dimensions(list,getdir(n))
+                             -- lastlinelength = list_dimensions(list,getdir(n))
+                                lastlinelength = list_dimensions(list,getdirection(n))
                             else
                                 lastlinelength = width
                             end

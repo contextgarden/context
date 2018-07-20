@@ -1,0 +1,220 @@
+% language=uk
+
+\startcomponent onandon-media
+
+\environment onandon-environment
+
+\startchapter[title={The state of \PDF}]
+
+\startsection[title={Introduction}]
+
+Below I will spend some words on the state of \PDF\ in \CONTEXT\ mid 2018. These
+are just some reflections, not an in|-|depth discussion of the state of affairs. I
+sometimes feel the need to wrap up.
+
+\stopsection
+
+\startsection[title={Media}]
+
+For over two decades \CONTEXT\ has supported fancy \PDF\ features like movies and
+sound. In fact, as happens more, the flexibility of \TEX\ made it possible to
+support such features right after they became available, often even before other
+applications supported them.
+
+The first approach to support such media clips was relatively easy. In \PDF\ one
+has the text flow, resulting from the typesetting process, either or not enhanced
+with images that are referred to from the flow. In that respect images are an
+integral part of \PDF. On a separate layer there can be annotations. There are
+many kinds and they are originally a sort of extension mechanism that permits
+plugins to add features to a document. Examples of this are hyperlinks and the
+already mentioned media clips. Video was supported by the quicktime movie plugin.
+As far as I know in the meantime that plugin has been dropped as official part of
+Acrobat but one can still plug it in.
+
+Later an extra mechanism was introduced, tagged renditions. It separates the
+views from the media and was more complex. When I first played with it, quite
+some media were possible, and I made a demo that could handle mov, mp3, smi and
+swf files. But last time I checked none of these really worked, apart from the
+swf file. One gets pop|-|ups for missing viewers and a look at the reader
+preferences makes one pessimistic about future support anyway. But one should be
+able to set up a list of useable players with this mechanism (although only an
+Adobe one seems to be okay so we're back to where we started).
+
+At some point support for u3d was added. Interesting is that there is quite some
+infrastructure described in the \PDF\ standard. Also something called rich media
+was introduced and that should replace the former video and audio annotations
+(definitely in \PDF\ version 2) and probably some day the renditions will no
+longer be supported either. Open source \PDF\ viewers just stuck to supporting
+text and static images.
+
+Now, do these rich media work well? Hardly. The standard leaves it to the viewer
+and provides ways to define viewers (although it's unclear to me how that works
+out in practice.) Basically in \PDF\ version 2 there is no native support for
+simple straightforward video. One has to construct a complex set of related
+annotations.
+
+One can give arguments (like security risks) for not supporting all these fancy
+features but then why make rich media part of the specification at all? Browsers
+beat \PDF\ viewers in showing media and as browsers can operate in kiosk mode I
+suppose that it's not that hard to delegate showing whatever you want in an
+embedded window in the \PDF\ viewer. Or why not simply support videolan out of
+the box. All we need is the ability to view movies and control them (play, pause,
+stop, rewind, etc). Where \HTML\ evolved towards easier media support, \PDF\
+evolved to more obscurity.
+
+So, how bad is it really? There are \PDF\ files around that have video! Indeed,
+but the way they're supposed to do this is as follows: currently one actually has
+to embed a shockwave video player (a user interface around something built|-|in)
+and let that player show for instance an mp4 movie. However, support for
+shockwave (flash) will be dropped in 2020 and that renders documents that use it
+obsolete. This even makes one wonder about \JAVASCRIPT\ and widgets like form
+fields, also a rather moving and somewhat unstable target. (I must have a
+document being a calculator somewhere made in the previous century, in the early
+days of \PDF.)
+
+I think that the plugin model failed already rather early in the \PDF\ history if
+only because it made no sense to develop them when in a next version of Acrobat
+the functionality was copied in the core. In a similar fashion \JAVASCRIPT\
+support seems to have stalled.
+
+Unfortunately the open source viewers never catched on with media, forms and
+\JAVASCRIPT\ and therefore there has been no momentum created to keep things
+supported. It all makes efforts spent on supporting this kind of \PDF\ features a
+waste of time. It also makes one careful in using them: it only works on the
+short term.
+
+Get me right, I'm not talking of complex media like 3d or animations but of
+straightforward video support. I understand that the rich media framework tries
+to cover complex cases but it's simple cases that carry the format. On the other
+hand, one can wonder why the \PDF\ format makes it possible to specify behaviour
+that in practice depends on \JAVASCRIPT\ and therefore could as well have been
+delegated to \JAVASCRIPT\ as well. It would probably have been much cleaner.
+\footnote {It looks like mu\PDF\ in 2018 got some support related to widgets aka
+fields but alas not for layers which would be quite useful.}
+
+The \PDF\ version 2 specification mentions \type {3D}, \type {Video} and \type
+{Audio} as primary content types so maybe future viewers will support video out
+of the box. Who knows. We try to keep up in \CONTEXT\ because it's often not that
+complex to support \PDF\ features but with hardly any possibility to test them,
+they have a low priority. And with Acrobat moving to the cloud and thereby
+creating a more of less lifelong dependency on remote resources it doesn't become
+much interesting to explore those routes either.
+
+\stopsection
+
+\startsection[title={Accessibility}]
+
+A popular \PDF\ related topic is accessibility. One aspect of that is tagged
+\PDF. This substandard is in my opinion not something that deserves a price for
+beauty. I know that there are \CONTEXT\ users who need to be compliant but I
+always wonder what a publisher really does with such a file. It's a bit like
+requiring \XML\ as source but at the same time sacrificing really rich encoded
+and sources for tweaks that suite the current limitations of for instance browsers,
+tool|-|chains and competence. We've seen it happen.
+
+Support for tagged \PDF\ has been available in \CONTEXT\ already for a while but
+as far as I know only Acrobat professional can do something with it. The reason
+for tagging is that a document is then useable for (for instance) visually
+impaired users, but aren't they better served with a proper complete and very
+structured source in some format that tools suitable for it can use? How many
+publishers distribute \PDF\ files while they can still make money on prints? How
+many are really interested in distributing enriched content that then can be
+reused somehow? And how many are willing to invest in tools instead of waiting
+for it to happen for free? It's a bit cheap trick to just expect authors (and
+their in the case of \TEX\ free tools) to suit a publishers needs. Anyway, just
+as with advanced interactive documents or forms, I wonder if it will catch on. At
+least no publisher ever asked us and by the time they might do the competition of
+web based dissemination could have driven \PDF\ to the background. But, in
+\CONTEXT\ we will keep supporting such features anyway, if only because it's
+quite doable. But \unknown\ it's user demand that drives development, not the
+market, which means that the motivation for implementing such features depends on
+user input as well as challenging aspects that make it somewhat fun to spend time
+on them.
+
+\stopsection
+
+\startsection[title={Quality assurance}]
+
+Another aspect popping up occasionally is validation. I'm not entirely sure what
+drives that but delegating a problem can be one reason. Often we see publishers
+and printers use old versions of \PDF\ related tools. Also, some workflows are
+kind of ancient anyway and are more driven by \POSTSCRIPT\ history than \PDF\
+possibilities. I sometimes get the impression that it takes at least a decade for
+these things to catch on, and by that time it doesn't matter any more that \TEX\
+and friends were at the front: their users are harassed by what the market
+demands by then.
+
+Support for several standards related to validation is already part of \CONTEXT\
+for quite a while. For instance the bump from \PDF\ 1.7 to 2.0 was hardly worth
+noticing, simply because there are not that many fundamental changes. Adapting
+\LUATEX\ was trivial (and actually not really needed), and macro packages can
+provide what is needed without much problems. So, yes, we can support it without
+much hassle. Personally I never ran into a case where validation was really
+needed. The danger of validation is that it can give a false impression of
+quality. And as with everything quality control created a market. As with other
+features it is users who drive the availability of support for this. After all,
+they are the ones testing it and figuring out the often fuzzy specifications.
+These are things that one can always look at in retrospect (like: it has to be
+done this or that way) while in practice in order to be an early adopter one has
+to gamble a bit and see where it fails or succeeds. Fortunately it's relatively
+easy to adapt macro packages and \CONTEXT\ users are willing to update so it's
+not really an issue.
+
+Putting a stamp of approval on a \PDF\ cannot hide the inconsistencies between
+for instance vector graphics produced by a third party. They also don't expose
+inconsistent use of color and fonts. The page streams produced by \LUATEX\ are
+simple and clean enough to not give problems with validation. The problem lays
+more with resources coming from elsewhere. When you're phoned by a printing house
+about an issue with \RGB\ images in a file where there is no sign of \RGB\ being
+used but where a validator reports an issue, you're lucky when an experienced
+printer dating back decades then replies that he already had that impression and
+will contact the origin. There is no easy way out of this but educating users
+(authors) is an option. However, they are often dependent on the publishers and
+departments that deal with these and those tend to come with directives that the
+authors cannot really argue with (or about).
+
+\stopsection
+
+\startsection[title={Interactivity}]
+
+This is an area where \TEX\ (an therefore also \CONTEXT) always had an edge,
+There is a lot possible and in principle all that \PDF\ provides can be
+supported. But the more fancy one goes, the more one depends on Acrobat.
+Interactivity in \PDF\ evolved stepwise and is mostly market driven. As a result
+it is (or was) not always consistent. This is partly due to the fact that we have
+a chicken|-|egg issue: you need typesetting machinery, viewer as well as a
+standard.
+
+The regular hyperlinks, page or named driven are normally supported by viewers.
+Some redefined named destinations (like going to a next page, or going back in a
+chain of followed links) not always. Launching applications, as it also relates
+to security, can be qualified as an unreliable mechanism. More advanced linking,
+for instance using \JAVASCRIPT\ is hardly supported. In that respect \PDF\
+viewers lag way behind \HTML\ browsers. I understand that there can be security
+risks involved. It's interesting to see that in Acrobat one can mess with
+internals of files which makes the \API\ large and complex, but if we stick to
+the useful core, the amount of interfacing needed is quite small. Lack of support
+in open source viewers (we're talking of about two decades now) made me loose
+interest in these features but they are and will be supported in \CONTEXT. We'll
+see if and when viewers catch up.
+
+Comments and attachments are also part of interactivity and of course we
+supported them right from the start. Some free viewers also support them by now.
+Personally I never use comments but they can be handy for popping up information
+or embedding snippets or (structured) sources (like \MATHML\ or bibliographic
+data). In \CONTEXT\ we can even support \PDF\ inclusion with (a reasonable)
+subset of these so called annotations. As the \PDF\ standard no longer evolves
+much we can expect all these features to become stable.
+
+\stopsection
+
+\startsection[title={Summary}]
+
+We have always supported the fancy \PDF\ features and we will continue doing so
+in \CONTEXT . However, many of them depends on what viewers support, and after
+decades of \PDF\ that is still kind of disappointing, which is not that
+motivating. We'll see what happens.
+
+\stopsection
+
+\stopchapter

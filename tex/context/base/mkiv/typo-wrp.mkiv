@@ -40,18 +40,21 @@
 \unexpanded\def\spac_crlf
   {\clf_enablecrlf % once
    \unskip
-   \prewordbreak % here or in \spac_crlf_placeholder
    \spac_crlf_placeholder
    \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
+   % in bad usage this can lead to: [break -10000] [wordboundary] [line(break)penalty] [parfillskip]
    \break
-   \hskip\zeropoint % new so that the next word also hyphenates
+   \wordboundary
+   % which we then remove (maybe we should flag the wordboundary with an attribute but not now
    \ignorespaces}
 
 \unexpanded\def\spac_crlf_placeholder
   {\strut}
 
 \unexpanded\def\spac_crlf_placeholder_show
-  {\hbox to \zeropoint{\strut{\infofont\kern.25\emwidth}\lohi{\infofont CR}{\infofont LF}\hss}}
+  {\wordboundary
+  %\nobreak
+   \hpack to \zeropoint{\strut{\infofont\kern.25\emwidth}\lohi{\infofont CR}{\infofont LF}\hss}}
 
 \unexpanded\def\settestcrlf
   {\let\spac_crlf_placeholder\spac_crlf_placeholder_show}

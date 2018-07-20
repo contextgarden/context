@@ -70,7 +70,7 @@ local a_linefiller      = privateattributes("linefiller")
 local a_ruled           = privateattributes("ruled")
 
 local trace_alignment   = false
-local report_alignment  = logs.reported("backgrounds","alignment")
+local report_alignment  = logs.reporter("backgrounds","alignment")
 
 trackers.register("backgrounds.alignments",function(v) trace_alignment = v end)
 

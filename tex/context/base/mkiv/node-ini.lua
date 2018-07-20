@@ -107,7 +107,6 @@ dircodes = allocate {
     [1] = "cancel",
 }
 
-
 -- local glyphcodes = allocate {
 --     [ 1] = "character",
 --     [ 2] = "ligature",
@@ -382,6 +381,9 @@ nodes.noadoptions          = noadoptions
 nodes.dirvalues            = dirvalues
 nodes.gluevalues           = gluevalues
 nodes.pdfliteralvalues     = pdfliteralvalues
+
+dirvalues.lefttoright = 0
+dirvalues.righttoleft = 1
 
 nodes.subtypes = {
     [nodecodes.accent]     = accentcodes,

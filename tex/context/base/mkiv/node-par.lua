@@ -11,6 +11,8 @@ local stoptiming  = statistics.stoptiming
 
 local actions = nodes.tasks.actions("everypar")
 
+-- this one is called a lot!
+
 local function everypar(head)
     starttiming(builders)
     head = actions(head)
@@ -18,4 +20,8 @@ local function everypar(head)
     return head
 end
 
-callback.register("insert_local_par",everypar,"paragraph start")
+if LUATEXFUNCTIONALITY > 6857 then
+
+    callback.register("insert_local_par",everypar,"paragraph start")
+
+end
