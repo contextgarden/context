@@ -3744,6 +3744,13 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="characters fonts" file="char-ini.mkiv" level="style" name="textormathchars">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:character"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="characters" file="char-ini.mkiv" level="style" name="chardescription">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -35158,6 +35165,16 @@
   </cd:command>
   <cd:command file="core-env.mkiv" level="system" name="resetsetups">
    <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="core-env.mkiv" level="system" name="copysetups">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>

@@ -663,6 +663,24 @@
      \dodoglobal\undefinevalue{\??setup:#1}%
    \fi}
 
+% \unexpanded\def\resetsetups[#1]% see x-fo for usage
+%   {\dodoglobal\expandafter\let\csname\??setup
+%      \ifgridsnapping\ifcsname\??setup\v!grid:#1\endcsname\v!grid\fi
+%    :#1\endcsname\undefined}
+
+\unexpanded\def\copysetups
+  {\dodoubleargument\syst_setups_copy}
+
+% \def\syst_setups_copy[#1][#2]%
+%   {\ifcsname\??setup:#2\endcsname
+%       \expandafter\let\csname\??setup:#1\expandafter\endcsname\csname\??setup:#2\endcsname
+%    \fi}
+
+\def\syst_setups_copy[#1][#2]%
+  {\ifcsname\??setup:#2\endcsname
+      \expandafter\let\csname\??setup:#1\expandafter\endcsname\lastnamedcs
+   \fi}
+
 \unexpanded\def\showsetupsdefinition[#1]%
   {\showvalue{\??setup:#1}} % temp hack for debugging
 

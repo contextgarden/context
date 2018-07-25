@@ -473,7 +473,8 @@ function constructors.scale(tfmdata,specification)
     local psname   = properties.psname   or tfmdata.psname
     local name     = properties.name     or tfmdata.name
     --
-    -- the psname used in pdf file as well as for selecting subfont in ttc
+    -- The psname used in pdf file as well as for selecting subfont in ttc although
+    -- we don't need that subfont look up here (mapfile stuff).
     --
     local psname, psfixed = fixedpsname(psname,fontname or fullname or file.nameonly(filename))
     --

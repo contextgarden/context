@@ -805,61 +805,119 @@
 
 \ifdefined\symbol \else \def\symbol[#1]{#1} \fi % todo
 
+% \defineconversion
+%   [set 0]
+%   [{\symbol[bullet]},
+%    {\symbol[dash]},
+%    {\symbol[star]},
+%    {\symbol[triangle]},
+%    {\symbol[circle]},
+%    {\symbol[medcircle]},
+%    {\symbol[bigcircle]},
+%    {\symbol[square]},
+%    {\symbol[checkmark]}]
+
+% \defineconversion
+%   [set 1]
+%   [\mathematics{\star},
+%    \mathematics{\star\star},
+%    \mathematics{\star\star\star},
+%    \mathematics{\ddagger},
+%    \mathematics{\ddagger\ddagger},
+%    \mathematics{\ddagger\ddagger\ddagger},
+%    \mathematics{\ast},
+%    \mathematics{\ast\ast},
+%    \mathematics{\ast\ast\ast}]
+%
+% \defineconversion
+%   [set 2]
+%   [\mathematics{\ast},
+%    \mathematics{\dag},
+%    \mathematics{\ddag},
+%    \mathematics{\ast\ast},
+%    \mathematics{\dag\dag},
+%    \mathematics{\ddag\ddag},
+%    \mathematics{\ast\ast\ast},
+%    \mathematics{\dag\dag\dag},
+%    \mathematics{\ddag\ddag\ddag},
+%    \mathematics{\ast\ast\ast\ast},
+%    \mathematics{\dag\dag\dag\dag},
+%    \mathematics{\ddag\ddag\ddag\ddag}]
+%
+% \defineconversion
+%   [set 3]
+%   [\mathematics{\star},
+%    \mathematics{\star\star},
+%    \mathematics{\star\star\star},
+%    \mathematics{\ddagger},
+%    \mathematics{\ddagger\ddagger},
+%    \mathematics{\ddagger\ddagger\ddagger},
+%    \mathematics{\P},
+%    \mathematics{\P\P},
+%    \mathematics{\P\P\P},
+%    \mathematics{\S},
+%    \mathematics{\S\S},
+%    \mathematics{\S\S\S},
+%    \mathematics{\ast},
+%    \mathematics{\ast\ast},
+%    \mathematics{\ast\ast\ast}]
+
 \defineconversion
   [set 0]
-  [{\symbol[bullet]},
-   {\symbol[dash]},
-   {\symbol[star]},
-   {\symbol[triangle]},
-   {\symbol[circle]},
-   {\symbol[medcircle]},
-   {\symbol[bigcircle]},
-   {\symbol[square]}]
+  [\symbol{bullet},
+   \symbol{dash},
+   \symbol{star},
+   \symbol{triangle},
+   \symbol{circle},
+   \symbol{medcircle},
+   \symbol{bigcircle},
+   \symbol{square},
+   \symbol{checkmark}]
 
 \defineconversion
   [set 1]
-  [\mathematics{\star},
-   \mathematics{\star\star},
-   \mathematics{\star\star\star},
-   \mathematics{\ddagger},
-   \mathematics{\ddagger\ddagger},
-   \mathematics{\ddagger\ddagger\ddagger},
-   \mathematics{\ast},
-   \mathematics{\ast\ast},
-   \mathematics{\ast\ast\ast}]
+  [\textormathchars{⋆},
+   \textormathchars{⋆⋆},
+   \textormathchars{⋆⋆⋆},
+   \textormathchars{‡},
+   \textormathchars{‡‡},
+   \textormathchars{‡‡‡},
+   \textormathchars{∗},
+   \textormathchars{∗∗},
+   \textormathchars{∗∗∗}]
 
 \defineconversion
   [set 2]
-  [\mathematics{*},
-   \mathematics{\dag},
-   \mathematics{\ddag},
-   \mathematics{**},
-   \mathematics{\dag\dag},
-   \mathematics{\ddag\ddag},
-   \mathematics{***},
-   \mathematics{\dag\dag\dag},
-   \mathematics{\ddag\ddag\ddag},
-   \mathematics{****},
-   \mathematics{\dag\dag\dag\dag},
-   \mathematics{\ddag\ddag\ddag\ddag}]
+  [\textormathchars{∗},
+   \textormathchars{†},
+   \textormathchars{‡},
+   \textormathchars{∗∗},
+   \textormathchars{††},
+   \textormathchars{‡‡},
+   \textormathchars{∗∗∗},
+   \textormathchars{†††},
+   \textormathchars{‡‡‡},
+   \textormathchars{∗∗∗∗},
+   \textormathchars{††††},
+   \textormathchars{‡‡‡‡}]
 
 \defineconversion
   [set 3]
-  [\mathematics{\star},
-   \mathematics{\star\star},
-   \mathematics{\star\star\star},
-   \mathematics{\ddagger},
-   \mathematics{\ddagger\ddagger},
-   \mathematics{\ddagger\ddagger\ddagger},
-   \mathematics{\P},
-   \mathematics{\P\P},
-   \mathematics{\P\P\P},
-   \mathematics{\S},
-   \mathematics{\S\S},
-   \mathematics{\S\S\S},
-   \mathematics{\ast},
-   \mathematics{\ast\ast},
-   \mathematics{\ast\ast\ast}]
+  [\textormathchars{⋆},
+   \textormathchars{⋆⋆},
+   \textormathchars{⋆⋆⋆},
+   \textormathchars{‡},
+   \textormathchars{‡‡},
+   \textormathchars{‡‡‡},
+   \textormathchars{¶},
+   \textormathchars{¶¶},
+   \textormathchars{¶¶¶},
+   \textormathchars{§},
+   \textormathchars{§§},
+   \textormathchars{§§§},
+   \textormathchars{∗},
+   \textormathchars{∗∗},
+   \textormathchars{∗∗∗}]
 
 %D Iteration of suggestion by WS on mailinglist 2010.12.22:
 %D

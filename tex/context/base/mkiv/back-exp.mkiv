@@ -255,6 +255,13 @@
       {\iftrialtypesetting\else\clf_settagmargintext#1\relax\fi}%
 \to \everyenableelements
 
+\appendtoks
+    \unexpanded\def\dotagpublication#1#2%
+      {\iftrialtypesetting\else
+         \clf_settagpublication{#1}{#2}\relax
+       \fi}%
+\to \everyenableelements
+
 % The action: \setupbackend[export=yes] % or filename
 
 % maybe xhtml css settings will move to setupexport

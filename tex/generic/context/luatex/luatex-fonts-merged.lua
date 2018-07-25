@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/20/18 21:20:26
+-- merge date  : 07/25/18 19:41:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -22856,6 +22856,7 @@ local function copytotfm(data,cache_id)
     local fontname=metadata.fontname
     local fullname=metadata.fullname or fontname
     local psname=fontname or fullname
+    local subfont=metadata.subfontindex
     local units=metadata.units or 1000
     if units==0 then 
       units=1000 
@@ -22943,6 +22944,7 @@ local function copytotfm(data,cache_id)
     properties.fullname=fullname
     properties.psname=psname
     properties.name=filename or fullname
+    properties.subfont=subfont
     properties.private=properties.private or data.private or privateoffset
     return {
       characters=characters,
@@ -32623,7 +32625,7 @@ function afm.load(filename)
     local name=file.removesuffix(file.basename(filename))
     local data=containers.read(afm.cache,name)
     local attr=lfs.attributes(filename)
-    local size,time=attr.size or 0,attr.modification or 0
+    local size,time=attr and attr.size or 0,attr and attr.modification or 0
     local pfbfile=file.replacesuffix(name,"pfb")
     local pfbname=resolvers.findfile(pfbfile,"pfb") or ""
     if pfbname=="" then

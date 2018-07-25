@@ -534,8 +534,12 @@ do
                 end
                 if normalized == "crossref" then
                     setmetatableindex(entries,function(t,k)
-                        local parent = luadata[value]
-                        if parent then
+                        local parent = rawget(luadata,value)
+                        if parent == entries then
+                            report_duplicates("bad parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                            setmetatableindex(entries,nil)
+                            return entries
+                        elseif parent then
                             setmetatableindex(entries,parent)
                             return entries[k]
                         else
@@ -717,22 +721,27 @@ do
 
     local compact = false -- can be a directive but then we also need to deal with newlines ... not now
 
-    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset) -- we have fields !
+    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset,noversion) -- we have fields !
         local current = datasets[dataset]
         local luadata = subset or (current and current.luadata)
         if luadata then
             statistics.starttiming(publications)
             --
             local result, r, n = { }, 0, 0
-            local usedonly = usedonly and publications.usedentries()
+            if usedonly then
+                usedonly = publications.usedentries()
+                usedonly = usedonly[current.name]
+            end
             --
             r = r + 1 ; result[r] = "<?xml version='1.0' standalone='yes'?>"
-            r = r + 1 ; result[r] = "<bibtex>"
+            r = r + 1 ; result[r] = formatters["<bibtex dataset='%s'>"](current.name)
             --
             if nice then -- will be default
                 local f_entry_start = formatters[" <entry tag='%s' category='%s' index='%s'>"]
                 local s_entry_stop  = " </entry>"
                 local f_field       = formatters["  <field name='%s'>%s</field>"]
+                local f_cdata       = formatters["  <field name='rawbibtex'><![CDATA[%s]]></field>"]
+
                 for tag, entry in sortedhash(luadata) do
                     if not usedonly or usedonly[tag] then
                         r = r + 1 ; result[r] = f_entry_start(tag,entry.category,entry.index)
@@ -746,6 +755,9 @@ do
                                 end
                             end
                         end
+local s = publications.savers.bib(current,false,{ [tag] = entry })
+s = utilities.strings.striplines(s,"prune and collapse")
+r = r + 1 ; result[r] = f_cdata(xml.escaped(s))
                         r = r + 1 ; result[r] = s_entry_stop
                         n = n + 1
                     end
@@ -775,7 +787,7 @@ do
             --
             r = r + 1 ; result[r] = "</bibtex>"
             --
-            result = concat(result,nice and "\n" or nil)
+            result = concat(result,nice and "\n" or nil,noversion and 2 or 1,#result)
             --
             if dontstore then
                 -- indeed

@@ -111,6 +111,8 @@ analyzers.useunicodemarks = false
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
 
+-- done can go away as can tonut
+
 function analyzers.setstate(head,font)
     local useunicodemarks  = analyzers.useunicodemarks
     local tfmdata = fontdata[font]

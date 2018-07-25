@@ -46,6 +46,7 @@ local lasttags       = { }
 local stacksize      = 0
 local metadata       = nil -- applied to the next element
 local documentdata   = { }
+local extradata      = false
 
 local tags           = structures.tags
 tags.taglist         = taglist -- can best be hidden
@@ -126,6 +127,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     listcontent           = { pdf = "P",          nature = "mixed"   },
     listdata              = { pdf = "P",          nature = "mixed"   },
     listpage              = { pdf = "Reference",  nature = "mixed"   },
+    listtext              = { pdf = "Span",       nature = "inline"  },
 
     delimitedblock        = { pdf = "BlockQuote", nature = "display" },
     delimited             = { pdf = "Quote",      nature = "inline"  },
@@ -206,6 +208,10 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     combinationpair       = { pdf = "Span",       nature = "display" },
     combinationcontent    = { pdf = "Span",       nature = "mixed"   },
     combinationcaption    = { pdf = "Span",       nature = "mixed"   },
+
+    publications          = { pdf = "Div",        nature = "display" },
+    publication           = { pdf = "Div",        nature = "mixed"   },
+    pubfld                = { pdf = "Span",       nature = "inline"  },
 }
 
 tags.properties = properties
@@ -287,6 +293,20 @@ end
 
 function tags.getmetadata()
     return documentdata or { }
+end
+
+function tags.registerextradata(name,serializer)
+    if type(serializer) == "function" then
+        if extradata then
+            extradata[name] = serializer
+        else
+            extradata = { [name] = serializer }
+        end
+    end
+end
+
+function tags.getextradata()
+    return extradata
 end
 
 function tags.start(tag,specification)

@@ -87,6 +87,12 @@
         </cd:arguments>
     </cd:command>
 
+  <cd:command name="textormathchars" level="style" category="characters fonts" file="char-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-character"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="chardescription" level="style" category="characters" file="char-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>

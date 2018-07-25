@@ -25,19 +25,29 @@
 \let\synctexsetfilename  \clf_synctexsetfilename
 \let\synctexresetfilename\clf_synctexresetfilename
 \let\synctexblockfilename\clf_synctexblockfilename
-\let\synctexpause        \clf_synctexpause
-\let\synctexresume       \clf_synctexresume
 
-\appendtoks\clf_synctexpause \to\everybeforeoutput
-\appendtoks\clf_synctexresume\to\everyafteroutput
+\let\synctexpause   \donothing
+\let\synctexresume  \donothing
+\let\synctexpushline\donothing
+\let\synctexpopline \donothing
+
+\appendtoks\synctexpause \to\everybeforeoutput
+\appendtoks\synctexresume\to\everyafteroutput
 
 \unexpanded\def\setupsynctex[#1]%
   {\begingroup
    \getdummyparameters[\c!state=\v!stop,\c!method=\v!max,#1]%
+   \edef\p_state{\dummyparameter\c!state}%
    \clf_setupsynctex
-      state  {\dummyparameter\c!state}%
+      state  {\p_state}%
       method {\dummyparameter\c!method}%
    \relax
+   \ifx\p_state\v!start
+     \glet\synctexpause   \clf_synctexpause
+     \glet\synctexresume  \clf_synctexresume
+     \glet\synctexpushline\clf_synctexpushline
+     \glet\synctexpopline \clf_synctexpopline
+   \fi
    \endgroup}
 
 \unexpanded\def\blocksynctexfile[#1]%

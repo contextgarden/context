@@ -284,47 +284,50 @@
 
 \unexpanded\def\smallbreak
   {\par
-   \ifdim\lastskip<\smallskipamount
+   \ifvmode\ifdim\lastskip<\smallskipamount
      \removelastskip
-     \penalty-50
+     \penalty-\plusfifty
      \smallskip
-   \fi}
+   \fi\fi}
 
 \unexpanded\def\medbreak
   {\par
-   \ifdim\lastskip<\medskipamount
+   \ifvmode\ifdim\lastskip<\medskipamount
      \removelastskip
-     \penalty-100
+     \penalty-\plusonehundred
      \medskip
-   \fi}
+   \fi\fi}
 
 \unexpanded\def\bigbreak
   {\par
-   \ifdim\lastskip<\bigskipamount
+   \ifvmode\ifdim\lastskip<\bigskipamount
      \removelastskip
-     \penalty-200
+     \penalty-\plustwohundred
      \bigskip
-   \fi}
+   \fi\fi}
 
-\unexpanded\def\break     {\penalty-\plustenthousand}     % can be hmode or vmode
-\unexpanded\def\nobreak   {\penalty \plustenthousand}     % can be hmode or vmode
-\unexpanded\def\allowbreak{\penalty \zeropoint}           % can be hmode or vmode
-\unexpanded\def\goodbreak {\par\penalty-500\relax}        % forces vmode
-\unexpanded\def\filbreak  {\par\vfil\penalty-200\vfilneg} % forces vmode
+\unexpanded\def\break     {\penalty-\plustenthousand} % can be hmode or vmode
+\unexpanded\def\nobreak   {\penalty \plustenthousand} % can be hmode or vmode
+\unexpanded\def\allowbreak{\penalty \zerocount}       % can be hmode or vmode
+
+\unexpanded\def\goodbreak {\par\ifvmode\penalty-\plusfivehundred\relax\fi}       % forces vmode
+\unexpanded\def\filbreak  {\par\ifvmode\vfil\penalty-\plustwohundred\vfilneg\fi} % forces vmode
 
 %D Made slightly more readable:
 
 \unexpanded\def\vglue  {\afterassignment\spac_helpers_vglue_indeed\s_spac_lastskip=}
 \unexpanded\def\hglue  {\afterassignment\spac_helpers_hglue_indeed\s_spac_lastskip=}
-\unexpanded\def\topglue{\nointerlineskip\vglue-\topskip\vglue}
+\unexpanded\def\topglue{\par\ifvmode\nointerlineskip\vglue-\topskip\vglue\fi}
 
 \def\spac_helpers_vglue_indeed
   {\par
-   \d_spac_prevdepth\prevdepth
-   \hrule\s!height\zeropoint
-   \nobreak
-   \vskip\s_spac_lastskip
-   \prevdepth\d_spac_prevdepth}
+   \ifvmode
+     \d_spac_prevdepth\prevdepth
+     \hrule\s!height\zeropoint
+     \nobreak
+     \vskip\s_spac_lastskip
+     \prevdepth\d_spac_prevdepth
+   \fi}
 
 \def\spac_helpers_hglue_indeed
   {\dontleavehmode

@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['scrp-eth'] = {
+if not modules then modules = { } end modules ['scrp-tib'] = {
     version   = 1.001,
     comment   = "companion to scrp-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -13,9 +13,11 @@ local nuts               = nodes.nuts
 
 local getnext            = nuts.getnext
 local getfont            = nuts.getfont
-local getid              = nuts.getid
+----- getid              = nuts.getid
 local getattr            = nuts.getattr
+local ischar             = nuts.ischar
 
+local insert_node_after  = nuts.insert_after
 local insert_node_before = nuts.insert_before
 
 local nodepool           = nuts.pool
@@ -33,6 +35,8 @@ local categorytonumber   = scripts.categorytonumber
 local numbertocategory   = scripts.numbertocategory
 local hash               = scripts.hash
 local numbertodataset    = scripts.numbertodataset
+
+-- can be shared:
 
 local fonthashes         = fonts.hashes
 local parameters         = fonthashes.parameters
@@ -65,9 +69,13 @@ local function space_glue(current)
     )
 end
 
-local function insert_space_before(head,current)
-    return insert_node_before(head,current,space_glue(current))
+local function insert_space_after(head,current)
+    return insert_node_after(head,current,space_glue(current))
 end
+
+-- local function insert_space_before(head,current)
+--     return insert_node_before(head,current,space_glue(current))
+-- end
 
 local function insert_zerowidthspace_before(head,current)
     return insert_node_before(head,current,new_glue(0))
@@ -78,52 +86,35 @@ local function insert_nobreakspace_before(head,current)
     return insert_node_before(head,current,space_glue(current))
 end
 
--- syllable [zerowidthspace] syllable
--- syllable [zerowidthspace] word
--- syllable [zerowidthspace] sentence
--- word     [nobreakspace]   syllable
--- word     [space]          word
--- word     [space]          sentence
--- sentence [nobreakspace]   syllable
--- sentence [space]          word
--- sentence [space]          sentence
+-- more efficient is to check directly
+--
+-- local b_tsheg = 0x0F0B -- breaking
+-- local n_tsheg = 0x0F0C -- nonbreaking
+--
+-- if char == b_tsheg then
+--     head, current = insert_space_after(head,current)
+-- end
+--
+-- but this is more general
 
-local injectors = { -- [previous] [current]
-    ethiopic_syllable = {
-        ethiopic_syllable = insert_zerowidthspace_before,
-        ethiopic_word     = insert_nobreakspace_before,
-        ethiopic_sentence = insert_nobreakspace_before,
-    },
-    ethiopic_word = {
-        ethiopic_syllable = insert_space_before,
-        ethiopic_word     = insert_space_before,
-        ethiopic_sentence = insert_space_before,
-    },
-    ethiopic_sentence = {
-        ethiopic_syllable = insert_space_before,
-        ethiopic_word     = insert_space_before,
-        ethiopic_sentence = insert_space_before,
-    },
+local injectors = {
+    breaking_tsheg = insert_space_after,
 }
 
 local function process(head,first,last)
     if first ~= last then
-        local injector = false
         local current = first
         while current do
-            local id = getid(current)
-            if id == glyph_code then
-                local scriptstatus = getattr(current,a_scriptstatus)
-                local category     = numbertocategory[scriptstatus]
-                if injector then
-                    local action = injector[category]
-                    if action then
-                        action(head,current)
+            local char, id = ischar(current)
+            local scriptstatus = getattr(current,a_scriptstatus)
+            if scriptstatus and scriptstatus > 0 then
+                local category = numbertocategory[scriptstatus]
+                if category then
+                    local injector = injectors[category]
+                    if injector then
+                        head, current = insert_space_after(head,current)
                     end
                 end
-                injector = injectors[category]
-            else
-                -- nothing yet
             end
             if current == last then
                 break
@@ -135,7 +126,7 @@ local function process(head,first,last)
 end
 
 scripts.installmethod {
-    name     = "ethiopic",
+    name     = "tibetan",
     injector = process,
     datasets = {
         default = {

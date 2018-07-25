@@ -71,6 +71,7 @@ local getshift            = nuts.getshift
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
 local copy_list           = nuts.copy_list
+local copy_node           = nuts.copy_node
 local flush_node_list     = nuts.flush_list
 local insert_node_before  = nuts.insert_before
 local insert_node_after   = nuts.insert_after
@@ -196,11 +197,13 @@ end
 local userrule    -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 local outlinerule -- bah, not yet defined: todo, delayed(nuts.rules,"userrule")
 
-local function enable()
+local function initialize()
+    --
     if not usedfont then
         -- we use a narrow monospaced font -- infofont ?
         visualizers.setfont(fonts.definers.define { name = "lmmonoltcond10regular", size = tex.sp("4pt") })
     end
+    --
     for mode, value in next, modes do
         local tag = formatters["v_%s"](mode)
         attributes.viewerlayers.define {
@@ -231,17 +234,25 @@ local function enable()
     l_line          = layers.line
     l_space         = layers.space
     l_depth         = layers.depth
-    enableaction("shipouts","nodes.visualizers.handler")
-    report_visualize("enabled")
-    enabled = true
-    tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
     --
     if not userrule then
        userrule = nuts.rules.userrule
     end
+    --
     if not outlinerule then
        outlinerule = nuts.pool.outlinerule
     end
+    initialize = false
+end
+
+local function enable()
+    if initialize then
+        initialize()
+    end
+    enableaction("shipouts","nodes.visualizers.handler")
+    report_visualize("enabled")
+    enabled = true
+    tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
 end
 
 local function setvisual(n,a,what,list) -- this will become more efficient when we have the bit lib linked in
@@ -1568,5 +1579,59 @@ do
         arguments = "integer",
         actions   = visualizers.setfont
     }
+
+end
+
+-- Here for now:
+
+do
+
+    local function make(str,forecolor,rulecolor,layer)
+        if initialize then
+            initialize()
+        end
+        local rule = new_rule(emwidth/fraction,exheight,4*exheight)
+        setcolor(rule,rulecolor)
+        settransparency(rule,rulecolor)
+        local info
+        if str == "" then
+            info = new_hlist(rule)
+        else
+            local text = hpack_string(str,usedfont)
+            local list = getlist(text)
+            setlistcolor(list,textcolor)
+            setlisttransparency(list,textcolor)
+            setshift(text,3.5 * exheight)
+            info = new_hlist(setlink(rule,text))
+        end
+        setattr(info,a_layer,layer)
+        return info
+    end
+
+    function visualizers.register(name,textcolor,rulecolor)
+        if rawget(layers,name) then
+            -- message
+            return
+        end
+        local cache = caches[name]
+        local layer = layers[name]
+        if not textcolor then
+            textcolor = c_text_d
+        end
+        if not rulecolor then
+            rulecolor = c_origin_d
+        end
+        return function(str)
+            if not str then
+                str = ""
+            end
+            local info = cache[str]
+            if not info then
+                info = make(str,textcolor,rulecolor,layer)
+                cache[str] = info
+            end
+            return copy_node(info)
+        end
+    end
 
 end

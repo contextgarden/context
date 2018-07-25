@@ -156,7 +156,8 @@
 \ifx\postwordbreak\undefined \unexpanded\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
 \ifx\hspaceamount \undefined            \def\hspaceamount#1#2{.16667\emwidth}                                 \fi % language specific
 
-\unexpanded\def\permithyphenation{\ifhmode\prewordbreak\fi} % doesn't remove spaces
+%unexpanded\def\permithyphenation{\ifhmode\prewordbreak\fi} % doesn't remove spaces
+\unexpanded\def\permithyphenation{\ifhmode\wordboundary\fi} % doesn't remove spaces
 
 %D \macros
 %D   {beginofsubsentence,endofsubsentence,
@@ -209,15 +210,14 @@
   {% if direct if, we need \relax for lookahead in math mode
    \csname\??discretionarymode
      \ifcase\discretionarymode
-       n% \csstring\lang_discretionaries_process_none
+       n%
      \else\ifmmode
-       m% \csstring\lang_discretionaries_process_math
+       m%
      \else
-       t% \csstring\lang_discretionaries_process_text
+       t%
      \fi\fi
    \endcsname}
 
-% \def\lang_discretionaries_process_none#1%
 \setvalue{\??discretionarymode n}#1%
   {\detokenize{#1}}
 
@@ -230,19 +230,22 @@
 \newconditional\punctafterdiscretionary
 \newconditional\spaceafterdiscretionary
 
-\def\lang_discretionaries_check_before
+\def\lang_discretionaries_check_before %i sused grouped
   {\ifvmode
      \dontleavehmode
    \fi
    \ifhmode
-     \begingroup
-     \setbox\scratchbox\lastbox
-     \ifzeropt\wd\scratchbox
-       \let\postwordbreak\prewordbreak
-     \fi
-     \box\scratchbox\relax
-     \endgroup
-  \fi}
+    %\begingroup
+    %\setbox\scratchbox\lastbox
+    %\ifzeropt\wd\scratchbox
+    %  \box\scratchbox\relax
+    %  \endgroup
+    %  \let\postwordbreak\prewordbreak
+    %\else
+    %  \box\scratchbox\relax
+    %  \endgroup
+    %\fi
+   \fi}
 
 \def\lang_discretionaries_check_after
   {\setfalse\punctafterdiscretionary
@@ -254,10 +257,8 @@
    \ifx          :\nextnext \settrue \punctafterdiscretionary \else
    \ifx          ;\nextnext \settrue \punctafterdiscretionary \fi\fi\fi\fi\fi\fi}
 
-%let\lang_discretionaries_process_math\handlemathmodediscretionary
 \letvalue{\??discretionarymode m}\handlemathmodediscretionary
 
-% \def\lang_discretionaries_process_text#1% grouped !
 \setvalue{\??discretionarymode t}#1%
   {\bgroup
    \let\nextnextnext\egroup
@@ -278,39 +279,47 @@
        \ifcsname\??discretionaryaction\string#1\endcsname
          \lastnamedcs
        \else\ifconditional\spaceafterdiscretionary
-         \prewordbreak\hbox{\string#1}\relax
+        %\prewordbreak\hbox{\string#1}\relax
+         \wordboundary\hbox{\string#1}\relax
        \else\ifconditional\punctafterdiscretionary
-         \prewordbreak\hbox{\string#1}\relax
+        %\prewordbreak\hbox{\string#1}\relax
+         \wordboundary\hbox{\string#1}\wordboundary
        \else
-         \prewordbreak\hbox{\string#1}\prewordbreak
+        %\prewordbreak\hbox{\string#1}\prewordbreak
+         \wordboundary\hbox{\string#1}\wordboundary
        \fi\fi\fi
        \def\nextnextnext{\afterassignment\egroup\let\next=}%
      \else
        \lang_discretionaries_check_before
        % the next line has been changed (20050203)
-       % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
+       % \prewordbreak\hbox{\textmodediscretionary\nextnext}\postwordbreak
        % but an hbox blocks a possible \discretionary
        \ifcsname\??discretionaryaction\endcsname
          \lastnamedcs
        \else\ifconditional\spaceafterdiscretionary
-         \prewordbreak\textmodediscretionary\relax
+        %\prewordbreak\textmodediscretionary\relax
+         \wordboundary\textmodediscretionary\relax
        \else\ifconditional\punctafterdiscretionary
-         \prewordbreak\textmodediscretionary\relax
+        %\prewordbreak\textmodediscretionary\relax
+         \wordboundary\textmodediscretionary\relax
        \else
-         \prewordbreak\textmodediscretionary\prewordbreak
+        %\prewordbreak\textmodediscretionary\prewordbreak
+         \wordboundary\textmodediscretionary\wordboundary
        \fi\fi\fi
-     %  \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
      \fi
    \else\ifcsname\??discretionaryaction\discretionarytoken\endcsname
      \lastnamedcs
    \else
      \lang_discretionaries_check_before
      \ifconditional\spaceafterdiscretionary
-       \prewordbreak\hbox{#2}\relax
+      %\prewordbreak\hbox{#2}\relax
+       \wordboundary\hbox{#2}\relax
      \else\ifconditional\punctafterdiscretionary
-       \prewordbreak\hbox{#2}\relax
+      %\prewordbreak\hbox{#2}\relax
+       \wordboundary\hbox{#2}\relax
      \else
-       \prewordbreak\discretionary{\hbox{#2}}{}{\hbox{#2}}\allowbreak\postwordbreak
+      %\prewordbreak\discretionary{\hbox{#2}}{}{\hbox{#2}}\postwordbreak
+       \wordboundary\discretionary{\hbox{#2}}{}{\hbox{#2}}\wordboundary
      \fi\fi
    \fi\fi
    \nextnextnext}
@@ -324,35 +333,33 @@
 \unexpanded\def\directdiscretionary
   {\csname\??discretionarymode
      \ifcase\discretionarymode
-       n% \csstring\lang_discretionaries_process_none
+       n%
      \else
-       d% \csstring\lang_discretionaries_process_direct
+       d%
      \fi
    \endcsname}
 
 \unexpanded\def\indirectdiscretionary
   {\csname\??discretionarymode
      \ifcase\discretionarymode
-       n% \csstring\lang_discretionaries_process_none
+       n%
      \else
-       i% \csstring\lang_discretionaries_process_indirect
+       i%
      \fi
    \endcsname}
 
-% \unexpanded\def\lang_discretionaries_process_direct#1%
 \setuvalue{\??discretionarymode d}#1%
   {\edef\discretionarytoken{\detokenize{#1}}%
    \let\textmodediscretionary\compoundhyphen
-  %\executeifdefined{\??discretionaryaction\discretionarytoken}{\indirectdiscretionary{#1}}}
    \ifcsname\??discretionaryaction\discretionarytoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\indirectdiscretionary
    \fi{#1}}
 
-% \unexpanded\unexpanded\def\lang_discretionaries_process_indirect#1%
 \setuvalue{\??discretionarymode i}#1%
-  {\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\allowbreak\postwordbreak}
+ %{\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\postwordbreak}
+  {\wordboundary\discretionary{\hbox{#1}}{}{\hbox{#1}}\wordboundary}
 
 \unexpanded\def\definetextmodediscretionary #1
   {\setvalue{\??discretionaryaction\detokenize{#1}}}
@@ -376,11 +383,14 @@
 
 \def\lang_discretionaries_hyphen_like#1#2%
   {\ifconditional\spaceafterdiscretionary
-     \prewordbreak\hbox{#1}\relax
+     %prewordbreak\hbox{#1}\relax
+     \wordboundary\hbox{#1}\relax
    \else\ifconditional\punctafterdiscretionary
-     \prewordbreak\hbox{#1}\relax
+     %prewordbreak\hbox{#1}\relax
+     \wordboundary\hbox{#1}\relax
    \else
-     \prewordbreak#2\postwordbreak % was prewordbreak
+    %\prewordbreak#2\postwordbreak % was prewordbreak
+     \wordboundary#2\wordboundary
    \fi\fi}
 
 \definetextmodediscretionary {}
@@ -397,59 +407,65 @@
 
 \definetextmodediscretionary (
   {\ifdim\lastskip>\zeropoint
-     (\prewordbreak
+    %(\prewordbreak
+     (\wordboundary
    \else
-     \prewordbreak\discretionary{}{(-}{(}\prewordbreak
+    %\prewordbreak\discretionary{}{(-}{(}\prewordbreak
+     \wordboundary\discretionary{}{(-}{(}\wordboundary
    \fi}
 
 \definetextmodediscretionary ~
-  {\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
+ %{\prewordbreak\discretionary{-}{}{\thinspace}\postwordbreak}
+  {\wordboundary\discretionary{-}{}{\thinspace}\wordboundary}
 
 \definetextmodediscretionary '
-  {\prewordbreak\discretionary{-}{}{'}\postwordbreak}
+ %{\prewordbreak\discretionary{-}{}{'}\postwordbreak}
+  {\wordboundary\discretionary{-}{}{'}\wordboundary}
 
 \definetextmodediscretionary ^
-  {\prewordbreak\discretionary{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}%
-   \allowbreak\postwordbreak} % bugged
-
-% \definetextmodediscretionary <
-%   {\beginofsubsentence\prewordbreak\beginofsubsentencespacing}
-%
-% \definetextmodediscretionary >
-%   {\endofsubsentencespacing\prewordbreak\endofsubsentence}
-%
-% \definetextmodediscretionary =
-%   {\prewordbreak\midsentence\prewordbreak}
+ %{\prewordbreak\discretionary{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}%
+ % \postwordbreak} % bugged
+  {\wordboundary\discretionary{\hbox{\normalstartimath|\normalstopimath}}{}{\hbox{\normalstartimath|\normalstopimath}}%
+   \wordboundary} % bugged
 
 \definetextmodediscretionary <
-  {\beginofsubsentence\prewordbreak\beginofsubsentencespacing
+ %{\beginofsubsentence\prewordbreak\beginofsubsentencespacing
+  {\beginofsubsentence\wordboundary\beginofsubsentencespacing
    \aftergroup\ignorespaces} % tricky, we need to go over the \nextnextnext
 
 \definetextmodediscretionary >
   {\removeunwantedspaces
-   \endofsubsentencespacing\prewordbreak\endofsubsentence}
+  %\endofsubsentencespacing\prewordbreak\endofsubsentence}
+   \endofsubsentencespacing\wordboundary\endofsubsentence}
 
 \definetextmodediscretionary =
   {\removeunwantedspaces
-   \prewordbreak\midsentence\prewordbreak
+  %\prewordbreak\midsentence\prewordbreak
+   \wordboundary\midsentence\wordboundary
    \aftergroup\ignorespaces}
 
 % french
 
-\definetextmodediscretionary : {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{:}:}
-\definetextmodediscretionary ; {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{;};}
-\definetextmodediscretionary ? {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{?}?}
-\definetextmodediscretionary ! {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{!}!}
+%definetextmodediscretionary : {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{:}:}
+%definetextmodediscretionary ; {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{;};}
+%definetextmodediscretionary ? {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{?}?}
+%definetextmodediscretionary ! {\removeunwantedspaces\prewordbreak\kern\hspaceamount\empty{!}!}
 
-\definetextmodediscretionary *
-  {\prewordbreak\discretionary{-}{}{\kern.05em}\prewordbreak}
+\definetextmodediscretionary : {\removeunwantedspaces\wordboundary\kern\hspaceamount\empty{:}:}
+\definetextmodediscretionary ; {\removeunwantedspaces\wordboundary\kern\hspaceamount\empty{;};}
+\definetextmodediscretionary ? {\removeunwantedspaces\wordboundary\kern\hspaceamount\empty{?}?}
+\definetextmodediscretionary ! {\removeunwantedspaces\wordboundary\kern\hspaceamount\empty{!}!}
+
+%definetextmodediscretionary * {\prewordbreak\discretionary{-}{}{\kern.05\emwidth}\prewordbreak}
+\definetextmodediscretionary * {\wordboundary\discretionary{-}{}{\kern.05\emwidth}\wordboundary}
 
 % spanish
 
-\definetextmodediscretionary ?? {\prewordbreak\questiondown}
-\definetextmodediscretionary !! {\prewordbreak\exclamdown}
+%definetextmodediscretionary ?? {\prewordbreak\questiondown}
+%definetextmodediscretionary !! {\prewordbreak\exclamdown}
 
-% \ifx\normalcompound\undefined \let\normalcompound=| \fi
+\definetextmodediscretionary ?? {\wordboundary\questiondown}
+\definetextmodediscretionary !! {\wordboundary\exclamdown}
 
 %D \installdiscretionary | +
 %D \installdiscretionary + =

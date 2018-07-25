@@ -72,6 +72,8 @@ do
     local has_glyph   = nodes.has_glyph
     local count_nodes = nodes.countall
 
+    local texget      = tex.get
+
     local tracer      = processors.tracer
 
     local function pre_linebreak_filter(head,groupcode) -- ,size,packtype,direction
@@ -95,6 +97,13 @@ do
     local function hpack_filter(head,groupcode,size,packtype,direction,attributes)
         local found = force_processors or has_glyph(head)
         if found then
+            --
+            -- yes or no or maybe an option
+            --
+            if not direction then
+                direction = texget("textdir")
+            end
+            --
             if trace_callbacks then
                 local before = count_nodes(head,true)
                 head = actions(head,groupcode,size,packtype,direction,attributes)

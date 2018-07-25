@@ -206,7 +206,9 @@ local hash = { -- we could put these presets in char-def.lua
     --
     [0x1361] = "ethiopic_word",
     [0x1362] = "ethiopic_sentence",
-    --
+    -- tibetan:
+    [0x0F0B] = "breaking_tsheg",
+    [0x0F0C] = "nonbreaking_tsheg",
 }
 
 local function provide(t,k)
@@ -226,6 +228,7 @@ local function provide(t,k)
     elseif (k >= 0x01160 and k <= 0x011A7) then v = "jamo_medial"
     elseif (k >= 0x011A8 and k <= 0x011FF) then v = "jamo_final"
     elseif (k >= 0x01200 and k <= 0x0139F) then v = "ethiopic_syllable"
+    elseif (k >= 0x00F00 and k <= 0x00FFF) then v = "tibetan"
                                            else v = false
     end
     t[k] = v
@@ -388,6 +391,8 @@ local scriptcolors = allocate {  -- todo: just named colors
     ethiopic_syllable = "trace:1",
     ethiopic_word     = "trace:2",
     ethiopic_sentence = "trace:3",
+    breaking_tsheg    = "trace:1",
+    nonbreaking_tsheg = "trace:2",
 }
 
 scripts.colors = scriptcolors
@@ -410,6 +415,8 @@ local numbertocategory = allocate { -- rather bound to cjk ... will be generaliz
     "ethiopic_syllable",
     "ethiopic_word",
     "ethiopic_sentence",
+    "breaking_tsheg",
+    "nonbreaking_tsheg",
 }
 
 local categorytonumber = allocate(table.swapped(numbertocategory)) -- could be one table

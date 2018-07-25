@@ -24,7 +24,16 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- I only tested SumatraPDF with SciTE, for which one needs to configure in the
 -- viewer:
 --
--- InverseSearchCmdLine = c:\data\system\scite\wscite\scite.exe "%f" "-goto:%l" $
+--   InverseSearchCmdLine = c:\data\system\scite\wscite\scite.exe "%f" "-goto:%l" $
+--
+-- In fact, a way more powerful implementation would have been not to add a library
+-- to a viewer, but letthe viewer call an external program:
+--
+--   InverseSearchCmdLine = mtxrun.exe --script synctex --edit --name="%f" --line="%l" $
+--
+-- which would (re)launch the editor in the right spot. That way we can really
+-- tune well to the macro package used and also avoid the fuzzy heuristics of
+-- the library.
 --
 -- Unfortunately syntex always removes the files at the end and not at the start
 -- (this happens in synctexterminate) so we need to work around that by using an
@@ -124,6 +133,7 @@ local openfile, renamefile, removefile = io.open, os.rename, os.remove
 local report_system = logs.reporter("system")
 
 local tex                = tex
+local texget             = tex.get
 
 local nuts               = nodes.nuts
 
@@ -166,7 +176,7 @@ local set_synctex_tag    = tex.set_synctex_tag
 local force_synctex_tag  = tex.force_synctex_tag
 local force_synctex_line = tex.force_synctex_line
 ----- get_synctex_tag    = tex.get_synctex_tag
------ get_synctex_line   = tex.get_synctex_line
+local get_synctex_line   = tex.get_synctex_line
 local set_synctex_mode   = tex.set_synctex_mode
 
 local getpos             = function()
@@ -264,6 +274,34 @@ function synctex.resetfilename()
         force_synctex_tag(0)
         force_synctex_line(0)
     end
+end
+
+do
+
+    local nesting = 0
+    local ignored = false
+
+    function synctex.pushline()
+        nesting = nesting + 1
+        if nesting == 1 then
+            local l = get_synctex_line()
+            ignored = l and l > 0
+            if not ignored then
+                force_synctex_line(texget("inputlineno"))
+            end
+        end
+    end
+
+    function synctex.popline()
+        if nesting == 1 then
+            if not ignored then
+                force_synctex_line()
+                ignored = false
+            end
+        end
+        nesting = nesting - 1
+    end
+
 end
 
 -- the node stuff
@@ -778,11 +816,21 @@ implement {
 }
 
 implement {
-    name      = "synctexpause",
-    actions   = synctex.pause,
+    name    = "synctexpause",
+    actions = synctex.pause,
 }
 
 implement {
-    name      = "synctexresume",
-    actions   = synctex.resume,
+    name    = "synctexresume",
+    actions = synctex.resume,
 }
+
+interfaces.implement {
+    name    = "synctexpushline",
+    actions = synctex.pushline,
+}
+interfaces.implement {
+    name    = "synctexpopline",
+    actions = synctex.popline,
+}
+

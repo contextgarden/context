@@ -1,0 +1,17 @@
+\environment onandon-speed-000
+
+\ProcessSample{bodyfont} \setupbodyfont[dejavu]
+
+\starttext
+
+\def\Sample#1%
+  {\start
+   \switchtobodyfont[#1]
+   \dorecurse\SampleCount{\sapolsky\space\sapolsky\space\sapolsky\space\sapolsky\par}%
+   \stop}
+
+\startlayout[page]
+    \ProcessSample{\SampleCount\space times 4 texts on pages}
+\stoplayout
+
+\stoptext

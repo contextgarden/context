@@ -53,10 +53,7 @@
    script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
    autoscript=position,
    autolanguage=position,
-% ccmp=yes,
    kern=yes,     % consider skipping the base passes when no base mode is used
-% palt=yes,
-% pwid=yes,
    mark=yes,
    mkmk=yes,
    curs=yes]
@@ -322,6 +319,22 @@
 \definefontfeature [oriya-two]      [oriya-one]      [script=ory2]
 \definefontfeature [tamil-two]      [tamil-one]      [script=tml2]
 \definefontfeature [telugu-two]     [telugu-one]     [script=tel2]
+
+% tibetan
+
+\definefontfeature
+  [tibetan]
+  [always]
+  [script=tibt,
+   language=dflt,
+   locl=yes,
+   ccmp=yes,
+   abvs=yes,
+   blws=yes,
+   calt=yes,
+   liga=yes,
+   abvm=yes,
+   blwm=yes]
 
 % cjk
 

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['typo-chr'] = {
     license   = "see context related readme files"
 }
 
+-- This module can be optimized.
+
 -- local nodecodes      = nodes.nodecodes
 -- local whatsitcodes   = nodes.whatsitcodes
 -- local glyph_code     = nodecodes.glyph
@@ -79,12 +81,21 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 local insert, remove = table.insert, table.remove
 
 local context         = context
+local ctx_doifelse    = commands.doifelse
 
 local nodecodes       = nodes.nodecodes
+local subtypes        = nodes.subtypes
+
 local glyph_code      = nodecodes.glyph
 local localpar_code   = nodecodes.localpar
+local boundary_code   = nodecodes.boundary
 
-local texnest         = tex.nest
+local word_code       = nodes.boundarycodes.word
+
+local texgetnest      = tex.getnest -- to be used
+
+local texsetcount     = tex.setcount
+
 local flush_node      = node.flush_node
 local flush_list      = node.flush_list
 
@@ -106,7 +117,7 @@ local marked          = {
 local stack           = { }
 
 local function pickup()
-    local list = texnest[texnest.ptr]
+    local list = texgetnest()
     if list then
         local tail = list.tail
         if tail and tail.id == glyph_code and punctuation[tail.char] then
@@ -177,7 +188,7 @@ end
 
 local actions = {
     remove = function(specification)
-        local list = texnest[texnest.ptr]
+        local list = texgetnest()
         if list then
             local head = list.head
             local tail = list.tail
@@ -240,3 +251,95 @@ interfaces.implement {
     actions   = markcontent,
     arguments = "string",
 }
+
+-- We just put these here.
+
+interfaces.implement {
+    name    = "lastnodeidstring",
+    public  = true,
+    actions = function()
+        local list = texgetnest() -- "top"
+        local okay = false
+        if list then
+            local tail = list.tail
+            if tail then
+                okay = nodecodes[tail.id]
+            end
+        end
+        context(okay or "")
+    end,
+}
+
+-- local t_lastnodeid = token.create("c_syst_last_node_id")
+--
+-- interfaces.implement {
+--     name    = "lastnodeid",
+--     public  = true,
+--     actions = function()
+--         ...
+--         tex.setcount("c_syst_last_node_id",okay)
+--         context.sprint(t_lastnodeid)
+--     end,
+-- }
+
+interfaces.implement {
+    name    = "lastnodeid",
+    actions = function()
+        local list = texgetnest() -- "top"
+        local okay = -1
+        if list then
+            local tail = list.tail
+            if tail then
+                okay = tail.id
+            end
+        end
+        texsetcount("c_syst_last_node_id",okay)
+    end,
+}
+
+interfaces.implement {
+    name    = "lastnodesubtypestring",
+    public  = true,
+    actions = function()
+        local list = texgetnest() -- "top"
+        local okay = false
+        if list then
+            local tail = list.tail
+            if head then
+                okay = subtypes[tail.id][tail.subtype]
+            end
+        end
+        context(okay or "")
+    end,
+}
+
+local function lastnodeequals(id,subtype)
+    local list = texgetnest() -- "top"
+    local okay = false
+    if list then
+        local tail = list.tail
+        if tail then
+            local i = tail.id
+            okay = i == id or i == nodecodes[id]
+            if subtype then
+                local s = tail.subtype
+                okay = s == subtype or s == subtypes[i][subtype]
+            end
+        end
+    end
+    ctx_doifelse(okay)
+end
+
+interfaces.implement {
+    name      = "lastnodeequals",
+    arguments = "2 strings",
+    actions   = lastnodeequals,
+}
+
+interfaces.implement {
+    name    = "atwordboundary",
+    actions = function()
+        lastnodeequals(boundary_code,word_code)
+    end,
+}
+

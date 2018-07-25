@@ -1,0 +1,32 @@
+\environment onandon-speed-000
+
+\ProcessSample{bodyfont} \setupbodyfont[dejavu]
+
+\starttext
+
+\def\sapolsky{%
+    Agriculture is a fairly recent human invention, and in many ways it was one
+    of the great \type {stupid} moves of all time. Hunter|-|gatherers have
+    thousands of wild sources of food to subsist on. Agriculture changed that
+    all, generating an overwhelming reliance on a few dozen domesticated food
+    sources, making you extremely vulnerable to the next famine, the next locust
+    infestation, the next potato blight. Agriculture allowed for stockpiling of
+    surplus resources and thus, \type {inevitably}, the unequal stockpiling of
+    them --- stratification of society and the invention of classes. Thus, it
+    allowed for the invention of poverty. I think that the punch line of the
+    primate|-|human difference is that when humans invented poverty, they came up
+    with a way of subjugating the low|-|ranking like \type {nothing ever seen
+    before} in the primate world.
+}%
+
+\def\Sample#1%
+  {\start
+   \switchtobodyfont[#1]
+   \dorecurse\SampleCount{\sapolsky\par}%
+   \stop}
+
+\startlayout[page]
+    \ProcessSample{\SampleCount\space texts on pages with [1,2,4] word verbatim switches}
+\stoplayout
+
+\stoptext

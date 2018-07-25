@@ -1,0 +1,16 @@
+\environment onandon-speed-000
+
+\ProcessSample{bodyfont} \setupbodyfont[dejavu]
+
+\starttext
+
+\def\Sample#1%
+  {\start
+   \switchtobodyfont[#1]
+   \setbox\scratchbox\hbox{\tf\bf\it\bi}%
+   \stop}
+
+\ProcessSample{bodyfont switch and 4 style changes (first time)}
+\ProcessSample{bodyfont switch and 4 style changes (follow up)}
+
+\stoptext

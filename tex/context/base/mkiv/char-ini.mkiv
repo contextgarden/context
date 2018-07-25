@@ -66,6 +66,18 @@
      \normalstartimath\char#1\normalstopimath
    \fi\fi}
 
+\unexpanded\def\textormathchars#1%
+  {{\font_text_or_mathchars#1\relax}}
+
+\unexpanded\def\font_text_or_mathchars#1#2\relax
+  {\relax\ifmmode
+     #1#2%
+   \else\iffontchar\font`#1\relax
+     #1#2\relax
+   \else
+     \normalstartimath#1#2\normalstopimath
+   \fi\fi}
+
 %D The codes are stored in the format, so we don't need to reinitialize
 %D them (unless of course we have adapted the table). It is on the agenda
 %D to do this with \type {tex.lccode} cum suis once they're available.

@@ -1,0 +1,15 @@
+\environment onandon-speed-000
+
+\ProcessSample{bodyfont} \setupbodyfont[dejavu]
+
+\starttext
+
+\def\Sample#1%
+  {\start
+   \switchtobodyfont[#1]
+   \dorecurse\SampleCount{\setbox\scratchbox\hbox{\sapolsky\space\sapolsky\space\sapolsky\space\sapolsky}}%
+   \stop}
+
+\ProcessSample{\SampleCount\space hboxes with 4 texts using one font}
+
+\stoptext

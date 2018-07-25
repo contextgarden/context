@@ -12,7 +12,8 @@ return {
     ["constants"] = {
         --
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
-        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred", "plustwohundred",
+        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen",
+        "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
@@ -155,6 +156,7 @@ return {
         "texdefinition",
         --
         "doifelsesetups", "doifsetupselse", "doifsetups", "doifnotsetups", "setup", "setups", "texsetup", "xmlsetup", "luasetup", "directsetup", "fastsetup",
+        "copysetups", "resetsetups",
         "doifelsecommandhandler", "doifcommandhandlerelse", "doifnotcommandhandler", "doifcommandhandler",
         --
         "newmode", "setmode", "resetmode",

@@ -405,6 +405,7 @@ local function copytotfm(data,cache_id)
         local fontname = metadata.fontname
         local fullname = metadata.fullname or fontname
         local psname   = fontname or fullname
+        local subfont  = metadata.subfontindex
         local units    = metadata.units or 1000
         --
         if units == 0 then -- catch bugs in fonts
@@ -499,6 +500,7 @@ local function copytotfm(data,cache_id)
         properties.fullname      = fullname
         properties.psname        = psname
         properties.name          = filename or fullname
+        properties.subfont       = subfont
         --
      -- properties.name          = specification.name
      -- properties.sub           = specification.sub

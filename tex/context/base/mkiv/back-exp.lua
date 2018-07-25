@@ -2050,6 +2050,41 @@ do
 
 end
 
+do
+
+    local usedpublications = { }
+    local tagsindatasets   = setmetatableindex("table")
+    local serialize        = false
+
+    function structurestags.setpublication(dataset,tag,rendering)
+        usedpublications[locatedtag("publication")] = {
+            dataset   = dataset,
+            tag       = tag,
+            rendering = rendering
+        }
+        tagsindatasets[dataset][tag] = true
+        if not serialize then
+            structures.tags.registerextradata("btx",function()
+                local t = { "<btxdata>"}
+                for dataset, used in sortedhash(tagsindatasets) do
+                    t[#t+1] = publications.converttoxml(dataset,true,false,true,false,true)
+                end
+                t[#t+1] = "</btxdata>"
+                return concat(t,"\n")
+            end)
+        end
+    end
+
+    function extras.publication(di,element,n,fulltag)
+        local hash = usedpublications[fulltag]
+        if hash then
+            setattribute(di,"dataset",hash.dataset)
+            setattribute(di,"tag",hash.tag)
+        end
+    end
+
+end
+
 -- flusher
 
 do
@@ -3840,6 +3875,22 @@ local htmltemplate = [[
 
         local result = allcontent(tree,embedmath) -- embedfile is for testing
 
+        -- ugly but so be it:
+
+        local extradata = structures.tags.getextradata()
+        if extradata then
+            local t = { "" }
+            t[#t+1] = "<extradata>"
+            for name, action in sortedhash(extradata) do
+                t[#t+1] = action()
+            end
+            t[#t+1] = "</extradata>"
+            t[#t+1] = "</document>"
+            result = gsub(result,"</document>",concat(t,"\n"))
+        end
+
+        -- done with ugly
+
         if onlyxml then
 
             os.remove(defaultfilename)
@@ -3959,8 +4010,8 @@ local htmltemplate = [[
         -- looking at identity is somewhat redundant as we also inherit from interaction
         -- at the tex end
 
-        local identity = interactions.general.getidentity()
-        local metadata = structures.tags.getmetadata()
+        local identity  = interactions.general.getidentity()
+        local metadata  = structures.tags.getmetadata()
 
         local specification = {
             name        = usedname,
@@ -4195,4 +4246,10 @@ implement {
     name      = "settaglist",
     actions   = structurestags.setlist,
     arguments = "integer"
+}
+
+implement {
+    name      = "settagpublication",
+    actions   = structurestags.setpublication,
+    arguments = "2 strings"
 }

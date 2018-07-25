@@ -197,14 +197,13 @@
 \def\strc_rendering_start_placement
   {\bgroup
    \setsystemmode\currenthead
-   %
    \strc_rendering_initialize_alternatives
    \strc_rendering_initialize_dimensions
-   %
    \strc_rendering_initialize_line_state
    \reseteverypar % needed indeed
    \noindent      % ipv \whitespace elders, na \forgetall !
    \bgroup
+   \synctexpushline
    \edef\p_aligntitle{\headparameter\c!aligntitle}%
    \ifx\p_aligntitle\v!yes
      \strc_rendering_initialize_hsize_local
@@ -372,6 +371,7 @@
        \fi
      \fi
    \fi
+   \synctexpopline
    \egroup
    \egroup
    \ifconditional\headisdisplay

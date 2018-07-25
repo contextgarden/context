@@ -9,9 +9,15 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 }
 
 -- one can make a stub:
+
+-- mtxrun :
 --
 -- #!/bin/sh
 -- env LUATEXDIR=/....../texmf/scripts/context/lua luatex --luaonly mtxrun.lua "$@"
+
+-- mtxrun.cmd :
+--
+-- @luatex --luaonly %~d0%~p0mtxrun.lua %*
 
 -- filename : mtxrun.lua
 -- comment  : companion to context.tex

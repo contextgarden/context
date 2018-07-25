@@ -79,4 +79,23 @@
 \def\typo_marked_remove[#1]%
   {\clf_pickupmarkedcontent action{remove}mark{#1}\relax}
 
+%D A few helpers (put here for convenience):
+%D
+%D \starttyping
+%D test test\doifelselastnode{boundary}{word}{YES}{NOP}test
+%D test test\wordboundary \doifelselastnode{boundary}{word}{YES}{NOP}test
+%D test test\wordboundary \doifelseatwordboundary{YES}{NOP}test
+%D test test \lastnodeidstring test
+%D test test\lastnodeidstring test
+%D test test\number\lastnodeid test
+%D \stoptyping
+
+\newcount\c_syst_last_node_id
+
+\unexpanded\def\doifelselastnode      {\clf_lastnodeequals}
+\unexpanded\def\doifelseatwordboundary{\clf_atwordboundary}
+\unexpanded\def\lastnodeid            {\clf_lastnodeid\c_syst_last_node_id}
+%              \lastnodeidstring      % public expandable
+%              \lastnodesubstring     % public expandable
+
 \protect \endinput

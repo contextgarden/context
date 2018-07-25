@@ -391,6 +391,12 @@
 
 \let\btxsetup\fastsetup
 
+\def\btxfield      #1{\dostarttagged\t!pubfld{#1}\clf_btxfield {\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
+\def\btxdetail     #1{\dostarttagged\t!pubfld{#1}\clf_btxdetail{\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
+\def\btxflush      #1{\dostarttagged\t!pubfld{#1}\clf_btxflush {\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
+\def\btxdirect     #1{\dostarttagged\t!pubfld{#1}\clf_btxdirect{\currentbtxdataset}{\currentbtxtag}{#1}\dostoptagged}
+%def\btxauthorfield#1{\dostarttagged\t!pubfld{#1}\clf_btxauthorfield         \currentbtxauthorindex{#1}\dostoptagged}
+
 %D How complex will we go? Can we assume that e.g. an apa style will not be mixed
 %D with another one? I think this assumption is okay. For manuals we might want to
 %D mix but we can work around it.
@@ -635,11 +641,13 @@
 
 \unexpanded\def\btxnumberingsetup#1%
   {\begingroup
+   \dostarttagged\t!listtag\empty
    \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering % brrrr   \setbtxlist
    \btxparameter\c!left
  % \btxparameter\c!command{\publ_fast_setup\plusthree{\s!list:\s!numbering}{#1}}%
    \publ_fast_setup\plusthree{\s!list:\s!numbering}{#1}%
    \btxparameter\c!right
+   \dostoptagged
    \endgroup
    \btx_reset_numbering} % probably not needed
 
@@ -661,21 +669,34 @@
 \def\btx_entry_inject_list_text
   {\publ_fast_setup\plusfour\s!list\s!text}
 
+\ifdefined\dotagpublication \else \let\dotagpublication \gobbletwoarguments \fi
+
 \unexpanded\def\btx_entry_inject
   {\begingroup
+   \dostarttagged\t!publication\empty
+   \dotagpublication\currentbtxdataset\currentbtxtag
    \redoconvertfont % see (**) in strc-lst, this will become an configuration option
    \edef\currentbtxcategory{\btxfield{category}}%
    \ignorespaces
    \ifconditional\c_btx_list_texts
+     \dostarttagged\t!listtext\s!left
      \currentbtxbefore
+     \dostoptagged
    \fi
+  %\dostarttagged\t!listcontent\empty
    \btx_entry_inject_list_text
+  %\dostoptagged
    \ifconditional\c_btx_list_pages
+     \dostarttagged\t!listpage\empty
      \btx_entry_inject_pages
+     \dostoptagged
    \fi
    \ifconditional\c_btx_list_texts
+     \dostarttagged\t!listtext\s!right
      \currentbtxafter
+     \dostoptagged
    \fi
+   \dostoptagged
    \endgroup}
 
 \unexpanded\def\btxshowentryinline
@@ -849,6 +870,8 @@
          \expandafter\p_command\expandafter{\number\nofbtxlistentries}\relax
        \fi
      \else
+       \dostarttagged\t!publications\currentbtxrendering
+       \dostarttagged\t!list{btx}%
        \startpacked[\v!blank]%
        % sorting and so
        \clf_btxpreparelistentries{\currentbtxdataset}% could be put in collect
@@ -871,6 +894,8 @@
           {\let\currentbtxlistentry\recurselevel
            \clf_btxflushlistentry{\currentbtxdataset}\currentbtxlistentry\relax}%
        \stoppacked
+       \dostoptagged
+       \dostoptagged
      \fi
      \btxrenderingparameter\c!after
    \fi
@@ -984,8 +1009,10 @@
    \strc_lists_apply_renderingsetup}
 
 \def\btx_entry_indeed
-  {\btx_list_reference_inject
-   \btx_entry_inject}
+  {\dostarttagged\t!listcontent\empty
+   \btx_list_reference_inject
+   \btx_entry_inject
+   \dostoptagged}
 
 \def\btx_page_indeed
   {}
@@ -1192,7 +1219,7 @@
 \unexpanded\def\btxflushauthorinverted     {\btx_flush_author{inverted}}      % #1
 \unexpanded\def\btxflushauthorinvertedshort{\btx_flush_author{invertedshort}} % #1
 
-\let\currentbtxauthorfield      \s!author
+\let\currentbtxauthorfield\s!author
 
 \unexpanded\def\btxsetauthorfield#1{\edef\currentbtxauthorfield{#1}}
 

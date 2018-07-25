@@ -13,7 +13,8 @@ local settings_to_hash = utilities.parsers.settings_to_hash
 local sortedhash = table.sortedhash
 local formatters = string.formatters
 
-local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
+local trace_tags = false  trackers.register("structures.tags",      function(v) trace_tags = v end)
+local trace_info = false  trackers.register("structures.tags.info", function(v) trace_info = v end)
 
 local report_tags = logs.reporter("backend","tags")
 
@@ -316,6 +317,7 @@ end
 -- no need to adapt head, as we always operate on lists
 
 local EMCliteral = nil
+local visualize  = nil
 
 function nodeinjections.addtags(head)
 
@@ -381,22 +383,30 @@ function nodeinjections.addtags(head)
     local noftop = 0
 
 
-    local function inject(start,stop,list,literal)
+    local function inject(start,stop,list,literal,left,right)
         local prev = getprev(start)
         if prev then
             setlink(prev,literal)
         end
-        setlink(literal,start)
+        if left then
+            setlink(literal,left,start)
+        else
+            setlink(literal,start)
+        end
         if list and getlist(list) == start then
             setlist(list,literal)
         end
         local literal = copy_node(EMCliteral)
         -- use insert instead:
-        local next    = getnext(stop)
+        local next = getnext(stop)
         if next then
             setlink(literal,next)
         end
-        setlink(stop,literal)
+        if right then
+            setlink(stop,right,literal)
+        else
+            setlink(stop,literal)
+        end
     end
 
     for i=1,#ranges do
@@ -453,7 +463,18 @@ function nodeinjections.addtags(head)
             end
 
             if literal then
-                inject(start,stop,list,literal)
+                local left,right
+                if trace_info then
+                    local name = specification.tagname
+                    if name then
+                        if not visualize then
+                            visualize = nodes.visualizers.register("tags")
+                        end
+                        left  = visualize(name)
+                        right = visualize()
+                    end
+                end
+                inject(start,stop,list,literal,left,right)
             end
 
             top    = taglist

@@ -86,7 +86,7 @@ function afm.load(filename)
         local name = file.removesuffix(file.basename(filename))
         local data = containers.read(afm.cache,name)
         local attr = lfs.attributes(filename)
-        local size, time = attr.size or 0, attr.modification or 0
+        local size, time = attr and attr.size or 0, attr and attr.modification or 0
         --
         local pfbfile = file.replacesuffix(name,"pfb")
         local pfbname = resolvers.findfile(pfbfile,"pfb") or ""

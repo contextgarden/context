@@ -34,8 +34,9 @@
 
 @namespace context url('http://www.pragma-ade.com/context/export') ;
 
-/* ignore  : mixed   */
-/* metadata: display */
+/* ignore   : mixed   */
+/* metadata : display */
+/* extradata: display */
 
 ignore,
 context|div.ignore {
@@ -54,6 +55,11 @@ context|div.xmetadata {
 
 xmetavariable,
 context|div.xmetavariable {
+	display : none ;
+}
+
+extradata,
+context|div.extradata {
 	display : none ;
 }
 
@@ -679,6 +685,7 @@ context|div.combinationcaption {
 /* listcontent : mixed   */
 /* listdata    : mixed   */
 /* listpage    : mixed   */
+/* listtext    : inline   */
 
 list,
 context|div.list {
@@ -756,6 +763,11 @@ context|div.listdata {
 listpage,
 context|div.listpage {
 	display : none ;
+}
+
+listtext,
+context|div.listtext {
+	display : inline ;
 }
 
 /* delimitedblock     : display */
@@ -1022,6 +1034,20 @@ context|div.math-inline {
 context|div.math-display {
 	display : block ;
 	margin  : 1ex 0ex 1em 3em ;
+}
+
+/* publication : inline */
+/* pubfld      : inline */
+
+publication,
+context|div.publication {
+	display : inline ;
+}
+
+pubfld[detail="title"],
+context|div.pubfld.title {
+	display     : inline ;
+	font-weight : italic ;
 }
 
 /* quantity : inline */

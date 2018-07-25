@@ -41,17 +41,15 @@
 
 %D Alternative discretionary handlers:
 
-\definetextmodediscretionary :
-  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{:}:}
+%definetextmodediscretionary : {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{:}:}
+%definetextmodediscretionary ; {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{;};}
+%definetextmodediscretionary ? {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{?}?}
+%definetextmodediscretionary ! {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{!}!}
 
-\definetextmodediscretionary ;
-  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{;};}
-
-\definetextmodediscretionary ?
-  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{?}?}
-
-\definetextmodediscretionary !
-  {\removeunwantedspaces\prewordbreak\kern\hspaceamount\currentlanguage{!}!}
+\definetextmodediscretionary : {\removeunwantedspaces\wordboundary\kern\hspaceamount\currentlanguage{:}:}
+\definetextmodediscretionary ; {\removeunwantedspaces\wordboundary\kern\hspaceamount\currentlanguage{;};}
+\definetextmodediscretionary ? {\removeunwantedspaces\wordboundary\kern\hspaceamount\currentlanguage{?}?}
+\definetextmodediscretionary ! {\removeunwantedspaces\wordboundary\kern\hspaceamount\currentlanguage{!}!}
 
 %D \startbuffer
 %D \mainlanguage[en] \quotation{test \quotation{test} test}\par

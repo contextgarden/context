@@ -71,35 +71,48 @@
 
 \setnewconstant\boundarycharactermode\plusone
 
+% old:       skip symbol skip
+% new: bound skip symbol skip bound
+
 \unexpanded\def\midboundarycharacter#1#2%
   {\ifcase\boundarycharactermode
    \or
-     %\nobreak
+     \removeunwantedspaces
+     \wordboundary
      \hskip\hspaceamount\currentusedlanguage{#2}%
      \usedlanguageparameter#1%
-     %\nobreak
      \hskip\hspaceamount\currentusedlanguage{#2}%
+     \wordboundary
+     \ignorespaces
    \or
      \usedlanguageparameter#1%
    \fi
    \boundarycharactermode\plusone}
+
+% old: symbol nobreak skip
+% new: symbol nobreak skip wordboundary
 
 \unexpanded\def\leftboundarycharacter#1#2%
   {\ifcase\boundarycharactermode
    \or
      \usedlanguageparameter#1%
      \nobreak
-     \hskip\hspaceamount\currentusedlanguage{#2}%
+     \hskip\hspaceamount\currentusedlanguage{#2}% why not a kern
+     \wordboundary
    \or
      \usedlanguageparameter#1%
    \fi
    \boundarycharactermode\plusone}
 
+% old: preword         skip symbol
+% new: bound   nobreak skip symbol
+
 \unexpanded\def\rightboundarycharacter#1#2%
   {\ifcase\boundarycharactermode
    \or
-     \prewordbreak %\nobreak
-     \hskip\hspaceamount\currentusedlanguage{#2}%
+     \wordboundary
+     \nobreak
+     \hskip\hspaceamount\currentusedlanguage{#2}% why not a kern
      \usedlanguageparameter#1%
    \or
      \usedlanguageparameter#1%
@@ -212,11 +225,15 @@
 %D \typebuffer
 %D \getbuffer
 
-\unexpanded\def\startsubsentence{\beginofsubsentence\prewordbreak\beginofsubsentencespacing\typo_subsentence_cleanup_start}
-\unexpanded\def\stopsubsentence {\typo_subsentence_cleanup_stop\endofsubsentencespacing\prewordbreak\endofsubsentence}
+%unexpanded\def\startsubsentence{\beginofsubsentence\prewordbreak\beginofsubsentencespacing\typo_subsentence_cleanup_start}
+%unexpanded\def\stopsubsentence {\typo_subsentence_cleanup_stop\endofsubsentencespacing\prewordbreak\endofsubsentence}
+%unexpanded\def\subsentence     {\groupedcommandcs\startsubsentence\stopsubsentence}
+%unexpanded\def\midsubsentence  {\typo_subsentence_cleanup_start\prewordbreak\midsentence\prewordbreak\typo_subsentence_cleanup_stop}
+
+\unexpanded\def\startsubsentence{\beginofsubsentence\wordboundary\beginofsubsentencespacing\wordboundary\typo_subsentence_cleanup_start}
+\unexpanded\def\stopsubsentence {\typo_subsentence_cleanup_stop\wordboundary\endofsubsentencespacing\wordboundary\endofsubsentence}
 \unexpanded\def\subsentence     {\groupedcommandcs\startsubsentence\stopsubsentence}
-%unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
-\unexpanded\def\midsubsentence  {\typo_subsentence_cleanup_start\prewordbreak\midsentence\prewordbreak\typo_subsentence_cleanup_stop}
+\unexpanded\def\midsubsentence  {\typo_subsentence_cleanup_start\wordboundary\midsentence\wordboundary\typo_subsentence_cleanup_stop}
 
 \definehspace [quotation]      [\zeropoint]
 \definehspace [interquotation] [.125em]
@@ -419,6 +436,8 @@
    \dostoptagged
    \ignorespaces}
 
+\newconditional\c_typo_delimited_repeating
+
 \def\typo_delimited_start_other
   {\edef\p_delimited_repeat{\delimitedtextparameter\c!repeat}%
    \ifx\p_delimited_repeat\v!yes
@@ -426,6 +445,7 @@
    \else
      \let\typo_delimited_repeat\relax
    \fi
+   \setfalse\c_typo_delimited_repeating
    \edef\p_delimited_location{\delimitedtextparameter\c!location}%
    \ifx\p_delimited_location\v!paragraph
      \singleexpandafter\typo_delimited_start_par
@@ -685,30 +705,37 @@
 %     test test test
 % \stoptext
 
-\def\typo_delimited_handle_middle#1%
-  {\typo_delimited_stop_content
-   \begingroup
-   \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
-   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
-   \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastkern=\d_typo_delimited_signal
-       \unkern
-       \hskip\hspaceamount\currentusedlanguage{interquotation}%
+% We have no real test case for this and it's broken already for a while,
+% even in \MKII. Maybe we should to this in \LUA. Only Italian has the
+% middlespeech parameter set.
+
+\def\typo_delimited_handle_middle#1% special case
+  {\ifconditional\c_typo_delimited_repeating
+     \begingroup
+     \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
+     \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
+     \ifdim\wd\scratchbox>\zeropoint
+       \ifdim\lastkern=\d_typo_delimited_signal
+         \unkern
+         \hskip\hspaceamount\currentusedlanguage{interquotation}%
+       \else % maybe an option:
+        %\edef\p_delimited_margin{\delimitedtextparameter\c!location}%
+        %\ifx\p_delimited_margin\v!margin
+        %   \hskip-\wd\scratchbox
+        %\fi
+       \fi
+       \strut % new, needed below
+       \dostarttagged\t!delimitedsymbol\empty
+       \dotagsetdelimitedsymbol\s!middle
+       \delimitedtextparameter#1% unhbox\scratchbox
+       \dostoptagged
+     % \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
+       \kern\d_typo_delimited_signal % +- \prewordbreak
      \fi
-     \ifhmode % else funny pagebeaks
-       \penalty\plustenthousand
-       \hskip\zeropoint % == \prewordbreak
-     \fi
-     \strut % new, needed below
-     \dostarttagged\t!delimitedsymbol\empty
-     \dotagsetdelimitedsymbol\s!middle
-     \delimitedtextparameter#1% unhbox\scratchbox
-     \dostoptagged
-   % \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
-     \kern\d_typo_delimited_signal % +- \prewordbreak
-   \fi
-   \endgroup
-   \typo_delimited_start_content}
+     \endgroup
+   \else
+     \settrue\c_typo_delimited_repeating
+   \fi}
 
 \def\typo_delimited_handle_left#1%
   {\begingroup
@@ -722,11 +749,11 @@
        \unskip
        \hskip\hspaceamount\currentusedlanguage{interquotation}%
      \fi\fi
-     \strut % new, needed below
-     \ifhmode % else funny pagebeaks
-       \penalty\plustenthousand
-       \hskip\zeropoint % == \prewordbreak
-     \fi
+   % \strut % new, needed below
+   % \ifhmode % else funny pagebeaks
+   %   \penalty\plustenthousand
+   %   \hskip\zeropoint % == \prewordbreak
+   % \fi
      \strut % new, needed below
      \dostarttagged\t!delimitedsymbol\empty
      \dotagsetdelimitedsymbol\s!left
