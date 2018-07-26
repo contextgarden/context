@@ -12,71 +12,16 @@ if not modules then modules = { } end modules ['scrp-eth'] = {
 local nuts               = nodes.nuts
 
 local getnext            = nuts.getnext
-local getfont            = nuts.getfont
-local getid              = nuts.getid
+local getchar            = nuts.getchar
 local getattr            = nuts.getattr
-
-local insert_node_before = nuts.insert_before
-
-local nodepool           = nuts.pool
-
-local new_glue           = nodepool.glue
-local new_penalty        = nodepool.penalty
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 
 local a_scriptstatus     = attributes.private('scriptstatus')
-local a_scriptinjection  = attributes.private('scriptinjection')
 
-local categorytonumber   = scripts.categorytonumber
 local numbertocategory   = scripts.numbertocategory
-local hash               = scripts.hash
-local numbertodataset    = scripts.numbertodataset
-
-local fonthashes         = fonts.hashes
-local parameters         = fonthashes.parameters
-
-local space, stretch, shrink, lastfont
-
-local inter_character_space_factor   = 1
-local inter_character_stretch_factor = 1
-local inter_character_shrink_factor  = 1
-
-local function space_glue(current)
-    local data = numbertodataset[getattr(current,a_scriptinjection)]
-    if data then
-        inter_character_space_factor   = data.inter_character_space_factor   or 1
-        inter_character_stretch_factor = data.inter_character_stretch_factor or 1
-        inter_character_shrink_factor  = data.inter_character_shrink_factor  or 1
-    end
-    local font = getfont(current)
-    if lastfont ~= font then
-        local pf = parameters[font]
-        space    = pf.space
-        stretch  = pf.space_stretch
-        shrink   = pf.space_shrink
-        lastfont = font
-    end
-    return new_glue(
-        inter_character_space_factor   * space,
-        inter_character_stretch_factor * stretch,
-        inter_character_shrink_factor  * shrink
-    )
-end
-
-local function insert_space_before(head,current)
-    return insert_node_before(head,current,space_glue(current))
-end
-
-local function insert_zerowidthspace_before(head,current)
-    return insert_node_before(head,current,new_glue(0))
-end
-
-local function insert_nobreakspace_before(head,current)
-    head, current = insert_node_before(head,current,new_penalty(10000))
-    return insert_node_before(head,current,space_glue(current))
-end
+local inserters          = scripts.inserters
 
 -- syllable [zerowidthspace] syllable
 -- syllable [zerowidthspace] word
@@ -88,21 +33,22 @@ end
 -- sentence [space]          word
 -- sentence [space]          sentence
 
+
 local injectors = { -- [previous] [current]
     ethiopic_syllable = {
-        ethiopic_syllable = insert_zerowidthspace_before,
-        ethiopic_word     = insert_nobreakspace_before,
-        ethiopic_sentence = insert_nobreakspace_before,
+        ethiopic_syllable = inserters.zerowidthspace_before,
+        ethiopic_word     = inserters.nobreakspace_before,
+        ethiopic_sentence = inserters.nobreakspace_before,
     },
     ethiopic_word = {
-        ethiopic_syllable = insert_space_before,
-        ethiopic_word     = insert_space_before,
-        ethiopic_sentence = insert_space_before,
+        ethiopic_syllable = inserters.space_before,
+        ethiopic_word     = inserters.space_before,
+        ethiopic_sentence = inserters.space_before,
     },
     ethiopic_sentence = {
-        ethiopic_syllable = insert_space_before,
-        ethiopic_word     = insert_space_before,
-        ethiopic_sentence = insert_space_before,
+        ethiopic_syllable = inserters.space_before,
+        ethiopic_word     = inserters.space_before,
+        ethiopic_sentence = inserters.space_before,
     },
 }
 
@@ -111,8 +57,8 @@ local function process(head,first,last)
         local injector = false
         local current = first
         while current do
-            local id = getid(current)
-            if id == glyph_code then
+            local char, id = ischar(current)
+            if char then
                 local scriptstatus = getattr(current,a_scriptstatus)
                 local category     = numbertocategory[scriptstatus]
                 if injector then
@@ -122,8 +68,6 @@ local function process(head,first,last)
                     end
                 end
                 injector = injectors[category]
-            else
-                -- nothing yet
             end
             if current == last then
                 break

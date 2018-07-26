@@ -102,7 +102,8 @@ local function exportcolors()
         local function black(f)
             return (f[1] == f[2]) and (f[2] == f[3]) and (f[3] == 0)
         end
-        local result, r = { f_mapping }, 1
+--         local result, r = { f_mapping }, 1
+local result, r = { }, 0
         for k, v in table.sortedhash(lexer.context.styles) do
             local fore = v.fore
             if fore and not black(fore) then
@@ -346,6 +347,18 @@ visualizers.register("sql",   visualizer)
 \let\slxb    \gobbleoneargument
 \let\slxe    \space
 \let\slxbreak\relax
+
+\let\slxL    \letterleftbrace
+\let\slxR    \letterrightbrace
+\let\slxM    \letterdollar
+\let\slxV    \letterbar
+\let\slxU    \letterhat
+\let\slxD    \letterunderscore
+\let\slxH    \letterhash
+\let\slxB    \letterbackslash
+\let\slxP    \letterpercent
+\let\slxT    \lettertilde
+\let\slxS    \fixedspace
 
 \let\slxS    \buff_scite_slxs
 \let\slxF    \buff_scite_slxf

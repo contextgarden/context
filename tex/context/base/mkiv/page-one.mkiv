@@ -73,6 +73,7 @@
    \else
      \global\vsize\textheight
    \fi
+   \global\advance\vsize\d_page_adapts_delta
    % alternatively we could set it in builders.buildpage_filter
  % \ifdim\pagegoal<\maxdimen .. \fi
    \global\pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}

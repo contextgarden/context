@@ -854,6 +854,10 @@
 %     \let\page_prepare_backgrounds\gobbleoneargument
 % \fi
 
+% only for very special controlled cases or experiments:
+
+\let\page_scale_text_box\gobbleoneargument
+
 \def\page_insert_body#1#2%
   {\setbox\b_page_layouts_element\vpack
      {\offinterlineskip
@@ -863,7 +867,6 @@
       \vskip\dimexpr\headerheight+\headerdistance+\textdistance\relax
       \dontleavehmode
      %\page_prepare_backgrounds{#2}%
-%       \hbox to \makeupwidth
       \hpack to \makeupwidth
         {\begingroup
            \swapmargins
@@ -881,6 +884,7 @@
          \settextpagecontent\b_page_layouts_element{#1}{#2}%
          \page_backgrounds_add_to_text\b_page_layouts_element
          \page_grids_add_to_box\b_page_layouts_element
+         \page_scale_text_box\b_page_layouts_element
          \box\b_page_layouts_element
          \begingroup
            \ifdim\rightmarginwidth>\zeropoint

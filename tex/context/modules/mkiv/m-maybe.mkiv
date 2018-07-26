@@ -1,0 +1,57 @@
+%D \module
+%D   [       file=m-maybe,
+%D        version=2018.07.26,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Maybe some day,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The code here is not in the core and might never be as it's probably not
+%D of much use and|/|or can interfere.
+
+\unprotect
+
+% \showframe
+% \starttext
+%     \tweakpagegoal[-\lineheight]
+%     \dorecurse{40}{\inleftmargin{!}\input ward\par}
+% \stoptext
+
+\def\page_scale_text_box_indeed#1%
+  {\scratchheight\ht#1\relax
+   \scratchwidth \wd#1\relax
+   \setbox#1\vpack\bgroup
+     \hpack\bgroup
+       \scale
+        [\c!height=\dimexpr\textheight-\d_page_adapts_delta\relax,
+         \c!width=\scratchwidth]
+        {\box#1}%
+     \egroup
+   \egroup
+   \global\d_page_adapts_delta\zeropoint
+   \glet\page_scale_text_box\gobbleoneargument
+   \ht#1\scratchheight
+   \wd#1\scratchwidth}
+
+\unexpanded\def\tweakpagegoal[#1]%
+  {\ifx\currentoutputroutine\s!singlecolumn
+     \global\d_page_adapts_delta\dimexpr#1\relax
+     \ifdim\d_page_adapts_delta=\zeropoint
+       \glet\page_scale_text_box\gobbleoneargument
+     \else
+       \glet\page_scale_text_box\page_scale_text_box_indeed
+     \fi
+   \else
+     \global\d_page_adapts_delta\zeropoint
+     \glet\page_scale_text_box\gobbleoneargument
+   \fi
+   \page_otr_command_set_vsize}
+
+\protect
+
+\endinput

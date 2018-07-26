@@ -22,6 +22,6 @@ end
 
 if LUATEXFUNCTIONALITY > 6857 then
 
-    callback.register("insert_local_par",everypar,"paragraph start")
+    callbacks.register("insert_local_par",everypar,"paragraph start")
 
 end

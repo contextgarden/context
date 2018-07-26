@@ -1312,13 +1312,21 @@
 
 \let\normaloffinterlineskip\offinterlineskip % knuth's original
 
-%D This is tricky. The prevdepth value is still set to the last
-%D one even if there is nothing on the page. The same is true for
-%D prevgraf, which doesn't resemble the value on the current page.
+%D This is tricky. The prevdepth value is still set to the last one even if there is
+%D nothing on the page. The same is true for prevgraf, which doesn't resemble the
+%D value on the current page.
 %D
-%D So, here we kick in a checker but it has to happen after the
-%D output group and it only has to be done once (output can trigger
-%D itself!).
+%D So, here we kick in a checker but it has to happen after the output group and it
+%D only has to be done once (output can trigger itself!).
+%D
+%D However, prevgraf is somehow bound to hangindent so we can get very
+%D nasty side effects. So, in tne end we use our own variable!
+
+\ifdefined\getnofpreviouslines
+    % defined public at the lua end
+\else
+    \let\getnofpreviouslines\!!zerocount
+\fi
 
 \unexpanded\def\page_otr_synchronize_page_yes
   {\aftergroup\page_otr_synchronize_page_indeed

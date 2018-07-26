@@ -2040,65 +2040,82 @@ do
 
     local ignoredepth = -65536000
 
-    function vspacing.synchronizepage()
+    -- A previous version analyzed the number of lines moved to the next page in
+    -- synchronizepage because prevgraf is unreliable in that case. However, we cannot
+    -- tweak that parameter because it is also used in postlinebreak and hangafter, so
+    -- there is a danger for interference. Therefore we now do it dynamically.
+
+    -- We can also support other lists but there prevgraf probably is ok.
+
+    function vspacing.getnofpreviouslines(head)
         if enabled then
-            local newdepth = outer.prevdepth
-            local olddepth = newdepth
-            local oldlines = outer.prevgraf
-            local newlines = 0
-            local head     = texlists.page_head
+            if not thead then
+                head = texlists.page_head
+            end
+            local noflines = 0
             if head then
-                head = tonut(head)
-                if getid(head) == glue_code and getsubtype(head) == topskip_code then
-                    local tail = find_node_tail(head)
-                    while tail do
-                        local id = getid(tail)
-                        if id == hlist_code then
-                            if getsubtype(tail) == line_code then
-                                newlines = newlines + 1
-                            else
-                                break
-                            end
-                        elseif id == vlist_code then
-                            break
-                        elseif id == glue_code then
-                            local subtype = getsubtype(tail)
-                            if subtype == baselineskip_code or subtype == lineskip_code then
-                                -- we're ok
-                            elseif subtype == parskip_code then
-                                if getwidth(tail) > 0 then
-                                    break
-                                else
-                                    -- we assume we're ok
-                                end
-                            end
-                        elseif id == penalty_code then
-                            -- we're probably ok
-                        elseif id == rule_code or id == kern_code then
-                            break
+                local tail = find_node_tail(tonut(head))
+                while tail do
+                    local id = getid(tail)
+                    if id == hlist_code then
+                        if getsubtype(tail) == line_code then
+                            noflines = noflines + 1
                         else
-                            -- ins, mark, boundary, whatsit
+                            break
                         end
-                        tail = getprev(tail)
+                    elseif id == vlist_code then
+                        break
+                    elseif id == glue_code then
+                        local subtype = getsubtype(tail)
+                        if subtype == baselineskip_code or subtype == lineskip_code then
+                            -- we're ok
+                        elseif subtype == parskip_code then
+                            if getwidth(tail) > 0 then
+                                break
+                            else
+                                -- we assume we're ok
+                            end
+                        end
+                    elseif id == penalty_code then
+                        -- we're probably ok
+                    elseif id == rule_code or id == kern_code then
+                        break
+                    else
+                        -- ins, mark, boundary, whatsit
                     end
+                    tail = getprev(tail)
                 end
-            else
-                newdepth = ignoredepth
-                texset("prevdepth",ignoredepth)
-                outer.prevdepth = ignoredepth
             end
-            texset("prevgraf", newlines)
-            outer.prevgraf = newlines
-            if trace then
-                report("page %i, prevdepth %p => %p, prevgraf %i => %i",
-                    texgetcount("realpageno"),olddepth,newdepth,oldlines,newlines)
-                report("list %s",nodes.idsandsubtypes(head))
-            end
+            return noflines
         end
     end
 
+    interfaces.implement {
+        name    = "getnofpreviouslines",
+        public  = true,
+        actions = vspacing.getnofpreviouslines,
+    }
 
-
+    function vspacing.synchronizepage()
+        if enabled then
+            if trace then
+                local newdepth = outer.prevdepth
+                local olddepth = newdepth
+                if not texlists.page_head then
+                    newdepth = ignoredepth
+                    texset("prevdepth",ignoredepth)
+                    outer.prevdepth = ignoredepth
+                end
+                report("page %i, prevdepth %p => %p",texgetcount("realpageno"),olddepth,newdepth)
+             -- report("list %s",nodes.idsandsubtypes(head))
+            else
+                if not texlists.page_head then
+                    texset("prevdepth",ignoredepth)
+                    outer.prevdepth = ignoredepth
+                end
+            end
+        end
+    end
 
     local trace = false
 

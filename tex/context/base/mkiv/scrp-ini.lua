@@ -22,73 +22,75 @@ local report_splitting     = logs.reporter("scripts","splitting")
 local utfbyte, utfsplit = utf.byte, utf.split
 local gmatch = string.gmatch
 
-local attributes        = attributes
-local nodes             = nodes
-local context           = context
+local attributes         = attributes
+local nodes              = nodes
+local context            = context
 
-local texsetattribute   = tex.setattribute
+local texsetattribute    = tex.setattribute
 
-local nodecodes         = nodes.nodecodes
-local unsetvalue        = attributes.unsetvalue
+local nodecodes          = nodes.nodecodes
+local unsetvalue         = attributes.unsetvalue
 
-local implement         = interfaces.implement
+local implement          = interfaces.implement
 
-local glyph_code        = nodecodes.glyph
-local glue_code         = nodecodes.glue
+local glyph_code         = nodecodes.glyph
+local glue_code          = nodecodes.glue
 
-local emwidths          = fonts.hashes.emwidths
-local exheights         = fonts.hashes.exheights
+local emwidths           = fonts.hashes.emwidths
+local exheights          = fonts.hashes.exheights
 
-local a_scriptinjection = attributes.private('scriptinjection')
-local a_scriptsplitting = attributes.private('scriptsplitting')
-local a_scriptstatus    = attributes.private('scriptstatus')
+local a_scriptinjection  = attributes.private('scriptinjection')
+local a_scriptsplitting  = attributes.private('scriptsplitting')
+local a_scriptstatus     = attributes.private('scriptstatus')
 
-local fontdata          = fonts.hashes.identifiers
-local allocate          = utilities.storage.allocate
-local setnodecolor      = nodes.tracers.colors.set
-local setmetatableindex = table.setmetatableindex
+local fontdata           = fonts.hashes.identifiers
+local allocate           = utilities.storage.allocate
+local setnodecolor       = nodes.tracers.colors.set
+local setmetatableindex  = table.setmetatableindex
 
-local enableaction      = nodes.tasks.enableaction
-local disableaction     = nodes.tasks.disableaction
+local enableaction       = nodes.tasks.enableaction
+local disableaction      = nodes.tasks.disableaction
 
-local nuts              = nodes.nuts
+local nuts               = nodes.nuts
 
-local getnext           = nuts.getnext
-local getchar           = nuts.getchar
-local getfont           = nuts.getfont
-local getid             = nuts.getid
-local getattr           = nuts.getattr
-local setattr           = nuts.setattr
-local isglyph           = nuts.isglyph
+local getnext            = nuts.getnext
+local getchar            = nuts.getchar
+local getfont            = nuts.getfont
+local getid              = nuts.getid
+local getattr            = nuts.getattr
+local setattr            = nuts.setattr
+local isglyph            = nuts.isglyph
 
-local insert_node_after = nuts.insert_after
-local first_glyph       = nuts.first_glyph
+local insert_node_after  = nuts.insert_after
+local insert_node_before = nuts.insert_before
 
------ traverse_id       = nuts.traverse_id
------ traverse_char     = nuts.traverse_char
-local nextglyph         = nuts.traversers.glyph
-local nextchar          = nuts.traversers.char
+local first_glyph        = nuts.first_glyph
 
-local nodepool          = nuts.pool
+----- traverse_id        = nuts.traverse_id
+----- traverse_char      = nuts.traverse_char
+local nextglyph          = nuts.traversers.glyph
+local nextchar           = nuts.traversers.char
 
-local new_glue          = nodepool.glue
-local new_rule          = nodepool.rule
-local new_penalty       = nodepool.penalty
+local nodepool           = nuts.pool
 
-scripts                 = scripts or { }
-local scripts           = scripts
+local new_glue           = nodepool.glue
+local new_rule           = nodepool.rule
+local new_penalty        = nodepool.penalty
 
-scripts.hash            = scripts.hash or { }
-local hash              = scripts.hash
+scripts                  = scripts or { }
+local scripts            = scripts
 
-local handlers          = allocate()
-scripts.handlers        = handlers
+scripts.hash             = scripts.hash or { }
+local hash               = scripts.hash
 
-local injectors         = allocate()
-scripts.injectors       = handlers
+local handlers           = allocate()
+scripts.handlers         = handlers
 
-local splitters         = allocate()
-scripts.splitters       = splitters
+local injectors          = allocate()
+scripts.injectors        = handlers
+
+local splitters          = allocate()
+scripts.splitters        = splitters
 
 local hash = { -- we could put these presets in char-def.lua
     --
@@ -206,9 +208,12 @@ local hash = { -- we could put these presets in char-def.lua
     --
     [0x1361] = "ethiopic_word",
     [0x1362] = "ethiopic_sentence",
+    --
     -- tibetan:
+    --
     [0x0F0B] = "breaking_tsheg",
     [0x0F0C] = "nonbreaking_tsheg",
+
 }
 
 local function provide(t,k)
@@ -271,6 +276,7 @@ function scripts.installmethod(handler)
         report_preprocessing("missing (default) dataset in script %a",name)
         datasets.default = { } -- slower but an error anyway
     end
+
     for k, v in next, datasets do
         setmetatableindex(v,defaults)
     end
@@ -707,32 +713,6 @@ end)
 
 local categories = characters.categories or { }
 
--- local function hit(root,head)
---     local current   = getnext(head)
---     local lastrun   = false
---     local lastfinal = false
---     while current and getid(current) == glyph_code do
---         local char = getchar(current)
---         local newroot = root[char]
---         if newroot then
---             local final = newroot.final
---             if final then
---                 lastrun   = current
---                 lastfinal = final
---             end
---             root = newroot
---         elseif categories[char] == "mn" then
---             -- continue
---         else
---             return lastrun, lastfinal
---         end
---         current = getnext(current)
---     end
---     if lastrun then
---         return lastrun, lastfinal
---     end
--- end
-
 local function hit(root,head)
     local current   = getnext(head)
     local lastrun   = false
@@ -1029,3 +1009,69 @@ implement {
     name      = "resetscript",
     actions   = scripts.reset
 }
+
+-- some common helpers
+
+
+do
+
+    local parameters = fonts.hashes.parameters
+
+    local space, stretch, shrink, lastfont
+
+    local inter_character_space_factor   = 1
+    local inter_character_stretch_factor = 1
+    local inter_character_shrink_factor  = 1
+
+    local function space_glue(current)
+        local data = numbertodataset[getattr(current,a_scriptinjection)]
+        if data then
+            inter_character_space_factor   = data.inter_character_space_factor   or 1
+            inter_character_stretch_factor = data.inter_character_stretch_factor or 1
+            inter_character_shrink_factor  = data.inter_character_shrink_factor  or 1
+        end
+        local font = getfont(current)
+        if lastfont ~= font then
+            local pf = parameters[font]
+            space    = pf.space
+            stretch  = pf.space_stretch
+            shrink   = pf.space_shrink
+            lastfont = font
+        end
+        return new_glue(
+            inter_character_space_factor   * space,
+            inter_character_stretch_factor * stretch,
+            inter_character_shrink_factor  * shrink
+        )
+    end
+
+    scripts.inserters = {
+
+        space_before = function(head,current)
+            return insert_node_before(head,current,space_glue(current))
+        end,
+        space_after = function(head,current)
+            return insert_node_after(head,current,space_glue(current))
+        end,
+
+        zerowidthspace_before = function(head,current)
+            return insert_node_before(head,current,new_glue(0))
+        end,
+        zerowidthspace_after = function(head,current)
+            return insert_node_after(head,current,new_glue(0))
+        end,
+
+        nobreakspace_before = function(head,current)
+            head, current = insert_node_before(head,current,new_penalty(10000))
+            return insert_node_before(head,current,space_glue(current))
+        end,
+        nobreakspace_after = function(head,current)
+            head, current = insert_node_after(head,current,space_glue(current))
+            return insert_node_after(head,current,new_penalty(10000))
+        end,
+
+    }
+
+end
+
+-- end of helpers

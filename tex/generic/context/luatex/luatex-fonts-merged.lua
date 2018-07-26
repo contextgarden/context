@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/25/18 19:41:46
+-- merge date  : 07/26/18 20:40:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -20777,8 +20777,8 @@ local function unifyglyphs(fontdata,usenames)
   end
   for index=1,#glyphs do
     local glyph=glyphs[index]
-    local unicode=glyph.unicode 
-    if not unicode then
+    local unicode=glyph.unicode
+    if not unicode or unicode>=private or (unicode>=0xE000 and unicode<=0xF8FF) or unicode==0xFFFE or unicode==0xFFFF then
       unicode=private
       if names then
         local name=glyph.name or f_private(unicode)
@@ -22574,7 +22574,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.103 
+otf.version=3.104 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)

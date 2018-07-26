@@ -674,7 +674,8 @@ local function unifyglyphs(fontdata,usenames)
     for index=1,#glyphs do
         local glyph   = glyphs[index]
         local unicode = glyph.unicode -- this is the primary one
-        if not unicode then
+     -- if not unicode then -- some fonts use the private space
+        if not unicode or unicode >= private or (unicode >= 0xE000 and unicode <= 0xF8FF) or unicode == 0xFFFE or unicode == 0xFFFF then
          -- report("assigning private unicode %U to glyph indexed %05X (%s)",private,index,"unset")
             unicode = private
             -- glyph.unicode  = -1
