@@ -721,7 +721,7 @@ do
 
     local compact = false -- can be a directive but then we also need to deal with newlines ... not now
 
-    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset,noversion) -- we have fields !
+    function publications.converttoxml(dataset,nice,dontstore,usedonly,subset,noversion,rawtoo) -- we have fields !
         local current = datasets[dataset]
         local luadata = subset or (current and current.luadata)
         if luadata then
@@ -755,9 +755,11 @@ do
                                 end
                             end
                         end
-local s = publications.savers.bib(current,false,{ [tag] = entry })
-s = utilities.strings.striplines(s,"prune and collapse")
-r = r + 1 ; result[r] = f_cdata(xml.escaped(s))
+                        if rawtoo then
+                            local s = publications.savers.bib(current,false,{ [tag] = entry })
+                            s = utilities.strings.striplines(s,"prune and collapse")
+                            r = r + 1 ; result[r] = f_cdata(s)
+                        end
                         r = r + 1 ; result[r] = s_entry_stop
                         n = n + 1
                     end
@@ -1156,8 +1158,8 @@ do
         table.save(filename,list)
     end
 
-    function savers.xml(dataset,filename,tobesaved)
-        local result, n = publications.converttoxml(dataset,true,true,false,tobesaved)
+    function savers.xml(dataset,filename,tobesaved,rawtoo)
+        local result, n = publications.converttoxml(dataset,true,true,false,tobesaved,false,rawtoo)
         report("%s entries from dataset %a saved in %a",n,dataset,filename)
         io.savedata(filename,result)
     end

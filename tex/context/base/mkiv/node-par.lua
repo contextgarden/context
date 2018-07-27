@@ -9,19 +9,48 @@ if not modules then modules = { } end modules ['node-par'] = {
 local starttiming = statistics.starttiming
 local stoptiming  = statistics.stoptiming
 
-local actions = nodes.tasks.actions("everypar")
+local sequencers  = utilities.sequencers
 
--- this one is called a lot!
-
-local function everypar(head)
-    starttiming(builders)
-    head = actions(head)
-    stoptiming(builders)
-    return head
-end
+-- This are called a lot!
 
 if LUATEXFUNCTIONALITY > 6857 then
 
-    callbacks.register("insert_local_par",everypar,"paragraph start")
+    local actions = nodes.tasks.actions("everypar")
+
+    local function everypar(head)
+        starttiming(builders)
+        head = actions(head)
+        stoptiming(builders)
+        return head
+    end
+
+    callbacks.register("insert_local_par",everypar,"after paragraph start")
+
+end
+
+if LUATEXFUNCTIONALITY > 6870 then
+
+    local actions = sequencers.new {
+        name         = "newgraf",
+        arguments    = "mode,indented",
+        returnvalues = "indented",
+        results      = "indented",
+    }
+
+    sequencers.appendgroup(actions,"before") -- user
+    sequencers.appendgroup(actions,"system") -- private
+    sequencers.appendgroup(actions,"after" ) -- user
+
+    local function newgraf(mode,indented)
+        local runner = actions.runner
+        if runner then
+            starttiming(builders)
+            indent = runner(mode,indented)
+            stoptiming(builders)
+        end
+        return indented
+    end
+
+    callbacks.register("new_graf",newgraf,"before paragraph start")
 
 end

@@ -60,6 +60,35 @@
    \endgroup
    \ignorespaces}
 
+% \definefiller
+%   [MyFiller]
+%   [offset=.25\emwidth,
+%    rightmargindistance=-\rightskip,
+%    method=middle]
+%
+% \startitemize[packed,joinedup][rightmargin=5em]
+%     \startitem
+%         \input sapolsky \fillupto[MyFiller]{RS}
+%     \stopitem
+% \stopitemize
+
+\unexpanded\def\fillupto
+  {\dosingleempty\spac_fillers_upto}
+
+\def\spac_fillers_upto[#1]#2%
+  {\removeunwantedspaces
+   \begingroup
+   \edef\currentfiller{#1}%
+   \scratchdimen\dimexpr\fillerparameter\c!rightmargindistance\relax
+   \ifdim\scratchdimen=\zeropoint\else
+     \parfillskip \scratchdimen\s!plus \plusone\s!fil\relax
+   \fi
+   \spac_fillers_indeed[#1]%
+   \doifsomething{#2}{\hbox{#2}}%
+   \par
+   \endgroup
+   \ignorespaces}
+
 \setvalue{\??filleralternative\s!unknown}%
   {}
 
@@ -87,8 +116,8 @@
 \setvalue{\??filleralternative\v!rule}%
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
      \hrule
-       \!!height\fillerparameter\c!height
-       \!!depth \fillerparameter\c!depth
+       \s!height\fillerparameter\c!height
+       \s!depth \fillerparameter\c!depth
    \hfill}
 
 \letvalue{\??fillerleadermethod\s!local }\normalleaders  % overflow ends up inbetween (current box)
@@ -106,6 +135,7 @@
    \c!depth=\zeropoint,
    \c!leftmargin=\zeropoint,
    \c!rightmargin=\zeropoint,
+   \c!rightmargindistance=\zeropoint,
    \c!alternative=\v!symbol,
    \c!method=\s!local]
 

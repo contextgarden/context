@@ -758,3 +758,40 @@ nonut = [[
 --         ]],
 --     },
 -- }
+
+-- -- math -- --
+
+-- not really a node processor
+
+-- tasks.new {
+--     name      = "newpar",
+--     processor = nodeprocessor,
+--     sequence  = {
+--         "before",
+--         "normalizers",
+--         "after",
+--     },
+--     templates = {
+--
+-- default = [[
+-- return function(mode,indent)
+--     return indent
+-- end
+-- ]],
+--
+-- process = [[
+-- %localize%
+--
+-- return function(mode,indent)
+--
+-- %actions%
+--     return indent
+-- end
+-- ]],
+--
+-- step = [[
+--     indent = %action%(mode,indent)
+-- ]],
+--
+--     }
+-- }

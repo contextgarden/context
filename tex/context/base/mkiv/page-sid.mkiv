@@ -760,7 +760,8 @@
   %\ignoreparskip}
 
 \def\page_sides_handle_float#1% grid (4) is rather experimental
-  {\page_sides_check_horizontal_skips
+  {\page_sides_initialize_checker
+   \page_sides_check_horizontal_skips
    \page_sides_check_vertical_skips
    \page_sides_apply_horizontal_shift
    \page_sides_check_previous_float
@@ -803,7 +804,16 @@
    \fi
    \parskip\s_spac_whitespace_parskip} % not needed
 
-\let\page_sides_check_floats\page_sides_check_floats_indeed
+% \let\page_sides_check_floats\page_sides_check_floats_indeed
+
+\let\page_sides_check_floats\relax
+
+\def\page_sides_initialize_checker
+  {\ifx\page_sides_check_floats\relax
+     \glet\page_sides_check_floats\page_sides_check_floats_indeed
+     \clf_enablesidefloatchecker
+     \glet\page_sides_initialize_checker\relax
+   \fi}
 
 \unexpanded\def\page_sides_check_floats_tracer
   {\begingroup
@@ -913,7 +923,8 @@
        \global\c_page_sides_hangafter\zerocount
        \hangindent\zeropoint
      \fi
-     \global\c_page_sides_checks_done\zerocount
+   % \global % no, otherwise a next hangindent won't work
+     \c_page_sides_checks_done\zerocount
    \fi}
 
 \unexpanded\def\page_sides_synchronize_floats

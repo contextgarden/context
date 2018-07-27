@@ -117,6 +117,7 @@ local a_snapvbox          = attributes.private('snapvbox')
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
+local tonode              = nuts.tonode
 
 local getnext             = nuts.getnext
 local setlink             = nuts.setlink
@@ -212,76 +213,80 @@ vspacingdata.snapmethods  = snapmethods
 
 storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vspacing.data.snapmethods")
 
-local default = {
-    [v_maxheight] = true,
-    [v_maxdepth]  = true,
-    [v_strut]     = true,
-    [v_hfraction] = 1,
-    [v_dfraction] = 1,
-    [v_bfraction] = 0.25,
-}
+do
 
-local fractions = {
-    [v_minheight] = v_hfraction, [v_maxheight] = v_hfraction,
-    [v_mindepth]  = v_dfraction, [v_maxdepth]  = v_dfraction,
-    [v_box]       = v_bfraction,
-    [v_top]       = v_tlines,    [v_bottom]    = v_blines,
-}
+    local default = {
+        [v_maxheight] = true,
+        [v_maxdepth]  = true,
+        [v_strut]     = true,
+        [v_hfraction] = 1,
+        [v_dfraction] = 1,
+        [v_bfraction] = 0.25,
+    }
 
-local values = {
-    offset = "offset"
-}
+    local fractions = {
+        [v_minheight] = v_hfraction, [v_maxheight] = v_hfraction,
+        [v_mindepth]  = v_dfraction, [v_maxdepth]  = v_dfraction,
+        [v_box]       = v_bfraction,
+        [v_top]       = v_tlines,    [v_bottom]    = v_blines,
+    }
 
-local colonsplitter = lpeg.splitat(":")
+    local values = {
+        offset = "offset"
+    }
 
-local function listtohash(str)
-    local t = { }
-    for s in gmatch(str,"[^, ]+") do
-        local key, detail = lpegmatch(colonsplitter,s)
-        local v = variables[key]
-        if v then
-            t[v] = true
-            if detail then
-                local k = fractions[key]
-                if k then
-                    detail = tonumber("0" .. detail)
-                    if detail then
-                        t[k] = detail
-                    end
-                else
-                    k = values[key]
+    local colonsplitter = lpeg.splitat(":")
+
+    local function listtohash(str)
+        local t = { }
+        for s in gmatch(str,"[^, ]+") do
+            local key, detail = lpegmatch(colonsplitter,s)
+            local v = variables[key]
+            if v then
+                t[v] = true
+                if detail then
+                    local k = fractions[key]
                     if k then
-                        detail = todimen(detail)
+                        detail = tonumber("0" .. detail)
                         if detail then
                             t[k] = detail
                         end
+                    else
+                        k = values[key]
+                        if k then
+                            detail = todimen(detail)
+                            if detail then
+                                t[k] = detail
+                            end
+                        end
                     end
                 end
-            end
-        else
-            detail = tonumber("0" .. key)
-            if detail then
-                t[v_hfraction] = detail
-                t[v_dfraction] = detail
+            else
+                detail = tonumber("0" .. key)
+                if detail then
+                    t[v_hfraction] = detail
+                    t[v_dfraction] = detail
+                end
             end
         end
+        if next(t) then
+            t[v_hfraction] = t[v_hfraction] or 1
+            t[v_dfraction] = t[v_dfraction] or 1
+            return t
+        else
+            return default
+        end
     end
-    if next(t) then
-        t[v_hfraction] = t[v_hfraction] or 1
-        t[v_dfraction] = t[v_dfraction] or 1
-        return t
-    else
-        return default
-    end
-end
 
-function vspacing.definesnapmethod(name,method)
-    local n = #snapmethods + 1
-    local t = listtohash(method)
-    snapmethods[n] = t
-    t.name          = name   -- not interfaced
-    t.specification = method -- not interfaced
-    context(n)
+    function vspacing.definesnapmethod(name,method)
+        local n = #snapmethods + 1
+        local t = listtohash(method)
+        snapmethods[n] = t
+        t.name          = name   -- not interfaced
+        t.specification = method -- not interfaced
+        context(n)
+    end
+
 end
 
 local function validvbox(parentid,list)
@@ -1911,6 +1916,8 @@ do
     -- ugly code: we get partial lists (check if this stack is still okay) ... and we run
     -- into temp nodes (sigh)
 
+    local forceflush = false
+
     function vspacing.pagehandler(newhead,where)
         -- local newhead = texlists.contrib_head
         if newhead then
@@ -1937,6 +1944,12 @@ do
                 end
             end
             texsetcount("c_spac_vspacing_ignore_parskip",0)
+
+            if forceflush then
+                forceflush = false
+                flush      = true
+            end
+
             if flush then
                 if stackhead then
                     if trace_collect_vspacing then report("%s > appending %s nodes to stack (final): %s",where,newhead) end
@@ -1962,28 +1975,42 @@ do
                     if trace_collect_vspacing then report("%s > storing %s nodes in stack (initial): %s",where,newhead) end
                     stackhead = newhead
                 end
-if not flush then
-    local h = 0
-    for n, id in nextnode, stackhead do
-        if id == glue_code then
-            h = h + getwidth(n)
-        elseif id == kern_code then
-            h = h + getkern(n)
-        end
-    end
-    if h + tex.pagetotal >= tex.pagegoal then
-        newhead = stackhead
-        stackhead, stacktail = nil, nil
-        return newhead
-    end
-end
                 stacktail = newtail
-             -- texlists.contrib_head = nil
-             -- newhead = nil
             end
         end
---         tex.triggerbuildpage()
         return nil
+    end
+
+ -- function vspacing.flushpagestack()
+ --     if stackhead then
+ --         local head = texlists.contrib_head
+ --         if head then
+ --             local tail = find_node_tail(head)
+ --             setlink(tail,stackhead)
+ --         else
+ --             texlists.contrib_head = tonode(stackhead)
+ --         end
+ --         stackhead, stacktail = nil, nil
+ --     end
+ --
+ -- end
+
+    function vspacing.pageoverflow()
+        local h = 0
+        if stackhead then
+            for n, id in nextnode, stackhead do
+                if id == glue_code then
+                    h = h + getwidth(n)
+                elseif id == kern_code then
+                    h = h + getkern(n)
+                end
+            end
+        end
+        return h
+    end
+
+    function vspacing.forcepageflush()
+        forceflush = true
     end
 
     local ignore = table.tohash {
@@ -2225,7 +2252,7 @@ do
  --     end
  -- }
 
-    interfaces.implement {
+    implement {
         name    = "removelastline",
         actions = function()
             local head = texlists.page_head
@@ -2241,7 +2268,7 @@ do
         end
     }
 
-    interfaces.implement {
+    implement {
         name    = "showpagelist", -- will improve
         actions = function()
             local head = texlists.page_head
@@ -2253,6 +2280,16 @@ do
                 end
             end
         end
+    }
+
+    implement {
+        name    = "pageoverflow",
+        actions = { vspacing.pageoverflow, context }
+    }
+
+    implement {
+        name    = "forcepageflush",
+        actions = vspacing.forcepageflush
     }
 
 end

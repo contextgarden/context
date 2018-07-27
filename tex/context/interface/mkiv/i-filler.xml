@@ -99,6 +99,20 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="fillupto" level="style" category="rules" file="spac-flr.mkiv">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="sym"/>
+                <cd:constant type="symbol"/>
+                <cd:constant type="rule"/>
+                <cd:constant type="width"/>
+                <cd:constant type="space"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+       </cd:arguments>
+    </cd:command>
+
     <cd:command name="checkedfiller" level="style" category="rules" file="spac-flr.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">

@@ -9558,6 +9558,21 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="rules" file="spac-flr.mkiv" level="style" name="fillupto">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="sym"/>
+     <cd:constant type="symbol"/>
+     <cd:constant type="rule"/>
+     <cd:constant type="width"/>
+     <cd:constant type="space"/>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="rules" file="spac-flr.mkiv" level="style" name="checkedfiller">
    <cd:arguments>
     <cd:keywords delimiters="braces">

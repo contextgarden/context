@@ -2067,7 +2067,7 @@ do
             structures.tags.registerextradata("btx",function()
                 local t = { "<btxdata>"}
                 for dataset, used in sortedhash(tagsindatasets) do
-                    t[#t+1] = publications.converttoxml(dataset,true,false,true,false,true)
+                    t[#t+1] = publications.converttoxml(dataset,true,false,true,false,true,true)
                 end
                 t[#t+1] = "</btxdata>"
                 return concat(t,"\n")
@@ -3886,7 +3886,10 @@ local htmltemplate = [[
             end
             t[#t+1] = "</extradata>"
             t[#t+1] = "</document>"
-            result = gsub(result,"</document>",concat(t,"\n"))
+            -- we use a function because otherwise we can have a bad capture index
+            result = gsub(result,"</document>",function()
+                return concat(t,"\n")
+            end)
         end
 
         -- done with ugly
