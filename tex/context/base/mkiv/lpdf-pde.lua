@@ -41,7 +41,7 @@ local setmetatable, rawset, rawget, type, next = setmetatable, rawset, rawget, t
 local tostring, tonumber, unpack = tostring, tonumber, unpack
 local char, byte, find = string.char, string.byte, string.find
 local abs = math.abs
-local concat, swapped = table.concat, table.swapped
+local concat, swapped, sortedhash, sortedkeys = table.concat, table.swapped, table.sortedhash, table.sortedkeys
 local utfchar = string.char
 local setmetatableindex = table.setmetatableindex
 
@@ -874,10 +874,15 @@ if img then do
 
     local plugins = nil
 
+    -- Sorting the hash slows down upto 5% bit but it is still as fast as the C
+    -- code. We could loop over the index instead but sorting might be nicer in
+    -- the end.
+
     copydictionary = function (xref,copied,object)
         local target = pdfdictionary()
         local source = object.__raw__
-        for key, value in next, source do
+     -- for key, value in next, source do
+        for key, value in sortedhash(source) do
             if plugins then
                 local p = plugins[key]
                 if p then

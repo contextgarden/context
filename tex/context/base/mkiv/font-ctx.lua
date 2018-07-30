@@ -1898,10 +1898,19 @@ implement {
 local function nametoslot(name)
     local t = type(name)
     if t == "string" then
-        local slot = unicodes[true][name]
+        local unic = unicodes[true]
+        local slot = unic[name]
         if slot then
             return slot
         end
+        --
+        local slot = unic[gsub(name,"_"," ")] or unic[gsub(name,"_","-")] or
+                     unic[gsub(name,"-"," ")] or unic[gsub(name,"-","_")] or
+                     unic[gsub(name," ","_")] or unic[gsub(name," ","-")]
+        if slot then
+            return slot
+        end
+        --
         if not aglunicodes then
             aglunicodes = encodings.agl.unicodes
         end
@@ -1920,14 +1929,13 @@ local function nametoslot(name)
     end
 end
 
-
 local found = { }
 
 local function descriptiontoslot(name)
     local t = type(name)
     if t == "string" then
         -- slow
-        local list = sortedkeys(chardata)
+        local list = sortedkeys(chardata) -- can be a cache with weak tables
         local slot = found[name]
         local char = characters[true]
         if slot then

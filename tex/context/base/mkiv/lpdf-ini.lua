@@ -793,6 +793,10 @@ function lpdf.pagereference(n)
     end
 end
 
+function lpdf.nofpages()
+    return structures.pages.nofpages
+end
+
 function lpdf.delayedobject(data,n)
     if n then
         pdfdeferredobject(n,data)

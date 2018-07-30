@@ -749,6 +749,10 @@ local is_punctuation = allocate ( tohash {
     "pc","pd","ps","pe","pi","pf","po",
 } )
 
+local is_symbol = allocate ( tohash {
+    "sm", "sc", "sk", "so",
+} )
+
 -- to be redone: store checked characters
 
 characters.is_character   = is_character
@@ -757,6 +761,7 @@ characters.is_command     = is_command
 characters.is_spacing     = is_spacing
 characters.is_mark        = is_mark
 characters.is_punctuation = is_punctuation
+characters.is_symbol      = is_symbol
 
 local mti = function(t,k)
     if type(k) == "number" then

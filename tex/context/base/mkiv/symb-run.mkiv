@@ -12,23 +12,55 @@
 %C details.
 
 \startluacode
-    function commands.showsymbolset(collection,symbols)
+    function commands.showsymbolset(collection,symbols,fontid)
         if type(symbols) == "string" then
             symbols = utilities.parsers.settings_to_array(symbols)
         end
+        local options  = { framecolor = "orange", rulethickness = ".8pt", offset = interfaces.variables.overlay }
+        local list     = table.tohash(symbols)
+        local alsofont = fontid > 0
+        local defined  = #symbols > 0
+        local byname   = false
+        if alsofont then
+            local is_symbol  = characters.is_symbol
+            local chardata   = characters.data
+            local resources  = fonts.hashes.resources [fontid]
+            local characters = fonts.hashes.characters[fontid]
+            if resources and characters then
+                local unicodes = resources.unicodes
+                if unicodes then
+                    for name, unicode in next, unicodes do
+                        if not list[name] and name ~= ".notdef" then
+                            local c = rawget(chardata,unicode)
+                            if not c or is_symbol[c.category] then
+                                list[name] = false
+                                byname     = true
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        local detail = defined and byname
         context.start()
         context.forcesymbolset { collection }
-        context.starttabulate { "|lT|l|l|" }
-        local options = { framecolor = "orange", rulethickness = ".8pt", offset = interfaces.variables.overlay }
-        for i=1,#symbols do
-            local symbol = symbols[i]
+        context.starttabulate { detail and "|lT|l|l|lT|" or "|lT|l|l|"}
+        for symbol, how in table.sortedhash(list) do
             context.NC()
-            context(symbol)
+            if detail and how then
+                context.bold(symbol)
+            else
+                context(symbol)
+            end
             context.NC()
             context.symbol(symbol)
             context.NC()
             context.framed(options,context.nested.symbol(symbol))
             context.NC()
+            if detail and how then
+                context.bold("defined")
+                context.NC()
+            end
             context.NR()
         end
         context.stoptabulate()
@@ -42,7 +74,23 @@
   {\dosingleargument\symb_show_set}
 
 \gdef\symb_show_set[#1]%
-  {\ctxcommand{showsymbolset("#1","\symbolset{#1}")}}
+  {\begingroup
+   \edef\p_font{\begincsname\??symboldefault#1\endcsname}%
+   \begingroup
+   \ifx\p_font\empty
+     \global\globalscratchcounter\zerocount
+   \else
+     \definedfont[\p_font]%
+     \global\globalscratchcounter\fontid\font\relax
+   \fi
+   \endgroup
+   \ctxcommand {
+      showsymbolset (
+        "#1",
+        "\symbolset{#1}",
+        \the\globalscratchcounter
+      ) }%
+   \endgroup}
 
 \protect
 

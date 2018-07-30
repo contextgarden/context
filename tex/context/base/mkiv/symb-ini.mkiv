@@ -45,6 +45,7 @@
 
 \installcorenamespace{symbol}
 \installcorenamespace{symbolset}
+\installcorenamespace{symboldefault}
 
 \let\currentsymbol   \empty
 \let\currentsymbolset\empty
@@ -95,8 +96,9 @@
 % Test test \symbol[whatever]\ test \symbol[whatever].
 % Test test \symbol{whatever}  test \symbol{whatever}.
 
-\unexpanded\def\symbol           % This one always gobbles spaces,
-  {\dodoubleempty\symb_place} % so never change it again!
+\unexpanded\def\symbol
+  {\dontleavehmode % so we can start a paragraph with it
+   \dodoubleempty\symb_place}
 
 \def\symb_place   % so we also handle \symbol{name}
   {\iffirstargument  % which is nicer with following spaces
@@ -160,10 +162,46 @@
      \expandafter\symb_fetch_indeed
    \fi}
 
+% \def\symb_fetch_indeed#1%
+%   {\ifcsname\??symbol#1:\currentsymbol\endcsname
+%      \symb_place_indeed{#1:\currentsymbol}%
+%    \fi}
+
 \def\symb_fetch_indeed#1%
   {\ifcsname\??symbol#1:\currentsymbol\endcsname
      \symb_place_indeed{#1:\currentsymbol}%
+   \else\ifcsname\??symboldefault#1\endcsname
+     \symb_place_named{#1}%
+   \fi\fi}
+
+\def\symb_place_named#1% \relax's prevent lookahead problems
+  {\begingroup
+   \setbox\scratchbox\hbox\bgroup
+     \the\everysymbol
+     \getglyphstyled
+       {\csname\??symboldefault#1\endcsname}%
+       {\tochar{n:\currentsymbol}}%
+     \relax
+   \egroup
+   \ifdim\wd\scratchbox>\zeropoint
+     \unhbox\scratchbox
+     \endgroup
+     \setxvalue{\??symbol#1:\currentsymbol}%
+       {\symb_place_named_indeed{#1}{\currentsymbol}}%
+     \settrue\c_symb_found
+   \else
+     \endgroup
    \fi}
+
+\unexpanded\def\symb_place_named_indeed#1#2% \relax's prevent lookahead problems
+  {\settrue\c_symb_found
+   \begingroup
+   \the\everysymbol
+   \getglyphstyled
+     {\csname\??symboldefault#1\endcsname}%
+     {\tochar{n:#2}}%
+   \relax
+   \endgroup}
 
 \def\symb_place_retry#1%
   {\ifcsname\??symbol:#1\endcsname
@@ -273,9 +311,25 @@
 
 \installcorenamespace{symbolsets}
 
-\unexpanded\def\startsymbolset[#1]%
+% \unexpanded\def\startsymbolset[#1]%
+%   {\pushmacro\m_symb_current_set
+%    \def\m_symb_current_set{#1}}
+
+% maybe a parameterhandler:
+
+\unexpanded\def\startsymbolset
+  {\dodoubleargument\symb_start_set}
+
+\def\symb_start_set[#1][#2]%
   {\pushmacro\m_symb_current_set
-   \def\m_symb_current_set{#1}}
+   \def\m_symb_current_set{#1}%
+   \ifsecondargument
+     \getdummyparameters[\s!font=,#2]%
+     \edef\p_font{\dummyparameter\s!font}%
+     \ifx\p_font\empty\else
+       \letvalue{\??symboldefault#1}\p_font
+     \fi
+   \fi}
 
 \unexpanded\def\stopsymbolset
   {\popmacro\m_symb_current_set}
